@@ -22,9 +22,9 @@
 #include "build/build_config.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
-#include "content/browser/dom_storage/session_storage_leveldb_wrapper.h"
+#include "content/browser/dom_storage/session_storage_area_impl.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
-#include "content/browser/leveldb_wrapper_impl.h"
+#include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/common/content_features.h"
@@ -137,11 +137,11 @@ void SessionStorageContextMojo::OpenSessionStorage(
         data_maps_);
   }
 
-  PurgeUnusedWrappersIfNeeded();
+  PurgeUnusedAreasIfNeeded();
   found->second->Bind(std::move(request), process_id);
 
-  size_t total_cache_size, unused_wrapper_count;
-  GetStatistics(&total_cache_size, &unused_wrapper_count);
+  size_t total_cache_size, unused_area_count;
+  GetStatistics(&total_cache_size, &unused_area_count);
   // Track the total sessionStorage cache size.
   UMA_HISTOGRAM_COUNTS_100000("SessionStorageContext.CacheSizeInKB",
                               total_cache_size / 1024);
@@ -193,7 +193,7 @@ void SessionStorageContextMojo::Flush() {
     return;
   }
   for (const auto& it : data_maps_)
-    it.second->level_db_wrapper()->ScheduleImmediateCommit();
+    it.second->storage_area()->ScheduleImmediateCommit();
 }
 
 void SessionStorageContextMojo::GetStorageUsage(
@@ -255,47 +255,47 @@ void SessionStorageContextMojo::ShutdownAndDelete() {
 
   // Flush any uncommitted data.
   for (const auto& it : data_maps_) {
-    auto* wrapper = it.second->level_db_wrapper();
+    auto* area = it.second->storage_area();
     LOCAL_HISTOGRAM_BOOLEAN(
         "SessionStorageContext.ShutdownAndDelete.MaybeDroppedChanges",
-        wrapper->has_pending_load_tasks());
-    wrapper->ScheduleImmediateCommit();
+        area->has_pending_load_tasks());
+    area->ScheduleImmediateCommit();
     // TODO(dmurph): Monitor the above histogram, and if dropping changes is
     // common then handle that here.
-    wrapper->CancelAllPendingRequests();
+    area->CancelAllPendingRequests();
   }
 
   OnShutdownComplete(leveldb::mojom::DatabaseError::OK);
 }
 
 void SessionStorageContextMojo::PurgeMemory() {
-  size_t total_cache_size, unused_wrapper_count;
-  GetStatistics(&total_cache_size, &unused_wrapper_count);
+  size_t total_cache_size, unused_area_count;
+  GetStatistics(&total_cache_size, &unused_area_count);
 
-  // Purge all wrappers that don't have bindings.
+  // Purge all areas that don't have bindings.
   for (auto it = namespaces_.begin(); it != namespaces_.end();) {
     if (!it->second->IsBound()) {
       it = namespaces_.erase(it);
       continue;
     }
-    it->second->PurgeUnboundWrappers();
+    it->second->PurgeUnboundAreas();
   }
 
   // Track the size of cache purged.
   size_t final_total_cache_size;
-  GetStatistics(&final_total_cache_size, &unused_wrapper_count);
+  GetStatistics(&final_total_cache_size, &unused_area_count);
   size_t purged_size_kib = (total_cache_size - final_total_cache_size) / 1024;
   RecordSessionStorageCachePurgedHistogram(
       SessionStorageCachePurgeReason::kAggressivePurgeTriggered,
       purged_size_kib);
 }
 
-void SessionStorageContextMojo::PurgeUnusedWrappersIfNeeded() {
-  size_t total_cache_size, unused_wrapper_count;
-  GetStatistics(&total_cache_size, &unused_wrapper_count);
+void SessionStorageContextMojo::PurgeUnusedAreasIfNeeded() {
+  size_t total_cache_size, unused_area_count;
+  GetStatistics(&total_cache_size, &unused_area_count);
 
   // Nothing to purge.
-  if (!unused_wrapper_count)
+  if (!unused_area_count)
     return;
 
   SessionStorageCachePurgeReason purge_reason =
@@ -311,14 +311,14 @@ void SessionStorageContextMojo::PurgeUnusedWrappersIfNeeded() {
   if (purge_reason == SessionStorageCachePurgeReason::kNotNeeded)
     return;
 
-  // Purge all wrappers that don't have bindings.
+  // Purge all areas that don't have bindings.
   for (auto it = namespaces_.begin(); it != namespaces_.end();) {
     if (!it->second->IsBound())
       it = namespaces_.erase(it);
   }
 
   size_t final_total_cache_size;
-  GetStatistics(&final_total_cache_size, &unused_wrapper_count);
+  GetStatistics(&final_total_cache_size, &unused_area_count);
   size_t purged_size_kib = (total_cache_size - final_total_cache_size) / 1024;
   RecordSessionStorageCachePurgedHistogram(
       SessionStorageCachePurgeReason::kAggressivePurgeTriggered,
@@ -381,8 +381,8 @@ bool SessionStorageContextMojo::OnMemoryDump(
 
   if (args.level_of_detail ==
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
-    size_t total_cache_size, unused_wrapper_count;
-    GetStatistics(&total_cache_size, &unused_wrapper_count);
+    size_t total_cache_size, unused_area_count;
+    GetStatistics(&total_cache_size, &unused_area_count);
     auto* mad = pmd->CreateAllocatorDump(context_name + "/cache_size");
     mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
@@ -400,10 +400,10 @@ bool SessionStorageContextMojo::OnMemoryDump(
       if (!std::isalnum(url[index]))
         url[index] = '_';
     }
-    std::string wrapper_dump_name = base::StringPrintf(
+    std::string area_dump_name = base::StringPrintf(
         "%s/%s/0x%" PRIXPTR, context_name.c_str(), url.c_str(),
-        reinterpret_cast<uintptr_t>(it.second->level_db_wrapper()));
-    it.second->level_db_wrapper()->OnMemoryDump(wrapper_dump_name, pmd);
+        reinterpret_cast<uintptr_t>(it.second->storage_area()));
+    it.second->storage_area()->OnMemoryDump(area_dump_name, pmd);
   }
   return true;
 }
@@ -442,8 +442,8 @@ void SessionStorageContextMojo::OnCommitResult(
     }
     tried_to_recover_from_commit_errors_ = true;
 
-    // Deleting LevelDBWrappers in here could cause more commits (and commit
-    // errors), but those commits won't reach OnCommitResult because the wrapper
+    // Deleting StorageAreas in here could cause more commits (and commit
+    // errors), but those commits won't reach OnCommitResult because the area
     // will have been deleted before the commit finishes.
     DeleteAndRecreateDatabase(
         "SessionStorageContext.OpenResultAfterCommitErrors");
@@ -517,7 +517,7 @@ SessionStorageContextMojo::CreateSessionStorageNamespaceImplMojo(
       add_namespace_callback = base::BindRepeating(
           &SessionStorageContextMojo::RegisterShallowClonedNamespace,
           base::Unretained(this));
-  SessionStorageLevelDBWrapper::RegisterNewAreaMap map_id_callback =
+  SessionStorageAreaImpl::RegisterNewAreaMap map_id_callback =
       base::BindRepeating(&SessionStorageContextMojo::RegisterNewAreaMap,
                           base::Unretained(this));
 
@@ -585,7 +585,7 @@ void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
 void SessionStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
   if (err != base::File::FILE_OK) {
     // We failed to open the directory; continue with startup so that we create
-    // the |level_db_wrappers_|.
+    // the data maps.
     UMA_HISTOGRAM_ENUMERATION("SessionStorageContext.DirectoryOpenError", -err,
                               -base::File::FILE_ERROR_MAX);
     LogDatabaseOpenResult(OpenResult::kDirectoryOpenFailed);
@@ -779,10 +779,10 @@ void SessionStorageContextMojo::OnConnectionFinished() {
 
 void SessionStorageContextMojo::DeleteAndRecreateDatabase(
     const char* histogram_name) {
-  // We're about to set database_ to null, so delete the LevelDBWrappers
+  // We're about to set database_ to null, so delete the StorageAreas
   // that might still be using the old database.
   for (const auto& it : data_maps_)
-    it.second->level_db_wrapper()->CancelAllPendingRequests();
+    it.second->storage_area()->CancelAllPendingRequests();
 
   for (const auto& namespace_pair : namespaces_) {
     namespace_pair.second->Reset();
@@ -790,7 +790,7 @@ void SessionStorageContextMojo::DeleteAndRecreateDatabase(
   DCHECK(data_maps_.empty());
 
   // Reset state to be in process of connecting. This will cause requests for
-  // LevelDBWrappers to be queued until the connection is complete.
+  // StorageAreas to be queued until the connection is complete.
   connection_state_ = CONNECTION_IN_PROGRESS;
   commit_error_count_ = 0;
   database_ = nullptr;
@@ -849,13 +849,13 @@ void SessionStorageContextMojo::OnShutdownComplete(
 }
 
 void SessionStorageContextMojo::GetStatistics(size_t* total_cache_size,
-                                              size_t* unused_wrapper_count) {
+                                              size_t* unused_area_count) {
   *total_cache_size = 0;
-  *unused_wrapper_count = 0;
+  *unused_area_count = 0;
   for (const auto& it : data_maps_) {
-    *total_cache_size += it.second->level_db_wrapper()->memory_used();
+    *total_cache_size += it.second->storage_area()->memory_used();
     if (it.second->binding_count() == 0)
-      (*unused_wrapper_count)++;
+      (*unused_area_count)++;
   }
 }
 

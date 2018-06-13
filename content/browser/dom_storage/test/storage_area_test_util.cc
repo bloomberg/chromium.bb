@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/test/leveldb_wrapper_test_util.h"
+#include "content/browser/dom_storage/test/storage_area_test_util.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -26,45 +26,44 @@ base::OnceCallback<void(bool)> MakeSuccessCallback(base::OnceClosure callback,
   return base::BindOnce(&SuccessCallback, std::move(callback), success_out);
 }
 
-bool PutSync(blink::mojom::StorageArea* wrapper,
+bool PutSync(blink::mojom::StorageArea* area,
              const std::vector<uint8_t>& key,
              const std::vector<uint8_t>& value,
              const base::Optional<std::vector<uint8_t>>& old_value,
              const std::string& source) {
   bool success = false;
   base::RunLoop loop;
-  wrapper->Put(key, value, old_value, source,
-               base::BindLambdaForTesting([&](bool success_in) {
-                 success = success_in;
-                 loop.Quit();
-               }));
+  area->Put(key, value, old_value, source,
+            base::BindLambdaForTesting([&](bool success_in) {
+              success = success_in;
+              loop.Quit();
+            }));
   loop.Run();
   return success;
 }
 
-bool GetSync(blink::mojom::StorageArea* wrapper,
+bool GetSync(blink::mojom::StorageArea* area,
              const std::vector<uint8_t>& key,
              std::vector<uint8_t>* data_out) {
   bool success = false;
   base::RunLoop loop;
-  wrapper->Get(key,
-               base::BindLambdaForTesting(
-                   [&](bool success_in, const std::vector<uint8_t>& value) {
-                     success = success_in;
-                     *data_out = std::move(value);
-                     loop.Quit();
-                   }));
+  area->Get(key, base::BindLambdaForTesting(
+                     [&](bool success_in, const std::vector<uint8_t>& value) {
+                       success = success_in;
+                       *data_out = std::move(value);
+                       loop.Quit();
+                     }));
   loop.Run();
   return success;
 }
 
-bool GetAllSync(blink::mojom::StorageArea* wrapper,
+bool GetAllSync(blink::mojom::StorageArea* area,
                 std::vector<blink::mojom::KeyValuePtr>* data_out) {
   DCHECK(data_out);
   base::RunLoop loop;
   bool complete = false;
   bool success = false;
-  wrapper->GetAll(
+  area->GetAll(
       GetAllCallback::CreateAndBind(&complete, loop.QuitClosure()),
       base::BindLambdaForTesting(
           [&](bool success_in, std::vector<blink::mojom::KeyValuePtr> data_in) {
@@ -77,13 +76,13 @@ bool GetAllSync(blink::mojom::StorageArea* wrapper,
 }
 
 bool GetAllSyncOnDedicatedPipe(
-    blink::mojom::StorageArea* wrapper,
+    blink::mojom::StorageArea* area,
     std::vector<blink::mojom::KeyValuePtr>* data_out) {
   DCHECK(data_out);
   base::RunLoop loop;
   bool complete = false;
   bool success = false;
-  wrapper->GetAll(
+  area->GetAll(
       GetAllCallback::CreateAndBindOnDedicatedPipe(&complete,
                                                    loop.QuitClosure()),
       base::BindLambdaForTesting(
@@ -96,29 +95,28 @@ bool GetAllSyncOnDedicatedPipe(
   return success;
 }
 
-bool DeleteSync(blink::mojom::StorageArea* wrapper,
+bool DeleteSync(blink::mojom::StorageArea* area,
                 const std::vector<uint8_t>& key,
                 const base::Optional<std::vector<uint8_t>>& client_old_value,
                 const std::string& source) {
   bool success = false;
   base::RunLoop loop;
-  wrapper->Delete(key, client_old_value, source,
-                  base::BindLambdaForTesting([&](bool success_in) {
-                    success = success_in;
-                    loop.Quit();
-                  }));
+  area->Delete(key, client_old_value, source,
+               base::BindLambdaForTesting([&](bool success_in) {
+                 success = success_in;
+                 loop.Quit();
+               }));
   loop.Run();
   return success;
 }
 
-bool DeleteAllSync(blink::mojom::StorageArea* wrapper,
-                   const std::string& source) {
+bool DeleteAllSync(blink::mojom::StorageArea* area, const std::string& source) {
   bool success = false;
   base::RunLoop loop;
-  wrapper->DeleteAll(source, base::BindLambdaForTesting([&](bool success_in) {
-                       success = success_in;
-                       loop.Quit();
-                     }));
+  area->DeleteAll(source, base::BindLambdaForTesting([&](bool success_in) {
+                    success = success_in;
+                    loop.Quit();
+                  }));
   loop.Run();
   return success;
 }

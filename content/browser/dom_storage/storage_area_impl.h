@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LEVELDB_WRAPPER_IMPL_H_
-#define CONTENT_BROWSER_LEVELDB_WRAPPER_IMPL_H_
+#ifndef CONTENT_BROWSER_DOM_STORAGE_STORAGE_AREA_IMPL_H_
+#define CONTENT_BROWSER_DOM_STORAGE_STORAGE_AREA_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -25,14 +25,13 @@ namespace base {
 namespace trace_event {
 class ProcessMemoryDump;
 }
-}
+}  // namespace base
 
 namespace content {
 
 // This is a wrapper around a leveldb::mojom::LevelDBDatabase. Multiple
-// interface
-// pointers can be bound to the same object. The wrapper adds a couple of
-// features not found directly in leveldb.
+// interface pointers can be bound to the same object. The wrapper adds a couple
+// of features not found directly in leveldb.
 // 1) Adds the given prefix, if any, to all keys. This allows the sharing of one
 //    database across many, possibly untrusted, consumers and ensuring that they
 //    can't access each other's values.
@@ -41,7 +40,7 @@ namespace content {
 // 4) Throttles requests to avoid overwhelming the disk.
 //
 // The wrapper supports two different caching modes.
-class CONTENT_EXPORT LevelDBWrapperImpl : public blink::mojom::StorageArea {
+class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
  public:
   using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
   using ValueMapCallback = base::OnceCallback<void(std::unique_ptr<ValueMap>)>;
@@ -90,34 +89,34 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public blink::mojom::StorageArea {
 
   // |Delegate::OnNoBindings| will be called when this object has no more
   // bindings and all pending modifications have been processed.
-  LevelDBWrapperImpl(leveldb::mojom::LevelDBDatabase* database,
-                     const std::string& prefix,
-                     Delegate* delegate,
-                     const Options& options);
-  LevelDBWrapperImpl(leveldb::mojom::LevelDBDatabase* database,
-                     std::vector<uint8_t> prefix,
-                     Delegate* delegate,
-                     const Options& options);
+  StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
+                  const std::string& prefix,
+                  Delegate* delegate,
+                  const Options& options);
+  StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
+                  std::vector<uint8_t> prefix,
+                  Delegate* delegate,
+                  const Options& options);
 
-  ~LevelDBWrapperImpl() override;
+  ~StorageAreaImpl() override;
 
   void Bind(blink::mojom::StorageAreaRequest request);
 
   // Forks, or copies, all data in this prefix to another prefix.
-  // Note: this object (the parent) must stay alive until the forked wrapper
+  // Note: this object (the parent) must stay alive until the forked area
   // has been loaded (see initialized()).
-  std::unique_ptr<LevelDBWrapperImpl> ForkToNewPrefix(
+  std::unique_ptr<StorageAreaImpl> ForkToNewPrefix(
       const std::string& new_prefix,
       Delegate* delegate,
       const Options& options);
-  std::unique_ptr<LevelDBWrapperImpl> ForkToNewPrefix(
+  std::unique_ptr<StorageAreaImpl> ForkToNewPrefix(
       std::vector<uint8_t> new_prefix,
       Delegate* delegate,
       const Options& options);
 
   // Cancels all pending load tasks. Useful for emergency destructions. If the
-  // wrapper is unloaded (initialized() returns false), this will DROP all
-  // pending changes to the database, and any uninitialized wrappers created
+  // area is unloaded (initialized() returns false), this will DROP all
+  // pending changes to the database, and any uninitialized areas created
   // through |ForkToNewPrefix| will stay BROKEN and unresponsive.
   void CancelAllPendingRequests();
 
@@ -128,7 +127,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public blink::mojom::StorageArea {
 
   bool empty() const { return storage_used_ == 0; }
 
-  // If this wrapper is loaded and sending changes to the database.
+  // If this ares is loaded and sending changes to the database.
   bool initialized() const { return IsMapLoaded(); }
 
   CacheMode cache_mode() const { return cache_mode_; }
@@ -195,11 +194,11 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public blink::mojom::StorageArea {
               GetAllCallback callback) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, GetAllAfterSetCacheMode);
-  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest,
+  FRIEND_TEST_ALL_PREFIXES(StorageAreaImplTest, GetAllAfterSetCacheMode);
+  FRIEND_TEST_ALL_PREFIXES(StorageAreaImplTest,
                            PutLoadsValuesAfterCacheModeUpgrade);
-  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplTest, SetCacheModeConsistent);
-  FRIEND_TEST_ALL_PREFIXES(LevelDBWrapperImplParamTest,
+  FRIEND_TEST_ALL_PREFIXES(StorageAreaImplTest, SetCacheModeConsistent);
+  FRIEND_TEST_ALL_PREFIXES(StorageAreaImplParamTest,
                            CommitOnDifferentCacheModes);
 
   // Used to rate limit commits.
@@ -207,7 +206,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public blink::mojom::StorageArea {
    public:
     RateLimiter(size_t desired_rate, base::TimeDelta time_quantum);
 
-    void add_samples(size_t samples) { samples_ += samples;  }
+    void add_samples(size_t samples) { samples_ += samples; }
 
     // Computes the total time needed to process the total samples seen
     // at the desired rate.
@@ -245,7 +244,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public blink::mojom::StorageArea {
     UNLOADED,
     // Loading from the database connection.
     LOADING_FROM_DATABASE,
-    // Loading from another LevelDBWrapperImpl that we have forked from.
+    // Loading from another StorageAreaImpl that we have forked from.
     LOADING_FROM_FORK,
     LOADED_KEYS_ONLY,
     LOADED_KEYS_AND_VALUES
@@ -256,7 +255,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public blink::mojom::StorageArea {
   using ForkSourceEarlyDeathCallback =
       base::OnceCallback<void(std::vector<uint8_t> source_prefix)>;
 
-  // Changes the cache mode of the wrapper. If applicable, this will change the
+  // Changes the cache mode of the area. If applicable, this will change the
   // internal storage type after the next commit. The keys-only mode can only
   // be set only when there is one client binding. It automatically changes to
   // keys-and-values mode when more than one binding exists.
@@ -305,7 +304,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public blink::mojom::StorageArea {
             keys_values_map_.empty());
   }
 
-  void DoForkOperation(const base::WeakPtr<LevelDBWrapperImpl>& forked_wrapper);
+  void DoForkOperation(const base::WeakPtr<StorageAreaImpl>& forked_area);
   void OnForkStateLoaded(bool database_enabled,
                          const ValueMap& map,
                          const KeysOnlyMap& key_only_map);
@@ -336,13 +335,13 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public blink::mojom::StorageArea {
   bool has_committed_data_ = false;
   std::unique_ptr<CommitBatch> commit_batch_;
 
-  base::WeakPtrFactory<LevelDBWrapperImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<StorageAreaImpl> weak_ptr_factory_;
 
   static bool s_aggressive_flushing_enabled_;
 
-  DISALLOW_COPY_AND_ASSIGN(LevelDBWrapperImpl);
+  DISALLOW_COPY_AND_ASSIGN(StorageAreaImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LEVELDB_WRAPPER_IMPL_H_
+#endif  // CONTENT_BROWSER_DOM_STORAGE_STORAGE_AREA_IMPL_H_

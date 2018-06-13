@@ -83,8 +83,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
   // storage for a particular origin will reload the data from the database.
   void PurgeMemory();
 
-  // Clears unused leveldb wrappers, when thresholds are reached.
-  void PurgeUnusedWrappersIfNeeded();
+  // Clears unused storage areas, when thresholds are reached.
+  void PurgeUnusedAreasIfNeeded();
 
   // Any namespaces that have been loaded from disk and have not had a
   // corresponding CreateSessionNamespace() call will be deleted. Called after
@@ -97,7 +97,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  // SessionStorageLevelDBWrapper::Listener implementation:
+  // SessionStorageAreaImpl::Listener implementation:
   void OnDataMapCreation(const std::vector<uint8_t>& map_prefix,
                          SessionStorageDataMap* map) override;
   void OnDataMapDestruction(const std::vector<uint8_t>& map_prefix) override;
@@ -164,7 +164,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   void OnShutdownComplete(leveldb::mojom::DatabaseError error);
 
-  void GetStatistics(size_t* total_cache_size, size_t* unused_wrapper_count);
+  void GetStatistics(size_t* total_cache_size, size_t* unused_areas_count);
 
   // These values are written to logs.  New enum values can be added, but
   // existing enums must never be renumbered or deleted and reused.

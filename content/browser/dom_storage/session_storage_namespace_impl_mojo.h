@@ -9,8 +9,8 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/dom_storage/session_storage_area_impl.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
-#include "content/browser/dom_storage/session_storage_leveldb_wrapper.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/common/child_process_host.h"
@@ -48,7 +48,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
     : public mojom::SessionStorageNamespace {
  public:
   using OriginAreas =
-      std::map<url::Origin, std::unique_ptr<SessionStorageLevelDBWrapper>>;
+      std::map<url::Origin, std::unique_ptr<SessionStorageAreaImpl>>;
   using RegisterShallowClonedNamespace = base::RepeatingCallback<void(
       SessionStorageMetadata::NamespaceEntry source_namespace,
       const std::string& destination_namespace,
@@ -59,14 +59,13 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // |data_map_listener| are given to any data maps constructed for this
   // namespace. The |add_namespace_callback| is called when the |Clone| method
   // is called by mojo. The |register_new_map_callback| is given to the the
-  // SessionStorageLevelDBWrapper's, used per-origin, that are bound to in
+  // SessionStorageAreaImpl's, used per-origin, that are bound to in
   // OpenArea.
   SessionStorageNamespaceImplMojo(
       std::string namespace_id,
       SessionStorageDataMap::Listener* data_map_listener,
       RegisterShallowClonedNamespace add_namespace_callback,
-      SessionStorageLevelDBWrapper::RegisterNewAreaMap
-          register_new_map_callback);
+      SessionStorageAreaImpl::RegisterNewAreaMap register_new_map_callback);
 
   ~SessionStorageNamespaceImplMojo() override;
 
@@ -113,8 +112,8 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
     return !bindings_.empty() || bind_waiting_on_clone_population_;
   }
 
-  // Removes any LevelDBWrappers bound in |OpenArea| that are no longer bound.
-  void PurgeUnboundWrappers();
+  // Removes any StorageAreas bound in |OpenArea| that are no longer bound.
+  void PurgeUnboundAreas();
 
   // Removes data for the given origin from this namespace. If there is no data
   // map for that given origin, this does nothing.
@@ -141,7 +140,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
 
   SessionStorageDataMap::Listener* data_map_listener_;
   RegisterShallowClonedNamespace add_namespace_callback_;
-  SessionStorageLevelDBWrapper::RegisterNewAreaMap register_new_map_callback_;
+  SessionStorageAreaImpl::RegisterNewAreaMap register_new_map_callback_;
 
   bool waiting_on_clone_population_ = false;
   bool bind_waiting_on_clone_population_ = false;

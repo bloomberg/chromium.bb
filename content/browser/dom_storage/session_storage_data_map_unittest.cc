@@ -112,7 +112,7 @@ TEST_F(SessionStorageDataMapTest, BasicEmptyCreation) {
   std::vector<blink::mojom::KeyValuePtr> data;
   bool done = false;
   base::RunLoop loop;
-  map->level_db_wrapper()->GetAll(
+  map->storage_area()->GetAll(
       GetAllCallback::CreateAndBind(&done, loop.QuitClosure()),
       MakeGetAllCallback(&success, &data));
   loop.Run();
@@ -152,13 +152,13 @@ TEST_F(SessionStorageDataMapTest, Clone) {
           &listener_,
           base::MakeRefCounted<SessionStorageMetadata::MapData>(2,
                                                                 test_origin_),
-          map1->level_db_wrapper());
+          map1->storage_area());
 
   bool success;
   std::vector<blink::mojom::KeyValuePtr> data;
   bool done = false;
   base::RunLoop loop;
-  map2->level_db_wrapper()->GetAll(
+  map2->storage_area()->GetAll(
       GetAllCallback::CreateAndBind(&done, loop.QuitClosure()),
       MakeGetAllCallback(&success, &data));
   loop.Run();
