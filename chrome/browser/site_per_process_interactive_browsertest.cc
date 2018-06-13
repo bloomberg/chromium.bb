@@ -38,6 +38,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -359,8 +360,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   ASSERT_NE(nullptr, child2);
 
   // Needed to avoid flakiness with --enable-browser-side-navigation.
-  content::WaitForChildFrameSurfaceReady(child1);
-  content::WaitForChildFrameSurfaceReady(child2);
+  content::WaitForHitTestDataOrChildSurfaceReady(child1);
+  content::WaitForHitTestDataOrChildSurfaceReady(child2);
 
   // Assign a name to each frame.  This will be sent along in test messages
   // from focus events.
