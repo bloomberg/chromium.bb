@@ -2729,9 +2729,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   // will trigger kTouchActionNone being sent back to the browser.
   RenderWidgetHostImpl* child_render_widget_host =
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
-  EXPECT_EQ(false, child_render_widget_host->input_router()
-                       ->AllowedTouchAction()
-                       .has_value());
+  EXPECT_EQ(true, child_render_widget_host->input_router()
+                      ->AllowedTouchAction()
+                      .has_value());
 
   InputEventAckWaiter waiter(child_render_widget_host,
                              blink::WebInputEvent::kTouchStart);
@@ -2806,7 +2806,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   RenderWidgetHostImpl* render_widget_host =
       root->current_frame_host()->GetRenderWidgetHost();
   EXPECT_EQ(
-      false,
+      true,
       render_widget_host->input_router()->AllowedTouchAction().has_value());
 
   // Simulate touch event to sub-frame.

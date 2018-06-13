@@ -52,6 +52,9 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
       DCHECK(!suppress_manipulation_events_);
       DCHECK(!touchscreen_scroll_in_progress_);
       touchscreen_scroll_in_progress_ = true;
+      // TODO(https://crbug.com/851644): Make sure the value is properly set.
+      if (!scrolling_touch_action_.has_value())
+        SetTouchAction(cc::kTouchActionAuto);
       suppress_manipulation_events_ =
           ShouldSuppressManipulation(*gesture_event);
       return suppress_manipulation_events_
@@ -115,6 +118,9 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     // If double tap is disabled, there's no reason for the tap delay.
     case WebInputEvent::kGestureTapUnconfirmed: {
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
+      // TODO(https://crbug.com/851644): Make sure the value is properly set.
+      if (!scrolling_touch_action_.has_value())
+        SetTouchAction(cc::kTouchActionAuto);
       allow_current_double_tap_event_ = (scrolling_touch_action_.value() &
                                          cc::kTouchActionDoubleTapZoom) != 0;
       if (!allow_current_double_tap_event_) {
