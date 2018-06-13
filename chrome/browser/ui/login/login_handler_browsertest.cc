@@ -6,8 +6,10 @@
 #include <list>
 #include <map>
 
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_origin.h"
@@ -18,17 +20,22 @@
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/login/login_interstitial_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/auth.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/cpp/features.h"
+#include "url/gurl.h"
 
 using content::NavigationController;
 using content::OpenURLParams;
@@ -175,46 +182,60 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestBasicAuth) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   NavigationController* controller = &contents->GetController();
-  LoginPromptBrowserTestObserver observer;
 
-  observer.Register(content::Source<NavigationController>(controller));
+  // If the network service crashes, basic auth should still be enabled.
+  for (bool crash_network_service : {false, true}) {
+    if (crash_network_service) {
+      // Can't crash the network service if it isn't enabled.
+      if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+        return;
 
-  {
-    WindowedAuthNeededObserver auth_needed_waiter(controller);
-    browser()->OpenURL(OpenURLParams(test_page, Referrer(),
-                                     WindowOpenDisposition::CURRENT_TAB,
-                                     ui::PAGE_TRANSITION_TYPED, false));
-    auth_needed_waiter.Wait();
-  }
+      SimulateNetworkServiceCrash();
+      // Flush the network interface to make sure it notices the crash.
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->FlushNetworkInterfaceForTesting();
+    }
 
-  ASSERT_FALSE(observer.handlers().empty());
-  {
-    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    LoginPromptBrowserTestObserver observer;
+
+    observer.Register(content::Source<NavigationController>(controller));
+
+    {
+      WindowedAuthNeededObserver auth_needed_waiter(controller);
+      browser()->OpenURL(OpenURLParams(test_page, Referrer(),
+                                       WindowOpenDisposition::CURRENT_TAB,
+                                       ui::PAGE_TRANSITION_TYPED, false));
+      auth_needed_waiter.Wait();
+    }
+
+    ASSERT_FALSE(observer.handlers().empty());
+    {
+      WindowedAuthNeededObserver auth_needed_waiter(controller);
+      WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
+      LoginHandler* handler = *observer.handlers().begin();
+
+      ASSERT_TRUE(handler);
+      handler->SetAuth(base::UTF8ToUTF16(bad_username_),
+                       base::UTF8ToUTF16(bad_password_));
+      auth_supplied_waiter.Wait();
+
+      // The request should be retried after the incorrect password is
+      // supplied.  This should result in a new AUTH_NEEDED notification
+      // for the same realm.
+      auth_needed_waiter.Wait();
+    }
+
+    ASSERT_EQ(1u, observer.handlers().size());
     WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
     LoginHandler* handler = *observer.handlers().begin();
-
-    ASSERT_TRUE(handler);
-    handler->SetAuth(base::UTF8ToUTF16(bad_username_),
-                     base::UTF8ToUTF16(bad_password_));
+    SetAuthFor(handler);
     auth_supplied_waiter.Wait();
 
-    // The request should be retried after the incorrect password is
-    // supplied.  This should result in a new AUTH_NEEDED notification
-    // for the same realm.
-    auth_needed_waiter.Wait();
+    base::string16 expected_title = ExpectedTitleFromAuth(
+        base::ASCIIToUTF16("basicuser"), base::ASCIIToUTF16("secret"));
+    content::TitleWatcher title_watcher(contents, expected_title);
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
-
-  ASSERT_EQ(1u, observer.handlers().size());
-  WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
-  LoginHandler* handler = *observer.handlers().begin();
-  SetAuthFor(handler);
-  auth_supplied_waiter.Wait();
-
-  base::string16 expected_title =
-      ExpectedTitleFromAuth(base::ASCIIToUTF16("basicuser"),
-                            base::ASCIIToUTF16("secret"));
-  content::TitleWatcher title_watcher(contents, expected_title);
-  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 // Test that "Digest" HTTP authentication works.
@@ -1520,6 +1541,47 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ(SSLBlockingPage::kTypeForTesting, contents->GetInterstitialPage()
                                                   ->GetDelegateForTesting()
                                                   ->GetTypeForTesting());
+}
+
+// Test where Basic HTTP authentication is disabled.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PRE_TestBasicAuthDisabled) {
+  // Disable all auth schemes. The modified list isn't respected until the
+  // browser is restarted, however.
+  g_browser_process->local_state()->SetString(prefs::kAuthSchemes, "");
+}
+
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestBasicAuthDisabled) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
+
+  // If the network service crashes, basic auth should still be disabled.
+  for (bool crash_network_service : {false, true}) {
+    // Crash the network service if it is enabled.
+    if (crash_network_service &&
+        base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      SimulateNetworkServiceCrash();
+      // Flush the network interface to make sure it notices the crash.
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->FlushNetworkInterfaceForTesting();
+    }
+
+    LoginPromptBrowserTestObserver observer;
+
+    observer.Register(content::Source<NavigationController>(controller));
+    browser()->OpenURL(OpenURLParams(test_page, Referrer(),
+                                     WindowOpenDisposition::CURRENT_TAB,
+                                     ui::PAGE_TRANSITION_TYPED, false));
+    EXPECT_EQ(0, observer.auth_supplied_count());
+
+    const base::string16 kExpectedTitle =
+        base::ASCIIToUTF16("Denied: Missing Authorization Header");
+    content::TitleWatcher title_watcher(contents, kExpectedTitle);
+    EXPECT_EQ(kExpectedTitle, title_watcher.WaitAndGetTitle());
+  }
 }
 
 }  // namespace

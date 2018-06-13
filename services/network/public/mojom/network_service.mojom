@@ -83,6 +83,48 @@ interface NetworkServiceClient {
                         bool fatal) => (int32 net_error);
 };
 
+// Values for configuring HTTP authentication that can only be set once.
+struct HttpAuthStaticParams {
+  // List of supported auth schemes. Unrecognized schemes are ignored.
+  // The default value of this field (an empty list) does not match default
+  // behavior of NetworkService when no HttpAuthStaticParams is specified.
+  array<string> supported_schemes;
+
+  // File name the GSSAPI library to load. Only supported on
+  // (OS_POSIX && !OS_ANDROID && !OS_CHROMEOS && OS_IOS) platforms.
+  string gssapi_library_name;
+
+  // Indicates whether the GSSAPI library should be loaded. Only supported on
+  // ChromeOS.
+  bool allow_gssapi_library_load = true;
+};
+
+// Values for configurating HTTP authentication that can be changed as needed.
+struct HttpAuthDynamicParams {
+  // Comma / semi-colon delimited whitelist of server origins which the network
+  // service may send the default credentials for NTLM or Negotiate
+  // authentication.
+  string server_whitelist;
+
+  // Comma / semi-colon delimited whitelist of server origins for which Kerberos
+  // delegation is allowed for NTLM or Negotiate authentication.
+  string delegate_whitelist;
+
+  // True if canonical hostnames should be resolved when using Negotiate.
+  bool negotiate_disable_cname_lookup = false;
+
+  // True if Negotiate SPNs (service principal names) should include ports
+  // when the port isn't a standard port (80 or 443).
+  bool enable_negotiate_port = true;
+
+  // Whether NTLM V2 is enabled on POSIX platforms. No effect elsewhere.
+  bool ntlm_v2_enabled = false;
+
+  // The AccountManager AccountManagerget.AccountsByTypeAndFeatures on Android
+  // when using Negotiate authentication.
+  string android_negotiate_account_type;
+};
+
 // Browser interface to the network service.
 interface NetworkService {
   SetClient(NetworkServiceClient client);
@@ -94,6 +136,19 @@ interface NetworkService {
   // Disables QUIC for the NetworkService. Affects all existing NetworkContexts,
   // and all new ones that are created. Once called, QUIC cannot be re-enabled.
   DisableQuic();
+
+  // Configures HTTP authentication for all NetworkContexts created using the
+  // NetworkService. May only be called at most once, and may only be called
+  // before any NetworkContexts are created.
+  //
+  // If this method is not invoked, default values will be used (which currently
+  // allow all supported schemes on the current platform).
+  SetUpHttpAuth(HttpAuthStaticParams http_auth_static_params);
+
+  // Sets global auth params. Unlike SetUpAuth(), may be called multiple times,
+  // at any point in time. Affects all NetworkContexts, both already existing
+  // one and subsequently created ones.
+  ConfigureHttpAuthPrefs(HttpAuthDynamicParams http_auth_dynamic_params);
 
   // Specifies whether requests for raw headers coming through URLLoaderFactory
   // associated with the specified process will be granted. Granting such a

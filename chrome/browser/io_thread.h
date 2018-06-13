@@ -62,8 +62,6 @@ class EventRouterForwarder;
 namespace net {
 class CertVerifier;
 class HostResolver;
-class HttpAuthHandlerFactory;
-class HttpAuthPreferences;
 class NetworkQualityEstimator;
 class RTTAndThroughputEstimatesObserver;
 class URLRequestContext;
@@ -116,7 +114,6 @@ class IOThread : public content::BrowserThreadDelegate {
     std::unique_ptr<android::ExternalDataUseObserver>
         external_data_use_observer;
 #endif  // defined(OS_ANDROID)
-    std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
 
     // NetworkQualityEstimator only for use in dummy in-process
     // URLRequestContext when network service is enabled.
@@ -188,18 +185,7 @@ class IOThread : public content::BrowserThreadDelegate {
   void Init() override;
   void CleanUp() override;
 
-  std::unique_ptr<net::HttpAuthHandlerFactory> CreateDefaultAuthHandlerFactory(
-      net::HostResolver* host_resolver);
-
   void UpdateDnsClientEnabled();
-  void UpdateServerWhitelist();
-  void UpdateDelegateWhitelist();
-  void UpdateAndroidAuthNegotiateAccountType();
-  void UpdateNegotiateDisableCnameLookup();
-  void UpdateNegotiateEnablePort();
-#if defined(OS_POSIX)
-  void UpdateNtlmV2Enabled();
-#endif
 
   extensions::EventRouterForwarder* extension_event_router_forwarder() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -238,32 +224,6 @@ class IOThread : public content::BrowserThreadDelegate {
 
   StringListPrefMember dns_over_https_server_methods_;
 
-  // Store HTTP Auth-related policies in this thread.
-  // TODO(aberent) Make the list of auth schemes a PrefMember, so that the
-  // policy can change after startup (https://crbug/549273).
-  std::string auth_schemes_;
-  BooleanPrefMember negotiate_disable_cname_lookup_;
-  BooleanPrefMember negotiate_enable_port_;
-#if defined(OS_POSIX)
-  BooleanPrefMember ntlm_v2_enabled_;
-#endif
-  StringPrefMember auth_server_whitelist_;
-  StringPrefMember auth_delegate_whitelist_;
-
-#if defined(OS_ANDROID)
-  StringPrefMember auth_android_negotiate_account_type_;
-#endif
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  // No PrefMember for the GSSAPI library name, since changing it after startup
-  // requires unloading the existing GSSAPI library, which could cause all sorts
-  // of problems for, for example, active Negotiate transactions.
-  std::string gssapi_library_name_;
-#endif
-
-#if defined(OS_CHROMEOS)
-  bool allow_gssapi_library_load_;
-#endif
-
   // These are set on the UI thread, and then consumed during initialization on
   // the IO thread.
   network::mojom::NetworkContextRequest network_context_request_;
@@ -271,6 +231,12 @@ class IOThread : public content::BrowserThreadDelegate {
 
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;
+
+  // Initial HTTP auth configuration used when setting up the NetworkService on
+  // the IO Thread. Future updates are sent using the NetworkService mojo
+  // interface, but initial state needs to be set non-racily.
+  network::mojom::HttpAuthStaticParamsPtr http_auth_static_params_;
+  network::mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params_;
 
   // True if QUIC is initially enabled.
   bool is_quic_allowed_on_init_;

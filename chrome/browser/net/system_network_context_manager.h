@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_NET_SYSTEM_NETWORK_CONTEXT_MANAGER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/ssl_config.mojom.h"
 
+class PrefRegistrySimple;
 class SSLConfigServiceManager;
 
 namespace network {
@@ -30,6 +33,8 @@ class SharedURLLoaderFactory;
 // comes from extensions, and similarly, has no extension-provided per-profile
 // proxy configuration information.
 //
+// This class is also responsible for configuring global NetworkService state.
+//
 // The "system" NetworkContext will either share a URLRequestContext with
 // IOThread's SystemURLRequestContext and be part of IOThread's NetworkService
 // (If the network service is disabled) or be an independent NetworkContext
@@ -44,6 +49,8 @@ class SystemNetworkContextManager {
   SystemNetworkContextManager();
   ~SystemNetworkContextManager();
 
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
   // Initializes |network_context_params| as needed to set up a system
   // NetworkContext. If the network service is disabled,
   // |network_context_request| will be for the NetworkContext used by the
@@ -52,9 +59,16 @@ class SystemNetworkContextManager {
   //
   // Must be called before the system NetworkContext is first used.
   //
-  // |is_quic_allowed| is set to true if policy allows QUIC to be enabled.
+  // |http_auth_static_params|, |http_auth_dynamic_params|, and
+  // |is_quic_allowed| are used to pass initial NetworkService state to the
+  // caller, so the NetworkService can be configured appropriately. Using
+  // NetworkService's Mojo interface to set those options would lead to races
+  // with other UI->IO thread network-related tasks, since Mojo doesn't preserve
+  // execution order relative to PostTasks.
   void SetUp(network::mojom::NetworkContextRequest* network_context_request,
              network::mojom::NetworkContextParamsPtr* network_context_params,
+             network::mojom::HttpAuthStaticParamsPtr* http_auth_static_params,
+             network::mojom::HttpAuthDynamicParamsPtr* http_auth_dynamic_params,
              bool* is_quic_allowed);
 
   // Returns the System NetworkContext. May only be called after SetUp(). Does
@@ -130,6 +144,8 @@ class SystemNetworkContextManager {
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   bool is_quic_allowed_ = true;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNetworkContextManager);
 };

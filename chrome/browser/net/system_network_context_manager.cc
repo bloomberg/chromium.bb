@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -18,9 +19,12 @@
 #include "chrome/browser/net/default_network_context_params.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
@@ -30,6 +34,11 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -42,6 +51,65 @@ void DisableQuicOnIOThread(IOThread* io_thread) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     content::GetNetworkServiceImpl()->DisableQuic();
   io_thread->DisableQuic();
+}
+
+// Constructs HttpAuthStaticParams based on global state.
+network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams() {
+  PrefService* local_state = g_browser_process->local_state();
+  network::mojom::HttpAuthStaticParamsPtr auth_static_params =
+      network::mojom::HttpAuthStaticParams::New();
+
+  // TODO(https://crbug/549273): Allow this to change after startup.
+  auth_static_params->supported_schemes =
+      base::SplitString(local_state->GetString(prefs::kAuthSchemes), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  auth_static_params->gssapi_library_name =
+      local_state->GetString(prefs::kGSSAPILibraryName);
+#endif
+
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  auth_static_params->allow_gssapi_library_load =
+      connector->IsActiveDirectoryManaged();
+#endif
+
+  return auth_static_params;
+}
+
+// Constructs HttpAuthDynamicParams based on current global state.
+network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams() {
+  PrefService* local_state = g_browser_process->local_state();
+  network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params =
+      network::mojom::HttpAuthDynamicParams::New();
+
+  auth_dynamic_params->server_whitelist =
+      local_state->GetString(prefs::kAuthServerWhitelist);
+  auth_dynamic_params->delegate_whitelist =
+      local_state->GetString(prefs::kAuthNegotiateDelegateWhitelist);
+  auth_dynamic_params->negotiate_disable_cname_lookup =
+      local_state->GetBoolean(prefs::kDisableAuthNegotiateCnameLookup);
+  auth_dynamic_params->enable_negotiate_port =
+      local_state->GetBoolean(prefs::kEnableAuthNegotiatePort);
+
+#if defined(OS_POSIX)
+  auth_dynamic_params->ntlm_v2_enabled =
+      local_state->GetBoolean(prefs::kNtlmV2Enabled);
+#endif  // defined(OS_POSIX)
+
+#if defined(OS_ANDROID)
+  auth_dynamic_params->android_negotiate_account_type =
+      local_state->GetString(prefs::kAuthAndroidNegotiateAccountType);
+#endif  // defined(OS_ANDROID)
+
+  return auth_dynamic_params;
+}
+
+void OnAuthPrefsChanged(const std::string& pref_name) {
+  content::GetNetworkService()->ConfigureHttpAuthPrefs(
+      CreateHttpAuthDynamicParams());
 }
 
 }  // namespace
@@ -144,6 +212,8 @@ SystemNetworkContextManager::GetSharedURLLoaderFactory() {
 void SystemNetworkContextManager::SetUp(
     network::mojom::NetworkContextRequest* network_context_request,
     network::mojom::NetworkContextParamsPtr* network_context_params,
+    network::mojom::HttpAuthStaticParamsPtr* http_auth_static_params,
+    network::mojom::HttpAuthDynamicParamsPtr* http_auth_dynamic_params,
     bool* is_quic_allowed) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
@@ -154,6 +224,8 @@ void SystemNetworkContextManager::SetUp(
     *network_context_params = CreateDefaultNetworkContextParams();
   }
   *is_quic_allowed = is_quic_allowed_;
+  *http_auth_static_params = CreateHttpAuthStaticParams();
+  *http_auth_dynamic_params = CreateHttpAuthDynamicParams();
 }
 
 SystemNetworkContextManager::SystemNetworkContextManager()
@@ -167,10 +239,56 @@ SystemNetworkContextManager::SystemNetworkContextManager()
   if (value)
     value->GetAsBoolean(&is_quic_allowed_);
   shared_url_loader_factory_ = new URLLoaderFactoryForSystem(this);
+
+  pref_change_registrar_.Init(g_browser_process->local_state());
+
+  PrefChangeRegistrar::NamedChangeCallback auth_pref_callback =
+      base::BindRepeating(&OnAuthPrefsChanged);
+  pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
+  pref_change_registrar_.Add(prefs::kAuthNegotiateDelegateWhitelist,
+                             auth_pref_callback);
+  pref_change_registrar_.Add(prefs::kDisableAuthNegotiateCnameLookup,
+                             auth_pref_callback);
+  pref_change_registrar_.Add(prefs::kEnableAuthNegotiatePort,
+                             auth_pref_callback);
+
+#if defined(OS_POSIX)
+  pref_change_registrar_.Add(prefs::kNtlmV2Enabled, auth_pref_callback);
+#endif  // defined(OS_POSIX)
+
+#if defined(OS_ANDROID)
+  pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
+                             auth_pref_callback);
+#endif  // defined(OS_ANDROID)
 }
 
 SystemNetworkContextManager::~SystemNetworkContextManager() {
   shared_url_loader_factory_->Shutdown();
+}
+
+void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  // Static auth params
+  registry->RegisterStringPref(prefs::kAuthSchemes,
+                               "basic,digest,ntlm,negotiate");
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  registry->RegisterStringPref(prefs::kGSSAPILibraryName, std::string());
+#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+  // Dynamic auth params.
+  registry->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup, false);
+  registry->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
+  registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
+  registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist,
+                               std::string());
+#if defined(OS_POSIX)
+  registry->RegisterBooleanPref(
+      prefs::kNtlmV2Enabled,
+      base::FeatureList::IsEnabled(features::kNtlmV2Enabled));
+#endif  // defined(OS_POSIX)
+#if defined(OS_ANDROID)
+  registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
+                               std::string());
+#endif  // defined(OS_ANDROID)
 }
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(
@@ -180,6 +298,10 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   // Disable QUIC globally, if needed.
   if (!is_quic_allowed_)
     network_service->DisableQuic();
+
+  network_service->SetUpHttpAuth(CreateHttpAuthStaticParams());
+  network_service->ConfigureHttpAuthPrefs(CreateHttpAuthDynamicParams());
+
   // The system NetworkContext must be created first, since it sets
   // |use_to_validate_certs| to true.
   network_service->CreateNetworkContext(

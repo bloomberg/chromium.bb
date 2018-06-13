@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/log/net_log.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/network_change_manager.h"
@@ -25,6 +26,7 @@
 
 namespace net {
 class HostResolver;
+class HttpAuthHandlerFactory;
 class LoggingNetworkChangeObserver;
 class NetworkQualityEstimator;
 class URLRequestContext;
@@ -112,12 +114,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void CreateNetworkContext(mojom::NetworkContextRequest request,
                             mojom::NetworkContextParamsPtr params) override;
   void DisableQuic() override;
+  void SetUpHttpAuth(
+      mojom::HttpAuthStaticParamsPtr http_auth_static_params) override;
+  void ConfigureHttpAuthPrefs(
+      mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params) override;
   void SetRawHeadersAccess(uint32_t process_id, bool allow) override;
   void GetNetworkChangeManager(
       mojom::NetworkChangeManagerRequest request) override;
   void GetTotalNetworkUsages(
       mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
   void UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) override;
+
+  // Returns the shared HttpAuthHandlerFactory for the NetworkService, creating
+  // one if needed.
+  net::HttpAuthHandlerFactory* GetHttpAuthHandlerFactory();
 
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(uint32_t process_id) const;
@@ -170,10 +180,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   mojo::Binding<mojom::NetworkService> binding_;
 
   std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
-
   std::unique_ptr<net::HostResolver> host_resolver_;
-
   std::unique_ptr<NetworkUsageAccumulator> network_usage_accumulator_;
+
+  // Must be above |http_auth_handler_factory_|, since it depends on this.
+  net::HttpAuthPreferences http_auth_preferences_;
+  std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
 
   // NetworkContexts created by CreateNetworkContext(). They call into the
   // NetworkService when their connection is closed so that it can delete

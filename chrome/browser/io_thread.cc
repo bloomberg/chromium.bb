@@ -71,9 +71,6 @@
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
-#include "net/http/http_auth_filter.h"
-#include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_factory.h"
@@ -314,39 +311,6 @@ IOThread::IOThread(
       weak_factory_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
-  negotiate_disable_cname_lookup_.Init(
-      prefs::kDisableAuthNegotiateCnameLookup, local_state,
-      base::Bind(&IOThread::UpdateNegotiateDisableCnameLookup,
-                 base::Unretained(this)));
-  negotiate_disable_cname_lookup_.MoveToThread(io_thread_proxy);
-  negotiate_enable_port_.Init(
-      prefs::kEnableAuthNegotiatePort, local_state,
-      base::Bind(&IOThread::UpdateNegotiateEnablePort, base::Unretained(this)));
-  negotiate_enable_port_.MoveToThread(io_thread_proxy);
-  auth_server_whitelist_.Init(
-      prefs::kAuthServerWhitelist, local_state,
-      base::Bind(&IOThread::UpdateServerWhitelist, base::Unretained(this)));
-  auth_server_whitelist_.MoveToThread(io_thread_proxy);
-  auth_delegate_whitelist_.Init(
-      prefs::kAuthNegotiateDelegateWhitelist, local_state,
-      base::Bind(&IOThread::UpdateDelegateWhitelist, base::Unretained(this)));
-  auth_delegate_whitelist_.MoveToThread(io_thread_proxy);
-#if defined(OS_ANDROID)
-  auth_android_negotiate_account_type_.Init(
-      prefs::kAuthAndroidNegotiateAccountType, local_state,
-      base::Bind(&IOThread::UpdateAndroidAuthNegotiateAccountType,
-                 base::Unretained(this)));
-  auth_android_negotiate_account_type_.MoveToThread(io_thread_proxy);
-#endif
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  gssapi_library_name_ = local_state->GetString(prefs::kGSSAPILibraryName);
-#endif
-#if defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  allow_gssapi_library_load_ = connector->IsActiveDirectoryManaged();
-#endif
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
       &system_enable_referrers_,
       nullptr,
@@ -388,21 +352,12 @@ IOThread::IOThread(
   dns_over_https_servers_.MoveToThread(io_thread_proxy);
   dns_over_https_server_methods_.MoveToThread(io_thread_proxy);
 
-#if defined(OS_POSIX)
-  local_state->SetDefaultPrefValue(
-      prefs::kNtlmV2Enabled,
-      base::Value(base::FeatureList::IsEnabled(features::kNtlmV2Enabled)));
-  ntlm_v2_enabled_.Init(
-      prefs::kNtlmV2Enabled, local_state,
-      base::Bind(&IOThread::UpdateNtlmV2Enabled, base::Unretained(this)));
-  ntlm_v2_enabled_.MoveToThread(io_thread_proxy);
-#endif
-
   BrowserThread::SetIOThreadDelegate(this);
 
-  system_network_context_manager->SetUp(&network_context_request_,
-                                        &network_context_params_,
-                                        &is_quic_allowed_on_init_);
+  system_network_context_manager->SetUp(
+      &network_context_request_, &network_context_params_,
+      &http_auth_static_params_, &http_auth_dynamic_params_,
+      &is_quic_allowed_on_init_);
 }
 
 IOThread::~IOThread() {
@@ -530,92 +485,16 @@ void IOThread::CleanUp() {
 
 // static
 void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kAuthSchemes,
-                               "basic,digest,ntlm,negotiate");
-  registry->RegisterBooleanPref(prefs::kDisableAuthNegotiateCnameLookup, false);
-  registry->RegisterBooleanPref(prefs::kEnableAuthNegotiatePort, false);
-  registry->RegisterStringPref(prefs::kAuthServerWhitelist, std::string());
-  registry->RegisterStringPref(prefs::kAuthNegotiateDelegateWhitelist,
-                               std::string());
-  registry->RegisterStringPref(prefs::kGSSAPILibraryName, std::string());
-  registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
-                               std::string());
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
   data_reduction_proxy::RegisterPrefs(registry);
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);
   registry->RegisterListPref(prefs::kDnsOverHttpsServers);
   registry->RegisterListPref(prefs::kDnsOverHttpsServerMethods);
-#if defined(OS_POSIX)
-  registry->RegisterBooleanPref(prefs::kNtlmV2Enabled, true);
-#endif
 }
 
 // static
 void IOThread::SetCertVerifierForTesting(net::CertVerifier* cert_verifier) {
   g_cert_verifier_for_io_thread_testing = cert_verifier;
-}
-
-void IOThread::UpdateServerWhitelist() {
-  globals_->http_auth_preferences->SetServerWhitelist(
-      auth_server_whitelist_.GetValue());
-}
-
-void IOThread::UpdateDelegateWhitelist() {
-  globals_->http_auth_preferences->SetDelegateWhitelist(
-      auth_delegate_whitelist_.GetValue());
-}
-
-#if defined(OS_ANDROID)
-void IOThread::UpdateAndroidAuthNegotiateAccountType() {
-  globals_->http_auth_preferences->set_auth_android_negotiate_account_type(
-      auth_android_negotiate_account_type_.GetValue());
-}
-#endif
-
-void IOThread::UpdateNegotiateDisableCnameLookup() {
-  globals_->http_auth_preferences->set_negotiate_disable_cname_lookup(
-      negotiate_disable_cname_lookup_.GetValue());
-}
-
-void IOThread::UpdateNegotiateEnablePort() {
-  globals_->http_auth_preferences->set_negotiate_enable_port(
-      negotiate_enable_port_.GetValue());
-}
-
-#if defined(OS_POSIX)
-void IOThread::UpdateNtlmV2Enabled() {
-  globals_->http_auth_preferences->set_ntlm_v2_enabled(
-      ntlm_v2_enabled_.GetValue());
-}
-#endif
-
-std::unique_ptr<net::HttpAuthHandlerFactory>
-IOThread::CreateDefaultAuthHandlerFactory(net::HostResolver* host_resolver) {
-  std::vector<std::string> supported_schemes = base::SplitString(
-      auth_schemes_, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  globals_->http_auth_preferences =
-      std::make_unique<net::HttpAuthPreferences>();
-  UpdateServerWhitelist();
-  UpdateDelegateWhitelist();
-  UpdateNegotiateDisableCnameLookup();
-  UpdateNegotiateEnablePort();
-#if defined(OS_POSIX)
-  UpdateNtlmV2Enabled();
-#endif
-#if defined(OS_ANDROID)
-  UpdateAndroidAuthNegotiateAccountType();
-#endif
-
-  return net::HttpAuthHandlerRegistryFactory::Create(
-      host_resolver, globals_->http_auth_preferences.get(), supported_schemes
-#if defined(OS_CHROMEOS)
-      ,
-      allow_gssapi_library_load_
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
-      ,
-      gssapi_library_name_
-#endif
-      );
 }
 
 void IOThread::DisableQuic() {
@@ -668,9 +547,6 @@ void IOThread::ConstructSystemRequestContext() {
   std::unique_ptr<net::HostResolver> host_resolver(
       CreateGlobalHostResolver(net_log_));
 
-  builder->SetHttpAuthHandlerFactory(
-      CreateDefaultAuthHandlerFactory(host_resolver.get()));
-
   std::unique_ptr<net::CertVerifier> cert_verifier;
   if (g_cert_verifier_for_io_thread_testing) {
     cert_verifier = std::make_unique<WrappedCertVerifierForIOThreadTesting>();
@@ -715,10 +591,16 @@ void IOThread::ConstructSystemRequestContext() {
     globals_->system_request_context =
         globals_->system_request_context_owner.url_request_context.get();
   } else {
-    content::GetNetworkServiceImpl()->SetHostResolver(std::move(host_resolver));
+    network::NetworkService* network_service = content::GetNetworkServiceImpl();
+    network_service->SetHostResolver(std::move(host_resolver));
+
+    // These must be done after the SetHostResolver call.
+    network_service->SetUpHttpAuth(std::move(http_auth_static_params_));
+    network_service->ConfigureHttpAuthPrefs(
+        std::move(http_auth_dynamic_params_));
 
     globals_->system_network_context =
-        content::GetNetworkServiceImpl()->CreateNetworkContextWithBuilder(
+        network_service->CreateNetworkContextWithBuilder(
             std::move(network_context_request_),
             std::move(network_context_params_), std::move(builder),
             &globals_->system_request_context);

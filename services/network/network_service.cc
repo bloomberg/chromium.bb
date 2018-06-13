@@ -24,6 +24,7 @@
 #include "net/cert/signed_tree_head.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
+#include "net/http/http_auth_handler_factory.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_util.h"
 #include "net/nqe/network_quality_estimator.h"
@@ -250,6 +251,45 @@ void NetworkService::DisableQuic() {
   }
 }
 
+void NetworkService::SetUpHttpAuth(
+    mojom::HttpAuthStaticParamsPtr http_auth_static_params) {
+  DCHECK(!http_auth_handler_factory_);
+
+  http_auth_handler_factory_ = net::HttpAuthHandlerRegistryFactory::Create(
+      host_resolver_.get(), &http_auth_preferences_,
+      http_auth_static_params->supported_schemes
+#if defined(OS_CHROMEOS)
+      ,
+      http_auth_static_params->allow_gssapi_library_load
+#elif (defined(OS_POSIX) && !defined(OS_ANDROID)) || defined(OS_FUCHSIA)
+      ,
+      http_auth_static_params->gssapi_library_name
+#endif
+      );
+}
+
+void NetworkService::ConfigureHttpAuthPrefs(
+    mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_params) {
+  http_auth_preferences_.SetServerWhitelist(
+      http_auth_dynamic_params->server_whitelist);
+  http_auth_preferences_.SetDelegateWhitelist(
+      http_auth_dynamic_params->delegate_whitelist);
+  http_auth_preferences_.set_negotiate_disable_cname_lookup(
+      http_auth_dynamic_params->negotiate_disable_cname_lookup);
+  http_auth_preferences_.set_negotiate_enable_port(
+      http_auth_dynamic_params->enable_negotiate_port);
+
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+  http_auth_preferences_.set_ntlm_v2_enabled(
+      http_auth_dynamic_params->ntlm_v2_enabled);
+#endif
+
+#if defined(OS_ANDROID)
+  http_auth_preferences_.set_auth_android_negotiate_account_type(
+      http_auth_dynamic_params->android_negotiate_account_type);
+#endif
+}
+
 void NetworkService::SetRawHeadersAccess(uint32_t process_id, bool allow) {
   DCHECK(process_id);
   if (allow)
@@ -282,6 +322,14 @@ void NetworkService::GetTotalNetworkUsages(
 
 void NetworkService::UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) {
   sth_distributor_->NewSTHObserved(sth);
+}
+
+net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
+  if (!http_auth_handler_factory_) {
+    http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault(
+        host_resolver_.get(), &http_auth_preferences_);
+  }
+  return http_auth_handler_factory_.get();
 }
 
 certificate_transparency::STHReporter* NetworkService::sth_reporter() {

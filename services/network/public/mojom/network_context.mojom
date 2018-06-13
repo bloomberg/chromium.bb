@@ -143,13 +143,6 @@ struct NetworkContextParams {
   // See https://crbug.com/619087
   bool dangerously_allow_pac_access_to_secure_urls = false;
 
-  // Only used on OS_CHROMEOS platform.
-  bool allow_gssapi_library_load = false;
-
-  // The GSSAPI library name.
-  // Only used on (OS_POSIX && !OS_ANDROID) platform.
-  string gssapi_library_name;
-
   // Enables reporting certain SSL errors, such as HTTP Public Key Pinning, to
   // servers, so they can discover misconfigurations.
   bool enable_certificate_reporting = false;
