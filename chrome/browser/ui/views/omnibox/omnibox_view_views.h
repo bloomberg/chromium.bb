@@ -122,6 +122,9 @@ class OmniboxViewViews : public OmniboxView,
     return popup_view_.get();
   }
 
+  // views::Textfield:
+  bool IsDropCursorForInsertion() const override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, FriendlyAccessibleLabel);

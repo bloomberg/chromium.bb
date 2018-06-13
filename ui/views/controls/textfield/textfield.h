@@ -387,6 +387,11 @@ class VIEWS_EXPORT Textfield : public View,
   // This is harmless if there is not a currently double-clicked word.
   void OffsetDoubleClickWord(int offset);
 
+  // Returns true if the drop cursor is for insertion at a target text location,
+  // the standard behavior/style. Returns false when drop will do something
+  // else (like replace the text entirely).
+  virtual bool IsDropCursorForInsertion() const;
+
  private:
   friend class TextfieldTestApi;
 

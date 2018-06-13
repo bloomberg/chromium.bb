@@ -413,6 +413,15 @@ bool OmniboxViewViews::ShouldDoLearning() {
   return location_bar_view_ && !location_bar_view_->profile()->IsOffTheRecord();
 }
 
+bool OmniboxViewViews::IsDropCursorForInsertion() const {
+  // Dragging text from within omnibox itself will behave like text input
+  // editor, showing insertion-style drop cursor as usual;
+  // but dragging text from outside omnibox will replace entire contents with
+  // paste-and-go behavior, so returning false in that case prevents the
+  // confusing insertion-style drop cursor.
+  return HasTextBeingDragged();
+}
+
 void OmniboxViewViews::SetTextAndSelectedRange(const base::string16& text,
                                                const gfx::Range& range) {
   SetText(text);
