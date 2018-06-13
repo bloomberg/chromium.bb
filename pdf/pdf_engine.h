@@ -219,10 +219,6 @@ class PDFEngine {
     // Creates and returns new URL loader for partial document requests.
     virtual pp::URLLoader CreateURLLoader() = 0;
 
-    // Calls the client's OnTouchTimerCallback() function in |delay| with the
-    // given |id|.
-    virtual void ScheduleTouchTimerCallback(int id, base::TimeDelta delay) {}
-
     // Searches the given string for "term" and returns the results.  Unicode-
     // aware.
     struct SearchStringResult {
@@ -361,8 +357,6 @@ class PDFEngine {
   virtual int GetVerticalScrollbarYPosition() = 0;
   // Set color / grayscale rendering modes.
   virtual void SetGrayscale(bool grayscale) = 0;
-  // Callback for timer that's set with ScheduleTouchTimerCallback().
-  virtual void OnTouchTimerCallback(int id) = 0;
   // Get the number of characters on a given page.
   virtual int GetCharCount(int page_index) = 0;
   // Get the bounds in page pixels of a character on a given page.

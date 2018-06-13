@@ -109,11 +109,6 @@ pp::URLLoader PreviewModeClient::CreateURLLoader() {
   return pp::URLLoader();
 }
 
-void PreviewModeClient::ScheduleTouchTimerCallback(int id,
-                                                   base::TimeDelta delay) {
-  NOTREACHED();
-}
-
 std::vector<PDFEngine::Client::SearchStringResult>
 PreviewModeClient::SearchString(const base::char16* string,
                                 const base::char16* term,
