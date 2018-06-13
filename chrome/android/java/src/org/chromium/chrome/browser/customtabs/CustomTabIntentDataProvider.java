@@ -21,7 +21,6 @@ import android.util.Pair;
 import android.view.View;
 import android.widget.RemoteViews;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -30,6 +29,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
+import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
@@ -281,8 +282,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * Processes the color passed from the client app and updates {@link #mToolbarColor}.
      */
     private void retrieveToolbarColor(Intent intent, Context context) {
-        int defaultColor = ApiCompatibilityUtils.getColor(
-                context.getResources(), R.color.default_primary_color);
+        int defaultColor = ColorUtils.getDefaultThemeColor(
+                context.getResources(), FeatureUtilities.isChromeModernDesignEnabled(), false);
         int color = IntentUtils.safeGetIntExtra(
                 intent, CustomTabsIntent.EXTRA_TOOLBAR_COLOR, defaultColor);
         mToolbarColor = removeTransparencyFromColor(color);
@@ -324,8 +325,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     }
 
     /**
-     * @return The toolbar color specified in the intent. Will return the color of
-     *         default_primary_color, if not set in the intent.
+     * @return The toolbar color specified in the intent. Will return the  default theme color, if
+     *         not set in the intent.
      */
     public int getToolbarColor() {
         return mToolbarColor;
