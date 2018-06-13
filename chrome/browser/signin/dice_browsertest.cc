@@ -17,7 +17,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -51,7 +50,6 @@
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -335,9 +333,6 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
                             base::Unretained(this))));
     signin::SetDiceAccountReconcilorBlockDelayForTesting(
         kAccountReconcilorDelayMs);
-
-    scoped_site_isolation_.InitAndEnableFeature(
-        features::kSignInProcessIsolation);
   }
 
   // Navigates to the given path on the test server.
@@ -583,7 +578,6 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     EXPECT_EQ(count, token_revoked_count_);
   }
 
-  base::test::ScopedFeatureList scoped_site_isolation_;
   signin::ScopedAccountConsistency scoped_account_consistency_;
   net::EmbeddedTestServer https_server_;
   bool enable_sync_requested_;

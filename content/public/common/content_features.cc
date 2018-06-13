@@ -370,11 +370,6 @@ const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
 const base::Feature kSignedHTTPExchangeOriginTrial{
     "SignedHTTPExchangeOriginTrial", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// An experiment to require process isolation for the sign-in origin,
-// https://accounts.google.com.  Launch bug: https://crbug.com/739418.
-const base::Feature kSignInProcessIsolation{"sign-in-process-isolation",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether SpareRenderProcessHostManager tries to always have a warm
 // spare renderer process around for the most recently requested BrowserContext.
 // This feature is only consulted in site-per-process mode.
