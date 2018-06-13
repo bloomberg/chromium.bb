@@ -11,12 +11,20 @@
 
 namespace blink {
 
+class ResourceFetcher;
+
+// WorkletModuleScriptFetcher is an implementation of ModuleScriptFetcher
+// interface for Worklets. This implements the custom "perform the fetch" hook
+// defined in the Worklets spec:
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetching-scripts-perform-fetch
+// https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
+//
 // WorkletModuleScriptFetcher either fetchs a cached result from
 // WorkletModuleResponsesMap, or defers to ModuleScriptFetcher and
 // stores the result in WorkletModuleResponsesMap on fetch completion.
 class CORE_EXPORT WorkletModuleScriptFetcher final
-    : public ModuleScriptFetcher,
-      private ModuleScriptFetcher::Client {
+    : public GarbageCollectedFinalized<WorkletModuleScriptFetcher>,
+      public ModuleScriptFetcher {
   USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleScriptFetcher);
 
  public:
@@ -28,12 +36,19 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
   void Trace(blink::Visitor*) override;
 
  private:
-  // Implements ModuleScriptFetcher::Client.
-  void NotifyFetchFinished(
-      const base::Optional<ModuleScriptCreationParams>&,
-      const HeapVector<Member<ConsoleMessage>>& error_messages) override;
+  // Implements ResourceClient
+  void NotifyFinished(Resource*) override;
+  String DebugName() const override { return "WorkletModuleScriptFetcher"; }
 
+  const Member<ResourceFetcher> fetcher_;
+
+  // TODO(nhiroki): In general, CrossThreadPersistent is heavy and should not be
+  // owned by objects that can frequently be created like this class. Instead of
+  // retaining a reference to WorkletModuleResponsesMap, this class should
+  // access the map via WorkletGlobalScope::GetModuleResponsesMap().
+  // Bonus: WorkletGlobalScope can provide ResourceFetcher, too.
   CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map_;
+
   KURL url_;
 };
 
