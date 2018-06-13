@@ -536,7 +536,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Windows-10',
+              'os': 'Windows-10-15063',
             },
           ],
         },
@@ -548,7 +548,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Windows-10',
+              'os': 'Windows-10-15063',
             },
           ],
         },
@@ -560,7 +560,7 @@
         'swarming': {
           'dimension_sets': [
             {
-              'os': 'Windows-10',
+              'os': 'Windows-10-15063',
             },
           ],
         },
