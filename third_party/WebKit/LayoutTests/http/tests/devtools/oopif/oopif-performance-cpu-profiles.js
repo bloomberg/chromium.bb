@@ -12,7 +12,7 @@
   await TestRunner.navigatePromise('resources/page.html');
   await PerformanceTestRunner.stopTimeline();
 
-  for (const track of PerformanceTestRunner.timelineModel().tracks().sort((a, b) => a.url > b.url)) {
+  for (const track of PerformanceTestRunner.timelineModel().tracks().sort((a, b) => a.url.compareTo(b.url))) {
     if (track.type !== TimelineModel.TimelineModel.TrackType.MainThread)
       continue;
     TestRunner.addResult(`name: ${track.name}`);
