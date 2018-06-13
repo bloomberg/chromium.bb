@@ -96,14 +96,17 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
   advertisement_data->set_manufacturer_data(std::move(manufacturer_data));
 
 #elif defined(OS_LINUX) || defined(OS_CHROMEOS)
-  // Service data for ChromeOS and Linux is 1 byte corresponding to Cable
-  // version number, followed by 7 empty(0x00) bytes, followed by 16 bytes
-  // corresponding to client EID.
+  // Service data for ChromeOS and Linux is 1 byte corresponding to Cable flags,
+  // followed by 1 byte corresponding to Cable version number, followed by 16
+  // bytes corresponding to client EID.
   auto service_data = std::make_unique<BluetoothAdvertisement::ServiceData>();
-  std::vector<uint8_t> service_data_value(24, 0);
-  service_data_value[0] = version_number;
+  std::vector<uint8_t> service_data_value(18, 0);
+  // Since the remainder of this service data field is a Cable EID, set the 5th
+  // bit of the flag byte.
+  service_data_value[0] = 1 << 5;
+  service_data_value[1] = version_number;
   std::copy(client_eid.begin(), client_eid.end(),
-            service_data_value.begin() + 8);
+            service_data_value.begin() + 2);
   service_data->emplace(kCableAdvertisementUUID, std::move(service_data_value));
   advertisement_data->set_service_data(std::move(service_data));
 #endif
@@ -266,9 +269,14 @@ FidoCableDiscovery::GetFoundCableDiscoveryData(
       device->GetServiceDataForUUID(CableAdvertisementUUID());
   DCHECK(service_data);
 
+  // Received service data from authenticator must have a flag that signals that
+  // the service data includes Cable EID.
+  if (service_data->empty() || !(service_data->at(0) >> 5 & 1u))
+    return nullptr;
+
   EidArray received_authenticator_eid;
   bool extract_success = fido_parsing_utils::ExtractArray(
-      *service_data, 8, &received_authenticator_eid);
+      *service_data, 2, &received_authenticator_eid);
   if (!extract_success)
     return nullptr;
 
