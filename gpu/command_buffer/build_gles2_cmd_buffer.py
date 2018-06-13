@@ -2266,10 +2266,6 @@ _FUNCTION_INFO = {
     'resource_type': 'Buffer',
     'resource_types': 'Buffers',
   },
-  'GenMailboxCHROMIUM': {
-    'type': 'NoCommand',
-    'extension': "CHROMIUM_texture_mailbox",
-  },
   'GenFramebuffers': {
     'type': 'GENn',
     'gl_test_func': 'glGenFramebuffersEXT',

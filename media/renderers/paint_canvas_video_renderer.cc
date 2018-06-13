@@ -908,7 +908,6 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
     gpu::gles2::GLES2Interface* canvas_gl = context_3d.gl;
     gpu::MailboxHolder mailbox_holder;
     mailbox_holder.texture_target = texture_info.fTarget;
-    canvas_gl->GenMailboxCHROMIUM(mailbox_holder.mailbox.name);
     canvas_gl->ProduceTextureDirectCHROMIUM(texture_info.fID,
                                             mailbox_holder.mailbox.name);
 

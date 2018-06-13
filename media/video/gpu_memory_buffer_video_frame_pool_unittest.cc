@@ -41,7 +41,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
     memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
   }
 
-  void GenMailboxCHROMIUM(GLbyte* mailbox) override {
+  void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override {
     *reinterpret_cast<unsigned*>(mailbox) = ++mailbox_;
   }
 

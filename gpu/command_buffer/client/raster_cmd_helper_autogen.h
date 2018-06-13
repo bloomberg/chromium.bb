@@ -221,7 +221,7 @@ void SetColorSpaceMetadata(GLuint texture_id,
   }
 }
 
-void ProduceTextureDirectImmediate(GLuint texture, const GLbyte* mailbox) {
+void ProduceTextureDirectImmediate(GLuint texture, GLbyte* mailbox) {
   const uint32_t size =
       raster::cmds::ProduceTextureDirectImmediate::ComputeSize();
   raster::cmds::ProduceTextureDirectImmediate* c =

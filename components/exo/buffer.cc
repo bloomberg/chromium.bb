@@ -82,14 +82,6 @@ unsigned CreateGLTexture(gpu::gles2::GLES2Interface* gles2, GLenum target) {
   return texture_id;
 }
 
-void CreateGLMailbox(gpu::gles2::GLES2Interface* gles2,
-                     unsigned texture_id,
-                     GLenum target,
-                     gpu::Mailbox* mailbox) {
-  gles2->GenMailboxCHROMIUM(mailbox->name);
-  gles2->ProduceTextureDirectCHROMIUM(texture_id, mailbox->name);
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -178,7 +170,7 @@ Buffer::Texture::Texture(ui::ContextFactory* context_factory,
   gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
   texture_id_ = CreateGLTexture(gles2, texture_target_);
   // Generate a crypto-secure random mailbox name.
-  CreateGLMailbox(gles2, texture_id_, texture_target_, &mailbox_);
+  gles2->ProduceTextureDirectCHROMIUM(texture_id_, mailbox_.name);
   // Provides a notification when |context_provider_| is lost.
   context_factory_->AddObserver(this);
 }
@@ -255,7 +247,7 @@ gpu::SyncToken Buffer::Texture::BindTexImage() {
     gles2->BindTexImage2DCHROMIUM(texture_target_, image_id_);
     // Generate a crypto-secure random mailbox name if not already done.
     if (mailbox_.IsZero())
-      CreateGLMailbox(gles2, texture_id_, texture_target_, &mailbox_);
+      gles2->ProduceTextureDirectCHROMIUM(texture_id_, mailbox_.name);
     // Create and return a sync token that can be used to ensure that the
     // BindTexImage2DCHROMIUM call is processed before issuing any commands
     // that will read from the texture on a different context.

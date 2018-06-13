@@ -62,7 +62,6 @@ void GraphicsContext3DUtils::GetMailboxForSkImage(gpu::Mailbox& out_mailbox,
   if (it != cached_mailboxes_.end()) {
     out_mailbox = it->value;
   } else {
-    gl->GenMailboxCHROMIUM(out_mailbox.name);
     gl->ProduceTextureDirectCHROMIUM(texture_id, out_mailbox.name);
 
     GrTextureMailboxReleaseProcData* release_proc_data =

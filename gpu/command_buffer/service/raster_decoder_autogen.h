@@ -341,8 +341,8 @@ error::Error RasterDecoderImpl::HandleProduceTextureDirectImmediate(
   if (data_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
-  volatile const GLbyte* mailbox = GetImmediateDataAs<volatile const GLbyte*>(
-      c, data_size, immediate_data_size);
+  volatile GLbyte* mailbox =
+      GetImmediateDataAs<volatile GLbyte*>(c, data_size, immediate_data_size);
   if (mailbox == NULL) {
     return error::kOutOfBounds;
   }

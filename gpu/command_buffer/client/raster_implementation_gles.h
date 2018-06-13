@@ -68,8 +68,7 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void TexParameteri(GLuint texture_id, GLenum pname, GLint param) override;
 
   // Mailboxes.
-  void GenMailbox(GLbyte* mailbox) override;
-  void ProduceTextureDirect(GLuint texture, const GLbyte* mailbox) override;
+  void ProduceTextureDirect(GLuint texture, GLbyte* mailbox) override;
   GLuint CreateAndConsumeTexture(bool use_buffer,
                                  gfx::BufferUsage buffer_usage,
                                  viz::ResourceFormat format,

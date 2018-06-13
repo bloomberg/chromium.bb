@@ -84,8 +84,8 @@ class MockGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
   MOCK_METHOD2(GenTextures, void(GLsizei, GLuint*));
   MOCK_METHOD2(DeleteTextures, void(GLsizei, const GLuint*));
   // Fake
-  void GenMailboxCHROMIUM(GLbyte* name) override {
-    name[0] = 1;  // Make non-zero mailbox names
+  void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override {
+    mailbox[0] = 1;  // Make non-zero mailbox names
   }
 };
 

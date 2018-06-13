@@ -481,7 +481,6 @@ void GLRendererCopier::SendTextureResult(
   // within its own GL context will be using the texture at a point in time
   // after the texture has been rendered (via GLRendererCopier's GL context).
   gpu::Mailbox mailbox;
-  gl->GenMailboxCHROMIUM(mailbox.name);
   gl->ProduceTextureDirectCHROMIUM(result_texture, mailbox.name);
   gpu::SyncToken sync_token;
   gl->GenSyncTokenCHROMIUM(sync_token.GetData());

@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modifed Date: August 3, 2016
+    Last Modifed Date: June 11, 2018
 
 Dependencies
 
@@ -18,43 +18,33 @@ Overview
 
     This extension defines a way of sharing texture image data between texture
     objects in different contexts where the contexts would not normally share
-    texture resources. Five new functions are exported. glGenMailboxCHROMIUM
-    generates a name that can be used to identify texture image data outside
-    the scope of a context group. glProduceTextureDirectCHROMIUM associates a
-    texture object with a global mailbox name. glCreateAndConsumeTextureCHROMIUM
-    associates the texture object referenced by a mailbox name to a texture
-    name.
+    texture resources. Two new functions are exported.
+    glProduceTextureDirectCHROMIUM generates a name that can be used to identify
+    texture image data outside the scope of a context group and associates a
+    texture object with that global mailbox name.
+    glCreateAndConsumeTextureCHROMIUM associates the texture object referenced
+    by a mailbox name to a texture name.
 
 New Procedures and Functions
 
-    void glGenMailboxCHROMIUM (GLbyte *mailbox)
+    void glProduceTextureDirectCHROMIUM (GLuint texture, GLbyte *mailbox)
 
-    Generates a unique name identifying a mailbox. The name is generated using
-    a cryptographic random number generator and is intended to be difficult to
+    Generates a unique name identifying a mailbox, and associates the specified
+    texture object with the mailbox name. The name is generated using a
+    cryptographic random number generator and is intended to be difficult to
     guess. The scope of the name is implementation specific, for example it
     might not span multiple displays.
 
-    <mailbox> returns a GL_MAILBOX_SIZE_CHROMIUM byte sized name
-
-    void glProduceTextureDirectCHROMIUM (GLuint texture, const GLbyte *mailbox)
-
-    Associates the specified texture object with the mailbox name.  A given
-    texture object can be associated with several mailbox names. If a
-    mailbox name was previously associated with a texture object, that
-    previous association is broken.
+    A given texture object can be associated with several mailbox names.
 
     This operation does not change the texture bindings or alter the bound
-    texture in any way. If <texture> is 0 then any previous association of the
-    mailbox with a texture object is broken and no new association is created.
+    texture in any way.
 
     <texture> Specifies the name of a texture.
 
-    <mailbox> identifies a GL_MAILBOX_SIZE_CHROMIUM byte sized name returned by
-    glGenMailboxCHROMIUM.
+    <mailbox> returns a GL_MAILBOX_SIZE_CHROMIUM byte sized name.
 
     INVALID_OPERATION is generated if <texture> is not a valid texture.
-
-    INVALID_OPERATION is generated if <mailbox> is invalid.
 
 
     GLuint glCreateAndConsumeTextureCHROMIUM (const GLbyte *mailbox)
@@ -74,8 +64,6 @@ New Procedures and Functions
     name remains unbound.  It is treated in the same way as a new texture name
     returned by GenTextures.
 
-    INVALID_OPERATION is generated if <mailbox> is invalid.
-
     INVALID_OPERATION is generated if <mailbox> is not associated with a texture
     object.
 
@@ -83,7 +71,7 @@ New Tokens
 
     The size of a mailbox name in bytes.
 
-        GL_MAILBOX_SIZE_CHROMIUM                             64
+        GL_MAILBOX_SIZE_CHROMIUM                             16
 
 Errors
 
@@ -99,14 +87,16 @@ New State
 
 Revision History
 
-    4/25/2011    Documented the extension
-    5/23/2013    Major revision in Produce/Consume semantics, introducing
+    2011-04-25   Documented the extension
+    2013-05-23   Major revision in Produce/Consume semantics, introducing
                  sharing.
-    6/02/2014    Added glProduceTextureDirectCHROMIUM and
+    2014-06-02   Added glProduceTextureDirectCHROMIUM and
                  glCreateAndConsumeTextureCHROMIUM definitions.
-    8/03/2016    Allow unbinding mailbox using glProduceTextureDirectCHROMIUM.
-    10/20/2017   Remove glConsumeTextureCHROMIUM and update
+    2016-08-03   Allow unbinding mailbox using glProduceTextureDirectCHROMIUM.
+    2017-10-20   Remove glConsumeTextureCHROMIUM and update
                  glCreateAndConsumeTextureCHROMIUM definition.
-    11/20/2017   Remove glProduceTextureCHROMIUM.  Removed <target> arguments
+    2017-11-20   Remove glProduceTextureCHROMIUM.  Removed <target> arguments
                  from glProduceTextureDirectCHROMIUM and
                  glCreateAndConsumeTextureCHROMIUM, and updated definition.
+    2018-06-11   Merge glGenMailboxCHROMIUM into glProduceTextureDirectCHROMIUM.
+                 Update documentation to reflect reality.

@@ -577,7 +577,8 @@ void TestGLES2Interface::DiscardFramebufferEXT(GLenum target,
                                                GLsizei count,
                                                const GLenum* attachments) {}
 
-void TestGLES2Interface::GenMailboxCHROMIUM(GLbyte* mailbox) {
+void TestGLES2Interface::ProduceTextureDirectCHROMIUM(GLuint texture,
+                                                      GLbyte* mailbox) {
   static char mailbox_name1 = '1';
   static char mailbox_name2 = '1';
   mailbox[0] = mailbox_name1;
@@ -588,9 +589,6 @@ void TestGLES2Interface::GenMailboxCHROMIUM(GLbyte* mailbox) {
     ++mailbox_name2;
   }
 }
-
-void TestGLES2Interface::ProduceTextureDirectCHROMIUM(GLuint texture,
-                                                      const GLbyte* mailbox) {}
 
 GLuint TestGLES2Interface::CreateAndConsumeTextureCHROMIUM(
     const GLbyte* mailbox) {

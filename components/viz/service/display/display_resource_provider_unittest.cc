@@ -236,12 +236,8 @@ class ResourceProviderGLES2Interface : public TestGLES2Interface {
     SetPixels(xoffset, yoffset, width, height, pixels);
   }
 
-  void GenMailboxCHROMIUM(GLbyte* mailbox) override {
-    return shared_data_->GenMailbox(mailbox);
-  }
-
-  void ProduceTextureDirectCHROMIUM(GLuint texture,
-                                    const GLbyte* mailbox) override {
+  void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override {
+    shared_data_->GenMailbox(mailbox);
     // Delay moving the texture into the mailbox until the next
     // sync token, so that it is not visible to other contexts that
     // haven't waited on that sync point.
@@ -393,7 +389,6 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
       unsigned texture;
       child_gl_->GenTextures(1, &texture);
       gpu::Mailbox gpu_mailbox;
-      child_gl_->GenMailboxCHROMIUM(gpu_mailbox.name);
       child_gl_->ProduceTextureDirectCHROMIUM(texture, gpu_mailbox.name);
       gpu::SyncToken sync_token;
       child_gl_->GenSyncTokenCHROMIUM(sync_token.GetData());
@@ -757,7 +752,6 @@ TEST_P(DisplayResourceProviderTest, ReturnResourcesWithoutSyncToken) {
 
   // A sync point is specified directly and should be used.
   gpu::Mailbox external_mailbox;
-  child_gl_->GenMailboxCHROMIUM(external_mailbox.name);
   child_gl_->ProduceTextureDirectCHROMIUM(external_texture_id,
                                           external_mailbox.name);
   gpu::SyncToken external_sync_token;
@@ -964,7 +958,7 @@ class TextureStateTrackingGLES2Interface : public TestGLES2Interface {
   MOCK_METHOD3(TexParameteri, void(GLenum target, GLenum pname, GLint param));
   MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte* sync_token));
   MOCK_METHOD2(ProduceTextureDirectCHROMIUM,
-               void(GLuint texture, const GLbyte* mailbox));
+               void(GLuint texture, GLbyte* mailbox));
   MOCK_METHOD1(CreateAndConsumeTextureCHROMIUM,
                unsigned(const GLbyte* mailbox));
 
@@ -1305,7 +1299,6 @@ TEST_P(DisplayResourceProviderTest, OverlayPromotionHint) {
   GLuint external_texture_id = child_gl_->CreateExternalTexture();
 
   gpu::Mailbox external_mailbox;
-  child_gl_->GenMailboxCHROMIUM(external_mailbox.name);
   child_gl_->ProduceTextureDirectCHROMIUM(external_texture_id,
                                           external_mailbox.name);
   gpu::SyncToken external_sync_token;

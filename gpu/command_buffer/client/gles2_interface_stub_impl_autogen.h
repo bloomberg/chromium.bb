@@ -950,10 +950,8 @@ void GLES2InterfaceStub::DrawElementsInstancedANGLE(GLenum /* mode */,
                                                     GLsizei /* primcount */) {}
 void GLES2InterfaceStub::VertexAttribDivisorANGLE(GLuint /* index */,
                                                   GLuint /* divisor */) {}
-void GLES2InterfaceStub::GenMailboxCHROMIUM(GLbyte* /* mailbox */) {}
-void GLES2InterfaceStub::ProduceTextureDirectCHROMIUM(
-    GLuint /* texture */,
-    const GLbyte* /* mailbox */) {}
+void GLES2InterfaceStub::ProduceTextureDirectCHROMIUM(GLuint /* texture */,
+                                                      GLbyte* /* mailbox */) {}
 GLuint GLES2InterfaceStub::CreateAndConsumeTextureCHROMIUM(
     const GLbyte* /* mailbox */) {
   return 0;

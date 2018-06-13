@@ -74,9 +74,7 @@ GLuint CreateTexture(bool use_buffer,
 void SetColorSpaceMetadata(GLuint texture_id,
                            GLColorSpace color_space) override;
 
-void GenMailbox(GLbyte* mailbox) override;
-
-void ProduceTextureDirect(GLuint texture, const GLbyte* mailbox) override;
+void ProduceTextureDirect(GLuint texture, GLbyte* mailbox) override;
 
 GLuint CreateAndConsumeTexture(bool use_buffer,
                                gfx::BufferUsage buffer_usage,

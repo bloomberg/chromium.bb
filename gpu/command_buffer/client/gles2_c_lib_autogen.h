@@ -1391,11 +1391,8 @@ void GL_APIENTRY GLES2DrawElementsInstancedANGLE(GLenum mode,
 void GL_APIENTRY GLES2VertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
   gles2::GetGLContext()->VertexAttribDivisorANGLE(index, divisor);
 }
-void GL_APIENTRY GLES2GenMailboxCHROMIUM(GLbyte* mailbox) {
-  gles2::GetGLContext()->GenMailboxCHROMIUM(mailbox);
-}
 void GL_APIENTRY GLES2ProduceTextureDirectCHROMIUM(GLuint texture,
-                                                   const GLbyte* mailbox) {
+                                                   GLbyte* mailbox) {
   gles2::GetGLContext()->ProduceTextureDirectCHROMIUM(texture, mailbox);
 }
 GLuint GL_APIENTRY GLES2CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) {
@@ -2839,10 +2836,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glVertexAttribDivisorANGLE",
         reinterpret_cast<GLES2FunctionPointer>(glVertexAttribDivisorANGLE),
-    },
-    {
-        "glGenMailboxCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glGenMailboxCHROMIUM),
     },
     {
         "glProduceTextureDirectCHROMIUM",

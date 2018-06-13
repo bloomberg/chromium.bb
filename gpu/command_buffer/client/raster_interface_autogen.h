@@ -50,8 +50,7 @@ virtual GLuint CreateTexture(bool use_buffer,
                              viz::ResourceFormat format) = 0;
 virtual void SetColorSpaceMetadata(GLuint texture_id,
                                    GLColorSpace color_space) = 0;
-virtual void GenMailbox(GLbyte* mailbox) = 0;
-virtual void ProduceTextureDirect(GLuint texture, const GLbyte* mailbox) = 0;
+virtual void ProduceTextureDirect(GLuint texture, GLbyte* mailbox) = 0;
 virtual GLuint CreateAndConsumeTexture(bool use_buffer,
                                        gfx::BufferUsage buffer_usage,
                                        viz::ResourceFormat format,

@@ -36,7 +36,6 @@ class VideoOverlayFactory::Texture {
         gl->BindTexture(GL_TEXTURE_2D, texture_id_);
         gl->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id_);
 
-        gl->GenMailboxCHROMIUM(mailbox_.name);
         gl->ProduceTextureDirectCHROMIUM(texture_id_, mailbox_.name);
 
         gl->GenSyncTokenCHROMIUM(sync_token_.GetData());

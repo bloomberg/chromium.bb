@@ -129,7 +129,6 @@ scoped_refptr<VideoFrame> MakeTextFrameForCast(
                  bitmap.getPixels());
 
   gpu::Mailbox texture_mailbox;
-  gl->GenMailboxCHROMIUM(texture_mailbox.name);
   gl->ProduceTextureDirectCHROMIUM(remote_playback_texture_id,
                                    texture_mailbox.name);
 

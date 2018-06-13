@@ -5005,7 +5005,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   if (layer_tree_frame_sink_->context_provider()) {
     gpu::gles2::GLES2Interface* gl =
         layer_tree_frame_sink_->context_provider()->ContextGL();
-    gpu::Mailbox mailbox = gpu::Mailbox::Generate();
+    gpu::Mailbox mailbox;
     gl->ProduceTextureDirectCHROMIUM(texture_alloc.texture_id, mailbox.name);
     gpu::SyncToken sync_token =
         viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);

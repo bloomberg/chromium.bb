@@ -29,8 +29,7 @@ namespace blink {
 
 class MockGLES2InterfaceWithMailboxSupport : public FakeGLES2Interface {
  public:
-  MOCK_METHOD2(ProduceTextureDirectCHROMIUM, void(GLuint, const GLbyte*));
-  MOCK_METHOD1(GenMailboxCHROMIUM, void(GLbyte*));
+  MOCK_METHOD2(ProduceTextureDirectCHROMIUM, void(GLuint, GLbyte*));
   MOCK_METHOD1(GenUnverifiedSyncTokenCHROMIUM, void(GLbyte*));
   MOCK_METHOD1(GenSyncTokenCHROMIUM, void(GLbyte*));
   MOCK_METHOD4(CreateImageCHROMIUM,
@@ -103,10 +102,9 @@ TEST_F(CanvasResourceTest, SkiaResourceNoMailboxLeak) {
 
   gpu::Mailbox test_mailbox;
   test_mailbox.name[0] = 1;
-  EXPECT_CALL(gl_, GenMailboxCHROMIUM(_))
-      .WillOnce(SetArrayArgument<0>(
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, _))
+      .WillOnce(SetArrayArgument<1>(
           test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
-  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, _));
   EXPECT_CALL(gl_, BindTexture(GL_TEXTURE_2D, _)).Times(2);
   EXPECT_CALL(gl_, GenUnverifiedSyncTokenCHROMIUM(_));
   resource->GetOrCreateGpuMailbox(kUnverifiedSyncToken);
@@ -152,10 +150,9 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
 
   gpu::Mailbox test_mailbox;
   test_mailbox.name[0] = 1;
-  EXPECT_CALL(gl_, GenMailboxCHROMIUM(_))
-      .WillOnce(SetArrayArgument<0>(
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, _))
+      .WillOnce(SetArrayArgument<1>(
           test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
-  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, _));
   resource->GetOrCreateGpuMailbox(kVerifiedSyncToken);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -172,7 +169,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
 
   // Grabbing the mailbox again without making any changes must not result in
   // a sync token refresh
-  EXPECT_CALL(gl_, GenMailboxCHROMIUM(_)).Times(0);
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, _)).Times(0);
   EXPECT_CALL(gl_, GenSyncTokenCHROMIUM(_)).Times(0);
   resource->GetOrCreateGpuMailbox(kVerifiedSyncToken);
   actual_token = resource->GetSyncToken();
@@ -182,7 +179,7 @@ TEST_F(CanvasResourceTest, GpuMemoryBufferSyncTokenRefresh) {
 
   // Grabbing the mailbox again after a content change must result in
   // a sync token refresh, but the mailbox gets re-used.
-  EXPECT_CALL(gl_, GenMailboxCHROMIUM(_)).Times(0);
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, _)).Times(0);
   const gpu::SyncToken reference_token2 = GenTestSyncToken(2);
   EXPECT_CALL(gl_, GenSyncTokenCHROMIUM(_))
       .WillOnce(SetArrayArgument<0>(
@@ -324,8 +321,8 @@ TEST_F(CanvasResourceTest, RamGpuMemoryBuffer_ResourcePreparation) {
   if (canvas_resource) {
     gpu::Mailbox test_mailbox;
     test_mailbox.name[0] = 1;
-    EXPECT_CALL(gl_, GenMailboxCHROMIUM(_))
-        .WillOnce(SetArrayArgument<0>(
+    EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, _))
+        .WillOnce(SetArrayArgument<1>(
             test_mailbox.name, test_mailbox.name + GL_MAILBOX_SIZE_CHROMIUM));
 
     canvas_resource->TakeSkImage(surface->makeImageSnapshot());

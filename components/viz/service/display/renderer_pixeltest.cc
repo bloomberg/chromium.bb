@@ -95,7 +95,6 @@ ResourceId CreateGpuResource(scoped_refptr<ContextProvider> context_provider,
                                        color_space);
   }
   gpu::Mailbox mailbox;
-  gl->GenMailboxCHROMIUM(mailbox.name);
   gl->ProduceTextureDirectCHROMIUM(allocation.texture_id, mailbox.name);
   gpu::SyncToken sync_token;
   gl->GenSyncTokenCHROMIUM(sync_token.GetData());

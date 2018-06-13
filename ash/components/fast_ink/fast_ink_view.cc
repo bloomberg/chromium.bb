@@ -421,7 +421,6 @@ void FastInkView::SubmitCompositorFrame() {
       gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
       gles2->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      gles2->GenMailboxCHROMIUM(resource->mailbox.name);
       gles2->ProduceTextureDirectCHROMIUM(resource->texture,
                                           resource->mailbox.name);
     }
