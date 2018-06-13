@@ -17,7 +17,6 @@
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/session/session_observer.h"
-#include "ash/shell_observer.h"
 #include "ash/system/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -69,7 +68,6 @@ class ASH_EXPORT LockContentsView
       public views::StyledLabelListener,
       public SessionObserver,
       public keyboard::KeyboardControllerObserver,
-      public ShellObserver,
       public chromeos::PowerManagerClient::Observer {
  public:
   // TestApi is used for tests to get internal implementation details.
@@ -175,10 +173,6 @@ class ASH_EXPORT LockContentsView
                               int event_flags) override{};
   // SessionObserver:
   void OnLockStateChanged(bool locked) override;
-
-  // ash::ShellObserver:
-  void OnVirtualKeyboardStateChanged(bool activated,
-                                     aura::Window* root_window) override;
 
   // keyboard::KeyboardControllerObserver:
   void OnStateChanged(const keyboard::KeyboardControllerState state) override;
@@ -371,9 +365,6 @@ class ASH_EXPORT LockContentsView
 
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
   ScopedSessionObserver session_observer_;
-  ScopedObserver<keyboard::KeyboardController,
-                 keyboard::KeyboardControllerObserver>
-      keyboard_observer_;
 
   // Bubbles for displaying authentication error.
   std::unique_ptr<LoginBubble> auth_error_bubble_;

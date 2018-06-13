@@ -8,7 +8,6 @@
 #include <map>
 #include <utility>
 
-#include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -254,7 +253,6 @@ PanelLayoutManager::PanelLayoutManager(Window* panel_container)
       dragged_panel_(nullptr),
       shelf_(nullptr),
       last_active_panel_(nullptr),
-      keyboard_observer_(this),
       weak_factory_(this) {
   DCHECK(panel_container);
   Shell::Get()->activation_client()->AddObserver(this);
@@ -454,13 +452,6 @@ void PanelLayoutManager::OnOverviewModeEnded() {
 void PanelLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
   if (root_window_controller_->GetRootWindow() == root_window)
     Relayout();
-}
-
-void PanelLayoutManager::OnVirtualKeyboardStateChanged(bool activated,
-                                                       Window* root_window) {
-  UpdateKeyboardObserverFromStateChanged(activated, root_window,
-                                         panel_container_->GetRootWindow(),
-                                         &keyboard_observer_);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -934,10 +925,6 @@ void PanelLayoutManager::OnKeyboardWorkspaceOccludedBoundsChanged(
   // This bounds change will have caused a change to the Shelf which does not
   // propagate automatically to this class, so manually recalculate bounds.
   OnWindowResized();
-}
-
-void PanelLayoutManager::OnKeyboardClosed() {
-  keyboard_observer_.RemoveAll();
 }
 
 }  // namespace ash

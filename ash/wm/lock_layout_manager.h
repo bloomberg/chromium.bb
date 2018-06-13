@@ -63,17 +63,12 @@ class ASH_EXPORT LockLayoutManager
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
 
-  // ShellObserver:
-  void OnVirtualKeyboardStateChanged(bool activated,
-                                     aura::Window* root_window) override;
-
   // ShelfObserver:
   void WillChangeVisibilityState(ShelfVisibilityState visibility) override;
 
   // keyboard::KeyboardControllerObserver overrides:
   void OnKeyboardWorkspaceOccludedBoundsChanged(
       const gfx::Rect& new_bounds) override;
-  void OnKeyboardClosed() override;
 
  protected:
   // Adjusts the bounds of all managed windows when the display area changes.
@@ -88,9 +83,6 @@ class ASH_EXPORT LockLayoutManager
   aura::Window* root_window_;
 
   ScopedObserver<Shelf, ShelfObserver> shelf_observer_;
-  ScopedObserver<keyboard::KeyboardController,
-                 keyboard::KeyboardControllerObserver>
-      keyboard_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LockLayoutManager);
 };

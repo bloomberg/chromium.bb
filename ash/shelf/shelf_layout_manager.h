@@ -24,10 +24,6 @@
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
-namespace keyboard {
-class KeyboardController;
-}
-
 namespace ui {
 class ImplicitAnimationObserver;
 class MouseEvent;
@@ -150,8 +146,6 @@ class ASH_EXPORT ShelfLayoutManager
   // Overridden from ShellObserver:
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
-  void OnVirtualKeyboardStateChanged(bool activated,
-                                     aura::Window* root_window) override;
   void OnAppListVisibilityChanged(bool shown,
                                   aura::Window* root_window) override;
   void OnSplitViewModeStarted() override;
@@ -166,7 +160,6 @@ class ASH_EXPORT ShelfLayoutManager
   void OnKeyboardAppearanceChanged(
       const keyboard::KeyboardStateDescriptor& state) override;
   void OnKeyboardAvailabilityChanged(const bool is_available) override;
-  void OnKeyboardClosed() override;
 
   // Overridden from LockStateObserver:
   void OnLockStateEvent(LockStateObserver::EventType event) override;
@@ -420,9 +413,6 @@ class ASH_EXPORT ShelfLayoutManager
   ShelfBackgroundType shelf_background_type_before_drag_ =
       SHELF_BACKGROUND_OVERLAP;
 
-  ScopedObserver<keyboard::KeyboardController,
-                 keyboard::KeyboardControllerObserver>
-      keyboard_observer_;
   ScopedSessionObserver scoped_session_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);

@@ -98,8 +98,6 @@ class ASH_EXPORT PanelLayoutManager
   // ShellObserver:
   void OnOverviewModeEnded() override;
   void OnShelfAlignmentChanged(aura::Window* root_window) override;
-  void OnVirtualKeyboardStateChanged(bool activated,
-                                     aura::Window* root_window) override;
 
   // aura::WindowObserver
   void OnWindowPropertyChanged(aura::Window* window,
@@ -173,7 +171,6 @@ class ASH_EXPORT PanelLayoutManager
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardWorkspaceOccludedBoundsChanged(
       const gfx::Rect& keyboard_bounds) override;
-  void OnKeyboardClosed() override;
 
   // Parent window associated with this layout manager.
   aura::Window* panel_container_;
@@ -201,10 +198,6 @@ class ASH_EXPORT PanelLayoutManager
   // The last active panel. Used to maintain stacking order even if no panels
   // are currently focused.
   aura::Window* last_active_panel_;
-
-  ScopedObserver<keyboard::KeyboardController,
-                 keyboard::KeyboardControllerObserver>
-      keyboard_observer_;
 
   base::WeakPtrFactory<PanelLayoutManager> weak_factory_;
 

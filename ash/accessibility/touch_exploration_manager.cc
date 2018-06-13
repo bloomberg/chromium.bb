@@ -10,7 +10,6 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/accessibility/touch_exploration_controller.h"
-#include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/interfaces/accessibility_focus_ring_controller.mojom.h"
 #include "ash/root_window_controller.h"
@@ -38,11 +37,11 @@ AccessibilityController* GetA11yController() {
 TouchExplorationManager::TouchExplorationManager(
     RootWindowController* root_window_controller)
     : root_window_controller_(root_window_controller),
-      audio_handler_(chromeos::CrasAudioHandler::Get()),
-      keyboard_observer_(this) {
+      audio_handler_(chromeos::CrasAudioHandler::Get()) {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->accessibility_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
+  keyboard::KeyboardController::Get()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   UpdateTouchExplorationState();
 }
@@ -52,6 +51,7 @@ TouchExplorationManager::~TouchExplorationManager() {
   if (Shell::Get()->accessibility_controller())
     Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
 }
@@ -168,16 +168,7 @@ void TouchExplorationManager::OnKeyboardVisibleBoundsChanged(
 }
 
 void TouchExplorationManager::OnKeyboardClosed() {
-  keyboard_observer_.RemoveAll();
   UpdateTouchExplorationState();
-}
-
-void TouchExplorationManager::OnVirtualKeyboardStateChanged(
-    bool activated,
-    aura::Window* root_window) {
-  UpdateKeyboardObserverFromStateChanged(
-      activated, root_window, root_window_controller_->GetRootWindow(),
-      &keyboard_observer_);
 }
 
 void TouchExplorationManager::UpdateTouchExplorationState() {
