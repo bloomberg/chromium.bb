@@ -119,6 +119,15 @@ BackgroundTest.prototype = {
       });
     </script>
   */},
+
+  detailsDoc: function() {/*!
+    <p aria-details="details">start</p>
+    <div role="group">
+      <p>Before</p>
+      <p id="details">Details</p>
+      <p>After</p>
+    </div>
+  */},
 };
 
 /** Tests that ChromeVox classic is in this context. */
@@ -868,6 +877,17 @@ TEST_F('BackgroundTest', 'DisappearingObject', function() {
         .expectSpeech('After1')
         .call(doCmd('previousObject'))
         .expectSpeech('Before3');
+
+    mockFeedback.replay();
+  });
+});
+
+/** Tests that focus jumps to details properly when indicated. */
+TEST_F('BackgroundTest', 'JumpToDetails', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(this.detailsDoc, function(rootNode) {
+    mockFeedback.call(doCmd('jumpToDetails'))
+      .expectSpeech('Details');
 
     mockFeedback.replay();
   });

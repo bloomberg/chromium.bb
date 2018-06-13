@@ -2960,6 +2960,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="A hint to the user for interacting with the menu control." name="IDS_CHROMEVOX_HINT_MENU">
         Press up or down arrow to navigate; enter to activate.
       </message>
+      <message desc="A hint to the user that there are details associated with this element." name="IDS_CHROMEVOX_HINT_DETAILS">
+        Press Search+A, J to jump to details.
+      </message>
       <message desc="Describes the action of decrementing a control." name="IDS_CHROMEVOX_ACTION_DECREMENT_DESCRIPTION">
         Decrease value
       </message>

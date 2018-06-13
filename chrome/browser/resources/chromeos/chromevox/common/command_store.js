@@ -347,6 +347,9 @@ cvox.CommandStore.CMD_WHITELIST = {
   'moveToStartOfLine': {forward: true, announce: true},
   'moveToEndOfLine': {backward: true, announce: true},
 
+  'jumpToDetails':
+      {announce: false, msgId: 'jump_to_details', category: 'navigation'},
+
   'readFromHere': {
     forward: true,
     announce: false,

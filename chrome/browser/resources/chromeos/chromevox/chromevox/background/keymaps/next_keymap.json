@@ -887,6 +887,15 @@
       }
     },
     {
+      "command": "jumpToDetails",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65,74]
+        }
+      }
+    },
+    {
       "command": "darkenScreen",
       "sequence": {
         "cvoxModifier": true,
