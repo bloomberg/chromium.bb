@@ -29,7 +29,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
       public mojom::URLLoaderClient {
  public:
   // Assumes network_loader_factory outlives this loader.
-  // TODO(yhirano): Remove |preflight_finalizer| when the network service is
+  // TODO(yhirano): Remove |request_finalizer| when the network service is
   // fully enabled.
   CORSURLLoader(
       int32_t routing_id,
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
       mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,
-      const base::RepeatingCallback<void(int)>& preflight_finalizer);
+      const base::RepeatingCallback<void(int)>& request_finalizer);
 
   ~CORSURLLoader() override;
 
@@ -68,12 +68,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
   void OnComplete(const URLLoaderCompletionStatus& status) override;
 
  private:
-  void StartNetworkRequest(
-      int32_t routing_id,
-      int32_t request_id,
-      uint32_t options,
-      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      base::Optional<CORSErrorStatus> status);
+  void StartRequest();
+  void StartNetworkRequest(base::Optional<CORSErrorStatus> status);
 
   // Called when there is a connection error on the upstream pipe used for the
   // actual request.
@@ -81,6 +77,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   // Handles OnComplete() callback.
   void HandleComplete(const URLLoaderCompletionStatus& status);
+
+  // We need to save these for redirect.
+  const int32_t routing_id_;
+  const int32_t request_id_;
+  const uint32_t options_;
 
   // This raw URLLoaderFactory pointer is shared with the CORSURLLoaderFactory
   // that created and owns this object.
@@ -104,6 +105,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
 
   // Corresponds to the Fetch spec, https://fetch.spec.whatwg.org/.
   bool fetch_cors_flag_;
+
+  net::RedirectInfo redirect_info_;
+
+  // https://fetch.spec.whatwg.org/#concept-request-tainted-origin
+  bool tainted_ = false;
+
+  // https://fetch.spec.whatwg.org/#concept-request-redirect-count
+  int redirect_count_ = 0;
+
+  // Used to finalize preflight / redirect requests.
+  // TODO(yhirano): Remove this once the network service is fully enabled.
+  base::RepeatingCallback<void(int)> request_finalizer_;
+
+  // We need to save this for redirect.
+  net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
   // Used to run asynchronous class instance bound callbacks safely.
   base::WeakPtrFactory<CORSURLLoader> weak_factory_;

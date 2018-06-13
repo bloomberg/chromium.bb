@@ -130,6 +130,19 @@ TEST(PreflightControllerCreatePreflightRequestTest, ExcludeForbiddenHeaders) {
       cors::header_names::kAccessControlRequestHeaders, &header));
 }
 
+TEST(PreflightControllerCreatePreflightRequestTest, Tainted) {
+  ResourceRequest request;
+  request.request_initiator = url::Origin::Create(GURL("https://example.com"));
+
+  std::unique_ptr<ResourceRequest> preflight =
+      PreflightController::CreatePreflightRequestForTesting(request, true);
+
+  std::string header;
+  EXPECT_TRUE(
+      preflight->headers.GetHeader(net::HttpRequestHeaders::kOrigin, &header));
+  EXPECT_EQ(header, "null");
+}
+
 class PreflightControllerTest : public testing::Test {
  public:
   PreflightControllerTest()
@@ -161,13 +174,14 @@ class PreflightControllerTest : public testing::Test {
 
   GURL GetURL(const std::string& path) { return test_server_.GetURL(path); }
 
-  void PerformPreflightCheck(const ResourceRequest& request) {
+  void PerformPreflightCheck(const ResourceRequest& request,
+                             bool tainted = false) {
     DCHECK(preflight_controller_);
     run_loop_ = std::make_unique<base::RunLoop>();
     preflight_controller_->PerformPreflightCheck(
         base::BindOnce(&PreflightControllerTest::HandleRequestCompletion,
                        base::Unretained(this)),
-        0 /* request_id */, request, TRAFFIC_ANNOTATION_FOR_TESTS,
+        0 /* request_id */, request, tainted, TRAFFIC_ANNOTATION_FOR_TESTS,
         url_loader_factory_ptr_.get(),
         base::BindOnce(&PreflightControllerTest::CancelPreflight,
                        base::Unretained(this)));
@@ -198,11 +212,15 @@ class PreflightControllerTest : public testing::Test {
 
     response = std::make_unique<net::test_server::BasicHttpResponse>();
     if (net::test_server::ShouldHandle(request, "/404") ||
-        net::test_server::ShouldHandle(request, "/allow")) {
+        net::test_server::ShouldHandle(request, "/allow") ||
+        net::test_server::ShouldHandle(request, "/tainted")) {
       response->set_code(net::test_server::ShouldHandle(request, "/404")
                              ? net::HTTP_NOT_FOUND
                              : net::HTTP_OK);
-      url::Origin origin = url::Origin::Create(test_server_.base_url());
+      const url::Origin origin =
+          net::test_server::ShouldHandle(request, "/tainted")
+              ? url::Origin()
+              : url::Origin::Create(test_server_.base_url());
       response->AddCustomHeader(cors::header_names::kAccessControlAllowOrigin,
                                 origin.Serialize());
       response->AddCustomHeader(header_names::kAccessControlAllowMethods,
@@ -255,6 +273,16 @@ TEST_F(PreflightControllerTest, CheckValidRequest) {
   PerformPreflightCheck(request);
   ASSERT_FALSE(status());
   EXPECT_EQ(1u, access_count());  // Should be from the preflight cache.
+}
+
+TEST_F(PreflightControllerTest, CheckTaintedRequest) {
+  ResourceRequest request;
+  request.url = GetURL("/tainted");
+  request.request_initiator = url::Origin::Create(request.url);
+
+  PerformPreflightCheck(request, true /* tainted */);
+  ASSERT_FALSE(status());
+  EXPECT_EQ(1u, access_count());
 }
 
 // TODO(yhirano): Remove this test case when the network service is fully

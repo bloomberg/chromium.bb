@@ -61,7 +61,8 @@ std::string CreateAccessControlRequestHeadersHeader(
 }
 
 std::unique_ptr<ResourceRequest> CreatePreflightRequest(
-    const ResourceRequest& request) {
+    const ResourceRequest& request,
+    bool tainted) {
   DCHECK(!request.url.has_username());
   DCHECK(!request.url.has_password());
 
@@ -98,8 +99,9 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
 
   DCHECK(request.request_initiator);
   preflight_request->request_initiator = request.request_initiator;
-  preflight_request->headers.SetHeader(net::HttpRequestHeaders::kOrigin,
-                                       request.request_initiator->Serialize());
+  preflight_request->headers.SetHeader(
+      net::HttpRequestHeaders::kOrigin,
+      (tainted ? url::Origin() : *request.request_initiator).Serialize());
 
   // TODO(toyoshim): Remove the following line once the network service is
   // enabled by default.
@@ -116,6 +118,7 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
     const GURL& final_url,
     const ResourceResponseHead& head,
     const ResourceRequest& original_request,
+    bool tainted,
     base::Optional<mojom::CORSError>* detected_error) {
   DCHECK(detected_error);
 
@@ -127,7 +130,8 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
       GetHeaderString(head.headers,
                       cors::header_names::kAccessControlAllowCredentials),
       original_request.fetch_credentials_mode,
-      *original_request.request_initiator, false /* allow_file_origin */);
+      tainted ? url::Origin() : *original_request.request_initiator,
+      false /* allow_file_origin */);
   if (*detected_error)
     return nullptr;
 
@@ -225,13 +229,15 @@ class PreflightController::PreflightLoader final {
   PreflightLoader(PreflightController* controller,
                   CompletionCallback completion_callback,
                   const ResourceRequest& request,
+                  bool tainted,
                   const net::NetworkTrafficAnnotationTag& annotation_tag,
                   base::OnceCallback<void()> preflight_finalizer)
       : controller_(controller),
         completion_callback_(std::move(completion_callback)),
         original_request_(request),
+        tainted_(tainted),
         preflight_finalizer_(std::move(preflight_finalizer)) {
-    loader_ = SimpleURLLoader::Create(CreatePreflightRequest(request),
+    loader_ = SimpleURLLoader::Create(CreatePreflightRequest(request, tainted),
                                       annotation_tag);
   }
 
@@ -275,7 +281,7 @@ class PreflightController::PreflightLoader final {
 
     base::Optional<mojom::CORSError> detected_error;
     std::unique_ptr<PreflightResult> result = CreatePreflightResult(
-        final_url, head, original_request_, &detected_error);
+        final_url, head, original_request_, tainted_, &detected_error);
 
     base::Optional<CORSErrorStatus> detected_error_status;
     if (result) {
@@ -331,6 +337,8 @@ class PreflightController::PreflightLoader final {
   PreflightController::CompletionCallback completion_callback_;
   const ResourceRequest original_request_;
 
+  const bool tainted_;
+
   // This is needed because we sometimes need to cancel the preflight loader
   // synchronously.
   // TODO(yhirano): Remove this when the network service is fully enabled.
@@ -342,8 +350,9 @@ class PreflightController::PreflightLoader final {
 // static
 std::unique_ptr<ResourceRequest>
 PreflightController::CreatePreflightRequestForTesting(
-    const ResourceRequest& request) {
-  return CreatePreflightRequest(request);
+    const ResourceRequest& request,
+    bool tainted) {
+  return CreatePreflightRequest(request, tainted);
 }
 
 // static
@@ -360,6 +369,7 @@ void PreflightController::PerformPreflightCheck(
     CompletionCallback callback,
     int32_t request_id,
     const ResourceRequest& request,
+    bool tainted,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     mojom::URLLoaderFactory* loader_factory,
     base::OnceCallback<void()> preflight_finalizer) {
@@ -374,7 +384,7 @@ void PreflightController::PerformPreflightCheck(
   }
 
   auto emplaced_pair = loaders_.emplace(std::make_unique<PreflightLoader>(
-      this, std::move(callback), request, annotation_tag,
+      this, std::move(callback), request, tainted, annotation_tag,
       std::move(preflight_finalizer)));
   (*emplaced_pair.first)->Request(loader_factory, request_id);
 }
