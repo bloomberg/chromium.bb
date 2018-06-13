@@ -11,6 +11,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import android.content.pm.ActivityInfo;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
@@ -621,10 +622,15 @@ public class ContextualSuggestionsTest {
     }
 
     @Test
-    @FlakyTest(message = "https://crbug.com/850117")
     @MediumTest
     @Feature({"ContextualSuggestions"})
     public void testPeekWithPageScrollPercentage() throws Exception {
+        // Set the screen orientation to portrait since we scroll the web contents in absolute
+        // pixels in the test.
+        mActivityTestRule.getActivity().setRequestedOrientation(
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+
         CallbackHelper scrollChangedCallback = new CallbackHelper();
         GestureStateListener gestureStateListener = new GestureStateListener() {
             @Override
