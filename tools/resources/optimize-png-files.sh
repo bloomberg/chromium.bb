@@ -409,9 +409,6 @@ Options:
       2  Aggressively optimize the size of png files. This may produce
          addtional 1%~5% reduction.  Warning: this is *VERY*
          slow and can take hours to process all files.
-  -r<revision> If this is specified, the script processes only png files
-               changed since this revision. The <dir> options will be used
-               to narrow down the files under specific directories.
   -c<commit>   Same as -r but referencing a git commit. Only files changed
                between this commit and HEAD will be processed.
   -v  Shows optimization process for each file.
@@ -440,18 +437,11 @@ fi
 
 OPTIMIZE_LEVEL=1
 # Parse options
-while getopts o:c:r:h:v opts
+while getopts o:c:h:v opts
 do
   case $opts in
     c)
       COMMIT=$OPTARG
-      ;;
-    r)
-      COMMIT=$(git svn find-rev r$OPTARG | tail -1) || exit
-      if [ -z "$COMMIT" ] ; then
-        echo "Revision $OPTARG not found"
-        show_help
-      fi
       ;;
     o)
       if [[ "$OPTARG" != 0 && "$OPTARG" != 1 && "$OPTARG" != 2 ]] ; then
