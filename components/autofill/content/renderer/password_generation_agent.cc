@@ -181,6 +181,7 @@ PasswordGenerationAgent::PasswordGenerationAgent(
     service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame),
       password_is_generated_(false),
+      is_manually_triggered_(false),
       password_edited_(false),
       generation_popup_shown_(false),
       editing_popup_shown_(false),
@@ -255,6 +256,7 @@ void PasswordGenerationAgent::DidFinishDocumentLoad() {
     password_edited_ = false;
     generation_popup_shown_ = false;
     editing_popup_shown_ = false;
+    is_manually_triggered_ = false;
   }
 
   FindPossibleGenerationForm();
@@ -536,6 +538,7 @@ bool PasswordGenerationAgent::SetUpUserTriggeredGeneration() {
                   .Utf8())));
   generation_form_data_.reset(new AccountCreationFormData(
       make_linked_ptr(password_form.release()), password_elements));
+  is_manually_triggered_ = true;
   return true;
 }
 
@@ -572,7 +575,7 @@ bool PasswordGenerationAgent::FocusedNodeHasChanged(
   // the password suggestion.
   if (!element->IsReadOnly() && element->IsEnabled() &&
       element->Value().length() <= kMaximumOfferSize) {
-    AutomaticGenerationStatusChanged(true);
+    MaybeOfferAutomaticGeneration();
     return true;
   }
 
@@ -600,7 +603,7 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
     }
 
     // Offer generation again.
-    AutomaticGenerationStatusChanged(true);
+    MaybeOfferAutomaticGeneration();
   } else if (password_is_generated_) {
     password_edited_ = true;
     // Mirror edits to any confirmation password fields.
@@ -617,10 +620,16 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
     // Password isn't generated and there are fewer than kMaximumOfferSize
     // characters typed, so keep offering the password. Note this function
     // will just keep the previous popup if one is already showing.
-    AutomaticGenerationStatusChanged(true);
+    MaybeOfferAutomaticGeneration();
   }
-
   return true;
+}
+
+void PasswordGenerationAgent::MaybeOfferAutomaticGeneration() {
+  // TODO(crbug.com/852309): Add this check to the generation element class.
+  if (!is_manually_triggered_) {
+    ShowGenerationPopup(false /* is_manual_generation */);
+  }
 }
 
 void PasswordGenerationAgent::ShowGenerationPopup(bool is_manual_generation) {

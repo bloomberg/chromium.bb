@@ -118,6 +118,11 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // all required information is collected.
   bool SetUpUserTriggeredGeneration();
 
+  // This is called whenever automatic generation could be offered.
+  // If manual generation was already requested, automatic generation will
+  // not be offered.
+  void MaybeOfferAutomaticGeneration();
+
   // Shows a generation popup.
   void ShowGenerationPopup(bool is_manual_generation);
 
@@ -183,6 +188,9 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // If the password field at |generation_element_| contains a generated
   // password.
   bool password_is_generated_;
+
+  // True if the last password generation was manually triggered.
+  bool is_manually_triggered_;
 
   // True if a password was generated and the user edited it. Used for UMA
   // stats.

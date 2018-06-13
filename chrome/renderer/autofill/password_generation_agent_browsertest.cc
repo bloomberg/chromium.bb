@@ -713,6 +713,10 @@ TEST_F(PasswordGenerationAgentTest, ManualGenerationInFormTest) {
   SelectGenerationFallbackInContextMenu("first_password");
   ExpectManualGenerationAvailable("first_password", true);
   ExpectManualGenerationAvailable("second_password", false);
+  // Re-focusing a password field for which manual generation was requested
+  // should not re-trigger generation, manual or automatic.
+  ExpectManualGenerationAvailable("first_password", false);
+  ExpectAutomaticGenerationAvailable("first_password", false);
 }
 
 TEST_F(PasswordGenerationAgentTest, ManualGenerationNoFormTest) {
@@ -720,17 +724,6 @@ TEST_F(PasswordGenerationAgentTest, ManualGenerationNoFormTest) {
   SelectGenerationFallbackInContextMenu("first_password");
   ExpectManualGenerationAvailable("first_password", true);
   ExpectManualGenerationAvailable("second_password", false);
-}
-
-TEST_F(PasswordGenerationAgentTest, ManualGenerationChangeFocusTest) {
-  // This test simulates focus change after user triggered password generation.
-  // PasswordGenerationAgent should save last focused password element and
-  // generate password, even if focused element has changed.
-  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
-  FocusField("first_password");
-  SelectGenerationFallbackInContextMenu("username" /* current focus */);
-  ExpectAutomaticGenerationAvailable("first_password", true);
-  ExpectAutomaticGenerationAvailable("second_password", false);
 }
 
 TEST_F(PasswordGenerationAgentTest, PresavingGeneratedPassword) {
