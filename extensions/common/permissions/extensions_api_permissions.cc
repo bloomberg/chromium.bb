@@ -130,6 +130,8 @@ ExtensionsAPIPermissions::GetAllPermissions() const {
       {APIPermission::kWebView, "webview",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWindowShape, "app.window.shape"},
+      {APIPermission::kFileSystemRequestDownloads,
+       "fileSystem.requestDownloads"},
   };
 
   std::vector<std::unique_ptr<APIPermissionInfo>> permissions;

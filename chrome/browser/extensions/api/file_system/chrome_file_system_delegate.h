@@ -45,9 +45,10 @@ class ChromeFileSystemDelegate : public FileSystemDelegate {
                                        const base::Closure& on_cancel) override;
   int GetDescriptionIdForAcceptType(const std::string& accept_type) override;
 #if defined(OS_CHROMEOS)
-  bool IsGrantable(content::BrowserContext* browser_context,
-                   content::RenderFrameHost* render_frame_host,
-                   const Extension& extension) override;
+  FileSystemDelegate::GrantVolumesMode GetGrantVolumesMode(
+      content::BrowserContext* browser_context,
+      content::RenderFrameHost* render_frame_host,
+      const Extension& extension) override;
   void RequestFileSystem(content::BrowserContext* browser_context,
                          scoped_refptr<UIThreadExtensionFunction> requester,
                          const Extension& extension,
@@ -56,6 +57,7 @@ class ChromeFileSystemDelegate : public FileSystemDelegate {
                          const FileSystemCallback& success_callback,
                          const ErrorCallback& error_callback) override;
   void GetVolumeList(content::BrowserContext* browser_context,
+                     const Extension& extension,
                      const VolumeListCallback& success_callback,
                      const ErrorCallback& error_callback) override;
 #endif  // defined(OS_CHROMEOS)
