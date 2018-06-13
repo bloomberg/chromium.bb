@@ -10,6 +10,7 @@
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
+#include "base/base64.h"
 #include "base/callback.h"
 #include "base/unguessable_token.h"
 #include "ui/views/layout/box_layout.h"
@@ -18,7 +19,7 @@ namespace ash {
 
 namespace {
 
-constexpr char kDataUriPrefix[] = "data:text/html,";
+constexpr char kDataUriPrefix[] = "data:text/html;base64,";
 
 }  // namespace
 
@@ -106,10 +107,14 @@ void UiElementContainerView::OnCardElementAdded(
   // card resources when it is no longer needed.
   base::UnguessableToken id_token = base::UnguessableToken::Create();
 
+  // Encode the card HTML in base64.
+  std::string encoded_html;
+  base::Base64Encode(card_element->html(), &encoded_html);
+
   // Configure parameters for the card.
   ash::mojom::ManagedWebContentsParamsPtr params(
       ash::mojom::ManagedWebContentsParams::New());
-  params->url = GURL(kDataUriPrefix + card_element->html());
+  params->url = GURL(kDataUriPrefix + encoded_html);
   params->min_size_dip = gfx::Size(kPreferredWidthDip - 2 * kPaddingDip, 1);
   params->max_size_dip =
       gfx::Size(kPreferredWidthDip - 2 * kPaddingDip, INT_MAX);
