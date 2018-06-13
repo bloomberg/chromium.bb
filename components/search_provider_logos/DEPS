@@ -6,6 +6,9 @@ include_rules = [
   "+components/signin/core/browser",
   "+components/sync_preferences/testing_pref_service_syncable.h",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/public/mojom",
+  "+services/network/test",
   "+third_party/skia/include/core/SkBitmap.h",
   "+ui/gfx/image",
 ]

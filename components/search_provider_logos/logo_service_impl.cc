@@ -22,7 +22,7 @@
 #include "components/search_provider_logos/logo_tracker.h"
 #include "components/search_provider_logos/switches.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/image/image.h"
 
 using search_provider_logos::LogoDelegate;
@@ -178,11 +178,11 @@ LogoServiceImpl::LogoServiceImpl(
     GaiaCookieManagerService* cookie_service,
     TemplateURLService* template_url_service,
     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     base::RepeatingCallback<bool()> want_gray_logo_getter)
     : cache_directory_(cache_directory),
       template_url_service_(template_url_service),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(url_loader_factory),
       want_gray_logo_getter_(std::move(want_gray_logo_getter)),
       image_decoder_(std::move(image_decoder)),
       signin_observer_(std::make_unique<SigninObserver>(
@@ -304,7 +304,7 @@ void LogoServiceImpl::InitializeLogoTrackerIfNecessary() {
   }
 
   logo_tracker_ = std::make_unique<LogoTracker>(
-      request_context_getter_,
+      url_loader_factory_,
       std::make_unique<LogoDelegateImpl>(std::move(image_decoder_)),
       std::move(logo_cache), clock);
 }

@@ -23,9 +23,9 @@ namespace image_fetcher {
 class ImageDecoder;
 }  // namespace image_fetcher
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace search_provider_logos {
 
@@ -40,7 +40,7 @@ class LogoServiceImpl : public LogoService {
       GaiaCookieManagerService* cookie_service,
       TemplateURLService* template_url_service,
       std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       base::RepeatingCallback<bool()> want_gray_logo_getter);
 
   ~LogoServiceImpl() override;
@@ -68,7 +68,7 @@ class LogoServiceImpl : public LogoService {
   // Constructor arguments.
   const base::FilePath cache_directory_;
   TemplateURLService* const template_url_service_;
-  const scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Callback to get the type of logo to fetch. Returns whether we want a logo
   // optimized for gray backgrounds or not.

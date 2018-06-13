@@ -10,7 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "ios/chrome/browser/ui/ui_util.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -36,7 +36,7 @@ base::FilePath DoodleDirectory() {
 
 GoogleLogoService::GoogleLogoService(
     TemplateURLService* template_url_service,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : LogoServiceImpl(DoodleDirectory(),
                       // Personalized Doodles aren't supported on iOS (see
                       // https://crbug.com/711314), so no need to pass a
@@ -44,7 +44,7 @@ GoogleLogoService::GoogleLogoService(
                       /*cookie_service=*/nullptr,
                       template_url_service,
                       image_fetcher::CreateIOSImageDecoder(),
-                      request_context_getter,
+                      std::move(url_loader_factory),
                       /*want_gray_logo_getter=*/base::BindRepeating([] {
                         return !IsUIRefreshPhase1Enabled();
                       })) {}

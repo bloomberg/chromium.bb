@@ -21,12 +21,11 @@
 #include "base/time/time.h"
 #include "components/search_provider_logos/logo_cache.h"
 #include "components/search_provider_logos/logo_common.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
 }
 
 namespace search_provider_logos {
@@ -73,7 +72,7 @@ class LogoDelegate {
 // Call SetServerAPI() at least once to specify how to get the logo from the
 // server. Then call GetLogo() to trigger retrieval of the logo and receive
 // updates once the cached and/or fresh logos are available.
-class LogoTracker : public net::URLFetcherDelegate {
+class LogoTracker {
  public:
   // Constructs a LogoTracker with the given LogoDelegate. Takes ownership of
   // |delegate|, which will be deleted at the same time as the LogoTracker.
@@ -84,15 +83,15 @@ class LogoTracker : public net::URLFetcherDelegate {
   // |background_task_runner| is the TaskRunner that should be used to for
   // CPU-intensive background operations.
   //
-  // |request_context_getter| is the URLRequestContextGetter used to download
+  // |url_loader_factory| is the SharedURLLoaderFactory used to download
   // the logo.
   explicit LogoTracker(
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<LogoDelegate> delegate,
       std::unique_ptr<LogoCache> logo_cache,
       base::Clock* clock);
 
-  ~LogoTracker() override;
+  ~LogoTracker();
 
   // Defines the server API for downloading and parsing the logo. This must be
   // called at least once before calling GetLogo().
@@ -173,12 +172,9 @@ class LogoTracker : public net::URLFetcherDelegate {
                             bool from_http_cache,
                             const SkBitmap& image);
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-  void OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                  int64_t current,
-                                  int64_t total,
-                                  int64_t current_network_bytes) override;
+  // Invoked by |loader|.
+  void OnURLLoadComplete(const network::SimpleURLLoader* source,
+                         std::unique_ptr<std::string> body);
 
   // The URL from which the logo is fetched.
   GURL logo_url_;
@@ -207,8 +203,8 @@ class LogoTracker : public net::URLFetcherDelegate {
   // The timestamp for the last time a logo is stated to be downloaded.
   base::TimeTicks logo_download_start_time_;
 
-  // The URLFetcher currently fetching the logo. NULL when not fetching.
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  // The SimpleURLLoader currently fetching the logo. NULL when not loading.
+  std::unique_ptr<network::SimpleURLLoader> loader_;
 
   // Lists of callbacks to be invoked when logos are available. All should be
   // empty when the state is IDLE.
@@ -229,8 +225,8 @@ class LogoTracker : public net::URLFetcherDelegate {
   // Clock used to determine current time. Can be overridden in tests.
   base::Clock* clock_;
 
-  // The URLRequestContextGetter used for network requests.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  // Used for network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   base::WeakPtrFactory<LogoTracker> weak_ptr_factory_;
 
