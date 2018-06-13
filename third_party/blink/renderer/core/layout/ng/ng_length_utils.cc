@@ -745,6 +745,14 @@ LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
   }
 }
 
+LayoutUnit InlineOffsetForTextAlign(const ComputedStyle& container_style,
+                                    LayoutUnit space_left) {
+  TextDirection direction = container_style.Direction();
+  LayoutUnit line_offset = LineOffsetForTextAlign(
+      container_style.GetTextAlign(), direction, space_left, LayoutUnit());
+  return IsLtr(direction) ? line_offset : space_left - line_offset;
+}
+
 LayoutUnit ConstrainByMinMax(LayoutUnit length,
                              LayoutUnit min,
                              LayoutUnit max) {

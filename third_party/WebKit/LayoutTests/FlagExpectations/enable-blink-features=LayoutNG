@@ -602,7 +602,6 @@ crbug.com/591099 fast/table/percent-height-replaced-content-in-cell.html [ Failu
 crbug.com/591099 fast/table/table-display-types-vertical.html [ Failure ]
 crbug.com/591099 fast/table/unbreakable-images-quirk.html [ Failure ]
 crbug.com/591099 fast/table/vertical-align-baseline-readjust.html [ Failure ]
-crbug.com/591099 fast/text/container-align-with-inlines.html [ Failure ]
 crbug.com/591099 fast/text/decorations-with-text-combine.html [ Failure ]
 crbug.com/591099 fast/text/ellipsis-in-relative-inline-right.html [ Failure ]
 crbug.com/591099 fast/text/ellipsis-in-relative-inline.html [ Failure ]
