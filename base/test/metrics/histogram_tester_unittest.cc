@@ -143,7 +143,6 @@ TEST_F(HistogramTesterTest, TestGetAllChangedHistograms) {
 
   UMA_HISTOGRAM_ENUMERATION("Test1.Test2.Test3", 2, 5);
   std::string results = tester.GetAllHistogramsRecorded();
-  LOG(INFO) << results;
 
   EXPECT_EQ(std::string::npos, results.find("Histogram: Test1 recorded"));
   EXPECT_NE(std::string::npos,
