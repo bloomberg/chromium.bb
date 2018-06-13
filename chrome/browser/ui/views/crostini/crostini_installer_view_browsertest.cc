@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +19,8 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_concierge_client.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +28,36 @@
 
 class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
  public:
-  CrostiniInstallerViewBrowserTest() {}
+  class WaitingFakeConciergeClient : public chromeos::FakeConciergeClient {
+   public:
+    void StartTerminaVm(
+        const vm_tools::concierge::StartVmRequest& request,
+        chromeos::DBusMethodCallback<vm_tools::concierge::StartVmResponse>
+            callback) override {
+      chromeos::FakeConciergeClient::StartTerminaVm(request,
+                                                    std::move(callback));
+      if (closure_) {
+        base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                      std::move(closure_));
+      }
+    }
+
+    void WaitForStartTerminaVmCalled() {
+      base::RunLoop loop;
+      closure_ = loop.QuitClosure();
+      loop.Run();
+      EXPECT_TRUE(start_termina_vm_called());
+    }
+
+   private:
+    base::OnceClosure closure_;
+  };
+
+  CrostiniInstallerViewBrowserTest()
+      : waiting_fake_concierge_client_(new WaitingFakeConciergeClient()) {
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetConciergeClient(
+        base::WrapUnique(waiting_fake_concierge_client_));
+  }
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
@@ -54,6 +86,10 @@ class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
   bool HasCancelButton() {
     return ActiveView()->GetDialogClientView()->cancel_button() != nullptr;
   }
+
+ protected:
+  // Owned by chromeos::DBusThreadManager
+  WaitingFakeConciergeClient* waiting_fake_concierge_client_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -95,5 +131,27 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, Cancel) {
       "Crostini.SetupResult",
       static_cast<base::HistogramBase::Sample>(
           CrostiniInstallerView::SetupResult::kNotStarted),
+      1);
+}
+
+IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenCancel) {
+  base::HistogramTester histogram_tester;
+  ShowUi("default");
+  EXPECT_NE(nullptr, ActiveView());
+  vm_tools::concierge::StartVmResponse response;
+  response.set_success(false);
+  waiting_fake_concierge_client_->set_start_vm_response(std::move(response));
+
+  ActiveView()->GetDialogClientView()->AcceptWindow();
+  EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
+  waiting_fake_concierge_client_->WaitForStartTerminaVmCalled();
+  ActiveView()->GetDialogClientView()->CancelWindow();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(nullptr, ActiveView());
+
+  histogram_tester.ExpectBucketCount(
+      "Crostini.SetupResult",
+      static_cast<base::HistogramBase::Sample>(
+          CrostiniInstallerView::SetupResult::kErrorStartingTermina),
       1);
 }

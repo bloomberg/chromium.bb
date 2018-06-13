@@ -123,10 +123,56 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
     is_container_startup_failed_signal_connected_ = connected;
   }
 
+  void set_create_disk_image_response(
+      const vm_tools::concierge::CreateDiskImageResponse&
+          create_disk_image_response) {
+    create_disk_image_response_ = create_disk_image_response;
+  }
+  void set_destroy_disk_image_response(
+      const vm_tools::concierge::DestroyDiskImageResponse&
+          destroy_disk_image_response) {
+    destroy_disk_image_response_ = destroy_disk_image_response;
+  }
+  void set_list_vm_disks_response(
+      const vm_tools::concierge::ListVmDisksResponse& list_vm_disks_response) {
+    list_vm_disks_response_ = list_vm_disks_response;
+  }
+  void set_start_vm_response(
+      const vm_tools::concierge::StartVmResponse& start_vm_response) {
+    start_vm_response_ = start_vm_response;
+  }
+  void set_stop_vm_response(
+      const vm_tools::concierge::StopVmResponse& stop_vm_response) {
+    stop_vm_response_ = stop_vm_response;
+  }
+  void set_start_container_response(
+      const vm_tools::concierge::StartContainerResponse&
+          start_container_response) {
+    start_container_response_ = start_container_response;
+  }
+  void set_launch_container_application_response(
+      const vm_tools::concierge::LaunchContainerApplicationResponse&
+          launch_container_application_response) {
+    launch_container_application_response_ =
+        launch_container_application_response;
+  }
+  void set_container_app_icon_response(
+      const vm_tools::concierge::ContainerAppIconResponse&
+          container_app_icon_response) {
+    container_app_icon_response_ = container_app_icon_response;
+  }
+  void set_container_ssh_keys_response(
+      const vm_tools::concierge::ContainerSshKeysResponse&
+          container_ssh_keys_response) {
+    container_ssh_keys_response_ = container_ssh_keys_response;
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {}
 
  private:
+  void InitializeProtoResponses();
+
   bool create_disk_image_called_ = false;
   bool destroy_disk_image_called_ = false;
   bool list_vm_disks_called_ = false;
@@ -135,6 +181,18 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool start_container_called_ = false;
   bool is_container_started_signal_connected_ = true;
   bool is_container_startup_failed_signal_connected_ = true;
+
+  vm_tools::concierge::CreateDiskImageResponse create_disk_image_response_;
+  vm_tools::concierge::DestroyDiskImageResponse destroy_disk_image_response_;
+  vm_tools::concierge::ListVmDisksResponse list_vm_disks_response_;
+  vm_tools::concierge::StartVmResponse start_vm_response_;
+  vm_tools::concierge::StopVmResponse stop_vm_response_;
+  vm_tools::concierge::StartContainerResponse start_container_response_;
+  vm_tools::concierge::LaunchContainerApplicationResponse
+      launch_container_application_response_;
+  vm_tools::concierge::ContainerAppIconResponse container_app_icon_response_;
+  vm_tools::concierge::ContainerSshKeysResponse container_ssh_keys_response_;
+
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConciergeClient);
