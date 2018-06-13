@@ -74,14 +74,22 @@ KeyedService* PasswordRequirementsServiceFactory::BuildServiceInstanceFor(
   std::map<std::string, std::string> field_trial_params;
   base::GetFieldTrialParams(features::kGenerationRequirementsFieldTrial,
                             &field_trial_params);
-  base::StringToInt(
-      field_trial_params[features::kGenerationRequirementsVersion], &version);
-  base::StringToInt(
-      field_trial_params[features::kGenerationRequirementsPrefixLength],
-      &prefix_length);
-  base::StringToInt(
-      field_trial_params[features::kGenerationRequirementsTimeout],
-      &timeout_in_ms);
+  // base::StringToInt modifies the target even if it fails to parse the input.
+  // |tmp| is used to protect the default values above.
+  int tmp = 0;
+  if (base::StringToInt(
+          field_trial_params[features::kGenerationRequirementsVersion], &tmp)) {
+    version = tmp;
+  }
+  if (base::StringToInt(
+          field_trial_params[features::kGenerationRequirementsPrefixLength],
+          &tmp)) {
+    prefix_length = tmp;
+  }
+  if (base::StringToInt(
+          field_trial_params[features::kGenerationRequirementsTimeout], &tmp)) {
+    timeout_in_ms = tmp;
+  }
 
   VLOG(1) << "PasswordGenerationRequirements parameters: " << version << ", "
           << prefix_length << ", " << timeout_in_ms << " ms";
