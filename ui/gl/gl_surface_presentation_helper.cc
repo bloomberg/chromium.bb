@@ -7,6 +7,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gpu_timing.h"
 
 namespace gl {
@@ -31,10 +32,47 @@ GLSurfacePresentationHelper::Frame::Frame(
     const GLSurface::PresentationCallback& callback)
     : timer(std::move(timer)), callback(callback) {}
 
+GLSurfacePresentationHelper::Frame::Frame(
+    std::unique_ptr<GLFence>&& fence,
+    const GLSurface::PresentationCallback& callback)
+    : fence(std::move(fence)), callback(callback) {}
+
+GLSurfacePresentationHelper::Frame::Frame(
+    const GLSurface::PresentationCallback& callback)
+    : callback(callback) {}
+
 GLSurfacePresentationHelper::Frame::~Frame() = default;
 
 GLSurfacePresentationHelper::Frame& GLSurfacePresentationHelper::Frame::
 operator=(Frame&& other) = default;
+
+bool GLSurfacePresentationHelper::Frame::StillPending() const {
+  DCHECK(timer || fence);
+  return timer ? !timer->IsAvailable() : !fence->HasCompleted();
+}
+
+base::TimeTicks GLSurfacePresentationHelper::Frame::GetTimestamp() const {
+  DCHECK(!StillPending());
+  if (timer) {
+    int64_t start = 0;
+    int64_t end = 0;
+    timer->GetStartEndTimestamps(&start, &end);
+    return base::TimeTicks() + base::TimeDelta::FromMicroseconds(start);
+  }
+  return base::TimeTicks::Now();
+}
+
+void GLSurfacePresentationHelper::Frame::Destroy(bool has_context) {
+  if (timer) {
+    timer->Destroy(has_context);
+  } else if (fence) {
+    if (has_context)
+      fence = nullptr;
+    else
+      fence->Invalidate();
+  }
+  callback.Run(gfx::PresentationFeedback::Failure());
+}
 
 GLSurfacePresentationHelper::GLSurfacePresentationHelper(
     gfx::VSyncProvider* vsync_provider)
@@ -53,9 +91,7 @@ GLSurfacePresentationHelper::~GLSurfacePresentationHelper() {
   // PresentationFeedback.
   bool has_context = gl_context_ && gl_context_->IsCurrent(surface_);
   for (auto& frame : pending_frames_) {
-    if (frame.timer)
-      frame.timer->Destroy(has_context);
-    frame.callback.Run(gfx::PresentationFeedback::Failure());
+    frame.Destroy(has_context);
   }
   pending_frames_.clear();
 }
@@ -71,14 +107,12 @@ void GLSurfacePresentationHelper::OnMakeCurrent(GLContext* context,
   surface_ = surface;
   // If context is changed, we assume SwapBuffers issued for previous context
   // will be discarded.
-  if (gpu_timing_client_) {
+  if (gpu_timing_client_)
     gpu_timing_client_ = nullptr;
-    for (auto& frame : pending_frames_) {
-      frame.timer->Destroy(false /* has_context */);
-      frame.callback.Run(gfx::PresentationFeedback::Failure());
-    }
-    pending_frames_.clear();
+  for (auto& frame : pending_frames_) {
+    frame.Destroy();
   }
+  pending_frames_.clear();
 
   gl_context_ = context;
   gpu_timing_client_ = context->CreateGPUTimingClient();
@@ -88,12 +122,17 @@ void GLSurfacePresentationHelper::OnMakeCurrent(GLContext* context,
 
 void GLSurfacePresentationHelper::PreSwapBuffers(
     const GLSurface::PresentationCallback& callback) {
-  std::unique_ptr<GPUTimer> timer;
   if (gpu_timing_client_) {
+    std::unique_ptr<GPUTimer> timer;
     timer = gpu_timing_client_->CreateGPUTimer(false /* prefer_elapsed_time */);
     timer->QueryTimeStamp();
+    pending_frames_.push_back(Frame(std::move(timer), callback));
+  } else if (GLFence::IsSupported()) {
+    auto fence = GLFence::Create();
+    pending_frames_.push_back(Frame(std::move(fence), callback));
+  } else {
+    pending_frames_.push_back(Frame(callback));
   }
-  pending_frames_.push_back(Frame(std::move(timer), callback));
 }
 
 void GLSurfacePresentationHelper::PostSwapBuffers(gfx::SwapResult result) {
@@ -123,11 +162,8 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
   // for previous context will be discarded.
   if (gl_context_ && !gl_context_->IsCurrent(surface_)) {
     gpu_timing_client_ = nullptr;
-    for (auto& frame : pending_frames_) {
-      if (frame.timer)
-        frame.timer->Destroy(false /* has_context */);
-      frame.callback.Run(gfx::PresentationFeedback::Failure());
-    }
+    for (auto& frame : pending_frames_)
+      frame.Destroy();
     pending_frames_.clear();
     return;
   }
@@ -135,9 +171,10 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
   bool need_update_vsync = false;
   bool disjoint_occurred =
       gpu_timing_client_ && gpu_timing_client_->CheckAndResetTimerErrors();
-  if (disjoint_occurred || !gpu_timing_client_) {
-    // If GPUTimer is not avaliable or disjoint occurred, we will compute the
-    // next VSync's timestamp and use it to run presentation callback.
+  if (disjoint_occurred || (!gpu_timing_client_ && !GLFence::IsSupported())) {
+    // If GPUTimer and GLFence are not avaliable or disjoint occurred, we will
+    // compute the next VSync's timestamp and use it to run presentation
+    // callback.
     uint32_t flags = 0;
     auto timestamp = base::TimeTicks::Now();
     if (!vsync_interval_.is_zero()) {
@@ -172,7 +209,8 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
     // frame.
     auto frame_presentation_callback =
         [this, &frame](const gfx::PresentationFeedback& feedback) {
-          frame.timer->Destroy(true /* has_context */);
+          if (frame.timer)
+            frame.timer->Destroy(true /* has_context */);
           frame.callback.Run(feedback);
           pending_frames_.pop_front();
         };
@@ -182,15 +220,10 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
       continue;
     }
 
-    if (!frame.timer->IsAvailable())
+    if (frame.StillPending())
       break;
 
-    int64_t start = 0;
-    int64_t end = 0;
-    frame.timer->GetStartEndTimestamps(&start, &end);
-    auto timestamp =
-        base::TimeTicks() + base::TimeDelta::FromMicroseconds(start);
-
+    auto timestamp = frame.GetTimestamp();
 
     if (vsync_interval_.is_zero() || fixed_vsync) {
       // If VSync parameters are fixed or not avaliable, we just run

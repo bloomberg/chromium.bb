@@ -2154,7 +2154,7 @@ error::Error GLES2DecoderPassthroughImpl::DoReadPixelsAsync(
     return error::kNoError;
   }
 
-  pending_read_pixels.fence.reset(gl::GLFence::Create());
+  pending_read_pixels.fence = gl::GLFence::Create();
 
   if (CheckErrorCallbackState()) {
     return error::kNoError;

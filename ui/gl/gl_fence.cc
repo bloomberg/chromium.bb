@@ -46,7 +46,7 @@ bool GLFence::IsSupported() {
          g_current_gl_driver->ext.b_GL_NV_fence;
 }
 
-GLFence* GLFence::Create() {
+std::unique_ptr<GLFence> GLFence::Create() {
   DCHECK(GLContext::GetCurrent())
       << "Trying to create fence with no context";
 
@@ -77,7 +77,7 @@ GLFence* GLFence::Create() {
   }
 
   DCHECK_EQ(!!fence.get(), GLFence::IsSupported());
-  return fence.release();
+  return fence;
 }
 
 bool GLFence::ResetSupported() {

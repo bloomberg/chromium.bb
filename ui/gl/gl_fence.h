@@ -19,7 +19,7 @@ class GL_EXPORT GLFence {
   virtual ~GLFence();
 
   static bool IsSupported();
-  static GLFence* Create();
+  static std::unique_ptr<GLFence> Create();
 
   // GpuFenceHandle integration.
   static bool IsGpuFenceSupported();

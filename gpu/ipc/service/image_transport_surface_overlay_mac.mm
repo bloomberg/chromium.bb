@@ -165,7 +165,7 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
     // Create a fence for the current frame's work and save the context.
     {
       TRACE_EVENT0("gpu", "Create GLFence");
-      previous_frame_fence_.reset(gl::GLFence::Create());
+      previous_frame_fence_ = gl::GLFence::Create();
       fence_context_obj_.reset(CGLGetCurrentContext(),
                                base::scoped_policy::RETAIN);
     }
