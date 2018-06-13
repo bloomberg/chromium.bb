@@ -16,18 +16,9 @@
 #include "tools/gn/err.h"
 #include "tools/gn/parse_tree.h"
 
-class Parser;
-typedef std::unique_ptr<ParseNode> (Parser::*PrefixFunc)(const Token& token);
-typedef std::unique_ptr<ParseNode> (
-    Parser::*InfixFunc)(std::unique_ptr<ParseNode> left, const Token& token);
-
 extern const char kGrammar_Help[];
 
-struct ParserHelper {
-  PrefixFunc prefix;
-  InfixFunc infix;
-  int precedence;
-};
+struct ParserHelper;
 
 // Parses a series of tokens. The resulting AST will refer to the tokens passed
 // to the input, so the tokens an the file data they refer to must outlive your
@@ -144,6 +135,16 @@ class Parser {
   FRIEND_TEST_ALL_PREFIXES(Parser, UnaryOp);
 
   DISALLOW_COPY_AND_ASSIGN(Parser);
+};
+
+typedef std::unique_ptr<ParseNode> (Parser::*PrefixFunc)(const Token& token);
+typedef std::unique_ptr<ParseNode> (
+    Parser::*InfixFunc)(std::unique_ptr<ParseNode> left, const Token& token);
+
+struct ParserHelper {
+  PrefixFunc prefix;
+  InfixFunc infix;
+  int precedence;
 };
 
 #endif  // TOOLS_GN_PARSER_H_
