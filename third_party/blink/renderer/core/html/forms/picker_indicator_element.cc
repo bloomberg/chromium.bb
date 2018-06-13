@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
+#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
@@ -169,6 +170,9 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
   setAttribute(tabindexAttr, "0");
   setAttribute(aria_haspopupAttr, "menu");
   setAttribute(roleAttr, "button");
+  setAttribute(aria_labelAttr,
+               AtomicString(GetLocale().QueryString(
+                   WebLocalizedString::kAXCalendarShowDatePicker)));
 }
 
 void PickerIndicatorElement::Trace(blink::Visitor* visitor) {
