@@ -86,6 +86,17 @@ base::Optional<base::TimeDelta> GetProactivePruningDelta() {
 
   return kDefaultProactivePruningDelta;
 }
+
+bool TimePointInRange(const base::Time& time_point,
+                      const base::Time& range_begin,
+                      const base::Time& range_end) {
+  DCHECK(!time_point.is_null());
+  DCHECK(range_begin.is_null() || range_end.is_null() ||
+         range_begin <= range_end);
+  return (range_begin.is_null() || range_begin <= time_point) &&
+         (range_end.is_null() || time_point < range_end);
+}
+
 }  // namespace
 
 const size_t kMaxActiveRemoteBoundWebRtcEventLogs = 3;
@@ -289,6 +300,7 @@ bool WebRtcRemoteEventLogManager::EventLogWrite(const PeerConnectionKey& key,
 
   if (!write_successful || it->second.MaxSizeReached()) {
     CloseLogFile(it);
+    MaybeStartUploading();
   }
 
   return write_successful;
@@ -299,6 +311,7 @@ void WebRtcRemoteEventLogManager::ClearCacheForBrowserContext(
     const base::Time& delete_begin,
     const base::Time& delete_end) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  MaybeCancelActiveLogs(delete_begin, delete_end, browser_context_id);
   MaybeRemovePendingLogs(delete_begin, delete_end, browser_context_id);
   MaybeCancelUpload(delete_begin, delete_end, browser_context_id);
 }
@@ -329,14 +342,14 @@ void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
   while (log_it != active_logs_.end()) {
     if (log_it->first.render_process_id == render_process_id) {
       log_it = CloseLogFile(log_it);
+      MaybeStartUploading();
     } else {
       ++log_it;
     }
   }
 
-  // Though CloseLogFile() calls this, it's important to also do this
-  // explicitly, since it could be that no files were closed, but some
-  // active PeerConnections that were suppressing uploading are now gone.
+  // It could be that no files were closed, but some active PeerConnections that
+  // were suppressing uploading are now gone.
   MaybeStartUploading();
 }
 
@@ -379,8 +392,6 @@ WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it) {
   if (observer_) {
     observer_->OnRemoteLogStopped(peer_connection);
   }
-
-  MaybeStartUploading();
 
   return it;
 }
@@ -519,19 +530,17 @@ void WebRtcRemoteEventLogManager::MaybeStopRemoteLogging(
     return;
   }
 
-  it->second.Close();
-
   // The current time is a good enough approximation of the file's last
   // modification time.
   const base::Time last_modified = base::Time::Now();
 
-  // The stopped log becomes a pending log. It is no longer an active log.
+  // The stopped log becomes a pending log.
   const auto emplace_result = pending_logs_.emplace(
       key.browser_context_id, it->second.path(), last_modified);
   DCHECK(emplace_result.second);  // No pre-existing entry.
-  active_logs_.erase(it);
 
-  observer_->OnRemoteLogStopped(key);
+  // It is no longer an active log.
+  CloseLogFile(it);
 
   MaybeStartUploading();
 }
@@ -565,8 +574,8 @@ void WebRtcRemoteEventLogManager::MaybeRemovePendingLogs(
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
   for (auto it = pending_logs_.begin(); it != pending_logs_.end();) {
-    if (LogFileMatchesFilter(*it, delete_begin, delete_end,
-                             browser_context_id)) {
+    if (LogFileMatchesFilter(it->browser_context_id, it->last_modified,
+                             browser_context_id, delete_begin, delete_end)) {
       DVLOG(1) << "Removing " << it->path << ".";
       if (!base::DeleteFile(it->path, /*recursive=*/false)) {
         LOG(ERROR) << "Failed to delete " << it->path << ".";
@@ -579,14 +588,33 @@ void WebRtcRemoteEventLogManager::MaybeRemovePendingLogs(
   }
 }
 
+void WebRtcRemoteEventLogManager::MaybeCancelActiveLogs(
+    const base::Time& delete_begin,
+    const base::Time& delete_end,
+    BrowserContextId browser_context_id) {
+  for (auto it = active_logs_.begin(); it != active_logs_.end();) {
+    // Since the file is active, assume it's still being modified.
+    if (LogFileMatchesFilter(it->first.browser_context_id, base::Time::Now(),
+                             browser_context_id, delete_begin, delete_end)) {
+      const base::FilePath log_file_path = it->second.path();
+      it = CloseLogFile(it);
+      if (!base::DeleteFile(log_file_path, /*recursive=*/false)) {
+        LOG(ERROR) << "Failed to delete " << log_file_path << ".";
+      }
+    } else {
+      ++it;
+    }
+  }
+}
+
 void WebRtcRemoteEventLogManager::MaybeCancelUpload(
     const base::Time& delete_begin,
     const base::Time& delete_end,
     base::Optional<BrowserContextId> browser_context_id) {
   if (uploader_) {
     const WebRtcLogFileInfo& info = uploader_->GetWebRtcLogFileInfo();
-    if (LogFileMatchesFilter(info, delete_begin, delete_end,
-                             browser_context_id)) {
+    if (LogFileMatchesFilter(info.browser_context_id, info.last_modified,
+                             browser_context_id, delete_begin, delete_end)) {
       // Cancel the upload. (If the upload has asynchronously completed by now,
       // the uploader must have posted a task back to our queue to delete it
       // and move on to the next file; cancellation is reported as unsucessful
@@ -601,15 +629,17 @@ void WebRtcRemoteEventLogManager::MaybeCancelUpload(
 }
 
 bool WebRtcRemoteEventLogManager::LogFileMatchesFilter(
-    const WebRtcLogFileInfo& log,
-    const base::Time& range_begin,
-    const base::Time& range_end,
-    base::Optional<BrowserContextId> browser_context_id) const {
-  if (browser_context_id && *browser_context_id != log.browser_context_id) {
+    BrowserContextId log_browser_context_id,
+    const base::Time& log_last_modification,
+    base::Optional<BrowserContextId> filter_browser_context_id,
+    const base::Time& filter_range_begin,
+    const base::Time& filter_range_end) const {
+  if (filter_browser_context_id &&
+      *filter_browser_context_id != log_browser_context_id) {
     return false;
   }
-  return (range_begin.is_null() || range_begin <= log.last_modified) &&
-         (range_end.is_null() || log.last_modified < range_end);
+  return TimePointInRange(log_last_modification, filter_range_begin,
+                          filter_range_end);
 }
 
 bool WebRtcRemoteEventLogManager::AdditionalActiveLogAllowed(
@@ -707,7 +737,7 @@ WebRtcRemoteEventLogManager::FindNextPeerConnection(
     const std::string& peer_connection_id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   const auto end = active_peer_connections_.cend();
-  for (auto it = begin; it != end; it++) {
+  for (auto it = begin; it != end; ++it) {
     if (it->first.render_process_id == render_process_id &&
         it->second == peer_connection_id) {
       return it;

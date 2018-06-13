@@ -679,7 +679,7 @@ class WebRtcEventLogManagerTestCacheClearing
       elements->rphs.push_back(
           std::make_unique<MockRenderProcessHost>(browser_context));
       const auto key = GetPeerConnectionKey(elements->rphs[i].get(), kLid);
-      elements->file_paths.push_back(CreateRemoteLogFile(key));
+      elements->file_paths.push_back(CreatePendingRemoteLogFile(key));
       ASSERT_TRUE(elements->file_paths[i]);
       ASSERT_TRUE(base::PathExists(*elements->file_paths[i]));
 
@@ -691,14 +691,28 @@ class WebRtcEventLogManagerTestCacheClearing
   }
 
   base::Optional<base::FilePath> CreateRemoteLogFile(
-      const PeerConnectionKey& key) {
+      const PeerConnectionKey& key,
+      bool pending) {
     base::Optional<base::FilePath> file_path;
     ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
         .WillByDefault(Invoke(SaveFilePathTo(&file_path)));
     EXPECT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
     EXPECT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
-    EXPECT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
+    if (pending) {
+      // Transition from ACTIVE to PENDING.
+      EXPECT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
+    }
     return file_path;
+  }
+
+  base::Optional<base::FilePath> CreateActiveRemoteLogFile(
+      const PeerConnectionKey& key) {
+    return CreateRemoteLogFile(key, false);
+  }
+
+  base::Optional<base::FilePath> CreatePendingRemoteLogFile(
+      const PeerConnectionKey& key) {
+    return CreateRemoteLogFile(key, true);
   }
 
  protected:
@@ -2898,6 +2912,29 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 }
 
 TEST_F(WebRtcEventLogManagerTestCacheClearing,
+       ClearCacheForBrowserContextCancelsActiveLogFilesIfInRange) {
+  SuppressUploading();
+
+  // Setup
+  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  base::Optional<base::FilePath> file_path;
+  EXPECT_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .Times(1)
+      .WillOnce(Invoke(SaveFilePathTo(&file_path)));
+  ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+  ASSERT_TRUE(file_path);
+  ASSERT_TRUE(base::PathExists(*file_path));
+
+  // Test
+  EXPECT_CALL(remote_observer_, OnRemoteLogStopped(key)).Times(1);
+  ClearCacheForBrowserContext(
+      browser_context_, base::Time::Now() - base::TimeDelta::FromHours(1),
+      base::Time::Now() + base::TimeDelta::FromHours(1));
+  EXPECT_FALSE(base::PathExists(*file_path));
+}
+
+TEST_F(WebRtcEventLogManagerTestCacheClearing,
        ClearCacheForBrowserContextCancelsFileUploadIfInRange) {
   // This factory will enforce the expectation that the upload is cancelled.
   // WebRtcEventLogUploaderImplTest.CancelOnOngoingUploadDeletesFile is in
@@ -2908,7 +2945,7 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 
   // Set up and trigger the uploading of a file.
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
-  base::Optional<base::FilePath> file_path = CreateRemoteLogFile(key);
+  base::Optional<base::FilePath> file_path = CreatePendingRemoteLogFile(key);
 
   ASSERT_TRUE(file_path);
   ASSERT_TRUE(base::PathExists(*file_path));
@@ -2944,6 +2981,29 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 }
 
 TEST_F(WebRtcEventLogManagerTestCacheClearing,
+       ClearCacheForBrowserContextDoesNotCancelActiveLogFilesIfOutOfRange) {
+  SuppressUploading();
+
+  // Setup
+  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  base::Optional<base::FilePath> file_path;
+  EXPECT_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .Times(1)
+      .WillOnce(Invoke(SaveFilePathTo(&file_path)));
+  ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+  ASSERT_TRUE(file_path);
+  ASSERT_TRUE(base::PathExists(*file_path));
+
+  // Test
+  EXPECT_CALL(remote_observer_, OnRemoteLogStopped(_)).Times(0);
+  ClearCacheForBrowserContext(
+      browser_context_, base::Time::Now() - base::TimeDelta::FromHours(2),
+      base::Time::Now() - base::TimeDelta::FromHours(1));
+  EXPECT_TRUE(base::PathExists(*file_path));
+}
+
+TEST_F(WebRtcEventLogManagerTestCacheClearing,
        ClearCacheForBrowserContextDoesNotCancelFileUploadIfOutOfRange) {
   // This factory will enforce the expectation that the upload is not cancelled.
   SetWebRtcEventLogUploaderFactoryForTesting(
@@ -2951,7 +3011,7 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 
   // Set up and trigger the uploading of a file.
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
-  base::Optional<base::FilePath> file_path = CreateRemoteLogFile(key);
+  base::Optional<base::FilePath> file_path = CreatePendingRemoteLogFile(key);
 
   ASSERT_TRUE(file_path);
   ASSERT_TRUE(base::PathExists(*file_path));
@@ -2994,6 +3054,40 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 }
 
 TEST_F(WebRtcEventLogManagerTestCacheClearing,
+       ClearCacheForBrowserContextDoesNotCancelActiveLogsFromOtherProfiles) {
+  SuppressUploading();
+
+  // Remote-bound active log file that *will* be cleared.
+  auto* const cleared_browser_context = CreateBrowserContext("cleared");
+  auto cleared_rph =
+      std::make_unique<MockRenderProcessHost>(cleared_browser_context);
+  const auto cleared_key = GetPeerConnectionKey(cleared_rph.get(), kLid);
+  base::Optional<base::FilePath> cleared_file_path =
+      CreateActiveRemoteLogFile(cleared_key);
+
+  // Remote-bound active log file that will *not* be cleared.
+  auto* const uncleared_browser_context = CreateBrowserContext("pristine");
+  auto uncleared_rph =
+      std::make_unique<MockRenderProcessHost>(uncleared_browser_context);
+  const auto uncleared_key = GetPeerConnectionKey(uncleared_rph.get(), kLid);
+  base::Optional<base::FilePath> uncleared_file_path =
+      CreateActiveRemoteLogFile(uncleared_key);
+
+  // Test - ClearCacheForBrowserContext() only removes the files which belong
+  // to the cleared context.
+  EXPECT_CALL(remote_observer_, OnRemoteLogStopped(cleared_key)).Times(1);
+  EXPECT_CALL(remote_observer_, OnRemoteLogStopped(uncleared_key)).Times(0);
+  ClearCacheForBrowserContext(cleared_browser_context, base::Time::Min(),
+                              base::Time::Max());
+  EXPECT_FALSE(base::PathExists(*cleared_file_path));
+  EXPECT_TRUE(base::PathExists(*uncleared_file_path));
+
+  // Cleanup - uncleared_file_path will be closed as part of the shutdown. It
+  // is time to clear its expectation.
+  testing::Mock::VerifyAndClearExpectations(&remote_observer_);
+}
+
+TEST_F(WebRtcEventLogManagerTestCacheClearing,
        ClearCacheForBrowserContextDoesNotCancelFileUploadFromOtherProfiles) {
   // This factory will enforce the expectation that the upload is not cancelled.
   SetWebRtcEventLogUploaderFactoryForTesting(
@@ -3001,7 +3095,7 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
 
   // Set up and trigger the uploading of a file.
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
-  base::Optional<base::FilePath> file_path = CreateRemoteLogFile(key);
+  base::Optional<base::FilePath> file_path = CreatePendingRemoteLogFile(key);
 
   ASSERT_TRUE(file_path);
   ASSERT_TRUE(base::PathExists(*file_path));
@@ -3015,26 +3109,31 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
                               mod_time + kEpsion);
 }
 
-// If the file has not yet transitioned from ACTIVE to PENDING, it is not
-// considered cached, and is therefore not deleted.
-TEST_F(WebRtcEventLogManagerTestCacheClearing, ActiveLogFilesNotRemoved) {
+// Show that clearing browser cache, while it removes remote-bound logs, does
+// not interfere with local-bound logging, even if that happens on the same PC.
+TEST_F(WebRtcEventLogManagerTestCacheClearing,
+       ClearCacheForBrowserContextDoesNotInterfereWithLocalLogs) {
   SuppressUploading();
 
-  // Setup
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
-  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
-  base::Optional<base::FilePath> file_path;
-  EXPECT_CALL(remote_observer_, OnRemoteLogStarted(key, _))
-      .Times(1)
-      .WillOnce(Invoke(SaveFilePathTo(&file_path)));
-  ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
-  ASSERT_TRUE(file_path);
-  ASSERT_TRUE(base::PathExists(*file_path));
 
-  // Test
+  base::Optional<base::FilePath> local_log;
+  ON_CALL(local_observer_, OnLocalLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&local_log)));
+  ASSERT_TRUE(EnableLocalLogging());
+
+  // This adds a peer connection for |key|, which also triggers
+  // OnLocalLogStarted() on |local_observer_|.
+  auto pending_remote_log = CreatePendingRemoteLogFile(key);
+
+  // Test focus - local logging is uninterrupted.
+  EXPECT_CALL(local_observer_, OnLocalLogStopped(_)).Times(0);
   ClearCacheForBrowserContext(browser_context_, base::Time::Min(),
                               base::Time::Max());
-  EXPECT_TRUE(base::PathExists(*file_path));
+  EXPECT_TRUE(base::PathExists(*local_log));
+
+  // Sanity on the test itself; the remote log should have been cleared.
+  ASSERT_FALSE(base::PathExists(*pending_remote_log));
 }
 
 // When cache clearing cancels the active upload, the next (non-deleted) pending
@@ -3047,8 +3146,8 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
       std::make_unique<NullWebRtcEventLogUploader::Factory>(true));
 
   // Create the files that will be deleted when cache is cleared.
-  CreateRemoteLogFile(GetPeerConnectionKey(rph_.get(), 0));
-  CreateRemoteLogFile(GetPeerConnectionKey(rph_.get(), 1));
+  CreatePendingRemoteLogFile(GetPeerConnectionKey(rph_.get(), 0));
+  CreatePendingRemoteLogFile(GetPeerConnectionKey(rph_.get(), 1));
 
   // Create the not-deleted file under a different profile, to easily make sure
   // it does not fit in the ClearCacheForBrowserContext range (less fiddly than
@@ -3057,7 +3156,7 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   auto other_rph =
       std::make_unique<MockRenderProcessHost>(other_browser_context);
   const auto key = GetPeerConnectionKey(other_rph.get(), kLid);
-  base::Optional<base::FilePath> other_file = CreateRemoteLogFile(key);
+  base::Optional<base::FilePath> other_file = CreatePendingRemoteLogFile(key);
   ASSERT_TRUE(other_file);
 
   // Switch the uploader factory to one that will allow us to ensure that the
