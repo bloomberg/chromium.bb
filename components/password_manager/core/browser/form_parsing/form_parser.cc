@@ -29,12 +29,12 @@ constexpr char kAutocompleteCreditCardPrefix[] = "cc-";
 
 // The susbset of autocomplete flags related to passwords.
 enum class AutocompleteFlag {
-  NONE,
-  USERNAME,
-  CURRENT_PASSWORD,
-  NEW_PASSWORD,
+  kNone,
+  kUsername,
+  kCurrentPassword,
+  kNewPassword,
   // Represents the whole family of cc-* flags.
-  CREDIT_CARD
+  kCreditCard
 };
 
 // The autocomplete attribute has one of the following structures:
@@ -45,73 +45,42 @@ enum class AutocompleteFlag {
 // For password forms, only the field_type is relevant. So parsing the attribute
 // amounts to just taking the last token.  If that token is one of "username",
 // "current-password" or "new-password", this returns an appropriate enum value.
-// If the token starts with a "cc-" prefix, this returns CREDIT_CARD.
-// Otherwise, returns NONE.
+// If the token starts with a "cc-" prefix, this returns kCreditCard.
+// Otherwise, returns kNone.
 AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
   std::vector<base::StringPiece> tokens =
       base::SplitStringPiece(attribute, base::kWhitespaceASCII,
                              base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (tokens.empty())
-    return AutocompleteFlag::NONE;
+    return AutocompleteFlag::kNone;
 
   const base::StringPiece& field_type = tokens.back();
   if (base::LowerCaseEqualsASCII(field_type, kAutocompleteUsername))
-    return AutocompleteFlag::USERNAME;
+    return AutocompleteFlag::kUsername;
   if (base::LowerCaseEqualsASCII(field_type, kAutocompleteCurrentPassword))
-    return AutocompleteFlag::CURRENT_PASSWORD;
+    return AutocompleteFlag::kCurrentPassword;
   if (base::LowerCaseEqualsASCII(field_type, kAutocompleteNewPassword))
-    return AutocompleteFlag::NEW_PASSWORD;
+    return AutocompleteFlag::kNewPassword;
 
   if (base::StartsWith(field_type, kAutocompleteCreditCardPrefix,
                        base::CompareCase::SENSITIVE))
-    return AutocompleteFlag::CREDIT_CARD;
+    return AutocompleteFlag::kCreditCard;
 
-  return AutocompleteFlag::NONE;
+  return AutocompleteFlag::kNone;
 }
 
-// Helper to spare map::find boilerplate when caching field's autocomplete
-// attributes.
-class AutocompleteCache {
- public:
-  AutocompleteCache();
+// A wrapper around FormFieldData, carrying some additional data used during
+// parsing.
+struct ProcessedField {
+  // This points to the wrapped FormFieldData.
+  const FormFieldData* field;
 
-  ~AutocompleteCache();
+  // The flag derived from field->autocomplete_attribute.
+  AutocompleteFlag autocomplete_flag = AutocompleteFlag::kNone;
 
-  // Computes and stores the AutocompleteFlag for |field| based on its
-  // autocomplete attribute. Note that this cannot be done on-demand during
-  // RetrieveFor, because the cache spares space and look-up time by not storing
-  // AutocompleteFlag::NONE values, hence for all elements without an
-  // autocomplete attribute, every retrieval would result in a new computation.
-  void Store(const FormFieldData* field);
-
-  // Retrieves the value previously stored for |field|.
-  AutocompleteFlag RetrieveFor(const FormFieldData* field) const;
-
- private:
-  std::map<const FormFieldData*, AutocompleteFlag> cache_;
-
-  DISALLOW_COPY_AND_ASSIGN(AutocompleteCache);
+  // True iff field->form_control_type == "password".
+  bool is_password = false;
 };
-
-AutocompleteCache::AutocompleteCache() = default;
-
-AutocompleteCache::~AutocompleteCache() = default;
-
-void AutocompleteCache::Store(const FormFieldData* field) {
-  const AutocompleteFlag flag =
-      ExtractAutocompleteFlag(field->autocomplete_attribute);
-  // Only store non-trivial flags. Most of the elements will have the NONE
-  // value, so spare storage and lookup time by assuming anything not stored in
-  // |cache_| has the NONE flag.
-  if (flag != AutocompleteFlag::NONE)
-    cache_[field] = flag;
-}
-
-AutocompleteFlag AutocompleteCache::RetrieveFor(
-    const FormFieldData* field) const {
-  auto it = cache_.find(field);
-  return it == cache_.end() ? AutocompleteFlag::NONE : it->second;
-}
 
 // Helper struct that is used to return results from the parsing function.
 struct ParseResult {
@@ -125,51 +94,21 @@ struct ParseResult {
   }
 };
 
-// Returns text fields from |fields|.
-std::vector<const FormFieldData*> GetTextFields(
-    const std::vector<FormFieldData>& fields) {
-  std::vector<const FormFieldData*> result;
-  result.reserve(fields.size());
-  for (const auto& field : fields) {
-    if (field.IsTextInputElement())
-      result.push_back(&field);
-  }
-  return result;
-}
-
-// Filters fields that have credit card related autocomplete attributes out of
-// |fields|. Uses |autocomplete_cache| to get the autocomplete attributes.
-void FilterCreditCardFields(std::vector<const FormFieldData*>* fields,
-                            const AutocompleteCache& autocomplete_cache) {
-  base::EraseIf(*fields, [&autocomplete_cache](const FormFieldData* field) {
-    return autocomplete_cache.RetrieveFor(field) ==
-           AutocompleteFlag::CREDIT_CARD;
-  });
-}
-
-// Returns true iff there is a password field.
-bool HasPasswordField(const std::vector<const FormFieldData*>& fields) {
-  for (const FormFieldData* field : fields)
-    if (field->form_control_type == "password")
-      return true;
-  return false;
-}
-
 // Returns the first element of |fields| which has the specified
 // |unique_renderer_id|, or null if there is no such element.
 const FormFieldData* FindFieldWithUniqueRendererId(
-    const std::vector<const FormFieldData*>& fields,
+    const std::vector<ProcessedField>& processed_fields,
     uint32_t unique_renderer_id) {
-  for (const FormFieldData* field : fields) {
-    if (field->unique_renderer_id == unique_renderer_id)
-      return field;
+  for (const ProcessedField& processed_field : processed_fields) {
+    if (processed_field.field->unique_renderer_id == unique_renderer_id)
+      return processed_field.field;
   }
   return nullptr;
 }
 
-// Tries to parse |fields| based on server |predictions|.
+// Tries to parse |processed_fields| based on server |predictions|.
 std::unique_ptr<ParseResult> ParseUsingPredictions(
-    const std::vector<const FormFieldData*>& fields,
+    const std::vector<ProcessedField>& processed_fields,
     const FormPredictions& predictions) {
   auto result = std::make_unique<ParseResult>();
   // Note: The code does not check whether there is at most 1 username, 1
@@ -179,19 +118,19 @@ std::unique_ptr<ParseResult> ParseUsingPredictions(
     switch (DeriveFromServerFieldType(prediction.second.type)) {
       case CredentialFieldType::kUsername:
         result->username_field =
-            FindFieldWithUniqueRendererId(fields, prediction.first);
+            FindFieldWithUniqueRendererId(processed_fields, prediction.first);
         break;
       case CredentialFieldType::kCurrentPassword:
         result->password_field =
-            FindFieldWithUniqueRendererId(fields, prediction.first);
+            FindFieldWithUniqueRendererId(processed_fields, prediction.first);
         break;
       case CredentialFieldType::kNewPassword:
         result->new_password_field =
-            FindFieldWithUniqueRendererId(fields, prediction.first);
+            FindFieldWithUniqueRendererId(processed_fields, prediction.first);
         break;
       case CredentialFieldType::kConfirmationPassword:
         result->confirmation_password_field =
-            FindFieldWithUniqueRendererId(fields, prediction.first);
+            FindFieldWithUniqueRendererId(processed_fields, prediction.first);
         break;
       case CredentialFieldType::kNone:
         break;
@@ -200,8 +139,8 @@ std::unique_ptr<ParseResult> ParseUsingPredictions(
   return result->IsEmpty() ? nullptr : std::move(result);
 }
 
-// Tries to parse |fields| based on autocomplete attributes from
-// |autocomplete_cache|. Assumption on the usage autocomplete attributes:
+// Tries to parse |processed_fields| based on autocomplete attributes.
+// Assumption on the usage autocomplete attributes:
 // 1. Not more than 1 field with autocomplete=username.
 // 2. Not more than 1 field with autocomplete=current-password.
 // 3. Not more than 2 fields with autocomplete=new-password.
@@ -211,37 +150,36 @@ std::unique_ptr<ParseResult> ParseUsingPredictions(
 // attribute, parsing is unsuccessful. Returns nullptr if parsing is
 // unsuccessful.
 std::unique_ptr<ParseResult> ParseUsingAutocomplete(
-    const std::vector<const FormFieldData*>& fields,
-    const AutocompleteCache& autocomplete_cache) {
+    const std::vector<ProcessedField>& processed_fields) {
   auto result = std::make_unique<ParseResult>();
-  for (const FormFieldData* field : fields) {
-    AutocompleteFlag flag = autocomplete_cache.RetrieveFor(field);
-    const bool is_password = field->form_control_type == "password";
-    switch (flag) {
-      case AutocompleteFlag::USERNAME:
-        if (is_password || result->username_field)
+  for (const ProcessedField& processed_field : processed_fields) {
+    switch (processed_field.autocomplete_flag) {
+      case AutocompleteFlag::kUsername:
+        if (processed_field.is_password || result->username_field)
           return nullptr;
-        result->username_field = field;
+        result->username_field = processed_field.field;
         break;
-      case AutocompleteFlag::CURRENT_PASSWORD:
-        if (!is_password || result->password_field)
+      case AutocompleteFlag::kCurrentPassword:
+        if (!processed_field.is_password || result->password_field)
           return nullptr;
-        result->password_field = field;
+        result->password_field = processed_field.field;
         break;
-      case AutocompleteFlag::NEW_PASSWORD:
-        if (!is_password)
+      case AutocompleteFlag::kNewPassword:
+        if (!processed_field.is_password)
           return nullptr;
         // The first field with autocomplete=new-password is considered to be
         // new_password_field and the second is confirmation_password_field.
         if (!result->new_password_field)
-          result->new_password_field = field;
+          result->new_password_field = processed_field.field;
         else if (!result->confirmation_password_field)
-          result->confirmation_password_field = field;
+          result->confirmation_password_field = processed_field.field;
         else
           return nullptr;
         break;
-      case AutocompleteFlag::CREDIT_CARD:
-      case AutocompleteFlag::NONE:
+      case AutocompleteFlag::kCreditCard:
+        NOTREACHED();
+        break;
+      case AutocompleteFlag::kNone:
         break;
     }
   }
@@ -249,37 +187,38 @@ std::unique_ptr<ParseResult> ParseUsingAutocomplete(
   return result->IsEmpty() ? nullptr : std::move(result);
 }
 
-// Returns only relevant password fields from |fields|. Namely
+// Returns only relevant password fields from |processed_fields|. Namely
 // 1. If there is a focusable password field, return only focusable.
 // 2. If mode == SAVING return only non-empty fields (for saving empty fields
 // are useless).
 // Note that focusability is the proxy for visibility.
 std::vector<const FormFieldData*> GetRelevantPasswords(
-    const std::vector<const FormFieldData*>& fields,
+    const std::vector<ProcessedField>& processed_fields,
     FormParsingMode mode) {
   std::vector<const FormFieldData*> result;
-  result.reserve(fields.size());
+  result.reserve(processed_fields.size());
 
   const bool consider_only_non_empty = mode == FormParsingMode::SAVING;
   bool found_focusable = false;
 
-  for (const FormFieldData* field : fields) {
-    if (field->form_control_type != "password")
+  for (const ProcessedField& processed_field : processed_fields) {
+    if (!processed_field.is_password)
       continue;
-    if (consider_only_non_empty && field->value.empty())
+    if (consider_only_non_empty && processed_field.field->value.empty())
       continue;
     // Readonly fields can be an indication that filling is useless (e.g., the
     // page might use a virtual keyboard). However, if the field was readonly
     // only temporarily, that makes it still interesting for saving. The fact
     // that a user typed or Chrome filled into that field in tha past is an
     // indicator that the radonly was only temporary.
-    if (field->is_readonly &&
-        !(field->properties_mask & (FieldPropertiesFlags::USER_TYPED |
-                                    FieldPropertiesFlags::AUTOFILLED))) {
+    if (processed_field.field->is_readonly &&
+        !(processed_field.field->properties_mask &
+          (FieldPropertiesFlags::USER_TYPED |
+           FieldPropertiesFlags::AUTOFILLED))) {
       continue;
     }
-    result.push_back(field);
-    found_focusable |= field->is_focusable;
+    result.push_back(processed_field.field);
+    found_focusable |= processed_field.field->is_focusable;
   }
 
   if (found_focusable) {
@@ -357,19 +296,23 @@ void LocateSpecificPasswords(const std::vector<const FormFieldData*>& passwords,
   }
 }
 
-// Tries to find username field among text fields from |fields| occurring before
-// |first_relevant_password|. Returns nullptr if the username is not found.
+// Tries to find username field among text fields from |processed_fields|
+// occurring before |first_relevant_password|. Returns nullptr if the username
+// is not found.
 const FormFieldData* FindUsernameFieldBaseHeuristics(
-    const std::vector<const FormFieldData*>& fields,
+    const std::vector<ProcessedField>& processed_fields,
     const FormFieldData* first_relevant_password,
     FormParsingMode mode) {
   DCHECK(first_relevant_password);
 
   // Let username_candidates be all non-password fields before
   // |first_relevant_password|.
-  auto first_relevant_password_it =
-      std::find(fields.begin(), fields.end(), first_relevant_password);
-  DCHECK(first_relevant_password_it != fields.end());
+  auto first_relevant_password_it = std::find_if(
+      processed_fields.begin(), processed_fields.end(),
+      [first_relevant_password](const ProcessedField& processed_field) {
+        return processed_field.field == first_relevant_password;
+      });
+  DCHECK(first_relevant_password_it != processed_fields.end());
 
   // For saving filter out empty fields.
   const bool consider_only_non_empty = mode == FormParsingMode::SAVING;
@@ -381,15 +324,15 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
   const FormFieldData* username = nullptr;
   // Do reverse search to find the closest candidates preceding the password.
   for (auto it = std::make_reverse_iterator(first_relevant_password_it);
-       it != fields.rend(); ++it) {
-    if ((*it)->form_control_type == "password")
+       it != processed_fields.rend(); ++it) {
+    if (it->is_password)
       continue;
-    if (consider_only_non_empty && (*it)->value.empty())
+    if (consider_only_non_empty && it->field->value.empty())
       continue;
     if (!username)
-      username = *it;
-    if ((*it)->is_focusable) {
-      focusable_username = *it;
+      username = it->field;
+    if (it->field->is_focusable) {
+      focusable_username = it->field;
       break;
     }
   }
@@ -398,11 +341,11 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
 }
 
 std::unique_ptr<ParseResult> ParseUsingBaseHeuristics(
-    const std::vector<const FormFieldData*>& fields,
+    const std::vector<ProcessedField>& processed_fields,
     FormParsingMode mode) {
   // Try to find password elements (current, new, confirmation).
   std::vector<const FormFieldData*> passwords =
-      GetRelevantPasswords(fields, mode);
+      GetRelevantPasswords(processed_fields, mode);
   if (passwords.empty())
     return nullptr;
 
@@ -415,7 +358,7 @@ std::unique_ptr<ParseResult> ParseUsingBaseHeuristics(
 
   // If password elements are found then try to find a username.
   result->username_field =
-      FindUsernameFieldBaseHeuristics(fields, passwords[0], mode);
+      FindUsernameFieldBaseHeuristics(processed_fields, passwords[0], mode);
   return result;
 }
 
@@ -442,24 +385,53 @@ void SetFields(const ParseResult& parse_result, PasswordForm* password_form) {
   }
 }
 
+// For each relevant field of |fields| computes additional data useful for
+// parsing and wraps that in a ProcessedField. Returns the vector of all those
+// ProcessedField instances, or an empty vector if there was not a single
+// password field.
+std::vector<ProcessedField> ProcessFields(
+    const std::vector<FormFieldData>& fields) {
+  std::vector<ProcessedField> result;
+  bool password_field_found = false;
+
+  result.reserve(fields.size());
+
+  for (const FormFieldData& field : fields) {
+    if (!field.IsTextInputElement())
+      continue;
+
+    const AutocompleteFlag flag =
+        ExtractAutocompleteFlag(field.autocomplete_attribute);
+    if (flag == AutocompleteFlag::kCreditCard)
+      continue;
+
+    ProcessedField processed_field = {.field = &field,
+                                      .autocomplete_flag = flag};
+
+    if (field.form_control_type == "password") {
+      processed_field.is_password = true;
+      password_field_found = true;
+    }
+
+    result.push_back(processed_field);
+  }
+
+  if (!password_field_found)
+    result.clear();
+
+  return result;
+}
+
 }  // namespace
 
 std::unique_ptr<PasswordForm> ParseFormData(
     const autofill::FormData& form_data,
     const FormPredictions* form_predictions,
     FormParsingMode mode) {
+  std::vector<ProcessedField> processed_fields =
+      ProcessFields(form_data.fields);
 
-  std::vector<const FormFieldData*> fields = GetTextFields(form_data.fields);
-
-  // Fill the cache with autocomplete flags.
-  AutocompleteCache autocomplete_cache;
-  for (const FormFieldData* input : fields)
-    autocomplete_cache.Store(input);
-
-  FilterCreditCardFields(&fields, autocomplete_cache);
-
-  // Skip forms without password fields.
-  if (!HasPasswordField(fields))
+  if (processed_fields.empty())
     return nullptr;
 
   // Create parse result and set non-field related information.
@@ -472,7 +444,7 @@ std::unique_ptr<PasswordForm> ParseFormData(
   if (form_predictions) {
     // Try to parse with server predictions.
     auto predictions_parse_result =
-        ParseUsingPredictions(fields, *form_predictions);
+        ParseUsingPredictions(processed_fields, *form_predictions);
     if (predictions_parse_result) {
       SetFields(*predictions_parse_result, result.get());
       return result;
@@ -480,15 +452,15 @@ std::unique_ptr<PasswordForm> ParseFormData(
   }
 
   // Try to parse with autocomplete attributes.
-  auto autocomplete_parse_result =
-      ParseUsingAutocomplete(fields, autocomplete_cache);
+  auto autocomplete_parse_result = ParseUsingAutocomplete(processed_fields);
   if (autocomplete_parse_result) {
     SetFields(*autocomplete_parse_result, result.get());
     return result;
   }
 
   // Try to parse with base heuristic.
-  auto base_heuristics_parse_result = ParseUsingBaseHeuristics(fields, mode);
+  auto base_heuristics_parse_result =
+      ParseUsingBaseHeuristics(processed_fields, mode);
   if (base_heuristics_parse_result) {
     SetFields(*base_heuristics_parse_result, result.get());
     return result;
