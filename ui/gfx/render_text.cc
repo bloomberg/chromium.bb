@@ -929,6 +929,10 @@ SelectionModel RenderText::GetSelectionModelForSelectionStart() const {
                         sel.is_reversed() ? CURSOR_BACKWARD : CURSOR_FORWARD);
 }
 
+RectF RenderText::GetStringRect() {
+  return RectF(PointF(ToViewPoint(Point())), GetStringSizeF());
+}
+
 const Vector2d& RenderText::GetUpdatedDisplayOffset() {
   UpdateCachedBoundsAndOffset();
   return display_offset_;

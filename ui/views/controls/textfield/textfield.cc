@@ -1984,6 +1984,10 @@ void Textfield::OffsetDoubleClickWord(int offset) {
   selection_controller_.OffsetDoubleClickWord(offset);
 }
 
+bool Textfield::IsDropCursorForInsertion() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, private:
 
@@ -2156,10 +2160,16 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
         render_text->display_rect(), placeholder_text_draw_flags);
   }
 
+  if (drop_cursor_visible_ && !IsDropCursorForInsertion()) {
+    // Mark the entire text that will be replaced by the drop.
+    canvas->FillRect(ToEnclosedRect(render_text->GetStringRect()),
+                     GetSelectionBackgroundColor());
+  }
+
   render_text->Draw(canvas);
 
-  // Draw the detached drop cursor that marks where the text will be dropped.
-  if (drop_cursor_visible_) {
+  if (drop_cursor_visible_ && IsDropCursorForInsertion()) {
+    // Draw a drop cursor that marks where the text will be dropped/inserted.
     canvas->FillRect(render_text->GetCursorBounds(drop_cursor_position_, true),
                      GetTextColor());
   }
