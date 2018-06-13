@@ -217,11 +217,14 @@ bool StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::Read(
       }
     }
 
-    if (gesture_data->pinch_data &&
-        type == blink::WebInputEvent::Type::kGesturePinchUpdate) {
-      gesture_event->data.pinch_update.zoom_disabled =
-          gesture_data->pinch_data->zoom_disabled;
-      gesture_event->data.pinch_update.scale = gesture_data->pinch_data->scale;
+    if (blink::WebInputEvent::IsPinchGestureEventType(type)) {
+      gesture_event->SetNeedsWheelEvent(false);
+      if (gesture_data->pinch_data &&
+          type == blink::WebInputEvent::Type::kGesturePinchUpdate) {
+        gesture_event->data.pinch_update.zoom_disabled = false;
+        gesture_event->data.pinch_update.scale =
+            gesture_data->pinch_data->scale;
+      }
     }
 
     if (gesture_data->tap_data) {
@@ -477,7 +480,6 @@ StructTraits<content::mojom::EventDataView, InputEventUniquePtr>::gesture_data(
       break;
     case blink::WebInputEvent::Type::kGesturePinchUpdate:
       gesture_data->pinch_data = content::mojom::PinchData::New(
-          gesture_event->data.pinch_update.zoom_disabled,
           gesture_event->data.pinch_update.scale);
       break;
   }
