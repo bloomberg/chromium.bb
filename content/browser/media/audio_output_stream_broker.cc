@@ -48,7 +48,7 @@ AudioOutputStreamBroker::AudioOutputStreamBroker(
 
   // Unretained is safe because |this| owns |client_|
   client_.set_connection_error_handler(base::BindOnce(
-      &AudioOutputStreamBroker::Cleanup, base::Unretained(this)));
+      &AudioOutputStreamBroker::ClientBindingLost, base::Unretained(this)));
 }
 
 AudioOutputStreamBroker::~AudioOutputStreamBroker() {
@@ -146,6 +146,12 @@ void AudioOutputStreamBroker::ObserverBindingLost(
                                 DisconnectReason::kPlatformError),
       std::string());
 
+  Cleanup();
+}
+
+void AudioOutputStreamBroker::ClientBindingLost() {
+  disconnect_reason_ = media::mojom::AudioOutputStreamObserver::
+      DisconnectReason::kTerminatedByClient;
   Cleanup();
 }
 
