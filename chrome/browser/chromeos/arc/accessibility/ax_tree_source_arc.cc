@@ -532,12 +532,24 @@ const gfx::Rect AXTreeSourceArc::GetBounds(AXNodeInfoData* node,
     aura::Window* toplevel_window = focused_window->GetToplevelWindow();
     float scale = toplevel_window->layer()->device_scale_factor();
 
+    // When window is maximized, Android content is rendered without considering
+    // caption bar. When window is not maximized, Android content is rendered
+    // with considering caption bar. We need to do nothing for the later case.
+    int caption_bar_offset = 0;
+    views::Widget* widget =
+        views::Widget::GetTopLevelWidgetForNativeView(toplevel_window);
+    if (widget->IsMaximized()) {
+      caption_bar_offset =
+          widget->non_client_view()->frame_view()->GetBoundsForClientView().y();
+    }
+
     // Bounds of root node is relative to its container, i.e. focused window.
     node_bounds.Offset(
         static_cast<int>(-1.0f * scale *
                          static_cast<float>(toplevel_window->bounds().x())),
         static_cast<int>(-1.0f * scale *
-                         static_cast<float>(toplevel_window->bounds().y())));
+                             static_cast<float>(toplevel_window->bounds().y()) +
+                         scale * static_cast<float>(caption_bar_offset)));
 
     return node_bounds;
   }
