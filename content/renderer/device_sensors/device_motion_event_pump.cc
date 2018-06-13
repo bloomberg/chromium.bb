@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_thread.h"
 #include "services/device/public/cpp/generic_sensor/motion_data.h"
 #include "services/device/public/mojom/sensor.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -25,7 +24,9 @@ DeviceMotionEventPump::DeviceMotionEventPump()
           device::mojom::SensorType::LINEAR_ACCELERATION),
       gyroscope_(this, device::mojom::SensorType::GYROSCOPE) {}
 
-DeviceMotionEventPump::~DeviceMotionEventPump() {}
+DeviceMotionEventPump::~DeviceMotionEventPump() {
+  StopIfObserving();
+}
 
 void DeviceMotionEventPump::SendStartMessage() {
   if (!sensor_provider_) {

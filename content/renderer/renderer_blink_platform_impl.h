@@ -21,6 +21,8 @@
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
+#include "content/renderer/device_sensors/device_motion_event_pump.h"
+#include "content/renderer/device_sensors/device_orientation_event_pump.h"
 #include "content/renderer/top_level_blame_context.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -266,6 +268,15 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   static std::unique_ptr<PlatformEventObserverBase>
   CreatePlatformEventObserverFromType(blink::WebPlatformEventType type);
 
+  // TODO(crbug.com/850997): Remove when Device*EventPump classes are
+  // moved to blink
+  void InitDeviceSensorEventPump(blink::WebPlatformEventType type,
+                                 blink::WebPlatformEventListener* listener);
+
+  // TODO(crbug.com/850997): Remove when Device*EventPump classes are
+  // moved to blink
+  void StopDeviceSensorEventPump(blink::WebPlatformEventType type);
+
   // Ensure that the WebDatabaseHost has been initialized.
   void InitializeWebDatabaseHostIfNeeded();
 
@@ -307,6 +318,12 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   base::IDMap<std::unique_ptr<PlatformEventObserverBase>>
       platform_event_observers_;
+
+  // TODO(crbug.com/850997): Remove when Device*EventPump classes are
+  // moved to blink
+  std::unique_ptr<DeviceMotionEventPump> motion_event_pump_;
+  std::unique_ptr<DeviceOrientationEventPump> orientation_event_pump_;
+  std::unique_ptr<DeviceOrientationEventPump> absolute_orientation_event_pump_;
 
   // NOT OWNED
   blink::scheduler::WebThreadScheduler* main_thread_scheduler_;

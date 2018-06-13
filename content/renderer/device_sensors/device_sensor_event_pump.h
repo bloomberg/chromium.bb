@@ -15,10 +15,9 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/common/content_export.h"
 #include "content/public/common/service_names.mojom.h"
-#include "content/public/renderer/platform_event_observer.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_thread.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
@@ -33,8 +32,7 @@
 namespace content {
 
 template <typename ListenerType>
-class CONTENT_EXPORT DeviceSensorEventPump
-    : public PlatformEventObserver<ListenerType> {
+class CONTENT_EXPORT DeviceSensorEventPump {
  public:
   // Default rate for firing events.
   static constexpr int kDefaultPumpFrequencyHz = 60;
@@ -65,8 +63,7 @@ class CONTENT_EXPORT DeviceSensorEventPump
     SUSPENDED
   };
 
-  // PlatformEventObserver:
-  void Start(blink::WebPlatformEventListener* listener) override {
+  virtual void Start(blink::WebPlatformEventListener* listener) {
     DVLOG(2) << "requested start";
 
     if (state_ != PumpState::STOPPED)
@@ -75,11 +72,15 @@ class CONTENT_EXPORT DeviceSensorEventPump
     DCHECK(!timer_.IsRunning());
 
     state_ = PumpState::PENDING_START;
-    PlatformEventObserver<ListenerType>::Start(listener);
+
+    DCHECK(!is_observing_);
+    listener_ = static_cast<ListenerType*>(listener);
+    is_observing_ = true;
+
+    SendStartMessage();
   }
 
-  // PlatformEventObserver:
-  void Stop() override {
+  virtual void Stop() {
     DVLOG(2) << "requested stop";
 
     if (state_ == PumpState::STOPPED)
@@ -91,7 +92,12 @@ class CONTENT_EXPORT DeviceSensorEventPump
     if (timer_.IsRunning())
       timer_.Stop();
 
-    PlatformEventObserver<ListenerType>::Stop();
+    DCHECK(is_observing_);
+    listener_ = nullptr;
+    is_observing_ = false;
+
+    SendStopMessage();
+
     state_ = PumpState::STOPPED;
   }
 
@@ -105,13 +111,33 @@ class CONTENT_EXPORT DeviceSensorEventPump
   PumpState GetPumpStateForTesting() { return state_; }
 
  protected:
-  DeviceSensorEventPump() : state_(PumpState::STOPPED) {}
+  DeviceSensorEventPump()
+      : state_(PumpState::STOPPED), is_observing_(false), listener_(nullptr) {}
 
-  ~DeviceSensorEventPump() override {
-    PlatformEventObserver<ListenerType>::StopIfObserving();
+  virtual ~DeviceSensorEventPump() { DCHECK(!is_observing_); }
+
+  // This method is expected to send an IPC to the browser process to let it
+  // know that it should start observing.
+  // It is expected for subclasses to override it.
+  virtual void SendStartMessage() = 0;
+
+  // This method is expected to send an IPC to the browser process to let it
+  // know that it should start observing.
+  // It is expected for subclasses to override it.
+  virtual void SendStopMessage() = 0;
+
+  // Implementations of DeviceSensorEventPump must call StopIfObserving()
+  // from their destructor to shutdown in an orderly manner.
+  // (As Stop() calls a virtual method, it cannot be handled by
+  // ~DeviceSensorEventPump.)
+  void StopIfObserving() {
+    if (is_observing_)
+      Stop();
   }
 
   virtual void FireEvent() = 0;
+
+  ListenerType* listener() { return listener_; }
 
   struct SensorEntry : public device::mojom::SensorClient {
     SensorEntry(DeviceSensorEventPump* pump,
@@ -319,6 +345,8 @@ class CONTENT_EXPORT DeviceSensorEventPump
 
   PumpState state_;
   base::RepeatingTimer timer_;
+  bool is_observing_;
+  ListenerType* listener_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSensorEventPump);
 };
