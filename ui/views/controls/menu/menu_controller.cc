@@ -778,6 +778,10 @@ void MenuController::OnMouseEntered(SubmenuView* source,
 bool MenuController::OnMouseWheel(SubmenuView* source,
                                   const ui::MouseWheelEvent& event) {
   MenuPart part = GetMenuPart(source, event.location());
+
+  SetSelection(part.menu ? part.menu : state_.item,
+               SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
+
   return part.submenu && part.submenu->OnMouseWheel(event);
 }
 
