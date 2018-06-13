@@ -56,7 +56,7 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
 
 void SmbHandler::HandleSmbMountResponse(SmbMountResult result) {
   AllowJavascript();
-  FireWebUIListener("on-add-smb-share", base::Value(result));
+  FireWebUIListener("on-add-smb-share", base::Value(static_cast<int>(result)));
 }
 
 void SmbHandler::HandleStartDiscovery(const base::ListValue* args) {

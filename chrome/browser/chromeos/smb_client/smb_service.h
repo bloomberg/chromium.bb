@@ -27,20 +27,6 @@ class FilePath;
 namespace chromeos {
 namespace smb_client {
 
-// These values are written to logs. New enum values may be added, but existing
-// enums must never be runumbered or deleted and reused. Must be kept in sync
-// with the SmbMountResult enum in
-// chrome/browser/resources/settings/downloads_page/smb_browser_proxy.js.
-enum SmbMountResult {
-  SUCCESS = 0,                // Mount succeeded
-  UNKNOWN_FAILURE = 1,        // Mount failed in an unrecognized way
-  AUTHENTICATION_FAILED = 2,  // Authentication to the share failed
-  NOT_FOUND = 3,              // The specified share was not found
-  UNSUPPORTED_DEVICE = 4,     // The specified share is not supported
-  MOUNT_EXISTS = 5,           // The specified share is already mounted
-  kMaxValue = MOUNT_EXISTS    // Max enum value for use in metrics
-};
-
 using file_system_provider::Capabilities;
 using file_system_provider::ProvidedFileSystemInfo;
 using file_system_provider::ProvidedFileSystemInterface;
@@ -132,11 +118,6 @@ class SmbService : public KeyedService,
   void FireMountCallback(MountResponse callback, SmbMountResult result);
 
   void RecordMountCount() const;
-
-  // Translates an error |error| into an SmbMountResult.
-  SmbMountResult TranslateErrorToMountResult(
-      smbprovider::ErrorType error) const;
-  SmbMountResult TranslateErrorToMountResult(base::File::Error error) const;
 
   const ProviderId provider_id_;
   Profile* profile_;

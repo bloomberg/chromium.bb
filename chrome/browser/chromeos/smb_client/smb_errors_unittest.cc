@@ -96,5 +96,84 @@ TEST_F(SmbErrorsTest, FileErrorToSmbError) {
             TranslateToErrorType(base::File::FILE_ERROR_IO));
 }
 
+TEST_F(SmbErrorsTest, SmbErrorToMountResult) {
+  EXPECT_EQ(SmbMountResult::SUCCESS,
+            TranslateErrorToMountResult(smbprovider::ERROR_OK));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(smbprovider::ERROR_FAILED));
+  EXPECT_EQ(SmbMountResult::MOUNT_EXISTS,
+            TranslateErrorToMountResult(smbprovider::ERROR_IN_USE));
+  EXPECT_EQ(SmbMountResult::MOUNT_EXISTS,
+            TranslateErrorToMountResult(smbprovider::ERROR_EXISTS));
+  EXPECT_EQ(SmbMountResult::NOT_FOUND,
+            TranslateErrorToMountResult(smbprovider::ERROR_NOT_FOUND));
+  EXPECT_EQ(SmbMountResult::AUTHENTICATION_FAILED,
+            TranslateErrorToMountResult(smbprovider::ERROR_ACCESS_DENIED));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(smbprovider::ERROR_TOO_MANY_OPENED));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(smbprovider::ERROR_NO_MEMORY));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(smbprovider::ERROR_NO_SPACE));
+  EXPECT_EQ(SmbMountResult::NOT_FOUND,
+            TranslateErrorToMountResult(smbprovider::ERROR_NOT_A_DIRECTORY));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(smbprovider::ERROR_INVALID_OPERATION));
+  EXPECT_EQ(SmbMountResult::AUTHENTICATION_FAILED,
+            TranslateErrorToMountResult(smbprovider::ERROR_SECURITY));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(smbprovider::ERROR_ABORT));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(smbprovider::ERROR_NOT_A_FILE));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(smbprovider::ERROR_NOT_EMPTY));
+  EXPECT_EQ(SmbMountResult::NOT_FOUND,
+            TranslateErrorToMountResult(smbprovider::ERROR_INVALID_URL));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(smbprovider::ERROR_IO));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(smbprovider::ERROR_DBUS_PARSE_FAILED));
+}
+
+TEST_F(SmbErrorsTest, FileErrorToMountResult) {
+  EXPECT_EQ(SmbMountResult::SUCCESS,
+            TranslateErrorToMountResult(base::File::FILE_OK));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_FAILED));
+  EXPECT_EQ(SmbMountResult::MOUNT_EXISTS,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_IN_USE));
+  EXPECT_EQ(SmbMountResult::MOUNT_EXISTS,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_EXISTS));
+  EXPECT_EQ(SmbMountResult::NOT_FOUND,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_NOT_FOUND));
+  EXPECT_EQ(SmbMountResult::AUTHENTICATION_FAILED,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_ACCESS_DENIED));
+  EXPECT_EQ(
+      SmbMountResult::UNKNOWN_FAILURE,
+      TranslateErrorToMountResult(base::File::FILE_ERROR_TOO_MANY_OPENED));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_NO_MEMORY));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_NO_SPACE));
+  EXPECT_EQ(
+      SmbMountResult::NOT_FOUND,
+      TranslateErrorToMountResult(base::File::FILE_ERROR_NOT_A_DIRECTORY));
+  EXPECT_EQ(
+      SmbMountResult::UNKNOWN_FAILURE,
+      TranslateErrorToMountResult(base::File::FILE_ERROR_INVALID_OPERATION));
+  EXPECT_EQ(SmbMountResult::AUTHENTICATION_FAILED,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_SECURITY));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_ABORT));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_NOT_A_FILE));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_NOT_EMPTY));
+  EXPECT_EQ(SmbMountResult::NOT_FOUND,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_INVALID_URL));
+  EXPECT_EQ(SmbMountResult::UNKNOWN_FAILURE,
+            TranslateErrorToMountResult(base::File::FILE_ERROR_IO));
+}
+
 }  // namespace smb_client
 }  // namespace chromeos
