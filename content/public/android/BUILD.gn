@@ -225,7 +225,6 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/browser/AccessibilitySnapshotNode.java",
     "java/src/org/chromium/content_public/browser/ActionModeCallbackHelper.java",
     "java/src/org/chromium/content_public/browser/BrowserStartupController.java",
-    "java/src/org/chromium/content_public/browser/ChildProcessUtils.java",
     "java/src/org/chromium/content_public/browser/ContentViewStatics.java",
     "java/src/org/chromium/content_public/browser/DeviceUtils.java",
     "java/src/org/chromium/content_public/browser/InputMethodManagerWrapper.java",
