@@ -28,6 +28,10 @@ namespace {
 constexpr char kCrostiniAppLaunchHistogram[] = "Crostini.AppLaunch";
 constexpr char kCrostiniAppNamePrefix[] = "_crostini_";
 
+// If true then override IsCrostiniUIAllowedForProfile and related methods to
+// turn on Crostini.
+bool g_crostini_ui_allowed_for_testing = false;
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class CrostiniAppLaunchAppType {
@@ -98,13 +102,23 @@ void LaunchContainerApplication(
 
 }  // namespace
 
+void SetCrostiniUIAllowedForTesting(bool enabled) {
+  g_crostini_ui_allowed_for_testing = enabled;
+}
+
 bool IsCrostiniAllowed() {
+  if (g_crostini_ui_allowed_for_testing) {
+    return true;
+  }
   return virtual_machines::AreVirtualMachinesAllowedByVersionAndChannel() &&
          virtual_machines::AreVirtualMachinesAllowedByPolicy() &&
          base::FeatureList::IsEnabled(features::kCrostini);
 }
 
 bool IsCrostiniUIAllowedForProfile(Profile* profile) {
+  if (g_crostini_ui_allowed_for_testing) {
+    return true;
+  }
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
     return false;
   }

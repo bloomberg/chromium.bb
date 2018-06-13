@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -20,6 +21,9 @@ using testing::_;
 using vm_tools::apps::App;
 using vm_tools::apps::ApplicationList;
 
+constexpr char kCrostiniAppsInstalledHistogram[] =
+    "Crostini.AppsInstalledAtLogin";
+
 namespace crostini {
 
 class CrostiniRegistryServiceTest : public testing::Test {
@@ -28,11 +32,22 @@ class CrostiniRegistryServiceTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
+    SetCrostiniUIAllowedForTesting(true);
+
+    CrostiniTestHelper::EnableCrostini(&profile_);
+
+    RecreateService();
+  }
+
+  void TearDown() override { SetCrostiniUIAllowedForTesting(false); }
+
+ protected:
+  void RecreateService() {
+    service_.reset(nullptr);
     service_ = std::make_unique<CrostiniRegistryService>(&profile_);
     service_->SetClockForTesting(&test_clock_);
   }
 
- protected:
   class Observer : public CrostiniRegistryService::Observer {
    public:
     MOCK_METHOD4(OnRegistryUpdated,
@@ -141,6 +156,47 @@ TEST_F(CrostiniRegistryServiceTest, Observer) {
                                 testing::ElementsAre(app_id_2),
                                 testing::ElementsAre(app_id_4)));
   service()->UpdateApplicationList(app_list);
+}
+
+TEST_F(CrostiniRegistryServiceTest, ZeroAppsInstalledHistogram) {
+  base::HistogramTester histogram_tester;
+
+  RecreateService();
+
+  // Check that there are no apps installed.
+  histogram_tester.ExpectTotalCount(kCrostiniAppsInstalledHistogram, 1);
+  histogram_tester.ExpectBucketCount(kCrostiniAppsInstalledHistogram, 0, 1);
+}
+
+TEST_F(CrostiniRegistryServiceTest, NAppsInstalledHistogram) {
+  base::HistogramTester histogram_tester;
+
+  // Set up an app list with the expected number of apps.
+  ApplicationList app_list =
+      CrostiniTestHelper::BasicAppList("app 0", "vm", "container");
+  *app_list.add_apps() = CrostiniTestHelper::BasicApp("app 1");
+  *app_list.add_apps() = CrostiniTestHelper::BasicApp("app 2");
+  *app_list.add_apps() = CrostiniTestHelper::BasicApp("app 3");
+
+  // Add apps that should not be counted.
+  App app4 = CrostiniTestHelper::BasicApp("no display app 4");
+  app4.set_no_display(true);
+  *app_list.add_apps() = app4;
+
+  App app5 = CrostiniTestHelper::BasicApp("no display app 5");
+  app5.set_no_display(true);
+  *app_list.add_apps() = app5;
+
+  // Force the registry to have a prefs entry for the Terminal.
+  service()->AppLaunched(kCrostiniTerminalId);
+
+  // Update the list of apps so that they can be counted.
+  service()->UpdateApplicationList(app_list);
+
+  RecreateService();
+
+  histogram_tester.ExpectTotalCount(kCrostiniAppsInstalledHistogram, 1);
+  histogram_tester.ExpectBucketCount(kCrostiniAppsInstalledHistogram, 4, 1);
 }
 
 TEST_F(CrostiniRegistryServiceTest, InstallAndLaunchTime) {

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 
 #include "ash/public/cpp/app_list/app_list_constants.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -52,6 +53,9 @@ constexpr char kAppStartupWMClassKey[] = "startup_wm_class";
 constexpr char kAppStartupNotifyKey[] = "startup_notify";
 constexpr char kAppInstallTimeKey[] = "install_time";
 constexpr char kAppLastLaunchTimeKey[] = "last_launch_time";
+
+constexpr char kCrostiniAppsInstalledHistogram[] =
+    "Crostini.AppsInstalledAtLogin";
 
 std::string GenerateAppId(const std::string& desktop_file_id,
                           const std::string& vm_name,
@@ -309,7 +313,9 @@ CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
       prefs_(profile->GetPrefs()),
       base_icon_path_(profile->GetPath().AppendASCII(kCrostiniIconFolder)),
       clock_(base::DefaultClock::GetInstance()),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  RecordStartupMetrics();
+}
 
 CrostiniRegistryService::~CrostiniRegistryService() = default;
 
@@ -422,6 +428,31 @@ CrostiniRegistryService::GetRegistration(const std::string& app_id) const {
   if (!pref_registration)
     return base::nullopt;
   return base::make_optional<Registration>(pref_registration, false);
+}
+
+void CrostiniRegistryService::RecordStartupMetrics() {
+  const base::DictionaryValue* apps =
+      prefs_->GetDictionary(kCrostiniRegistryPref);
+
+  if (!IsCrostiniEnabled(profile_))
+    return;
+  if (!IsCrostiniUIAllowedForProfile(profile_))
+    return;
+
+  size_t num_apps = 0;
+
+  for (const auto& item : apps->DictItems()) {
+    if (item.first == kCrostiniTerminalId)
+      continue;
+
+    const base::Value* no_display =
+        item.second.FindKeyOfType(kAppNoDisplayKey, base::Value::Type::BOOLEAN);
+    if (no_display && no_display->GetBool())
+      continue;
+
+    num_apps++;
+  }
+  UMA_HISTOGRAM_COUNTS_1000(kCrostiniAppsInstalledHistogram, num_apps);
 }
 
 base::FilePath CrostiniRegistryService::GetAppPath(
