@@ -231,14 +231,14 @@ TEST_F(TaskQueueManagerTestWithCustomInitialization,
 
 void NullTask() {}
 
-void TestTask(EnqueueOrder value, std::vector<EnqueueOrder>* out_result) {
-  out_result->push_back(value);
+void TestTask(uint64_t value, std::vector<EnqueueOrder>* out_result) {
+  out_result->push_back(EnqueueOrder::FromIntForTesting(value));
 }
 
-void DisableQueueTestTask(EnqueueOrder value,
+void DisableQueueTestTask(uint64_t value,
                           std::vector<EnqueueOrder>* out_result,
                           TaskQueue::QueueEnabledVoter* voter) {
-  out_result->push_back(value);
+  out_result->push_back(EnqueueOrder::FromIntForTesting(value));
   voter->SetQueueEnabled(false);
 }
 
@@ -251,7 +251,7 @@ TEST_F(TaskQueueManagerTest, SingleQueuePosting) {
   runners_[0]->PostTask(FROM_HERE, BindOnce(&TestTask, 3, &run_order));
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u));
 }
 
 TEST_F(TaskQueueManagerTest, MultiQueuePosting) {
@@ -266,7 +266,7 @@ TEST_F(TaskQueueManagerTest, MultiQueuePosting) {
   runners_[2]->PostTask(FROM_HERE, BindOnce(&TestTask, 6, &run_order));
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5, 6));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u, 4u, 5u, 6u));
 }
 
 TEST_F(TaskQueueManagerTestWithMessageLoop, NonNestableTaskPosting) {
@@ -277,7 +277,7 @@ TEST_F(TaskQueueManagerTestWithMessageLoop, NonNestableTaskPosting) {
                                    BindOnce(&TestTask, 1, &run_order));
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
 }
 
 TEST_F(TaskQueueManagerTestWithMessageLoop,
@@ -293,7 +293,7 @@ TEST_F(TaskQueueManagerTestWithMessageLoop,
                                    BindOnce(&TestTask, 5, &run_order));
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u, 4u, 5u));
 }
 
 TEST_F(TaskQueueManagerTestWithMessageLoop,
@@ -320,15 +320,15 @@ TEST_F(TaskQueueManagerTestWithMessageLoop,
 
   RunLoop().RunUntilIdle();
   // Note we expect tasks 3 & 4 to run last because they're non-nestable.
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 5, 6, 3, 4));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 5u, 6u, 3u, 4u));
 }
 
 namespace {
 
-void InsertFenceAndPostTestTask(EnqueueOrder id,
+void InsertFenceAndPostTestTask(int id,
                                 std::vector<EnqueueOrder>* run_order,
                                 scoped_refptr<TestTaskQueue> task_queue) {
-  run_order->push_back(id);
+  run_order->push_back(EnqueueOrder::FromIntForTesting(id));
   task_queue->InsertFence(TaskQueue::InsertFencePosition::kNow);
   task_queue->PostTask(FROM_HERE, BindOnce(&TestTask, id + 1, run_order));
 
@@ -360,11 +360,11 @@ TEST_F(TaskQueueManagerTestWithMessageLoop, TaskQueueDisabledFromNestedLoop) {
   // due to being posted before inserting a fence.
   // This test checks that breaks when nestable task is pushed into a redo
   // queue.
-  EXPECT_THAT(run_order, ElementsAre(2, 1));
+  EXPECT_THAT(run_order, ElementsAre(2u, 1u));
 
   runners_[0]->RemoveFence();
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(2, 1, 3));
+  EXPECT_THAT(run_order, ElementsAre(2u, 1u, 3u));
 }
 
 TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_ImmediateTask) {
@@ -431,7 +431,7 @@ TEST_F(TaskQueueManagerTest, DelayedTaskPosting) {
 
   // After the delay has completed, the task runs normally.
   test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
   EXPECT_FALSE(runners_[0]->HasTaskToRunImmediately());
 }
 
@@ -463,17 +463,17 @@ TEST_F(TaskQueueManagerTest, DelayedTaskPosting_MultipleTasks_DecendingOrder) {
             test_task_runner_->NextPendingTaskDelay());
 
   test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(5));
-  EXPECT_THAT(run_order, ElementsAre(3));
+  EXPECT_THAT(run_order, ElementsAre(3u));
   EXPECT_EQ(TimeDelta::FromMilliseconds(3),
             test_task_runner_->NextPendingTaskDelay());
 
   test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(3));
-  EXPECT_THAT(run_order, ElementsAre(3, 2));
+  EXPECT_THAT(run_order, ElementsAre(3u, 2u));
   EXPECT_EQ(TimeDelta::FromMilliseconds(2),
             test_task_runner_->NextPendingTaskDelay());
 
   test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(2));
-  EXPECT_THAT(run_order, ElementsAre(3, 2, 1));
+  EXPECT_THAT(run_order, ElementsAre(3u, 2u, 1u));
 }
 
 TEST_F(TaskQueueManagerTest, DelayedTaskPosting_MultipleTasks_AscendingOrder) {
@@ -493,17 +493,17 @@ TEST_F(TaskQueueManagerTest, DelayedTaskPosting_MultipleTasks_AscendingOrder) {
             test_task_runner_->NextPendingTaskDelay());
 
   test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
   EXPECT_EQ(TimeDelta::FromMilliseconds(4),
             test_task_runner_->NextPendingTaskDelay());
 
   test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(4));
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u));
   EXPECT_EQ(TimeDelta::FromMilliseconds(5),
             test_task_runner_->NextPendingTaskDelay());
 
   test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(5));
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u));
 }
 
 TEST_F(TaskQueueManagerTest, PostDelayedTask_SharesUnderlyingDelayedTasks) {
@@ -565,7 +565,7 @@ TEST_F(TaskQueueManagerTest, InsertAndRemoveFence) {
   runners_[0]->RemoveFence();
   EXPECT_TRUE(test_task_runner_->HasPendingTask());
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
 }
 
 TEST_F(TaskQueueManagerTest, RemovingFenceForDisabledQueueDoesNotPostDoWork) {
@@ -611,7 +611,7 @@ TEST_F(TaskQueueManagerTest, DenyRunning_BeforePosting) {
 
   voter->SetQueueEnabled(true);
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
 }
 
 TEST_F(TaskQueueManagerTest, DenyRunning_AfterPosting) {
@@ -629,7 +629,7 @@ TEST_F(TaskQueueManagerTest, DenyRunning_AfterPosting) {
 
   voter->SetQueueEnabled(true);
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
 }
 
 TEST_F(TaskQueueManagerTest, DenyRunning_AfterRemovingFence) {
@@ -648,7 +648,7 @@ TEST_F(TaskQueueManagerTest, DenyRunning_AfterRemovingFence) {
   runners_[0]->RemoveFence();
   voter->SetQueueEnabled(true);
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
 }
 
 TEST_F(TaskQueueManagerTest, RemovingFenceWithDelayedTask) {
@@ -670,7 +670,7 @@ TEST_F(TaskQueueManagerTest, RemovingFenceWithDelayedTask) {
   runners_[0]->RemoveFence();
   EXPECT_TRUE(test_task_runner_->HasPendingTask());
   RunPendingTasks();
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
 }
 
 TEST_F(TaskQueueManagerTest, RemovingFenceWithMultipleDelayedTasks) {
@@ -697,7 +697,7 @@ TEST_F(TaskQueueManagerTest, RemovingFenceWithMultipleDelayedTasks) {
   // Removing the fence causes the ready tasks to run.
   runners_[0]->RemoveFence();
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 }
 
 TEST_F(TaskQueueManagerTest, InsertFencePreventsDelayedTasksFromRunning) {
@@ -723,13 +723,13 @@ TEST_F(TaskQueueManagerTest, MultipleFences) {
 
   runners_[0]->PostTask(FROM_HERE, BindOnce(&TestTask, 3, &run_order));
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 
   runners_[0]->InsertFence(TaskQueue::InsertFencePosition::kNow);
   // Subsequent tasks should be blocked.
   runners_[0]->PostTask(FROM_HERE, BindOnce(&TestTask, 4, &run_order));
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u));
 }
 
 TEST_F(TaskQueueManagerTest, InsertFenceThenImmediatlyRemoveDoesNotBlock) {
@@ -742,7 +742,7 @@ TEST_F(TaskQueueManagerTest, InsertFenceThenImmediatlyRemoveDoesNotBlock) {
   runners_[0]->PostTask(FROM_HERE, BindOnce(&TestTask, 2, &run_order));
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 }
 
 TEST_F(TaskQueueManagerTest, InsertFencePostThenRemoveDoesNotBlock) {
@@ -755,7 +755,7 @@ TEST_F(TaskQueueManagerTest, InsertFencePostThenRemoveDoesNotBlock) {
   runners_[0]->RemoveFence();
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 }
 
 TEST_F(TaskQueueManagerTest, MultipleFencesWithInitiallyEmptyQueue) {
@@ -768,7 +768,7 @@ TEST_F(TaskQueueManagerTest, MultipleFencesWithInitiallyEmptyQueue) {
   runners_[0]->PostTask(FROM_HERE, BindOnce(&TestTask, 2, &run_order));
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
 }
 
 TEST_F(TaskQueueManagerTest, BlockedByFence) {
@@ -965,7 +965,7 @@ namespace {
 void ReentrantTestTask(scoped_refptr<SingleThreadTaskRunner> runner,
                        int countdown,
                        std::vector<EnqueueOrder>* out_result) {
-  out_result->push_back(countdown);
+  out_result->push_back(EnqueueOrder::FromIntForTesting(countdown));
   if (--countdown) {
     runner->PostTask(
         FROM_HERE, BindOnce(&ReentrantTestTask, runner, countdown, out_result));
@@ -982,7 +982,7 @@ TEST_F(TaskQueueManagerTest, ReentrantPosting) {
       FROM_HERE, BindOnce(&ReentrantTestTask, runners_[0], 3, &run_order));
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(3, 2, 1));
+  EXPECT_THAT(run_order, ElementsAre(3u, 2u, 1u));
 }
 
 TEST_F(TaskQueueManagerTest, NoTasksAfterShutdown) {
@@ -1013,7 +1013,7 @@ TEST_F(TaskQueueManagerTestWithMessageLoop, PostFromThread) {
   thread.Stop();
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
 }
 
 void RePostingTestTask(scoped_refptr<SingleThreadTaskRunner> runner,
@@ -1051,7 +1051,7 @@ TEST_F(TaskQueueManagerTestWithMessageLoop, PostFromNestedRunloop) {
 
   RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(run_order, ElementsAre(0, 2, 1));
+  EXPECT_THAT(run_order, ElementsAre(0u, 2u, 1u));
 }
 
 TEST_F(TaskQueueManagerTest, WorkBatching) {
@@ -1069,12 +1069,12 @@ TEST_F(TaskQueueManagerTest, WorkBatching) {
   // get executed.
   EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
   RunPendingTasks();
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 
   // The second task runs the remaining two posted tasks.
   EXPECT_EQ(1u, test_task_runner_->GetPendingTaskCount());
   RunPendingTasks();
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u, 4u));
 }
 
 class MockTaskObserver : public MessageLoop::TaskObserver {
@@ -1331,7 +1331,7 @@ TEST_F(TaskQueueManagerTest, HasPendingImmediateWork_DelayedTasks) {
 void ExpensiveTestTask(int value,
                        scoped_refptr<TestMockTimeTaskRunner> test_task_runner,
                        std::vector<EnqueueOrder>* out_result) {
-  out_result->push_back(value);
+  out_result->push_back(EnqueueOrder::FromIntForTesting(value));
   test_task_runner->FastForwardBy(TimeDelta::FromMilliseconds(1));
 }
 
@@ -1357,8 +1357,8 @@ TEST_F(TaskQueueManagerTest, ImmediateAndDelayedTaskInterleaving) {
 
   // Delayed tasks are not allowed to starve out immediate work which is why
   // some of the immediate tasks run out of order.
-  int expected_run_order[] = {10, 11, 12, 13, 0, 14, 15, 16, 1,
-                              17, 18, 2,  3,  4, 5,  6,  7,  8};
+  uint64_t expected_run_order[] = {10u, 11u, 12u, 13u, 0u, 14u, 15u, 16u, 1u,
+                                   17u, 18u, 2u,  3u,  4u, 5u,  6u,  7u,  8u};
   EXPECT_THAT(run_order, ElementsAreArray(expected_run_order));
 }
 
@@ -1376,7 +1376,7 @@ TEST_F(TaskQueueManagerTest,
   test_task_runner_->AdvanceMockTickClock(delay * 2);
   RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(run_order, ElementsAre(2, 3, 1));
+  EXPECT_THAT(run_order, ElementsAre(2u, 3u, 1u));
 }
 
 TEST_F(TaskQueueManagerTest,
@@ -1393,7 +1393,7 @@ TEST_F(TaskQueueManagerTest,
   test_task_runner_->AdvanceMockTickClock(delay * 2);
   RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(run_order, ElementsAre(2, 3, 1));
+  EXPECT_THAT(run_order, ElementsAre(2u, 3u, 1u));
 }
 
 TEST_F(TaskQueueManagerTest, DelayedTaskDoesNotSkipAHeadOfShorterDelayedTask) {
@@ -1410,7 +1410,7 @@ TEST_F(TaskQueueManagerTest, DelayedTaskDoesNotSkipAHeadOfShorterDelayedTask) {
   test_task_runner_->AdvanceMockTickClock(delay1 * 2);
   RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(run_order, ElementsAre(2, 1));
+  EXPECT_THAT(run_order, ElementsAre(2u, 1u));
 }
 
 void CheckIsNested(bool* is_nested) {
@@ -1449,12 +1449,10 @@ class SequenceNumberCapturingTaskObserver : public MessageLoop::TaskObserver {
     sequence_numbers_.push_back(pending_task.sequence_num);
   }
 
-  const std::vector<EnqueueOrder>& sequence_numbers() const {
-    return sequence_numbers_;
-  }
+  const std::vector<int>& sequence_numbers() const { return sequence_numbers_; }
 
  private:
-  std::vector<EnqueueOrder> sequence_numbers_;
+  std::vector<int> sequence_numbers_;
 };
 
 TEST_F(TaskQueueManagerTest, SequenceNumSetWhenTaskIsPosted) {
@@ -1474,7 +1472,7 @@ TEST_F(TaskQueueManagerTest, SequenceNumSetWhenTaskIsPosted) {
   runners_[0]->PostTask(FROM_HERE, BindOnce(&TestTask, 4, &run_order));
 
   test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(40));
-  ASSERT_THAT(run_order, ElementsAre(4, 3, 2, 1));
+  ASSERT_THAT(run_order, ElementsAre(4u, 3u, 2u, 1u));
 
   // The sequence numbers are a one-based monotonically incrememting counter
   // which should be set when the task is posted rather than when it's enqueued
@@ -1501,7 +1499,7 @@ TEST_F(TaskQueueManagerTest, NewTaskQueues) {
   queue3->PostTask(FROM_HERE, BindOnce(&TestTask, 3, &run_order));
   RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u));
 }
 
 TEST_F(TaskQueueManagerTest, ShutdownTaskQueue) {
@@ -1523,7 +1521,7 @@ TEST_F(TaskQueueManagerTest, ShutdownTaskQueue) {
   queue2->ShutdownTaskQueue();
   RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(run_order, ElementsAre(1, 3));
+  EXPECT_THAT(run_order, ElementsAre(1u, 3u));
 }
 
 TEST_F(TaskQueueManagerTest, ShutdownTaskQueue_WithDelayedTasks) {
@@ -1542,7 +1540,7 @@ TEST_F(TaskQueueManagerTest, ShutdownTaskQueue_WithDelayedTasks) {
   RunLoop().RunUntilIdle();
 
   test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(40));
-  ASSERT_THAT(run_order, ElementsAre(1, 3));
+  ASSERT_THAT(run_order, ElementsAre(1u, 3u));
 }
 
 namespace {
@@ -1562,7 +1560,7 @@ TEST_F(TaskQueueManagerTest, ShutdownTaskQueue_InTasks) {
   runners_[2]->PostTask(FROM_HERE, BindOnce(&TestTask, 3, &run_order));
 
   RunLoop().RunUntilIdle();
-  ASSERT_THAT(run_order, ElementsAre(1));
+  ASSERT_THAT(run_order, ElementsAre(1u));
 }
 
 namespace {
@@ -1637,13 +1635,13 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(4, 5, 6));
+  EXPECT_THAT(run_order, ElementsAre(4u, 5u, 6u));
 
   domain_a->AdvanceNowTo(start_time_ticks + TimeDelta::FromMilliseconds(50));
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(4, 5, 6, 1, 2, 3));
+  EXPECT_THAT(run_order, ElementsAre(4u, 5u, 6u, 1u, 2u, 3u));
 
   runners_[0]->ShutdownTaskQueue();
   runners_[1]->ShutdownTaskQueue();
@@ -1674,7 +1672,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   domain_a->AdvanceNowTo(start_time_ticks + TimeDelta::FromMilliseconds(20));
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 
   std::unique_ptr<VirtualTimeDomain> domain_b(
       new VirtualTimeDomain(start_time_ticks));
@@ -1685,7 +1683,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u, 4u));
 
   runners_[0]->ShutdownTaskQueue();
 
@@ -1710,7 +1708,7 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigrationWithIncomingImmediateTasks) {
   runners_[0]->SetTimeDomain(domain_b.get());
 
   RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, ElementsAre(1));
+  EXPECT_THAT(run_order, ElementsAre(1u));
 
   runners_[0]->ShutdownTaskQueue();
 
@@ -1746,7 +1744,7 @@ TEST_F(TaskQueueManagerTest,
                                TimeDelta::FromMilliseconds(10));
 
   test_task_runner_->FastForwardBy(TimeDelta::FromMilliseconds(40));
-  EXPECT_THAT(run_order, ElementsAre(4, 3, 2, 1));
+  EXPECT_THAT(run_order, ElementsAre(4u, 3u, 2u, 1u));
 
   runners_[0]->ShutdownTaskQueue();
 
@@ -2883,7 +2881,7 @@ TEST_F(TaskQueueManagerTest, ProcessTasksWithoutTaskTimeObservers) {
   RunLoop().RunUntilIdle();
   EXPECT_EQ(start_counter, 3);
   EXPECT_EQ(complete_counter, 3);
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u));
 
   UnsetOnTaskHandlers(runners_[0]);
   EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
@@ -2894,7 +2892,7 @@ TEST_F(TaskQueueManagerTest, ProcessTasksWithoutTaskTimeObservers) {
   RunLoop().RunUntilIdle();
   EXPECT_EQ(start_counter, 3);
   EXPECT_EQ(complete_counter, 3);
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5, 6));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u, 4u, 5u, 6u));
 }
 
 TEST_F(TaskQueueManagerTest, ProcessTasksWithTaskTimeObservers) {
@@ -2912,7 +2910,7 @@ TEST_F(TaskQueueManagerTest, ProcessTasksWithTaskTimeObservers) {
   RunLoop().RunUntilIdle();
   EXPECT_EQ(start_counter, 2);
   EXPECT_EQ(complete_counter, 2);
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 
   UnsetOnTaskHandlers(runners_[0]);
   EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
@@ -2922,7 +2920,7 @@ TEST_F(TaskQueueManagerTest, ProcessTasksWithTaskTimeObservers) {
   RunLoop().RunUntilIdle();
   EXPECT_EQ(start_counter, 2);
   EXPECT_EQ(complete_counter, 2);
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u, 4u));
 
   manager_->RemoveTaskTimeObserver(&test_task_time_observer_);
   runners_[0]->PostTask(FROM_HERE, BindOnce(&TestTask, 5, &run_order));
@@ -2932,7 +2930,7 @@ TEST_F(TaskQueueManagerTest, ProcessTasksWithTaskTimeObservers) {
   EXPECT_EQ(start_counter, 2);
   EXPECT_EQ(complete_counter, 2);
   EXPECT_FALSE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5, 6));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u, 4u, 5u, 6u));
 
   SetOnTaskHandlers(runners_[0], &start_counter, &complete_counter);
   runners_[0]->PostTask(FROM_HERE, BindOnce(&TestTask, 7, &run_order));
@@ -2942,7 +2940,7 @@ TEST_F(TaskQueueManagerTest, ProcessTasksWithTaskTimeObservers) {
   EXPECT_EQ(start_counter, 4);
   EXPECT_EQ(complete_counter, 4);
   EXPECT_TRUE(runners_[0]->GetTaskQueueImpl()->RequiresTaskTiming());
-  EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5, 6, 7, 8));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u));
   UnsetOnTaskHandlers(runners_[0]);
 }
 
@@ -3107,7 +3105,7 @@ TEST_F(TaskQueueManagerTest, CanceledTasksInQueueCantMakeOtherTasksSkipAhead) {
   task2.weak_factory_.InvalidateWeakPtrs();
   RunLoop().RunUntilIdle();
 
-  EXPECT_THAT(run_order, ElementsAre(1, 2));
+  EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 }
 
 TEST_F(TaskQueueManagerTest, TaskQueueDeletedOnAnotherThread) {

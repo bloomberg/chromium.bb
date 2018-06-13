@@ -7,7 +7,6 @@ import("//third_party/blink/renderer/platform/platform.gni")
 
 blink_platform_sources("scheduler") {
   sources = [
-    "base/enqueue_order.cc",
     "base/enqueue_order.h",
     "base/graceful_queue_shutdown_helper.cc",
     "base/graceful_queue_shutdown_helper.h",

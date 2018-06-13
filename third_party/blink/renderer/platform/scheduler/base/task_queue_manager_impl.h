@@ -184,7 +184,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     ExecutingTask()
         : pending_task(TaskQueue::PostedTask(OnceClosure(), Location()),
                        TimeTicks(),
-                       0) {}
+                       internal::EnqueueOrder()) {}
 
     ExecutingTask(internal::TaskQueueImpl::Task&& pending_task,
                   internal::TaskQueueImpl* task_queue)
@@ -302,7 +302,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   const scoped_refptr<internal::GracefulQueueShutdownHelper>
       graceful_shutdown_helper_;
 
-  internal::EnqueueOrderGenerator enqueue_order_generator_;
+  internal::EnqueueOrder::Generator enqueue_order_generator_;
 
   std::unique_ptr<internal::ThreadController> controller_;
 
