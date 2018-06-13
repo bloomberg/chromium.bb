@@ -16,6 +16,7 @@ cast_source_set("desktop") {
     "media_sink_desktop.h",
     "video_decoder_desktop.cc",
     "video_decoder_desktop.h",
+    "volume_control_desktop.cc",
   ]
 
   deps = [
