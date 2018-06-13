@@ -1902,10 +1902,6 @@
       'Mac10.12 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
-      'Win7 Tests (dbg)(1)',
-      'Win10 Tests x64',
-      # chromium.win
-      'Win10 Tests x64 (dbg)',
     ],
   },
   'services_unittests': {
