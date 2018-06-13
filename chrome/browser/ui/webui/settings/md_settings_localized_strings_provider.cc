@@ -1880,6 +1880,10 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       {"clearBrowsingData", IDS_SETTINGS_CLEAR_BROWSING_DATA},
       {"clearBrowsingDataDescription", IDS_SETTINGS_CLEAR_DATA_DESCRIPTION},
       {"titleAndCount", IDS_SETTINGS_TITLE_AND_COUNT},
+      {"safeBrowsingEnableExtendedReporting",
+       IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_UNIFIED_CONSENT},
+      {"safeBrowsingEnableExtendedReportingDesc",
+       IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC_UNIFIED_CONSENT},
       {"syncAndPersonalizationLink", IDS_SETTINGS_PRIVACY_MORE_SETTINGS},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
@@ -1892,10 +1896,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
         {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF_UNIFIED_CONSENT},
         {"searchSuggestPrefDesc",
          IDS_SETTINGS_SUGGEST_PREF_DESC_UNIFIED_CONSENT},
-        {"safeBrowsingEnableExtendedReporting",
-         IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_UNIFIED_CONSENT},
-        {"safeBrowsingEnableExtendedReportingDesc",
-         IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC_UNIFIED_CONSENT},
         {"networkPredictionEnabled",
          IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL_UNIFIED_CONSENT},
         {"networkPredictionEnabledDesc",
@@ -1919,7 +1919,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
     LocalizedString conditional_localized_strings[] = {
       {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
       {"searchSuggestPrefDesc", IDS_SETTINGS_EMPTY_STRING},
-      {"safeBrowsingEnableExtendedReportingDesc", IDS_SETTINGS_EMPTY_STRING},
       {"networkPredictionEnabled",
        IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_LABEL},
       {"networkPredictionEnabledDesc", IDS_SETTINGS_EMPTY_STRING},
@@ -1939,13 +1938,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
     };
     AddLocalizedStringsBulk(html_source, conditional_localized_strings,
                             arraysize(conditional_localized_strings));
-
-    html_source->AddLocalizedString(
-        "safeBrowsingEnableExtendedReporting",
-        safe_browsing::ChooseOptInTextResource(
-            *profile->GetPrefs(),
-            IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING,
-            IDS_SETTINGS_SAFEBROWSING_ENABLE_SCOUT_REPORTING));
   }
 
   html_source->AddString(

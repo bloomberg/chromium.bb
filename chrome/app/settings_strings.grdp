@@ -2385,13 +2385,7 @@
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC_UNIFIED_CONSENT" desc="The secondary label of the 'Protect you and your device from dangerous sites' checkbox">
     Checks sites you visit and files you download for harmful behavior or content, like phishing or malware
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_EXTENDED_REPORTING" desc="Checkbox label: should Chrome upload information about suspicious downloads and websites to Safe Browsing">
-    Automatically report details of possible security incidents to Google
-  </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_SCOUT_REPORTING" desc="Checkbox label: should Chrome upload some system information and page content to Safe Browsing for malware detection">
-    Automatically send some system information and page content to Google to help detect dangerous apps and sites
-  </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_UNIFIED_CONSENT" desc="Checkbox label: should Chrome upload some system information and page content to Safe Browsing">
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_UNIFIED_CONSENT" desc="The section title of the 'Sends some system information and page content to Google' checkbox">
     Help improve Safe Browsing
   </message>
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC_UNIFIED_CONSENT" desc="Checkbox label: should Chrome upload some system information and page content to Safe Browsing">
