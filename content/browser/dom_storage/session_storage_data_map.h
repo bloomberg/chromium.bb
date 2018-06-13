@@ -12,24 +12,24 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "content/browser/leveldb_wrapper_impl.h"
+#include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace content {
 
-// Holds the LevelDBWrapper for a session storage data map. Every
+// Holds the StorageArea for a session storage data map. Every
 // namespace-origin area has a data map. To support shallow copying of the data
 // (copy-on-write), a single data map can be shared between multiple namespaces.
 // Thus this class is refcounted. This class has a one-to-one relationship with
 // the SessionStorageMetadata::MapData object, accessible from |map_data()|.
 //
-// Neither this data map nor the inner LevelDBWrapper is bound to, as it needs
+// Neither this data map nor the inner StorageArea is bound to, as it needs
 // to be shared between multiple connections if it is shallow-copied. However,
 // it does allow it's user to keep track of the number of binding using
 // |binding_count()|, |AddBindingReference()|, and |RemoveBindingReference()|.
 class CONTENT_EXPORT SessionStorageDataMap final
-    : public LevelDBWrapperImpl::Delegate,
+    : public StorageAreaImpl::Delegate,
       public base::RefCounted<SessionStorageDataMap> {
  public:
   class CONTENT_EXPORT Listener {
@@ -49,11 +49,11 @@ class CONTENT_EXPORT SessionStorageDataMap final
   static scoped_refptr<SessionStorageDataMap> CreateClone(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_data,
-      LevelDBWrapperImpl* clone_from);
+      StorageAreaImpl* clone_from);
 
   Listener* listener() const { return listener_; }
 
-  LevelDBWrapperImpl* level_db_wrapper() { return level_db_wrapper_ptr_; }
+  StorageAreaImpl* storage_area() { return storage_area_ptr_; }
 
   scoped_refptr<SessionStorageMetadata::MapData> map_data() {
     return map_data_.get();
@@ -62,10 +62,10 @@ class CONTENT_EXPORT SessionStorageDataMap final
   int binding_count() { return binding_count_; }
   void AddBindingReference() { ++binding_count_; }
   // When the binding count reaches 0, we schedule an immediate commit on our
-  // wrapper, but we don't close the connection.
+  // area, but we don't close the connection.
   void RemoveBindingReference();
 
-  // Note: this is irrelevant, as the parent wrapper is handling binding.
+  // Note: this is irrelevant, as the parent area is handling binding.
   void OnNoBindings() override {}
 
   std::vector<leveldb::mojom::BatchedOperationPtr> PrepareToCommit() override;
@@ -82,21 +82,21 @@ class CONTENT_EXPORT SessionStorageDataMap final
   SessionStorageDataMap(
       Listener* listener,
       scoped_refptr<SessionStorageMetadata::MapData> map_entry,
-      LevelDBWrapperImpl* forking_from);
+      StorageAreaImpl* forking_from);
   ~SessionStorageDataMap() override;
 
-  static LevelDBWrapperImpl::Options GetOptions();
+  static StorageAreaImpl::Options GetOptions();
 
   Listener* listener_;
   int binding_count_ = 0;
   scoped_refptr<SessionStorageMetadata::MapData> map_data_;
-  std::unique_ptr<LevelDBWrapperImpl> wrapper_impl_;
-  // Holds the same value as |wrapper_impl_|. The reason for this is that
-  // during destruction of the LevelDBWrapperImpl instance we might still get
-  // called and need access  to the LevelDBWrapperImpl instance. The
+  std::unique_ptr<StorageAreaImpl> storage_area_impl_;
+  // Holds the same value as |storage_area_impl_|. The reason for this is that
+  // during destruction of the StorageAreaImpl instance we might still get
+  // called and need access  to the StorageAreaImpl instance. The
   // unique_ptr could already be null, but this field should still be valid.
   // TODO(dmurph): Change delegate ownership so this doesn't have to be done.
-  LevelDBWrapperImpl* level_db_wrapper_ptr_;
+  StorageAreaImpl* storage_area_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageDataMap);
 };

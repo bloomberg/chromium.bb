@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/leveldb_wrapper_impl.h"
+#include "content/browser/dom_storage/storage_area_impl.h"
 
 #include "base/atomic_ref_count.h"
 #include "base/bind.h"
@@ -15,9 +15,9 @@
 #include "base/threading/thread.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
+#include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
-#include "content/test/leveldb_wrapper_test_util.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -29,7 +29,7 @@ namespace {
 using test::MakeSuccessCallback;
 using test::MakeGetAllCallback;
 using test::GetAllCallback;
-using CacheMode = LevelDBWrapperImpl::CacheMode;
+using CacheMode = StorageAreaImpl::CacheMode;
 using DatabaseError = leveldb::mojom::DatabaseError;
 
 const char* kTestSource = "source";
@@ -90,7 +90,7 @@ class IncrementalBarrier {
   DISALLOW_COPY_AND_ASSIGN(IncrementalBarrier);
 };
 
-class MockDelegate : public LevelDBWrapperImpl::Delegate {
+class MockDelegate : public StorageAreaImpl::Delegate {
  public:
   MockDelegate() {}
   ~MockDelegate() override {}
@@ -106,13 +106,13 @@ class MockDelegate : public LevelDBWrapperImpl::Delegate {
       std::move(committed_).Run();
   }
   void OnMapLoaded(DatabaseError error) override { map_load_count_++; }
-  std::vector<LevelDBWrapperImpl::Change> FixUpData(
-      const LevelDBWrapperImpl::ValueMap& data) override {
+  std::vector<StorageAreaImpl::Change> FixUpData(
+      const StorageAreaImpl::ValueMap& data) override {
     return std::move(mock_changes_);
   }
 
   int map_load_count() const { return map_load_count_; }
-  void set_mock_changes(std::vector<LevelDBWrapperImpl::Change> changes) {
+  void set_mock_changes(std::vector<StorageAreaImpl::Change> changes) {
     mock_changes_ = std::move(changes);
   }
 
@@ -122,7 +122,7 @@ class MockDelegate : public LevelDBWrapperImpl::Delegate {
 
  private:
   int map_load_count_ = 0;
-  std::vector<LevelDBWrapperImpl::Change> mock_changes_;
+  std::vector<StorageAreaImpl::Change> mock_changes_;
   base::OnceClosure committed_;
 };
 
@@ -144,8 +144,8 @@ base::OnceCallback<void(bool, const std::vector<uint8_t>&)> MakeGetCallback(
                         value_out);
 }
 
-LevelDBWrapperImpl::Options GetDefaultTestingOptions(CacheMode cache_mode) {
-  LevelDBWrapperImpl::Options options;
+StorageAreaImpl::Options GetDefaultTestingOptions(CacheMode cache_mode) {
+  StorageAreaImpl::Options options;
   options.max_size = kTestSizeLimit;
   options.default_commit_delay = base::TimeDelta::FromSeconds(5);
   options.max_bytes_per_hour = 10 * 1024 * 1024;
@@ -156,8 +156,8 @@ LevelDBWrapperImpl::Options GetDefaultTestingOptions(CacheMode cache_mode) {
 
 }  // namespace
 
-class LevelDBWrapperImplTest : public testing::Test,
-                               public blink::mojom::StorageAreaObserver {
+class StorageAreaImplTest : public testing::Test,
+                            public blink::mojom::StorageAreaObserver {
  public:
   struct Observation {
     enum { kAdd, kChange, kDelete, kDeleteAll, kSendOldValue } type;
@@ -168,26 +168,26 @@ class LevelDBWrapperImplTest : public testing::Test,
     bool should_send_old_value;
   };
 
-  LevelDBWrapperImplTest() : db_(&mock_data_), observer_binding_(this) {
+  StorageAreaImplTest() : db_(&mock_data_), observer_binding_(this) {
     auto request = mojo::MakeRequest(&level_db_database_ptr_);
     db_.Bind(std::move(request));
 
-    LevelDBWrapperImpl::Options options =
+    StorageAreaImpl::Options options =
         GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
-    level_db_wrapper_ = std::make_unique<LevelDBWrapperImpl>(
+    storage_area_ = std::make_unique<StorageAreaImpl>(
         level_db_database_ptr_.get(), test_prefix_, &delegate_, options);
 
     set_mock_data(test_prefix_ + test_key1_, test_value1_);
     set_mock_data(test_prefix_ + test_key2_, test_value2_);
     set_mock_data("123", "baddata");
 
-    level_db_wrapper_->Bind(mojo::MakeRequest(&level_db_wrapper_ptr_));
+    storage_area_->Bind(mojo::MakeRequest(&storage_area_ptr_));
     blink::mojom::StorageAreaObserverAssociatedPtrInfo ptr_info;
     observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
-    level_db_wrapper_ptr_->AddObserver(std::move(ptr_info));
+    storage_area_ptr_->AddObserver(std::move(ptr_info));
   }
 
-  ~LevelDBWrapperImplTest() override {}
+  ~StorageAreaImplTest() override {}
 
   void set_mock_data(const std::string& key, const std::string& value) {
     mock_data_[ToBytes(key)] = ToBytes(value);
@@ -208,55 +208,55 @@ class LevelDBWrapperImplTest : public testing::Test,
 
   void clear_mock_data() { mock_data_.clear(); }
 
-  blink::mojom::StorageArea* wrapper() { return level_db_wrapper_ptr_.get(); }
-  LevelDBWrapperImpl* wrapper_impl() { return level_db_wrapper_.get(); }
+  blink::mojom::StorageArea* storage_area() { return storage_area_ptr_.get(); }
+  StorageAreaImpl* storage_area_impl() { return storage_area_.get(); }
 
-  void FlushWrapperBinding() { level_db_wrapper_ptr_.FlushForTesting(); }
+  void FlushAreaBinding() { storage_area_ptr_.FlushForTesting(); }
 
-  bool GetSync(blink::mojom::StorageArea* wrapper,
+  bool GetSync(blink::mojom::StorageArea* area,
                const std::vector<uint8_t>& key,
                std::vector<uint8_t>* result) {
     bool success = false;
     base::RunLoop loop;
-    wrapper->Get(key, MakeGetCallback(loop.QuitClosure(), &success, result));
+    area->Get(key, MakeGetCallback(loop.QuitClosure(), &success, result));
     loop.Run();
     return success;
   }
 
   bool DeleteSync(
-      blink::mojom::StorageArea* wrapper,
+      blink::mojom::StorageArea* area,
       const std::vector<uint8_t>& key,
       const base::Optional<std::vector<uint8_t>>& client_old_value) {
-    return test::DeleteSync(wrapper, key, client_old_value, test_source_);
+    return test::DeleteSync(area, key, client_old_value, test_source_);
   }
 
-  bool DeleteAllSync(blink::mojom::StorageArea* wrapper) {
-    return test::DeleteAllSync(wrapper, test_source_);
+  bool DeleteAllSync(blink::mojom::StorageArea* area) {
+    return test::DeleteAllSync(area, test_source_);
   }
 
   bool GetSync(const std::vector<uint8_t>& key, std::vector<uint8_t>* result) {
-    return GetSync(wrapper(), key, result);
+    return GetSync(storage_area(), key, result);
   }
 
   bool PutSync(const std::vector<uint8_t>& key,
                const std::vector<uint8_t>& value,
                const base::Optional<std::vector<uint8_t>>& client_old_value,
                std::string source = kTestSource) {
-    return test::PutSync(wrapper(), key, value, client_old_value, source);
+    return test::PutSync(storage_area(), key, value, client_old_value, source);
   }
 
   bool DeleteSync(
       const std::vector<uint8_t>& key,
       const base::Optional<std::vector<uint8_t>>& client_old_value) {
-    return DeleteSync(wrapper(), key, client_old_value);
+    return DeleteSync(storage_area(), key, client_old_value);
   }
 
-  bool DeleteAllSync() { return DeleteAllSync(wrapper()); }
+  bool DeleteAllSync() { return DeleteAllSync(storage_area()); }
 
-  std::string GetSyncStrUsingGetAll(LevelDBWrapperImpl* wrapper_impl,
+  std::string GetSyncStrUsingGetAll(StorageAreaImpl* area_impl,
                                     const std::string& key) {
     std::vector<blink::mojom::KeyValuePtr> data;
-    bool success = test::GetAllSyncOnDedicatedPipe(wrapper_impl, &data);
+    bool success = test::GetAllSyncOnDedicatedPipe(area_impl, &data);
 
     if (!success)
       return "";
@@ -269,14 +269,13 @@ class LevelDBWrapperImplTest : public testing::Test,
     return "";
   }
 
-  void BlockingCommit() { BlockingCommit(&delegate_, level_db_wrapper_.get()); }
+  void BlockingCommit() { BlockingCommit(&delegate_, storage_area_.get()); }
 
-  void BlockingCommit(MockDelegate* delegate, LevelDBWrapperImpl* wrapper) {
-    while (wrapper->has_pending_load_tasks() ||
-           wrapper->has_changes_to_commit()) {
+  void BlockingCommit(MockDelegate* delegate, StorageAreaImpl* area) {
+    while (area->has_pending_load_tasks() || area->has_changes_to_commit()) {
       base::RunLoop loop;
       delegate->SetDidCommitCallback(loop.QuitClosure());
-      wrapper->ScheduleImmediateCommit();
+      area->ScheduleImmediateCommit();
       loop.Run();
     }
   }
@@ -343,28 +342,27 @@ class LevelDBWrapperImplTest : public testing::Test,
   FakeLevelDBDatabase db_;
   leveldb::mojom::LevelDBDatabasePtr level_db_database_ptr_;
   MockDelegate delegate_;
-  std::unique_ptr<LevelDBWrapperImpl> level_db_wrapper_;
-  blink::mojom::StorageAreaPtr level_db_wrapper_ptr_;
+  std::unique_ptr<StorageAreaImpl> storage_area_;
+  blink::mojom::StorageAreaPtr storage_area_ptr_;
   mojo::AssociatedBinding<blink::mojom::StorageAreaObserver> observer_binding_;
   std::vector<Observation> observations_;
   bool should_record_send_old_value_observations_ = false;
 };
 
-class LevelDBWrapperImplParamTest
-    : public LevelDBWrapperImplTest,
-      public testing::WithParamInterface<CacheMode> {
+class StorageAreaImplParamTest : public StorageAreaImplTest,
+                                 public testing::WithParamInterface<CacheMode> {
  public:
-  LevelDBWrapperImplParamTest() {}
-  ~LevelDBWrapperImplParamTest() override {}
+  StorageAreaImplParamTest() {}
+  ~StorageAreaImplParamTest() override {}
 };
 
-INSTANTIATE_TEST_CASE_P(LevelDBWrapperImplTest,
-                        LevelDBWrapperImplParamTest,
+INSTANTIATE_TEST_CASE_P(StorageAreaImplTest,
+                        StorageAreaImplParamTest,
                         testing::Values(CacheMode::KEYS_ONLY_WHEN_POSSIBLE,
                                         CacheMode::KEYS_AND_VALUES));
 
-TEST_F(LevelDBWrapperImplTest, GetLoadedFromMap) {
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
+TEST_F(StorageAreaImplTest, GetLoadedFromMap) {
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   std::vector<uint8_t> result;
   EXPECT_TRUE(GetSync(test_key2_bytes_, &result));
   EXPECT_EQ(test_value2_bytes_, result);
@@ -372,8 +370,8 @@ TEST_F(LevelDBWrapperImplTest, GetLoadedFromMap) {
   EXPECT_FALSE(GetSync(ToBytes("x"), &result));
 }
 
-TEST_F(LevelDBWrapperImplTest, GetFromPutOverwrite) {
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
+TEST_F(StorageAreaImplTest, GetFromPutOverwrite) {
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   std::vector<uint8_t> key = test_key2_bytes_;
   std::vector<uint8_t> value = ToBytes("foo");
 
@@ -383,9 +381,10 @@ TEST_F(LevelDBWrapperImplTest, GetFromPutOverwrite) {
   bool get_success = false;
   {
     IncrementalBarrier barrier(loop.QuitClosure());
-    wrapper()->Put(key, value, test_value2_bytes_, test_source_,
-                   MakeSuccessCallback(barrier.Get(), &put_success));
-    wrapper()->Get(key, MakeGetCallback(barrier.Get(), &get_success, &result));
+    storage_area()->Put(key, value, test_value2_bytes_, test_source_,
+                        MakeSuccessCallback(barrier.Get(), &put_success));
+    storage_area()->Get(key,
+                        MakeGetCallback(barrier.Get(), &get_success, &result));
   }
 
   loop.Run();
@@ -395,8 +394,8 @@ TEST_F(LevelDBWrapperImplTest, GetFromPutOverwrite) {
   EXPECT_EQ(value, result);
 }
 
-TEST_F(LevelDBWrapperImplTest, GetFromPutNewKey) {
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
+TEST_F(StorageAreaImplTest, GetFromPutNewKey) {
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   std::vector<uint8_t> key = ToBytes("newkey");
   std::vector<uint8_t> value = ToBytes("foo");
 
@@ -407,41 +406,42 @@ TEST_F(LevelDBWrapperImplTest, GetFromPutNewKey) {
   EXPECT_EQ(value, result);
 }
 
-TEST_F(LevelDBWrapperImplTest, PutLoadsValuesAfterCacheModeUpgrade) {
+TEST_F(StorageAreaImplTest, PutLoadsValuesAfterCacheModeUpgrade) {
   std::vector<uint8_t> key = ToBytes("newkey");
   std::vector<uint8_t> value1 = ToBytes("foo");
   std::vector<uint8_t> value2 = ToBytes("bar");
 
-  ASSERT_EQ(CacheMode::KEYS_ONLY_WHEN_POSSIBLE, wrapper_impl()->cache_mode());
+  ASSERT_EQ(CacheMode::KEYS_ONLY_WHEN_POSSIBLE,
+            storage_area_impl()->cache_mode());
 
   // Do a put to load the key-only cache.
   EXPECT_TRUE(PutSync(key, value1, base::nullopt));
   BlockingCommit();
-  EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_ONLY,
-            wrapper_impl()->map_state_);
+  EXPECT_EQ(StorageAreaImpl::MapState::LOADED_KEYS_ONLY,
+            storage_area_impl()->map_state_);
 
   // Change cache mode.
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   // Loading new map isn't necessary yet.
-  EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_ONLY,
-            wrapper_impl()->map_state_);
+  EXPECT_EQ(StorageAreaImpl::MapState::LOADED_KEYS_ONLY,
+            storage_area_impl()->map_state_);
 
   // Do another put and check that the map has been upgraded
   EXPECT_TRUE(PutSync(key, value2, value1));
-  EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_AND_VALUES,
-            wrapper_impl()->map_state_);
+  EXPECT_EQ(StorageAreaImpl::MapState::LOADED_KEYS_AND_VALUES,
+            storage_area_impl()->map_state_);
 }
 
-TEST_P(LevelDBWrapperImplParamTest, GetAll) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, GetAll) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(wrapper(), &data));
+  EXPECT_TRUE(test::GetAllSync(storage_area(), &data));
   EXPECT_EQ(2u, data.size());
 }
 
-TEST_P(LevelDBWrapperImplParamTest, CommitPutToDB) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, CommitPutToDB) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   std::string key1 = test_key2_;
   std::string value1 = "foo";
   std::string key2 = test_prefix_;
@@ -454,15 +454,15 @@ TEST_P(LevelDBWrapperImplParamTest, CommitPutToDB) {
   {
     IncrementalBarrier barrier(loop.QuitClosure());
 
-    wrapper()->Put(ToBytes(key1), ToBytes(value1), test_value2_bytes_,
-                   test_source_,
-                   MakeSuccessCallback(barrier.Get(), &put_success1));
-    wrapper()->Put(ToBytes(key2), ToBytes("old value"), base::nullopt,
-                   test_source_,
-                   MakeSuccessCallback(barrier.Get(), &put_success2));
-    wrapper()->Put(ToBytes(key2), ToBytes(value2), ToBytes("old value"),
-                   test_source_,
-                   MakeSuccessCallback(barrier.Get(), &put_success3));
+    storage_area()->Put(ToBytes(key1), ToBytes(value1), test_value2_bytes_,
+                        test_source_,
+                        MakeSuccessCallback(barrier.Get(), &put_success1));
+    storage_area()->Put(ToBytes(key2), ToBytes("old value"), base::nullopt,
+                        test_source_,
+                        MakeSuccessCallback(barrier.Get(), &put_success2));
+    storage_area()->Put(ToBytes(key2), ToBytes(value2), ToBytes("old value"),
+                        test_source_,
+                        MakeSuccessCallback(barrier.Get(), &put_success3));
   }
 
   loop.Run();
@@ -479,8 +479,8 @@ TEST_P(LevelDBWrapperImplParamTest, CommitPutToDB) {
   EXPECT_EQ(value2, get_mock_data(test_prefix_ + key2));
 }
 
-TEST_P(LevelDBWrapperImplParamTest, PutObservations) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, PutObservations) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   std::string key = "new_key";
   std::string value1 = "foo";
   std::string value2 = "data abc";
@@ -507,14 +507,14 @@ TEST_P(LevelDBWrapperImplParamTest, PutObservations) {
   ASSERT_EQ(2u, observations().size());
 }
 
-TEST_P(LevelDBWrapperImplParamTest, DeleteNonExistingKey) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, DeleteNonExistingKey) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   EXPECT_TRUE(DeleteSync(ToBytes("doesn't exist"), std::vector<uint8_t>()));
   EXPECT_EQ(0u, observations().size());
 }
 
-TEST_P(LevelDBWrapperImplParamTest, DeleteExistingKey) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, DeleteExistingKey) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   std::string key = "newkey";
   std::string value = "foo";
   set_mock_data(test_prefix_ + key, value);
@@ -532,8 +532,8 @@ TEST_P(LevelDBWrapperImplParamTest, DeleteExistingKey) {
   EXPECT_FALSE(has_mock_data(test_prefix_ + key));
 }
 
-TEST_P(LevelDBWrapperImplParamTest, DeleteAllWithoutLoadedMap) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, DeleteAllWithoutLoadedMap) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   std::string key = "newkey";
   std::string value = "foo";
   std::string dummy_key = "foobar";
@@ -561,8 +561,8 @@ TEST_P(LevelDBWrapperImplParamTest, DeleteAllWithoutLoadedMap) {
                       std::vector<uint8_t>(), base::nullopt));
 }
 
-TEST_P(LevelDBWrapperImplParamTest, DeleteAllWithLoadedMap) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, DeleteAllWithLoadedMap) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   std::string key = "newkey";
   std::string value = "foo";
   std::string dummy_key = "foobar";
@@ -582,15 +582,15 @@ TEST_P(LevelDBWrapperImplParamTest, DeleteAllWithLoadedMap) {
   EXPECT_TRUE(has_mock_data(dummy_key));
 }
 
-TEST_P(LevelDBWrapperImplParamTest, DeleteAllWithPendingMapLoad) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, DeleteAllWithPendingMapLoad) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   std::string key = "newkey";
   std::string value = "foo";
   std::string dummy_key = "foobar";
   set_mock_data(dummy_key, value);
 
-  wrapper()->Put(ToBytes(key), ToBytes(value), base::nullopt, kTestSource,
-                 base::DoNothing());
+  storage_area()->Put(ToBytes(key), ToBytes(value), base::nullopt, kTestSource,
+                      base::DoNothing());
 
   EXPECT_TRUE(DeleteAllSync());
   ASSERT_EQ(2u, observations().size());
@@ -604,17 +604,16 @@ TEST_P(LevelDBWrapperImplParamTest, DeleteAllWithPendingMapLoad) {
   EXPECT_TRUE(has_mock_data(dummy_key));
 }
 
-TEST_P(LevelDBWrapperImplParamTest, DeleteAllWithoutLoadedEmptyMap) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, DeleteAllWithoutLoadedEmptyMap) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   clear_mock_data();
 
   EXPECT_TRUE(DeleteAllSync());
   ASSERT_EQ(0u, observations().size());
 }
 
-TEST_F(LevelDBWrapperImplParamTest, PutOverQuotaLargeValue) {
-  wrapper_impl()->SetCacheModeForTesting(
-      LevelDBWrapperImpl::CacheMode::KEYS_AND_VALUES);
+TEST_F(StorageAreaImplParamTest, PutOverQuotaLargeValue) {
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   std::vector<uint8_t> key = ToBytes("newkey");
   std::vector<uint8_t> value(kTestSizeLimit, 4);
 
@@ -624,9 +623,8 @@ TEST_F(LevelDBWrapperImplParamTest, PutOverQuotaLargeValue) {
   EXPECT_TRUE(PutSync(key, value, base::nullopt));
 }
 
-TEST_F(LevelDBWrapperImplParamTest, PutOverQuotaLargeKey) {
-  wrapper_impl()->SetCacheModeForTesting(
-      LevelDBWrapperImpl::CacheMode::KEYS_AND_VALUES);
+TEST_F(StorageAreaImplParamTest, PutOverQuotaLargeKey) {
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   std::vector<uint8_t> key(kTestSizeLimit, 'a');
   std::vector<uint8_t> value = ToBytes("newvalue");
 
@@ -636,9 +634,8 @@ TEST_F(LevelDBWrapperImplParamTest, PutOverQuotaLargeKey) {
   EXPECT_TRUE(PutSync(key, value, base::nullopt));
 }
 
-TEST_F(LevelDBWrapperImplParamTest, PutWhenAlreadyOverQuota) {
-  wrapper_impl()->SetCacheModeForTesting(
-      LevelDBWrapperImpl::CacheMode::KEYS_AND_VALUES);
+TEST_F(StorageAreaImplParamTest, PutWhenAlreadyOverQuota) {
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   std::string key = "largedata";
   std::vector<uint8_t> value(kTestSizeLimit, 4);
   std::vector<uint8_t> old_value = value;
@@ -671,9 +668,8 @@ TEST_F(LevelDBWrapperImplParamTest, PutWhenAlreadyOverQuota) {
   EXPECT_FALSE(PutSync(ToBytes(key), value, old_value));
 }
 
-TEST_F(LevelDBWrapperImplParamTest, PutWhenAlreadyOverQuotaBecauseOfLargeKey) {
-  wrapper_impl()->SetCacheModeForTesting(
-      LevelDBWrapperImpl::CacheMode::KEYS_AND_VALUES);
+TEST_F(StorageAreaImplParamTest, PutWhenAlreadyOverQuotaBecauseOfLargeKey) {
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   std::vector<uint8_t> key(kTestSizeLimit, 'x');
   std::vector<uint8_t> value = ToBytes("value");
   std::vector<uint8_t> old_value = value;
@@ -695,8 +691,8 @@ TEST_F(LevelDBWrapperImplParamTest, PutWhenAlreadyOverQuotaBecauseOfLargeKey) {
   EXPECT_FALSE(PutSync(key, value, old_value));
 }
 
-TEST_P(LevelDBWrapperImplParamTest, PutAfterPurgeMemory) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, PutAfterPurgeMemory) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   std::vector<uint8_t> result;
   const auto key = test_key2_bytes_;
   const auto value = test_value2_bytes_;
@@ -707,15 +703,15 @@ TEST_P(LevelDBWrapperImplParamTest, PutAfterPurgeMemory) {
   EXPECT_TRUE(PutSync(key, value, value));
   EXPECT_EQ(delegate()->map_load_count(), 1);
 
-  wrapper_impl()->PurgeMemory();
+  storage_area_impl()->PurgeMemory();
 
   // Now adding should still work, and load map again.
   EXPECT_TRUE(PutSync(key, value, value));
   EXPECT_EQ(delegate()->map_load_count(), 2);
 }
 
-TEST_P(LevelDBWrapperImplParamTest, PurgeMemoryWithPendingChanges) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, PurgeMemoryWithPendingChanges) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   std::vector<uint8_t> key = test_key2_bytes_;
   std::vector<uint8_t> value = ToBytes("foo");
   EXPECT_TRUE(PutSync(key, value, test_value2_bytes_));
@@ -723,22 +719,22 @@ TEST_P(LevelDBWrapperImplParamTest, PurgeMemoryWithPendingChanges) {
 
   // Purge memory, and read. Should not actually have purged, so should not have
   // triggered a load.
-  wrapper_impl()->PurgeMemory();
+  storage_area_impl()->PurgeMemory();
 
   EXPECT_TRUE(PutSync(key, value, value));
   EXPECT_EQ(delegate()->map_load_count(), 1);
 }
 
-TEST_P(LevelDBWrapperImplParamTest, FixUpData) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
-  std::vector<LevelDBWrapperImpl::Change> changes;
+TEST_P(StorageAreaImplParamTest, FixUpData) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
+  std::vector<StorageAreaImpl::Change> changes;
   changes.push_back(std::make_pair(test_key1_bytes_, ToBytes("foo")));
   changes.push_back(std::make_pair(test_key2_bytes_, base::nullopt));
   changes.push_back(std::make_pair(test_prefix_bytes_, ToBytes("bla")));
   delegate()->set_mock_changes(std::move(changes));
 
   std::vector<blink::mojom::KeyValuePtr> data;
-  EXPECT_TRUE(test::GetAllSync(wrapper(), &data));
+  EXPECT_TRUE(test::GetAllSync(storage_area(), &data));
 
   ASSERT_EQ(2u, data.size());
   EXPECT_EQ(test_prefix_, ToString(data[0]->key));
@@ -751,46 +747,46 @@ TEST_P(LevelDBWrapperImplParamTest, FixUpData) {
   EXPECT_EQ("bla", get_mock_data(test_prefix_ + test_prefix_));
 }
 
-TEST_F(LevelDBWrapperImplTest, SetOnlyKeysWithoutDatabase) {
+TEST_F(StorageAreaImplTest, SetOnlyKeysWithoutDatabase) {
   std::vector<uint8_t> key = test_key2_bytes_;
   std::vector<uint8_t> value = ToBytes("foo");
   MockDelegate delegate;
-  LevelDBWrapperImpl level_db_wrapper(
+  StorageAreaImpl storage_area(
       nullptr, test_prefix_, &delegate,
       GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE));
-  blink::mojom::StorageAreaPtr level_db_wrapper_ptr;
-  level_db_wrapper.Bind(mojo::MakeRequest(&level_db_wrapper_ptr));
+  blink::mojom::StorageAreaPtr storage_area_ptr;
+  storage_area.Bind(mojo::MakeRequest(&storage_area_ptr));
   // Setting only keys mode is noop.
-  level_db_wrapper.SetCacheModeForTesting(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
+  storage_area.SetCacheModeForTesting(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
 
-  EXPECT_FALSE(level_db_wrapper.initialized());
-  EXPECT_EQ(CacheMode::KEYS_AND_VALUES, level_db_wrapper.cache_mode());
+  EXPECT_FALSE(storage_area.initialized());
+  EXPECT_EQ(CacheMode::KEYS_AND_VALUES, storage_area.cache_mode());
 
   // Put and Get can work synchronously without reload.
   bool put_callback_called = false;
-  level_db_wrapper.Put(key, value, base::nullopt, "source",
-                       base::BindOnce(
-                           [](bool* put_callback_called, bool success) {
-                             EXPECT_TRUE(success);
-                             *put_callback_called = true;
-                           },
-                           &put_callback_called));
+  storage_area.Put(key, value, base::nullopt, "source",
+                   base::BindOnce(
+                       [](bool* put_callback_called, bool success) {
+                         EXPECT_TRUE(success);
+                         *put_callback_called = true;
+                       },
+                       &put_callback_called));
   EXPECT_TRUE(put_callback_called);
 
   std::vector<uint8_t> expected_value;
-  level_db_wrapper.Get(
-      key, base::BindOnce(
-               [](std::vector<uint8_t>* expected_value, bool success,
-                  const std::vector<uint8_t>& value) {
-                 EXPECT_TRUE(success);
-                 *expected_value = value;
-               },
-               &expected_value));
+  storage_area.Get(key,
+                   base::BindOnce(
+                       [](std::vector<uint8_t>* expected_value, bool success,
+                          const std::vector<uint8_t>& value) {
+                         EXPECT_TRUE(success);
+                         *expected_value = value;
+                       },
+                       &expected_value));
   EXPECT_EQ(expected_value, value);
 }
 
-TEST_P(LevelDBWrapperImplParamTest, CommitOnDifferentCacheModes) {
-  wrapper_impl()->SetCacheModeForTesting(GetParam());
+TEST_P(StorageAreaImplParamTest, CommitOnDifferentCacheModes) {
+  storage_area_impl()->SetCacheModeForTesting(GetParam());
   std::vector<uint8_t> key = test_key2_bytes_;
   std::vector<uint8_t> value = ToBytes("foo");
   std::vector<uint8_t> value2 = ToBytes("foo2");
@@ -798,29 +794,29 @@ TEST_P(LevelDBWrapperImplParamTest, CommitOnDifferentCacheModes) {
 
   // The initial map always has values, so a nullopt is fine for the old value.
   ASSERT_TRUE(PutSync(key, value, base::nullopt));
-  ASSERT_TRUE(wrapper_impl()->commit_batch_);
+  ASSERT_TRUE(storage_area_impl()->commit_batch_);
 
-  // Wrapper stays in CacheMode::KEYS_AND_VALUES until the first commit has
+  // Area stays in CacheMode::KEYS_AND_VALUES until the first commit has
   // succeeded.
-  EXPECT_TRUE(wrapper_impl()->commit_batch_->changed_values.empty());
-  auto* changes = &wrapper_impl()->commit_batch_->changed_keys;
+  EXPECT_TRUE(storage_area_impl()->commit_batch_->changed_values.empty());
+  auto* changes = &storage_area_impl()->commit_batch_->changed_keys;
   ASSERT_EQ(1u, changes->size());
   EXPECT_EQ(key, *changes->begin());
 
   BlockingCommit();
 
   ASSERT_TRUE(PutSync(key, value2, value));
-  ASSERT_TRUE(wrapper_impl()->commit_batch_);
+  ASSERT_TRUE(storage_area_impl()->commit_batch_);
 
   // Commit has occured, so the map type will diverge based on the cache mode.
   if (GetParam() == CacheMode::KEYS_AND_VALUES) {
-    EXPECT_TRUE(wrapper_impl()->commit_batch_->changed_values.empty());
-    auto* changes = &wrapper_impl()->commit_batch_->changed_keys;
+    EXPECT_TRUE(storage_area_impl()->commit_batch_->changed_values.empty());
+    auto* changes = &storage_area_impl()->commit_batch_->changed_keys;
     ASSERT_EQ(1u, changes->size());
     EXPECT_EQ(key, *changes->begin());
   } else {
-    EXPECT_TRUE(wrapper_impl()->commit_batch_->changed_keys.empty());
-    auto* changes = &wrapper_impl()->commit_batch_->changed_values;
+    EXPECT_TRUE(storage_area_impl()->commit_batch_->changed_keys.empty());
+    auto* changes = &storage_area_impl()->commit_batch_->changed_values;
     ASSERT_EQ(1u, changes->size());
     auto it = changes->begin();
     EXPECT_EQ(key, it->first);
@@ -831,21 +827,21 @@ TEST_P(LevelDBWrapperImplParamTest, CommitOnDifferentCacheModes) {
 
   EXPECT_EQ("foo2", get_mock_data(test_prefix_ + test_key2_));
   if (GetParam() == CacheMode::KEYS_AND_VALUES)
-    EXPECT_EQ(2u, wrapper_impl()->keys_values_map_.size());
+    EXPECT_EQ(2u, storage_area_impl()->keys_values_map_.size());
   else
-    EXPECT_EQ(2u, wrapper_impl()->keys_only_map_.size());
+    EXPECT_EQ(2u, storage_area_impl()->keys_only_map_.size());
   ASSERT_TRUE(PutSync(key, value2, value2));
-  EXPECT_FALSE(wrapper_impl()->commit_batch_);
+  EXPECT_FALSE(storage_area_impl()->commit_batch_);
   ASSERT_TRUE(PutSync(key, value3, value2));
-  ASSERT_TRUE(wrapper_impl()->commit_batch_);
+  ASSERT_TRUE(storage_area_impl()->commit_batch_);
 
   if (GetParam() == CacheMode::KEYS_AND_VALUES) {
-    auto* changes = &wrapper_impl()->commit_batch_->changed_keys;
+    auto* changes = &storage_area_impl()->commit_batch_->changed_keys;
     EXPECT_EQ(1u, changes->size());
     auto it = changes->find(key);
     ASSERT_NE(it, changes->end());
   } else {
-    auto* changes = &wrapper_impl()->commit_batch_->changed_values;
+    auto* changes = &storage_area_impl()->commit_batch_->changed_values;
     EXPECT_EQ(1u, changes->size());
     auto it = changes->find(key);
     ASSERT_NE(it, changes->end());
@@ -853,13 +849,13 @@ TEST_P(LevelDBWrapperImplParamTest, CommitOnDifferentCacheModes) {
   }
 
   clear_mock_data();
-  EXPECT_TRUE(wrapper_impl()->has_changes_to_commit());
+  EXPECT_TRUE(storage_area_impl()->has_changes_to_commit());
   BlockingCommit();
   EXPECT_EQ("foobar", get_mock_data(test_prefix_ + test_key2_));
-  EXPECT_FALSE(wrapper_impl()->has_changes_to_commit());
+  EXPECT_FALSE(storage_area_impl()->has_changes_to_commit());
 }
 
-TEST_F(LevelDBWrapperImplTest, GetAllWhenCacheOnlyKeys) {
+TEST_F(StorageAreaImplTest, GetAllWhenCacheOnlyKeys) {
   std::vector<uint8_t> key = test_key2_bytes_;
   std::vector<uint8_t> value = ToBytes("foo");
   std::vector<uint8_t> value2 = ToBytes("foobar");
@@ -868,7 +864,7 @@ TEST_F(LevelDBWrapperImplTest, GetAllWhenCacheOnlyKeys) {
   ASSERT_TRUE(PutSync(key, value, base::nullopt));
   BlockingCommit();
   ASSERT_TRUE(PutSync(key, value2, value));
-  EXPECT_TRUE(wrapper_impl()->has_changes_to_commit());
+  EXPECT_TRUE(storage_area_impl()->has_changes_to_commit());
 
   bool get_all_success = false;
   std::vector<blink::mojom::KeyValuePtr> data;
@@ -881,14 +877,15 @@ TEST_F(LevelDBWrapperImplTest, GetAllWhenCacheOnlyKeys) {
   {
     IncrementalBarrier barrier(loop.QuitClosure());
 
-    wrapper()->Put(key, value, value2, test_source_,
-                   MakeSuccessCallback(barrier.Get(), &put_result1));
+    storage_area()->Put(key, value, value2, test_source_,
+                        MakeSuccessCallback(barrier.Get(), &put_result1));
 
-    wrapper()->GetAll(GetAllCallback::CreateAndBind(&result, barrier.Get()),
-                      MakeGetAllCallback(&get_all_success, &data));
-    wrapper()->Put(key, value2, value, test_source_,
-                   MakeSuccessCallback(barrier.Get(), &put_result2));
-    FlushWrapperBinding();
+    storage_area()->GetAll(
+        GetAllCallback::CreateAndBind(&result, barrier.Get()),
+        MakeGetAllCallback(&get_all_success, &data));
+    storage_area()->Put(key, value2, value, test_source_,
+                        MakeSuccessCallback(barrier.Get(), &put_result2));
+    FlushAreaBinding();
   }
 
   // GetAll triggers a commit when it's switching map types.
@@ -914,13 +911,13 @@ TEST_F(LevelDBWrapperImplTest, GetAllWhenCacheOnlyKeys) {
   // The last "put" isn't committed yet.
   EXPECT_EQ("foo", get_mock_data(test_prefix_ + test_key2_));
 
-  ASSERT_TRUE(wrapper_impl()->has_changes_to_commit());
+  ASSERT_TRUE(storage_area_impl()->has_changes_to_commit());
   BlockingCommit();
 
   EXPECT_EQ("foobar", get_mock_data(test_prefix_ + test_key2_));
 }
 
-TEST_F(LevelDBWrapperImplTest, GetAllAfterSetCacheMode) {
+TEST_F(StorageAreaImplTest, GetAllAfterSetCacheMode) {
   std::vector<uint8_t> key = test_key2_bytes_;
   std::vector<uint8_t> value = ToBytes("foo");
   std::vector<uint8_t> value2 = ToBytes("foobar");
@@ -928,16 +925,16 @@ TEST_F(LevelDBWrapperImplTest, GetAllAfterSetCacheMode) {
   // Go to load state only keys.
   ASSERT_TRUE(PutSync(key, value, base::nullopt));
   BlockingCommit();
-  EXPECT_TRUE(wrapper_impl()->map_state_ ==
-              LevelDBWrapperImpl::MapState::LOADED_KEYS_ONLY);
+  EXPECT_TRUE(storage_area_impl()->map_state_ ==
+              StorageAreaImpl::MapState::LOADED_KEYS_ONLY);
   ASSERT_TRUE(PutSync(key, value2, value));
-  EXPECT_TRUE(wrapper_impl()->has_changes_to_commit());
+  EXPECT_TRUE(storage_area_impl()->has_changes_to_commit());
 
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
 
   // Cache isn't cleared when commit batch exists.
-  EXPECT_TRUE(wrapper_impl()->map_state_ ==
-              LevelDBWrapperImpl::MapState::LOADED_KEYS_ONLY);
+  EXPECT_TRUE(storage_area_impl()->map_state_ ==
+              StorageAreaImpl::MapState::LOADED_KEYS_ONLY);
 
   base::RunLoop loop;
 
@@ -949,22 +946,22 @@ TEST_F(LevelDBWrapperImplTest, GetAllAfterSetCacheMode) {
   {
     IncrementalBarrier barrier(loop.QuitClosure());
 
-    wrapper()->Put(key, value, value2, test_source_,
-                   MakeSuccessCallback(barrier.Get(), &put_success));
+    storage_area()->Put(key, value, value2, test_source_,
+                        MakeSuccessCallback(barrier.Get(), &put_success));
 
     // Put task triggers database upgrade, so there are no more changes
     // to commit.
-    FlushWrapperBinding();
-    EXPECT_FALSE(wrapper_impl()->has_changes_to_commit());
-    EXPECT_TRUE(wrapper_impl()->has_pending_load_tasks());
+    FlushAreaBinding();
+    EXPECT_FALSE(storage_area_impl()->has_changes_to_commit());
+    EXPECT_TRUE(storage_area_impl()->has_pending_load_tasks());
 
-    wrapper()->GetAll(
+    storage_area()->GetAll(
         GetAllCallback::CreateAndBind(&get_all_success, barrier.Get()),
         MakeGetAllCallback(&get_all_callback_success, &data));
 
     // This Delete() should not affect the value returned by GetAll().
-    wrapper()->Delete(key, value, test_source_,
-                      MakeSuccessCallback(barrier.Get(), &delete_success));
+    storage_area()->Delete(key, value, test_source_,
+                           MakeSuccessCallback(barrier.Get(), &delete_success));
   }
   loop.Run();
 
@@ -984,74 +981,77 @@ TEST_F(LevelDBWrapperImplTest, GetAllAfterSetCacheMode) {
   // map should be loading.
   EXPECT_EQ("foobar", get_mock_data(test_prefix_ + test_key2_));
 
-  ASSERT_TRUE(wrapper_impl()->has_changes_to_commit());
+  ASSERT_TRUE(storage_area_impl()->has_changes_to_commit());
   BlockingCommit();
 
   EXPECT_FALSE(has_mock_data(test_prefix_ + test_key2_));
 }
 
-TEST_F(LevelDBWrapperImplTest, SetCacheModeConsistent) {
+TEST_F(StorageAreaImplTest, SetCacheModeConsistent) {
   std::vector<uint8_t> key = test_key2_bytes_;
   std::vector<uint8_t> value = ToBytes("foo");
   std::vector<uint8_t> value2 = ToBytes("foobar");
 
-  EXPECT_FALSE(wrapper_impl()->IsMapLoaded());
-  EXPECT_TRUE(wrapper_impl()->cache_mode() ==
+  EXPECT_FALSE(storage_area_impl()->IsMapLoaded());
+  EXPECT_TRUE(storage_area_impl()->cache_mode() ==
               CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
 
-  // Clear the database before the wrapper loads data.
+  // Clear the database before the area loads data.
   clear_mock_data();
 
   EXPECT_TRUE(PutSync(key, value, base::nullopt));
-  EXPECT_TRUE(wrapper_impl()->has_changes_to_commit());
+  EXPECT_TRUE(storage_area_impl()->has_changes_to_commit());
   BlockingCommit();
 
   EXPECT_TRUE(PutSync(key, value2, value));
-  EXPECT_TRUE(wrapper_impl()->has_changes_to_commit());
+  EXPECT_TRUE(storage_area_impl()->has_changes_to_commit());
 
   // Setting cache mode does not reload the cache till it is required.
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
-  EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_ONLY,
-            wrapper_impl()->map_state_);
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
+  EXPECT_EQ(StorageAreaImpl::MapState::LOADED_KEYS_ONLY,
+            storage_area_impl()->map_state_);
 
   // Put operation should change the mode.
   EXPECT_TRUE(PutSync(key, value, value2));
-  EXPECT_TRUE(wrapper_impl()->has_changes_to_commit());
-  EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_AND_VALUES,
-            wrapper_impl()->map_state_);
+  EXPECT_TRUE(storage_area_impl()->has_changes_to_commit());
+  EXPECT_EQ(StorageAreaImpl::MapState::LOADED_KEYS_AND_VALUES,
+            storage_area_impl()->map_state_);
   std::vector<uint8_t> result;
   EXPECT_TRUE(GetSync(key, &result));
   EXPECT_EQ(value, result);
-  EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_AND_VALUES,
-            wrapper_impl()->map_state_);
+  EXPECT_EQ(StorageAreaImpl::MapState::LOADED_KEYS_AND_VALUES,
+            storage_area_impl()->map_state_);
 
   BlockingCommit();
 
   // Test that the map will unload correctly
   EXPECT_TRUE(PutSync(key, value2, value));
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
-  EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_ONLY,
-            wrapper_impl()->map_state_);
+  storage_area_impl()->SetCacheModeForTesting(
+      CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
+  EXPECT_EQ(StorageAreaImpl::MapState::LOADED_KEYS_ONLY,
+            storage_area_impl()->map_state_);
   BlockingCommit();
-  EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_ONLY,
-            wrapper_impl()->map_state_);
+  EXPECT_EQ(StorageAreaImpl::MapState::LOADED_KEYS_ONLY,
+            storage_area_impl()->map_state_);
 
   // Test the map will unload right away when there are no changes.
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   EXPECT_TRUE(GetSync(key, &result));
-  EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_AND_VALUES,
-            wrapper_impl()->map_state_);
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
-  EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_ONLY,
-            wrapper_impl()->map_state_);
+  EXPECT_EQ(StorageAreaImpl::MapState::LOADED_KEYS_AND_VALUES,
+            storage_area_impl()->map_state_);
+  storage_area_impl()->SetCacheModeForTesting(
+      CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
+  EXPECT_EQ(StorageAreaImpl::MapState::LOADED_KEYS_ONLY,
+            storage_area_impl()->map_state_);
 }
 
-TEST_F(LevelDBWrapperImplTest, SendOldValueObservations) {
+TEST_F(StorageAreaImplTest, SendOldValueObservations) {
   should_record_send_old_value_observations(true);
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
+  storage_area_impl()->SetCacheModeForTesting(CacheMode::KEYS_AND_VALUES);
   // Flush tasks on mojo thread to observe callback.
   EXPECT_TRUE(DeleteSync(ToBytes("doesn't exist"), base::nullopt));
-  wrapper_impl()->SetCacheModeForTesting(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
+  storage_area_impl()->SetCacheModeForTesting(
+      CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
   // Flush tasks on mojo thread to observe callback.
   EXPECT_TRUE(DeleteSync(ToBytes("doesn't exist"), base::nullopt));
 
@@ -1062,13 +1062,13 @@ TEST_F(LevelDBWrapperImplTest, SendOldValueObservations) {
   EXPECT_TRUE(observations()[1].should_send_old_value);
 }
 
-TEST_P(LevelDBWrapperImplParamTest, PrefixForking) {
+TEST_P(StorageAreaImplParamTest, PrefixForking) {
   std::string value3 = "value3";
   std::string value4 = "value4";
   std::string value5 = "value5";
 
   // In order to test the interaction between forking and mojo calls where
-  // forking can happen in between a request and reply to the wrapper mojo
+  // forking can happen in between a request and reply to the area mojo
   // service, all calls are done on the 'impl' object itself.
 
   // Operations in the same run cycle:
@@ -1078,11 +1078,11 @@ TEST_P(LevelDBWrapperImplParamTest, PrefixForking) {
   // Put on fork 1
   // Put on original
   // Fork 3 created from original
-  std::unique_ptr<LevelDBWrapperImpl> fork1;
+  std::unique_ptr<StorageAreaImpl> fork1;
   MockDelegate fork1_delegate;
-  std::unique_ptr<LevelDBWrapperImpl> fork2;
+  std::unique_ptr<StorageAreaImpl> fork2;
   MockDelegate fork2_delegate;
-  std::unique_ptr<LevelDBWrapperImpl> fork3;
+  std::unique_ptr<StorageAreaImpl> fork3;
   MockDelegate fork3_delegate;
 
   auto options = GetDefaultTestingOptions(GetParam());
@@ -1094,8 +1094,8 @@ TEST_P(LevelDBWrapperImplParamTest, PrefixForking) {
     IncrementalBarrier barrier(loop.QuitClosure());
 
     // Create fork 1.
-    fork1 = wrapper_impl()->ForkToNewPrefix(test_copy_prefix1_, &fork1_delegate,
-                                            options);
+    fork1 = storage_area_impl()->ForkToNewPrefix(test_copy_prefix1_,
+                                                 &fork1_delegate, options);
 
     // Do a put on fork 1 and create fork 2.
     // Note - these are 'skipping' the mojo layer, which is why the fork isn't
@@ -1108,10 +1108,10 @@ TEST_P(LevelDBWrapperImplParamTest, PrefixForking) {
                MakeSuccessCallback(barrier.Get(), &put_success2));
 
     // Do a put on original and create fork 3, which is key-only.
-    wrapper_impl()->Put(test_key1_bytes_, ToBytes(value3), test_value1_bytes_,
-                        test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_success3));
-    fork3 = wrapper_impl()->ForkToNewPrefix(
+    storage_area_impl()->Put(test_key1_bytes_, ToBytes(value3),
+                             test_value1_bytes_, test_source_,
+                             MakeSuccessCallback(barrier.Get(), &put_success3));
+    fork3 = storage_area_impl()->ForkToNewPrefix(
         test_copy_prefix3_, &fork3_delegate,
         GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE));
   }
@@ -1121,17 +1121,18 @@ TEST_P(LevelDBWrapperImplParamTest, PrefixForking) {
   EXPECT_TRUE(fork2.get());
   EXPECT_TRUE(fork3.get());
 
-  EXPECT_EQ(value3, GetSyncStrUsingGetAll(wrapper_impl(), test_key1_));
+  EXPECT_EQ(value3, GetSyncStrUsingGetAll(storage_area_impl(), test_key1_));
   EXPECT_EQ(test_value1_, GetSyncStrUsingGetAll(fork1.get(), test_key1_));
   EXPECT_EQ(test_value1_, GetSyncStrUsingGetAll(fork2.get(), test_key1_));
   EXPECT_EQ(value3, GetSyncStrUsingGetAll(fork3.get(), test_key1_));
 
-  EXPECT_EQ(test_value2_, GetSyncStrUsingGetAll(wrapper_impl(), test_key2_));
+  EXPECT_EQ(test_value2_,
+            GetSyncStrUsingGetAll(storage_area_impl(), test_key2_));
   EXPECT_EQ(value5, GetSyncStrUsingGetAll(fork1.get(), test_key2_));
   EXPECT_EQ(value4, GetSyncStrUsingGetAll(fork2.get(), test_key2_));
   EXPECT_EQ(test_value2_, GetSyncStrUsingGetAll(fork3.get(), test_key2_));
 
-  BlockingCommit(delegate(), wrapper_impl());
+  BlockingCommit(delegate(), storage_area_impl());
   BlockingCommit(&fork1_delegate, fork1.get());
 
   // test_key1_ values.
@@ -1147,7 +1148,7 @@ TEST_P(LevelDBWrapperImplParamTest, PrefixForking) {
   EXPECT_EQ(test_value2_, get_mock_data(test_copy_prefix3_ + test_key2_));
 }
 
-TEST_P(LevelDBWrapperImplParamTest, PrefixForkAfterLoad) {
+TEST_P(StorageAreaImplParamTest, PrefixForkAfterLoad) {
   const std::string kValue = "foo";
   const std::vector<uint8_t> kValueVec = ToBytes(kValue);
 
@@ -1156,14 +1157,14 @@ TEST_P(LevelDBWrapperImplParamTest, PrefixForkAfterLoad) {
 
   // Execute the fork.
   MockDelegate fork1_delegate;
-  std::unique_ptr<LevelDBWrapperImpl> fork1 =
-      wrapper_impl()->ForkToNewPrefix(test_copy_prefix1_, &fork1_delegate,
-                                      GetDefaultTestingOptions(GetParam()));
+  std::unique_ptr<StorageAreaImpl> fork1 = storage_area_impl()->ForkToNewPrefix(
+      test_copy_prefix1_, &fork1_delegate,
+      GetDefaultTestingOptions(GetParam()));
 
   // Check our forked state.
   EXPECT_EQ(kValue, GetSyncStrUsingGetAll(fork1.get(), test_key1_));
 
-  BlockingCommit(delegate(), wrapper_impl());
+  BlockingCommit(delegate(), storage_area_impl());
 
   EXPECT_EQ(kValue, get_mock_data(test_copy_prefix1_ + test_key1_));
 }
@@ -1181,38 +1182,38 @@ struct FuzzState {
 };
 }  // namespace
 
-TEST_F(LevelDBWrapperImplTest, PrefixForkingPsuedoFuzzer) {
+TEST_F(StorageAreaImplTest, PrefixForkingPsuedoFuzzer) {
   const std::string kKey1 = "key1";
   const std::vector<uint8_t> kKey1Vec = ToBytes(kKey1);
   const std::string kKey2 = "key2";
   const std::vector<uint8_t> kKey2Vec = ToBytes(kKey2);
-  const int kTotalWrappers = 1000;
+  const int kTotalAreas = 1000;
 
   // This tests tries to throw all possible enumartions of operations and
-  // forking at wrappers. The purpose is to hit all edge cases possible to
+  // forking at areas. The purpose is to hit all edge cases possible to
   // expose any loading bugs.
 
-  std::vector<FuzzState> states(kTotalWrappers);
-  std::vector<std::unique_ptr<LevelDBWrapperImpl>> wrappers(kTotalWrappers);
-  std::vector<MockDelegate> delegates(kTotalWrappers);
+  std::vector<FuzzState> states(kTotalAreas);
+  std::vector<std::unique_ptr<StorageAreaImpl>> areas(kTotalAreas);
+  std::vector<MockDelegate> delegates(kTotalAreas);
   std::list<bool> successes;
   int curr_prefix = 0;
 
   base::RunLoop loop;
   {
     IncrementalBarrier barrier(loop.QuitClosure());
-    for (int64_t i = 0; i < kTotalWrappers; i++) {
+    for (int64_t i = 0; i < kTotalAreas; i++) {
       FuzzState& state = states[i];
-      if (!wrappers[i]) {
-        wrappers[i] = wrapper_impl()->ForkToNewPrefix(
+      if (!areas[i]) {
+        areas[i] = storage_area_impl()->ForkToNewPrefix(
             GetNewPrefix(&curr_prefix), &delegates[i],
             GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE));
       }
       int64_t forks = i;
-      if ((i % 5 == 0 || i % 6 == 0) && forks + 1 < kTotalWrappers) {
+      if ((i % 5 == 0 || i % 6 == 0) && forks + 1 < kTotalAreas) {
         forks++;
         states[forks] = state;
-        wrappers[forks] = wrappers[i]->ForkToNewPrefix(
+        areas[forks] = areas[i]->ForkToNewPrefix(
             GetNewPrefix(&curr_prefix), &delegates[forks],
             GetDefaultTestingOptions(CacheMode::KEYS_AND_VALUES));
       }
@@ -1220,42 +1221,41 @@ TEST_F(LevelDBWrapperImplTest, PrefixForkingPsuedoFuzzer) {
         FuzzState old_state = state;
         state.val1 = base::nullopt;
         successes.push_back(false);
-        wrappers[i]->Delete(
-            kKey1Vec, old_state.val1, test_source_,
-            MakeSuccessCallback(barrier.Get(), &successes.back()));
+        areas[i]->Delete(kKey1Vec, old_state.val1, test_source_,
+                         MakeSuccessCallback(barrier.Get(), &successes.back()));
       }
       if (i % 4 == 0) {
         FuzzState old_state = state;
         state.val2 = base::make_optional<std::vector<uint8_t>>(
             {static_cast<uint8_t>(i)});
         successes.push_back(false);
-        wrappers[i]->Put(kKey2Vec, state.val2.value(), old_state.val2,
-                         test_source_,
-                         MakeSuccessCallback(barrier.Get(), &successes.back()));
+        areas[i]->Put(kKey2Vec, state.val2.value(), old_state.val2,
+                      test_source_,
+                      MakeSuccessCallback(barrier.Get(), &successes.back()));
       }
       if (i % 3 == 0) {
         FuzzState old_state = state;
         state.val1 = base::make_optional<std::vector<uint8_t>>(
             {static_cast<uint8_t>(i + 5)});
         successes.push_back(false);
-        wrappers[i]->Put(kKey1Vec, state.val1.value(), old_state.val1,
-                         test_source_,
-                         MakeSuccessCallback(barrier.Get(), &successes.back()));
+        areas[i]->Put(kKey1Vec, state.val1.value(), old_state.val1,
+                      test_source_,
+                      MakeSuccessCallback(barrier.Get(), &successes.back()));
       }
       if (i % 11 == 0) {
         state.val1 = base::nullopt;
         state.val2 = base::nullopt;
         successes.push_back(false);
-        wrappers[i]->DeleteAll(
+        areas[i]->DeleteAll(
             test_source_,
             MakeSuccessCallback(barrier.Get(), &successes.back()));
       }
-      if (i % 2 == 0 && forks + 1 < kTotalWrappers) {
+      if (i % 2 == 0 && forks + 1 < kTotalAreas) {
         CacheMode mode = i % 3 == 0 ? CacheMode::KEYS_AND_VALUES
                                     : CacheMode::KEYS_ONLY_WHEN_POSSIBLE;
         forks++;
         states[forks] = state;
-        wrappers[forks] = wrappers[i]->ForkToNewPrefix(
+        areas[forks] = areas[i]->ForkToNewPrefix(
             GetNewPrefix(&curr_prefix), &delegates[forks],
             GetDefaultTestingOptions(mode));
       }
@@ -1264,23 +1264,23 @@ TEST_F(LevelDBWrapperImplTest, PrefixForkingPsuedoFuzzer) {
         state.val1 = base::make_optional<std::vector<uint8_t>>(
             {static_cast<uint8_t>(i + 9)});
         successes.push_back(false);
-        wrappers[i]->Put(kKey1Vec, state.val1.value(), old_state.val1,
-                         test_source_,
-                         MakeSuccessCallback(barrier.Get(), &successes.back()));
+        areas[i]->Put(kKey1Vec, state.val1.value(), old_state.val1,
+                      test_source_,
+                      MakeSuccessCallback(barrier.Get(), &successes.back()));
       }
     }
   }
   loop.Run();
 
   // This section checks that we get the correct values when we query the
-  // wrappers (which may or may not be maintaining their own cache).
-  for (size_t i = 0; i < kTotalWrappers; i++) {
+  // areas (which may or may not be maintaining their own cache).
+  for (size_t i = 0; i < kTotalAreas; i++) {
     FuzzState& state = states[i];
     std::vector<uint8_t> result;
 
-    // Note: this will cause all keys-only wrappers to commit.
-    std::string result1 = GetSyncStrUsingGetAll(wrappers[i].get(), kKey1);
-    std::string result2 = GetSyncStrUsingGetAll(wrappers[i].get(), kKey2);
+    // Note: this will cause all keys-only areas to commit.
+    std::string result1 = GetSyncStrUsingGetAll(areas[i].get(), kKey1);
+    std::string result2 = GetSyncStrUsingGetAll(areas[i].get(), kKey2);
     EXPECT_EQ(!!state.val1, !result1.empty()) << i;
     if (state.val1)
       EXPECT_EQ(state.val1.value(), ToBytes(result1));
@@ -1289,24 +1289,24 @@ TEST_F(LevelDBWrapperImplTest, PrefixForkingPsuedoFuzzer) {
       EXPECT_EQ(state.val2.value(), ToBytes(result2)) << i;
   }
 
-  // This section verifies that all wrappers have committed their changes to
+  // This section verifies that all areas have committed their changes to
   // the database.
-  ASSERT_EQ(wrappers.size(), delegates.size());
-  size_t half = kTotalWrappers / 2;
+  ASSERT_EQ(areas.size(), delegates.size());
+  size_t half = kTotalAreas / 2;
   for (size_t i = 0; i < half; i++) {
-    BlockingCommit(&delegates[i], wrappers[i].get());
+    BlockingCommit(&delegates[i], areas[i].get());
   }
 
-  for (size_t i = kTotalWrappers - 1; i >= half; i--) {
-    BlockingCommit(&delegates[i], wrappers[i].get());
+  for (size_t i = kTotalAreas - 1; i >= half; i--) {
+    BlockingCommit(&delegates[i], areas[i].get());
   }
 
-  // This section checks the data in the database itself to verify all wrappers
+  // This section checks the data in the database itself to verify all areas
   // committed changes correctly.
-  for (size_t i = 0; i < kTotalWrappers; ++i) {
+  for (size_t i = 0; i < kTotalAreas; ++i) {
     FuzzState& state = states[i];
 
-    std::vector<uint8_t> prefix = wrappers[i]->prefix();
+    std::vector<uint8_t> prefix = areas[i]->prefix();
     std::string key1 = ToString(prefix) + kKey1;
     std::string key2 = ToString(prefix) + kKey2;
     EXPECT_EQ(!!state.val1, has_mock_data(key1));
@@ -1316,7 +1316,7 @@ TEST_F(LevelDBWrapperImplTest, PrefixForkingPsuedoFuzzer) {
     if (state.val2)
       EXPECT_EQ(ToString(state.val2.value()), get_mock_data(key2));
 
-    EXPECT_FALSE(wrappers[i]->has_pending_load_tasks()) << i;
+    EXPECT_FALSE(areas[i]->has_pending_load_tasks()) << i;
   }
 }
 

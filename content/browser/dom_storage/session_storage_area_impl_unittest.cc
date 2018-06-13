@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/dom_storage/session_storage_leveldb_wrapper.h"
+#include "content/browser/dom_storage/session_storage_area_impl.h"
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -21,10 +21,10 @@
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
+#include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
 #include "content/test/gmock_util.h"
-#include "content/test/leveldb_wrapper_test_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
@@ -61,9 +61,9 @@ class MockListener : public SessionStorageDataMap::Listener {
   MOCK_METHOD1(OnCommitResult, void(DatabaseError error));
 };
 
-class SessionStorageLevelDBWrapperTest : public testing::Test {
+class SessionStorageAreaImplTest : public testing::Test {
  public:
-  SessionStorageLevelDBWrapperTest()
+  SessionStorageAreaImplTest()
       : test_namespace_id1_(base::GenerateGUID()),
         test_namespace_id2_(base::GenerateGUID()),
         test_origin1_(url::Origin::Create(GURL("https://host1.com:1/"))),
@@ -75,7 +75,7 @@ class SessionStorageLevelDBWrapperTest : public testing::Test {
         std::make_unique<leveldb::LevelDBServiceImpl>(std::move(file_runner)));
 
     leveldb_service_->OpenInMemory(
-        base::nullopt, "SessionStorageLevelDBWrapperTestDatabase",
+        base::nullopt, "SessionStorageAreaImplTestDatabase",
         mojo::MakeRequest(&leveldb_database_), base::DoNothing());
 
     leveldb_database_->Put(StdStringToUint8Vector("map-0-key1"),
@@ -89,7 +89,7 @@ class SessionStorageLevelDBWrapperTest : public testing::Test {
     DCHECK(map_id->KeyPrefix() == StdStringToUint8Vector("map-0-"));
     leveldb_database_->Write(std::move(save_operations), base::DoNothing());
   }
-  ~SessionStorageLevelDBWrapperTest() override = default;
+  ~SessionStorageAreaImplTest() override = default;
 
   scoped_refptr<SessionStorageMetadata::MapData> RegisterNewAreaMap(
       SessionStorageMetadata::NamespaceEntry namespace_entry,
@@ -101,11 +101,9 @@ class SessionStorageLevelDBWrapperTest : public testing::Test {
     return map_data;
   }
 
-  SessionStorageLevelDBWrapper::RegisterNewAreaMap
-  GetRegisterNewAreaMapCallback() {
-    return base::BindRepeating(
-        &SessionStorageLevelDBWrapperTest::RegisterNewAreaMap,
-        base::Unretained(this));
+  SessionStorageAreaImpl::RegisterNewAreaMap GetRegisterNewAreaMapCallback() {
+    return base::BindRepeating(&SessionStorageAreaImplTest::RegisterNewAreaMap,
+                               base::Unretained(this));
   }
 
  protected:
@@ -122,12 +120,12 @@ class SessionStorageLevelDBWrapperTest : public testing::Test {
 };
 }  // namespace
 
-TEST_F(SessionStorageLevelDBWrapperTest, BasicUsage) {
+TEST_F(SessionStorageAreaImplTest, BasicUsage) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
       .Times(1);
 
-  auto ss_leveldb_impl = std::make_unique<SessionStorageLevelDBWrapper>(
+  auto ss_leveldb_impl = std::make_unique<SessionStorageAreaImpl>(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
       SessionStorageDataMap::Create(
           &listener_,
@@ -151,12 +149,12 @@ TEST_F(SessionStorageLevelDBWrapperTest, BasicUsage) {
       .Times(1);
 }
 
-TEST_F(SessionStorageLevelDBWrapperTest, Cloning) {
+TEST_F(SessionStorageAreaImplTest, Cloning) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
       .Times(1);
 
-  auto ss_leveldb_impl1 = std::make_unique<SessionStorageLevelDBWrapper>(
+  auto ss_leveldb_impl1 = std::make_unique<SessionStorageAreaImpl>(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
       SessionStorageDataMap::Create(
           &listener_,
@@ -226,12 +224,12 @@ TEST_F(SessionStorageLevelDBWrapperTest, Cloning) {
   ss_leveldb_impl2 = nullptr;
 }
 
-TEST_F(SessionStorageLevelDBWrapperTest, ObserverTransfer) {
+TEST_F(SessionStorageAreaImplTest, ObserverTransfer) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
       .Times(1);
 
-  auto ss_leveldb_impl1 = std::make_unique<SessionStorageLevelDBWrapper>(
+  auto ss_leveldb_impl1 = std::make_unique<SessionStorageAreaImpl>(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
       SessionStorageDataMap::Create(
           &listener_,
@@ -280,7 +278,7 @@ TEST_F(SessionStorageLevelDBWrapperTest, ObserverTransfer) {
   EXPECT_TRUE(test::PutSync(ss_leveldb2.get(), StdStringToUint8Vector("key2"),
                             StdStringToUint8Vector("data2"), base::nullopt,
                             ""));
-  ss_leveldb_impl2->data_map()->level_db_wrapper()->ScheduleImmediateCommit();
+  ss_leveldb_impl2->data_map()->storage_area()->ScheduleImmediateCommit();
 
   // Do a change on the old interface.
   EXPECT_CALL(mock_observer,
@@ -291,7 +289,7 @@ TEST_F(SessionStorageLevelDBWrapperTest, ObserverTransfer) {
   EXPECT_TRUE(test::PutSync(ss_leveldb1.get(), StdStringToUint8Vector("key1"),
                             StdStringToUint8Vector("data2"),
                             StdStringToUint8Vector("data1"), "ss_leveldb1"));
-  ss_leveldb_impl1->data_map()->level_db_wrapper()->ScheduleImmediateCommit();
+  ss_leveldb_impl1->data_map()->storage_area()->ScheduleImmediateCommit();
 
   // Wait for the commits.
   commit_waiters.Run();
@@ -305,12 +303,12 @@ TEST_F(SessionStorageLevelDBWrapperTest, ObserverTransfer) {
   ss_leveldb_impl2 = nullptr;
 }
 
-TEST_F(SessionStorageLevelDBWrapperTest, DeleteAllOnShared) {
+TEST_F(SessionStorageAreaImplTest, DeleteAllOnShared) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
       .Times(1);
 
-  auto ss_leveldb_impl1 = std::make_unique<SessionStorageLevelDBWrapper>(
+  auto ss_leveldb_impl1 = std::make_unique<SessionStorageAreaImpl>(
       metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
       SessionStorageDataMap::Create(
           &listener_,

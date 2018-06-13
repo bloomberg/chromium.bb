@@ -1,8 +1,8 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CONTENT_TEST_LEVELDB_WRAPPER_TEST_UTIL_H_
-#define CONTENT_TEST_LEVELDB_WRAPPER_TEST_UTIL_H_
+#ifndef CONTENT_BROWSER_DOM_STORAGE_TEST_STORAGE_AREA_TEST_UTIL_H_
+#define CONTENT_BROWSER_DOM_STORAGE_TEST_STORAGE_AREA_TEST_UTIL_H_
 
 #include <stdint.h>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
-// Utility functions and classes for testing LevelDBWrapper implementations.
+// Utility functions and classes for testing StorageArea implementations.
 
 namespace content {
 namespace test {
@@ -24,47 +24,46 @@ namespace test {
 base::OnceCallback<void(bool)> MakeSuccessCallback(base::OnceClosure callback,
                                                    bool* success_out);
 
-// Does a |Put| call on the given |wrapper| and waits until the response is
+// Does a |Put| call on the given |area| and waits until the response is
 // received. Returns if the call was successful.
-bool PutSync(blink::mojom::StorageArea* wrapper,
+bool PutSync(blink::mojom::StorageArea* area,
              const std::vector<uint8_t>& key,
              const std::vector<uint8_t>& value,
              const base::Optional<std::vector<uint8_t>>& old_value,
              const std::string& source);
 
-bool GetSync(blink::mojom::StorageArea* wrapper,
+bool GetSync(blink::mojom::StorageArea* area,
              const std::vector<uint8_t>& key,
              std::vector<uint8_t>* data_out);
 
-bool GetAllSync(blink::mojom::StorageArea* wrapper,
+bool GetAllSync(blink::mojom::StorageArea* area,
                 std::vector<blink::mojom::KeyValuePtr>* data_out);
 
 // Unlike GetAllSync above, this method uses
 // mojo::MakeRequestAssociatedWithDedicatedPipe for the GetAllCallback object's
-// binding to the wrapper. This can be necessary if the wrapper is an
+// binding to the area. This can be necessary if the area is an
 // implementation and not a binding with it's own pipe already.
 bool GetAllSyncOnDedicatedPipe(
-    blink::mojom::StorageArea* wrapper,
+    blink::mojom::StorageArea* area,
     std::vector<blink::mojom::KeyValuePtr>* data_out);
 
-// Does a |Delete| call on the wrapper and waits until the response is
+// Does a |Delete| call on the area and waits until the response is
 // received. Returns if the call was successful.
-bool DeleteSync(blink::mojom::StorageArea* wrapper,
+bool DeleteSync(blink::mojom::StorageArea* area,
                 const std::vector<uint8_t>& key,
                 const base::Optional<std::vector<uint8_t>>& client_old_value,
                 const std::string& source);
 
-// Does a |DeleteAll| call on the wrapper and waits until the response is
+// Does a |DeleteAll| call on the area and waits until the response is
 // received. Returns if the call was successful.
-bool DeleteAllSync(blink::mojom::StorageArea* wrapper,
-                   const std::string& source);
+bool DeleteAllSync(blink::mojom::StorageArea* area, const std::string& source);
 
 // Creates a callback that simply sets the  |*_out| variables to the arguments.
 base::OnceCallback<void(bool, std::vector<blink::mojom::KeyValuePtr>)>
 MakeGetAllCallback(bool* success_out,
                    std::vector<blink::mojom::KeyValuePtr>* data_out);
 
-// Utility class to help using the LevelDBWrapper::GetAll method. Use
+// Utility class to help using the StorageArea::GetAll method. Use
 // |CreateAndBind| to create the PtrInfo to send to the |GetAll| method.
 // When the call is complete, the |callback| will be called.
 class GetAllCallback : public blink::mojom::StorageAreaGetAllCallback {
@@ -118,4 +117,4 @@ class MockLevelDBObserver : public blink::mojom::StorageAreaObserver {
 }  // namespace test
 }  // namespace content
 
-#endif  // CONTENT_TEST_LEVELDB_WRAPPER_TEST_UTIL_H_
+#endif  // CONTENT_BROWSER_DOM_STORAGE_TEST_STORAGE_AREA_TEST_UTIL_H_

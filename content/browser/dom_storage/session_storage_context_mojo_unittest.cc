@@ -21,11 +21,11 @@
 #include "content/browser/dom_storage/test/fake_leveldb_database_error_on_write.h"
 #include "content/browser/dom_storage/test/fake_leveldb_service.h"
 #include "content/browser/dom_storage/test/mojo_test_with_file_service.h"
+#include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_utils.h"
-#include "content/test/leveldb_wrapper_test_util.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "services/file/file_service.h"
 #include "services/file/public/mojom/constants.mojom.h"
@@ -479,9 +479,9 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
                               base::Unretained(&fake_leveldb_service))));
 
   // Open three connections to the database.
-  blink::mojom::StorageAreaAssociatedPtr wrapper1;
-  blink::mojom::StorageAreaAssociatedPtr wrapper2;
-  blink::mojom::StorageAreaAssociatedPtr wrapper3;
+  blink::mojom::StorageAreaAssociatedPtr area1;
+  blink::mojom::StorageAreaAssociatedPtr area2;
+  blink::mojom::StorageAreaAssociatedPtr area3;
   mojom::SessionStorageNamespacePtr ss_namespace;
   context()->CreateSessionNamespace(namespace_id);
   {
@@ -489,18 +489,18 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
     fake_leveldb_service.SetOnOpenCallback(loop.QuitClosure());
     context()->OpenSessionStorage(kTestProcessId, namespace_id,
                                   mojo::MakeRequest(&ss_namespace));
-    ss_namespace->OpenArea(origin1, mojo::MakeRequest(&wrapper1));
-    ss_namespace->OpenArea(origin2, mojo::MakeRequest(&wrapper2));
-    ss_namespace->OpenArea(origin3, mojo::MakeRequest(&wrapper3));
+    ss_namespace->OpenArea(origin1, mojo::MakeRequest(&area1));
+    ss_namespace->OpenArea(origin2, mojo::MakeRequest(&area2));
+    ss_namespace->OpenArea(origin3, mojo::MakeRequest(&area3));
     loop.Run();
   }
 
   // Add observers to the first two connections.
   testing::StrictMock<test::MockLevelDBObserver> observer1;
-  wrapper1->AddObserver(observer1.Bind());
-  EXPECT_FALSE(wrapper1.encountered_error());
+  area1->AddObserver(observer1.Bind());
+  EXPECT_FALSE(area1.encountered_error());
   testing::StrictMock<test::MockLevelDBObserver> observer3;
-  wrapper3->AddObserver(observer3.Bind());
+  area3->AddObserver(observer3.Bind());
 
   // Verify one attempt was made to open the database, and connect that request
   // with a database implementation that always fails on write.
@@ -527,20 +527,20 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   EXPECT_CALL(observer3, KeyAdded(leveldb::StringPieceToUint8Vector("w3key"),
                                   value, "source"))
       .Times(1);
-  wrapper3->Put(leveldb::StringPieceToUint8Vector("w3key"), value,
-                base::nullopt, "source",
-                base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
+  area3->Put(leveldb::StringPieceToUint8Vector("w3key"), value, base::nullopt,
+             "source",
+             base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
 
   // Repeatedly write data to the database, to trigger enough commit errors.
   int i = 0;
-  while (!wrapper1.encountered_error()) {
+  while (!area1.encountered_error()) {
     ++i;
     base::RunLoop put_loop;
     // Every write needs to be different to make sure there actually is a
     // change to commit.
     std::vector<uint8_t> old_value = value;
     value[0]++;
-    wrapper1.set_connection_error_handler(put_loop.QuitClosure());
+    area1.set_connection_error_handler(put_loop.QuitClosure());
 
     if (i == 1) {
       EXPECT_CALL(observer1, ShouldSendOldValueOnMutations(false)).Times(1);
@@ -553,13 +553,12 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
                              old_value, "source"))
           .Times(1);
     }
-    wrapper1->Put(leveldb::StringPieceToUint8Vector("key"), value,
-                  base::nullopt, "source",
-                  base::BindLambdaForTesting([&](bool success) {
-                    EXPECT_TRUE(success);
-                    put_loop.Quit();
-                  }));
-    wrapper1.FlushForTesting();
+    area1->Put(leveldb::StringPieceToUint8Vector("key"), value, base::nullopt,
+               "source", base::BindLambdaForTesting([&](bool success) {
+                 EXPECT_TRUE(success);
+                 put_loop.Quit();
+               }));
+    area1.FlushForTesting();
     put_loop.RunUntilIdle();
     // And we need to flush after every change. Otherwise changes get batched up
     // and only one commit is done some time later.
@@ -574,27 +573,27 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   // connection to the database to have been severed.
   EXPECT_FALSE(mock_db);
 
-  // The connection to the second wrapper should have closed as well.
-  EXPECT_TRUE(wrapper2.encountered_error());
+  // The connection to the second area should have closed as well.
+  EXPECT_TRUE(area2.encountered_error());
   EXPECT_TRUE(ss_namespace.encountered_error());
 
   // And the old database should have been destroyed.
   EXPECT_EQ(1u, fake_leveldb_service.destroy_requests().size());
 
-  // Reconnect wrapper1 to the database, and try to read a value.
+  // Reconnect area1 to the database, and try to read a value.
   context()->OpenSessionStorage(kTestProcessId, namespace_id,
                                 mojo::MakeRequest(&ss_namespace));
-  ss_namespace->OpenArea(origin1, mojo::MakeRequest(&wrapper1));
+  ss_namespace->OpenArea(origin1, mojo::MakeRequest(&area1));
 
   base::RunLoop delete_loop;
   bool success = true;
   test::MockLevelDBObserver observer4;
-  wrapper1->AddObserver(observer4.Bind());
-  wrapper1->Delete(leveldb::StringPieceToUint8Vector("key"), base::nullopt,
-                   "source", base::BindLambdaForTesting([&](bool success_in) {
-                     success = success_in;
-                     delete_loop.Quit();
-                   }));
+  area1->AddObserver(observer4.Bind());
+  area1->Delete(leveldb::StringPieceToUint8Vector("key"), base::nullopt,
+                "source", base::BindLambdaForTesting([&](bool success_in) {
+                  success = success_in;
+                  delete_loop.Quit();
+                }));
 
   // Wait for LocalStorageContextMojo to try to reconnect to the database, and
   // connect that new request to a properly functioning database.
@@ -607,10 +606,10 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   std::move(reopen_request.callback).Run(leveldb::mojom::DatabaseError::OK);
   fake_leveldb_service.open_requests().clear();
 
-  // And deleting the value from the new wrapper should have failed (as the
+  // And deleting the value from the new area should have failed (as the
   // database is empty).
   delete_loop.Run();
-  wrapper1 = nullptr;
+  area1 = nullptr;
   ss_namespace.reset();
   context()->DeleteSessionNamespace(namespace_id, true);
 
@@ -638,7 +637,7 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
 
   // Open three connections to the database.
-  blink::mojom::StorageAreaAssociatedPtr wrapper;
+  blink::mojom::StorageAreaAssociatedPtr area;
   mojom::SessionStorageNamespacePtr ss_namespace;
   context()->CreateSessionNamespace(namespace_id);
   {
@@ -646,7 +645,7 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
     fake_leveldb_service.SetOnOpenCallback(loop.QuitClosure());
     context()->OpenSessionStorage(kTestProcessId, namespace_id,
                                   mojo::MakeRequest(&ss_namespace));
-    ss_namespace->OpenArea(origin1, mojo::MakeRequest(&wrapper));
+    ss_namespace->OpenArea(origin1, mojo::MakeRequest(&area));
     loop.Run();
   }
 
@@ -669,17 +668,17 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   // Repeatedly write data to the database, to trigger enough commit errors.
   auto value = leveldb::StringPieceToUint8Vector("avalue");
   base::Optional<std::vector<uint8_t>> old_value = base::nullopt;
-  while (!wrapper.encountered_error()) {
+  while (!area.encountered_error()) {
     base::RunLoop put_loop;
     // Every write needs to be different to make sure there actually is a
     // change to commit.
-    wrapper.set_connection_error_handler(put_loop.QuitClosure());
-    wrapper->Put(leveldb::StringPieceToUint8Vector("key"), value, old_value,
-                 "source", base::BindLambdaForTesting([&](bool success) {
-                   EXPECT_TRUE(success);
-                   put_loop.Quit();
-                 }));
-    wrapper.FlushForTesting();
+    area.set_connection_error_handler(put_loop.QuitClosure());
+    area->Put(leveldb::StringPieceToUint8Vector("key"), value, old_value,
+              "source", base::BindLambdaForTesting([&](bool success) {
+                EXPECT_TRUE(success);
+                put_loop.Quit();
+              }));
+    area.FlushForTesting();
     put_loop.RunUntilIdle();
     // And we need to flush after every change. Otherwise changes get batched up
     // and only one commit is done some time later.
@@ -712,24 +711,24 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   // The old database should also have been destroyed.
   EXPECT_EQ(1u, fake_leveldb_service.destroy_requests().size());
 
-  // Reconnect a wrapper to the database, and repeatedly write data to it again.
+  // Reconnect a area to the database, and repeatedly write data to it again.
   // This time all should just keep getting written, and commit errors are
   // getting ignored.
   context()->OpenSessionStorage(kTestProcessId, namespace_id,
                                 mojo::MakeRequest(&ss_namespace));
-  ss_namespace->OpenArea(origin1, mojo::MakeRequest(&wrapper));
+  ss_namespace->OpenArea(origin1, mojo::MakeRequest(&area));
   old_value = base::nullopt;
   for (int i = 0; i < 64; ++i) {
     base::RunLoop put_loop;
     // Every write needs to be different to make sure there actually is a
     // change to commit.
-    wrapper.set_connection_error_handler(put_loop.QuitClosure());
-    wrapper->Put(leveldb::StringPieceToUint8Vector("key"), value, old_value,
-                 "source", base::BindLambdaForTesting([&](bool success) {
-                   EXPECT_TRUE(success);
-                   put_loop.Quit();
-                 }));
-    wrapper.FlushForTesting();
+    area.set_connection_error_handler(put_loop.QuitClosure());
+    area->Put(leveldb::StringPieceToUint8Vector("key"), value, old_value,
+              "source", base::BindLambdaForTesting([&](bool success) {
+                EXPECT_TRUE(success);
+                put_loop.Quit();
+              }));
+    area.FlushForTesting();
     put_loop.RunUntilIdle();
     // And we need to flush after every change. Otherwise changes get batched up
     // and only one commit is done some time later.
@@ -744,7 +743,7 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   if (mock_db)
     mock_db->FlushForTesting();
   EXPECT_TRUE(mock_db);
-  EXPECT_FALSE(wrapper.encountered_error());
+  EXPECT_FALSE(area.encountered_error());
 
   context()->DeleteSessionNamespace(namespace_id, false);
 }

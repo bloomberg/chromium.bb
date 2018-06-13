@@ -24,7 +24,7 @@ scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::Create(
 scoped_refptr<SessionStorageDataMap> SessionStorageDataMap::CreateClone(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    LevelDBWrapperImpl* clone_from) {
+    StorageAreaImpl* clone_from) {
   return base::WrapRefCounted(
       new SessionStorageDataMap(listener, std::move(map_data), clone_from));
 }
@@ -44,11 +44,12 @@ SessionStorageDataMap::SessionStorageDataMap(
     leveldb::mojom::LevelDBDatabase* database)
     : listener_(listener),
       map_data_(std::move(map_data)),
-      wrapper_impl_(std::make_unique<LevelDBWrapperImpl>(database,
-                                                         map_data_->KeyPrefix(),
-                                                         this,
-                                                         GetOptions())),
-      level_db_wrapper_ptr_(wrapper_impl_.get()) {
+      storage_area_impl_(
+          std::make_unique<StorageAreaImpl>(database,
+                                            map_data_->KeyPrefix(),
+                                            this,
+                                            GetOptions())),
+      storage_area_ptr_(storage_area_impl_.get()) {
   DCHECK(listener_);
   DCHECK(map_data_);
   listener_->OnDataMapCreation(map_data_->MapNumberAsBytes(), this);
@@ -57,13 +58,13 @@ SessionStorageDataMap::SessionStorageDataMap(
 SessionStorageDataMap::SessionStorageDataMap(
     Listener* listener,
     scoped_refptr<SessionStorageMetadata::MapData> map_data,
-    LevelDBWrapperImpl* forking_from)
+    StorageAreaImpl* forking_from)
     : listener_(listener),
       map_data_(std::move(map_data)),
-      wrapper_impl_(forking_from->ForkToNewPrefix(map_data_->KeyPrefix(),
-                                                  this,
-                                                  GetOptions())),
-      level_db_wrapper_ptr_(wrapper_impl_.get()) {
+      storage_area_impl_(forking_from->ForkToNewPrefix(map_data_->KeyPrefix(),
+                                                       this,
+                                                       GetOptions())),
+      storage_area_ptr_(storage_area_impl_.get()) {
   DCHECK(listener_);
   DCHECK(map_data_);
   listener_->OnDataMapCreation(map_data_->MapNumberAsBytes(), this);
@@ -81,11 +82,11 @@ void SessionStorageDataMap::RemoveBindingReference() {
   // Don't delete ourselves, but do schedule an immediate commit. Possible
   // deletion will happen under memory pressure or when another sessionstorage
   // area is opened.
-  level_db_wrapper()->ScheduleImmediateCommit();
+  storage_area()->ScheduleImmediateCommit();
 }
 
 // static
-LevelDBWrapperImpl::Options SessionStorageDataMap::GetOptions() {
+StorageAreaImpl::Options SessionStorageDataMap::GetOptions() {
   // Delay for a moment after a value is set in anticipation
   // of other values being set, so changes are batched.
   constexpr const base::TimeDelta kCommitDefaultDelaySecs =
@@ -93,12 +94,12 @@ LevelDBWrapperImpl::Options SessionStorageDataMap::GetOptions() {
 
   // To avoid excessive IO we apply limits to the amount of data being
   // written and the frequency of writes.
-  LevelDBWrapperImpl::Options options;
+  StorageAreaImpl::Options options;
   options.max_size = kPerStorageAreaQuota + kPerStorageAreaOverQuotaAllowance;
   options.default_commit_delay = kCommitDefaultDelaySecs;
   options.max_bytes_per_hour = kPerStorageAreaQuota;
   options.max_commits_per_hour = 60;
-  options.cache_mode = LevelDBWrapperImpl::CacheMode::KEYS_ONLY_WHEN_POSSIBLE;
+  options.cache_mode = StorageAreaImpl::CacheMode::KEYS_ONLY_WHEN_POSSIBLE;
   return options;
 }
 

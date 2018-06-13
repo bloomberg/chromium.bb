@@ -11,9 +11,9 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
+#include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_leveldb_database.h"
-#include "content/test/leveldb_wrapper_test_util.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -104,7 +104,7 @@ class SessionStorageNamespaceImplMojoTest : public testing::Test {
             base::BindRepeating(&SessionStorageNamespaceImplMojoTest::
                                     RegisterShallowClonedNamespace,
                                 base::Unretained(this));
-    SessionStorageLevelDBWrapper::RegisterNewAreaMap map_id_callback =
+    SessionStorageAreaImpl::RegisterNewAreaMap map_id_callback =
         base::BindRepeating(
             &SessionStorageNamespaceImplMojoTest::RegisterNewAreaMap,
             base::Unretained(this));
@@ -417,7 +417,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, ProcessLockedToOtherOrigin) {
 }
 
 TEST_F(SessionStorageNamespaceImplMojoTest, PurgeUnused) {
-  // Verifies that wrappers are kept alive after the area is unbound, and they
+  // Verifies that areas are kept alive after the area is unbound, and they
   // are removed when PurgeUnboundWrappers() is called.
   SessionStorageNamespaceImplMojo* namespace_impl =
       CreateSessionStorageNamespaceImplMojo(test_namespace_id1_);
@@ -442,7 +442,7 @@ TEST_F(SessionStorageNamespaceImplMojoTest, PurgeUnused) {
   leveldb_1.reset();
   EXPECT_TRUE(namespace_impl->HasAreaForOrigin(test_origin1_));
 
-  namespace_impl->PurgeUnboundWrappers();
+  namespace_impl->PurgeUnboundAreas();
   EXPECT_FALSE(namespace_impl->HasAreaForOrigin(test_origin1_));
 
   namespaces_.clear();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/leveldb_wrapper_impl.h"
+#include "content/browser/dom_storage/storage_area_impl.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -20,33 +20,33 @@ using leveldb::mojom::BatchedOperationPtr;
 using leveldb::mojom::DatabaseError;
 }  // namespace
 
-LevelDBWrapperImpl::Delegate::~Delegate() {}
+StorageAreaImpl::Delegate::~Delegate() {}
 
-void LevelDBWrapperImpl::Delegate::MigrateData(
+void StorageAreaImpl::Delegate::MigrateData(
     base::OnceCallback<void(std::unique_ptr<ValueMap>)> callback) {
   std::move(callback).Run(nullptr);
 }
 
-std::vector<LevelDBWrapperImpl::Change> LevelDBWrapperImpl::Delegate::FixUpData(
+std::vector<StorageAreaImpl::Change> StorageAreaImpl::Delegate::FixUpData(
     const ValueMap& data) {
   return std::vector<Change>();
 }
 
-void LevelDBWrapperImpl::Delegate::OnMapLoaded(DatabaseError) {}
+void StorageAreaImpl::Delegate::OnMapLoaded(DatabaseError) {}
 
-bool LevelDBWrapperImpl::s_aggressive_flushing_enabled_ = false;
+bool StorageAreaImpl::s_aggressive_flushing_enabled_ = false;
 
-LevelDBWrapperImpl::RateLimiter::RateLimiter(size_t desired_rate,
-                                            base::TimeDelta time_quantum)
+StorageAreaImpl::RateLimiter::RateLimiter(size_t desired_rate,
+                                          base::TimeDelta time_quantum)
     : rate_(desired_rate), samples_(0), time_quantum_(time_quantum) {
   DCHECK_GT(desired_rate, 0ul);
 }
 
-base::TimeDelta LevelDBWrapperImpl::RateLimiter::ComputeTimeNeeded() const {
+base::TimeDelta StorageAreaImpl::RateLimiter::ComputeTimeNeeded() const {
   return time_quantum_ * (samples_ / rate_);
 }
 
-base::TimeDelta LevelDBWrapperImpl::RateLimiter::ComputeDelayNeeded(
+base::TimeDelta StorageAreaImpl::RateLimiter::ComputeDelayNeeded(
     const base::TimeDelta elapsed_time) const {
   base::TimeDelta time_needed = ComputeTimeNeeded();
   if (time_needed > elapsed_time)
@@ -54,24 +54,22 @@ base::TimeDelta LevelDBWrapperImpl::RateLimiter::ComputeDelayNeeded(
   return base::TimeDelta();
 }
 
-LevelDBWrapperImpl::CommitBatch::CommitBatch() : clear_all_first(false) {}
-LevelDBWrapperImpl::CommitBatch::~CommitBatch() {}
+StorageAreaImpl::CommitBatch::CommitBatch() : clear_all_first(false) {}
+StorageAreaImpl::CommitBatch::~CommitBatch() {}
 
-LevelDBWrapperImpl::LevelDBWrapperImpl(
-    leveldb::mojom::LevelDBDatabase* database,
-    const std::string& prefix,
-    Delegate* delegate,
-    const Options& options)
-    : LevelDBWrapperImpl(database,
-                         leveldb::StdStringToUint8Vector(prefix),
-                         delegate,
-                         options) {}
+StorageAreaImpl::StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
+                                 const std::string& prefix,
+                                 Delegate* delegate,
+                                 const Options& options)
+    : StorageAreaImpl(database,
+                      leveldb::StdStringToUint8Vector(prefix),
+                      delegate,
+                      options) {}
 
-LevelDBWrapperImpl::LevelDBWrapperImpl(
-    leveldb::mojom::LevelDBDatabase* database,
-    std::vector<uint8_t> prefix,
-    Delegate* delegate,
-    const Options& options)
+StorageAreaImpl::StorageAreaImpl(leveldb::mojom::LevelDBDatabase* database,
+                                 std::vector<uint8_t> prefix,
+                                 Delegate* delegate,
+                                 const Options& options)
     : prefix_(std::move(prefix)),
       delegate_(delegate),
       database_(database),
@@ -86,17 +84,17 @@ LevelDBWrapperImpl::LevelDBWrapperImpl(
       commit_rate_limiter_(options.max_commits_per_hour,
                            base::TimeDelta::FromHours(1)),
       weak_ptr_factory_(this) {
-  bindings_.set_connection_error_handler(base::Bind(
-      &LevelDBWrapperImpl::OnConnectionError, base::Unretained(this)));
+  bindings_.set_connection_error_handler(
+      base::Bind(&StorageAreaImpl::OnConnectionError, base::Unretained(this)));
 }
 
-LevelDBWrapperImpl::~LevelDBWrapperImpl() {
+StorageAreaImpl::~StorageAreaImpl() {
   DCHECK(!has_pending_load_tasks());
   if (commit_batch_)
     CommitChanges();
 }
 
-void LevelDBWrapperImpl::Bind(blink::mojom::StorageAreaRequest request) {
+void StorageAreaImpl::Bind(blink::mojom::StorageAreaRequest request) {
   bindings_.AddBinding(this, std::move(request));
   // If the number of bindings is more than 1, then the |client_old_value| sent
   // by the clients need not be valid due to races on updates from multiple
@@ -106,11 +104,11 @@ void LevelDBWrapperImpl::Bind(blink::mojom::StorageAreaRequest request) {
   // reaching late.
   if (cache_mode_ == CacheMode::KEYS_ONLY_WHEN_POSSIBLE &&
       bindings_.size() > 1) {
-    SetCacheMode(LevelDBWrapperImpl::CacheMode::KEYS_AND_VALUES);
+    SetCacheMode(CacheMode::KEYS_AND_VALUES);
   }
 }
 
-std::unique_ptr<LevelDBWrapperImpl> LevelDBWrapperImpl::ForkToNewPrefix(
+std::unique_ptr<StorageAreaImpl> StorageAreaImpl::ForkToNewPrefix(
     const std::string& new_prefix,
     Delegate* delegate,
     const Options& options) {
@@ -118,36 +116,36 @@ std::unique_ptr<LevelDBWrapperImpl> LevelDBWrapperImpl::ForkToNewPrefix(
                          options);
 }
 
-std::unique_ptr<LevelDBWrapperImpl> LevelDBWrapperImpl::ForkToNewPrefix(
+std::unique_ptr<StorageAreaImpl> StorageAreaImpl::ForkToNewPrefix(
     std::vector<uint8_t> new_prefix,
     Delegate* delegate,
     const Options& options) {
-  auto forked_wrapper = std::make_unique<LevelDBWrapperImpl>(
+  auto forked_area = std::make_unique<StorageAreaImpl>(
       database_, std::move(new_prefix), delegate, options);
 
-  forked_wrapper->map_state_ = MapState::LOADING_FROM_FORK;
+  forked_area->map_state_ = MapState::LOADING_FROM_FORK;
 
   if (IsMapLoaded()) {
-    DoForkOperation(forked_wrapper->weak_ptr_factory_.GetWeakPtr());
+    DoForkOperation(forked_area->weak_ptr_factory_.GetWeakPtr());
   } else {
-    LoadMap(base::BindOnce(&LevelDBWrapperImpl::DoForkOperation,
+    LoadMap(base::BindOnce(&StorageAreaImpl::DoForkOperation,
                            weak_ptr_factory_.GetWeakPtr(),
-                           forked_wrapper->weak_ptr_factory_.GetWeakPtr()));
+                           forked_area->weak_ptr_factory_.GetWeakPtr()));
   }
-  return forked_wrapper;
+  return forked_area;
 }
 
-void LevelDBWrapperImpl::CancelAllPendingRequests() {
+void StorageAreaImpl::CancelAllPendingRequests() {
   on_load_complete_tasks_.clear();
 }
 
-void LevelDBWrapperImpl::EnableAggressiveCommitDelay() {
+void StorageAreaImpl::EnableAggressiveCommitDelay() {
   s_aggressive_flushing_enabled_ = true;
 }
 
-void LevelDBWrapperImpl::ScheduleImmediateCommit() {
+void StorageAreaImpl::ScheduleImmediateCommit() {
   if (!on_load_complete_tasks_.empty()) {
-    LoadMap(base::BindOnce(&LevelDBWrapperImpl::ScheduleImmediateCommit,
+    LoadMap(base::BindOnce(&StorageAreaImpl::ScheduleImmediateCommit,
                            base::Unretained(this)));
     return;
   }
@@ -157,9 +155,8 @@ void LevelDBWrapperImpl::ScheduleImmediateCommit() {
   CommitChanges();
 }
 
-void LevelDBWrapperImpl::OnMemoryDump(
-    const std::string& name,
-    base::trace_event::ProcessMemoryDump* pmd) {
+void StorageAreaImpl::OnMemoryDump(const std::string& name,
+                                   base::trace_event::ProcessMemoryDump* pmd) {
   if (!IsMapLoaded())
     return;
 
@@ -197,7 +194,7 @@ void LevelDBWrapperImpl::OnMemoryDump(
     pmd->AddSuballocation(map_mad->guid(), system_allocator_name);
 }
 
-void LevelDBWrapperImpl::PurgeMemory() {
+void StorageAreaImpl::PurgeMemory() {
   if (!IsMapLoaded() ||  // We're not using any memory.
       commit_batch_ ||   // We leave things alone with changes pending.
       !database_) {  // Don't purge anything if we're not backed by a database.
@@ -209,41 +206,41 @@ void LevelDBWrapperImpl::PurgeMemory() {
   keys_values_map_.clear();
 }
 
-void LevelDBWrapperImpl::SetCacheModeForTesting(CacheMode cache_mode) {
+void StorageAreaImpl::SetCacheModeForTesting(CacheMode cache_mode) {
   SetCacheMode(cache_mode);
 }
 
-mojo::InterfacePtrSetElementId LevelDBWrapperImpl::AddObserver(
+mojo::InterfacePtrSetElementId StorageAreaImpl::AddObserver(
     blink::mojom::StorageAreaObserverAssociatedPtr observer) {
   if (cache_mode_ == CacheMode::KEYS_AND_VALUES)
     observer->ShouldSendOldValueOnMutations(false);
   return observers_.AddPtr(std::move(observer));
 }
 
-bool LevelDBWrapperImpl::HasObserver(mojo::InterfacePtrSetElementId id) {
+bool StorageAreaImpl::HasObserver(mojo::InterfacePtrSetElementId id) {
   return observers_.HasPtr(id);
 }
 
-blink::mojom::StorageAreaObserverAssociatedPtr
-LevelDBWrapperImpl::RemoveObserver(mojo::InterfacePtrSetElementId id) {
+blink::mojom::StorageAreaObserverAssociatedPtr StorageAreaImpl::RemoveObserver(
+    mojo::InterfacePtrSetElementId id) {
   return observers_.RemovePtr(id);
 }
 
-void LevelDBWrapperImpl::AddObserver(
+void StorageAreaImpl::AddObserver(
     blink::mojom::StorageAreaObserverAssociatedPtrInfo observer) {
   AddObserver(
       blink::mojom::StorageAreaObserverAssociatedPtr(std::move(observer)));
 }
 
-void LevelDBWrapperImpl::Put(
+void StorageAreaImpl::Put(
     const std::vector<uint8_t>& key,
     const std::vector<uint8_t>& value,
     const base::Optional<std::vector<uint8_t>>& client_old_value,
     const std::string& source,
     PutCallback callback) {
   if (!IsMapLoaded() || IsMapUpgradeNeeded()) {
-    LoadMap(base::BindOnce(&LevelDBWrapperImpl::Put, base::Unretained(this),
-                           key, value, client_old_value, source,
+    LoadMap(base::BindOnce(&StorageAreaImpl::Put, base::Unretained(this), key,
+                           value, client_old_value, source,
                            std::move(callback)));
     return;
   }
@@ -269,7 +266,7 @@ void LevelDBWrapperImpl::Put(
         // sent to clients will not contain old value. This is okay since
         // currently the only observer to these notification is the client
         // itself.
-        DVLOG(1) << "Wrapper with prefix "
+        DVLOG(1) << "Storage area with prefix "
                  << leveldb::Uint8VectorToStdString(prefix_)
                  << ": past value has length of " << found->second << ", but:";
         if (client_old_value) {
@@ -349,7 +346,7 @@ void LevelDBWrapperImpl::Put(
   std::move(callback).Run(true);
 }
 
-void LevelDBWrapperImpl::Delete(
+void StorageAreaImpl::Delete(
     const std::vector<uint8_t>& key,
     const base::Optional<std::vector<uint8_t>>& client_old_value,
     const std::string& source,
@@ -359,7 +356,7 @@ void LevelDBWrapperImpl::Delete(
   // |client_old_value| can race. Thus any changes require checking for an
   // upgrade.
   if (!IsMapLoaded() || IsMapUpgradeNeeded()) {
-    LoadMap(base::BindOnce(&LevelDBWrapperImpl::Delete, base::Unretained(this),
+    LoadMap(base::BindOnce(&StorageAreaImpl::Delete, base::Unretained(this),
                            key, client_old_value, source, std::move(callback)));
     return;
   }
@@ -382,7 +379,7 @@ void LevelDBWrapperImpl::Delete(
       // then we still let the change go through. But the notification sent to
       // clients will not contain old value. This is okay since currently the
       // only observer to these notification is the client itself.
-      DVLOG(1) << "Wrapper with prefix "
+      DVLOG(1) << "Storage area with prefix "
                << leveldb::Uint8VectorToStdString(prefix_)
                << ": past value has length of " << found->second << ", but:";
       if (client_old_value) {
@@ -420,14 +417,13 @@ void LevelDBWrapperImpl::Delete(
   std::move(callback).Run(true);
 }
 
-void LevelDBWrapperImpl::DeleteAll(const std::string& source,
-                                   DeleteAllCallback callback) {
+void StorageAreaImpl::DeleteAll(const std::string& source,
+                                DeleteAllCallback callback) {
   // Don't check if a map upgrade is needed here and instead just create an
   // empty map ourself.
   if (!IsMapLoaded()) {
-    LoadMap(base::BindOnce(&LevelDBWrapperImpl::DeleteAll,
-                           base::Unretained(this), source,
-                           std::move(callback)));
+    LoadMap(base::BindOnce(&StorageAreaImpl::DeleteAll, base::Unretained(this),
+                           source, std::move(callback)));
     return;
   }
 
@@ -462,8 +458,8 @@ void LevelDBWrapperImpl::DeleteAll(const std::string& source,
   std::move(callback).Run(true);
 }
 
-void LevelDBWrapperImpl::Get(const std::vector<uint8_t>& key,
-                             GetCallback callback) {
+void StorageAreaImpl::Get(const std::vector<uint8_t>& key,
+                          GetCallback callback) {
   // TODO(ssid): Remove this method since it is not supported in only keys mode,
   // crbug.com/764127.
   if (cache_mode_ == CacheMode::KEYS_ONLY_WHEN_POSSIBLE) {
@@ -471,8 +467,8 @@ void LevelDBWrapperImpl::Get(const std::vector<uint8_t>& key,
     return;
   }
   if (!IsMapLoaded() || IsMapUpgradeNeeded()) {
-    LoadMap(base::BindOnce(&LevelDBWrapperImpl::Get, base::Unretained(this),
-                           key, std::move(callback)));
+    LoadMap(base::BindOnce(&StorageAreaImpl::Get, base::Unretained(this), key,
+                           std::move(callback)));
     return;
   }
 
@@ -484,12 +480,12 @@ void LevelDBWrapperImpl::Get(const std::vector<uint8_t>& key,
   std::move(callback).Run(true, found->second);
 }
 
-void LevelDBWrapperImpl::GetAll(
+void StorageAreaImpl::GetAll(
     blink::mojom::StorageAreaGetAllCallbackAssociatedPtrInfo complete_callback,
     GetAllCallback callback) {
   // The map must always be loaded for the KEYS_ONLY_WHEN_POSSIBLE mode.
   if (map_state_ != MapState::LOADED_KEYS_AND_VALUES) {
-    LoadMap(base::BindOnce(&LevelDBWrapperImpl::GetAll, base::Unretained(this),
+    LoadMap(base::BindOnce(&StorageAreaImpl::GetAll, base::Unretained(this),
                            std::move(complete_callback), std::move(callback)));
     return;
   }
@@ -509,7 +505,7 @@ void LevelDBWrapperImpl::GetAll(
   }
 }
 
-void LevelDBWrapperImpl::SetCacheMode(CacheMode cache_mode) {
+void StorageAreaImpl::SetCacheMode(CacheMode cache_mode) {
   if (cache_mode_ == cache_mode ||
       (!database_ && cache_mode == CacheMode::KEYS_ONLY_WHEN_POSSIBLE)) {
     return;
@@ -528,7 +524,7 @@ void LevelDBWrapperImpl::SetCacheMode(CacheMode cache_mode) {
   UnloadMapIfPossible();
 }
 
-void LevelDBWrapperImpl::OnConnectionError() {
+void StorageAreaImpl::OnConnectionError() {
   if (!bindings_.empty())
     return;
   // If any tasks are waiting for load to complete, delay calling the
@@ -538,7 +534,7 @@ void LevelDBWrapperImpl::OnConnectionError() {
   delegate_->OnNoBindings();
 }
 
-void LevelDBWrapperImpl::LoadMap(base::OnceClosure completion_callback) {
+void StorageAreaImpl::LoadMap(base::OnceClosure completion_callback) {
   DCHECK_NE(map_state_, MapState::LOADED_KEYS_AND_VALUES);
   DCHECK(keys_values_map_.empty());
 
@@ -552,7 +548,7 @@ void LevelDBWrapperImpl::LoadMap(base::OnceClosure completion_callback) {
     if (commit_batch_)
       CommitChanges();
     // Make sure the keys only map is not used when on load tasks are in queue.
-    // The changes to the wrapper will be queued to on load tasks.
+    // The changes to the area will be queued to on load tasks.
     keys_only_map_.clear();
     map_state_ = MapState::UNLOADED;
   }
@@ -572,20 +568,19 @@ void LevelDBWrapperImpl::LoadMap(base::OnceClosure completion_callback) {
   }
 
   database_->GetPrefixed(prefix_,
-                         base::BindOnce(&LevelDBWrapperImpl::OnMapLoaded,
+                         base::BindOnce(&StorageAreaImpl::OnMapLoaded,
                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LevelDBWrapperImpl::OnMapLoaded(
+void StorageAreaImpl::OnMapLoaded(
     DatabaseError status,
     std::vector<leveldb::mojom::KeyValuePtr> data) {
   DCHECK(keys_values_map_.empty());
   DCHECK_EQ(map_state_, MapState::LOADING_FROM_DATABASE);
 
   if (data.empty() && status == DatabaseError::OK) {
-    delegate_->MigrateData(
-        base::BindOnce(&LevelDBWrapperImpl::OnGotMigrationData,
-                       weak_ptr_factory_.GetWeakPtr()));
+    delegate_->MigrateData(base::BindOnce(&StorageAreaImpl::OnGotMigrationData,
+                                          weak_ptr_factory_.GetWeakPtr()));
     return;
   }
   keys_only_map_.clear();
@@ -636,7 +631,7 @@ void LevelDBWrapperImpl::OnMapLoaded(
   OnLoadComplete();
 }
 
-void LevelDBWrapperImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
+void StorageAreaImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
   keys_only_map_.clear();
   keys_values_map_ = data ? std::move(*data) : ValueMap();
   map_state_ = MapState::LOADED_KEYS_AND_VALUES;
@@ -653,7 +648,7 @@ void LevelDBWrapperImpl::OnGotMigrationData(std::unique_ptr<ValueMap> data) {
   OnLoadComplete();
 }
 
-void LevelDBWrapperImpl::CalculateStorageAndMemoryUsed() {
+void StorageAreaImpl::CalculateStorageAndMemoryUsed() {
   memory_used_ = 0;
   storage_used_ = 0;
 
@@ -667,7 +662,7 @@ void LevelDBWrapperImpl::CalculateStorageAndMemoryUsed() {
   }
 }
 
-void LevelDBWrapperImpl::OnLoadComplete() {
+void StorageAreaImpl::OnLoadComplete() {
   DCHECK(IsMapLoaded());
 
   std::vector<base::OnceClosure> tasks;
@@ -696,7 +691,7 @@ void LevelDBWrapperImpl::OnLoadComplete() {
     delegate_->OnNoBindings();
 }
 
-void LevelDBWrapperImpl::CreateCommitBatchIfNeeded() {
+void StorageAreaImpl::CreateCommitBatchIfNeeded() {
   if (commit_batch_)
     return;
   DCHECK(database_);
@@ -704,11 +699,11 @@ void LevelDBWrapperImpl::CreateCommitBatchIfNeeded() {
   commit_batch_.reset(new CommitBatch());
   BrowserThread::PostAfterStartupTask(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
-      base::BindOnce(&LevelDBWrapperImpl::StartCommitTimer,
+      base::BindOnce(&StorageAreaImpl::StartCommitTimer,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LevelDBWrapperImpl::StartCommitTimer() {
+void StorageAreaImpl::StartCommitTimer() {
   if (!commit_batch_)
     return;
 
@@ -720,25 +715,27 @@ void LevelDBWrapperImpl::StartCommitTimer() {
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&LevelDBWrapperImpl::CommitChanges,
+      base::BindOnce(&StorageAreaImpl::CommitChanges,
                      weak_ptr_factory_.GetWeakPtr()),
       ComputeCommitDelay());
 }
 
-base::TimeDelta LevelDBWrapperImpl::ComputeCommitDelay() const {
+base::TimeDelta StorageAreaImpl::ComputeCommitDelay() const {
   if (s_aggressive_flushing_enabled_)
     return base::TimeDelta::FromSeconds(1);
 
   base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time_;
-  base::TimeDelta delay = std::max(
-      default_commit_delay_,
-      std::max(commit_rate_limiter_.ComputeDelayNeeded(elapsed_time),
-               data_rate_limiter_.ComputeDelayNeeded(elapsed_time)));
+  base::TimeDelta delay =
+      std::max(default_commit_delay_,
+               std::max(commit_rate_limiter_.ComputeDelayNeeded(elapsed_time),
+                        data_rate_limiter_.ComputeDelayNeeded(elapsed_time)));
+  // TODO(mek): Rename histogram to match class name, or eliminate histogram
+  // entirely.
   UMA_HISTOGRAM_LONG_TIMES("LevelDBWrapper.CommitDelay", delay);
   return delay;
 }
 
-void LevelDBWrapperImpl::CommitChanges() {
+void StorageAreaImpl::CommitChanges() {
   // Note: commit_batch_ may be null if ScheduleImmediateCommit was called
   // after a delayed commit task was scheduled.
   if (!commit_batch_)
@@ -822,11 +819,11 @@ void LevelDBWrapperImpl::CommitChanges() {
   // TODO(michaeln): Currently there is no guarantee LevelDBDatabaseImpl::Write
   // will run during a clean shutdown. We need that to avoid dataloss.
   database_->Write(std::move(operations),
-                   base::BindOnce(&LevelDBWrapperImpl::OnCommitComplete,
+                   base::BindOnce(&StorageAreaImpl::OnCommitComplete,
                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
-void LevelDBWrapperImpl::OnCommitComplete(DatabaseError error) {
+void StorageAreaImpl::OnCommitComplete(DatabaseError error) {
   has_committed_data_ = true;
   --commit_batches_in_flight_;
   StartCommitTimer();
@@ -841,7 +838,7 @@ void LevelDBWrapperImpl::OnCommitComplete(DatabaseError error) {
   delegate_->DidCommit(error);
 }
 
-void LevelDBWrapperImpl::UnloadMapIfPossible() {
+void StorageAreaImpl::UnloadMapIfPossible() {
   // Do not unload the map if:
   // * The desired cache mode isn't key-only,
   // * The map isn't a loaded key-value map,
@@ -877,9 +874,9 @@ void LevelDBWrapperImpl::UnloadMapIfPossible() {
   CalculateStorageAndMemoryUsed();
 }
 
-void LevelDBWrapperImpl::DoForkOperation(
-    const base::WeakPtr<LevelDBWrapperImpl>& forked_wrapper) {
-  if (!forked_wrapper)
+void StorageAreaImpl::DoForkOperation(
+    const base::WeakPtr<StorageAreaImpl>& forked_area) {
+  if (!forked_area)
     return;
 
   DCHECK(IsMapLoaded());
@@ -891,17 +888,17 @@ void LevelDBWrapperImpl::DoForkOperation(
     if (has_changes_to_commit())
       CommitChanges();
     CreateCommitBatchIfNeeded();
-    commit_batch_->copy_to_prefix = forked_wrapper->prefix_;
+    commit_batch_->copy_to_prefix = forked_area->prefix_;
     CommitChanges();
   }
 
-  forked_wrapper->OnForkStateLoaded(database_ != nullptr, keys_values_map_,
-                                    keys_only_map_);
+  forked_area->OnForkStateLoaded(database_ != nullptr, keys_values_map_,
+                                 keys_only_map_);
 }
 
-void LevelDBWrapperImpl::OnForkStateLoaded(bool database_enabled,
-                                           const ValueMap& value_map,
-                                           const KeysOnlyMap& keys_only_map) {
+void StorageAreaImpl::OnForkStateLoaded(bool database_enabled,
+                                        const ValueMap& value_map,
+                                        const KeysOnlyMap& keys_only_map) {
   // This callback can get either the value map or the key only map depending
   // on parent operations and other things. So handle both.
   if (!value_map.empty() || keys_only_map.empty()) {

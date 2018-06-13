@@ -81,8 +81,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // storage for a particular origin will reload the data from the database.
   void PurgeMemory();
 
-  // Clears unused leveldb wrappers, when thresholds are reached.
-  void PurgeUnusedWrappersIfNeeded();
+  // Clears unused storage areas, when thresholds are reached.
+  void PurgeUnusedAreasIfNeeded();
 
   void SetDatabaseForTesting(
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
@@ -97,7 +97,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
  private:
   friend class DOMStorageBrowserTest;
 
-  class LevelDBWrapperHolder;
+  class StorageAreaHolder;
 
   ~LocalStorageContextMojo() override;
 
@@ -121,7 +121,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // directly from that function, or through |on_database_open_callbacks_|.
   void BindLocalStorage(const url::Origin& origin,
                         blink::mojom::StorageAreaRequest request);
-  LevelDBWrapperHolder* GetOrCreateDBWrapper(const url::Origin& origin);
+  StorageAreaHolder* GetOrCreateStorageArea(const url::Origin& origin);
 
   // The (possibly delayed) implementation of GetStorageUsage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
@@ -133,7 +133,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   void OnGotStorageUsageForShutdown(std::vector<LocalStorageUsageInfo> usage);
   void OnShutdownComplete(leveldb::mojom::DatabaseError error);
 
-  void GetStatistics(size_t* total_cache_size, size_t* unused_wrapper_count);
+  void GetStatistics(size_t* total_cache_size, size_t* unused_area_count);
   void OnCommitResult(leveldb::mojom::DatabaseError error);
 
   // These values are written to logs.  New enum values can be added, but
@@ -175,8 +175,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   std::vector<base::OnceClosure> on_database_opened_callbacks_;
 
   // Maps between an origin and its prefixed LevelDB view.
-  std::map<url::Origin, std::unique_ptr<LevelDBWrapperHolder>>
-      level_db_wrappers_;
+  std::map<url::Origin, std::unique_ptr<StorageAreaHolder>> areas_;
 
   // Used to access old data for migration.
   scoped_refptr<DOMStorageTaskRunner> task_runner_;
