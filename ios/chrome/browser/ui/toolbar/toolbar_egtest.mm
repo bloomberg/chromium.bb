@@ -168,8 +168,7 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       assertWithMatcher:chrome_test_util::OmniboxText(URL.GetContent())];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText(@"foo")];
+  [ChromeEarlGreyUI focusOmniboxAndType:@"foo"];
 
   id<GREYMatcher> typingShield = grey_accessibilityID(@"Typing Shield");
   [[EarlGrey selectElementWithMatcher:typingShield] performAction:grey_tap()];
@@ -431,11 +430,6 @@ using chrome_test_util::SystemSelectionCalloutCopyButton;
     EARL_GREY_TEST_DISABLED(@"Disabled for iPad due to a typing bug.");
   }
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
-  if (IsRefreshLocationBarEnabled()) {
-    [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
-        performAction:grey_tap()];
-  }
   [ChromeEarlGreyUI focusOmniboxAndType:@"javascript:alert('Hello');\n"];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Hello")]
