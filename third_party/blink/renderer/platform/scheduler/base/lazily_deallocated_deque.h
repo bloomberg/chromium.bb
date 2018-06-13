@@ -132,10 +132,12 @@ class LazilyDeallocatedDeque {
 
   void pop_front() {
     DCHECK(tail_);
+    DCHECK_GT(size_, 0u);
     head_->pop_front();
 
-    // If the ring has become empty and we have more than one ring, remove the
-    // head one (which we expect to have lower capacity than the remaining one).
+    // If the ring has become empty and we have several rings then, remove the
+    // head one (which we expect to have lower capacity than the remaining
+    // ones).
     if (head_->empty() && head_->next_) {
       head_ = std::move(head_->next_);
     }
@@ -190,6 +192,7 @@ class LazilyDeallocatedDeque {
     size_t real_size = size_;
 
     while (!empty()) {
+      DCHECK(new_ring->CanPush());
       new_ring->push_back(std::move(head_->front()));
       pop_front();
     }
@@ -213,18 +216,8 @@ class LazilyDeallocatedDeque {
           front_index_(0),
           back_index_(0),
           data_(reinterpret_cast<T*>(new char[sizeof(T) * capacity])),
-          next_(nullptr) {}
-
-    Ring(Ring&& other) noexcept {
-      capacity_ = other.capacity_;
-      front_index_ = other.front_index_;
-      back_index_ = other.back_index_;
-      data_ = other.data_;
-
-      other.capacity_ = 0;
-      other.front_index_ = 0;
-      other.back_index_ = 0;
-      other.data_ = nullptr;
+          next_(nullptr) {
+      DCHECK_GE(capacity_, kMinimumRingSize);
     }
 
     ~Ring() {
@@ -286,10 +279,11 @@ class LazilyDeallocatedDeque {
     size_t CircularDecrement(size_t index) const {
       if (index == 0)
         return capacity_ - 1;
-      return --index;
+      return index - 1;
     }
 
     size_t CircularIncrement(size_t index) const {
+      DCHECK_LT(index, capacity_);
       ++index;
       if (index == capacity_)
         return 0;
