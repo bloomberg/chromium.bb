@@ -21,6 +21,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_metadata.h"
+#include "media/capture/video/shared_memory_handle_provider.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -216,6 +217,90 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
   base::WeakPtrFactory<TextureDeviceExerciser> weak_factory_;
 };
 
+// A VirtualDeviceExerciser for exercising
+// DeviceFactory.AddSharedMemoryVirtualDevice().
+// It generates (dummy) I420 frame data by setting all bytes equal to the
+// current frame count.
+class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
+                                    public video_capture::mojom::Producer {
+ public:
+  SharedMemoryDeviceExerciser()
+      : producer_binding_(this), weak_factory_(this) {}
+
+  // VirtualDeviceExerciser implementation.
+  void Initialize() override {}
+  void RegisterVirtualDeviceAtFactory(
+      video_capture::mojom::DeviceFactoryPtr* factory,
+      const media::VideoCaptureDeviceInfo& info) override {
+    video_capture::mojom::ProducerPtr producer;
+    producer_binding_.Bind(mojo::MakeRequest(&producer));
+    (*factory)->AddSharedMemoryVirtualDevice(
+        info, std::move(producer), mojo::MakeRequest(&virtual_device_));
+  }
+  void PushNextFrame(base::TimeDelta timestamp) override {
+    virtual_device_->RequestFrameBuffer(
+        kDummyFrameDimensions, media::VideoPixelFormat::PIXEL_FORMAT_I420,
+        base::BindOnce(&SharedMemoryDeviceExerciser::OnFrameBufferReceived,
+                       weak_factory_.GetWeakPtr(), timestamp));
+  }
+  void ShutDown() override {
+    virtual_device_ = nullptr;
+    producer_binding_.Close();
+    weak_factory_.InvalidateWeakPtrs();
+  }
+
+  // video_capture::mojom::Producer implementation.
+  void OnNewBufferHandle(int32_t buffer_id,
+                         mojo::ScopedSharedBufferHandle buffer_handle,
+                         OnNewBufferHandleCallback callback) override {
+    auto handle_provider =
+        std::make_unique<media::SharedMemoryHandleProvider>();
+    handle_provider->InitFromMojoHandle(std::move(buffer_handle));
+    outgoing_buffer_id_to_buffer_map_.insert(
+        std::make_pair(buffer_id, std::move(handle_provider)));
+    std::move(callback).Run();
+  }
+  void OnBufferRetired(int32_t buffer_id) override {
+    outgoing_buffer_id_to_buffer_map_.erase(buffer_id);
+  }
+
+ private:
+  void OnFrameBufferReceived(base::TimeDelta timestamp, int32_t buffer_id) {
+    if (buffer_id == video_capture::mojom::kInvalidBufferId)
+      return;
+
+    media::VideoFrameMetadata metadata;
+    metadata.SetDouble(media::VideoFrameMetadata::FRAME_RATE, kDummyFrameRate);
+    metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
+                          base::TimeTicks::Now());
+
+    media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
+    info->timestamp = timestamp;
+    info->pixel_format = media::PIXEL_FORMAT_I420;
+    info->coded_size = kDummyFrameDimensions;
+    info->visible_rect = gfx::Rect(kDummyFrameDimensions.width(),
+                                   kDummyFrameDimensions.height());
+    info->metadata = metadata.GetInternalValues().Clone();
+
+    auto outgoing_buffer = outgoing_buffer_id_to_buffer_map_.at(buffer_id)
+                               ->GetHandleForInProcessAccess();
+
+    static int frame_count = 0;
+    frame_count++;
+    memset(outgoing_buffer->data(), frame_count % 256,
+           outgoing_buffer->mapped_size());
+
+    virtual_device_->OnFrameReadyInBuffer(buffer_id, std::move(info));
+  }
+
+  mojo::Binding<video_capture::mojom::Producer> producer_binding_;
+  video_capture::mojom::SharedMemoryVirtualDevicePtr virtual_device_;
+  std::map<int32_t /*buffer_id*/,
+           std::unique_ptr<media::SharedMemoryHandleProvider>>
+      outgoing_buffer_id_to_buffer_map_;
+  base::WeakPtrFactory<SharedMemoryDeviceExerciser> weak_factory_;
+};
+
 // Integration test that obtains a connection to the video capture service via
 // the Browser process' service manager. It then registers a virtual device at
 // the service and feeds frames to it. It opens the virtual device in a <video>
@@ -231,7 +316,8 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
 
   ~WebRtcVideoCaptureServiceBrowserTest() override {}
 
-  void AddVirtualDeviceAndStartCapture(base::OnceClosure finish_test_cb) {
+  void AddVirtualDeviceAndStartCapture(VirtualDeviceExerciser* device_exerciser,
+                                       base::OnceClosure finish_test_cb) {
     DCHECK(virtual_device_thread_.task_runner()->RunsTasksInCurrentSequence());
     connector_->BindInterface(video_capture::mojom::kServiceName, &provider_);
     provider_->ConnectToDeviceFactory(mojo::MakeRequest(&factory_));
@@ -241,37 +327,40 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
     info.descriptor.set_display_name(kVirtualDeviceName);
     info.descriptor.capture_api = media::VideoCaptureApi::VIRTUAL_DEVICE;
 
-    device_exerciser_->RegisterVirtualDeviceAtFactory(&factory_, info);
+    device_exerciser->RegisterVirtualDeviceAtFactory(&factory_, info);
 
     main_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(
-            &WebRtcVideoCaptureServiceBrowserTest::
-                OpenVirtualDeviceInRendererAndWaitForPlaying,
-            base::Unretained(this),
-            media::BindToCurrentLoop(base::BindOnce(
-                &WebRtcVideoCaptureServiceBrowserTest::
-                    ShutDownVirtualDeviceAndContinue,
-                base::Unretained(this), std::move(finish_test_cb)))));
+        base::BindOnce(&WebRtcVideoCaptureServiceBrowserTest::
+                           OpenVirtualDeviceInRendererAndWaitForPlaying,
+                       base::Unretained(this),
+                       media::BindToCurrentLoop(base::BindOnce(
+                           &WebRtcVideoCaptureServiceBrowserTest::
+                               ShutDownVirtualDeviceAndContinue,
+                           base::Unretained(this), device_exerciser,
+                           std::move(finish_test_cb)))));
 
-    PushDummyFrameAndScheduleNextPush();
+    PushDummyFrameAndScheduleNextPush(device_exerciser);
   }
 
-  void PushDummyFrameAndScheduleNextPush() {
+  void PushDummyFrameAndScheduleNextPush(
+      VirtualDeviceExerciser* device_exerciser) {
     DCHECK(virtual_device_thread_.task_runner()->RunsTasksInCurrentSequence());
-    device_exerciser_->PushNextFrame(CalculateTimeSinceFirstInvocation());
+    device_exerciser->PushNextFrame(CalculateTimeSinceFirstInvocation());
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&WebRtcVideoCaptureServiceBrowserTest::
                            PushDummyFrameAndScheduleNextPush,
-                       weak_factory_.GetWeakPtr()),
+                       weak_factory_.GetWeakPtr(), device_exerciser),
         base::TimeDelta::FromMilliseconds(1000 / kDummyFrameRate));
   }
 
-  void ShutDownVirtualDeviceAndContinue(base::OnceClosure continuation) {
+  void ShutDownVirtualDeviceAndContinue(
+      VirtualDeviceExerciser* device_exerciser,
+      base::OnceClosure continuation) {
     DCHECK(virtual_device_thread_.task_runner()->RunsTasksInCurrentSequence());
     LOG(INFO) << "Shutting down virtual device";
-    device_exerciser_->ShutDown();
+    device_exerciser->ShutDown();
     factory_ = nullptr;
     provider_ = nullptr;
     weak_factory_.InvalidateWeakPtrs();
@@ -323,7 +412,6 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
   base::Thread virtual_device_thread_;
   scoped_refptr<base::TaskRunner> main_task_runner_;
   std::unique_ptr<service_manager::Connector> connector_;
-  std::unique_ptr<VirtualDeviceExerciser> device_exerciser_;
 
  private:
   base::TimeDelta CalculateTimeSinceFirstInvocation() {
@@ -345,18 +433,34 @@ IN_PROC_BROWSER_TEST_F(
     WebRtcVideoCaptureServiceBrowserTest,
     FramesSentThroughTextureVirtualDeviceGetDisplayedOnPage) {
   Initialize();
-  device_exerciser_ = std::make_unique<TextureDeviceExerciser>();
-  device_exerciser_->Initialize();
+  auto device_exerciser = std::make_unique<TextureDeviceExerciser>();
+  device_exerciser->Initialize();
 
   base::RunLoop run_loop;
   virtual_device_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&WebRtcVideoCaptureServiceBrowserTest::
                          AddVirtualDeviceAndStartCapture,
-                     base::Unretained(this),
+                     base::Unretained(this), device_exerciser.get(),
                      media::BindToCurrentLoop(run_loop.QuitClosure())));
   run_loop.Run();
-  device_exerciser_.reset();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcVideoCaptureServiceBrowserTest,
+    FramesSentThroughSharedMemoryVirtualDeviceGetDisplayedOnPage) {
+  Initialize();
+  auto device_exerciser = std::make_unique<SharedMemoryDeviceExerciser>();
+  device_exerciser->Initialize();
+
+  base::RunLoop run_loop;
+  virtual_device_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WebRtcVideoCaptureServiceBrowserTest::
+                         AddVirtualDeviceAndStartCapture,
+                     base::Unretained(this), device_exerciser.get(),
+                     media::BindToCurrentLoop(run_loop.QuitClosure())));
+  run_loop.Run();
 }
 
 }  // namespace content
