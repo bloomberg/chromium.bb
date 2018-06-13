@@ -3235,6 +3235,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-per-user-timezone", flag_descriptions::kEnablePerUserTimezoneName,
      flag_descriptions::kEnablePerUserTimezoneDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisablePerUserTimezone)},
+    {"enable-virtual-keyboard-md-ui",
+     flag_descriptions::kEnableVirtualKeyboardMdUiName,
+     flag_descriptions::kEnableVirtualKeyboardMdUiDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kEnableVirtualKeyboardMdUi)},
 #endif  // OS_CHROMEOS
 
 #if !defined(OS_ANDROID)
