@@ -8,14 +8,8 @@
 せっかく見つけたすばらしい記事がどこにあったか忘れてしまった経験はありますかならタイトルとアドレスだけでなく、訪問したウェブページのコンテンツからも検索することができます。せっかく見つけたすばらしい記事がどこにあったか忘れてしまった経験はありますか ならタイトルとアドレスだけでなく、訪問したウェブページのコンテンツからも検索することができます。訪問したウェブページのコンテンツからも検索することができます。せっかく見つけたすばらしい記事がどこにあったか忘れてしまった経験はありますか ならタイトルとアドレスだけでなく、訪問
 </div>
 <script>
-  if (window.testRunner)
-    testRunner.waitUntilDone();
-  setTimeout(() => {
-    let text = document.querySelector("div").firstChild;
-    getSelection().setBaseAndExtent(text, 9, text, 245);
-    if (window.testRunner)
-      testRunner.notifyDone();
-  }, 100);
+const text = document.querySelector("div").firstChild;
+getSelection().setBaseAndExtent(text, 9, text, 245);
 </script>
 </body>
 </html>
