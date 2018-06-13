@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/view_util.h"
@@ -16,7 +17,6 @@
 #include "components/autofill/core/browser/ui/card_unmask_prompt_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/vector_icons/vector_icons.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
@@ -28,6 +28,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/bubble/tooltip_icon.h"
@@ -44,12 +45,6 @@
 #include "ui/views/widget/widget.h"
 
 namespace autofill {
-
-namespace {
-
-SkColor const kWarningColor = gfx::kGoogleRed700;
-
-}  // namespace
 
 CardUnmaskPromptViews::CardUnmaskPromptViews(
     CardUnmaskPromptController* controller,
@@ -146,7 +141,7 @@ void CardUnmaskPromptViews::SetRetriableErrorMessage(
     const base::string16& message) {
   error_label_->SetMultiLine(!message.empty());
   error_label_->SetText(message);
-  error_icon_->SetVisible(!message.empty());
+  temporary_error_->SetVisible(!message.empty());
 
   // Update the dialog's size.
   if (GetWidget() && web_contents_) {
@@ -174,7 +169,6 @@ void CardUnmaskPromptViews::ShowNewCardLink() {
 
   new_card_link_ = new views::Link(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK));
-  new_card_link_->SetBorder(views::CreateEmptyBorder(0, 7, 0, 0));
   new_card_link_->SetUnderline(false);
   new_card_link_->set_listener(this);
   input_row_->AddChildView(new_card_link_);
@@ -339,8 +333,9 @@ void CardUnmaskPromptViews::InitIfNecessary() {
       rb.GetFontList(ui::ResourceBundle::BoldFont));
   permanent_error_label_->SetBorder(views::CreateEmptyBorder(
       provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION)));
-  permanent_error_label_->SetBackground(
-      views::CreateSolidBackground(kWarningColor));
+  permanent_error_label_->SetBackground(views::CreateSolidBackground(
+      permanent_error_label_->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_AlertSeverityHigh)));
   permanent_error_label_->SetEnabledColor(SK_ColorWHITE);
   permanent_error_label_->SetAutoColorReadabilityEnabled(false);
   permanent_error_label_->SetVisible(false);
@@ -355,13 +350,13 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   main_contents->SetLayoutManager(std::make_unique<views::FillLayout>());
   // Inset the whole main section.
   main_contents->SetBorder(views::CreateEmptyBorder(
-      provider->GetInsetsMetric(views::INSETS_DIALOG)));
+      provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL)));
   AddChildView(main_contents);
 
   controls_container_ = new views::View();
   controls_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   main_contents->AddChildView(controls_container_);
 
   // Instruction text of the dialog.
@@ -372,6 +367,13 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   instructions_->SetMultiLine(true);
   instructions_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   controls_container_->AddChildView(instructions_);
+
+  // The input container is a vertical box layout containing the input row and
+  // the temporary error label. They are separated by a related distance.
+  views::View* input_container = new views::View();
+  input_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   // Input row, containing month/year dropdowns if needed and the CVC field.
   input_row_ = new views::View();
@@ -404,31 +406,34 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   cvc_image->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_CVC_IMAGE_DESCRIPTION));
   input_row_->AddChildView(cvc_image);
-  controls_container_->AddChildView(input_row_);
+  input_container->AddChildView(input_row_);
 
   // Temporary error view, just below the input field(s).
-  views::View* temporary_error = new views::View();
+  temporary_error_ = new views::View();
   auto* temporary_error_layout =
-      temporary_error->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      temporary_error_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::kHorizontal, gfx::Insets(),
           provider->GetDistanceMetric(
               views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
   temporary_error_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
 
-  error_icon_ = new views::ImageView();
-  error_icon_->SetVisible(false);
-  error_icon_->SetImage(
-      gfx::CreateVectorIcon(vector_icons::kWarningIcon, 16, kWarningColor));
-  temporary_error->AddChildView(error_icon_);
+  const SkColor kWarningTextColor = views::style::GetColor(
+      *instructions_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_RED);
+  views::ImageView* error_icon = new views::ImageView();
+  error_icon->SetImage(
+      gfx::CreateVectorIcon(kBrowserToolsErrorIcon, kWarningTextColor));
+  temporary_error_->SetVisible(false);
+  temporary_error_->AddChildView(error_icon);
 
   error_label_ = new views::Label();
   error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  error_label_->SetEnabledColor(views::style::GetColor(
-      *instructions_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_RED));
-  temporary_error->AddChildView(error_label_);
+  error_label_->SetEnabledColor(kWarningTextColor);
+  temporary_error_->AddChildView(error_label_);
   temporary_error_layout->SetFlexForView(error_label_, 1);
-  controls_container_->AddChildView(temporary_error);
+  input_container->AddChildView(temporary_error_);
+
+  controls_container_->AddChildView(input_container);
 
   // On top of the main contents, we add the progress overlay and hide it.
   progress_overlay_ = new views::View();
