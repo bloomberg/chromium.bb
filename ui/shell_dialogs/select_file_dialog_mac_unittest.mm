@@ -419,7 +419,7 @@ TEST_F(SelectFileDialogMacTest, DialogMessage) {
 }
 
 // Verify that multiple file dialogs are corrected handled.
-TEST_F(SelectFileDialogMacTest, MultipleDialogs) {
+TEST_F(SelectFileDialogMacTest, DISABLED_MultipleDialogs) {
   FileDialogArguments args(GetDefaultArguments());
   SelectFileWithParams(args);
   SelectFileWithParams(args);
