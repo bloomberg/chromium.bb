@@ -16,7 +16,7 @@ Polymer({
     autofocus: Boolean,
   },
 
-  /** @return {!HTMLInputElement} */
+  /** @return {!CrInputElement} */
   getSearchInput: function() {
     return this.$.searchInput;
   },
