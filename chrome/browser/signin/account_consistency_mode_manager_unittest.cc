@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/test/scoped_feature_list.h"
 #include "build/buildflag.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -19,7 +18,6 @@
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -71,8 +69,6 @@ TEST(AccountConsistencyModeManagerTest, MigrateAtCreation) {
 // Checks that new profiles are migrated at creation.
 TEST(AccountConsistencyModeManagerTest, NewProfile) {
   content::TestBrowserThreadBundle test_thread_bundle;
-  base::test::ScopedFeatureList scoped_site_isolation;
-  scoped_site_isolation.InitAndEnableFeature(features::kSignInProcessIsolation);
   signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
   TestingProfile::Builder profile_builder;
   {
