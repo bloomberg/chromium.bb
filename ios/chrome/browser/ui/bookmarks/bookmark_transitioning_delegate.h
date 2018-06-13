@@ -7,8 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol TableViewPresentationControllerDelegate;
+
 @interface BookmarkTransitioningDelegate
     : NSObject<UIViewControllerTransitioningDelegate>
+
+// The modal delegate that is passed along to the presentation controller.
+@property(nonatomic, weak) id<TableViewPresentationControllerDelegate>
+    presentationControllerModalDelegate;
 
 @end
 

@@ -219,6 +219,12 @@ using bookmarks::BookmarkNode;
   [self reloadModel];
 }
 
+#pragma mark - Presentation controller integration
+
+- (BOOL)shouldBeDismissedOnTouchOutside {
+  return NO;
+}
+
 #pragma mark - Accessibility
 
 - (BOOL)accessibilityPerformEscape {

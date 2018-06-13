@@ -233,49 +233,8 @@ enum class PresentedState {
         [self.bookmarkBrowser cachedViewControllerStack];
   }
 
-  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
-    TableViewNavigationController* navController =
-        [[TableViewNavigationController alloc]
-            initWithTable:self.bookmarkBrowser];
-    self.bookmarkNavigationController = navController;
-    if (replacementViewControllers) {
-      [navController setViewControllers:replacementViewControllers];
-    }
-
-    navController.toolbarHidden = YES;
-    self.bookmarkNavigationControllerDelegate =
-        [[TableViewNavigationControllerDelegate alloc] init];
-    navController.delegate = self.bookmarkNavigationControllerDelegate;
-    self.bookmarkTransitioningDelegate =
-        [[BookmarkTransitioningDelegate alloc] init];
-    navController.transitioningDelegate = self.bookmarkTransitioningDelegate;
-    [navController setModalPresentationStyle:UIModalPresentationCustom];
-
-    self.bookmarkNavigationController = navController;
-    [_parentController presentViewController:navController
-                                    animated:YES
-                                  completion:nil];
-
-    TableViewPresentationController* presentationController =
-        base::mac::ObjCCastStrict<TableViewPresentationController>(
-            navController.presentationController);
-    self.bookmarkNavigationControllerDelegate.modalController =
-        presentationController;
-    presentationController.modalDelegate = self;
-  } else {
-    FormSheetNavigationController* navController =
-        [[FormSheetNavigationController alloc]
-            initWithRootViewController:self.bookmarkBrowser];
-    if (replacementViewControllers) {
-      [navController setViewControllers:replacementViewControllers];
-    }
-    [navController setModalPresentationStyle:UIModalPresentationFormSheet];
-    self.bookmarkNavigationController = navController;
-    [_parentController presentViewController:navController
-                                    animated:YES
-                                  completion:nil];
-  }
-
+  [self presentTableViewController:self.bookmarkBrowser
+      withReplacementViewControllers:replacementViewControllers];
   self.currentPresentedState = PresentedState::BOOKMARK_BROWSER;
 }
 
@@ -316,13 +275,8 @@ enum class PresentedState {
     NOTREACHED();
   }
 
-  UINavigationController* navController = [[BookmarkNavigationController alloc]
-      initWithRootViewController:editorController];
-  navController.modalPresentationStyle = UIModalPresentationFormSheet;
-  self.bookmarkNavigationController = navController;
-  [_parentController presentViewController:navController
-                                  animated:YES
-                                completion:nil];
+  [self presentTableViewController:editorController
+      withReplacementViewControllers:nil];
 }
 
 - (void)dismissBookmarkBrowserAnimated:(BOOL)animated
@@ -537,6 +491,60 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
 }
 
 #pragma mark - Private
+
+// Presents |viewController| using the appropriate presentation and styling,
+// depending on whether the UIRefresh experiment is enabled or disabled. Sets
+// |self.bookmarkNavigationController| to the UINavigationController subclass
+// used, and may set |self.bookmarkNavigationControllerDelegate| or
+// |self.bookmarkTransitioningDelegate| depending on whether or not the desired
+// transition requires those objects.  If |replacementViewControllers| is not
+// nil, those controllers are swapped in to the UINavigationController instead
+// of |viewController|.
+- (void)presentTableViewController:(ChromeTableViewController*)viewController
+    withReplacementViewControllers:
+        (NSArray<ChromeTableViewController*>*)replacementViewControllers {
+  if (experimental_flags::IsBookmarksUIRebootEnabled()) {
+    TableViewNavigationController* navController =
+        [[TableViewNavigationController alloc] initWithTable:viewController];
+    self.bookmarkNavigationController = navController;
+    if (replacementViewControllers) {
+      [navController setViewControllers:replacementViewControllers];
+    }
+
+    navController.toolbarHidden = YES;
+    self.bookmarkNavigationControllerDelegate =
+        [[TableViewNavigationControllerDelegate alloc] init];
+    navController.delegate = self.bookmarkNavigationControllerDelegate;
+    self.bookmarkTransitioningDelegate =
+        [[BookmarkTransitioningDelegate alloc] init];
+    self.bookmarkTransitioningDelegate.presentationControllerModalDelegate =
+        self;
+    navController.transitioningDelegate = self.bookmarkTransitioningDelegate;
+    navController.modalPresentationStyle = UIModalPresentationCustom;
+
+    [_parentController presentViewController:navController
+                                    animated:YES
+                                  completion:nil];
+
+    TableViewPresentationController* presentationController =
+        base::mac::ObjCCastStrict<TableViewPresentationController>(
+            navController.presentationController);
+    self.bookmarkNavigationControllerDelegate.modalController =
+        presentationController;
+  } else {
+    FormSheetNavigationController* navController =
+        [[FormSheetNavigationController alloc]
+            initWithRootViewController:viewController];
+    if (replacementViewControllers) {
+      [navController setViewControllers:replacementViewControllers];
+    }
+    navController.modalPresentationStyle = UIModalPresentationFormSheet;
+    self.bookmarkNavigationController = navController;
+    [_parentController presentViewController:navController
+                                    animated:YES
+                                  completion:nil];
+  }
+}
 
 - (void)openURLInCurrentTab:(const GURL&)url {
   if (url.SchemeIs(url::kJavaScriptScheme)) {  // bookmarklet
