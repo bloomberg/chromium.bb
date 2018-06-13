@@ -81,12 +81,6 @@ namespace net {
 class NetworkChangeNotifier;
 }  // namespace net
 
-#if BUILDFLAG(ENABLE_MUS)
-namespace ui {
-class ImageCursorsSet;
-}
-#endif
-
 namespace viz {
 class CompositingModeReporterImpl;
 class FrameSinkManagerImpl;
@@ -191,10 +185,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   const base::FilePath& startup_trace_file() const {
     return startup_trace_file_;
   }
-
-#if BUILDFLAG(ENABLE_MUS)
-  ui::ImageCursorsSet* image_cursors_set() { return image_cursors_set_.get(); }
-#endif
 
   // Returns the task runner for tasks that that are critical to producing a new
   // CompositorFrame on resize. On Mac this will be the task runner provided by
@@ -310,9 +300,6 @@ class CONTENT_EXPORT BrowserMainLoop {
 
 #if defined(USE_AURA)
   std::unique_ptr<aura::Env> env_;
-#endif
-#if BUILDFLAG(ENABLE_MUS)
-  std::unique_ptr<ui::ImageCursorsSet> image_cursors_set_;
 #endif
 
 #if defined(OS_ANDROID)

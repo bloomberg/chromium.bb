@@ -231,10 +231,6 @@
 #include "crypto/nss_util.h"
 #endif
 
-#if BUILDFLAG(ENABLE_MUS)
-#include "services/ui/common/image_cursors_set.h"
-#endif
-
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll
@@ -1010,12 +1006,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   if (RenderProcessHost::run_renderer_in_process())
     RenderProcessHostImpl::ShutDownInProcessRenderer();
 
-#if BUILDFLAG(ENABLE_MUS)
-  // NOTE: because of dependencies this has to happen before
-  // PostMainMessageLoopRun().
-  image_cursors_set_.reset();
-#endif
-
   if (parts_) {
     TRACE_EVENT0("shutdown",
                  "BrowserMainLoop::Subsystem:PostMainMessageLoopRun");
@@ -1515,11 +1505,6 @@ bool BrowserMainLoop::InitializeToolkit() {
                                        ? aura::Env::Mode::MUS
                                        : aura::Env::Mode::LOCAL);
 #endif  // defined(USE_AURA)
-
-#if BUILDFLAG(ENABLE_MUS)
-  if (features::IsMashEnabled())
-    image_cursors_set_ = std::make_unique<ui::ImageCursorsSet>();
-#endif
 
   if (parts_)
     parts_->ToolkitInitialized();
