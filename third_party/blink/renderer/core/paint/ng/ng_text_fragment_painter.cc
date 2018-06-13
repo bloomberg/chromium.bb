@@ -5,10 +5,15 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/markers/composition_marker.h"
+#include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_text_decoration_offset.h"
+#include "third_party/blink/renderer/core/paint/document_marker_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -58,6 +63,117 @@ Color SelectionBackgroundColor(const Document& document,
   if (text_color == color)
     return Color(0xff - color.Red(), 0xff - color.Green(), 0xff - color.Blue());
   return color;
+}
+
+DocumentMarkerVector ComputeMarkersToPaint(
+    const NGPaintFragment& paint_fragment) {
+  // TODO(yoichio): Handle first-letter
+  Node* const node = paint_fragment.GetNode();
+  if (!node)
+    return DocumentMarkerVector();
+  DocumentMarkerController& document_marker_controller =
+      node->GetDocument().Markers();
+  return document_marker_controller.ComputeMarkersToPaint(*node);
+}
+
+void PaintSingleMarkerBackgroundRun(GraphicsContext& context,
+                                    const LayoutPoint& box_origin,
+                                    Color background_color,
+                                    const NGPhysicalOffsetRect& local_rect) {
+  if (background_color == Color::kTransparent)
+    return;
+  GraphicsContextStateSaver state_saver(context);
+  const NGPhysicalOffsetRect global_rect(
+      local_rect.offset + NGPhysicalOffset(box_origin), local_rect.size);
+  context.FillRect(global_rect.ToFloatRect(), background_color);
+}
+
+void PaintStyleableMarkerUnderline(GraphicsContext& context,
+                                   const LayoutPoint& box_origin,
+                                   const StyleableMarker& marker,
+                                   const ComputedStyle& style,
+                                   const NGPhysicalOffsetRect& local_rect) {
+  const SimpleFontData* font_data = style.GetFont().PrimaryFont();
+  DCHECK(font_data);
+  DocumentMarkerPainter::PaintStyleableMarkerUnderline(
+      context, box_origin, marker, style, local_rect.ToFloatRect(),
+      LayoutUnit(font_data->GetFontMetrics().Height()));
+}
+
+unsigned GetTextContentOffset(const Text& text, unsigned offset) {
+  const Position position(text, offset);
+  const NGOffsetMapping* const offset_mapping =
+      NGOffsetMapping::GetFor(position);
+  DCHECK(offset_mapping);
+  const base::Optional<unsigned>& ng_offset =
+      offset_mapping->GetTextContentOffset(position);
+  DCHECK(ng_offset.has_value());
+  return ng_offset.value();
+}
+
+// ClampOffset modifies |offset| fixed in a range of |text_fragment| start/end
+// offsets.
+unsigned ClampOffset(unsigned offset,
+                     const NGPhysicalTextFragment& text_fragment) {
+  return std::min(std::max(offset, text_fragment.StartOffset()),
+                  text_fragment.EndOffset());
+}
+
+// Copied from InlineTextBoxPainter
+enum class DocumentMarkerPaintPhase { kForeground, kBackground };
+// Copied from InlineTextBoxPainter
+void PaintDocumentMarkers(GraphicsContext& context,
+                          const NGPaintFragment& paint_fragment,
+                          const DocumentMarkerVector& markers_to_paint,
+                          const LayoutPoint& box_origin,
+                          const ComputedStyle& style,
+                          DocumentMarkerPaintPhase marker_paint_phase) {
+  if (markers_to_paint.IsEmpty())
+    return;
+
+  const NGPhysicalTextFragment& text_fragment =
+      ToNGPhysicalTextFragmentOrDie(paint_fragment.PhysicalFragment());
+  DCHECK(text_fragment.GetNode());
+  const Text& text = ToTextOrDie(*text_fragment.GetNode());
+  for (const DocumentMarker* marker : markers_to_paint) {
+    const unsigned marker_start_offset =
+        GetTextContentOffset(text, marker->StartOffset());
+    const unsigned marker_end_offset =
+        GetTextContentOffset(text, marker->EndOffset());
+    const unsigned paint_start_offset =
+        ClampOffset(marker_start_offset, text_fragment);
+    const unsigned paint_end_offset =
+        ClampOffset(marker_end_offset, text_fragment);
+    if (paint_start_offset == paint_end_offset)
+      continue;
+
+    switch (marker->GetType()) {
+      // TODO(yoichio): Implement following cases
+      // case DocumentMarker::kSpelling:
+      // case DocumentMarker::kGrammar:
+      // case DocumentMarker::kTextMatch:
+      case DocumentMarker::kComposition:
+      case DocumentMarker::kActiveSuggestion:
+      case DocumentMarker::kSuggestion: {
+        const StyleableMarker& styleable_marker = ToStyleableMarker(*marker);
+        if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
+          PaintSingleMarkerBackgroundRun(
+              context, box_origin, styleable_marker.BackgroundColor(),
+              text_fragment.LocalRect(paint_start_offset, paint_end_offset));
+        } else {
+          // TODO(yoichio) We call this on vertical/horizontal flipped context.
+          // Since NGPhysicalTextFragment::LocalRect returns physical rect,
+          // we need to adapt it.
+          PaintStyleableMarkerUnderline(
+              context, box_origin, styleable_marker, style,
+              text_fragment.LocalRect(paint_start_offset, paint_end_offset));
+        }
+      } break;
+      default:
+        // Marker is not painted, or painting code has not been added yet
+        break;
+    }
+  }
 }
 
 }  // namespace
@@ -156,11 +272,17 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
   // TODO(yoichio): Make NGPhysicalTextFragment::LocalRect and
   // NGPaintFragment::ComputeLocalSelectionRect logical so that we can paint
   // selection in same fliped dimention as NGTextPainter.
-  if (have_selection && paint_info.phase != PaintPhase::kSelection &&
+  const DocumentMarkerVector& markers_to_paint =
+      ComputeMarkersToPaint(fragment_);
+  if (paint_info.phase != PaintPhase::kSelection &&
       paint_info.phase != PaintPhase::kTextClip && !is_printing) {
-    // TODO(yoichio): Implement composition highlights.
-    PaintSelection(context, fragment_, document, style,
-                   selection_style.fill_color, box_rect, selection_status);
+    PaintDocumentMarkers(context, fragment_, markers_to_paint, box_origin,
+                         style, DocumentMarkerPaintPhase::kBackground);
+
+    if (have_selection) {
+      PaintSelection(context, fragment_, document, style,
+                     selection_style.fill_color, box_rect, selection_status);
+    }
   }
 
   // Line break needs only selection painting.
@@ -246,6 +368,11 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
     text_painter.Paint(selection_status.start, selection_status.end, length,
                        selection_style);
   }
+
+  if (paint_info.phase != PaintPhase::kForeground)
+    return;
+  PaintDocumentMarkers(context, fragment_, markers_to_paint, box_origin, style,
+                       DocumentMarkerPaintPhase::kForeground);
 }
 
 }  // namespace blink

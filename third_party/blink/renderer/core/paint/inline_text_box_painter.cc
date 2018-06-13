@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/text_decoration_offset.h"
 #include "third_party/blink/renderer/core/paint/applied_decoration_painter.h"
 #include "third_party/blink/renderer/core/paint/decoration_info.h"
+#include "third_party/blink/renderer/core/paint/document_marker_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/selection_painting_utils.h"
 #include "third_party/blink/renderer/core/paint/text_painter.h"
@@ -511,31 +512,35 @@ void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
 }
 
 DocumentMarkerVector InlineTextBoxPainter::ComputeMarkersToPaint() const {
-  // We don't render composition or spelling markers that overlap suggestion
-  // markers.
-
   Node* const node = inline_text_box_.GetLineLayoutItem().GetNode();
   if (!node)
     return DocumentMarkerVector();
 
   DocumentMarkerController& document_marker_controller =
       inline_text_box_.GetLineLayoutItem().GetDocument().Markers();
+  return document_marker_controller.ComputeMarkersToPaint(*node);
+}
 
+// TODO(yoichio): Move this to document_marker_controller.cc
+DocumentMarkerVector DocumentMarkerController::ComputeMarkersToPaint(
+    const Node& node) {
+  // We don't render composition or spelling markers that overlap suggestion
+  // markers.
   // Note: DocumentMarkerController::MarkersFor() returns markers sorted by
   // start offset.
   const DocumentMarkerVector& suggestion_markers =
-      document_marker_controller.MarkersFor(node, DocumentMarker::kSuggestion);
+      MarkersFor(&node, DocumentMarker::kSuggestion);
   if (suggestion_markers.IsEmpty()) {
     // If there are no suggestion markers, we can return early as a minor
     // performance optimization.
     DocumentMarker::MarkerTypes remaining_types = DocumentMarker::AllMarkers();
     remaining_types.Remove(DocumentMarker::kSuggestion);
-    return document_marker_controller.MarkersFor(node, remaining_types);
+    return MarkersFor(&node, remaining_types);
   }
 
   const DocumentMarkerVector& markers_overridden_by_suggestion_markers =
-      document_marker_controller.MarkersFor(
-          node, DocumentMarker::kComposition | DocumentMarker::kSpelling);
+      MarkersFor(&node,
+                 DocumentMarker::kComposition | DocumentMarker::kSpelling);
 
   Vector<unsigned> suggestion_starts;
   Vector<unsigned> suggestion_ends;
@@ -588,8 +593,7 @@ DocumentMarkerVector InlineTextBoxPainter::ComputeMarkersToPaint() const {
                          DocumentMarker::kSpelling |
                          DocumentMarker::kSuggestion);
 
-  markers_to_paint.AppendVector(
-      document_marker_controller.MarkersFor(node, remaining_types));
+  markers_to_paint.AppendVector(MarkersFor(&node, remaining_types));
 
   return markers_to_paint;
 }
@@ -1012,20 +1016,32 @@ void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
     const StyleableMarker& marker,
     const ComputedStyle& style,
     const Font& font) {
+  if (inline_text_box_.Truncation() == kCFullTruncation)
+    return;
+
+  const PaintOffsets marker_offsets = MarkerPaintStartAndEnd(marker);
+  const TextRun& run = inline_text_box_.ConstructTextRun(style);
+  // Pass 0 for height since we only care about the width
+  const FloatRect& marker_rect = font.SelectionRectForText(
+      run, FloatPoint(), 0, marker_offsets.start, marker_offsets.end);
+  DocumentMarkerPainter::PaintStyleableMarkerUnderline(
+      context, box_origin, marker, style, marker_rect,
+      inline_text_box_.LogicalHeight());
+}
+
+// TODO(yoichio) : Move this to document_marker_painter.cc
+void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
+    GraphicsContext& context,
+    const LayoutPoint& box_origin,
+    const StyleableMarker& marker,
+    const ComputedStyle& style,
+    const FloatRect& marker_rect,
+    LayoutUnit logical_height) {
   if (marker.HasThicknessNone() ||
       (marker.UnderlineColor() == Color::kTransparent &&
        !marker.UseTextColor()))
     return;
 
-  if (inline_text_box_.Truncation() == kCFullTruncation)
-    return;
-
-  const PaintOffsets marker_offsets = MarkerPaintStartAndEnd(marker);
-
-  const TextRun& run = inline_text_box_.ConstructTextRun(style);
-  // Pass 0 for height since we only care about the width
-  const FloatRect& marker_rect = font.SelectionRectForText(
-      run, FloatPoint(), 0, marker_offsets.start, marker_offsets.end);
   // start of line to draw, relative to box_origin.X()
   LayoutUnit start = LayoutUnit(marker_rect.X());
   LayoutUnit width = LayoutUnit(marker_rect.Width());
@@ -1042,21 +1058,15 @@ void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
   // thick.  If there's not enough space the underline will touch or overlap
   // characters.
   int line_thickness = 1;
-  const SimpleFontData* font_data =
-      inline_text_box_.GetLineLayoutItem()
-          .Style(inline_text_box_.IsFirstLineStyle())
-          ->GetFont()
-          .PrimaryFont();
+  const SimpleFontData* font_data = style.GetFont().PrimaryFont();
   DCHECK(font_data);
   int baseline = font_data ? font_data->GetFontMetrics().Ascent() : 0;
-  if (marker.HasThicknessThick() &&
-      inline_text_box_.LogicalHeight() - baseline >= 2)
+  if (marker.HasThicknessThick() && logical_height.ToInt() - baseline >= 2)
     line_thickness = 2;
 
   Color marker_color =
       marker.UseTextColor()
-          ? inline_text_box_.GetLineLayoutItem().Style()->VisitedDependentColor(
-                GetCSSPropertyWebkitTextFillColor())
+          ? style.VisitedDependentColor(GetCSSPropertyWebkitTextFillColor())
           : marker.UnderlineColor();
   context.SetStrokeColor(marker_color);
 
@@ -1064,8 +1074,7 @@ void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
   context.DrawLineForText(
       FloatPoint(
           box_origin.X() + start,
-          (box_origin.Y() + inline_text_box_.LogicalHeight() - line_thickness)
-              .ToFloat()),
+          (box_origin.Y() + logical_height.ToInt() - line_thickness).ToFloat()),
       width);
 }
 
