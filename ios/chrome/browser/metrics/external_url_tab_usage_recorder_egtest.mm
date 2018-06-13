@@ -30,14 +30,10 @@ const char kTestUrl[] =
 @implementation ExternalURLTabUsageRecorderTestCase
 
 // TODO(crbug.com/847948): This test is faling on devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testEvictedTabReloadFailure testEvictedTabReloadFailure
-#else
-#define MAYBE_testEvictedTabReloadFailure DISABLED_testEvictedTabReloadFailure
-#endif
+// TODO(crbug.com/852341): This test is faling on simulators.
 // Verify correct recording of metrics when the reloading of an evicted tab
 // fails.
-- (void)MAYBE_testEvictedTabReloadFailure {
+- (void)DISABLED_testEvictedTabReloadFailure {
   web::test::SetUpFileBasedHttpServer();
   chrome_test_util::HistogramTester histogramTester;
   FailureBlock failureBlock = ^(NSString* error) {
