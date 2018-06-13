@@ -260,6 +260,8 @@ class GLRenderingVDAClient
   // If |decode_calls_per_second| > 0, |num_in_flight_decodes| must be 1.
   // |render_as_thumbnails| indicates if the decoded picture will be rendered
   // as thumbnails at the end of tests.
+  // |num_frames| is the number of frames that must be verified to be decoded
+  // during the test.
   struct Config {
     size_t window_id = 0;
     size_t num_in_flight_decodes = 1;
@@ -276,6 +278,7 @@ class GLRenderingVDAClient
     size_t delay_reuse_after_frame_num = std::numeric_limits<size_t>::max();
     size_t decode_calls_per_second = 0;
     bool render_as_thumbnails = false;
+    size_t num_frames = 0;
   };
 
   // Doesn't take ownership of |rendering_helper| or |note|, which must outlive
@@ -687,6 +690,11 @@ void GLRenderingVDAClient::NotifyFlushDone() {
     return;
   }
 
+  // Check all the Decode()-ed frames are returned by PictureReady() in
+  // END_OF_STREAM_RESET case.
+  if (config_.reset_point == END_OF_STREAM_RESET)
+    EXPECT_EQ(num_decoded_frames_, config_.num_frames);
+
   SetState(CS_FLUSHED);
   ResetDecoderAfterFlush();
 }
@@ -702,6 +710,8 @@ void GLRenderingVDAClient::NotifyResetDone() {
       DecodeNextFragment();
       return;
     case START_OF_STREAM_RESET:
+      EXPECT_EQ(num_decoded_frames_, 0u);
+      EXPECT_EQ(encoded_data_helper_->AtHeadOfStream(), true);
       reset_point_ = END_OF_STREAM_RESET;
       for (size_t i = 0; i < config_.num_in_flight_decodes; ++i)
         DecodeNextFragment();
@@ -757,6 +767,8 @@ void GLRenderingVDAClient::SetState(ClientState new_state) {
 void GLRenderingVDAClient::FinishInitialization() {
   SetState(CS_INITIALIZED);
   initialize_done_ticks_ = base::TimeTicks::Now();
+  EXPECT_EQ(encoded_data_helper_->AtHeadOfStream(), true);
+  num_decoded_frames_ = 0;
 
   if (reset_point_ == START_OF_STREAM_RESET) {
     decoder_->Reset();
@@ -1160,6 +1172,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
     config.fake_decoder = g_fake_decoder;
     config.delay_reuse_after_frame_num = delay_reuse_after_frame_num;
     config.render_as_thumbnails = render_as_thumbnails;
+    config.num_frames = video_file->num_frames;
 
     clients_[index] = std::make_unique<GLRenderingVDAClient>(
         std::move(config), video_file->data_str, &rendering_helper_,
@@ -1506,6 +1519,7 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
   config.profile = video_file->profile;
   config.fake_decoder = g_fake_decoder;
   config.decode_calls_per_second = kWebRtcDecodeCallsPerSecond;
+  config.num_frames = video_file->num_frames;
 
   clients_.push_back(std::make_unique<GLRenderingVDAClient>(
       std::move(config), video_file->data_str, &rendering_helper_,
@@ -1539,6 +1553,7 @@ TEST_F(VideoDecodeAcceleratorTest, NoCrash) {
   config.frame_size = gfx::Size(video_file->width, video_file->height);
   config.profile = video_file->profile;
   config.fake_decoder = g_fake_decoder;
+  config.num_frames = video_file->num_frames;
 
   clients_.push_back(std::make_unique<GLRenderingVDAClient>(
       std::move(config), video_file->data_str, &rendering_helper_,
