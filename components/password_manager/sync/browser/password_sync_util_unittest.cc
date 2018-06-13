@@ -97,6 +97,34 @@ TEST_F(PasswordSyncUtilTest, IsSyncAccountCredential) {
   }
 }
 
+TEST_F(PasswordSyncUtilTest, IsSyncAccountEmail) {
+  const struct {
+    std::string fake_sync_email;
+    std::string input_username;
+    bool expected_result;
+  } kTestCases[] = {
+      {"", "", false},
+      {"", "user@example.org", false},
+      {"sync_user@example.org", "", false},
+      {"sync_user@example.org", "sync_user@example.org", true},
+      {"sync_user@example.org", "sync_user", false},
+      {"sync_user@example.org", "non_sync_user@example.org", false},
+  };
+
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
+    SCOPED_TRACE(testing::Message() << "i=" << i);
+    if (kTestCases[i].fake_sync_email.empty()) {
+      EXPECT_EQ(kTestCases[i].expected_result,
+                IsSyncAccountEmail(kTestCases[i].input_username, nullptr));
+      continue;
+    }
+    FakeSigninAs(kTestCases[i].fake_sync_email);
+    EXPECT_EQ(
+        kTestCases[i].expected_result,
+        IsSyncAccountEmail(kTestCases[i].input_username, signin_manager()));
+  }
+}
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 class PasswordSyncUtilEnterpriseTest : public SyncUsernameTestBase {
  public:
