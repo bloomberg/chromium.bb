@@ -517,6 +517,7 @@
         'hard_timeout': 300,
       },
     },
+    'shell_dialogs_unittests': {},
     'skia_unittests': {},
     'sql_unittests': {},
     'storage_unittests': {},
