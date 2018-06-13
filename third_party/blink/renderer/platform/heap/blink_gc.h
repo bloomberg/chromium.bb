@@ -103,7 +103,8 @@ class PLATFORM_EXPORT BlinkGC final {
     kThreadTerminationGC = 6,
     kTesting = 7,
     kIncrementalIdleGC = 8,
-    kLastGCReason = kIncrementalIdleGC,
+    kIncrementalV8FollowupGC = 9,
+    kLastGCReason = kIncrementalV8FollowupGC,
   };
 
   enum ArenaIndices {

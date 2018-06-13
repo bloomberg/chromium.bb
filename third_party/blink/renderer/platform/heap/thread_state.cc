@@ -113,6 +113,8 @@ const char* GcReasonString(BlinkGC::GCReason reason) {
       return "TestingGC";
     case BlinkGC::kIncrementalIdleGC:
       return "IncrementalIdleGC";
+    case BlinkGC::kIncrementalV8FollowupGC:
+      return "IncrementalV8FollowupGC";
   }
   return "<Unknown>";
 }
@@ -175,6 +177,7 @@ ThreadState::ThreadState()
       gc_mixin_marker_(nullptr),
       gc_state_(kNoGCScheduled),
       gc_phase_(GCPhase::kNone),
+      reason_for_scheduled_gc_(BlinkGC::kLastGCReason),
       isolate_(nullptr),
       trace_dom_wrappers_(nullptr),
       invalidate_dead_objects_in_wrappers_marking_deque_(nullptr),
@@ -786,6 +789,17 @@ void ThreadState::SchedulePreciseGC() {
   SetGCState(kPreciseGCScheduled);
 }
 
+void ThreadState::ScheduleIncrementalGC(BlinkGC::GCReason reason) {
+  DCHECK(CheckThread());
+  // Schedule an incremental GC only when no GC is scheduled or an idle GC is
+  // scheduled. Otherwise, already scheduled GCs should be prioritized.
+  if (GetGCState() == kNoGCScheduled || GetGCState() == kIdleGCScheduled) {
+    CompleteSweep();
+    reason_for_scheduled_gc_ = reason;
+    SetGCState(kIncrementalGCScheduled);
+  }
+}
+
 namespace {
 
 #define UNEXPECTED_GCSTATE(s)                                   \
@@ -802,6 +816,7 @@ void UnexpectedGCState(ThreadState::GCState gc_state) {
     UNEXPECTED_GCSTATE(kIncrementalMarkingStepScheduled);
     UNEXPECTED_GCSTATE(kIncrementalMarkingFinalizeScheduled);
     UNEXPECTED_GCSTATE(kPageNavigationGCScheduled);
+    UNEXPECTED_GCSTATE(kIncrementalGCScheduled);
   }
 }
 
@@ -822,13 +837,15 @@ void ThreadState::SetGCState(GCState gc_state) {
           gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
           gc_state_ == kPageNavigationGCScheduled ||
           gc_state_ == kIncrementalMarkingStepScheduled ||
-          gc_state_ == kIncrementalMarkingFinalizeScheduled);
+          gc_state_ == kIncrementalMarkingFinalizeScheduled ||
+          gc_state_ == kIncrementalGCScheduled);
       break;
     case kIncrementalMarkingStepScheduled:
       DCHECK(CheckThread());
       VERIFY_STATE_TRANSITION(gc_state_ == kNoGCScheduled ||
                               gc_state_ == kIncrementalMarkingStepScheduled ||
-                              gc_state_ == kIdleGCScheduled);
+                              gc_state_ == kIdleGCScheduled ||
+                              gc_state_ == kIncrementalGCScheduled);
       break;
     case kIncrementalMarkingFinalizeScheduled:
       DCHECK(CheckThread());
@@ -844,13 +861,21 @@ void ThreadState::SetGCState(GCState gc_state) {
           gc_state_ == kIncrementalMarkingStepScheduled ||
           gc_state_ == kIncrementalMarkingFinalizeScheduled ||
           gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
-          gc_state_ == kPageNavigationGCScheduled);
+          gc_state_ == kPageNavigationGCScheduled ||
+          gc_state_ == kIncrementalGCScheduled);
       break;
     case kIdleGCScheduled:
       DCHECK(CheckThread());
       DCHECK(!IsMarkingInProgress());
       DCHECK(!IsSweepingInProgress());
       VERIFY_STATE_TRANSITION(gc_state_ == kNoGCScheduled);
+      break;
+    case kIncrementalGCScheduled:
+      DCHECK(CheckThread());
+      DCHECK(!IsMarkingInProgress());
+      DCHECK(!IsSweepingInProgress());
+      VERIFY_STATE_TRANSITION(gc_state_ == kNoGCScheduled ||
+                              gc_state_ == kIdleGCScheduled);
       break;
     default:
       NOTREACHED();
@@ -910,6 +935,9 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
     case kIncrementalMarkingFinalizeScheduled:
       if (current_gc_data_.reason == BlinkGC::kTesting)
         RunIncrementalMarkingFinalizeTask();
+      break;
+    case kIncrementalGCScheduled:
+      IncrementalMarkingStart(reason_for_scheduled_gc_);
       break;
     default:
       break;
@@ -1160,6 +1188,7 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
     COUNT_BY_GC_REASON(ThreadTerminationGC)
     COUNT_BY_GC_REASON(Testing)
     COUNT_BY_GC_REASON(IncrementalIdleGC)
+    COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
 
 #undef COUNT_BY_GC_REASON
   }
@@ -1546,6 +1575,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     COUNT_BY_GC_REASON(ThreadTerminationGC)
     COUNT_BY_GC_REASON(Testing)
     COUNT_BY_GC_REASON(IncrementalIdleGC)
+    COUNT_BY_GC_REASON(IncrementalV8FollowupGC)
   }
 #undef COUNT_BY_GC_REASON
 
