@@ -252,6 +252,7 @@ NetworkContext::NetworkContext(
       builder.get(), params_.get(), network_service->quic_disabled(),
       network_service->net_log(), network_service->host_resolver(),
       network_service->network_quality_estimator(),
+      network_service_->GetHttpAuthHandlerFactory(),
       network_service_->sth_reporter(), &ct_tree_tracker_,
       &require_ct_delegate_, &certificate_report_sender_,
       &user_agent_settings_);
@@ -660,6 +661,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     net::NetLog* net_log,
     net::HostResolver* host_resolver,
     net::NetworkQualityEstimator* network_quality_estimator,
+    net::HttpAuthHandlerFactory* http_auth_handler_factory,
     certificate_transparency::STHReporter* sth_reporter,
     std::unique_ptr<certificate_transparency::TreeStateTracker>*
         out_ct_tree_tracker,
@@ -672,6 +674,9 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 
   if (host_resolver)
     builder->set_shared_host_resolver(host_resolver);
+
+  if (http_auth_handler_factory)
+    builder->set_shared_http_auth_handler_factory(http_auth_handler_factory);
 
   if (network_quality_estimator)
     builder->set_network_quality_estimator(network_quality_estimator);
@@ -973,22 +978,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     DCHECK(!network_context_params->persist_session_cookies);
   }
 
-  http_auth_preferences_ = std::make_unique<net::HttpAuthPreferences>();
-
-  std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory =
-      net::HttpAuthHandlerFactory::CreateDefault(
-          network_service_->host_resolver(), http_auth_preferences_.get()
-#if defined(OS_CHROMEOS)
-                                                 ,
-          network_context_params->allow_gssapi_library_load
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
-                                                 ,
-          network_context_params->gssapi_library_name
-#endif
-          );
-
-  builder.SetHttpAuthHandlerFactory(std::move(http_auth_handler_factory));
-
   if (g_cert_verifier_for_testing) {
     builder.SetCertVerifier(std::make_unique<WrappedTestingCertVerifier>());
   } else {
@@ -1009,6 +998,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       network_service_ ? network_service_->net_log() : nullptr,
       network_service_ ? network_service_->host_resolver() : nullptr,
       network_service_ ? network_service_->network_quality_estimator()
+                       : nullptr,
+      network_service_ ? network_service_->GetHttpAuthHandlerFactory()
                        : nullptr,
       network_service_ ? network_service_->sth_reporter() : nullptr,
       &ct_tree_tracker_, &require_ct_delegate_, &certificate_report_sender_,

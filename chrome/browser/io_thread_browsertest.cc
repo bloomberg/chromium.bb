@@ -81,31 +81,6 @@ void RunOnIOThreadBlocking(base::OnceClosure task) {
   run_loop.Run();
 }
 
-void CheckCnameLookup(IOThread* io_thread, bool expected) {
-  EXPECT_EQ(expected,
-            io_thread->globals()
-                ->http_auth_preferences->NegotiateDisableCnameLookup());
-}
-
-void CheckNegotiateEnablePort(IOThread* io_thread, bool expected) {
-  EXPECT_EQ(expected,
-            io_thread->globals()->http_auth_preferences->NegotiateEnablePort());
-}
-
-void CheckCanUseDefaultCredentials(IOThread* io_thread,
-                                   bool expected,
-                                   const GURL& url) {
-  EXPECT_EQ(
-      expected,
-      io_thread->globals()->http_auth_preferences->CanUseDefaultCredentials(
-          url));
-}
-
-void CheckCanDelegate(IOThread* io_thread, bool expected, const GURL& url) {
-  EXPECT_EQ(expected,
-            io_thread->globals()->http_auth_preferences->CanDelegate(url));
-}
-
 void CheckEffectiveConnectionType(IOThread* io_thread,
                                   net::EffectiveConnectionType expected) {
   EXPECT_EQ(expected, io_thread->globals()
@@ -135,67 +110,6 @@ class IOThreadBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::TearDown();
   }
 };
-
-// This test uses the kDisableAuthNegotiateCnameLookup to check that
-// the HttpAuthPreferences are correctly initialized and running on the
-// IO thread. The other preferences are tested by the HttpAuthPreferences
-// unit tests.
-IN_PROC_BROWSER_TEST_F(IOThreadBrowserTest, UpdateNegotiateDisableCnameLookup) {
-  g_browser_process->local_state()->SetBoolean(
-      prefs::kDisableAuthNegotiateCnameLookup, false);
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckCnameLookup,
-                 base::Unretained(g_browser_process->io_thread()), false));
-  g_browser_process->local_state()->SetBoolean(
-      prefs::kDisableAuthNegotiateCnameLookup, true);
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckCnameLookup,
-                 base::Unretained(g_browser_process->io_thread()), true));
-}
-
-IN_PROC_BROWSER_TEST_F(IOThreadBrowserTest, UpdateEnableAuthNegotiatePort) {
-  g_browser_process->local_state()->SetBoolean(prefs::kEnableAuthNegotiatePort,
-                                               false);
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckNegotiateEnablePort,
-                 base::Unretained(g_browser_process->io_thread()), false));
-  g_browser_process->local_state()->SetBoolean(prefs::kEnableAuthNegotiatePort,
-                                               true);
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckNegotiateEnablePort,
-                 base::Unretained(g_browser_process->io_thread()), true));
-}
-
-IN_PROC_BROWSER_TEST_F(IOThreadBrowserTest, UpdateServerWhitelist) {
-  GURL url("http://test.example.com");
-
-  g_browser_process->local_state()->SetString(prefs::kAuthServerWhitelist,
-                                              "xxx");
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckCanUseDefaultCredentials,
-                 base::Unretained(g_browser_process->io_thread()), false, url));
-
-  g_browser_process->local_state()->SetString(prefs::kAuthServerWhitelist, "*");
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckCanUseDefaultCredentials,
-                 base::Unretained(g_browser_process->io_thread()), true, url));
-}
-
-IN_PROC_BROWSER_TEST_F(IOThreadBrowserTest, UpdateDelegateWhitelist) {
-  GURL url("http://test.example.com");
-
-  g_browser_process->local_state()->SetString(
-      prefs::kAuthNegotiateDelegateWhitelist, "");
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckCanDelegate,
-                 base::Unretained(g_browser_process->io_thread()), false, url));
-
-  g_browser_process->local_state()->SetString(
-      prefs::kAuthNegotiateDelegateWhitelist, "*");
-  RunOnIOThreadBlocking(
-      base::Bind(&CheckCanDelegate,
-                 base::Unretained(g_browser_process->io_thread()), true, url));
-}
 
 class IOThreadEctCommandLineBrowserTest : public IOThreadBrowserTest {
  public:

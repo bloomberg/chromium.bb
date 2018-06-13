@@ -11,10 +11,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/base/mock_network_change_notifier.h"
+#include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_auth_handler_negotiate.h"
+#include "net/http/http_auth_scheme.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/url_request_context.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
@@ -97,7 +101,377 @@ TEST_F(NetworkServiceTest, CreateContextWithoutChannelID) {
   base::RunLoop().RunUntilIdle();
 }
 
-namespace {
+// Platforms where Negotiate can be used.
+#if defined(OS_WIN) || \
+    (defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS))
+
+// Returns the negotiate factory, if one exists, to query its configuration.
+net::HttpAuthHandlerNegotiate::Factory* GetNegotiateFactory(
+    NetworkContext* network_context) {
+  net::HttpAuthHandlerFactory* auth_factory =
+      network_context->url_request_context()->http_auth_handler_factory();
+  return reinterpret_cast<net::HttpAuthHandlerNegotiate::Factory*>(
+      reinterpret_cast<net::HttpAuthHandlerRegistryFactory*>(auth_factory)
+          ->GetSchemeFactory(net::kNegotiateAuthScheme));
+}
+
+#endif  //  defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_ANDROID) &&
+        //  !defined(OS_IOS))
+
+TEST_F(NetworkServiceTest, AuthDefaultParams) {
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  net::HttpAuthHandlerRegistryFactory* auth_handler_factory =
+      reinterpret_cast<net::HttpAuthHandlerRegistryFactory*>(
+          network_context.url_request_context()->http_auth_handler_factory());
+  ASSERT_TRUE(auth_handler_factory);
+
+  // These three factories should always be created by default.  Negotiate may
+  // or may not be created, depending on other build flags.
+  EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kBasicAuthScheme));
+  EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
+  EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
+
+#if defined(OS_CHROMEOS)
+  ASSERT_TRUE(GetNegotiateFactory(&network_context));
+  EXPECT_TRUE(GetNegotiateFactory(&network_context)
+                  ->allow_gssapi_library_load_for_testing());
+#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS)
+  ASSERT_TRUE(GetNegotiateFactory(&network_context));
+  EXPECT_EQ("",
+            GetNegotiateFactory(&network_context)->GetLibraryNameForTesting());
+#elif defined(OS_WIN)
+  EXPECT_TRUE(GetNegotiateFactory(&network_context));
+#endif
+
+  EXPECT_FALSE(auth_handler_factory->http_auth_preferences()
+                   ->NegotiateDisableCnameLookup());
+  EXPECT_FALSE(
+      auth_handler_factory->http_auth_preferences()->NegotiateEnablePort());
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+  EXPECT_TRUE(auth_handler_factory->http_auth_preferences()->NtlmV2Enabled());
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if defined(OS_ANDROID)
+  EXPECT_EQ("", auth_handler_factory->http_auth_preferences()
+                    ->AuthAndroidNegotiateAccountType());
+#endif  // defined(OS_ANDROID)
+}
+
+TEST_F(NetworkServiceTest, AuthSchemesDigestAndNtlmOnly) {
+  mojom::HttpAuthStaticParamsPtr auth_params =
+      mojom::HttpAuthStaticParams::New();
+  auth_params->supported_schemes.push_back("digest");
+  auth_params->supported_schemes.push_back("ntlm");
+  service()->SetUpHttpAuth(std::move(auth_params));
+
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  net::HttpAuthHandlerRegistryFactory* auth_handler_factory =
+      reinterpret_cast<net::HttpAuthHandlerRegistryFactory*>(
+          network_context.url_request_context()->http_auth_handler_factory());
+  ASSERT_TRUE(auth_handler_factory);
+
+  EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kBasicAuthScheme));
+  EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
+  EXPECT_TRUE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
+  EXPECT_FALSE(
+      auth_handler_factory->GetSchemeFactory(net::kNegotiateAuthScheme));
+}
+
+TEST_F(NetworkServiceTest, AuthSchemesNone) {
+  // An empty list means to support no schemes.
+  service()->SetUpHttpAuth(mojom::HttpAuthStaticParams::New());
+
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  net::HttpAuthHandlerRegistryFactory* auth_handler_factory =
+      reinterpret_cast<net::HttpAuthHandlerRegistryFactory*>(
+          network_context.url_request_context()->http_auth_handler_factory());
+  ASSERT_TRUE(auth_handler_factory);
+
+  EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kBasicAuthScheme));
+  EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kDigestAuthScheme));
+  EXPECT_FALSE(auth_handler_factory->GetSchemeFactory(net::kNtlmAuthScheme));
+}
+
+// |allow_gssapi_library_load| is only supported on ChromeOS.
+#if defined(OS_CHROMEOS)
+TEST_F(NetworkServiceTest, AuthGssapiLibraryDisabled) {
+  mojom::HttpAuthStaticParamsPtr auth_params =
+      mojom::HttpAuthStaticParams::New();
+  auth_params->supported_schemes.push_back("negotiate");
+  auth_params->allow_gssapi_library_load = true;
+  service()->SetUpHttpAuth(std::move(auth_params));
+
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  ASSERT_TRUE(GetNegotiateFactory(&network_context));
+  EXPECT_TRUE(GetNegotiateFactory(&network_context)
+                  ->allow_gssapi_library_load_for_testing());
+}
+#endif  // defined(OS_CHROMEOS)
+
+// |gssapi_library_name| is only supported certain POSIX platforms.
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS) && \
+    !defined(OS_CHROMEOS)
+TEST_F(NetworkServiceTest, AuthGssapiLibraryName) {
+  const std::string kGssapiLibraryName = "Jim";
+  mojom::HttpAuthStaticParamsPtr auth_params =
+      mojom::HttpAuthStaticParams::New();
+  auth_params->supported_schemes.push_back("negotiate");
+  auth_params->gssapi_library_name = kGssapiLibraryName;
+  service()->SetUpHttpAuth(std::move(auth_params));
+
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  ASSERT_TRUE(GetNegotiateFactory(&network_context));
+  EXPECT_EQ(kGssapiLibraryName,
+            GetNegotiateFactory(&network_context)->GetLibraryNameForTesting());
+}
+#endif
+
+TEST_F(NetworkServiceTest, AuthServerWhitelist) {
+  // Add one server to the whitelist before creating any NetworkContexts.
+  mojom::HttpAuthDynamicParamsPtr auth_params =
+      mojom::HttpAuthDynamicParams::New();
+  auth_params->server_whitelist = "server1";
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+
+  // Create a network context, which should reflect the whitelist.
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  net::HttpAuthHandlerFactory* auth_handler_factory =
+      network_context.url_request_context()->http_auth_handler_factory();
+  ASSERT_TRUE(auth_handler_factory);
+  ASSERT_TRUE(auth_handler_factory->http_auth_preferences());
+  EXPECT_TRUE(
+      auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
+          GURL("https://server1/")));
+  EXPECT_FALSE(
+      auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
+          GURL("https://server2/")));
+
+  // Change whitelist to only have a different server on it. The pre-existing
+  // NetworkContext should be using the new list.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->server_whitelist = "server2";
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_FALSE(
+      auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
+          GURL("https://server1/")));
+  EXPECT_TRUE(
+      auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
+          GURL("https://server2/")));
+
+  // Change whitelist to have multiple servers. The pre-existing NetworkContext
+  // should be using the new list.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->server_whitelist = "server1,server2";
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_TRUE(
+      auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
+          GURL("https://server1/")));
+  EXPECT_TRUE(
+      auth_handler_factory->http_auth_preferences()->CanUseDefaultCredentials(
+          GURL("https://server2/")));
+}
+
+TEST_F(NetworkServiceTest, AuthDelegateWhitelist) {
+  // Add one server to the whitelist before creating any NetworkContexts.
+  mojom::HttpAuthDynamicParamsPtr auth_params =
+      mojom::HttpAuthDynamicParams::New();
+  auth_params->delegate_whitelist = "server1";
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+
+  // Create a network context, which should reflect the whitelist.
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  net::HttpAuthHandlerFactory* auth_handler_factory =
+      network_context.url_request_context()->http_auth_handler_factory();
+  ASSERT_TRUE(auth_handler_factory);
+  ASSERT_TRUE(auth_handler_factory->http_auth_preferences());
+  EXPECT_TRUE(auth_handler_factory->http_auth_preferences()->CanDelegate(
+      GURL("https://server1/")));
+  EXPECT_FALSE(auth_handler_factory->http_auth_preferences()->CanDelegate(
+      GURL("https://server2/")));
+
+  // Change whitelist to only have a different server on it. The pre-existing
+  // NetworkContext should be using the new list.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->delegate_whitelist = "server2";
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_FALSE(auth_handler_factory->http_auth_preferences()->CanDelegate(
+      GURL("https://server1/")));
+  EXPECT_TRUE(auth_handler_factory->http_auth_preferences()->CanDelegate(
+      GURL("https://server2/")));
+
+  // Change whitelist to have multiple servers. The pre-existing NetworkContext
+  // should be using the new list.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->delegate_whitelist = "server1,server2";
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_TRUE(auth_handler_factory->http_auth_preferences()->CanDelegate(
+      GURL("https://server1/")));
+  EXPECT_TRUE(auth_handler_factory->http_auth_preferences()->CanDelegate(
+      GURL("https://server2/")));
+}
+
+TEST_F(NetworkServiceTest, AuthNegotiateCnameLookup) {
+  // Set |negotiate_disable_cname_lookup| to true before creating any
+  // NetworkContexts.
+  mojom::HttpAuthDynamicParamsPtr auth_params =
+      mojom::HttpAuthDynamicParams::New();
+  auth_params->negotiate_disable_cname_lookup = true;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+
+  // Create a network context, which should reflect the setting.
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  net::HttpAuthHandlerFactory* auth_handler_factory =
+      network_context.url_request_context()->http_auth_handler_factory();
+  ASSERT_TRUE(auth_handler_factory);
+  ASSERT_TRUE(auth_handler_factory->http_auth_preferences());
+  EXPECT_TRUE(auth_handler_factory->http_auth_preferences()
+                  ->NegotiateDisableCnameLookup());
+
+  // Set it to false. The pre-existing NetworkContext should be using the new
+  // setting.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->negotiate_disable_cname_lookup = false;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_FALSE(auth_handler_factory->http_auth_preferences()
+                   ->NegotiateDisableCnameLookup());
+
+  // Set it back to true. The pre-existing NetworkContext should be using the
+  // new setting.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->negotiate_disable_cname_lookup = true;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_TRUE(auth_handler_factory->http_auth_preferences()
+                  ->NegotiateDisableCnameLookup());
+}
+
+TEST_F(NetworkServiceTest, AuthEnableNegotiatePort) {
+  // Set |enable_negotiate_port| to true before creating any NetworkContexts.
+  mojom::HttpAuthDynamicParamsPtr auth_params =
+      mojom::HttpAuthDynamicParams::New();
+  auth_params->enable_negotiate_port = true;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+
+  // Create a network context, which should reflect the setting.
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  net::HttpAuthHandlerFactory* auth_handler_factory =
+      network_context.url_request_context()->http_auth_handler_factory();
+  ASSERT_TRUE(auth_handler_factory);
+  ASSERT_TRUE(auth_handler_factory->http_auth_preferences());
+  EXPECT_TRUE(
+      auth_handler_factory->http_auth_preferences()->NegotiateEnablePort());
+
+  // Set it to false. The pre-existing NetworkContext should be using the new
+  // setting.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->enable_negotiate_port = false;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_FALSE(
+      auth_handler_factory->http_auth_preferences()->NegotiateEnablePort());
+
+  // Set it back to true. The pre-existing NetworkContext should be using the
+  // new setting.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->enable_negotiate_port = true;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_TRUE(
+      auth_handler_factory->http_auth_preferences()->NegotiateEnablePort());
+}
+
+// |ntlm_v2_enabled| is only supported on POSIX platforms.
+#if defined(OS_POSIX)
+TEST_F(NetworkServiceTest, AuthNtlmV2Enabled) {
+  // Set |ntlm_v2_enabled| to false before creating any NetworkContexts.
+  mojom::HttpAuthDynamicParamsPtr auth_params =
+      mojom::HttpAuthDynamicParams::New();
+  auth_params->ntlm_v2_enabled = false;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+
+  // Create a network context, which should reflect the setting.
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  net::HttpAuthHandlerFactory* auth_handler_factory =
+      network_context.url_request_context()->http_auth_handler_factory();
+  ASSERT_TRUE(auth_handler_factory);
+  ASSERT_TRUE(auth_handler_factory->http_auth_preferences());
+  EXPECT_FALSE(auth_handler_factory->http_auth_preferences()->NtlmV2Enabled());
+
+  // Set it to true. The pre-existing NetworkContext should be using the new
+  // setting.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->ntlm_v2_enabled = true;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_TRUE(auth_handler_factory->http_auth_preferences()->NtlmV2Enabled());
+
+  // Set it back to false. The pre-existing NetworkContext should be using the
+  // new setting.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->ntlm_v2_enabled = false;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_FALSE(auth_handler_factory->http_auth_preferences()->NtlmV2Enabled());
+}
+#endif  // defined(OS_POSIX)
+
+// |android_negotiate_account_type| is only supported on Android.
+#if defined(OS_ANDROID)
+TEST_F(NetworkServiceTest, AuthAndroidNegotiateAccountType) {
+  const char kInitialAccountType[] = "Scorpio";
+  const char kFinalAccountType[] = "Pisces";
+  // Set |android_negotiate_account_type| to before creating any
+  // NetworkContexts.
+  mojom::HttpAuthDynamicParamsPtr auth_params =
+      mojom::HttpAuthDynamicParams::New();
+  auth_params->android_negotiate_account_type = kInitialAccountType;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+
+  // Create a network context, which should reflect the setting.
+  mojom::NetworkContextPtr network_context_ptr;
+  NetworkContext network_context(service(),
+                                 mojo::MakeRequest(&network_context_ptr),
+                                 CreateContextParams());
+  net::HttpAuthHandlerFactory* auth_handler_factory =
+      network_context.url_request_context()->http_auth_handler_factory();
+  ASSERT_TRUE(auth_handler_factory);
+  ASSERT_TRUE(auth_handler_factory->http_auth_preferences());
+  EXPECT_EQ(kInitialAccountType, auth_handler_factory->http_auth_preferences()
+                                     ->AuthAndroidNegotiateAccountType());
+
+  // Change |android_negotiate_account_type|. The pre-existing NetworkContext
+  // should be using the new setting.
+  auth_params = mojom::HttpAuthDynamicParams::New();
+  auth_params->android_negotiate_account_type = kFinalAccountType;
+  service()->ConfigureHttpAuthPrefs(std::move(auth_params));
+  EXPECT_EQ(kFinalAccountType, auth_handler_factory->http_auth_preferences()
+                                   ->AuthAndroidNegotiateAccountType());
+}
+#endif  // defined(OS_ANDROID)
 
 class ServiceTestClient : public service_manager::test::ServiceTestClient,
                           public service_manager::mojom::ServiceFactory {
@@ -138,8 +512,6 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
       service_factory_bindings_;
 };
-
-}  // namespace
 
 class NetworkServiceTestWithService
     : public service_manager::test::ServiceTest {

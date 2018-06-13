@@ -35,7 +35,7 @@
 namespace net {
 class CertVerifier;
 class HostResolver;
-class HttpAuthPreferences;
+class HttpAuthHandlerFactory;
 class NetworkQualityEstimator;
 class ReportSender;
 class StaticHttpUserAgentSettings;
@@ -215,6 +215,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       net::NetLog* net_log,
       net::HostResolver* host_resolver,
       net::NetworkQualityEstimator* network_quality_estimator,
+      net::HttpAuthHandlerFactory* http_auth_handler_factory,
       certificate_transparency::STHReporter* sth_reporter,
       std::unique_ptr<certificate_transparency::TreeStateTracker>*
           out_tree_state_tracker,
@@ -236,8 +237,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   NetworkService* const network_service_;
 
   std::unique_ptr<ResourceScheduler> resource_scheduler_;
-
-  std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences_;
 
   // Holds owning pointer to |url_request_context_|. Will contain a nullptr for
   // |url_request_context| when the NetworkContextImpl doesn't own its own
