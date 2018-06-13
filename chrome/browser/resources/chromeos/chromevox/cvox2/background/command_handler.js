@@ -501,6 +501,13 @@ CommandHandler.onCommand = function(command) {
       // Skip all other processing; if focus changes, we should get an event
       // for that.
       return false;
+    case 'jumpToDetails':
+      var node = current.start.node;
+      while (node && !node.details)
+        node = node.parent;
+      if (node)
+        current = cursors.Range.fromNode(node.details);
+      break;
     case 'readFromHere':
       ChromeVoxState.isReadingContinuously = true;
       var continueReading = function() {

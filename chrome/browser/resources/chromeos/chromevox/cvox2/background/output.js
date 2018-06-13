@@ -1910,6 +1910,10 @@ Output.prototype = {
     if (uniqueAncestors.find(/** @type {function(?) : boolean} */ (
             AutomationPredicate.roles([RoleType.MENU, RoleType.MENU_BAR]))))
       this.format_(node, '@hint_menu', buff);
+    if (uniqueAncestors.find(/** @type {function(?) : boolean} */ (function(n) {
+          return !!n.details;
+        })))
+      this.format_(node, '@hint_details', buff);
   },
 
   /**
