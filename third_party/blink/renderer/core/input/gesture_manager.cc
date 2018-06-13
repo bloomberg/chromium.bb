@@ -124,9 +124,6 @@ WebInputEventResult GestureManager::HandleGestureEventInFrame(
       return HandleGestureLongTap(targeted_event);
     case WebInputEvent::kGestureTwoFingerTap:
       return HandleGestureTwoFingerTap(targeted_event);
-    case WebInputEvent::kGesturePinchBegin:
-    case WebInputEvent::kGesturePinchEnd:
-    case WebInputEvent::kGesturePinchUpdate:
     case WebInputEvent::kGestureTapCancel:
     case WebInputEvent::kGestureTapUnconfirmed:
       break;

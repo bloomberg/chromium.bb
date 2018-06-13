@@ -227,7 +227,6 @@ class WebGestureEvent : public WebInputEvent {
   BLINK_PLATFORM_EXPORT float DeltaYInRootFrame() const;
   BLINK_PLATFORM_EXPORT ScrollUnits DeltaUnits() const;
   BLINK_PLATFORM_EXPORT WebFloatPoint PositionInRootFrame() const;
-  BLINK_PLATFORM_EXPORT float PinchScale() const;
   BLINK_PLATFORM_EXPORT InertialPhaseState InertialPhase() const;
   BLINK_PLATFORM_EXPORT bool Synthetic() const;
 

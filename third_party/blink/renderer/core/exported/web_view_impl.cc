@@ -602,10 +602,6 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
                          .HandleGestureScrollEvent(scaled_event);
       client_->DidHandleGestureEvent(event, event_cancelled);
       return event_result;
-    case WebInputEvent::kGesturePinchBegin:
-    case WebInputEvent::kGesturePinchEnd:
-    case WebInputEvent::kGesturePinchUpdate:
-      return WebInputEventResult::kNotHandled;
     default:
       break;
   }

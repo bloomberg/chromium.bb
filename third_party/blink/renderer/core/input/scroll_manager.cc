@@ -705,9 +705,6 @@ WebInputEventResult ScrollManager::HandleGestureScrollEvent(
       return HandleGestureScrollEnd(gesture_event);
     case WebInputEvent::kGestureFlingStart:
     case WebInputEvent::kGestureFlingCancel:
-    case WebInputEvent::kGesturePinchBegin:
-    case WebInputEvent::kGesturePinchEnd:
-    case WebInputEvent::kGesturePinchUpdate:
       return WebInputEventResult::kNotHandled;
     default:
       NOTREACHED();

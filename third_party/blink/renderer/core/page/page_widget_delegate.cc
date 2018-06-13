@@ -238,11 +238,11 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
       return WebInputEventResult::kNotHandled;
 
     case WebInputEvent::kGesturePinchBegin:
+      // Gesture pinch events are handled entirely on the compositor.
+      DLOG(INFO) << "Gesture pinch ignored by main thread.";
+      FALLTHROUGH;
     case WebInputEvent::kGesturePinchEnd:
     case WebInputEvent::kGesturePinchUpdate:
-      // Touchscreen pinch events are currently not handled in main thread.
-      // Once they are, these should be passed to |handleGestureEvent| similar
-      // to gesture scroll events.
       return WebInputEventResult::kNotHandled;
     default:
       return WebInputEventResult::kNotHandled;

@@ -29,11 +29,6 @@ WebGestureEvent::ScrollUnits WebGestureEvent::DeltaUnits() const {
   return data.scroll_end.delta_units;
 }
 
-float WebGestureEvent::PinchScale() const {
-  DCHECK(type_ == WebInputEvent::kGesturePinchUpdate);
-  return data.pinch_update.scale;
-}
-
 WebGestureEvent::InertialPhaseState WebGestureEvent::InertialPhase() const {
   if (type_ == WebInputEvent::kGestureScrollBegin)
     return data.scroll_begin.inertial_phase;
