@@ -670,6 +670,18 @@ void ShutdownSDK() {
   TearDownV8();
 }
 
+PDFiumEngine::TouchTimer::TouchTimer(PDFiumEngine* engine,
+                                     int id,
+                                     const pp::TouchInputEvent& event)
+    : Timer(kTouchLongPressTimeout), engine_(engine), id_(id), event_(event) {}
+
+PDFiumEngine::TouchTimer::~TouchTimer() = default;
+
+void PDFiumEngine::TouchTimer::OnTimer() {
+  engine_->HandleLongPress(event_);
+  engine_->KillTouchTimer(id_);
+}
+
 std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client,
                                              bool enable_javascript) {
   return std::make_unique<PDFiumEngine>(client, enable_javascript);
@@ -1087,7 +1099,7 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
       rv = OnChar(pp::KeyboardInputEvent(event));
       break;
     case PP_INPUTEVENT_TYPE_TOUCHSTART: {
-      KillTouchTimer(next_touch_timer_id_);
+      KillTouchTimer(last_touch_timer_id_);
 
       pp::TouchInputEvent touch_event(event);
       if (touch_event.GetTouchCount(PP_TOUCHLIST_TYPE_TARGETTOUCHES) == 1)
@@ -1095,12 +1107,12 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
       break;
     }
     case PP_INPUTEVENT_TYPE_TOUCHEND:
-      KillTouchTimer(next_touch_timer_id_);
+      KillTouchTimer(last_touch_timer_id_);
       break;
     case PP_INPUTEVENT_TYPE_TOUCHMOVE:
       // TODO(dsinclair): This should allow a little bit of movement (up to the
       // touch radii) to account for finger jiggle.
-      KillTouchTimer(next_touch_timer_id_);
+      KillTouchTimer(last_touch_timer_id_);
       break;
     default:
       break;
@@ -2370,14 +2382,6 @@ void PDFiumEngine::SetGrayscale(bool grayscale) {
   render_grayscale_ = grayscale;
 }
 
-void PDFiumEngine::OnTouchTimerCallback(int id) {
-  if (!touch_timers_.count(id))
-    return;
-
-  HandleLongPress(touch_timers_[id]);
-  KillTouchTimer(id);
-}
-
 void PDFiumEngine::HandleLongPress(const pp::TouchInputEvent& event) {
   pp::FloatPoint fp =
       event.GetTouchByIndex(PP_TOUCHLIST_TYPE_TARGETTOUCHES, 0).position();
@@ -3507,9 +3511,8 @@ bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
 }
 
 void PDFiumEngine::ScheduleTouchTimer(const pp::TouchInputEvent& evt) {
-  touch_timers_[++next_touch_timer_id_] = evt;
-  client_->ScheduleTouchTimerCallback(next_touch_timer_id_,
-                                      kTouchLongPressTimeout);
+  const int timer_id = ++last_touch_timer_id_;
+  touch_timers_[timer_id] = std::make_unique<TouchTimer>(this, timer_id, evt);
 }
 
 void PDFiumEngine::KillTouchTimer(int timer_id) {
