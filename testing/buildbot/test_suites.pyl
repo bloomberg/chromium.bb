@@ -1581,12 +1581,6 @@
     },
   },
 
-  # TODO(thakis): Move snapshot_unittests into chromium_gtests since we use
-  # the snapshot code on all platforms.
-  'linux_and_mac_specific_chromium_gtests': {
-    'snapshot_unittests': {},
-  },
-
   'linux_arm_gtests': {
     'nacl_helper_nonsfi_unittests': {},
     'nacl_loader_unittests': {},
@@ -1913,6 +1907,7 @@
     'printing_unittests': {},
     'remoting_unittests': {},
     'service_manager_unittests': {}, # crbug.com/843134
+    'snapshot_unittests': {},
     'sync_integration_tests': {},
     'views_unittests': {},
   },
@@ -2429,7 +2424,6 @@
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
-    'linux_and_mac_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_specific_chromium_gtests',
     'network_service_gtests',
@@ -2448,7 +2442,6 @@
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
-    'linux_and_mac_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_specific_chromium_gtests',
     'network_service_gtests',
@@ -2471,7 +2464,6 @@
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
-    'linux_and_mac_specific_chromium_gtests',
     'linux_chromeos_specific_gtests',
     'linux_flavor_specific_chromium_gtests',
     'non_android_chromium_gtests',
@@ -2487,7 +2479,6 @@
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
-    'linux_and_mac_specific_chromium_gtests',
     'linux_chromeos_specific_gtests',
     'linux_chromeos_rel_specific_gtests',
     'linux_flavor_specific_chromium_gtests',
@@ -2513,7 +2504,6 @@
   'chromium_mac_fyi_gtests': [
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
-    'linux_and_mac_specific_chromium_gtests',
     'mac_specific_chromium_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
@@ -2524,7 +2514,6 @@
   'chromium_mac_gtests': [
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
-    'linux_and_mac_specific_chromium_gtests',
     'mac_specific_chromium_gtests',
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
@@ -2549,7 +2538,6 @@
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
     'gl_gtests',
-    'linux_and_mac_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_specific_chromium_gtests',
     'non_android_chromium_gtests',
