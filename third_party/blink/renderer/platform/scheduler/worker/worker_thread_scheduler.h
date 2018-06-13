@@ -133,8 +133,6 @@ class PLATFORM_EXPORT WorkerThreadScheduler
 
   WorkerMetricsHelper worker_metrics_helper_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
-
   // This controller should be initialized before any TraceableVariables
   // because they require one to initialize themselves.
   TraceableVariableController traceable_variable_controller_;
