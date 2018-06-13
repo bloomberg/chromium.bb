@@ -36,7 +36,8 @@ class PrefetchDownloader {
 
   // Starts to download an archive from |download_location|.
   virtual void StartDownload(const std::string& download_id,
-                             const std::string& download_location) = 0;
+                             const std::string& download_location,
+                             const std::string& operation_name) = 0;
 
   // Called when the download service is initialized.
   // |success_downloads| is a map with download_id as key and pair of file path

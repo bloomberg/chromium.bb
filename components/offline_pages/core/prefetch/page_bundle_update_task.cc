@@ -29,19 +29,18 @@ bool MarkUrlRenderedSync(sql::Connection* db,
                          const std::string& operation_name) {
   DCHECK_EQ(page.status, RenderStatus::RENDERED);
 
-  // If the operation name is empty, then we assume this is from a
-  // GeneratePageBundle request, so we don't need to match because the incoming
-  // operation name is the new operation name for unfinished entries in the
-  // newest batch.
+  // This method may be called upon receiving the results of GeneratePageBundle
+  // or GetOperation. For GeneratePageBundle, the operation name is not yet set
+  // in the database. For GetOperation, the operation name is already set.
+  // This statement ensures that the item's operation_name is assigned, and that
+  // an item can't be reassigned an operation name.
   static const char kSql[] = R"(UPDATE prefetch_items
     SET state = ?,
         final_archived_url = ?,
         archive_body_name = ?,
-        archive_body_length = ?
-    WHERE requested_url = ? AND (
-          (state = ? AND operation_name = "") OR
-          (state = ? AND operation_name = ?)
-    )
+        archive_body_length = ?,
+        operation_name = ?
+    WHERE requested_url = ? AND state IN (?, ?) AND operation_name IN ("", ?)
   )";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -56,13 +55,14 @@ bool MarkUrlRenderedSync(sql::Connection* db,
   statement.BindString(1, final_url);
   statement.BindString(2, page.body_name);
   statement.BindInt64(3, page.body_length);
+  statement.BindString(4, operation_name);
 
   // WHERE
-  statement.BindString(4, page.url);
+  statement.BindString(5, page.url);
   statement.BindInt(
-      5, static_cast<int>(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE));
-  statement.BindInt(6, static_cast<int>(PrefetchItemState::SENT_GET_OPERATION));
-  statement.BindString(7, operation_name);
+      6, static_cast<int>(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE));
+  statement.BindInt(7, static_cast<int>(PrefetchItemState::SENT_GET_OPERATION));
+  statement.BindString(8, operation_name);
 
   if (!statement.Run())
     return false;
@@ -79,11 +79,9 @@ void MarkUrlFailedSync(sql::Connection* db,
 
   static const char kSql[] = R"(UPDATE prefetch_items
     SET state = ?,
-        error_code = ?
-    WHERE requested_url = ? AND (
-          (state = ? AND operation_name = "") OR
-          (state = ? AND operation_name = ?)
-    )
+        error_code = ?,
+        operation_name = ?
+    WHERE requested_url = ? AND state IN (?, ?) AND operation_name IN ("", ?)
   )";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -96,13 +94,14 @@ void MarkUrlFailedSync(sql::Connection* db,
   // SET
   statement.BindInt(0, static_cast<int>(PrefetchItemState::FINISHED));
   statement.BindInt(1, static_cast<int>(final_status));
+  statement.BindString(2, operation_name);
 
   // WHERE
-  statement.BindString(2, page.url);
+  statement.BindString(3, page.url);
   statement.BindInt(
-      3, static_cast<int>(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE));
-  statement.BindInt(4, static_cast<int>(PrefetchItemState::SENT_GET_OPERATION));
-  statement.BindString(5, operation_name);
+      4, static_cast<int>(PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE));
+  statement.BindInt(5, static_cast<int>(PrefetchItemState::SENT_GET_OPERATION));
+  statement.BindString(6, operation_name);
 
   statement.Run();
 }

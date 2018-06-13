@@ -18,6 +18,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_server_urls.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
+#include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
@@ -70,9 +71,9 @@ void PrefetchDownloaderImpl::CleanupDownloadsWhenReady() {
   cleanup_downloads_when_service_starts_ = true;
 }
 
-void PrefetchDownloaderImpl::StartDownload(
-    const std::string& download_id,
-    const std::string& download_location) {
+void PrefetchDownloaderImpl::StartDownload(const std::string& download_id,
+                                           const std::string& download_location,
+                                           const std::string& operation_name) {
   prefetch_service_->GetLogger()->RecordActivity(
       "Downloader: Start download of '" + download_location +
       "', download_id=" + download_id);
@@ -124,6 +125,16 @@ void PrefetchDownloaderImpl::StartDownload(
   if (!experiment_header.empty()) {
     params.request_params.request_headers.AddHeaderFromString(
         experiment_header);
+  }
+
+  if (!operation_name.empty() &&
+      net::HttpUtil::IsValidHeaderValue(operation_name)) {
+    params.request_params.request_headers.SetHeader(
+        kPrefetchOperationHeaderName, operation_name);
+  } else {
+    // Offline internals uses operation_name="".
+    LOG(WARNING) << "Not setting " << kPrefetchOperationHeaderName
+                 << ", invalid operation name '" << operation_name << "'";
   }
 
   // Lessen download restrictions if limitless prefetching is enabled.

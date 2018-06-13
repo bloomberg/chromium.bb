@@ -29,8 +29,12 @@ class DownloadArchivesTask : public Task {
 
   // Represents item to be downloaded as a result of running the task.
   struct DownloadItem {
+    DownloadItem();
+    DownloadItem(const DownloadItem& other);
+
     int64_t offline_id;
     std::string archive_body_name;
+    std::string operation_name;
     int64_t archive_body_length;
     std::string guid;
   };

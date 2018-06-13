@@ -96,12 +96,12 @@ TEST_F(PageBundleUpdateTaskTest, UpdatesItemsFromSentGeneratePageBundle) {
   RunTask(&task);
 
   // The matching entry has been updated.
-  EXPECT_EQ(PrefetchItemState::RECEIVED_BUNDLE,
-            store_util()->GetPrefetchItem(item1.offline_id)->state);
-  EXPECT_NE("",
-            store_util()->GetPrefetchItem(item1.offline_id)->archive_body_name);
-  EXPECT_LT(
-      0, store_util()->GetPrefetchItem(item1.offline_id)->archive_body_length);
+  const PrefetchItem stored_item =
+      *store_util()->GetPrefetchItem(item1.offline_id).get();
+  EXPECT_EQ(PrefetchItemState::RECEIVED_BUNDLE, stored_item.state);
+  EXPECT_NE("", stored_item.archive_body_name);
+  EXPECT_LT(0, stored_item.archive_body_length);
+  EXPECT_EQ("operation", stored_item.operation_name);
   // The non-matching entry has not changed.
   EXPECT_EQ(item2, *(store_util()->GetPrefetchItem(item2.offline_id)));
   // The dispatcher knows to reschedule the action tasks.
@@ -123,12 +123,12 @@ TEST_F(PageBundleUpdateTaskTest, SentGetOperationToReceivedBundle) {
   RunTask(&task);
 
   // The matching entry has been updated.
-  EXPECT_EQ(store_util()->GetPrefetchItem(item1.offline_id)->state,
-            PrefetchItemState::RECEIVED_BUNDLE);
-  EXPECT_NE("",
-            store_util()->GetPrefetchItem(item1.offline_id)->archive_body_name);
-  EXPECT_LT(
-      0, store_util()->GetPrefetchItem(item1.offline_id)->archive_body_length);
+  const PrefetchItem stored_item =
+      *store_util()->GetPrefetchItem(item1.offline_id).get();
+  EXPECT_EQ(stored_item.state, PrefetchItemState::RECEIVED_BUNDLE);
+  EXPECT_NE("", stored_item.archive_body_name);
+  EXPECT_LT(0, stored_item.archive_body_length);
+  EXPECT_EQ(item1.operation_name, stored_item.operation_name);
   EXPECT_LE(1, dispatcher.processing_schedule_count);
 }
 
@@ -180,12 +180,14 @@ TEST_F(PageBundleUpdateTaskTest, FailedRenderToFinished) {
   // exceeded result.
   PrefetchItem item1 = item_generator()->CreateItem(
       PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
+  item1.operation_name = "operation";
   ASSERT_EQ(PrefetchItemErrorCode::SUCCESS, item1.error_code);
   ASSERT_TRUE(store_util()->InsertPrefetchItem(item1));
   RenderPageInfo item1_render_info = FailedPageInfoForPrefetchItem(item1);
 
   PrefetchItem item2 = item_generator()->CreateItem(
       PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
+  item2.operation_name = "operation";
   ASSERT_EQ(PrefetchItemErrorCode::SUCCESS, item2.error_code);
   ASSERT_TRUE(store_util()->InsertPrefetchItem(item2));
   RenderPageInfo item2_render_info = FailedPageInfoForPrefetchItem(item2);
@@ -198,11 +200,15 @@ TEST_F(PageBundleUpdateTaskTest, FailedRenderToFinished) {
             store_util()->GetPrefetchItem(item1.offline_id)->state);
   EXPECT_EQ(PrefetchItemErrorCode::ARCHIVING_FAILED,
             store_util()->GetPrefetchItem(item1.offline_id)->error_code);
+  EXPECT_EQ("operation",
+            store_util()->GetPrefetchItem(item1.offline_id)->operation_name);
 
   EXPECT_EQ(PrefetchItemState::FINISHED,
             store_util()->GetPrefetchItem(item2.offline_id)->state);
   EXPECT_EQ(PrefetchItemErrorCode::ARCHIVING_LIMIT_EXCEEDED,
             store_util()->GetPrefetchItem(item2.offline_id)->error_code);
+  EXPECT_EQ("operation",
+            store_util()->GetPrefetchItem(item2.offline_id)->operation_name);
   EXPECT_EQ(0, dispatcher.processing_schedule_count);
 }
 
@@ -211,16 +217,19 @@ TEST_F(PageBundleUpdateTaskTest, MixOfResults) {
   // independently and properly.
   PrefetchItem item1 = item_generator()->CreateItem(
       PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
+  item1.operation_name = "operation";
   ASSERT_TRUE(store_util()->InsertPrefetchItem(item1));
   RenderPageInfo item1_render_info = PendingPageInfoForPrefetchItem(item1);
 
   PrefetchItem item2 = item_generator()->CreateItem(
       PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
+  item2.operation_name = "operation";
   ASSERT_TRUE(store_util()->InsertPrefetchItem(item2));
   RenderPageInfo item2_render_info = FailedPageInfoForPrefetchItem(item2);
 
   PrefetchItem item3 = item_generator()->CreateItem(
       PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
+  item3.operation_name = "operation";
   ASSERT_TRUE(store_util()->InsertPrefetchItem(item3));
   RenderPageInfo item3_render_info = RenderedPageInfoForPrefetchItem(item3);
 
