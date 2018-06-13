@@ -1754,6 +1754,22 @@
           'shards': 4,
         }
       },
+      # The suite runs signficantly slower on linux dbg, so increase shards.
+      'Linux Tests (dbg)(1)': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
+      'Linux Tests (dbg)(1)(32)': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
+      'linux-chromeos-dbg': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
     },
   },
   'network_service_browser_tests': {
