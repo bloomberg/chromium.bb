@@ -345,6 +345,7 @@
   },
 
   'chromeos_gtests': {
+    'base_unittests': {},
     'cacheinvalidation_unittests': {},
     'capture_unittests': {},
     'cros_vm_sanity_test': {
