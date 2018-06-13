@@ -20,7 +20,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
@@ -33,11 +32,15 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/wm/core/shadow_types.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/window_tree_host.h"
+#endif
+
 using content::DesktopMediaID;
 
 namespace {
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && defined(USE_AURA)
 DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
     gfx::AcceleratedWidget accelerated_widget) {
 #if defined(OS_WIN)
@@ -223,6 +226,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // the Id is passed to DesktopMediaList.
   DesktopMediaID dialog_window_id;
   if (!modal_dialog) {
+#if defined(USE_AURA)
     dialog_window_id = DesktopMediaID::RegisterAuraWindow(
         DesktopMediaID::TYPE_WINDOW, widget->GetNativeWindow());
 
@@ -230,7 +234,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 #if !defined(OS_CHROMEOS)
     dialog_window_id.id = AcceleratedWidgetToDesktopMediaId(
         widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
-#endif
+#endif  // !defined(OS_CHROMEOS)
+#endif  // defined(USE_AURA)
   }
 
   for (auto* list_view : list_views_)
