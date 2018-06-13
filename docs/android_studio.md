@@ -181,8 +181,9 @@ resources, native libraries, etc.
 
 * Android Studio v3.0-v3.2.
 * Java editing.
+    * Application code in `main` sourceset.
+    * Instrumentation test code in `androidTest` sourceset.
 * Native code editing (experimental).
-* Instrumentation tests included as androidTest.
 * Symlinks to existing .so files in jniLibs (doesn't generate them).
 * Editing resource xml files
 * Layout editor (limited functionality).
