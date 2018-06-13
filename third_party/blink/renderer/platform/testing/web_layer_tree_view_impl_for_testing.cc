@@ -47,7 +47,7 @@ WebLayerTreeViewImplForTesting::DefaultLayerTreeSettings() {
 }
 
 bool WebLayerTreeViewImplForTesting::HasLayer(const cc::Layer& layer) {
-  return layer.GetLayerTreeHostForTesting() == layer_tree_host_.get();
+  return layer.layer_tree_host() == layer_tree_host_.get();
 }
 
 void WebLayerTreeViewImplForTesting::SetViewportSize(

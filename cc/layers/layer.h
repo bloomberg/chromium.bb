@@ -57,7 +57,6 @@ class LayerTreeHost;
 class LayerTreeHostCommon;
 class LayerTreeImpl;
 class MutatorHost;
-class ScrollbarLayerInterface;
 
 // Base class for composited layers. Special layer types are derived from
 // this class. Each layer is an independent unit in the compositor, be that
@@ -493,13 +492,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   int NumDescendantsThatDrawContent() const;
 
-  // This methods typically need to be overwritten by derived classes.
-  // Returns true iff anything was updated that needs to be committed.
-  virtual bool Update();
-  virtual void SetLayerMaskType(Layer::LayerMaskType type) {}
-  virtual bool HasSlowPaths() const;
-  virtual bool HasNonAAPaint() const;
-
   void UpdateDebugInfo();
 
   void SetLayerClient(base::WeakPtr<LayerClient> client);
@@ -507,16 +499,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   virtual bool IsSnapped();
 
-  virtual void PushPropertiesTo(LayerImpl* layer);
-
-  LayerTreeHost* GetLayerTreeHostForTesting() const { return layer_tree_host_; }
-
-  virtual ScrollbarLayerInterface* ToScrollbarLayer();
-
   virtual sk_sp<SkPicture> GetPicture() const;
-
-  // Constructs a LayerImpl of the correct runtime type for this Layer type.
-  virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
 
   // Mark the layer as needing to push its properties to the LayerImpl during
   // commit.
@@ -527,31 +510,17 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void Set3dSortingContextId(int id);
   int sorting_context_id() const { return inputs_.sorting_context_id; }
 
-  void set_property_tree_sequence_number(int sequence_number) {
-    property_tree_sequence_number_ = sequence_number;
-  }
-  int property_tree_sequence_number() const {
-    return property_tree_sequence_number_;
-  }
-
-  void SetTransformTreeIndex(int index);
+  // The index of this layer's node in the various property trees. These are
+  // only valid after a main frame, when Update() is called on the layer, and
+  // remain valid and in in the same state until the next main frame, or until
+  // the layer is removed from its LayerTreeHost. Otherwise kInvalidNodeId is
+  // returned.
   int transform_tree_index() const;
-
-  void SetClipTreeIndex(int index);
   int clip_tree_index() const;
-
-  void SetEffectTreeIndex(int index);
   int effect_tree_index() const;
-
-  void SetScrollTreeIndex(int index);
   int scroll_tree_index() const;
 
-  void set_offset_to_transform_parent(gfx::Vector2dF offset) {
-    if (offset_to_transform_parent_ == offset)
-      return;
-    offset_to_transform_parent_ = offset;
-    SetNeedsPushProperties();
-  }
+  void SetOffsetToTransformParent(gfx::Vector2dF offset);
   gfx::Vector2dF offset_to_transform_parent() const {
     return offset_to_transform_parent_;
   }
@@ -559,12 +528,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // TODO(enne): This needs a different name.  It is a calculated value
   // from the property tree builder and not a synonym for "should
   // flatten transform".
-  void set_should_flatten_transform_from_property_tree(bool should_flatten) {
-    if (should_flatten_transform_from_property_tree_ == should_flatten)
-      return;
-    should_flatten_transform_from_property_tree_ = should_flatten;
-    SetNeedsPushProperties();
-  }
+  void SetShouldFlattenTransformFromPropertyTree(bool should_flatten);
   bool should_flatten_transform_from_property_tree() const {
     return should_flatten_transform_from_property_tree_;
   }
@@ -599,6 +563,66 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool has_transform_node() { return has_transform_node_; }
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
   TransformNode* GetTransformNode() const;
+
+  // Internal method to create the compositor thread type for this Layer.
+  // Subclasses should override this method if they want to return their own
+  // subclass of LayerImpl instead.
+  virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
+
+  // Internal method to copy all state from this Layer to the compositor thread.
+  // Should be overridden by any subclass that has additional state, to copy
+  // that state as well. The |layer| passed in will be of the type created by
+  // CreateLayerImpl(), so can be safely down-casted if the subclass uses a
+  // different type for the compositor thread.
+  virtual void PushPropertiesTo(LayerImpl* layer);
+
+  // Internal method to be overridden by Layer subclasses that need to do work
+  // during a main frame. The method should compute any state that will need to
+  // propogated to the compositor thread for the next commit, and return true
+  // if there is anything new to commit. If all layers return false, the commit
+  // may be aborted.
+  virtual bool Update();
+  // Internal method to be overriden by Layer subclasses that override Update()
+  // and require rasterization. After Update() is called, this is immediately
+  // called, and should return whether the layer will require rasterization of
+  // paths that will be difficult/slow to raster. Only layers that do
+  // rasterization via TileManager need to override this, other layers that have
+  // content generated in other ways may leave it as the default.
+  virtual bool HasSlowPaths() const;
+  // Internal method to be overriden by Layer subclasses that override Update()
+  // and require rasterization. After Update() is called, this is immediately
+  // called, and should return whether the layer will require rasterization of a
+  // drawing operation that must not be anti-aliased. In this case using MSAA to
+  // antialias the entire layer's content would produce an incorrect result.
+  // This result is considered sticky, once a layer returns true, so false
+  // positives should be avoided. Only layers that do rasterization via
+  // TileManager need to override this, other layers that have content generated
+  // in other ways may leave it as the default.
+  virtual bool HasNonAAPaint() const;
+
+  // TODO(danakj): This should not be part of Layer API.
+  // A virtual method because the mask layer is a Layer type, but it really is
+  // always a PictureLayer. Instead, mask layer should be a PictureLayer and
+  // this no longer needs to be virtual or part of the Layer base class.
+  virtual void SetLayerMaskType(Layer::LayerMaskType type) {}
+
+  // Internal to property tree construction. A generation number for the
+  // property trees, to verify the layer's indices are pointers into the trees
+  // currently held by the LayerTreeHost. The number is updated when property
+  // trees are built from the Layer tree.
+  void set_property_tree_sequence_number(int sequence_number) {
+    property_tree_sequence_number_ = sequence_number;
+  }
+  int property_tree_sequence_number() const {
+    return property_tree_sequence_number_;
+  }
+
+  // Internal to property tree construction. Sets the index for this Layer's
+  // node in each property tree.
+  void SetTransformTreeIndex(int index);
+  void SetClipTreeIndex(int index);
+  void SetEffectTreeIndex(int index);
+  void SetScrollTreeIndex(int index);
 
   // Internal to property tree construction. Indicates that a property changed
   // on this layer that may affect the position or content of all layers in this

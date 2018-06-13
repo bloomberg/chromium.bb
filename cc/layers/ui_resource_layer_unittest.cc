@@ -57,7 +57,7 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
 
   layer_tree_host()->SetRootLayer(test_layer);
   Mock::VerifyAndClearExpectations(layer_tree_host());
-  EXPECT_EQ(test_layer->GetLayerTreeHostForTesting(), layer_tree_host());
+  EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host());
 
   test_layer->Update();
 
@@ -80,7 +80,7 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
 
   layer_tree_host()->SetRootLayer(test_layer);
   Mock::VerifyAndClearExpectations(layer_tree_host());
-  EXPECT_EQ(test_layer->GetLayerTreeHostForTesting(), layer_tree_host());
+  EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host());
 
   test_layer->Update();
 

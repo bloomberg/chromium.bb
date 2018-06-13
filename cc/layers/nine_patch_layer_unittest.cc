@@ -51,7 +51,7 @@ TEST_F(NinePatchLayerTest, SetLayerProperties) {
 
   layer_tree_host_->SetRootLayer(test_layer);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
-  EXPECT_EQ(test_layer->GetLayerTreeHostForTesting(), layer_tree_host_.get());
+  EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
   test_layer->Update();
 

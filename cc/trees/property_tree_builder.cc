@@ -469,9 +469,9 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
                                          &to_parent);
       source_to_parent = to_parent.To2dTranslation();
     }
-    layer->set_offset_to_transform_parent(source_offset + source_to_parent +
-                                          local_offset);
-    layer->set_should_flatten_transform_from_property_tree(
+    layer->SetOffsetToTransformParent(source_offset + source_to_parent +
+                                      local_offset);
+    layer->SetShouldFlattenTransformFromPropertyTree(
         data_from_ancestor.should_flatten);
     layer->SetTransformTreeIndex(parent_index);
     return false;
@@ -603,10 +603,10 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   node->needs_local_transform_update = true;
   transform_tree_.UpdateTransforms(node->id);
 
-  layer->set_offset_to_transform_parent(gfx::Vector2dF());
+  layer->SetOffsetToTransformParent(gfx::Vector2dF());
 
   // Flattening (if needed) will be handled by |node|.
-  layer->set_should_flatten_transform_from_property_tree(false);
+  layer->SetShouldFlattenTransformFromPropertyTree(false);
 
   return true;
 }
@@ -1254,7 +1254,7 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
   if (MaskLayer(layer)) {
     MaskLayer(layer)->set_property_tree_sequence_number(
         property_trees_.sequence_number);
-    MaskLayer(layer)->set_offset_to_transform_parent(
+    MaskLayer(layer)->SetOffsetToTransformParent(
         layer->offset_to_transform_parent());
     MaskLayer(layer)->SetTransformTreeIndex(layer->transform_tree_index());
     MaskLayer(layer)->SetClipTreeIndex(layer->clip_tree_index());

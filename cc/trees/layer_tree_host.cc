@@ -794,18 +794,20 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                                                    &update_layer_list);
   }
 
-  bool content_has_slow_paths = false;
-  bool content_has_non_aa_paint = false;
-  bool did_paint_content = PaintContent(
-      update_layer_list, &content_has_slow_paths, &content_has_non_aa_paint);
+  bool painted_content_has_slow_paths = false;
+  bool painted_content_has_non_aa_paint = false;
+  bool did_paint_content =
+      PaintContent(update_layer_list, &painted_content_has_slow_paths,
+                   &painted_content_has_non_aa_paint);
 
-  // |content_has_non_aa_paint| is a correctness (not performance) modifier, if
-  // it changes we immediately update. To prevent churn, this flag is sticky.
-  content_has_non_aa_paint_ |= content_has_non_aa_paint;
+  // |painted_content_has_non_aa_paint| is a correctness (not performance)
+  // modifier, if it changes we immediately update. To prevent churn, this flag
+  // is sticky.
+  content_has_non_aa_paint_ |= painted_content_has_non_aa_paint;
 
   // If no slow-path content has appeared for a required number of frames,
   // update the flag.
-  if (!content_has_slow_paths) {
+  if (!painted_content_has_slow_paths) {
     ++num_consecutive_frames_without_slow_paths_;
     if (num_consecutive_frames_without_slow_paths_ >=
         kNumFramesToConsiderBeforeRemovingSlowPathFlag) {

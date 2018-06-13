@@ -97,10 +97,6 @@ void PaintedOverlayScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
     scrollbar_layer->set_track_ui_resource_id(0);
 }
 
-ScrollbarLayerInterface* PaintedOverlayScrollbarLayer::ToScrollbarLayer() {
-  return this;
-}
-
 void PaintedOverlayScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
   // When the LTH is set to null or has changed, then this layer should remove
   // all of its associated resources.
