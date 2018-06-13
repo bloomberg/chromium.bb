@@ -88,7 +88,7 @@
 <translation id="1123187597739372905">显示同步设置</translation>
 <translation id="1123316951456119629">取消您的 Google 帐号与 <ph name="PRODUCT_NAME" />之间的关联后，您的数据仍会保留在此计算机上，但是更改将不再同步到您的 Google 帐号中。已存储在您 Google 帐号中的数据仍会保留在那，直到您使用 <ph name="BEGIN_LINK" />Google 信息中心<ph name="END_LINK" />将其删除。</translation>
 <translation id="1124772482545689468">用户</translation>
-<translation id="1125550662859510761">屏幕分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" />（原生）</translation>
+<translation id="1125550662859510761">有效分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" />（原生）</translation>
 <translation id="1128109161498068552">禁止任何网站使用系统专有消息访问 MIDI 设备</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">修改搜索引擎</translation>
@@ -772,7 +772,7 @@
 <translation id="2151576029659734873">输入的标签页索引无效。</translation>
 <translation id="2154484045852737596">修改支付卡</translation>
 <translation id="2154710561487035718">复制网址</translation>
-<translation id="2155772377859296191">屏幕分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
+<translation id="2155772377859296191">有效分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="215753907730220065">退出全屏模式</translation>
 <translation id="2157875535253991059">此网页现处于全屏模式。</translation>
 <translation id="216169395504480358">添加 Wi-Fi...</translation>
@@ -2481,7 +2481,7 @@
 <translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> - 视频正在“画中画”模式中播放</translation>
 <translation id="4862050643946421924">添加设备…</translation>
 <translation id="4862642413395066333">签名 OCSP 响应</translation>
-<translation id="4863769717153320198">屏幕分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" />（默认）</translation>
+<translation id="4863769717153320198">有效分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" />（默认）</translation>
 <translation id="4864369630010738180">正在登录…</translation>
 <translation id="486635084936119914">下载特定类型的文件后自动将其打开</translation>
 <translation id="4869142322204669043">Google 可能会根据您所访问的网站中的内容、您的浏览活动和互动行为对 <ph name="IDS_SHORT_PRODUCT_NAME" /> 以及其他 Google 服务（例如翻译、搜索和广告）进行个性化设置。您随时可在“设置”中自定义此设置。</translation>
@@ -3885,7 +3885,6 @@
 <translation id="6990081529015358884">空间不足</translation>
 <translation id="6990778048354947307">黑暗主题</translation>
 <translation id="6991665348624301627">选择目标打印机</translation>
-<translation id="699220179437400583">自动向 Google 报告可能出现的安全事件详情</translation>
 <translation id="6997707937646349884">在您的设备上：</translation>
 <translation id="6998711733709403587">已选择 <ph name="SELCTED_FOLDERS_COUNT" /> 个文件夹</translation>
 <translation id="6998793565256476099">注册设备以进行视频会议</translation>
@@ -4569,7 +4568,6 @@
 <translation id="8004582292198964060">浏览器</translation>
 <translation id="8005600846065423578">始终允许 <ph name="HOST" /> 查看剪贴板</translation>
 <translation id="8008356846765065031">网络已断开，请检查您的互联网连接是否正常。</translation>
-<translation id="8008818777654712271">自动向 Google 发送某些系统信息和网页内容，以帮助检测危险应用和网站</translation>
 <translation id="8009225694047762179">管理密码</translation>
 <translation id="8012382203418782830">此网页内容已经过翻译。</translation>
 <translation id="8014154204619229810">更新程序正在运行，请稍后刷新并再次查看。</translation>

@@ -657,7 +657,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 
       Si cette règle n'est pas configurée ou si elle est définie sur <ph name="BR_DISABLED" />, le service de sauvegarde et de restauration Android est désactivé et ne peut pas être activé par l'utilisateur.
 
-      Si cette règle est définie sur <ph name="BR_UNDER_USER_CONTROL" />, l'utilisateur est invité à choisir s'il veut activer ou non le service de sauvegarde et de restauration Android. S'il l'active, les données des applications Android sont sauvegardées via Android Backup Service, puis restaurées depuis ce dernier lors de la réinstallation des applications (si ces dernières sont compatibles).</translation>
+      Si cette règle est définie sur <ph name="BR_UNDER_USER_CONTROL" />, l'utilisateur est invité à choisir s'il veut activer ou non le service de sauvegarde et de restauration Android. S'il l'active, les données des applications Android sont sauvegardées sur les serveurs de sauvegarde Android, puis restaurées depuis ces derniers lors de la réinstallation des applications (si ces dernières sont compatibles).</translation>
 <translation id="2757054304033424106">Types d'extensions ou d'applications autorisés à être installés</translation>
 <translation id="2759224876420453487">Contrôler le comportement de l'utilisateur lors d'une session à plusieurs profils</translation>
 <translation id="2761483219396643566">Délai d'inactivité avant l'affichage d'un avertissement (en cas d'utilisation de la batterie)</translation>
@@ -2545,13 +2545,6 @@ Si ce paramètre est activé, cette machine peut découvrir et se connecter à d
 
 Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine peut uniquement se connecter aux machines hôte au sein du réseau local.</translation>
 <translation id="7976157349247117979">Nom de la destination <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Si cette règle n'est pas définie et que l'outil de nettoyage de Chrome détecte des logiciels indésirables, celui-ci peut nous transmettre des métadonnées concernant l'analyse, conformément à la règle définie par "SafeBrowsingExtendedReportingEnabled". L'outil de nettoyage de Chrome demande ensuite à l'utilisateur s'il souhaite supprimer les logiciels indésirables. Il peut choisir de partager les résultats du nettoyage avec nous afin de nous aider à améliorer la détection des logiciels indésirables. Ces résultats contiennent des métadonnées de fichier et des clés de registre, tel que décrit par le livre blanc sur la confidentialité dans Google Chrome.
-
-      Si elle est définie sur "false" et que l'outil de nettoyage de Chrome détecte des logiciels indésirables, aucune métadonnée sur l'analyse ne nous est transmise, contournant toute règle définie par "SafeBrowsingExtendedReportingEnabled". L'outil de nettoyage de Chrome demande à l'utilisateur s'il souhaite supprimer les logiciels indésirables. Les résultats du nettoyage ne nous sont pas transmis et l'utilisateur n'a pas non plus la possibilité de le faire.
-
-      Si elle est définie sur "true" et que l'outil de nettoyage de Chrome détecte des logiciels indésirables, celui-ci peut nous transmettre des métadonnées sur l'analyse conformément à la règle définie par "SafeBrowsingExtendedReportingEnabled". L'outil de nettoyage de Chrome demande à l'utilisateur s'il souhaite supprimer les logiciels indésirables. Les résultats du nettoyage nous sont transmis, et l'utilisateur n'a pas la possibilité d'empêcher cette transmission.
-
-      Cette règle n'est pas disponible pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Aucune restriction particulière</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Faire pivoter l'écran de 0 degré</translation>

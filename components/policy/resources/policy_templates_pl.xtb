@@ -51,7 +51,7 @@
       Jeśli ta zasada ma wartość Fałsz, stan przełącznika trybu programisty nie jest zgłaszany.</translation>
 <translation id="1160479894929412407">Zezwalaj na protokół QUIC</translation>
 <translation id="1160939557934457296">Wyłącz możliwość kontynuacji na stronie ostrzeżenia Bezpiecznego przeglądania</translation>
-<translation id="1189817621108632689">Pozwala na ustawienie listy wzorcowych adresów URL, które określają witryny mogące wyświetlać obrazy.
+<translation id="1189817621108632689">Pozwala na ustawienie listy wzorców adresów URL określających witryny, którym nie wolno wyświetlać obrazów.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.
 
@@ -733,7 +733,7 @@ Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą oni stos
 <translation id="3072045631333522102">Wygaszacz ekranu używany na ekranie logowania w trybie sklepu</translation>
 <translation id="3072847235228302527">Określ Warunki korzystania z usługi dla lokalnego konta na urządzeniu</translation>
 <translation id="3086995894968271156">Konfigurowanie odbiornika Cast (<ph name="PRODUCT_NAME" />).</translation>
-<translation id="3088796212846734853">Umożliwia skonfigurowanie listy wzorcowych adresów URL określających witryny, w których mogą być wyświetlane obrazy.
+<translation id="3088796212846734853">Umożliwia skonfigurowanie listy wzorców adresów URL określających witryny, w których mogą być wyświetlane obrazy.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultImagesSettings” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.
 
@@ -812,7 +812,7 @@ Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą oni stos
 <translation id="332771718998993005">Pozwala określić nazwę używaną jako miejsce docelowe <ph name="PRODUCT_NAME" />.
 
           Jeśli ta zasada jest ustawiona na niepusty ciąg znaków, to jest on nazwą miejsca docelowego <ph name="PRODUCT_NAME" />. W przeciwnym razie nazwą miejsca docelowego jest nazwa urządzenia. Jeśli ta zasada nie jest ustawiona, nazwą miejsca docelowego jest nazwa urządzenia, a właściciel urządzenia (lub użytkownik z domeny zarządzającej urządzeniem) może ją zmienić. Nazwa może mieć maksymalnie 24 znaki.</translation>
-<translation id="3335468714959531450">Umożliwia skonfigurowanie listy wzorcowych adresów URL określających witryny, którym wolno tworzyć pliki cookie.
+<translation id="3335468714959531450">Umożliwia skonfigurowanie listy wzorców adresów URL określających witryny, którym wolno tworzyć pliki cookie.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultCookiesSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.
 
@@ -895,7 +895,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3736879847913515635">Włączanie dodawania osób w menedżerze użytkowników</translation>
 <translation id="3737544779868348650">Sieciowa nazwa hosta urządzenia</translation>
 <translation id="3746590506846867985">
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę obowiązującą dla użytkownika.
+      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
       Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej przecinkami będzie działać w obrębie własnego procesu. Powoduje to też izolację źródeł z nazwami subdomen, np. określenie https://example.com/ spowoduje, że także adres https://foo.example.com/ będzie izolowany jako część witryny https://example.com/
       Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie IsolateOrigins.
       Jeśli zasada nie jest skonfigurowana, do ekranu logowania będą stosowane domyślne ustawienia platformy dotyczące izolacji witryn.
@@ -1056,7 +1056,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Gdy ta zasada nie jest skonfigurowana lub nie jest dla niej wybrana wartość <ph name="GLS_DISABLED" />, usługi lokalizacyjne Google są wyłączone, a użytkownik nie może ich włączyć.
 
-      Gdy dla tej zasady zostanie wybrana wartość <ph name="GLS_UNDER_USER_CONTROL" />, użytkownik otrzyma prośbę o określenie, czy usługi lokalizacyjne Google mają być używane. Dzięki temu aplikacje na Androida mogą używać usług do przesyłania zapytań o lokalizację użytkownika oraz jest możliwe przesyłanie Google anonimowych danych o lokalizacji.
+      Gdy dla tej zasady zostanie wybrana wartość <ph name="GLS_UNDER_USER_CONTROL" />, użytkownik otrzyma prośbę o określenie, czy usługi lokalizacyjne Google mają być używane. Dzięki temu aplikacje na Androida mogą używać usług do przesyłania zapytań o lokalizację użytkownika oraz jest możliwe przesyłanie do Google anonimowych danych o lokalizacji.
 
       Uwaga: po ustawieniu dla zasady <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> wartości <ph name="BLOCK_GEOLOCATION_SETTING" /> zasada jest ignorowana, a usługi lokalizacyjne Google zostają wyłączone.</translation>
 <translation id="408029843066770167">Zezwalaj na wysyłanie zapytań do usługi czasu Google</translation>
@@ -2159,7 +2159,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       </translation>
 <translation id="7443616896860707393">Monity o podstawowe uwierzytelnienie HTTP pochodzące z innych witryn</translation>
 <translation id="7458437477941640506">Nie cofaj do docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. Aktualizacje też są wyłączone.</translation>
-<translation id="7464991223784276288">Ograniczanie możliwości wyszukiwania przez pliki cookie odpowiedników adresów URL dla bieżącej sesji</translation>
+<translation id="7464991223784276288">Ograniczanie plików cookie z odpowiednich adresów URL tylko do bieżącej sesji</translation>
 <translation id="7469554574977894907">Włącz propozycje wyszukiwania</translation>
 <translation id="7474249562477552702">Określa, czy są dozwolone certyfikaty z podpisem SHA-1 wydane przez lokalne kotwice zaufania</translation>
 <translation id="7485481791539008776">Reguły wybierania domyślnej drukarki</translation>
@@ -2241,9 +2241,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7643883929273267746">Ogranicz konta widoczne w <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Określa, czy na urządzeniu powinno być włączone przesyłanie danych w roamingu. W przypadku włączenia tej zasady przesyłanie danych w roamingu będzie dozwolone. Jeśli zasada będzie wyłączona lub nieskonfigurowana, przesyłanie danych w roamingu będzie niedostępne.</translation>
 <translation id="7673194325208122247">Czas (w milisekundach)</translation>
-<translation id="7676708657861783864">Umożliwia skonfigurowanie listy wzorców adresów URL służącej do określenia witryn, którym wolno tworzyć pliki cookie tylko na czas sesji.
+<translation id="7676708657861783864">Umożliwia skonfigurowanie listy wzorców adresów URL służącej do określenia witryn, którym wolno tworzyć pliki cookie tylko na czas sesji, czyli do czasu wyjścia z przeglądarki.
 
-          Jeśli nie skonfigurujesz tej zasady, dla wszystkich witryn będzie stosowana domyślna wartość globalna z zasady DefaultCookiesSetting, o ile taka zasada jest ustawiona, lub z osobistej konfiguracji użytkownika.
+          Jeśli nie skonfigurujesz tej zasady lub jeśli skonfigurowane w niej wzorce nie obejmują danego adresu URL, dla wszystkich witryn będzie stosowana domyślna wartość globalna z zasady DefaultCookiesSetting, o ile taka zasada jest ustawiona, lub z osobistej konfiguracji użytkownika.
 
           Pamiętaj, że jeśli <ph name="PRODUCT_NAME" /> działa w tle, sesja może nie zamknąć się po zamknięciu ostatniego okna przeglądarki, tylko pozostać aktywna do czasu wyjścia z przeglądarki. Więcej informacji o konfigurowaniu tego działania znajdziesz w opisie zasady BackgroundModeEnabled.
 
@@ -2319,7 +2319,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
       Jeśli zasada jest włączona, każda witryna uruchamia się w obrębie własnego procesu.
       Jeśli zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny powodująca wyłączenie testów funkcjonalnych zasad IsolateOrigins i SitePerProcess. Użytkownicy nadal mogą włączyć zasadę SitePerProcess ręcznie.
       Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      W systemie <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie zasady dotyczącej urządzeń <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na tę samą wartość. Jeśli wartości określone przez te dwie zasady nie są zgodne, podczas logowania się do sesji użytkownika może wystąpić opóźnienie spowodowane zastosowaniem wartości określonej przez zasady dotyczące użytkowników.
+      W systemie <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie zasady <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> dotyczącej urządzeń na tę samą wartość. Jeśli wartości określone przez te dwie zasady nie są zgodne, podczas logowania się do sesji użytkownika może wystąpić opóźnienie spowodowane zastosowaniem wartości określonej przez zasady dotyczące użytkowników.
 
       UWAGA: ta zasada nie jest stosowana na urządzeniach z Androidem. Aby włączyć funkcję SitePerProcess w Androidzie, użyj ustawienia zasady SitePerProcessAndroid.
       </translation>
@@ -2359,9 +2359,9 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="7882857838942884046">Wyłączenie Google Sync spowoduje, że tworzenie i przywracanie kopii zapasowej Androida nie będzie działać prawidłowo.</translation>
 <translation id="7882890448959833986">Ukryj ostrzeżenie o nieobsługiwanym systemie operacyjnym</translation>
 <translation id="7892077286206685156">
-      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="SITE_PER_PROCESS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę obowiązującą dla użytkownika.
+      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="SITE_PER_PROCESS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
       Możesz dostosować ustawienie zasady IsolateOrigins, by uzyskać
-optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym celu dodaj do zasady IsolateOrigins listę witryn, które chcesz izolować. Ustawienie SitePerProcess izoluje wszystkie witryny.
+optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym celu dodaj do zasady IsolateOrigins listę witryn, które chcesz izolować. To ustawienie, SitePerProcess, izoluje wszystkie witryny.
       Jeśli ta zasada jest włączona, każda witryna będzie działać w obrębie własnego procesu.
       Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie SitePerProcess.
       Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
@@ -2397,20 +2397,13 @@ optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym c
 <translation id="7961779417826583251">Wyłącz egzekwowanie protokołu Certificate Transparency dla starych urzędów certyfikacji z listy</translation>
 <translation id="7974114691960514888">Ta zasada nie jest już obsługiwana. Umożliwia stosowanie protokołu STUN i serwerów przekazywania podczas łączenia się z klientem zdalnym. Jeśli ustawienie jest włączone, ten komputer może wykrywać hosty zdalne i łączyć się z nimi nawet wówczas, gdy są oddzielone zaporą sieciową. Jeśli ustawienie jest wyłączone, a wychodzące połączenia UDP są filtrowane przez zaporę sieciową, komputer może łączyć się tylko z hostami w sieci lokalnej.</translation>
 <translation id="7976157349247117979">Nazwa miejsca docelowego <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Gdy ta zasada jest nieskonfigurowana, Narzędzie do czyszczenia Chrome po wykryciu niechcianego oprogramowania może przesłać metadane skanowania do Google zgodnie z ustawieniem zasady SafeBrowsingExtendedReportingEnabled. Następnie Narzędzie do czyszczenia Chrome zapyta użytkownika, czy usunąć niechciane oprogramowanie. Użytkownik może zdecydować, czy przesłać do Google wyniki czyszczenia, by pomóc ulepszyć wykrywanie niechcianego oprogramowania. Te wyniki zawierają metadane plików i klucze rejestru zgodnie z opisem w Dokumencie na temat ochrony prywatności w Google Chrome.
-
-      Gdy zasada jest ustawiona na wartość fałsz, Narzędzie do czyszczenia Chrome po wykryciu niechcianego oprogramowania nie prześle metadanych skanowania do Google, ignorując ustawienie zasady SafeBrowsingExtendedReportingEnabled. Narzędzie do czyszczenia Chrome zapyta użytkownika, czy usunąć niechciane oprogramowanie. Wyniki czyszczenia nie będą przesyłane do Google, a użytkownik nie będzie pytany, czy chce to zrobić.
-
-      Gdy zasada jest ustawiona na wartość prawda, Narzędzie do czyszczenia Chrome po wykryciu niechcianego oprogramowania może przesłać metadane skanowania do Google zgodnie z ustawieniem zasady SafeBrowsingExtendedReportingEnabled. Narzędzie do czyszczenia Chrome zapyta użytkownika, czy usunąć niechciane oprogramowanie. Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytany, czy się na to zgadza.
-
-      Ta zasada jest niedostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Brak ograniczeń specjalnych</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Obróć ekran o 0 stopni</translation>
 <translation id="8044493735196713914">Zgłoś tryb uruchomienia urządzenia</translation>
 <translation id="8050080920415773384">Drukowanie natywne</translation>
 <translation id="8059164285174960932">Adres URL, dla którego klienty dostępu zdalnego powinny uzyskać token uwierzytelniania</translation>
-<translation id="8078366200175825572">Umożliwia skonfigurowanie listy wzorcowych adresów URL określających witryny, którym nie wolno tworzyć plików cookie.
+<translation id="8078366200175825572">Umożliwia skonfigurowanie listy wzorców adresów URL określających witryny, którym nie wolno tworzyć plików cookie.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultCookiesSetting” (jeśli została ustawiona) lub z osobistej konfiguracji użytkownika.
 

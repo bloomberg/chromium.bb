@@ -159,7 +159,7 @@
 <translation id="5193136243808726294">Google Chrome OS यह पेज नहीं खोल सकता.</translation>
 <translation id="5204098752394657250">Google Chrome <ph name="TERMS_OF_SERVICE_LINK" />सेवा की शर्तों<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
 <translation id="5251420635869119124">अतिथि कोई पदचिह्न छोड़े बिना Chrome का उपयोग कर सकते हैं.</translation>
-<translation id="532046782124376502">चेतावनी: Google Chrome, एक्सटेंशन को आपका ब्राउज़िंग इतिहास रिकॉर्ड करने से नहीं रोक सकता. गुप्त मोड में इस एक्सटेंशन को बंद करने के लिए, इस विकल्प का चयन हटाएं.</translation>
+<translation id="532046782124376502">चेतावनी: Google Chrome आपका ब्राउज़िंग इतिहास रिकॉर्ड करने से एक्‍सटेंशन को नहीं रोक सकता है. गुप्त मोड में इस एक्‍सटेंशन को बंद करने के लिए, इस विकल्‍प का चयन हटाएं.</translation>
 <translation id="5334545119300433702">यह मॉड्यूल Google Chrome से विरोध के लिए जाना जाता है.</translation>
 <translation id="5386244825306882791">इससे यह भी नियंत्रित होता है कि जब आप Chrome को प्रारंभ करते हैं या खोज वाली पट्टी से खोजते हैं तब कौन सा पेज दिखाया जाए.</translation>
 <translation id="5430073640787465221">आपकी प्राथमिकताएं फ़ाइल दूषित या अमान्‍य है. Google Chrome आपकी सेटिंग पुनर्प्राप्त करने में असमर्थ है.</translation>
@@ -189,7 +189,6 @@
 <translation id="6291549208091401781">Google Chrome आपके कंप्यूटर पर मौजूद सभी उपयोगकर्ताओं के लिए पहले से इंंस्टॉल है.</translation>
 <translation id="6338556085225130112">Google Chrome अपडेट हो रहा है</translation>
 <translation id="6368958679917195344">Chrome OS को अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />ओपन सोर्स सॉफ़्टवेयर<ph name="END_LINK_CROS_OSS" /> द्वारा संभव बनाया गया है.</translation>
-<translation id="6410540444482791104">खतरनाक ऐप्लिकेशन और साइटों का पता लगाने में सहायता करने के लिए Google को अपने आप कुछ सिस्टम जानकारी और पेज सामग्री भेजकर आप Chrome को उपयोग में अधिक सुरक्षित और अधिक आसान बनाने में सहायता कर सकते हैं.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome डेवलपर</translation>
 <translation id="6566149418543181476">Google Chrome अपडेट हो रहा है (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">आप अपनी Chrome सामग्री को सिंक करने के लिए <ph name="PROFILE_EMAIL" /> का उपयोग कर रहे हैं. सिंक करने की अपनी प्राथमिकता को अपडेट करने या 'Google खाते' के बिना क्रोमियम का उपयोग करने के लिए, <ph name="SETTINGS_LINK" /> पर जाएं.</translation>
@@ -259,7 +258,7 @@
 <translation id="8556340503434111824">Google Chrome का एक नया वर्शन उपलब्‍ध है, और यह अब तक का सबसे तेज़ है.</translation>
 <translation id="8568392309447938879">ऐप्स का उपयोग करने के लिए आपको Chrome में प्रवेश किए हुए रहना होगा. इससे Chrome को सभी डिवाइस में मौजूद आपके ऐप्स, बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग समन्वयित करने की अनुमति मिल जाती है.</translation>
 <translation id="859960207076826247">{0,plural, =0{Chrome का एक अपडेट उपलब्ध है}=1{Chrome का एक अपडेट उपलब्ध है}one{Chrome का एक अपडेट # दिनों से उपलब्ध है}other{Chrome का एक अपडेट # दिनों से उपलब्ध है}}</translation>
-<translation id="8606668294522778825">आपके ब्राउज़िंग अनुभव को बेहतर बनाने के लिए Google Chrome वेब सेवाओं का उपयोग कर सकता है. आप इन सेवाओं को वैकल्‍पिक रूप से अक्षम कर सकते हैं. <ph name="BEGIN_LINK" />और जानें<ph name="END_LINK" /></translation>
+<translation id="8606668294522778825">आपके ब्राउज़िंग अनुभव को बेहतर बनाने के लिए Google Chrome, वेब सेवाओं का उपयोग कर सकता है. आप इन सेवाओं को वैकल्‍पिक रूप से बंद कर सकते हैं. <ph name="BEGIN_LINK" />और जानें<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome निष्‍क्रिय है. अभी पुन: लॉन्च करें?</translation>
 <translation id="8667808506758191620">आपका <ph name="DEVICE_TYPE" /> अद्यतित है.</translation>
 <translation id="8669527147644353129">Google Chrome सहायक</translation>

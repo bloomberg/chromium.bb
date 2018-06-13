@@ -2522,13 +2522,6 @@
 
           이 설정을 사용 중지하고 발신 UDP 연결이 방화벽에 의해 필터링되는 경우 이 컴퓨터는 로컬 네트워크 내에 있는 호스트 컴퓨터에만 연결할 수 있습니다.</translation>
 <translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> 전송 대상의 이름</translation>
-<translation id="7977445800390854860">설정되지 않는 경우 Chrome 정리도구에서 원치 않는 소프트웨어를 감지하면 SafeBrowsingExtendedReportingEnabled에서 설정된 정책에 따라 Google에 검색 관련 메타데이터를 보고합니다. 그런 다음 Chrome 정리도구가 사용자에게 원치 않는 소프트웨어를 정리할 것인지 묻습니다. 사용자는 향후 원치 않는 소프트웨어 감지에 도움이 되도록 Google에 정리 결과를 공유하겠다고 선택할 수 있습니다. 이러한 결과에는 Chrome 개인정보 보호 백서에 설명된 바와 같이 파일 메타데이터 및 레지스트리 키가 포함됩니다.
-
-      False로 설정되는 경우 Chrome 정리도구에서 원치 않는 소프트웨어를 감지하면 Google에 검색 관련 메타데이터를 전송하지 않고 SafeBrowsingExtendedReportingEnabled에서 설정된 모든 정책을 무시합니다. Chrome 정리도구는 사용자에게 원치 않는 소프트웨어를 정리할 것인지 묻습니다. 정리 결과는 Google에 보고되지 않으며 사용자는 결과를 보고할 수 없습니다.
-
-      True로 설정되는 경우 Chrome 정리도구에서 원치 않는 소프트웨어를 감지하면 SafeBrowsingExtendedReportingEnabled에서 설정된 정책에 따라 Google에 검색 관련 메타데이터를 전송합니다. Chrome 정리도구는 사용자에게 원치 않는 소프트웨어를 정리할 것인지 묻습니다. 정리 결과는 Google에 보고되며 사용자는 결과가 보고되지 않도록 할 수 있습니다.
-
-      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 가입하지 않은 Windows 인스턴스에서는 사용할 수 없습니다.</translation>
 <translation id="7980227303582973781">특별한 제한 없음</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">화면을 0도 회전</translation>

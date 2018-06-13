@@ -221,7 +221,7 @@
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5895138241574237353">Neu starten</translation>
 <translation id="5901316534475909376">Umschalttaste + Esc</translation>
-<translation id="5911533659001334206">Tastenkombinationsbetrachter</translation>
+<translation id="5911533659001334206">Tastenkombinationsanzeige</translation>
 <translation id="5916664084637901428">An</translation>
 <translation id="5927132638760172455">Übertragung an unbekannten Empfänger</translation>
 <translation id="5947494881799873997">Rückgängig machen</translation>
@@ -342,7 +342,7 @@
 <translation id="8351131234907093545">Notiz erstellen</translation>
 <translation id="8392451568018454956">Optionsmenü für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Einstellungen</translation>
-<translation id="8431190899827883166">Tippeingaben anzeigen</translation>
+<translation id="8431190899827883166">Fingertipps anzeigen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
 <translation id="8433977262951327081">Die Tastenkombination zum Aufrufen des Infofelds für die Eingabeoptionen in der Ablage hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">Keine SIM-Karte vorhanden</translation>

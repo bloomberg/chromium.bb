@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">קרדיטים</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">מודעת באנר</translation>
+<translation id="1548116112524424341">הפעלת הסרטון במצב 'תמונה בתוך תמונה'</translation>
 <translation id="1589122976691792535">אזור</translation>
 <translation id="1591562245178063882">החודש</translation>
 <translation id="1637811476055996098">בחר קבצים</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">מד</translation>
 <translation id="6166809985690652833">אחרית דבר</translation>
 <translation id="6213469881011901533">מילון מונחים</translation>
+<translation id="6310801910862476708">יציאה ממצב 'תמונה בתוך תמונה'</translation>
 <translation id="6398862346408813489">הצג חלונית לבחירת חודש</translation>
 <translation id="6404546809543547843">מסתיר משך אודיו</translation>
 <translation id="6453774872122745852">תודות</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">ניווט</translation>
 <translation id="9050748414552849310">הצג כתוביות סגורות</translation>
 <translation id="9062295712474918030">מסמך</translation>
+<translation id="9093215626363556771">יציאה ממצב 'תמונה בתוך תמונה'</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9132465097189459683">אחר...</translation>
 <translation id="9138385573473225930">התראה</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, שמתחיל בתאריך <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">הערת שוליים</translation>
 <translation id="947831847158436616">תא</translation>
+<translation id="954003015749068518">מעבר אל מצב 'תמונה בתוך תמונה'</translation>
 <translation id="966787709310836684">תפריט</translation>
 </translationbundle>

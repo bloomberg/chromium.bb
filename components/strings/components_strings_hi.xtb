@@ -64,8 +64,8 @@
 <translation id="1333989956347591814">आपकी गतिविधि इन्हें <ph name="BEGIN_EMPHASIS" />अभी भी दिखाई दे सकती है<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />जिन वेबसाइट पर आप जाते हैं
-          <ph name="LIST_ITEM" />आपका नियोक्ता या विद्यालय
-          <ph name="LIST_ITEM" />आपका इंटरनेट सेवा प्रदाता
+          <ph name="LIST_ITEM" />वह कंपनी जहां आप काम करते हैं या स्कूल
+          <ph name="LIST_ITEM" />आपकी इंटरनेट सेवा देने वाली कंपनी
         <ph name="END_LIST" /></translation>
 <translation id="1339601241726513588">नामांकन डोमेन:</translation>
 <translation id="1340482604681802745">पिकअप पता</translation>
@@ -295,7 +295,7 @@
 <translation id="2985398929374701810">मान्य पता डालें</translation>
 <translation id="2986368408720340940">पिकअप का यह तरीका उपलब्ध नहीं है. कोई दूसरा तरीका आज़माएं.</translation>
 <translation id="2991174974383378012">वेबसाइटों के साथ साझाकरण</translation>
-<translation id="2991571918955627853">आप इस समय <ph name="SITE" /> पर नहीं जा सकते हैं क्योंकि वेबसाइट HSTS का उपयोग करती है. नेटवर्क की गड़बड़ियां और हमले आमतौर पर कुछ समय के लिए होते हैं, इसलिए पेज शायद बाद में ठीक से काम करेगा.</translation>
+<translation id="2991571918955627853">आप इस समय <ph name="SITE" /> पर नहीं जा सकते क्योंकि वेबसाइट एचएसटीएस का उपयोग करती है. नेटवर्क की गड़बड़ियां और हमले आमतौर पर कुछ समय के लिए होते हैं इसलिए यह पेज शायद बाद में ठीक से काम करेगा.</translation>
 <translation id="3005723025932146533">सहेजी गई कॉपी दिखाएं</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> का CVC डालें. आपकी तरफ से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ शेयर किए जाएंगे.</translation>
 <translation id="3010559122411665027">सूची प्रविष्ट‍ि "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -401,7 +401,7 @@
 <translation id="3678529606614285348">पेज को नई गुप्त विंडो में खोलें (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">ख़राबी रिपोर्ट <ph name="CRASH_TIME" /> पर कैप्चर की गई, <ph name="UPLOAD_TIME" /> पर अपलोड की गई</translation>
 <translation id="3681007416295224113">प्रमाणपत्र जानकारी</translation>
-<translation id="3704162925118123524">आप जिस नेटवर्क का उपयोग कर रहे हैं उसके लिए आपको प्रवेश पृष्‍ठ पर जाने की आवश्‍यकता हो सकती है.</translation>
+<translation id="3704162925118123524">आप जिस नेटवर्क का उपयोग कर रहे हैं उसके लिए आपको लॉगिन पेज पर जाने की ज़रूरत हो सकती है.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">लोड हो रही हैं...</translation>
 <translation id="3712624925041724820">लाइसेंस समाप्त हो गए</translation>
@@ -609,15 +609,15 @@
 <translation id="5230733896359313003">शिपिंग पता</translation>
 <translation id="5250209940322997802">"नेटवर्क से कनेक्ट करें"</translation>
 <translation id="5251803541071282808">क्लाउड</translation>
-<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />इन चरणों का पालन करके सॉफ़्टवेयर को कुछ समय के लिए अक्षम करें ताकि आप वेब पर जा सकें. आपको व्यावस्थापकीय विशेषाधिकारों की ज़रूरत होगी.<ph name="END_PARAGRAPH" />
+<translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />नीचे दिए गए तरीके से सॉफ़्टवेयर को कुछ समय के लिए बंद करें ताकि आप वेब पर जा सकें. इसके लिए आपको एडमिन को मिलने वाले खास अधिकार चाहिए होंगे.<ph name="END_PARAGRAPH" />
 
     <ph name="BEGIN_LIST" />
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />शुरू करें<ph name="END_BOLD" /> को क्लिक करें, फिर <ph name="BEGIN_BOLD" />"स्थानीय सेवाएं देखें"<ph name="END_BOLD" /> को खोजें और चुनें
+    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />शुरू करें<ph name="END_BOLD" /> पर क्लिक करें, इसके बाद <ph name="BEGIN_BOLD" />"स्थानीय सेवाएं देखें"<ph name="END_BOLD" /> को खोजें और चुनें
     <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />VisualDiscovery<ph name="END_BOLD" /> चुनें
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />स्टार्टअप प्रकार<ph name="END_BOLD" /> के अंतर्गत, <ph name="BEGIN_BOLD" />अक्षम<ph name="END_BOLD" /> चुनें
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />सेवा स्थिति<ph name="END_BOLD" /> के अंतर्गत, <ph name="BEGIN_BOLD" />रोकें<ph name="END_BOLD" /> को क्लिक करें
-    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />लागू करें<ph name="END_BOLD" /> को क्लिक करें, फिर <ph name="BEGIN_BOLD" />ठीक है<ph name="END_BOLD" /> क्लिक करें
-    <ph name="LIST_ITEM" />अपने कंप्यूटर से हमेशा के लिए सॉफ़्टवेयर को निकालने का तरीका जानने के लिए <ph name="BEGIN_LEARN_MORE_LINK" />Chrome सहायता केंद्र<ph name="END_LEARN_MORE_LINK" /> पर जाएं
+    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />स्टार्टअप प्रकार<ph name="END_BOLD" /> में <ph name="BEGIN_BOLD" />बंद किया गया<ph name="END_BOLD" /> चुनें
+    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />सेवा स्थिति<ph name="END_BOLD" /> में <ph name="BEGIN_BOLD" />रोकें<ph name="END_BOLD" /> पर क्लिक करें
+    <ph name="LIST_ITEM" /><ph name="BEGIN_BOLD" />लागू करें<ph name="END_BOLD" /> पर क्लिक करें, फिर <ph name="BEGIN_BOLD" />ठीक है<ph name="END_BOLD" /> पर क्लिक करें
+    <ph name="LIST_ITEM" />अपने कंप्यूटर से सॉफ़्टवेयर को हमेशा के लिए हटाने का तरीका जानने के लिए <ph name="BEGIN_LEARN_MORE_LINK" />Chrome सहायता केंद्र<ph name="END_LEARN_MORE_LINK" /> पर जाएं
     <ph name="END_LIST" /></translation>
 <translation id="5285570108065881030">सेव किए गए सभी पासवर्ड दिखाएं</translation>
 <translation id="5287240709317226393">कुकी दिखाएं</translation>
@@ -704,7 +704,6 @@
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (सिंक किया गया)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 उपयोग में है}one{# उपयोग में हैं}other{# उपयोग में हैं}}</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
-<translation id="5959728338436674663">Google को कुछ <ph name="BEGIN_WHITEPAPER_LINK" />सिस्टम संबंधी जानकारी और पेज सामग्री<ph name="END_WHITEPAPER_LINK" /> अपने आप भेजें ताकि खतरनाक ऐप्लिकेशन और साइटों का पता लगाने में सहायता मिल सके. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5967592137238574583">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="5967867314010545767">इतिहास से निकालें</translation>
 <translation id="5975083100439434680">ज़ूम आउट</translation>
@@ -719,9 +718,9 @@
 <translation id="6027201098523975773">नाम डालें</translation>
 <translation id="6039846035001940113">अगर समस्या बनी रहती है, तो साइट के मालिक से संपर्क करें.</translation>
 <translation id="6040143037577758943">बंद करें</translation>
-<translation id="6047233362582046994">अगर आप अपनी सुरक्षा में होने वाले जोखिमों को समझते हैं, तो खतरनाक ऐप्लिकेशन निकाले जाने से पहले आप <ph name="BEGIN_LINK" />इस साइट पर जा<ph name="END_LINK" /> सकते हैं.</translation>
+<translation id="6047233362582046994">अगर आप अपनी सुरक्षा को होने वाले खतरों के बारे में जानते हैं तो, खतरनाक ऐप्लिकेशन हटाए जाने से पहले आप <ph name="BEGIN_LINK" />इस साइट पर जा<ph name="END_LINK" /> सकते हैं.</translation>
 <translation id="6047927260846328439">यह सामग्री आपसे धोखे से सॉफ़्टवेयर इंस्‍टॉल करवाने या व्यक्तिगत जानकारी का खुलासा करवाने की कोशिश कर सकती है. <ph name="BEGIN_LINK" />फिर भी दिखाएं<ph name="END_LINK" /></translation>
-<translation id="6051221802930200923">आप इस समय <ph name="SITE" /> पर नहीं जा सकते हैं क्योंकि वेबसाइट प्रमाणपत्र पिनिंग का उपयोग करती है. नेटवर्क की गड़बड़ियां और हमले आमतौर पर कुछ देर के लिए होते हैं, इसलिए यह पेज शायद बाद में ठीक से काम करेगा.</translation>
+<translation id="6051221802930200923">आप इस समय <ph name="SITE" /> पर नहीं जा सकते क्योंकि वेबसाइट, प्रमाणपत्र पिनिंग का उपयोग करती है. नेटवर्क की गड़बड़ियां और हमले आमतौर पर कुछ समय के लिए होते हैं इसलिए यह पेज शायद बाद में ठीक से काम करेगा.</translation>
 <translation id="6059925163896151826">USB डिवाइस</translation>
 <translation id="6071091556643036997">नीति का प्रकार गलत है.</translation>
 <translation id="6080696365213338172">आपने व्यवस्थापक द्वारा प्रदत्त प्रमाणपत्र के उपयोग से सामग्री एक्सेस की है. आपके द्वारा <ph name="DOMAIN" /> को प्रदान किया गया डेटा आपके व्यवस्थापक द्वारा बीच में रोका जा सकता है.</translation>
@@ -740,7 +739,7 @@
 <translation id="6221345481584921695">Google सुरक्षित ब्राउज़िंग को <ph name="SITE" /> पर हाल ही में <ph name="BEGIN_LINK" />मैलवेयर का पता चला<ph name="END_LINK" /> है. आमतौर पर सुरक्षित रहने वाली वेबसाइटें कभी-कभी मैलेवयर से संक्रमित हो जाती हैं. दुर्भावनापूर्ण सामग्री <ph name="SUBRESOURCE_HOST" /> से आती है, जो कि एक ज्ञात मैलवेयर वितरक है.</translation>
 <translation id="6251924700383757765">निजता नीति</translation>
 <translation id="6254436959401408446">यह पेज खोलने के लिए ज़रूरी जगह नहीं है</translation>
-<translation id="625755898061068298">आपने इस साइट के लिए सुरक्षा चेतावनियों को अक्षम करना चुना है.</translation>
+<translation id="625755898061068298">आपने इस साइट के लिए सुरक्षा चेतावनियों को बंद करने का विकल्प चुना है.</translation>
 <translation id="6259156558325130047">&amp;पुन: क्रमित करना फिर से करें</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> बुकमार्क</translation>
 <translation id="6264485186158353794">सुरक्षा पर वापस</translation>
@@ -872,8 +871,8 @@
 <translation id="7378810950367401542">/</translation>
 <translation id="7390545607259442187">कार्ड की पुष्टि करें</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7407424307057130981">&lt;p&gt;अगर आपके Windows कंप्यूटर पर Superfish सॉफ़्टवेयर है, तो आपको यह गड़बड़ी दिखाई देगी.&lt;/p&gt;
-      &lt;p&gt;आगे बताए गए कदम उठाकर सॉफ़्टवेयर को कुछ देर के लिए बंद कर दें ताकि आप वेब पर जा सकें. आपको एडमिन विशेषाधिकार चाहिए होंगे.&lt;/p&gt;
+<translation id="7407424307057130981">&lt;p&gt;अगर आपके Windows कंप्यूटर पर Superfish सॉफ़्टवेयर है तो, आपको यह गड़बड़ी दिखाई देगी.&lt;/p&gt;
+      &lt;p&gt;आगे बताए गए कदम उठाकर सॉफ़्टवेयर को कुछ देर के लिए बंद कर दें ताकि आप वेब पर जा सकें. आपको एडमिन विशेषाधिकार की ज़रूरत होगी.&lt;/p&gt;
       &lt;ol&gt;
       &lt;li&gt;&lt;strong&gt;शुरू करें&lt;/strong&gt; पर क्लिक करें, उसके बाद &lt;strong&gt;"स्थानीय सेवाएं देखें"&lt;/strong&gt; को खोजें और चुनें
       &lt;li&gt;&lt;strong&gt;VisualDiscovery&lt;/strong&gt; चुनें
@@ -958,7 +957,7 @@
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' के लिए <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> मिले</translation>
 <translation id="7818867226424560206">नीति प्रबंधन</translation>
 <translation id="782886543891417279">आप जिस वाई-फ़ाई का उपयोग कर रहे हैं (<ph name="WIFI_NAME" />) आपको उसके लॉगिन पेज पर जाने की ज़रूरत पड़ सकती है.</translation>
-<translation id="785549533363645510">हालांकि, आप अदृश्य नहीं हैं. गुप्त मोड में रहने से आपकी ब्राउज़िंग आपके नियोक्ता, आपके इंटरनेट सेवा प्रदाता या आपके द्वारा देखी जाने वाली वेबसाइट से छिपती नहीं है.</translation>
+<translation id="785549533363645510">हालांकि, आपकी गतिविधि पूरी तरह से छिपी नहीं है. गुप्त मोड में रहने के बावजूद आपकी ब्राउजिंग की जानकारी उस कंपनी को जहां आप काम करते हैं, आपकी इंटरनेट सेवा देने वाली कंपनी को या उस वेबसाइट को दिखती रहती है जिस पर आप जाते हैं.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">साइट छोड़ें?</translation>
 <translation id="7878176543348854470">डेबिट और प्रीपेड कार्ड स्वीकार किए जाते हैं.</translation>
@@ -1016,7 +1015,7 @@
 <translation id="8289355894181816810">यदि आप सुनिश्चित नहीं हैं कि इसका क्या मतलब है, तो अपने नेटवर्क व्यवस्थापक से संपर्क करें.</translation>
 <translation id="8293206222192510085">बुकमार्क जोड़ें</translation>
 <translation id="8294431847097064396">स्रोत</translation>
-<translation id="8298115750975731693">आप जिस वाई-फ़ाई का उपयोग कर रहे हैं (<ph name="WIFI_NAME" />) उसके लिए आपको <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> पर जाने की आवश्‍यकता हो सकती है.</translation>
+<translation id="8298115750975731693">आप जिस वाई-फ़ाई का उपयोग कर रहे हैं (<ph name="WIFI_NAME" />) उसके लिए आपको <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> पर जाने की ज़रूरत हो सकती है.</translation>
 <translation id="8308427013383895095">नेटवर्क कनेक्शन में कोई समस्या होने के कारण अनुवाद विफल हुआ.</translation>
 <translation id="8311129316111205805">सत्र लोड करें</translation>
 <translation id="8332188693563227489"><ph name="HOST_NAME" /> का एक्सेस अस्वीकृत किया गया</translation>

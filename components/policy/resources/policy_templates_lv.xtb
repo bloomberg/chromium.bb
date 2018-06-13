@@ -2524,13 +2524,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 
           Ja šis iestatījums ir atspējots un ugunsmūris filtrē izejošos UDP savienojumus, dators var izveidot savienojumus tikai ar lokālā tīkla saimniekdatoriem.</translation>
 <translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> galamērķa nosaukums</translation>
-<translation id="7977445800390854860">Ja šī politika nav iestatīta, Chrome tīrīšanas rīki saskaņā ar SafeBrowsingExtendedReportingEnabled politiku pēc nevēlamas programmatūras noteikšanas meklēšanas metadatus nosūtīs Google serveriem. Tādā gadījumā lietotājam tiks parādīts Chrome tīrīšanas rīku ziņojums ar jautājumu, vai nevēlamo programmatūru noņemt. Lietotājs var izvēlēties, vai tīrīšanas rezultātus kopīgot ar Google serveriem, lai uzlabotu turpmāku nevēlamas programmatūras noteikšanu. Kā norādīts Chrome konfidencialitātes tehniskajā dokumentā, šie rezultāti ietver faila metadatus un reģistra atslēgas.
-
-      Ja politikai ir iestatīta vērtība “False”, Chrome tīrīšanas rīki pēc nevēlamas programmatūras noteikšanas nesūtīs meklēšanas metadatus Google serveriem un ignorēs politiku SafeBrowsingExtendedReportingEnabled. Lietotājam tiks parādīts Chrome tīrīšanas rīku ziņojums ar jautājumu, vai nevēlamo programmatūru noņemt. Tīrīšanas rezultāti netiks nosūtīti Google serveriem, un arī lietotājam nebūs pieejamas opcijas to nosūtīšanai.
-
-      Ja politikai ir iestatīta vērtība “True”, Chrome tīrīšanas rīki saskaņā ar SafeBrowsingExtendedReportingEnabled politiku pēc nevēlamas programmatūras noteikšanas meklēšanas metadatus nosūtīs Google serveriem. Lietotājam tiks parādīts Chrome tīrīšanas rīku ziņojums ar jautājumu, vai nevēlamo programmatūru noņemt. Tīrīšanas rezultāti tiks nosūtīti Google serveriem, un lietotājam nebūs pieejamas opcijas, lai nosūtīšanu liegtu.
-
-      Šī politika nav pieejama Windows instancēs, kas nav pievienotas <ph name="MS_AD_NAME" /> domēnam.</translation>
 <translation id="7980227303582973781">Nav specifisku ierobežojumu</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Pagriezt ekrānu par 0 grādiem</translation>

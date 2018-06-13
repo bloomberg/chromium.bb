@@ -178,7 +178,7 @@
 <translation id="4527045527269911712">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> alla ricarica completa</translation>
 <translation id="4544944664594876241">La scorciatoia per bloccare lo schermo è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="4564869809620998694">Servizio carattere</translation>
+<translation id="4564869809620998694">Servizio di gestione caratteri</translation>
 <translation id="4570957409596482333">Pulsante Seleziona per ascoltare</translation>
 <translation id="4659419629803378708">ChromeVox attivato</translation>
 <translation id="4776917500594043016">Password per <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -261,7 +261,7 @@
 <translation id="6521655319214113338">Scrittura a mano libera</translation>
 <translation id="6528179044667508675">Non disturbare</translation>
 <translation id="6537270692134705506">Acquisisci schermata</translation>
-<translation id="6542521951477560771">Trasmissione a <ph name="RECEIVER_NAME" /></translation>
+<translation id="6542521951477560771">Trasmissione di contenuti a <ph name="RECEIVER_NAME" /> in corso</translation>
 <translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6627638273713273709">Tasto per la ricerca + MAIUSC + K</translation>
 <translation id="6650933572246256093">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Inserisci questa passkey sul dispositivo: <ph name="PASSKEY" /></translation>
@@ -273,8 +273,8 @@
 <translation id="6715542151869432661">Nessun dispositivo mobile trovato.</translation>
 <translation id="671928215901716392">Blocco schermo</translation>
 <translation id="6723839937902243910">Alimentazione</translation>
-<translation id="6725073593266469338">Servizio UI</translation>
-<translation id="6751826523481687655">Il rilevamento del rendimento è attivo</translation>
+<translation id="6725073593266469338">Servizio di gestione UI</translation>
+<translation id="6751826523481687655">La traccia delle prestazioni è attiva</translation>
 <translation id="6785414152754474415">Percentuale di caricamento batteria: <ph name="PERCENTAGE" />%. La batteria è in carica.</translation>
 <translation id="6803622936009808957">Impossibile duplicare i display perché non sono state trovate risoluzioni supportate. È stato attivato il desktop esteso.</translation>
 <translation id="6820676911989879663">Fai una pausa!</translation>
@@ -357,7 +357,7 @@
 <translation id="8652175077544655965">Chiudi impostazioni</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>
-<translation id="8683506306463609433">Rilevamento del rendimento attivo</translation>
+<translation id="8683506306463609433">Traccia delle prestazioni attiva</translation>
 <translation id="8734991477317290293">Potrebbe essere un tentativo di rubare i tasti premuti</translation>
 <translation id="8809737090443522491">Digita il nome di un'app o un documento</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

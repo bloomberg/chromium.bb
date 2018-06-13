@@ -343,7 +343,7 @@
 <translation id="8351131234907093545">Tạo ghi chú</translation>
 <translation id="8392451568018454956">Menu tùy chọn dành cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8428213095426709021">Cài đặt</translation>
-<translation id="8431190899827883166">Hiển thị các điểm có thể nhấn</translation>
+<translation id="8431190899827883166">Hiển thị điểm khi nhấn</translation>
 <translation id="8433186206711564395">Cài đặt mạng</translation>
 <translation id="8433977262951327081">Phím tắt để hiển thị bong bóng menu tùy chọn nhập trong giá đã thay đổi. Vui lòng sử dụng <ph name="NEW_SHORTCUT" /> thay cho <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="8452135315243592079">Thiếu thẻ SIM</translation>
@@ -370,7 +370,7 @@
 <translation id="8921624153894383499">Trợ lý Google không hỗ trợ ngôn ngữ này.</translation>
 <translation id="8938800817013097409">Thiết bị USB-C (cổng bên phải ở phía sau)</translation>
 <translation id="8940956008527784070">Pin yếu (<ph name="PERCENTAGE" />%)</translation>
-<translation id="8984179138335769204">Khởi chạy nhanh</translation>
+<translation id="8984179138335769204">Khởi động nhanh</translation>
 <translation id="8995603266996330174">Được quản lý bởi <ph name="DOMAIN" /></translation>
 <translation id="9033907480196064950">Bạn hiện đang truyền <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>

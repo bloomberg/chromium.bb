@@ -2403,13 +2403,6 @@
 <translation id="7961779417826583251">Desativar a aplicação da Transparência dos certificados para uma lista de Autoridades de certificação de legado</translation>
 <translation id="7974114691960514888">Esta política não é mais suportada. Ativa o uso de servidores STUN e de retransmissão ao estabelecer conexão a um cliente remoto. Se esta configuração estiver ativada, este computador pode descobrir e conectar-se a computadores host remotos mesmo se separados por um firewall. Se esta configuração estiver desativada e conexões de UDP enviadas forem filtradas pelo firewall, este computador só poderá estabelecer conexões a computadores host na rede local.</translation>
 <translation id="7976157349247117979">Nome do destino do <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Se esta política não for definida e a Ferramenta de varredura do Chrome detectar software indesejado, ela poderá reportar metadados sobre a verificação ao Google de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. A Ferramenta de varredura do Chrome perguntará, então, ao usuário se ele quer remover o software indesejado. O usuário poderá optar por compartilhar resultados da limpeza com o Google para auxiliar em uma futura detecção de software indesejado. Esses resultados contêm metadados de arquivos e chaves de registro, conforme descrito pelo Relatório de Privacidade do Google Chrome.
-
-      Se esta política for definida como falsa e a Ferramenta de varredura do Chrome detectar software indesejado, ela não reportará metadados sobre a verificação ao Google, substituindo qualquer política definida por SafeBrowsingExtendedReportingEnabled. A Ferramenta de varredura do Chrome perguntará ao usuário se ele quer remover o software indesejado. Os resultados da limpeza não serão reportados ao Google, e o usuário não terá a opção de fazê-lo.
-
-      Se definida como verdadeira e a Ferramenta de varredura do Chrome detectar software indesejado, ela poderá reportar metadados sobre a verificação ao Google, de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. A Ferramenta de varredura do Chrome perguntará ao usuário se ele quer remover o software indesejado. Os resultados da limpeza serão reportados ao Google, e o usuário não terá a opção de impedir tal ação.
-
-      Esta política não está definida em instâncias do Windows que não estejam vinculadas a um domínio <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Nenhuma restrição especial</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Girar tela em 0 graus</translation>

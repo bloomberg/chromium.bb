@@ -101,7 +101,7 @@
 <translation id="1145292499998999162">Plugin bị chặn</translation>
 <translation id="1145532888383813076">Tìm kiếm trong thiết bị, ứng dụng và trên web.</translation>
 <translation id="1146204723345436916">Nhập dấu trang từ tệp HTML...</translation>
-<translation id="114721135501989771">Có các tính năng thông minh của Google trong Chrome</translation>
+<translation id="114721135501989771">Dùng các tính năng thông minh của Google trong Chrome</translation>
 <translation id="1148097584170732637">Đã tìm thấy <ph name="FILE_COUNT" />.
     <ph name="LINE_BREAK1" />
     Không còn đủ dung lượng trong bộ nhớ cục bộ. Cần có thêm <ph name="FILE_SIZE" />.
@@ -364,7 +364,7 @@
 <translation id="1511388193702657997">Đề xuất lưu mật khẩu web của bạn</translation>
 <translation id="1512210426710821809">Cách duy nhất để hoàn tác hành động này là cài đặt lại <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
 <translation id="151501797353681931">Đã nhập Từ Safari</translation>
-<translation id="1520605251886806589">Google có thể sử dụng nội dung trên các trang web bạn truy cập, hoạt động duyệt web và các hoạt động tương tác để cá nhân hóa Chrome cũng như các dịch vụ khác của Google, chẳng hạn như Dịch, Tìm kiếm và quảng cáo. Bạn có thể tùy chỉnh tùy chọn này trong mục Cài đặt.</translation>
+<translation id="1520605251886806589">Google có thể sử dụng nội dung trên các trang web bạn truy cập, hoạt động duyệt web và các hoạt động tương tác để cá nhân hóa Chrome cũng như các dịch vụ khác của Google, chẳng hạn như Dịch, Tìm kiếm và quảng cáo. Bạn có thể tùy chỉnh phần này trong mục Cài đặt.</translation>
 <translation id="1521442365706402292">Quản lý chứng chỉ</translation>
 <translation id="152234381334907219">Không bao giờ lưu</translation>
 <translation id="1524430321211440688">Bàn phím</translation>
@@ -439,7 +439,7 @@
 <translation id="1637224376458524414">Truy cập dấu trang này trên iPhone của bạn</translation>
 <translation id="1637765355341780467">Đã xảy ra lỗi khi mở hồ sơ của bạn. Một số tính năng có thể không khả dụng.</translation>
 <translation id="1639239467298939599">Đang tải</translation>
-<translation id="163993578339087550"><ph name="SERVICE_NAME" /> muốn kiểm tra xem bạn có đang sử dụng thiết bị Chrome OS đủ điều kiện hay không.</translation>
+<translation id="163993578339087550"><ph name="SERVICE_NAME" /> muốn kiểm tra xem thiết bị Chrome OS bạn đang sử dụng có đủ điều kiện hay không.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 Với Mã hóa RSA</translation>
 <translation id="1642494467033190216">Yêu cầu xóa bảo vệ rootfs và khởi động lại trước khi bật các tính năng gỡ lỗi khác.</translation>
 <translation id="1643050526526937107">Chỉ đồng bộ hóa</translation>
@@ -1019,7 +1019,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="253434972992662860">&amp;Tạm dừng</translation>
 <translation id="2534460670861217804">Proxy HTTP bảo mật</translation>
 <translation id="253557089021624350">Số lượng giữ kết nối</translation>
-<translation id="2538361623464451692">Đồng bộ hóa đã bị tắt</translation>
+<translation id="2538361623464451692">Tính năng đồng bộ hóa đã bị tắt</translation>
 <translation id="2541423446708352368">Hiển thị mọi bản tải xuống</translation>
 <translation id="2542049655219295786">Bảng Google</translation>
 <translation id="2544853746127077729">Chứng chỉ xác thực bị mạng từ chối</translation>
@@ -3900,7 +3900,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="6990081529015358884">Bạn đã hết dung lượng lưu trữ</translation>
 <translation id="6990778048354947307">Chủ đề tối</translation>
 <translation id="6991665348624301627">Chọn máy in đích</translation>
-<translation id="699220179437400583">Tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra</translation>
 <translation id="6997707937646349884">Trên các thiết bị của bạn:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> thư mục đã được chọn</translation>
 <translation id="6998793565256476099">Đăng ký thiết bị tham gia hội nghị truyền hình</translation>
@@ -4144,7 +4143,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="7366415735885268578">Thêm trang web</translation>
 <translation id="7366909168761621528">Dữ liệu duyệt web</translation>
 <translation id="7371006317849674875">Thời gian bắt đầu</translation>
-<translation id="737439367876257440">Cải thiện Chrome và tăng cường tính bảo mật bằng cách gửi thông tin sử dụng và thông tin về hệ thống cho Google</translation>
+<translation id="737439367876257440">Cải thiện Chrome và tăng cường bảo mật bằng cách gửi thông tin sử dụng và thông tin về hệ thống cho Google</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Đánh dấu con trỏ chuột khi đang di chuyển</translation>
 <translation id="7377169924702866686">Caps Lock đang bật.</translation>
@@ -4593,7 +4592,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8004582292198964060">Trình duyệt</translation>
 <translation id="8005600846065423578">Luôn cho phép <ph name="HOST" /> xem khay nhớ tạm</translation>
 <translation id="8008356846765065031">Internet đã bị ngắt kết nối. Vui lòng kiểm tra kết nối Internet của bạn.</translation>
-<translation id="8008818777654712271">Tự động gửi một số thông tin hệ thống và nội dung trang cho Google để giúp phát hiện các ứng dụng và trang web nguy hiểm</translation>
 <translation id="8009225694047762179">Quản lý mật khẩu</translation>
 <translation id="8012382203418782830">Trang này đã được dịch.</translation>
 <translation id="8014154204619229810">Trình cập nhật hiện đang chạy. Hãy làm mới sau một phút nữa để kiểm tra lại.</translation>

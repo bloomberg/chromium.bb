@@ -900,7 +900,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3528000905991875314">Omogoči nadomestne strani za napake</translation>
 <translation id="3545457887306538845">Omogoča nadzor nad tem, kje se lahko uporabijo orodja za razvijalce.
 
-      Če je ta pravilnik nastavljen na »DeveloperToolsDisallowedForForceInstalledExtensions« (vrednost 0 je privzeta vrednost), je dostop do orodij za razvijalce in konzole JavaScript na splošno mogoč, vendar ne v kontekstu razširitev, nameščenih s pravilnikom podjetja.
+      Če je ta pravilnik nastavljen na »DeveloperToolsDisallowedForForceInstalledExtensions« (vrednost 0, ki je privzeta vrednost), je dostop do orodij za razvijalce in konzole JavaScript na splošno mogoč, vendar ne v kontekstu razširitev, nameščenih s pravilnikom podjetja.
       Če je ta pravilnik nastavljen na »DeveloperToolsAllowed« (vrednost 1), sta dostop do orodij za razvijalce in konzole JavaScript ter njihova uporaba mogoča v vseh kontekstih, vključno s kontekstom razširitev, nameščenih s pravilnikom podjetja.
       Če je ta pravilnik nastavljen na »DeveloperToolsDisallowed« (vrednost 2), dostop do orodij za razvijalce ni mogoč in elementov na spletnih mestih ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali kontekstnem meniju za odpiranje orodij za razvijalce in konzole JavaScript bodo onemogočeni.</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
@@ -2000,7 +2000,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če je ta pravilnik nastavljen, <ph name="PRODUCT_NAME" /> poskusi poiskati tiskalnik, ki se ujema z vsemi določenimi atributi, in ga izbere kot privzetega. Izbran je prvi tiskalnik, ki se ujema s pravilnikom. V primeru neenoličnega ujemanja je lahko izbran kateri koli tiskalnik, ki se ujema, odvisno od vrstnega reda odkrivanja tiskalnikov.
 
-      Če ta pravilnik ni nastavljen ali v časovni omejitvi ni najden tiskalnik, ki se ujema, je tiskalnik privzeto vgrajeni tiskalnik PDF. Če ta ni na voljo, ni izbran noben tiskalnik.
+      Če ta pravilnik ni nastavljen ali v časovni omejitvi ni najden tiskalnik, ki se ujema, je privzeti tiskalnik vgrajeni tiskalnik PDF. Če ta ni na voljo, ni izbran noben tiskalnik.
 
       Vrednost je razčlenjena kot predmet JSON skladno s to shemo:
       {
@@ -2305,15 +2305,15 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7519251620064708155">Dovoli ustvarjanje ključev na teh spletnih mestih</translation>
 <translation id="7529083451528428240">Omogoča zaklepanje uporabnikove seje glede na čas odjemalca ali omejitev uporabe v dnevu. 
 
-          |time_window_limit| določa dnevno obdobje, v katerem je uporabnikova seja zaklenjena. Podpiramo samo eno pravilo za vsak dan v tednu, zato se polje |entries| morda razlikuje v velikosti od 0 do 7. |starts_at| in |ends_at| sta na začetku in koncu omejitve obdobja; če je |ends_at| manjši od |starts_at|, se |time_limit_window| konča naslednji dan. |last_updated_millis| je časovni žig časa UTC za zadnji čas, ko je bil ta vnos posodobljen. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število.
+          |time_window_limit| določa dnevno obdobje, v katerem je uporabnikova seja zaklenjena. Podpiramo samo eno pravilo za vsak dan v tednu, zato se polje |entries| morda razlikuje v velikosti od 0 do 7. |starts_at| in |ends_at| sta začetek in konec omejitve obdobja; če je |ends_at| manjši od |starts_at|, se |time_limit_window| konča naslednji dan. |last_updated_millis| je časovni žig časa UTC za zadnji čas, ko je bil ta vnos posodobljen. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število.
 
-          |time_usage_limit| določa omejitev dnevne uporabe. Ko jo uporabnik doseže, se uporabnikova seja zaklene. Za vsak dan v tednu je lastnost in se nastavi samo, če je za ta dan aktivna omejitev. |usage_quota_mins| določa, koliko časa v dnevu je mogoče uporabljati upravljano napravo, |reset_at| pa določa čas, ko je omejitev uporabe obnovljena. Privzeta vrednost za |reset_at| je polnoč ({'hour': 0, 'minute': 0}). |last_updated_millis| je časovni žig časa UTC za zadnji čas, ko je bil ta vnos posodobljen. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število.
+          |time_usage_limit| določa omejitev dnevne uporabe. Ko jo uporabnik doseže, se uporabnikova seja zaklene. Za vsak dan v tednu je na voljo lastnost, ki jo nastavite le, če je za ta dan aktivna omejitev. |usage_quota_mins| določa, koliko časa v dnevu je mogoče uporabljati upravljano napravo, |reset_at| pa določa čas, ko omejitev uporabe znova začne meriti od nič. Privzeta vrednost za |reset_at| je polnoč ({'hour': 0, 'minute': 0}). |last_updated_millis| je časovni žig časa UTC za zadnji čas, ko je bil ta vnos posodobljen. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število.
 
           |overrides| je na voljo za začasno razveljavitev enega ali več prejšnjih pravil.
           * Če nista aktivna ne time_window_limit ne time_usage_limit, je za zaklepanje naprave mogoče uporabiti |LOCK|.
           * |LOCK| začasno zaklene uporabnikovo sejo, dokler se ne začne naslednji time_window_limit ali time_usage_limit.
           * |UNLOCK| odklene uporabnikovo sejo, ki jo zaklene time_window_limit ali time_usage_limit.
-          |created_time_millis| je časovni žig časa UTC za ustvarjanje preglasitve. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število. Uporabi se za določitev, ali se ta preglasitev še vedno uporabi. Če se je funkcija trenutne omejitve aktivnega časa (časovna omejitev uporabe ali omejitev časovnega obdobja) začela po ustvarjanju preglasitve, se ne izvaja. Če je bila preglasitev ustvarjena pred zadnjo spremembo aktivne omejitve time_window_limit ali aktivnega obdobja time_usage_window, se ne uporablja.</translation>
+          |created_time_millis| je časovni žig časa UTC za ustvarjanje preglasitve. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število. Uporabi se za določitev, ali se ta preglasitev še vedno uporabi. Če se je trenutno aktivna funkcija za omejitev časa (časovna omejitev uporabe ali omejitev časovnega obdobja) začela po ustvarjanju preglasitve, se ne izvaja. Če je bila preglasitev ustvarjena pred zadnjo spremembo aktivne omejitve time_window_limit ali aktivnega obdobja time_usage_window, se ne uporablja.</translation>
 <translation id="7529100000224450960">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko odpirajo pojavna okna.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPopupsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -2534,13 +2534,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če je ta nastavitev onemogočena in izhodne povezave UDP filtrira požarni zid, se bo lahko ta računalnik povezal samo z gostiteljskimi računalniki znotraj lokalnega omrežja.</translation>
 <translation id="7976157349247117979">Ime cilja za napravo <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Če pravilnik ni nastavljen in Chromovo orodje za čiščenje zazna neželeno programsko opremo, bo Googlu morda sporočilo metapodatke o pregledu v skladu s pravilnikom, nastavljenim z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo orodje za čiščenje bo pozvalo uporabnika, ali želi počistiti neželeno programsko opremo. Uporabnik se lahko odloči za deljenje rezultatov čiščenja z Googlom in tako pripomore k zaznavanju neželene programske opreme v prihodnosti. Ti rezultati vsebujejo metapodatke o datotekah in registrske ključe, kot je opisano v beli knjigi o zasebnosti za Google Chrome.
-
-      Če je pravilnik onemogočen in Chromovo orodje za čiščenje zazna neželeno programsko opremo, Googlu ne bo sporočilo metapodatkov o pregledu, pri čemer bo preglašen vsak pravilnik, nastavljen z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo orodje za čiščenje bo pozvalo uporabnika, ali želi počistiti neželeno programsko opremo. Rezultati čiščenja ne bodo sporočeni Googlu in uporabnik ne bo imel možnosti sporočanja.
-
-      Če je pravilnik omogočen in Chromovo orodje za čiščenje zazna neželeno programsko opremo, bo Googlu morda sporočilo metapodatke o pregledu v skladu s pravilnikom, nastavljenim z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo orodje za čiščenje bo pozvalo uporabnika, ali želi počistiti neželeno programsko opremo. Rezultati čiščenja bodo sporočeni Googlu in uporabnik tega ne bo mogel preprečiti.
-
-      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Ni posebnih omejitev</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Sukanje zaslona za 0 stopinj</translation>
