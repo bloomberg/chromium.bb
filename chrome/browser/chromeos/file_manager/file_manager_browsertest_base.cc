@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -28,8 +29,12 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/components/drivefs/drivefs_host.h"
+#include "chromeos/components/drivefs/fake_drivefs.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -196,6 +201,7 @@ struct AddEntriesMessage {
     SharedOption shared_option;      // File entry sharing option.
     std::string source_file_name;    // Source file name prototype.
     std::string target_path;         // Target file or directory path.
+    std::string name_text;           // Display file name.
     std::string mime_type;           // File entry content mime type.
     base::Time last_modified_time;   // Entry last modified time.
     EntryCapabilities capabilities;  // Permissions of this file or directory.
@@ -208,6 +214,7 @@ struct AddEntriesMessage {
       converter->RegisterStringField("sourceFileName",
                                      &TestEntryInfo::source_file_name);
       converter->RegisterStringField("targetPath", &TestEntryInfo::target_path);
+      converter->RegisterStringField("nameText", &TestEntryInfo::name_text);
       converter->RegisterStringField("mimeType", &TestEntryInfo::mime_type);
       converter->RegisterCustomField("sharedOption",
                                      &TestEntryInfo::shared_option,
@@ -498,7 +505,7 @@ class DriveTestVolume : public TestVolume {
   DriveTestVolume() : TestVolume("drive") {}
   ~DriveTestVolume() override = default;
 
-  void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
+  virtual void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) {
     const base::FilePath path =
         base::FilePath::FromUTF8Unsafe(entry.target_path);
     const std::string target_name = path.BaseName().AsUTF8Unsafe();
@@ -647,12 +654,18 @@ class DriveTestVolume : public TestVolume {
     EXPECT_FALSE(integration_service_);
     integration_service_ = new drive::DriveIntegrationService(
         profile, nullptr, fake_drive_service_, std::string(), root_path(),
-        nullptr);
+        nullptr, CreateDriveFsConnectionDelegate());
 
     return integration_service_;
   }
 
  private:
+  virtual base::RepeatingCallback<
+      std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>
+  CreateDriveFsConnectionDelegate() {
+    return {};
+  }
+
   // Profile associated with this volume: not owned.
   Profile* profile_ = nullptr;
   // Fake drive service used for testing: not owned.
@@ -661,6 +674,105 @@ class DriveTestVolume : public TestVolume {
   drive::DriveIntegrationService* integration_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DriveTestVolume);
+};
+
+// DriveFsTestVolume: test volume for Google Drive using DriveFS.
+class DriveFsTestVolume : public DriveTestVolume {
+ public:
+  explicit DriveFsTestVolume(Profile* profile) : profile_(profile) {}
+  ~DriveFsTestVolume() override = default;
+
+  void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) override {
+    const base::FilePath target_path = GetTargetPathForTestEntry(entry);
+
+    entries_.insert(std::make_pair(target_path, entry));
+    switch (entry.type) {
+      case AddEntriesMessage::FILE: {
+        fake_drivefs_->SetMetadata(
+            target_path, entry.mime_type,
+            base::FilePath(entry.target_path).BaseName().value());
+
+        if (entry.source_file_name.empty()) {
+          ASSERT_EQ(0, base::WriteFile(target_path, "", 0));
+          break;
+        }
+        const base::FilePath source_path =
+            TestVolume::GetTestDataFilePath(entry.source_file_name);
+        ASSERT_TRUE(base::CopyFile(source_path, target_path))
+            << "Copy from " << source_path.value() << " to "
+            << target_path.value() << " failed.";
+        break;
+      }
+      case AddEntriesMessage::DIRECTORY:
+        ASSERT_TRUE(base::CreateDirectory(target_path))
+            << "Failed to create a directory: " << target_path.value();
+        break;
+    }
+
+    ASSERT_TRUE(UpdateModifiedTime(entry));
+  }
+
+ private:
+  base::RepeatingCallback<
+      std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>()>
+  CreateDriveFsConnectionDelegate() override {
+    CHECK(base::CreateDirectory(GetDriveRoot()));
+    InitializeFakeDriveFs();
+    return base::BindRepeating(&drivefs::FakeDriveFs::CreateConnectionDelegate,
+                               base::Unretained(fake_drivefs_.get()));
+  }
+
+  void InitializeFakeDriveFs() {
+    fake_drivefs_ = std::make_unique<drivefs::FakeDriveFs>(root_path());
+    fake_drivefs_->RegisterMountingForAccountId(base::BindRepeating(
+        [](Profile* profile) {
+          auto* user =
+              chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+          if (!user)
+            return AccountId();
+
+          return user->GetAccountId();
+        },
+        profile_));
+  }
+
+  // Updates ModifiedTime of the entry and its parents by referring
+  // TestEntryInfo. Returns true on success.
+  bool UpdateModifiedTime(const AddEntriesMessage::TestEntryInfo& entry) {
+    const auto path = GetTargetPathForTestEntry(entry);
+    if (!base::TouchFile(path, entry.last_modified_time,
+                         entry.last_modified_time)) {
+      return false;
+    }
+
+    // Update the modified time of parent directories because it may be also
+    // affected by the update of child items.
+    if (path.DirName() != GetDriveRoot()) {
+      const auto it = entries_.find(path.DirName());
+      if (it == entries_.end())
+        return false;
+      return UpdateModifiedTime(it->second);
+    }
+
+    return true;
+  }
+
+  base::FilePath GetTargetPathForTestEntry(
+      const AddEntriesMessage::TestEntryInfo& entry) {
+    const base::FilePath target_path =
+        GetDriveRoot().AppendASCII(entry.target_path);
+    if (entry.name_text != entry.target_path)
+      return target_path.DirName().Append(entry.name_text);
+    return target_path;
+  }
+
+  base::FilePath GetDriveRoot() { return root_path().Append("root"); }
+
+  Profile* const profile_;
+  std::map<base::FilePath, const AddEntriesMessage::TestEntryInfo> entries_;
+  std::unique_ptr<drivefs::FakeDriveFs> fake_drivefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(DriveFsTestVolume);
 };
 
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
@@ -696,6 +808,32 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 }
 
+bool FileManagerBrowserTestBase::SetUpUserDataDirectory() {
+  if (IsGuestModeTest())
+    return true;
+
+  auto known_users_list = std::make_unique<base::ListValue>();
+  auto user_dict = std::make_unique<base::DictionaryValue>();
+  user_dict->SetString("account_type", "google");
+  user_dict->SetString("email", "testuser@gmail.com");
+  user_dict->SetString("gaia_id", "123456");
+  known_users_list->Append(std::move(user_dict));
+
+  base::DictionaryValue local_state;
+  local_state.SetList("KnownUsers", std::move(known_users_list));
+
+  std::string local_state_json;
+  if (!base::JSONWriter::Write(local_state, &local_state_json))
+    return false;
+
+  base::FilePath local_state_file;
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &local_state_file))
+    return false;
+  local_state_file = local_state_file.Append(chrome::kLocalStateFilename);
+  return base::WriteFile(local_state_file, local_state_json.data(),
+                         local_state_json.size()) != -1;
+}
+
 void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
@@ -722,7 +860,7 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     CHECK(embedded_test_server()->Start());
     const GURL share_url_base(embedded_test_server()->GetURL(
         "/chromeos/file_manager/share_dialog_mock/index.html"));
-    drive_volume_ = std::move(drive_volumes_[profile()->GetOriginalProfile()]);
+    drive_volume_ = drive_volumes_[profile()->GetOriginalProfile()].get();
     drive_volume_->ConfigureShareUrlBase(share_url_base);
     test_util::WaitUntilDriveMountPointIsAdded(profile());
   }
@@ -828,13 +966,21 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "getRootPaths") {
     // Obtain the root paths.
     const auto downloads_root = util::GetDownloadsMountPointName(profile());
-    const auto drive = drive::util::GetDriveMountPointPath(profile());
 
     base::DictionaryValue dictionary;
-    auto drive_root = drive.BaseName().AsUTF8Unsafe().append("/root");
-    dictionary.SetString("drive", "/" + drive_root);
     dictionary.SetString("downloads", "/" + downloads_root);
 
+    if (!profile()->IsGuestSession()) {
+      auto* drive_integration_service =
+          drive::DriveIntegrationServiceFactory::GetForProfile(profile());
+      if (drive_integration_service->IsMounted()) {
+        const auto drive_mount_name =
+            base::FilePath(drive_integration_service->GetMountPointPath())
+                .BaseName();
+        dictionary.SetString(
+            "drive", base::StrCat({"/", drive_mount_name.value(), "/root"}));
+      }
+    }
     base::JSONWriter::Write(dictionary, output);
     return;
   }
@@ -954,8 +1100,13 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
 drive::DriveIntegrationService*
 FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
-  drive_volumes_[profile->GetOriginalProfile()] =
-      std::make_unique<DriveTestVolume>();
+  if (base::FeatureList::IsEnabled(drive::kDriveFs)) {
+    drive_volumes_[profile->GetOriginalProfile()] =
+        std::make_unique<DriveFsTestVolume>(profile->GetOriginalProfile());
+  } else {
+    drive_volumes_[profile->GetOriginalProfile()] =
+        std::make_unique<DriveTestVolume>();
+  }
   return drive_volumes_[profile->GetOriginalProfile()]
       ->CreateDriveIntegrationService(profile);
 }
