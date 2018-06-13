@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/cast_back_gesture_dispatcher.h"
+#include "chromecast/browser/cast_gesture_dispatcher.h"
 
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
@@ -30,9 +30,9 @@ class MockCastContentWindowDelegate : public CastContentWindow::Delegate {
 
 // Verify the simple case of a left swipe with the right horizontal leads to
 // back.
-TEST(CastBackGestureDispatcherTest, VerifySimpleDispatchSuccess) {
+TEST(CastGestureDispatcherTest, VerifySimpleDispatchSuccess) {
   MockCastContentWindowDelegate delegate;
-  CastBackGestureDispatcher dispatcher(&delegate);
+  CastGestureDispatcher dispatcher(&delegate);
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillOnce(Return(true));
   EXPECT_CALL(delegate, ConsumeGesture(Eq(GestureType::GO_BACK)))
@@ -45,9 +45,9 @@ TEST(CastBackGestureDispatcherTest, VerifySimpleDispatchSuccess) {
 
 // Verify that multiple 'continue' events still only lead to one back
 // invocation.
-TEST(CastBackGestureDispatcherTest, VerifyOnlySingleDispatch) {
+TEST(CastGestureDispatcherTest, VerifyOnlySingleDispatch) {
   MockCastContentWindowDelegate delegate;
-  CastBackGestureDispatcher dispatcher(&delegate);
+  CastGestureDispatcher dispatcher(&delegate);
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillOnce(Return(true));
   EXPECT_CALL(delegate, ConsumeGesture(Eq(GestureType::GO_BACK)))
@@ -64,9 +64,9 @@ TEST(CastBackGestureDispatcherTest, VerifyOnlySingleDispatch) {
 
 // Verify that if the delegate says it doesn't handle back that we won't try to
 // ask them to consume it.
-TEST(CastBackGestureDispatcherTest, VerifyDelegateDoesNotConsumeUnwanted) {
+TEST(CastGestureDispatcherTest, VerifyDelegateDoesNotConsumeUnwanted) {
   MockCastContentWindowDelegate delegate;
-  CastBackGestureDispatcher dispatcher(&delegate);
+  CastGestureDispatcher dispatcher(&delegate);
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillOnce(Return(false));
   dispatcher.CanHandleSwipe(CastSideSwipeOrigin::LEFT);
@@ -76,9 +76,9 @@ TEST(CastBackGestureDispatcherTest, VerifyDelegateDoesNotConsumeUnwanted) {
 }
 
 // Verify that a not-left gesture doesn't lead to a swipe.
-TEST(CastBackGestureDispatcherTest, VerifyNotLeftSwipeIsNotBack) {
+TEST(CastGestureDispatcherTest, VerifyNotLeftSwipeIsNotBack) {
   MockCastContentWindowDelegate delegate;
-  CastBackGestureDispatcher dispatcher(&delegate);
+  CastGestureDispatcher dispatcher(&delegate);
   dispatcher.CanHandleSwipe(CastSideSwipeOrigin::TOP);
   dispatcher.HandleSideSwipeBegin(CastSideSwipeOrigin::TOP, gfx::Point(0, 5));
   dispatcher.HandleSideSwipeContinue(CastSideSwipeOrigin::TOP,
@@ -87,9 +87,9 @@ TEST(CastBackGestureDispatcherTest, VerifyNotLeftSwipeIsNotBack) {
 
 // Verify that if the gesture doesn't go far enough horizontally that we will
 // not consider it a swipe.
-TEST(CastBackGestureDispatcherTest, VerifyNotFarEnoughRightIsNotBack) {
+TEST(CastGestureDispatcherTest, VerifyNotFarEnoughRightIsNotBack) {
   MockCastContentWindowDelegate delegate;
-  CastBackGestureDispatcher dispatcher(&delegate);
+  CastGestureDispatcher dispatcher(&delegate);
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillOnce(Return(true));
   dispatcher.CanHandleSwipe(CastSideSwipeOrigin::LEFT);
@@ -100,9 +100,9 @@ TEST(CastBackGestureDispatcherTest, VerifyNotFarEnoughRightIsNotBack) {
 
 // Verify that if the gesture ends before going far enough, that's also not a
 // swipe.
-TEST(CastBackGestureDispatcherTest, VerifyNotFarEnoughRightAndEndIsNotBack) {
+TEST(CastGestureDispatcherTest, VerifyNotFarEnoughRightAndEndIsNotBack) {
   MockCastContentWindowDelegate delegate;
-  CastBackGestureDispatcher dispatcher(&delegate);
+  CastGestureDispatcher dispatcher(&delegate);
   EXPECT_CALL(delegate, CanHandleGesture(Eq(GestureType::GO_BACK)))
       .WillOnce(Return(true));
   dispatcher.CanHandleSwipe(CastSideSwipeOrigin::LEFT);

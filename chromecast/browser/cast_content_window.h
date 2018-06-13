@@ -64,7 +64,7 @@ enum class VisibilityPriority {
   HIDDEN = 5,
 };
 
-enum class GestureType { NO_GESTURE = 0, GO_BACK = 1 };
+enum class GestureType { NO_GESTURE = 0, GO_BACK = 1, TAP = 2 };
 
 // Class that represents the "window" a WebContents is displayed in cast_shell.
 // For Linux, this represents an Aura window. For Android, this is a Activity.

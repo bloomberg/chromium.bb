@@ -48,8 +48,7 @@ class TestEventGeneratorDelegate
   DISALLOW_COPY_AND_ASSIGN(TestEventGeneratorDelegate);
 };
 
-class TestSideSwipeGestureHandler
-    : public CastSideSwipeGestureHandlerInterface {
+class TestSideSwipeGestureHandler : public CastGestureHandler {
  public:
   TestSideSwipeGestureHandler()
       : begin_swipe_point_(kZeroPoint), end_swipe_point_(kZeroPoint) {}
@@ -122,14 +121,13 @@ class CastSystemGestureEventHandlerTest : public aura::test::AuraTestBase {
     gesture_event_handler_ =
         std::make_unique<CastSystemGestureEventHandler>(root_window());
     gesture_handler_ = std::make_unique<TestSideSwipeGestureHandler>();
-    gesture_event_handler_->AddSideSwipeGestureHandler(gesture_handler_.get());
+    gesture_event_handler_->AddGestureHandler(gesture_handler_.get());
     test_event_handler_ = std::make_unique<TestEventHandler>();
     root_window()->AddPostTargetHandler(test_event_handler_.get());
   }
 
   void TearDown() override {
-    gesture_event_handler_->RemoveSideSwipeGestureHandler(
-        gesture_handler_.get());
+    gesture_event_handler_->RemoveGestureHandler(gesture_handler_.get());
     gesture_event_handler_.reset();
     gesture_handler_.reset();
 

@@ -8,8 +8,8 @@ import("//testing/test.gni")
 
 cast_source_set("graphics") {
   sources = [
-    "cast_side_swipe_gesture_handler.cc",
-    "cast_side_swipe_gesture_handler.h",
+    "cast_gesture_handler.cc",
+    "cast_gesture_handler.h",
     "cast_window_manager.h",
   ]
 

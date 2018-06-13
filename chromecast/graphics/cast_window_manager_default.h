@@ -24,11 +24,9 @@ class CastWindowManagerDefault : public CastWindowManager {
   gfx::NativeView GetRootWindow() override;
   void InjectEvent(ui::Event* event) override;
 
-  void AddSideSwipeGestureHandler(
-      CastSideSwipeGestureHandlerInterface* handler) override;
+  void AddGestureHandler(CastGestureHandler* handler) override;
 
-  void RemoveSideSwipeGestureHandler(
-      CastSideSwipeGestureHandlerInterface* handler) override;
+  void RemoveGestureHandler(CastGestureHandler* handler) override;
 
   void SetColorInversion(bool enable) override;
 
