@@ -351,6 +351,14 @@ source_set("base") {
     ]
   }
 
+  # Note: should also work on is_posix || is_fuchsia
+  if (is_linux) {
+    sources += [
+      "scopedfd_helper.cc",
+      "scopedfd_helper.h",
+    ]
+  }
+
   if (is_win) {
     deps += [ "//media/base/win" ]
   }

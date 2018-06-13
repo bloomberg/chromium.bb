@@ -699,17 +699,32 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   qbuf.memory = input_memory_type_;
   qbuf.m.planes = qbuf_planes;
   qbuf.length = input_planes_count_;
+
+  std::vector<int> fds;
+  if (input_memory_type_ == V4L2_MEMORY_DMABUF) {
+    fds = input_record.frame->DmabufFds();
+    if (fds.size() != input_planes_count_) {
+      VLOGF(1) << "Invalid number of planes in the frame";
+      return false;
+    }
+  }
   for (size_t i = 0; i < input_planes_count_; ++i) {
     qbuf.m.planes[i].bytesused =
         VideoFrame::PlaneSize(input_record.frame->format(), i,
                               input_allocated_size_)
             .GetArea();
     qbuf.m.planes[i].length = qbuf.m.planes[i].bytesused;
-    if (input_memory_type_ == V4L2_MEMORY_USERPTR) {
-      qbuf.m.planes[i].m.userptr =
-          reinterpret_cast<unsigned long>(input_record.frame->data(i));
-    } else {
-      qbuf.m.planes[i].m.fd = input_record.frame->DmabufFd(i);
+    switch (input_memory_type_) {
+      case V4L2_MEMORY_USERPTR:
+        qbuf.m.planes[i].m.userptr =
+            reinterpret_cast<unsigned long>(input_record.frame->data(i));
+        break;
+      case V4L2_MEMORY_DMABUF:
+        qbuf.m.planes[i].m.fd = fds[i];
+        break;
+      default:
+        NOTREACHED();
+        return false;
     }
   }
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
