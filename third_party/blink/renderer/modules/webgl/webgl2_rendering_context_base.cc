@@ -3412,9 +3412,8 @@ void WebGL2RenderingContextBase::drawArraysInstanced(GLenum mode,
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
                                                    drawing_buffer_.get());
-  ClearIfComposited();
+  OnBeforeDrawCall();
   ContextGL()->DrawArraysInstancedANGLE(mode, first, count, instance_count);
-  MarkContextChanged(kCanvasChanged);
 }
 
 void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode,
@@ -3433,11 +3432,10 @@ void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode,
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
                                                    drawing_buffer_.get());
-  ClearIfComposited();
+  OnBeforeDrawCall();
   ContextGL()->DrawElementsInstancedANGLE(
       mode, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)),
       instance_count);
-  MarkContextChanged(kCanvasChanged);
 }
 
 void WebGL2RenderingContextBase::drawRangeElements(GLenum mode,
@@ -3457,11 +3455,10 @@ void WebGL2RenderingContextBase::drawRangeElements(GLenum mode,
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
                                                    drawing_buffer_.get());
-  ClearIfComposited();
+  OnBeforeDrawCall();
   ContextGL()->DrawRangeElements(
       mode, start, end, count, type,
       reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
-  MarkContextChanged(kCanvasChanged);
 }
 
 void WebGL2RenderingContextBase::drawBuffers(const Vector<GLenum>& buffers) {
@@ -4199,6 +4196,15 @@ WebGLSync* WebGL2RenderingContextBase::fenceSync(GLenum condition,
   if (isContextLost())
     return nullptr;
 
+  if (condition != GL_SYNC_GPU_COMMANDS_COMPLETE) {
+    SynthesizeGLError(GL_INVALID_ENUM, "fenceSync",
+                      "condition must be SYNC_GPU_COMMANDS_COMPLETE");
+    return nullptr;
+  }
+  if (flags != 0) {
+    SynthesizeGLError(GL_INVALID_VALUE, "fenceSync", "flags must be zero");
+    return nullptr;
+  }
   return WebGLFenceSync::Create(this, condition, flags);
 }
 
@@ -4206,7 +4212,7 @@ GLboolean WebGL2RenderingContextBase::isSync(WebGLSync* sync) {
   if (isContextLost() || !sync)
     return 0;
 
-  return ContextGL()->IsSync(sync->Object());
+  return sync->Object() != 0;
 }
 
 void WebGL2RenderingContextBase::deleteSync(WebGLSync* sync) {
@@ -4542,6 +4548,22 @@ bool WebGL2RenderingContextBase::ValidateTransformFeedbackPrimitiveMode(
                         "invalid transform feedback primitive mode");
       return false;
   }
+}
+
+void WebGL2RenderingContextBase::OnBeforeDrawCall() {
+  if (transform_feedback_binding_->active() &&
+      !transform_feedback_binding_->paused()) {
+    for (WebGLBuffer* buffer :
+         transform_feedback_binding_
+             ->bound_indexed_transform_feedback_buffers()) {
+      if (buffer) {
+        ContextGL()->InvalidateReadbackBufferShadowDataCHROMIUM(
+            buffer->Object());
+      }
+    }
+  }
+
+  WebGLRenderingContextBase::OnBeforeDrawCall();
 }
 
 void WebGL2RenderingContextBase::bindBufferBase(GLenum target,

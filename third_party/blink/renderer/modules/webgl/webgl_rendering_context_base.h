@@ -1473,6 +1473,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                             GLenum type,
                             long long offset);
 
+  // State updates and operations necessary before or at draw call time.
+  virtual void OnBeforeDrawCall();
+
   // Helper functions to bufferData() and bufferSubData().
   void BufferDataImpl(GLenum target,
                       long long size,
