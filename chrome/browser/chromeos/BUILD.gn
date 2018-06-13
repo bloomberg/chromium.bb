@@ -1620,6 +1620,8 @@ source_set("chromeos") {
     "smb_client/smb_service_factory.h",
     "smb_client/smb_service_helper.cc",
     "smb_client/smb_service_helper.h",
+    "smb_client/smb_share_finder.cc",
+    "smb_client/smb_share_finder.h",
     "smb_client/smb_task_queue.cc",
     "smb_client/smb_task_queue.h",
     "smb_client/smb_url.cc",
