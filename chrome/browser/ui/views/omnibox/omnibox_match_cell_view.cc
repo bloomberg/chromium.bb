@@ -30,11 +30,11 @@
 namespace {
 
 // The left-hand margin used for rows with the refresh UI.
-static constexpr int kRefreshMarginLeft = 12;
+static constexpr int kRefreshMarginLeft = 4;
 
 // In the MD refresh or rich suggestions, x-offset of the content and
 // description text.
-static constexpr int kTextIndent = 40;
+static constexpr int kTextIndent = 48;
 
 // TODO(dschuyler): Perhaps this should be based on the font size
 // instead of hardcoded to 2 dp (e.g. by adding a space in an
@@ -42,9 +42,15 @@ static constexpr int kTextIndent = 40;
 // the additional padding here to zero).
 static constexpr int kAnswerIconToTextPadding = 2;
 
-// The edge length of the rich suggestions images.
-static constexpr int kRichImageSize = 24;
-static constexpr int kRichImageCornerRadius = 4;
+// The edge length of the refresh layout image area.
+static constexpr int kRefreshImageBoxSize = 40;
+
+// The diameter of the new answer layout images.
+static constexpr int kNewAnswerImageSize = 24;
+
+// The edge length of the entity suggestions images.
+static constexpr int kEntityImageSize = 32;
+static constexpr int kEntityImageCornerRadius = 4;
 
 // The minimum vertical margin that should be used above and below each
 // suggestion.
@@ -52,7 +58,6 @@ static constexpr int kMinVerticalMargin = 1;
 
 // The margin height of a split row when MD refresh is enabled.
 static constexpr int kRefreshSplitMarginHeight = 8;
-static constexpr int kRefreshSplitAdditionalMargin = 4;
 
 // The margin height of a rich suggestion row.
 static constexpr int kRichSuggestionMarginHeight = 4;
@@ -169,8 +174,8 @@ void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
   flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
   flags.setColor(color_);
   canvas->sk_canvas()->drawRoundRect(gfx::RectToSkRect(gfx::Rect(size_)),
-                                     kRichImageCornerRadius,
-                                     kRichImageCornerRadius, flags);
+                                     kEntityImageCornerRadius,
+                                     kEntityImageCornerRadius, flags);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -191,8 +196,8 @@ class OmniboxImageView : public views::ImageView {
 
 void OmniboxImageView::OnPaint(gfx::Canvas* canvas) {
   gfx::Path mask;
-  mask.addRoundRect(gfx::RectToSkRect(GetImageBounds()), kRichImageCornerRadius,
-                    kRichImageCornerRadius);
+  mask.addRoundRect(gfx::RectToSkRect(GetImageBounds()),
+                    kEntityImageCornerRadius, kEntityImageCornerRadius);
   canvas->ClipPath(mask, true);
   ImageView::OnPaint(canvas);
 }
@@ -211,6 +216,13 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view)
   AddChildView(content_view_ = new OmniboxTextView(result_view));
   AddChildView(description_view_ = new OmniboxTextView(result_view));
   AddChildView(separator_view_ = new OmniboxTextView(result_view));
+
+  if (ui::MaterialDesignController::IsRefreshUi()) {
+    icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
+    icon_view_->SetVerticalAlignment(views::ImageView::CENTER);
+  }
+  image_view_->SetHorizontalAlignment(views::ImageView::CENTER);
+  image_view_->SetVerticalAlignment(views::ImageView::CENTER);
 
   const base::string16& separator =
       l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
@@ -281,7 +293,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     image_view_->SetImage(gfx::ImageSkia());
     image_view_->SetSize(gfx::Size());
   } else {
-    // Set up the larger image.
+    // Determine if we have a local icon (or else it will be downloaded).
     const gfx::VectorIcon* vector_icon = nullptr;
     if (match.answer) {
       switch (match.answer->type()) {
@@ -306,16 +318,21 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
         default:
           break;
       }
-    }
-    if (vector_icon) {
-      image_view_->SetImage(gfx::CreateVectorIcon(*vector_icon, kRichImageSize,
-                                                  gfx::kGoogleBlue600));
+      if (vector_icon) {
+        image_view_->SetImage(gfx::CreateVectorIcon(
+            *vector_icon, kNewAnswerImageSize, gfx::kGoogleBlue600));
+      }
+      // Always set the image size so that downloaded images get the correct
+      // size (such as Weather answers).
+      image_view_->SetImageSize(
+          gfx::Size(kNewAnswerImageSize, kNewAnswerImageSize));
     } else {
       SkColor color = result_view->GetColor(OmniboxPart::RESULTS_BACKGROUND);
       extensions::image_util::ParseHexColorString(match.image_dominant_color,
                                                   &color);
       color = SkColorSetA(color, 0x40);  // 25% transparency (arbitrary).
-      const gfx::Size size = gfx::Size(kRichImageSize, kRichImageSize);
+      const gfx::Size size = gfx::Size(kEntityImageSize, kEntityImageSize);
+      image_view_->SetImageSize(size);
       image_view_->SetImage(
           gfx::CanvasImageSource::MakeImageSkia<PlaceholderImageSource>(size,
                                                                         color));
@@ -348,6 +365,8 @@ void OmniboxMatchCellView::Layout() {
 }
 
 void OmniboxMatchCellView::LayoutOldStyleAnswer() {
+  // TODO(dschuyler): Remove this layout once rich layouts are enabled by
+  // default.
   gfx::Rect child_area = GetContentsBounds();
   const int text_height = content_view_->GetLineHeight();
   int x = child_area.x();
@@ -375,12 +394,9 @@ void OmniboxMatchCellView::LayoutRichSuggestion() {
   gfx::Rect child_area = GetContentsBounds();
   int x = child_area.x();
   int y = child_area.y();
-  int row_height = child_area.height();
+  image_view_->SetBounds(x, y, kRefreshImageBoxSize, child_area.height());
+  const int text_width = child_area.width() - kTextIndent;
   const int text_height = content_view_->GetLineHeight();
-  image_view_->SetImageSize(gfx::Size(kRichImageSize, kRichImageSize));
-  image_view_->SetBounds(x, y + (row_height - kRichImageSize) / 2,
-                         kRichImageSize, kRichImageSize);
-  int text_width = child_area.width() - kTextIndent;
   content_view_->SetBounds(x + kTextIndent, y, text_width, text_height);
   description_view_->SetBounds(
       x + kTextIndent, y + text_height, text_width,
@@ -389,15 +405,16 @@ void OmniboxMatchCellView::LayoutRichSuggestion() {
 
 void OmniboxMatchCellView::LayoutSplit(int text_indent) {
   gfx::Rect child_area = GetContentsBounds();
-  icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   int row_height = child_area.height();
-  int icon_x = child_area.x();
-  if (ui::MaterialDesignController::IsRefreshUi()) {
-    icon_x += kRefreshSplitAdditionalMargin;
-  }
   int y = child_area.y();
-  icon_view_->SetPosition(
-      gfx::Point(icon_x, y + (row_height - icon_view_->height()) / 2));
+  if (ui::MaterialDesignController::IsRefreshUi()) {
+    icon_view_->SetBounds(child_area.x(), y, kRefreshImageBoxSize, row_height);
+  } else {
+    int icon_x = child_area.x();
+    icon_view_->SetSize(icon_view_->CalculatePreferredSize());
+    icon_view_->SetPosition(
+        gfx::Point(icon_x, y + (row_height - icon_view_->height()) / 2));
+  }
   int content_width = content_view_->CalculatePreferredSize().width();
   int description_width = description_view_->CalculatePreferredSize().width();
   gfx::Size separator_size = separator_view_->CalculatePreferredSize();
