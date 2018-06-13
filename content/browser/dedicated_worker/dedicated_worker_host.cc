@@ -69,9 +69,17 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
 
   void CreateWebSocket(network::mojom::WebSocketRequest request) {
     network::mojom::AuthenticationHandlerPtr auth_handler;
-    GetContentClient()->browser()->WillCreateWebSocket(
-        RenderFrameHost::FromID(process_id_, parent_render_frame_id_), &request,
-        &auth_handler);
+    auto* frame = RenderFrameHost::FromID(process_id_, parent_render_frame_id_);
+    if (!frame) {
+      // In some cases |frame| can be null. In such cases the worker will
+      // soon be terminated too, so let's abort the connection.
+      request.ResetWithReason(network::mojom::WebSocket::kInsufficientResources,
+                              "The parent frame has already been gone.");
+      return;
+    }
+
+    GetContentClient()->browser()->WillCreateWebSocket(frame, &request,
+                                                       &auth_handler);
 
     WebSocketManager::CreateWebSocket(process_id_, parent_render_frame_id_,
                                       origin_, std::move(auth_handler),
