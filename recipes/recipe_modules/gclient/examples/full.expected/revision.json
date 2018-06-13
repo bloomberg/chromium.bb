@@ -8,8 +8,10 @@
       "--spec",
       "cache_dir = '[ROOT]/git_cache'\nsolutions = [{'custom_vars': {'string_var': 'string_val', 'true_var': True}, 'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]"
     ],
-    "env": {
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_PACKAGE_REPO[depot_tools]"
+      ]
     },
     "infra_step": true,
     "name": "gclient setup"
@@ -35,8 +37,10 @@
       "--output-json",
       "/path/to/tmp/json"
     ],
-    "env": {
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_PACKAGE_REPO[depot_tools]"
+      ]
     },
     "infra_step": true,
     "name": "gclient sync",
@@ -62,8 +66,10 @@
       "user.name",
       "local_bot"
     ],
-    "env": {
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_PACKAGE_REPO[depot_tools]"
+      ]
     },
     "infra_step": true,
     "name": "gclient recurse (git config user.name)"
@@ -79,8 +85,10 @@
       "user.email",
       "local_bot@example.com"
     ],
-    "env": {
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_PACKAGE_REPO[depot_tools]"
+      ]
     },
     "infra_step": true,
     "name": "gclient recurse (git config user.email)"
@@ -95,8 +103,10 @@
       "cache_dir = '[CACHE]/git'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'Angle', 'url': 'https://chromium.googlesource.com/angle/angle.git'}]"
     ],
     "cwd": "[START_DIR]/src/third_party",
-    "env": {
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_PACKAGE_REPO[depot_tools]"
+      ]
     },
     "infra_step": true,
     "name": "[spec: Angle] gclient setup"
@@ -125,8 +135,10 @@
       "/path/to/tmp/json"
     ],
     "cwd": "[START_DIR]/src/third_party",
-    "env": {
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_PACKAGE_REPO[depot_tools]"
+      ]
     },
     "infra_step": true,
     "name": "[spec: Angle] gclient sync",
@@ -157,8 +169,10 @@
       "local_bot"
     ],
     "cwd": "[START_DIR]/src/third_party",
-    "env": {
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_PACKAGE_REPO[depot_tools]"
+      ]
     },
     "infra_step": true,
     "name": "[spec: Angle] gclient recurse (git config user.name)"
@@ -175,8 +189,10 @@
       "local_bot@example.com"
     ],
     "cwd": "[START_DIR]/src/third_party",
-    "env": {
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_PACKAGE_REPO[depot_tools]"
+      ]
     },
     "infra_step": true,
     "name": "[spec: Angle] gclient recurse (git config user.email)"
@@ -213,8 +229,10 @@
       "runhooks"
     ],
     "cwd": "[START_DIR]/src",
-    "env": {
-      "PATH": "<PATH>:RECIPE_PACKAGE_REPO[depot_tools]"
+    "env_suffixes": {
+      "PATH": [
+        "RECIPE_PACKAGE_REPO[depot_tools]"
+      ]
     },
     "name": "gclient runhooks"
   },

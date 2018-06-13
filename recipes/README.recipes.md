@@ -226,12 +226,12 @@ Returns (Path): The "depot_tools" root directory.
 
 Wrapper for easy calling of gclient steps.
 
-&mdash; **def [break\_locks](/recipes/recipe_modules/gclient/api.py#288)(self):**
+&mdash; **def [break\_locks](/recipes/recipe_modules/gclient/api.py#283)(self):**
 
 Remove all index.lock files. If a previous run of git crashed, bot was
 reset, etc... we might end up with leftover index.lock files.
 
-&mdash; **def [calculate\_patch\_root](/recipes/recipe_modules/gclient/api.py#310)(self, patch_project, gclient_config=None, patch_repo=None):**
+&mdash; **def [calculate\_patch\_root](/recipes/recipe_modules/gclient/api.py#305)(self, patch_project, gclient_config=None, patch_repo=None):**
 
 Returns path where a patch should be applied to based patch_project.
 
@@ -250,15 +250,15 @@ Returns:
   If patch_project is not given or not recognized, it'll be just first
   solution root.
 
-&mdash; **def [checkout](/recipes/recipe_modules/gclient/api.py#235)(self, gclient_config=None, revert=RevertOnTryserver, inject_parent_got_revision=True, extra_sync_flags=None, \*\*kwargs):**
+&mdash; **def [checkout](/recipes/recipe_modules/gclient/api.py#230)(self, gclient_config=None, revert=RevertOnTryserver, inject_parent_got_revision=True, extra_sync_flags=None, \*\*kwargs):**
 
 Return a step generator function for gclient checkouts.
 
-&emsp; **@staticmethod**<br>&mdash; **def [config\_to\_pythonish](/recipes/recipe_modules/gclient/api.py#125)(cfg):**
+&emsp; **@staticmethod**<br>&mdash; **def [config\_to\_pythonish](/recipes/recipe_modules/gclient/api.py#120)(cfg):**
 
-&mdash; **def [get\_config\_defaults](/recipes/recipe_modules/gclient/api.py#119)(self):**
+&mdash; **def [get\_config\_defaults](/recipes/recipe_modules/gclient/api.py#114)(self):**
 
-&emsp; **@staticmethod**<br>&mdash; **def [got\_revision\_reverse\_mapping](/recipes/recipe_modules/gclient/api.py#130)(cfg):**
+&emsp; **@staticmethod**<br>&mdash; **def [got\_revision\_reverse\_mapping](/recipes/recipe_modules/gclient/api.py#125)(cfg):**
 
 Returns the merged got_revision_reverse_mapping.
 
@@ -266,7 +266,7 @@ Returns (dict): A mapping from property name -> project name. It merges the
     values of the deprecated got_revision_mapping and the new
     got_revision_reverse_mapping.
 
-&mdash; **def [inject\_parent\_got\_revision](/recipes/recipe_modules/gclient/api.py#210)(self, gclient_config=None, override=False):**
+&mdash; **def [inject\_parent\_got\_revision](/recipes/recipe_modules/gclient/api.py#205)(self, gclient_config=None, override=False):**
 
 Match gclient config to build revisions obtained from build_properties.
 
@@ -276,7 +276,7 @@ Args:
   override (bool) - If True, will forcibly set revision and custom_vars
     even if the config already contains values for them.
 
-&emsp; **@property**<br>&mdash; **def [is\_blink\_mode](/recipes/recipe_modules/gclient/api.py#275)(self):**
+&emsp; **@property**<br>&mdash; **def [is\_blink\_mode](/recipes/recipe_modules/gclient/api.py#270)(self):**
 
 Indicates wether the caller is to use the Blink config rather than the
 Chromium config. This may happen for one of two reasons:
@@ -285,22 +285,22 @@ Chromium config. This may happen for one of two reasons:
 2. A try job comes in that applies to the Blink tree. (patch_project is
    blink)
 
-&mdash; **def [resolve\_revision](/recipes/recipe_modules/gclient/api.py#147)(self, revision):**
+&mdash; **def [resolve\_revision](/recipes/recipe_modules/gclient/api.py#142)(self, revision):**
 
-&mdash; **def [runhooks](/recipes/recipe_modules/gclient/api.py#269)(self, args=None, name='runhooks', \*\*kwargs):**
+&mdash; **def [runhooks](/recipes/recipe_modules/gclient/api.py#264)(self, args=None, name='runhooks', \*\*kwargs):**
 
-&mdash; **def [set\_patch\_project\_revision](/recipes/recipe_modules/gclient/api.py#342)(self, patch_project, gclient_config=None):**
+&mdash; **def [set\_patch\_project\_revision](/recipes/recipe_modules/gclient/api.py#337)(self, patch_project, gclient_config=None):**
 
 Updates config revision corresponding to patch_project.
 
 Useful for bot_update only, as this is the only consumer of gclient's config
 revision map. This doesn't overwrite the revision if it was already set.
 
-&emsp; **@spec_alias.deleter**<br>&mdash; **def [spec\_alias](/recipes/recipe_modules/gclient/api.py#115)(self):**
+&emsp; **@spec_alias.deleter**<br>&mdash; **def [spec\_alias](/recipes/recipe_modules/gclient/api.py#110)(self):**
 
-&mdash; **def [sync](/recipes/recipe_modules/gclient/api.py#152)(self, cfg, extra_sync_flags=None, \*\*kwargs):**
+&mdash; **def [sync](/recipes/recipe_modules/gclient/api.py#147)(self, cfg, extra_sync_flags=None, \*\*kwargs):**
 
-&emsp; **@use_mirror.setter**<br>&mdash; **def [use\_mirror](/recipes/recipe_modules/gclient/api.py#102)(self, val):**
+&emsp; **@use_mirror.setter**<br>&mdash; **def [use\_mirror](/recipes/recipe_modules/gclient/api.py#97)(self, val):**
 ### *recipe_modules* / [gerrit](/recipes/recipe_modules/gerrit)
 
 [DEPS](/recipes/recipe_modules/gerrit/__init__.py#1): [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/step][recipe_engine/recipe_modules/step]
