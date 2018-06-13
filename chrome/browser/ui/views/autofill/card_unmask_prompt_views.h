@@ -21,7 +21,6 @@ class WebContents;
 
 namespace views {
 class Checkbox;
-class ImageView;
 class Label;
 class Link;
 class Textfield;
@@ -103,8 +102,9 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
 
   views::Link* new_card_link_ = nullptr;
 
-  // The error icon and label for most errors, which live beneath the inputs.
-  views::ImageView* error_icon_ = nullptr;
+  // The error row view and label for most errors, which live beneath the
+  // inputs.
+  views::View* temporary_error_ = nullptr;
   views::Label* error_label_ = nullptr;
   // The error label for permanent errors (where the user can't retry).
   views::Label* permanent_error_label_ = nullptr;
