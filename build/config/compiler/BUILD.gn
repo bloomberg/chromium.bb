@@ -1445,7 +1445,11 @@ config("default_warnings") {
 
           # TODO(hans): https://crbug.com/681136
           "-Wno-unused-lambda-capture",
-
+        ]
+      }
+      if (current_toolchain == host_toolchain || !use_xcode_clang ||
+          xcode_version_int >= 1000) {
+        cflags += [
           # TODO(hans): https://crbug.com/766891
           "-Wno-null-pointer-arithmetic",
         ]
