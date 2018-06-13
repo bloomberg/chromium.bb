@@ -249,8 +249,6 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
           .GetImageNamed(CreditCard::IconResourceId(card.network()))
           .AsImageSkia());
   card_type_icon->SetTooltipText(card.NetworkForDisplay());
-  card_type_icon->SetBorder(
-      views::CreateSolidBorder(1, SkColorSetA(SK_ColorBLACK, 10)));
   description_view->AddChildView(card_type_icon);
 
   description_view->AddChildView(
