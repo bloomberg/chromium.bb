@@ -6,7 +6,7 @@
 
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_handle.h"
+#include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "net/http/http_util.h"
@@ -17,15 +17,15 @@ namespace content {
 namespace {
 
 // Returns an object info to send over Mojo. The info must be sent immediately.
-// See ServiceWorkerHandle::CreateCompleteObjectInfoToSend() for details.
+// See ServiceWorkerObjectHost::CreateCompleteObjectInfoToSend() for details.
 blink::mojom::ServiceWorkerObjectInfoPtr CreateCompleteObjectInfoToSend(
     ServiceWorkerProviderHost* provider_host,
     ServiceWorkerVersion* version) {
-  base::WeakPtr<ServiceWorkerHandle> service_worker_handle =
-      provider_host->GetOrCreateServiceWorkerHandle(version);
-  if (!service_worker_handle)
+  base::WeakPtr<ServiceWorkerObjectHost> service_worker_object_host =
+      provider_host->GetOrCreateServiceWorkerObjectHost(version);
+  if (!service_worker_object_host)
     return nullptr;
-  return service_worker_handle->CreateCompleteObjectInfoToSend();
+  return service_worker_object_host->CreateCompleteObjectInfoToSend();
 }
 
 }  // anonymous namespace

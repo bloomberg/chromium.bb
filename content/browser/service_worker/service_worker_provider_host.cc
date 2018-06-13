@@ -499,9 +499,10 @@ void ServiceWorkerProviderHost::RemoveServiceWorkerRegistrationObjectHost(
   registration_object_hosts_.erase(registration_id);
 }
 
-void ServiceWorkerProviderHost::RemoveServiceWorkerHandle(int64_t version_id) {
-  DCHECK(base::ContainsKey(handles_, version_id));
-  handles_.erase(version_id);
+void ServiceWorkerProviderHost::RemoveServiceWorkerObjectHost(
+    int64_t version_id) {
+  DCHECK(base::ContainsKey(service_worker_object_hosts_, version_id));
+  service_worker_object_hosts_.erase(version_id);
 }
 
 bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope) {
@@ -561,20 +562,21 @@ ServiceWorkerProviderHost::CreateRequestHandler(
   return std::unique_ptr<ServiceWorkerRequestHandler>();
 }
 
-base::WeakPtr<ServiceWorkerHandle>
-ServiceWorkerProviderHost::GetOrCreateServiceWorkerHandle(
+base::WeakPtr<ServiceWorkerObjectHost>
+ServiceWorkerProviderHost::GetOrCreateServiceWorkerObjectHost(
     scoped_refptr<ServiceWorkerVersion> version) {
   if (!context_ || !version)
     return nullptr;
 
   const int64_t version_id = version->version_id();
-  auto existing_handle = handles_.find(version_id);
-  if (existing_handle != handles_.end())
-    return existing_handle->second->AsWeakPtr();
+  auto existing_object_host = service_worker_object_hosts_.find(version_id);
+  if (existing_object_host != service_worker_object_hosts_.end())
+    return existing_object_host->second->AsWeakPtr();
 
-  handles_[version_id] =
-      std::make_unique<ServiceWorkerHandle>(context_, this, std::move(version));
-  return handles_[version_id]->AsWeakPtr();
+  service_worker_object_hosts_[version_id] =
+      std::make_unique<ServiceWorkerObjectHost>(context_, this,
+                                                std::move(version));
+  return service_worker_object_hosts_[version_id]->AsWeakPtr();
 }
 
 bool ServiceWorkerProviderHost::CanAssociateRegistration(
@@ -594,10 +596,10 @@ void ServiceWorkerProviderHost::PostMessageToClient(
   DCHECK(IsProviderForClient());
 
   blink::mojom::ServiceWorkerObjectInfoPtr info;
-  base::WeakPtr<ServiceWorkerHandle> handle =
-      GetOrCreateServiceWorkerHandle(version);
-  if (handle)
-    info = handle->CreateCompleteObjectInfoToSend();
+  base::WeakPtr<ServiceWorkerObjectHost> object_host =
+      GetOrCreateServiceWorkerObjectHost(version);
+  if (object_host)
+    info = object_host->CreateCompleteObjectInfoToSend();
   container_->PostMessageToClient(std::move(info), std::move(message));
 }
 
@@ -777,10 +779,11 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   DCHECK_EQ(associated_registration_->active_version(), controller_.get());
 
   // Set the info for the JavaScript ServiceWorkerContainer#controller object.
-  base::WeakPtr<ServiceWorkerHandle> handle =
-      GetOrCreateServiceWorkerHandle(controller_);
-  if (handle)
-    controller_info->object_info = handle->CreateCompleteObjectInfoToSend();
+  base::WeakPtr<ServiceWorkerObjectHost> object_host =
+      GetOrCreateServiceWorkerObjectHost(controller_);
+  if (object_host)
+    controller_info->object_info =
+        object_host->CreateCompleteObjectInfoToSend();
 
   // Populate used features for UseCounter purposes.
   std::vector<blink::mojom::WebFeature> used_features;

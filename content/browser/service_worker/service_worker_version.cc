@@ -418,7 +418,7 @@ void ServiceWorkerVersion::SetStatus(Status status) {
   }
 
   // OnVersionStateChanged() invokes updates of the status using state
-  // change IPC at ServiceWorkerHandle (for JS-land on renderer process) and
+  // change IPC at ServiceWorkerObjectHost (for JS-land on renderer process) and
   // ServiceWorkerContextCore (for devtools and serviceworker-internals).
   // This should be done before using the new status by
   // |status_change_callbacks_| which sends the IPC for resolving the .ready

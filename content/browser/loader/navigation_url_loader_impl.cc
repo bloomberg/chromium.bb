@@ -951,14 +951,14 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           subresource_loader_params_ = SubresourceLoaderParams();
           subresource_loader_params_->controller_service_worker_info =
               mojom::ControllerServiceWorkerInfo::New();
-          base::WeakPtr<ServiceWorkerHandle> sw_handle =
-              sw_provider_host->GetOrCreateServiceWorkerHandle(
+          base::WeakPtr<ServiceWorkerObjectHost> sw_object_host =
+              sw_provider_host->GetOrCreateServiceWorkerObjectHost(
                   sw_provider_host->controller());
-          if (sw_handle) {
-            subresource_loader_params_->controller_service_worker_handle =
-                sw_handle;
+          if (sw_object_host) {
+            subresource_loader_params_->controller_service_worker_object_host =
+                sw_object_host;
             subresource_loader_params_->controller_service_worker_info
-                ->object_info = sw_handle->CreateIncompleteObjectInfo();
+                ->object_info = sw_object_host->CreateIncompleteObjectInfo();
           }
         }
       } else {
