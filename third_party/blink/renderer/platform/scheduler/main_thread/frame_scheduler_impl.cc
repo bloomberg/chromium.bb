@@ -517,6 +517,9 @@ void FrameSchedulerImpl::AsValueInto(
                    frame_type_ == FrameScheduler::FrameType::kMainFrame
                        ? "MainFrame"
                        : "Subframe");
+  state->SetBoolean(
+      "disable_background_timer_throttling",
+      !RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled());
   if (loading_task_queue_) {
     state->SetString("loading_task_queue",
                      PointerToString(loading_task_queue_.get()));
@@ -650,6 +653,8 @@ FrameSchedulerImpl::OnActiveConnectionCreated() {
 }
 
 bool FrameSchedulerImpl::ShouldThrottleTimers() const {
+  if (!RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled())
+    return false;
   if (parent_page_scheduler_ && parent_page_scheduler_->IsAudioPlaying())
     return false;
   if (!parent_page_scheduler_->IsPageVisible())

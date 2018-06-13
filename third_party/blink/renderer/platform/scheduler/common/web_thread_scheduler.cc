@@ -142,10 +142,6 @@ bool WebThreadScheduler::IsHighPriorityWorkAnticipated() {
   return false;
 }
 
-void WebThreadScheduler::SetFreezingWhenBackgroundedEnabled(bool enabled) {
-  NOTREACHED();
-}
-
 void WebThreadScheduler::SetTopLevelBlameContext(
     base::trace_event::BlameContext* blame_context) {
   NOTREACHED();

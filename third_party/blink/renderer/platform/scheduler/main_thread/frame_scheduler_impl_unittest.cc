@@ -47,8 +47,7 @@ class FrameSchedulerImplTest : public testing::Test {
             nullptr, task_environment_.GetMainThreadTaskRunner(),
             task_environment_.GetMockTickClock()),
         base::nullopt));
-    page_scheduler_.reset(
-        new PageSchedulerImpl(nullptr, scheduler_.get(), false));
+    page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
     frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
         nullptr, FrameScheduler::FrameType::kSubframe);
   }

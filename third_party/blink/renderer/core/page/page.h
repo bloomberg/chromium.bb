@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/frame/settings_delegate.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
-#include "third_party/blink/renderer/core/page/page_lifecycle_state.h"
 #include "third_party/blink/renderer/core/page/page_visibility_notifier.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_state.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -264,7 +264,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   mojom::PageVisibilityState VisibilityState() const;
   bool IsPageVisible() const;
 
-  void SetLifecycleState(PageLifecycleState);
   PageLifecycleState LifecycleState() const;
 
   bool IsCursorVisible() const;
@@ -311,7 +310,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   // PageScheduler::Delegate implementation.
   void ReportIntervention(const String& message) override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
-  void SetPageFrozen(bool frozen) override;
+  void SetLifecycleState(PageLifecycleState) override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   int64_t GetUkmSourceId() override;
 
