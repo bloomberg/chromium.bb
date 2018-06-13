@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
@@ -58,6 +59,7 @@ class DiceResponseHandler : public KeyedService {
                       AccountTrackerService* account_tracker_service,
                       AccountReconcilor* account_reconcilor,
                       AboutSigninInternals* about_signin_internals,
+                      signin::AccountConsistencyMethod account_consistency,
                       const base::FilePath& profile_path_);
   ~DiceResponseHandler() override;
 
@@ -78,7 +80,8 @@ class DiceResponseHandler : public KeyedService {
                      SigninClient* signin_client,
                      AccountReconcilor* account_reconcilor,
                      std::unique_ptr<ProcessDiceHeaderDelegate> delegate,
-                     DiceResponseHandler* dice_response_handler);
+                     DiceResponseHandler* dice_response_handler,
+                     signin::AccountConsistencyMethod account_consistency);
     ~DiceTokenFetcher() override;
 
     const std::string& gaia_id() const { return gaia_id_; }
@@ -155,6 +158,7 @@ class DiceResponseHandler : public KeyedService {
   AccountTrackerService* account_tracker_service_;
   AccountReconcilor* account_reconcilor_;
   AboutSigninInternals* about_signin_internals_;
+  signin::AccountConsistencyMethod account_consistency_;
   base::FilePath profile_path_;
   std::vector<std::unique_ptr<DiceTokenFetcher>> token_fetchers_;
 

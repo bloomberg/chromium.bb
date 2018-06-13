@@ -27,7 +27,6 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/browser/test_signin_client.h"
@@ -156,11 +155,6 @@ class DiceResponseHandlerTest : public testing::Test,
         &token_service_, &signin_manager_, &signin_client_, nullptr,
         std::move(account_reconcilor_delegate));
     about_signin_internals_.Initialize(&signin_client_);
-    dice_response_handler_ = std::make_unique<DiceResponseHandler>(
-        &signin_client_, &signin_manager_, &token_service_,
-        &account_tracker_service_, account_reconcilor_.get(),
-        &about_signin_internals_, temp_dir_.GetPath());
-
     account_tracker_service_.Initialize(&signin_client_);
     account_reconcilor_->AddObserver(this);
   }
@@ -176,6 +170,15 @@ class DiceResponseHandlerTest : public testing::Test,
     token_service_.Shutdown();
     signin_client_.Shutdown();
     task_runner_->ClearPendingTasks();
+  }
+
+  void InitializeDiceResponseHandler(
+      signin::AccountConsistencyMethod account_consistency) {
+    DCHECK(!dice_response_handler_);
+    dice_response_handler_ = std::make_unique<DiceResponseHandler>(
+        &signin_client_, &signin_manager_, &token_service_,
+        &account_tracker_service_, account_reconcilor_.get(),
+        &about_signin_internals_, account_consistency, temp_dir_.GetPath());
   }
 
   DiceResponseParams MakeDiceParams(DiceAction action) {
@@ -264,7 +267,7 @@ class TestProcessDiceHeaderDelegate : public ProcessDiceHeaderDelegate {
 
 // Checks that a SIGNIN action triggers a token exchange request.
 TEST_F(DiceResponseHandlerTest, Signin) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
   std::string account_id = account_tracker_service_.PickAccountIdForAccount(
@@ -291,7 +294,7 @@ TEST_F(DiceResponseHandlerTest, Signin) {
 
 // Checks that a GaiaAuthFetcher failure is handled correctly.
 TEST_F(DiceResponseHandlerTest, SigninFailure) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
   std::string account_id = account_tracker_service_.PickAccountIdForAccount(
@@ -319,7 +322,7 @@ TEST_F(DiceResponseHandlerTest, SigninFailure) {
 // Checks that a second token for the same account is not requested when a
 // request is already in flight.
 TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
   std::string account_id = account_tracker_service_.PickAccountIdForAccount(
@@ -345,7 +348,7 @@ TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
 
 // Checks that two SIGNIN requests can happen concurrently.
 TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params_1 = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info_1 = dice_params_1.signin_info->account_info;
   DiceResponseParams dice_params_2 = MakeDiceParams(DiceAction::SIGNIN);
@@ -390,7 +393,7 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
 // Checks that a ENABLE_SYNC action received after the refresh token is added
 // to the token service, triggers a call to enable sync on the delegate.
 TEST_F(DiceResponseHandlerTest, SigninEnableSyncAfterRefreshTokenFetched) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
   std::string account_id = account_tracker_service_.PickAccountIdForAccount(
@@ -421,7 +424,7 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncAfterRefreshTokenFetched) {
 // to the token service, is schedules a call to enable sync on the delegate
 // once the refresh token is received.
 TEST_F(DiceResponseHandlerTest, SigninEnableSyncBeforeRefreshTokenFetched) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
   std::string account_id = account_tracker_service_.PickAccountIdForAccount(
@@ -450,7 +453,7 @@ TEST_F(DiceResponseHandlerTest, SigninEnableSyncBeforeRefreshTokenFetched) {
 }
 
 TEST_F(DiceResponseHandlerTest, Timeout) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
   std::string account_id = account_tracker_service_.PickAccountIdForAccount(
@@ -475,7 +478,7 @@ TEST_F(DiceResponseHandlerTest, Timeout) {
 }
 
 TEST_F(DiceResponseHandlerTest, SignoutMainAccount) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   const char kSecondaryGaiaID[] = "secondary_account";
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
   const auto& account_info = dice_params.signout_info->account_infos[0];
@@ -507,7 +510,8 @@ TEST_F(DiceResponseHandlerTest, SignoutMainAccount) {
 }
 
 TEST_F(DiceResponseHandlerTest, MigrationSignout) {
-  signin::ScopedAccountConsistencyDiceMigration scoped_dice_migration;
+  InitializeDiceResponseHandler(
+      signin::AccountConsistencyMethod::kDiceMigration);
   const char kSecondaryGaiaID[] = "secondary_account";
   const char kSecondaryEmail[] = "other@gmail.com";
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
@@ -544,7 +548,7 @@ TEST_F(DiceResponseHandlerTest, MigrationSignout) {
 }
 
 TEST_F(DiceResponseHandlerTest, SignoutSecondaryAccount) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   const char kMainGaiaID[] = "main_account";
   const char kMainEmail[] = "main@gmail.com";
   std::string main_account_id =
@@ -573,7 +577,7 @@ TEST_F(DiceResponseHandlerTest, SignoutSecondaryAccount) {
 }
 
 TEST_F(DiceResponseHandlerTest, SignoutWebOnly) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   const char kSecondaryAccountID[] = "secondary_account";
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
   const auto& account_info = dice_params.signout_info->account_infos[0];
@@ -597,7 +601,7 @@ TEST_F(DiceResponseHandlerTest, SignoutWebOnly) {
 
 // Checks that signin in progress is canceled by a signout.
 TEST_F(DiceResponseHandlerTest, SigninSignoutSameAccount) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
   const auto& account_info = dice_params.signout_info->account_infos[0];
   std::string account_id = account_tracker_service_.PickAccountIdForAccount(
@@ -629,7 +633,7 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutSameAccount) {
 // Checks that signin in progress is not canceled by a signout for a different
 // account.
 TEST_F(DiceResponseHandlerTest, SigninSignoutDifferentAccount) {
-  signin::ScopedAccountConsistencyDice scoped_dice;
+  InitializeDiceResponseHandler(signin::AccountConsistencyMethod::kDice);
   // User starts signin in the web with two accounts.
   DiceResponseParams signout_params_1 = MakeDiceParams(DiceAction::SIGNOUT);
   DiceResponseParams signin_params_1 = MakeDiceParams(DiceAction::SIGNIN);
@@ -675,7 +679,8 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutDifferentAccount) {
 
 // Checks that no auth error fix happens if the user is signed out.
 TEST_F(DiceResponseHandlerTest, FixAuthErrorSignedOut) {
-  signin::ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_auth_errors;
+  InitializeDiceResponseHandler(
+      signin::AccountConsistencyMethod::kDiceFixAuthErrors);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
   ASSERT_FALSE(token_service_.RefreshTokenIsAvailable(
@@ -690,7 +695,8 @@ TEST_F(DiceResponseHandlerTest, FixAuthErrorSignedOut) {
 // Checks that the token is not stored if the user signs out during the token
 // request.
 TEST_F(DiceResponseHandlerTest, FixAuthErrorSignOutDuringRequest) {
-  signin::ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_auth_errors;
+  InitializeDiceResponseHandler(
+      signin::AccountConsistencyMethod::kDiceFixAuthErrors);
   // User is signed in to Chrome.
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
@@ -717,7 +723,8 @@ TEST_F(DiceResponseHandlerTest, FixAuthErrorSignOutDuringRequest) {
 
 // Checks that the token is fixed if the Chrome account matches the web account.
 TEST_F(DiceResponseHandlerTest, FixAuthError) {
-  signin::ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_auth_errors;
+  InitializeDiceResponseHandler(
+      signin::AccountConsistencyMethod::kDiceFixAuthErrors);
   // User is signed in to Chrome.
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNIN);
   const auto& account_info = dice_params.signin_info->account_info;
@@ -755,7 +762,8 @@ TEST_F(DiceResponseHandlerTest, FixAuthError) {
 // Tests that the Dice Signout response is ignored when kDiceFixAuthErrors is
 // used.
 TEST_F(DiceResponseHandlerTest, FixAuthErroDoesNotSignout) {
-  signin::ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_auth_errors;
+  InitializeDiceResponseHandler(
+      signin::AccountConsistencyMethod::kDiceFixAuthErrors);
   DiceResponseParams dice_params = MakeDiceParams(DiceAction::SIGNOUT);
   const auto& account_info = dice_params.signout_info->account_infos[0];
   std::string account_id = account_tracker_service_.PickAccountIdForAccount(
