@@ -4,8 +4,8 @@
 
 #include <memory>
 
-#include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/model/app_list_view_state.h"
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"

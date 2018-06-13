@@ -5,7 +5,7 @@
 #include "ash/app_list/app_list_presenter_delegate_impl.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/app_list_presenter_impl.h"
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -52,7 +52,9 @@ bool IsSideShelf(aura::Window* root_window) {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterDelegateImpl, public:
 
-AppListPresenterDelegateImpl::AppListPresenterDelegateImpl() = default;
+AppListPresenterDelegateImpl::AppListPresenterDelegateImpl(
+    AppListControllerImpl* controller)
+    : controller_(controller) {}
 
 AppListPresenterDelegateImpl::~AppListPresenterDelegateImpl() {
   Shell::Get()->RemovePreTargetHandler(this);
@@ -77,9 +79,7 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
   app_list::AppListView::InitParams params;
   params.parent =
       RootWindowController::ForWindow(root_window)
-          ->GetContainer(Shell::Get()
-                                 ->app_list_controller()
-                                 ->IsHomeLauncherEnabledInTabletMode()
+          ->GetContainer(IsHomeLauncherEnabledInTabletMode()
                              ? kShellWindowId_AppListTabletModeContainer
                              : kShellWindowId_AppListContainer);
   params.initial_apps_page = current_apps_page;
@@ -103,12 +103,14 @@ void AppListPresenterDelegateImpl::Init(app_list::AppListView* view,
 
 void AppListPresenterDelegateImpl::OnShown(int64_t display_id) {
   is_visible_ = true;
+  controller_->ViewShown(display_id);
 }
 
 void AppListPresenterDelegateImpl::OnDismissed() {
   DCHECK(is_visible_);
   DCHECK(view_);
   is_visible_ = false;
+  controller_->ViewClosing();
 }
 
 gfx::Vector2d AppListPresenterDelegateImpl::GetVisibilityAnimationOffset(
@@ -135,6 +137,38 @@ base::TimeDelta AppListPresenterDelegateImpl::GetVisibilityAnimationDuration(
   }
   return GetAnimationDurationFullscreen(IsSideShelf(root_window),
                                         view_->is_fullscreen());
+}
+
+bool AppListPresenterDelegateImpl::IsHomeLauncherEnabledInTabletMode() {
+  return controller_->IsHomeLauncherEnabledInTabletMode();
+}
+
+app_list::AppListViewDelegate*
+AppListPresenterDelegateImpl::GetAppListViewDelegate() {
+  return controller_;
+}
+
+bool AppListPresenterDelegateImpl::GetOnScreenKeyboardShown() {
+  return controller_->onscreen_keyboard_shown();
+}
+
+aura::Window* AppListPresenterDelegateImpl::GetRootWindowForDisplayId(
+    int64_t display_id) {
+  return ash::Shell::Get()->GetRootWindowForDisplayId(display_id);
+}
+
+void AppListPresenterDelegateImpl::OnVisibilityChanged(
+    bool visible,
+    aura::Window* root_window) {
+  // Notify Chrome the visibility change.
+  controller_->OnVisibilityChanged(visible);
+  // Notify Ash the visibility change
+  ash::Shell::Get()->NotifyAppListVisibilityChanged(visible, root_window);
+}
+
+void AppListPresenterDelegateImpl::OnTargetVisibilityChanged(bool visible) {
+  // Notify Chrome the target visibility change.
+  controller_->OnTargetVisibilityChanged(visible);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -186,9 +220,7 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
   if (!window->Contains(target) && !presenter_->Back() &&
       !app_list::switches::ShouldNotDismissOnBlur() &&
-      !Shell::Get()
-           ->app_list_controller()
-           ->IsHomeLauncherEnabledInTabletMode()) {
+      !IsHomeLauncherEnabledInTabletMode()) {
     presenter_->Dismiss(event->time_stamp());
   }
 }

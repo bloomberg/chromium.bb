@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_presenter_impl.h"
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 
 #include <utility>
 
-#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/pagination_model.h"
@@ -16,8 +15,6 @@
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
-#include "ash/shell.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/client/focus_client.h"
@@ -71,19 +68,17 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
 }  // namespace
 
 AppListPresenterImpl::AppListPresenterImpl(
-    std::unique_ptr<AppListPresenterDelegate> delegate,
-    ash::AppListControllerImpl* controller)
-    : presenter_delegate_(std::move(delegate)),
-      controller_(controller),
+    std::unique_ptr<AppListPresenterDelegate> delegate)
+    : delegate_(std::move(delegate)),
       state_animation_metrics_reporter_(
           std::make_unique<StateAnimationMetricsReporter>()) {
-  DCHECK(presenter_delegate_);
-  presenter_delegate_->SetPresenter(this);
+  DCHECK(delegate_);
+  delegate_->SetPresenter(this);
 }
 
 AppListPresenterImpl::~AppListPresenterImpl() {
   Dismiss(base::TimeTicks());
-  presenter_delegate_.reset();
+  delegate_.reset();
   // Ensures app list view goes before the controller since pagination model
   // lives in the controller and app list view would access it on destruction.
   if (view_) {
@@ -103,7 +98,7 @@ void AppListPresenterImpl::Show(int64_t display_id,
     // Launcher is always visible on the internal display when home launcher is
     // enabled in tablet mode.
     if (display_id != GetDisplayId() &&
-        !controller_->IsHomeLauncherEnabledInTabletMode()) {
+        !delegate_->IsHomeLauncherEnabledInTabletMode()) {
       Dismiss(event_time_stamp);
     }
     return;
@@ -115,14 +110,13 @@ void AppListPresenterImpl::Show(int64_t display_id,
   if (view_) {
     ScheduleAnimation();
   } else {
-    // Note |controller_| outlives the AppListView. For Ash, the view
+    // Note |delegate_| outlives the AppListView. For Ash, the view
     // is destroyed when dismissed.
-    AppListView* view = new AppListView(controller_);
-    presenter_delegate_->Init(view, display_id, current_apps_page_);
+    AppListView* view = new AppListView(delegate_->GetAppListViewDelegate());
+    delegate_->Init(view, display_id, current_apps_page_);
     SetView(view);
   }
-  presenter_delegate_->OnShown(display_id);
-  controller_->ViewShown(display_id);
+  delegate_->OnShown(display_id);
   NotifyTargetVisibilityChanged(GetTargetVisibility());
   NotifyVisibilityChanged(GetTargetVisibility(), display_id);
 }
@@ -146,8 +140,7 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   if (view_->GetWidget()->IsActive())
     view_->GetWidget()->Deactivate();
 
-  controller_->ViewClosing();
-  presenter_delegate_->OnDismissed();
+  delegate_->OnDismissed();
   ScheduleAnimation();
   NotifyTargetVisibilityChanged(GetTargetVisibility());
   NotifyVisibilityChanged(GetTargetVisibility(), display_id);
@@ -224,7 +217,7 @@ void AppListPresenterImpl::SetView(AppListView* view) {
 
   // Sync the |onscreen_keyboard_shown_| in case |view_| is not initiated when
   // the on-screen is shown.
-  view_->set_onscreen_keyboard_shown(controller_->onscreen_keyboard_shown());
+  view_->set_onscreen_keyboard_shown(delegate_->GetOnScreenKeyboardShown());
   view_->ShowWhenReady();
 }
 
@@ -251,10 +244,9 @@ void AppListPresenterImpl::ScheduleAnimation() {
   layer->GetAnimator()->StopAnimating();
   aura::Window* root_window = widget->GetNativeView()->GetRootWindow();
   const gfx::Vector2d offset =
-      presenter_delegate_->GetVisibilityAnimationOffset(root_window);
+      delegate_->GetVisibilityAnimationOffset(root_window);
   base::TimeDelta animation_duration =
-      presenter_delegate_->GetVisibilityAnimationDuration(root_window,
-                                                          is_visible_);
+      delegate_->GetVisibilityAnimationDuration(root_window, is_visible_);
   gfx::Rect target_bounds = widget->GetNativeView()->bounds();
   target_bounds.Offset(offset);
   widget->GetNativeView()->SetBounds(target_bounds);
@@ -291,12 +283,9 @@ void AppListPresenterImpl::NotifyVisibilityChanged(bool visible,
   last_visible_ = visible;
   last_display_id_ = display_id;
 
-  if (controller_)
-    controller_->OnVisibilityChanged(visible);
-
   // Notify the Shell and its observers of the app list visibility change.
-  aura::Window* root = ash::Shell::Get()->GetRootWindowForDisplayId(display_id);
-  ash::Shell::Get()->NotifyAppListVisibilityChanged(visible, root);
+  delegate_->OnVisibilityChanged(
+      visible, delegate_->GetRootWindowForDisplayId(display_id));
 }
 
 void AppListPresenterImpl::NotifyTargetVisibilityChanged(bool visible) {
@@ -305,8 +294,7 @@ void AppListPresenterImpl::NotifyTargetVisibilityChanged(bool visible) {
     return;
   last_target_visible_ = visible;
 
-  if (controller_)
-    controller_->OnTargetVisibilityChanged(visible);
+  delegate_->OnTargetVisibilityChanged(visible);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -320,7 +308,7 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
     if (applist_container->Contains(lost_focus) &&
         (!gained_focus || !applist_container->Contains(gained_focus)) &&
         !switches::ShouldNotDismissOnBlur() &&
-        !controller_->IsHomeLauncherEnabledInTabletMode()) {
+        !delegate_->IsHomeLauncherEnabledInTabletMode()) {
       Dismiss(base::TimeTicks());
     }
   }
@@ -373,8 +361,7 @@ void AppListPresenterImpl::RequestPresentationTime(
     base::TimeTicks event_time_stamp) {
   if (event_time_stamp.is_null())
     return;
-  aura::Window* root_window =
-      ash::Shell::Get()->GetRootWindowForDisplayId(display_id);
+  aura::Window* root_window = delegate_->GetRootWindowForDisplayId(display_id);
   if (!root_window)
     return;
   ui::Compositor* compositor = root_window->layer()->GetCompositor();

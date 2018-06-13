@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_APP_LIST_APP_LIST_PRESENTER_IMPL_H_
-#define ASH_APP_LIST_APP_LIST_PRESENTER_IMPL_H_
+#ifndef ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
+#define ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_
 
 #include <stdint.h>
 
@@ -12,7 +12,7 @@
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/pagination_model_observer.h"
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
-#include "ash/ash_export.h"
+#include "ash/app_list/presenter/app_list_presenter_export.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/client/focus_change_observer.h"
@@ -22,37 +22,24 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace ash {
-class AppListControllerImpl;
-}
-
 namespace ui {
 class AnimationMetricsReporter;
 }
 
 namespace app_list {
 class AppListView;
-class AppListViewDelegate;
-
-namespace test {
-class AppListPresenterImplTestApi;
-}
-
-class AppListViewDelegate;
 
 // Manages app list UI. Creates AppListView and schedules showing/hiding
 // animation. While the UI is visible, it monitors things such as app list
-// activation state to auto dismiss the UI. Delegates the responsibility
-// for laying out the app list UI to ash::AppListLayoutDelegate.
-class ASH_EXPORT AppListPresenterImpl
+// activation state to auto dismiss the UI.
+class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
     : public aura::client::FocusChangeObserver,
       public ui::ImplicitAnimationObserver,
       public views::WidgetObserver,
       public PaginationModelObserver {
  public:
   explicit AppListPresenterImpl(
-      std::unique_ptr<AppListPresenterDelegate> delegate,
-      ash::AppListControllerImpl* controller);
+      std::unique_ptr<AppListPresenterDelegate> delegate);
   ~AppListPresenterImpl() override;
 
   // Returns app list window or NULL if it is not visible.
@@ -98,8 +85,6 @@ class ASH_EXPORT AppListPresenterImpl
   void ProcessMouseWheelOffset(int y_scroll_offset);
 
  private:
-  friend class test::AppListPresenterImplTestApi;
-
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);
 
@@ -140,10 +125,7 @@ class ASH_EXPORT AppListPresenterImpl
                                base::TimeTicks event_time_stamp);
 
   // Responsible for laying out the app list UI.
-  std::unique_ptr<AppListPresenterDelegate> presenter_delegate_;
-
-  // Used to report visibility changes to chrome. Not owned, owns this class.
-  ash::AppListControllerImpl* const controller_;
+  std::unique_ptr<AppListPresenterDelegate> delegate_;
 
   // Whether we should show or hide app list widget.
   bool is_visible_ = false;
@@ -157,9 +139,6 @@ class ASH_EXPORT AppListPresenterImpl
 
   // Cached bounds of |view_| for snapping back animation after over-scroll.
   gfx::Rect view_bounds_;
-
-  // Whether should schedule snap back animation.
-  bool should_snap_back_ = false;
 
   // Metric reporter for state change animations.
   const std::unique_ptr<ui::AnimationMetricsReporter>
@@ -177,4 +156,4 @@ class ASH_EXPORT AppListPresenterImpl
 
 }  // namespace app_list
 
-#endif  // ASH_APP_LIST_APP_LIST_PRESENTER_IMPL_H_
+#endif  // ASH_APP_LIST_PRESENTER_APP_LIST_PRESENTER_IMPL_H_

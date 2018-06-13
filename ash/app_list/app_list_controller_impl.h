@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_model_observer.h"
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/interfaces/app_list.mojom.h"

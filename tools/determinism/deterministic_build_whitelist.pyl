@@ -164,7 +164,6 @@
     'angle_unittests.exe',
     'app_driver_library.dll',
     'app_list_demo.exe',
-    'app_list_presenter_unittests.exe',
     'app_list_unittests.exe',
     'app_shell.exe',
     'app_shell_unittests.exe',
