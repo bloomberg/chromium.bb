@@ -80,7 +80,7 @@ public class DownloadForegroundService extends Service {
             int oldNotificationId, Notification oldNotification, boolean killOldNotification) {
         Log.w(TAG,
                 "startOrUpdateForegroundService new: " + newNotificationId
-                        + ", old: " + oldNotificationId);
+                        + ", old: " + oldNotificationId + ", kill old: " + killOldNotification);
         // Handle notifications and start foreground.
         if (oldNotificationId == INVALID_NOTIFICATION_ID && oldNotification == null) {
             // If there is no old notification or old notification id, just start foreground.
