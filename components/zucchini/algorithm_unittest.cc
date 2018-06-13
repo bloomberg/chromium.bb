@@ -131,18 +131,99 @@ TEST(AlgorithmTest, InclusiveClamp) {
             InclusiveClamp<uint32_t>(0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF));
 }
 
-TEST(AlgorithmTest, Ceil) {
-  EXPECT_EQ(0U, ceil<uint32_t>(0U, 2U));
-  EXPECT_EQ(2U, ceil<uint32_t>(1U, 2U));
-  EXPECT_EQ(2U, ceil<uint32_t>(2U, 2U));
-  EXPECT_EQ(4U, ceil<uint32_t>(3U, 2U));
-  EXPECT_EQ(4U, ceil<uint32_t>(4U, 2U));
-  EXPECT_EQ(11U, ceil<uint32_t>(10U, 11U));
-  EXPECT_EQ(11U, ceil<uint32_t>(11U, 11U));
-  EXPECT_EQ(22U, ceil<uint32_t>(12U, 11U));
-  EXPECT_EQ(22U, ceil<uint32_t>(21U, 11U));
-  EXPECT_EQ(22U, ceil<uint32_t>(22U, 11U));
-  EXPECT_EQ(33U, ceil<uint32_t>(23U, 11U));
+TEST(AlgorithmTest, AlignCeil) {
+  EXPECT_EQ(0U, AlignCeil<uint32_t>(0U, 2U));
+  EXPECT_EQ(2U, AlignCeil<uint32_t>(1U, 2U));
+  EXPECT_EQ(2U, AlignCeil<uint32_t>(2U, 2U));
+  EXPECT_EQ(4U, AlignCeil<uint32_t>(3U, 2U));
+  EXPECT_EQ(4U, AlignCeil<uint32_t>(4U, 2U));
+  EXPECT_EQ(11U, AlignCeil<uint32_t>(10U, 11U));
+  EXPECT_EQ(11U, AlignCeil<uint32_t>(11U, 11U));
+  EXPECT_EQ(22U, AlignCeil<uint32_t>(12U, 11U));
+  EXPECT_EQ(22U, AlignCeil<uint32_t>(21U, 11U));
+  EXPECT_EQ(22U, AlignCeil<uint32_t>(22U, 11U));
+  EXPECT_EQ(33U, AlignCeil<uint32_t>(23U, 11U));
+}
+
+TEST(AlgorithmTest, GetBit) {
+  // 0xC5 = 0b1100'0101.
+  constexpr uint8_t v = 0xC5;
+  EXPECT_EQ(uint8_t(1), (GetBit<0>(v)));
+  EXPECT_EQ(int8_t(0), (GetBit<1>(signed8(v))));
+  EXPECT_EQ(uint8_t(1), (GetBit<2>(v)));
+  EXPECT_EQ(int8_t(0), (GetBit<3>(signed8(v))));
+  EXPECT_EQ(uint8_t(0), (GetBit<4>(v)));
+  EXPECT_EQ(int8_t(0), (GetBit<5>(signed8(v))));
+  EXPECT_EQ(uint8_t(1), (GetBit<6>(v)));
+  EXPECT_EQ(int8_t(1), (GetBit<7>(signed8(v))));
+
+  EXPECT_EQ(int16_t(1), (GetBit<3, int16_t>(0x0008)));
+  EXPECT_EQ(uint16_t(0), (GetBit<14, uint16_t>(0xB000)));
+  EXPECT_EQ(uint16_t(1), (GetBit<15, uint16_t>(0xB000)));
+
+  EXPECT_EQ(uint32_t(1), (GetBit<0, uint32_t>(0xFFFFFFFF)));
+  EXPECT_EQ(int32_t(1), (GetBit<31, int32_t>(0xFFFFFFFF)));
+
+  EXPECT_EQ(uint32_t(0), (GetBit<0, uint32_t>(0xFF00A596)));
+  EXPECT_EQ(int32_t(1), (GetBit<1, int32_t>(0xFF00A596)));
+  EXPECT_EQ(uint32_t(1), (GetBit<4, uint32_t>(0xFF00A596)));
+  EXPECT_EQ(int32_t(1), (GetBit<7, int32_t>(0xFF00A596)));
+  EXPECT_EQ(uint32_t(0), (GetBit<9, uint32_t>(0xFF00A596)));
+  EXPECT_EQ(int32_t(0), (GetBit<16, int32_t>(0xFF00A59)));
+  EXPECT_EQ(uint32_t(1), (GetBit<24, uint32_t>(0xFF00A596)));
+  EXPECT_EQ(int32_t(1), (GetBit<31, int32_t>(0xFF00A596)));
+
+  EXPECT_EQ(uint64_t(0), (GetBit<62, uint64_t>(0xB000000000000000ULL)));
+  EXPECT_EQ(int64_t(1), (GetBit<63, int64_t>(0xB000000000000000LL)));
+}
+
+TEST(AlgorithmTest, GetBits) {
+  // Zero-extended: Basic cases for various values.
+  uint32_t test_cases[] = {0, 1, 2, 7, 137, 0x10000, 0x69969669, 0xFFFFFFFF};
+  for (uint32_t v : test_cases) {
+    EXPECT_EQ(uint32_t(v & 0xFF), (GetUnsignedBits<0, 7>(v)));
+    EXPECT_EQ(uint32_t((v >> 8) & 0xFF), (GetUnsignedBits<8, 15>(v)));
+    EXPECT_EQ(uint32_t((v >> 16) & 0xFF), (GetUnsignedBits<16, 23>(v)));
+    EXPECT_EQ(uint32_t((v >> 24) & 0xFF), (GetUnsignedBits<24, 31>(v)));
+    EXPECT_EQ(uint32_t(v & 0xFFFF), (GetUnsignedBits<0, 15>(v)));
+    EXPECT_EQ(uint32_t((v >> 1) & 0x3FFFFFFF), (GetUnsignedBits<1, 30>(v)));
+    EXPECT_EQ(uint32_t((v >> 2) & 0x0FFFFFFF), (GetUnsignedBits<2, 29>(v)));
+    EXPECT_EQ(uint32_t(v), (GetUnsignedBits<0, 31>(v)));
+  }
+
+  // Zero-extended: Reading off various nibbles.
+  EXPECT_EQ(uint32_t(0x4), (GetUnsignedBits<20, 23>(0x00432100U)));
+  EXPECT_EQ(uint32_t(0x43), (GetUnsignedBits<16, 23>(0x00432100)));
+  EXPECT_EQ(uint32_t(0x432), (GetUnsignedBits<12, 23>(0x00432100U)));
+  EXPECT_EQ(uint32_t(0x4321), (GetUnsignedBits<8, 23>(0x00432100)));
+  EXPECT_EQ(uint32_t(0x321), (GetUnsignedBits<8, 19>(0x00432100U)));
+  EXPECT_EQ(uint32_t(0x21), (GetUnsignedBits<8, 15>(0x00432100)));
+  EXPECT_EQ(uint32_t(0x1), (GetUnsignedBits<8, 11>(0x00432100U)));
+
+  // Sign-extended: 0x3CA5 = 0b0011'1100'1010'0101.
+  EXPECT_EQ(signed16(0xFFFF), (GetSignedBits<0, 0>(0x3CA5U)));
+  EXPECT_EQ(signed16(0x0001), (GetSignedBits<0, 1>(0x3CA5)));
+  EXPECT_EQ(signed16(0xFFFD), (GetSignedBits<0, 2>(0x3CA5U)));
+  EXPECT_EQ(signed16(0x0005), (GetSignedBits<0, 4>(0x3CA5)));
+  EXPECT_EQ(signed16(0xFFA5), (GetSignedBits<0, 7>(0x3CA5U)));
+  EXPECT_EQ(signed16(0xFCA5), (GetSignedBits<0, 11>(0x3CA5)));
+  EXPECT_EQ(signed16(0x0005), (GetSignedBits<0, 3>(0x3CA5U)));
+  EXPECT_EQ(signed16(0xFFFA), (GetSignedBits<4, 7>(0x3CA5)));
+  EXPECT_EQ(signed16(0xFFFC), (GetSignedBits<8, 11>(0x3CA5U)));
+  EXPECT_EQ(signed16(0x0003), (GetSignedBits<12, 15>(0x3CA5)));
+  EXPECT_EQ(signed16(0x0000), (GetSignedBits<4, 4>(0x3CA5U)));
+  EXPECT_EQ(signed16(0xFFFF), (GetSignedBits<5, 5>(0x3CA5)));
+  EXPECT_EQ(signed16(0x0002), (GetSignedBits<4, 6>(0x3CA5U)));
+  EXPECT_EQ(signed16(0x1E52), (GetSignedBits<1, 14>(0x3CA5)));
+  EXPECT_EQ(signed16(0xFF29), (GetSignedBits<2, 13>(0x3CA5U)));
+  EXPECT_EQ(int32_t(0x00001E52), (GetSignedBits<1, 14>(0x3CA5)));
+  EXPECT_EQ(int32_t(0xFFFFFF29), (GetSignedBits<2, 13>(0x3CA5U)));
+
+  // 64-bits: Extract from middle 0x66 = 0b0110'0110.
+  EXPECT_EQ(uint64_t(0x0000000000000009LL),
+            (GetUnsignedBits<30, 33>(int64_t(0x2222222661111111LL))));
+  EXPECT_EQ(int64_t(0xFFFFFFFFFFFFFFF9LL),
+            (GetSignedBits<30, 33>(uint64_t(0x2222222661111111LL))));
 }
 
 TEST(AlgorithmTest, SignExtend) {
@@ -201,6 +282,40 @@ TEST(AlgorithmTest, SignExtendTemplated) {
             (SignExtend<9, uint64_t>(0x000000000000026AULL)));
   EXPECT_EQ(uint64_t(0x000000000000016AULL),
             (SignExtend<9, uint64_t>(0xFFFFFFFFFFFFFD6AULL)));
+}
+
+TEST(AlgorithmTest, SignedFit) {
+  for (int v = -0x80; v < 0x80; ++v) {
+    EXPECT_EQ(v >= -1 && v < 1, (SignedFit<1, int8_t>(v)));
+    EXPECT_EQ(v >= -1 && v < 1, (SignedFit<1, uint8_t>(v)));
+    EXPECT_EQ(v >= -2 && v < 2, (SignedFit<2, int8_t>(v)));
+    EXPECT_EQ(v >= -4 && v < 4, (SignedFit<3, uint8_t>(v)));
+    EXPECT_EQ(v >= -8 && v < 8, (SignedFit<4, int16_t>(v)));
+    EXPECT_EQ(v >= -16 && v < 16, (SignedFit<5, uint32_t>(v)));
+    EXPECT_EQ(v >= -32 && v < 32, (SignedFit<6, int32_t>(v)));
+    EXPECT_EQ(v >= -64 && v < 64, (SignedFit<7, uint64_t>(v)));
+    EXPECT_TRUE((SignedFit<8, int8_t>(v)));
+    EXPECT_TRUE((SignedFit<8, uint8_t>(v)));
+  }
+
+  EXPECT_TRUE((SignedFit<16, uint32_t>(0x00000000)));
+  EXPECT_TRUE((SignedFit<16, uint32_t>(0x00007FFF)));
+  EXPECT_TRUE((SignedFit<16, uint32_t>(0xFFFF8000)));
+  EXPECT_TRUE((SignedFit<16, uint32_t>(0xFFFFFFFF)));
+  EXPECT_TRUE((SignedFit<16, int32_t>(0x00007FFF)));
+  EXPECT_TRUE((SignedFit<16, int32_t>(0xFFFF8000)));
+
+  EXPECT_FALSE((SignedFit<16, uint32_t>(0x80000000)));
+  EXPECT_FALSE((SignedFit<16, uint32_t>(0x7FFFFFFF)));
+  EXPECT_FALSE((SignedFit<16, uint32_t>(0x00008000)));
+  EXPECT_FALSE((SignedFit<16, uint32_t>(0xFFFF7FFF)));
+  EXPECT_FALSE((SignedFit<16, int32_t>(0x00008000)));
+  EXPECT_FALSE((SignedFit<16, int32_t>(0xFFFF7FFF)));
+
+  EXPECT_TRUE((SignedFit<48, int64_t>(0x00007FFFFFFFFFFFLL)));
+  EXPECT_TRUE((SignedFit<48, int64_t>(0xFFFF800000000000LL)));
+  EXPECT_FALSE((SignedFit<48, int64_t>(0x0008000000000000LL)));
+  EXPECT_FALSE((SignedFit<48, int64_t>(0xFFFF7FFFFFFFFFFFLL)));
 }
 
 }  // namespace zucchini

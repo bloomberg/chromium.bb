@@ -184,7 +184,7 @@ class BufferViewBase {
     DCHECK_LE(origin.first_, first_);
     DCHECK_GE(origin.last_, last_);
     size_type aligned_size =
-        ceil(static_cast<size_type>(first_ - origin.first_), alignment);
+        AlignCeil(static_cast<size_type>(first_ - origin.first_), alignment);
     if (aligned_size > static_cast<size_type>(last_ - origin.first_))
       return false;
     first_ = origin.first_ + aligned_size;

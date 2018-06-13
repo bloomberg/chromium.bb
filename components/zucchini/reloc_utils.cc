@@ -81,7 +81,7 @@ RelocRvaReaderWin32::RelocRvaReaderWin32(
   offset_t cur_reloc_units_offset = cur_reloc_units_.begin() - image_.begin();
   if (lo > cur_reloc_units_offset) {
     offset_t delta =
-        ceil<offset_t>(lo - cur_reloc_units_offset, kRelocUnitSize);
+        AlignCeil<offset_t>(lo - cur_reloc_units_offset, kRelocUnitSize);
     cur_reloc_units_.Skip(delta);
   }
 }
