@@ -54,3 +54,5 @@
 -BrowserSideFlingBrowserTest.AutoscrollFling
 -BrowserSideFlingBrowserTest.TouchpadFling
 -BrowserSideFlingBrowserTest.TouchscreenFling
+-SitePerProcessBrowserTest.TouchpadGestureFlingStart
+-SitePerProcessBrowserTest.TouchscreenGestureFlingStart
