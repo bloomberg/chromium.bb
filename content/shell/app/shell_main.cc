@@ -11,10 +11,6 @@
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "content/shell/app/shell_content_main.h"
-#endif
-
 #if defined(OS_WIN)
 
 #if !defined(WIN_CONSOLE_APP)
@@ -36,17 +32,11 @@ int main() {
 #else
 
 int main(int argc, const char** argv) {
-#if defined(OS_MACOSX)
-  // Do the delegate work in shell_content_main to avoid having to export the
-  // delegate types.
-  return ::ContentMain(argc, argv);
-#else
   content::ShellMainDelegate delegate;
   content::ContentMainParams params(&delegate);
   params.argc = argc;
   params.argv = argv;
   return content::ContentMain(params);
-#endif  // OS_MACOSX
 }
 
 #endif  // OS_POSIX
