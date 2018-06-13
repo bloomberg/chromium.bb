@@ -74,6 +74,9 @@ class APP_LIST_EXPORT PagedViewStructure {
   // can be moved.
   bool IsValidReorderTargetIndex(const GridIndex& index) const;
 
+  // Returns true if the page has no empty slot.
+  bool IsFullPage(int page_index) const;
+
   // Returns total number of pages in the view structure.
   int total_pages() const { return pages_.size(); }
 
