@@ -31,7 +31,8 @@ namespace {
 static constexpr char kApiKeyQueryParam[] = "key";
 // todo(pnoland, https://crbug.com/808131): Decide on the correct auth scope and
 // change the below constant to that value.
-static constexpr char kAuthenticationScope[] = "ntp_snippets;";
+static constexpr char kAuthenticationScope[] =
+    "https://www.googleapis.com/auth/googlenow";
 static constexpr char kContentEncoding[] = "Content-Encoding";
 static constexpr char kContentType[] = "application/octet-stream";
 static constexpr char kGzip[] = "gzip";
