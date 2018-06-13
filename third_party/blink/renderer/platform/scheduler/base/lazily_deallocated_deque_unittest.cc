@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/lazily_deallocated_deque.h"
+#include "base/task/sequence_manager/lazily_deallocated_deque.h"
 
 #include "base/time/time_override.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
 namespace sequence_manager {
+namespace internal {
 
 class LazilyDeallocatedDequeTest : public testing::Test {};
 
@@ -358,5 +359,6 @@ TEST_F(LazilyDeallocatedDequeTest, RingPushPopPushPop) {
   EXPECT_FALSE(r.CanPop());
 }
 
+}  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base

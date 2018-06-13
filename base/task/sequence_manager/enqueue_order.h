@@ -1,14 +1,15 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_ENQUEUE_ORDER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_ENQUEUE_ORDER_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_ENQUEUE_ORDER_H_
+#define BASE_TASK_SEQUENCE_MANAGER_ENQUEUE_ORDER_H_
 
 #include <stdint.h>
 
 #include <atomic>
 
+#include "base/base_export.h"
 #include "base/macros.h"
 
 namespace base {
@@ -35,12 +36,13 @@ class EnqueueOrder {
 
   // EnqueueOrder can't be created from a raw number in non-test code.
   // Generator is used to create it with strictly monotonic guarantee.
-  class Generator {
+  class BASE_EXPORT Generator {
    public:
-    Generator() : counter_(kFirst) {}
-    ~Generator() = default;
+    Generator();
+    ~Generator();
 
     // Can be called from any thread.
+    // TODO(scheduler-dev): Is it the right atomic? https://crbug.com/852344.
     EnqueueOrder GenerateNext() {
       return EnqueueOrder(std::atomic_fetch_add_explicit(
           &counter_, uint64_t(1), std::memory_order_seq_cst));
@@ -67,4 +69,4 @@ class EnqueueOrder {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_ENQUEUE_ORDER_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_ENQUEUE_ORDER_H_

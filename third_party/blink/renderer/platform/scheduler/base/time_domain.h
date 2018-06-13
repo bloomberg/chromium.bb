@@ -10,10 +10,10 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task/sequence_manager/intrusive_heap.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/time/time.h"
-#include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 
 namespace base {
 namespace sequence_manager {
@@ -115,18 +115,18 @@ class PLATFORM_EXPORT TimeDomain {
       return wake_up <= other.wake_up;
     }
 
-    void SetHeapHandle(HeapHandle handle) {
+    void SetHeapHandle(internal::HeapHandle handle) {
       DCHECK(handle.IsValid());
       queue->set_heap_handle(handle);
     }
 
     void ClearHeapHandle() {
       DCHECK(queue->heap_handle().IsValid());
-      queue->set_heap_handle(HeapHandle());
+      queue->set_heap_handle(internal::HeapHandle());
     }
   };
 
-  IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wake_up_queue_;
+  internal::IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wake_up_queue_;
 
   ThreadChecker main_thread_checker_;
 

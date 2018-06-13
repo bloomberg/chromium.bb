@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
+#include "base/task/sequence_manager/intrusive_heap.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 namespace sequence_manager {
+namespace internal {
 namespace {
 
 struct TestElement {
@@ -370,5 +371,6 @@ TEST_F(IntrusiveHeapTest, CompareNodes) {
   EXPECT_TRUE(IntrusiveHeapTest::CompareNodes(six, five));
 }
 
+}  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base
