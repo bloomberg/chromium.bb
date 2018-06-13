@@ -17,8 +17,9 @@
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/common/content_export.h"
-#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/dom_storage_context.h"
+#include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
 
 namespace base {
@@ -82,7 +83,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
                         blink::mojom::StorageAreaRequest request);
   void OpenSessionStorage(int process_id,
                           const std::string& namespace_id,
-                          mojom::SessionStorageNamespaceRequest request);
+                          blink::mojom::SessionStorageNamespaceRequest request);
 
   void SetLocalStorageDatabaseForTesting(
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database);

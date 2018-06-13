@@ -94,7 +94,7 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
                  base::StringPiece value,
                  const std::string& source) {
     context()->CreateSessionNamespace(namespace_id);
-    mojom::SessionStorageNamespacePtr ss_namespace;
+    blink::mojom::SessionStorageNamespacePtr ss_namespace;
     context()->OpenSessionStorage(kTestProcessId, namespace_id,
                                   mojo::MakeRequest(&ss_namespace));
     blink::mojom::StorageAreaAssociatedPtr leveldb;
@@ -110,7 +110,7 @@ class SessionStorageContextMojoTest : public test::MojoTestWithFileService {
       const url::Origin& origin,
       base::StringPiece key) {
     context()->CreateSessionNamespace(namespace_id);
-    mojom::SessionStorageNamespacePtr ss_namespace;
+    blink::mojom::SessionStorageNamespacePtr ss_namespace;
     context()->OpenSessionStorage(kTestProcessId, namespace_id,
                                   mojo::MakeRequest(&ss_namespace));
     blink::mojom::StorageAreaAssociatedPtr leveldb;
@@ -166,10 +166,10 @@ TEST_F(SessionStorageContextMojoTest, MigrationV0ToV1) {
   context()->CreateSessionNamespace(namespace_id1);
   context()->CreateSessionNamespace(namespace_id2);
 
-  mojom::SessionStorageNamespacePtr ss_namespace1;
+  blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
                                 mojo::MakeRequest(&ss_namespace1));
-  mojom::SessionStorageNamespacePtr ss_namespace2;
+  blink::mojom::SessionStorageNamespacePtr ss_namespace2;
   context()->OpenSessionStorage(kTestProcessId, namespace_id2,
                                 mojo::MakeRequest(&ss_namespace2));
 
@@ -198,7 +198,7 @@ TEST_F(SessionStorageContextMojoTest, StartupShutdownSave) {
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
   context()->CreateSessionNamespace(namespace_id1);
 
-  mojom::SessionStorageNamespacePtr ss_namespace1;
+  blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
                                 mojo::MakeRequest(&ss_namespace1));
 
@@ -254,7 +254,7 @@ TEST_F(SessionStorageContextMojoTest, Cloning) {
   std::string namespace_id2 = base::GenerateGUID();
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
   context()->CreateSessionNamespace(namespace_id1);
-  mojom::SessionStorageNamespacePtr ss_namespace1;
+  blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
@@ -273,7 +273,7 @@ TEST_F(SessionStorageContextMojoTest, Cloning) {
   leveldb_n1_o1.FlushForTesting();
 
   // Open the second namespace.
-  mojom::SessionStorageNamespacePtr ss_namespace2;
+  blink::mojom::SessionStorageNamespacePtr ss_namespace2;
   context()->OpenSessionStorage(kTestProcessId, namespace_id2,
                                 mojo::MakeRequest(&ss_namespace2));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n2_o1;
@@ -327,7 +327,7 @@ TEST_F(SessionStorageContextMojoTest, Scavenging) {
   ShutdownContext();
   context()->CreateSessionNamespace(namespace_id1);
 
-  mojom::SessionStorageNamespacePtr ss_namespace1;
+  blink::mojom::SessionStorageNamespacePtr ss_namespace1;
   context()->OpenSessionStorage(kTestProcessId, namespace_id1,
                                 mojo::MakeRequest(&ss_namespace1));
   blink::mojom::StorageAreaAssociatedPtr leveldb_n1_o1;
@@ -482,7 +482,7 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   blink::mojom::StorageAreaAssociatedPtr area1;
   blink::mojom::StorageAreaAssociatedPtr area2;
   blink::mojom::StorageAreaAssociatedPtr area3;
-  mojom::SessionStorageNamespacePtr ss_namespace;
+  blink::mojom::SessionStorageNamespacePtr ss_namespace;
   context()->CreateSessionNamespace(namespace_id);
   {
     base::RunLoop loop;
@@ -638,7 +638,7 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
 
   // Open three connections to the database.
   blink::mojom::StorageAreaAssociatedPtr area;
-  mojom::SessionStorageNamespacePtr ss_namespace;
+  blink::mojom::SessionStorageNamespacePtr ss_namespace;
   context()->CreateSessionNamespace(namespace_id);
   {
     base::RunLoop loop;

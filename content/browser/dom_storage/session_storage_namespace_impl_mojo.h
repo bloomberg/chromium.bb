@@ -12,11 +12,11 @@
 #include "content/browser/dom_storage/session_storage_area_impl.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
 
 namespace content {
@@ -45,7 +45,7 @@ namespace content {
 // create the cloned namespace and expect to manage it's lifetime that way, and
 // this can happen before the first case, as they are on different task runners.
 class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
-    : public mojom::SessionStorageNamespace {
+    : public blink::mojom::SessionStorageNamespace {
  public:
   using OriginAreas =
       std::map<url::Origin, std::unique_ptr<SessionStorageAreaImpl>>;
@@ -106,7 +106,8 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // |SetWaitingForClonePopulation|. For the later case, |PopulateAsClone| must
   // eventually be called before the SessionStorageNamespaceRequest can be
   // bound.
-  void Bind(mojom::SessionStorageNamespaceRequest request, int process_id);
+  void Bind(blink::mojom::SessionStorageNamespaceRequest request,
+            int process_id);
 
   bool IsBound() const {
     return !bindings_.empty() || bind_waiting_on_clone_population_;
@@ -148,7 +149,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
 
   bool populated_ = false;
   OriginAreas origin_areas_;
-  mojo::BindingSet<mojom::SessionStorageNamespace> bindings_;
+  mojo::BindingSet<blink::mojom::SessionStorageNamespace> bindings_;
 };
 
 }  // namespace content

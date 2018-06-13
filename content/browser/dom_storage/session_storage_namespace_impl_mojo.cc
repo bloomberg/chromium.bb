@@ -90,7 +90,7 @@ void SessionStorageNamespaceImplMojo::Reset() {
 }
 
 void SessionStorageNamespaceImplMojo::Bind(
-    mojom::SessionStorageNamespaceRequest request,
+    blink::mojom::SessionStorageNamespaceRequest request,
     int process_id) {
   if (waiting_on_clone_population_) {
     bind_waiting_on_clone_population_ = true;

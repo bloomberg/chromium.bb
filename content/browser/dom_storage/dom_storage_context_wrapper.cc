@@ -383,7 +383,7 @@ void DOMStorageContextWrapper::OpenLocalStorage(
 void DOMStorageContextWrapper::OpenSessionStorage(
     int process_id,
     const std::string& namespace_id,
-    mojom::SessionStorageNamespaceRequest request) {
+    blink::mojom::SessionStorageNamespaceRequest request) {
   if (!mojo_session_state_)
     return;
   // base::Unretained is safe here, because the mojo_state_ won't be deleted

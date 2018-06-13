@@ -40,7 +40,6 @@
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/renderer_host.mojom.h"
-#include "content/common/storage_partition_service.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_manager_connection.h"
@@ -56,6 +55,7 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
 
@@ -324,7 +324,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // service.
   using CreateStoragePartitionServiceFunction =
       void (*)(RenderProcessHostImpl* rph,
-               mojom::StoragePartitionServiceRequest request);
+               blink::mojom::StoragePartitionServiceRequest request);
   static void SetCreateStoragePartitionServiceFunction(
       CreateStoragePartitionServiceFunction function);
 
@@ -484,7 +484,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindCompositingModeReporter(
       viz::mojom::CompositingModeReporterRequest request);
   void CreateStoragePartitionService(
-      mojom::StoragePartitionServiceRequest request);
+      blink::mojom::StoragePartitionServiceRequest request);
   void CreateRendererHost(mojom::RendererHostAssociatedRequest request);
 
   // Control message handlers.

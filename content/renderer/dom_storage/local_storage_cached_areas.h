@@ -12,10 +12,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "content/common/storage_partition_service.mojom.h"
+#include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
 
 namespace blink {
+namespace mojom {
+class StoragePartitionService;
+}
+
 namespace scheduler {
 class WebThreadScheduler;
 }
@@ -23,10 +27,6 @@ class WebThreadScheduler;
 
 namespace content {
 class LocalStorageCachedArea;
-
-namespace mojom {
-class StoragePartitionService;
-}
 
 // Keeps a map of all the LocalStorageCachedArea objects in a renderer. This is
 // needed because we can have n LocalStorageArea objects for the same origin but
@@ -36,7 +36,7 @@ class StoragePartitionService;
 class CONTENT_EXPORT LocalStorageCachedAreas {
  public:
   LocalStorageCachedAreas(
-      mojom::StoragePartitionService* storage_partition_service,
+      blink::mojom::StoragePartitionService* storage_partition_service,
       blink::scheduler::WebThreadScheduler* main_thread_scheduler);
   ~LocalStorageCachedAreas();
 
@@ -63,7 +63,7 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
       const url::Origin& origin,
       blink::scheduler::WebThreadScheduler* scheduler);
 
-  mojom::StoragePartitionService* const storage_partition_service_;
+  blink::mojom::StoragePartitionService* const storage_partition_service_;
 
   struct DOMStorageNamespace {
    public:
@@ -76,7 +76,7 @@ class CONTENT_EXPORT LocalStorageCachedAreas {
     // Returns true if this namespace is totally unused and can be deleted.
     bool CleanUpUnusedAreas();
 
-    mojom::SessionStorageNamespacePtr session_storage_namespace;
+    blink::mojom::SessionStorageNamespacePtr session_storage_namespace;
     base::flat_map<url::Origin, scoped_refptr<LocalStorageCachedArea>>
         cached_areas;
 

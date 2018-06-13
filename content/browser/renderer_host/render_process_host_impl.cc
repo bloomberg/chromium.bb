@@ -2106,7 +2106,7 @@ void RenderProcessHostImpl::BindCompositingModeReporter(
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
-    mojom::StoragePartitionServiceRequest request) {
+    blink::mojom::StoragePartitionServiceRequest request) {
   if (g_create_storage_partition) {
     g_create_storage_partition(this, std::move(request));
     return;

@@ -859,7 +859,7 @@ void StoragePartitionImpl::OpenLocalStorage(
 
 void StoragePartitionImpl::OpenSessionStorage(
     const std::string& namespace_id,
-    mojom::SessionStorageNamespaceRequest request) {
+    blink::mojom::SessionStorageNamespaceRequest request) {
   int process_id = bindings_.dispatch_context();
   dom_storage_context_->OpenSessionStorage(process_id, namespace_id,
                                            std::move(request));
@@ -1217,7 +1217,7 @@ BrowserContext* StoragePartitionImpl::browser_context() const {
 
 mojo::BindingId StoragePartitionImpl::Bind(
     int process_id,
-    mojo::InterfaceRequest<mojom::StoragePartitionService> request) {
+    mojo::InterfaceRequest<blink::mojom::StoragePartitionService> request) {
   return bindings_.AddBinding(this, std::move(request), process_id);
 }
 

@@ -11,6 +11,7 @@
 #include "content/public/common/content_features.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_partition_service.mojom.h"
 
 namespace content {
 namespace {
@@ -22,7 +23,7 @@ constexpr const char kLocalStorageNamespaceId[] = "";
 }  // namespace
 
 LocalStorageCachedAreas::LocalStorageCachedAreas(
-    mojom::StoragePartitionService* storage_partition_service,
+    blink::mojom::StoragePartitionService* storage_partition_service,
     blink::scheduler::WebThreadScheduler* main_thread_scheduler)
     : storage_partition_service_(storage_partition_service),
       total_cache_limit_(base::SysInfo::IsLowEndDevice()
