@@ -29,4 +29,6 @@ void CastWebView::RemoveObserver(CastWebView::Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+CastWebView::CreateParams::CreateParams() {}
+
 }  // namespace chromecast
