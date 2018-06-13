@@ -113,7 +113,7 @@ class WorkerThreadSchedulerTest : public testing::Test {
 
   void Init() {
     scheduler_->Init();
-    default_task_runner_ = scheduler_->DefaultTaskRunner();
+    default_task_runner_ = scheduler_->CreateTaskRunner();
     idle_task_runner_ = scheduler_->IdleTaskRunner();
     timeline_ = nullptr;
   }
@@ -404,6 +404,6 @@ TEST_F(WorkerThreadSchedulerTest, TestLongIdlePeriodTimeline) {
   EXPECT_THAT(timeline, ElementsAreArray(expected_timeline));
 }
 
-}  // namespace worker_scheduler_impl_unittest
+}  // namespace worker_thread_scheduler_unittest
 }  // namespace scheduler
 }  // namespace blink

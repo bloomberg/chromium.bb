@@ -114,10 +114,7 @@ WorkerThreadScheduler::WorkerThreadScheduler(
                     kUnspecifiedWorkerThreadLoadTrackerReportingInterval),
       lifecycle_state_(proxy ? proxy->lifecycle_state()
                              : SchedulingLifecycleState::kNotThrottled),
-      worker_metrics_helper_(thread_type),
-      default_task_runner_(TaskQueueWithTaskType::Create(
-          helper()->DefaultNonMainThreadTaskQueue(),
-          TaskType::kWorkerThreadTaskQueueDefault)) {
+      worker_metrics_helper_(thread_type) {
   thread_start_time_ = helper()->NowTicks();
   load_tracker_.Resume(thread_start_time_);
   helper()->AddTaskTimeObserver(this);
@@ -145,7 +142,8 @@ WorkerThreadScheduler::~WorkerThreadScheduler() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 WorkerThreadScheduler::DefaultTaskRunner() {
-  return default_task_runner_;
+  NOTREACHED();
+  return nullptr;
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>
