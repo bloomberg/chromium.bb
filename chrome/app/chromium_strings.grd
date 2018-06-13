@@ -1051,9 +1051,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
       <message name="IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION" desc="Explanation of the dialog asking whether the user wants to upload suspected malicious files for analysis">
         You can help make Chromium safer and easier to use by automatically reporting details of possible security incidents to Google.
       </message>
-      <message name="IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION_SCOUT" desc="Explanation of the dialog asking whether the user wants to upload some system information and page content for Safe Browsing analysis">
-        You can help make Chromium safer and easier to use by automatically sending some system information and page content to Google to help detect dangerous apps and sites.
-      </message>
 
       <!-- Desktop Capture -->
       <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_TAB" desc="Text for the button on the window picker dialog, clicking which takes one to tab sharing">

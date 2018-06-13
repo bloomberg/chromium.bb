@@ -1904,6 +1904,9 @@ are declared in build/common.gypi.
       </if>
 
       <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
+      <message name="IDS_FEEDBACK_SERVICE_DIALOG_EXPLANATION_SCOUT" desc="Explanation of the dialog asking whether the user wants to upload some system information and page content for Safe Browsing analysis">
+        You can help improve Safe Browsing by sending some system information and page content to Google.
+      </message>
       <message name="IDS_FEEDBACK_SERVICE_DIALOG_OK_BUTTON_LABEL" desc="Button that elects to upload suspected malicious files for analysis">
         Yes, I want to help
       </message>
