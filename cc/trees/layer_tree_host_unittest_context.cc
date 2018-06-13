@@ -895,8 +895,7 @@ class LayerTreeHostContextTestDontUseLostResources
   void SetupTree() override {
     gpu::gles2::GLES2Interface* gl = child_context_provider_->ContextGL();
 
-    gpu::Mailbox mailbox;
-    gl->GenMailboxCHROMIUM(mailbox.name);
+    gpu::Mailbox mailbox = gpu::Mailbox::Generate();
 
     gpu::SyncToken sync_token;
     gl->GenSyncTokenCHROMIUM(sync_token.GetData());

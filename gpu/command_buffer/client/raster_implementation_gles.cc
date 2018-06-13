@@ -194,12 +194,8 @@ void RasterImplementationGLES::TexParameteri(GLuint texture_id,
   gl_->TexParameteri(texture->target, pname, param);
 }
 
-void RasterImplementationGLES::GenMailbox(GLbyte* mailbox) {
-  gl_->GenMailboxCHROMIUM(mailbox);
-}
-
 void RasterImplementationGLES::ProduceTextureDirect(GLuint texture_id,
-                                                    const GLbyte* mailbox) {
+                                                    GLbyte* mailbox) {
   Texture* texture = GetTexture(texture_id);
   gl_->ProduceTextureDirectCHROMIUM(texture->id, mailbox);
 }

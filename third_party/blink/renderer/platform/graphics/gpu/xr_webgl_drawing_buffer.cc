@@ -24,7 +24,6 @@ XRWebGLDrawingBuffer::ColorBuffer::ColorBuffer(
     GLuint texture_id)
     : drawing_buffer(drawing_buffer), size(size), texture_id(texture_id) {
   gpu::gles2::GLES2Interface* gl = drawing_buffer->ContextGL();
-  gl->GenMailboxCHROMIUM(mailbox.name);
   gl->ProduceTextureDirectCHROMIUM(texture_id, mailbox.name);
 }
 

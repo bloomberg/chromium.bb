@@ -251,7 +251,6 @@ void TestPlugin::UpdateGeometry(
 
     DrawSceneGL();
 
-    gl_->GenMailboxCHROMIUM(mailbox_.name);
     gl_->ProduceTextureDirectCHROMIUM(color_texture_, mailbox_.name);
     gl_->Flush();
     gl_->GenSyncTokenCHROMIUM(sync_token_.GetData());

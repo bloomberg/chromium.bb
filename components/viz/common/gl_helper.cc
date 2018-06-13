@@ -878,7 +878,6 @@ void GLHelper::WaitSyncToken(const gpu::SyncToken& sync_token) {
 gpu::MailboxHolder GLHelper::ProduceMailboxHolderFromTexture(
     GLuint texture_id) {
   gpu::Mailbox mailbox;
-  gl_->GenMailboxCHROMIUM(mailbox.name);
   gl_->ProduceTextureDirectCHROMIUM(texture_id, mailbox.name);
 
   gpu::SyncToken sync_token;

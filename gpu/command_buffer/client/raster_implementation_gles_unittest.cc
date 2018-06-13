@@ -78,9 +78,8 @@ class RasterMockGLES2Interface : public gles2::GLES2InterfaceStub {
   MOCK_METHOD3(TexParameteri, void(GLenum target, GLenum pname, GLint param));
 
   // Mailboxes.
-  MOCK_METHOD1(GenMailboxCHROMIUM, void(GLbyte*));
   MOCK_METHOD2(ProduceTextureDirectCHROMIUM,
-               void(GLuint texture, const GLbyte* mailbox));
+               void(GLuint texture, GLbyte* mailbox));
   MOCK_METHOD1(CreateAndConsumeTextureCHROMIUM, GLuint(const GLbyte* mailbox));
 
   // Image objects.
@@ -451,23 +450,15 @@ TEST_F(RasterImplementationGLESTest, TexParameteri) {
   ri_->TexParameteri(kTextureId, kPname, kParam);
 }
 
-TEST_F(RasterImplementationGLESTest, GenMailbox) {
-  gpu::Mailbox mailbox;
-  EXPECT_CALL(*gl_, GenMailboxCHROMIUM(mailbox.name)).Times(1);
-  ri_->GenMailbox(mailbox.name);
-}
-
 TEST_F(RasterImplementationGLESTest, ProduceTextureDirect) {
   const GLuint kTextureId = 23;
   gpu::Mailbox mailbox;
 
   AllocTextureId(false, gfx::BufferUsage::GPU_READ, viz::RGBA_8888, kTextureId);
 
-  EXPECT_CALL(*gl_, GenMailboxCHROMIUM(mailbox.name)).Times(1);
   EXPECT_CALL(*gl_, ProduceTextureDirectCHROMIUM(kTextureId, mailbox.name))
       .Times(1);
 
-  ri_->GenMailbox(mailbox.name);
   ri_->ProduceTextureDirect(kTextureId, mailbox.name);
 }
 

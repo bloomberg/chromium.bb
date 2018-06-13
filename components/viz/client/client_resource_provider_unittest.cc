@@ -427,7 +427,6 @@ TEST_P(ClientResourceProviderTest, ReturnedSyncTokensArePassedToClient) {
   context_provider()->ContextGL()->GenTextures(1, &texture);
   context_provider()->ContextGL()->BindTexture(GL_TEXTURE_2D, texture);
   gpu::Mailbox mailbox;
-  context_provider()->ContextGL()->GenMailboxCHROMIUM(mailbox.name);
   context_provider()->ContextGL()->ProduceTextureDirectCHROMIUM(texture,
                                                                 mailbox.name);
   gpu::SyncToken sync_token;

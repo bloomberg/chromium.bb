@@ -1062,13 +1062,13 @@ struct ProduceTextureDirectImmediate {
 
   void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
-  void Init(GLuint _texture, const GLbyte* _mailbox) {
+  void Init(GLuint _texture, GLbyte* _mailbox) {
     SetHeader();
     texture = _texture;
     memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
   }
 
-  void* Set(void* cmd, GLuint _texture, const GLbyte* _mailbox) {
+  void* Set(void* cmd, GLuint _texture, GLbyte* _mailbox) {
     static_cast<ValueType*>(cmd)->Init(_texture, _mailbox);
     const uint32_t size = ComputeSize();
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);

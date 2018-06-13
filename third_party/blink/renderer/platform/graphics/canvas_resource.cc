@@ -400,7 +400,6 @@ const gpu::Mailbox& CanvasResourceGpuMemoryBuffer::GetOrCreateGpuMailbox(
   auto* gl = ContextGL();
   DCHECK(gl);  // caller should already have early exited if !gl.
   if (gpu_mailbox_.IsZero() && gl) {
-    gl->GenMailboxCHROMIUM(gpu_mailbox_.name);
     gl->ProduceTextureDirectCHROMIUM(texture_id_, gpu_mailbox_.name);
     mailbox_needs_new_sync_token_ = true;
     mailbox_sync_mode_ = sync_mode;

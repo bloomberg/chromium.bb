@@ -628,7 +628,6 @@ DrawingBuffer::ColorBuffer::ColorBuffer(
       image_id(image_id),
       gpu_memory_buffer(std::move(gpu_memory_buffer)) {
   gpu::gles2::GLES2Interface* gl = drawing_buffer->ContextGL();
-  gl->GenMailboxCHROMIUM(mailbox.name);
   gl->ProduceTextureDirectCHROMIUM(texture_id, mailbox.name);
 }
 
@@ -855,7 +854,6 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
       // contents of this texture later, premultiplying alpha into the color
       // channels. We lazily produce a mailbox for it.
       if (premultiplied_alpha_false_mailbox_.IsZero()) {
-        src_gl->GenMailboxCHROMIUM(premultiplied_alpha_false_mailbox_.name);
         src_gl->ProduceTextureDirectCHROMIUM(
             premultiplied_alpha_false_texture_,
             premultiplied_alpha_false_mailbox_.name);

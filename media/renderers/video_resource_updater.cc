@@ -304,7 +304,6 @@ class VideoResourceUpdater::HardwarePlaneResource
                         viz::TextureAllocation allocation)
       : PlaneResource(plane_resource_id, size, format, /*is_software=*/false),
         context_provider_(context_provider),
-        mailbox_(gpu::Mailbox::Generate()),
         allocation_(std::move(allocation)) {
     DCHECK(context_provider_);
     context_provider_->ContextGL()->ProduceTextureDirectCHROMIUM(
@@ -321,7 +320,7 @@ class VideoResourceUpdater::HardwarePlaneResource
 
  private:
   viz::ContextProvider* const context_provider_;
-  const gpu::Mailbox mailbox_;
+  gpu::Mailbox mailbox_;
   const viz::TextureAllocation allocation_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwarePlaneResource);

@@ -161,10 +161,7 @@ int32_t CompositorLayerResource::SetTexture(
   GLES2Implementation* gl = graphics->gles2_impl();
 
   // Generate a Mailbox for the texture.
-  gl->GenMailboxCHROMIUM(
-      reinterpret_cast<GLbyte*>(data_.texture->mailbox.name));
-  gl->ProduceTextureDirectCHROMIUM(
-      texture, reinterpret_cast<const GLbyte*>(data_.texture->mailbox.name));
+  gl->ProduceTextureDirectCHROMIUM(texture, data_.texture->mailbox.name);
 
   // Set the source size to (1, 1). It will be used to verify the source_rect
   // passed to SetSourceRect().

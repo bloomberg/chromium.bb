@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
+using testing::_;
 using testing::Test;
 
 namespace blink {
@@ -46,7 +47,7 @@ class SharedGpuContextTest
 
 class MailboxMockGLES2Interface : public FakeGLES2Interface {
  public:
-  MOCK_METHOD1(GenMailboxCHROMIUM, void(GLbyte*));
+  MOCK_METHOD2(ProduceTextureDirectCHROMIUM, void(GLuint, GLbyte*));
   MOCK_METHOD1(GenSyncTokenCHROMIUM, void(GLbyte*));
   MOCK_METHOD1(GenUnverifiedSyncTokenCHROMIUM, void(GLbyte*));
 };
@@ -173,7 +174,7 @@ TEST_F(SoftwareCompositingTest, CompositingMode) {
 
 class FakeMailboxGenerator {
  public:
-  void GenMailbox(GLbyte* name) { *name = counter_++; }
+  void ProduceTexture(GLuint texture, GLbyte* name) { *name = counter_++; }
 
   GLbyte counter_ = 1;
 };
@@ -192,10 +193,10 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
   gpu::Mailbox mailbox;
   mailbox.name[0] = 0;
 
-  EXPECT_CALL(gl_, GenMailboxCHROMIUM(mailbox.name))
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, mailbox.name))
       .Times(1)
       .WillOnce(testing::Invoke(&mailboxGenerator,
-                                &FakeMailboxGenerator::GenMailbox));
+                                &FakeMailboxGenerator::ProduceTexture));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
       mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
@@ -204,8 +205,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, GenMailboxCHROMIUM(mailbox.name))
-      .Times(0);  // GenMailboxCHROMIUM must not be called!
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, mailbox.name))
+      .Times(0);  // ProduceTextureDirectCHROMIUM must not be called!
 
   mailbox.name[0] = 0;
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
@@ -229,10 +230,10 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
   gpu::Mailbox mailbox;
   mailbox.name[0] = 0;
 
-  EXPECT_CALL(gl_, GenMailboxCHROMIUM(mailbox.name))
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, mailbox.name))
       .Times(1)
       .WillOnce(testing::Invoke(&mailboxGenerator,
-                                &FakeMailboxGenerator::GenMailbox));
+                                &FakeMailboxGenerator::ProduceTexture));
 
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(
       mailbox, image->PaintImageForCurrentFrame().GetSkImage(), GL_NEAREST);
@@ -255,8 +256,8 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, GenMailboxCHROMIUM(mailbox.name))
-      .Times(0);  // GenMailboxCHROMIUM must not be called!
+  EXPECT_CALL(gl_, ProduceTextureDirectCHROMIUM(_, mailbox.name))
+      .Times(0);  // ProduceTextureDirectCHROMIUM must not be called!
 
   mailbox.name[0] = 0;
   SharedGpuContext::ContextProviderWrapper()->Utils()->GetMailboxForSkImage(

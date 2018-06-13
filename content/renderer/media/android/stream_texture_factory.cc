@@ -119,7 +119,6 @@ unsigned StreamTextureFactory::CreateStreamTexture(
     *texture_id = 0;
     *texture_mailbox = gpu::Mailbox();
   } else {
-    gl->GenMailboxCHROMIUM(texture_mailbox->name);
     gl->ProduceTextureDirectCHROMIUM(*texture_id, texture_mailbox->name);
   }
   return route_id;

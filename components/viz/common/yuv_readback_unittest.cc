@@ -356,9 +356,8 @@ class YUVReadbackTest : public testing::Test {
                     GL_UNSIGNED_BYTE, input_pixels.getPixels());
 
     gpu::Mailbox mailbox;
-    gl_->GenMailboxCHROMIUM(mailbox.name);
-    EXPECT_FALSE(mailbox.IsZero());
     gl_->ProduceTextureDirectCHROMIUM(src_texture, mailbox.name);
+    EXPECT_FALSE(mailbox.IsZero());
 
     gpu::SyncToken sync_token;
     gl_->GenSyncTokenCHROMIUM(sync_token.GetData());

@@ -701,9 +701,7 @@ void DrawElementsInstancedANGLE(GLenum mode,
                                 const void* indices,
                                 GLsizei primcount) override;
 void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) override;
-void GenMailboxCHROMIUM(GLbyte* mailbox) override;
-void ProduceTextureDirectCHROMIUM(GLuint texture,
-                                  const GLbyte* mailbox) override;
+void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override;
 GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) override;
 void BindUniformLocationCHROMIUM(GLuint program,
                                  GLint location,

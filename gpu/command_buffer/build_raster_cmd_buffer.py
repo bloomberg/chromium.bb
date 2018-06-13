@@ -215,9 +215,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoFlush',
     'trace_level': 1,
   },
-  'GenMailbox': {
-    'type': 'NoCommand',
-  },
   'GetError': {
     'type': 'Is',
     'decoder_func': 'GetErrorState()->GetGLError',

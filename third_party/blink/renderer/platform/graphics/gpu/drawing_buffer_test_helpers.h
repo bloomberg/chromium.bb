@@ -196,13 +196,9 @@ class GLES2InterfaceForTests : public gpu::gles2::GLES2InterfaceStub,
     }
   }
 
-  void GenMailboxCHROMIUM(GLbyte* mailbox) override {
+  void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) override {
     ++current_mailbox_byte_;
     memset(mailbox, current_mailbox_byte_, GL_MAILBOX_SIZE_CHROMIUM);
-  }
-
-  void ProduceTextureDirectCHROMIUM(GLuint texture,
-                                    const GLbyte* mailbox) override {
     if (!create_image_chromium_fail_) {
       ASSERT_TRUE(texture_sizes_.Contains(texture));
       most_recently_produced_size_ = texture_sizes_.at(texture);

@@ -360,8 +360,6 @@ uint32_t MailboxToSurfaceBridge::CreateMailboxTexture(gpu::Mailbox* mailbox) {
   GLuint tex = 0;
   gl_->GenTextures(1, &tex);
   gl_->BindTexture(GL_TEXTURE_2D, tex);
-
-  gl_->GenMailboxCHROMIUM(mailbox->name);
   gl_->ProduceTextureDirectCHROMIUM(tex, mailbox->name);
 
   return tex;

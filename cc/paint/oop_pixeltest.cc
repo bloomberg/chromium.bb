@@ -165,7 +165,6 @@ class OopPixelTest : public testing::Test {
     // Produce a mailbox and insert an ordering barrier (assumes the raster
     // interface and gl are on the same scheduling group).
     gpu::Mailbox mailbox;
-    raster_implementation->GenMailbox(mailbox.name);
     raster_implementation->ProduceTextureDirect(raster_texture_id,
                                                 mailbox.name);
     raster_implementation->OrderingBarrierCHROMIUM();

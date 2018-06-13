@@ -231,7 +231,6 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       backing->texture_id = alloc.texture_id;
       backing->texture_target = alloc.texture_target;
       backing->overlay_candidate = alloc.overlay_candidate;
-      backing->mailbox = gpu::Mailbox::Generate();
       context_provider->ContextGL()->ProduceTextureDirectCHROMIUM(
           backing->texture_id, backing->mailbox.name);
       pool_resource.set_gpu_backing(std::move(backing));

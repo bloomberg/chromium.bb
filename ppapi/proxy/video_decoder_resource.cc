@@ -403,7 +403,6 @@ void VideoDecoderResource::OnPluginMsgRequestTextures(
                                 GL_UNSIGNED_BYTE,
                                 NULL);
       }
-      gles2_impl_->GenMailboxCHROMIUM(mailboxes[i].name);
       gles2_impl_->ProduceTextureDirectCHROMIUM(texture_ids[i],
                                                 mailboxes[i].name);
 
