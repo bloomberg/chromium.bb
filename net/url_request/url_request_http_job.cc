@@ -538,7 +538,8 @@ void URLRequestHttpJob::DestroyTransaction() {
 
 void URLRequestHttpJob::StartTransaction() {
   if (network_delegate()) {
-    OnCallToDelegate();
+    OnCallToDelegate(
+        NetLogEventType::NETWORK_DELEGATE_BEFORE_START_TRANSACTION);
     // The NetworkDelegate must watch for OnRequestDestroyed and not modify
     // |extra_headers| or invoke the callback after it's called. Not using a
     // WeakPtr here because it's not enough, the consumer has to watch for
@@ -990,7 +991,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
       // Note that |this| may not be deleted until
       // |URLRequestHttpJob::OnHeadersReceivedCallback()| or
       // |NetworkDelegate::URLRequestDestroyed()| has been called.
-      OnCallToDelegate();
+      OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_HEADERS_RECEIVED);
       allowed_unsafe_redirect_url_ = GURL();
       // The NetworkDelegate must watch for OnRequestDestroyed and not modify
       // any of the arguments or invoke the callback after it's called. Not

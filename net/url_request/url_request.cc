@@ -530,7 +530,7 @@ void URLRequest::Start() {
   load_timing_info_.request_start = base::TimeTicks::Now();
 
   if (network_delegate_) {
-    OnCallToDelegate();
+    OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_BEFORE_URL_REQUEST);
     int error = network_delegate_->NotifyBeforeURLRequest(
         this,
         base::BindOnce(&URLRequest::BeforeRequestComplete,
@@ -573,6 +573,7 @@ URLRequest::URLRequest(const GURL& url,
       redirect_limit_(kMaxRedirects),
       priority_(priority),
       identifier_(GenerateURLRequestIdentifier()),
+      delegate_event_type_(NetLogEventType::FAILED),
       calling_delegate_(false),
       use_blocked_by_as_load_param_(false),
       has_notified_completion_(false),
@@ -806,7 +807,7 @@ void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
   if (job) {
     RestartWithJob(job);
   } else {
-    OnCallToDelegate();
+    OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_RECEIVED_REDIRECT);
     delegate_->OnReceivedRedirect(this, redirect_info, defer_redirect);
     // |this| may be have been destroyed here.
   }
@@ -840,7 +841,7 @@ void URLRequest::NotifyResponseStarted(const URLRequestStatus& status) {
     if (!has_notified_completion_ && !status_.is_success())
       NotifyRequestCompleted();
 
-    OnCallToDelegate();
+    OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_RESPONSE_STARTED);
     delegate_->OnResponseStarted(this, net_error);
     // Nothing may appear below this line as OnResponseStarted may delete
     // |this|.
@@ -997,7 +998,7 @@ void URLRequest::NotifyAuthRequired(AuthChallengeInfo* auth_info) {
       NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
   auth_info_ = auth_info;
   if (network_delegate_) {
-    OnCallToDelegate();
+    OnCallToDelegate(NetLogEventType::NETWORK_DELEGATE_AUTH_REQUIRED);
     rv = network_delegate_->NotifyAuthRequired(
         this, *auth_info,
         base::BindOnce(&URLRequest::NotifyAuthRequiredComplete,
@@ -1049,14 +1050,14 @@ void URLRequest::NotifyAuthRequiredComplete(
 void URLRequest::NotifyCertificateRequested(
     SSLCertRequestInfo* cert_request_info) {
   status_ = URLRequestStatus();
-  OnCallToDelegate();
+  OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_CERTIFICATE_REQUESTED);
   delegate_->OnCertificateRequested(this, cert_request_info);
 }
 
 void URLRequest::NotifySSLCertificateError(const SSLInfo& ssl_info,
                                            bool fatal) {
   status_ = URLRequestStatus();
-  OnCallToDelegate();
+  OnCallToDelegate(NetLogEventType::URL_REQUEST_DELEGATE_SSL_CERTIFICATE_ERROR);
   delegate_->OnSSLCertificateError(this, ssl_info, fatal);
 }
 
@@ -1153,11 +1154,12 @@ void URLRequest::NotifyRequestCompleted() {
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 }
 
-void URLRequest::OnCallToDelegate() {
+void URLRequest::OnCallToDelegate(NetLogEventType type) {
   DCHECK(!calling_delegate_);
   DCHECK(blocked_by_.empty());
   calling_delegate_ = true;
-  net_log_.BeginEvent(NetLogEventType::URL_REQUEST_DELEGATE);
+  delegate_event_type_ = type;
+  net_log_.BeginEvent(type);
 }
 
 void URLRequest::OnCallToDelegateComplete() {
@@ -1166,7 +1168,8 @@ void URLRequest::OnCallToDelegateComplete() {
   if (!calling_delegate_)
     return;
   calling_delegate_ = false;
-  net_log_.EndEvent(NetLogEventType::URL_REQUEST_DELEGATE);
+  net_log_.EndEvent(delegate_event_type_);
+  delegate_event_type_ = NetLogEventType::FAILED;
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)
