@@ -2977,6 +2977,27 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksTestCase verifyBookmarkFolderIsSeen:@"Folder 2"];
 }
 
+- (void)testCantDeleteCellBeingEdited {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Create a new folder and type "New Folder 1" without pressing return.
+  NSString* newFolderTitle = @"New Folder";
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
+
+  // Swipe action to try to delete the newly created folder while its name its
+  // being edited.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"New Folder")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Verify the delete confirmation button doesn't show up.
+  [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      assertWithMatcher:grey_nil()];
+}
+
 // Tests that all elements on the bookmarks landing page are accessible.
 - (void)testAccessibilityOnBookmarksLandingPage {
   [BookmarksTestCase setupStandardBookmarks];
