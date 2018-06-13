@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/ui/public/interfaces/event_injector.mojom.h"
-#include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
@@ -141,10 +140,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   // Close all widgets this client knows.
   void CloseAllWidgets();
 
-  // Returns an interface to test drawing in mus. Only available when created
-  // with MusClientTestingState::CREATE_TESTING_STATE.
-  ui::mojom::WindowServerTest* GetTestingInterface() const;
-
   // Returns an interface to inject events into the Window Service. Only
   // available when created with MusClientTestingState::CREATE_TESTING_STATE.
   ui::mojom::EventInjector* GetTestingEventInjector() const;
@@ -206,7 +201,6 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   // Gives services transparent remote access the InputDeviceManager.
   std::unique_ptr<ui::InputDeviceClient> input_device_client_;
 
-  ui::mojom::WindowServerTestPtr server_test_ptr_;
   ui::mojom::EventInjectorPtr event_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(MusClient);
