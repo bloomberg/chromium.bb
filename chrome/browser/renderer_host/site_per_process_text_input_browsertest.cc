@@ -744,13 +744,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
     send_tab_set_composition_wait_for_bounds_change(view);
 }
 
+// Failing on Mac - http://crbug.com/852452
+#if defined(OS_MACOSX)
+#define MAYBE_TrackTextSelectionForAllFrames \
+  DISABLED_TrackTextSelectionForAllFrames
+#else
+#define MAYBE_TrackTextSelectionForAllFrames TrackTextSelectionForAllFrames
+#endif
+
 // This test creates a page with multiple child frames and adds an <input> to
 // each frame. Then, sequentially, each <input> is focused by sending a tab key.
 // After focusing each input, a sequence of key presses (character 'E') are sent
 // to the focused widget. The test then verifies that the selection length
 // equals the length of the sequence of 'E's.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       TrackTextSelectionForAllFrames) {
+                       MAYBE_TrackTextSelectionForAllFrames) {
   CreateIframePage("a(b,c(a,b),d)");
   std::vector<content::RenderFrameHost*> frames{
       GetFrame(IndexVector{}),     GetFrame(IndexVector{0}),
