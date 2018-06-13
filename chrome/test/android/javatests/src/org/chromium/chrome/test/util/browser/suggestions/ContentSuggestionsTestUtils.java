@@ -187,16 +187,6 @@ public final class ContentSuggestionsTestUtils {
                 describeItem("HEADER");
             }
 
-            @Override
-            public void visitTileGrid() {
-                describeItem("SITE_SECTION");
-            }
-
-            @Override
-            public void visitLogo() {
-                describeItem("LOGO");
-            }
-
             private void describeItem(String description) {
                 stringBuilder.append(
                         String.format(Locale.US, "%s - %s%n", mPosition++, description));

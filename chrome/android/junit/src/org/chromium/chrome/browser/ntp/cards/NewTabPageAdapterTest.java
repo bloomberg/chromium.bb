@@ -1242,9 +1242,9 @@ public class NewTabPageAdapterTest {
 
     private void reloadNtp() {
         mSource.removeObservers();
-        mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), /* logoView = */ null,
-                makeUiConfig(), mOfflinePageBridge, mock(ContextMenuManager.class),
-                /* tileGroupDelegate = */ null);
+        mAdapter = new NewTabPageAdapter(mUiDelegate, mock(View.class), /* logoView = */
+                makeUiConfig(), mOfflinePageBridge, mock(ContextMenuManager.class)
+                /* tileGroupDelegate = */);
         mAdapter.refreshSuggestions();
     }
 
