@@ -1260,45 +1260,53 @@ void FormStructure::RationalizePhoneNumbersInSection(std::string section) {
   phone_rationalized_[section] = true;
 }
 
-void FormStructure::RationalizeAddressFields() {
+void FormStructure::RationalizeAddressLineFields(
+    const std::vector<size_t>& address_indexes) {
   // TODO(crbug.com/850552): Add UKM logging.
   // Get the number of fields predicted as being the whole street address.
-  int nb_street_address = 0;
-  for (const auto& field : fields_) {
-    ServerFieldType current_field_type =
-        field->ComputedType().GetStorableType();
 
-    if (current_field_type == ADDRESS_HOME_STREET_ADDRESS) {
-      ++nb_street_address;
-    }
-  }
-
-  // The rationalization only applies to forms that have 2 or 3 whole street
-  // address predictions.
-  if (nb_street_address != 2 && nb_street_address != 3) {
+  if (address_indexes.size() < 2)
     return;
+
+  // The rationalization is within a section, so we need to draw the borders
+  // between them.
+  auto nb_street_address = address_indexes.size();
+
+  std::vector<size_t> section_delimiters;
+  section_delimiters.push_back(0);
+  for (unsigned i = 1; i < nb_street_address; ++i) {
+    if (fields_[address_indexes[i]]->section !=
+        fields_[address_indexes[i - 1]]->section)
+      section_delimiters.push_back(i);
   }
+  section_delimiters.push_back(nb_street_address);
 
   // Rationalize the street address fields to be address lines 1 to 3 instead.
-  int nb_address_rationalized = 0;
-  for (auto it = fields_.begin(); it != fields_.end(); ++it) {
-    auto& field = *it;
-    ServerFieldType current_field_type = field->Type().GetStorableType();
+  // By using the sections we are using the heuristic detected types used for
+  // identifying sections, to rationalize the server detected types.
+  for (unsigned section_border_index = 0;
+       section_border_index < section_delimiters.size() - 1;
+       ++section_border_index) {
+    auto border = section_delimiters[section_border_index];
+    auto next_border = section_delimiters[section_border_index + 1];
+    // The rationalization only applies to sections that have 2 or 3 whole
+    // street address predictions.
+    if ((next_border - border) != 2 && (next_border - border) != 3)
+      continue;
 
-    if (current_field_type == ADDRESS_HOME_STREET_ADDRESS) {
+    int nb_address_rationalized = 0;
+    for (unsigned i = border; i < next_border; ++i) {
+      auto& field = fields_[address_indexes[i]];
       switch (nb_address_rationalized) {
         case 0:
           field->SetTypeTo(AutofillType(ADDRESS_HOME_LINE1));
           break;
-
         case 1:
           field->SetTypeTo(AutofillType(ADDRESS_HOME_LINE2));
           break;
-
         case 2:
           field->SetTypeTo(AutofillType(ADDRESS_HOME_LINE3));
           break;
-
         default:
           NOTREACHED();
           break;
@@ -1308,9 +1316,31 @@ void FormStructure::RationalizeAddressFields() {
   }
 }
 
+void FormStructure::RationalizeRepreatedFields() {
+  // Group fields w/ their |type| in index_group_by_type[|type|].
+  std::vector<size_t> index_group_by_type[MAX_VALID_FIELD_TYPE];
+
+  for (const auto& field : fields_) {
+    // The hidden fields are not considered when rationalizing, except the
+    // hidden select ones for which the types may need to be changed
+    // accordingly.
+    if ((!field->is_focusable ||
+         field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) &&
+        field->form_control_type != "select-one")
+      continue;
+
+    auto current_type = field->Type().GetStorableType();
+    if (current_type != UNKNOWN_TYPE && current_type < MAX_VALID_FIELD_TYPE)
+      index_group_by_type[current_type].push_back(&field - &fields_[0]);
+  }
+
+  RationalizeAddressLineFields(
+      index_group_by_type[ADDRESS_HOME_STREET_ADDRESS]);
+}
+
 void FormStructure::RationalizeFieldTypePredictions() {
+  RationalizeRepreatedFields();
   RationalizeCreditCardFieldPredictions();
-  RationalizeAddressFields();
   for (const auto& field : fields_) {
     field->SetTypeTo(field->Type());
   }
