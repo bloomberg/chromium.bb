@@ -7521,8 +7521,7 @@ TEST_P(QuicFramerTest, BuildTruncatedCloseFramePacket) {
                                       data->length(), AsChars(p), p_size);
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildApplicationCloseFramePacket) {
+TEST_P(QuicFramerTest, BuildApplicationCloseFramePacket) {
   if (framer_.transport_version() != QUIC_VERSION_99) {
     // Versions other than 99 do not have ApplicationClose
     return;
@@ -7571,8 +7570,7 @@ TEST_P(QuicFramerTest, DISABLED_BuildApplicationCloseFramePacket) {
                                       QUIC_ARRAYSIZE(packet99));
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildTruncatedApplicationCloseFramePacket) {
+TEST_P(QuicFramerTest, BuildTruncatedApplicationCloseFramePacket) {
   if (framer_.transport_version() != QUIC_VERSION_99) {
     // Versions other than 99 do not have this frame.
     return;
@@ -8116,8 +8114,7 @@ TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
                                       data->length(), AsChars(p), p_size);
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildMaxStreamDataPacket) {
+TEST_P(QuicFramerTest, BuildMaxStreamDataPacket) {
   if (framer_.transport_version() != QUIC_VERSION_99) {
     // This frame is available only in this version.
     return;
@@ -8161,8 +8158,7 @@ TEST_P(QuicFramerTest, DISABLED_BuildMaxStreamDataPacket) {
                                       QUIC_ARRAYSIZE(packet99));
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildMaxDataPacket) {
+TEST_P(QuicFramerTest, BuildMaxDataPacket) {
   if (framer_.transport_version() != QUIC_VERSION_99) {
     // This frame is available only in this version.
     return;
@@ -9385,8 +9381,7 @@ TEST_P(QuicFramerTest, IetfBlockedFrame) {
   CheckFramingBoundaries(packet99, QUIC_INVALID_BLOCKED_DATA);
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildIetfBlockedPacket) {
+TEST_P(QuicFramerTest, BuildIetfBlockedPacket) {
   // This test only for version 99.
   if (framer_.transport_version() != QUIC_VERSION_99) {
     return;
@@ -9471,8 +9466,7 @@ TEST_P(QuicFramerTest, IetfStreamBlockedFrame) {
   CheckFramingBoundaries(packet99, QUIC_INVALID_STREAM_BLOCKED_DATA);
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildIetfStreamBlockedPacket) {
+TEST_P(QuicFramerTest, BuildIetfStreamBlockedPacket) {
   // This test only for version 99.
   if (framer_.transport_version() != QUIC_VERSION_99) {
     return;
@@ -9556,8 +9550,7 @@ TEST_P(QuicFramerTest, MaxStreamIdFrame) {
   CheckFramingBoundaries(packet99, QUIC_MAX_STREAM_ID_DATA);
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildMaxStreamIdPacket) {
+TEST_P(QuicFramerTest, BuildMaxStreamIdPacket) {
   // This test only for version 99.
   if (framer_.transport_version() != QUIC_VERSION_99) {
     return;
@@ -9638,8 +9631,7 @@ TEST_P(QuicFramerTest, StreamIdBlockedFrame) {
   CheckFramingBoundaries(packet99, QUIC_STREAM_ID_BLOCKED_DATA);
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildStreamIdBlockedPacket) {
+TEST_P(QuicFramerTest, BuildStreamIdBlockedPacket) {
   // This test only for version 99.
   if (framer_.transport_version() != QUIC_VERSION_99) {
     return;
@@ -9731,8 +9723,7 @@ TEST_P(QuicFramerTest, NewConnectionIdFrame) {
   CheckFramingBoundaries(packet99, QUIC_INVALID_NEW_CONNECTION_ID_DATA);
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildNewConnectionIdFramePacket) {
+TEST_P(QuicFramerTest, BuildNewConnectionIdFramePacket) {
   if (framer_.transport_version() != QUIC_VERSION_99) {
     // This frame is only for version 99.
     return;
@@ -9823,8 +9814,7 @@ TEST_P(QuicFramerTest, IetfStopSendingFrame) {
   CheckFramingBoundaries(packet99, QUIC_INVALID_STOP_SENDING_FRAME_DATA);
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildIetfStopSendingPacket) {
+TEST_P(QuicFramerTest, BuildIetfStopSendingPacket) {
   // This test is only for version 99.
   if (framer_.transport_version() != QUIC_VERSION_99) {
     return;
@@ -9909,8 +9899,7 @@ TEST_P(QuicFramerTest, IetfPathChallengeFrame) {
   CheckFramingBoundaries(packet99, QUIC_INVALID_PATH_CHALLENGE_DATA);
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildIetfPathChallengePacket) {
+TEST_P(QuicFramerTest, BuildIetfPathChallengePacket) {
   // This test only for version 99.
   if (framer_.transport_version() != QUIC_VERSION_99) {
     return;
@@ -9992,8 +9981,7 @@ TEST_P(QuicFramerTest, IetfPathResponseFrame) {
   CheckFramingBoundaries(packet99, QUIC_INVALID_PATH_RESPONSE_DATA);
 }
 
-// TODO(b/109878472): Re-enable after it is fixed in Chromium.
-TEST_P(QuicFramerTest, DISABLED_BuildIetfPathResponsePacket) {
+TEST_P(QuicFramerTest, BuildIetfPathResponsePacket) {
   // This test only for version 99.
   if (framer_.transport_version() != QUIC_VERSION_99) {
     return;
