@@ -157,6 +157,16 @@ class PasswordFormMetricsRecorder
     kCorrectedUsernameInForm = 200,
   };
 
+  // Old and new form parsings comparison result.
+  enum class ParsingComparisonResult {
+    kSame,
+    kDifferent,
+    // Old and new parsers use different identification mechanism for unnamed
+    // fields, so the difference in parsing of anonymous fields is expected.
+    kAnonymousFields,
+    kMax
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -235,6 +245,10 @@ class PasswordFormMetricsRecorder
   // Records a low entropy hash of the form signature in order to be able to
   // distinguish two forms on the same site.
   void RecordFormSignature(autofill::FormSignature form_signature);
+
+  // Records old and new form parsings comparison result.
+  void RecordParsingsComparisonResult(
+      ParsingComparisonResult comparison_result);
 
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;

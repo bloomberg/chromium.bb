@@ -200,15 +200,19 @@ void NewPasswordFormManager::ProcessServerPredictions(
 }
 
 void NewPasswordFormManager::Fill() {
-  if (!driver_ || best_matches_.empty())
-    return;
-
   // There are additional signals (server-side data) and parse results in
   // filling and saving mode might be different so it is better not to cache
   // parse result, but to parse each time again.
   std::unique_ptr<autofill::PasswordForm> observed_password_form =
       ParseFormAndMakeLogging(client_, observed_form_, predictions_);
   if (!observed_password_form)
+    return;
+
+  RecordMetricOnCompareParsingResult(*observed_password_form);
+
+  // TODO(https://crbug.com/831123). Move this lines to the beginning of the
+  // function when the old parsing is removed.
+  if (!driver_ || best_matches_.empty())
     return;
 
   // TODO(https://crbug.com/831123). Implement correct treating of federated
@@ -218,6 +222,44 @@ void NewPasswordFormManager::Fill() {
       *client_, driver_.get(), false /* is_blaclisted */,
       *observed_password_form.get(), best_matches_, federated_matches,
       preferred_match_, metrics_recorder_.get());
+}
+
+void NewPasswordFormManager::RecordMetricOnCompareParsingResult(
+    const autofill::PasswordForm& parsed_form) {
+  bool same =
+      parsed_form.username_element == old_parsing_result_.username_element &&
+      parsed_form.password_element == old_parsing_result_.password_element &&
+      parsed_form.new_password_element ==
+          old_parsing_result_.new_password_element &&
+      parsed_form.confirmation_password_element ==
+          old_parsing_result_.confirmation_password_element;
+  if (same) {
+    metrics_recorder_->RecordParsingsComparisonResult(
+        PasswordFormMetricsRecorder::ParsingComparisonResult::kSame);
+    return;
+  }
+
+  // In the old parsing for fields with empty name, placeholders are used. The
+  // reason for this is that an empty "..._element" attribute in a PasswordForm
+  // means that no corresponding input element exists. The new form parsing sets
+  // empty string in that case because renderer ids are used instead of element
+  // names for fields identification. Hence in case of anonymous fields, the
+  // results will be different for sure. Compare to placeholders and record this
+  // case.
+  if (old_parsing_result_.username_element ==
+          base::ASCIIToUTF16("anonymous_username") ||
+      old_parsing_result_.password_element ==
+          base::ASCIIToUTF16("anonymous_password") ||
+      old_parsing_result_.new_password_element ==
+          base::ASCIIToUTF16("anonymous_new_password") ||
+      old_parsing_result_.confirmation_password_element ==
+          base::ASCIIToUTF16("anonymous_confirmation_password")) {
+    metrics_recorder_->RecordParsingsComparisonResult(
+        PasswordFormMetricsRecorder::ParsingComparisonResult::kAnonymousFields);
+  } else {
+    metrics_recorder_->RecordParsingsComparisonResult(
+        PasswordFormMetricsRecorder::ParsingComparisonResult::kDifferent);
+  }
 }
 
 }  // namespace password_manager

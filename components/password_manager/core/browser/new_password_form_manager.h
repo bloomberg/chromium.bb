@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
@@ -59,6 +60,10 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   bool is_submitted() { return is_submitted_; }
   void set_not_submitted() { is_submitted_ = false; }
 
+  void set_old_parsing_result(const autofill::PasswordForm& form) {
+    old_parsing_result_ = form;
+  }
+
   // Selects from |predictions| predictions that corresponds to
   // |observed_form_|, initiates filling and stores predictions in
   // |predictions_|.
@@ -100,6 +105,12 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   // Sends fill data to the renderer.
   void Fill();
 
+  // Compares |parsed_form| with |old_parsing_result_| and records UKM metric.
+  // TODO(https://crbug.com/831123): Remove it when the old form parsing is
+  // removed.
+  void RecordMetricOnCompareParsingResult(
+      const autofill::PasswordForm& parsed_form);
+
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
@@ -133,6 +144,11 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   autofill::FormData submitted_form_;
 
   base::Optional<FormPredictions> predictions_;
+
+  // Used for comparison metrics.
+  // TODO(https://crbug.com/831123): Remove it when the old form parsing is
+  // removed.
+  autofill::PasswordForm old_parsing_result_;
 
   DISALLOW_COPY_AND_ASSIGN(NewPasswordFormManager);
 };

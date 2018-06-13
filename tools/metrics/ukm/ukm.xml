@@ -2298,6 +2298,14 @@ be describing additional metrics about the same event.
       enum ManagerAutofillEvent.
     </summary>
   </metric>
+  <metric name="ParsingComparison">
+    <summary>
+      Records comparison result of old and new password form parsing algorithms.
+      Metric is recorded on a password form detection. Recorded values
+      correspond to the enum
+      password_manager::PasswordFormMetricsRecorder::ParsingComparisonResult.
+    </summary>
+  </metric>
   <metric name="Saving.Prompt.Interaction">
     <summary>
       Records how the user interacted with a saving prompt. Recorded values
