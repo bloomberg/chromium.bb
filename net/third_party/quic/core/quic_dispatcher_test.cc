@@ -47,6 +47,7 @@ using std::string;
 using testing::_;
 using testing::InSequence;
 using testing::Invoke;
+using testing::NiceMock;
 using testing::Return;
 using testing::WithArg;
 using testing::WithoutArgs;
@@ -208,10 +209,10 @@ class QuicDispatcherTest : public QuicTest {
                        QuicRandom::GetInstance(),
                        std::move(proof_source),
                        TlsServerHandshaker::CreateSslCtx()),
-        dispatcher_(new TestDispatcher(config_,
-                                       &crypto_config_,
-                                       &version_manager_,
-                                       &eps_)),
+        dispatcher_(new NiceMock<TestDispatcher>(config_,
+                                                 &crypto_config_,
+                                                 &version_manager_,
+                                                 &eps_)),
         time_wait_list_manager_(nullptr),
         session1_(nullptr),
         session2_(nullptr),
@@ -361,7 +362,7 @@ class QuicDispatcherTest : public QuicTest {
   QuicVersionManager version_manager_;
   QuicCryptoServerConfig crypto_config_;
   QuicSocketAddress server_address_;
-  std::unique_ptr<TestDispatcher> dispatcher_;
+  std::unique_ptr<NiceMock<TestDispatcher>> dispatcher_;
   MockTimeWaitListManager* time_wait_list_manager_;
   TestQuicSpdyServerSession* session1_;
   TestQuicSpdyServerSession* session2_;
@@ -1527,7 +1528,7 @@ TEST_P(BufferedPacketStoreTest, ProcessNonChloPacketsUptoLimitAndProcessChlo) {
   EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
               ProcessUdpPacket(_, _, _))
       .Times(kDefaultMaxUndecryptablePackets + 1)  // + 1 for CHLO.
-      .WillOnce(
+      .WillRepeatedly(
           WithArg<2>(Invoke([this, conn_id](const QuicEncryptedPacket& packet) {
             ValidatePacket(conn_id, packet);
           })));
@@ -1578,7 +1579,7 @@ TEST_P(BufferedPacketStoreTest,
     EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
                 ProcessUdpPacket(_, client_address, _))
         .Times(num_packet_to_process)
-        .WillOnce(WithArg<2>(
+        .WillRepeatedly(WithArg<2>(
             Invoke([this, conn_id](const QuicEncryptedPacket& packet) {
               ValidatePacket(conn_id, packet);
             })));
@@ -1598,6 +1599,8 @@ TEST_P(BufferedPacketStoreTest, DeliverEmptyPackets) {
           dispatcher_.get(), config_, conn_id, client_address, &mock_helper_,
           &mock_alarm_factory_, &crypto_config_,
           QuicDispatcherPeer::GetCache(dispatcher_.get()), &session1_)));
+  EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
+              ProcessUdpPacket(_, client_address, _));
   ProcessPacket(client_address, conn_id, true, SerializeFullCHLO());
 }
 
@@ -1624,7 +1627,7 @@ TEST_P(BufferedPacketStoreTest, ReceiveRetransmittedCHLO) {
   EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
               ProcessUdpPacket(_, _, _))
       .Times(3)  // Triggered by 1 data packet and 2 CHLOs.
-      .WillOnce(
+      .WillRepeatedly(
           WithArg<2>(Invoke([this, conn_id](const QuicEncryptedPacket& packet) {
             ValidatePacket(conn_id, packet);
           })));
@@ -1770,7 +1773,7 @@ TEST_P(BufferedPacketStoreTest, BufferDuplicatedCHLO) {
   EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
               ProcessUdpPacket(_, _, _))
       .Times(packets_buffered)
-      .WillOnce(WithArg<2>(
+      .WillRepeatedly(WithArg<2>(
           Invoke([this, last_connection](const QuicEncryptedPacket& packet) {
             ValidatePacket(last_connection, packet);
           })));
@@ -1791,7 +1794,7 @@ TEST_P(BufferedPacketStoreTest, BufferNonChloPacketsUptoLimitWithChloBuffered) {
       EXPECT_CALL(
           *reinterpret_cast<MockQuicConnection*>(session1_->connection()),
           ProcessUdpPacket(_, _, _))
-          .WillOnce(WithArg<2>(
+          .WillRepeatedly(WithArg<2>(
               Invoke([this, conn_id](const QuicEncryptedPacket& packet) {
                 ValidatePacket(conn_id, packet);
               })));
@@ -1818,7 +1821,7 @@ TEST_P(BufferedPacketStoreTest, BufferNonChloPacketsUptoLimitWithChloBuffered) {
   EXPECT_CALL(*reinterpret_cast<MockQuicConnection*>(session1_->connection()),
               ProcessUdpPacket(_, _, _))
       .Times(kDefaultMaxUndecryptablePackets + 1)
-      .WillOnce(WithArg<2>(
+      .WillRepeatedly(WithArg<2>(
           Invoke([this, last_connection_id](const QuicEncryptedPacket& packet) {
             ValidatePacket(last_connection_id, packet);
           })));
