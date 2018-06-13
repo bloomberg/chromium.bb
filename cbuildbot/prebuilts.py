@@ -187,7 +187,7 @@ def UploadPrebuilts(category, chrome_rev, private_bucket, buildroot,
   elif config_lib.IsPFQType(category):
     extra_args.extend(['--key', _PREFLIGHT_BINHOST])
   else:
-    assert category in (constants.BUILD_FROM_SOURCE_TYPE,
+    assert category in (constants.FULL_TYPE,
                         constants.CHROOT_BUILDER_TYPE)
     extra_args.extend(['--key', _FULL_BINHOST])
 

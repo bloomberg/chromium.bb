@@ -618,8 +618,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
       error = 'Unified config for %s has invalid values' % build_name
       # Unified masters must be internal and must rev both overlays.
       if config['master']:
-        self.assertTrue(
-            config['internal'] and config['manifest_version'], error)
+        self.assertTrue(config['manifest_version'], error)
       elif not config['master'] and config['manifest_version']:
         # Unified slaves can rev either public or both depending on whether
         # they are internal or not.

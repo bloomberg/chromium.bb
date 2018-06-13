@@ -985,7 +985,7 @@ def GeneralTemplates(site_config, ge_build_config):
       usepkg_build_packages=False,
       chrome_sdk=True,
       display_label=config_lib.DISPLAY_LABEL_FULL,
-      build_type=constants.BUILD_FROM_SOURCE_TYPE,
+      build_type=constants.FULL_TYPE,
       archive_build_debug=True,
       images=['base', 'recovery', 'test', 'factory_install'],
       git_sync=True,
@@ -2445,12 +2445,8 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.build_external_chrome,
       boards=[],
       master=True,
-      slave_configs=[],
       manifest_version=True,
-      # Mark this builder as internal, only because masters need to be.
-      internal=True,
-      manifest_repo_url=site_config.params['MANIFEST_URL'],
-      overlays=constants.BOTH_OVERLAYS,
+      slave_configs=[],
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='0 */3 * * *',
   )

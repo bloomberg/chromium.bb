@@ -564,7 +564,7 @@ ANDROID_PFQ_TYPE = 'android'
 
 # Builds from source and non-incremental.  This builds fully wipe their
 # chroot before the start of every build and no not use a BINHOST.
-BUILD_FROM_SOURCE_TYPE = 'full'
+FULL_TYPE = 'full'
 
 # Full but with versioned logic.
 CANARY_TYPE = 'canary'
@@ -594,7 +594,7 @@ PRE_CQ_TYPE = 'pre_cq'
 VALID_BUILD_TYPES = (
     PALADIN_TYPE,
     INCREMENTAL_TYPE,
-    BUILD_FROM_SOURCE_TYPE,
+    FULL_TYPE,
     CANARY_TYPE,
     CHROOT_BUILDER_TYPE,
     CHROOT_BUILDER_BOARD,
