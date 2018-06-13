@@ -237,4 +237,25 @@ bool IsHeadingOrTableHeader(ax::mojom::Role role) {
       return false;
   }
 }
+
+bool SupportsOrientation(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComboBoxMenuButton:
+    case ax::mojom::Role::kListBox:
+    case ax::mojom::Role::kMenu:
+    case ax::mojom::Role::kMenuBar:
+    case ax::mojom::Role::kRadioGroup:
+    case ax::mojom::Role::kScrollBar:
+    case ax::mojom::Role::kSlider:
+    case ax::mojom::Role::kSplitter:
+    case ax::mojom::Role::kTabList:
+    case ax::mojom::Role::kToolbar:
+    case ax::mojom::Role::kTreeGrid:
+    case ax::mojom::Role::kTree:
+      return true;
+    default:
+      return false;
+  }
+}
 }  // namespace ui

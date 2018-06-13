@@ -2521,11 +2521,15 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
   COM_OBJECT_VALIDATE_1_ARG(result);
 
+  const AXNodeData& data = GetData();
+  int int_attribute;
+  result->vt = VT_EMPTY;
+
   switch (property_id) {
     // Supported by IAccessibleEx.
     // TODO(suproteem): Implementations where applicable.
     case UIA_AriaPropertiesPropertyId:
-      result->vt = VT_EMPTY;
+      // TODO(suproteem)
       break;
 
     case UIA_AriaRolePropertyId:
@@ -2534,23 +2538,79 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_AutomationIdPropertyId:
+      result->vt = VT_BSTR;
+      result->bstrVal =
+          SysAllocString(base::NumberToString16(GetUniqueId()).c_str());
+      break;
+
     case UIA_ClassNamePropertyId:
+      result->vt = VT_BSTR;
+      GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
+                               result->pbstrVal);
+      break;
+
     case UIA_ClickablePointPropertyId:
     case UIA_ControllerForPropertyId:
+      // TODO(suproteem)
+      break;
+
     case UIA_CulturePropertyId:
+      result->vt = VT_BSTR;
+      GetStringAttributeAsBstr(ax::mojom::StringAttribute::kLanguage,
+                               result->pbstrVal);
+      break;
+
     case UIA_DescribedByPropertyId:
     case UIA_FlowsToPropertyId:
     case UIA_FrameworkIdPropertyId:
     case UIA_IsContentElementPropertyId:
     case UIA_IsControlElementPropertyId:
+      // TODO(suproteem)
+      break;
+
     case UIA_IsDataValidForFormPropertyId:
+      if (GetIntAttribute(ax::mojom::IntAttribute::kInvalidState,
+                          &int_attribute)) {
+        result->vt = VT_BOOL;
+        result->boolVal = int_attribute ==
+                          static_cast<int32_t>(ax::mojom::InvalidState::kFalse);
+      }
+      break;
+
     case UIA_IsRequiredForFormPropertyId:
+      result->vt = VT_BOOL;
+      if (data.HasState(ax::mojom::State::kRequired)) {
+        result->boolVal = true;
+      } else {
+        result->boolVal = false;
+      }
+      break;
+
     case UIA_ItemStatusPropertyId:
     case UIA_ItemTypePropertyId:
     case UIA_LabeledByPropertyId:
+      // TODO(suproteem)
+      break;
+
     case UIA_LocalizedControlTypePropertyId:
+      break;
+
     case UIA_OrientationPropertyId:
-      result->vt = VT_EMPTY;
+      if (SupportsOrientation(data.role)) {
+        if (data.HasState(ax::mojom::State::kHorizontal) &&
+            data.HasState(ax::mojom::State::kVertical)) {
+          NOTREACHED() << "An accessibility object cannot have a horizontal "
+                          "and a vertical orientation at the same time.";
+        }
+        if (data.HasState(ax::mojom::State::kHorizontal)) {
+          result->vt = VT_I4;
+          result->intVal = OrientationType_Horizontal;
+        }
+        if (data.HasState(ax::mojom::State::kVertical)) {
+          result->vt = VT_I4;
+          result->intVal = OrientationType_Vertical;
+        }
+      }
       break;
 
     // Covered by MSAA.
@@ -2564,7 +2624,6 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_NamePropertyId:
     case UIA_NativeWindowHandlePropertyId:
     case UIA_ProcessIdPropertyId:
-      result->vt = VT_EMPTY;
       break;
 
     // Overlap with MSAA, not supported.
@@ -2602,7 +2661,6 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     case UIA_VisualEffectsPropertyId:
     case UIA_WindowControlTypeId:
       // MSAA-to-UIA Proxy.
-      result->vt = VT_EMPTY;
       break;
   }
 

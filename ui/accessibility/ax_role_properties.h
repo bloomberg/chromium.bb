@@ -52,6 +52,9 @@ AX_EXPORT bool IsHeading(ax::mojom::Role role);
 
 // Returns true if it's a heading.
 AX_EXPORT bool IsHeadingOrTableHeader(ax::mojom::Role role);
+
+// Returns true if this node can have an orientation
+AX_EXPORT bool SupportsOrientation(ax::mojom::Role role);
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_ROLE_PROPERTIES_H_
