@@ -1501,18 +1501,18 @@ TEST_P(QuicProxyClientSocketTest, NetLog) {
       LogContainsEndEvent(entry_list, 9, NetLogEventType::SOCKET_ALIVE));
 }
 
-// CompletionCallback that causes the QuicProxyClientSocket to be
-// deleted when Run is invoked.
+// A helper class that will delete |sock| when the callback is invoked.
 class DeleteSockCallback : public TestCompletionCallbackBase {
  public:
   explicit DeleteSockCallback(std::unique_ptr<QuicProxyClientSocket>* sock)
-      : sock_(sock),
-        callback_(base::Bind(&DeleteSockCallback::OnComplete,
-                             base::Unretained(this))) {}
+      : sock_(sock) {}
 
   ~DeleteSockCallback() override {}
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&DeleteSockCallback::OnComplete,
+                          base::Unretained(this));
+  }
 
  private:
   void OnComplete(int result) {
@@ -1521,7 +1521,6 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
   }
 
   std::unique_ptr<QuicProxyClientSocket>* sock_;
-  CompletionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteSockCallback);
 };

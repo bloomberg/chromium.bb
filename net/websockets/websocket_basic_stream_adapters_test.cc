@@ -846,7 +846,7 @@ TEST_F(WebSocketSpdyStreamAdapterTest, AsyncReadAndWrite) {
   EXPECT_TRUE(data.AllWriteDataConsumed());
 }
 
-// KillerCallback will delete the adapter as part of the callback.
+// A helper class that will delete |adapter| when the callback is invoked.
 class KillerCallback : public TestCompletionCallbackBase {
  public:
   explicit KillerCallback(std::unique_ptr<WebSocketSpdyStreamAdapter> adapter)
@@ -854,8 +854,8 @@ class KillerCallback : public TestCompletionCallbackBase {
 
   ~KillerCallback() override = default;
 
-  CompletionCallback callback() {
-    return base::Bind(&KillerCallback::OnComplete, base::Unretained(this));
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&KillerCallback::OnComplete, base::Unretained(this));
   }
 
  private:

@@ -24,6 +24,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
@@ -2562,16 +2563,16 @@ class TestReleasingSocketRequest : public TestCompletionCallbackBase {
                              bool reset_releasing_handle)
       : pool_(pool),
         expected_result_(expected_result),
-        reset_releasing_handle_(reset_releasing_handle),
-        callback_(base::Bind(&TestReleasingSocketRequest::OnComplete,
-                             base::Unretained(this))) {
-  }
+        reset_releasing_handle_(reset_releasing_handle) {}
 
   ~TestReleasingSocketRequest() override = default;
 
   ClientSocketHandle* handle() { return &handle_; }
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&TestReleasingSocketRequest::OnComplete,
+                          base::Unretained(this));
+  }
 
  private:
   void OnComplete(int result) {
@@ -2580,10 +2581,11 @@ class TestReleasingSocketRequest : public TestCompletionCallbackBase {
       handle_.Reset();
 
     scoped_refptr<TestSocketParams> con_params(new TestSocketParams());
-    EXPECT_EQ(expected_result_,
-              handle2_.Init("a", con_params, DEFAULT_PRIORITY, SocketTag(),
-                            ClientSocketPool::RespectLimits::ENABLED,
-                            callback2_.callback(), pool_, NetLogWithSource()));
+    EXPECT_EQ(
+        expected_result_,
+        handle2_.Init("a", con_params, DEFAULT_PRIORITY, SocketTag(),
+                      ClientSocketPool::RespectLimits::ENABLED,
+                      CompletionOnceCallback(), pool_, NetLogWithSource()));
   }
 
   TestClientSocketPool* const pool_;
@@ -2591,8 +2593,6 @@ class TestReleasingSocketRequest : public TestCompletionCallbackBase {
   bool reset_releasing_handle_;
   ClientSocketHandle handle_;
   ClientSocketHandle handle2_;
-  CompletionCallback callback_;
-  TestCompletionCallback callback2_;
 };
 
 
@@ -2677,16 +2677,10 @@ TEST_F(ClientSocketPoolBaseTest, DoNotReuseSocketAfterFlush) {
 
 class ConnectWithinCallback : public TestCompletionCallbackBase {
  public:
-  ConnectWithinCallback(
-      const std::string& group_name,
-      const scoped_refptr<TestSocketParams>& params,
-      TestClientSocketPool* pool)
-      : group_name_(group_name),
-        params_(params),
-        pool_(pool),
-        callback_(base::Bind(&ConnectWithinCallback::OnComplete,
-                             base::Unretained(this))) {
-  }
+  ConnectWithinCallback(const std::string& group_name,
+                        const scoped_refptr<TestSocketParams>& params,
+                        TestClientSocketPool* pool)
+      : group_name_(group_name), params_(params), pool_(pool) {}
 
   ~ConnectWithinCallback() override = default;
 
@@ -2694,7 +2688,10 @@ class ConnectWithinCallback : public TestCompletionCallbackBase {
     return nested_callback_.WaitForResult();
   }
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&ConnectWithinCallback::OnComplete,
+                          base::Unretained(this));
+  }
 
  private:
   void OnComplete(int result) {
@@ -2710,7 +2707,6 @@ class ConnectWithinCallback : public TestCompletionCallbackBase {
   const scoped_refptr<TestSocketParams> params_;
   TestClientSocketPool* const pool_;
   ClientSocketHandle handle_;
-  CompletionCallback callback_;
   TestCompletionCallback nested_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectWithinCallback);

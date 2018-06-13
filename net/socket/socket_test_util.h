@@ -25,6 +25,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "net/base/address_list.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -996,7 +997,10 @@ class TestSocketRequest : public TestCompletionCallbackBase {
 
   ClientSocketHandle* handle() { return &handle_; }
 
-  CompletionOnceCallback callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&TestSocketRequest::OnComplete,
+                          base::Unretained(this));
+  }
 
  private:
   void OnComplete(int result);
@@ -1004,7 +1008,6 @@ class TestSocketRequest : public TestCompletionCallbackBase {
   ClientSocketHandle handle_;
   std::vector<TestSocketRequest*>* request_order_;
   size_t* completion_count_;
-  CompletionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSocketRequest);
 };

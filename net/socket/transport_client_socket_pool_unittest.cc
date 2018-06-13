@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_timing_info.h"
@@ -489,16 +490,14 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
  public:
   RequestSocketCallback(ClientSocketHandle* handle,
                         TransportClientSocketPool* pool)
-      : handle_(handle),
-        pool_(pool),
-        within_callback_(false),
-        callback_(base::Bind(&RequestSocketCallback::OnComplete,
-                             base::Unretained(this))) {
-  }
+      : handle_(handle), pool_(pool), within_callback_(false) {}
 
   ~RequestSocketCallback() override = default;
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&RequestSocketCallback::OnComplete,
+                          base::Unretained(this));
+  }
 
  private:
   void OnComplete(int result) {
@@ -525,7 +524,6 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
   ClientSocketHandle* const handle_;
   TransportClientSocketPool* const pool_;
   bool within_callback_;
-  CompletionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestSocketCallback);
 };

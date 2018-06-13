@@ -136,15 +136,16 @@ class ReadErrorUploadDataStream : public UploadDataStream {
   DISALLOW_COPY_AND_ASSIGN(ReadErrorUploadDataStream);
 };
 
-// A Callback that deletes the QuicHttpStream.
+// A helper class that will delete |stream| when the callback is invoked.
 class DeleteStreamCallback : public TestCompletionCallbackBase {
  public:
-  DeleteStreamCallback(std::unique_ptr<QuicHttpStream> stream)
-      : stream_(std::move(stream)),
-        callback_(base::Bind(&DeleteStreamCallback::DeleteStream,
-                             base::Unretained(this))) {}
+  explicit DeleteStreamCallback(std::unique_ptr<QuicHttpStream> stream)
+      : stream_(std::move(stream)) {}
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&DeleteStreamCallback::DeleteStream,
+                          base::Unretained(this));
+  }
 
  private:
   void DeleteStream(int result) {
@@ -153,7 +154,6 @@ class DeleteStreamCallback : public TestCompletionCallbackBase {
   }
 
   std::unique_ptr<QuicHttpStream> stream_;
-  CompletionCallback callback_;
 };
 
 }  // namespace

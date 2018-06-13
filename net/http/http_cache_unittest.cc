@@ -166,12 +166,12 @@ void DeferCallback(bool* defer) {
 class DeleteCacheCompletionCallback : public TestCompletionCallbackBase {
  public:
   explicit DeleteCacheCompletionCallback(MockHttpCache* cache)
-      : cache_(cache),
-        callback_(base::Bind(&DeleteCacheCompletionCallback::OnComplete,
-                             base::Unretained(this))) {
-  }
+      : cache_(cache) {}
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&DeleteCacheCompletionCallback::OnComplete,
+                          base::Unretained(this));
+  }
 
  private:
   void OnComplete(int result) {
@@ -180,7 +180,6 @@ class DeleteCacheCompletionCallback : public TestCompletionCallbackBase {
   }
 
   MockHttpCache* cache_;
-  CompletionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteCacheCompletionCallback);
 };

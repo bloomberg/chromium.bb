@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/proxy_server.h"
@@ -1388,19 +1389,18 @@ TEST_F(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
 
 namespace {
 
-// The KillerCallback will delete the transaction on error as part of the
-// callback.
+// A helper class that will delete |transaction| on error when the callback is
+// invoked.
 class KillerCallback : public TestCompletionCallbackBase {
  public:
   explicit KillerCallback(HttpNetworkTransaction* transaction)
-      : transaction_(transaction),
-        callback_(base::Bind(&KillerCallback::OnComplete,
-                             base::Unretained(this))) {
-  }
+      : transaction_(transaction) {}
 
   ~KillerCallback() override = default;
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&KillerCallback::OnComplete, base::Unretained(this));
+  }
 
  private:
   void OnComplete(int result) {
@@ -1411,7 +1411,6 @@ class KillerCallback : public TestCompletionCallbackBase {
   }
 
   HttpNetworkTransaction* transaction_;
-  CompletionCallback callback_;
 };
 
 }  // namespace
