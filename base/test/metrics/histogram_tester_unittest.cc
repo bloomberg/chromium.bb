@@ -5,6 +5,7 @@
 #include "base/test/metrics/histogram_tester.h"
 
 #include <memory>
+#include <string>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
@@ -125,6 +126,33 @@ TEST_F(HistogramTesterTest, TestGetTotalCountsForPrefix) {
   EXPECT_TRUE(tester.GetTotalCountsForPrefix("Test2.").empty());
 
   EXPECT_EQ(1u, tester.GetTotalCountsForPrefix("Test1.").size());
+}
+
+TEST_F(HistogramTesterTest, TestGetAllChangedHistograms) {
+  // Record into a sample twice, once before the tester creation.
+  UMA_HISTOGRAM_COUNTS_100(kHistogram1, true);
+  UMA_HISTOGRAM_COUNTS_100(kHistogram4, 4);
+
+  HistogramTester tester;
+  UMA_HISTOGRAM_COUNTS_100(kHistogram4, 3);
+
+  UMA_HISTOGRAM_ENUMERATION(kHistogram5, 2, 5);
+  UMA_HISTOGRAM_ENUMERATION(kHistogram5, 3, 5);
+  UMA_HISTOGRAM_ENUMERATION(kHistogram5, 4, 5);
+  UMA_HISTOGRAM_ENUMERATION(kHistogram5, 5, 5);
+
+  UMA_HISTOGRAM_ENUMERATION("Test1.Test2.Test3", 2, 5);
+  std::string results = tester.GetAllHistogramsRecorded();
+  LOG(INFO) << results;
+
+  EXPECT_EQ(std::string::npos, results.find("Histogram: Test1 recorded"));
+  EXPECT_NE(std::string::npos,
+            results.find("Histogram: Test4 recorded 1 new samples"));
+  EXPECT_NE(std::string::npos,
+            results.find("Histogram: Test5 recorded 4 new samples"));
+  EXPECT_NE(
+      std::string::npos,
+      results.find("Histogram: Test1.Test2.Test3 recorded 1 new samples"));
 }
 
 }  // namespace base
