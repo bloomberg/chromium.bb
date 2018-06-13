@@ -771,7 +771,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarDangerous) {
   ASSERT_TRUE(https_server()->Start());
 
   const GURL app_url = https_server()->GetURL("app.com", "/simple.html");
+  ui_test_utils::UrlLoadObserver url_observer(
+      app_url, content::NotificationService::AllSources());
   SetupAppWithURL(app_url);
+  url_observer.Wait();
   cert_verifier()->set_default_result(net::ERR_CERT_DATE_INVALID);
 
   // When DesktopPWAWindowing is enabled, proceeding through an interstitial
