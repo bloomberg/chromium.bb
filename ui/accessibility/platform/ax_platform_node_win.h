@@ -687,6 +687,8 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   base::string16 UIAAriaRole();
 
+  base::string16 ComputeUIAProperties();
+
   AXHypertext ComputeHypertext();
 
   // AXPlatformNodeBase overrides.
@@ -793,6 +795,49 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   void IntAttributeToIA2(std::vector<base::string16>& attributes,
                          ax::mojom::IntAttribute attribute,
                          const char* ia2_attr);
+
+  // Escapes characters in string attributes as required by the UIA Aria
+  // Property Spec. It's okay for input to be the same as output.
+  static void SanitizeStringAttributeForUIAAriaProperty(
+      const base::string16& input,
+      base::string16* output);
+
+  // If the string attribute |attribute| is present, add its value as a
+  // UIA AriaProperties Property with the name |uia_aria_property|.
+  void StringAttributeToUIAAriaProperty(std::vector<base::string16>& properties,
+                                        ax::mojom::StringAttribute attribute,
+                                        const char* uia_aria_property);
+
+  // If the bool attribute |attribute| is present, add its value as a
+  // UIA AriaProperties Property with the name |uia_aria_property|.
+  void BoolAttributeToUIAAriaProperty(std::vector<base::string16>& properties,
+                                      ax::mojom::BoolAttribute attribute,
+                                      const char* uia_aria_property);
+
+  // If the int attribute |attribute| is present, add its value as a
+  // UIA AriaProperties Property with the name |uia_aria_property|.
+  void IntAttributeToUIAAriaProperty(std::vector<base::string16>& properties,
+                                     ax::mojom::IntAttribute attribute,
+                                     const char* uia_aria_property);
+
+  // If the float attribute |attribute| is present, add its value as a
+  // UIA AriaProperties Property with the name |uia_aria_property|.
+  void FloatAttributeToUIAAriaProperty(std::vector<base::string16>& properties,
+                                       ax::mojom::FloatAttribute attribute,
+                                       const char* uia_aria_property);
+
+  // If the state |state| exists, set the
+  // UIA AriaProperties Property with the name |uia_aria_property| to "true".
+  // Otherwise set the AriaProperties Property to "false".
+  void StateToUIAAriaProperty(std::vector<base::string16>& properties,
+                              ax::mojom::State state,
+                              const char* uia_aria_property);
+
+  // If the Html attribute |html_attribute_name| is present, add its value as a
+  // UIA AriaProperties Property with the name |uia_aria_property|.
+  void HtmlAttributeToUIAAriaProperty(std::vector<base::string16>& properties,
+                                      const char* html_attribute_name,
+                                      const char* uia_aria_property);
 
   void AddAlertTarget();
   void RemoveAlertTarget();
