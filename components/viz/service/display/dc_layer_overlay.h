@@ -102,7 +102,7 @@ class DCLayerOverlayProcessor {
                DCLayerOverlayList* ca_layer_overlays);
   void ClearOverlayState() {
     previous_frame_underlay_rect_ = gfx::Rect();
-    previous_occlusion_bounding_box_ = gfx::Rect();
+    previous_frame_underlay_occlusion_ = gfx::Rect();
   }
 
  private:
@@ -136,23 +136,21 @@ class DCLayerOverlayProcessor {
                           bool is_root,
                           gfx::Rect* damage_rect,
                           gfx::Rect* this_frame_underlay_rect,
+                          gfx::Rect* this_frame_underlay_occlusion,
                           DCLayerOverlay* dc_layer);
 
   gfx::Rect previous_frame_underlay_rect_;
-  gfx::Rect previous_occlusion_bounding_box_;
+  gfx::Rect previous_frame_underlay_occlusion_;
   gfx::RectF previous_display_rect_;
   bool processed_overlay_in_frame_ = false;
 
-  // Store information about punch-through rectangles for non-root
-  // RenderPasses. These rectangles are used to clear the corresponding areas
-  // in parent renderpasses.
-  struct PunchThroughRect {
-    gfx::Rect rect;
-    gfx::Transform transform_to_target;
-    float opacity;
-  };
+  // Store information about clipped punch-through rects in target space for
+  // non-root render passes. These rects are used to clear the corresponding
+  // areas in parent render passes.
+  base::flat_map<RenderPassId, std::vector<gfx::Rect>>
+      pass_punch_through_rects_;
 
-  base::flat_map<RenderPassId, std::vector<PunchThroughRect>> pass_info_;
+  DISALLOW_COPY_AND_ASSIGN(DCLayerOverlayProcessor);
 };
 
 }  // namespace viz
