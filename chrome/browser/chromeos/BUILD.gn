@@ -1367,6 +1367,7 @@ source_set("chromeos") {
     "policy/display_rotation_default_handler.h",
     "policy/dm_token_storage.cc",
     "policy/dm_token_storage.h",
+    "policy/enrollment_config.cc",
     "policy/enrollment_config.h",
     "policy/enrollment_handler_chromeos.cc",
     "policy/enrollment_handler_chromeos.h",

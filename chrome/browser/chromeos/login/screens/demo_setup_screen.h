@@ -30,7 +30,7 @@ class DemoSetupScreen : public BaseScreen,
   void OnUserAction(const std::string& action_id) override;
 
   // DemoSetupManager::Delegate:
-  void OnSetupError() override;
+  void OnSetupError(const std::string& message) override;
   void OnSetupSuccess() override;
 
   // Called when view is being destroyed. If Screen is destroyed earlier
