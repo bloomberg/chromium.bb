@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "device/fido/virtual_u2f_device.h"
 
@@ -17,7 +18,9 @@ namespace device {
 namespace test {
 
 // A FidoDiscovery that always vends a single |VirtualFidoDevice|.
-class VirtualFidoDeviceDiscovery : public FidoDiscovery {
+class VirtualFidoDeviceDiscovery
+    : public FidoDiscovery,
+      public base::SupportsWeakPtr<VirtualFidoDeviceDiscovery> {
  public:
   explicit VirtualFidoDeviceDiscovery(
       scoped_refptr<VirtualFidoDevice::State> state)
@@ -32,7 +35,7 @@ class VirtualFidoDeviceDiscovery : public FidoDiscovery {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&VirtualFidoDeviceDiscovery::NotifyDiscoveryStarted,
-                       base::Unretained(this), true /* success */));
+                       AsWeakPtr(), true /* success */));
   }
 
  private:

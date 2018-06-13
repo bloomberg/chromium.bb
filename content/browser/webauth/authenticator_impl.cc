@@ -460,6 +460,7 @@ void AuthenticatorImpl::MakeCredential(
 
   DCHECK(make_credential_response_callback_.is_null());
   make_credential_response_callback_ = std::move(callback);
+  request_delegate_->DidStartRequest();
 
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
@@ -562,6 +563,7 @@ void AuthenticatorImpl::GetAssertion(
 
   DCHECK(get_assertion_response_callback_.is_null());
   get_assertion_response_callback_ = std::move(callback);
+  request_delegate_->DidStartRequest();
 
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,

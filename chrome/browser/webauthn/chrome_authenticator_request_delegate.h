@@ -32,6 +32,7 @@ class ChromeAuthenticatorRequestDelegate
   }
 
   // content::AuthenticatorRequestClientDelegate:
+  void DidStartRequest() override;
   bool ShouldPermitIndividualAttestation(
       const std::string& relying_party_id) override;
   void ShouldReturnAttestation(

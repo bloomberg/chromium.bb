@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/json/json_parser.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
@@ -198,6 +199,7 @@ using TestMakeCredentialCallback = device::test::StatusAndValueCallbackReceiver<
 using TestGetAssertionCallback = device::test::StatusAndValueCallbackReceiver<
     AuthenticatorStatus,
     GetAssertionAuthenticatorResponsePtr>;
+using TestRequestStartedCallback = device::test::TestCallbackReceiver<>;
 
 std::vector<uint8_t> GetTestChallengeBytes() {
   return std::vector<uint8_t>(std::begin(kTestChallengeBytes),
@@ -1045,13 +1047,20 @@ class TestAuthenticatorRequestDelegate
     : public AuthenticatorRequestClientDelegate {
  public:
   TestAuthenticatorRequestDelegate(RenderFrameHost* render_frame_host,
+                                   base::OnceClosure did_start_request_callback,
                                    IndividualAttestation individual_attestation,
                                    AttestationConsent attestation_consent,
                                    bool is_focused)
-      : individual_attestation_(individual_attestation),
+      : did_start_request_callback_(std::move(did_start_request_callback)),
+        individual_attestation_(individual_attestation),
         attestation_consent_(attestation_consent),
         is_focused_(is_focused) {}
   ~TestAuthenticatorRequestDelegate() override {}
+
+  void DidStartRequest() override {
+    ASSERT_TRUE(did_start_request_callback_) << "DidStartRequest called twice.";
+    std::move(did_start_request_callback_).Run();
+  }
 
   bool ShouldPermitIndividualAttestation(
       const std::string& relying_party_id) override {
@@ -1067,6 +1076,7 @@ class TestAuthenticatorRequestDelegate
 
   bool IsFocused() override { return is_focused_; }
 
+  base::OnceClosure did_start_request_callback_;
   const IndividualAttestation individual_attestation_;
   const AttestationConsent attestation_consent_;
   const bool is_focused_;
@@ -1083,9 +1093,15 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
     if (return_null_delegate)
       return nullptr;
     return std::make_unique<TestAuthenticatorRequestDelegate>(
-        render_frame_host, individual_attestation, attestation_consent,
-        is_focused);
+        render_frame_host,
+        request_started_callback ? std::move(request_started_callback)
+                                 : base::DoNothing(),
+        individual_attestation, attestation_consent, is_focused);
   }
+
+  // If set, this closure will be called when the subsequently constructed
+  // delegate is informed that the request has started.
+  base::OnceClosure request_started_callback;
 
   IndividualAttestation individual_attestation =
       IndividualAttestation::NOT_REQUESTED;
@@ -1369,6 +1385,36 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   RunTestCases(kTests);
 }
 
+TEST_F(AuthenticatorContentBrowserClientTest,
+       MakeCredentialRequestStartedCallback) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+
+  TestRequestStartedCallback request_started;
+  test_client_.request_started_callback = request_started.callback();
+  authenticator->MakeCredential(std::move(options), base::DoNothing());
+  request_started.WaitForCallback();
+}
+
+TEST_F(AuthenticatorContentBrowserClientTest,
+       GetAssertionRequestStartedCallback) {
+  TestServiceManagerContext smc;
+  NavigateAndCommit(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+
+  TestRequestStartedCallback request_started;
+  test_client_.request_started_callback = request_started.callback();
+  authenticator->GetAssertion(std::move(options), base::DoNothing());
+  request_started.WaitForCallback();
+}
+
 TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
   // When the |ContentBrowserClient| considers the tab to be unfocused,
   // registration requests should fail with a |NOT_FOCUSED| error, but getting
@@ -1384,9 +1430,14 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
     options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
 
     TestMakeCredentialCallback cb;
+    TestRequestStartedCallback request_started;
+    test_client_.request_started_callback = request_started.callback();
+
     authenticator->MakeCredential(std::move(options), cb.callback());
     cb.WaitForCallback();
+
     EXPECT_EQ(AuthenticatorStatus::NOT_FOCUSED, cb.status());
+    EXPECT_FALSE(request_started.was_called());
   }
 
   {
@@ -1403,10 +1454,14 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
     options->allow_credentials.emplace_back(std::move(credential));
 
     TestGetAssertionCallback cb;
+    TestRequestStartedCallback request_started;
+    test_client_.request_started_callback = request_started.callback();
+
     authenticator->GetAssertion(std::move(options), cb.callback());
     cb.WaitForCallback();
 
     EXPECT_EQ(AuthenticatorStatus::SUCCESS, cb.status());
+    EXPECT_TRUE(request_started.was_called());
   }
 }
 
