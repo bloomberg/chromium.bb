@@ -28,7 +28,12 @@ class CONTENT_EXPORT DOMStorageMap
   explicit DOMStorageMap(size_t quota);
 
   unsigned Length() const;
-  base::NullableString16 Key(unsigned index);
+  // If |did_decrease_iterator| is not null it is set to true iff this method
+  // call was made more efficient because iterators are bidirectional. If being
+  // able to decrement the iterator wasn't used |did_decrease_iterator| is left
+  // unmodified.
+  base::NullableString16 Key(unsigned index,
+                             bool* did_decrease_iterator = nullptr);
 
   // Sets and removes items from the storage. Old value is wriiten into
   // |old_value| if it's not null and |has_only_keys| is false. |old_value| is

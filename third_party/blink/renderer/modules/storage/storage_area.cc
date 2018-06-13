@@ -67,7 +67,11 @@ String StorageArea::key(unsigned index, ExceptionState& exception_state) const {
     exception_state.ThrowSecurityError("access is denied for this document.");
     return String();
   }
-  return storage_area_->Key(index);
+  bool did_decrease_iterator = false;
+  String result = storage_area_->Key(index, &did_decrease_iterator);
+  if (did_decrease_iterator)
+    UseCounter::Count(GetFrame(), WebFeature::kReverseIterateDOMStorage);
+  return result;
 }
 
 String StorageArea::getItem(const String& key,

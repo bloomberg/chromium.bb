@@ -34,10 +34,12 @@ unsigned DOMStorageCachedArea::GetLength(int connection_id) {
   return map_->Length();
 }
 
-base::NullableString16 DOMStorageCachedArea::GetKey(int connection_id,
-                                                    unsigned index) {
+base::NullableString16 DOMStorageCachedArea::GetKey(
+    int connection_id,
+    unsigned index,
+    bool* did_decrease_iterator) {
   PrimeIfNeeded(connection_id);
-  return map_->Key(index);
+  return map_->Key(index, did_decrease_iterator);
 }
 
 base::NullableString16 DOMStorageCachedArea::GetItem(

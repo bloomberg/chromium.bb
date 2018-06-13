@@ -47,7 +47,8 @@ unsigned DOMStorageMap::Length() const {
   return has_only_keys_ ? keys_only_.size() : keys_values_.size();
 }
 
-base::NullableString16 DOMStorageMap::Key(unsigned index) {
+base::NullableString16 DOMStorageMap::Key(unsigned index,
+                                          bool* did_decrease_iterator) {
   if (index >= Length())
     return base::NullableString16();
   while (last_key_index_ != index) {
@@ -57,6 +58,8 @@ base::NullableString16 DOMStorageMap::Key(unsigned index) {
       else
         --keys_values_iterator_;
       --last_key_index_;
+      if (did_decrease_iterator)
+        *did_decrease_iterator = true;
     } else {
       if (has_only_keys_)
         ++keys_only_iterator_;

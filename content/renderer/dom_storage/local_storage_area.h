@@ -22,7 +22,7 @@ class LocalStorageArea : public blink::WebStorageArea {
 
   // blink::WebStorageArea:
   unsigned length() override;
-  blink::WebString Key(unsigned index) override;
+  blink::WebString Key(unsigned index, bool* did_decrease_iterator) override;
   blink::WebString GetItem(const blink::WebString& key) override;
   void SetItem(const blink::WebString& key,
                const blink::WebString& value,
