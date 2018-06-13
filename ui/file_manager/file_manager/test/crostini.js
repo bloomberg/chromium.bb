@@ -19,8 +19,8 @@ crostini.testCrostiniNotEnabled = (done) => {
 
 crostini.testCrostiniSuccess = (done) => {
   chrome.fileManagerPrivate.crostiniEnabled_ = true;
-  var oldMount = chrome.fileManagerPrivate.mountCrostiniContainer;
-  var mountCallback = null;
+  const oldMount = chrome.fileManagerPrivate.mountCrostiniContainer;
+  let mountCallback = null;
   chrome.fileManagerPrivate.mountCrostiniContainer = (callback) => {
     mountCallback = callback;
   };
@@ -77,7 +77,7 @@ crostini.testCrostiniSuccess = (done) => {
 
 crostini.testCrostiniError = (done) => {
   chrome.fileManagerPrivate.crostiniEnabled_ = true;
-  var oldMount = chrome.fileManagerPrivate.mountCrostiniContainer;
+  const oldMount = chrome.fileManagerPrivate.mountCrostiniContainer;
   // Override fileManagerPrivate.mountCrostiniContainer to return error.
   chrome.fileManagerPrivate.mountCrostiniContainer = (callback) => {
     chrome.runtime.lastError = {message: 'test message'};
@@ -104,6 +104,31 @@ crostini.testCrostiniError = (done) => {
       .then(() => {
         // Reset chrome.fileManagerPrivate.mountCrostiniContainer.
         chrome.fileManagerPrivate.mountCrostiniContainer = oldMount;
+        done();
+      });
+};
+
+crostini.testCrostiniMountOnDrag = (done) => {
+  chrome.fileManagerPrivate.crostiniEnabled_ = true;
+  chrome.fileManagerPrivate.mountCrostiniContainerDelay_ = 0;
+  fileManager.setupCrostini_();
+  test.setupAndWaitUntilReady()
+      .then(() => {
+        return test.waitForElement(
+            '#directory-tree .tree-item [root-type-icon="crostini"]');
+      })
+      .then(() => {
+        assertTrue(test.sendEvent(
+            '#directory-tree .tree-item [root-type-icon="crostini"]',
+            new Event('dragenter', {bubbles: true})));
+        assertTrue(test.sendEvent(
+            '#directory-tree .tree-item [root-type-icon="crostini"]',
+            new Event('dragleave', {bubbles: true})));
+        return test.waitForFiles(
+            test.TestEntryInfo.getExpectedRows(test.BASIC_CROSTINI_ENTRY_SET));
+      })
+      .then(() => {
+        chrome.fileManagerPrivate.removeMount('crostini');
         done();
       });
 };

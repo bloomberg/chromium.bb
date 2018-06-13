@@ -17,6 +17,7 @@ loadTimeData.data = new Proxy(
       DEFAULT_NEW_FOLDER_NAME: 'New Folder',
       DEFAULT_TASK_LABEL: '(default)',
       DELETE_FILE_NAME: 'Deleting "$1"...',
+      DEVICE_ACCESS_RESTRICTED: 'Access restricted',
       DIRECTORY_ALREADY_EXISTS: 'The folder named "$1" already exists. ' +
           'Please choose a different name.',
       DOWNLOADS_DIRECTORY_LABEL: 'Downloads',
@@ -69,6 +70,7 @@ loadTimeData.data = new Proxy(
       OK_LABEL: 'OK',
       ONE_DIRECTORY_SELECTED: '1 folder selected',
       ONE_FILE_SELECTED: '1 file selected',
+      OPENING_LINUX_FILES: 'Opening Linux Files...',
       OPEN_LABEL: 'Open',
       PLAIN_TEXT_FILE_TYPE: 'Plain text',
       PREPARING_LABEL: 'Preparing',

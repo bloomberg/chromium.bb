@@ -167,7 +167,7 @@ function FileTransferController(
       queryRequiredElement('command#cut', this.document_));
 
   /**
-   * @private {DirectoryEntry}
+   * @private {DirectoryEntry|FakeEntry}
    */
   this.destinationEntry_ = null;
 
@@ -1182,11 +1182,22 @@ FileTransferController.prototype.onDrop_ =
 };
 
 /**
+ * Change to the drop target directory.
+ * @private
+ */
+FileTransferController.prototype.changeToDropTargetDirectory_ = function() {
+  // Do custom action.
+  if (this.dropTarget_ instanceof DirectoryItem)
+    /** @type {DirectoryItem} */ (this.dropTarget_).doDropTargetAction();
+  this.directoryModel_.changeDirectoryEntry(assert(this.destinationEntry_));
+};
+
+/**
  * Sets the drop target.
  *
  * @param {Element} domElement Target of the drop.
  * @param {!ClipboardData} clipboardData Data transfer object.
- * @param {!DirectoryEntry} destinationEntry Destination entry.
+ * @param {!DirectoryEntry|!FakeEntry} destinationEntry Destination entry.
  * @private
  */
 FileTransferController.prototype.setDropTarget_ =
@@ -1208,14 +1219,13 @@ FileTransferController.prototype.setDropTarget_ =
   domElement.classList.add('accepts');
   this.destinationEntry_ = destinationEntry;
 
-  // Start timer changing the directory.
-  this.navigateTimer_ = setTimeout(function() {
-    if (domElement instanceof DirectoryItem) {
-      // Do custom action.
-      /** @type {DirectoryItem} */ (domElement).doDropTargetAction();
-    }
-    this.directoryModel_.changeDirectoryEntry(destinationEntry);
-  }.bind(this), 2000);
+  // Change directory immediately for crostini, otherwise start timer.
+  if (destinationEntry.rootType === VolumeManagerCommon.RootType.CROSTINI) {
+    this.changeToDropTargetDirectory_();
+  } else {
+    this.navigateTimer_ =
+        setTimeout(this.changeToDropTargetDirectory_.bind(this), 2000);
+  }
 };
 
 /**
@@ -1602,6 +1612,12 @@ FileTransferController.prototype.selectDropEffect_ = function(
     if (destinationLocationInfo.isSpecialSearchRoot) {
       // The location is a fake entry that corresponds to special search.
       return new DropEffectAndLabel(DropEffectType.NONE, null);
+    }
+    if (destinationLocationInfo.rootType ==
+        VolumeManagerCommon.RootType.CROSTINI) {
+      // The location is a the fake entry for crostini.  Start container.
+      return new DropEffectAndLabel(
+          DropEffectType.NONE, strf('OPENING_LINUX_FILES'));
     }
     if (destinationLocationInfo.volumeInfo.isReadOnlyRemovableDevice) {
       return new DropEffectAndLabel(DropEffectType.NONE,
