@@ -69,30 +69,6 @@ class PaintPropertyNode : public RefCounted<NodeType> {
     return true;
   }
 
-  // TODO(wangxianzhu): Changed() and ClearChangedToRoot() are inefficient
-  // due to the tree walks. Optimize this if this affects overall performance.
-
-  // Returns true if any node (excluding the lowest common ancestor of
-  // |relative_to_node| and |this|) is marked changed along the shortest path
-  // from |this| to |relative_to_node|.
-  bool Changed(const NodeType& relative_to_node) const {
-    if (this == &relative_to_node)
-      return false;
-
-    bool changed = false;
-    for (const auto* n = this; n; n = n->Parent()) {
-      if (n == &relative_to_node)
-        return changed;
-      if (n->changed_)
-        changed = true;
-    }
-
-    // We reach here if |relative_to_node| is not an ancestor of |this|.
-    const auto& lca = LowestCommonAncestor(static_cast<const NodeType&>(*this),
-                                           relative_to_node);
-    return Changed(lca) || relative_to_node.Changed(lca);
-  }
-
   void ClearChangedToRoot() const {
     for (auto* n = this; n; n = n->Parent())
       n->changed_ = false;
@@ -129,8 +105,11 @@ class PaintPropertyNode : public RefCounted<NodeType> {
   }
 
   void SetChanged() { changed_ = true; }
+  bool NodeChanged() const { return changed_; }
 
  private:
+  friend class PaintPropertyNodeTest;
+
   scoped_refptr<const NodeType> parent_;
   mutable bool changed_ = true;
 

@@ -17,6 +17,7 @@
 namespace blink {
 
 class GeometryMapperClipCache;
+class PropertyTreeState;
 
 // A clip rect created by a css property such as "overflow" or "clip".
 // Along with a reference to the transform space the clip rect is based on,
@@ -71,6 +72,15 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
     state_ = std::move(state);
     return true;
   }
+
+  // Checks if the accumulated clip from |this| to |relative_to_state.Clip()|
+  // has changed in the space of |relative_to_state.Transform()|. We check for
+  // changes of not only clip nodes, but also LocalTransformSpace relative to
+  // |relative_to_state.Transform()| of the clip nodes. |transform_not_to_check|
+  // specifies a transform node that the caller has checked or will check its
+  // change in other ways and this function should treat it as unchanged.
+  bool Changed(const PropertyTreeState& relative_to_state,
+               const TransformPaintPropertyNode* transform_not_to_check) const;
 
   bool EqualIgnoringHitTestRects(const ClipPaintPropertyNode* parent,
                                  const State& state) const {

@@ -75,7 +75,8 @@ PaintInvalidationReason RasterInvalidator::ChunkPropertiesChanged(
   // different, or the effect node's value changed between the layer state and
   // the chunk state.
   if (new_chunk_state.Effect() != old_chunk.effect_state ||
-      new_chunk_state.Effect()->Changed(*layer_state.Effect()))
+      new_chunk_state.Effect()->Changed(layer_state,
+                                        new_chunk_state.Transform()))
     return PaintInvalidationReason::kPaintProperty;
 
   // Check for accumulated clip rect change, if the clip rects are tight.
@@ -94,7 +95,7 @@ PaintInvalidationReason RasterInvalidator::ChunkPropertiesChanged(
   // different, or the clip node's value changed between the layer state and the
   // chunk state.
   if (new_chunk_state.Clip() != old_chunk.clip_state ||
-      new_chunk_state.Clip()->Changed(*layer_state.Clip()))
+      new_chunk_state.Clip()->Changed(layer_state, new_chunk_state.Transform()))
     return PaintInvalidationReason::kPaintProperty;
 
   return PaintInvalidationReason::kNone;

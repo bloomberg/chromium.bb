@@ -16,6 +16,8 @@
 
 namespace blink {
 
+class PropertyTreeState;
+
 // Effect nodes are abstraction of isolated groups, along with optional effects
 // that can be applied to the composited output of the group.
 //
@@ -81,6 +83,17 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     state_ = std::move(state);
     return true;
   }
+
+  // Checks if the accumulated effect from |this| to |relative_to_state
+  // .Effect()| has changed in the space of |relative_to_state.Transform()|.
+  // We check for changes of not only effect nodes, but also LocalTransformSpace
+  // relative to |relative_to_state.Transform()| of the effect nodes having
+  // filters that move pixels. Change of OutputClip is not checked and the
+  // caller should check in other ways. |transform_not_to_check| specifies the
+  // transform node that the caller has checked or will check its change in
+  // other ways and this function should treat it as unchanged.
+  bool Changed(const PropertyTreeState& relative_to_state,
+               const TransformPaintPropertyNode* transform_not_to_check) const;
 
   const TransformPaintPropertyNode* LocalTransformSpace() const {
     return state_.local_transform_space.get();
