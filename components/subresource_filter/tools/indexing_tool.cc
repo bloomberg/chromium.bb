@@ -23,7 +23,7 @@ bool IndexAndWriteRuleset(const base::FilePath& unindexed_path,
     return false;
   }
 
-  base::File unindexed_file(unindexed_path,
+  base::File unindexed_file(base::MakeAbsoluteFilePath(unindexed_path),
                             base::File::FLAG_OPEN | base::File::FLAG_READ);
 
   subresource_filter::RulesetIndexer indexer;
