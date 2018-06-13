@@ -237,6 +237,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamUseGooglePayBrandingOnMobile)},
+    {"enable-autofill-credit-card-upload-update-prompt-explanation",
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadUpdatePromptExplanationName,
+     flag_descriptions::
+         kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::kAutofillUpstreamUpdatePromptExplanation)},
     {"show-autofill-type-predictions",
      flag_descriptions::kShowAutofillTypePredictionsName,
      flag_descriptions::kShowAutofillTypePredictionsDescription,
