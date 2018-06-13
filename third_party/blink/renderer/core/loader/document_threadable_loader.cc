@@ -604,6 +604,7 @@ bool DocumentThreadableLoader::RedirectReceived(
   const KURL& original_url = redirect_response.Url();
 
   if (!actual_request_.IsNull()) {
+    DCHECK(!out_of_blink_cors_);
     ReportResponseReceived(resource->Identifier(), redirect_response);
 
     HandlePreflightFailure(
@@ -641,6 +642,15 @@ bool DocumentThreadableLoader::RedirectReceived(
     client->DidFailRedirectCheck();
 
     return false;
+  }
+
+  if (out_of_blink_cors_) {
+    client_->DidReceiveRedirectTo(new_url);
+    if (client_->IsDocumentThreadableLoaderClient()) {
+      return static_cast<DocumentThreadableLoaderClient*>(client_)
+          ->WillFollowRedirect(new_url, redirect_response);
+    }
+    return true;
   }
 
   // Allow same origin requests to continue after allowing clients to audit the
