@@ -343,6 +343,13 @@ class MockWebUIDataSource : public content::URLDataSource {
     return "text/html";
   }
 
+  // Append 'unsave-eval' to the default script-src CSP policy, since it is
+  // needed by some tests using chrome://dummyurl (because they depend on
+  // Mock4JS, see crbug.com/844820).
+  std::string GetContentSecurityPolicyScriptSrc() const override {
+    return "script-src chrome://resources 'self' 'unsafe-eval';";
+  }
+
   DISALLOW_COPY_AND_ASSIGN(MockWebUIDataSource);
 };
 
