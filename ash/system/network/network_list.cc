@@ -116,6 +116,14 @@ void ShowCellularSettings() {
       cellular_network ? cellular_network->guid() : std::string());
 }
 
+// Only enable toggles and "add wifi" for the primary user since secondary
+// users can not change network configurations.
+bool GetDefaultToggleEnabled() {
+  SessionController* session_controller = Shell::Get()->session_controller();
+  return !session_controller->IsActiveUserSessionStarted() ||
+         session_controller->IsUserPrimary();
+}
+
 }  // namespace
 
 // A header row for sections in network detailed view which contains a title and
@@ -303,10 +311,7 @@ class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
         network_state_handler_->GetTechnologyState(
             NetworkTypePattern::Tether());
 
-    // Only enable the toggle for the primary user since secondary users can not
-    // change network configurations.
-    bool default_toggle_enabled =
-        Shell::Get()->session_controller()->IsUserPrimary();
+    bool default_toggle_enabled = GetDefaultToggleEnabled();
 
     // If Cellular is available, toggle state and subtitle reflect Cellular.
     if (cellular_state != NetworkStateHandler::TECHNOLOGY_UNAVAILABLE) {
@@ -924,10 +929,7 @@ int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
     *separator_view = nullptr;
   }
 
-  // Only enable the toggle for the primary user since secondary users can not
-  // change network configurations.
-  bool default_toggle_enabled =
-      Shell::Get()->session_controller()->IsUserPrimary();
+  bool default_toggle_enabled = GetDefaultToggleEnabled();
   // Mobile updates its toggle state independently.
   if (!pattern.MatchesPattern(NetworkTypePattern::Mobile()))
     (*view)->SetToggleState(default_toggle_enabled, enabled /* is_on */);
