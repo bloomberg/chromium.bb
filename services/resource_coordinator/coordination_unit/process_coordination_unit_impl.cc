@@ -17,6 +17,11 @@ ProcessCoordinationUnitImpl::ProcessCoordinationUnitImpl(
     : CoordinationUnitInterface(id, graph, std::move(service_ref)) {}
 
 ProcessCoordinationUnitImpl::~ProcessCoordinationUnitImpl() {
+  // Make as if we're transitioning to the null PID before we die to clear this
+  // instance from the PID map.
+  if (process_id_ != base::kNullProcessId)
+    graph()->BeforeProcessPidChange(this, base::kNullProcessId);
+
   for (auto* child_frame : frame_coordination_units_)
     child_frame->RemoveProcessCoordinationUnit(this);
 }
@@ -64,6 +69,11 @@ void ProcessCoordinationUnitImpl::SetMainThreadTaskLoadIsLow(
 }
 
 void ProcessCoordinationUnitImpl::SetPID(int64_t pid) {
+  // The PID can only be set once.
+  DCHECK_EQ(process_id_, base::kNullProcessId);
+
+  graph()->BeforeProcessPidChange(this, pid);
+  process_id_ = static_cast<base::ProcessId>(pid);
   SetProperty(mojom::PropertyType::kPID, pid);
 }
 

@@ -28,18 +28,6 @@ namespace resource_coordinator {
 class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
                                 public mojom::PageSignalGenerator {
  public:
-  // The amount of time a page has to be idle post-loading in order for it to be
-  // considered loaded and idle. This is used in UpdateLoadIdleState
-  // transitions.
-  static const base::TimeDelta kLoadedAndIdlingTimeout;
-
-  // The maximum amount of time post-DidStopLoading a page can be waiting for
-  // an idle state to occur before the page is simply considered loaded anyways.
-  // Since PageAlmostIdle is intended as an "initial loading complete" signal,
-  // it needs to eventually terminate. This is strictly greater than the
-  // kLoadedAndIdlingTimeout.
-  static const base::TimeDelta kWaitingForIdleTimeout;
-
   PageSignalGeneratorImpl();
   ~PageSignalGeneratorImpl() override;
 
@@ -74,6 +62,18 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
       const service_manager::BindSourceInfo& source_info);
 
  private:
+  // The amount of time a page has to be idle post-loading in order for it to be
+  // considered loaded and idle. This is used in UpdateLoadIdleState
+  // transitions.
+  static const base::TimeDelta kLoadedAndIdlingTimeout;
+
+  // The maximum amount of time post-DidStopLoading a page can be waiting for
+  // an idle state to occur before the page is simply considered loaded anyways.
+  // Since PageAlmostIdle is intended as an "initial loading complete" signal,
+  // it needs to eventually terminate. This is strictly greater than the
+  // kLoadedAndIdlingTimeout.
+  static const base::TimeDelta kWaitingForIdleTimeout;
+
   friend class PageSignalGeneratorImplTest;
   FRIEND_TEST_ALL_PREFIXES(PageSignalGeneratorImplTest, IsLoading);
   FRIEND_TEST_ALL_PREFIXES(PageSignalGeneratorImplTest, IsIdling);

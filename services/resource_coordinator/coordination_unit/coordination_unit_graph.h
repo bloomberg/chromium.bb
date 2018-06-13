@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/process/process_handle.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
@@ -75,6 +76,9 @@ class CoordinationUnitGraph {
       CoordinationUnitType type);
 
   std::vector<ProcessCoordinationUnitImpl*> GetAllProcessCoordinationUnits();
+  // Retrieves the process CU with PID |pid|, if any.
+  ProcessCoordinationUnitImpl* GetProcessCoordinationUnitByPid(
+      base::ProcessId pid);
   CoordinationUnitBase* GetCoordinationUnitByID(const CoordinationUnitID cu_id);
 
   std::vector<std::unique_ptr<CoordinationUnitGraphObserver>>&
@@ -85,6 +89,8 @@ class CoordinationUnitGraph {
  private:
   using CUIDMap = std::unordered_map<CoordinationUnitID,
                                      std::unique_ptr<CoordinationUnitBase>>;
+  using ProcessByPidMap =
+      std::unordered_map<base::ProcessId, ProcessCoordinationUnitImpl*>;
 
   // Lifetime management functions for CoordinationUnitBase.
   friend class CoordinationUnitBase;
@@ -92,8 +98,14 @@ class CoordinationUnitGraph {
       std::unique_ptr<CoordinationUnitBase> new_cu);
   void DestroyCoordinationUnit(CoordinationUnitBase* cu);
 
+  // Process PID map for use by ProcessCoordinationUnitImpl.
+  friend class ProcessCoordinationUnitImpl;
+  void BeforeProcessPidChange(ProcessCoordinationUnitImpl* process,
+                              base::ProcessId new_pid);
+
   CoordinationUnitID system_coordination_unit_id_;
   CUIDMap coordination_units_;
+  ProcessByPidMap processes_by_pid_;
   std::vector<std::unique_ptr<CoordinationUnitGraphObserver>> observers_;
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
   std::unique_ptr<CoordinationUnitProviderImpl> provider_;

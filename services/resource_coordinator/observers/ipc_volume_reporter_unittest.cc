@@ -62,7 +62,6 @@ TEST_F(IPCVolumeReporterTest, Basic) {
       base::TimeDelta::FromMilliseconds(1));
   cu_graph.process->SetLaunchTime(base::Time());
   cu_graph.process->SetMainThreadTaskLoadIsLow(true);
-  cu_graph.process->SetPID(1);
 
   reporter_->mock_timer()->Fire();
 

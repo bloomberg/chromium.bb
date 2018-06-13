@@ -30,7 +30,21 @@ CoordinationUnitGraph::CoordinationUnitGraph()
     : system_coordination_unit_id_(CoordinationUnitType::kSystem,
                                    CoordinationUnitID::RANDOM_ID) {}
 
-CoordinationUnitGraph::~CoordinationUnitGraph() = default;
+CoordinationUnitGraph::~CoordinationUnitGraph() {
+  // Because the graph has ownership of the CUs, and because the process CUs
+  // unregister on destruction, there is reentrancy to this class on
+  // destruction. The order of operations here is optimized to minimize the work
+  // done on destruction, as well as to make sure the cleanup is independent of
+  // the declaration order of member variables.
+
+  // Kill all the observers first.
+  observers_.clear();
+  // Then clear up the CUs to ensure this happens before the PID map is
+  // destructed.
+  coordination_units_.clear();
+
+  DCHECK_EQ(0u, processes_by_pid_.size());
+}
 
 void CoordinationUnitGraph::OnStart(
     service_manager::BinderRegistryWithArgs<
@@ -104,6 +118,15 @@ CoordinationUnitBase* CoordinationUnitGraph::GetCoordinationUnitByID(
   return it->second.get();
 }
 
+ProcessCoordinationUnitImpl*
+CoordinationUnitGraph::GetProcessCoordinationUnitByPid(base::ProcessId pid) {
+  auto it = processes_by_pid_.find(pid);
+  if (it == processes_by_pid_.end())
+    return nullptr;
+
+  return ProcessCoordinationUnitImpl::FromCoordinationUnitBase(it->second);
+}
+
 std::vector<CoordinationUnitBase*>
 CoordinationUnitGraph::GetCoordinationUnitsOfType(CoordinationUnitType type) {
   std::vector<CoordinationUnitBase*> results;
@@ -141,6 +164,20 @@ void CoordinationUnitGraph::DestroyCoordinationUnit(CoordinationUnitBase* cu) {
 
   size_t erased = coordination_units_.erase(cu->id());
   DCHECK_EQ(1u, erased);
+}
+
+void CoordinationUnitGraph::BeforeProcessPidChange(
+    ProcessCoordinationUnitImpl* process,
+    base::ProcessId new_pid) {
+  if (process->process_id() != base::kNullProcessId) {
+    size_t erased = processes_by_pid_.erase(process->process_id());
+    DCHECK_EQ(1u, erased);
+  }
+  if (new_pid != base::kNullProcessId) {
+    bool inserted =
+        processes_by_pid_.insert(std::make_pair(new_pid, process)).second;
+    DCHECK(inserted);
+  }
 }
 
 }  // namespace resource_coordinator
