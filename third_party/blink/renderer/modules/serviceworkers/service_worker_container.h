@@ -75,12 +75,6 @@ class MODULES_EXPORT ServiceWorkerContainer final
   ScriptPromise ready(ScriptState*);
   WebServiceWorkerProvider* Provider() { return provider_; }
 
-  void RegisterServiceWorkerImpl(ExecutionContext*,
-                                 const KURL& script_url,
-                                 const KURL& scope,
-                                 mojom::ServiceWorkerUpdateViaCache,
-                                 std::unique_ptr<RegistrationCallbacks>);
-
   ScriptPromise registerServiceWorker(ScriptState*,
                                       const String& pattern,
                                       const RegistrationOptions&);
