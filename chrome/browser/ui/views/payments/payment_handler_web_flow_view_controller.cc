@@ -240,6 +240,10 @@ void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
   // IsSslCertificateValid checks security_state::SecurityInfo.security_level
   // which reflects security state.
   if (!SslValidityChecker::IsSslCertificateValid(source)) {
+    WarnIfPossible(
+        "Opened payment handler window's visible security state changed for "
+        "url " +
+        source->GetVisibleURL().spec());
     AbortPayment();
   }
 }
@@ -265,6 +269,9 @@ void PaymentHandlerWebFlowViewController::DidFinishNavigation(
        !navigation_handle->GetURL().IsAboutBlank()) ||
       !SslValidityChecker::IsSslCertificateValid(
           navigation_handle->GetWebContents())) {
+    WarnIfPossible(
+        "Opened payment handler window has an insecure navigation to url " +
+        navigation_handle->GetURL().spec());
     AbortPayment();
     return;
   }
@@ -285,6 +292,8 @@ void PaymentHandlerWebFlowViewController::TitleWasSet(
 }
 
 void PaymentHandlerWebFlowViewController::DidAttachInterstitialPage() {
+  WarnIfPossible(
+      "An interstitial page attached to opened payment handler window.");
   AbortPayment();
 }
 
@@ -293,6 +302,16 @@ void PaymentHandlerWebFlowViewController::AbortPayment() {
     web_contents()->Close();
 
   dialog()->ShowErrorMessage();
+}
+
+void PaymentHandlerWebFlowViewController::WarnIfPossible(
+    const std::string& message) {
+  if (web_contents()) {
+    web_contents()->GetMainFrame()->AddMessageToConsole(
+        content::ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING, message);
+  } else {
+    LOG(WARNING) << message;
+  }
 }
 
 }  // namespace payments
