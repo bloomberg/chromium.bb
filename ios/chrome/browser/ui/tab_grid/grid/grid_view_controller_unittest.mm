@@ -7,9 +7,10 @@
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
+#import "ios/chrome/test/root_view_controller_test.h"
+#import "ios/testing/wait_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
-#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,11 +21,13 @@
 @property(nonatomic, readonly) NSMutableArray<GridItem*>* items;
 @property(nonatomic, readonly) NSUInteger selectedIndex;
 @property(nonatomic, readonly) UICollectionView* collectionView;
+@property(nonatomic, assign, getter=isViewAppeared) BOOL viewAppeared;
 @end
 @implementation TestGridViewController
 @dynamic items;
 @dynamic selectedIndex;
 @dynamic collectionView;
+@dynamic viewAppeared;
 @end
 
 // Fake object that conforms to GridViewControllerDelegate.
@@ -55,7 +58,7 @@
 }
 @end
 
-class GridViewControllerTest : public PlatformTest {
+class GridViewControllerTest : public RootViewControllerTest {
  public:
   GridViewControllerTest() {
     view_controller_ = [[TestGridViewController alloc] init];
@@ -91,9 +94,9 @@ TEST_F(GridViewControllerTest, InitializeItems) {
 TEST_F(GridViewControllerTest, InsertItem) {
   // Previously: The grid had 2 items and selectedIndex was 0. The delegate had
   // an itemCount of 2.
-  [view_controller_ insertItem:[[GridItem alloc] initWithIdentifier:@"C"]
+  [view_controller_ insertItem:[[GridItem alloc] initWithIdentifier:@"NEW-ITEM"]
                        atIndex:2
-                selectedItemID:@"C"];
+                selectedItemID:@"NEW-ITEM"];
   EXPECT_EQ(3U, view_controller_.items.count);
   EXPECT_EQ(2U, view_controller_.selectedIndex);
   EXPECT_EQ(3U, delegate_.itemCount);
@@ -157,4 +160,32 @@ TEST_F(GridViewControllerTest, MoveUnselectedItem) {
   EXPECT_NSEQ(@"A", view_controller_.items[1].identifier);
   EXPECT_EQ(1U, view_controller_.selectedIndex);
   EXPECT_EQ(2U, delegate_.itemCount);
+}
+
+// Tests that |-replaceItemID:withItem:| does not crash when updating an item
+// that is scrolled offscreen.
+TEST_F(GridViewControllerTest, ReplaceScrolledOffScreenCell) {
+  // This test requires that the collection view be placed on the screen.
+  SetRootViewController(view_controller_);
+  bool condition_met = testing::WaitUntilConditionOrTimeout(
+      testing::kWaitForUIElementTimeout, ^bool {
+        return [view_controller_ isViewAppeared];
+      });
+  EXPECT_TRUE(condition_met);
+  NSArray* visibleCells = view_controller_.collectionView.visibleCells;
+  NSArray* items = view_controller_.items;
+  // Keep adding items until we get an item that is offscreen. Since device
+  // sizes may vary, this is better than creating a fixed number of items that
+  // we think will overflow to offscreen items.
+  while (visibleCells.count >= items.count) {
+    NSString* uniqueID =
+        [NSString stringWithFormat:@"%d", base::checked_cast<int>(items.count)];
+    GridItem* item = [[GridItem alloc] initWithIdentifier:uniqueID];
+    [view_controller_ insertItem:item atIndex:0 selectedItemID:@"A"];
+    visibleCells = view_controller_.collectionView.visibleCells;
+  }
+  // The last item ("B") is scrolled off screen.
+  GridItem* item = [[GridItem alloc] initWithIdentifier:@"NEW-ITEM"];
+  // Do not crash due to cell being nil.
+  [view_controller_ replaceItemID:@"B" withItem:item];
 }

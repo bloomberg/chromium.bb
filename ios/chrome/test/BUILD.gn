@@ -28,6 +28,8 @@ source_set("test_support") {
     "ios_chrome_scoped_testing_local_state.h",
     "ios_chrome_unit_test_suite.h",
     "ios_chrome_unit_test_suite.mm",
+    "root_view_controller_test.h",
+    "root_view_controller_test.mm",
     "scoped_block_popups_pref.h",
     "scoped_block_popups_pref.mm",
     "scoped_key_window.h",

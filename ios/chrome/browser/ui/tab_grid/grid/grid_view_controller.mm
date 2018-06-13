@@ -361,7 +361,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     return;
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
       [self.collectionView cellForItemAtIndexPath:CreateIndexPath(index)]);
-  [self configureCell:cell withItem:item];
+  // |cell| may be nil if it is scrolled offscreen.
+  if (cell)
+    [self configureCell:cell withItem:item];
 }
 
 - (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)toIndex {
