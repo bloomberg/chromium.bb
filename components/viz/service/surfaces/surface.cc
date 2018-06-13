@@ -139,9 +139,8 @@ bool Surface::QueueFrame(
     return false;
   }
 
-  if (closed_) {
+  if (closed_)
     return true;
-  }
 
   if (active_frame_data_ || pending_frame_data_)
     previous_frame_surface_id_ = surface_id();
