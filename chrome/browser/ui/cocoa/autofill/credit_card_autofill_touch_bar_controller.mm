@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/touchbar/credit_card_autofill_touch_bar_controller.h"
+#import "chrome/browser/ui/cocoa/autofill/credit_card_autofill_touch_bar_controller.h"
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
