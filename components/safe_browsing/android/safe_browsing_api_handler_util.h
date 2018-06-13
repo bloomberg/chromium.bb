@@ -44,6 +44,19 @@ enum UmaRemoteCallResult {
   UMA_STATUS_MAX_VALUE
 };
 
+// Do not reorder or delete entries, and make sure changes here are reflected
+// in SafeBrowsingRemoteInternalErrorStatusCode histogram enum.
+// A similar enum exists in the internal ApiHandler in java and must be kept
+// in sync.
+enum InternalErrorStatusCode {
+  IESC_UNEXPECTED = 0,
+  IESC_UNSUPPORTED_THREAT_TYPES = 1,
+  IESC_MISSING_API_KEY = 2,
+  IESC_API_NOT_AVAILABLE = 3,
+  IESC_API_NOT_INITIALIZED = 4,
+  IESC_MAX_VALUE
+};
+
 // This parses the JSON from the GMSCore API and then:
 //   1) Picks the most severe threat type
 //   2) Parses that threat's key/value pairs into the metadata struct.
