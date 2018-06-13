@@ -667,23 +667,24 @@ void PasswordManager::CreateFormManagers(
     password_manager::PasswordManagerDriver* driver,
     const std::vector<autofill::PasswordForm>& forms) {
   // Find new forms.
-  std::vector<const FormData*> new_forms;
-  for (const autofill::PasswordForm& form : forms) {
+  std::vector<const PasswordForm*> new_forms;
+  for (const PasswordForm& form : forms) {
     bool form_manager_exists =
         std::any_of(form_managers_.begin(), form_managers_.end(),
                     [&form, driver](const auto& form_manager) {
                       return form_manager->DoesManage(form.form_data, driver);
                     });
     if (!form_manager_exists)
-      new_forms.push_back(&form.form_data);
+      new_forms.push_back(&form);
   }
 
   // Create form manager for new forms.
-  for (const FormData* new_form : new_forms) {
+  for (const PasswordForm* new_form : new_forms) {
     form_managers_.push_back(std::make_unique<NewPasswordFormManager>(
         client_,
         driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>(),
-        *new_form, nullptr));
+        new_form->form_data, nullptr));
+    form_managers_.back()->set_old_parsing_result(*new_form);
   }
 }
 

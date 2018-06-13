@@ -235,6 +235,12 @@ void PasswordFormMetricsRecorder::RecordFormSignature(
       HashFormSignature(form_signature));
 }
 
+void PasswordFormMetricsRecorder::RecordParsingsComparisonResult(
+    ParsingComparisonResult comparison_result) {
+  ukm_entry_builder_.SetParsingComparison(
+      static_cast<uint64_t>(comparison_result));
+}
+
 int PasswordFormMetricsRecorder::GetActionsTaken() const {
   return static_cast<int>(user_action_) +
          static_cast<int>(UserAction::kMax) *
