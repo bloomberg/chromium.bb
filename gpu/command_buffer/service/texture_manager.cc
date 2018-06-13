@@ -2186,11 +2186,6 @@ void TextureManager::SetLevelInfo(TextureRef* ref,
                                              texture->estimated_size());
 }
 
-Texture* TextureManager::Produce(TextureRef* ref) {
-  DCHECK(ref);
-  return ref->texture();
-}
-
 TextureRef* TextureManager::Consume(
     GLuint client_id,
     Texture* texture) {

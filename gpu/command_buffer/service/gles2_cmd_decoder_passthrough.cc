@@ -1009,8 +1009,8 @@ void GLES2DecoderPassthroughImpl::TakeFrontBuffer(const Mailbox& mailbox) {
 
 void GLES2DecoderPassthroughImpl::ReturnFrontBuffer(const Mailbox& mailbox,
                                                     bool is_lost) {
-  TexturePassthrough* texture = static_cast<TexturePassthrough*>(
-      mailbox_manager_->ConsumeTexture(mailbox));
+  TextureBase* texture = mailbox_manager_->ConsumeTexture(mailbox);
+  mailbox_manager_->TextureDeleted(texture);
 
   if (offscreen_single_buffer_) {
     return;

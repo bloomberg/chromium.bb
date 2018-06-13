@@ -33,8 +33,6 @@ class GPU_GLES2_EXPORT MailboxManagerImpl : public MailboxManager {
   void TextureDeleted(TextureBase* texture) override;
 
  private:
-  void InsertTexture(const Mailbox& mailbox, TextureBase* texture);
-
   // This is a bidirectional map between mailbox and textures. We can have
   // multiple mailboxes per texture, but one texture per mailbox. We keep an
   // iterator in the MailboxToTextureMap to be able to manage changes to

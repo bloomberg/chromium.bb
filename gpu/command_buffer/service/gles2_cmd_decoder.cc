@@ -1128,10 +1128,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoProduceTextureDirectCHROMIUM(GLuint texture,
                                       const volatile GLbyte* key);
-  void ProduceTextureRef(const char* func_name,
-                         bool clear,
-                         TextureRef* texture_ref,
-                         const volatile GLbyte* data);
 
   void DoCreateAndConsumeTextureINTERNAL(GLuint client_id,
                                          const volatile GLbyte* key);
@@ -5274,8 +5270,8 @@ void GLES2DecoderImpl::TakeFrontBuffer(const Mailbox& mailbox) {
 }
 
 void GLES2DecoderImpl::ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) {
-  Texture* texture =
-      static_cast<Texture*>(group_->mailbox_manager()->ConsumeTexture(mailbox));
+  TextureBase* texture = mailbox_manager()->ConsumeTexture(mailbox);
+  mailbox_manager()->TextureDeleted(texture);
 
   if (offscreen_single_buffer_)
     return;
@@ -18108,40 +18104,19 @@ void GLES2DecoderImpl::DoProduceTextureDirectCHROMIUM(
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoProduceTextureDirectCHROMIUM",
       "context", logger_.GetLogPrefix(),
       "mailbox[0]", static_cast<unsigned char>(data[0]));
-
-  ProduceTextureRef("glProduceTextureDirectCHROMIUM", !client_id,
-                    GetTexture(client_id), data);
-}
-
-void GLES2DecoderImpl::ProduceTextureRef(const char* func_name,
-                                         bool clear,
-                                         TextureRef* texture_ref,
-                                         const volatile GLbyte* data) {
   Mailbox mailbox =
       Mailbox::FromVolatile(*reinterpret_cast<const volatile Mailbox*>(data));
   DLOG_IF(ERROR, !mailbox.Verify())
       << "ProduceTextureDirectCHROMIUM was not passed a crypto-random mailbox.";
 
-  if (clear) {
-    DCHECK(!texture_ref);
-
-    group_->mailbox_manager()->ProduceTexture(mailbox, nullptr);
-    return;
-  }
-
+  TextureRef* texture_ref = GetTexture(client_id);
   if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "unknown texture");
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glProduceTextureDirectCHROMIUM",
+                       "unknown texture");
     return;
   }
 
-  Texture* produced = texture_manager()->Produce(texture_ref);
-  if (!produced) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, func_name, "invalid texture");
-    return;
-  }
-
-  group_->mailbox_manager()->ProduceTexture(mailbox, produced);
+  group_->mailbox_manager()->ProduceTexture(mailbox, texture_ref->texture());
 }
 
 void GLES2DecoderImpl::DoCreateAndConsumeTextureINTERNAL(

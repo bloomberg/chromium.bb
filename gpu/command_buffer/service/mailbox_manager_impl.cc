@@ -30,25 +30,17 @@ TextureBase* MailboxManagerImpl::ConsumeTexture(const Mailbox& mailbox) {
   if (it != mailbox_to_textures_.end())
     return it->second->first;
 
-  return NULL;
+  return nullptr;
 }
 
 void MailboxManagerImpl::ProduceTexture(const Mailbox& mailbox,
                                         TextureBase* texture) {
+  DCHECK(texture);
   MailboxToTextureMap::iterator it = mailbox_to_textures_.find(mailbox);
   if (it != mailbox_to_textures_.end()) {
-    if (it->second->first == texture)
-      return;
-    TextureToMailboxMap::iterator texture_it = it->second;
-    mailbox_to_textures_.erase(it);
-    textures_to_mailboxes_.erase(texture_it);
+    DLOG(ERROR) << "Ignored attempt to reassign a mailbox";
+    return;
   }
-  if (texture)
-    InsertTexture(mailbox, texture);
-}
-
-void MailboxManagerImpl::InsertTexture(const Mailbox& mailbox,
-                                       TextureBase* texture) {
   texture->SetMailboxManager(this);
   TextureToMailboxMap::iterator texture_it =
       textures_to_mailboxes_.insert(std::make_pair(texture, mailbox));
