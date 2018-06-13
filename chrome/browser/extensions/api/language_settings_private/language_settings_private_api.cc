@@ -275,8 +275,7 @@ LanguageSettingsPrivateDisableLanguageFunction::Run() {
   std::string chrome_language = language_code;
   translate::ToChromeLanguageSynonym(&chrome_language);
 
-  auto it = std::find(languages.begin(), languages.end(), chrome_language);
-  if (it == languages.end()) {
+  if (!base::ContainsValue(languages, chrome_language)) {
     LOG(ERROR) << "Language " << chrome_language << " not enabled";
     return RespondNow(NoArguments());
   }

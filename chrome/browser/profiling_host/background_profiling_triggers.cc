@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiling_host/background_profiling_triggers.h"
 
+#include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -141,8 +142,7 @@ void BackgroundProfilingTriggers::OnReceivedMemoryDump(
 
   bool should_send_report = false;
   for (const auto& proc : dump->process_dumps()) {
-    if (std::find(profiled_pids.begin(), profiled_pids.end(), proc.pid()) ==
-        profiled_pids.end())
+    if (!base::ContainsValue(profiled_pids, proc.pid()))
       continue;
     if (IsOverTriggerThreshold(GetContentProcessType(proc.process_type()),
                                proc.os_dump().private_footprint_kb)) {

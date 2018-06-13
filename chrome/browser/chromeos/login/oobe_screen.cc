@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "chromeos/chromeos_switches.h"
 
@@ -89,7 +90,7 @@ bool ForceShowOobeScreen(OobeScreen screen) {
   std::vector<std::string> screens = base::SplitString(
       option_str, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   std::string name = GetOobeScreenName(screen);
-  return std::find(screens.begin(), screens.end(), name) != screens.end();
+  return base::ContainsValue(screens, name);
 }
 
 }  // namespace chromeos

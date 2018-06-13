@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/version.h"
 #include "chrome/browser/vr/assets_loader.h"
@@ -51,8 +52,7 @@ void VrAssetsComponentInstallerPolicy::UpdateComponent(
   const std::string crx_id = crx_file::id_util::GenerateIdFromHash(
       kVrAssetsPublicKeySHA256, sizeof(kVrAssetsPublicKeySHA256));
   // Make sure the component is registered.
-  DCHECK(std::find(cus->GetComponentIDs().begin(), cus->GetComponentIDs().end(),
-                   crx_id) != cus->GetComponentIDs().end());
+  DCHECK(base::ContainsValue(cus->GetComponentIDs(), crx_id));
   cus->GetOnDemandUpdater().OnDemandUpdate(
       crx_id, base::BindOnce([](update_client::Error error) { return; }));
 #endif  // BUILDFLAG(USE_VR_ASSETS_COMPONENT)
