@@ -11,15 +11,22 @@ description('If we drag files onto an editable area, then the filenames should b
 
 var result;
 
+jsTestIsAsync = true;
 function startTest()
 {
     var editable = document.getElementById("editable");
     if (window.eventSender) {
-        dragFilesOntoEditable(['foo', 'bar', 'baz']);
+        dragFilesOntoEditable([
+          './resources/drag-files-to-editable-element-fail', 
+          './resources/foo',
+          './resources/bar']);
         result = editable.innerHTML.replace(/file.*?LayoutTests/g, "LayoutTests");
-        shouldBeEqualToString('result', '<div>LayoutTests/editing/pasteboard/foo</div><div>LayoutTests/editing/pasteboard/bar</div><div>LayoutTests/editing/pasteboard/baz</div>');
+        shouldBeEqualToString('result',
+          '<div>LayoutTests/editing/pasteboard/resources/drag-files-to-editable-element-fails</div>'+
+          '<div>LayoutTests/editing/pasteboard/resources/foo</div>'+
+          '<div>LayoutTests/editing/pasteboard/resources/bar</div>');
         editable.innerHTML = '';
-        window.stop();
+        finishJSTest();
     }
 }
 
