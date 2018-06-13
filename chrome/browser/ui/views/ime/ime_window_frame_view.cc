@@ -31,7 +31,7 @@ const int kTitlebarLeftPadding = 8;
 const int kTitlebarRightPadding = 6;
 
 // Colors used to draw border, titlebar background and title text.
-const SkColor kBackgroundColor = SkColorSetRGB(0xec, 0xef, 0xf1);
+const SkColor kImeBackgroundColor = SkColorSetRGB(0xec, 0xef, 0xf1);
 const SkColor kBorderColor = SkColorSetRGB(0xda, 0xdf, 0xe1);
 
 }  // namespace
@@ -246,7 +246,7 @@ void ImeWindowFrameView::ButtonPressed(views::Button* sender,
 }
 
 void ImeWindowFrameView::PaintFrameBackground(gfx::Canvas* canvas) {
-  canvas->DrawColor(kBackgroundColor);
+  canvas->DrawColor(kImeBackgroundColor);
 
   // left border.
   canvas->FillRect(gfx::Rect(0, 0, kImeBorderThickness, height()),
