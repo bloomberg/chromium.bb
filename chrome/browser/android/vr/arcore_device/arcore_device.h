@@ -60,18 +60,19 @@ class ARCoreDevice : public VRDeviceBase {
       mojom::VRDisplayHost::RequestSessionCallback callback,
       bool success);
 
-  template <typename DataType>
+  template <typename... Args>
   static void RunCallbackOnTaskRunner(
       const scoped_refptr<base::TaskRunner>& task_runner,
-      base::OnceCallback<void(DataType)> callback,
-      DataType data) {
-    task_runner->PostTask(FROM_HERE,
-                          base::BindOnce(std::move(callback), std::move(data)));
+      base::OnceCallback<void(Args...)> callback,
+      Args... args) {
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), std::forward<Args>(args)...));
   }
-  template <typename DataType>
-  base::OnceCallback<void(DataType)> CreateMainThreadCallback(
-      base::OnceCallback<void(DataType)> callback) {
-    return base::BindOnce(&ARCoreDevice::RunCallbackOnTaskRunner<DataType>,
+  template <typename... Args>
+  base::OnceCallback<void(Args...)> CreateMainThreadCallback(
+      base::OnceCallback<void(Args...)> callback) {
+    return base::BindOnce(&ARCoreDevice::RunCallbackOnTaskRunner<Args...>,
                           main_thread_task_runner_, std::move(callback));
   }
 

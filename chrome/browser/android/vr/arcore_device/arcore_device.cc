@@ -63,19 +63,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(uint32_t device_id) {
   return device;
 }
 
-void RunCallbackOnTaskRunnerVoid(
-    const scoped_refptr<base::TaskRunner>& task_runner,
-    base::OnceClosure callback) {
-  task_runner->PostTask(FROM_HERE, std::move(callback));
-}
-
-base::OnceCallback<void(void)> CreateThreadCallbackVoid(
-    const scoped_refptr<base::TaskRunner>& task_runner,
-    base::OnceCallback<void(void)> callback) {
-  return base::BindOnce(&RunCallbackOnTaskRunnerVoid, task_runner,
-                        std::move(callback));
-}
-
 }  // namespace
 
 ARCoreDevice::ARCoreDevice()
@@ -133,10 +120,8 @@ void ARCoreDevice::OnMailboxBridgeReady() {
   // TODO(https://crbug.com/836553): use same GL thread as GVR.
   arcore_gl_thread_ = std::make_unique<ARCoreGlThread>(
       std::move(mailbox_bridge_),
-      CreateThreadCallbackVoid(
-          main_thread_task_runner_,
-          base::BindOnce(&ARCoreDevice::OnARCoreGlThreadInitialized,
-                         GetWeakPtr())));
+      CreateMainThreadCallback(base::BindOnce(
+          &ARCoreDevice::OnARCoreGlThreadInitialized, GetWeakPtr())));
   arcore_gl_thread_->Start();
 }
 
@@ -325,7 +310,7 @@ void ARCoreDevice::OnRequestSessionPreconditionsComplete(
 
   PostTaskToGlThread(base::BindOnce(
       &ARCoreGl::Initialize, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr(),
-      CreateMainThreadCallback<bool>(
+      CreateMainThreadCallback(
           base::BindOnce(&ARCoreDevice::OnARCoreGlInitializationComplete,
                          GetWeakPtr(), std::move(callback)))));
 }
