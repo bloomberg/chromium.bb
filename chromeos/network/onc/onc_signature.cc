@@ -268,6 +268,7 @@ const OncFieldSignature cellular_apn_fields[] = {
     {::onc::cellular_apn::kName, &kStringSignature},
     {::onc::cellular_apn::kUsername, &kStringSignature},
     {::onc::cellular_apn::kPassword, &kStringSignature},
+    {::onc::cellular_apn::kAuthentication, &kStringSignature},
     {::onc::cellular_apn::kLocalizedName, &kStringSignature},
     {::onc::cellular_apn::kLanguage, &kStringSignature},
     {NULL}};

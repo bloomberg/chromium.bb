@@ -4,6 +4,7 @@
   "Cellular": {
     "APN": {
       "AccessPointName": "test-apn",
+      "Authentication": "chap",
       "Username": "test-username",
       "Password": "test-password"
     },
