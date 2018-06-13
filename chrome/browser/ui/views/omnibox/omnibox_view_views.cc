@@ -236,6 +236,20 @@ void OmniboxViewViews::InstallPlaceholderText() {
   set_placeholder_text_hidden_on_focus(true);
 }
 
+void OmniboxViewViews::UpdateTextIndent() {
+  DCHECK(ui::MaterialDesignController::IsRefreshUi());
+
+  gfx::Insets insets =
+      ChromeLayoutProvider::Get()->GetInsetsMetric(INSETS_OMNIBOX);
+  if (model()->popup_model()->IsOpen())
+    insets += gfx::Insets(0, 8 /* left */, 0, 0);
+
+  SetBorder(views::CreateEmptyBorder(insets));
+
+  // This is necessary to reposition the internal RenderText.
+  OnBoundsChanged(gfx::Rect());
+}
+
 void OmniboxViewViews::EmphasizeURLComponents() {
   if (!location_bar_view_)
     return;
