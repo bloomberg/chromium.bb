@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/autofill/save_card_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
-#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
 
 namespace content {
@@ -17,7 +16,6 @@ class WebContents;
 }
 
 namespace views {
-class Link;
 class StyledLabel;
 }
 
@@ -28,7 +26,6 @@ namespace autofill {
 // previously saved.
 class SaveCardBubbleViews : public SaveCardBubbleView,
                             public LocationBarBubbleDelegateView,
-                            public views::LinkListener,
                             public views::StyledLabelListener {
  public:
   // Bubble will be anchored to |anchor_view|.
@@ -43,7 +40,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   void Hide() override;
 
   // views::BubbleDialogDelegateView:
-  views::View* CreateExtraView() override;
   views::View* CreateFootnoteView() override;
   bool Accept() override;
   bool Cancel() override;
@@ -60,9 +56,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   void WindowClosing() override;
-
-  // views::LinkListener:
-  void LinkClicked(views::Link* source, int event_flags) override;
 
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
@@ -108,7 +101,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   SaveCardBubbleController* controller_;  // Weak reference.
 
   views::View* footnote_view_ = nullptr;
-  views::Link* learn_more_link_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViews);
 };

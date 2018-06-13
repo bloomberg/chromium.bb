@@ -155,37 +155,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   EXPECT_FALSE(FindViewInBubbleById(DialogViewId::CANCEL_BUTTON));
 }
 
-// Tests the local save bubble. Ensures that clicking the [Learn more] link
-// causes the bubble to go away and opens the relevant help page.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Local_ClickingLearnMoreClosesBubble) {
-  // Set up the Payments RPC.
-  SetUploadDetailsRpcPaymentsDeclines();
-
-  // Submitting the form and having Payments decline offering to save should
-  // show the local save bubble.
-  // (Must wait for response from Payments before accessing the controller.)
-  ResetEventWaiterForSequence(
-      {DialogEvent::REQUESTED_UPLOAD_SAVE,
-       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
-       DialogEvent::OFFERED_LOCAL_SAVE});
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_LOCAL)->visible());
-
-  // Click the [Learn more] link.
-  content::WebContentsAddedObserver web_contents_added_observer;
-  ClickOnDialogViewWithIdAndWait(DialogViewId::LEARN_MORE_LINK);
-  // A new support page tab should have been spawned.
-  content::WebContents* new_tab_contents =
-      web_contents_added_observer.GetWebContents();
-  EXPECT_TRUE(new_tab_contents->GetVisibleURL().spec() ==
-                  "https://support.google.com/chrome/?p=settings_autofill" ||
-              new_tab_contents->GetVisibleURL().spec() ==
-                  "https://support.google.com/chromebook/?p=settings_autofill");
-}
-
 // Tests the local save bubble. Ensures that the bubble behaves correctly if
 // dismissed and then immediately torn down (e.g. by closing browser window)
 // before the asynchronous close completes. Regression test for
@@ -336,28 +305,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
   base::HistogramTester histogram_tester;
   ClickOnDialogViewAndWait(
       GetSaveCardBubbleViews()->GetBubbleFrameView()->GetCloseButtonForTest());
-}
-
-// Tests the upload save bubble. Ensures that the upload save version of the
-// bubble does not have a [Learn more] link.
-IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
-                       Upload_ShouldNotHaveLearnMoreLink) {
-  // Set up the Payments RPC.
-  SetUploadDetailsRpcPaymentsAccepts();
-
-  // Submitting the form should show the upload save bubble and legal footer.
-  // (Must wait for response from Payments before accessing the controller.)
-  ResetEventWaiterForSequence(
-      {DialogEvent::REQUESTED_UPLOAD_SAVE,
-       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
-  FillAndSubmitForm();
-  WaitForObservedEvent();
-  EXPECT_TRUE(
-      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
-  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
-
-  // Assert that the Learn more link cannot be found.
-  EXPECT_FALSE(FindViewInBubbleById(DialogViewId::LEARN_MORE_LINK));
 }
 
 // TODO(jsaul): Only *part* of the legal message StyledLabel is clickable, and

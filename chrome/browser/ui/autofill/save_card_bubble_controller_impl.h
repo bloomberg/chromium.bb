@@ -55,7 +55,6 @@ class SaveCardBubbleControllerImpl
   const CreditCard GetCard() const override;
   void OnSaveButton() override;
   void OnCancelButton() override;
-  void OnLearnMoreClicked() override;
   void OnLegalMessageLinkClicked(const GURL& url) override;
   void OnBubbleClosed() override;
   const LegalMessageLines& GetLegalMessageLines() const override;
