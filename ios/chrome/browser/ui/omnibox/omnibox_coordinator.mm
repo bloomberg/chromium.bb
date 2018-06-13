@@ -24,6 +24,13 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Font size used in the omnibox.
+const CGFloat kFontSize = 19.0f;
+
+}  // namespace
+
 @interface OmniboxCoordinator ()
 // Object taking care of adding the accessory views to the keyboard.
 @property(nonatomic, strong)
@@ -53,16 +60,15 @@
   BOOL isIncognito = self.browserState->IsOffTheRecord();
 
   UIColor* textColor =
-      isIncognito
-          ? [UIColor whiteColor]
-          : [UIColor colorWithWhite:0 alpha:[MDCTypography body1FontOpacity]];
-  UIColor* tintColor = isIncognito ? textColor : nil;
+      isIncognito ? [UIColor whiteColor] : [UIColor colorWithWhite:0 alpha:0.7];
+  UIColor* tintColor =
+      isIncognito ? [UIColor whiteColor] : [UIColor blackColor];
 
-  self.viewController =
-      [[OmniboxViewController alloc] initWithFont:[MDCTypography subheadFont]
-                                        textColor:textColor
-                                        tintColor:tintColor
-                                        incognito:isIncognito];
+  self.viewController = [[OmniboxViewController alloc]
+      initWithFont:[UIFont systemFontOfSize:kFontSize]
+         textColor:textColor
+         tintColor:tintColor
+         incognito:isIncognito];
 
   self.mediator = [[OmniboxMediator alloc] init];
   self.mediator.consumer = self.viewController;
@@ -77,20 +83,6 @@
   self.textField.incognito = isIncognito;
   self.textField.suggestionCommandsEndpoint =
       static_cast<id<OmniboxSuggestionCommands>>(self.dispatcher);
-
-  if (isIncognito) {
-    [self.textField
-        setSelectedTextBackgroundColor:[UIColor colorWithWhite:1 alpha:0.1]];
-    [self.textField
-        setPlaceholderTextColor:[UIColor colorWithWhite:1 alpha:0.5]];
-  } else if (!IsIPadIdiom()) {
-    // Set placeholder text color to match fakebox placeholder text color when
-    // on iPhone.
-    UIColor* placeholderTextColor =
-        [UIColor colorWithWhite:kiPhoneLocationBarPlaceholderColorBrightness
-                          alpha:1.0];
-    [self.textField setPlaceholderTextColor:placeholderTextColor];
-  }
 
   self.keyboardDelegate = [[ToolbarAssistiveKeyboardDelegateImpl alloc] init];
   self.keyboardDelegate.dispatcher =
