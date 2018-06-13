@@ -419,11 +419,6 @@ Options:
   exit 1
 }
 
-if [ ! -e ../.gclient ]; then
-  echo "$0 must be run in src directory"
-  exit 1
-fi
-
 if [ "$(expr substr $(uname -s) 1 6)" == "CYGWIN" ]; then
   using_cygwin=true
 else
@@ -512,6 +507,12 @@ set ${DIRS:=$ALL_DIRS}
 info "Optimize level=$OPTIMIZE_LEVEL"
 
 if [ -n "$COMMIT" ] ; then
+  # To keep git logic below sane, require it be run from the top dir.
+  if [ ! -e ../.gclient ]; then
+    echo "$0 must be run in src directory"
+    exit 1
+  fi
+
  ALL_FILES=$(git diff --name-only $COMMIT HEAD $DIRS | grep "png$")
  ALL_FILES_LIST=( $ALL_FILES )
  echo "Processing ${#ALL_FILES_LIST[*]} files"
