@@ -64,6 +64,22 @@ typedef struct EXTERNAL_REFERENCES {
   int num;
 } EXTERNAL_REFERENCES;
 
+typedef struct TileJobsDec {
+  TileBufferDec *tile_buffer;
+  TileDataDec *tile_data;
+} TileJobsDec;
+
+typedef struct AV1DecTileMTData {
+#if CONFIG_MULTITHREAD
+  pthread_mutex_t *job_mutex;
+#endif
+  TileJobsDec *job_queue;
+  int jobs_enqueued;
+  int jobs_dequeued;
+  int alloc_tile_rows;
+  int alloc_tile_cols;
+} AV1DecTileMT;
+
 typedef struct AV1Decoder {
   DECLARE_ALIGNED(32, MACROBLOCKD, mb);
 
@@ -88,6 +104,7 @@ typedef struct AV1Decoder {
   int allocated_tiles;
 
   TileBufferDec tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];
+  AV1DecTileMT tile_mt_info;
 
   // Each time the decoder is called, we expect to receive a full temporal unit.
   // This can contain up to one shown frame per spatial layer in the current
@@ -165,6 +182,7 @@ aom_codec_err_t av1_copy_new_frame_dec(AV1_COMMON *cm,
 struct AV1Decoder *av1_decoder_create(BufferPool *const pool);
 
 void av1_decoder_remove(struct AV1Decoder *pbi);
+void av1_dealloc_dec_jobs(struct AV1DecTileMTData *tile_jobs_sync);
 
 static INLINE void decrease_ref_count(int idx, RefCntBuffer *const frame_bufs,
                                       BufferPool *const pool) {

@@ -130,6 +130,21 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   return pbi;
 }
 
+void av1_dealloc_dec_jobs(struct AV1DecTileMTData *tile_mt_info) {
+  if (tile_mt_info != NULL) {
+#if CONFIG_MULTITHREAD
+    if (tile_mt_info->job_mutex != NULL) {
+      pthread_mutex_destroy(tile_mt_info->job_mutex);
+      aom_free(tile_mt_info->job_mutex);
+    }
+#endif
+    aom_free(tile_mt_info->job_queue);
+    // clear the structure as the source of this call may be a resize in which
+    // case this call will be followed by an _alloc() which may fail.
+    av1_zero(*tile_mt_info);
+  }
+}
+
 void av1_decoder_remove(AV1Decoder *pbi) {
   int i;
 
@@ -158,6 +173,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
   if (pbi->num_workers > 0) {
     av1_loop_filter_dealloc(&pbi->lf_row_sync);
     av1_loop_restoration_dealloc(&pbi->lr_row_sync, pbi->num_workers);
+    av1_dealloc_dec_jobs(&pbi->tile_mt_info);
   }
 
 #if CONFIG_ACCOUNTING

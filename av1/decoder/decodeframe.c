@@ -2643,14 +2643,29 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   return aom_reader_find_end(&tile_data->bit_reader);
 }
 
+static TileJobsDec *get_dec_job_info(AV1DecTileMT *tile_mt_info) {
+  TileJobsDec *cur_job_info = NULL;
+#if CONFIG_MULTITHREAD
+  pthread_mutex_lock(tile_mt_info->job_mutex);
+
+  if (tile_mt_info->jobs_dequeued < tile_mt_info->jobs_enqueued) {
+    cur_job_info = tile_mt_info->job_queue + tile_mt_info->jobs_dequeued;
+    tile_mt_info->jobs_dequeued++;
+  }
+
+  pthread_mutex_unlock(tile_mt_info->job_mutex);
+#else
+  (void)tile_mt_info;
+#endif
+  return cur_job_info;
+}
+
 static int tile_worker_hook(void *arg1, void *arg2) {
   DecWorkerData *const thread_data = (DecWorkerData *)arg1;
   AV1Decoder *const pbi = (AV1Decoder *)arg2;
   AV1_COMMON *cm = &pbi->common;
   ThreadData *const td = thread_data->td;
   uint8_t allow_update_cdf;
-
-  volatile int tile_idx = thread_data->tile_start;
 
   if (setjmp(thread_data->error_info.jmp)) {
     thread_data->error_info.setjmp = 0;
@@ -2661,52 +2676,103 @@ static int tile_worker_hook(void *arg1, void *arg2) {
   allow_update_cdf = allow_update_cdf && !cm->disable_cdf_update;
 
   assert(cm->tile_cols > 0);
-  do {
-    volatile int tile_row = tile_idx / cm->tile_cols;
-    volatile int tile_col = tile_idx % cm->tile_cols;
-    const TileBufferDec *const tile_buffer =
-        &pbi->tile_buffers[tile_row][tile_col];
-    TileDataDec *const tile_data =
-        pbi->tile_data + tile_row * cm->tile_cols + tile_col;
+  while (1) {
+    TileJobsDec *cur_job_info = get_dec_job_info(&pbi->tile_mt_info);
 
-    td->xd = pbi->mb;
-    td->xd.corrupted = 0;
-    td->xd.mc_buf[0] = td->mc_buf[0];
-    td->xd.mc_buf[1] = td->mc_buf[1];
-    td->bit_reader = &tile_data->bit_reader;
-    av1_zero(td->dqcoeff);
-    av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
-    setup_bool_decoder(tile_buffer->data, thread_data->data_end,
-                       tile_buffer->size, &cm->error, td->bit_reader,
-                       allow_update_cdf);
+    if (cur_job_info != NULL && !td->xd.corrupted) {
+      const TileBufferDec *const tile_buffer = cur_job_info->tile_buffer;
+      TileDataDec *const tile_data = cur_job_info->tile_data;
+      volatile int tile_row = tile_data->tile_info.tile_row;
+      volatile int tile_col = tile_data->tile_info.tile_col;
+
+      td->xd = pbi->mb;
+      td->xd.corrupted = 0;
+      td->xd.mc_buf[0] = td->mc_buf[0];
+      td->xd.mc_buf[1] = td->mc_buf[1];
+      td->bit_reader = &tile_data->bit_reader;
+      av1_zero(td->dqcoeff);
+      av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
+      setup_bool_decoder(tile_buffer->data, thread_data->data_end,
+                         tile_buffer->size, &cm->error, td->bit_reader,
+                         allow_update_cdf);
 #if CONFIG_ACCOUNTING
-    if (pbi->acct_enabled) {
-      td->bit_reader->accounting = &pbi->accounting;
-      td->bit_reader->accounting->last_tell_frac =
-          aom_reader_tell_frac(td->bit_reader);
+      if (pbi->acct_enabled) {
+        td->bit_reader->accounting = &pbi->accounting;
+        td->bit_reader->accounting->last_tell_frac =
+            aom_reader_tell_frac(td->bit_reader);
+      } else {
+        td->bit_reader->accounting = NULL;
+      }
+#endif
+      av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
+      av1_init_above_context(cm, &td->xd, tile_row);
+
+      // Initialise the tile context from the frame context
+      tile_data->tctx = *cm->fc;
+      td->xd.tile_ctx = &tile_data->tctx;
+      td->xd.plane[0].color_index_map = td->color_index_map[0];
+      td->xd.plane[1].color_index_map = td->color_index_map[1];
+#if CONFIG_ACCOUNTING
+      if (pbi->acct_enabled) {
+        tile_data->bit_reader.accounting->last_tell_frac =
+            aom_reader_tell_frac(&tile_data->bit_reader);
+      }
+#endif
+      // decode tile
+      decode_tile(pbi, td, tile_row, tile_col);
     } else {
-      td->bit_reader->accounting = NULL;
+      break;
     }
-#endif
-    av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
-    av1_init_above_context(cm, &td->xd, tile_row);
-
-    // Initialise the tile context from the frame context
-    tile_data->tctx = *cm->fc;
-    td->xd.tile_ctx = &tile_data->tctx;
-    td->xd.plane[0].color_index_map = td->color_index_map[0];
-    td->xd.plane[1].color_index_map = td->color_index_map[1];
-#if CONFIG_ACCOUNTING
-    if (pbi->acct_enabled) {
-      tile_data->bit_reader.accounting->last_tell_frac =
-          aom_reader_tell_frac(&tile_data->bit_reader);
-    }
-#endif
-    // decode tile
-    decode_tile(pbi, td, tile_row, tile_col);
-  } while (!td->xd.corrupted && ++tile_idx <= thread_data->tile_end);
-
+  }
   return !td->xd.corrupted;
+}
+
+// sorts in descending order
+static int compare_tile_buffers(const void *a, const void *b) {
+  const TileJobsDec *const buf1 = (const TileJobsDec *)a;
+  const TileJobsDec *const buf2 = (const TileJobsDec *)b;
+  return (int)(buf2->tile_buffer->size - buf1->tile_buffer->size);
+}
+
+static void enqueue_tile_jobs(AV1Decoder *pbi, AV1_COMMON *cm,
+                              int tile_rows_start, int tile_rows_end,
+                              int tile_cols_start, int tile_cols_end,
+                              int startTile, int endTile) {
+  AV1DecTileMT *tile_mt_info = &pbi->tile_mt_info;
+  TileJobsDec *tile_job_queue = tile_mt_info->job_queue;
+  tile_mt_info->jobs_enqueued = 0;
+  tile_mt_info->jobs_dequeued = 0;
+
+  for (int row = tile_rows_start; row < tile_rows_end; row++) {
+    for (int col = tile_cols_start; col < tile_cols_end; col++) {
+      if (row * cm->tile_cols + col < startTile ||
+          row * cm->tile_cols + col > endTile)
+        continue;
+      tile_job_queue->tile_buffer = &pbi->tile_buffers[row][col];
+      tile_job_queue->tile_data = pbi->tile_data + row * cm->tile_cols + col;
+      tile_job_queue++;
+      tile_mt_info->jobs_enqueued++;
+    }
+  }
+}
+
+static void alloc_dec_jobs(AV1DecTileMT *tile_mt_info, AV1_COMMON *cm,
+                           int tile_rows, int tile_cols) {
+  tile_mt_info->alloc_tile_rows = tile_rows;
+  tile_mt_info->alloc_tile_cols = tile_cols;
+  int num_tiles = tile_rows * tile_cols;
+#if CONFIG_MULTITHREAD
+  {
+    CHECK_MEM_ERROR(cm, tile_mt_info->job_mutex,
+                    aom_malloc(sizeof(*tile_mt_info->job_mutex) * num_tiles));
+
+    for (int i = 0; i < num_tiles; i++) {
+      pthread_mutex_init(&tile_mt_info->job_mutex[i], NULL);
+    }
+  }
+#endif
+  CHECK_MEM_ERROR(cm, tile_mt_info->job_queue,
+                  aom_malloc(sizeof(*tile_mt_info->job_queue) * num_tiles));
 }
 
 void av1_free_mc_tmp_buf(void *td, int use_highbd) {
@@ -2860,6 +2926,23 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
     aom_accounting_reset(&pbi->accounting);
   }
 #endif
+  for (int row = 0; row < tile_rows; row++) {
+    for (int col = 0; col < tile_cols; col++) {
+      TileDataDec *tile_data = pbi->tile_data + row * cm->tile_cols + col;
+      av1_tile_init(&tile_data->tile_info, cm, row, col);
+    }
+  }
+
+  if (pbi->tile_mt_info.alloc_tile_cols != tile_cols ||
+      pbi->tile_mt_info.alloc_tile_rows != tile_rows) {
+    av1_dealloc_dec_jobs(&pbi->tile_mt_info);
+    alloc_dec_jobs(&pbi->tile_mt_info, cm, tile_rows, tile_cols);
+  }
+  enqueue_tile_jobs(pbi, cm, tile_rows_start, tile_rows_end, tile_cols_start,
+                    tile_cols_end, start_tile, end_tile);
+  qsort(pbi->tile_mt_info.job_queue, pbi->tile_mt_info.jobs_enqueued,
+        sizeof(pbi->tile_mt_info.job_queue[0]), compare_tile_buffers);
+
   {
     const int base = tile_count_tg / num_workers;
     const int remain = tile_count_tg % num_workers;
@@ -2872,14 +2955,11 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
       AVxWorker *const worker = &pbi->tile_workers[worker_idx];
       DecWorkerData *const thread_data = (DecWorkerData *)worker->data1;
 
-      thread_data->tile_start = tile_start;
-      thread_data->tile_end = tile_start + count - 1;
       thread_data->data_end = data_end;
       tile_start += count;
 
       worker->had_error = 0;
       if (worker_idx == num_workers - 1) {
-        assert(thread_data->tile_end == end_tile);
         winterface->execute(worker);
       } else {
         winterface->launch(worker);
