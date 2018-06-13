@@ -92,6 +92,7 @@
 <translation id="17513872634828108">열린 탭</translation>
 <translation id="1756600373018374892">내 탭에 빠르게 액세스하려면 이 버튼을 탭하세요.</translation>
 <translation id="1779089405699405702">이미지 디코더</translation>
+<translation id="1782483593938241562">종료일: <ph name="DATE" /></translation>
 <translation id="1792959175193046959">언제든지 기본 다운로드 위치 변경 가능</translation>
 <translation id="1807246157184219062">밝게</translation>
 <translation id="1829244130665387512">페이지에서 찾기</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">페이지 새로고침</translation>
 <translation id="2709516037105925701">자동 완성</translation>
 <translation id="271033894570825754">새 파일</translation>
+<translation id="2728754400939377704">사이트별 정렬</translation>
 <translation id="2736391366332017384">홈 버튼을 탭하여 현재 탭에서 새 탭 페이지로 이동하세요.</translation>
 <translation id="2744248271121720757">단어를 탭하여 즉시 검색하거나 관련 작업을 확인하세요</translation>
 <translation id="2762000892062317888">방금 전</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">관리자가 관리합니다.</translation>
 <translation id="4116038641877404294">페이지를 다운로드하여 오프라인에서 사용하세요.</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{북마크 %1$d개}other{북마크 %1$d개}}</translation>
+<translation id="4159800535322890630">사이트의 센서 액세스 차단</translation>
 <translation id="4165986682804962316">사이트 설정</translation>
 <translation id="4170011742729630528">서비스를 사용할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
+<translation id="4179980317383591987"><ph name="AMOUNT" /> 사용됨</translation>
 <translation id="4181841719683918333">언어</translation>
 <translation id="4195643157523330669">새 탭에서 열기</translation>
 <translation id="4198423547019359126">사용할 수 있는 다운로드 위치가 없음</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">카드</translation>
 <translation id="5595485650161345191">주소 수정</translation>
 <translation id="5596627076506792578">옵션 더보기</translation>
+<translation id="5620299005957670886">사이트의 센서 액세스 허용(권장)</translation>
 <translation id="5620928963363755975">옵션 더보기 버튼을 눌러 다운로드에서 파일 및 페이지를 찾아보세요.</translation>
 <translation id="5626134646977739690">이름:</translation>
 <translation id="5639724618331995626">모든 사이트 허용</translation>
@@ -563,6 +568,7 @@
 <translation id="5911030830365207728">Google 번역</translation>
 <translation id="5916664084637901428">사용</translation>
 <translation id="5919204609460789179"><ph name="PRODUCT_NAME" />을(를) 업데이트하여 동기화를 시작합니다.</translation>
+<translation id="5937580074298050696"><ph name="AMOUNT" /> 저장됨</translation>
 <translation id="5939518447894949180">초기화</translation>
 <translation id="5942872142862698679">검색할 때 Google 사용</translation>
 <translation id="5956665950594638604">새 탭에서 Chrome 고객센터 열기</translation>
@@ -643,6 +649,7 @@
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
 <translation id="6627583120233659107">폴더 수정</translation>
 <translation id="6643016212128521049">삭제</translation>
+<translation id="6643649862576733715">저장된 데이터 양에 따라 정렬</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />개}other{<ph name="CONTACT_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />개}}</translation>
 <translation id="6656545060687952787">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. <ph name="BEGIN_LINK" />권한 업데이트<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">비밀번호</translation>
@@ -729,6 +736,7 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403691278183511381">Chrome 첫 실행</translation>
 <translation id="741204030948306876">사용</translation>
+<translation id="7413229368719586778">시작일: <ph name="DATE" /></translation>
 <translation id="7423098979219808738">우선 확인</translation>
 <translation id="7423538860840206698">클립보드 액세스가 차단됨</translation>
 <translation id="7437998757836447326">Chrome에서 로그아웃</translation>
@@ -834,6 +842,7 @@
 <translation id="8313455859591948645">시작 페이지 수정</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 및 그 외 사이트</translation>
 <translation id="8339163506404995330"><ph name="LANGUAGE" />로 된 페이지를 번역하지 않습니다.</translation>
+<translation id="8349013245300336738">사용된 데이터 양에 따라 정렬</translation>
 <translation id="8363501664269050863">탐색 패널입니다. 닫으려면 아래로 스와이프하세요.</translation>
 <translation id="8372893542064058268">특정 사이트에서 백그라운드 동기화를 허용합니다.</translation>
 <translation id="8374821112118309944">음성 안내 지원을 최신 버전으로 업데이트해야 합니다.</translation>

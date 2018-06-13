@@ -5,6 +5,7 @@
 <translation id="1122869341872663659">Visar <ph name="N" /> sökresultat för <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Dra länken till flikens adressfält</translation>
 <translation id="1204450209689312104">Öppna ett nytt fönster i inkognitoläge</translation>
+<translation id="1251638888133819822">Aktivera och inaktivera helskärmsförstoring</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /> <ph name="SEPARATOR1" /> <ph name="MODIFIER2" /> <ph name="SEPARATOR2" /> <ph name="MODIFIER3" /> <ph name="SEPARATOR3" /> <ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Skriv ut den aktuella sidan</translation>
@@ -102,6 +103,7 @@
 <translation id="5236674127086649162">Läs in den aktuella sidan igen utan att använda cacheminnet</translation>
 <translation id="526651782186312376">Markera text till radens början</translation>
 <translation id="5316716239522500219">Speglar monitorer</translation>
+<translation id="539072479502328326">Aktivera och inaktivera dockad skärmförstoring</translation>
 <translation id="5487187679583934283">Startar eller stoppar utskrift av det du säger</translation>
 <translation id="5541719484267030947">Tryck på <ph name="ESC" /> medan du drar fliken</translation>
 <translation id="5554139136362089836">Sök på den aktuella sidan</translation>

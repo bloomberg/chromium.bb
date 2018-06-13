@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">เครดิต</translation>
 <translation id="1342835525016946179">บทความ</translation>
 <translation id="1359897965706325498">แบนเนอร์</translation>
+<translation id="1548116112524424341">เล่นวิดีโอในโหมดการแสดงภาพซ้อนภาพ</translation>
 <translation id="1589122976691792535">ภูมิภาค</translation>
 <translation id="1591562245178063882">เดือนนี้</translation>
 <translation id="1637811476055996098">เลือกไฟล์</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">เมตร</translation>
 <translation id="6166809985690652833">คำแถลงท้ายเล่ม</translation>
 <translation id="6213469881011901533">อภิธานศัพท์</translation>
+<translation id="6310801910862476708">ออกจากการแสดงภาพซ้อนภาพ</translation>
 <translation id="6398862346408813489">แสดงแผงการเลือกเดือน</translation>
 <translation id="6404546809543547843">ตัวควบคุมเวลาของเสียง</translation>
 <translation id="6453774872122745852">กิตติกรรมประกาศ</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">การนำทาง</translation>
 <translation id="9050748414552849310">แสดงคำอธิบายภาพ</translation>
 <translation id="9062295712474918030">เอกสาร</translation>
+<translation id="9093215626363556771">ออกจากการแสดงภาพซ้อนภาพ</translation>
 <translation id="9108370397979208512">คณิตศาสตร์</translation>
 <translation id="9132465097189459683">อื่นๆ...</translation>
 <translation id="9138385573473225930">การแจ้งเตือน</translation>
 <translation id="9155987714137265666"><ph name="WEEK" /> เริ่มวันที่ <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">เชิงอรรถ</translation>
 <translation id="947831847158436616">เซลล์</translation>
+<translation id="954003015749068518">เข้าสู่การแสดงภาพซ้อนภาพ</translation>
 <translation id="966787709310836684">เมนู</translation>
 </translationbundle>

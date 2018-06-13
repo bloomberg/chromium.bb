@@ -128,6 +128,7 @@
 <translation id="3400357268283240774">अतिरिक्त सेटिंग्ज</translation>
 <translation id="3413817803639110246">आत्ताच पाहण्यासाठी काहीही नाही</translation>
 <translation id="3445925074670675829">USB-C डिव्‍हाइस</translation>
+<translation id="3454224730401036106">तुमचे कनेक्शन अधिक सुरक्षित नेटवर्कवर स्विच केले आहे</translation>
 <translation id="3465566417615315331">आपला फोटो क्लिक करा</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">माउसचा कर्सर हायलाइट करा</translation>
@@ -296,6 +297,7 @@
 <translation id="7348093485538360975">ऑन-स्क्रीन कीबोर्ड</translation>
 <translation id="735745346212279324">VPN डिस्कनेक्ट केले</translation>
 <translation id="7377169924702866686">Caps Lock सुरू आहे.</translation>
+<translation id="7398254312354928459">नेटवर्क कनेक्शन स्विच केले</translation>
 <translation id="742594950370306541">कॅमेरा वापरात आहे.</translation>
 <translation id="743058460480092004">कॅमेरा आणि मायक्रोफोन वापरात आहेत.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -328,6 +330,7 @@
 <translation id="7994370417837006925">एकाधिक साइन-इन</translation>
 <translation id="8000066093800657092">कोणतेही नेटवर्क नाही</translation>
 <translation id="8054466585765276473">बॅटरी वेळ गणना करत आहे.</translation>
+<translation id="8061464966246066292">उच्च रंगभेद</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> वर स्क्रीन कास्ट करणे थांबवा</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> शी कनेक्ट केलेले</translation>
 <translation id="813913629614996137">प्रारंभ करत आहे…</translation>

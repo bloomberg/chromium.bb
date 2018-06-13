@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">készítők</translation>
 <translation id="1342835525016946179">cikk</translation>
 <translation id="1359897965706325498">szalaghirdetés</translation>
+<translation id="1548116112524424341">videó lejátszása kép a képben módban</translation>
 <translation id="1589122976691792535">régió</translation>
 <translation id="1591562245178063882">Ebben a hónapban</translation>
 <translation id="1637811476055996098">Fájlok kiválasztása</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">mérő</translation>
 <translation id="6166809985690652833">utószó</translation>
 <translation id="6213469881011901533">szószedet</translation>
+<translation id="6310801910862476708">Kilépés a kép a képben funkcióból</translation>
 <translation id="6398862346408813489">A hónapválasztási panel megjelenítése</translation>
 <translation id="6404546809543547843">hang idővonalának vezérlője</translation>
 <translation id="6453774872122745852">köszönetnyilvánítás</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">navigáció</translation>
 <translation id="9050748414552849310">feliratok megjelenítése</translation>
 <translation id="9062295712474918030">dokumentum</translation>
+<translation id="9093215626363556771">kilépés a kép a képben funkcióból</translation>
 <translation id="9108370397979208512">matematika</translation>
 <translation id="9132465097189459683">Más...</translation>
 <translation id="9138385573473225930">értesítés</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />. hét (<ph name="WEEK_START_DATE" />-i dátummal kezdődik)</translation>
 <translation id="9168329111483466115">lábjegyzet</translation>
 <translation id="947831847158436616">cella</translation>
+<translation id="954003015749068518">belépés a kép a képben funkcióba</translation>
 <translation id="966787709310836684">menü</translation>
 </translationbundle>

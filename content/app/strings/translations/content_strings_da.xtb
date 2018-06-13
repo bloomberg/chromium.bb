@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">anerkendelser</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1548116112524424341">afspil video i tilstanden integreret billede</translation>
 <translation id="1589122976691792535">område</translation>
 <translation id="1591562245178063882">Denne måned</translation>
 <translation id="1637811476055996098">Vælg filer</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">måler</translation>
 <translation id="6166809985690652833">efterskrift</translation>
 <translation id="6213469881011901533">ordliste</translation>
+<translation id="6310801910862476708">Afslut integreret billede</translation>
 <translation id="6398862346408813489">Vis panel til valg af måned</translation>
 <translation id="6404546809543547843">afspilningsbjælke for lyd</translation>
 <translation id="6453774872122745852">tak</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">navigation</translation>
 <translation id="9050748414552849310">vis undertekster</translation>
 <translation id="9062295712474918030">dokument</translation>
+<translation id="9093215626363556771">afslut integreret billede</translation>
 <translation id="9108370397979208512">matematik</translation>
 <translation id="9132465097189459683">Andet...</translation>
 <translation id="9138385573473225930">underretning</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, med start <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">fodnote</translation>
 <translation id="947831847158436616">celle</translation>
+<translation id="954003015749068518">start integreret billede</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

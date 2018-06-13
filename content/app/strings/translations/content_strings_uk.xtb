@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">подяки</translation>
 <translation id="1342835525016946179">стаття</translation>
 <translation id="1359897965706325498">банер</translation>
+<translation id="1548116112524424341">відтворювати відео в режимі "Картинка в картинці"</translation>
 <translation id="1589122976691792535">регіон</translation>
 <translation id="1591562245178063882">Цей місяць</translation>
 <translation id="1637811476055996098">Вибрати файли</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">вимірювач</translation>
 <translation id="6166809985690652833">післямова</translation>
 <translation id="6213469881011901533">глосарій</translation>
+<translation id="6310801910862476708">Вийти з режиму "Картинка в картинці"</translation>
 <translation id="6398862346408813489">Показати панель вибору місяців</translation>
 <translation id="6404546809543547843">повзунок часу відтворення аудіо</translation>
 <translation id="6453774872122745852">слова подяки</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">навігація</translation>
 <translation id="9050748414552849310">показати приховані субтитри</translation>
 <translation id="9062295712474918030">документ</translation>
+<translation id="9093215626363556771">вийти з режиму "Картинка в картинці"</translation>
 <translation id="9108370397979208512">математика</translation>
 <translation id="9132465097189459683">Інші...</translation>
 <translation id="9138385573473225930">сповіщення</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, починається <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">виноска</translation>
 <translation id="947831847158436616">клітинка</translation>
+<translation id="954003015749068518">увімкнути режим "Картинка в картинці"</translation>
 <translation id="966787709310836684">меню</translation>
 </translationbundle>

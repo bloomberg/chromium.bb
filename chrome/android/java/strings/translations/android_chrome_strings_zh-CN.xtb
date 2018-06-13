@@ -92,6 +92,7 @@
 <translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="1756600373018374892">点按此按钮即可快速访问您的标签页。</translation>
 <translation id="1779089405699405702">图片解码器</translation>
+<translation id="1782483593938241562">结束日期：<ph name="DATE" /></translation>
 <translation id="1792959175193046959">随时更改默认的下载内容保存位置</translation>
 <translation id="1807246157184219062">浅色调</translation>
 <translation id="1829244130665387512">在网页中查找</translation>
@@ -204,6 +205,7 @@
 <translation id="2707726405694321444">刷新网页</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="271033894570825754">新建</translation>
+<translation id="2728754400939377704">按网站排序</translation>
 <translation id="2736391366332017384">点按主屏幕按钮即可在当前标签页中转到新标签页</translation>
 <translation id="2744248271121720757">点按某个字词可立即开始搜索或查看相关操作</translation>
 <translation id="2762000892062317888">刚刚</translation>
@@ -353,8 +355,10 @@
 <translation id="4113030288477039509">由您的管理员管理</translation>
 <translation id="4116038641877404294">下载网页以便离线查看</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 个书签}other{%1$d 个书签}}</translation>
+<translation id="4159800535322890630">禁止网站使用您的传感器</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
+<translation id="4179980317383591987">已耗用 <ph name="AMOUNT" /></translation>
 <translation id="4181841719683918333">语言</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="4198423547019359126">没有可用的下载内容保存位置</translation>
@@ -520,6 +524,7 @@
 <translation id="5585019845078534178">卡片</translation>
 <translation id="5595485650161345191">修改地址</translation>
 <translation id="5596627076506792578">更多选项</translation>
+<translation id="5620299005957670886">允许网站使用您的传感器（推荐）</translation>
 <translation id="5620928963363755975">通过“更多选项”按钮在“下载内容”中查找您的文件和网页</translation>
 <translation id="5626134646977739690">名字：</translation>
 <translation id="5639724618331995626">允许访问所有网站</translation>
@@ -563,6 +568,7 @@
 <translation id="5911030830365207728">Google 翻译</translation>
 <translation id="5916664084637901428">启用</translation>
 <translation id="5919204609460789179">需更新 <ph name="PRODUCT_NAME" />，才能开始同步</translation>
+<translation id="5937580074298050696">已节省 <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="5942872142862698679">目前使用的搜索引擎是 Google</translation>
 <translation id="5956665950594638604">在新标签页中打开 Chrome 帮助中心</translation>
@@ -643,6 +649,7 @@
 <translation id="6612358246767739896">受保护的内容</translation>
 <translation id="6627583120233659107">修改文件夹</translation>
 <translation id="6643016212128521049">清除</translation>
+<translation id="6643649862576733715">按已节省的数据流量排序</translation>
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 个联系人}other{<ph name="CONTACT_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> 个联系人}}</translation>
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
 <translation id="6657585470893396449">密码</translation>
@@ -729,6 +736,7 @@
 <translation id="7400418766976504921">网址</translation>
 <translation id="7403691278183511381">Chrome 首次运行体验</translation>
 <translation id="741204030948306876">确认</translation>
+<translation id="7413229368719586778">开始日期：<ph name="DATE" /></translation>
 <translation id="7423098979219808738">先询问</translation>
 <translation id="7423538860840206698">已阻止读取剪贴板中的内容</translation>
 <translation id="7437998757836447326">退出 Chrome</translation>
@@ -834,6 +842,7 @@
 <translation id="8313455859591948645">修改启动页</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> 及更多网站</translation>
 <translation id="8339163506404995330">系统不会自动翻译源语言为<ph name="LANGUAGE" />的网页</translation>
+<translation id="8349013245300336738">按已耗用的数据流量排序</translation>
 <translation id="8363501664269050863">导航面板。向下滑动手指即可关闭。</translation>
 <translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>

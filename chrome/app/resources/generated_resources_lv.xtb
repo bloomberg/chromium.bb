@@ -1614,7 +1614,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3450157232394774192">Neaktīvs stāvoklis — noslogojuma procentuālais daudzums</translation>
 <translation id="3453612417627951340">Nepieciešama pilnvara</translation>
 <translation id="3454157711543303649">Aktivizācija pabeigta</translation>
-<translation id="3454224730401036106">Savienojums ir mainīts uz drošāku tīklu.</translation>
 <translation id="345693547134384690">Atvērt attēlu jaunā cilnē</translation>
 <translation id="3459509316159669723">Drukāšana</translation>
 <translation id="3459697287128633276">Lai ar jūsu kontu varētu piekļūt Google Play veikalam, nepieciešams autentificēties, izmantojot identitātes nodrošinātāju.</translation>
@@ -2176,7 +2175,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4340515029017875942"><ph name="ORIGIN" /> vēlas sazināties ar lietotni “<ph name="EXTENSION_NAME" />”</translation>
 <translation id="4342311272543222243">Radās TPM kļūda.</translation>
 <translation id="4345587454538109430">Konfigurēt...</translation>
-<translation id="4345703751611431217">Programmatūras nesaderība: uzziniet vairāk</translation>
 <translation id="4348766275249686434">Apkopot kļūdas</translation>
 <translation id="4350019051035968019">Šo ierīci nevar reģistrēt domēnā, kuram pieder jūsu konts, jo tā ir iestatīta pārvaldībai citā domēnā.</translation>
 <translation id="4354266305752237763">Aizsargāt jūs un ierīci pret bīstamām vietnēm (droša pārlūkošana)</translation>
@@ -3375,7 +3373,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6163363155248589649">Parasts</translation>
 <translation id="6163522313638838258">Izvērst visu...</translation>
 <translation id="6164005077879661055">Visi faili un lokālie dati, kas ir saistīti ar uzraudzīto lietotāju, tiks neatgriezeniski dzēsti, tiklīdz uzraudzītais lietotājs tiks noņemts. Iespējams, pārzinis joprojām varēs skatīt šī uzraudzītā lietotāja apmeklētās vietnes un iestatījumus (vietnē <ph name="MANAGEMENT_URL" />).</translation>
-<translation id="6165508094623778733">Uzziniet vairāk</translation>
 <translation id="6166185671393271715">Paroļu importēšana pārlūkā Chrome</translation>
 <translation id="6169040057125497443">Lūdzu, pārbaudiet savu mikrofonu.</translation>
 <translation id="6169666352732958425">Nevar apraidīt darbvirsmu.</translation>
@@ -4171,7 +4168,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7392118418926456391">Vīrusu skenēšana neizdevās.</translation>
 <translation id="7392915005464253525">A&amp;tkārtoti atvērt aizvērto logu</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> tiks startēta pie sistēmas startēšanas un turpinās darboties fonā arī tad, ja aizvērsiet visus citus <ph name="PRODUCT_NAME" /> logus.</translation>
-<translation id="7398254312354928459">Ieslēgts tīkla savienojums</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Lūdzu, uzgaidiet, līdz jūsu Chromebox dators tiek restartēts...</translation>
 <translation id="7400839060291901923">Savienojuma iestatīšana tālrunī <ph name="PHONE_NAME" /></translation>

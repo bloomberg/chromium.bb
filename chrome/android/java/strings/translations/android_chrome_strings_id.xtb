@@ -13,7 +13,7 @@
 <translation id="1111673857033749125">Bookmark yang tersimpan di perangkat lainnya akan muncul di sini.</translation>
 <translation id="1113597929977215864">Tampilkan tampilan sederhana</translation>
 <translation id="1121094540300013208">Laporan kerusakan dan penggunaan</translation>
-<translation id="11221688409173367">Tap tombol layar utama untuk melihat artikel yang dipilih khusus untuk Anda</translation>
+<translation id="11221688409173367">Tap tombol beranda untuk melihat artikel yang dipilih khusus untuk Anda</translation>
 <translation id="1129510026454351943">Detail: <ph name="ERROR_DESCRIPTION" /></translation>
 <translation id="1145536944570833626">Hapus data yang sudah ada.</translation>
 <translation id="1146678959555564648">Masuki VR</translation>
@@ -157,7 +157,7 @@
 <translation id="2321086116217818302">Mempersiapkan sandi…</translation>
 <translation id="2321958826496381788">Geser ukuran teks sampai Anda dapat membacanya dengan nyaman. Teks akan terlihat sebesar ini, setelah mengetuk dua kali di paragraf.</translation>
 <translation id="2323763861024343754">Penyimpanan situs</translation>
-<translation id="2325181368089033281"><ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /> dapat disesuaikan oleh kamu atau orang tua kapan saja. Google dapat menggunakan konten di situs yang kamu buka, interaksi dan aktivitas browser untuk mempersonalisasi Chrome dan layanan Google seperti Terjemahan, Penelusuran, dan iklan.</translation>
+<translation id="2325181368089033281"><ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /> dapat disesuaikan oleh kamu atau orang tua kapan saja. Google dapat menggunakan konten di situs yang kamu buka, serta interaksi dan aktivitas browser untuk mempersonalisasi Chrome dan layanan Google seperti Terjemahan, Penelusuran, dan iklan.</translation>
 <translation id="2328985652426384049">Tidak dapat login</translation>
 <translation id="2342981853652716282">Login ke Chrome untuk mendapatkan bookmark, sandi, dan lainnya di semua perangkat Anda.</translation>
 <translation id="2343328333327081434">Memasang...</translation>
@@ -206,7 +206,7 @@
 <translation id="2709516037105925701">Isi-Otomatis</translation>
 <translation id="271033894570825754">Baru</translation>
 <translation id="2728754400939377704">Urutkan menurut situs</translation>
-<translation id="2736391366332017384">Tap tombol layar utama untuk membuka halaman tab baru pada tab saat ini</translation>
+<translation id="2736391366332017384">Tap tombol beranda untuk membuka halaman tab baru pada tab saat ini</translation>
 <translation id="2744248271121720757">Tap sebuah kata untuk menelusuri secara instan atau melihat tindakan terkait</translation>
 <translation id="2762000892062317888">baru saja</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> detik lagi</translation>
@@ -268,7 +268,7 @@
 <translation id="3328801116991980348">Informasi situs</translation>
 <translation id="3341058695485821946">Lihat berapa banyak data yang dihemat</translation>
 <translation id="3350687908700087792">Tutup semua jendela penyamaran</translation>
-<translation id="3361477720586884778"><ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /> dapat disesuaikan kapan saja. Google dapat menggunakan konten di situs yang Anda buka, interaksi dan aktivitas browser untuk mempersonalisasi Chrome dan layanan Google seperti Terjemahan, Penelusuran, dan iklan.</translation>
+<translation id="3361477720586884778"><ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /> dapat disesuaikan kapan saja. Google dapat menggunakan konten di situs yang Anda buka, serta interaksi dan aktivitas browser untuk mempersonalisasi Chrome dan layanan Google seperti Terjemahan, Penelusuran, dan iklan.</translation>
 <translation id="3365671512111106261">Tidak tersedia jika Penghemat Kuota Internet diaktifkan</translation>
 <translation id="3367813778245106622">Masuk lagi untuk memulai sinkronisasi</translation>
 <translation id="3384347053049321195">Bagikan gambar</translation>
@@ -925,7 +925,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang did
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB didownload</translation>
 <translation id="9100505651305367705">Tawarkan untuk menampilkan artikel dalam tampilan sederhana, jika didukung</translation>
 <translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
-<translation id="9100939710791843300">Tap tombol layar utama untuk memuat halaman tab baru dan melihat artikel yang disarankan</translation>
+<translation id="9100939710791843300">Tap tombol beranda untuk memuat halaman tab baru dan melihat artikel yang disarankan</translation>
 <translation id="9133515669113036225">Menyetel ulang kredensial perangkat</translation>
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9139068048179869749">Tanya terlebih dahulu sebelum mengizinkan situs mengirimkan notifikasi (disarankan)</translation>

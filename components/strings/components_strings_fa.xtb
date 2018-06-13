@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">انتخاب</translation>
 <translation id="6948701128805548767">برای دیدن روش‌های تحویل گرفتن و شرایط موردنیاز، یک نشانی انتخاب کنید</translation>
 <translation id="6949872517221025916">بازنشانی گذرواژه</translation>
+<translation id="6950684638814147129">‏خطا هنگام تجزیه مقدار JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">به نظر می‌رسد که گواهی سرور جعلی باشد.</translation>
 <translation id="6965382102122355670">قبول</translation>
 <translation id="6965978654500191972">دستگاه</translation>
@@ -1050,6 +1051,7 @@
 <translation id="8620436878122366504">والدینتان هنوز این سایت را تأیید نکرده‌اند</translation>
 <translation id="8625384913736129811">ذخیره کردن این کارت در این دستگاه</translation>
 <translation id="8639963783467694461">تنظیمات تکمیل خودکار</translation>
+<translation id="8663226718884576429">خلاصه سفارش، <ph name="TOTAL_LABEL" />، جزئيات بیشتر</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />، پاسخ، <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">اتصال شما به <ph name="DOMAIN" /> رمزگذاری نشده است.</translation>
 <translation id="8718314106902482036">پرداخت کامل نشد</translation>

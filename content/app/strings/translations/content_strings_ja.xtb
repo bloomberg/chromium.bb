@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">クレジット</translation>
 <translation id="1342835525016946179">記事</translation>
 <translation id="1359897965706325498">バナー</translation>
+<translation id="1548116112524424341">ピクチャー イン ピクチャー モードで動画を再生します</translation>
 <translation id="1589122976691792535">地域</translation>
 <translation id="1591562245178063882">今月</translation>
 <translation id="1637811476055996098">ファイル選択</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">メーター</translation>
 <translation id="6166809985690652833">後書き</translation>
 <translation id="6213469881011901533">用語集</translation>
+<translation id="6310801910862476708">ピクチャー イン ピクチャーを終了</translation>
 <translation id="6398862346408813489">月選択パネルを表示</translation>
 <translation id="6404546809543547843">オーディオ再生バー</translation>
 <translation id="6453774872122745852">謝辞</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">ナビゲーション</translation>
 <translation id="9050748414552849310">クローズド キャプションを表示</translation>
 <translation id="9062295712474918030">ドキュメント</translation>
+<translation id="9093215626363556771">ピクチャー イン ピクチャーを終了します</translation>
 <translation id="9108370397979208512">数式</translation>
 <translation id="9132465097189459683">その他...</translation>
 <translation id="9138385573473225930">アラート</translation>
 <translation id="9155987714137265666"><ph name="WEEK_START_DATE" /> から始まる <ph name="WEEK" /></translation>
 <translation id="9168329111483466115">脚注</translation>
 <translation id="947831847158436616">セル</translation>
+<translation id="954003015749068518">ピクチャー イン ピクチャーを開始します</translation>
 <translation id="966787709310836684">メニュー</translation>
 </translationbundle>

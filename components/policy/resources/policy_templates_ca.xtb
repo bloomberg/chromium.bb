@@ -2485,7 +2485,7 @@ No cal que configuris aquestes opcions manualment. Pots baixar plantilles fàcil
 
 La manera recomanada de configurar la política a Windows és amb GPO, tot i que encara s'admet proporcionar la política mitjançant el registre per a instàncies de Windows vinculades a un domini de <ph name="MS_AD_NAME" />.</translation>
 <translation id="8274603902181597201">Esborra el directori d'inici eCryptfs de l'usuari i inicia un directori d'inici nou encriptat amb ext4.</translation>
-<translation id="8279832363395120715">Suprimeix les parts dels URL de tipus https:// que contenen informació confidencial i de seguretat abans d'enviar-los als scripts PAC (configuració automàtica de servidor intermediari) que utilitza <ph name="PRODUCT_NAME" /> durant la resolució del servidor intermediari.
+<translation id="8279832363395120715">Suprimeix les parts dels URL de tipus https:// que contenen informació sensible i de seguretat abans d'enviar-los als scripts PAC (configuració automàtica de servidor intermediari) que utilitza <ph name="PRODUCT_NAME" /> durant la resolució del servidor intermediari.
 
       Quan s'estableix com a "true", s'activa la funció de seguretat i se suprimeixen els URL de tipus https://
       abans d'enviar-los als scripts PAC. D'aquesta manera, l'script PAC

@@ -1615,7 +1615,6 @@
 <translation id="3450157232394774192">Tétlenségi állapot lefoglaltsága százalékban</translation>
 <translation id="3453612417627951340">Engedélyt igényel</translation>
 <translation id="3454157711543303649">Aktiválás befejezve</translation>
-<translation id="3454224730401036106">A rendszer biztonságosabb hálózati kapcsolatra váltott</translation>
 <translation id="345693547134384690">Kép &amp;megnyitása új lapon</translation>
 <translation id="3459509316159669723">Nyomtatás</translation>
 <translation id="3459697287128633276">A Google Play Áruházhoz való hozzáférés engedélyezéséhez hitelesítse fiókját az identitásszolgáltatóján keresztül.</translation>
@@ -2176,7 +2175,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4340515029017875942"><ph name="ORIGIN" /> kommunikálni szeretne a(z) „<ph name="EXTENSION_NAME" />” alkalmazással.</translation>
 <translation id="4342311272543222243">Hoppá! TPM-hiba.</translation>
 <translation id="4345587454538109430">Konfigurálás...</translation>
-<translation id="4345703751611431217">Nem kompatibilis szoftver: további információ</translation>
 <translation id="4348766275249686434">Hibák gyűjtése</translation>
 <translation id="4350019051035968019">Ez az eszköz nem regisztrálható annál a domainnél, amelyhez fiókja tartozik, mert az eszköz felügyeletére egy másik domain van kijelölve.</translation>
 <translation id="4354266305752237763">Saját maga és eszköze védelme a veszélyes webhelyekkel szemben (Biztonságos Böngészés)</translation>
@@ -3377,7 +3375,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6163363155248589649">&amp;Normál</translation>
 <translation id="6163522313638838258">Összes részletes nézete...</translation>
 <translation id="6164005077879661055">Amikor ezt a felügyelt felhasználót eltávolítják, minden hozzá tartozó fájl és helyi adat véglegesen törlődik. A felügyelt felhasználó felkeresett webhelyeit és beállításait a kezelő továbbra is láthatja a következő címen: <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">További információ</translation>
 <translation id="6166185671393271715">Jelszavak importálása a Chrome-ba</translation>
 <translation id="6169040057125497443">Ellenőrizze a mikrofont.</translation>
 <translation id="6169666352732958425">Nem lehet átküldeni az asztalt.</translation>
@@ -4148,7 +4145,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7366415735885268578">Webhely hozzáadása</translation>
 <translation id="7366909168761621528">Böngészési adatok</translation>
 <translation id="7371006317849674875">Kezdés ideje</translation>
-<translation id="737439367876257440">A rendszer- és használati adatok Google-nak való elküldésével hozzájárulhat a Chrome fejlesztéséhez és a böngésző biztonságának javításához</translation>
+<translation id="737439367876257440">Ha elküldi a rendszer- és használati adatokat a Google-nak, hozzájárulhat a Chrome fejlesztéséhez és a böngésző biztonságának javításához</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Az egérmutató kiemelése mozgás közben</translation>
 <translation id="7377169924702866686">A Caps Lock be van kapcsolva.</translation>
@@ -4173,7 +4170,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7392118418926456391">A víruskeresés nem sikerült</translation>
 <translation id="7392915005464253525">Bezárt ablak újram&amp;egnyitása</translation>
 <translation id="7396845648024431313">A(z) <ph name="APP_NAME" />  el fog indulni a rendszer indításakor, és akkor is tovább fut a háttérben, ha már bezárta az összes többi <ph name="PRODUCT_NAME" />-ablakot.</translation>
-<translation id="7398254312354928459">A rendszer hálózati kapcsolatot váltott</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Kérjük, várjon, míg a Chromebox újraindul…</translation>
 <translation id="7400839060291901923">Kapcsolat beállítása a(z) <ph name="PHONE_NAME" /> eszközön</translation>

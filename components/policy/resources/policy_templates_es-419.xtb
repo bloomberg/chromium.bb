@@ -859,6 +859,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3512226956150568738">Si el modelo del dispositivo del cliente ya era compatible con ARC, la migración a ext4 era necesaria para ejecutar ARC y se establece la política ArcEnabled como verdadera, esta opción se comportará como AskUser (valor 3). En los demás casos (si el modelo del dispositivo no era compatible con ARC o se establece la política ArcEnabled como falsa), este valor es equivalente a DisallowArc (valor 0).</translation>
 <translation id="3524204464536655762">No permitir que ningún sitio solicite acceso a dispositivos USB a través de la API de WebUSB</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
+<translation id="3545457887306538845">Te permite controlar si se pueden usar las Herramientas para desarrolladores.
+
+      Si esta política se establece como "DeveloperToolsDisallowedForForceInstalledExtensions" (valor de 0, que es la opción predeterminada para usuarios empresariales), las Herramientas para desarrolladores y la Consola de JavaScript están accesibles en general, pero no es posible acceder a ellas en el contexto de extensiones instaladas por una política empresarial.
+      Si esta política se establece como "DeveloperToolsAllowed" (valor de 1), las Herramientas para desarrolladores y la Consola de JavaScript están accesibles y se pueden usar en todos los contextos, incluido el de las extensiones instaladas por una política empresarial.
+      Si esta política se establece como "DeveloperToolsDisallowed" (valor de 2), no es posible acceder a las Herramientas para desarrolladores y los elementos de los sitios web ya no se pueden inspeccionar. Quedarán inhabilitadas las combinaciones de teclas y las entradas de menú o menú contextual para abrir las Herramientas para desarrolladores o la Consola de JavaScript.</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3556806727696701427">Permite la función de la Navegación segura de <ph name="PRODUCT_NAME" /> y evita que los usuarios puedan cambiar esta configuración.
 
@@ -1887,6 +1892,37 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
 <translation id="6835883744948188639">Mostrar un mensaje recurrente al usuario para indicarle que se recomienda llevar a cabo el reinicio</translation>
+<translation id="6838056959556423778">Anula las reglas predeterminadas de selección de impresora de <ph name="PRODUCT_NAME" />.
+
+      Esta política determina las reglas para seleccionar la impresora predeterminada en <ph name="PRODUCT_NAME" />, que sucede la primera vez que se usa la función de impresión con un perfil.
+
+      Cuando se establezca esta política, <ph name="PRODUCT_NAME" /> buscará una impresora que cuente con todos los atributos especificados. Selecciónala como impresora predeterminada. Se elige la primera impresora que coincida con la política. En el caso de que haya más de una coincidencia, se puede seleccionar cualquier impresora encontrada, en función del orden en el que se encontraron.
+
+      Si no se establece esta política o no se encuentra ninguna impresora que coincida dentro del tiempo de espera, se selecciona como predeterminada la impresora PDF integrada o, en caso de que no esté disponible, no se selecciona ninguna.
+
+      El valor se analiza como un objeto JSON, de acuerdo al siguiente esquema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Limitar la búsqueda de la impresora a un grupo específico.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Expresión regular que coincida con la ID de la impresora.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Expresión regular que coincida con el nombre comercial de la impresora.",
+            "type": "string"
+          }
+        }
+      }
+
+      Las impresoras conectadas a <ph name="CLOUD_PRINT_NAME" /> se consideran <ph name="PRINTER_TYPE_CLOUD" />, el resto de las impresoras se clasifican como <ph name="PRINTER_TYPE_LOCAL" />.
+      Si se omite un campo, todos los valores se consideran coincidentes. Por ejemplo, si no se especifica la conectividad, la Vista previa de impresión iniciará la búsqueda de todo tipo de impresoras, ya sea locales o en la nube.
+      Los patrones de expresión regulares deben seguir la sintaxis de JavaScript RegExp y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="684856667300805181">En la versión 68 de <ph name="PRODUCT_NAME" />, se quitó esta política y se reemplazó por <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Esta política dejó de estar disponible y se quitó de M66 porque se usó solo para realizar pruebas internas y representa un riesgo para la seguridad.
 
@@ -2151,6 +2187,18 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7511361072385293666">Si esta política no se configura o se establece en true, se permite el uso del protocolo QUIC en <ph name="PRODUCT_NAME" />.
       Si esta política se establece en false, no se permite el uso del protocolo QUIC.</translation>
 <translation id="7519251620064708155">Permitir la generación de claves en estos sitios</translation>
+<translation id="7529083451528428240">Permite bloquear la sesión del usuario en función del tiempo del cliente o del uso durante el día.
+
+          El |time_window_limit| especifica un período diario en el que se debe bloquear la sesión del usuario. Solo se admite una regla por día, por lo que el tamaño de |entries| puede variar de 0 a 7. El período comienza a las |starts_at| y finaliza a las |ends_at|. Cuando |ends_at| es anterior a |starts_at| significa que |time_limit_window| finaliza el día siguiente. |last_updated_millis| es la marca de tiempo expresada en UTC correspondiente a la última actualización de la entrada. Se envía como string porque la marca de tiempo no se puede expresar como número entero.
+
+          El |time_usage_limit| especifica un período de uso diario; cuando el usuario supera ese límite, se bloquea la sesión. Existe una propiedad para cada día de la semana, y debe establecerse solo si hay un horario de actividad ese día. |usage_quota_mins| es la cantidad de tiempo que puede usarse el dispositivo administrado un día determinado, y |reset_at| es la hora cuando se renueva el tiempo de uso. El valor predeterminado para |reset_at| es la medianoche ({"hora": 0, "minuto": 0}). |last_updated_millis| es la marca de tiempo expresada en UTC correspondiente a la última actualización de esta entrada. Se envía como string porque la marca de tiempo no se puede expresar como número entero.
+
+
+          Se proporciona |overrides| para invalidar de forma temporal una o varias de las reglas anteriores.
+          * Si no están activos time_window_limit ni time_usage_limit, se podrá usar |LOCK| para bloquear el dispositivo.
+          * |LOCK| bloquea de forma temporal una sesión de usuario hasta que comienza el siguiente time_window_limit o time_usage_limit.
+          * |UNLOCK| desbloquea una sesión de usuario que esté bloqueada por time_window_limit o time_usage_limit.
+          |created_time_millis| es la marca de tiempo expresada en UTC para la anulación. Este valor se usa para determinar si se debe aplicar esta anulación y se envía como string porque la marca de tiempo no se puede expresar como número entero. Si la función de límite actual para el tiempo activo (el límite de uso o el límite de tiempo) comenzó después de que haberse creado la anulación, no realiza ninguna acción. Además, la anulación no debe aplicarse si se creó antes del último cambio del time_window_limit o time_usage_window activos.</translation>
 <translation id="7529100000224450960">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a abrir ventanas emergentes. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultPopupsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="7529144158022474049">Actualizar de forma automática el factor de dispersión</translation>
 <translation id="7534199150025803530">Esta política no tiene efecto en la app de Google Drive de Android. Si quieres evitar el uso de Google Drive con conexiones móviles, debes inhabilitar la instalación de su app.</translation>

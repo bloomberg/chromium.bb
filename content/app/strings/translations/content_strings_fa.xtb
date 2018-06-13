@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">دست‌اندرکاران</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">برنما</translation>
+<translation id="1548116112524424341">پخش ویدیو در حالت تصویر در تصویر</translation>
 <translation id="1589122976691792535">منطقه</translation>
 <translation id="1591562245178063882">این ماه</translation>
 <translation id="1637811476055996098">انتخاب فایل‌ها</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">متر</translation>
 <translation id="6166809985690652833">سخن پایانی</translation>
 <translation id="6213469881011901533">واژه‌نامه</translation>
+<translation id="6310801910862476708">خروج از تصویر در تصویر</translation>
 <translation id="6398862346408813489">نمایش پانل انتخاب ماه</translation>
 <translation id="6404546809543547843">انتخابگر زمان صدا</translation>
 <translation id="6453774872122745852">قدردانی</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">پیمایش</translation>
 <translation id="9050748414552849310">نمایش زیرنویس ناشنوایان</translation>
 <translation id="9062295712474918030">سند</translation>
+<translation id="9093215626363556771">خروج از تصویر در تصویر</translation>
 <translation id="9108370397979208512">حساب</translation>
 <translation id="9132465097189459683">موارد دیگر...</translation>
 <translation id="9138385573473225930">هشدار</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />، شروع از <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">پانویس</translation>
 <translation id="947831847158436616">سلول</translation>
+<translation id="954003015749068518">ورود به تصویر در تصویر</translation>
 <translation id="966787709310836684">منو</translation>
 </translationbundle>

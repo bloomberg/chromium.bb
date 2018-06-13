@@ -1610,7 +1610,6 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3450157232394774192">Inaktiver Zustand – Auslastung in Prozent</translation>
 <translation id="3453612417627951340">Autorisierung erforderlich</translation>
 <translation id="3454157711543303649">Aktivierung abgeschlossen</translation>
-<translation id="3454224730401036106">Der Wechsel Ihrer Verbindung zu einem sichereren Netzwerk ist erfolgt</translation>
 <translation id="345693547134384690">Bil&amp;d in neuem Tab öffnen</translation>
 <translation id="3459509316159669723">Drucken</translation>
 <translation id="3459697287128633276">Damit Ihr Konto Zugriff auf den Google Play Store hat, müssen Sie sich bei Ihrem Identitätsanbieter authentifizieren.</translation>
@@ -2172,7 +2171,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> möchte mit der App "<ph name="EXTENSION_NAME" />" kommunizieren.</translation>
 <translation id="4342311272543222243">TPM-Fehler</translation>
 <translation id="4345587454538109430">Konfigurieren...</translation>
-<translation id="4345703751611431217">Softwareinkompatibilität: weitere Informationen</translation>
 <translation id="4348766275249686434">Fehler erfassen</translation>
 <translation id="4350019051035968019">Dieses Gerät kann nicht in der Domain registriert werden, zu der Ihr Konto gehört, weil das Gerät für die Verwaltung in einer anderen Domain gekennzeichnet wurde.</translation>
 <translation id="4354266305752237763">Mich und mein Gerät vor schädlichen Websites schützen (Safe Browsing)</translation>
@@ -3371,7 +3369,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Alle anzeigen...</translation>
 <translation id="6164005077879661055">Durch das Entfernen des betreuten Nutzers werden alle mit ihm verknüpften Dateien und lokalen Daten endgültig gelöscht. Besuchte Websites und Einstellungen des betreuten Nutzers kann der Manager möglicherweise weiterhin unter <ph name="MANAGEMENT_URL" /> einsehen.</translation>
-<translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6166185671393271715">Passwörter in Chrome importieren</translation>
 <translation id="6169040057125497443">Überprüfen Sie Ihr Mikrofon.</translation>
 <translation id="6169666352732958425">Der Desktop kann nicht übertragen werden</translation>
@@ -4170,7 +4167,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7392118418926456391">Fehler beim Virenscan</translation>
 <translation id="7392915005464253525">Geschlossenes Fenster wieder öffn&amp;en</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> wird beim Systemstart gestartet und auch dann weiter im Hintergrund ausgeführt, wenn Sie alle anderen <ph name="PRODUCT_NAME" />-Fenster geschlossen haben.</translation>
-<translation id="7398254312354928459">Netzwerkverbindung gewechselt</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Chromebox wird neu gestartet. Bitte warten...</translation>
 <translation id="7400839060291901923">Verbindung auf <ph name="PHONE_NAME" /> einrichten</translation>

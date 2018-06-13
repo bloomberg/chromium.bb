@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">ghi nhận tác giả</translation>
 <translation id="1342835525016946179">bài viết</translation>
 <translation id="1359897965706325498">biểu ngữ</translation>
+<translation id="1548116112524424341">phát video ở chế độ hình trong hình</translation>
 <translation id="1589122976691792535">khu vực</translation>
 <translation id="1591562245178063882">Tháng này</translation>
 <translation id="1637811476055996098">Chọn tệp</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">thước đo</translation>
 <translation id="6166809985690652833">lời bạt</translation>
 <translation id="6213469881011901533">bảng thuật ngữ</translation>
+<translation id="6310801910862476708">Thoát chế độ hình trong hình</translation>
 <translation id="6398862346408813489">Hiển thị bảng lựa chọn tháng</translation>
 <translation id="6404546809543547843">trình kiểm soát thời gian âm thanh</translation>
 <translation id="6453774872122745852">lời cảm ơn</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">điều hướng</translation>
 <translation id="9050748414552849310">hiển thị phụ đề chi tiết</translation>
 <translation id="9062295712474918030">tài liệu</translation>
+<translation id="9093215626363556771">thoát chế độ hình trong hình</translation>
 <translation id="9108370397979208512">toán học</translation>
 <translation id="9132465097189459683">Khác...</translation>
 <translation id="9138385573473225930">thông báo</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, bắt đầu vào <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">chú thích cuối trang</translation>
 <translation id="947831847158436616">ô</translation>
+<translation id="954003015749068518">vào chế độ hình trong hình</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

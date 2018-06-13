@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">titulky</translation>
 <translation id="1342835525016946179">článok</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1548116112524424341">prehrať video v režime obrazu v obraze</translation>
 <translation id="1589122976691792535">oblasť</translation>
 <translation id="1591562245178063882">Tento mesiac</translation>
 <translation id="1637811476055996098">Vybrať súbory</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">meter</translation>
 <translation id="6166809985690652833">doslov</translation>
 <translation id="6213469881011901533">glosár</translation>
+<translation id="6310801910862476708">Ukončiť obraz v obraze</translation>
 <translation id="6398862346408813489">Zobraziť panel na výber mesiaca</translation>
 <translation id="6404546809543547843">posúvač časovej osi zvuku</translation>
 <translation id="6453774872122745852">poďakovanie</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">navigácia</translation>
 <translation id="9050748414552849310">zobraziť skryté titulky</translation>
 <translation id="9062295712474918030">dokument</translation>
+<translation id="9093215626363556771">ukončiť obraz v obraze</translation>
 <translation id="9108370397979208512">matematika</translation>
 <translation id="9132465097189459683">Iné...</translation>
 <translation id="9138385573473225930">upozornenie</translation>
 <translation id="9155987714137265666"><ph name="WEEK" /> začínajúci <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">poznámka pod čiarou</translation>
 <translation id="947831847158436616">bunka</translation>
+<translation id="954003015749068518">zapnúť obraz v obraze</translation>
 <translation id="966787709310836684">ponuka</translation>
 </translationbundle>

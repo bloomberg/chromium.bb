@@ -118,6 +118,7 @@
 <translation id="3151786313568798007">Orientación</translation>
 <translation id="3153444934357957346">Puedes acceder a un máximo de <ph name="MULTI_PROFILE_USER_LIMIT" /> cuentas con acceso múltiple.</translation>
 <translation id="3236488194889173876">No hay redes móviles disponibles</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="332587331255250389">Reemplaza la batería</translation>
 <translation id="3351879221545518001">Estás transmitiendo la pantalla.</translation>
@@ -127,6 +128,7 @@
 <translation id="3400357268283240774">Configuración adicional</translation>
 <translation id="3413817803639110246">No hay nada para ver</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
+<translation id="3454224730401036106">Tu conexión se cambió a una red más segura</translation>
 <translation id="3465566417615315331">Haz clic en tu foto.</translation>
 <translation id="3477079411857374384">Control-Mayúscula-Espacio</translation>
 <translation id="3510164367642747937">Resaltar el cursor del mouse</translation>
@@ -296,6 +298,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7348093485538360975">Teclado en pantalla</translation>
 <translation id="735745346212279324">VPN desconectada</translation>
 <translation id="7377169924702866686">Bloq Mayús está activado.</translation>
+<translation id="7398254312354928459">Se cambió la conexión de red</translation>
 <translation id="742594950370306541">Cámara en uso</translation>
 <translation id="743058460480092004">Cámara y micrófono en uso</translation>
 <translation id="7510334386202674593">Ctrl + mayúscula + L</translation>
@@ -328,6 +331,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7994370417837006925">Acceso múltiple</translation>
 <translation id="8000066093800657092">Sin red</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
+<translation id="8061464966246066292">Contraste alto</translation>
 <translation id="8098591350844501178">Detener la transmisión de la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>

@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Vælg</translation>
 <translation id="6948701128805548767">Vælg en adresse for at se afhentningsmetoder og -krav</translation>
 <translation id="6949872517221025916">Nulstil adgangskode</translation>
+<translation id="6950684638814147129">Der opstod en fejl under parsing af JSON-værdien: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Serverens certifikat ser ud til at være en forfalskning.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Enhed</translation>
@@ -1051,6 +1052,7 @@
 <translation id="8620436878122366504">Dine forældre har ikke godkendt det endnu</translation>
 <translation id="8625384913736129811">Gem dette kort på denne enhed</translation>
 <translation id="8639963783467694461">Indstillinger for AutoFyld</translation>
+<translation id="8663226718884576429">Ordreoversigt, <ph name="TOTAL_LABEL" />, flere oplysninger</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, svar, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Din forbindelse til <ph name="DOMAIN" /> er ikke krypteret.</translation>
 <translation id="8718314106902482036">Betalingen blev ikke gennemført</translation>

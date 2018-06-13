@@ -118,6 +118,7 @@
 <translation id="3151786313568798007">Retning</translation>
 <translation id="3153444934357957346">Du kan kun have op til <ph name="MULTI_PROFILE_USER_LIMIT" /> konti i samlet login fra flere konti.</translation>
 <translation id="3236488194889173876">Der er ingen tilgængelige mobilnetværk</translation>
+<translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">Gæst</translation>
 <translation id="332587331255250389">Udskift batteriet</translation>
 <translation id="3351879221545518001">Du caster i øjeblikket skærmen.</translation>
@@ -127,6 +128,7 @@
 <translation id="3400357268283240774">Yderligere indstillinger</translation>
 <translation id="3413817803639110246">Der er intet at se endnu</translation>
 <translation id="3445925074670675829">USB-C-enhed</translation>
+<translation id="3454224730401036106">Din forbindelse er skiftet til et mere sikkert netværk</translation>
 <translation id="3465566417615315331">Klik på dit foto</translation>
 <translation id="3477079411857374384">Ctrl-Shift-mellemrumstast</translation>
 <translation id="3510164367642747937">Fremhæv musemarkør</translation>
@@ -296,6 +298,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7348093485538360975">Skærmtastatur</translation>
 <translation id="735745346212279324">VPN afbrudt</translation>
 <translation id="7377169924702866686">Caps Lock er slået til.</translation>
+<translation id="7398254312354928459">Der blev skiftet netværksforbindelse</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>
 <translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -328,6 +331,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7994370417837006925">Samlet login fra flere konti</translation>
 <translation id="8000066093800657092">Intet netværk</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
+<translation id="8061464966246066292">Høj kontrast</translation>
 <translation id="8098591350844501178">Stop med at caste skærmen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer...</translation>

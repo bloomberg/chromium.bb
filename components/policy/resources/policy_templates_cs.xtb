@@ -860,6 +860,11 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3512226956150568738">Pokud model zařízení klienta podporoval ARC již předtím, než kvůli spuštění ARC bylo potřeba migrovat na ext4, a zásada ArcEnabled je nastavena na hodnotu true, bude se tato možnost chovat jako AskUser (hodnota 3). Ve všech ostatních případech (model zařízení dříve ARC nepodporoval nebo je zásada ArcEnabled nastavena na hodnotu false) se tato možnost bude chovat jako DisallowArc (hodnota 0).</translation>
 <translation id="3524204464536655762">Nedovolit žádnému webu požadovat přístup k zařízením USB pomocí rozhraní WebUSB API</translation>
 <translation id="3528000905991875314">Aktivovat alternativní chybové stránky</translation>
+<translation id="3545457887306538845">Umožňuje ovládat, kde je možné používat Nástroje pro vývojáře.
+
+      Pokud je tato zásada nastavena na možnost DeveloperToolsDisallowedForForceInstalledExtensions (výchozí hodnota 0), je přístup k Nástrojům pro vývojáře a konzoli JavaScriptu obecně povolen, ale není povolen v kontextu rozšíření nainstalovaných pomocí podnikových zásad.
+      Je-li tato zásada nastavena na možnost DeveloperToolsAllowed (hodnota 1), je možné Nástroje pro vývojáře a konzoli JavaScriptu otevřít a používat ve všech kontextech, včetně rozšíření nainstalovaných pomocí podnikových zásad.
+      Je-li tato zásada nastavena na možnost DeveloperToolsDisallowed (hodnota 2), Nástroje pro vývojáře nelze otevřít a nelze prozkoumávat prvky na webech. Deaktivovány budou také veškeré klávesové zkratky a položky klasických či kontextových nabídek, pomocí kterých lze nástroje pro vývojáře nebo konzoli JavaScriptu otevřít.</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="3556806727696701427">Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> funkci Bezpečné prohlížení a brání uživatelům ve změně tohoto nastavení.
 
@@ -1937,6 +1942,37 @@ Pokud tato zásada není nastavena, funkce aktualizace firmwaru <ph name="TPM_FI
 <translation id="6810445994095397827">Blokovat JavaScript na těchto stránkách</translation>
 <translation id="681446116407619279">Podporovaná schémata ověření</translation>
 <translation id="6835883744948188639">Zobrazovat uživateli opakovaně výzvu s oznámením, že je doporučen restart</translation>
+<translation id="6838056959556423778">Přepíše v prohlížeči <ph name="PRODUCT_NAME" /> pravidla výběru výchozí tiskárny.
+
+      Tato zásada určuje pravidla pro výběr výchozí tiskárny v prohlížeči <ph name="PRODUCT_NAME" />, který se provede při prvním použití funkce tisku v profilu.
+
+      Je-li tato zásada nastavena, <ph name="PRODUCT_NAME" /> se pokusí najít tiskárnu, která odpovídá všem zadaným atributům, a vybrat ji jako výchozí. Bude vybrána první tiskárna, která tuto zásadu splňuje. Pokud zásadě odpovídá více tiskáren, může být v závislosti na tom, v jakém pořadí jsou tiskárny objeveny, vybrána kterákoliv z nich.
+
+      Pokud tato zásada není nastavena nebo do vypršení časového limitu odpovídající tiskárna není nalezena, vybere se integrovaná virtuální tiskárna na vytváření souborů PDF. Pokud tiskárna na vytváření souborů PDF není k dispozici, nebude vybrána žádná tiskárna.
+
+      Hodnota se analyzuje jako objekt JSON odpovídající následujícímu schématu:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Informace o tom, zda má být vyhledávání odpovídající tiskárny omezeno na konkrétní množinu tiskáren.",
+            "type": "string"
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Regulární výraz, kterému musí odpovídat ID tiskárny.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Regulární výraz, kterému musí odpovídat zobrazovaný název tiskárny.",
+            "type": "string"
+          }
+        }
+      }
+
+      Tiskárny připojené ke službě <ph name="CLOUD_PRINT_NAME" /> jsou považovány za cloudové („<ph name="PRINTER_TYPE_CLOUD" />“), ostatní jsou klasifikovány jako místní („<ph name="PRINTER_TYPE_LOCAL" />“).
+      Vynechání pole znamená, že v něm budou vyhovovat všechny hodnoty. Pokud například nezadáte způsob připojení, při náhledu tisku se spustí vyhledávání všech typů tiskáren: místních i cloudových.
+      Regulární výrazy musejí odpovídat syntaxi objektů RegExp jazyka JavaScript a při vyhledávání shod se rozlišují velká a malá písmena.</translation>
 <translation id="684856667300805181">Tato zásada byla ve verzi 68 prohlížeče <ph name="PRODUCT_NAME" /> odstraněna a nahrazena zásadou <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Tato zásada je zastaralá a ve verzi M66 byla odstraněna, protože byla používána pouze k internímu testování a představovala bezpečnostní ohrožení.
 
@@ -2204,6 +2240,17 @@ Je-li tato zásada použita, bude mít uživatel k dispozici všechny tiskárny
 <translation id="7511361072385293666">Pokud je tato zásada nastavena na hodnotu true nebo nebo nastavena není, je v prohlížeči <ph name="PRODUCT_NAME" /> povoleno použití protokolu QUIC.
 Pokud je tato zásada nastavena na hodnotu false, použití protokolu QUIC je zakázáno.</translation>
 <translation id="7519251620064708155">Povolit generování klíčů na těchto webech</translation>
+<translation id="7529083451528428240">Umožňuje uzamknout relaci uživatele na základě času klienta nebo denní kvóty použití.
+
+          Údaj |time_window_limit| udává denní časové okno, v němž by relace uživatele měla být uzamknuta. Pro každý den v týdnu podporujeme jen jedno pravidlo, pole |entries| proto může obsahovat 0 až 7 prvků. |starts_at| a |ends_at| jsou začátek a konec časového okna okno. Když je hodnota |ends_at| menší než |starts_at|, znamená to, že časové okno |time_limit_window| končí následující den. |last_updated_millis| je časové razítko UTC poslední aktualizace tohoto záznamu. Odesílá se jako textový řetězec, protože do celočíselné hodnoty by se časové razítko nevešlo.
+
+          Údaj |time_usage_limit| udává denní kvótu použití zařízení. Po jejím dosažení se relace uživatele uzamkne. Je k dispozici vlastnost pro každý den v týdnu, která by měla být nastavena jen v případě, že pro daný den existuje aktivní kvóta. |usage_quota_mins| udává, jak dlouho je spravované zařízení během dne možné používat, a |reset_at| udává, kdy se kvóta použití obnoví. Výchozí hodnotou |reset_at| je půlnoc ({'hour': 0, 'minute': 0}). |last_updated_millis| je časové razítko UTC poslední aktualizace tohoto záznamu. Odesílá se jako textový řetězec, protože do celočíselné hodnoty by se časové razítko nevešlo.
+
+          |overrides| umožňuje dočasně deaktivovat jedno nebo více předchozích pravidel.
+          * Pokud není aktivní time_window_limit ani time_usage_limit, je možné zařízení zamknout pomocí hodnoty |LOCK|.
+          * |LOCK| uživatelskou relaci dočasně uzamkne do začátku příštího období time_window_limit nebo time_usage_limit.
+          * |UNLOCK| odemkne uživatelskou relaci uzamknutou pomocí údaje time_window_limit nebo time_usage_limit.
+          |created_time_millis| je časové razítko UTC vytvoření přepisu. Odesílá se jako textový řetězec, protože do celočíselné hodnoty by se časové razítko nevešlo. Používá se ke zjištění, zda se tento přepis má nadále používat. Pokud aktuálně aktivní funkce časového omez (limit doby používání nebo časové okno) začala platit po vytvoření přepisu, neměl by se přepis projevit. Přepis by se neměl použít ani v případě, že byl vytvořen před poslední změnou aktivních hodnot time_window_limit nebo time_usage_window.</translation>
 <translation id="7529100000224450960">Umožňuje nastavit seznam vzorů adres URL stránek, které mají povoleno otevírat vyskakovací okna.
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultPopupsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>

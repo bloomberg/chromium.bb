@@ -1614,7 +1614,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="3450157232394774192">Postotak zauzetosti u stanju mirovanja</translation>
 <translation id="3453612417627951340">Potrebna je autorizacija</translation>
 <translation id="3454157711543303649">Aktivacija dovršena</translation>
-<translation id="3454224730401036106">Sada ste povezani sa sigurnijom mrežom</translation>
 <translation id="345693547134384690">Otvori &amp;sliku u novoj &amp;kartici</translation>
 <translation id="3459509316159669723">Ispis</translation>
 <translation id="3459697287128633276">Da biste omogućili računu pristup Trgovini Google Play, autentificirajte se pri Davatelju identiteta.</translation>
@@ -2176,7 +2175,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> želi komunicirati s aplikacijom "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4342311272543222243">Ups, TPM pogreška.</translation>
 <translation id="4345587454538109430">Konfiguracija...</translation>
-<translation id="4345703751611431217">Nekompatibilnost softvera: saznajte više</translation>
 <translation id="4348766275249686434">Prikupljaj pogreške</translation>
 <translation id="4350019051035968019">Uređaj se ne može prijaviti na domenu kojoj pripada vaš račun jer je postavljen za upravljanje na nekoj drugoj domeni.</translation>
 <translation id="4354266305752237763">Zaštitite sebe i svoj uređaj od opasnih web-lokacija (Sigurno pregledavanje)</translation>
@@ -3375,7 +3373,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="6163363155248589649">&amp;Normalno</translation>
 <translation id="6163522313638838258">Proširi sve...</translation>
 <translation id="6164005077879661055">Sve datoteke i lokalni podaci povezani sa zaštićenim korisnikom trajno će se izbrisati kada se taj korisnik ukloni. Web-lokacije koje je taj korisnik posjetio i njegove postavke mogu i dalje biti vidljive upravitelju na adresi <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Saznajte više</translation>
 <translation id="6166185671393271715">Uvoz zaporki u Chrome</translation>
 <translation id="6169040057125497443">Provjerite mikrofon.</translation>
 <translation id="6169666352732958425">Emitiranje radne površine nije moguće.</translation>
@@ -4170,7 +4167,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="7392118418926456391">Pretraživanje virusa nije uspjelo</translation>
 <translation id="7392915005464253525">P&amp;onovo otvorite zatvoreni prozor</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> pokrenut će se pri pokretanju sustava i nastavi raditi u pozadini čak i nakon što zatvorite sve ostale prozore proizvoda <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">Promijenjena je mrežna veza</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Pričekajte dok se Chromebox ponovo pokrene...</translation>
 <translation id="7400839060291901923">Postavite vezu na telefonu <ph name="PHONE_NAME" /></translation>

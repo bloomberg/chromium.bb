@@ -1612,7 +1612,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="3450157232394774192">Percentatge d'ocupació de l'estat d'inactivitat</translation>
 <translation id="3453612417627951340">Necessita una autorització.</translation>
 <translation id="3454157711543303649">S'ha completat l'activació</translation>
-<translation id="3454224730401036106">La connexió ha canviat a una xarxa més segura</translation>
 <translation id="345693547134384690">Obre la &amp;imatge en una pestanya nova</translation>
 <translation id="3459509316159669723">Imprimeix</translation>
 <translation id="3459697287128633276">Per poder accedir a Google Play Store amb el teu compte, autentica't amb el teu proveïdor d'identitat.</translation>
@@ -2173,7 +2172,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> es vol comunicar amb l'aplicació "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4342311272543222243">S'ha produït un error de TPM.</translation>
 <translation id="4345587454538109430">Configura...</translation>
-<translation id="4345703751611431217">Incompatibilitat de programari: més informació</translation>
 <translation id="4348766275249686434">Recopila els errors</translation>
 <translation id="4350019051035968019">No es pot inscriure aquest dispositiu al domini del vostre compte perquè s'ha indicat que el dispositiu es gestiona en un altre domini.</translation>
 <translation id="4354266305752237763">Protegeix-me a mi i al meu dispositiu de llocs web perillosos (Navegació segura)</translation>
@@ -3018,7 +3016,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="5618972959246891967">Data del sistema</translation>
 <translation id="56197088284879152">La connexió es congestiona al dispositiu remot <ph name="DEVICE_NAME" />.</translation>
 <translation id="5620568081365989559">DevTools sol·licita accés complet a <ph name="FOLDER_PATH" />.
-Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
+Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5620612546311710611">estadístiques d'ús</translation>
 <translation id="5620655347161642930">Exporta les contrasenyes...</translation>
 <translation id="5623842676595125836">Registre</translation>
@@ -3375,7 +3373,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Amplia-ho tot...</translation>
 <translation id="6164005077879661055">Tots els fitxers i les dades locals associats amb l'usuari supervisat se suprimiran permanentment quan aquest usuari supervisat se suprimeixi. És possible que el gestor encara pugui veure els llocs web visitats i la configuració d'aquest usuari supervisat a la pàgina <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Més informació</translation>
 <translation id="6166185671393271715">Importeu contrasenyes a Chrome</translation>
 <translation id="6169040057125497443">Comprova el micròfon.</translation>
 <translation id="6169666352732958425">L'escriptori no es pot emetre.</translation>
@@ -4164,7 +4161,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7392118418926456391">S'ha produït un error en l'anàlisi antivirus</translation>
 <translation id="7392915005464253525">T&amp;orna a obrir la finestra tancada</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> s'iniciarà quan s'iniciï el sistema i continuarà executant-se en segon pla, fins i tot quan hàgiu tancat la resta de finestres de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">S'ha canviat la connexió de xarxa</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Espereu mentre Chromebox es reinicia...</translation>
 <translation id="7400839060291901923">Configura la connexió al telèfon <ph name="PHONE_NAME" /></translation>

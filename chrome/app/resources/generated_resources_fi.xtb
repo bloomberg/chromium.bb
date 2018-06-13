@@ -1615,7 +1615,6 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="3450157232394774192">Käyttämätön-tilan käyttöprosentti</translation>
 <translation id="3453612417627951340">Tarvitsee luvan</translation>
 <translation id="3454157711543303649">Aktivointi valmis</translation>
-<translation id="3454224730401036106">Olet nyt yhteydessä turvallisempaan verkkoon.</translation>
 <translation id="345693547134384690">Avaa &amp;kuva uudessa välilehdessä</translation>
 <translation id="3459509316159669723">Tulostaminen</translation>
 <translation id="3459697287128633276">Tunnistustietojen tarjoajan on todennettava henkilöllisyytesi, ennen kuin Google Play Kaupan käyttö tilillä on mahdollista.</translation>
@@ -2174,7 +2173,6 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> haluaa viestiä sovelluksen <ph name="EXTENSION_NAME" /> kanssa.</translation>
 <translation id="4342311272543222243">Hups, tapahtui TPM-virhe.</translation>
 <translation id="4345587454538109430">Määritä...</translation>
-<translation id="4345703751611431217">Ohjelmistojen yhteensopimattomuus: lisätietoja</translation>
 <translation id="4348766275249686434">Kerää virheet</translation>
 <translation id="4350019051035968019">Tätä laitetta ei voi rekisteröidä verkkotunnukselle, johon tilisi kuuluu, koska laite on merkitty eri verkkotunnuksen hallinnoitavaksi.</translation>
 <translation id="4354266305752237763">Suojaa itseäsi ja laitettasi vaarallisilta sivustoilta (selaussuoja)</translation>
@@ -3375,7 +3373,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6164005077879661055">Kaikki valvottuun käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan
  pysyvästi, kun tämä valvottu käyttäjä poistetaan. Vieraillut verkkosivustot ja
  valvotun käyttäjän asetukset saattavat silti vielä näkyä hallinnoijalle osoitteessa <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="6166185671393271715">Tuo salasanat Chromeen</translation>
 <translation id="6169040057125497443">Tarkista mikrofonisi.</translation>
 <translation id="6169666352732958425">Työpöydän suoratoisto ei onnistu.</translation>
@@ -4170,7 +4167,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7392118418926456391">Virustarkistus epäonnistui</translation>
 <translation id="7392915005464253525">A&amp;vaa suljettu ikkuna uudelleen</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> käynnistyy tietokoneen käynnistyksen yhteydessä ja on käynnissä taustalla vielä kaikkien <ph name="PRODUCT_NAME" /> -ikkunoiden sulkemisen jälkeen.</translation>
-<translation id="7398254312354928459">Verkko vaihdettu</translation>
 <translation id="7400418766976504921">URL-osoite</translation>
 <translation id="740083207982962331">Odota, että Chromebox käynnistyy uudelleen…</translation>
 <translation id="7400839060291901923">Avaa <ph name="PHONE_NAME" /> ja määritä yhteys</translation>

@@ -5,6 +5,7 @@
 <translation id="1122869341872663659">目前顯示 <ph name="N" /> 項與「<ph name="QUERY" />」相符的搜尋結果</translation>
 <translation id="1195667586424773550">將連結拖曳至該分頁的網址列</translation>
 <translation id="1204450209689312104">以無痕模式開啟新視窗</translation>
+<translation id="1251638888133819822">開啟或關閉全螢幕放大鏡</translation>
 <translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /> 鍵</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">列印目前網頁</translation>
@@ -102,6 +103,7 @@
 <translation id="5236674127086649162">重新載入目前網頁，而不使用快取內容</translation>
 <translation id="526651782186312376">選取文字至本行開頭</translation>
 <translation id="5316716239522500219">顯示器鏡像</translation>
+<translation id="539072479502328326">開啟或關閉停駐放大鏡</translation>
 <translation id="5487187679583934283">開始或停止輸入你所說的內容</translation>
 <translation id="5541719484267030947">在拖曳分頁時按下 <ph name="ESC" /> 鍵</translation>
 <translation id="5554139136362089836">搜尋目前網頁</translation>

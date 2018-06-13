@@ -890,6 +890,11 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3512226956150568738">Müşterinin cihaz modeli, ARC'yi çalıştırmak için ext4'e taşıma işlemi zorunlu olmadan önce ARC'yi destekliyorsa ve ArcEnabled politikası doğru değerine ayarlanmışsa, bu seçenek AskUser (3 değeri) gibi çalışır. Diğer tüm durumlarda (cihaz modeli daha önce ARC'yi desteklemiyorsa veya ArcEnabled politikası yanlış değerine ayarlanmışsa), bu değer DisallowArc'a (0 değeri) eşdeğer olur.</translation>
 <translation id="3524204464536655762">Hiçbir sitenin WebUSB API'si aracılığıyla USB cihazlarına erişim izni istemesine izin verme</translation>
 <translation id="3528000905991875314">Alternatif hata sayfalarını etkinleştir</translation>
+<translation id="3545457887306538845">Geliştirici Araçları'nın kullanılabileceği yerleri kontrol etmenize olanak tanır.
+
+      Bu politika "DeveloperToolsDisallowedForForceInstalledExtensions" (varsayılan değer olan 0 değeri) olarak ayarlanırsa, Geliştirici Araçları ve JavaScript konsoluna genel olarak erişilebilir ancak kurumsal politikaya göre yüklenen uzantıların bağlamında bunlara erişim sağlanamaz.
+      Bu politika "DeveloperToolsAllowed" (1 değeri) olarak ayarlanırsa, Geliştirici Araçları ve JavaScript konsoluna erişilebilir ve bunlar kurumsal politikaya göre yüklenen uzantılar bağlamı dahil tüm bağlamlarda kullanılabilir.
+      Bu politika "DeveloperToolsDisallowed" (2 değeri) olarak ayarlanırsa Geliştirici Araçları'na erişilemez ve web sitesi öğeleri bundan sonra incelenemez. Geliştirici Araçları veya JavaScript Konsolu'nu açmaya yönelik klavye kısayolları ve menü ya da içerik menüsü girişleri devre dışı bırakılır.</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
 <translation id="3556806727696701427"><ph name="PRODUCT_NAME" /> ürününün Güvenli Tarama özelliğini etkinleştirir ve kullanıcıların bu ayarı değiştirmelerini önler.
 
@@ -1965,6 +1970,38 @@ politikayı geçersiz kılamaz.
 <translation id="6810445994095397827">Bu sitelerde JavaScript'i engelle</translation>
 <translation id="681446116407619279">Desteklenen kimlik doğrulama şemaları</translation>
 <translation id="6835883744948188639">Kullanıcıya yeniden başlatmanın önerildiğini belirten yinelenen bir istem gösterme</translation>
+<translation id="6838056959556423778"><ph name="PRODUCT_NAME" /> varsayılan yazıcı seçim kurallarını geçersiz kılar.
+
+      Bu politika, <ph name="PRODUCT_NAME" /> cihazında varsayılan yazıcıyı seçmeye ilişkin kuralları belirler. Bu seçim, yazdırma işlevi bir profilde ilk kez kullanıldığında yapılır.
+
+      Bu politika ayarlandığında, <ph name="PRODUCT_NAME" /> belirtilen tüm özelliklerle eşleşen bir yazıcı bulmaya ve onu varsayılan yazıcı olarak seçmeye çalışır. Politikayla eşleştiği belirlenen ilk yazıcı seçilir; benzersiz olmayan eşleme olması durumunda, yazıcıların bulunma sırasına göre eşleşen herhangi bir yazıcı seçilebilir.
+
+      Bu politika ayarlanmazsa veya zaman aşımı süresi içinde eşleşen bir yazıcı bulunamazsa, yazıcı varsayılan olarak dahili PDF yazıcısını kullanır veya PDF yazıcısı yoksa hiçbir yazıcı seçilmez.
+
+      Değer, aşağıdaki düzene uygun şekilde JSON nesnesi olarak ayrıştırılır:
+      {
+
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description":  "Eşleşen yazıcı arama işleminin belirli bir yazıcı grubuyla sınırlı olup olmayacağını belirler.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Yazıcı görünen adıyla eşleşecek normal ifade.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Yazıcı görünen adıyla eşleşecek normal ifade.",
+            "type": "string"
+          }
+        }
+      }
+
+      <ph name="CLOUD_PRINT_NAME" /> bağlantılı yazıcılar "<ph name="PRINTER_TYPE_CLOUD" />" yazıcı sayılır, geri kalan yazıcılar "<ph name="PRINTER_TYPE_LOCAL" />" olarak sınıflandırılır.
+      Bir alanın atlanması, tüm değerlerin eşleneceği anlamına gelir. Örneğin, bağlantı belirtilmezse Baskı Önizleme'nin yerel veya buluttaki her tür yazıcının bulunması işlemini başlatmasına neden olur.
+      Normal ifade kalıpları JavaScript RegExp söz dizimine uygun olmalıdır. Eşleşmeler büyük/küçük harfe duyarlıdır.</translation>
 <translation id="684856667300805181">Bu politika <ph name="PRODUCT_NAME" /> 68 sürümünde kaldırılmış ve yerine <ph name="ARC_GLS_POLICY_NAME" /> kullanılmaya başlanmıştır.</translation>
 <translation id="6856743875250214792">Bu politika, yalnızca dahili test amacıyla kullanıldığı ve güvenlik engeli teşkil ettiği için M66'da kullanımdan kaldırılmıştır.
 
@@ -2241,6 +2278,17 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7511361072385293666">Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" /> ürününde QUIC protokolünün kullanımına izin verilir.
       Bu politika yanlış seçeneğine ayarlanırsa QUIC protokolünün kullanımına izin verilmez.</translation>
 <translation id="7519251620064708155">Bu sitelerde anahtar oluşturmaya izin ver</translation>
+<translation id="7529083451528428240">Kullanıcının oturumunu istemci süresine veya günün kullanım kotasına dayalı olarak kilitlemenize olanak tanır.
+
+          |time_window_limit|, kullanıcı oturumunun kilitli olacağı bir günlük aralık belirtir. Haftanın her günü için yalnızca bir kural desteklendiğinden |entries| dizisinin büyüklüğü 0-7 arasında değişiklik gösterebilir. |starts_at| ve |ends_at|, zaman aralığı sınırının başlangıcı ve bitişidir. |ends_at| değerinin |starts_at| değerinden küçük olması |time_limit_window| aralığının ertesi gün sona ereceği anlamına gelir. |last_updated_millis|, bu girişin son güncellemesine ilişkin UTC zaman damgasıdır. Zaman damgası bir tam sayı olarak uygun olmayacağından dize olarak gönderilir.
+
+          |time_usage_limit|, bir günlük ekran kotasını belirtir. Böylece, kullanıcı bu değere ulaştığında kullanıcının oturumu kilitlenir. Haftanın her günü için bir özellik vardır ve yalnızca söz konusu gün için etkin bir kota olduğunda ayarlanması gerekir. |usage_quota_mins|, yönetilen cihazın bir günde kullanılabileceği süredir ve |reset_at|, kullanım kotasının ne zaman yenilendiğini belirtir. |reset_at| için varsayılan değer gece yarısıdır ({'hour': 0, 'minute': 0}). |last_updated_millis|, bu girişin son güncellemesine ilişkin UTC zaman damgasıdır. Zaman damgası bir tam sayı olarak uygun olmayacağından dize olarak gönderilir.
+
+          |overrides|, önceki kuralların birini veya birkaçını geçici olarak geçersiz kılmak için sağlanır.
+          * time_window_limit veya time_usage_limit etkin değilse, cihazı kilitlemek için |LOCK| kullanılabilir.
+          * |LOCK|, bir sonraki time_window_limit veya time_usage_limit başlayıncaya kadar bir kullanıcı oturumunu geçici olarak kilitler.
+          * |UNLOCK|, time_window_limit veya time_usage_limit tarafından kilitlenen bir kullanıcı oturumunun kilidini açar.
+          |created_time_millis|, geçersiz kılmanın oluşturulmasıyla ilgili UTC zaman damgasıdır. Zaman damgası bir tamsayı olarak uygun olmayacağından Dize olarak gönderilir. Bu geçersiz kılmanın hâlâ uygulanmasının gerekip gerekmediğini belirlemek için kullanılır. Geçerli etkin zaman sınırı özelliği (zaman kullanım sınırı veya zaman aralığı sınırı) geçersiz kılma oluşturulduktan sonra başladıysa herhangi bir işlem yapmaz. Ayrıca, geçersiz kılma, etkin time_window_limit veya time_usage_window değerinde yapılan son değişiklikten önce oluşturulduysa uygulanmamalıdır.</translation>
 <translation id="7529100000224450960">Pop-up açmasına izin verilen siteleri belirten bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultPopupsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>

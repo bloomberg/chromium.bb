@@ -1614,7 +1614,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="3450157232394774192">Percento obsadenia priestoru údajmi stavu nečinnosti</translation>
 <translation id="3453612417627951340">Vyžaduje autorizáciu</translation>
 <translation id="3454157711543303649">Aktivácia bola dokončená</translation>
-<translation id="3454224730401036106">Vaše pripojenie bolo prepnuté na bezpečnejšiu sieť</translation>
 <translation id="345693547134384690">Otvoriť &amp;obrázok na novej karte</translation>
 <translation id="3459509316159669723">Tlač</translation>
 <translation id="3459697287128633276">Ak chcete povoliť účtu prístup do Obchodu Google Play, overte svoju totožnosť pomocou poskytovateľa identity.</translation>
@@ -2176,7 +2175,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="4340515029017875942">Web <ph name="ORIGIN" /> chce komunikovať s aplikáciou <ph name="EXTENSION_NAME" /></translation>
 <translation id="4342311272543222243">Hops, vyskytla sa chyba modulu TPM.</translation>
 <translation id="4345587454538109430">Konfigurovať...</translation>
-<translation id="4345703751611431217">Nekompatibilita softvéru: viac informácií</translation>
 <translation id="4348766275249686434">Zhromažďovanie chýb</translation>
 <translation id="4350019051035968019">Toto zariadenie nemôže byť zaregistrované do domény vášho účtu, pretože je označené ako spravované inou doménou.</translation>
 <translation id="4354266305752237763">Chrániť seba aj svoje zariadenie pred nebezpečnými webmi (Bezpečné prehliadanie)</translation>
@@ -3375,7 +3373,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6163363155248589649">&amp;Normálny</translation>
 <translation id="6163522313638838258">Rozbaliť všetko...</translation>
 <translation id="6164005077879661055">Všetky súbory a miestne údaje spojené s týmto kontrolovaným používateľom budú po jeho odstránení natrvalo odstránené. Správca bude môcť naďalej zobraziť navštívené webové stránky a nastavenia tohto používateľa na adrese <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Ďalšie informácie</translation>
 <translation id="6166185671393271715">Import hesiel do Chromu</translation>
 <translation id="6169040057125497443">Skontrolujte mikrofón.</translation>
 <translation id="6169666352732958425">Plochu sa nepodarilo prenášať.</translation>
@@ -4169,7 +4166,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7392118418926456391">Antivírusová kontrola zlyhala</translation>
 <translation id="7392915005464253525">Znovu o&amp;tvoriť zatvorené okno</translation>
 <translation id="7396845648024431313">Aplikácia <ph name="APP_NAME" /> sa spustí pri spustení systému a bude fungovať na pozadí aj po zatvorení všetkých okien programu <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">Prepnuté sieťové pripojenie</translation>
 <translation id="7400418766976504921">Webová adresa</translation>
 <translation id="740083207982962331">Počkajte, kým sa zariadenie Chromebox reštartuje...</translation>
 <translation id="7400839060291901923">Nastavenie pripojenia v telefóne <ph name="PHONE_NAME" /></translation>

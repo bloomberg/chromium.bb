@@ -816,6 +816,7 @@
 <translation id="6945221475159498467">选择</translation>
 <translation id="6948701128805548767">要查看取货方式和要求，请选择相应地址</translation>
 <translation id="6949872517221025916">重置密码</translation>
+<translation id="6950684638814147129">解析 JSON 值时出错：<ph name="ERROR" /></translation>
 <translation id="6957887021205513506">该服务器的证书似乎是伪造的。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="6965978654500191972">设备</translation>
@@ -1047,6 +1048,7 @@
 <translation id="8620436878122366504">您的父母尚未批准此请求</translation>
 <translation id="8625384913736129811">将此卡的信息保存到该设备</translation>
 <translation id="8639963783467694461">自动填充设置</translation>
+<translation id="8663226718884576429">订单摘要，<ph name="TOTAL_LABEL" />，更多详情</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />，答案，<ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">您与 <ph name="DOMAIN" /> 的连接未加密。</translation>
 <translation id="8718314106902482036">未能完成付款</translation>

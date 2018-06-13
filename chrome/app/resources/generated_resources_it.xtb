@@ -1611,7 +1611,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3450157232394774192">Percentuale di occupazione dello stato di inattività</translation>
 <translation id="3453612417627951340">Occorre l'autorizzazione</translation>
 <translation id="3454157711543303649">Attivazione completata</translation>
-<translation id="3454224730401036106">La tua connessione è passata a una rete più sicura</translation>
 <translation id="345693547134384690">Apri &amp;immagine in un'altra scheda</translation>
 <translation id="3459509316159669723">Stampa</translation>
 <translation id="3459697287128633276">Per accedere al Google Play Store con il tuo account, esegui l'autenticazione con il tuo provider di identità.</translation>
@@ -2173,7 +2172,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4340515029017875942"><ph name="ORIGIN" /> vuole comunicare con l'app "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4342311272543222243">Spiacenti, errore TPM.</translation>
 <translation id="4345587454538109430">Configura...</translation>
-<translation id="4345703751611431217">Incompatibilità software: ulteriori informazioni</translation>
 <translation id="4348766275249686434">Raccogli errori</translation>
 <translation id="4350019051035968019">Questo dispositivo non può essere registrato sul dominio a cui appartiene il tuo account perché è contrassegnato per essere gestito da un altro dominio.</translation>
 <translation id="4354266305752237763">Proteggi te stesso e il tuo dispositivo da siti pericolosi (Navigazione sicura)</translation>
@@ -3371,7 +3369,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6163363155248589649">&amp;Normale</translation>
 <translation id="6163522313638838258">Espandi tutto...</translation>
 <translation id="6164005077879661055">Tutti i file e i dati locali associati all'utente controllato verranno eliminati definitivamente in seguito alla rimozione dell'utente. Le impostazioni e i siti web visitati relativi all'utente controllato potrebbero essere ancora visibili al gestore all'indirizzo <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Ulteriori informazioni</translation>
 <translation id="6166185671393271715">Importa le password in Chrome</translation>
 <translation id="6169040057125497443">Controlla il microfono.</translation>
 <translation id="6169666352732958425">Impossibile trasmettere il desktop.</translation>
@@ -4160,7 +4157,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7392118418926456391">Scansione virus non riuscita</translation>
 <translation id="7392915005464253525">R&amp;iapri finestra chiusa</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> si attiverà all'avvio del sistema e continuerà a funzionare in background anche dopo la chiusura di tutte le altre finestre di <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">Connessione di rete automatica</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Attendi che venga riavviato il Chromebox...</translation>
 <translation id="7400839060291901923">Configura la connessione sul tuo <ph name="PHONE_NAME" /></translation>

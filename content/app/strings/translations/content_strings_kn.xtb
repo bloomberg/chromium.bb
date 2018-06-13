@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">ಕ್ರೆಡಿಟ್‌ಗಳು</translation>
 <translation id="1342835525016946179">ಲೇಖನ</translation>
 <translation id="1359897965706325498">ಬ್ಯಾನರ್</translation>
+<translation id="1548116112524424341">ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರದ ಮೋಡ್‌ನಲ್ಲಿ ವೀಡಿಯೊ ಪ್ಲೇ ಮಾಡಿ</translation>
 <translation id="1589122976691792535">ಪ್ರದೇಶ</translation>
 <translation id="1591562245178063882">ಈ ತಿಂಗಳು</translation>
 <translation id="1637811476055996098">ಫೈಲ್‌ಗಳನ್ನು ಆರಿಸಿ</translation>
@@ -143,6 +144,7 @@
 <translation id="6164829606128959761">ಮೀಟರ್</translation>
 <translation id="6166809985690652833">ನಂತರದ</translation>
 <translation id="6213469881011901533">ಪದಕೋಶ</translation>
+<translation id="6310801910862476708">ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರದಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="6398862346408813489">ತಿಂಗಳ ಆಯ್ಕೆ ಪ್ಯಾನಲ್ ತೋರಿಸಿ</translation>
 <translation id="6404546809543547843">ಆಡಿಯೊ ಸಮಯ ಸ್ಕ್ರಬ್ಬರ್</translation>
 <translation id="6453774872122745852">ಅಂಗೀಕಾರಗಳು</translation>
@@ -228,11 +230,13 @@
 <translation id="9048119486235211610">ನ್ಯಾವಿಗೇಷನ್</translation>
 <translation id="9050748414552849310">ಮುಚ್ಚಿರುವ ಶೀರ್ಷಿಕೆಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="9062295712474918030">ಡಾಕ್ಯುಮೆಂಟ್</translation>
+<translation id="9093215626363556771">ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರದಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="9108370397979208512">ಮ್ಯಾಥ್</translation>
 <translation id="9132465097189459683">ಇತರೆ...</translation>
 <translation id="9138385573473225930">ಎಚ್ಚರಿಕೆ</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> ರಂದು ಪ್ರಾರಂಭವಾಗುತ್ತದೆ</translation>
 <translation id="9168329111483466115">ಅಡಿಟಿಪ್ಪಣಿ</translation>
 <translation id="947831847158436616">ಸೆಲ್</translation>
+<translation id="954003015749068518">ಚಿತ್ರದಲ್ಲಿನ ಚಿತ್ರವನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="966787709310836684">ಮೆನು</translation>
 </translationbundle>

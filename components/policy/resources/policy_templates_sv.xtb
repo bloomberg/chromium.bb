@@ -897,6 +897,11 @@
 <translation id="3512226956150568738">Om klientmodellen hade stöd för ARC redan innan det blev nödvändigt att migrera till ext4 för att köra ARC och om principen ArcEnabled är inställd på sant fungerar det här alternativet som AskUser (värde 3). I alla andra fall (om enhetsmodellen inte hade stöd för ARC tidigare eller om principen ArcEnabled är inställd på falskt) är det här värdet likvärdigt med DisallowArc (värde 0).</translation>
 <translation id="3524204464536655762">Tillåt inte att någon webbplats begär åtkomst till USB-enheter via WebUSB API</translation>
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
+<translation id="3545457887306538845">Gör det möjligt att styra var utvecklarverktygen får användas.
+
+      Om DeveloperToolsDisallowedForForceInstalledExtensions (värde 0, som är standardinställningen) anges för principen går det normalt sett att öppna utveckarverktygen och JavaScript-konsolen, men inte i samband med tillägg som har installerats via en företagsprincip.
+      Om DeveloperToolsAllowed (värde 1) anges för principen går det att öppna utvecklarverktygen och JavaScript-konsolen i alla sammanhang, även i samband med tillägg som har installerats via en företagsprincip.
+      Om DeveloperToolsDisallowed (värde 2) anges för principen går det inte att använda utvecklarverktygen eller att granska webbplatselement. Kortkommandon och alternativ för att öppna utvecklarverktygen eller JavaScript-konsolen på menyer och snabbmenyer inaktiveras.</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="3556806727696701427">Aktiverar funktionen Säker webbsökning i <ph name="PRODUCT_NAME" /> och hindrar användarna från att ändra inställningen.
 
@@ -1986,6 +1991,37 @@
 <translation id="6810445994095397827">Blockera JavaScript på dessa webbplatser</translation>
 <translation id="681446116407619279">Autentiseringsscheman som stöds</translation>
 <translation id="6835883744948188639">Visa användaren ett återkommande meddelande om att omstart rekommenderas</translation>
+<translation id="6838056959556423778">Åsidosätter skrivarens standardurvalsregler för <ph name="PRODUCT_NAME" />.
+
+      Genom denna princip fastställs reglerna för valet av standardskrivare i <ph name="PRODUCT_NAME" />, vilket sker första gången som utskriftsfunktionen används av en profil.
+
+      När den här principen har ställts in försöker <ph name="PRODUCT_NAME" /> att hitta en skrivare som uppfyller alla de angivna attributen och välja denna som standardskrivare. Den första skrivare som hittas och överensstämmer med principen är den som väljs. Om matchningen inte är unik väljs en skrivare ut som uppfyller attributen efter den ordning i vilken skrivarna hittades.
+
+      Om denna princip inte har ställts in eller om ingen skrivare som uppfyller attributen hittas innan tidsfristen löper ut ställs den inbyggda PDF-skrivaren in som standardskrivare. Om ingen PDF-skrivare finns tillgänglig väljs ingen skrivare.
+
+      Värdet analyseras som ett JSON-objekt enligt följande schema:
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "Huruvida sökningen efter en skrivare som uppfyller attributen ska begränsas till en specifik uppsättning av skrivare.",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "Reguljärt uttryck som ska matcha skrivar-id.",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "Reguljärt uttryck som ska matcha skrivarens visningsnamn.",
+            "type": "string"
+          }
+        }
+      }
+
+      Skrivare som är anslutna till <ph name="CLOUD_PRINT_NAME" /> betraktas som <ph name="PRINTER_TYPE_CLOUD" /> medan övriga skrivare klassificeras som <ph name="PRINTER_TYPE_LOCAL" />.
+      Om ett fält utelämnas innebär det att alla värden anses matcha. Om till exempel anslutningen inte anges hittar förhandsgranskningen alla typer av skrivare, såväl lokala skrivare som molnskrivare.
+      Reguljära uttryck måste följa syntaxen för reguljära uttryck i JavaScript. Matchningarna är skiftlägeskänsliga.</translation>
 <translation id="684856667300805181">Den här principen togs bort i <ph name="PRODUCT_NAME" /> 68 och ersattes av <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Principen har fasats ut och togs bort i M66 eftersom den endast användes för interna tester och utgör en säkerhetsrisk.
 
@@ -2263,6 +2299,17 @@
 <translation id="7511361072385293666">Om den här policyn är inställd på sant eller inte har angetts är användning av QUIC-protokoll i <ph name="PRODUCT_NAME" /> tillåten.
       Om policyn är inställd på falskt är inte användning av QUIC-protokoll tillåten.</translation>
 <translation id="7519251620064708155">Tillåt nyckelgenerering på dessa webbplatser</translation>
+<translation id="7529083451528428240">Den här principen låter dig låsa användarens session utifrån klientenhetens klocka eller en daglig användningskvot.
+
+          Med |time_window_limit| anges en tidsperiod på dygnet när användarens session ska vara låst. Det finns bara stöd för en regel per veckodag och därför kan storleken på vektorn |entries| vara mellan 0 och 7. |starts_at| och |ends_at| anger tidsperiodens början och slut. Om värdet på |ends_at| är mindre än värdet på |starts_at| betyder det att |time_limit_window| slutar nästa dag. |last_updated_millis| är en UTC-tidsstämpel som anger när den här posten uppdaterades senast. Värdet skickas som en sträng eftersom tidsstämpeln inte kan anges som ett heltal.
+
+          Med |time_usage_limit| anges skärmtid per dag, så att användarens session låses när denna tid har gått. Det finns en egenskap per veckodag som bara ska anges om det finns en aktiv kvot den dagen. |usage_quota_mins| anger hur lång tid den hanterade enheten får användas på en dag och |reset_at| anger vid vilken tidpunkt användningskvoten förnyas. Standardvärdet för |reset_at| är midnatt ({'hour': 0, 'minute': 0}). |last_updated_millis| är en UTC-tidsstämpel som anger när den här posten uppdaterades senast. Värdet skickas som en sträng eftersom tidsstämpeln inte kan anges som ett heltal.
+
+          |overrides| ger möjlighet att tillfälligt åsidosätta en eller flera av de föregående reglerna.
+          * Om varken time_window_limit eller time_usage_limit är aktiva kan enheten låsas med |LOCK|.
+          * |LOCK| låser en användarsession tillfälligt tills nästa time_window_limit eller time_usage_limit börjar.
+          * |UNLOCK| låser upp en användarsession som låsts med time_window_limit eller time_usage_limit.
+          |created_time_millis| är en UTC-tidsstämpel som anger när åsidosättningen skapades. Värdet skickas som en sträng eftersom tidsstämpeln inte kan anges som ett heltal. Det används för att avgöra om den aktuella åsidosättningen fortfarande gäller. Om den nu gällande tidsbegränsningen (begränsad användningstid eller begränsad tidsperiod) påbörjades efter att åsidosättningen skapades gäller den inte. Åsidosättningen gäller inte heller om den skapades före den senaste ändringen av den time_window_limit eller time_usage_window som är aktiv.</translation>
 <translation id="7529100000224450960">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får öppna popupfönster.
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>

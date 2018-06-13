@@ -896,6 +896,11 @@
 <translation id="3512226956150568738">클라이언트 기기 모델에서 ARC를 실행하기 위해 ext4로 이전해야 했던 시점 전에 ARC를 이미 지원했으며 ArcEnabled 정책이 true로 설정된 경우, 이 옵션은 AskUser(값 3)로 작동합니다. 다른 모든 경우(기기 모델이 이전에 ARC를 지원하지 않았거나 ArcEnabled 정책이 false로 설정된 경우), 이 값은 DisallowArc(값 0)와 동일합니다.</translation>
 <translation id="3524204464536655762">어떤 사이트든지 WebUSB API를 통해 USB 기기의 액세스를 요청하도록 허용하지 않습니다.</translation>
 <translation id="3528000905991875314">대체 오류 페이지 사용</translation>
+<translation id="3545457887306538845">Developer Tools 사용이 허용되는 위치를 제어할 수 있습니다.
+
+      정책이 'DeveloperToolsDisallowedForForceInstalledExtensions'(값 0, 기본값)로 설정되면 일반적인 경우 Developer Tools 및 자바스크립트 콘솔에 액세스할 수 있지만, 엔터프라이즈 정책에 의해 설치된 확장 프로그램의 컨텍스트에서는 액세스할 수 없습니다.
+      정책이 'DeveloperToolsAllowed'(값 1)로 설정되면 엔터프라이즈 정책에 의해 설치된 확장 프로그램을 포함한 모든 컨텍스트에서 Developer Tools 및 자바스크립트 콘솔에 액세스하고 이를 사용할 수 있습니다.
+      정책이 'DeveloperToolsDisallowed'(값 2)로 설정되면 Developer Tools에 액세스할 수 없으며, 웹사이트 요소를 더 이상 검사할 수 없습니다. 또한 Developers Tools 또는 자바스크립트 콘솔을 여는 모든 단축키와 메뉴 항목 또는 컨텍스트 메뉴 항목이 사용 중지됩니다.</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
 <translation id="3556806727696701427"><ph name="PRODUCT_NAME" />의 세이프 브라우징 기능을 사용 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
 
@@ -1975,6 +1980,36 @@
 <translation id="6810445994095397827">이 사이트에서 자바스크립트 차단</translation>
 <translation id="681446116407619279">지원되는 인증 스키마</translation>
 <translation id="6835883744948188639">사용자에게 재실행하는 것이 좋다는 메시지를 반복하여 표시</translation>
+<translation id="6838056959556423778"><ph name="PRODUCT_NAME" /> 기본 프린터 선택 규칙을 재정의합니다.
+
+      이 정책은 <ph name="PRODUCT_NAME" />에서 기본 프린터를 선택하는 규칙을 결정하며, 프로필을 통해 인쇄 기능을 처음 사용할 때 적용됩니다.
+
+      정책을 설정하면 <ph name="PRODUCT_NAME" />이(가) 지정된 속성과 모두 일치하는 프린터를 찾으려고 시도하며, 찾은 프린터를 기본 프린터로 선택합니다. 정책과 일치하는 프린터 중 첫 번째로 발견된 프린터가 선택되며, 일치하는 프린터가 여러 개인 경우 발견된 순서에 따라 일치하는 프린터 중 어떤 것이든 선택될 수 있습니다.
+      정책이 설정되어 있지 않거나 제한시간 안에 일치하는 프린터를 찾지 못한 경우, 내장 PDF 프린터가 기본으로 설정되며, PDF 프린터를 사용할 수 없는 경우 프린터가 선택되지 않습니다.
+
+      값은 다음 스키마에 따라 JSON 객체로 파싱됩니다.
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "일치하는 프린터 검색을 특정 프린터 집합으로 제한할지 여부",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "일치하는 프린터 ID를 찾기 위한 정규 표현식",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "일치하는 프린터 표시 이름을 찾기 위한 정규 표현식",
+            "type": "string"
+          }
+        }
+      }
+
+      <ph name="CLOUD_PRINT_NAME" />에 연결된 프린터는 <ph name="PRINTER_TYPE_CLOUD" />(으)로, 나머지 프린터는 <ph name="PRINTER_TYPE_LOCAL" />(으)로 분류됩니다.
+      필드가 생략된 경우 모든 값이 가능하다는 의미입니다. 예를 들어, 연결을 지정하지 않으면 인쇄 미리보기에서 로컬과 클라우드 등 모든 종류의 프린터를 검색합니다.
+      정규 표현식 패턴은 자바스크립트 RegExp 구문을 따라야 하며, 검색은 대소문자를 구분합니다.</translation>
 <translation id="684856667300805181">이 정책은 <ph name="PRODUCT_NAME" /> 68에서 삭제되었으며 <ph name="ARC_GLS_POLICY_NAME" />(으)로 교체되었습니다.</translation>
 <translation id="6856743875250214792">이 정책은 내부 테스트용으로만 사용되었으며 보안 문제를 일으킬 수 있기 때문에 M66에서 지원 중단되고 삭제됩니다.
 
@@ -2253,6 +2288,17 @@
 <translation id="7511361072385293666">이 정책이 true로 설정되거나 설정되지 않으면 <ph name="PRODUCT_NAME" />에서 QUIC 프로토콜 사용이 허용됩니다.
       이 정책이 false로 설정되면 QUIC 프로토콜 사용이 차단됩니다.</translation>
 <translation id="7519251620064708155">이 사이트에서 키 생성 허용</translation>
+<translation id="7529083451528428240">클라이언트 시간 또는 그날의 사용 할당량에 따라 사용자의 세션을 잠글 수 있습니다.
+
+          |time_window_limit|은 사용자의 세션을 잠글 일별 시간대를 지정합니다. Google에서는 요일당 하나의 규칙만 지원하므로, |entries| 배열의 크기는 0부터 7까지로 지정할 수 있습니다. |starts_at| 및 |ends_at|은 시간대의 시작과 끝이며, |ends_at|이 |starts_at|보다 작은 경우 |time_limit_window|가 다음 날 종료된다는 의미입니다. |last_updated_millis|는 이 항목이 마지막으로 업데이트된 시간의 UTC 타임스탬프로, 타임스탬프는 정수 형식에 맞지 않으므로 문자열로 전송됩니다.
+
+          |time_usage_limit|은 일일 사용 할당량을 지정합니다. 따라서 사용자가 이 할당량에 도달하면 사용자의 세션이 잠기게 됩니다. 요일별로 속성이 있으며, 해당 요일에 활성 할당량이 있는 경우에만 속성을 설정해야 합니다. |usage_quota_mins|는 관리되는 기기가 하루 동안 사용할 수 있는 시간의 양이며, |reset_at|은 사용 할당량이 갱신되는 시간입니다. |reset_at|의 기본값은 자정({'hour': 0, 'minute': 0})입니다. |last_updated_millis|는 이 항목이 마지막으로 업데이트된 시간의 UTC 타임스탬프로, 타임스탬프는 정수 형식에 맞지 않으므로 문자열로 전송됩니다.
+
+          |overrides|는 하나 이상의 이전 규칙을 일시적으로 무효화하기 위해 제공됩니다.
+          * time_window_limit과 time_usage_limit이 둘 다 활성화되어 있지 않은 경우, |LOCK|을 사용하여 기기를 잠글 수 있습니다.
+          * |LOCK|은 다음 time_window_limit 또는 time_usage_limit이 시작될 때까지 일시적으로 사용자 세션을 잠급니다.
+          * |UNLOCK|은 time_window_limit 또는 time_usage_limit에 의해 잠긴 사용자 세션을 잠금 해제합니다.
+          |created_time_millis|는 재정의를 생성하기 위한 UTC 타임스탬프로, 타임스탬프는 정수 형식에 맞지 않으므로 문자열로 전송됩니다. |created_time_millis|는 이 재정의가 계속 적용되어야 하는지 결정하는 데 사용됩니다. 현재 활성화된 시간제한 기능(시간 사용량 제한 또는 시간대 제한)이 재정의가 생성된 후 시작된 경우, 이 기능은 실행되지 않습니다. 또한 활성화된 time_window_limit 또는 time_usage_window가 마지막으로 변경되기 전에 재정의가 생성된 경우에도 적용되지 않습니다.</translation>
 <translation id="7529100000224450960">팝업을 열도록 허용된 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우, 'DefaultPopupsSetting' 정책이 설정된 경우엔 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>

@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">poděkování</translation>
 <translation id="1342835525016946179">čl</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1548116112524424341">přehrát video v režimu obrazu v obraze</translation>
 <translation id="1589122976691792535">oblast</translation>
 <translation id="1591562245178063882">Tento měsíc</translation>
 <translation id="1637811476055996098">Zvolit soubory</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">měřič</translation>
 <translation id="6166809985690652833">doslov</translation>
 <translation id="6213469881011901533">glosář</translation>
+<translation id="6310801910862476708">Ukončit režim obrazu v obraze</translation>
 <translation id="6398862346408813489">Zobrazit panel pro výběr měsíců</translation>
 <translation id="6404546809543547843">posuvník času zvuku</translation>
 <translation id="6453774872122745852">poděkování</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">navigace</translation>
 <translation id="9050748414552849310">zobrazit titulky</translation>
 <translation id="9062295712474918030">dokument</translation>
+<translation id="9093215626363556771">ukončit režim obrazu v obraze</translation>
 <translation id="9108370397979208512">matematika</translation>
 <translation id="9132465097189459683">Jiné…</translation>
 <translation id="9138385573473225930">upozornění</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, začíná <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">poznámka pod čarou</translation>
 <translation id="947831847158436616">buňka</translation>
+<translation id="954003015749068518">spustit režim obrazu v obraze</translation>
 <translation id="966787709310836684">nabídka</translation>
 </translationbundle>

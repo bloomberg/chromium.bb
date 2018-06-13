@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">ክሬዲቶች</translation>
 <translation id="1342835525016946179">ጽሑፍ</translation>
 <translation id="1359897965706325498">ሰንደቅ</translation>
+<translation id="1548116112524424341">ቪዲዮን በስዕል-ውስጥ-ስዕል ሁነታ አጫውት</translation>
 <translation id="1589122976691792535">ክልል</translation>
 <translation id="1591562245178063882">በዚህ ወር</translation>
 <translation id="1637811476055996098">ፋይሎችን ይምረጡ</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">ሜትር</translation>
 <translation id="6166809985690652833">ድሕረ ቃል</translation>
 <translation id="6213469881011901533">ሙዳየ ቃላት</translation>
+<translation id="6310801910862476708">ከስዕል-ውስጥ-ስዕል ውጣ</translation>
 <translation id="6398862346408813489">የወር መምረጫ ፓነል አሳይ</translation>
 <translation id="6404546809543547843">የኦዲዮ ሰዓት አንፏቃቂ</translation>
 <translation id="6453774872122745852">ምስጋና</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">አሰሳ</translation>
 <translation id="9050748414552849310">የተዘጉ የስዕል መግለጫዎችን አሳይ</translation>
 <translation id="9062295712474918030">ሰነድ</translation>
+<translation id="9093215626363556771">ከስዕል-ውስጥ-ስዕል ውጣ</translation>
 <translation id="9108370397979208512">ሒሳብ</translation>
 <translation id="9132465097189459683">ሌላ...</translation>
 <translation id="9138385573473225930">ማንቂያ</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />፣ የሚጀምረው በ<ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">የግርጌ ማስታወሻ</translation>
 <translation id="947831847158436616">ሕዋስ</translation>
+<translation id="954003015749068518">ወደ ስዕል-ውስጥ-ስዕል ይግቡ</translation>
 <translation id="966787709310836684">ምናሌ</translation>
 </translationbundle>

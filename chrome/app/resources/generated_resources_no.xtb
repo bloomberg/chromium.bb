@@ -1593,7 +1593,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="3450157232394774192">Utnyttelsesgrad for hviletilstand</translation>
 <translation id="3453612417627951340">Trenger autorisasjon</translation>
 <translation id="3454157711543303649">Aktiveringen er fullført</translation>
-<translation id="3454224730401036106">Tilkoblingen din er byttet til et sikrere nettverk</translation>
 <translation id="345693547134384690">Åpne b&amp;ilde i ny fane</translation>
 <translation id="3459509316159669723">Utskrift</translation>
 <translation id="3459697287128633276">For å få tilgang til Google Play Butikken med kontoen din, bekreft hvem du er, hos identitetsleverandøren din.</translation>
@@ -2151,7 +2150,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> ønsker å kommunisere med «<ph name="EXTENSION_NAME" />»-appen</translation>
 <translation id="4342311272543222243">Beklager, det oppsto en TPM-feil.</translation>
 <translation id="4345587454538109430">Konfigurer</translation>
-<translation id="4345703751611431217">Inkompatibel programvare: Les mer</translation>
 <translation id="4348766275249686434">Registrer feil</translation>
 <translation id="4350019051035968019">Denne enheten kan ikke registreres for domenet kontoen din tilhører. Enheten er merket for administrering av et annet domene.</translation>
 <translation id="4354266305752237763">Beskytt deg selv og enheten din mot farlige nettsteder (Safe Browsing)</translation>
@@ -3335,7 +3333,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Utvid alle</translation>
 <translation id="6164005077879661055">Alle filer og lokale data tilknyttet den administrerte brukeren slettes permanent når den administrerte brukeren fjernes. Besøkte nettsteder og innstillinger for denne administrerte brukeren kan fortsatt ses av administratoren på <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Les mer</translation>
 <translation id="6166185671393271715">Importér passord i Chrome</translation>
 <translation id="6169040057125497443">Sjekk mikrofonen din.</translation>
 <translation id="6169666352732958425">Kan ikke caste skrivebordet.</translation>
@@ -4117,7 +4114,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="7392118418926456391">Virusskanningen mislyktes</translation>
 <translation id="7392915005464253525">Gj&amp;enåpne det lukkede vinduet</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> starter ved systemoppstart, og fortsetter å kjøre i bakgrunnen selv når du har lukket alle andre vinduer for <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">Byttet nettverkstilkobling</translation>
 <translation id="7400418766976504921">Nettadresse</translation>
 <translation id="740083207982962331">Vent mens Chromeboxen din starter på nytt …</translation>
 <translation id="7400839060291901923">Konfigurerer tilkoblingen på <ph name="PHONE_NAME" />-enheten din</translation>

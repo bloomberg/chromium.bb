@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">ringraziamenti</translation>
 <translation id="1342835525016946179">articolo</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1548116112524424341">riproduci video in modalità picture in picture</translation>
 <translation id="1589122976691792535">regione</translation>
 <translation id="1591562245178063882">Questo mese</translation>
 <translation id="1637811476055996098">Scegli file</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">indicatore</translation>
 <translation id="6166809985690652833">postfazione</translation>
 <translation id="6213469881011901533">glossario</translation>
+<translation id="6310801910862476708">Esci da Picture in picture</translation>
 <translation id="6398862346408813489">Mostra il riquadro di selezione del mese</translation>
 <translation id="6404546809543547843">dispositivo di scorrimento durata audio</translation>
 <translation id="6453774872122745852">riconoscimenti</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">navigazione</translation>
 <translation id="9050748414552849310">mostra sottotitoli</translation>
 <translation id="9062295712474918030">documento</translation>
+<translation id="9093215626363556771">esci da picture in picture</translation>
 <translation id="9108370397979208512">elemento matematico</translation>
 <translation id="9132465097189459683">Altro...</translation>
 <translation id="9138385573473225930">avviso</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, a partire dal giorno <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">piè di pagina</translation>
 <translation id="947831847158436616">cella</translation>
+<translation id="954003015749068518">attiva picture in picture</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

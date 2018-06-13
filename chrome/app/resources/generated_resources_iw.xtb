@@ -1595,7 +1595,6 @@
 <translation id="3450157232394774192">אחוז תפוסה במצב לא פעיל</translation>
 <translation id="3453612417627951340">יש צורך באישור</translation>
 <translation id="3454157711543303649">ההפעלה הושלמה</translation>
-<translation id="3454224730401036106">החיבור שלך הועבר לרשת מאובטחת יותר</translation>
 <translation id="345693547134384690">פתח &amp;תמונה בכרטיסייה חדשה</translation>
 <translation id="3459509316159669723">הדפסה</translation>
 <translation id="3459697287128633276">‏כדי לאפשר לחשבונך לגשת אל חנות Google Play, עליך לבצע אימות אצל ספק הזהות שלך.</translation>
@@ -2155,7 +2154,6 @@
 <translation id="4340515029017875942"><ph name="ORIGIN" /> רוצה לתקשר עם האפליקציה "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="4342311272543222243">‏אופס, טעות של TPM.</translation>
 <translation id="4345587454538109430">הגדר...</translation>
-<translation id="4345703751611431217">חוסר תאימות של תוכנה: למידע נוסף</translation>
 <translation id="4348766275249686434">תעד שגיאות</translation>
 <translation id="4350019051035968019">לא ניתן לרשום את המכשיר הזה לדומיין שאליו שייך החשבון שלך מפני שהמכשיר מסומן לניהול על ידי דומיין אחר.</translation>
 <translation id="4354266305752237763">הגנה מפני אתרים שעלולים לסכן אותך או את המכשיר (גלישה בטוחה)</translation>
@@ -3341,7 +3339,6 @@
 <translation id="6163363155248589649">&amp;רגיל</translation>
 <translation id="6163522313638838258">הרחב את הכל...</translation>
 <translation id="6164005077879661055">כל הקבצים והנתונים המקומיים המשויכים למשתמש בפיקוח יימחקו לצמיתות לאחר שמשתמש בפיקוח זה יוסר. המנהל עדיין יוכל לראות את האתרים שבהם משתמש בפיקוח זה ביקר, ואת ההגדרות שלו, בכתובת <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6166185671393271715">‏ייבוא סיסמאות אל Chrome</translation>
 <translation id="6169040057125497443">יש לבדוק את המיקרופון.</translation>
 <translation id="6169666352732958425">לא ניתן להעביר מהמחשב השולחני.</translation>
@@ -4124,7 +4121,6 @@
 <translation id="7392118418926456391">סריקת וירוסים נכשלה</translation>
 <translation id="7392915005464253525">פ&amp;תח מחדש חלון סגור</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> יופעל עם אתחול המערכת וימשיך לפעול ברקע גם כאשר תסגור את כל החלונות האחרים של <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">חיבור הרשת הוחלף</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>
 <translation id="740083207982962331">‏המתן בזמן שה-Chromebox שלך מופעל מחדש...</translation>
 <translation id="7400839060291901923">הגדר את החיבור בטלפון <ph name="PHONE_NAME" /></translation>

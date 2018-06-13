@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">bronvermelding</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1548116112524424341">Video in de scherm-in-scherm-modus afspelen</translation>
 <translation id="1589122976691792535">regio</translation>
 <translation id="1591562245178063882">Deze maand</translation>
 <translation id="1637811476055996098">Bestanden kiezen</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">meter</translation>
 <translation id="6166809985690652833">nawoord</translation>
 <translation id="6213469881011901533">woordenlijst</translation>
+<translation id="6310801910862476708">Scherm-in-scherm afsluiten</translation>
 <translation id="6398862346408813489">Deelvenster voor maandselectie weergeven</translation>
 <translation id="6404546809543547843">scrollbar met audiotijd</translation>
 <translation id="6453774872122745852">dankwoord</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">navigatie</translation>
 <translation id="9050748414552849310">ondertiteling weergeven</translation>
 <translation id="9062295712474918030">document</translation>
+<translation id="9093215626363556771">scherm-in-scherm afsluiten</translation>
 <translation id="9108370397979208512">wiskunde</translation>
 <translation id="9132465097189459683">Anders...</translation>
 <translation id="9138385573473225930">melding</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, die begint op <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">voetnoot</translation>
 <translation id="947831847158436616">cel</translation>
+<translation id="954003015749068518">scherm-in-scherm openen</translation>
 <translation id="966787709310836684">menu</translation>
 </translationbundle>

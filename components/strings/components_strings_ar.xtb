@@ -20,6 +20,7 @@
 <translation id="1110994991967754504">اختيار إذن لـ <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">الإشارات الجديدة</translation>
 <translation id="1113869188872983271">تراجع عن إعادة الت&amp;رتيب</translation>
+<translation id="1125573121925420732">قد تكون التحذيرات شائعة أثناء تحديث مواقع الويب لأمانها. وهذا من شأنه أن يتحسَّن قريبًا.</translation>
 <translation id="1126551341858583091">يمثل الحجم على سعة التخزين المحلية <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">ذاكرة التخزين المؤقت للسياسة بحالة جيدة</translation>
 <translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
@@ -262,6 +263,7 @@
 <translation id="2742870351467570537">إزالة العناصر المحددة</translation>
 <translation id="277133753123645258">طريقة الشحن</translation>
 <translation id="277499241957683684">سجِلّ الجهاز مفقود</translation>
+<translation id="2781030394888168909">‏تصدير نظام التشغيل MacOS</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">تمت إعادة تعيين الاتصال.</translation>
 <translation id="2788784517760473862">بطاقات الائتمان المقبولة</translation>
@@ -511,6 +513,7 @@
 <translation id="4415426530740016218">عنوان الاستلام</translation>
 <translation id="4424024547088906515">‏هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من قبل Chrome. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
 <translation id="4432688616882109544">لم يقبل <ph name="HOST_NAME" /> شهادة تسجيل الدخول أو من المحتمل ألا يكون قد تم تقديم واحدة.</translation>
+<translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
 <translation id="443673843213245140">تم إيقاف استخدام الخادم الوكيل ولكن تم تحديد تهيئة صريحة للخادم الوكيل.</translation>
 <translation id="445100540951337728">بطاقات السحب الآلي المقبولة</translation>
 <translation id="4506176782989081258">خطأ في عملية التحقق: <ph name="VALIDATION_ERROR" />.</translation>
@@ -817,6 +820,7 @@
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6948701128805548767">لعرض طرق الاستلام ومتطلباته، حدِّد عنوانًا</translation>
 <translation id="6949872517221025916">إعادة تحديد كلمة المرور</translation>
+<translation id="6950684638814147129">‏حدث خطأ أثناء تحليل قيمة JSON: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">يبدو أن شهادة الخادم مزيفة.</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6965978654500191972">جهاز</translation>
@@ -1048,6 +1052,7 @@
 <translation id="8620436878122366504">لم يوافق عليه والداك حتى الآن</translation>
 <translation id="8625384913736129811">حفظ هذه البطاقة إلى هذا الجهاز</translation>
 <translation id="8639963783467694461">إعدادات الملء التلقائي</translation>
+<translation id="8663226718884576429">ملخّص الطلب و<ph name="TOTAL_LABEL" /> وتفاصيل إضافية</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />، إجابة، <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">الاتصال بالموقع <ph name="DOMAIN" /> غير محميّ بنظام تشفير.</translation>
 <translation id="8718314106902482036">لم تكتمل عملية الدفع</translation>

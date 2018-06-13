@@ -866,6 +866,11 @@
 <translation id="3512226956150568738">如果用戶端裝置型號在必須遷移至 Ext4 才能執行 ARC 之前已支援 ARC，且 ArcEnabled 政策設為 True，這個選項的行為會與 AskUser 相同 (值 3)。在所有其他情況下 (如果用戶端裝置型號之前不支援 ARC，或 ArcEnabled 政策設為 False)，這個值會等同於 DisallowArc (值 0)。</translation>
 <translation id="3524204464536655762">不允許任何網站透過 WebUSB API 要求存取 USB 裝置</translation>
 <translation id="3528000905991875314">啟用替代的錯誤網頁</translation>
+<translation id="3545457887306538845">讓你控制在哪些情況下可使用開發人員工具。
+
+      如果將這項政策設為「DeveloperToolsDisallowedForForceInstalledExtensions」(值為 0，即預設值)，使用者可在一般情況下存取開發人員工具和 JavaScript 控制台，但無法在由企業政策安裝的擴充功能中存取開發人員工具和 JavaScript 控制台。
+      如果將這項政策設為「DeveloperToolsAllowed」(值為 1)，使用者可在所有情況下存取及使用開發人員工具和 JavaScript 控制台，包括在由企業政策安裝的擴充功能中。
+      如果將這項政策設為「DeveloperToolsDisallowed」(值為 2)，使用者將無法再存取開發人員工具，也無法再檢查網站元素。此外，所有可開啟開發人員工具或 JavaScript 控制台的鍵盤快速鍵、選單項目或內容選單項目都會遭到停用。</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3556806727696701427">啟用 <ph name="PRODUCT_NAME" /> 的安全瀏覽功能並禁止使用者變更這項設定。
 
@@ -1895,6 +1900,37 @@
 <translation id="6810445994095397827">封鎖這些網站的 JavaScript</translation>
 <translation id="681446116407619279">支援的驗證機制</translation>
 <translation id="6835883744948188639">顯示週期性提示，建議使用者重新啟動瀏覽器</translation>
+<translation id="6838056959556423778">覆寫 <ph name="PRODUCT_NAME" /> 預設印表機選取規則。
+
+      這項政策可讓你決定在 <ph name="PRODUCT_NAME" /> 中首次透過設定檔使用列印功能時，選取預設印表機的規則。
+
+      如果設定這項政策，<ph name="PRODUCT_NAME" /> 會嘗試尋找符合所有指定屬性的印表機，並選取該印表機做為預設印表機。採用非唯一比對機制時，凡是相符的印表機皆可供選取 (取決於找到的順序)，因此一旦找到符合政策的印表機，系統就會直接選取。
+
+      如果未設定這項政策，或是在逾時期間找不到相符的印表機，系統會以內建的 PDF 印表機做為預設印表機，或者不選取任何印表機 (如果沒有 PDF 印表機的話)。
+
+      系統會以 JSON 物件形式剖析政策值，架構如下：
+      {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "description": "是否僅限在特定的印表機範圍內搜尋相符的印表機。",
+            "type": "string",
+            "enum": [ "local", "cloud" ]
+          },
+          "idPattern": {
+            "description": "用於比對印表機 ID 的規則運算式。",
+            "type": "string"
+          },
+          "namePattern": {
+            "description": "用於比對印表機顯示名稱的規則運算式。",
+            "type": "string"
+          }
+        }
+      }
+
+      已連上 <ph name="CLOUD_PRINT_NAME" /> 的印表機屬於「<ph name="PRINTER_TYPE_CLOUD" />」類型，其他印表機則是「<ph name="PRINTER_TYPE_LOCAL" />」類型。
+      省略欄位表示不對值設限。舉例來說，如果未指定連線，系統會在執行列印預覽作業時尋找所有類型的印表機 (包括 local 和 cloud)。
+      規則運算式模式必須符合 JavaScript RegExp 語法，且比對機制需區分大小寫。</translation>
 <translation id="684856667300805181">這項政策已在 <ph name="PRODUCT_NAME" /> 68 中遭到移除，並已由 <ph name="ARC_GLS_POLICY_NAME" /> 取代。</translation>
 <translation id="6856743875250214792">這項政策僅供內部測試，而且有安全性方面的問題，因此 M66 已淘汰並移除這項政策。
 
@@ -2155,6 +2191,17 @@
 <translation id="7511361072385293666">如果這項政策設為 True 或未設定，可在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 通訊協定。
       如果這項政策設為 False，則不可使用 QUIC 通訊協定。</translation>
 <translation id="7519251620064708155">允許在這些網站上使用金鑰產生功能</translation>
+<translation id="7529083451528428240">讓你可根據用戶端時間或當日用量配額鎖定使用者的工作階段。
+
+          |time_window_limit| 是用來指定一個每日時段，在這段時間系統會鎖定使用者的工作階段。星期一到日每天各只能設定一項規則，因此 |entries| 陣列的大小可為 1 到 7 之間的值。|starts_at| 和 |ends_at| 是時段限制的開始和結束時間；如果 |ends_at| 小於 |starts_at|，表示 |time_limit_window| 到隔天才會結束。|last_updated_millis| 是此項目上次更新時間的時間戳記 (採世界標準時間)，由於時間戳記無法轉換成整數，因此這項參數是採字串的形式傳送。
+
+          |time_usage_limit| 是用來指定每日螢幕使用時間配額，當使用者用盡配額，系統就會鎖定使用者的工作階段。星期一到日各有一個屬性，只有在該日具備有效配額的情況下才應設定屬性。|usage_quota_mins| 是受管理裝置的單日可用時間，|reset_at| 則是用量配額的更新時間。|reset_at| 的預設值為午夜 ({'hour'：0，'minute'：0})。|last_updated_millis| 是此項目上次更新時間的時間戳記 (採世界標準時間)，由於時間戳記無法轉換成整數，因此這項參數是採字串的形式傳送。
+
+          |overrides| 可讓一或多項先前設定的規則暫時失效。
+          * 如果 time_window_limit 和 time_usage_limit 都處於無效狀態，則可使用 |LOCK| 來鎖定裝置。
+          * |LOCK| 可暫時鎖定使用者工作階段，直到下一個 time_window_limit 或 time_usage_limit 開始為止。
+          * |UNLOCK| 可以解除鎖定根據 time_window_limit 或 time_usage_limit 鎖定的使用者工作階段。
+          |created_time_millis| 是覆寫作業建立時間的時間戳記 (採世界標準時間)，由於時間戳記無法轉換成整數，因此這項參數是採字串的形式傳送。這項參數是用來供系統判定是否仍要執行覆寫作業。如果目前有效的時間限制功能 (時間用量限制或時段限制) 是在覆寫作業建立後才開始，系統就不會採取行動。此外，如果覆寫作業的建立時間早於有效 time_window_limit 或 time_usage_window 的上次變更時間，系統就不會執行覆寫作業。</translation>
 <translation id="7529100000224450960">允許你設定網址模式清單，指定可以開啟彈出式視窗的網站。如果未設定這項政策，系統會從「DefaultPopupsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7529144158022474049">自動更新分散係數</translation>
 <translation id="7534199150025803530">這項政策對 Android Google 雲端硬碟應用程式沒有影響。如要禁止透過行動網路連線使用 Google 雲端硬碟，則必須禁止安裝 Android Google 雲端硬碟應用程式。</translation>

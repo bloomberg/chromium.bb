@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">저작권 표시</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">배너</translation>
+<translation id="1548116112524424341">PIP 모드로 동영상 재생</translation>
 <translation id="1589122976691792535">지역</translation>
 <translation id="1591562245178063882">이번 달</translation>
 <translation id="1637811476055996098">파일 선택</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">미터</translation>
 <translation id="6166809985690652833">후기</translation>
 <translation id="6213469881011901533">용어설명</translation>
+<translation id="6310801910862476708">PIP 모드 종료</translation>
 <translation id="6398862346408813489">월 선택 패널 표시</translation>
 <translation id="6404546809543547843">오디오 시간 스크러버</translation>
 <translation id="6453774872122745852">감사의 말</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">탐색</translation>
 <translation id="9050748414552849310">캡션 표시</translation>
 <translation id="9062295712474918030">문서</translation>
+<translation id="9093215626363556771">PIP 모드 종료</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9132465097189459683">다른 달...</translation>
 <translation id="9138385573473225930">알림</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />(<ph name="WEEK_START_DATE" />에 시작)</translation>
 <translation id="9168329111483466115">각주</translation>
 <translation id="947831847158436616">셀</translation>
+<translation id="954003015749068518">PIP 모드 시작</translation>
 <translation id="966787709310836684">메뉴</translation>
 </translationbundle>

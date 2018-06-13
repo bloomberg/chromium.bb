@@ -128,6 +128,7 @@
 <translation id="3400357268283240774">Lisäasetukset</translation>
 <translation id="3413817803639110246">Ei mitään nähtävää vielä</translation>
 <translation id="3445925074670675829">C-tyypin USB-laite</translation>
+<translation id="3454224730401036106">Olet nyt yhteydessä turvallisempaan verkkoon.</translation>
 <translation id="3465566417615315331">Klikkaa valokuvaasi</translation>
 <translation id="3477079411857374384">Ctrl + vaihto + välilyönti</translation>
 <translation id="3510164367642747937">Korosta hiiren osoitin</translation>
@@ -299,6 +300,7 @@
 <translation id="7348093485538360975">Virtuaalinäppäimistö</translation>
 <translation id="735745346212279324">VPN-yhteys katkaistu</translation>
 <translation id="7377169924702866686">Caps Lock on päällä.</translation>
+<translation id="7398254312354928459">Verkko vaihdettu</translation>
 <translation id="742594950370306541">Kamera on käytössä.</translation>
 <translation id="743058460480092004">Kamera ja mikrofoni ovat käytössä.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -331,6 +333,7 @@
 <translation id="7994370417837006925">Kirjautuminen useaan tiliin</translation>
 <translation id="8000066093800657092">Ei verkkoa</translation>
 <translation id="8054466585765276473">Lasketaan akun kesto.</translation>
+<translation id="8061464966246066292">Suuri kontrasti</translation>
 <translation id="8098591350844501178">Lopeta suoratoisto: <ph name="RECEIVER_NAME" /></translation>
 <translation id="8132793192354020517">Yhteys muodostettu verkkoon <ph name="NAME" /></translation>
 <translation id="813913629614996137">Käynnistetään…</translation>

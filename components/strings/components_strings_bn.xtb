@@ -808,6 +808,7 @@
 <translation id="6915804003454593391">ব্যবহারকারী:</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
 <translation id="6948701128805548767">পিকআপ এর পদ্ধতি এবং প্রয়োজনীয়তা দেখতে একটি ঠিকানা বেছে নিন</translation>
+<translation id="6950684638814147129">JSON মান পার্সিং করার সময় সমস্যা: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">সার্ভারটির শংসাপত্রটি একটি জাল হিসাবে উপস্থিত হয়েছে৷</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="6965978654500191972">ডিভাইস</translation>
@@ -1037,6 +1038,7 @@
 <translation id="8620436878122366504">আপনার পিতামাতা এখনও এটি অনুমোদন করেন নি</translation>
 <translation id="8625384913736129811">এই ডিভাইসে এই কার্ডটি সেভ করুন</translation>
 <translation id="8639963783467694461">স্বতঃপূর্ণ সেটিংস</translation>
+<translation id="8663226718884576429">অর্ডারের সারসংক্ষেপ, <ph name="TOTAL_LABEL" />, আরও বিবরণ</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, উত্তর, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" />-এ আপনার কানেকশন এনক্রিপ্ট হয় নি৷</translation>
 <translation id="8718314106902482036">পেমেন্ট করা যায়নি</translation>

@@ -1614,7 +1614,6 @@ Nemanau, kad ši svetainė turėtų būti užblokuota!</translation>
 <translation id="3450157232394774192">Neveikos būsenos užėmimo procentas</translation>
 <translation id="3453612417627951340">Reikalingas leidimas</translation>
 <translation id="3454157711543303649">Aktyvinimas baigtas</translation>
-<translation id="3454224730401036106">Ryšys perjungtas į saugesnį tinklą</translation>
 <translation id="345693547134384690">Atidaryti &amp;paveikslėlį naujame skirtuke</translation>
 <translation id="3459509316159669723">Spausdinimas</translation>
 <translation id="3459697287128633276">Kad leistumėte paskyrai pasiekti „Google Play“ parduotuvę, autentifikuokite prieigą naudodami tapatybės teikėją.</translation>
@@ -2176,7 +2175,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> nori užmegzti ryšį su programa „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="4342311272543222243">Oi, TPM klaida.</translation>
 <translation id="4345587454538109430">Konfigūruoti...</translation>
-<translation id="4345703751611431217">Nesuderinama programinė įranga: sužinokite daugiau</translation>
 <translation id="4348766275249686434">Kaupti klaidas</translation>
 <translation id="4350019051035968019">Šio įrenginio negalima užregistruoti domene, kuriam priklauso paskyra, nes pažymėta, kad įrenginys tvarkomas kito domeno.</translation>
 <translation id="4354266305752237763">Apsaugoti save ir įrenginį nuo pavojingų svetainių (Saugus naršymas)</translation>
@@ -3376,7 +3374,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6163363155248589649">&amp;Normalus</translation>
 <translation id="6163522313638838258">Išskleisti viską</translation>
 <translation id="6164005077879661055">Visi failai ir su prižiūrimu naudotoju susiję duomenys bus ištrinti visam laikui, kai bus pašalintas šis prižiūrimas naudotojas. Valdytojas vis tiek gali peržiūrėti šio prižiūrimo naudotojo aplankytas svetaines ir nustatymus adresu <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Sužinokite daugiau</translation>
 <translation id="6166185671393271715">Slaptažodžių importavimas į „Chrome“</translation>
 <translation id="6169040057125497443">Patikrinkite mikrofoną.</translation>
 <translation id="6169666352732958425">Nepavyko perduoti stalinio kompiuterio ekrano.</translation>
@@ -4172,7 +4169,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7392118418926456391">Nepavyko žvalgyti, ar yra virusų</translation>
 <translation id="7392915005464253525">I&amp;š naujo atidaryti uždarytą langą</translation>
 <translation id="7396845648024431313">„<ph name="APP_NAME" />“ bus paleista kartu su sistema ir fone veiks toliau, net ir išjungus visus kitus „<ph name="PRODUCT_NAME" />“ langus.</translation>
-<translation id="7398254312354928459">Perjungtas tinklo ryšys</translation>
 <translation id="7400418766976504921">URL adresas</translation>
 <translation id="740083207982962331">Palaukite, „Chromebox“ paleidžiamas iš naujo…</translation>
 <translation id="7400839060291901923">Nustatykite ryšį „<ph name="PHONE_NAME" />“ įrenginyje</translation>

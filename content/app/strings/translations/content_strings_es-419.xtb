@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">créditos</translation>
 <translation id="1342835525016946179">artículo</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1548116112524424341">reproducir video en modo de pantalla en pantalla</translation>
 <translation id="1589122976691792535">región</translation>
 <translation id="1591562245178063882">Este mes</translation>
 <translation id="1637811476055996098">Elegir archivos</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">medidor</translation>
 <translation id="6166809985690652833">posfacio</translation>
 <translation id="6213469881011901533">glosario</translation>
+<translation id="6310801910862476708">Salir del modo de pantalla en pantalla</translation>
 <translation id="6398862346408813489">Mostrar el panel de selección de meses</translation>
 <translation id="6404546809543547843">control deslizante de duración del audio</translation>
 <translation id="6453774872122745852">reconocimientos</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">navegación</translation>
 <translation id="9050748414552849310">mostrar subtítulos</translation>
 <translation id="9062295712474918030">documento</translation>
+<translation id="9093215626363556771">salir del modo de pantalla en pantalla</translation>
 <translation id="9108370397979208512">expr mtmtc</translation>
 <translation id="9132465097189459683">Otra...</translation>
 <translation id="9138385573473225930">alerta</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, a partir del <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">nota a pie de página</translation>
 <translation id="947831847158436616">celda</translation>
+<translation id="954003015749068518">ingresar al modo de pantalla en pantalla</translation>
 <translation id="966787709310836684">menú</translation>
 </translationbundle>

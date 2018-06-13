@@ -520,7 +520,7 @@
 <translation id="1753682364559456262">Administrar bloqueo de imágenes...</translation>
 <translation id="1753905327828125965">Más visitado</translation>
 <translation id="1754582516739637364">Estado de la memoria</translation>
-<translation id="1756681705074952506">Método de entrada</translation>
+<translation id="1756681705074952506">Método de introducción</translation>
 <translation id="175772926354468439">Habilitar tema</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="17584710573359123">Ver en Chrome Web Store</translation>
@@ -1612,7 +1612,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3450157232394774192">Porcentaje de ocupación de estado de inactividad</translation>
 <translation id="3453612417627951340">Necesita autorización</translation>
 <translation id="3454157711543303649">Activación completa</translation>
-<translation id="3454224730401036106">La conexión ha cambiado a una red más segura</translation>
 <translation id="345693547134384690">Abrir &amp;imagen en una pestaña nueva</translation>
 <translation id="3459509316159669723">Imprimir</translation>
 <translation id="3459697287128633276">Para permitir que tu cuenta acceda a Google Play Store, debes autenticarte con tu proveedor de identidades.</translation>
@@ -2173,7 +2172,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4340515029017875942"><ph name="ORIGIN" /> quiere comunicarse con la aplicación <ph name="EXTENSION_NAME" /></translation>
 <translation id="4342311272543222243">¡Vaya! Se ha producido un error de TPM</translation>
 <translation id="4345587454538109430">Configurar...</translation>
-<translation id="4345703751611431217">Incompatibilidad de software: más información</translation>
 <translation id="4348766275249686434">Recopilar errores</translation>
 <translation id="4350019051035968019">Este dispositivo no se puede registrar en el dominio al que pertenece tu cuenta porque ya lo administra otro dominio.</translation>
 <translation id="4354266305752237763">Obtener protección para ti y para tu dispositivo frente a sitios web peligrosos (Navegación Segura)</translation>
@@ -3371,7 +3369,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="6163522313638838258">Ampliar todo...</translation>
 <translation id="6164005077879661055">Todos los archivos y datos locales asociados al usuario supervisado se eliminarán de forma permanente una vez que se haya eliminado este usuario supervisado. Es posible que el administrador pueda seguir viendo la configuración y los sitios web visitados de este usuario supervisado en la página <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Más información</translation>
 <translation id="6166185671393271715">Importar contraseñas a Chrome</translation>
 <translation id="6169040057125497443">Comprueba el micrófono.</translation>
 <translation id="6169666352732958425">No se ha podido enviar el escritorio.</translation>
@@ -4165,7 +4162,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7392118418926456391">Error en el análisis antivirus</translation>
 <translation id="7392915005464253525">Volv&amp;er a abrir ventana cerrada</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> empezará a ejecutarse cuando se inicie el sistema y seguirá ejecutándose en segundo plano aunque cierres todas las demás ventanas de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">Se ha cambiado la conexión de red</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Espera mientras se reinicia el Chromebox…</translation>
 <translation id="7400839060291901923">Configurar la conexión en tu <ph name="PHONE_NAME" /></translation>

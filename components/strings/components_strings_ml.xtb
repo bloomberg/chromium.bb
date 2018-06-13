@@ -819,6 +819,7 @@
 <translation id="6945221475159498467">തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6948701128805548767">പിക്ക്അപ്പ് രീതികളും ആവശ്യകതകളും കാണാൻ ഒരു വിലാസം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6949872517221025916">പാസ്‌വേഡ് പുനഃസജ്ജീകരിക്കുക</translation>
+<translation id="6950684638814147129">JSON മൂല്യം വിശകലനം ചെയ്യുമ്പോൾ പിശക്: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">സെർവറിന്റെ സർട്ടിഫിക്കറ്റ് വിശ്വസിക്കാൻ കൊള്ളാത്ത ഒന്നായി തോന്നുന്നു.</translation>
 <translation id="6965382102122355670">ശരി</translation>
 <translation id="6965978654500191972">ഉപാധി</translation>
@@ -1048,6 +1049,7 @@
 <translation id="8620436878122366504">നിങ്ങളുടെ രക്ഷിതാക്കൾ ഇതുവരെ അംഗീകാരം നൽകിയിട്ടില്ല</translation>
 <translation id="8625384913736129811">ഈ ഉപകരണത്തിലേക്ക് ഈ കാർഡ് സംരക്ഷിക്കുക</translation>
 <translation id="8639963783467694461">ഓട്ടോഫില്‍ ക്രമീകരണങ്ങള്‍</translation>
+<translation id="8663226718884576429">ഓർഡർ സംഗ്രഹം, <ph name="TOTAL_LABEL" />, കൂടുതൽ വിശദാംശങ്ങൾ</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, ഉത്തരം, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> ലേക്കുള്ള നിങ്ങളുടെ കണക്ഷന്‍ എന്‍‌ക്രിപ്റ്റ് ചെയ്തിട്ടില്ല.</translation>
 <translation id="8718314106902482036">പേയ്‌മെന്റ് പൂർത്തിയായിട്ടില്ല</translation>

@@ -820,6 +820,7 @@
 <translation id="6945221475159498467">Seç</translation>
 <translation id="6948701128805548767">Alım yöntemlerini ve gereksinimlerini görmek için bir adres seçin</translation>
 <translation id="6949872517221025916">Şifreyi Sıfırla</translation>
+<translation id="6950684638814147129">JSON değeri ayrıştırılırken hata oluştu: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">Sunucunun sertifikası sahte görünüyor.</translation>
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="6965978654500191972">Cihaz</translation>
@@ -1051,6 +1052,7 @@
 <translation id="8620436878122366504">Ebeveynleriniz henüz onaylamadı</translation>
 <translation id="8625384913736129811">Bu Kartı Bu Cihaza Kaydet</translation>
 <translation id="8639963783467694461">Otomatik doldurma ayarları</translation>
+<translation id="8663226718884576429">Sipariş Özeti, <ph name="TOTAL_LABEL" />, Daha Fazla Ayrıntı</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, yanıt, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> bağlantınız şifrelenmedi.</translation>
 <translation id="8718314106902482036">Ödeme işlemi tamamlanmadı</translation>

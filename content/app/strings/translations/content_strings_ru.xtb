@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">выходные сведения</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">баннер</translation>
+<translation id="1548116112524424341">воспроизвести видео в режиме "Картинка в картинке"</translation>
 <translation id="1589122976691792535">регион</translation>
 <translation id="1591562245178063882">В этом месяце</translation>
 <translation id="1637811476055996098">Выбрать файлы</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">счетчик</translation>
 <translation id="6166809985690652833">послесловие</translation>
 <translation id="6213469881011901533">словарь</translation>
+<translation id="6310801910862476708">Выйти из режима "Картинка в картинке"</translation>
 <translation id="6398862346408813489">Показать панель выбора месяца</translation>
 <translation id="6404546809543547843">полоса воспроизведения</translation>
 <translation id="6453774872122745852">благодарности</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">навигация</translation>
 <translation id="9050748414552849310">показать субтитры</translation>
 <translation id="9062295712474918030">документ</translation>
+<translation id="9093215626363556771">выйти из режима "Картинка в картинке"</translation>
 <translation id="9108370397979208512">math</translation>
 <translation id="9132465097189459683">Другое…</translation>
 <translation id="9138385573473225930">оповещение</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, начинается <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">сноска</translation>
 <translation id="947831847158436616">ячейка</translation>
+<translation id="954003015749068518">включить режим "Картинка в картинке"</translation>
 <translation id="966787709310836684">меню</translation>
 </translationbundle>

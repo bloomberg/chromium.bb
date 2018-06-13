@@ -1615,7 +1615,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="3450157232394774192">Odstotek zasedenosti stanja nedejavnosti</translation>
 <translation id="3453612417627951340">Potrebuje pooblastitev</translation>
 <translation id="3454157711543303649">Aktiviranje končano</translation>
-<translation id="3454224730401036106">Vaša povezava je preklopila na varnejše omrežje</translation>
 <translation id="345693547134384690">Odpri &amp;sliko v novem zavihku</translation>
 <translation id="3459509316159669723">Tiskanje</translation>
 <translation id="3459697287128633276">Če želite računu omogočiti dostop do Trgovine Google Play, morate preveriti pristnost s ponudnikom identitete.</translation>
@@ -2177,7 +2176,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> želi vzpostaviti povezavo z aplikacijo »<ph name="EXTENSION_NAME" />«</translation>
 <translation id="4342311272543222243">Napaka TPM.</translation>
 <translation id="4345587454538109430">Konfiguracija ...</translation>
-<translation id="4345703751611431217">Nezdružljiva programska oprema: več informacij</translation>
 <translation id="4348766275249686434">Zbiranje napak</translation>
 <translation id="4350019051035968019">Te naprave ni mogoče včlaniti v domeno vašega računa, ker je naprava označena za upravljanje v drugi domeni.</translation>
 <translation id="4354266305752237763">Zaščitite sebe in napravo pred nevarnimi spletnimi mesti (Varno brskanje)</translation>
@@ -3377,7 +3375,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6163363155248589649">&amp;Navadno</translation>
 <translation id="6163522313638838258">Razširi vse ...</translation>
 <translation id="6164005077879661055">Vse datoteke in lokalni podatki, povezani z zaščitenim uporabnikom, bodo trajno izbrisani, ko ga odstranite. Obiskana spletna mesta in nastavitve tega uporabnika bodo morda še vedno vidna upravitelju na <ph name="MANAGEMENT_URL" />.</translation>
-<translation id="6165508094623778733">Več o tem</translation>
 <translation id="6166185671393271715">Uvoz gesel v Chrome</translation>
 <translation id="6169040057125497443">Preverite mikrofon.</translation>
 <translation id="6169666352732958425">Namizja ni mogoče predvajati.</translation>
@@ -4172,7 +4169,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7392118418926456391">Protivirusni pregled ni uspel</translation>
 <translation id="7392915005464253525">&amp;Znova odpri zaprto okno</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> se bo zagnal ob zagonu sistema in se izvajal v ozadju, tudi ko zaprete vsa druga okna programa <ph name="PRODUCT_NAME" />.</translation>
-<translation id="7398254312354928459">Preklopljena omrežna povezava</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="740083207982962331">Počakajte, da se Chromebox znova zažene ...</translation>
 <translation id="7400839060291901923">Nastavitev povezave v telefonu <ph name="PHONE_NAME" /></translation>

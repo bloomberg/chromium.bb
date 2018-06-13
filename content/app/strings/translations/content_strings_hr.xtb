@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">zasluge</translation>
 <translation id="1342835525016946179">članak</translation>
 <translation id="1359897965706325498">natpis</translation>
+<translation id="1548116112524424341">reprodukcija videozapisa u načnu slike u slici</translation>
 <translation id="1589122976691792535">regija</translation>
 <translation id="1591562245178063882">Ovaj mjesec</translation>
 <translation id="1637811476055996098">Odabir datoteka</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">mjerač</translation>
 <translation id="6166809985690652833">pogovor</translation>
 <translation id="6213469881011901533">pojmovnik</translation>
+<translation id="6310801910862476708">Izlaz iz načina slika u slici</translation>
 <translation id="6398862346408813489">Prikaži ploču za odabir mjeseca</translation>
 <translation id="6404546809543547843">klizač vremena audiozapisa</translation>
 <translation id="6453774872122745852">zahvale</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">navigacija</translation>
 <translation id="9050748414552849310">prikazivanje titlova</translation>
 <translation id="9062295712474918030">dokument</translation>
+<translation id="9093215626363556771">izlaz iz načina slika u slici</translation>
 <translation id="9108370397979208512">mat</translation>
 <translation id="9132465097189459683">Drugo...</translation>
 <translation id="9138385573473225930">upozorenje</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, počevši od <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">fusnota</translation>
 <translation id="947831847158436616">ćelija</translation>
+<translation id="954003015749068518">pokretanje načina slika u slici</translation>
 <translation id="966787709310836684">izbornik</translation>
 </translationbundle>

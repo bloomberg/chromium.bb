@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">заслуге</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">банер</translation>
+<translation id="1548116112524424341">пустите видео у режиму слике у слици</translation>
 <translation id="1589122976691792535">регион</translation>
 <translation id="1591562245178063882">Овај месец</translation>
 <translation id="1637811476055996098">Избор датотека</translation>
@@ -144,6 +145,7 @@
 <translation id="6164829606128959761">мерач</translation>
 <translation id="6166809985690652833">поговор</translation>
 <translation id="6213469881011901533">речник термина</translation>
+<translation id="6310801910862476708">Изађи из режима слике у слици</translation>
 <translation id="6398862346408813489">Прикажи таблу за избор месеца</translation>
 <translation id="6404546809543547843">клизач за трајање аудио-садржаја</translation>
 <translation id="6453774872122745852">признања</translation>
@@ -230,11 +232,13 @@
 <translation id="9048119486235211610">навигација</translation>
 <translation id="9050748414552849310">приказивање опционалног титла</translation>
 <translation id="9062295712474918030">документ</translation>
+<translation id="9093215626363556771">изађи из режима слике у слици</translation>
 <translation id="9108370397979208512">математички</translation>
 <translation id="9132465097189459683">Друго...</translation>
 <translation id="9138385573473225930">обавештење</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, од <ph name="WEEK_START_DATE" /></translation>
 <translation id="9168329111483466115">фуснота</translation>
 <translation id="947831847158436616">ћелија</translation>
+<translation id="954003015749068518">уђи у режим слике у слици</translation>
 <translation id="966787709310836684">мени</translation>
 </translationbundle>

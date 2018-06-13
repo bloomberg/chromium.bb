@@ -128,6 +128,7 @@
 <translation id="3400357268283240774">その他の設定</translation>
 <translation id="3413817803639110246">通知はありません</translation>
 <translation id="3445925074670675829">USB-C デバイス</translation>
+<translation id="3454224730401036106">より安全なネットワークに接続が切り替えられました</translation>
 <translation id="3465566417615315331">写真をクリックしてください</translation>
 <translation id="3477079411857374384">Control+Shift+Space</translation>
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
@@ -297,6 +298,7 @@
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="7377169924702866686">CapsLock 
 がオンになっています。</translation>
+<translation id="7398254312354928459">ネットワーク接続が切り替えられました</translation>
 <translation id="742594950370306541">カメラが使用中です。</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
@@ -329,6 +331,7 @@
 <translation id="7994370417837006925">マルチ ログイン</translation>
 <translation id="8000066093800657092">ネットワーク接続なし</translation>
 <translation id="8054466585765276473">バッテリーの残り時間を計算しています。</translation>
+<translation id="8061464966246066292">ハイコントラスト</translation>
 <translation id="8098591350844501178"><ph name="RECEIVER_NAME" /> への画面のキャストを停止する</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> に接続しました</translation>
 <translation id="813913629614996137">初期化しています...</translation>
