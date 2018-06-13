@@ -250,10 +250,10 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   void PerformCollectionTask(int collection_id);
   void ShutdownTask(int add_events);
 
-  // Updates the |next_sample_time| time and the acquisition counters based on
-  // configured parameters.
-  // Returns true if there is a next sample or false if sampling is complete.
-  bool FinishSample(CollectionContext* collection);
+  // Updates |next_sample_time| and |sample_count| to schedule for the next
+  // sample recording.
+  // Returns true if there is a next sample recording to schedule.
+  bool ScheduleNextSample(CollectionContext* collection);
 
   // Thread:
   void CleanUp() override;
@@ -627,9 +627,8 @@ void StackSamplingProfiler::SamplingThread::PerformCollectionTask(
   // Do the collection of a single sample.
   RecordSample(collection);
 
-  // Update the time of the next sample recording and acquisition counters.
-  const bool collection_finished = !FinishSample(collection);
-  if (!collection_finished) {
+  // Schedule the next sample recording if there is one.
+  if (ScheduleNextSample(collection)) {
     bool success = GetTaskRunnerOnSamplingThread()->PostDelayedTask(
         FROM_HERE,
         BindOnce(&SamplingThread::PerformCollectionTask, Unretained(this),
@@ -685,7 +684,7 @@ void StackSamplingProfiler::SamplingThread::ShutdownTask(int add_events) {
   stack_buffer_.reset();
 }
 
-bool StackSamplingProfiler::SamplingThread::FinishSample(
+bool StackSamplingProfiler::SamplingThread::ScheduleNextSample(
     CollectionContext* collection) {
   // This will keep a consistent average interval between samples but will
   // result in constant series of acquisitions, thus nearly locking out the
