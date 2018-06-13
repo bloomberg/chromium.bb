@@ -57,6 +57,9 @@ public class DownloadLocationPreferenceAdapter
         radioButton.setTag(position);
         radioButton.setOnClickListener(this);
 
+        // Only show the radio button when there are multiple items.
+        if (getCount() <= 1) radioButton.setVisibility(View.GONE);
+
         view.setEnabled(isEnabled(position));
 
         DirectoryOption directoryOption = (DirectoryOption) getItem(position);
