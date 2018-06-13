@@ -33,6 +33,12 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
  public:
   class MEDIA_GPU_EXPORT H264Accelerator {
    public:
+    enum class Status {
+      kOk,     // Operation completed successfully.
+      kFail,   // Operation failed.
+      kNoKey,  // Operation failed because the key for decryption is missing.
+    };
+
     H264Accelerator();
     virtual ~H264Accelerator();
 
@@ -53,14 +59,17 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // Note that this does not run decode in the accelerator and the decoder
     // is expected to follow this call with one or more SubmitSlice() calls
     // before calling SubmitDecode().
-    // Return true if successful.
-    virtual bool SubmitFrameMetadata(const H264SPS* sps,
-                                     const H264PPS* pps,
-                                     const H264DPB& dpb,
-                                     const H264Picture::Vector& ref_pic_listp0,
-                                     const H264Picture::Vector& ref_pic_listb0,
-                                     const H264Picture::Vector& ref_pic_listb1,
-                                     const scoped_refptr<H264Picture>& pic) = 0;
+    // Returns kOk if successful, kNoKey if the buffer is encrypted and could
+    // not be processed because the key for decryption is missing, or kFail
+    // if there are errors.
+    virtual Status SubmitFrameMetadata(
+        const H264SPS* sps,
+        const H264PPS* pps,
+        const H264DPB& dpb,
+        const H264Picture::Vector& ref_pic_listp0,
+        const H264Picture::Vector& ref_pic_listb0,
+        const H264Picture::Vector& ref_pic_listb1,
+        const scoped_refptr<H264Picture>& pic) = 0;
 
     // Submit one slice for the current frame, passing the current |pps| and
     // |pic| (same as in SubmitFrameMetadata()), the parsed header for the
@@ -70,20 +79,24 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // |size| in bytes.
     // This must be called one or more times per frame, before SubmitDecode().
     // Note that |data| does not have to remain valid after this call returns.
-    // Return true if successful.
-    virtual bool SubmitSlice(const H264PPS* pps,
-                             const H264SliceHeader* slice_hdr,
-                             const H264Picture::Vector& ref_pic_list0,
-                             const H264Picture::Vector& ref_pic_list1,
-                             const scoped_refptr<H264Picture>& pic,
-                             const uint8_t* data,
-                             size_t size) = 0;
+    // Returns kOk if successful, kNoKey if the buffer is encrypted and could
+    // not be processed because the key for decryption is missing, or kFail
+    // if there are errors.
+    virtual Status SubmitSlice(const H264PPS* pps,
+                               const H264SliceHeader* slice_hdr,
+                               const H264Picture::Vector& ref_pic_list0,
+                               const H264Picture::Vector& ref_pic_list1,
+                               const scoped_refptr<H264Picture>& pic,
+                               const uint8_t* data,
+                               size_t size) = 0;
 
     // Execute the decode in hardware for |pic|, using all the slices and
     // metadata submitted via SubmitFrameMetadata() and SubmitSlice() since
     // the previous call to SubmitDecode().
-    // Return true if successful.
-    virtual bool SubmitDecode(const scoped_refptr<H264Picture>& pic) = 0;
+    // Returns kOk if successful, kNoKey if the buffer is encrypted and could
+    // not be processed because the key for decryption is missing, or kFail
+    // if there are errors.
+    virtual Status SubmitDecode(const scoped_refptr<H264Picture>& pic) = 0;
 
     // Schedule output (display) of |pic|. Note that returning from this
     // method does not mean that |pic| has already been outputted (displayed),
