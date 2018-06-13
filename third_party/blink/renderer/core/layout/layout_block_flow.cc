@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_paged_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/glyph_overflow.h"
@@ -276,9 +277,7 @@ LayoutBlockFlow* LayoutBlockFlow::CreateAnonymous(
     Document* document,
     scoped_refptr<ComputedStyle> style) {
   LayoutBlockFlow* layout_block_flow =
-      RuntimeEnabledFeatures::LayoutNGEnabled() && !style->ForceLegacyLayout()
-          ? new LayoutNGBlockFlow(nullptr)
-          : new LayoutBlockFlow(nullptr);
+      LayoutObjectFactory::CreateBlockFlow(*document, *style);
   layout_block_flow->SetDocumentForAnonymous(document);
   layout_block_flow->SetStyle(style);
   return layout_block_flow;
