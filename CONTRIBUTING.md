@@ -1,9 +1,11 @@
-= Contributing to Wayland =
+Contributing to Wayland
+=======================
 
-== Sending patches ==
+Sending patches
+---------------
 
-Patches should be sent to wayland-devel@lists.freedesktop.org, using
-git send-email. See git's documentation for help [1].
+Patches should be sent to **wayland-devel@lists.freedesktop.org**, using
+`git send-email`. See [git documentation] for help.
 
 The first line of a commit message should contain a prefix indicating
 what part is affected by the patch followed by one sentence that
@@ -28,7 +30,8 @@ answered on the one-line summary.
 The lines of the commit message should have at most 76 characters, to
 cope with the way git log presents them.
 
-See [2] for a recommended reading on writing commit messages.
+See [notes on commit messages] for a recommended reading on writing commit
+messages.
 
 Your patches should also include a Signed-off-by line with your name and
 email address.  If you're not the patch's original author, you should
@@ -40,15 +43,14 @@ responsibility for the copyright status of the code.
 
 We won't reject patches that lack S-o-b, but it is strongly recommended.
 
-== Tracking patches and following up ==
+Tracking patches and following up
+---------------------------------
 
-Patchwork is used for tracking patches to Wayland and Weston:
-http://patchwork.freedesktop.org/project/wayland/list/
-
-Xwayland patches are tracked with the Xorg project, not here.
-
-Libinput patches, even though they use the same mailing list as Wayland, are
-not tracked in the Wayland Patchwork.
+[Wayland Patchwork](http://patchwork.freedesktop.org/project/wayland/list/) is
+used for tracking patches to Wayland and Weston. Xwayland patches are tracked
+with the [Xorg project](https://patchwork.freedesktop.org/project/Xorg/list/)
+instead. Libinput patches, even though they use the same mailing list as
+Wayland, are not tracked in the Wayland Patchwork.
 
 The following applies only to Wayland and Weston.
 
@@ -65,59 +67,63 @@ appropriately will help maintainer work.
 
 The following patch states are found in Patchwork:
 
-  New
-	Patches under discussion or not yet processed.
+- **New**:
+    Patches under discussion or not yet processed.
 
-  Under review
-	Mostly unused state.
+- **Under review**:
+    Mostly unused state.
 
-  Accepted
-	The patch is merged in the master branch upstream, as is or slightly
-	modified.
+- **Accepted**:
+    The patch is merged in the master branch upstream, as is or slightly
+    modified.
 
-  Rejected
-	The idea or approach is rejected and cannot be fixed by revising
-	the patch.
+- **Rejected**:
+    The idea or approach is rejected and cannot be fixed by revising
+    the patch.
 
-  RFC
-	Request for comments, not meant to be merged as is.
+- **RFC**:
+    Request for comments, not meant to be merged as is.
 
-  Not applicable
-	The email was not actually a patch, or the patch is not for Wayland or
-	Weston. Libinput patches are usually automatically ignored by Wayland
-	Patchwork, but if they get through, they will be marked as Not
-	applicable.
+- **Not applicable**:
+    The email was not actually a patch, or the patch is not for Wayland or
+    Weston. Libinput patches are usually automatically ignored by Wayland
+    Patchwork, but if they get through, they will be marked as Not
+    applicable.
 
-  Changes requested
-	Reviewers determined that changes to the patch are needed. The
-	submitter is expected to send a revised version. (You should
-	not wait for your patch to be set to this state before revising,
-	though.)
+- **Changes requested**:
+    Reviewers determined that changes to the patch are needed. The
+    submitter is expected to send a revised version. (You should
+    not wait for your patch to be set to this state before revising,
+    though.)
 
-  Awaiting upstream
-	Mostly unused as the patch is waiting for upstream actions but
-	is not shown in the default list, which means it is easy to
-	overlook.
+- **Awaiting upstream**:
+    Mostly unused as the patch is waiting for upstream actions but
+    is not shown in the default list, which means it is easy to
+    overlook.
 
-  Superseded
-	A revised version of the patch has been submitted.
+- **Superseded**:
+    A revised version of the patch has been submitted.
 
-  Deferred
-	Used mostly during freeze periods before releases, to temporarily
-	hide patches that cannot be merged during a freeze.
+- **Deferred**:
+    Used mostly during freeze periods before releases, to temporarily
+    hide patches that cannot be merged during a freeze.
 
-Note, that in the default listing, only patches in New or Under review are
+Note, that in the default listing, only patches in *New* or *Under review* are
 shown.
 
-There is also a command line interface to Patchwork called 'pwclient', see
+There is also a command line interface to Patchwork called `pwclient`, see
 http://patchwork.freedesktop.org/project/wayland/
-for links where to get it and the sample .pwclientrc for Wayland/Weston.
+for links where to get it and the sample `.pwclientrc` for Wayland/Weston.
 
 
-== Coding style ==
+Coding style
+------------
 
 You should follow the style of the file you're editing. In general, we
 try to follow the rules below.
+
+**Note: this file uses spaces due to markdown rendering issues for tabs.
+  Code must be implemented using tabs.**
 
 - indent with tabs, and a tab is always 8 characters wide
 - opening braces are on the same line as the if statement;
@@ -127,23 +133,25 @@ try to follow the rules below.
 - there is always an empty line between variable declarations and the
   code;
 
+```c
 static int
 my_function(void)
 {
-	int a = 0;
+        int a = 0;
 
-	if (a)
-		b();
-	else
-		c();
+        if (a)
+                b();
+        else
+                c();
 
-	if (a) {
-		b();
-		c();
-	} else {
-		d();
-	}
+        if (a) {
+                b();
+                c();
+        } else {
+                d();
+        }
 }
+```
 
 - lines should be less than 80 characters wide;
 - when breaking lines with functions calls, the parameters are aligned
@@ -152,15 +160,17 @@ my_function(void)
   line would be longer we break it around the equal '=' sign if it makes
   sense;
 
-	long_variable_name =
-		function_with_a_really_long_name(parameter1, parameter2,
-						 parameter3, parameter4);
+```c
+        long_variable_name =
+                function_with_a_really_long_name(parameter1, parameter2,
+                                                 parameter3, parameter4);
 
-	x = function_with_a_really_long_name(parameter1, parameter2,
-					     parameter3, parameter4);
+        x = function_with_a_really_long_name(parameter1, parameter2,
+                                             parameter3, parameter4);
+```
 
-
-== Conduct ==
+Conduct
+=======
 
 As a freedesktop.org project, Wayland follows the Contributor Covenant,
 found at:
@@ -172,7 +182,8 @@ trackers. The community represents the project as a whole, and abusive
 or bullying behaviour is not tolerated by the project.
 
 
-== Licensing ==
+Licensing
+=========
 
 Wayland is licensed with the intention to be usable anywhere X.org is.
 Originally, X.org was covered under the MIT X11 license, but changed to
@@ -185,9 +196,6 @@ in Expat.
 New source code files should specify the MIT Expat license in their
 boilerplate, as part of the copyright statement.
 
-== References ==
 
-	[1] http://git-scm.com/documentation
-
-	[2] http://who-t.blogspot.de/2009/12/on-commit-messages.html
-
+[git documentation]: http://git-scm.com/documentation
+[notes on commit messages]: http://who-t.blogspot.de/2009/12/on-commit-messages.html
