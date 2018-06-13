@@ -1752,6 +1752,7 @@ test("browser_tests") {
         "//ash/public/interfaces:test_interfaces",
         "//chrome/browser/chromeos:arc_test_support",
         "//chrome/services/file_util/public/cpp:browser_tests",
+        "//chromeos/components/drivefs:test_support",
         "//components/arc:arc_test_support",
         "//components/exo:test_support",
         "//components/prefs",

@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/components/drivefs/drivefs_host.h"
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/file_system.h"
 #include "components/drive/chromeos/resource_metadata.h"
@@ -78,8 +76,6 @@ const base::FilePath::CharType kCacheFileDirectory[] =
 // Name of the directory used to store temporary files.
 const base::FilePath::CharType kTemporaryFileDirectory[] =
     FILE_PATH_LITERAL("tmp");
-
-const base::Feature kDriveFs{"DriveFS", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Returns a user agent string used for communicating with the Drive backend,
 // both WAPI and Drive API.  The user agent looks like:
@@ -207,6 +203,8 @@ FileError InitializeMetadata(
 
 }  // namespace
 
+const base::Feature kDriveFs{"DriveFS", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Observes drive disable Preference's change.
 class DriveIntegrationService::PreferenceWatcher {
  public:
@@ -244,7 +242,10 @@ class DriveIntegrationService::PreferenceWatcher {
 class DriveIntegrationService::DriveFsHolder
     : public drivefs::DriveFsHost::Delegate {
  public:
-  DriveFsHolder(Profile* profile, base::RepeatingClosure on_drivefs_mounted);
+  DriveFsHolder(Profile* profile,
+                base::RepeatingClosure on_drivefs_mounted,
+                DriveFsMojoConnectionDelegateFactory
+                    test_drivefs_mojo_connection_delegate_factory);
 
   drivefs::DriveFsHost* drivefs_host() { return &drivefs_host_; }
 
@@ -254,11 +255,16 @@ class DriveIntegrationService::DriveFsHolder
   service_manager::Connector* GetConnector() override;
   const AccountId& GetAccountId() override;
   void OnMounted(const base::FilePath& path) override;
+  std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
+  CreateMojoConnectionDelegate() override;
 
   Profile* const profile_;
 
   // Invoked when DriveFS mounting is completed.
   const base::RepeatingClosure on_drivefs_mounted_;
+
+  const DriveFsMojoConnectionDelegateFactory
+      test_drivefs_mojo_connection_delegate_factory_;
 
   drivefs::DriveFsHost drivefs_host_;
 
@@ -267,9 +273,13 @@ class DriveIntegrationService::DriveFsHolder
 
 DriveIntegrationService::DriveFsHolder::DriveFsHolder(
     Profile* profile,
-    base::RepeatingClosure on_drivefs_mounted)
+    base::RepeatingClosure on_drivefs_mounted,
+    DriveFsMojoConnectionDelegateFactory
+        test_drivefs_mojo_connection_delegate_factory)
     : profile_(profile),
       on_drivefs_mounted_(std::move(on_drivefs_mounted)),
+      test_drivefs_mojo_connection_delegate_factory_(
+          std::move(test_drivefs_mojo_connection_delegate_factory)),
       drivefs_host_(profile_->GetPath(), this) {}
 
 net::URLRequestContextGetter*
@@ -288,6 +298,13 @@ const AccountId& DriveIntegrationService::DriveFsHolder::GetAccountId() {
       ->GetAccountId();
 }
 
+std::unique_ptr<drivefs::DriveFsHost::MojoConnectionDelegate>
+DriveIntegrationService::DriveFsHolder::CreateMojoConnectionDelegate() {
+  if (test_drivefs_mojo_connection_delegate_factory_)
+    return test_drivefs_mojo_connection_delegate_factory_.Run();
+  return Delegate::CreateMojoConnectionDelegate();
+}
+
 void DriveIntegrationService::DriveFsHolder::OnMounted(
     const base::FilePath& path) {
   on_drivefs_mounted_.Run();
@@ -299,7 +316,9 @@ DriveIntegrationService::DriveIntegrationService(
     DriveServiceInterface* test_drive_service,
     const std::string& test_mount_point_name,
     const base::FilePath& test_cache_root,
-    FileSystemInterface* test_file_system)
+    FileSystemInterface* test_file_system,
+    DriveFsMojoConnectionDelegateFactory
+        test_drivefs_mojo_connection_delegate_factory)
     : profile_(profile),
       state_(NOT_INITIALIZED),
       enabled_(false),
@@ -313,7 +332,8 @@ DriveIntegrationService::DriveIntegrationService(
                     profile_,
                     base::BindRepeating(&DriveIntegrationService::
                                             AddDriveMountPointAfterMounted,
-                                        base::Unretained(this)))
+                                        base::Unretained(this)),
+                    std::move(test_drivefs_mojo_connection_delegate_factory))
               : nullptr),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
