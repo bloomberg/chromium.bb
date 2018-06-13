@@ -198,16 +198,23 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("renameNewFolderDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
+    ContextMenu, /* context_menu.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("checkDeleteEnabledForReadWriteFile"),
+                      TestCase("checkDeleteDisabledForReadOnlyDocument"),
+                      TestCase("checkDeleteDisabledForReadOnlyFile"),
+                      TestCase("checkDeleteDisabledForReadOnlyFolder"),
+                      TestCase("checkRenameEnabledForReadWriteFile"),
+                      TestCase("checkRenameDisabledForReadOnlyDocument"),
+                      TestCase("checkRenameDisabledForReadOnlyFile"),
+                      TestCase("checkRenameDisabledForReadOnlyFolder")));
+
+WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete, /* delete.js */
     FilesAppBrowserTest,
-    ::testing::Values(
-        TestCase("deleteMenuItemNoEntrySelected"),
-        TestCase("deleteEntryWithToolbar").InGuestMode(),
-        TestCase("deleteEntryWithToolbar"),
-        TestCase("deleteContextMenuItemDisabledForReadOnlyDocument"),
-        TestCase("deleteContextMenuItemDisabledForReadOnlyFile"),
-        TestCase("deleteContextMenuItemDisabledForReadOnlyFolder"),
-        TestCase("deleteContextMenuItemEnabledForReadWriteFile")));
+    ::testing::Values(TestCase("deleteMenuItemNoEntrySelected"),
+                      TestCase("deleteEntryWithToolbar").InGuestMode(),
+                      TestCase("deleteEntryWithToolbar")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(QuickView, /* quick_view.js */
                                 FilesAppBrowserTest,

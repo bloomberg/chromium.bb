@@ -1176,8 +1176,12 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
         CommandUtil.getParentEntry(renameTarget, fileManager.directoryModel);
     var locationInfo = parentEntry ?
         fileManager.volumeManager.getLocationInfo(parentEntry) : null;
+    const volumeIsNotReadOnly = !!locationInfo && !locationInfo.isReadOnly;
+    // Check if canRename is true or undefined, but not false.
+    var metadata = fileManager.metadataModel_.getCache(entries, ['canRename']);
+    const canRenameAllItems = metadata.every(item => item.canRename !== false);
     event.canExecute =
-        entries.length === 1 && !!locationInfo && !locationInfo.isReadOnly;
+        entries.length === 1 && volumeIsNotReadOnly && canRenameAllItems;
     event.command.setHidden(false);
   }
 });
