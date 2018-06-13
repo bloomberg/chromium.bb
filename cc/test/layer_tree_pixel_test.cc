@@ -46,9 +46,9 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
   scoped_refptr<TestInProcessContextProvider> worker_context_provider;
   if (test_type_ == PIXEL_TEST_GL) {
     compositor_context_provider = new TestInProcessContextProvider(
-        /*enable_oop_rasterization=*/false);
+        /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     worker_context_provider = new TestInProcessContextProvider(
-        /*enable_oop_rasterization=*/false);
+        /*enable_oop_rasterization=*/false, /*support_locking=*/true);
   }
   static constexpr bool disable_display_vsync = false;
   bool synchronous_composite =
@@ -78,7 +78,7 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     // compositor.
     auto display_context_provider =
         base::MakeRefCounted<TestInProcessContextProvider>(
-            /*enable_oop_rasterization=*/false);
+            /*enable_oop_rasterization=*/false, /*support_locking=*/false);
     display_context_provider->BindToCurrentThread();
 
     bool flipped_output_surface = false;

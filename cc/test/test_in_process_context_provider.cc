@@ -9,6 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/resources/platform_color.h"
@@ -63,7 +64,11 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext() {
 }
 
 TestInProcessContextProvider::TestInProcessContextProvider(
-    bool enable_oop_rasterization) {
+    bool enable_oop_rasterization,
+    bool support_locking) {
+  if (support_locking)
+    context_lock_.emplace();
+
   if (enable_oop_rasterization) {
     gpu::ContextCreationAttribs attribs;
     attribs.bind_generates_resource = false;
@@ -94,6 +99,8 @@ TestInProcessContextProvider::TestInProcessContextProvider(
             gles2_context_->GetImplementation()->command_buffer(),
             gles2_context_->GetCapabilities());
   }
+
+  cache_controller_->SetLock(GetLock());
 }
 
 TestInProcessContextProvider::~TestInProcessContextProvider() = default;
@@ -154,7 +161,7 @@ viz::ContextCacheController* TestInProcessContextProvider::CacheController() {
 }
 
 base::Lock* TestInProcessContextProvider::GetLock() {
-  return &context_lock_;
+  return base::OptionalOrNullptr(context_lock_);
 }
 
 const gpu::Capabilities& TestInProcessContextProvider::ContextCapabilities()
