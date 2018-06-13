@@ -259,12 +259,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
     base::Time high_water_mark_;
   };
 
-  // Causes the controller to load the specified entry. The function assumes
-  // ownership of the pointer since it is put in the navigation list.
-  // NOTE: Do not pass an entry that the controller already owns!
-  void LoadEntry(std::unique_ptr<NavigationEntryImpl> entry,
-                 std::unique_ptr<NavigationUIData> navigation_ui_data);
-
   // Identifies which frames need to be navigated for the pending
   // NavigationEntry and instructs their Navigator to navigate them.  Returns
   // whether any frame successfully started a navigation.
@@ -279,8 +273,18 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
                             FrameLoadVector* sameDocumentLoads,
                             FrameLoadVector* differentDocumentLoads);
 
+  // Starts a new navigation based on |load_params|, that doesn't correspond to
+  // an exisiting NavigationEntry.
+  void NavigateWithoutEntry(const LoadURLParams& load_params);
+
   // Handles a navigation to a renderer-debug URL.
   void HandleRendererDebugURL(FrameTreeNode* frame_tree_node, const GURL& url);
+
+  // Creates and returns a NavigationEntry based on |load_params| for a
+  // navigation in |node|.
+  std::unique_ptr<NavigationEntryImpl> CreateNavigationEntryFromLoadParams(
+      FrameTreeNode* node,
+      const LoadURLParams& load_params);
 
   // Creates and returns a NavigationRequest based on the provided parameters.
   // Will return nullptr if the parameters are invalid and the navigation cannot

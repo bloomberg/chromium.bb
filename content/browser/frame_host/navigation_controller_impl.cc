@@ -559,18 +559,6 @@ NavigationControllerImpl::GetEntryWithUniqueID(int nav_entry_id) const {
   return (index != -1) ? entries_[index].get() : nullptr;
 }
 
-void NavigationControllerImpl::LoadEntry(
-    std::unique_ptr<NavigationEntryImpl> entry,
-    std::unique_ptr<NavigationUIData> navigation_ui_data) {
-  DiscardPendingEntry(false);
-
-  // When navigating to a new page, we don't know for sure if we will actually
-  // end up leaving the current page.  The new page load could for example
-  // result in a download or a 'no content' response (e.g., a mailto: URL).
-  SetPendingEntry(std::move(entry));
-  NavigateToPendingEntry(ReloadType::NONE, std::move(navigation_ui_data));
-}
-
 void NavigationControllerImpl::SetPendingEntry(
     std::unique_ptr<NavigationEntryImpl> entry) {
   DiscardNonCommittedEntriesInternal();
@@ -811,122 +799,7 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   // The user initiated a load, we don't need to reload anymore.
   needs_reload_ = false;
 
-  bool override = false;
-  switch (params.override_user_agent) {
-    case UA_OVERRIDE_INHERIT:
-      override = ShouldKeepOverride(GetLastCommittedEntry());
-      break;
-    case UA_OVERRIDE_TRUE:
-      override = true;
-      break;
-    case UA_OVERRIDE_FALSE:
-      override = false;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  std::unique_ptr<NavigationEntryImpl> entry;
-
-  int frame_tree_node_id = params.frame_tree_node_id;
-  // navigation_ui_data should only be present for main frame navigations.
-  DCHECK(frame_tree_node_id == RenderFrameHost::kNoFrameTreeNodeId ||
-         !params.navigation_ui_data);
-
-  if (frame_tree_node_id != RenderFrameHost::kNoFrameTreeNodeId ||
-      !params.frame_name.empty()) {
-    FrameTreeNode* node =
-        params.frame_tree_node_id != RenderFrameHost::kNoFrameTreeNodeId
-            ? delegate_->GetFrameTree()->FindByID(params.frame_tree_node_id)
-            : delegate_->GetFrameTree()->FindByName(params.frame_name);
-    if (node && !node->IsMainFrame()) {
-      DCHECK(GetLastCommittedEntry());
-
-      // Update the FTN ID to use below in case we found a named frame.
-      frame_tree_node_id = node->frame_tree_node_id();
-
-      // Create an identical NavigationEntry with a new FrameNavigationEntry for
-      // the target subframe.
-      entry = GetLastCommittedEntry()->Clone();
-      entry->AddOrUpdateFrameEntry(
-          node, -1, -1, nullptr,
-          static_cast<SiteInstanceImpl*>(params.source_site_instance.get()),
-          params.url, params.referrer, params.redirect_chain, PageState(),
-          "GET", -1, params.blob_url_loader_factory);
-    }
-  }
-
-  // Otherwise, create a pending entry for the main frame.
-  if (!entry) {
-    // extra_headers in params are \n separated, navigation entries want \r\n.
-    std::string extra_headers_crlf;
-    base::ReplaceChars(params.extra_headers, "\n", "\r\n", &extra_headers_crlf);
-    entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
-        params.url, params.referrer, params.transition_type,
-        params.is_renderer_initiated, extra_headers_crlf, browser_context_,
-        params.blob_url_loader_factory));
-    entry->set_source_site_instance(
-        static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
-    entry->SetRedirectChain(params.redirect_chain);
-  }
-
-  // Set the FTN ID (only used in non-site-per-process, for tests).
-  entry->set_frame_tree_node_id(frame_tree_node_id);
-  // Don't allow an entry replacement if there is no entry to replace.
-  // http://crbug.com/457149
-  if (params.should_replace_current_entry && entries_.size() > 0)
-    entry->set_should_replace_entry(true);
-  entry->set_should_clear_history_list(params.should_clear_history_list);
-  entry->SetIsOverridingUserAgent(override);
-
-// Always propagate `has_user_gesture` on Android but only when the request
-// was originated by the renderer on other platforms. This is merely for
-// backward compatibility as browser process user gestures create confusion
-// in many tests.
-#if defined(OS_ANDROID)
-  entry->set_has_user_gesture(params.has_user_gesture);
-#else
-  if (params.is_renderer_initiated)
-    entry->set_has_user_gesture(params.has_user_gesture);
-#endif
-
-#if defined(OS_ANDROID)
-  if (params.intent_received_timestamp > 0) {
-    entry->set_intent_received_timestamp(
-        base::TimeTicks() +
-        base::TimeDelta::FromMilliseconds(params.intent_received_timestamp));
-  }
-#endif
-
-  switch (params.load_type) {
-    case LOAD_TYPE_DEFAULT:
-      break;
-    case LOAD_TYPE_HTTP_POST:
-      entry->SetHasPostData(true);
-      entry->SetPostData(params.post_data);
-      break;
-    case LOAD_TYPE_DATA:
-      entry->SetBaseURLForDataURL(params.base_url_for_data_url);
-      entry->SetVirtualURL(params.virtual_url_for_data_url);
-#if defined(OS_ANDROID)
-      entry->SetDataURLAsString(params.data_url_as_string);
-#endif
-      entry->SetCanLoadLocalResources(params.can_load_local_resources);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  // TODO(clamy): NavigationEntry is meant for information that will be kept
-  // after the navigation ended and therefore is not appropriate for
-  // started_from_context_menu. Move started_from_context_menu to
-  // NavigationUIData.
-  entry->set_started_from_context_menu(params.started_from_context_menu);
-  LoadEntry(std::move(entry), params.navigation_ui_data
-                                  ? params.navigation_ui_data->Clone()
-                                  : nullptr);
+  NavigateWithoutEntry(params);
 }
 
 bool NavigationControllerImpl::PendingEntryMatchesHandle(
@@ -2470,13 +2343,107 @@ void NavigationControllerImpl::FindFramesToNavigate(
   }
 }
 
+void NavigationControllerImpl::NavigateWithoutEntry(
+    const LoadURLParams& params) {
+  // Find the appropriate FrameTreeNode.
+  FrameTreeNode* node = nullptr;
+  if (params.frame_tree_node_id != RenderFrameHost::kNoFrameTreeNodeId ||
+      !params.frame_name.empty()) {
+    node = params.frame_tree_node_id != RenderFrameHost::kNoFrameTreeNodeId
+               ? delegate_->GetFrameTree()->FindByID(params.frame_tree_node_id)
+               : delegate_->GetFrameTree()->FindByName(params.frame_name);
+  }
+
+  // If no FrameTreeNode was specified, navigate the main frame.
+  if (!node)
+    node = delegate_->GetFrameTree()->root();
+
+  // Javascript URLs should not create NavigationEntries. All other navigations
+  // do, including navigations to chrome renderer debug URLs.
+  std::unique_ptr<NavigationEntryImpl> entry;
+  if (!params.url.SchemeIs(url::kJavaScriptScheme)) {
+    entry = CreateNavigationEntryFromLoadParams(node, params);
+    DiscardPendingEntry(false);
+    SetPendingEntry(std::move(entry));
+  }
+
+  // Renderer-debug URLs are sent to the renderer process immediately for
+  // processing and don't need to create a NavigationRequest.
+  // Note: this includes navigations to JavaScript URLs, which are considered
+  // renderer-debug URLs.
+  // Note: we intentionally leave the pending entry in place for renderer debug
+  // URLs, unlike the cases below where we clear it if the navigation doesn't
+  // proceed.
+  if (IsRendererDebugURL(params.url)) {
+    HandleRendererDebugURL(node, params.url);
+    return;
+  }
+
+  // Convert navigations to the current URL to a reload.
+  // TODO(clamy): We should be using FrameTreeNode::IsMainFrame here instead of
+  // relying on the frame tree node id from LoadURLParams. Unfortunately,
+  // DevTools sometimes issues navigations to main frames that they do not
+  // expect to see treated as reload, and it only works because they pass a
+  // FrameTreeNode id in their LoadURLParams. Change this once they no longer do
+  // that. See https://crbug.com/850926.
+  ReloadType reload_type = ReloadType::NONE;
+  if (ShouldTreatNavigationAsReload(
+          params.url, pending_entry_->GetVirtualURL(),
+          params.base_url_for_data_url, params.transition_type,
+          params.frame_tree_node_id == RenderFrameHost::kNoFrameTreeNodeId,
+          params.load_type ==
+              NavigationController::LOAD_TYPE_HTTP_POST /* is_post */,
+          false /* is_reload */, false /* is_navigation_to_existing_entry */,
+          transient_entry_index_ != -1 /* has_interstitial */,
+          GetLastCommittedEntry())) {
+    reload_type = ReloadType::NORMAL;
+  }
+
+  // navigation_ui_data should only be present for main frame navigations.
+  DCHECK(node->IsMainFrame() || !params.navigation_ui_data);
+
+  // TODO(clamy): Create the NavigationRequest directly from the LoadURLParams
+  // instead of relying on the NavigationEntry.
+  DCHECK(pending_entry_);
+  std::unique_ptr<NavigationRequest> request = CreateNavigationRequest(
+      node, *pending_entry_, pending_entry_->GetFrameEntry(node), reload_type,
+      false /* is_same_document_history_load */,
+      false /* is_history_navigation_in_new_child */, nullptr,
+      params.navigation_ui_data ? params.navigation_ui_data->Clone() : nullptr);
+
+  // If the navigation couldn't start, return immediately and discard the
+  // pending NavigationEntry.
+  if (!request) {
+    DiscardPendingEntry(false);
+    return;
+  }
+
+  // If an interstitial page is showing, the previous renderer is blocked and
+  // cannot make new requests.  Unblock (and disable) it to allow this
+  // navigation to succeed.  The interstitial will stay visible until the
+  // resulting DidNavigate.
+  if (delegate_->GetInterstitialPage()) {
+    static_cast<InterstitialPageImpl*>(delegate_->GetInterstitialPage())
+        ->CancelForNavigation();
+  }
+
+  // This call does not support re-entrancy.  See http://crbug.com/347742.
+  CHECK(!in_navigate_to_pending_entry_);
+  in_navigate_to_pending_entry_ = true;
+
+  node->navigator()->Navigate(std::move(request), reload_type,
+                              RestoreType::NONE);
+
+  in_navigate_to_pending_entry_ = false;
+}
+
 void NavigationControllerImpl::HandleRendererDebugURL(
     FrameTreeNode* frame_tree_node,
     const GURL& url) {
   if (!frame_tree_node->current_frame_host()->IsRenderFrameLive()) {
-    // Any renderer-side debug URLs or javascript: URLs should be ignored if the
-    // renderer process is not live, unless it is the initial navigation of the
-    // tab.
+    // Any renderer-side debug URLs or javascript: URLs should be ignored if
+    // the renderer process is not live, unless it is the initial navigation
+    // of the tab.
     if (!IsInitialNavigation()) {
       DiscardNonCommittedEntries();
       return;
@@ -2485,6 +2452,112 @@ void NavigationControllerImpl::HandleRendererDebugURL(
         frame_tree_node->current_frame_host());
   }
   frame_tree_node->current_frame_host()->HandleRendererDebugURL(url);
+}
+
+std::unique_ptr<NavigationEntryImpl>
+NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
+    FrameTreeNode* node,
+    const LoadURLParams& params) {
+  std::unique_ptr<NavigationEntryImpl> entry;
+
+  // For subframes, create a pending entry with a corresponding frame entry.
+  if (!node->IsMainFrame()) {
+    DCHECK(GetLastCommittedEntry());
+
+    // Create an identical NavigationEntry with a new FrameNavigationEntry for
+    // the target subframe.
+    entry = GetLastCommittedEntry()->Clone();
+    entry->AddOrUpdateFrameEntry(
+        node, -1, -1, nullptr,
+        static_cast<SiteInstanceImpl*>(params.source_site_instance.get()),
+        params.url, params.referrer, params.redirect_chain, PageState(), "GET",
+        -1, params.blob_url_loader_factory);
+  } else {
+    // Otherwise, create a pending entry for the main frame.
+
+    // extra_headers in params are \n separated; navigation entries want \r\n.
+    std::string extra_headers_crlf;
+    base::ReplaceChars(params.extra_headers, "\n", "\r\n", &extra_headers_crlf);
+    entry = NavigationEntryImpl::FromNavigationEntry(CreateNavigationEntry(
+        params.url, params.referrer, params.transition_type,
+        params.is_renderer_initiated, extra_headers_crlf, browser_context_,
+        params.blob_url_loader_factory));
+    entry->set_source_site_instance(
+        static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
+    entry->SetRedirectChain(params.redirect_chain);
+  }
+
+  // Set the FTN ID (only used in non-site-per-process, for tests).
+  entry->set_frame_tree_node_id(node->frame_tree_node_id());
+  // Don't allow an entry replacement if there is no entry to replace.
+  // http://crbug.com/457149
+  if (params.should_replace_current_entry && entries_.size() > 0)
+    entry->set_should_replace_entry(true);
+  entry->set_should_clear_history_list(params.should_clear_history_list);
+
+  bool override = false;
+  switch (params.override_user_agent) {
+    case UA_OVERRIDE_INHERIT:
+      override = ShouldKeepOverride(GetLastCommittedEntry());
+      break;
+    case UA_OVERRIDE_TRUE:
+      override = true;
+      break;
+    case UA_OVERRIDE_FALSE:
+      override = false;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  entry->SetIsOverridingUserAgent(override);
+
+// Always propagate `has_user_gesture` on Android but only when the request
+// was originated by the renderer on other platforms. This is merely for
+// backward compatibility as browser process user gestures create confusion in
+// many tests.
+#if defined(OS_ANDROID)
+  entry->set_has_user_gesture(params.has_user_gesture);
+#else
+  if (params.is_renderer_initiated)
+    entry->set_has_user_gesture(params.has_user_gesture);
+#endif
+
+#if defined(OS_ANDROID)
+  if (params.intent_received_timestamp > 0) {
+    entry->set_intent_received_timestamp(
+        base::TimeTicks() +
+        base::TimeDelta::FromMilliseconds(params.intent_received_timestamp));
+  }
+#endif
+
+  switch (params.load_type) {
+    case LOAD_TYPE_DEFAULT:
+      break;
+    case LOAD_TYPE_HTTP_POST:
+      entry->SetHasPostData(true);
+      entry->SetPostData(params.post_data);
+      break;
+    case LOAD_TYPE_DATA:
+      entry->SetBaseURLForDataURL(params.base_url_for_data_url);
+      entry->SetVirtualURL(params.virtual_url_for_data_url);
+#if defined(OS_ANDROID)
+      entry->SetDataURLAsString(params.data_url_as_string);
+#endif
+      entry->SetCanLoadLocalResources(params.can_load_local_resources);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  // TODO(clamy): NavigationEntry is meant for information that will be kept
+  // after the navigation ended and therefore is not appropriate for
+  // started_from_context_menu. Move started_from_context_menu to
+  // NavigationUIData.
+  entry->set_started_from_context_menu(params.started_from_context_menu);
+
+  return entry;
 }
 
 std::unique_ptr<NavigationRequest>
