@@ -274,6 +274,13 @@ viz_component("service") {
     ]
   }
 
+  if (is_android) {
+    sources += [
+      "display_embedder/gl_output_surface_android.cc",
+      "display_embedder/gl_output_surface_android.h",
+    ]
+  }
+
   if (enable_vulkan) {
     deps += [ "//gpu/vulkan" ]
   }
