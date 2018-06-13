@@ -137,7 +137,6 @@ class ASH_EXPORT TabletModeController
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // ui::InputDeviceEventObserver::
-  void OnKeyboardDeviceConfigurationChanged() override;
   void OnMouseDeviceConfigurationChanged() override;
   void OnDeviceListsComplete() override;
 
@@ -206,9 +205,9 @@ class ASH_EXPORT TabletModeController
   // certain way regardless of configuration.
   bool AllowEnterExitTabletMode() const;
 
-  // Called when a mouse or keyboard config is changed, or when a device list is
+  // Called when a mouse config is changed, or when a device list is
   // sent from device manager. This will exit tablet mode if needed.
-  void HandleDeviceAddedOrRemoved();
+  void HandleMouseAddedOrRemoved();
 
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
@@ -248,13 +247,13 @@ class ASH_EXPORT TabletModeController
   // Last computed lid angle.
   double lid_angle_ = 0.0f;
 
-  // Tracks if the device has an external keyboard and mouse. The device will
+  // Tracks if the device has an external mouse. The device will
   // not enter tablet mode if this is true.
-  bool has_external_keyboard_and_mouse_ = false;
+  bool has_external_mouse_ = false;
 
   // Tracks if the device would enter tablet mode, but does not because of a
-  // attached external keyboard and mouse. If the external keyboard or mouse
-  // is detached and this is true, we will enter tablet mode.
+  // attached external mouse. If the external mouse is detached and this is
+  // true, we will enter tablet mode.
   bool should_enter_tablet_mode_ = false;
 
   // Tracks smoothed accelerometer data over time. This is done when the hinge

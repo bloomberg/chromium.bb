@@ -323,16 +323,12 @@ void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
   tablet_mode_usage_interval_start_time_ = base::Time::Now();
 }
 
-void TabletModeController::OnKeyboardDeviceConfigurationChanged() {
-  HandleDeviceAddedOrRemoved();
-}
-
 void TabletModeController::OnMouseDeviceConfigurationChanged() {
-  HandleDeviceAddedOrRemoved();
+  HandleMouseAddedOrRemoved();
 }
 
 void TabletModeController::OnDeviceListsComplete() {
-  HandleDeviceAddedOrRemoved();
+  HandleMouseAddedOrRemoved();
 }
 
 void TabletModeController::HandleHingeRotation(
@@ -423,7 +419,7 @@ void TabletModeController::EnterTabletMode() {
 
   should_enter_tablet_mode_ = true;
 
-  if (has_external_keyboard_and_mouse_)
+  if (has_external_mouse_)
     return;
 
   EnableTabletModeWindowManager(true);
@@ -519,16 +515,7 @@ bool TabletModeController::AllowEnterExitTabletMode() const {
   return force_ui_mode_ == UiMode::NONE;
 }
 
-void TabletModeController::HandleDeviceAddedOrRemoved() {
-  bool has_external_keyboard = false;
-  for (const ui::InputDevice& keyboard :
-       ui::InputDeviceManager::GetInstance()->GetKeyboardDevices()) {
-    if (keyboard.type == ui::INPUT_DEVICE_EXTERNAL) {
-      has_external_keyboard = true;
-      break;
-    }
-  }
-
+void TabletModeController::HandleMouseAddedOrRemoved() {
   bool has_external_mouse = false;
   for (const ui::InputDevice& mouse :
        ui::InputDeviceManager::GetInstance()->GetMouseDevices()) {
@@ -538,21 +525,19 @@ void TabletModeController::HandleDeviceAddedOrRemoved() {
     }
   }
 
-  bool has_external_keyboard_and_mouse =
-      has_external_keyboard && has_external_mouse;
-  if (has_external_keyboard_and_mouse_ && has_external_keyboard_and_mouse)
+  if (has_external_mouse_ && has_external_mouse)
     return;
 
-  has_external_keyboard_and_mouse_ = has_external_keyboard_and_mouse;
+  has_external_mouse_ = has_external_mouse;
 
   // Exit tablet mode if we are already in tablet mode and
-  // |has_external_keyboard_and_mouse| is true.
-  if (has_external_keyboard_and_mouse) {
+  // |has_external_mouse| is true.
+  if (has_external_mouse) {
     LeaveTabletMode(true);
     return;
   }
 
-  // Enter tablet mode if |has_external_keyboard_and_mouse| is false and we
+  // Enter tablet mode if |has_external_mouse| is false and we
   // are in an orientation that should be tablet mode.
   if (should_enter_tablet_mode_)
     EnterTabletMode();
