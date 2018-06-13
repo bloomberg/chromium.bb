@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
@@ -128,7 +129,13 @@ TEST_F(MemoryCacheTest, CapacityAccounting) {
   EXPECT_EQ(kTotalCapacity, GetMemoryCache()->Capacity());
 }
 
-TEST_F(MemoryCacheTest, VeryLargeResourceAccounting) {
+// TODO(crbug.com/850788): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_VeryLargeResourceAccounting DISABLED_VeryLargeResourceAccounting
+#else
+#define MAYBE_VeryLargeResourceAccounting VeryLargeResourceAccounting
+#endif
+TEST_F(MemoryCacheTest, MAYBE_VeryLargeResourceAccounting) {
   const size_t kSizeMax = ~static_cast<size_t>(0);
   const size_t kTotalCapacity = kSizeMax / 4;
   const size_t kResourceSize1 = kSizeMax / 16;
@@ -227,11 +234,26 @@ static void TestResourcePruningAtEndOfTask(ResourceFetcher* fetcher,
 
 // Verified that when ordering a prune in a runLoop task, the prune
 // is deferred to the end of the task.
-TEST_F(MemoryCacheTest, ResourcePruningAtEndOfTask_Basic) {
+// TODO(crbug.com/850788): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_ResourcePruningAtEndOfTask_Basic \
+  DISABLED_ResourcePruningAtEndOfTask_Basic
+#else
+#define MAYBE_ResourcePruningAtEndOfTask_Basic ResourcePruningAtEndOfTask_Basic
+#endif
+TEST_F(MemoryCacheTest, MAYBE_ResourcePruningAtEndOfTask_Basic) {
   TestResourcePruningAtEndOfTask(fetcher_, "", "");
 }
 
-TEST_F(MemoryCacheTest, ResourcePruningAtEndOfTask_MultipleResourceMaps) {
+// TODO(crbug.com/850788): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_ResourcePruningAtEndOfTask_MultipleResourceMaps \
+  DISABLED_ResourcePruningAtEndOfTask_MultipleResourceMaps
+#else
+#define MAYBE_ResourcePruningAtEndOfTask_MultipleResourceMaps \
+  ResourcePruningAtEndOfTask_MultipleResourceMaps
+#endif
+TEST_F(MemoryCacheTest, MAYBE_ResourcePruningAtEndOfTask_MultipleResourceMaps) {
   {
     TestResourcePruningAtEndOfTask(fetcher_, "foo", "");
     GetMemoryCache()->EvictResources();
@@ -309,11 +331,25 @@ static void TestClientRemoval(ResourceFetcher* fetcher,
   EXPECT_EQ(0u, GetMemoryCache()->size());
 }
 
-TEST_F(MemoryCacheTest, ClientRemoval_Basic) {
+// TODO(crbug.com/850788): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_ClientRemoval_Basic DISABLED_ClientRemoval_Basic
+#else
+#define MAYBE_ClientRemoval_Basic ClientRemoval_Basic
+#endif
+TEST_F(MemoryCacheTest, MAYBE_ClientRemoval_Basic) {
   TestClientRemoval(fetcher_, "", "");
 }
 
-TEST_F(MemoryCacheTest, ClientRemoval_MultipleResourceMaps) {
+// TODO(crbug.com/850788): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_ClientRemoval_MultipleResourceMaps \
+  DISABLED_ClientRemoval_MultipleResourceMaps
+#else
+#define MAYBE_ClientRemoval_MultipleResourceMaps \
+  ClientRemoval_MultipleResourceMaps
+#endif
+TEST_F(MemoryCacheTest, MAYBE_ClientRemoval_MultipleResourceMaps) {
   {
     TestClientRemoval(fetcher_, "foo", "");
     GetMemoryCache()->EvictResources();

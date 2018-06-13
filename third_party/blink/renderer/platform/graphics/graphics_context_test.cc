@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 #include <memory>
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -173,7 +174,13 @@ class GraphicsContextHighConstrastTest : public testing::Test {
 
 // This is just a baseline test, compare against the other variants
 // of the test below, where high contrast mode is enabled.
-TEST_F(GraphicsContextHighConstrastTest, NoHighContrast) {
+// TODO(crbug.com/850782): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_NoHighContrast DISABLED_NoHighContrast
+#else
+#define MAYBE_NoHighContrast NoHighContrast
+#endif
+TEST_F(GraphicsContextHighConstrastTest, MAYBE_NoHighContrast) {
   DrawColorsToContext();
 
   EXPECT_EQ(0xff000000, *bitmap_.getAddr32(0, 0));
@@ -182,7 +189,13 @@ TEST_F(GraphicsContextHighConstrastTest, NoHighContrast) {
   EXPECT_EQ(0xff808080, *bitmap_.getAddr32(3, 0));
 }
 
-TEST_F(GraphicsContextHighConstrastTest, HighContrastOff) {
+// TODO(crbug.com/850782): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_HighContrastOff DISABLED_HighContrastOff
+#else
+#define MAYBE_HighContrastOff HighContrastOff
+#endif
+TEST_F(GraphicsContextHighConstrastTest, MAYBE_HighContrastOff) {
   HighContrastSettings settings;
   settings.mode = HighContrastMode::kOff;
   settings.grayscale = false;
@@ -199,7 +212,13 @@ TEST_F(GraphicsContextHighConstrastTest, HighContrastOff) {
 
 // Simple invert for testing. Each color component |c|
 // is replaced with |255 - c| for easy testing.
-TEST_F(GraphicsContextHighConstrastTest, SimpleInvertForTesting) {
+// TODO(crbug.com/850782): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_SimpleInvertForTesting DISABLED_SimpleInvertForTesting
+#else
+#define MAYBE_SimpleInvertForTesting SimpleInvertForTesting
+#endif
+TEST_F(GraphicsContextHighConstrastTest, MAYBE_SimpleInvertForTesting) {
   HighContrastSettings settings;
   settings.mode = HighContrastMode::kSimpleInvertForTesting;
   settings.grayscale = false;
@@ -215,7 +234,13 @@ TEST_F(GraphicsContextHighConstrastTest, SimpleInvertForTesting) {
 }
 
 // Invert brightness (with gamma correction).
-TEST_F(GraphicsContextHighConstrastTest, InvertBrightness) {
+// TODO(crbug.com/850782): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_InvertBrightness DISABLED_InvertBrightness
+#else
+#define MAYBE_InvertBrightness InvertBrightness
+#endif
+TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertBrightness) {
   HighContrastSettings settings;
   settings.mode = HighContrastMode::kInvertBrightness;
   settings.grayscale = false;
@@ -231,7 +256,13 @@ TEST_F(GraphicsContextHighConstrastTest, InvertBrightness) {
 }
 
 // Invert lightness (in HSL space).
-TEST_F(GraphicsContextHighConstrastTest, InvertLightness) {
+// TODO(crbug.com/850782): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_InvertLightness DISABLED_InvertLightness
+#else
+#define MAYBE_InvertLightness InvertLightness
+#endif
+TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertLightness) {
   HighContrastSettings settings;
   settings.mode = HighContrastMode::kInvertLightness;
   settings.grayscale = false;
@@ -262,7 +293,13 @@ TEST_F(GraphicsContextHighConstrastTest, InvertLightnessPlusGrayscale) {
   EXPECT_EQ(0xffdddddd, *bitmap_.getAddr32(3, 0));
 }
 
-TEST_F(GraphicsContextHighConstrastTest, InvertLightnessPlusContrast) {
+// TODO(crbug.com/850782): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_InvertLightnessPlusContrast DISABLED_InvertLightnessPlusContrast
+#else
+#define MAYBE_InvertLightnessPlusContrast InvertLightnessPlusContrast
+#endif
+TEST_F(GraphicsContextHighConstrastTest, MAYBE_InvertLightnessPlusContrast) {
   HighContrastSettings settings;
   settings.mode = HighContrastMode::kInvertLightness;
   settings.grayscale = false;

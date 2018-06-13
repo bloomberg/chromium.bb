@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
@@ -359,7 +360,13 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   EXPECT_TRUE(client->NotifyFinishedCalled());
 }
 
-TEST_F(ResourceFetcherTest, DontReuseMediaDataUrl) {
+// TODO(crbug.com/850785): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_DontReuseMediaDataUrl DISABLED_DontReuseMediaDataUrl
+#else
+#define MAYBE_DontReuseMediaDataUrl DontReuseMediaDataUrl
+#endif
+TEST_F(ResourceFetcherTest, MAYBE_DontReuseMediaDataUrl) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
   ResourceRequest request(KURL("data:text/html,foo"));
   request.SetRequestContext(WebURLRequest::kRequestContextVideo);
@@ -803,7 +810,13 @@ TEST_F(ResourceFetcherTest, LinkPreloadResourceMultipleFetchersAndMove) {
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 }
 
-TEST_F(ResourceFetcherTest, ContentTypeDataURL) {
+// TODO(crbug.com/850785): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_ContentTypeDataURL DISABLED_ContentTypeDataURL
+#else
+#define MAYBE_ContentTypeDataURL ContentTypeDataURL
+#endif
+TEST_F(ResourceFetcherTest, MAYBE_ContentTypeDataURL) {
   ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
   FetchParameters fetch_params{ResourceRequest("data:text/testmimetype,foo")};
   Resource* resource = MockResource::Fetch(fetch_params, fetcher, nullptr);

@@ -456,6 +456,7 @@
     'base_unittests': {},
     'blink_common_unittests': {},
     'blink_heap_unittests': {},
+    'blink_platform_unittests': {},
     'boringssl_crypto_tests': {},
     'boringssl_ssl_tests': {},
     'cacheinvalidation_unittests': {},
@@ -1918,7 +1919,6 @@
 
   'non_android_and_cast_and_chromeos_chromium_gtests': {
     'battor_agent_unittests': {},
-    'blink_platform_unittests': {},
     'cronet_tests': {},
     'cronet_unittests': {},
     'gn_unittests': {},

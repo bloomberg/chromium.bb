@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
-
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_test_helpers.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -265,7 +265,15 @@ TEST_P(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
   CHECK_MAPPINGS();
 }
 
-TEST_P(GeometryMapperTest, NestedTransformsIntermediateDestination) {
+// TODO(crbug.com/851417): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_NestedTransformsIntermediateDestination \
+  DISABLED_NestedTransformsIntermediateDestination
+#else
+#define MAYBE_NestedTransformsIntermediateDestination \
+  NestedTransformsIntermediateDestination
+#endif
+TEST_P(GeometryMapperTest, MAYBE_NestedTransformsIntermediateDestination) {
   auto rotate_transform = TransformationMatrix().Rotate(45);
   auto transform1 = CreateTransform(t0(), rotate_transform);
 

@@ -160,6 +160,16 @@
       },
     },
   },
+  'blink_platform_unittests': {
+    'modifications': {
+      'android-kitkat-arm-rel': {
+        'experiment_percentage': 100,
+      },
+      'android-marshmallow-arm64-rel': {
+        'experiment_percentage': 100,
+      },
+    },
+  },
   'boringssl_crypto_tests': {
     'remove_from': [
       # chromium.chromiumos
