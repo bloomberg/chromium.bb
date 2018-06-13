@@ -1966,11 +1966,7 @@ class ProduceConsumeTextureTest : public TextureTest,
     return info;
   }
 
-  Texture* Produce(TextureRef* texture_ref) {
-    Texture* texture = manager_->Produce(texture_ref);
-    EXPECT_TRUE(texture != NULL);
-    return texture;
-  }
+  Texture* Produce(TextureRef* texture_ref) { return texture_ref->texture(); }
 
   void Consume(GLuint client_id, Texture* texture) {
     EXPECT_TRUE(manager_->Consume(client_id, texture));

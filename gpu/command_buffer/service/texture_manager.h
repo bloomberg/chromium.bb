@@ -844,8 +844,6 @@ class GPU_GLES2_EXPORT TextureManager
                     GLenum type,
                     const gfx::Rect& cleared_rect);
 
-  Texture* Produce(TextureRef* ref);
-
   // Maps an existing texture into the texture manager, at a given client ID.
   TextureRef* Consume(GLuint client_id, Texture* texture);
 

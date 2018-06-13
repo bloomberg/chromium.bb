@@ -222,37 +222,25 @@ Texture* MailboxManagerSync::ConsumeTexture(const Mailbox& mailbox) {
 
 void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
                                         TextureBase* texture_base) {
+  DCHECK(texture_base);
   base::AutoLock lock(g_lock.Get());
   // Relax the cross-thread access restriction to non-thread-safe RefCount.
   // The lock above protects non-thread-safe RefCount in TextureGroup.
   base::ScopedAllowCrossThreadRefCountAccess
       scoped_allow_cross_thread_ref_count_access;
+  if (TextureGroup::FromName(mailbox)) {
+    DLOG(ERROR) << "Ignored attempt to reassign a mailbox";
+    return;
+  }
 
   Texture* texture = static_cast<Texture*>(texture_base);
 
   TextureToGroupMap::iterator tex_it = texture_to_group_.find(texture);
-  TextureGroup* group_for_mailbox = TextureGroup::FromName(mailbox);
-  TextureGroup* group_for_texture = NULL;
+  TextureGroup* group_for_texture = nullptr;
 
   if (tex_it != texture_to_group_.end()) {
     group_for_texture = tex_it->second.group.get();
     DCHECK(group_for_texture);
-    if (group_for_mailbox == group_for_texture) {
-      // The texture is already known under this name.
-      return;
-    }
-  }
-
-  if (group_for_mailbox) {
-    // Unlink the mailbox from its current group.
-    group_for_mailbox->RemoveName(mailbox);
-  }
-
-  if (!texture)
-    return;
-
-  if (group_for_texture) {
-    group_for_texture->AddName(mailbox);
   } else {
     // This is a new texture, so create a new group.
     texture->SetMailboxManager(this);
@@ -263,10 +251,10 @@ void MailboxManagerSync::ProduceTexture(const Mailbox& mailbox,
     }
     group_for_texture = new TextureGroup(definition);
     group_for_texture->AddTexture(this, texture);
-    group_for_texture->AddName(mailbox);
     texture_to_group_.insert(std::make_pair(
         texture, TextureGroupRef(kNewTextureVersion, group_for_texture)));
   }
+  group_for_texture->AddName(mailbox);
 
   DCHECK(texture->mailbox_manager() == this);
 }

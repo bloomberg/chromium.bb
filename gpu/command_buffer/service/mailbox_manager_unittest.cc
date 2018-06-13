@@ -143,43 +143,17 @@ TEST_F(MailboxManagerTest, ProduceMultipleTexture) {
   manager_->ProduceTexture(name, texture1);
   EXPECT_EQ(texture1, manager_->ConsumeTexture(name));
 
-  // Can produce a second time with the same mailbox, but different texture.
+  // Producing a second time is ignored.
   manager_->ProduceTexture(name, texture2);
-  EXPECT_EQ(texture2, manager_->ConsumeTexture(name));
+  EXPECT_EQ(texture1, manager_->ConsumeTexture(name));
 
   // Destroying the texture that's under no mailbox shouldn't have an effect.
-  DestroyTexture(texture1);
-  EXPECT_EQ(texture2, manager_->ConsumeTexture(name));
+  DestroyTexture(texture2);
+  EXPECT_EQ(texture1, manager_->ConsumeTexture(name));
 
   // Destroying the texture that's bound should clean up.
-  DestroyTexture(texture2);
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
-}
-
-TEST_F(MailboxManagerTest, ProduceMultipleTextureMailbox) {
-  Texture* texture1 = CreateTexture();
-  Texture* texture2 = CreateTexture();
-  Mailbox name1 = Mailbox::Generate();
-  Mailbox name2 = Mailbox::Generate();
-
-  // Put texture1 on name1 and name2.
-  manager_->ProduceTexture(name1, texture1);
-  manager_->ProduceTexture(name2, texture1);
-  EXPECT_EQ(texture1, manager_->ConsumeTexture(name1));
-  EXPECT_EQ(texture1, manager_->ConsumeTexture(name2));
-
-  // Put texture2 on name2.
-  manager_->ProduceTexture(name2, texture2);
-  EXPECT_EQ(texture1, manager_->ConsumeTexture(name1));
-  EXPECT_EQ(texture2, manager_->ConsumeTexture(name2));
-
-  // Destroy texture1, shouldn't affect name2.
   DestroyTexture(texture1);
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name1));
-  EXPECT_EQ(texture2, manager_->ConsumeTexture(name2));
-
-  DestroyTexture(texture2);
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name2));
+  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
 }
 
 const GLsizei kMaxTextureWidth = 64;
@@ -288,7 +262,7 @@ TEST_F(MailboxManagerSyncTest, ProduceSyncDestroy) {
   EXPECT_EQ(NULL, manager2_->ConsumeTexture(name));
 }
 
-TEST_F(MailboxManagerSyncTest, ProduceSyncClobberDestroy) {
+TEST_F(MailboxManagerSyncTest, ProduceSyncMultipleMailbox) {
   InSequence sequence;
 
   Texture* texture = DefineTexture();
@@ -297,10 +271,11 @@ TEST_F(MailboxManagerSyncTest, ProduceSyncClobberDestroy) {
   manager_->ProduceTexture(name, texture);
   manager_->PushTextureUpdates(g_sync_token);
 
-  // Clobber
+  // Producing a second time with the same mailbox is ignored.
   Texture* old_texture = texture;
   texture = DefineTexture();
   manager_->ProduceTexture(name, texture);
+  EXPECT_EQ(old_texture, manager_->ConsumeTexture(name));
 
   DestroyTexture(old_texture);
   DestroyTexture(texture);
@@ -445,73 +420,6 @@ TEST_F(MailboxManagerSyncTest, ProduceConsumeBidirectional) {
   DestroyTexture(texture2);
   DestroyTexture(new_texture1);
   DestroyTexture(new_texture2);
-}
-
-// If a texture is shared with another manager instance, but the mailbox
-// is then clobbered with a different texture in the source context, this should
-// disconnect the earlier texture from updates.
-TEST_F(MailboxManagerSyncTest, ProduceAndClobber) {
-  const GLuint kNewTextureId = 1234;
-  InSequence sequence;
-
-  Texture* texture = DefineTexture();
-  Mailbox name = Mailbox::Generate();
-
-  manager_->ProduceTexture(name, texture);
-  EXPECT_EQ(texture, manager_->ConsumeTexture(name));
-
-  // Synchronize
-  manager_->PushTextureUpdates(g_sync_token);
-  manager2_->PullTextureUpdates(g_sync_token);
-
-  EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgPointee<1>(kNewTextureId));
-  SetupUpdateTexParamExpectations(
-      kNewTextureId, GL_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-  Texture* new_texture = static_cast<Texture*>(manager2_->ConsumeTexture(name));
-  EXPECT_NE(nullptr, new_texture);
-  EXPECT_NE(texture, new_texture);
-  EXPECT_EQ(kNewTextureId, new_texture->service_id());
-
-  Texture* old_texture = texture;
-  texture = DefineTexture();
-  manager_->ProduceTexture(name, texture);
-
-  // Make a change to the new texture
-  DCHECK_EQ(static_cast<GLuint>(GL_LINEAR), texture->min_filter());
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR),
-            SetParameter(texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
-
-  // Synchronize in both directions - no changes, since it's not shared
-  manager_->PushTextureUpdates(g_sync_token);
-  manager2_->PullTextureUpdates(g_sync_token);
-  EXPECT_EQ(static_cast<GLuint>(GL_LINEAR), new_texture->min_filter());
-
-  // Make a change to the previously shared texture
-  DCHECK_EQ(static_cast<GLuint>(GL_LINEAR), old_texture->mag_filter());
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR),
-            SetParameter(old_texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-
-  // Synchronize and expect update
-  manager_->PushTextureUpdates(g_sync_token);
-  SetupUpdateTexParamExpectations(
-      new_texture->service_id(), GL_LINEAR, GL_NEAREST, GL_REPEAT, GL_REPEAT);
-  manager2_->PullTextureUpdates(g_sync_token);
-
-  EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgPointee<1>(kNewTextureId));
-  SetupUpdateTexParamExpectations(
-      kNewTextureId, GL_NEAREST, GL_LINEAR, GL_REPEAT, GL_REPEAT);
-  TextureBase* tmp_texture = manager2_->ConsumeTexture(name);
-  EXPECT_NE(new_texture, tmp_texture);
-  DestroyTexture(tmp_texture);
-
-  DestroyTexture(old_texture);
-  DestroyTexture(texture);
-  DestroyTexture(new_texture);
-
-  EXPECT_EQ(NULL, manager_->ConsumeTexture(name));
-  EXPECT_EQ(NULL, manager2_->ConsumeTexture(name));
 }
 
 TEST_F(MailboxManagerSyncTest, ClearedStateSynced) {
