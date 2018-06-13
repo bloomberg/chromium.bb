@@ -316,8 +316,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                 result = mSupportLibClient.shouldOverrideUrlLoading(
                         mWebView, new WebResourceRequestAdapter(request));
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                result = mWebViewClient.shouldOverrideUrlLoading(
-                        mWebView, new WebResourceRequestAdapter(request));
+                result = ApiHelperForN.shouldOverrideUrlLoading(mWebViewClient, mWebView, request);
             } else {
                 result = mWebViewClient.shouldOverrideUrlLoading(mWebView, request.url);
             }

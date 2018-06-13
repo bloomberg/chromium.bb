@@ -374,7 +374,7 @@ public class WebViewChromiumAwInit {
     public TokenBindingService getTokenBindingService() {
         synchronized (mLock) {
             if (mTokenBindingManager == null) {
-                mTokenBindingManager = new TokenBindingManagerAdapter(mFactory);
+                mTokenBindingManager = ApiHelperForN.createTokenBindingManagerAdapter(mFactory);
             }
         }
         return (TokenBindingService) mTokenBindingManager;

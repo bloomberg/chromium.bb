@@ -467,7 +467,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         synchronized (mAwInit.getLock()) {
             if (mServiceWorkerControllerAdapter == null) {
                 mServiceWorkerControllerAdapter =
-                        new ServiceWorkerControllerAdapter(mAwInit.getServiceWorkerController());
+                        ApiHelperForN.createServiceWorkerControllerAdapter(mAwInit);
             }
         }
         return (ServiceWorkerController) mServiceWorkerControllerAdapter;
