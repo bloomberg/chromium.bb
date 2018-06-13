@@ -2687,6 +2687,31 @@
             ]
         }
     ],
+    "PasswordGenerationRequirements": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "prefix_length": "0",
+                        "timeout": "5000",
+                        "version": "0"
+                    },
+                    "enable_features": [
+                        "PasswordGenerationRequirements",
+                        "PasswordGenerationRequirementsDomainOverrides"
+                    ]
+                }
+            ]
+        }
+    ],
     "PasswordManagerSearchSettings": [
         {
             "platforms": [

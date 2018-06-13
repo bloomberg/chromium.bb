@@ -25,6 +25,7 @@ namespace password_manager {
 // random password on a specific form and site.
 class PasswordRequirementsService : public KeyedService {
  public:
+  // If |fetcher| is a nullptr, no network requests happen.
   explicit PasswordRequirementsService(
       std::unique_ptr<autofill::PasswordRequirementsSpecFetcher> fetcher);
   ~PasswordRequirementsService() override;
@@ -60,6 +61,7 @@ class PasswordRequirementsService : public KeyedService {
   base::MRUCache<GURL, autofill::PasswordRequirementsSpec> specs_for_domains_;
   base::MRUCache<FullSignature, autofill::PasswordRequirementsSpec>
       specs_for_signatures_;
+  // May be a nullptr.
   std::unique_ptr<autofill::PasswordRequirementsSpecFetcher> fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordRequirementsService);

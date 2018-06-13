@@ -20,9 +20,7 @@ PasswordRequirementsService::PasswordRequirementsService(
     std::unique_ptr<autofill::PasswordRequirementsSpecFetcher> fetcher)
     : specs_for_domains_(kCacheSizeForDomainKeyedSpecs),
       specs_for_signatures_(kCacheSizeForSignatureKeyedSpecs),
-      fetcher_(std::move(fetcher)) {
-  DCHECK(fetcher_);
-}
+      fetcher_(std::move(fetcher)) {}
 
 PasswordRequirementsService::~PasswordRequirementsService() = default;
 
@@ -65,6 +63,12 @@ autofill::PasswordRequirementsSpec PasswordRequirementsService::GetSpec(
 void PasswordRequirementsService::PrefetchSpec(const GURL& main_frame_domain) {
   VLOG(1) << "PasswordRequirementsService::PrefetchSpec(" << main_frame_domain
           << ")";
+
+  if (!fetcher_) {
+    VLOG(1) << "PasswordRequirementsService::PrefetchSpec has no fetcher";
+    return;
+  }
+
   // Using base::Unretained(this) is safe here because the
   // PasswordRequirementsService owns fetcher_. If |this| is deleted, so is
   // the |fetcher_|, and no callback can happen.
