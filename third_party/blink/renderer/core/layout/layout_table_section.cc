@@ -2024,8 +2024,20 @@ void LayoutTableSection::AdjustRowForPagination(LayoutTableRow& row_object,
     pagination_strut -= offset_from_top_of_page.ToInt();
 
   // If we have a header group we will paint it at the top of each page,
-  // move the rows down to accomodate it.
-  pagination_strut += OffsetForRepeatedHeader();
+  // move the rows down to accommodate it.
+  int additional_adjustment = OffsetForRepeatedHeader();
+
+  // If the table collapses borders, push the row down by the max height of the
+  // outer half borders to make the whole collapsed borders on the next page.
+  if (Table()->ShouldCollapseBorders()) {
+    for (const auto* cell = row_object.FirstCell(); cell;
+         cell = cell->NextCell()) {
+      additional_adjustment = std::max<int>(additional_adjustment,
+                                            cell->CollapsedOuterBorderBefore());
+    }
+  }
+
+  pagination_strut += additional_adjustment;
   row_object.SetPaginationStrut(LayoutUnit(pagination_strut));
 
   // We have inserted a pagination strut before the row. Adjust the logical top
