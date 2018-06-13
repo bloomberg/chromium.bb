@@ -25,6 +25,7 @@ enum ChangeType {
   CHANGE_TYPE_CAPTURE_CHANGED,
   CHANGE_TYPE_FRAME_SINK_ID_ALLOCATED,
   CHANGE_TYPE_EMBED,
+  CHANGE_TYPE_EMBED_FROM_TOKEN,
   CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED,
   CHANGE_TYPE_UNEMBED,
   // TODO(sky): nuke NODE.
@@ -164,6 +165,10 @@ class TestChangeTracker {
   // Each of these functions generate a Change. There is one per
   // WindowTreeClient function.
   void OnEmbed(mojom::WindowDataPtr root, bool drawn);
+  void OnEmbedFromToken(
+      mojom::WindowDataPtr root,
+      int64_t display_id,
+      const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   void OnEmbeddedAppDisconnected(Id window_id);
   void OnUnembed(Id window_id);
   void OnCaptureChanged(Id new_capture_window_id, Id old_capture_window_id);

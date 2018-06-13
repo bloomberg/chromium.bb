@@ -84,7 +84,9 @@ void TestWindowTreeClient::OnEmbedFromToken(
     const base::UnguessableToken& token,
     mojom::WindowDataPtr root,
     int64_t display_id,
-    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {}
+    const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+  tracker_.OnEmbedFromToken(std::move(root), display_id, local_surface_id);
+}
 
 void TestWindowTreeClient::OnEmbeddedAppDisconnected(Id window_id) {
   tracker_.OnEmbeddedAppDisconnected(window_id);

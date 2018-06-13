@@ -53,6 +53,8 @@ class WindowServiceTestSetup {
 
   WindowTree* window_tree() { return window_tree_.get(); }
 
+  WindowService* service() { return service_.get(); }
+
  private:
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};

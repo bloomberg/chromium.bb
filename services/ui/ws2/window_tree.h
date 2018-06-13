@@ -87,6 +87,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Asks the client to close |window|. |window| must be a top-level window.
   void RequestClose(ServerWindow* window);
 
+  // Called when an Embedding is destroyed. This is only called for Embeddings
+  // that do not own the WindowTree (see Embedding for more details on when this
+  // happens).
+  void OnEmbeddingDestroyed(Embedding* embedding);
+
   WindowService* window_service() { return window_service_; }
 
  private:
@@ -128,9 +133,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Creates a new ClientRoot. The returned ClientRoot is owned by this.
   // |is_top_level| is true if this is called from
   // WindowTree::NewTopLevelWindow().
-  ClientRoot* CreateClientRoot(aura::Window* window,
-                               bool is_top_level,
-                               mojom::WindowTreePtr window_tree);
+  ClientRoot* CreateClientRoot(aura::Window* window, bool is_top_level);
   void DeleteClientRoot(ClientRoot* client_root, DeleteClientRootReason reason);
   void DeleteClientRootWithRoot(aura::Window* window);
 
@@ -205,14 +208,23 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
       const std::vector<aura::Window*>& windows);
   mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
 
-  // Called before |window| becomes the root Window of a ClientRoot. This
-  // destroys the existing ClientRoot if there is one (because a Window can
-  // only be the root Window of a single ClientRoot).
-  void OnWillBecomeClientRootWindow(aura::Window* window);
+  // Call to complete a previous call to ScheduleEmbedForExistingClient().
+  void CompleteScheduleEmbedForExistingClient(
+      aura::Window* window,
+      const ClientWindowId& id,
+      const base::UnguessableToken& token);
 
-  // Methods with the name Impl() mirror those of mojom::WindowTree. The return
-  // value indicates whether they succeeded or not. Generally failure means the
-  // operation was not allowed.
+  // Returns the WindowTreeClient previously scheduled for an embed with the
+  // given |token| from ScheduleEmbed(). If this client is the result of an
+  // Embed() and ScheduleEmbed() was not called on this client, then this
+  // recurses to the parent WindowTree. Recursing enables an ancestor to call
+  // ScheduleEmbed() and the ancestor to communicate the token with the client.
+  mojom::WindowTreeClientPtr GetAndRemoveScheduledEmbedWindowTreeClient(
+      const base::UnguessableToken& token);
+
+  // Methods with the name Impl() mirror those of mojom::WindowTree. The
+  // return value indicates whether they succeeded or not. Generally failure
+  // means the operation was not allowed.
   bool NewWindowImpl(
       const ClientWindowId& client_window_id,
       const std::map<std::string, std::vector<uint8_t>>& properties);
@@ -331,7 +343,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   void ScheduleEmbedForExistingClient(
       uint32_t window_id,
       ScheduleEmbedForExistingClientCallback callback) override;
-  void EmbedUsingToken(Id window_id,
+  void EmbedUsingToken(Id transport_window_id,
                        const base::UnguessableToken& token,
                        uint32_t embed_flags,
                        EmbedUsingTokenCallback callback) override;
@@ -411,6 +423,20 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   std::unique_ptr<PointerWatcher> pointer_watcher_;
 
   FocusHandler focus_handler_{this};
+
+  // Holds WindowTreeClients passed to ScheduleEmbed(). Entries are removed
+  // when EmbedUsingToken() is called.
+  using ScheduledEmbeds =
+      base::flat_map<base::UnguessableToken, mojom::WindowTreeClientPtr>;
+  ScheduledEmbeds scheduled_embeds_;
+
+  // Calls to ScheduleEmbedForExistingClient() add an entry here. The value is
+  // the value supplied to ScheduleEmbedForExistingClient(). When a matching
+  // EmbedUsingToken() is received, the value in the map is used as the id for
+  // the window in this client (specifically |ClientWindowId.sink_id|).
+  using ScheduledEmbedsForExistingClient =
+      base::flat_map<base::UnguessableToken, ClientSpecificId>;
+  ScheduledEmbedsForExistingClient scheduled_embeds_for_existing_client_;
 
   // Events that an ack is expected from the client are added here.
   std::queue<std::unique_ptr<InFlightKeyEvent>> in_flight_key_events_;

@@ -11,7 +11,6 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "services/ui/ws2/window_tree_binding.h"
 
 namespace aura {
 class Window;
@@ -22,11 +21,16 @@ namespace ws2 {
 
 class WindowService;
 class WindowTree;
+class WindowTreeBinding;
 
-// Embedding is created any time a client calls Embed() (Embedding is not
-// created for top-levels). Embedding owns the embedded WindowTree (by way of
-// owning WindowTreeBinding). Embedding is owned by the Window associated with
-// the embedding.
+// Embedding is created any time a client calls Embed() or EmbedUsingToken()
+// (Embedding is not created for top-levels). Embedding has two distinct
+// configurations:
+// . The Embedding does not own the embedded WindowTree. This happens if
+//   ScheduleEmbedForExistingClient() was used.
+// . In all other cases Embedding owns the embedded WindowTree.
+//
+// Embedding is owned by the Window associated with the embedding.
 class COMPONENT_EXPORT(WINDOW_SERVICE) Embedding {
  public:
   Embedding(WindowTree* embedding_tree,
@@ -39,13 +43,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) Embedding {
             mojom::WindowTreeClient* window_tree_client,
             base::OnceClosure connection_lost_callback);
 
+  // Initializes the Embedding as the result of
+  // ScheduleEmbedForExistingClient().
+  void InitForEmbedInExistingTree(WindowTree* embedded_tree);
+
   WindowTree* embedding_tree() { return embedding_tree_; }
 
   bool embedding_tree_intercepts_events() const {
     return embedding_tree_intercepts_events_;
   }
 
-  WindowTree* embedded_tree() { return binding_.window_tree(); }
+  WindowTree* embedded_tree() { return embedded_tree_; }
 
   aura::Window* window() { return window_; }
 
@@ -64,7 +72,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) Embedding {
   // Embedded trees can always observe pointer events, regardless of this value.
   const bool embedding_tree_intercepts_events_;
 
-  WindowTreeBinding binding_;
+  // |binding_| is created if the Embedding owns the embedded WindowTree.
+  std::unique_ptr<WindowTreeBinding> binding_;
+
+  // The embedded WindowTree. If |binding_| is non-null, this comes from the
+  // WindowTreeBinding. If |binding_| is null, this is the value supplied to
+  // InitForEmbedInExistingTree().
+  WindowTree* embedded_tree_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Embedding);
 };
