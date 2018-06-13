@@ -78,8 +78,7 @@ void AssistantMainView::ChildVisibilityChanged(views::View* child) {
 void AssistantMainView::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-          kSpacingDip));
+          views::BoxLayout::Orientation::kVertical));
 
   // Caption bar.
   AddChildView(caption_bar_);

@@ -71,7 +71,7 @@ void SuggestionContainerView::InitLayout() {
           gfx::Insets(0, kPaddingDip), kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_END);
 
   // ScrollView.
   SetBackgroundColor(SK_ColorTRANSPARENT);
