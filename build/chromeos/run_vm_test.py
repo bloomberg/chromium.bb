@@ -177,6 +177,8 @@ def vm_test(args):
           'install', '\;',
       ]
     cros_run_vm_test_cmd += [
+        # Some tests fail as root, so run as the less privileged user 'chronos'.
+        '--as-chronos',
         '--cmd',
         '--',
         # Wrap the cmd to run in the VM around quotes (") so that the
