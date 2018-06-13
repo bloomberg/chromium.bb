@@ -17,12 +17,18 @@ const testCases = {
     'wheel': () => eventSender.mouseScrollBy(0, -50),
 };
 
+let receivedEvents = [];
 for (let eventName in testCases)
     createTest(eventName, testCases[eventName]);
 
 function createTest(eventName, dispatchEventFn) {
     async_test(function(t) {
         document.addEventListener(eventName, t.step_func(function(e) {
+            receivedEvents.push(eventName);
+            // Prevent default to ensure contextmenu is not shown which can
+            // potentially hijack other events.
+            e.preventDefault();
+
             const platformTimestamp = eventSender.lastEventTimestamp(); // in seconds
             const expectedUnclampedTimestamp = internals.monotonicTimeToZeroBasedDocumentTime(platformTimestamp) * 1000; // in milliseconds
             // Time clamping logic in Blink can introduce at most 2*100us of
@@ -32,6 +38,11 @@ function createTest(eventName, dispatchEventFn) {
             t.done();
         }));
         dispatchEventFn();
+        t.step_timeout(function() {
+          assert_unreached("timeout with received events: " + receivedEvents.join(', '));
+        }, 5000);
     }, "Event timestamp should be equal to the timestamp provided by the platform for " + eventName);
 }
+
+
 </script>

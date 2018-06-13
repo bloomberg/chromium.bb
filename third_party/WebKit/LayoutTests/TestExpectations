@@ -4744,8 +4744,7 @@ crbug.com/838254 virtual/video-surface-layer/media/webkit-media-controls-webkit-
 crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [ Pass Failure ]
 
 # Sheriff 2018-05-17
-crbug.com/810437 fast/events/hr-timestamp/input-events.html [ Pass Timeout Failure ]
-crbug.com/846726 virtual/mouseevent_fractional/fast/events/hr-timestamp/input-events.html [ Pass Failure ]
+crbug.com/810437 [ Mac ] fast/events/hr-timestamp/input-events.html [ Pass Timeout ]
 
 
 # This will break for now
