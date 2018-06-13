@@ -8,10 +8,10 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/touch_selection/touch_handle.h"
 
 namespace cc {
-class Layer;
 class UIResourceLayer;
 }  // namespace cc
 
@@ -20,8 +20,7 @@ namespace content {
 // Touch handle drawable implementation backed by a cc layer.
 class CompositedTouchHandleDrawable : public ui::TouchHandleDrawable {
  public:
-  CompositedTouchHandleDrawable(cc::Layer* root_layer,
-                                float dpi_scale,
+  CompositedTouchHandleDrawable(gfx::NativeView view,
                                 const base::android::JavaRef<jobject>& context);
   ~CompositedTouchHandleDrawable() override;
 
@@ -39,7 +38,7 @@ class CompositedTouchHandleDrawable : public ui::TouchHandleDrawable {
   void DetachLayer();
   void UpdateLayerPosition();
 
-  const float dpi_scale_;
+  gfx::NativeView view_;
   float drawable_horizontal_padding_ratio_;
   ui::TouchHandleOrientation orientation_;
   gfx::PointF origin_position_;

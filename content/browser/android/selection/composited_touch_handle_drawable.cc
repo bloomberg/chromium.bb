@@ -10,6 +10,7 @@
 #include "cc/layers/ui_resource_layer.h"
 #include "content/public/browser/android/compositor.h"
 #include "ui/android/handle_view_resources.h"
+#include "ui/android/view_android.h"
 
 using base::android::JavaRef;
 
@@ -22,17 +23,16 @@ base::LazyInstance<ui::HandleViewResources>::Leaky g_selection_resources;
 }  // namespace
 
 CompositedTouchHandleDrawable::CompositedTouchHandleDrawable(
-    cc::Layer* root_layer,
-    float dpi_scale,
+    gfx::NativeView view,
     const JavaRef<jobject>& context)
-    : dpi_scale_(dpi_scale),
+    : view_(view),
       orientation_(ui::TouchHandleOrientation::UNDEFINED),
       layer_(cc::UIResourceLayer::Create()) {
   g_selection_resources.Get().LoadIfNecessary(context);
   drawable_horizontal_padding_ratio_ =
       g_selection_resources.Get().GetDrawableHorizontalPaddingRatio();
-  DCHECK(root_layer);
-  root_layer->AddChild(layer_.get());
+  DCHECK(view->GetLayer());
+  view->GetLayer()->AddChild(layer_.get());
 }
 
 CompositedTouchHandleDrawable::~CompositedTouchHandleDrawable() {
@@ -78,7 +78,7 @@ void CompositedTouchHandleDrawable::SetOrientation(
 }
 
 void CompositedTouchHandleDrawable::SetOrigin(const gfx::PointF& origin) {
-  origin_position_ = gfx::ScalePoint(origin, dpi_scale_);
+  origin_position_ = origin;
   UpdateLayerPosition();
 }
 
@@ -91,11 +91,10 @@ void CompositedTouchHandleDrawable::SetAlpha(float alpha) {
 }
 
 gfx::RectF CompositedTouchHandleDrawable::GetVisibleBounds() const {
-  return gfx::ScaleRect(gfx::RectF(layer_->position().x(),
-                                   layer_->position().y(),
-                                   layer_->bounds().width(),
-                                   layer_->bounds().height()),
-                        1.f / dpi_scale_);
+  return gfx::ScaleRect(
+      gfx::RectF(layer_->position().x(), layer_->position().y(),
+                 layer_->bounds().width(), layer_->bounds().height()),
+      1.f / view_->GetDipScale());
 }
 
 float CompositedTouchHandleDrawable::GetDrawableHorizontalPaddingRatio() const {
@@ -107,7 +106,7 @@ void CompositedTouchHandleDrawable::DetachLayer() {
 }
 
 void CompositedTouchHandleDrawable::UpdateLayerPosition() {
-  layer_->SetPosition(origin_position_);
+  layer_->SetPosition(gfx::ScalePoint(origin_position_, view_->GetDipScale()));
 }
 
 }  // namespace content

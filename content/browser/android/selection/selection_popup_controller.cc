@@ -74,8 +74,7 @@ SelectionPopupController::CreateTouchHandleDrawable() {
   // the java side in CompositedTouchHandleDrawable.
   auto* view = web_contents()->GetNativeView();
   return std::unique_ptr<ui::TouchHandleDrawable>(
-      new CompositedTouchHandleDrawable(view->GetLayer(), view->GetDipScale(),
-                                        activityContext));
+      new CompositedTouchHandleDrawable(view, activityContext));
 }
 
 void SelectionPopupController::MoveRangeSelectionExtent(
