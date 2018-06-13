@@ -40,11 +40,12 @@ BleInitiatorOperation::Factory::BuildInstance(
     ConnectToDeviceOperation<BleInitiatorFailureType>::ConnectionFailedCallback
         failure_callback,
     const DeviceIdPair& device_id_pair,
+    ConnectionPriority connection_priority,
     base::OnceClosure destructor_callback,
     scoped_refptr<base::TaskRunner> task_runner) {
   return base::WrapUnique(new BleInitiatorOperation(
       std::move(success_callback), std::move(failure_callback), device_id_pair,
-      std::move(destructor_callback), task_runner));
+      connection_priority, std::move(destructor_callback), task_runner));
 }
 
 BleInitiatorOperation::~BleInitiatorOperation() = default;
@@ -55,21 +56,30 @@ BleInitiatorOperation::BleInitiatorOperation(
     ConnectToDeviceOperation<BleInitiatorFailureType>::ConnectionFailedCallback
         failure_callback,
     const DeviceIdPair& device_id_pair,
+    ConnectionPriority connection_priority,
     base::OnceClosure destructor_callback,
     scoped_refptr<base::TaskRunner> task_runner)
     : ConnectToDeviceOperationBase<BleInitiatorFailureType>(
           std::move(success_callback),
           std::move(failure_callback),
           device_id_pair,
+          connection_priority,
           std::move(destructor_callback),
           task_runner) {}
 
-void BleInitiatorOperation::AttemptConnectionToDevice() {
+void BleInitiatorOperation::AttemptConnectionToDevice(
+    ConnectionPriority connection_priority) {
   // TODO(khorimoto): Implement.
   NOTIMPLEMENTED();
 }
 
-void BleInitiatorOperation::CancelConnectionAttemptToDevice() {
+void BleInitiatorOperation::PerformCancellation() {
+  // TODO(khorimoto): Implement.
+  NOTIMPLEMENTED();
+}
+
+void BleInitiatorOperation::PerformUpdateConnectionPriority(
+    ConnectionPriority connection_priority) {
   // TODO(khorimoto): Implement.
   NOTIMPLEMENTED();
 }

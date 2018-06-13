@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
 #include "chromeos/services/secure_channel/pending_connection_request_delegate.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
@@ -37,6 +38,10 @@ class PendingConnectionRequest {
 
   virtual ~PendingConnectionRequest() = default;
 
+  ConnectionPriority connection_priority() const {
+    return connection_priority_;
+  }
+
   // Handles a failed connection attempt. Derived classes may choose to stop
   // trying to connect after some number of failures.
   virtual void HandleConnectionFailure(FailureDetailType failure_detail) = 0;
@@ -44,8 +49,9 @@ class PendingConnectionRequest {
   virtual const base::UnguessableToken& GetRequestId() const = 0;
 
  protected:
-  PendingConnectionRequest(PendingConnectionRequestDelegate* delegate)
-      : delegate_(delegate) {
+  PendingConnectionRequest(PendingConnectionRequestDelegate* delegate,
+                           ConnectionPriority connection_priority)
+      : delegate_(delegate), connection_priority_(connection_priority) {
     DCHECK(delegate_);
   }
 
@@ -60,6 +66,7 @@ class PendingConnectionRequest {
 
  private:
   PendingConnectionRequestDelegate* delegate_;
+  ConnectionPriority connection_priority_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingConnectionRequest);
 };

@@ -12,6 +12,7 @@
 #include "chromeos/services/secure_channel/ble_listener_failure_type.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation_base.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
@@ -33,6 +34,7 @@ class BleListenerOperation
         ConnectToDeviceOperation<
             BleListenerFailureType>::ConnectionFailedCallback failure_callback,
         const DeviceIdPair& device_id_pair,
+        ConnectionPriority connection_priority,
         base::OnceClosure destructor_callback,
         scoped_refptr<base::TaskRunner> task_runner =
             base::ThreadTaskRunnerHandle::Get());
@@ -50,12 +52,16 @@ class BleListenerOperation
       ConnectToDeviceOperation<BleListenerFailureType>::ConnectionFailedCallback
           failure_callback,
       const DeviceIdPair& device_id_pair,
+      ConnectionPriority connection_priority,
       base::OnceClosure destructor_callback,
       scoped_refptr<base::TaskRunner> task_runner);
 
   // ConnectToDeviceOperationBase<BleListenerFailureType>:
-  void AttemptConnectionToDevice() override;
-  void CancelConnectionAttemptToDevice() override;
+  void AttemptConnectionToDevice(
+      ConnectionPriority connection_priority) override;
+  void PerformCancellation() override;
+  void PerformUpdateConnectionPriority(
+      ConnectionPriority connection_priority) override;
 
   DISALLOW_COPY_AND_ASSIGN(BleListenerOperation);
 };

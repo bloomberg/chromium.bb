@@ -11,6 +11,7 @@
 #include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_connection_delegate.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_request_delegate.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -36,9 +37,11 @@ class TestPendingConnectionRequest
  public:
   TestPendingConnectionRequest(
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
+      ConnectionPriority connection_priority,
       PendingConnectionRequestDelegate* delegate)
       : PendingConnectionRequestBase<TestFailureDetail>(
             std::move(client_connection_parameters),
+            connection_priority,
             kTestReadableRequestTypeForLogging,
             delegate) {}
   ~TestPendingConnectionRequest() override = default;
@@ -75,6 +78,7 @@ class SecureChannelPendingConnectionRequestBaseTest : public testing::Test {
     test_pending_connection_request_ =
         std::make_unique<TestPendingConnectionRequest>(
             std::move(fake_client_connection_parameters),
+            ConnectionPriority::kLow,
             fake_pending_connection_request_delegate_.get());
   }
 

@@ -7,7 +7,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
 
@@ -22,14 +24,19 @@ class FakeConnectToDeviceOperation
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionSuccessCallback success_callback,
       typename ConnectToDeviceOperation<
-          FailureDetailType>::ConnectionFailedCallback failure_callback)
-      : ConnectToDeviceOperation<FailureDetailType>(
-            std::move(success_callback),
-            std::move(failure_callback)) {}
+          FailureDetailType>::ConnectionFailedCallback failure_callback,
+      ConnectionPriority connection_priority)
+      : ConnectToDeviceOperation<FailureDetailType>(std::move(success_callback),
+                                                    std::move(failure_callback),
+                                                    connection_priority) {}
 
   ~FakeConnectToDeviceOperation() override = default;
 
   bool canceled() const { return canceled_; }
+
+  const base::Optional<ConnectionPriority>& updated_priority() {
+    return updated_priority_;
+  }
 
   void set_destructor_callback(base::OnceClosure destructor_callback) {
     destructor_callback_ = std::move(destructor_callback);
@@ -44,7 +51,13 @@ class FakeConnectToDeviceOperation
   // ConnectToDeviceOperation<FailureDetailType>:
   void PerformCancellation() override { canceled_ = true; }
 
+  void PerformUpdateConnectionPriority(
+      ConnectionPriority connection_priority) override {
+    updated_priority_ = connection_priority;
+  }
+
   bool canceled_ = false;
+  base::Optional<ConnectionPriority> updated_priority_;
   base::OnceClosure destructor_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectToDeviceOperation);

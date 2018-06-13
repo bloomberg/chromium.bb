@@ -11,6 +11,7 @@
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/fake_client_connection_parameters.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_request_delegate.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -39,6 +40,7 @@ class SecureChannelPendingBleInitiatorConnectionRequestTest
     pending_ble_initiator_request_ =
         PendingBleInitiatorConnectionRequest::Factory::Get()->BuildInstance(
             std::move(fake_client_connection_parameters),
+            ConnectionPriority::kLow,
             fake_pending_connection_request_delegate_.get());
   }
 

@@ -25,8 +25,10 @@ template <typename FailureDetailType>
 class FakePendingConnectionRequest
     : public PendingConnectionRequest<FailureDetailType> {
  public:
-  FakePendingConnectionRequest(PendingConnectionRequestDelegate* delegate)
-      : PendingConnectionRequest<FailureDetailType>(delegate),
+  FakePendingConnectionRequest(PendingConnectionRequestDelegate* delegate,
+                               ConnectionPriority connection_priority)
+      : PendingConnectionRequest<FailureDetailType>(delegate,
+                                                    connection_priority),
         id_(base::UnguessableToken::Create()) {}
 
   ~FakePendingConnectionRequest() override = default;
