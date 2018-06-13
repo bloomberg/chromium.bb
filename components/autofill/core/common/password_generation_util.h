@@ -62,8 +62,7 @@ enum PasswordGenerationEvent {
   // User focused the password field containing the generated password.
   EDITING_POPUP_SHOWN,
 
-  // Generation enabled because autocomplete attributes for username and
-  // new-password are set.
+  // Generation enabled because autocomplete attributes for new-password is set.
   AUTOCOMPLETE_ATTRIBUTES_ENABLED_GENERATION,
 
   // Generation is triggered by the user from the context menu.

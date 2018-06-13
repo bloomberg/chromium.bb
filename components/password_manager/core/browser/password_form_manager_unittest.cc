@@ -713,6 +713,9 @@ class PasswordFormManagerTest : public testing::Test {
       histogram_tester.ExpectUniqueSample(
           "PasswordGeneration.GeneratedPasswordWasEdited",
           generated_password_changed /* sample */, 1);
+      histogram_tester.ExpectUniqueSample(
+          "PasswordGeneration.IsTriggeredManually",
+          is_manual_generation /* sample */, 1);
     }
     Mock::VerifyAndClearExpectations(
         client()->mock_driver()->mock_autofill_download_manager());
@@ -2653,6 +2656,52 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
   EXPECT_EQ(PasswordForm::TYPE_GENERATED, new_credentials.type);
   histogram_tester.ExpectBucketCount("PasswordGeneration.SubmissionEvent",
                                      metrics_util::PASSWORD_USED, 1);
+
+  // On the second reuse, the metric is not reported.
+  generated_form.times_used = 1;
+  fake_form_fetcher()->SetNonFederated({&generated_form}, 0u);
+  form_manager()->ProvisionallySave(submitted_form);
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, _));
+  form_manager()->Save();
+  histogram_tester.ExpectBucketCount("PasswordGeneration.SubmissionEvent",
+                                     metrics_util::PASSWORD_USED, 1);
+}
+
+TEST_F(PasswordFormManagerTest, GeneratedPasswordIsOverridden) {
+  base::HistogramTester histogram_tester;
+
+  PasswordForm generated_form = *observed_form();
+  generated_form.type = PasswordForm::TYPE_GENERATED;
+  generated_form.username_value = ASCIIToUTF16("username");
+  generated_form.password_value = ASCIIToUTF16("password2");
+  generated_form.preferred = true;
+
+  PasswordForm submitted_form(generated_form);
+  submitted_form.password_value = ASCIIToUTF16("another_password");
+
+  fake_form_fetcher()->SetNonFederated({&generated_form}, 0u);
+
+  form_manager()->ProvisionallySave(submitted_form);
+
+  PasswordForm new_credentials;
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, nullptr))
+      .WillOnce(testing::SaveArg<0>(&new_credentials));
+  form_manager()->Save();
+
+  EXPECT_EQ(PasswordForm::TYPE_MANUAL, new_credentials.type);
+  EXPECT_EQ(ASCIIToUTF16("another_password"), new_credentials.password_value);
+  histogram_tester.ExpectBucketCount("PasswordGeneration.SubmissionEvent",
+                                     metrics_util::PASSWORD_OVERRIDDEN, 1);
+
+  // On the reuse of the overriden password, the metric is not reported.
+  fake_form_fetcher()->SetNonFederated({&new_credentials}, 0u);
+  form_manager()->ProvisionallySave(new_credentials);
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, _));
+  form_manager()->Save();
+  histogram_tester.ExpectBucketCount("PasswordGeneration.SubmissionEvent",
+                                     metrics_util::PASSWORD_OVERRIDDEN, 1);
+  histogram_tester.ExpectBucketCount("PasswordGeneration.SubmissionEvent",
+                                     metrics_util::PASSWORD_USED, 0);
 }
 
 // Test that ProcessFrame is called on receiving matches from the fetcher,

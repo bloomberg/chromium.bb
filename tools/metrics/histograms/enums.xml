@@ -4094,6 +4094,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Invalid"/>
 </enum>
 
+<enum name="BooleanIsGenerationTriggeredManually">
+  <int value="0" label="Password generation was triggered automatically"/>
+  <int value="1" label="A user triggered password generation"/>
+</enum>
+
 <enum name="BooleanIsLastSharedAppInfoRetrieved">
   <int value="0" label="Not retrieved"/>
   <int value="1" label="Retrieved"/>
