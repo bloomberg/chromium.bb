@@ -1142,19 +1142,6 @@ void CompositorImpl::RemoveChildFrameSink(
                                                           frame_sink_id);
 }
 
-void CompositorImpl::OnFirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {
-  if (enable_viz_) {
-    // Force a new surface to be generated.
-    // TODO(ericrk): Remove this once we correctly set up fallback surfaces.
-    host_->SetViewportSizeAndScale(size_, root_window_->GetDipScale(),
-                                   GenerateLocalSurfaceId());
-  }
-
-  // TODO(fsamuel): Once surface synchronization is turned on, the fallback
-  // surface should be set here.
-}
-
 void CompositorImpl::OnDisplayMetricsChanged(const display::Display& display,
                                              uint32_t changed_metrics) {
   if (changed_metrics & display::DisplayObserver::DisplayMetric::
