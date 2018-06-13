@@ -16,6 +16,10 @@
 // Notifies consumer to defocus the omnibox (for example on tab change).
 - (void)defocusOmnibox;
 
+// Notifies the consumer to update after a navigation to NTP. Will be called
+// after -updateLocationText. Used for triggering NTP-specific location bar UI.
+- (void)updateAfterNavigatingToNTP;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_CONSUMER_H_
