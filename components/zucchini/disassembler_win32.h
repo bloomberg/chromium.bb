@@ -30,7 +30,7 @@ struct Win32X86Traits {
   static constexpr ExecutableType kExeType = kExeTypeWin32X86;
   enum : uint16_t { kMagic = 0x10B };
   enum : uint16_t { kRelocType = 3 };
-  enum : offset_t { kVAWidth = 4 };
+  enum : uint32_t { kVAWidth = 4 };
   static const char kExeTypeString[];
 
   using ImageOptionalHeader = pe::ImageOptionalHeader;
@@ -43,7 +43,7 @@ struct Win32X64Traits {
   static constexpr ExecutableType kExeType = kExeTypeWin32X64;
   enum : uint16_t { kMagic = 0x20B };
   enum : uint16_t { kRelocType = 10 };
-  enum : offset_t { kVAWidth = 8 };
+  enum : uint32_t { kVAWidth = 8 };
   static const char kExeTypeString[];
 
   using ImageOptionalHeader = pe::ImageOptionalHeader64;
