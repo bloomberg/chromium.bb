@@ -15,23 +15,22 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
-// Class that wraps IdentityManager in a KeyedService (as IdentityManager is a
-// client-side library intended for use by any process, it would be a layering
+// Subclass that wraps IdentityManager in a KeyedService (as IdentityManager is
+// a client-side library intended for use by any process, it would be a layering
 // violation for IdentityManager itself to have direct knowledge of
 // KeyedService).
-class IdentityManagerHolder : public KeyedService {
+// NOTE: Do not add any code here that further ties IdentityManager to
+// ChromeBrowserState without communicating with
+// {blundell, sdefresne}@chromium.org.
+class IdentityManagerWrapper : public KeyedService,
+                               public identity::IdentityManager {
  public:
-  explicit IdentityManagerHolder(ios::ChromeBrowserState* browser_state)
-      : identity_manager_(
+  explicit IdentityManagerWrapper(ios::ChromeBrowserState* browser_state)
+      : identity::IdentityManager(
             ios::SigninManagerFactory::GetForBrowserState(browser_state),
             ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
             ios::AccountTrackerServiceFactory::GetForBrowserState(
                 browser_state)) {}
-
-  identity::IdentityManager* identity_manager() { return &identity_manager_; }
-
- private:
-  identity::IdentityManager identity_manager_;
 };
 
 IdentityManagerFactory::IdentityManagerFactory()
@@ -48,10 +47,8 @@ IdentityManagerFactory::~IdentityManagerFactory() {}
 // static
 identity::IdentityManager* IdentityManagerFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
-  IdentityManagerHolder* holder = static_cast<IdentityManagerHolder*>(
+  return static_cast<IdentityManagerWrapper*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
-
-  return holder->identity_manager();
 }
 
 // static
@@ -61,6 +58,6 @@ IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
 
 std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
-  return std::make_unique<IdentityManagerHolder>(
+  return std::make_unique<IdentityManagerWrapper>(
       ios::ChromeBrowserState::FromBrowserState(browser_state));
 }

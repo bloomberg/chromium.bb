@@ -21,23 +21,22 @@
 
 namespace ios_web_view {
 
-// Class that wraps IdentityManager in a KeyedService (as IdentityManager is a
-// client-side library intended for use by any process, it would be a layering
+// Subclass that wraps IdentityManager in a KeyedService (as IdentityManager is
+// a client-side library intended for use by any process, it would be a layering
 // violation for IdentityManager itself to have direct knowledge of
 // KeyedService).
-class IdentityManagerHolder : public KeyedService {
+// NOTE: Do not add any code here that further ties IdentityManager to
+// WebViewBrowserState without communicating with
+// {blundell, sdefresne}@chromium.org.
+class IdentityManagerWrapper : public KeyedService,
+                               public identity::IdentityManager {
  public:
-  explicit IdentityManagerHolder(WebViewBrowserState* browser_state)
-      : identity_manager_(
+  explicit IdentityManagerWrapper(WebViewBrowserState* browser_state)
+      : identity::IdentityManager(
             WebViewSigninManagerFactory::GetForBrowserState(browser_state),
             WebViewOAuth2TokenServiceFactory::GetForBrowserState(browser_state),
             WebViewAccountTrackerServiceFactory::GetForBrowserState(
                 browser_state)) {}
-
-  identity::IdentityManager* identity_manager() { return &identity_manager_; }
-
- private:
-  identity::IdentityManager identity_manager_;
 };
 
 WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()
@@ -54,10 +53,8 @@ WebViewIdentityManagerFactory::~WebViewIdentityManagerFactory() {}
 // static
 identity::IdentityManager* WebViewIdentityManagerFactory::GetForBrowserState(
     WebViewBrowserState* browser_state) {
-  IdentityManagerHolder* holder = static_cast<IdentityManagerHolder*>(
+  return static_cast<IdentityManagerWrapper*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
-
-  return holder->identity_manager();
 }
 
 // static
@@ -68,7 +65,7 @@ WebViewIdentityManagerFactory* WebViewIdentityManagerFactory::GetInstance() {
 std::unique_ptr<KeyedService>
 WebViewIdentityManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
-  return std::make_unique<IdentityManagerHolder>(
+  return std::make_unique<IdentityManagerWrapper>(
       WebViewBrowserState::FromBrowserState(browser_state));
 }
 
