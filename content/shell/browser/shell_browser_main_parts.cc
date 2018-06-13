@@ -216,6 +216,11 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   off_the_record_browser_context_.reset();
 }
 
+void ShellBrowserMainParts::PreDefaultMainMessageLoopRun(
+    base::OnceClosure quit_closure) {
+  Shell::SetMainMessageLoopQuitClosure(std::move(quit_closure));
+}
+
 void ShellBrowserMainParts::PostDestroyThreads() {
 #if defined(OS_CHROMEOS)
   device::BluetoothAdapterFactory::Shutdown();

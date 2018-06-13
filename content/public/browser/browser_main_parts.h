@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_MAIN_PARTS_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_MAIN_PARTS_H_
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -94,6 +95,10 @@ class CONTENT_EXPORT BrowserMainParts {
   // If this returns false, the default implementation will be run.
   // May set |result_code|, which will be returned by |BrowserMain()|.
   virtual bool MainMessageLoopRun(int* result_code);
+
+  // Provides an embedder with a Closure which will quit the default main
+  // message loop. This is call only if MainMessageLoopRun returns false.
+  virtual void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) {}
 
   // This happens after the main message loop has stopped, but before
   // threads are stopped.

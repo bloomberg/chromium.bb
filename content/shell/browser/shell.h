@@ -112,8 +112,12 @@ class Shell : public WebContentsDelegate,
   // Returns the currently open windows.
   static std::vector<Shell*>& windows() { return windows_; }
 
-  // Closes all windows and returns. This runs a message loop.
+  // Closes all windows and returns.
   static void CloseAllWindows();
+
+  // Stores the supplied |quit_closure|, to be run when the last Shell instance
+  // is destroyed.
+  static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
 
   // Used for content_browsertests. Called once.
   static void SetShellCreatedCallback(
