@@ -630,7 +630,7 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   layout.SetKey(printing::kSettingPrintableAreaY, base::Value(17));
   layout.SetKey(printing::kSettingPrintableAreaWidth, base::Value(578));
   layout.SetKey(printing::kSettingPrintableAreaHeight, base::Value(734));
-  handler()->SendPageLayoutReady(layout, false);
+  handler()->SendPageLayoutReady(layout, false, preview_request_id);
 
   // Verify that page-layout-ready webUI event was fired.
   AssertWebUIEventFired(*web_ui()->call_data().back(), "page-layout-ready");
@@ -653,7 +653,8 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   // None of these should work since there has been no new preview request.
   // Check that there are no new web UI messages sent.
   size_t message_count = web_ui()->call_data().size();
-  handler()->SendPageLayoutReady(base::DictionaryValue(), false);
+  handler()->SendPageLayoutReady(base::DictionaryValue(), false,
+                                 preview_request_id);
   EXPECT_EQ(message_count, web_ui()->call_data().size());
   handler()->SendPageCountReady(1, 0, -1);
   EXPECT_EQ(message_count, web_ui()->call_data().size());

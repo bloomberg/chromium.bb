@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/prefs/pref_service.h"
+#include "components/printing/common/print_messages.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/site_instance.h"
@@ -203,7 +204,8 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
   // Test with invalid |preview_ui_addr|.
   bool cancel = false;
   const int32_t kInvalidId = -5;
-  preview_ui->GetCurrentPrintPreviewStatus(kInvalidId, 0, &cancel);
+  preview_ui->GetCurrentPrintPreviewStatus(
+      PrintHostMsg_PreviewIds(0, kInvalidId), &cancel);
   EXPECT_TRUE(cancel);
 
   const int kFirstRequestId = 1000;
@@ -213,24 +215,24 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
   // Test with kFirstRequestId.
   preview_ui->OnPrintPreviewRequest(kFirstRequestId);
   cancel = true;
-  preview_ui->GetCurrentPrintPreviewStatus(preview_ui_addr, kFirstRequestId,
-                                           &cancel);
+  preview_ui->GetCurrentPrintPreviewStatus(
+      PrintHostMsg_PreviewIds(kFirstRequestId, preview_ui_addr), &cancel);
   EXPECT_FALSE(cancel);
 
   cancel = false;
-  preview_ui->GetCurrentPrintPreviewStatus(preview_ui_addr, kSecondRequestId,
-                                           &cancel);
+  preview_ui->GetCurrentPrintPreviewStatus(
+      PrintHostMsg_PreviewIds(kSecondRequestId, preview_ui_addr), &cancel);
   EXPECT_TRUE(cancel);
 
   // Test with kSecondRequestId.
   preview_ui->OnPrintPreviewRequest(kSecondRequestId);
   cancel = false;
-  preview_ui->GetCurrentPrintPreviewStatus(preview_ui_addr, kFirstRequestId,
-                                           &cancel);
+  preview_ui->GetCurrentPrintPreviewStatus(
+      PrintHostMsg_PreviewIds(kFirstRequestId, preview_ui_addr), &cancel);
   EXPECT_TRUE(cancel);
 
   cancel = true;
-  preview_ui->GetCurrentPrintPreviewStatus(preview_ui_addr, kSecondRequestId,
-                                           &cancel);
+  preview_ui->GetCurrentPrintPreviewStatus(
+      PrintHostMsg_PreviewIds(kSecondRequestId, preview_ui_addr), &cancel);
   EXPECT_FALSE(cancel);
 }

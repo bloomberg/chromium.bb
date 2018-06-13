@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_PRINT_PREVIEW_PRINT_PREVIEW_HANDLER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
-#include "base/containers/queue.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -65,14 +65,17 @@ class PrintPreviewHandler
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
 
-  // Called when print preview failed.
-  void OnPrintPreviewFailed();
+  // Called when print preview failed. |request_id| identifies the request that
+  // failed.
+  void OnPrintPreviewFailed(int request_id);
 
-  // Called when print preview is cancelled due to a new request.
-  void OnPrintPreviewCancelled();
+  // Called when print preview is cancelled due to a new request. |request_id|
+  // identifies the cancelled request.
+  void OnPrintPreviewCancelled(int request_id);
 
-  // Called when printer settings were invalid.
-  void OnInvalidPrinterSettings();
+  // Called when printer settings were invalid. |request_id| identifies the
+  // request that requested the printer with invalid settings.
+  void OnInvalidPrinterSettings(int request_id);
 
   // Called when print preview is ready.
   void OnPrintPreviewReady(int preview_uid, int request_id);
@@ -81,7 +84,10 @@ class PrintPreviewHandler
   void OnPrintRequestCancelled();
 
   // Send the print preset options from the document.
-  void SendPrintPresetOptions(bool disable_scaling, int copies, int duplex);
+  void SendPrintPresetOptions(bool disable_scaling,
+                              int copies,
+                              int duplex,
+                              int request_id);
 
   // Send the print preview page count and fit to page scaling
   void SendPageCountReady(int page_count,
@@ -90,7 +96,8 @@ class PrintPreviewHandler
 
   // Send the default page layout
   void SendPageLayoutReady(const base::DictionaryValue& layout,
-                           bool has_custom_page_size_style);
+                           bool has_custom_page_size_style,
+                           int request_id);
 
   // Notify the WebUI that the page preview is ready.
   void SendPagePreviewReady(int page_index,
@@ -147,6 +154,18 @@ class PrintPreviewHandler
   content::WebContents* preview_web_contents() const;
 
   PrintPreviewUI* print_preview_ui() const;
+
+  // Whether the the handler should be receiving messages from the renderer to
+  // forward to the Print Preview JS in response to preview request with id
+  // |request_id|. Kills the renderer if the handler should not be receiving
+  // messages, or if |request_id| does not correspond to an outstanding request.
+  bool ShouldReceiveRendererMessage(int request_id);
+
+  // Gets the preview callback id associated with |request_id| and removes it
+  // from the |preview_callbacks_| map. Returns an empty string and kills the
+  // renderer if no callback is found, the handler should not be receiving
+  // messages, or if |request_id| is invalid.
+  std::string GetCallbackId(int request_id);
 
   // Gets the list of printers. First element of |args| is the Javascript
   // callback, second element of |args| is the printer type to fetch.
@@ -320,7 +339,8 @@ class PrintPreviewHandler
   // GetPrinterHandler().
   std::unique_ptr<PrinterHandler> local_printer_handler_;
 
-  base::queue<std::string> preview_callbacks_;
+  // Maps preview request ids to callbacks.
+  std::map<int, std::string> preview_callbacks_;
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;
 

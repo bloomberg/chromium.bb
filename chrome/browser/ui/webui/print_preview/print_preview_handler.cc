@@ -600,6 +600,37 @@ PrintPreviewUI* PrintPreviewHandler::print_preview_ui() const {
   return static_cast<PrintPreviewUI*>(web_ui()->GetController());
 }
 
+bool PrintPreviewHandler::ShouldReceiveRendererMessage(int request_id) {
+  if (!IsJavascriptAllowed()) {
+    BadMessageReceived();
+    return false;
+  }
+
+  if (!base::ContainsKey(preview_callbacks_, request_id)) {
+    BadMessageReceived();
+    return false;
+  }
+
+  return true;
+}
+
+std::string PrintPreviewHandler::GetCallbackId(int request_id) {
+  std::string result;
+  if (!IsJavascriptAllowed()) {
+    BadMessageReceived();
+    return result;
+  }
+
+  auto it = preview_callbacks_.find(request_id);
+  if (it == preview_callbacks_.end()) {
+    BadMessageReceived();
+    return result;
+  }
+  result = it->second;
+  preview_callbacks_.erase(it);
+  return result;
+}
+
 void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* args) {
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
@@ -680,7 +711,8 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   settings->GetInteger(printing::kPreviewRequestID, &request_id);
   CHECK_GT(request_id, -1);
 
-  preview_callbacks_.push(callback_id);
+  CHECK(!base::ContainsKey(preview_callbacks_, request_id));
+  preview_callbacks_[request_id] = callback_id;
   print_preview_ui()->OnPrintPreviewRequest(request_id);
   // Add an additional key in order to identify |print_preview_ui| later on
   // when calling PrintPreviewUI::GetCurrentPrintPreviewStatus() on the IO
@@ -1117,50 +1149,41 @@ void PrintPreviewHandler::OnAddAccountToCookieCompleted(
 }
 
 void PrintPreviewHandler::OnPrintPreviewReady(int preview_uid, int request_id) {
-  if (request_id < 0 || preview_callbacks_.empty() || !IsJavascriptAllowed()) {
-    // invalid ID or extra message
-    BadMessageReceived();
+  std::string callback_id = GetCallbackId(request_id);
+  if (callback_id.empty())
     return;
-  }
 
-  ResolveJavascriptCallback(base::Value(preview_callbacks_.front()),
-                            base::Value(preview_uid));
-  preview_callbacks_.pop();
+  ResolveJavascriptCallback(base::Value(callback_id), base::Value(preview_uid));
 }
 
-void PrintPreviewHandler::OnPrintPreviewFailed() {
-  if (preview_callbacks_.empty() || !IsJavascriptAllowed()) {
-    BadMessageReceived();
+void PrintPreviewHandler::OnPrintPreviewFailed(int request_id) {
+  std::string callback_id = GetCallbackId(request_id);
+  if (callback_id.empty())
     return;
-  }
 
   if (!reported_failed_preview_) {
     reported_failed_preview_ = true;
     ReportUserActionHistogram(PREVIEW_FAILED);
   }
-  RejectJavascriptCallback(base::Value(preview_callbacks_.front()),
+  RejectJavascriptCallback(base::Value(callback_id),
                            base::Value("PREVIEW_FAILED"));
-  preview_callbacks_.pop();
 }
 
-void PrintPreviewHandler::OnInvalidPrinterSettings() {
-  if (preview_callbacks_.empty() || !IsJavascriptAllowed()) {
-    BadMessageReceived();
+void PrintPreviewHandler::OnInvalidPrinterSettings(int request_id) {
+  std::string callback_id = GetCallbackId(request_id);
+  if (callback_id.empty())
     return;
-  }
 
-  RejectJavascriptCallback(base::Value(preview_callbacks_.front()),
+  RejectJavascriptCallback(base::Value(callback_id),
                            base::Value("SETTINGS_INVALID"));
-  preview_callbacks_.pop();
 }
 
 void PrintPreviewHandler::SendPrintPresetOptions(bool disable_scaling,
                                                  int copies,
-                                                 int duplex) {
-  if (preview_callbacks_.empty() || !IsJavascriptAllowed()) {
-    BadMessageReceived();
+                                                 int duplex,
+                                                 int request_id) {
+  if (!ShouldReceiveRendererMessage(request_id))
     return;
-  }
 
   FireWebUIListener("print-preset-options", base::Value(disable_scaling),
                     base::Value(copies), base::Value(duplex));
@@ -1169,10 +1192,8 @@ void PrintPreviewHandler::SendPrintPresetOptions(bool disable_scaling,
 void PrintPreviewHandler::SendPageCountReady(int page_count,
                                              int request_id,
                                              int fit_to_page_scaling) {
-  if (preview_callbacks_.empty() || !IsJavascriptAllowed()) {
-    BadMessageReceived();
+  if (!ShouldReceiveRendererMessage(request_id))
     return;
-  }
 
   FireWebUIListener("page-count-ready", base::Value(page_count),
                     base::Value(request_id), base::Value(fit_to_page_scaling));
@@ -1180,11 +1201,10 @@ void PrintPreviewHandler::SendPageCountReady(int page_count,
 
 void PrintPreviewHandler::SendPageLayoutReady(
     const base::DictionaryValue& layout,
-    bool has_custom_page_size_style) {
-  if (preview_callbacks_.empty() || !IsJavascriptAllowed()) {
-    BadMessageReceived();
+    bool has_custom_page_size_style,
+    int request_id) {
+  if (!ShouldReceiveRendererMessage(request_id))
     return;
-  }
 
   FireWebUIListener("page-layout-ready", layout,
                     base::Value(has_custom_page_size_style));
@@ -1193,29 +1213,19 @@ void PrintPreviewHandler::SendPageLayoutReady(
 void PrintPreviewHandler::SendPagePreviewReady(int page_index,
                                                int preview_uid,
                                                int preview_response_id) {
-  if (!IsJavascriptAllowed()) {
-    BadMessageReceived();
+  if (!ShouldReceiveRendererMessage(preview_response_id))
     return;
-  }
 
   FireWebUIListener("page-preview-ready", base::Value(page_index),
                     base::Value(preview_uid), base::Value(preview_response_id));
 }
 
-void PrintPreviewHandler::OnPrintPreviewCancelled() {
-  if (!IsJavascriptAllowed()) {
-    BadMessageReceived();
+void PrintPreviewHandler::OnPrintPreviewCancelled(int request_id) {
+  std::string callback_id = GetCallbackId(request_id);
+  if (callback_id.empty())
     return;
-  }
 
-  if (preview_callbacks_.empty()) {
-    BadMessageReceived();
-    return;
-  }
-
-  RejectJavascriptCallback(base::Value(preview_callbacks_.front()),
-                           base::Value("CANCELLED"));
-  preview_callbacks_.pop();
+  RejectJavascriptCallback(base::Value(callback_id), base::Value("CANCELLED"));
 }
 
 void PrintPreviewHandler::OnPrintRequestCancelled() {

@@ -152,6 +152,14 @@ PrintHostMsg_RequestPrintPreview_Params::
 PrintHostMsg_RequestPrintPreview_Params::
     ~PrintHostMsg_RequestPrintPreview_Params() {}
 
+PrintHostMsg_PreviewIds::PrintHostMsg_PreviewIds()
+    : request_id(-1), ui_id(-1) {}
+
+PrintHostMsg_PreviewIds::PrintHostMsg_PreviewIds(int request_id, int ui_id)
+    : request_id(request_id), ui_id(ui_id) {}
+
+PrintHostMsg_PreviewIds::~PrintHostMsg_PreviewIds() {}
+
 PrintHostMsg_SetOptionsFromDocument_Params::
     PrintHostMsg_SetOptionsFromDocument_Params()
     : is_scaling_disabled(false),

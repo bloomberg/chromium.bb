@@ -100,20 +100,21 @@ void PrintMockRenderThread::OnDidPrintDocument(
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintMockRenderThread::OnDidGetPreviewPageCount(
-    const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
+    const PrintHostMsg_DidGetPreviewPageCount_Params& params,
+    const PrintHostMsg_PreviewIds& ids) {
   print_preview_pages_remaining_ = params.page_count;
 }
 
 void PrintMockRenderThread::OnDidPreviewPage(
-    const PrintHostMsg_DidPreviewPage_Params& params) {
+    const PrintHostMsg_DidPreviewPage_Params& params,
+    const PrintHostMsg_PreviewIds& ids) {
   DCHECK_GE(params.page_number, printing::FIRST_PAGE_INDEX);
   print_preview_pages_remaining_--;
   print_preview_pages_.emplace_back(params.page_number,
                                     params.content.data_size);
 }
 
-void PrintMockRenderThread::OnCheckForCancel(int32_t preview_ui_id,
-                                             int preview_request_id,
+void PrintMockRenderThread::OnCheckForCancel(const PrintHostMsg_PreviewIds& ids,
                                              bool* cancel) {
   *cancel =
       (print_preview_pages_remaining_ == print_preview_cancel_page_number_);
