@@ -103,7 +103,6 @@ class PDFiumEngine : public PDFEngine,
   pp::Rect GetPageScreenRect(int page_index) const override;
   int GetVerticalScrollbarYPosition() override;
   void SetGrayscale(bool grayscale) override;
-  void OnCallback(int id) override;
   void OnTouchTimerCallback(int id) override;
   int GetCharCount(int page_index) override;
   pp::FloatRect GetCharBounds(int page_index, int char_index) override;
@@ -512,18 +511,9 @@ class PDFiumEngine : public PDFEngine,
   bool getting_password_ = false;
   int password_tries_remaining_ = 0;
 
-  // Used to manage timers that form fill API needs. The key is the timer id.
-  // The value holds the timer period and the callback function.
-  struct FormFillTimerData {
-    FormFillTimerData(base::TimeDelta period, TimerCallback callback);
-
-    base::TimeDelta timer_period;
-    TimerCallback timer_callback;
-  };
-
-  // Needs to be above pages_, as destroying a page may stop timers.
-  std::map<int, const FormFillTimerData> formfill_timers_;
-  int next_formfill_timer_id_ = 0;
+  // Needs to be above pages_, as destroying a page may call some methods of
+  // form filler.
+  PDFiumFormFiller form_filler_;
 
   // Interface structure to provide access to document stream.
   FPDF_FILEACCESS file_access_;
@@ -701,7 +691,6 @@ class PDFiumEngine : public PDFEngine,
 
   bool edit_mode_ = false;
 
-  PDFiumFormFiller form_filler_;
   PDFiumPrint print_;
 
   DISALLOW_COPY_AND_ASSIGN(PDFiumEngine);
