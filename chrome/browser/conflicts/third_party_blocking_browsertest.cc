@@ -13,6 +13,7 @@
 #include "base/scoped_native_library.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_reg_util_win.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_updater_win.h"
 #include "chrome/browser/conflicts/module_blacklist_cache_util_win.h"
@@ -158,6 +159,9 @@ class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
 //       browser launch.
 IN_PROC_BROWSER_TEST_F(ThirdPartyBlockingBrowserTest,
                        CreateModuleBlacklistCache) {
+  if (base::win::GetVersion() < base::win::VERSION_WIN10)
+    return;
+
   base::FilePath module_list_path;
   ASSERT_NO_FATAL_FAILURE(CreateModuleList(&module_list_path));
   ASSERT_FALSE(module_list_path.empty());
