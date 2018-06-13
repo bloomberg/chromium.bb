@@ -107,14 +107,14 @@ class CC_EXPORT LayerImpl {
   void SetScrollTreeIndex(int index);
   int scroll_tree_index() const { return scroll_tree_index_; }
 
-  void set_offset_to_transform_parent(const gfx::Vector2dF& offset) {
+  void SetOffsetToTransformParent(const gfx::Vector2dF& offset) {
     offset_to_transform_parent_ = offset;
   }
   gfx::Vector2dF offset_to_transform_parent() const {
     return offset_to_transform_parent_;
   }
 
-  void set_should_flatten_transform_from_property_tree(bool should_flatten) {
+  void SetShouldFlattenTransformFromPropertyTree(bool should_flatten) {
     should_flatten_transform_from_property_tree_ = should_flatten;
   }
   bool should_flatten_transform_from_property_tree() const {

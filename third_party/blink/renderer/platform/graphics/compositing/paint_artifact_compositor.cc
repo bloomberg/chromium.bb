@@ -619,7 +619,7 @@ class SynthesizedClip : private cc::ContentLayerClient {
     if (local_rrect_ != new_local_rrect || path_in_layer_changed) {
       layer_->SetNeedsDisplay();
     }
-    layer_->set_offset_to_transform_parent(new_layer_origin);
+    layer_->SetOffsetToTransformParent(new_layer_origin);
     layer_->SetBounds(gfx::Size(layer_bounds.Width(), layer_bounds.Height()));
 
     layer_origin_ = new_layer_origin;
@@ -754,7 +754,7 @@ void PaintArtifactCompositor::Update(
     int scroll_id =
         property_tree_manager.EnsureCompositorScrollNode(&scroll_translation);
 
-    layer->set_offset_to_transform_parent(layer_offset);
+    layer->SetOffsetToTransformParent(layer_offset);
 
     // Get the compositor element id for the layer. Scrollable layers are only
     // associated with scroll element ids which are set in

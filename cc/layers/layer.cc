@@ -1024,6 +1024,13 @@ int Layer::scroll_tree_index() const {
   return scroll_tree_index_;
 }
 
+void Layer::SetOffsetToTransformParent(gfx::Vector2dF offset) {
+  if (offset_to_transform_parent_ == offset)
+    return;
+  offset_to_transform_parent_ = offset;
+  SetNeedsPushProperties();
+}
+
 void Layer::InvalidatePropertyTreesIndices() {
   SetTransformTreeIndex(TransformTree::kInvalidNodeId);
   SetClipTreeIndex(ClipTree::kInvalidNodeId);
@@ -1174,7 +1181,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetEffectTreeIndex(effect_tree_index());
   layer->SetClipTreeIndex(clip_tree_index());
   layer->SetScrollTreeIndex(scroll_tree_index());
-  layer->set_offset_to_transform_parent(offset_to_transform_parent_);
+  layer->SetOffsetToTransformParent(offset_to_transform_parent_);
   layer->SetDrawsContent(DrawsContent());
   layer->SetHitTestableWithoutDrawsContent(
       hit_testable_without_draws_content());
@@ -1190,7 +1197,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTouchActionRegion(inputs_.touch_action_region);
   layer->SetContentsOpaque(inputs_.contents_opaque);
   layer->SetPosition(inputs_.position);
-  layer->set_should_flatten_transform_from_property_tree(
+  layer->SetShouldFlattenTransformFromPropertyTree(
       should_flatten_transform_from_property_tree_);
   layer->SetUseParentBackfaceVisibility(inputs_.use_parent_backface_visibility);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
@@ -1311,6 +1318,13 @@ void Layer::SetSubtreePropertyChanged() {
   SetNeedsPushProperties();
 }
 
+void Layer::SetShouldFlattenTransformFromPropertyTree(bool should_flatten) {
+  if (should_flatten_transform_from_property_tree_ == should_flatten)
+    return;
+  should_flatten_transform_from_property_tree_ = should_flatten;
+  SetNeedsPushProperties();
+}
+
 void Layer::SetMayContainVideo(bool yes) {
   if (may_contain_video_ == yes)
     return;
@@ -1372,10 +1386,6 @@ MutatorHost* Layer::GetMutatorHost() const {
 
 ElementListType Layer::GetElementTypeForAnimation() const {
   return ElementListType::ACTIVE;
-}
-
-ScrollbarLayerInterface* Layer::ToScrollbarLayer() {
-  return nullptr;
 }
 
 void Layer::RemoveFromClipTree() {

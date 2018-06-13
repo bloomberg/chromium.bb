@@ -61,8 +61,7 @@ TEST(PaintedOverlayScrollbarLayerTest, PaintTickmarks) {
   scrollbar_layer->SetBounds(gfx::Size(100, 100));
 
   layer_tree_host->SetRootLayer(scrollbar_layer);
-  EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
-            layer_tree_host.get());
+  EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host.get());
 
   // Request no paint when initialization.
   scrollbar_layer->Update();

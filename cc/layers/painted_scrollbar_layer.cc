@@ -109,10 +109,6 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_is_overlay_scrollbar(is_overlay_);
 }
 
-ScrollbarLayerInterface* PaintedScrollbarLayer::ToScrollbarLayer() {
-  return this;
-}
-
 void PaintedScrollbarLayer::SetLayerTreeHost(LayerTreeHost* host) {
   // When the LTH is set to null or has changed, then this layer should remove
   // all of its associated resources.

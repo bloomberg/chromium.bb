@@ -1050,7 +1050,7 @@ class LayerTreeHostFactory {
 };
 
 void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {
-  EXPECT_EQ(host, layer->GetLayerTreeHostForTesting());
+  EXPECT_EQ(host, layer->layer_tree_host());
 
   for (size_t i = 0; i < layer->children().size(); ++i)
     AssertLayerTreeHostMatchesForSubtree(layer->children()[i].get(), host);
@@ -1101,7 +1101,7 @@ TEST_F(LayerLayerTreeHostTest, AddingLayerSubtree) {
 
   layer_tree_host->SetRootLayer(parent.get());
 
-  EXPECT_EQ(parent->GetLayerTreeHostForTesting(), layer_tree_host.get());
+  EXPECT_EQ(parent->layer_tree_host(), layer_tree_host.get());
 
   // Adding a subtree to a layer already associated with a host should set the
   // host pointer on all layers in that subtree.
@@ -1181,10 +1181,9 @@ TEST_F(LayerLayerTreeHostTest, ChangeHostInSubtree) {
   second_parent->AddChild(second_child);
 
   // The moved layer and its children should point to the new host.
+  EXPECT_EQ(second_layer_tree_host.get(), second_child->layer_tree_host());
   EXPECT_EQ(second_layer_tree_host.get(),
-            second_child->GetLayerTreeHostForTesting());
-  EXPECT_EQ(second_layer_tree_host.get(),
-            second_grand_child->GetLayerTreeHostForTesting());
+            second_grand_child->layer_tree_host());
 
   // Test over, cleanup time.
   first_layer_tree_host->SetRootLayer(nullptr);
@@ -1210,8 +1209,8 @@ TEST_F(LayerLayerTreeHostTest, ReplaceMaskLayer) {
 
   // Replacing the mask should clear out the old mask's subtree's host pointers.
   parent->SetMaskLayer(mask_replacement.get());
-  EXPECT_EQ(nullptr, mask->GetLayerTreeHostForTesting());
-  EXPECT_EQ(nullptr, mask_child->GetLayerTreeHostForTesting());
+  EXPECT_EQ(nullptr, mask->layer_tree_host());
+  EXPECT_EQ(nullptr, mask_child->layer_tree_host());
 
   // Test over, cleanup time.
   layer_tree_host->SetRootLayer(nullptr);
