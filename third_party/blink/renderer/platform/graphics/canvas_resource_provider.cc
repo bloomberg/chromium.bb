@@ -307,7 +307,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     ResourceUsage usage,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     unsigned msaa_sample_count,
-    const CanvasColorParams& colorParams) {
+    const CanvasColorParams& colorParams,
+    PresentationMode presentation_mode) {
   const ResourceType* resource_type_fallback_list = nullptr;
   size_t list_length = 0;
 
@@ -335,9 +336,9 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
     switch (resource_type_fallback_list[i]) {
       case kTextureGpuMemoryBufferResourceType:
         DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
-        if (!RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled())
-          break;
-
+        if (presentation_mode !=
+            CanvasResourceProvider::kAllowImageChromiumPresentationMode)
+          continue;
         if (!gpu::IsImageFromGpuMemoryBufferFormatSupported(
                 colorParams.GetBufferFormat(),
                 context_provider_wrapper->ContextProvider()
@@ -355,6 +356,8 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
                 size, msaa_sample_count, colorParams, context_provider_wrapper);
         break;
       case kRamGpuMemoryBufferResourceType:
+        if (presentation_mode != kAllowImageChromiumPresentationMode)
+          continue;
         if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(
                 gfx::Size(size), colorParams.GetBufferFormat())) {
           continue;

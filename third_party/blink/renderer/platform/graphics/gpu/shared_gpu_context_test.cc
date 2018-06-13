@@ -115,7 +115,10 @@ TEST_F(SharedGpuContextTest, AccelerateImageBufferSurfaceAutoRecovery) {
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
           size, CanvasResourceProvider::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper());
+          SharedGpuContext::ContextProviderWrapper(),
+          0,  // msaa_sample_count
+          CanvasColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode);
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   EXPECT_TRUE(SharedGpuContext::IsValidWithoutRestoring());
 }
@@ -156,7 +159,10 @@ TEST_F(BadSharedGpuContextTest, AccelerateImageBufferSurfaceCreationFails) {
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
           size, CanvasResourceProvider::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper());
+          SharedGpuContext::ContextProviderWrapper(),
+          0,  // msaa_sample_count
+          CanvasColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode);
   EXPECT_FALSE(!resource_provider);
 }
 
@@ -184,7 +190,10 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCaching) {
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
           size, CanvasResourceProvider::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper());
+          SharedGpuContext::ContextProviderWrapper(),
+          0,  // msaa_sample_count
+          CanvasColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode);
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
   testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -221,7 +230,10 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
           size, CanvasResourceProvider::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper());
+          SharedGpuContext::ContextProviderWrapper(),
+          0,  // msaa_sample_count
+          CanvasColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode);
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
   testing::Mock::VerifyAndClearExpectations(&gl_);
@@ -250,7 +262,9 @@ TEST_F(MailboxSharedGpuContextTest, MailboxCacheSurvivesSkiaRecycling) {
   // Re-creating surface should recycle the old GrTexture inside skia
   resource_provider = CanvasResourceProvider::Create(
       size, CanvasResourceProvider::kAcceleratedResourceUsage,
-      SharedGpuContext::ContextProviderWrapper());
+      SharedGpuContext::ContextProviderWrapper(),
+      0,  // msaa_sample_count
+      CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode);
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   image = resource_provider->Snapshot();
 

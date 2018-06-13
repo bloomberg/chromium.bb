@@ -304,9 +304,14 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
           ? CanvasResourceProvider::kAcceleratedCompositedResourceUsage
           : CanvasResourceProvider::kSoftwareResourceUsage;
 
+  CanvasResourceProvider::PresentationMode presentation_mode =
+      RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()
+          ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
+          : CanvasResourceProvider::kDefaultPresentationMode;
+
   resource_host_->ReplaceResourceProvider(CanvasResourceProvider::Create(
       size_, usage, SharedGpuContext::ContextProviderWrapper(),
-      msaa_sample_count_, color_params_));
+      msaa_sample_count_, color_params_, presentation_mode));
   resource_provider = resource_host_->ResourceProvider();
 
   if (resource_provider) {
@@ -564,11 +569,15 @@ bool Canvas2DLayerBridge::Restore() {
     shared_gl = context_provider_wrapper->ContextProvider()->ContextGL();
 
   if (shared_gl && shared_gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
+    CanvasResourceProvider::PresentationMode presentation_mode =
+        RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()
+            ? CanvasResourceProvider::kAllowImageChromiumPresentationMode
+            : CanvasResourceProvider::kDefaultPresentationMode;
     std::unique_ptr<CanvasResourceProvider> resource_provider =
         CanvasResourceProvider::Create(
             size_, CanvasResourceProvider::kAcceleratedCompositedResourceUsage,
             std::move(context_provider_wrapper), msaa_sample_count_,
-            color_params_);
+            color_params_, presentation_mode);
 
     if (!resource_provider)
       ReportResourceProviderCreationFailure();

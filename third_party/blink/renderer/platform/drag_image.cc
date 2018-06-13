@@ -260,7 +260,11 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
   scaled_image_size.Scale(device_scale_factor);
   std::unique_ptr<CanvasResourceProvider> resource_provider(
       CanvasResourceProvider::Create(
-          scaled_image_size, CanvasResourceProvider::kSoftwareResourceUsage));
+          scaled_image_size, CanvasResourceProvider::kSoftwareResourceUsage,
+          nullptr,  // context_provider_wrapper
+          0,        // msaa_sample_count
+          CanvasColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode));
   if (!resource_provider)
     return nullptr;
 

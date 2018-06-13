@@ -249,49 +249,58 @@ void OffscreenCanvas::DiscardResourceProvider() {
 
 CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
   if (!ResourceProvider()) {
-    bool is_accelerated_2d_canvas_blacklisted = true;
-    if (SharedGpuContext::IsGpuCompositingEnabled()) {
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>
-          context_provider_wrapper = SharedGpuContext::ContextProviderWrapper();
-      if (context_provider_wrapper) {
-        const gpu::GpuFeatureInfo& gpu_feature_info =
-            context_provider_wrapper->ContextProvider()->GetGpuFeatureInfo();
-        if (gpu::kGpuFeatureStatusEnabled ==
-            gpu_feature_info
-                .status_values[gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS]) {
-          is_accelerated_2d_canvas_blacklisted = false;
-        }
+    bool can_use_gpu = false;
+    CanvasResourceProvider::PresentationMode presentation_mode =
+        CanvasResourceProvider::kDefaultPresentationMode;
+    if (Is2d()) {
+      if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
+        presentation_mode =
+            CanvasResourceProvider::kAllowImageChromiumPresentationMode;
       }
+      if (SharedGpuContext::IsGpuCompositingEnabled() &&
+          RuntimeEnabledFeatures::Accelerated2dCanvasEnabled()) {
+        can_use_gpu = true;
+      }
+    } else if (Is3d()) {
+      if (RuntimeEnabledFeatures::WebGLImageChromiumEnabled()) {
+        presentation_mode =
+            CanvasResourceProvider::kAllowImageChromiumPresentationMode;
+      }
+      can_use_gpu = SharedGpuContext::IsGpuCompositingEnabled();
     }
 
     IntSize surface_size(width(), height());
-    if (RuntimeEnabledFeatures::Accelerated2dCanvasEnabled() &&
-        !is_accelerated_2d_canvas_blacklisted) {
-      ReplaceResourceProvider(CanvasResourceProvider::Create(
-          surface_size, CanvasResourceProvider::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper(), 0,
-          context_->ColorParams()));
+    CanvasResourceProvider::ResourceUsage usage;
+    if (can_use_gpu) {
+      if (HasPlaceholderCanvas()) {
+        usage = CanvasResourceProvider::kAcceleratedCompositedResourceUsage;
+      } else {
+        usage = CanvasResourceProvider::kAcceleratedResourceUsage;
+      }
+    } else {
+      if (HasPlaceholderCanvas()) {
+        usage = CanvasResourceProvider::kSoftwareCompositedResourceUsage;
+      } else {
+        usage = CanvasResourceProvider::kSoftwareResourceUsage;
+      }
     }
 
-    if (!ResourceProvider() || !ResourceProvider()->IsValid()) {
-      ReplaceResourceProvider(CanvasResourceProvider::Create(
-          surface_size, CanvasResourceProvider::kSoftwareResourceUsage, nullptr,
-          0, context_->ColorParams()));
-    }
+    ReplaceResourceProvider(CanvasResourceProvider::Create(
+        surface_size, usage, SharedGpuContext::ContextProviderWrapper(), 0,
+        context_->ColorParams(), presentation_mode));
 
     if (ResourceProvider() && ResourceProvider()->IsValid()) {
       ResourceProvider()->Clear();
       // Always save an initial frame, to support resetting the top level matrix
       // and clip.
       ResourceProvider()->Canvas()->save();
-    }
 
-    if (ResourceProvider() && needs_matrix_clip_restore_) {
-      needs_matrix_clip_restore_ = false;
-      context_->RestoreCanvasMatrixClipStack(ResourceProvider()->Canvas());
+      if (needs_matrix_clip_restore_) {
+        needs_matrix_clip_restore_ = false;
+        context_->RestoreCanvasMatrixClipStack(ResourceProvider()->Canvas());
+      }
     }
   }
-
   return ResourceProvider();
 }
 
