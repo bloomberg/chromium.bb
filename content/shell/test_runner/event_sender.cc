@@ -621,9 +621,6 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void GestureScrollBegin(gin::Arguments* args);
   void GestureScrollEnd(gin::Arguments* args);
   void GestureScrollUpdate(gin::Arguments* args);
-  void GesturePinchBegin(gin::Arguments* args);
-  void GesturePinchEnd(gin::Arguments* args);
-  void GesturePinchUpdate(gin::Arguments* args);
   void GestureTap(gin::Arguments* args);
   void GestureTapDown(gin::Arguments* args);
   void GestureShowPress(gin::Arguments* args);
@@ -747,9 +744,6 @@ gin::ObjectTemplateBuilder EventSenderBindings::GetObjectTemplateBuilder(
       .SetMethod("gestureScrollEnd", &EventSenderBindings::GestureScrollEnd)
       .SetMethod("gestureScrollUpdate",
                  &EventSenderBindings::GestureScrollUpdate)
-      .SetMethod("gesturePinchBegin", &EventSenderBindings::GesturePinchBegin)
-      .SetMethod("gesturePinchEnd", &EventSenderBindings::GesturePinchEnd)
-      .SetMethod("gesturePinchUpdate", &EventSenderBindings::GesturePinchUpdate)
       .SetMethod("gestureTap", &EventSenderBindings::GestureTap)
       .SetMethod("gestureTapDown", &EventSenderBindings::GestureTapDown)
       .SetMethod("gestureShowPress", &EventSenderBindings::GestureShowPress)
@@ -973,21 +967,6 @@ void EventSenderBindings::GestureScrollEnd(gin::Arguments* args) {
 void EventSenderBindings::GestureScrollUpdate(gin::Arguments* args) {
   if (sender_)
     sender_->GestureScrollUpdate(args);
-}
-
-void EventSenderBindings::GesturePinchBegin(gin::Arguments* args) {
-  if (sender_)
-    sender_->GesturePinchBegin(args);
-}
-
-void EventSenderBindings::GesturePinchEnd(gin::Arguments* args) {
-  if (sender_)
-    sender_->GesturePinchEnd(args);
-}
-
-void EventSenderBindings::GesturePinchUpdate(gin::Arguments* args) {
-  if (sender_)
-    sender_->GesturePinchUpdate(args);
 }
 
 void EventSenderBindings::GestureTap(gin::Arguments* args) {
@@ -2138,18 +2117,6 @@ void EventSender::GestureScrollUpdate(gin::Arguments* args) {
   GestureEvent(WebInputEvent::kGestureScrollUpdate, args);
 }
 
-void EventSender::GesturePinchBegin(gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGesturePinchBegin, args);
-}
-
-void EventSender::GesturePinchEnd(gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGesturePinchEnd, args);
-}
-
-void EventSender::GesturePinchUpdate(gin::Arguments* args) {
-  GestureEvent(WebInputEvent::kGesturePinchUpdate, args);
-}
-
 void EventSender::GestureTap(gin::Arguments* args) {
   GestureEvent(WebInputEvent::kGestureTap, args);
 }
@@ -2408,24 +2375,6 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
     case WebInputEvent::kGestureFlingStart:
       event.SetPositionInWidget(current_gesture_location_);
       break;
-    case WebInputEvent::kGesturePinchBegin:
-    case WebInputEvent::kGesturePinchEnd:
-      current_gesture_location_ = WebFloatPoint(x, y);
-      event.SetPositionInWidget(current_gesture_location_);
-      break;
-    case WebInputEvent::kGesturePinchUpdate: {
-      float scale = 1;
-      if (!args->PeekNext().IsEmpty()) {
-        if (!args->GetNext(&scale)) {
-          args->ThrowError();
-          return;
-        }
-      }
-      event.data.pinch_update.scale = scale;
-      current_gesture_location_ = WebFloatPoint(x, y);
-      event.SetPositionInWidget(current_gesture_location_);
-      break;
-    }
     case WebInputEvent::kGestureTap: {
       float tap_count = 1;
       float width = 30;
