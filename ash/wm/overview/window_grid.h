@@ -67,19 +67,9 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   void PrepareForOverview();
 
   // Positions all the windows in rows of equal height scaling each window to
-  // fit that height.
-  // Layout is done in 2 stages maintaining fixed MRU ordering.
-  // 1. Optimal height is determined. In this stage |height| is bisected to find
-  //    maximum height which still allows all the windows to fit.
-  // 2. Row widths are balanced. In this stage the available width is reduced
-  //    until some windows are no longer fitting or until the difference between
-  //    the narrowest and the widest rows starts growing.
-  // Overall this achieves the goals of maximum size for previews (or maximum
-  // row height which is equivalent assuming fixed height), balanced rows and
-  // minimal wasted space.
-  // Optionally animates the windows to their targets when |animate| is true.
-  // If |ignored_item| is not null and is an item in |window_list_|, that item
-  // is not positioned. This is for split screen.
+  // fit that height. Optionally animates the windows to their targets when
+  // |animate| is true. If |ignored_item| is not null and is an item in
+  // |window_list_|, that item is not positioned. This is for split screen.
   void PositionWindows(bool animate,
                        WindowSelectorItem* ignored_item = nullptr);
 
@@ -215,9 +205,28 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // |should_animate_when_exiting_| and |should_be_observed_when_exiting_|.
   void ResetWindowListAnimationStates();
 
+  // Starts a nudge, with |item| being the item that may be deleted. This method
+  // calculates which items in |window_list_| are to be updated, and their
+  // destination bounds and fills |nudge_data_| accordingly.
+  void StartNudge(WindowSelectorItem* item);
+
+  // Moves items in |nudge_data_| towards their destination bounds based on
+  // |value|, which must be between 0.0 and 1.0.
+  void UpdateNudge(WindowSelectorItem* item, double value);
+
+  // Clears |nudge_data_|.
+  void EndNudge();
+
  private:
   class ShieldView;
   friend class WindowSelectorTest;
+
+  // Struct which holds data required to perform nudges.
+  struct NudgeData {
+    size_t index;
+    gfx::Rect src;
+    gfx::Rect dst;
+  };
 
   // Initializes the screen shield widget.
   void InitShieldWidget();
@@ -233,6 +242,18 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // Moves the selection widget to the targeted window.
   void MoveSelectionWidgetToTarget(bool animate);
+
+  // Gets the layout of the window selector items. Layout is done in 2 stages
+  // maintaining fixed MRU ordering.
+  // 1. Optimal height is determined. In this stage |height| is bisected to find
+  //    maximum height which still allows all the windows to fit.
+  // 2. Row widths are balanced. In this stage the available width is reduced
+  //    until some windows are no longer fitting or until the difference between
+  //    the narrowest and the widest rows starts growing.
+  // Overall this achieves the goals of maximum size for previews (or maximum
+  // row height which is equivalent assuming fixed height), balanced rows and
+  // minimal wasted space.
+  std::vector<gfx::Rect> GetWindowRects(WindowSelectorItem* ignored_item);
 
   // Attempts to fit all |out_rects| inside |bounds|. The method ensures that
   // the |out_rects| vector has appropriate size and populates it with the
@@ -308,6 +329,10 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
 
   // This WindowGrid's total bounds in screen coordinates.
   gfx::Rect bounds_;
+
+  // Collection of the items which should be nudged. This should only be
+  // non-empty if a nudge is in progress.
+  std::vector<NudgeData> nudge_data_;
 
   // Weak ptr to the observer monitoring the exit animation of the first MRU
   // window which covers the available workspace. The observer will be deleted

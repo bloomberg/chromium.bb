@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
+#include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_constants.h"
@@ -81,6 +82,8 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
         std::abs(distance.x()) < std::abs(distance.y())) {
       current_drag_behavior_ = DragBehavior::kDragToClose;
       original_opacity_ = item_->GetOpacity();
+      window_selector_->GetGridWithRootWindow(item_->root_window())
+          ->StartNudge(item_);
       did_move_ = true;
     } else {
       StartSplitViewDragMode(location_in_screen);
@@ -96,6 +99,8 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
                          initial_event_location_.y()) /
                 kDragToCloseDistanceThresholdDp;
     val = base::ClampToRange(val, 0.f, 1.f);
+    window_selector_->GetGridWithRootWindow(item_->root_window())
+        ->UpdateNudge(item_, val);
     float opacity = original_opacity_;
     if (opacity > kItemMinOpacity) {
       opacity = original_opacity_ - val * (original_opacity_ - kItemMinOpacity);
@@ -136,6 +141,7 @@ void OverviewWindowDragController::CompleteDrag(
           (location_in_screen - initial_event_location_).y() < 0);
     } else {
       item_->SetOpacity(original_opacity_);
+      window_selector_->GetGridWithRootWindow(item_->root_window())->EndNudge();
       window_selector_->PositionWindows(/*animate=*/true);
     }
   } else {

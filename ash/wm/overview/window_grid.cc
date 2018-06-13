@@ -360,120 +360,18 @@ void WindowGrid::PositionWindows(bool animate,
   if (window_list_.empty())
     return;
 
-  gfx::Rect total_bounds = bounds_;
-  // Windows occupy vertically centered area with additional vertical insets.
-  int horizontal_inset =
-      gfx::ToFlooredInt(std::min(kOverviewInsetRatio * total_bounds.width(),
-                                 kOverviewInsetRatio * total_bounds.height()));
-  int vertical_inset =
-      horizontal_inset +
-      kOverviewVerticalInset * (total_bounds.height() - 2 * horizontal_inset);
-  total_bounds.Inset(std::max(0, horizontal_inset - kWindowMargin),
-                     std::max(0, vertical_inset - kWindowMargin));
-  std::vector<gfx::Rect> rects;
+  std::vector<gfx::Rect> rects = GetWindowRects(ignored_item);
 
-  // Keep track of the lowest coordinate.
-  int max_bottom = total_bounds.y();
-
-  // Right bound of the narrowest row.
-  int min_right = total_bounds.right();
-  // Right bound of the widest row.
-  int max_right = total_bounds.x();
-
-  // Keep track of the difference between the narrowest and the widest row.
-  // Initially this is set to the worst it can ever be assuming the windows fit.
-  int width_diff = total_bounds.width();
-
-  // Initially allow the windows to occupy all available width. Shrink this
-  // available space horizontally to find the breakdown into rows that achieves
-  // the minimal |width_diff|.
-  int right_bound = total_bounds.right();
-
-  // Determine the optimal height bisecting between |low_height| and
-  // |high_height|. Once this optimal height is known, |height_fixed| is set to
-  // true and the rows are balanced by repeatedly squeezing the widest row to
-  // cause windows to overflow to the subsequent rows.
-  int low_height = 2 * kWindowMargin;
-  int high_height =
-      std::max(low_height, static_cast<int>(total_bounds.height() + 1));
-  int height = 0.5 * (low_height + high_height);
-  bool height_fixed = false;
-
-  // Repeatedly try to fit the windows |rects| within |right_bound|.
-  // If a maximum |height| is found such that all window |rects| fit, this
-  // fitting continues while shrinking the |right_bound| in order to balance the
-  // rows. If the windows fit the |right_bound| would have been decremented at
-  // least once so it needs to be incremented once before getting out of this
-  // loop and one additional pass made to actually fit the |rects|.
-  // If the |rects| cannot fit (e.g. there are too many windows) the bisection
-  // will still finish and we might increment the |right_bound| once pixel extra
-  // which is acceptable since there is an unused margin on the right.
-  bool make_last_adjustment = false;
-  while (true) {
-    gfx::Rect overview_bounds(total_bounds);
-    overview_bounds.set_width(right_bound - total_bounds.x());
-    bool windows_fit = FitWindowRectsInBounds(
-        overview_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
-        ignored_item, &rects, &max_bottom, &min_right, &max_right);
-
-    if (height_fixed) {
-      if (!windows_fit) {
-        // Revert the previous change to |right_bound| and do one last pass.
-        right_bound++;
-        make_last_adjustment = true;
-        break;
-      }
-      // Break if all the windows are zero-width at the current scale.
-      if (max_right <= total_bounds.x())
-        break;
-    } else {
-      // Find the optimal row height bisecting between |low_height| and
-      // |high_height|.
-      if (windows_fit)
-        low_height = height;
-      else
-        high_height = height;
-      height = 0.5 * (low_height + high_height);
-      // When height can no longer be improved, start balancing the rows.
-      if (height == low_height)
-        height_fixed = true;
-    }
-
-    if (windows_fit && height_fixed) {
-      if (max_right - min_right <= width_diff) {
-        // Row alignment is getting better. Try to shrink the |right_bound| in
-        // order to squeeze the widest row.
-        right_bound = max_right - 1;
-        width_diff = max_right - min_right;
-      } else {
-        // Row alignment is getting worse.
-        // Revert the previous change to |right_bound| and do one last pass.
-        right_bound++;
-        make_last_adjustment = true;
-        break;
-      }
-    }
-  }
-  // Once the windows in |window_list_| no longer fit, the change to
-  // |right_bound| was reverted. Perform one last pass to position the |rects|.
-  if (make_last_adjustment) {
-    gfx::Rect overview_bounds(total_bounds);
-    overview_bounds.set_width(right_bound - total_bounds.x());
-    FitWindowRectsInBounds(
-        overview_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
-        ignored_item, &rects, &max_bottom, &min_right, &max_right);
-  }
   // Position the windows centering the left-aligned rows vertically. Do not
   // position |ignored_item| if it is not nullptr and matches a item in
   // |window_list_|.
-  gfx::Vector2d offset(0, (total_bounds.bottom() - max_bottom) / 2);
   for (size_t i = 0; i < window_list_.size(); ++i) {
     if (ignored_item != nullptr && window_list_[i].get() == ignored_item)
       continue;
 
     const bool should_animate = window_list_[i]->ShouldAnimateWhenEntering();
     window_list_[i]->SetBounds(
-        rects[i] + offset,
+        rects[i],
         animate && should_animate
             ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
             : OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
@@ -901,6 +799,147 @@ void WindowGrid::ResetWindowListAnimationStates() {
     selector_item->ResetAnimationStates();
 }
 
+void WindowGrid::StartNudge(WindowSelectorItem* item) {
+  // When there is one window left, there is no need to nudge.
+  if (window_list_.size() <= 1) {
+    nudge_data_.clear();
+    return;
+  }
+
+  DCHECK(item);
+
+  // Get the bounds of the windows currently, and the bounds if |item| were to
+  // be removed.
+  std::vector<gfx::Rect> src_rects;
+  for (const auto& window_item : window_list_)
+    src_rects.push_back(window_item->target_bounds());
+
+  std::vector<gfx::Rect> dst_rects = GetWindowRects(item);
+
+  // Get the index of |item|.
+  size_t index =
+      std::find_if(
+          window_list_.begin(), window_list_.end(),
+          [&item](const std::unique_ptr<WindowSelectorItem>& item_ptr) {
+            return item == item_ptr.get();
+          }) -
+      window_list_.begin();
+  DCHECK_LT(index, window_list_.size());
+
+  // Returns a vector of integers indicating which row the item is in. |index|
+  // is the index of the element which is going to be deleted and should not
+  // factor into calculations. The call site should mark |index| as -1 if it
+  // should not be used. The item at |index| is marked with a 0. The heights of
+  // items are all set to the same value so a new row is determined if the y
+  // value has changed from the previous item.
+  auto get_rows = [](const std::vector<gfx::Rect>& bounds_list, size_t index) {
+    std::vector<int> row_numbers;
+    int current_row = 1;
+    int last_y = 0;
+    for (size_t i = 0; i < bounds_list.size(); ++i) {
+      if (i == index) {
+        row_numbers.push_back(0);
+        continue;
+      }
+
+      // Update |current_row| if the y position has changed (heights are all
+      // equal in overview, so a new y position indicates a new row).
+      if (last_y != 0 && last_y != bounds_list[i].y())
+        ++current_row;
+
+      row_numbers.push_back(current_row);
+      last_y = bounds_list[i].y();
+    }
+
+    return row_numbers;
+  };
+
+  std::vector<int> src_rows = get_rows(src_rects, -1);
+  std::vector<int> dst_rows = get_rows(dst_rects, index);
+
+  // Do nothing if the number of rows change.
+  if (dst_rows.back() != 0 && src_rows.back() != dst_rows.back())
+    return;
+  size_t second_last_index = src_rows.size() - 2;
+  if (dst_rows.back() == 0 &&
+      src_rows[second_last_index] != dst_rows[second_last_index]) {
+    return;
+  }
+
+  // TODO(sammiequon): We also want to do nothing if the an item from the
+  // previous row will drop onto the current row, this will cause the items to
+  // shift to the right, which looks weird.
+
+  // Helper to check whether the item at |item_index| will be nudged.
+  auto should_nudge = [&src_rows, &dst_rows, &index](size_t item_index) {
+    // Out of bounds.
+    if (item_index >= src_rows.size())
+      return false;
+
+    // Nudging happens when the item stays on the same row and is also on the
+    // same row as the item to be deleted was.
+    if (dst_rows[item_index] == src_rows[index] &&
+        dst_rows[item_index] == src_rows[item_index]) {
+      return true;
+    }
+
+    return false;
+  };
+
+  // Starting from |index| go up and down while the nudge condition returns
+  // true.
+  std::vector<int> affected_indexes;
+  size_t loop_index;
+
+  if (index > 0) {
+    loop_index = index - 1;
+    while (should_nudge(loop_index)) {
+      affected_indexes.push_back(loop_index);
+      --loop_index;
+    }
+  }
+
+  loop_index = index + 1;
+  while (should_nudge(loop_index)) {
+    affected_indexes.push_back(loop_index);
+    ++loop_index;
+  }
+
+  // Populate |nudge_data_| with the indexes in |affected_indexes| and their
+  // respective source and destination bounds.
+  nudge_data_.resize(affected_indexes.size());
+  for (size_t i = 0; i < affected_indexes.size(); ++i) {
+    NudgeData data;
+    data.index = affected_indexes[i];
+    data.src = src_rects[data.index];
+    data.dst = dst_rects[data.index];
+    nudge_data_[i] = data;
+  }
+}
+
+void WindowGrid::UpdateNudge(WindowSelectorItem* item, double value) {
+  DCHECK_GE(value, 0.0);
+  DCHECK_LE(value, 1.0);
+
+  for (const auto& data : nudge_data_) {
+    // TODO(sammiequon): This can happen if a new drag has started while
+    // a previous window is still animating out. Find a more graceful way to
+    // handle this.
+    if (data.index > window_list_.size())
+      continue;
+
+    WindowSelectorItem* nudged_item = window_list_[data.index].get();
+    // TODO(sammiequon): Use a better looking formula than linear
+    // interpolation.
+    gfx::Rect bounds = gfx::Tween::RectValueBetween(value, data.src, data.dst);
+    nudged_item->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
+  }
+}
+
+void WindowGrid::EndNudge() {
+  nudge_data_.clear();
+}
+
 void WindowGrid::InitShieldWidget() {
   // TODO(varkha): The code assumes that SHELF_BACKGROUND_MAXIMIZED is
   // synonymous with a black shelf background. Update this code if that
@@ -1053,6 +1092,118 @@ void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
     selector_shadow_->SetContentBounds(
         gfx::Rect(gfx::Point(1, 1), bounds.size()));
   }
+}
+
+std::vector<gfx::Rect> WindowGrid::GetWindowRects(
+    WindowSelectorItem* ignored_item) {
+  gfx::Rect total_bounds = bounds_;
+  // Windows occupy vertically centered area with additional vertical insets.
+  int horizontal_inset =
+      gfx::ToFlooredInt(std::min(kOverviewInsetRatio * total_bounds.width(),
+                                 kOverviewInsetRatio * total_bounds.height()));
+  int vertical_inset =
+      horizontal_inset +
+      kOverviewVerticalInset * (total_bounds.height() - 2 * horizontal_inset);
+  total_bounds.Inset(std::max(0, horizontal_inset - kWindowMargin),
+                     std::max(0, vertical_inset - kWindowMargin));
+  std::vector<gfx::Rect> rects;
+
+  // Keep track of the lowest coordinate.
+  int max_bottom = total_bounds.y();
+
+  // Right bound of the narrowest row.
+  int min_right = total_bounds.right();
+  // Right bound of the widest row.
+  int max_right = total_bounds.x();
+
+  // Keep track of the difference between the narrowest and the widest row.
+  // Initially this is set to the worst it can ever be assuming the windows fit.
+  int width_diff = total_bounds.width();
+
+  // Initially allow the windows to occupy all available width. Shrink this
+  // available space horizontally to find the breakdown into rows that achieves
+  // the minimal |width_diff|.
+  int right_bound = total_bounds.right();
+
+  // Determine the optimal height bisecting between |low_height| and
+  // |high_height|. Once this optimal height is known, |height_fixed| is set to
+  // true and the rows are balanced by repeatedly squeezing the widest row to
+  // cause windows to overflow to the subsequent rows.
+  int low_height = 2 * kWindowMargin;
+  int high_height =
+      std::max(low_height, static_cast<int>(total_bounds.height() + 1));
+  int height = 0.5 * (low_height + high_height);
+  bool height_fixed = false;
+
+  // Repeatedly try to fit the windows |rects| within |right_bound|.
+  // If a maximum |height| is found such that all window |rects| fit, this
+  // fitting continues while shrinking the |right_bound| in order to balance the
+  // rows. If the windows fit the |right_bound| would have been decremented at
+  // least once so it needs to be incremented once before getting out of this
+  // loop and one additional pass made to actually fit the |rects|.
+  // If the |rects| cannot fit (e.g. there are too many windows) the bisection
+  // will still finish and we might increment the |right_bound| once pixel extra
+  // which is acceptable since there is an unused margin on the right.
+  bool make_last_adjustment = false;
+  while (true) {
+    gfx::Rect overview_bounds(total_bounds);
+    overview_bounds.set_width(right_bound - total_bounds.x());
+    bool windows_fit = FitWindowRectsInBounds(
+        overview_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
+        ignored_item, &rects, &max_bottom, &min_right, &max_right);
+
+    if (height_fixed) {
+      if (!windows_fit) {
+        // Revert the previous change to |right_bound| and do one last pass.
+        right_bound++;
+        make_last_adjustment = true;
+        break;
+      }
+      // Break if all the windows are zero-width at the current scale.
+      if (max_right <= total_bounds.x())
+        break;
+    } else {
+      // Find the optimal row height bisecting between |low_height| and
+      // |high_height|.
+      if (windows_fit)
+        low_height = height;
+      else
+        high_height = height;
+      height = 0.5 * (low_height + high_height);
+      // When height can no longer be improved, start balancing the rows.
+      if (height == low_height)
+        height_fixed = true;
+    }
+
+    if (windows_fit && height_fixed) {
+      if (max_right - min_right <= width_diff) {
+        // Row alignment is getting better. Try to shrink the |right_bound| in
+        // order to squeeze the widest row.
+        right_bound = max_right - 1;
+        width_diff = max_right - min_right;
+      } else {
+        // Row alignment is getting worse.
+        // Revert the previous change to |right_bound| and do one last pass.
+        right_bound++;
+        make_last_adjustment = true;
+        break;
+      }
+    }
+  }
+  // Once the windows in |window_list_| no longer fit, the change to
+  // |right_bound| was reverted. Perform one last pass to position the |rects|.
+  if (make_last_adjustment) {
+    gfx::Rect overview_bounds(total_bounds);
+    overview_bounds.set_width(right_bound - total_bounds.x());
+    FitWindowRectsInBounds(
+        overview_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
+        ignored_item, &rects, &max_bottom, &min_right, &max_right);
+  }
+
+  gfx::Vector2d offset(0, (total_bounds.bottom() - max_bottom) / 2);
+  for (size_t i = 0; i < rects.size(); ++i)
+    rects[i] += offset;
+  return rects;
 }
 
 bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
