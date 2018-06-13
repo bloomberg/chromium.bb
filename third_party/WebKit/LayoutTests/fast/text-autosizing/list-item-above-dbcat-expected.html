@@ -10,13 +10,10 @@
     overflow: hidden;
   }
 </style>
-
-<script src="resources/autosizingTest.js"></script>
-
 </head>
 <body>
 
-<div>
+<div style="font-size:2.5em;">
 This test verifies that FastTextAutosizer considers a list item (LI) to be
 "text" for the purpose of determining the deepest block containing all text
 (DBCAT). If this were not the case, the cluster's DBCAT would be the DIV inside
@@ -24,7 +21,7 @@ the LI, which hasn't entered layout yet when the list marker is autosized (causi
 the autosizer to crash).
 </div>
 <ul style="float:left">
-<li style="width:800px;"><div>List item list item list item list item list item list item list item
+<li style="width:800px; font-size:2.5em;"><div>List item list item list item list item list item list item list item
 list item list item list item list item list item list item list item list item
 list item list item list item list item list item list item list item list item</div></li>
 </ul>
