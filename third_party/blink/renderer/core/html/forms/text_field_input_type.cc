@@ -494,8 +494,10 @@ void TextFieldInputType::AppendToFormData(FormData& form_data) const {
   InputType::AppendToFormData(form_data);
   const AtomicString& dirname_attr_value =
       GetElement().FastGetAttribute(dirnameAttr);
-  if (!dirname_attr_value.IsNull())
-    form_data.append(dirname_attr_value, GetElement().DirectionForFormData());
+  if (!dirname_attr_value.IsNull()) {
+    form_data.AppendFromElement(dirname_attr_value,
+                                GetElement().DirectionForFormData());
+  }
 }
 
 String TextFieldInputType::ConvertFromVisibleValue(

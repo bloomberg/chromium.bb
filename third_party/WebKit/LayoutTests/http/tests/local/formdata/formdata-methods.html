@@ -396,4 +396,78 @@ test(function() {
 
 }, 'FormData - iterators');
 
+test(function() {
+    var gen_different_crlf_keys = function(val) {
+        if (val.indexOf('\r\n') !== -1) {
+            return [val.replace('\r\n', '\r'), val.replace('\r\n', '\n')];
+        } else if (val.indexOf('\r') !== -1) {
+            return [val.replace('\r', '\n'), val.replace('\r', '\r\n')];
+        } else {
+            return [val.replace('\n', '\r'), val.replace('\n', '\r\n')];
+        }
+    }
+
+    var fd = new FormData();
+    fd.set('key\r1', 'value\r1');
+    fd.append('key\n2', 'value\n2');
+    fd.append('key\r\n3', 'value\r\n3');
+
+    var expected_keys = ['key\r1', 'key\n2', 'key\r\n3'];
+    var expected_values = ['value\r1', 'value\n2', 'value\r\n3'];
+
+    for (var i = 0; i < expected_keys.length; ++i) {
+        var expected_key = expected_keys[i];
+        var expected_value = expected_values[i];
+
+        assert_true(fd.has(expected_key),
+                    'has() should return true when tested with expected key');
+        assert_equals(fd.get(expected_key), expected_value,
+                    'get() should return the expected value');
+        var val_arr = fd.getAll(expected_key);
+        assert_true(val_arr.length === 1 && val_arr[0] === expected_value,
+                    'getAll() should return the expected value');
+
+        var wrong_keys = gen_different_crlf_keys(expected_key);
+
+        for (var j = 0; j < wrong_keys.length; ++j) {
+            var wrong_key = wrong_keys[j];
+            assert_false(fd.has(wrong_key),
+                         'has() should return false with keys in other CRLF form');
+            assert_equals(fd.get(wrong_key), null,
+                          'get() should return null with keys in other CRLF form');
+            assert_equals(fd.getAll(wrong_key).length, 0,
+                'getAll() should return empty array with keys in other CRLF form');
+        }
+    }
+
+    var count_keys = function(keys) {
+        var counter = 0;
+        for (var key of keys) {
+            ++counter;
+        }
+        return counter;
+    };
+
+    var fd = new FormData();
+    fd.set('test\rkey', 'value');
+    fd.append('test\nkey', 'value');
+    fd.append('test\r\nkey', 'value');
+
+    assert_equals(count_keys(fd.keys()), 3,
+        'Same key in different CRLF form should be treated as different keys');
+
+    fd.delete('test\rkey');
+    assert_equals(count_keys(fd.keys()), 2,
+                'delete() should only remove same CRLF form key from entries');
+
+    fd.delete('test\nkey');
+    assert_equals(count_keys(fd.keys()), 1,
+                'delete() should only remove same CRLF form key from entries');
+
+    fd.delete('test\r\nkey');
+    assert_equals(count_keys(fd.keys()), 0,
+                'delete() should only remove same CRLF form key from entries');
+
+}, 'FormData - no CRLF normalization');
+
 </script>

@@ -1232,7 +1232,7 @@ void HTMLSelectElement::AppendToFormData(FormData& form_data) {
 
   for (auto* const option : GetOptionList()) {
     if (option->Selected() && !option->IsDisabledFormControl())
-      form_data.append(name, option->value());
+      form_data.AppendFromElement(name, option->value());
   }
 }
 
