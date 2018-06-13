@@ -47,6 +47,7 @@ HttpCacheDataRemover::HttpCacheDataRemover(
     : delete_begin_(delete_begin),
       delete_end_(delete_end),
       done_callback_(std::move(done_callback)),
+      backend_(nullptr),
       weak_factory_(this) {
   DCHECK(!done_callback_.is_null());
 
@@ -97,31 +98,22 @@ std::unique_ptr<HttpCacheDataRemover> HttpCacheDataRemover::CreateAndStart(
       ->quic_stream_factory()
       ->ClearCachedStatesInCryptoConfig(remover->url_matcher_);
 
-  auto backend = std::make_unique<disk_cache::Backend*>();
-  disk_cache::Backend** backend_ptr = backend.get();
-  // IMPORTANT: we have to keep the callback on the stack so that |backend| is
-  // not deleted before this method returns, as its deletion would make
-  // |backend_ptr| invalid and it's needed for the CacheRetrieved() call below.
-  net::CompletionCallback callback =
-      base::Bind(&HttpCacheDataRemover::CacheRetrieved,
-                 remover->weak_factory_.GetWeakPtr(), base::Passed(&backend));
-  int rv = http_cache->GetBackend(backend_ptr, callback);
+  net::CompletionOnceCallback callback =
+      base::BindOnce(&HttpCacheDataRemover::CacheRetrieved,
+                     remover->weak_factory_.GetWeakPtr());
+  int rv = http_cache->GetBackend(&remover->backend_, std::move(callback));
   if (rv != net::ERR_IO_PENDING) {
-    remover->CacheRetrieved(
-        std::make_unique<disk_cache::Backend*>(*backend_ptr), rv);
+    remover->CacheRetrieved(rv);
   }
   return remover;
 }
 
-void HttpCacheDataRemover::CacheRetrieved(
-    std::unique_ptr<disk_cache::Backend*> backend,
-    int rv) {
+void HttpCacheDataRemover::CacheRetrieved(int rv) {
   DCHECK(done_callback_);
 
-  disk_cache::Backend* cache = *backend;
-
-  // |cache| can be null if it cannot be initialized.
-  if (!cache || rv != net::OK) {
+  // |backend_| can be null if it cannot be initialized.
+  if (rv != net::OK || !backend_) {
+    backend_ = nullptr;
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&HttpCacheDataRemover::ClearHttpCacheDone,
                                   weak_factory_.GetWeakPtr(), rv));
@@ -130,17 +122,17 @@ void HttpCacheDataRemover::CacheRetrieved(
 
   if (!url_matcher_.is_null()) {
     deletion_helper_ = ConditionalCacheDeletionHelper::CreateAndStart(
-        cache, url_matcher_, delete_begin_, delete_end_,
+        backend_, url_matcher_, delete_begin_, delete_end_,
         base::BindOnce(&HttpCacheDataRemover::ClearHttpCacheDone,
                        weak_factory_.GetWeakPtr(), net::OK));
     return;
   }
 
   if (delete_begin_.is_null() && delete_end_.is_max()) {
-    rv = cache->DoomAllEntries(base::Bind(
+    rv = backend_->DoomAllEntries(base::Bind(
         &HttpCacheDataRemover::ClearHttpCacheDone, weak_factory_.GetWeakPtr()));
   } else {
-    rv = cache->DoomEntriesBetween(
+    rv = backend_->DoomEntriesBetween(
         delete_begin_, delete_end_,
         base::Bind(&HttpCacheDataRemover::ClearHttpCacheDone,
                    weak_factory_.GetWeakPtr()));
