@@ -25,21 +25,21 @@ class VaapiH264Accelerator : public H264Decoder::H264Accelerator {
 
   // H264Decoder::H264Accelerator implementation.
   scoped_refptr<H264Picture> CreateH264Picture() override;
-  bool SubmitFrameMetadata(const H264SPS* sps,
-                           const H264PPS* pps,
-                           const H264DPB& dpb,
-                           const H264Picture::Vector& ref_pic_listp0,
-                           const H264Picture::Vector& ref_pic_listb0,
-                           const H264Picture::Vector& ref_pic_listb1,
-                           const scoped_refptr<H264Picture>& pic) override;
-  bool SubmitSlice(const H264PPS* pps,
-                   const H264SliceHeader* slice_hdr,
-                   const H264Picture::Vector& ref_pic_list0,
-                   const H264Picture::Vector& ref_pic_list1,
-                   const scoped_refptr<H264Picture>& pic,
-                   const uint8_t* data,
-                   size_t size) override;
-  bool SubmitDecode(const scoped_refptr<H264Picture>& pic) override;
+  Status SubmitFrameMetadata(const H264SPS* sps,
+                             const H264PPS* pps,
+                             const H264DPB& dpb,
+                             const H264Picture::Vector& ref_pic_listp0,
+                             const H264Picture::Vector& ref_pic_listb0,
+                             const H264Picture::Vector& ref_pic_listb1,
+                             const scoped_refptr<H264Picture>& pic) override;
+  Status SubmitSlice(const H264PPS* pps,
+                     const H264SliceHeader* slice_hdr,
+                     const H264Picture::Vector& ref_pic_list0,
+                     const H264Picture::Vector& ref_pic_list1,
+                     const scoped_refptr<H264Picture>& pic,
+                     const uint8_t* data,
+                     size_t size) override;
+  Status SubmitDecode(const scoped_refptr<H264Picture>& pic) override;
   bool OutputPicture(const scoped_refptr<H264Picture>& pic) override;
   void Reset() override;
 

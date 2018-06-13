@@ -45,27 +45,27 @@ class MockH264Accelerator : public H264Decoder::H264Accelerator {
   MockH264Accelerator() = default;
 
   MOCK_METHOD0(CreateH264Picture, scoped_refptr<H264Picture>());
-  MOCK_METHOD1(SubmitDecode, bool(const scoped_refptr<H264Picture>& pic));
+  MOCK_METHOD1(SubmitDecode, Status(const scoped_refptr<H264Picture>& pic));
   MOCK_METHOD1(OutputPicture, bool(const scoped_refptr<H264Picture>& pic));
 
-  bool SubmitFrameMetadata(const H264SPS* sps,
-                           const H264PPS* pps,
-                           const H264DPB& dpb,
-                           const H264Picture::Vector& ref_pic_listp0,
-                           const H264Picture::Vector& ref_pic_listb0,
-                           const H264Picture::Vector& ref_pic_listb1,
-                           const scoped_refptr<H264Picture>& pic) override {
-    return true;
+  Status SubmitFrameMetadata(const H264SPS* sps,
+                             const H264PPS* pps,
+                             const H264DPB& dpb,
+                             const H264Picture::Vector& ref_pic_listp0,
+                             const H264Picture::Vector& ref_pic_listb0,
+                             const H264Picture::Vector& ref_pic_listb1,
+                             const scoped_refptr<H264Picture>& pic) override {
+    return Status::kOk;
   }
 
-  bool SubmitSlice(const H264PPS* pps,
-                   const H264SliceHeader* slice_hdr,
-                   const H264Picture::Vector& ref_pic_list0,
-                   const H264Picture::Vector& ref_pic_list1,
-                   const scoped_refptr<H264Picture>& pic,
-                   const uint8_t* data,
-                   size_t size) override {
-    return true;
+  Status SubmitSlice(const H264PPS* pps,
+                     const H264SliceHeader* slice_hdr,
+                     const H264Picture::Vector& ref_pic_list0,
+                     const H264Picture::Vector& ref_pic_list1,
+                     const scoped_refptr<H264Picture>& pic,
+                     const uint8_t* data,
+                     size_t size) override {
+    return Status::kOk;
   }
 
   void Reset() override {}
@@ -106,7 +106,8 @@ void H264DecoderTest::SetUp() {
   ON_CALL(*accelerator_, CreateH264Picture()).WillByDefault(Invoke([]() {
     return new H264Picture();
   }));
-  ON_CALL(*accelerator_, SubmitDecode(_)).WillByDefault(Return(true));
+  ON_CALL(*accelerator_, SubmitDecode(_))
+      .WillByDefault(Return(H264Decoder::H264Accelerator::Status::kOk));
   ON_CALL(*accelerator_, OutputPicture(_)).WillByDefault(Return(true));
 }
 

@@ -95,7 +95,7 @@ bool H264Decoder::DecodePicture() {
   DCHECK(curr_pic_.get());
 
   DVLOG(4) << "Decoding POC " << curr_pic_->pic_order_cnt;
-  return accelerator_->SubmitDecode(curr_pic_);
+  return accelerator_->SubmitDecode(curr_pic_) == H264Accelerator::Status::kOk;
 }
 
 bool H264Decoder::InitNonexistingPicture(scoped_refptr<H264Picture> pic,
@@ -707,12 +707,9 @@ bool H264Decoder::StartNewFrame(const H264SliceHeader* slice_hdr) {
   UpdatePicNums(frame_num);
   PrepareRefPicLists(slice_hdr);
 
-  if (!accelerator_->SubmitFrameMetadata(sps, pps, dpb_, ref_pic_list_p0_,
-                                         ref_pic_list_b0_, ref_pic_list_b1_,
-                                         curr_pic_.get()))
-    return false;
-
-  return true;
+  return accelerator_->SubmitFrameMetadata(
+             sps, pps, dpb_, ref_pic_list_p0_, ref_pic_list_b0_,
+             ref_pic_list_b1_, curr_pic_.get()) == H264Accelerator::Status::kOk;
 }
 
 bool H264Decoder::HandleMemoryManagementOps(scoped_refptr<H264Picture> pic) {
@@ -1217,12 +1214,10 @@ bool H264Decoder::ProcessCurrentSlice() {
   if (!pps)
     return false;
 
-  if (!accelerator_->SubmitSlice(pps, slice_hdr, ref_pic_list0, ref_pic_list1,
-                                 curr_pic_.get(), slice_hdr->nalu_data,
-                                 slice_hdr->nalu_size))
-    return false;
-
-  return true;
+  return accelerator_->SubmitSlice(pps, slice_hdr, ref_pic_list0, ref_pic_list1,
+                                   curr_pic_.get(), slice_hdr->nalu_data,
+                                   slice_hdr->nalu_size) ==
+         H264Accelerator::Status::kOk;
 }
 
 #define SET_ERROR_AND_RETURN()         \

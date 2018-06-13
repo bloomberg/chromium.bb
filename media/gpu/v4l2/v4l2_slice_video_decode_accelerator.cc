@@ -262,29 +262,31 @@ V4L2SliceVideoDecodeAccelerator::PictureRecord::~PictureRecord() {}
 class V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator
     : public H264Decoder::H264Accelerator {
  public:
+  using Status = H264Decoder::H264Accelerator::Status;
+
   explicit V4L2H264Accelerator(V4L2SliceVideoDecodeAccelerator* v4l2_dec);
   ~V4L2H264Accelerator() override;
 
   // H264Decoder::H264Accelerator implementation.
   scoped_refptr<H264Picture> CreateH264Picture() override;
 
-  bool SubmitFrameMetadata(const H264SPS* sps,
-                           const H264PPS* pps,
-                           const H264DPB& dpb,
-                           const H264Picture::Vector& ref_pic_listp0,
-                           const H264Picture::Vector& ref_pic_listb0,
-                           const H264Picture::Vector& ref_pic_listb1,
-                           const scoped_refptr<H264Picture>& pic) override;
+  Status SubmitFrameMetadata(const H264SPS* sps,
+                             const H264PPS* pps,
+                             const H264DPB& dpb,
+                             const H264Picture::Vector& ref_pic_listp0,
+                             const H264Picture::Vector& ref_pic_listb0,
+                             const H264Picture::Vector& ref_pic_listb1,
+                             const scoped_refptr<H264Picture>& pic) override;
 
-  bool SubmitSlice(const H264PPS* pps,
-                   const H264SliceHeader* slice_hdr,
-                   const H264Picture::Vector& ref_pic_list0,
-                   const H264Picture::Vector& ref_pic_list1,
-                   const scoped_refptr<H264Picture>& pic,
-                   const uint8_t* data,
-                   size_t size) override;
+  Status SubmitSlice(const H264PPS* pps,
+                     const H264SliceHeader* slice_hdr,
+                     const H264Picture::Vector& ref_pic_list0,
+                     const H264Picture::Vector& ref_pic_list1,
+                     const scoped_refptr<H264Picture>& pic,
+                     const uint8_t* data,
+                     size_t size) override;
 
-  bool SubmitDecode(const scoped_refptr<H264Picture>& pic) override;
+  Status SubmitDecode(const scoped_refptr<H264Picture>& pic) override;
   bool OutputPicture(const scoped_refptr<H264Picture>& pic) override;
 
   void Reset() override;
@@ -2141,7 +2143,8 @@ void V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::H264DPBToV4L2DPB(
   }
 }
 
-bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitFrameMetadata(
+H264Decoder::H264Accelerator::Status
+V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitFrameMetadata(
     const H264SPS* sps,
     const H264PPS* pps,
     const H264DPB& dpb,
@@ -2316,10 +2319,11 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitFrameMetadata(
   H264DPBToV4L2DPB(dpb, &ref_surfaces);
   dec_surface->SetReferenceSurfaces(ref_surfaces);
 
-  return true;
+  return Status::kOk;
 }
 
-bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitSlice(
+H264Decoder::H264Accelerator::Status
+V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitSlice(
     const H264PPS* pps,
     const H264SliceHeader* slice_hdr,
     const H264Picture::Vector& ref_pic_list0,
@@ -2329,7 +2333,7 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitSlice(
     size_t size) {
   if (num_slices_ == kMaxSlices) {
     VLOGF(1) << "Over limit of supported slices per frame";
-    return false;
+    return Status::kFail;
   }
 
   struct v4l2_ctrl_h264_slice_param& v4l2_slice_param =
@@ -2437,7 +2441,9 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitSlice(
   data_copy[2] = 0x01;
   memcpy(data_copy.get() + 3, data, size);
   return v4l2_dec_->SubmitSlice(dec_surface->input_record(), data_copy.get(),
-                                data_copy_size);
+                                data_copy_size)
+             ? Status::kOk
+             : Status::kFail;
 }
 
 bool V4L2SliceVideoDecodeAccelerator::SubmitSlice(int index,
@@ -2483,7 +2489,8 @@ bool V4L2SliceVideoDecodeAccelerator::IsCtrlExposed(uint32_t ctrl_id) {
   return (device_->Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0);
 }
 
-bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitDecode(
+H264Decoder::H264Accelerator::Status
+V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitDecode(
     const scoped_refptr<H264Picture>& pic) {
   scoped_refptr<V4L2DecodeSurface> dec_surface =
       H264PictureToV4L2DecodeSurface(pic);
@@ -2514,12 +2521,12 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitDecode(
   ext_ctrls.controls = &ctrls[0];
   ext_ctrls.config_store = dec_surface->config_store();
   if (!v4l2_dec_->SubmitExtControls(&ext_ctrls))
-    return false;
+    return Status::kFail;
 
   Reset();
 
   v4l2_dec_->DecodeSurface(dec_surface);
-  return true;
+  return Status::kOk;
 }
 
 bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::OutputPicture(
