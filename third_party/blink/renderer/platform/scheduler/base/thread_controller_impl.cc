@@ -225,6 +225,8 @@ void ThreadControllerImpl::RemoveNestingObserver(
 void ThreadControllerImpl::OnBeginNestedRunLoop() {
   main_sequence_only().nesting_depth++;
   {
+    // We just entered a nested run loop, make sure there's a DoWork posted or
+    // the system will grind to a halt.
     AutoLock lock(any_sequence_lock_);
     any_sequence().nesting_depth++;
     if (!any_sequence().immediate_do_work_posted) {
