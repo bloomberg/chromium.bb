@@ -40,28 +40,33 @@ function openQuickViewSteps(appId, name) {
 }
 
 function closeQuickViewSteps(appId) {
+  let caller = getCaller();
+
+  function checkQuickViewElementsDisplayNone(elements) {
+    chrome.test.assertTrue(Array.isArray(elements));
+    if (elements.length > 0 && elements[0].styles.display !== 'none')
+      return pending(caller, 'Waiting for Quick View to close.');
+    return;
+  }
+
   return [
+    // Click on Quick View to close it.
     function() {
-      return remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, [['#quick-view', '#contentPanel']],
-          this.next);
+      const panelElements = ['#quick-view', '#contentPanel'];
+      remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [panelElements])
+          .then(this.next);
     },
+    // Check: the Quick View element should not be shown.
     function(result) {
-      chrome.test.assertEq(true, result);
-      // Wait until Quick View is displayed.
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
       repeatUntil(function() {
+        const elements = ['#quick-view', '#dialog'];
         return remoteCall
             .callRemoteTestUtil(
-                'deepQueryAllElements', appId,
-                [['#quick-view', '#dialog'], null, ['display']])
-            .then(function(results) {
-              if (results.length > 0 && results[0].styles.display !== 'none') {
-                return pending(caller, 'Quick View is not closed yet.');
-              }
-              return;
-            });
+                'deepQueryAllElements', appId, [elements, null, ['display']])
+            .then(checkQuickViewElementsDisplayNone);
       }).then(this.next);
-    }
+    },
   ];
 }
 
@@ -89,12 +94,28 @@ testcase.openQuickView = function() {
 };
 
 /**
- * Tests closing Quick View.
+ * Tests opening then closing Quick View on a local downloads file.
  */
 testcase.closeQuickView = function() {
-  setupAndWaitUntilReady(null, RootPath.DOWNLOADS).then(function(results) {
-    StepsRunner.run(
-        openQuickViewSteps(results.windowId, 'My Desktop Background.png')
-            .concat(closeQuickViewSteps(results.windowId)));
-  });
+  let appId;
+
+  StepsRunner.run([
+    // Open Files app on local downloads.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Open a file in Quick View.
+    function(results) {
+      appId = results.windowId;
+      const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    // Close Quick View.
+    function() {
+      StepsRunner.run(closeQuickViewSteps(appId)).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
 };
