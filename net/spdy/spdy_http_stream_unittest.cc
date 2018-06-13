@@ -105,12 +105,12 @@ class ReadErrorUploadDataStream : public UploadDataStream {
 
 class CancelStreamCallback : public TestCompletionCallbackBase {
  public:
-  explicit CancelStreamCallback(SpdyHttpStream* stream)
-      : stream_(stream),
-        callback_(base::Bind(&CancelStreamCallback::CancelStream,
-                             base::Unretained(this))) {}
+  explicit CancelStreamCallback(SpdyHttpStream* stream) : stream_(stream) {}
 
-  const CompletionCallback& callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&CancelStreamCallback::CancelStream,
+                          base::Unretained(this));
+  }
 
  private:
   void CancelStream(int result) {
@@ -119,7 +119,6 @@ class CancelStreamCallback : public TestCompletionCallbackBase {
   }
 
   SpdyHttpStream* stream_;
-  CompletionCallback callback_;
 };
 
 }  // namespace

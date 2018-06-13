@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/address_list.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -663,17 +664,16 @@ class CountingStreamSocket : public WrappedStreamSocket {
   int write_count_;
 };
 
-// CompletionCallback that will delete the associated StreamSocket when
-// the callback is invoked.
+// A helper class that will delete |socket| when the callback is invoked.
 class DeleteSocketCallback : public TestCompletionCallbackBase {
  public:
-  explicit DeleteSocketCallback(StreamSocket* socket)
-      : socket_(socket),
-        callback_(base::Bind(&DeleteSocketCallback::OnComplete,
-                             base::Unretained(this))) {}
+  explicit DeleteSocketCallback(StreamSocket* socket) : socket_(socket) {}
   ~DeleteSocketCallback() override = default;
 
-  CompletionOnceCallback callback() const { return callback_; }
+  CompletionOnceCallback callback() {
+    return base::BindOnce(&DeleteSocketCallback::OnComplete,
+                          base::Unretained(this));
+  }
 
  private:
   void OnComplete(int result) {
@@ -687,7 +687,6 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
   }
 
   StreamSocket* socket_;
-  CompletionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteSocketCallback);
 };
