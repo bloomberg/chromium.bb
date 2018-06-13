@@ -23,6 +23,14 @@
 
 namespace viz {
 
+// Compares two frame tokens, handling cases where the token wraps around the
+// 32-bit max value.
+inline bool FrameTokenGT(uint32_t token1, uint32_t token2) {
+  // There will be underflow in the subtraction if token1 was created
+  // after token2.
+  return (token2 - token1) > 0x80000000u;
+}
+
 class VIZ_COMMON_EXPORT CompositorFrameMetadata {
  public:
   CompositorFrameMetadata();
@@ -116,6 +124,11 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
 
   // An identifier for the frame. This is used to identify the frame for
   // presentation-feedback, or when the frame-token is sent to the embedder.
+  // For comparing |frame_token| from different frames, use |FrameTokenGT()|
+  // instead of directly comparing them, since the tokens wrap around back to 1
+  // after the 32-bit max value.
+  // TODO(crbug.com/850386): A custom type would be better to avoid incorrect
+  // comparisons.
   uint32_t frame_token = 0;
 
   // Once the display compositor processes a frame with

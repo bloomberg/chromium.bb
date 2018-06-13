@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/callback.h"
+#include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -208,10 +209,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidCommitAndDrawFrame() override;
   void DidReceiveCompositorFrameAck() override;
   void DidCompletePageScaleAnimation() override;
+  bool IsForSubframe() override;
   void DidPresentCompositorFrame(
       uint32_t frame_token,
-      const gfx::PresentationFeedback& feedback) override {}
-  bool IsForSubframe() override;
+      const gfx::PresentationFeedback& feedback) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void RequestScheduleAnimation() override;
@@ -228,6 +229,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void CreateRenderFrameObserver(
       mojom::RenderFrameMetadataObserverRequest request,
       mojom::RenderFrameMetadataObserverClientPtrInfo client_info);
+
+  void AddPresentationCallback(
+      uint32_t frame_token,
+      base::OnceCallback<void(base::TimeTicks)> callback);
 
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
 
@@ -259,6 +264,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
   base::OnceClosure layout_and_paint_async_callback_;
 
   viz::FrameSinkId frame_sink_id_;
+  base::circular_deque<
+      std::pair<uint32_t,
+                std::vector<base::OnceCallback<void(base::TimeTicks)>>>>
+      presentation_callbacks_;
 
   base::WeakPtrFactory<RenderWidgetCompositor> weak_factory_;
 
