@@ -228,6 +228,13 @@ class AvSettings {
   // Not all displays support this function.
   static bool GetDisplayMaxBrightnessNits(float* nits) __attribute__((weak));
 
+  // Gets the HDMI latency in microseconds.
+  // Returns valid values when HDMI is connected.
+  // Returns 0 when HDMI is not connected or when the latency cannot be
+  // measured.
+  // This function should only be implemented on HDMI platforms.
+  static int GetHdmiLatencyUs() __attribute__((weak));
+
   // Returns the type of volume control, i.e. MASTER_VOLUME, FIXED_VOLUME or
   // ATTENUATION_VOLUME. For example, normal TVs, devices of CEC audio
   // controls, and audio devices are master volume systems. The counter
