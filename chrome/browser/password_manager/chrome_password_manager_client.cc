@@ -593,6 +593,13 @@ password_manager::SyncState ChromePasswordManagerClient::GetPasswordSyncState()
   return password_manager_util::GetPasswordSyncState(sync_service);
 }
 
+password_manager::SyncState ChromePasswordManagerClient::GetHistorySyncState()
+    const {
+  const browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  return password_manager_util::GetHistorySyncState(sync_service);
+}
+
 bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
   DCHECK(web_contents());
 

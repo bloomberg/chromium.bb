@@ -33,8 +33,13 @@ class PrefService;
 namespace password_manager_util {
 
 // Reports whether and how passwords are currently synced. In particular, for a
-// null |sync_service| returns NOT_SYNCING_PASSWORDS.
+// null |sync_service| returns NOT_SYNCING.
 password_manager::SyncState GetPasswordSyncState(
+    const syncer::SyncService* sync_service);
+
+// Reports whether and how browsing history is currently synced. In particular,
+// for a null |sync_service| returns NOT_SYNCING.
+password_manager::SyncState GetHistorySyncState(
     const syncer::SyncService* sync_service);
 
 // Finds the forms with a duplicate sync tags in |forms|. The first one of

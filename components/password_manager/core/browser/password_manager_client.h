@@ -178,8 +178,13 @@ class PasswordManagerClient {
 
   // Reports whether and how passwords are synced in the embedder. The default
   // implementation always returns NOT_SYNCING.
-  // TODO(vabr): Factor this out of the client to the sync layer.
+  // TODO(crbug.com/515108): Factor this out of the client to the sync layer.
   virtual SyncState GetPasswordSyncState() const;
+
+  // Reports whether and how browsing history is synced in the embedder. The
+  // default implementation always returns NOT_SYNCING.
+  // TODO(crbug.com/515108): Factor this out of the client to the sync layer.
+  virtual SyncState GetHistorySyncState() const;
 
   // Returns true if last navigation page had HTTP error i.e 5XX or 4XX
   virtual bool WasLastNavigationHTTPError() const;
