@@ -708,10 +708,12 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
       return TaskQueue::QueuePriority::kBestEffortPriority;
   }
 
-  if (main_thread_scheduler_->IsLoading()) {
-    // Low priority feature enabled for hidden frame during the loading use
-    // case.
-    if (base::FeatureList::IsEnabled(kLowPriorityForHiddenFrameDuringLoading) &&
+  // If main thread is in the loading use case or if the priority experiments
+  // should take place at all times.
+  if (main_thread_scheduler_->IsLoading() ||
+      !base::FeatureList::IsEnabled(kExperimentOnlyWhenLoading)) {
+    // Low priority feature enabled for hidden frame.
+    if (base::FeatureList::IsEnabled(kLowPriorityForHiddenFrame) &&
         !IsFrameVisible())
       return TaskQueue::QueuePriority::kLowPriority;
 
@@ -720,22 +722,17 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
         task_queue->queue_type() ==
         MainThreadTaskQueue::QueueType::kFrameThrottleable;
 
-    // Low priority feature enabled for sub-frame during the loading use case.
-    if (base::FeatureList::IsEnabled(kLowPriorityForSubFrameDuringLoading) &&
-        is_subframe)
+    // Low priority feature enabled for sub-frame.
+    if (base::FeatureList::IsEnabled(kLowPriorityForSubFrame) && is_subframe)
       return TaskQueue::QueuePriority::kLowPriority;
 
-    // Low priority feature enabled for sub-frame throttleable task queues
-    // during the loading use case.
-    if (base::FeatureList::IsEnabled(
-            kLowPriorityForSubFrameThrottleableTaskDuringLoading) &&
+    // Low priority feature enabled for sub-frame throttleable task queues.
+    if (base::FeatureList::IsEnabled(kLowPriorityForSubFrameThrottleableTask) &&
         is_throttleable_task_queue)
       return TaskQueue::QueuePriority::kLowPriority;
 
-    // Low priority feature enabled for throttleable task queues
-    // during the loading use case.
-    if (base::FeatureList::IsEnabled(
-            kLowPriorityForThrottleableTaskDuringLoading) &&
+    // Low priority feature enabled for throttleable task queues.
+    if (base::FeatureList::IsEnabled(kLowPriorityForThrottleableTask) &&
         is_throttleable_task_queue)
       return TaskQueue::QueuePriority::kLowPriority;
   }
