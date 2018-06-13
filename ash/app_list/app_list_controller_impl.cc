@@ -40,7 +40,7 @@ int64_t GetDisplayIdToShowAppListOn() {
 namespace ash {
 
 AppListControllerImpl::AppListControllerImpl()
-    : presenter_(std::make_unique<AppListPresenterDelegateImpl>(), this),
+    : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
       keyboard_observer_(this),
       is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()) {
   model_.AddObserver(this);

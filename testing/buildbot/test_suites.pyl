@@ -1792,7 +1792,6 @@
 
   'linux_chromeos_specific_gtests': {
     # Chrome OS only.
-    'app_list_presenter_unittests': {},
     'app_list_unittests': {},
     'ash_content_unittests': {},
     'ash_unittests': {},

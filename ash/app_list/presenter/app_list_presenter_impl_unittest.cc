@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/app_list/app_list_presenter_impl.h"
+#include "ash/app_list/presenter/app_list_presenter_impl.h"
 
 #include <memory>
+#include <utility>
 
-#include "ash/app_list/presenter/test/app_list_presenter_impl_test_api.h"
+#include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/focus_client.h"
@@ -56,6 +57,16 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
                                                  bool is_visible) override {
     return base::TimeDelta::FromMilliseconds(0);
   }
+  bool IsHomeLauncherEnabledInTabletMode() override { return false; }
+  AppListViewDelegate* GetAppListViewDelegate() override {
+    return &app_list_view_delegate_;
+  }
+  bool GetOnScreenKeyboardShown() override { return false; }
+  aura::Window* GetRootWindowForDisplayId(int64_t display_id) override {
+    return nullptr;
+  }
+  void OnVisibilityChanged(bool visible, aura::Window* root_window) override {}
+  void OnTargetVisibilityChanged(bool visible) override {}
 
  private:
   aura::Window* container_;
@@ -64,7 +75,8 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   bool init_called_ = false;
   bool on_shown_called_ = false;
   bool on_dismissed_called_ = false;
-  views::TestViewsDelegate views_delegate_;
+  views::TestViewsDelegate view_delegate_;
+  test::AppListTestViewDelegate app_list_view_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateTest);
 };
@@ -79,13 +91,7 @@ class AppListPresenterImplTest : public aura::test::AuraTestBase {
   AppListPresenterImpl* presenter() { return presenter_.get(); }
   aura::Window* container() { return container_.get(); }
   int64_t GetDisplayId() { return test_screen()->GetPrimaryDisplay().id(); }
-
-  // Don't cache the return of this method - a new delegate is created every
-  // time the app list is shown.
-  AppListPresenterDelegateTest* delegate() {
-    return static_cast<AppListPresenterDelegateTest*>(
-        presenter_test_api_->presenter_delegate());
-  }
+  AppListPresenterDelegateTest* delegate() { return presenter_delegate_; }
 
   // aura::test::AuraTestBase:
   void SetUp() override;
@@ -93,8 +99,8 @@ class AppListPresenterImplTest : public aura::test::AuraTestBase {
 
  private:
   std::unique_ptr<AppListPresenterImpl> presenter_;
+  AppListPresenterDelegateTest* presenter_delegate_ = nullptr;
   std::unique_ptr<aura::Window> container_;
-  std::unique_ptr<test::AppListPresenterImplTestApi> presenter_test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterImplTest);
 };
@@ -109,10 +115,9 @@ void AppListPresenterImplTest::SetUp() {
   container_.reset(CreateNormalWindow(0, root_window(), nullptr));
   std::unique_ptr<AppListPresenterDelegateTest> presenter_delegate =
       std::make_unique<AppListPresenterDelegateTest>(container_.get());
-  presenter_ = std::make_unique<AppListPresenterImpl>(
-      std::move(presenter_delegate), nullptr);
-  presenter_test_api_ =
-      std::make_unique<test::AppListPresenterImplTestApi>(presenter());
+  presenter_delegate_ = presenter_delegate.get();
+  presenter_ =
+      std::make_unique<AppListPresenterImpl>(std::move(presenter_delegate));
 }
 
 void AppListPresenterImplTest::TearDown() {
@@ -124,9 +129,7 @@ void AppListPresenterImplTest::TearDown() {
 // not app list window's sibling and that appropriate delegate callbacks are
 // executed when the app launcher is shown and then when the app launcher is
 // dismissed.
-TEST_F(AppListPresenterImplTest, DISABLED_HideOnFocusOut) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
+TEST_F(AppListPresenterImplTest, HideOnFocusOut) {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(root_window());
   presenter()->Show(GetDisplayId(), base::TimeTicks());
@@ -147,9 +150,7 @@ TEST_F(AppListPresenterImplTest, DISABLED_HideOnFocusOut) {
 // Tests that app launcher remains visible when focus moves to a window which
 // is app list window's sibling and that appropriate delegate callbacks are
 // executed when the app launcher is shown.
-TEST_F(AppListPresenterImplTest, DISABLED_RemainVisibleWhenFocusingToSibling) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
+TEST_F(AppListPresenterImplTest, RemainVisibleWhenFocusingToSibling) {
   aura::client::FocusClient* focus_client =
       aura::client::GetFocusClient(root_window());
   presenter()->Show(GetDisplayId(), base::TimeTicks());
@@ -168,16 +169,14 @@ TEST_F(AppListPresenterImplTest, DISABLED_RemainVisibleWhenFocusingToSibling) {
   EXPECT_FALSE(delegate()->on_dismissed_called());
 }
 
-// Tests that the app list is dismissed and the delegate is destroyed when the
-// app list's widget is destroyed.
-TEST_F(AppListPresenterImplTest, DISABLED_WidgetDestroyed) {
-  // TODO(newcomer): this test needs to be reevaluated for the fullscreen app
-  // list (http://crbug.com/759779).
+// Tests that the app list is dismissed but the delegate is still active when
+// the app list's widget is destroyed.
+TEST_F(AppListPresenterImplTest, WidgetDestroyed) {
   presenter()->Show(GetDisplayId(), base::TimeTicks());
   EXPECT_TRUE(presenter()->GetTargetVisibility());
   presenter()->GetView()->GetWidget()->CloseNow();
   EXPECT_FALSE(presenter()->GetTargetVisibility());
-  EXPECT_FALSE(delegate());
+  EXPECT_TRUE(delegate());
 }
 
 }  // namespace app_list
