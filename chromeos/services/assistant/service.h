@@ -96,6 +96,8 @@ class Service : public service_manager::Service,
 
   void FinalizeAssistantManagerService();
 
+  void RetryRefreshToken();
+
   service_manager::BinderRegistry registry_;
 
   mojo::BindingSet<mojom::Assistant> bindings_;
