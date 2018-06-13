@@ -2743,11 +2743,6 @@ void Document::Shutdown() {
   if (SvgExtensions())
     AccessSVGExtensions().PauseAnimations();
 
-  // FIXME: This shouldn't be needed once LocalDOMWindow becomes
-  // ExecutionContext.
-  if (dom_window_)
-    dom_window_->ClearEventQueue();
-
   if (layout_view_)
     layout_view_->SetIsInWindow(false);
 
@@ -4939,12 +4934,6 @@ EventListener* Document::GetWindowAttributeEventListener(
   if (!dom_window)
     return nullptr;
   return dom_window->GetAttributeEventListener(event_type);
-}
-
-EventQueue* Document::GetEventQueue() const {
-  if (!dom_window_)
-    return nullptr;
-  return dom_window_->GetEventQueue();
 }
 
 void Document::EnqueueAnimationFrameTask(base::OnceClosure task) {

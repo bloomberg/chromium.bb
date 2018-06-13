@@ -30,7 +30,6 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     : worker_clients_(worker_clients),
       script_controller_(
           WorkerOrWorkletScriptController::Create(this, isolate)),
-      event_queue_(EventQueueImpl::Create(this, TaskType::kInternalWorker)),
       reporting_proxy_(reporting_proxy),
       used_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
   if (worker_clients_)
@@ -123,10 +122,6 @@ void WorkerOrWorkletGlobalScope::DisableEval(const String& error_message) {
 bool WorkerOrWorkletGlobalScope::CanExecuteScripts(
     ReasonForCallingCanExecuteScripts) {
   return !IsJSExecutionForbidden();
-}
-
-EventQueue* WorkerOrWorkletGlobalScope::GetEventQueue() const {
-  return event_queue_.Get();
 }
 
 void WorkerOrWorkletGlobalScope::Dispose() {
@@ -230,7 +225,6 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_fetcher_);
   visitor->Trace(script_controller_);
-  visitor->Trace(event_queue_);
   visitor->Trace(event_listeners_);
   visitor->Trace(modulator_);
   EventTargetWithInlineData::Trace(visitor);

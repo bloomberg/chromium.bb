@@ -54,7 +54,6 @@ class ConsoleMessage;
 class CoreProbeSink;
 class DOMTimerCoordinator;
 class ErrorEvent;
-class EventQueue;
 class EventTarget;
 class FrameOrWorkerScheduler;
 class InterfaceInvalidator;
@@ -190,7 +189,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   int CircularSequentialID();
 
   virtual EventTarget* ErrorEventTarget() = 0;
-  virtual EventQueue* GetEventQueue() const = 0;
 
   // Methods related to window interaction. It should be used to manage window
   // focusing and window creation permission for an ExecutionContext.

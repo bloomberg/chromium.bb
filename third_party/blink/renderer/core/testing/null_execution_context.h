@@ -36,7 +36,6 @@ class NullExecutionContext
   String UserAgent() const override { return String(); }
 
   EventTarget* ErrorEventTarget() override { return nullptr; }
-  EventQueue* GetEventQueue() const override { return queue_.Get(); }
 
   bool TasksNeedPause() override { return tasks_need_pause_; }
   void SetTasksNeedPause(bool flag) { tasks_need_pause_ = flag; }
@@ -62,7 +61,6 @@ class NullExecutionContext
   using SecurityContext::GetContentSecurityPolicy;
 
   void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(queue_);
     SecurityContext::Trace(visitor);
     ExecutionContext::Trace(visitor);
   }
@@ -70,7 +68,6 @@ class NullExecutionContext
  private:
   bool tasks_need_pause_;
   bool is_secure_context_;
-  Member<EventQueue> queue_;
 
   KURL url_;
 };

@@ -51,6 +51,7 @@ class Layer;
 namespace blink {
 
 class Event;
+class EventQueue;
 class GestureEvent;
 class HTMLFrameOwnerElement;
 class HTMLPlugInElement;
