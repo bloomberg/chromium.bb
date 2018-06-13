@@ -1,6 +1,8 @@
 include_rules = [
     # Don't depend on platform/.
     "-third_party/blink/renderer/platform",
+    # But the compiler support is okay to depend on.
+    "+third_party/blink/renderer/platform/decimal.h",
 
     # Module.
     "+third_party/blink/renderer/platform/bindings",

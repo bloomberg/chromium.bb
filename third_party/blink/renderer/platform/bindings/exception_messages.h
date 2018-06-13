@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_MESSAGES_H_
-#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_MESSAGES_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_EXCEPTION_MESSAGES_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_EXCEPTION_MESSAGES_H_
 
-#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -41,7 +41,7 @@ namespace blink {
 
 class Decimal;
 
-class CORE_EXPORT ExceptionMessages {
+class PLATFORM_EXPORT ExceptionMessages {
   STATIC_ONLY(ExceptionMessages);
 
  public:
@@ -175,10 +175,13 @@ class CORE_EXPORT ExceptionMessages {
 };
 
 template <>
-String ExceptionMessages::FormatNumber<float>(float number);
+PLATFORM_EXTERN_TEMPLATE_EXPORT String
+ExceptionMessages::FormatNumber<float>(float number);
+
 template <>
-String ExceptionMessages::FormatNumber<double>(double number);
+PLATFORM_EXTERN_TEMPLATE_EXPORT String
+ExceptionMessages::FormatNumber<double>(double number);
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_MESSAGES_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_EXCEPTION_MESSAGES_H_

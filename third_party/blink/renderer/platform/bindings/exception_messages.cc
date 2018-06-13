@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 
 #include "third_party/blink/renderer/platform/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
@@ -81,20 +81,20 @@ String ExceptionMessages::FailedToDelete(const char* property,
 
 String ExceptionMessages::FailedToGetIndexed(const char* type,
                                              const String& detail) {
-  return "Failed to read an indexed property from '" + String(type) + "': " +
-         detail;
+  return "Failed to read an indexed property from '" + String(type) +
+         "': " + detail;
 }
 
 String ExceptionMessages::FailedToSetIndexed(const char* type,
                                              const String& detail) {
-  return "Failed to set an indexed property on '" + String(type) + "': " +
-         detail;
+  return "Failed to set an indexed property on '" + String(type) +
+         "': " + detail;
 }
 
 String ExceptionMessages::FailedToDeleteIndexed(const char* type,
                                                 const String& detail) {
-  return "Failed to delete an indexed property from '" + String(type) + "': " +
-         detail;
+  return "Failed to delete an indexed property from '" + String(type) +
+         "': " + detail;
 }
 
 String ExceptionMessages::ConstructorNotCallableAsFunction(const char* type) {
@@ -174,12 +174,14 @@ String ExceptionMessages::ReadOnly(const char* detail) {
 }
 
 template <>
-CORE_EXPORT String ExceptionMessages::FormatNumber<float>(float number) {
+PLATFORM_TEMPLATE_EXPORT String
+ExceptionMessages::FormatNumber<float>(float number) {
   return FormatPotentiallyNonFiniteNumber(number);
 }
 
 template <>
-CORE_EXPORT String ExceptionMessages::FormatNumber<double>(double number) {
+PLATFORM_TEMPLATE_EXPORT String
+ExceptionMessages::FormatNumber<double>(double number) {
   return FormatPotentiallyNonFiniteNumber(number);
 }
 
