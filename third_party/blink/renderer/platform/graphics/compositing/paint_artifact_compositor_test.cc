@@ -1353,7 +1353,7 @@ TEST_F(PaintArtifactCompositorTest, ClipPushedUp) {
 // TODO(crbug.com/696842): The effect refuses to "decomposite" because it's in
 // a deeper transform space than its chunk. We should allow decomposite if
 // the two transform nodes share the same direct compositing ancestor.
-TEST_F(PaintArtifactCompositorTest, EffectPushedUp_DISABLED) {
+TEST_F(PaintArtifactCompositorTest, DISABLED_EffectPushedUp) {
   // Tests merging of an element which has an effect applied to it,
   // but has an ancestor transform of them. This can happen for fixed-
   // or absolute-position elements which escape scroll transforms.
@@ -1400,7 +1400,7 @@ TEST_F(PaintArtifactCompositorTest, EffectPushedUp_DISABLED) {
 // TODO(crbug.com/696842): The effect refuses to "decomposite" because it's in
 // a deeper transform space than its chunk. We should allow decomposite if
 // the two transform nodes share the same direct compositing ancestor.
-TEST_F(PaintArtifactCompositorTest, EffectAndClipPushedUp_DISABLED) {
+TEST_F(PaintArtifactCompositorTest, DISABLED_EffectAndClipPushedUp) {
   // Tests merging of an element which has an effect applied to it,
   // but has an ancestor transform of them. This can happen for fixed-
   // or absolute-position elements which escape scroll transforms.
@@ -1661,7 +1661,7 @@ TEST_F(PaintArtifactCompositorTest, PendingLayerWithGeometry) {
 
 // TODO(crbug.com/701991):
 // The test is disabled because opaque rect mapping is not implemented yet.
-TEST_F(PaintArtifactCompositorTest, PendingLayerKnownOpaque_DISABLED) {
+TEST_F(PaintArtifactCompositorTest, DISABLED_PendingLayerKnownOpaque) {
   PaintChunk chunk1 = DefaultChunk();
   chunk1.properties = PropertyTreeState::Root();
   chunk1.bounds = FloatRect(0, 0, 30, 40);

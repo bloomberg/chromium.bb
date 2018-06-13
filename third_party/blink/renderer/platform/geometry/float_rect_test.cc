@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_test_helpers.h"
@@ -134,7 +135,13 @@ TEST(FloatRectTest, SquaredDistanceToTest) {
                       r1.SquaredDistanceTo(p24), 50000.f);
 }
 
-TEST(FloatRectTest, ToString) {
+// TODO(crbug.com/851414): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_ToString DISABLED_ToString
+#else
+#define MAYBE_ToString ToString
+#endif
+TEST(FloatRectTest, MAYBE_ToString) {
   FloatRect empty_rect = FloatRect();
   EXPECT_EQ("0,0 0x0", empty_rect.ToString());
 

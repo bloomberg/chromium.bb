@@ -2126,6 +2126,18 @@
             }
           ]
         },
+        "test": "blink_platform_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho",
+              "os": "Android"
+            }
+          ]
+        },
         "test": "boringssl_crypto_tests"
       },
       {
@@ -5560,6 +5572,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "blink_platform_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "boringssl_crypto_tests"
       },
       {
@@ -5797,6 +5815,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "blink_heap_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "blink_platform_unittests"
       },
       {
         "swarming": {

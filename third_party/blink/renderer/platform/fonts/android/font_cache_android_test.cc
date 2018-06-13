@@ -4,12 +4,19 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
 
 namespace blink {
 
-TEST(FontCacheAndroid, fallbackFontForCharacter) {
+// TODO(crbug.com/850794): Reenable this.
+#if defined(OS_ANDROID)
+#define MAYBE_fallbackFontForCharacter DISABLED_fallbackFontForCharacter
+#else
+#define MAYBE_fallbackFontForCharacter fallbackFontForCharacter
+#endif
+TEST(FontCacheAndroid, MAYBE_fallbackFontForCharacter) {
   // A Latin character in the common locale system font, but not in the
   // Chinese locale-preferred font.
   const UChar32 kTestChar = 228;
