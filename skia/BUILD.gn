@@ -119,9 +119,10 @@ config("skia_config") {
 
 # Internal-facing config for Skia library code.
 config("skia_library_config") {
+  defines = [ "SK_IGNORE_TINY_FREETYPE_SIZE_FIX" ]
+
   # These include directories are only included for Skia code and are not
   # exported to dependents.
-  defines = []
   include_dirs = [
     "//third_party/skia/include/codec",
     "//third_party/skia/include/private",
