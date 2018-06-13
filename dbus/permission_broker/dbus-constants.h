@@ -19,6 +19,7 @@ const char kReleaseTcpPort[] = "ReleaseTcpPort";
 const char kReleaseUdpPort[] = "ReleaseUdpPort";
 const char kRequestVpnSetup[] = "RequestVpnSetup";
 const char kRemoveVpnSetup[] = "RemoveVpnSetup";
+const char kPowerCycleUsbPorts[] = "PowerCycleUsbPorts";
 }  // namespace permission_broker
 
 #endif  // SYSTEM_API_DBUS_PERMISSION_BROKER_DBUS_CONSTANTS_H_
