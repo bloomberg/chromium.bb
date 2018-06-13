@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -42,10 +44,11 @@ class TestDriveAppRegistryObserver : public DriveAppRegistryObserver {
 class DriveAppRegistryTest : public testing::Test {
  protected:
   void SetUp() override {
-    fake_drive_service_.reset(new FakeDriveService);
+    fake_drive_service_ = std::make_unique<FakeDriveService>();
     fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
-    apps_registry_.reset(new DriveAppRegistry(fake_drive_service_.get()));
+    apps_registry_ =
+        std::make_unique<DriveAppRegistry>(fake_drive_service_.get());
   }
 
   bool VerifyApp(const std::vector<DriveAppInfo>& list,

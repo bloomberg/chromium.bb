@@ -106,20 +106,20 @@ class FileSystemTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         google_apis::kEnableTeamDrives);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    pref_service_.reset(new TestingPrefServiceSimple);
+    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
-    logger_.reset(new EventLogger);
-    fake_drive_service_.reset(new FakeDriveService);
+    logger_ = std::make_unique<EventLogger>();
+    fake_drive_service_ = std::make_unique<FakeDriveService>();
     test_util::SetUpTestEntries(fake_drive_service_.get());
 
-    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
+    fake_free_disk_space_getter_ = std::make_unique<FakeFreeDiskSpaceGetter>();
 
-    scheduler_.reset(new JobScheduler(
+    scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), fake_drive_service_.get(),
-        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
+        base::ThreadTaskRunnerHandle::Get().get(), nullptr);
 
-    mock_directory_observer_.reset(new MockDirectoryChangeObserver);
+    mock_directory_observer_ = std::make_unique<MockDirectoryChangeObserver>();
 
     SetUpResourceMetadataAndFileSystem();
   }
@@ -147,10 +147,10 @@ class FileSystemTest : public testing::Test {
 
     const base::FilePath temp_file_dir = temp_dir_.GetPath().AppendASCII("tmp");
     ASSERT_TRUE(base::CreateDirectory(temp_file_dir));
-    file_system_.reset(new FileSystem(
+    file_system_ = std::make_unique<FileSystem>(
         pref_service_.get(), logger_.get(), cache_.get(), scheduler_.get(),
         resource_metadata_.get(), base::ThreadTaskRunnerHandle::Get().get(),
-        temp_file_dir));
+        temp_file_dir);
     file_system_->AddObserver(mock_directory_observer_.get());
 
     // Disable delaying so that the sync starts immediately.

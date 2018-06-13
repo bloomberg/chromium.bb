@@ -4,6 +4,8 @@
 
 #include "components/drive/chromeos/fake_file_system.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "components/drive/file_system_core_util.h"
@@ -20,11 +22,12 @@ class FakeFileSystemTest : public ::testing::Test {
  protected:
   void SetUp() override {
     // Initialize FakeDriveService.
-    fake_drive_service_.reset(new FakeDriveService);
+    fake_drive_service_ = std::make_unique<FakeDriveService>();
     ASSERT_TRUE(SetUpTestEntries(fake_drive_service_.get()));
 
     // Create a testee instance.
-    fake_file_system_.reset(new FakeFileSystem(fake_drive_service_.get()));
+    fake_file_system_ =
+        std::make_unique<FakeFileSystem>(fake_drive_service_.get());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;

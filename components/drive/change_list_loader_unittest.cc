@@ -86,17 +86,17 @@ class ChangeListLoaderTest : public testing::Test {
   }
 
   void BuildTestObjects() {
-    pref_service_.reset(new TestingPrefServiceSimple);
+    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
-    logger_.reset(new EventLogger);
+    logger_ = std::make_unique<EventLogger>();
 
-    drive_service_.reset(new FakeDriveService);
+    drive_service_ = std::make_unique<FakeDriveService>();
     ASSERT_TRUE(test_util::SetUpTestEntries(drive_service_.get()));
 
-    scheduler_.reset(new JobScheduler(
+    scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), drive_service_.get(),
-        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
+        base::ThreadTaskRunnerHandle::Get().get(), nullptr);
     metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
@@ -111,17 +111,18 @@ class ChangeListLoaderTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
-    about_resource_loader_.reset(new AboutResourceLoader(scheduler_.get()));
+    about_resource_loader_ =
+        std::make_unique<AboutResourceLoader>(scheduler_.get());
     root_folder_id_loader_ = std::make_unique<AboutResourceRootFolderIdLoader>(
         about_resource_loader_.get());
-    start_page_token_loader_.reset(new StartPageTokenLoader(
-        drive::util::kTeamDriveIdDefaultCorpus, scheduler_.get()));
-    loader_controller_.reset(new LoaderController);
-    change_list_loader_.reset(new ChangeListLoader(
+    start_page_token_loader_ = std::make_unique<StartPageTokenLoader>(
+        drive::util::kTeamDriveIdDefaultCorpus, scheduler_.get());
+    loader_controller_ = std::make_unique<LoaderController>();
+    change_list_loader_ = std::make_unique<ChangeListLoader>(
         logger_.get(), base::ThreadTaskRunnerHandle::Get().get(),
         metadata_.get(), scheduler_.get(), root_folder_id_loader_.get(),
         start_page_token_loader_.get(), loader_controller_.get(),
-        util::kTeamDriveIdDefaultCorpus, util::GetDriveMyDriveRootPath()));
+        util::kTeamDriveIdDefaultCorpus, util::GetDriveMyDriveRootPath());
   }
 
   void SetUpForTeamDrives() {
@@ -206,16 +207,17 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Reset loader.
-  about_resource_loader_.reset(new AboutResourceLoader(scheduler_.get()));
+  about_resource_loader_ =
+      std::make_unique<AboutResourceLoader>(scheduler_.get());
   root_folder_id_loader_ = std::make_unique<AboutResourceRootFolderIdLoader>(
       about_resource_loader_.get());
-  start_page_token_loader_.reset(new StartPageTokenLoader(
-      drive::util::kTeamDriveIdDefaultCorpus, scheduler_.get()));
-  change_list_loader_.reset(new ChangeListLoader(
+  start_page_token_loader_ = std::make_unique<StartPageTokenLoader>(
+      drive::util::kTeamDriveIdDefaultCorpus, scheduler_.get());
+  change_list_loader_ = std::make_unique<ChangeListLoader>(
       logger_.get(), base::ThreadTaskRunnerHandle::Get().get(), metadata_.get(),
       scheduler_.get(), root_folder_id_loader_.get(),
       start_page_token_loader_.get(), loader_controller_.get(),
-      util::kTeamDriveIdDefaultCorpus, util::GetDriveMyDriveRootPath()));
+      util::kTeamDriveIdDefaultCorpus, util::GetDriveMyDriveRootPath());
 
   // Add a file to the service.
   std::unique_ptr<google_apis::FileResource> gdata_entry =

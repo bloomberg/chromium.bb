@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/files/file_util.h"
@@ -193,8 +194,8 @@ JobScheduler::JobScheduler(
       pref_service_(pref_service),
       weak_ptr_factory_(this) {
   for (int i = 0; i < NUM_QUEUES; ++i)
-    queue_[i].reset(new JobQueue(kMaxJobCount[i], NUM_CONTEXT_TYPES,
-                                 kMaxBatchCount, kMaxBatchSize));
+    queue_[i] = std::make_unique<JobQueue>(kMaxJobCount[i], NUM_CONTEXT_TYPES,
+                                           kMaxBatchCount, kMaxBatchSize);
 
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }

@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
@@ -23,9 +25,9 @@ class TruncateOperationTest : public OperationTestBase {
   void SetUp() override {
     OperationTestBase::SetUp();
 
-    operation_.reset(new TruncateOperation(
-        blocking_task_runner(), delegate(), scheduler(),
-        metadata(), cache(), temp_dir()));
+    operation_ = std::make_unique<TruncateOperation>(
+        blocking_task_runner(), delegate(), scheduler(), metadata(), cache(),
+        temp_dir());
   }
 
   std::unique_ptr<TruncateOperation> operation_;

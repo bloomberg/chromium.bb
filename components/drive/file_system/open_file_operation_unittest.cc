@@ -29,9 +29,9 @@ class OpenFileOperationTest : public OperationTestBase {
   void SetUp() override {
     OperationTestBase::SetUp();
 
-    operation_.reset(new OpenFileOperation(
+    operation_ = std::make_unique<OpenFileOperation>(
         blocking_task_runner(), delegate(), scheduler(), metadata(), cache(),
-        temp_dir()));
+        temp_dir());
   }
 
   std::unique_ptr<OpenFileOperation> operation_;

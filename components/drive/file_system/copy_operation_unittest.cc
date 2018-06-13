@@ -4,6 +4,8 @@
 
 #include "components/drive/chromeos/file_system/copy_operation.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/task_runner_util.h"
 #include "components/drive/chromeos/file_cache.h"
@@ -39,8 +41,8 @@ class CopyOperationTest : public OperationTestBase {
  protected:
   void SetUp() override {
    OperationTestBase::SetUp();
-   operation_.reset(new CopyOperation(
-       blocking_task_runner(), delegate(), scheduler(), metadata(), cache()));
+   operation_ = std::make_unique<CopyOperation>(
+       blocking_task_runner(), delegate(), scheduler(), metadata(), cache());
   }
 
   std::unique_ptr<CopyOperation> operation_;

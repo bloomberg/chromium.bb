@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/drive/chromeos/team_drive_list_loader.h"
+#include <memory>
 
 #include "base/files/scoped_temp_dir.h"
 #include "components/drive/chromeos/change_list_loader.h"
 #include "components/drive/chromeos/drive_test_util.h"
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
+#include "components/drive/chromeos/team_drive_list_loader.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
@@ -66,18 +67,18 @@ class TeamDriveListLoaderTest : public testing::Test {
         google_apis::kEnableTeamDrives);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    pref_service_.reset(new TestingPrefServiceSimple);
+    pref_service_ = std::make_unique<TestingPrefServiceSimple>();
     test_util::RegisterDrivePrefs(pref_service_->registry());
 
-    logger_.reset(new EventLogger);
+    logger_ = std::make_unique<EventLogger>();
 
-    drive_service_.reset(new FakeDriveService);
+    drive_service_ = std::make_unique<FakeDriveService>();
     ASSERT_TRUE(test_util::SetUpTestEntries(drive_service_.get()));
     drive_service_->set_default_max_results(2);
 
-    scheduler_.reset(new JobScheduler(
+    scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), drive_service_.get(),
-        base::ThreadTaskRunnerHandle::Get().get(), nullptr));
+        base::ThreadTaskRunnerHandle::Get().get(), nullptr);
     metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
@@ -92,10 +93,10 @@ class TeamDriveListLoaderTest : public testing::Test {
                              base::ThreadTaskRunnerHandle::Get().get()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
-    loader_controller_.reset(new LoaderController);
-    team_drive_list_loader_.reset(new TeamDriveListLoader(
+    loader_controller_ = std::make_unique<LoaderController>();
+    team_drive_list_loader_ = std::make_unique<TeamDriveListLoader>(
         logger_.get(), base::ThreadTaskRunnerHandle::Get().get(),
-        metadata_.get(), scheduler_.get(), loader_controller_.get()));
+        metadata_.get(), scheduler_.get(), loader_controller_.get());
 
     team_drive_list_observer_ = std::make_unique<TestTeamDriveListObserver>();
     team_drive_list_loader_->AddObserver(team_drive_list_observer_.get());

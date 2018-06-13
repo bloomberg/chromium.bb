@@ -4,6 +4,8 @@
 
 #include "components/drive/chromeos/sync/entry_revert_performer.h"
 
+#include <memory>
+
 #include "base/task_runner_util.h"
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/file_change.h"
@@ -22,10 +24,8 @@ class EntryRevertPerformerTest : public file_system::OperationTestBase {
  protected:
   void SetUp() override {
    OperationTestBase::SetUp();
-   performer_.reset(new EntryRevertPerformer(blocking_task_runner(),
-                                             delegate(),
-                                             scheduler(),
-                                             metadata()));
+   performer_ = std::make_unique<EntryRevertPerformer>(
+       blocking_task_runner(), delegate(), scheduler(), metadata());
   }
 
   std::unique_ptr<EntryRevertPerformer> performer_;

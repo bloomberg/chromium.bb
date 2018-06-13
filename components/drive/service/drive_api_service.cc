@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -299,15 +300,15 @@ void DriveAPIService::Initialize(const std::string& account_id) {
   // to GData WAPI for the GetShareUrl.
   scopes.push_back(kDocsListScope);
 
-  sender_.reset(new RequestSender(
+  sender_ = std::make_unique<RequestSender>(
       new google_apis::AuthService(oauth2_token_service_, account_id,
                                    url_request_context_getter_.get(), scopes),
       url_request_context_getter_.get(), blocking_task_runner_.get(),
-      custom_user_agent_, traffic_annotation_));
+      custom_user_agent_, traffic_annotation_);
   sender_->auth_service()->AddObserver(this);
 
-  files_list_request_runner_.reset(
-      new FilesListRequestRunner(sender_.get(), url_generator_));
+  files_list_request_runner_ =
+      std::make_unique<FilesListRequestRunner>(sender_.get(), url_generator_);
 }
 
 void DriveAPIService::AddObserver(DriveServiceObserver* observer) {
