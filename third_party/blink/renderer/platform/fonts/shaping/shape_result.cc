@@ -37,6 +37,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/adapters.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
@@ -57,8 +58,7 @@ unsigned ShapeResult::RunInfo::NextSafeToBreakOffset(unsigned offset) const {
         return glyph_data.character_index;
     }
   } else {
-    for (auto it = glyph_data_.rbegin(); it != glyph_data_.rend(); ++it) {
-      const auto& glyph_data = *it;
+    for (const auto& glyph_data : base::Reversed(glyph_data_)) {
       if (glyph_data.safe_to_break_before &&
           glyph_data.character_index >= offset)
         return glyph_data.character_index;
@@ -74,8 +74,7 @@ unsigned ShapeResult::RunInfo::PreviousSafeToBreakOffset(
   if (offset >= num_characters_)
     return num_characters_;
   if (!Rtl()) {
-    for (auto it = glyph_data_.rbegin(); it != glyph_data_.rend(); ++it) {
-      const auto& glyph_data = *it;
+    for (const auto& glyph_data : base::Reversed(glyph_data_)) {
       if (glyph_data.safe_to_break_before &&
           glyph_data.character_index <= offset)
         return glyph_data.character_index;
@@ -886,9 +885,7 @@ float ShapeResult::LineRightBounds() const {
   DCHECK(!run.glyph_data_.IsEmpty()) << *this;
   const unsigned character_index = run.glyph_data_.back().character_index;
   GlyphBoundsAccumulator bounds(width_);
-  for (auto glyph_it = run.glyph_data_.rbegin();
-       glyph_it != run.glyph_data_.rend(); ++glyph_it) {
-    const auto& glyph = *glyph_it;
+  for (const auto& glyph : base::Reversed(run.glyph_data_)) {
     if (character_index != glyph.character_index)
       break;
     bounds.origin -= glyph.advance;
@@ -1027,8 +1024,7 @@ void ShapeResult::CheckConsistency() const {
   } else {
     // RTL on Mac may not have runs for the all characters. crbug.com/774034
     index = runs_.back()->start_index_;
-    for (auto it = runs_.rbegin(); it != runs_.rend(); ++it) {
-      const auto& run = *it;
+    for (const auto& run : base::Reversed(runs_)) {
       DCHECK_EQ(index, run->start_index_);
       index += run->num_characters_;
       num_glyphs += run->glyph_data_.size();
