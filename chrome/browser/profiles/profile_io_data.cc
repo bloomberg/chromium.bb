@@ -40,6 +40,7 @@
 #include "chrome/browser/policy/policy_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ssl/chrome_expect_ct_reporter.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
@@ -433,6 +434,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       extensions::ExtensionSystem::Get(profile)->info_map();
 #endif
 
+  params->account_consistency =
+      AccountConsistencyModeManager::GetMethodForProfile(profile);
+
   ProtocolHandlerRegistry* protocol_handler_registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
   DCHECK(protocol_handler_registry);
@@ -516,9 +520,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     sync_first_setup_complete_.MoveToThread(io_task_runner);
     sync_has_auth_error_.Init(syncer::prefs::kSyncHasAuthError, pref_service);
     sync_has_auth_error_.MoveToThread(io_task_runner);
-    dice_enabled_ = signin::CreateDicePrefMember(pref_service);
-    if (dice_enabled_)
-      dice_enabled_->MoveToThread(io_task_runner);
   }
 
   network_prediction_options_.Init(prefs::kNetworkPredictionOptions,
@@ -641,6 +642,7 @@ ProfileIOData::ProfileParams::~ProfileParams() {}
 
 ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
     : initialized_(false),
+      account_consistency_(signin::AccountConsistencyMethod::kDisabled),
 #if defined(OS_CHROMEOS)
       system_key_slot_use_type_(SystemKeySlotUseType::kNone),
 #endif
@@ -1024,6 +1026,8 @@ void ProfileIOData::Init(
   IOThread* const io_thread = profile_params_->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
 
+  account_consistency_ = profile_params_->account_consistency;
+
   // Create extension request context.  Only used for cookies.
   extensions_request_context_.reset(new net::URLRequestContext());
   extensions_request_context_->set_name("extensions");
@@ -1338,8 +1342,6 @@ void ProfileIOData::ShutdownOnUIThread(
   sync_suppress_start_.Destroy();
   sync_first_setup_complete_.Destroy();
   sync_has_auth_error_.Destroy();
-  if (dice_enabled_)
-    dice_enabled_->Destroy();
   enable_referrers_.Destroy();
   force_google_safesearch_.Destroy();
   force_youtube_restrict_.Destroy();

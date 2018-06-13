@@ -33,24 +33,6 @@ namespace {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 const char kDiceMigrationCompletePref[] = "signin.DiceMigrationComplete";
-
-// Returns whether Dice is enabled for the user, based on the account
-// consistency mode and the dice pref value.
-bool IsDiceEnabledForPrefValue(bool dice_pref_value) {
-  switch (GetAccountConsistencyMethod()) {
-    case AccountConsistencyMethod::kDisabled:
-    case AccountConsistencyMethod::kMirror:
-    case AccountConsistencyMethod::kDiceFixAuthErrors:
-    case AccountConsistencyMethod::kDicePrepareMigration:
-      return false;
-    case AccountConsistencyMethod::kDice:
-      return true;
-    case AccountConsistencyMethod::kDiceMigration:
-      return dice_pref_value;
-  }
-  NOTREACHED();
-  return false;
-}
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 // Returns a callback telling if site isolation is enabled for Gaia origins.
@@ -163,32 +145,21 @@ bool IsDiceMigrationEnabled() {
 bool IsDiceEnabledForProfile(const PrefService* user_prefs) {
   DCHECK(user_prefs);
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  return IsDiceEnabledForPrefValue(
-      user_prefs->GetBoolean(kDiceMigrationCompletePref));
+  switch (GetAccountConsistencyMethod()) {
+    case AccountConsistencyMethod::kDisabled:
+    case AccountConsistencyMethod::kMirror:
+    case AccountConsistencyMethod::kDiceFixAuthErrors:
+    case AccountConsistencyMethod::kDicePrepareMigration:
+      return false;
+    case AccountConsistencyMethod::kDice:
+      return true;
+    case AccountConsistencyMethod::kDiceMigration:
+      return user_prefs->GetBoolean(kDiceMigrationCompletePref);
+  }
+  NOTREACHED();
+  return false;
 #else
   return false;
-#endif
-}
-
-bool IsDiceEnabled(const BooleanPrefMember* dice_pref_member) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  DCHECK(dice_pref_member);
-  DCHECK_EQ(kDiceMigrationCompletePref, dice_pref_member->GetPrefName());
-  return IsDiceEnabledForPrefValue(dice_pref_member->GetValue());
-#else
-  return false;
-#endif
-}
-
-std::unique_ptr<BooleanPrefMember> CreateDicePrefMember(
-    PrefService* user_prefs) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  std::unique_ptr<BooleanPrefMember> pref_member =
-      std::make_unique<BooleanPrefMember>();
-  pref_member->Init(kDiceMigrationCompletePref, user_prefs);
-  return pref_member;
-#else
-  return std::unique_ptr<BooleanPrefMember>();
 #endif
 }
 

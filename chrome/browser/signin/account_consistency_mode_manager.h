@@ -34,12 +34,6 @@ class AccountConsistencyModeManager : public KeyedService {
   // Helper method, shorthand for calling GetAccountConsistencyMethod().
   static signin::AccountConsistencyMethod GetMethodForProfile(Profile* profile);
 
-  // Returns the account consistency method for the current profile. Can be
-  // called from any thread, with a PrefMember created with
-  // signin::CreateDicePrefMember().
-  static signin::AccountConsistencyMethod GetMethodForPrefMember(
-      BooleanPrefMember* dice_pref_member);
-
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Schedules migration to happen at next startup.
   void SetReadyForDiceMigration(bool is_ready);

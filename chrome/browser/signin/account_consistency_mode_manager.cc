@@ -138,16 +138,6 @@ AccountConsistencyModeManager::GetMethodForProfile(Profile* profile) {
 }
 
 // static
-signin::AccountConsistencyMethod
-AccountConsistencyModeManager::GetMethodForPrefMember(
-    BooleanPrefMember* dice_pref_member) {
-  if (signin::IsDiceEnabled(dice_pref_member))
-    return signin::AccountConsistencyMethod::kDice;
-
-  return signin::GetAccountConsistencyMethod();
-}
-
-// static
 bool AccountConsistencyModeManager::IsDiceEnabledForProfile(Profile* profile) {
   return GetMethodForProfile(profile) ==
          signin::AccountConsistencyMethod::kDice;

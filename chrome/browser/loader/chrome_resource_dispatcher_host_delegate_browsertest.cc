@@ -454,6 +454,14 @@ void SetDelegateOnIO(content::ResourceDispatcherHostDelegate* new_delegate) {
   content::ResourceDispatcherHost::Get()->SetDelegate(new_delegate);
 }
 
+// Subclass of ChromeResourceDispatcherHostDelegateBrowserTest with Mirror
+// enabled.
+class ChromeResourceDispatcherHostDelegateMirrorBrowserTest
+    : public ChromeResourceDispatcherHostDelegateBrowserTest {
+ private:
+  signin::ScopedAccountConsistencyMirror scoped_mirror_;
+};
+
 // Verify the following items:
 // 1- X-Chrome-Connected is appended on Google domains if account
 //    consistency is enabled and access is secure.
@@ -462,12 +470,8 @@ void SetDelegateOnIO(content::ResourceDispatcherHostDelegate* new_delegate) {
 // 3- The header is NOT stripped in case it is added directly by the page
 //    and not because it was on a secure Google domain.
 // This is a regression test for crbug.com/588492.
-IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
+IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateMirrorBrowserTest,
                        MirrorRequestHeader) {
-  // Enable account consistency so that mirror actually sets the
-  // X-Chrome-Connected header in requests to Google.
-  signin::ScopedAccountConsistencyMirror scoped_mirror;
-
   browser()->profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                               "user@gmail.com");
   browser()->profile()->GetPrefs()->SetString(
