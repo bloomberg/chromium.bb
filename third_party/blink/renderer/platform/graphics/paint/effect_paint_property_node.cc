@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
+
 namespace blink {
 
 const EffectPaintPropertyNode& EffectPaintPropertyNode::Root() {
@@ -22,10 +24,30 @@ FloatRect EffectPaintPropertyNode::MapRect(const FloatRect& input_rect) const {
   return result;
 }
 
+bool EffectPaintPropertyNode::Changed(
+    const PropertyTreeState& relative_to_state,
+    const TransformPaintPropertyNode* transform_not_to_check) const {
+  for (const auto* node = this; node && node != relative_to_state.Effect();
+       node = node->Parent()) {
+    if (node->NodeChanged())
+      return true;
+    if (node->HasFilterThatMovesPixels() &&
+        node->LocalTransformSpace() != transform_not_to_check &&
+        node->LocalTransformSpace()->Changed(*relative_to_state.Transform()))
+      return true;
+    // We don't check for change of OutputClip here to avoid N^3 complexity.
+    // The caller should check for clip change in other ways.
+  }
+
+  return false;
+}
+
 std::unique_ptr<JSONObject> EffectPaintPropertyNode::ToJSON() const {
   auto json = JSONObject::Create();
   if (Parent())
     json->SetString("parent", String::Format("%p", Parent()));
+  if (NodeChanged())
+    json->SetBoolean("changed", true);
   json->SetString("localTransformSpace",
                   String::Format("%p", state_.local_transform_space.get()));
   json->SetString("outputClip", String::Format("%p", state_.output_clip.get()));

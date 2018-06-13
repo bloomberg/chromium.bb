@@ -83,6 +83,12 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return true;
   }
 
+  // If |relative_to_node| is an ancestor of |this|, returns true if any node is
+  // marked changed along the path from |this| to |relative_to_node| (not
+  // included). Otherwise returns the combined changed status of the paths
+  // from |this| and |relative_to_node| to the root.
+  bool Changed(const TransformPaintPropertyNode& relative_to_node) const;
+
   const TransformationMatrix& Matrix() const { return state_.matrix; }
   const FloatPoint3D& Origin() const { return state_.origin; }
 
