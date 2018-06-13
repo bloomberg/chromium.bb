@@ -65,6 +65,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerUITest, Crostini) {
   RunTest("crostini");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, QuickView) {
+  RunTest("quickview");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerUITest, UMA) {
   RunTest("uma");
 }
