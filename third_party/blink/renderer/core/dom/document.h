@@ -1455,7 +1455,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void InitSecurityContext(const DocumentInit&);
   void InitSecureContextState();
   SecurityContext& GetSecurityContext() final { return *this; }
-  EventQueue* GetEventQueue() const final;
 
   bool HasPendingVisualUpdate() const {
     return lifecycle_.GetState() == DocumentLifecycle::kVisualUpdatePending;

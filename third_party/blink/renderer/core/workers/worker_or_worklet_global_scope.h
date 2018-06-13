@@ -20,8 +20,6 @@
 
 namespace blink {
 
-class EventQueue;
-class EventQueueImpl;
 class FetchClientSettingsObjectSnapshot;
 class Modulator;
 class ModuleTreeClient;
@@ -60,7 +58,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   bool IsJSExecutionForbidden() const final;
   void DisableEval(const String& error_message) final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
-  EventQueue* GetEventQueue() const final;
 
   // SecurityContext
   void DidUpdateSecurityOrigin() final {}
@@ -126,7 +123,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   CrossThreadPersistent<WorkerClients> worker_clients_;
   Member<ResourceFetcher> resource_fetcher_;
   Member<WorkerOrWorkletScriptController> script_controller_;
-  Member<EventQueueImpl> event_queue_;
 
   WorkerReportingProxy& reporting_proxy_;
 

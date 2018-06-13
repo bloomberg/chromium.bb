@@ -1408,12 +1408,6 @@ void ContentSecurityPolicy::PostViolationReport(
 void ContentSecurityPolicy::DispatchViolationEvents(
     const SecurityPolicyViolationEventInit& violation_data,
     Element* element) {
-  // If the context is detached or closed (thus clearing its event queue)
-  // between the violation occuring and this event dispatch, exit early.
-  EventQueue* queue = execution_context_->GetEventQueue();
-  if (!queue)
-    return;
-
   // Worklets don't support Events in general.
   if (execution_context_->IsWorkletGlobalScope())
     return;

@@ -296,7 +296,7 @@ bool IDBRequest::ShouldEnqueueEvent() const {
   // NotifyContextDestroyed() call yet, it will hang onto an ExecutionContext
   // whose event queue has been nulled out. The event queue null check covers
   // these specific circumstances.
-  if (!execution_context || !execution_context->GetEventQueue())
+  if (!execution_context)
     return false;
 
   DCHECK(ready_state_ == PENDING || ready_state_ == DONE);

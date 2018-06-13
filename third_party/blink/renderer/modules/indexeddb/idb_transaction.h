@@ -47,6 +47,7 @@
 namespace blink {
 
 class DOMException;
+class EventQueue;
 class ExecutionContext;
 class ExceptionState;
 class IDBDatabase;

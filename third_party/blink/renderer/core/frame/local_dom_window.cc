@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/css/style_media.h"
 #include "third_party/blink/renderer/core/dom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
-#include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
@@ -265,16 +264,9 @@ void LocalDOMWindow::ClearDocument() {
 
   DCHECK(!document_->IsActive());
 
-  // FIXME: This should be part of PausableObject shutdown
-  ClearEventQueue();
-
   unused_preloads_timer_.Stop();
   document_->ClearDOMWindow();
   document_ = nullptr;
-}
-
-void LocalDOMWindow::ClearEventQueue() {
-  event_queue_.Clear();
 }
 
 void LocalDOMWindow::AcceptLanguagesChanged() {
@@ -316,11 +308,6 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
   ClearDocument();
 
   document_ = CreateDocument(mime_type, init, force_xhtml);
-
-  // TODO(hajimehoshi): Task type should be determined by a posted event instead
-  // of specifying here.
-  event_queue_ =
-      EventQueueImpl::Create(document_.Get(), TaskType::kInternalDefault);
   document_->Initialize();
 
   if (!GetFrame())
@@ -349,22 +336,13 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
   return document_;
 }
 
-EventQueue* LocalDOMWindow::GetEventQueue() const {
-  return event_queue_.Get();
-}
-
 void LocalDOMWindow::EnqueueWindowEvent(Event* event) {
-  if (!event_queue_)
-    return;
-  event->SetTarget(this);
-  event_queue_->EnqueueEvent(FROM_HERE, event);
+  EnqueueAsyncEvent(event);
 }
 
 void LocalDOMWindow::EnqueueDocumentEvent(Event* event) {
-  if (!event_queue_)
-    return;
-  event->SetTarget(document_.Get());
-  event_queue_->EnqueueEvent(FROM_HERE, event);
+  if (document_)
+    document_->EnqueueAsyncEvent(event);
 }
 
 void LocalDOMWindow::DispatchWindowLoadEvent() {
@@ -430,10 +408,7 @@ void LocalDOMWindow::StatePopped(
     pending_state_object_ = std::move(state_object);
 }
 
-LocalDOMWindow::~LocalDOMWindow() {
-  // Cleared when detaching document.
-  DCHECK(!event_queue_);
-}
+LocalDOMWindow::~LocalDOMWindow() = default;
 
 void LocalDOMWindow::Dispose() {
   // Oilpan: should the LocalDOMWindow be GCed along with its LocalFrame without
@@ -1635,7 +1610,6 @@ void LocalDOMWindow::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);
   visitor->Trace(external_);
   visitor->Trace(application_cache_);
-  visitor->Trace(event_queue_);
   visitor->Trace(post_message_timers_);
   visitor->Trace(visualViewport_);
   visitor->Trace(event_listener_observers_);

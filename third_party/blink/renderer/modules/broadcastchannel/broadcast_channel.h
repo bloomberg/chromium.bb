@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class EventQueue;
 class ScriptValue;
 
 class BroadcastChannel final : public EventTargetWithInlineData,

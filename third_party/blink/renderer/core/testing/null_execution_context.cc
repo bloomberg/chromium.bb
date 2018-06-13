@@ -11,22 +11,8 @@
 
 namespace blink {
 
-namespace {
-
-class NullEventQueue final : public EventQueue {
- public:
-  NullEventQueue() = default;
-  ~NullEventQueue() override = default;
-  bool EnqueueEvent(const base::Location&, Event*) override { return true; }
-  void CancelAllEvents() override {}
-};
-
-}  // namespace
-
 NullExecutionContext::NullExecutionContext()
-    : tasks_need_pause_(false),
-      is_secure_context_(true),
-      queue_(new NullEventQueue()) {}
+    : tasks_need_pause_(false), is_secure_context_(true) {}
 
 void NullExecutionContext::SetIsSecureContext(bool is_secure_context) {
   is_secure_context_ = is_secure_context;
