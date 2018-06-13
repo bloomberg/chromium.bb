@@ -10,8 +10,10 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/sample_map.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -159,6 +161,35 @@ HistogramTester::GetHistogramSamplesSinceCreation(
   if (original_samples_it != histograms_snapshot_.end())
     named_samples->Subtract(*original_samples_it->second.get());
   return named_samples;
+}
+
+std::string HistogramTester::GetAllHistogramsRecorded() const {
+  std::string output;
+
+  for (const auto* const histogram : StatisticsRecorder::GetHistograms()) {
+    std::unique_ptr<HistogramSamples> named_samples =
+        histogram->SnapshotSamples();
+
+    for (const auto& histogram_data : histograms_snapshot_) {
+      if (histogram_data.first == histogram->histogram_name())
+        named_samples->Subtract(*histogram_data.second);
+    }
+
+    if (named_samples->TotalCount()) {
+      auto current_count = histogram->SnapshotSamples()->TotalCount();
+      StringAppendF(&output, "Histogram: %s recorded %d new samples.\n",
+                    histogram->histogram_name(), named_samples->TotalCount());
+      if (current_count != named_samples->TotalCount()) {
+        StringAppendF(&output,
+                      "WARNING: There were samples recorded to this histogram "
+                      "before tester instantiation.\n");
+      }
+      histogram->WriteAscii(&output);
+      StringAppendF(&output, "\n");
+    }
+  }
+
+  return output;
 }
 
 void HistogramTester::CheckBucketCount(const std::string& name,

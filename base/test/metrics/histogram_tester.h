@@ -126,6 +126,11 @@ class HistogramTester {
   std::unique_ptr<HistogramSamples> GetHistogramSamplesSinceCreation(
       const std::string& histogram_name) const;
 
+  // Dumps all histograms that have had new samples added to them into a string,
+  // for debugging purposes. Note: this will dump the entire contents of any
+  // modified histograms and not just the modified buckets.
+  std::string GetAllHistogramsRecorded() const;
+
  private:
   // Verifies and asserts that value in the |sample| bucket matches the
   // |expected_count|. The bucket's current value is determined from |samples|
