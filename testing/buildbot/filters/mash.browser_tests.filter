@@ -43,6 +43,7 @@
 -ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInBrowserImmersiveMode*
 -FileDisplay/FilesAppBrowserTest.Test/fileDisplayDownloads_TabletMode
 -FileDisplay/FilesAppBrowserTest.Test/fileDisplayDrive_TabletMode
+-QuickView/FilesAppBrowserTest.Test/openQuickView_TabletMode
 
 # ash::Shell access from ChromeViewsDelegate::CreateDefaultNonClientFrameView()
 # e.g. from chromeos::CaptivePortalWindowProxy::Show().

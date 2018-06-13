@@ -216,10 +216,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("deleteEntryWithToolbar").InGuestMode(),
                       TestCase("deleteEntryWithToolbar")));
 
-WRAPPED_INSTANTIATE_TEST_CASE_P(QuickView, /* quick_view.js */
-                                FilesAppBrowserTest,
-                                ::testing::Values(TestCase("openQuickView"),
-                                                  TestCase("closeQuickView")));
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    QuickView, /* quick_view.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("openQuickView"),
+                      TestCase("openQuickView").InGuestMode(),
+                      TestCase("openQuickView").TabletMode(),
+                      TestCase("openQuickViewUsb"),
+                      TestCase("closeQuickView")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DirectoryTreeContextMenu, /* directory_tree_context_menu.js */
