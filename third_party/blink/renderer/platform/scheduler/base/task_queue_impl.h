@@ -93,7 +93,10 @@ class PLATFORM_EXPORT TaskQueueImpl {
       if (time == other.time) {
         // Debug gcc builds can compare an element against itself.
         DCHECK(sequence_num != other.sequence_num || this == &other);
-        return (sequence_num - other.sequence_num) < 0;
+        // |PostedTask::sequence_num| is int and might wrap around to
+        // a negative number when casted from EnqueueOrder.
+        // This way of comparison handles that properly.
+        return (sequence_num - other.sequence_num) <= 0;
       }
       return time < other.time;
     }
@@ -111,32 +114,26 @@ class PLATFORM_EXPORT TaskQueueImpl {
          EnqueueOrder enqueue_order);
 
     DelayedWakeUp delayed_wake_up() const {
+      // Since we use |sequence_num| in DelayedWakeUp for ordering purposes
+      // and integer overflow handling is type-sensitive it's worth to protect
+      // it from an unnoticed potential change in the PendingTask base class.
+      static_assert(std::is_same<decltype(sequence_num), int>::value, "");
       return DelayedWakeUp{delayed_run_time, sequence_num};
     }
 
     EnqueueOrder enqueue_order() const {
-#ifndef NDEBUG
-      DCHECK(enqueue_order_set_);
-#endif
+      DCHECK(enqueue_order_);
       return enqueue_order_;
     }
 
     void set_enqueue_order(EnqueueOrder enqueue_order) {
-#ifndef NDEBUG
-      DCHECK(!enqueue_order_set_);
-      enqueue_order_set_ = true;
-#endif
+      DCHECK(!enqueue_order_);
       enqueue_order_ = enqueue_order;
     }
 
-#ifndef NDEBUG
-    bool enqueue_order_set() const { return enqueue_order_set_; }
-#endif
+    bool enqueue_order_set() const { return enqueue_order_; }
 
    private:
-#ifndef NDEBUG
-    bool enqueue_order_set_;
-#endif
     // Similar to sequence number, but ultimately the |enqueue_order_| is what
     // the scheduler uses for task ordering. For immediate tasks |enqueue_order|
     // is set when posted, but for delayed tasks it's not defined until they are

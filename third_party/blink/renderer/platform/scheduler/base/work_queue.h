@@ -142,7 +142,7 @@ class PLATFORM_EXPORT WorkQueue {
   size_t work_queue_set_index_ = 0;
   HeapHandle heap_handle_;
   const char* const name_;
-  EnqueueOrder fence_ = 0;
+  EnqueueOrder fence_;
   const QueueType queue_type_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkQueue);

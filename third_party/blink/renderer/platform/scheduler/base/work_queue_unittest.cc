@@ -50,22 +50,22 @@ class WorkQueueTest : public testing::Test {
     TaskQueueImpl::Task fake_task(
         TaskQueue::PostedTask(BindOnce(&Cancelable::NopTask, weak_ptr),
                               FROM_HERE),
-        TimeTicks(), 0);
-    fake_task.set_enqueue_order(enqueue_order);
+        TimeTicks(), EnqueueOrder(),
+        EnqueueOrder::FromIntForTesting(enqueue_order));
     return fake_task;
   }
 
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(), 0);
-    fake_task.set_enqueue_order(enqueue_order);
+        TaskQueue::PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(),
+        EnqueueOrder(), EnqueueOrder::FromIntForTesting(enqueue_order));
     return fake_task;
   }
 
   TaskQueueImpl::Task FakeNonNestableTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(), 0);
-    fake_task.set_enqueue_order(enqueue_order);
+        TaskQueue::PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(),
+        EnqueueOrder(), EnqueueOrder::FromIntForTesting(enqueue_order));
     fake_task.nestable = Nestable::kNonNestable;
     return fake_task;
   }
@@ -85,7 +85,7 @@ TEST_F(WorkQueueTest, Empty) {
 
 TEST_F(WorkQueueTest, Empty_IgnoresFences) {
   work_queue_->Push(FakeTaskWithEnqueueOrder(1));
-  work_queue_->InsertFence(1);
+  work_queue_->InsertFence(EnqueueOrder::blocking_fence());
   EXPECT_FALSE(work_queue_->Empty());
 }
 
@@ -140,7 +140,7 @@ TEST_F(WorkQueueTest, Push) {
 }
 
 TEST_F(WorkQueueTest, PushAfterFenceHit) {
-  work_queue_->InsertFence(1);
+  work_queue_->InsertFence(EnqueueOrder::blocking_fence());
   WorkQueue* work_queue;
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
 
@@ -165,7 +165,7 @@ TEST_F(WorkQueueTest, PushNonNestableTaskToFront) {
 }
 
 TEST_F(WorkQueueTest, PushNonNestableTaskToFrontAfterFenceHit) {
-  work_queue_->InsertFence(1);
+  work_queue_->InsertFence(EnqueueOrder::blocking_fence());
   WorkQueue* work_queue;
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
 
@@ -175,7 +175,7 @@ TEST_F(WorkQueueTest, PushNonNestableTaskToFrontAfterFenceHit) {
 }
 
 TEST_F(WorkQueueTest, PushNonNestableTaskToFrontBeforeFenceHit) {
-  work_queue_->InsertFence(3);
+  work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(3));
   WorkQueue* work_queue;
   EXPECT_FALSE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
 
@@ -205,7 +205,7 @@ TEST_F(WorkQueueTest, ReloadEmptyImmediateQueue) {
 }
 
 TEST_F(WorkQueueTest, ReloadEmptyImmediateQueueAfterFenceHit) {
-  work_queue_->InsertFence(1);
+  work_queue_->InsertFence(EnqueueOrder::blocking_fence());
   task_queue_->PushImmediateIncomingTaskForTest(FakeTaskWithEnqueueOrder(2));
   task_queue_->PushImmediateIncomingTaskForTest(FakeTaskWithEnqueueOrder(3));
   task_queue_->PushImmediateIncomingTaskForTest(FakeTaskWithEnqueueOrder(4));
@@ -243,7 +243,7 @@ TEST_F(WorkQueueTest, TakeTaskFromWorkQueue) {
 }
 
 TEST_F(WorkQueueTest, TakeTaskFromWorkQueue_HitFence) {
-  work_queue_->InsertFence(3);
+  work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(3));
   work_queue_->Push(FakeTaskWithEnqueueOrder(2));
   work_queue_->Push(FakeTaskWithEnqueueOrder(4));
   EXPECT_FALSE(work_queue_->BlockedByFence());
@@ -260,7 +260,7 @@ TEST_F(WorkQueueTest, TakeTaskFromWorkQueue_HitFence) {
 }
 
 TEST_F(WorkQueueTest, InsertFenceBeforeEnqueueing) {
-  EXPECT_FALSE(work_queue_->InsertFence(1));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::blocking_fence()));
   EXPECT_TRUE(work_queue_->BlockedByFence());
 
   work_queue_->Push(FakeTaskWithEnqueueOrder(2));
@@ -276,7 +276,7 @@ TEST_F(WorkQueueTest, InsertFenceAfterEnqueueingNonBlocking) {
   work_queue_->Push(FakeTaskWithEnqueueOrder(3));
   work_queue_->Push(FakeTaskWithEnqueueOrder(4));
 
-  EXPECT_FALSE(work_queue_->InsertFence(5));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(5)));
   EXPECT_FALSE(work_queue_->BlockedByFence());
 
   EnqueueOrder enqueue_order;
@@ -291,7 +291,7 @@ TEST_F(WorkQueueTest, InsertFenceAfterEnqueueing) {
 
   // NB in reality a fence will always be greater than any currently enqueued
   // tasks.
-  EXPECT_FALSE(work_queue_->InsertFence(1));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::blocking_fence()));
   EXPECT_TRUE(work_queue_->BlockedByFence());
 
   EnqueueOrder enqueue_order;
@@ -303,7 +303,7 @@ TEST_F(WorkQueueTest, InsertNewFence) {
   work_queue_->Push(FakeTaskWithEnqueueOrder(4));
   work_queue_->Push(FakeTaskWithEnqueueOrder(5));
 
-  EXPECT_FALSE(work_queue_->InsertFence(3));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(3)));
   EXPECT_FALSE(work_queue_->BlockedByFence());
 
   // Note until TakeTaskFromWorkQueue() is called we don't hit the fence.
@@ -317,7 +317,7 @@ TEST_F(WorkQueueTest, InsertNewFence) {
 
   // Inserting the new fence should temporarily unblock the queue until the new
   // one is hit.
-  EXPECT_TRUE(work_queue_->InsertFence(6));
+  EXPECT_TRUE(work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(6)));
   EXPECT_FALSE(work_queue_->BlockedByFence());
 
   EXPECT_TRUE(work_queue_->GetFrontTaskEnqueueOrder(&enqueue_order));
@@ -329,7 +329,7 @@ TEST_F(WorkQueueTest, InsertNewFence) {
 
 TEST_F(WorkQueueTest, PushWithNonEmptyQueueDoesNotHitFence) {
   work_queue_->Push(FakeTaskWithEnqueueOrder(1));
-  EXPECT_FALSE(work_queue_->InsertFence(2));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(2)));
   work_queue_->Push(FakeTaskWithEnqueueOrder(3));
   EXPECT_FALSE(work_queue_->BlockedByFence());
 }
@@ -338,7 +338,7 @@ TEST_F(WorkQueueTest, RemoveFence) {
   work_queue_->Push(FakeTaskWithEnqueueOrder(2));
   work_queue_->Push(FakeTaskWithEnqueueOrder(4));
   work_queue_->Push(FakeTaskWithEnqueueOrder(5));
-  work_queue_->InsertFence(3);
+  work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(3));
 
   WorkQueue* work_queue;
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(0, &work_queue));
@@ -360,7 +360,7 @@ TEST_F(WorkQueueTest, RemoveFenceButNoFence) {
 }
 
 TEST_F(WorkQueueTest, RemoveFenceNothingUnblocked) {
-  EXPECT_FALSE(work_queue_->InsertFence(1));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::blocking_fence()));
   EXPECT_TRUE(work_queue_->BlockedByFence());
 
   EXPECT_FALSE(work_queue_->RemoveFence());
@@ -369,13 +369,13 @@ TEST_F(WorkQueueTest, RemoveFenceNothingUnblocked) {
 
 TEST_F(WorkQueueTest, BlockedByFence) {
   EXPECT_FALSE(work_queue_->BlockedByFence());
-  EXPECT_FALSE(work_queue_->InsertFence(1));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::blocking_fence()));
   EXPECT_TRUE(work_queue_->BlockedByFence());
 }
 
 TEST_F(WorkQueueTest, BlockedByFencePopBecomesEmpty) {
   work_queue_->Push(FakeTaskWithEnqueueOrder(1));
-  EXPECT_FALSE(work_queue_->InsertFence(2));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(2)));
   EXPECT_FALSE(work_queue_->BlockedByFence());
 
   EXPECT_EQ(1ull, work_queue_->TakeTaskFromWorkQueue().enqueue_order());
@@ -384,7 +384,7 @@ TEST_F(WorkQueueTest, BlockedByFencePopBecomesEmpty) {
 
 TEST_F(WorkQueueTest, BlockedByFencePop) {
   work_queue_->Push(FakeTaskWithEnqueueOrder(1));
-  EXPECT_FALSE(work_queue_->InsertFence(2));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(2)));
   EXPECT_FALSE(work_queue_->BlockedByFence());
 
   work_queue_->Push(FakeTaskWithEnqueueOrder(3));
@@ -395,17 +395,17 @@ TEST_F(WorkQueueTest, BlockedByFencePop) {
 }
 
 TEST_F(WorkQueueTest, InitiallyEmptyBlockedByFenceNewFenceUnblocks) {
-  EXPECT_FALSE(work_queue_->InsertFence(1));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::blocking_fence()));
   EXPECT_TRUE(work_queue_->BlockedByFence());
 
   work_queue_->Push(FakeTaskWithEnqueueOrder(2));
-  EXPECT_TRUE(work_queue_->InsertFence(3));
+  EXPECT_TRUE(work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(3)));
   EXPECT_FALSE(work_queue_->BlockedByFence());
 }
 
 TEST_F(WorkQueueTest, BlockedByFenceNewFenceUnblocks) {
   work_queue_->Push(FakeTaskWithEnqueueOrder(1));
-  EXPECT_FALSE(work_queue_->InsertFence(2));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(2)));
   EXPECT_FALSE(work_queue_->BlockedByFence());
 
   work_queue_->Push(FakeTaskWithEnqueueOrder(3));
@@ -414,7 +414,7 @@ TEST_F(WorkQueueTest, BlockedByFenceNewFenceUnblocks) {
   EXPECT_EQ(1ull, work_queue_->TakeTaskFromWorkQueue().enqueue_order());
   EXPECT_TRUE(work_queue_->BlockedByFence());
 
-  EXPECT_TRUE(work_queue_->InsertFence(4));
+  EXPECT_TRUE(work_queue_->InsertFence(EnqueueOrder::FromIntForTesting(4)));
   EXPECT_FALSE(work_queue_->BlockedByFence());
 }
 
@@ -424,7 +424,7 @@ TEST_F(WorkQueueTest, InsertFenceAfterEnqueuing) {
   work_queue_->Push(FakeTaskWithEnqueueOrder(4));
   EXPECT_FALSE(work_queue_->BlockedByFence());
 
-  EXPECT_FALSE(work_queue_->InsertFence(1));
+  EXPECT_FALSE(work_queue_->InsertFence(EnqueueOrder::blocking_fence()));
   EXPECT_TRUE(work_queue_->BlockedByFence());
 
   EnqueueOrder enqueue_order;

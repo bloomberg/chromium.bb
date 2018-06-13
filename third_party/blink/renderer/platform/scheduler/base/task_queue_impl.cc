@@ -89,12 +89,9 @@ TaskQueueImpl::PostTaskResult TaskQueueImpl::PostTaskResult::Fail(
 TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
                           TimeTicks desired_run_time,
                           EnqueueOrder sequence_number)
-    : TaskQueue::Task(std::move(task), desired_run_time),
-#ifndef NDEBUG
-      enqueue_order_set_(false),
-#endif
-      enqueue_order_(0) {
-  sequence_num = sequence_number;
+    : TaskQueue::Task(std::move(task), desired_run_time) {
+  // It might wrap around to a negative number but it's handled properly.
+  sequence_num = static_cast<int>(sequence_number);
 }
 
 TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
@@ -102,11 +99,9 @@ TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
                           EnqueueOrder sequence_number,
                           EnqueueOrder enqueue_order)
     : TaskQueue::Task(std::move(task), desired_run_time),
-#ifndef NDEBUG
-      enqueue_order_set_(true),
-#endif
       enqueue_order_(enqueue_order) {
-  sequence_num = sequence_number;
+  // It might wrap around to a negative number but it's handled properly.
+  sequence_num = static_cast<int>(sequence_number);
 }
 
 TaskQueueImpl::AnyThread::AnyThread(TaskQueueManagerImpl* task_queue_manager,
@@ -130,7 +125,6 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(
       is_enabled_refcount(0),
       voter_refcount(0),
       blame_context(nullptr),
-      current_fence(0),
       is_enabled_for_test(true) {}
 
 TaskQueueImpl::MainThreadOnly::~MainThreadOnly() = default;
@@ -270,7 +264,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
 void TaskQueueImpl::PushOntoDelayedIncomingQueueLocked(Task pending_task) {
   any_thread().task_queue_manager->DidQueueTask(pending_task);
 
-  int thread_hop_task_sequence_number =
+  EnqueueOrder thread_hop_task_sequence_number =
       any_thread().task_queue_manager->GetNextSequenceNumber();
   // TODO(altimin): Add a copy method to Task to capture metadata here.
   PushOntoImmediateIncomingQueueLocked(Task(
@@ -308,7 +302,7 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(Task task) {
   // it run.
   bool was_immediate_incoming_queue_empty;
 
-  EnqueueOrder sequence_number = task.sequence_num;
+  EnqueueOrder sequence_number = task.enqueue_order();
   TimeTicks desired_run_time = task.delayed_run_time;
 
   {
@@ -356,8 +350,7 @@ void TaskQueueImpl::ReloadEmptyImmediateQueue(TaskDeque* queue) {
     for (const Task& task : *queue) {
       if (task.delayed_run_time >= main_thread_only().delayed_fence.value()) {
         main_thread_only().delayed_fence = nullopt;
-        DCHECK_EQ(main_thread_only().current_fence,
-                  static_cast<EnqueueOrder>(EnqueueOrderValues::kNone));
+        DCHECK(!main_thread_only().current_fence);
         main_thread_only().current_fence = task.enqueue_order();
         // Do not trigger WorkQueueSets notification when taking incoming
         // immediate queue.
@@ -642,7 +635,7 @@ void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
   EnqueueOrder current_fence =
       position == TaskQueue::InsertFencePosition::kNow
           ? main_thread_only().task_queue_manager->GetNextSequenceNumber()
-          : static_cast<EnqueueOrder>(EnqueueOrderValues::kBlockingFence);
+          : EnqueueOrder::blocking_fence();
 
   // Tasks posted after this point will have a strictly higher enqueue order
   // and will be blocked from running.
@@ -678,7 +671,7 @@ void TaskQueueImpl::RemoveFence() {
     return;
 
   EnqueueOrder previous_fence = main_thread_only().current_fence;
-  main_thread_only().current_fence = 0;
+  main_thread_only().current_fence = EnqueueOrder::none();
   main_thread_only().delayed_fence = nullopt;
 
   bool task_unblocked = main_thread_only().immediate_work_queue->RemoveFence();
@@ -766,12 +759,8 @@ void TaskQueueImpl::TaskAsValueInto(const Task& task,
                                     trace_event::TracedValue* state) {
   state->BeginDictionary();
   state->SetString("posted_from", task.posted_from.ToString());
-#ifndef NDEBUG
   if (task.enqueue_order_set())
     state->SetInteger("enqueue_order", task.enqueue_order());
-#else
-  state->SetInteger("enqueue_order", task.enqueue_order());
-#endif
   state->SetInteger("sequence_num", task.sequence_num);
   state->SetBoolean("nestable", task.nestable == Nestable::kNestable);
   state->SetBoolean("is_high_res", task.is_high_res);

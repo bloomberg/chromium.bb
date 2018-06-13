@@ -44,15 +44,15 @@ class WorkQueueSetsTest : public testing::Test {
 
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(BindOnce([] {}), FROM_HERE), TimeTicks(), 0);
-    fake_task.set_enqueue_order(enqueue_order);
+        TaskQueue::PostedTask(BindOnce([] {}), FROM_HERE), TimeTicks(),
+        EnqueueOrder(), EnqueueOrder::FromIntForTesting(enqueue_order));
     return fake_task;
   }
 
   TaskQueueImpl::Task FakeNonNestableTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(BindOnce([] {}), FROM_HERE), TimeTicks(), 0);
-    fake_task.set_enqueue_order(enqueue_order);
+        TaskQueue::PostedTask(BindOnce([] {}), FROM_HERE), TimeTicks(),
+        EnqueueOrder(), EnqueueOrder::FromIntForTesting(enqueue_order));
     fake_task.nestable = Nestable::kNonNestable;
     return fake_task;
   }
@@ -294,7 +294,7 @@ TEST_F(WorkQueueSetsTest, BlockQueuesByFence) {
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
   EXPECT_EQ(selected_work_queue, queue1);
 
-  queue1->InsertFence(1);
+  queue1->InsertFence(EnqueueOrder::blocking_fence());
 
   EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
   EXPECT_EQ(selected_work_queue, queue2);

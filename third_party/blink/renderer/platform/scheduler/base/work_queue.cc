@@ -175,7 +175,7 @@ void WorkQueue::AssignSetIndex(size_t work_queue_set_index) {
 
 bool WorkQueue::InsertFenceImpl(EnqueueOrder fence) {
   DCHECK_NE(fence, 0u);
-  DCHECK(fence >= fence_ || fence == 1u);
+  DCHECK(fence >= fence_ || fence == EnqueueOrder::blocking_fence());
   bool was_blocked_by_fence = BlockedByFence();
   fence_ = fence;
   return was_blocked_by_fence;
@@ -183,7 +183,7 @@ bool WorkQueue::InsertFenceImpl(EnqueueOrder fence) {
 
 void WorkQueue::InsertFenceSilently(EnqueueOrder fence) {
   // Ensure that there is no fence present or a new one blocks queue completely.
-  DCHECK(fence_ == 0u || fence == 1u);
+  DCHECK(!fence_ || fence_ == EnqueueOrder::blocking_fence());
   InsertFenceImpl(fence);
 }
 
@@ -204,7 +204,7 @@ bool WorkQueue::InsertFence(EnqueueOrder fence) {
 
 bool WorkQueue::RemoveFence() {
   bool was_blocked_by_fence = BlockedByFence();
-  fence_ = 0;
+  fence_ = EnqueueOrder::none();
   if (work_queue_sets_ && !tasks_.empty() && was_blocked_by_fence) {
     work_queue_sets_->OnTaskPushedToEmptyQueue(this);
     return true;
@@ -215,8 +215,8 @@ bool WorkQueue::RemoveFence() {
 bool WorkQueue::ShouldRunBefore(const WorkQueue* other_queue) const {
   DCHECK(!tasks_.empty());
   DCHECK(!other_queue->tasks_.empty());
-  EnqueueOrder enqueue_order = 0;
-  EnqueueOrder other_enqueue_order = 0;
+  EnqueueOrder enqueue_order;
+  EnqueueOrder other_enqueue_order;
   bool have_task = GetFrontTaskEnqueueOrder(&enqueue_order);
   bool have_other_task =
       other_queue->GetFrontTaskEnqueueOrder(&other_enqueue_order);
