@@ -9,6 +9,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 
 namespace policy {
 
@@ -37,6 +38,11 @@ class WeeklyTimeInterval {
   // |end| time is always after |start| time. It's possible because week time is
   // cyclic. (i.e. [Friday 17:00, Monday 9:00) )
   bool Contains(const WeeklyTime& w) const;
+
+  // Return time interval made from WeeklyTimeIntervalProto structure. Return
+  // nullptr if the proto contains an invalid interval.
+  static std::unique_ptr<WeeklyTimeInterval> ExtractFromProto(
+      const enterprise_management::WeeklyTimeIntervalProto& container);
 
   WeeklyTime start() const { return start_; }
 

@@ -10,6 +10,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 
 namespace policy {
 
@@ -42,6 +43,11 @@ class WeeklyTime {
 
   // Add milliseconds to WeeklyTime.
   WeeklyTime AddMilliseconds(int milliseconds) const;
+
+  // Return WeeklyTime structure from WeeklyTimeProto. Return nullptr if
+  // WeeklyTime structure isn't correct.
+  static std::unique_ptr<WeeklyTime> ExtractFromProto(
+      const enterprise_management::WeeklyTimeProto& container);
 
   // Return current time in WeeklyTime structure.
   static WeeklyTime GetCurrentWeeklyTime(base::Clock* clock);

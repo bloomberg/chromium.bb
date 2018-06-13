@@ -11,43 +11,14 @@ namespace em = enterprise_management;
 
 namespace policy {
 namespace off_hours {
-namespace {
-constexpr base::TimeDelta kDay = base::TimeDelta::FromDays(1);
-}  // namespace
-
-std::unique_ptr<WeeklyTime> ExtractWeeklyTimeFromProto(
-    const em::WeeklyTimeProto& container) {
-  if (!container.has_day_of_week() ||
-      container.day_of_week() == em::WeeklyTimeProto::DAY_OF_WEEK_UNSPECIFIED) {
-    LOG(ERROR) << "Day of week in interval is absent or unspecified.";
-    return nullptr;
-  }
-  if (!container.has_time()) {
-    LOG(ERROR) << "Time in interval is absent.";
-    return nullptr;
-  }
-  int time_of_day = container.time();
-  if (!(time_of_day >= 0 && time_of_day < kDay.InMilliseconds())) {
-    LOG(ERROR) << "Invalid time value: " << time_of_day
-               << ", the value should be in [0; " << kDay.InMilliseconds()
-               << ").";
-    return nullptr;
-  }
-  return std::make_unique<WeeklyTime>(container.day_of_week(), time_of_day);
-}
 
 std::vector<WeeklyTimeInterval> ExtractWeeklyTimeIntervalsFromProto(
     const em::DeviceOffHoursProto& container) {
   std::vector<WeeklyTimeInterval> intervals;
   for (const auto& entry : container.intervals()) {
-    if (!entry.has_start() || !entry.has_end()) {
-      LOG(WARNING) << "Skipping interval without start or/and end.";
-      continue;
-    }
-    auto start = ExtractWeeklyTimeFromProto(entry.start());
-    auto end = ExtractWeeklyTimeFromProto(entry.end());
-    if (start && end)
-      intervals.push_back(WeeklyTimeInterval(*start, *end));
+    auto interval = WeeklyTimeInterval::ExtractFromProto(entry);
+    if (interval)
+      intervals.push_back(*interval);
   }
   return intervals;
 }

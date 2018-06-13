@@ -9,7 +9,10 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace em = enterprise_management;
 
 namespace policy {
 namespace {
@@ -27,6 +30,16 @@ enum {
 const int kMinutesInHour = 60;
 
 constexpr base::TimeDelta kMinute = base::TimeDelta::FromMinutes(1);
+
+constexpr em::WeeklyTimeProto_DayOfWeek kWeekdays[] = {
+    em::WeeklyTimeProto::DAY_OF_WEEK_UNSPECIFIED,
+    em::WeeklyTimeProto::MONDAY,
+    em::WeeklyTimeProto::TUESDAY,
+    em::WeeklyTimeProto::WEDNESDAY,
+    em::WeeklyTimeProto::THURSDAY,
+    em::WeeklyTimeProto::FRIDAY,
+    em::WeeklyTimeProto::SATURDAY,
+    em::WeeklyTimeProto::SUNDAY};
 
 }  // namespace
 
@@ -62,6 +75,70 @@ TEST_P(SingleWeeklyTimeIntervalTest, ToValue) {
   expected_interval_value.SetDictionary("start", start.ToValue());
   expected_interval_value.SetDictionary("end", end.ToValue());
   EXPECT_EQ(*interval_value, expected_interval_value);
+}
+
+TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_Empty) {
+  em::WeeklyTimeIntervalProto interval_proto;
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  ASSERT_FALSE(result);
+}
+
+TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_NoEnd) {
+  em::WeeklyTimeIntervalProto interval_proto;
+  em::WeeklyTimeProto* start = interval_proto.mutable_start();
+  start->set_day_of_week(kWeekdays[start_day_of_week()]);
+  start->set_time(start_time());
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  ASSERT_FALSE(result);
+}
+
+TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_NoStart) {
+  em::WeeklyTimeIntervalProto interval_proto;
+  em::WeeklyTimeProto* end = interval_proto.mutable_end();
+  end->set_day_of_week(kWeekdays[end_day_of_week()]);
+  end->set_time(end_time());
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  ASSERT_FALSE(result);
+}
+
+TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_InvalidStart) {
+  em::WeeklyTimeIntervalProto interval_proto;
+  em::WeeklyTimeProto* start = interval_proto.mutable_start();
+  em::WeeklyTimeProto* end = interval_proto.mutable_end();
+  start->set_day_of_week(kWeekdays[0]);
+  start->set_time(start_time());
+  end->set_day_of_week(kWeekdays[end_day_of_week()]);
+  end->set_time(end_time());
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  ASSERT_FALSE(result);
+}
+
+TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_InvalidEnd) {
+  em::WeeklyTimeIntervalProto interval_proto;
+  em::WeeklyTimeProto* start = interval_proto.mutable_start();
+  em::WeeklyTimeProto* end = interval_proto.mutable_end();
+  start->set_day_of_week(kWeekdays[start_day_of_week()]);
+  start->set_time(start_time());
+  end->set_day_of_week(kWeekdays[0]);
+  end->set_time(end_time());
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  ASSERT_FALSE(result);
+}
+
+TEST_P(SingleWeeklyTimeIntervalTest, ExtractFromProto_Valid) {
+  em::WeeklyTimeIntervalProto interval_proto;
+  em::WeeklyTimeProto* start = interval_proto.mutable_start();
+  em::WeeklyTimeProto* end = interval_proto.mutable_end();
+  start->set_day_of_week(kWeekdays[start_day_of_week()]);
+  start->set_time(start_time());
+  end->set_day_of_week(kWeekdays[end_day_of_week()]);
+  end->set_time(end_time());
+  auto result = WeeklyTimeInterval::ExtractFromProto(interval_proto);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(result->start().day_of_week(), start_day_of_week());
+  EXPECT_EQ(result->start().milliseconds(), start_time());
+  EXPECT_EQ(result->end().day_of_week(), end_day_of_week());
+  EXPECT_EQ(result->end().milliseconds(), end_time());
 }
 
 INSTANTIATE_TEST_CASE_P(OneMinuteInterval,
