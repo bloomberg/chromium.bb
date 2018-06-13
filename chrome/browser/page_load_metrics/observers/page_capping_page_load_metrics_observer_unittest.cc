@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
@@ -530,4 +531,85 @@ TEST_F(PageCappingObserverTest, DataSavingsParam) {
   // Forcing savings to be written again should not change savings.
   NavigateToUntrackedUrl();
   EXPECT_EQ(0l, savings_);
+}
+
+TEST_F(PageCappingObserverTest, DataSavingsHistogram) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+  base::HistogramTester histogram_tester;
+
+  // A resource of 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should trigger an infobar as the non-media cap is met.
+  SimulateLoadedResource(resource);
+
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+
+  // Savings is only recorded in OnComplete
+  SimulateAppEnterBackground();
+  histogram_tester.ExpectTotalCount("HeavyPageCapping.RecordedDataSavings", 0);
+
+  NavigateToUntrackedUrl();
+  histogram_tester.ExpectUniqueSample("HeavyPageCapping.RecordedDataSavings",
+                                      1024, 1);
+}
+
+TEST_F(PageCappingObserverTest, DataSavingsHistogramWhenResumed) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+  base::HistogramTester histogram_tester;
+
+  // A resource of 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should trigger an infobar as the non-media cap is met.
+  SimulateLoadedResource(resource);
+
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+
+  NavigateToUntrackedUrl();
+  histogram_tester.ExpectTotalCount("HeavyPageCapping.RecordedDataSavings", 0);
 }

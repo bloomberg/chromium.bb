@@ -15,6 +15,7 @@
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_context.h"
@@ -163,6 +164,10 @@ void PageCappingPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordDataSavings();
+  if (paused_) {
+    PAGE_BYTES_HISTOGRAM("HeavyPageCapping.RecordedDataSavings",
+                         recorded_savings_);
+  }
 }
 
 void PageCappingPageLoadMetricsObserver::RecordDataSavings() {
