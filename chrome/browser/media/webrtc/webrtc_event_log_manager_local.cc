@@ -126,7 +126,14 @@ bool WebRtcLocalEventLogManager::EventLogWrite(const PeerConnectionKey& key,
   if (it == log_files_.end()) {
     return false;
   }
-  return WriteToLogFile(it, message);
+
+  const bool write_successful = it->second.Write(message);
+
+  if (!write_successful || it->second.MaxSizeReached()) {
+    CloseLogFile(it);
+  }
+
+  return write_successful;
 }
 
 void WebRtcLocalEventLogManager::RenderProcessHostExitedDestroyed(
@@ -208,8 +215,8 @@ WebRtcLocalEventLogManager::CloseLogFile(LogFilesMap::iterator it) {
 
   const PeerConnectionKey peer_connection = it->first;
 
-  it->second.file.Flush();
-  it = log_files_.erase(it);  // file.Close() called by destructor.
+  it->second.Close();
+  it = log_files_.erase(it);
 
   if (observer_) {
     observer_->OnLocalLogStopped(peer_connection);

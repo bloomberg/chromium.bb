@@ -197,45 +197,36 @@ class WebRtcRemoteEventLogsObserver {
   virtual ~WebRtcRemoteEventLogsObserver() = default;
 };
 
-struct LogFile {
+class LogFile {
+ public:
   LogFile(const base::FilePath& path,
           base::File file,
-          size_t max_file_size_bytes,
-          size_t file_size_bytes = 0)
-      : path(path),
-        file(std::move(file)),
-        max_file_size_bytes(max_file_size_bytes),
-        file_size_bytes(file_size_bytes) {}
-  const base::FilePath path;
-  base::File file;
-  const size_t max_file_size_bytes;
-  size_t file_size_bytes;
-};
+          size_t max_file_size_bytes);
 
-// WebRtcLocalEventLogManager and WebRtcRemoteEventLogManager share some logic
-// when it comes to handling of files on disk.
-class LogFileWriter {
- protected:
-  using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
-  using BrowserContextId = PeerConnectionKey::BrowserContextId;
-  using LogFilesMap = std::map<PeerConnectionKey, LogFile>;
+  LogFile(LogFile&& other);
 
-  virtual ~LogFileWriter() = default;
+  ~LogFile();
 
-  // Given a peer connection and its associated log file, and given a log
-  // fragment that should be written to the log file, attempt to write to
-  // the log file (return value indicates success/failure).
-  // If an error occurs, or if the file reaches its capacity, CloseLogFile()
-  // will be called, closing the file.
-  bool WriteToLogFile(LogFilesMap::iterator it, const std::string& message);
+  bool MaxSizeReached() const;
 
-  // Called when WriteToLogFile() either encounters an error, or if the file's
-  // intended capacity is reached. It indicates to the inheriting class that
-  // the file should also be purged from its set of active log files.
-  // The function should return an iterator to the next element in the set
-  // of active logs. This makes the function more useful, allowing it to be
-  // used when iterating and closing several log files.
-  virtual LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it) = 0;
+  // Writes to the log file, while respecting the file's size limit.
+  // True is returned if and only if the message was written to the file in
+  // it entirety.
+  // The function does *not* close the file, neither on errors nor when the
+  // maximum size is reached.
+  bool Write(const std::string& message);
+
+  void Close();
+
+  void Delete();
+
+  const base::FilePath& path() const { return path_; }
+
+ private:
+  const base::FilePath path_;
+  base::File file_;
+  const size_t max_file_size_bytes_;
+  size_t file_size_bytes_;
 };
 
 // Translate a BrowserContext into an ID. This lets us associate PeerConnections

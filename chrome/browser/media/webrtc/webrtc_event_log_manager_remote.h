@@ -22,8 +22,11 @@ class URLRequestContextGetter;
 }  // namespace net
 
 class WebRtcRemoteEventLogManager final
-    : public LogFileWriter,
-      public WebRtcEventLogUploaderObserver {
+    : public WebRtcEventLogUploaderObserver {
+  using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
+  using LogFilesMap = std::map<WebRtcEventLogPeerConnectionKey, LogFile>;
+  using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
+
  public:
   explicit WebRtcRemoteEventLogManager(WebRtcRemoteEventLogsObserver* observer);
   ~WebRtcRemoteEventLogManager() override;
@@ -128,16 +131,14 @@ class WebRtcRemoteEventLogManager final
       std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory);
 
  private:
-  using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
-
   // Checks whether a browser context has already been enabled via a call to
   // EnableForBrowserContext(), and not yet disabled using a call to
   // DisableForBrowserContext().
   bool BrowserContextEnabled(BrowserContextId browser_context_id) const;
 
-  // LogFileWriter implementation. Closes an active log file, changing its
-  // state from ACTIVE to PENDING.
-  LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it) override;
+  // Closes an active log file, changing its state from ACTIVE to PENDING.
+  // Returns an iterator to the next ACTIVE file.
+  LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it);
 
   // Attempts to create the directory where we'll write the logs, if it does
   // not already exist. Returns true if the directory exists (either it already

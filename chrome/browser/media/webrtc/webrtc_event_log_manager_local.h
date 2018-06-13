@@ -15,10 +15,13 @@
 #include "base/time/clock.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 
-class WebRtcLocalEventLogManager final : public LogFileWriter {
+class WebRtcLocalEventLogManager final {
+  using LogFilesMap = std::map<WebRtcEventLogPeerConnectionKey, LogFile>;
+  using PeerConnectionKey = WebRtcEventLogPeerConnectionKey;
+
  public:
   explicit WebRtcLocalEventLogManager(WebRtcLocalEventLogsObserver* observer);
-  ~WebRtcLocalEventLogManager() override;
+  ~WebRtcLocalEventLogManager();
 
   bool PeerConnectionAdded(const PeerConnectionKey& key);
   bool PeerConnectionRemoved(const PeerConnectionKey& key);
@@ -40,9 +43,9 @@ class WebRtcLocalEventLogManager final : public LogFileWriter {
   // Create a local log file.
   void StartLogFile(const PeerConnectionKey& key);
 
-  // LogFileWriter implementation. Closes a log file, flushing it to disk
-  // and relinquishing its handle.
-  LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it) override;
+  // Closes an active log file.
+  // Returns an iterator to the next active log file.
+  LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it);
 
   // Derives the name of a local log file. The format is:
   // [user_defined]_[date]_[time]_[render_process_id]_[lid].log
