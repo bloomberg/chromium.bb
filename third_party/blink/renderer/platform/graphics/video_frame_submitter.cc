@@ -177,6 +177,9 @@ void VideoFrameSubmitter::StartSubmitting() {
       frame_sink_id_, std::move(client),
       mojo::MakeRequest(&compositor_frame_sink_));
 
+  compositor_frame_sink_.set_connection_error_handler(base::BindOnce(
+      &VideoFrameSubmitter::OnContextLost, base::Unretained(this)));
+
   if (is_rendering_)
     compositor_frame_sink_->SetNeedsBeginFrame(true);
 
@@ -278,12 +281,17 @@ void VideoFrameSubmitter::OnContextLost() {
   if (binding_.is_bound())
     binding_.Unbind();
 
-  compositor_frame_sink_.reset();
-  context_provider_->RemoveObserver(this);
-  context_provider_ = nullptr;
+  if (context_provider_) {
+    context_provider_->RemoveObserver(this);
+    context_provider_ = nullptr;
+  }
   waiting_for_compositor_ack_ = false;
 
   resource_provider_->OnContextLost();
+
+  // |compositor_frame_sink_| should be reset last.
+  compositor_frame_sink_.reset();
+
   context_provider_callback_.Run(
       base::BindOnce(&VideoFrameSubmitter::OnReceivedContextProvider,
                      weak_ptr_factory_.GetWeakPtr()));
