@@ -31,15 +31,6 @@ constexpr char kCrostiniUninstallSourceHistogram[] = "Crostini.UninstallSource";
 
 }  // namespace
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class CrostiniUninstallerView::UninstallResult {
-  kCancelled = 0,
-  kError = 1,
-  kSuccess = 2,
-  kCount
-};
-
 void ShowCrostiniUninstallerView(Profile* profile,
                                  CrostiniUISurface ui_surface) {
   base::UmaHistogramEnumeration(kCrostiniUninstallSourceHistogram, ui_surface,
@@ -104,9 +95,9 @@ bool CrostiniUninstallerView::Accept() {
   // Setting value to -1 makes the progress bar play the
   // "indeterminate animation".
   progress_bar_->SetValue(-1);
+  DialogModelChanged();
   GetWidget()->UpdateWindowTitle();
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
-  DialogModelChanged();
   return false;  // Should not close the dialog
 }
 
@@ -120,6 +111,11 @@ gfx::Size CrostiniUninstallerView::CalculatePreferredSize() const {
                                DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                            margins().width();
   return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
+}
+
+// static
+CrostiniUninstallerView* CrostiniUninstallerView::GetActiveViewForTesting() {
+  return g_crostini_uninstaller_view;
 }
 
 CrostiniUninstallerView::CrostiniUninstallerView(Profile* profile)
@@ -154,8 +150,9 @@ void CrostiniUninstallerView::HandleError(const base::string16& error_message) {
   message_label_->SetVisible(true);
   message_label_->SetText(error_message);
   progress_bar_->SetVisible(false);
-  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+  DialogModelChanged();
   GetWidget()->UpdateWindowTitle();
+  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
   RecordUninstallResultHistogram(UninstallResult::kError);
 }
 
