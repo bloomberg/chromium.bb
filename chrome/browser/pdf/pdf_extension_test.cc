@@ -525,7 +525,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Beep) {
   RunTestsInFile("beep_test.js", "test-beep.pdf");
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NoBeep) {
+// TODO(tsepez): See https://crbug.com/696650.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_NoBeep) {
   // Block the exact query from pdf/main.js while still allowing enough
   // JavaScript to run in the extension for this test harness to complete
   // its work.

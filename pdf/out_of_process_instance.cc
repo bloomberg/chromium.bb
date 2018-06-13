@@ -504,7 +504,10 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   if (!stream_url)
     stream_url = original_url;
 
-  engine_ = PDFEngine::Create(this, enable_javascript);
+  if (!engine_) {
+    // TODO(tsepez): fix lifetime issue, conditionalize javascript.
+    engine_ = PDFEngine::Create(this, true);
+  }
 
   // If we're in print preview mode we don't need to load the document yet.
   // A |kJSResetPrintPreviewModeType| message will be sent to the plugin letting
