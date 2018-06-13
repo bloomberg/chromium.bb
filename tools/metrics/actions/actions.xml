@@ -11143,6 +11143,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MediaContextMenu_ExitPictureInPicture">
+  <owner>apacible@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    User clicked on the contextual menu of a video player to exit
+    Picture-in-Picture mode.
+  </description>
+</action>
+
 <action name="MediaContextMenu_Loop">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

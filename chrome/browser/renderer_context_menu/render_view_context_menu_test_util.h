@@ -47,6 +47,10 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   // A list of command ids can be found in chrome/app/chrome_command_ids.h.
   bool IsItemPresent(int command_id) const;
 
+  // Returns true if the command specified by |command_id| is checked in the
+  // menu.
+  bool IsItemChecked(int command_id) const;
+
   // Returns true if a command specified by any command id between
   // |command_id_first| and |command_id_last| (inclusive) is present in the
   // menu.

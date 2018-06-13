@@ -39,6 +39,11 @@ bool TestRenderViewContextMenu::IsItemPresent(int command_id) const {
   return menu_model_.GetIndexOfCommandId(command_id) != -1;
 }
 
+bool TestRenderViewContextMenu::IsItemChecked(int command_id) const {
+  return menu_model_.IsItemCheckedAt(
+      menu_model_.GetIndexOfCommandId(command_id));
+}
+
 bool TestRenderViewContextMenu::IsItemInRangePresent(
     int command_id_first,
     int command_id_last) const {

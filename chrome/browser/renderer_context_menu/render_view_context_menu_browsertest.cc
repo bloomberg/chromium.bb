@@ -67,6 +67,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/mime_handler_view/test_mime_handler_view_guest.h"
+#include "media/base/media_switches.h"
 #include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -1211,6 +1212,43 @@ IN_PROC_BROWSER_TEST_F(LoadImageBrowserTest, LoadImage) {
   LoadImageRequestObserver observer(web_contents, kValidImage);
   AttemptLoadImage();
   observer.WaitForRequest();
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       ContextMenuForVideoNotInPictureInPicture) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kPictureInPicture);
+
+  content::ContextMenuParams params;
+  params.media_type = blink::WebContextMenuData::kMediaTypeVideo;
+  params.media_flags |= blink::WebContextMenuData::kMediaCanPictureInPicture;
+
+  TestRenderViewContextMenu menu(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      params);
+  menu.Init();
+
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_PICTUREINPICTURE));
+  EXPECT_FALSE(menu.IsItemChecked(IDC_CONTENT_CONTEXT_PICTUREINPICTURE));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       ContextMenuForVideoInPictureInPicture) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(media::kPictureInPicture);
+
+  content::ContextMenuParams params;
+  params.media_type = blink::WebContextMenuData::kMediaTypeVideo;
+  params.media_flags |= blink::WebContextMenuData::kMediaCanPictureInPicture;
+  params.media_flags |= blink::WebContextMenuData::kMediaPictureInPicture;
+
+  TestRenderViewContextMenu menu(
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
+      params);
+  menu.Init();
+
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_PICTUREINPICTURE));
+  EXPECT_TRUE(menu.IsItemChecked(IDC_CONTENT_CONTEXT_PICTUREINPICTURE));
 }
 
 }  // namespace

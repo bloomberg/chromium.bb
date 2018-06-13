@@ -339,7 +339,7 @@ const struct UmaEnumCommandIdPair {
     {88, -1, IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN},
     {89, -1, IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP},
     {90, -1, IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS},
-    {91, -1, IDC_CONTENT_CONTENT_PICTUREINPICTURE},
+    {91, -1, IDC_CONTENT_CONTEXT_PICTUREINPICTURE},
     {92, -1, IDC_CONTENT_CONTEXT_EMOJI},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in
@@ -1548,8 +1548,8 @@ void RenderViewContextMenu::AppendPasswordItems() {
 
 void RenderViewContextMenu::AppendPictureInPictureItem() {
   if (base::FeatureList::IsEnabled(media::kPictureInPicture))
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTENT_PICTUREINPICTURE,
-                                    IDS_CONTENT_CONTENT_PICTUREINPICTURE);
+    menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
+                                         IDS_CONTENT_CONTEXT_PICTUREINPICTURE);
 }
 
 // Menu delegate functions -----------------------------------------------------
@@ -1754,7 +1754,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
       return true;
 
-    case IDC_CONTENT_CONTENT_PICTUREINPICTURE:
+    case IDC_CONTENT_CONTEXT_PICTUREINPICTURE:
       return !!(params_.media_flags &
                 WebContextMenuData::kMediaCanPictureInPicture);
 
@@ -1777,6 +1777,10 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
 
   if (id == IDC_CONTENT_CONTEXT_CONTROLS)
     return (params_.media_flags & WebContextMenuData::kMediaControls) != 0;
+
+  if (id == IDC_CONTENT_CONTEXT_PICTUREINPICTURE)
+    return (params_.media_flags & WebContextMenuData::kMediaPictureInPicture) !=
+           0;
 
   if (id == IDC_CONTENT_CONTEXT_EMOJI)
     return false;
@@ -2049,7 +2053,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
               source_web_contents_));
       break;
 
-    case IDC_CONTENT_CONTENT_PICTUREINPICTURE:
+    case IDC_CONTENT_CONTEXT_PICTUREINPICTURE:
       ExecPictureInPicture();
       break;
 
@@ -2648,15 +2652,21 @@ void RenderViewContextMenu::ExecPictureInPicture() {
   if (!base::FeatureList::IsEnabled(media::kPictureInPicture))
     return;
 
-  bool picture_in_picture =
-      !!(params_.media_flags & WebContextMenuData::kMediaCanPictureInPicture);
+  bool picture_in_picture_active =
+      IsCommandIdChecked(IDC_CONTENT_CONTEXT_PICTUREINPICTURE);
 
-  base::RecordAction(
-      UserMetricsAction("MediaContextMenu_EnterPictureInPicture"));
+  if (picture_in_picture_active) {
+    base::RecordAction(
+        UserMetricsAction("MediaContextMenu_ExitPictureInPicture"));
+  } else {
+    base::RecordAction(
+        UserMetricsAction("MediaContextMenu_EnterPictureInPicture"));
+  }
+
   MediaPlayerActionAt(
       gfx::Point(params_.x, params_.y),
       WebMediaPlayerAction(WebMediaPlayerAction::kPictureInPicture,
-                           picture_in_picture));
+                           !picture_in_picture_active));
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {

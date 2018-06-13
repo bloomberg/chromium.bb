@@ -475,7 +475,7 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="The name of the Open Audio in New Tab command in the content area context menu">
             &amp;Open audio in new tab
           </message>
-          <message name="IDS_CONTENT_CONTENT_PICTUREINPICTURE" desc="The name of the Picture-in-Picture command in the content area context menu.">
+          <message name="IDS_CONTENT_CONTEXT_PICTUREINPICTURE" desc="The name of the Picture-in-Picture command in the content area context menu.">
             Picture-in-Picture
           </message>
 
@@ -681,7 +681,7 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="In Title Case: The name of the Open Audio in New Tab command in the content area context menu">
             &amp;Open Audio in New Tab
           </message>
-          <message name="IDS_CONTENT_CONTENT_PICTUREINPICTURE" desc="In Title Case: The name of the Picture-in-Picture command in the content area context menu.">
+          <message name="IDS_CONTENT_CONTEXT_PICTUREINPICTURE" desc="In Title Case: The name of the Picture-in-Picture command in the content area context menu.">
             Picture-in-Picture
           </message>
 
