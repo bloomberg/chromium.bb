@@ -1178,8 +1178,12 @@ void PrintRenderFrameHelper::OnPrintPreview(
   if (print_pages_params_->params.is_first_request &&
       !print_preview_context_.IsModifiable()) {
     PrintHostMsg_SetOptionsFromDocument_Params options;
-    if (SetOptionsFromPdfDocument(&options))
-      Send(new PrintHostMsg_SetOptionsFromDocument(routing_id(), options));
+    if (SetOptionsFromPdfDocument(&options)) {
+      PrintHostMsg_PreviewIds ids(
+          print_pages_params_->params.preview_request_id,
+          print_pages_params_->params.preview_ui_id);
+      Send(new PrintHostMsg_SetOptionsFromDocument(routing_id(), options, ids));
+    }
   }
 
   is_print_ready_metafile_sent_ = false;
@@ -1289,16 +1293,18 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
     }
   }
   int fit_to_page_scaling = static_cast<int>(100.0f * fit_to_page_scale_factor);
+  PrintHostMsg_PreviewIds ids(print_params.preview_request_id,
+                              print_params.preview_ui_id);
+
   // Margins: Send default page layout to browser process.
   Send(new PrintHostMsg_DidGetDefaultPageLayout(
       routing_id(), default_page_layout, printable_area_in_points,
-      has_page_size_style));
+      has_page_size_style, ids));
 
   PrintHostMsg_DidGetPreviewPageCount_Params params;
   params.page_count = print_preview_context_.total_page_count();
   params.fit_to_page_scaling = fit_to_page_scaling;
-  params.preview_request_id = print_params.preview_request_id;
-  Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), params));
+  Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), params, ids));
   if (CheckForCancel())
     return false;
 
@@ -1380,12 +1386,14 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
   preview_params.expected_pages_count =
       print_preview_context_.total_page_count();
   preview_params.modifiable = print_preview_context_.IsModifiable();
-  preview_params.preview_request_id =
-      print_pages_params_->params.preview_request_id;
+
+  PrintHostMsg_PreviewIds ids(print_pages_params_->params.preview_request_id,
+                              print_pages_params_->params.preview_ui_id);
 
   is_print_ready_metafile_sent_ = true;
 
-  Send(new PrintHostMsg_MetafileReadyForPrinting(routing_id(), preview_params));
+  Send(new PrintHostMsg_MetafileReadyForPrinting(routing_id(), preview_params,
+                                                 ids));
   return true;
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -1590,6 +1598,13 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
 void PrintRenderFrameHelper::DidFinishPrinting(PrintingResult result) {
   int cookie =
       print_pages_params_ ? print_pages_params_->params.document_cookie : 0;
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  PrintHostMsg_PreviewIds ids;
+  if (print_pages_params_) {
+    ids.ui_id = print_pages_params_->params.preview_ui_id;
+    ids.request_id = print_pages_params_->params.preview_request_id;
+  }
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
   switch (result) {
     case OK:
       break;
@@ -1609,16 +1624,17 @@ void PrintRenderFrameHelper::DidFinishPrinting(PrintingResult result) {
       if (!is_print_ready_metafile_sent_) {
         if (notify_browser_of_print_failure_) {
           LOG(ERROR) << "CreatePreviewDocument failed";
-          Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie));
+          Send(new PrintHostMsg_PrintPreviewFailed(routing_id(), cookie, ids));
         } else {
-          Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie));
+          Send(new PrintHostMsg_PrintPreviewCancelled(routing_id(), cookie,
+                                                      ids));
         }
       }
       print_preview_context_.Failed(notify_browser_of_print_failure_);
       break;
     case INVALID_SETTINGS:
       Send(new PrintHostMsg_PrintPreviewInvalidPrinterSettings(routing_id(),
-                                                               cookie));
+                                                               cookie, ids));
       print_preview_context_.Failed(false);
       break;
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -2135,9 +2151,11 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
 bool PrintRenderFrameHelper::CheckForCancel() {
   const PrintMsg_Print_Params& print_params = print_pages_params_->params;
   bool cancel = false;
-  Send(new PrintHostMsg_CheckForCancel(routing_id(), print_params.preview_ui_id,
-                                       print_params.preview_request_id,
-                                       &cancel));
+  Send(new PrintHostMsg_CheckForCancel(
+      routing_id(),
+      PrintHostMsg_PreviewIds(print_params.preview_request_id,
+                              print_params.preview_ui_id),
+      &cancel));
   if (cancel)
     notify_browser_of_print_failure_ = false;
   return cancel;
@@ -2159,12 +2177,13 @@ bool PrintRenderFrameHelper::PreviewPageRendered(
   }
 
   preview_page_params.page_number = page_number;
-  preview_page_params.preview_request_id =
-      print_pages_params_->params.preview_request_id;
   preview_page_params.document_cookie =
       print_pages_params_->params.document_cookie;
 
-  Send(new PrintHostMsg_DidPreviewPage(routing_id(), preview_page_params));
+  PrintHostMsg_PreviewIds ids(print_pages_params_->params.preview_request_id,
+                              print_pages_params_->params.preview_ui_id);
+
+  Send(new PrintHostMsg_DidPreviewPage(routing_id(), preview_page_params, ids));
   return true;
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)

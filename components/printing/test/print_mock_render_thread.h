@@ -25,6 +25,7 @@ class MockPrinter;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
 struct PrintHostMsg_DidPrintDocument_Params;
+struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_ScriptedPrint_Params;
 struct PrintMsg_PrintPages_Params;
 struct PrintMsg_Print_Params;
@@ -78,11 +79,11 @@ class PrintMockRenderThread : public content::MockRenderThread {
   void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params);
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnDidGetPreviewPageCount(
-      const PrintHostMsg_DidGetPreviewPageCount_Params& params);
-  void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params);
-  void OnCheckForCancel(int32_t preview_ui_id,
-                        int preview_request_id,
-                        bool* cancel);
+      const PrintHostMsg_DidGetPreviewPageCount_Params& params,
+      const PrintHostMsg_PreviewIds& ids);
+  void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params,
+                        const PrintHostMsg_PreviewIds& ids);
+  void OnCheckForCancel(const PrintHostMsg_PreviewIds& ids, bool* cancel);
 #endif
 
   // For print preview, PrintRenderFrameHelper will update settings.

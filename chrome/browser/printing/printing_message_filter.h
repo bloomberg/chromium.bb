@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "printing/buildflags/buildflags.h"
 
+struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_ScriptedPrint_Params;
 class Profile;
 
@@ -94,9 +95,7 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // Check to see if print preview has been cancelled.
-  void OnCheckForCancel(int32_t preview_ui_id,
-                        int preview_request_id,
-                        bool* cancel);
+  void OnCheckForCancel(const PrintHostMsg_PreviewIds& ids, bool* cancel);
 #if defined(OS_WIN)
   void NotifySystemDialogCancelled(int routing_id);
 #endif

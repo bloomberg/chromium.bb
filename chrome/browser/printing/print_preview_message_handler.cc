@@ -90,11 +90,15 @@ WebContents* PrintPreviewMessageHandler::GetPrintPreviewDialog() {
   return dialog_controller->GetPrintPreviewForContents(web_contents());
 }
 
-PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI() {
+PrintPreviewUI* PrintPreviewMessageHandler::GetPrintPreviewUI(
+    int preview_ui_id) {
   WebContents* dialog = GetPrintPreviewDialog();
   if (!dialog || !dialog->GetWebUI())
     return nullptr;
-  return static_cast<PrintPreviewUI*>(dialog->GetWebUI()->GetController());
+  PrintPreviewUI* preview_ui =
+      static_cast<PrintPreviewUI*>(dialog->GetWebUI()->GetController());
+  return preview_ui->GetIDForPrintPreviewUI() == preview_ui_id ? preview_ui
+                                                               : nullptr;
 }
 
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
@@ -109,29 +113,31 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview(
 }
 
 void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
-    const PrintHostMsg_DidGetPreviewPageCount_Params& params) {
+    const PrintHostMsg_DidGetPreviewPageCount_Params& params,
+    const PrintHostMsg_PreviewIds& ids) {
   if (params.page_count <= 0) {
     NOTREACHED();
     return;
   }
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
 
   print_preview_ui->ClearAllPreviewData();
-  print_preview_ui->OnDidGetPreviewPageCount(params);
+  print_preview_ui->OnDidGetPreviewPageCount(params, ids.request_id);
 }
 
 void PrintPreviewMessageHandler::OnDidPreviewPage(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_DidPreviewPage_Params& params) {
+    const PrintHostMsg_DidPreviewPage_Params& params,
+    const PrintHostMsg_PreviewIds& ids) {
   int page_number = params.page_number;
   const PrintHostMsg_DidPrintContent_Params& content = params.content;
   if (page_number < FIRST_PAGE_INDEX || !content.data_size)
     return;
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
 
@@ -146,17 +152,18 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
         content.subframe_content_info,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
                        weak_ptr_factory_.GetWeakPtr(), params.page_number,
-                       params.preview_request_id));
+                       ids));
   } else {
     NotifyUIPreviewPageReady(
-        page_number, params.preview_request_id,
+        page_number, ids,
         GetDataFromHandle(content.metafile_data_handle, content.data_size));
   }
 }
 
 void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     content::RenderFrameHost* render_frame_host,
-    const PrintHostMsg_DidPreviewDocument_Params& params) {
+    const PrintHostMsg_DidPreviewDocument_Params& params,
+    const PrintHostMsg_PreviewIds& ids) {
   // Always try to stop the worker.
   StopWorker(params.document_cookie);
 
@@ -165,7 +172,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     return;
   }
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
 
@@ -179,94 +186,111 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
         content.data_size, content.subframe_content_info,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfDocumentDone,
                        weak_ptr_factory_.GetWeakPtr(),
-                       params.expected_pages_count, params.preview_request_id));
+                       params.expected_pages_count, ids));
   } else {
     NotifyUIPreviewDocumentReady(
-        params.expected_pages_count, params.preview_request_id,
+        params.expected_pages_count, ids,
         GetDataFromHandle(content.metafile_data_handle, content.data_size));
   }
 }
 
-void PrintPreviewMessageHandler::OnPrintPreviewFailed(int document_cookie) {
+void PrintPreviewMessageHandler::OnPrintPreviewFailed(
+    int document_cookie,
+    const PrintHostMsg_PreviewIds& ids) {
   StopWorker(document_cookie);
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
-  print_preview_ui->OnPrintPreviewFailed();
+  print_preview_ui->OnPrintPreviewFailed(ids.request_id);
 }
 
 void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
     const PageSizeMargins& page_layout_in_points,
     const gfx::Rect& printable_area_in_points,
-    bool has_custom_page_size_style) {
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+    bool has_custom_page_size_style,
+    const PrintHostMsg_PreviewIds& ids) {
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
-  print_preview_ui->OnDidGetDefaultPageLayout(page_layout_in_points,
-                                              printable_area_in_points,
-                                              has_custom_page_size_style);
+
+  print_preview_ui->OnDidGetDefaultPageLayout(
+      page_layout_in_points, printable_area_in_points,
+      has_custom_page_size_style, ids.request_id);
 }
 
-void PrintPreviewMessageHandler::OnPrintPreviewCancelled(int document_cookie) {
+void PrintPreviewMessageHandler::OnPrintPreviewCancelled(
+    int document_cookie,
+    const PrintHostMsg_PreviewIds& ids) {
   // Always need to stop the worker.
   StopWorker(document_cookie);
 
   // Notify UI
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
-  print_preview_ui->OnPrintPreviewCancelled();
+  print_preview_ui->OnPrintPreviewCancelled(ids.request_id);
 }
 
-void PrintPreviewMessageHandler::OnInvalidPrinterSettings(int document_cookie) {
+void PrintPreviewMessageHandler::OnInvalidPrinterSettings(
+    int document_cookie,
+    const PrintHostMsg_PreviewIds& ids) {
   StopWorker(document_cookie);
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
-  print_preview_ui->OnInvalidPrinterSettings();
+  print_preview_ui->OnInvalidPrinterSettings(ids.request_id);
 }
 
 void PrintPreviewMessageHandler::OnSetOptionsFromDocument(
-    const PrintHostMsg_SetOptionsFromDocument_Params& params) {
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+    const PrintHostMsg_SetOptionsFromDocument_Params& params,
+    const PrintHostMsg_PreviewIds& ids) {
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
-  print_preview_ui->OnSetOptionsFromDocument(params);
+  print_preview_ui->OnSetOptionsFromDocument(params, ids.request_id);
 }
 
 void PrintPreviewMessageHandler::NotifyUIPreviewPageReady(
     int page_number,
-    int request_id,
+    const PrintHostMsg_PreviewIds& ids,
     scoped_refptr<base::RefCountedMemory> data_bytes) {
   DCHECK(data_bytes);
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
+
+  // Don't bother notifying the UI if this request has been cancelled already.
+  bool cancel = false;
+  PrintPreviewUI::GetCurrentPrintPreviewStatus(ids, &cancel);
+  if (cancel)
+    return;
+
   print_preview_ui->SetPrintPreviewDataForIndex(page_number,
                                                 std::move(data_bytes));
-  print_preview_ui->OnDidPreviewPage(page_number, request_id);
+  print_preview_ui->OnDidPreviewPage(page_number, ids.request_id);
 }
 
 void PrintPreviewMessageHandler::NotifyUIPreviewDocumentReady(
     int page_count,
-    int request_id,
+    const PrintHostMsg_PreviewIds& ids,
     scoped_refptr<base::RefCountedMemory> data_bytes) {
   if (!data_bytes || !data_bytes->size())
     return;
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI();
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
+
   print_preview_ui->SetPrintPreviewDataForIndex(COMPLETE_PREVIEW_DOCUMENT_INDEX,
                                                 std::move(data_bytes));
-  print_preview_ui->OnPreviewDataIsAvailable(page_count, request_id);
+  print_preview_ui->OnPreviewDataIsAvailable(page_count, ids.request_id);
 }
 
 void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     int page_number,
-    int request_id,
+    const PrintHostMsg_PreviewIds& ids,
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -275,13 +299,13 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     return;
   }
   NotifyUIPreviewPageReady(
-      page_number, request_id,
+      page_number, ids,
       base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
 }
 
 void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     int page_count,
-    int request_id,
+    const PrintHostMsg_PreviewIds& ids,
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -290,7 +314,7 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     return;
   }
   NotifyUIPreviewDocumentReady(
-      page_count, request_id,
+      page_count, ids,
       base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
 }
 

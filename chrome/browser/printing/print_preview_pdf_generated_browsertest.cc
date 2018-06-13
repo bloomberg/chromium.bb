@@ -270,7 +270,8 @@ class PrintPreviewObserver : public WebContentsObserver {
   // Called when the observer gets the IPC message stating that the page count
   // is ready.
   void OnDidGetPreviewPageCount(
-        const PrintHostMsg_DidGetPreviewPageCount_Params &params) {
+      const PrintHostMsg_DidGetPreviewPageCount_Params& params,
+      const PrintHostMsg_PreviewIds& ids) {
     WebContents* web_contents = GetDialog();
     ASSERT_TRUE(web_contents);
     Observe(web_contents);
