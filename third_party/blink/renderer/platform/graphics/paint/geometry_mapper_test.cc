@@ -265,19 +265,11 @@ TEST_P(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
   CHECK_MAPPINGS();
 }
 
-// TODO(crbug.com/851417): Reenable this.
-#if defined(OS_ANDROID)
-#define MAYBE_NestedTransformsIntermediateDestination \
-  DISABLED_NestedTransformsIntermediateDestination
-#else
-#define MAYBE_NestedTransformsIntermediateDestination \
-  NestedTransformsIntermediateDestination
-#endif
-TEST_P(GeometryMapperTest, MAYBE_NestedTransformsIntermediateDestination) {
-  auto rotate_transform = TransformationMatrix().Rotate(45);
-  auto transform1 = CreateTransform(t0(), rotate_transform);
+TEST_P(GeometryMapperTest, NestedTransformsIntermediateDestination) {
+  auto translate_transform = TransformationMatrix().Translate(10, 20);
+  auto transform1 = CreateTransform(t0(), translate_transform);
 
-  auto scale_transform = TransformationMatrix().Translate(10, 20);
+  auto scale_transform = TransformationMatrix().Scale(3);
   auto transform2 = CreateTransform(*transform1, scale_transform);
 
   local_state.SetTransform(transform2.get());
@@ -287,6 +279,7 @@ TEST_P(GeometryMapperTest, MAYBE_NestedTransformsIntermediateDestination) {
   input_rect = FloatRect(0, 0, 100, 100);
   expected_transformed_rect = expected_transform.MapRect(input_rect);
   expected_visual_rect = FloatClipRect(expected_transformed_rect);
+  expected_visual_rect.ClearIsTight();
   CHECK_MAPPINGS();
 }
 
