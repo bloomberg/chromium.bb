@@ -611,6 +611,12 @@ void GLRenderingVDAClient::ReturnPicture(int32_t picture_buffer_id) {
     return;
   LOG_ASSERT(1U == pending_textures_.erase(picture_buffer_id));
 
+  if (active_textures_.find(picture_buffer_id) == active_textures_.end()) {
+    // The picture associated with picture_buffer_id is dismissed.
+    // Do not execute ReusePictureBuffer().
+    return;
+  }
+
   if (pending_textures_.empty() && state_ == CS_RESETTING) {
     SetState(CS_RESET);
     DeleteDecoder();
