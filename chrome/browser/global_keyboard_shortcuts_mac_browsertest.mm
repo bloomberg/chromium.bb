@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -48,6 +49,12 @@ void SendEvent(NSEvent* ns_event) {
 }  // namespace
 
 // Test that global keyboard shortcuts are handled by the native window.
+// https://crbug.com/852232
+#if defined(OS_MACOSX)
+#define MAYBE_SwitchTabsMac DISABLED_SwitchTabsMac
+#else
+#define MAYBE_SwitchTabsMac
+#endif
 IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, SwitchTabsMac) {
   NSWindow* ns_window = browser()->window()->GetNativeWindow();
   TabStripModel* tab_strip = browser()->tab_strip_model();
