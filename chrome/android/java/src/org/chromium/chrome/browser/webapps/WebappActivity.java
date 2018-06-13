@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
+import org.chromium.chrome.browser.browserservices.TrustedWebActivityDisclosure;
 import org.chromium.chrome.browser.browserservices.UkmRecorder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
@@ -197,6 +198,7 @@ public class WebappActivity extends SingleTabActivity {
             BrowserServicesMetrics.recordTwaOpened();
             // Occasionally verification occurs in the background while there is no active Tab.
             if (areTabModelsInitialized() && getActivityTab() != null) {
+                TrustedWebActivityDisclosure.showIfNeeded(WebappActivity.this, packageName);
                 mUkmRecorder.recordTwaOpened(getActivityTab().getWebContents());
             }
         }
