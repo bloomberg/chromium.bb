@@ -19,7 +19,7 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kPreferredSizeDip = 20;
+constexpr int kPreferredSizeDip = 26;
 
 }  // namespace
 

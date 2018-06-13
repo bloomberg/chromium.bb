@@ -13,7 +13,7 @@ namespace ash {
 
 // CaptionButtonId -------------------------------------------------------------
 
-enum CaptionButtonId {
+enum class CaptionButtonId {
   kClose = 1,
   kMinimize,
   kSettings,  // TODO(dmblack): Remove.

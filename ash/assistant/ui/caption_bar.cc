@@ -79,19 +79,19 @@ void CaptionBar::InitLayout() {
   // an entry point for development purposes.
   CaptionButton* settings_button =
       new CaptionButton(kNotificationSettingsIcon, this);
-  settings_button->set_id(CaptionButtonId::kSettings);
+  settings_button->set_id(static_cast<int>(CaptionButtonId::kSettings));
   AddChildView(settings_button);
 
   // Minimize.
   CaptionButton* minimize_button =
       new CaptionButton(kWindowControlMinimizeIcon, this);
-  minimize_button->set_id(CaptionButtonId::kMinimize);
+  minimize_button->set_id(static_cast<int>(CaptionButtonId::kMinimize));
   AddChildView(minimize_button);
 
   // Close.
   CaptionButton* close_button =
       new CaptionButton(kWindowControlCloseIcon, this);
-  close_button->set_id(CaptionButtonId::kClose);
+  close_button->set_id(static_cast<int>(CaptionButtonId::kClose));
   AddChildView(close_button);
 }
 

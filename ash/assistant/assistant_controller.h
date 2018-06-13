@@ -134,8 +134,7 @@ class AssistantController
   void OnOpenUrlFromTab(const GURL& url) override;
 
   // DialogPlateDelegate:
-  void OnDialogPlateActionPressed(const std::string& text) override;
-  void OnDialogPlateContentsChanged(const std::string& text) override;
+  void OnDialogPlateButtonPressed(DialogPlateButtonId id) override;
   void OnDialogPlateContentsCommitted(const std::string& text) override;
 
   AssistantBubbleController* bubble_controller() {
