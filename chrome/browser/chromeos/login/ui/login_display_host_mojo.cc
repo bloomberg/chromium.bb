@@ -78,6 +78,18 @@ void LoginDisplayHostMojo::ShowUnrecoverableCrypthomeErrorDialog() {
   dialog_->Show(false /*closable_by_esc*/);
 }
 
+void LoginDisplayHostMojo::ShowErrorScreen(LoginDisplay::SigninError error_id) {
+  DCHECK(GetOobeUI());
+  GetOobeUI()->signin_screen_handler()->ShowErrorScreen(error_id);
+  dialog_->Show(false /*closable_by_esc*/);
+}
+
+void LoginDisplayHostMojo::ShowSigninUI(const std::string& email) {
+  DCHECK(GetOobeUI());
+  GetOobeUI()->signin_screen_handler()->ShowSigninUI(email);
+  dialog_->Show(true /*closable_by_esc*/);
+}
+
 LoginDisplay* LoginDisplayHostMojo::CreateLoginDisplay(
     LoginDisplay::Delegate* delegate) {
   user_selection_screen_->SetLoginDisplayDelegate(delegate);
