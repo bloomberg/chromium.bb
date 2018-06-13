@@ -60,8 +60,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // time if no idle time is available.
   virtual scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() = 0;
 
-  virtual scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() = 0;
-
   // Shuts down the scheduler by dropping any remaining pending work in the work
   // queues. After this call any work posted to the task runners will be
   // silently dropped.
@@ -84,6 +82,8 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
 
   // Returns the input task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner();
+
+  virtual scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner();
 
   // Creates a WebThread implementation for the renderer main thread.
   virtual std::unique_ptr<WebThread> CreateMainThread();

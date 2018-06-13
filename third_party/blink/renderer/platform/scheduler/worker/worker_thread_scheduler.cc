@@ -166,11 +166,6 @@ WorkerThreadScheduler::CompositorTaskRunner() {
   return compositor_task_runner_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-WorkerThreadScheduler::IPCTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
-}
-
 bool WorkerThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
   DCHECK(initialized_);
   return idle_helper_.CanExceedIdleDeadlineIfRequired();

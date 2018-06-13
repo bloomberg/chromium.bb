@@ -76,11 +76,6 @@ CompositorThreadScheduler::CompositorTaskRunner() {
   return nullptr;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-CompositorThreadScheduler::IPCTaskRunner() {
-  return base::ThreadTaskRunnerHandle::Get();
-}
-
 bool CompositorThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
   return false;
 }
