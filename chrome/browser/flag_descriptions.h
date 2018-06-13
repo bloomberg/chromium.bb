@@ -1633,9 +1633,6 @@ extern const char kMacViewsNativeAppWindowsDescription[];
 extern const char kMacViewsTaskManagerName[];
 extern const char kMacViewsTaskManagerDescription[];
 
-extern const char kSuggestedTextTouchBarName[];
-extern const char kSuggestedTextTouchBarDescription[];
-
 extern const char kTabDetachingInFullscreenName[];
 extern const char kTabDetachingInFullscreenDescription[];
 
