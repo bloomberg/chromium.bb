@@ -67,6 +67,7 @@ class PaymentHandlerWebFlowViewController
   void DidAttachInterstitialPage() override;
 
   void AbortPayment();
+  void WarnIfPossible(const std::string& message);
 
   Profile* profile_;
   GURL target_;
