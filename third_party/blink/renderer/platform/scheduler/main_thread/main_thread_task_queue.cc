@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 
 namespace blink {

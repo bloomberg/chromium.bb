@@ -29,7 +29,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 #include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"

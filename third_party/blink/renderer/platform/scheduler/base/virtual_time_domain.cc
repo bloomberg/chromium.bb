@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
 
 #include "base/bind.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
 
 namespace base {

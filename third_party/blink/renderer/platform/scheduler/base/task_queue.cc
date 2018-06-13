@@ -6,7 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/optional.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
 
 namespace base {

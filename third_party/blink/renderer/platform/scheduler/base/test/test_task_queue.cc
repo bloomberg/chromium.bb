@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
 
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 
 namespace base {
 namespace sequence_manager {

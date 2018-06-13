@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_LAZILY_DEALLOCATED_DEQUE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_LAZILY_DEALLOCATED_DEQUE_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_LAZILY_DEALLOCATED_DEQUE_H_
+#define BASE_TASK_SEQUENCE_MANAGER_LAZILY_DEALLOCATED_DEQUE_H_
 
 #include <algorithm>
 #include <cmath>
@@ -16,6 +16,7 @@
 
 namespace base {
 namespace sequence_manager {
+namespace internal {
 
 // A LazilyDeallocatedDeque specialized for the TaskQueueManager's usage
 // patterns. The queue generally grows while tasks are added and then removed
@@ -356,7 +357,8 @@ class LazilyDeallocatedDeque {
   DISALLOW_COPY_AND_ASSIGN(LazilyDeallocatedDeque);
 };
 
+}  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_LAZILY_DEALLOCATED_DEQUE_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_LAZILY_DEALLOCATED_DEQUE_H_

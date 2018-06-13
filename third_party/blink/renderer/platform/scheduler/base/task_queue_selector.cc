@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
 namespace base {

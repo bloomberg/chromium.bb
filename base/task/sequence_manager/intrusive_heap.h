@@ -1,9 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_INTRUSIVE_HEAP_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_INTRUSIVE_HEAP_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_INTRUSIVE_HEAP_H_
+#define BASE_TASK_SEQUENCE_MANAGER_INTRUSIVE_HEAP_H_
 
 #include <algorithm>
 #include <vector>
@@ -12,6 +12,7 @@
 
 namespace base {
 namespace sequence_manager {
+namespace internal {
 
 template <typename T>
 class IntrusiveHeap;
@@ -221,7 +222,8 @@ class IntrusiveHeap {
   size_t size_;
 };
 
+}  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_INTRUSIVE_HEAP_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_INTRUSIVE_HEAP_H_

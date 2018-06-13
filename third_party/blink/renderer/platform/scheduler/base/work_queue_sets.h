@@ -12,10 +12,10 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task/sequence_manager/intrusive_heap.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
 namespace base {

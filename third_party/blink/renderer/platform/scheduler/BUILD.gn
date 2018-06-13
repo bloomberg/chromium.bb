@@ -7,17 +7,14 @@ import("//third_party/blink/renderer/platform/platform.gni")
 
 blink_platform_sources("scheduler") {
   sources = [
-    "base/enqueue_order.h",
     "base/graceful_queue_shutdown_helper.cc",
     "base/graceful_queue_shutdown_helper.h",
-    "base/intrusive_heap.h",
-    "base/lazily_deallocated_deque.h",
     "base/real_time_domain.cc",
     "base/real_time_domain.h",
     "base/task_queue.cc",
     "base/task_queue_forward.h",
     "base/task_queue_impl.cc",
-    "base/task_queue_impl.h",
+    "base/task_queue_impl_forward.h",
     "base/task_queue_manager.h",
     "base/task_queue_manager_impl.cc",
     "base/task_queue_manager_impl.h",

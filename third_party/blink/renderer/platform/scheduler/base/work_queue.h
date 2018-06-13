@@ -9,12 +9,12 @@
 
 #include <set>
 
+#include "base/task/sequence_manager/enqueue_order.h"
+#include "base/task/sequence_manager/intrusive_heap.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "third_party/blink/renderer/platform/scheduler/base/enqueue_order.h"
-#include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 
 namespace base {
 namespace sequence_manager {

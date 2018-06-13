@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_IMPL_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_IMPL_H_
+#define BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_IMPL_H_
 
 #include <stddef.h>
 
@@ -16,22 +16,24 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/pending_task.h"
+#include "base/task/sequence_manager/enqueue_order.h"
+#include "base/task/sequence_manager/intrusive_heap.h"
+#include "base/task/sequence_manager/lazily_deallocated_deque.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
+#include "base/task/sequence_manager/task_queue.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "third_party/blink/renderer/platform/scheduler/base/enqueue_order.h"
-#include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
-#include "third_party/blink/renderer/platform/scheduler/base/intrusive_heap.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
 
 namespace base {
 namespace sequence_manager {
+
 class LazyNow;
 class TimeDomain;
 class TaskQueueManagerImpl;
 
 namespace internal {
+
 class WorkQueue;
 class WorkQueueSets;
 
@@ -44,28 +46,28 @@ struct IncomingImmediateWorkList {
 // TaskQueueImpl has four main queues:
 //
 // Immediate (non-delayed) tasks:
-//    immediate_incoming_queue - PostTask enqueues tasks here
-//    immediate_work_queue
+//    |immediate_incoming_queue| - PostTask enqueues tasks here.
+//    |immediate_work_queue| - SequenceManager takes immediate tasks here.
 //
 // Delayed tasks
-//    delayed_incoming_queue - PostDelayedTask enqueues tasks here
-//    delayed_work_queue
+//    |delayed_incoming_queue| - PostDelayedTask enqueues tasks here.
+//    |delayed_work_queue| - SequenceManager takes delayed tasks here.
 //
-// The immediate_incoming_queue can be accessed from any thread, the other
+// The |immediate_incoming_queue| can be accessed from any thread, the other
 // queues are main-thread only. To reduce the overhead of locking,
-// immediate_work_queue is swapped with immediate_incoming_queue when
-// immediate_work_queue becomes empty.
+// |immediate_work_queue| is swapped with |immediate_incoming_queue| when
+// |immediate_work_queue| becomes empty.
 //
-// Delayed tasks are initially posted to delayed_incoming_queue and a wake-up
+// Delayed tasks are initially posted to |delayed_incoming_queue| and a wake-up
 // is scheduled with the TimeDomain.  When the delay has elapsed, the TimeDomain
 // calls UpdateDelayedWorkQueue and ready delayed tasks are moved into the
-// delayed_work_queue.  Note the EnqueueOrder (used for ordering) for a delayed
-// task is not set until it's moved into the delayed_work_queue.
+// |delayed_work_queue|. Note the EnqueueOrder (used for ordering) for a delayed
+// task is not set until it's moved into the |delayed_work_queue|.
 //
 // TaskQueueImpl uses the WorkQueueSets and the TaskQueueSelector to implement
 // prioritization. Task selection is done by the TaskQueueSelector and when a
-// queue is selected, it round-robins between the immediate_work_queue and
-// delayed_work_queue.  The reason for this is we want to make sure delayed
+// queue is selected, it round-robins between the |immediate_work_queue| and
+// |delayed_work_queue|.  The reason for this is we want to make sure delayed
 // tasks (normally the most common type) don't starve out immediate work.
 class PLATFORM_EXPORT TaskQueueImpl {
  public:
@@ -466,4 +468,4 @@ class PLATFORM_EXPORT TaskQueueImpl {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_IMPL_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_TASK_QUEUE_IMPL_H_
