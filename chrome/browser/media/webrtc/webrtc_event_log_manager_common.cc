@@ -6,11 +6,14 @@
 
 #include <limits>
 
+#include "base/files/file_util.h"
+#include "base/logging.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
 using BrowserContextId = WebRtcEventLogPeerConnectionKey::BrowserContextId;
+using LogFilesMap = std::map<WebRtcEventLogPeerConnectionKey, LogFile>;
 
 const char kStartRemoteLoggingFailureFeatureDisabled[] = "Feature disabled.";
 const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[] =
@@ -28,45 +31,71 @@ const char kStartRemoteLoggingFailureGeneric[] = "Unspecified error.";
 const BrowserContextId kNullBrowserContextId =
     reinterpret_cast<BrowserContextId>(nullptr);
 
-bool LogFileWriter::WriteToLogFile(LogFilesMap::iterator it,
-                                   const std::string& message) {
+LogFile::LogFile(const base::FilePath& path,
+                 base::File file,
+                 size_t max_file_size_bytes)
+    : path_(path),
+      file_(std::move(file)),
+      max_file_size_bytes_(max_file_size_bytes),
+      file_size_bytes_(0) {}
+
+LogFile::LogFile(LogFile&& other)
+    : path_(std::move(other.path_)),
+      file_(std::move(other.file_)),
+      max_file_size_bytes_(other.max_file_size_bytes_),
+      file_size_bytes_(other.file_size_bytes_) {}
+
+LogFile::~LogFile() = default;
+
+bool LogFile::MaxSizeReached() const {
+  if (max_file_size_bytes_ == kWebRtcEventLogManagerUnlimitedFileSize) {
+    return false;
+  }
+  DCHECK_LE(file_size_bytes_, max_file_size_bytes_);
+  return file_size_bytes_ >= max_file_size_bytes_;
+}
+
+bool LogFile::Write(const std::string& message) {
   DCHECK_LE(message.length(),
             static_cast<size_t>(std::numeric_limits<int>::max()));
 
   // Observe the file size limit, if any. Note that base::File's interface does
   // not allow writing more than numeric_limits<int>::max() bytes at a time.
   int message_len = static_cast<int>(message.length());  // DCHECKed above.
-  LogFile& log_file = it->second;
-  if (log_file.max_file_size_bytes != kWebRtcEventLogManagerUnlimitedFileSize) {
-    DCHECK_LT(log_file.file_size_bytes, log_file.max_file_size_bytes);
+  if (max_file_size_bytes_ != kWebRtcEventLogManagerUnlimitedFileSize) {
+    DCHECK_LT(file_size_bytes_, max_file_size_bytes_);
     const bool size_will_wrap_around =
-        log_file.file_size_bytes + message.length() < log_file.file_size_bytes;
+        file_size_bytes_ + message.length() < file_size_bytes_;
     const bool size_limit_will_be_exceeded =
-        log_file.file_size_bytes + message.length() >
-        log_file.max_file_size_bytes;
+        file_size_bytes_ + message.length() > max_file_size_bytes_;
     if (size_will_wrap_around || size_limit_will_be_exceeded) {
-      CloseLogFile(it);
       return false;
     }
   }
 
-  int written = log_file.file.WriteAtCurrentPos(message.c_str(), message_len);
+  int written = file_.WriteAtCurrentPos(message.c_str(), message_len);
   if (written != message_len) {
     LOG(WARNING) << "WebRTC event log message couldn't be written to the "
                     "locally stored file in its entirety.";
-    CloseLogFile(it);
     return false;
   }
 
-  log_file.file_size_bytes += static_cast<size_t>(written);
-  if (log_file.max_file_size_bytes != kWebRtcEventLogManagerUnlimitedFileSize) {
-    DCHECK_LE(log_file.file_size_bytes, log_file.max_file_size_bytes);
-    if (log_file.file_size_bytes >= log_file.max_file_size_bytes) {
-      CloseLogFile(it);
-    }
-  }
+  file_size_bytes_ += static_cast<size_t>(written);
+  DCHECK(max_file_size_bytes_ == kWebRtcEventLogManagerUnlimitedFileSize ||
+         file_size_bytes_ <= max_file_size_bytes_);
 
-  return (static_cast<size_t>(written) == message.length());
+  return true;
+}
+
+void LogFile::Close() {
+  file_.Flush();
+  file_.Close();
+}
+
+void LogFile::Delete() {
+  if (!base::DeleteFile(path_, /*recursive=*/false)) {
+    LOG(ERROR) << "Failed to delete " << path_ << ".";
+  }
 }
 
 BrowserContextId GetBrowserContextId(

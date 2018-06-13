@@ -35,15 +35,6 @@ namespace {
 const base::TimeDelta kDefaultProactivePruningDelta =
     base::TimeDelta::FromMinutes(5);
 
-// Purge from local disk a log file which could not be properly started
-// (e.g. error encountered when attempting to write the log header).
-void DiscardLogFile(base::File* file, const base::FilePath& file_path) {
-  file->Close();
-  if (!base::DeleteFile(file_path, /*recursive=*/false)) {
-    LOG(ERROR) << "Failed to delete " << file_path << ".";
-  }
-}
-
 bool AreLogParametersValid(size_t max_file_size_bytes,
                            const std::string& metadata,
                            std::string* error_message) {
@@ -293,7 +284,14 @@ bool WebRtcRemoteEventLogManager::EventLogWrite(const PeerConnectionKey& key,
   if (it == active_logs_.end()) {
     return false;
   }
-  return WriteToLogFile(it, message);
+
+  const bool write_successful = it->second.Write(message);
+
+  if (!write_successful || it->second.MaxSizeReached()) {
+    CloseLogFile(it);
+  }
+
+  return write_successful;
 }
 
 void WebRtcRemoteEventLogManager::ClearCacheForBrowserContext(
@@ -375,8 +373,8 @@ WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it) {
 
   const PeerConnectionKey peer_connection = it->first;
 
-  it->second.file.Flush();
-  it = active_logs_.erase(it);  // file.Close() called by destructor.
+  it->second.Close();
+  it = active_logs_.erase(it);
 
   if (observer_) {
     observer_->OnRemoteLogStopped(peer_connection);
@@ -468,6 +466,10 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
     return false;
   }
 
+  // Make the File into a LogFile (path and size information, etc.).
+  LogFile log_file(file_path, std::move(file), max_file_size_bytes);
+
+  // Produce the header.
   const uint32_t header_host_order =
       static_cast<uint32_t>(metadata.length()) |
       (kRemoteBoundWebRtcEventLogFileVersion << 24);
@@ -475,36 +477,35 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
                 "Restructure this otherwise.");
   char header[sizeof(uint32_t)];
   base::WriteBigEndian<uint32_t>(header, header_host_order);
-  int written = file.WriteAtCurrentPos(header, sizeof(header));
-  if (written != arraysize(header)) {
+  const std::string header_str(header, sizeof(header));
+
+  // Write the header to the file.
+  if (!log_file.Write(header_str) || log_file.MaxSizeReached()) {
     LOG(WARNING) << "Failed to write header to log file.";
-    DiscardLogFile(&file, file_path);
+    log_file.Close();
+    log_file.Delete();
     // Intentionally using a generic error; look for other places where it's
     // set for an explanation why.
     *error_message = kStartRemoteLoggingFailureGeneric;
     return false;
   }
 
-  const int metadata_length = static_cast<int>(metadata.length());
-  written = file.WriteAtCurrentPos(metadata.c_str(), metadata_length);
-  if (written != metadata_length) {
+  // Write the metadata to the file.
+  if (!log_file.Write(metadata) || log_file.MaxSizeReached()) {
     LOG(WARNING) << "Failed to write metadata to log file.";
-    DiscardLogFile(&file, file_path);
+    log_file.Close();
+    log_file.Delete();
     // Intentionally using a generic error; look for other places where it's
     // set for an explanation why.
     *error_message = kStartRemoteLoggingFailureGeneric;
     return false;
   }
 
-  // Record that we're now writing this remote-bound log to this file.
-  const size_t header_and_metadata_size_bytes =
-      kRemoteBoundLogFileHeaderSizeBytes + metadata_length;
-  const auto it = active_logs_.emplace(
-      key, LogFile(file_path, std::move(file), max_file_size_bytes,
-                   header_and_metadata_size_bytes));
+  // The log file is now ACTIVE.
+  const auto it = active_logs_.emplace(key, std::move(log_file));
   DCHECK(it.second);
 
-  observer_->OnRemoteLogStarted(key, file_path);
+  observer_->OnRemoteLogStarted(key, it.first->second.path());
 
   return true;
 }
@@ -518,8 +519,7 @@ void WebRtcRemoteEventLogManager::MaybeStopRemoteLogging(
     return;
   }
 
-  it->second.file.Flush();
-  it->second.file.Close();
+  it->second.Close();
 
   // The current time is a good enough approximation of the file's last
   // modification time.
@@ -527,7 +527,7 @@ void WebRtcRemoteEventLogManager::MaybeStopRemoteLogging(
 
   // The stopped log becomes a pending log. It is no longer an active log.
   const auto emplace_result = pending_logs_.emplace(
-      key.browser_context_id, it->second.path, last_modified);
+      key.browser_context_id, it->second.path(), last_modified);
   DCHECK(emplace_result.second);  // No pre-existing entry.
   active_logs_.erase(it);
 
