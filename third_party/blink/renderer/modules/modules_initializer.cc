@@ -212,10 +212,10 @@ void ModulesInitializer::InitInspectorAgentSession(
   session->Append(
       new InspectorIndexedDBAgent(inspected_frames, session->V8Session()));
   session->Append(new DeviceOrientationInspectorAgent(inspected_frames));
+  session->Append(new InspectorDOMStorageAgent(inspected_frames));
   if (allow_view_agents) {
     session->Append(InspectorDatabaseAgent::Create(page));
     session->Append(new InspectorAccessibilityAgent(page, dom_agent));
-    session->Append(InspectorDOMStorageAgent::Create(page));
     session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
   }
 }

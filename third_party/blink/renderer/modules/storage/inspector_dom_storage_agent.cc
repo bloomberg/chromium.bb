@@ -56,13 +56,14 @@ static Response ToResponse(ExceptionState& exception_state) {
                          " " + exception_state.Message());
 }
 
-InspectorDOMStorageAgent::InspectorDOMStorageAgent(Page* page)
-    : page_(page), is_enabled_(false) {}
+InspectorDOMStorageAgent::InspectorDOMStorageAgent(
+    InspectedFrames* inspected_frames)
+    : inspected_frames_(inspected_frames), is_enabled_(false) {}
 
 InspectorDOMStorageAgent::~InspectorDOMStorageAgent() = default;
 
 void InspectorDOMStorageAgent::Trace(blink::Visitor* visitor) {
-  visitor->Trace(page_);
+  visitor->Trace(inspected_frames_);
   InspectorBaseAgent::Trace(visitor);
 }
 
@@ -78,8 +79,8 @@ Response InspectorDOMStorageAgent::enable() {
     return Response::OK();
   is_enabled_ = true;
   state_->setBoolean(DOMStorageAgentState::kDomStorageAgentEnabled, true);
-  if (StorageNamespaceController* controller =
-          StorageNamespaceController::From(page_))
+  if (StorageNamespaceController* controller = StorageNamespaceController::From(
+          inspected_frames_->Root()->GetPage()))
     controller->SetInspectorAgent(this);
   return Response::OK();
 }
@@ -89,8 +90,8 @@ Response InspectorDOMStorageAgent::disable() {
     return Response::OK();
   is_enabled_ = false;
   state_->setBoolean(DOMStorageAgentState::kDomStorageAgentEnabled, false);
-  if (StorageNamespaceController* controller =
-          StorageNamespaceController::From(page_))
+  if (StorageNamespaceController* controller = StorageNamespaceController::From(
+          inspected_frames_->Root()->GetPage()))
     controller->SetInspectorAgent(nullptr);
   return Response::OK();
 }
@@ -203,18 +204,14 @@ Response InspectorDOMStorageAgent::FindStorageArea(
     StorageArea*& storage_area) {
   String security_origin = storage_id->getSecurityOrigin();
   bool is_local_storage = storage_id->getIsLocalStorage();
-
-  if (!page_->MainFrame()->IsLocalFrame())
-    return Response::InternalError();
-
-  InspectedFrames* inspected_frames =
-      new InspectedFrames(page_->DeprecatedLocalMainFrame());
   LocalFrame* frame =
-      inspected_frames->FrameWithSecurityOrigin(security_origin);
+      inspected_frames_->FrameWithSecurityOrigin(security_origin);
   if (!frame)
     return Response::Error("Frame not found for the given security origin");
 
   if (is_local_storage) {
+    if (!frame->GetDocument()->GetSecurityOrigin()->CanAccessLocalStorage())
+      return Response::Error("Security origin cannot access local storage");
     storage_area =
         StorageArea::Create(frame,
                             StorageNamespace::LocalStorageArea(
@@ -222,8 +219,11 @@ Response InspectorDOMStorageAgent::FindStorageArea(
                             StorageArea::StorageType::kLocalStorage);
     return Response::OK();
   }
+
+  if (!frame->GetDocument()->GetSecurityOrigin()->CanAccessSessionStorage())
+    return Response::Error("Security origin cannot access session storage");
   StorageNamespace* session_storage =
-      StorageNamespaceController::From(page_)->SessionStorage();
+      StorageNamespaceController::From(frame->GetPage())->SessionStorage();
   if (!session_storage)
     return Response::Error("SessionStorage is not supported");
   storage_area =
