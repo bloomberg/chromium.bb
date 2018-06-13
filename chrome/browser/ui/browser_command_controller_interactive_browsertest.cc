@@ -16,9 +16,16 @@
 
 using BrowserCommandControllerInteractiveTest =
     FullscreenKeyboardBrowserTestBase;
-
+#if defined(OS_MACOSX)
+// Flaky http://crbug.com/852285
+#define MAYBE_ShortcutsShouldTakeEffectInWindowMode \
+  DISABLED_ShortcutsShouldTakeEffectInWindowMode
+#else
+#define MAYBE_ShortcutsShouldTakeEffectInWindowMode \
+  ShortcutsShouldTakeEffectInWindowMode
+#endif
 IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
-                       ShortcutsShouldTakeEffectInWindowMode) {
+                       MAYBE_ShortcutsShouldTakeEffectInWindowMode) {
   ASSERT_EQ(1, GetTabCount());
   ASSERT_NO_FATAL_FAILURE(SendShortcut(ui::VKEY_T));
   ASSERT_EQ(2, GetTabCount());
