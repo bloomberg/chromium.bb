@@ -22,7 +22,7 @@ class CORE_EXPORT DocumentModuleScriptFetcher final
   ~DocumentModuleScriptFetcher() override = default;
 
   // Implements ModuleScriptFetcher.
-  void Fetch(FetchParameters&, Client*) override;
+  void Fetch(FetchParameters&, ModuleGraphLevel, Client*) override;
 
   // Implements ResourceClient
   void NotifyFinished(Resource*) override;

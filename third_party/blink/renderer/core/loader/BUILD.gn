@@ -68,6 +68,8 @@ blink_core_sources("loader") {
     "modulescript/module_tree_linker.h",
     "modulescript/module_tree_linker_registry.cc",
     "modulescript/module_tree_linker_registry.h",
+    "modulescript/worker_module_script_fetcher.cc",
+    "modulescript/worker_module_script_fetcher.h",
     "modulescript/worklet_module_script_fetcher.cc",
     "modulescript/worklet_module_script_fetcher.h",
     "navigation_policy.cc",

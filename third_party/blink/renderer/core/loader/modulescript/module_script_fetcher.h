@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_creation_params.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 
@@ -35,7 +36,7 @@ class CORE_EXPORT ModuleScriptFetcher : public ResourceClient {
 
   // Takes a non-const reference to FetchParameters because
   // ScriptResource::Fetch() requires it.
-  virtual void Fetch(FetchParameters&, Client*) = 0;
+  virtual void Fetch(FetchParameters&, ModuleGraphLevel, Client*) = 0;
 
  protected:
   static bool WasModuleLoadSuccessful(

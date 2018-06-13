@@ -31,7 +31,9 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
   WorkletModuleScriptFetcher(ResourceFetcher*, WorkletModuleResponsesMap*);
 
   // Implements ModuleScriptFetcher.
-  void Fetch(FetchParameters&, ModuleScriptFetcher::Client*) override;
+  void Fetch(FetchParameters&,
+             ModuleGraphLevel,
+             ModuleScriptFetcher::Client*) override;
 
   void Trace(blink::Visitor*) override;
 
