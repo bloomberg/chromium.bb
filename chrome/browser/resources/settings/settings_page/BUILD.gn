@@ -56,7 +56,7 @@ js_library("settings_subpage") {
 js_library("settings_subpage_search") {
   deps = [
     "//third_party/polymer/v1_0/components-chromium/paper-icon-button:paper-icon-button-extracted",
-    "//third_party/polymer/v1_0/components-chromium/paper-input:paper-input-container-extracted",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field_behavior",
     "//ui/webui/resources/js:assert",
   ]
