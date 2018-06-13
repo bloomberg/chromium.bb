@@ -132,8 +132,8 @@ void CrashMetricsReporter::CrashDumpProcessed(
     ReportCrashCount(ProcessedCrashCounts::kGpuForegroundOom, &reported_counts);
   }
 
-  if (info.process_type == content::PROCESS_TYPE_RENDERER) {
-    if (app_foreground && renderer_visible) {
+  if (info.process_type == content::PROCESS_TYPE_RENDERER && app_foreground) {
+    if (renderer_visible) {
       if (has_valid_dump) {
         ReportCrashCount(
             renderer_subframe
@@ -164,6 +164,41 @@ void CrashMetricsReporter::CrashDumpProcessed(
           base::RecordAction(
               base::UserMetricsAction("RendererForegroundMainFrameOOM"));
         }
+      }
+    } else if (!has_valid_dump) {
+      // Record stats when renderer is not visible, but the process has oom
+      // protected bindings. This case occurs when a tab is switched or closed,
+      // the bindings are updated later than visibility on web contents.
+      switch (info.binding_state) {
+        case base::android::ChildBindingState::UNBOUND:
+        case base::android::ChildBindingState::WAIVED:
+          break;
+        case base::android::ChildBindingState::STRONG:
+          if (intentional_kill || info.normal_termination) {
+            ReportCrashCount(
+                ProcessedCrashCounts::
+                    kRendererForegroundInvisibleWithStrongBindingKilled,
+                &reported_counts);
+          } else {
+            ReportCrashCount(
+                ProcessedCrashCounts::
+                    kRendererForegroundInvisibleWithStrongBindingOom,
+                &reported_counts);
+          }
+          break;
+        case base::android::ChildBindingState::MODERATE:
+          if (intentional_kill || info.normal_termination) {
+            ReportCrashCount(
+                ProcessedCrashCounts::
+                    kRendererForegroundInvisibleWithModerateBindingKilled,
+                &reported_counts);
+          } else {
+            ReportCrashCount(
+                ProcessedCrashCounts::
+                    kRendererForegroundInvisibleWithModerateBindingOom,
+                &reported_counts);
+          }
+          break;
       }
     }
   }

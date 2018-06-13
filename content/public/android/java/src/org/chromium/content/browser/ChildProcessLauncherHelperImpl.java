@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.ChildBindingState;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.CpuFeatures;
@@ -418,16 +419,16 @@ public final class ChildProcessLauncherHelperImpl {
 
     // Called on client (UI or IO) thread.
     @CalledByNative
-    private boolean hasOomProtectionBindings() {
+    private int bindingStateCurrentOrWhenDied() {
         ChildProcessConnection connection = mLauncher.getConnection();
         // Here we are accessing the connection from a thread other than the launcher thread, but it
         // does not change once it's been set. So it is safe to test whether it's null here and
         // access it afterwards.
         if (connection == null) {
-            return false;
+            return ChildBindingState.UNBOUND;
         }
 
-        return !connection.isWaivedBoundOnlyOrWasWhenDied();
+        return connection.bindingStateCurrentOrWhenDied();
     }
 
     @CalledByNative

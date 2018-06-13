@@ -38,6 +38,7 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.ChildBindingState;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /** Unit tests for ChildProcessConnection. */
@@ -338,13 +339,17 @@ public class ChildProcessConnectionTest {
         verify(mConnectionCallback, times(1)).onConnected(connection);
 
         // Add strong binding so that connection is oom protected.
+        connection.removeModerateBinding();
+        assertEquals(ChildBindingState.WAIVED, connection.bindingStateCurrentOrWhenDied());
+        connection.addModerateBinding();
+        assertEquals(ChildBindingState.MODERATE, connection.bindingStateCurrentOrWhenDied());
         connection.addStrongBinding();
-        Assert.assertFalse(connection.isWaivedBoundOnlyOrWasWhenDied());
+        assertEquals(ChildBindingState.STRONG, connection.bindingStateCurrentOrWhenDied());
 
         // Kill and verify state.
         connection.kill();
         verify(mIChildProcessService).forceKill();
-        Assert.assertFalse(connection.isWaivedBoundOnlyOrWasWhenDied());
+        assertEquals(ChildBindingState.STRONG, connection.bindingStateCurrentOrWhenDied());
         Assert.assertTrue(connection.isKilledByUs());
     }
 }

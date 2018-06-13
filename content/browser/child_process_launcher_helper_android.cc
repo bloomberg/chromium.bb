@@ -155,10 +155,14 @@ ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
     const ChildProcessLauncherHelper::Process& process,
     bool known_dead) {
   ChildProcessTerminationInfo info;
-  info.has_oom_protection_bindings =
-      java_peer_avaiable_on_client_thread_ &&
-      Java_ChildProcessLauncherHelperImpl_hasOomProtectionBindings(
-          AttachCurrentThread(), java_peer_);
+  info.binding_state = base::android::ChildBindingState::UNBOUND;
+  if (java_peer_avaiable_on_client_thread_) {
+    int binding_state =
+        Java_ChildProcessLauncherHelperImpl_bindingStateCurrentOrWhenDied(
+            AttachCurrentThread(), java_peer_);
+    info.binding_state =
+        static_cast<base::android::ChildBindingState>(binding_state);
+  }
   info.was_killed_intentionally_by_browser =
       java_peer_avaiable_on_client_thread_ &&
       Java_ChildProcessLauncherHelperImpl_isKilledByUs(AttachCurrentThread(),
@@ -170,7 +174,9 @@ ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
        base::android::ApplicationStatusListener::GetState() ==
            base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
 
-  if (app_foreground && info.has_oom_protection_bindings) {
+  if (app_foreground &&
+      (info.binding_state == base::android::ChildBindingState::MODERATE ||
+       info.binding_state == base::android::ChildBindingState::STRONG)) {
     info.status = base::TERMINATION_STATUS_OOM_PROTECTED;
   } else {
     // Note waitpid does not work on Android since these are not actually child

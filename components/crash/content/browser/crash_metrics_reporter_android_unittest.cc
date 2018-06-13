@@ -98,7 +98,7 @@ TEST_F(CrashMetricsReporterTest, RendereMainFrameOOM) {
   termination_info.app_state =
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
   termination_info.normal_termination = false;
-  termination_info.has_oom_protection_bindings = true;
+  termination_info.binding_state = base::android::ChildBindingState::STRONG;
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
@@ -116,7 +116,7 @@ TEST_F(CrashMetricsReporterTest, GpuProcessOOM) {
   termination_info.app_state =
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
   termination_info.normal_termination = false;
-  termination_info.has_oom_protection_bindings = true;
+  termination_info.binding_state = base::android::ChildBindingState::STRONG;
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
@@ -134,7 +134,7 @@ TEST_F(CrashMetricsReporterTest, RendererSubframeOOM) {
   termination_info.app_state =
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
   termination_info.normal_termination = false;
-  termination_info.has_oom_protection_bindings = true;
+  termination_info.binding_state = base::android::ChildBindingState::STRONG;
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
@@ -145,7 +145,7 @@ TEST_F(CrashMetricsReporterTest, RendererSubframeOOM) {
                          "Tab.RendererDetailedExitStatus");
 }
 
-TEST_F(CrashMetricsReporterTest, RendererNonVisibleOOM) {
+TEST_F(CrashMetricsReporterTest, RendererNonVisibleStrongOOM) {
   breakpad::CrashDumpObserver::TerminationInfo termination_info;
   termination_info.process_host_id = 1;
   termination_info.pid = base::kNullProcessHandle;
@@ -153,12 +153,33 @@ TEST_F(CrashMetricsReporterTest, RendererNonVisibleOOM) {
   termination_info.app_state =
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
   termination_info.normal_termination = false;
-  termination_info.has_oom_protection_bindings = true;
-  termination_info.was_killed_intentionally_by_browser = false;
+  termination_info.binding_state = base::android::ChildBindingState::STRONG;
   termination_info.was_oom_protected_status = true;
+  termination_info.was_killed_intentionally_by_browser = false;
   termination_info.renderer_has_visible_clients = false;
-  TestOomCrashProcessing(termination_info, {},
+  TestOomCrashProcessing(termination_info,
+                         {CrashMetricsReporter::ProcessedCrashCounts::
+                              kRendererForegroundInvisibleWithStrongBindingOom},
                          "Tab.RendererDetailedExitStatus");
+}
+
+TEST_F(CrashMetricsReporterTest, RendererNonVisibleModerateOOM) {
+  breakpad::CrashDumpObserver::TerminationInfo termination_info;
+  termination_info.process_host_id = 1;
+  termination_info.pid = base::kNullProcessHandle;
+  termination_info.process_type = content::PROCESS_TYPE_RENDERER;
+  termination_info.app_state =
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
+  termination_info.normal_termination = false;
+  termination_info.binding_state = base::android::ChildBindingState::MODERATE;
+  termination_info.was_oom_protected_status = true;
+  termination_info.was_killed_intentionally_by_browser = false;
+  termination_info.renderer_has_visible_clients = false;
+  TestOomCrashProcessing(
+      termination_info,
+      {CrashMetricsReporter::ProcessedCrashCounts::
+           kRendererForegroundInvisibleWithModerateBindingOom},
+      "Tab.RendererDetailedExitStatus");
 }
 
 TEST_F(CrashMetricsReporterTest, IntentionalKillIsNotOOM) {
@@ -169,7 +190,7 @@ TEST_F(CrashMetricsReporterTest, IntentionalKillIsNotOOM) {
   termination_info.app_state =
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
   termination_info.normal_termination = false;
-  termination_info.has_oom_protection_bindings = true;
+  termination_info.binding_state = base::android::ChildBindingState::STRONG;
   termination_info.was_killed_intentionally_by_browser = true;
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
@@ -190,7 +211,7 @@ TEST_F(CrashMetricsReporterTest, NormalTerminationIsNotOOM) {
   termination_info.app_state =
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
   termination_info.normal_termination = true;
-  termination_info.has_oom_protection_bindings = true;
+  termination_info.binding_state = base::android::ChildBindingState::STRONG;
   termination_info.was_killed_intentionally_by_browser = false;
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
@@ -208,7 +229,7 @@ TEST_F(CrashMetricsReporterTest, RendererForegroundCrash) {
   termination_info.app_state =
       base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
   termination_info.normal_termination = true;
-  termination_info.has_oom_protection_bindings = true;
+  termination_info.binding_state = base::android::ChildBindingState::STRONG;
   termination_info.was_killed_intentionally_by_browser = true;
   termination_info.was_oom_protected_status = true;
   termination_info.renderer_has_visible_clients = true;
