@@ -49,6 +49,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
+#include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/switches.h"
 #include "content/common/content_switches_internal.h"
@@ -71,6 +72,7 @@
 #include "third_party/blink/public/web/web_selection.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"
@@ -94,37 +96,51 @@ using ReportTimeCallback = blink::WebLayerTreeView::ReportTimeCallback;
 
 class ReportTimeSwapPromise : public cc::SwapPromise {
  public:
-  ReportTimeSwapPromise(
-      ReportTimeCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  ReportTimeSwapPromise(ReportTimeCallback callback,
+                        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        base::WeakPtr<RenderWidgetCompositor> compositor);
   ~ReportTimeSwapPromise() override;
 
   void DidActivate() override {}
-  void WillSwap(viz::CompositorFrameMetadata* metadata) override {}
+  void WillSwap(viz::CompositorFrameMetadata* metadata) override;
   void DidSwap() override;
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override;
-
   int64_t TraceId() const override;
 
  private:
   ReportTimeCallback callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  base::WeakPtr<RenderWidgetCompositor> compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(ReportTimeSwapPromise);
 };
 
 ReportTimeSwapPromise::ReportTimeSwapPromise(
     ReportTimeCallback callback,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : callback_(std::move(callback)), task_runner_(std::move(task_runner)) {}
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::WeakPtr<RenderWidgetCompositor> compositor)
+    : callback_(std::move(callback)),
+      task_runner_(std::move(task_runner)),
+      compositor_(compositor) {}
 
 ReportTimeSwapPromise::~ReportTimeSwapPromise() {}
 
+void ReportTimeSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
+  DCHECK_GT(metadata->frame_token, 0u);
+  metadata->request_presentation_feedback = true;
+  auto* task_runner = task_runner_.get();
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &RenderWidgetCompositor::AddPresentationCallback, compositor_,
+          metadata->frame_token,
+          base::BindOnce(std::move(callback_),
+                         blink::WebLayerTreeView::SwapResult::kDidSwap)));
+}
+
 void ReportTimeSwapPromise::DidSwap() {
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback_),
-                                blink::WebLayerTreeView::SwapResult::kDidSwap,
-                                base::TimeTicks::Now()));
+  // If swap did happen, then the paint-time will be reported when the
+  // presentation feedback is received.
 }
 
 cc::SwapPromise::DidNotSwapAction ReportTimeSwapPromise::DidNotSwap(
@@ -1249,6 +1265,22 @@ bool RenderWidgetCompositor::IsForSubframe() {
   return is_for_oopif_;
 }
 
+void RenderWidgetCompositor::DidPresentCompositorFrame(
+    uint32_t frame_token,
+    const gfx::PresentationFeedback& feedback) {
+  DCHECK(layer_tree_host_->GetTaskRunnerProvider()
+             ->MainThreadTaskRunner()
+             ->RunsTasksInCurrentSequence());
+  while (!presentation_callbacks_.empty()) {
+    const auto& front = presentation_callbacks_.begin();
+    if (viz::FrameTokenGT(front->first, frame_token))
+      break;
+    for (auto& callback : front->second)
+      std::move(callback).Run(feedback.timestamp);
+    presentation_callbacks_.erase(front);
+  }
+}
+
 void RenderWidgetCompositor::RequestScheduleAnimation() {
   delegate_->RequestScheduleAnimation();
 }
@@ -1278,7 +1310,8 @@ void RenderWidgetCompositor::SetContentSourceId(uint32_t id) {
 void RenderWidgetCompositor::NotifySwapTime(ReportTimeCallback callback) {
   QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
       std::move(callback),
-      layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner()));
+      layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner(),
+      weak_factory_.GetWeakPtr()));
 }
 
 void RenderWidgetCompositor::RequestBeginMainFrameNotExpected(bool new_state) {
@@ -1293,6 +1326,25 @@ void RenderWidgetCompositor::CreateRenderFrameObserver(
                                                         std::move(client_info));
   layer_tree_host_->SetRenderFrameObserver(
       std::move(render_frame_metadata_observer));
+}
+
+void RenderWidgetCompositor::AddPresentationCallback(
+    uint32_t frame_token,
+    base::OnceCallback<void(base::TimeTicks)> callback) {
+  if (!presentation_callbacks_.empty()) {
+    auto& previous = presentation_callbacks_.back();
+    uint32_t previous_frame_token = previous.first;
+    if (previous_frame_token == frame_token) {
+      previous.second.push_back(std::move(callback));
+      DCHECK_LE(previous.second.size(), 25u);
+      return;
+    }
+    DCHECK(viz::FrameTokenGT(frame_token, previous_frame_token));
+  }
+  std::vector<base::OnceCallback<void(base::TimeTicks)>> callbacks;
+  callbacks.push_back(std::move(callback));
+  presentation_callbacks_.push_back({frame_token, std::move(callbacks)});
+  DCHECK_LE(presentation_callbacks_.size(), 25u);
 }
 
 void RenderWidgetCompositor::SetURLForUkm(const GURL& url) {
