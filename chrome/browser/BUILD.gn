@@ -5032,6 +5032,7 @@ static_library("test_support_ui") {
     ]
 
     deps += [
+      ":browser",
       "//chrome:browser_tests_pak",
       "//chrome/common:mojo_bindings",
       "//chrome/test/data:web_ui_test_bindings",
