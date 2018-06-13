@@ -34,6 +34,7 @@ Polymer({
   },
 
   /**
+   * Manually select texts for readonly inputs.
    * @param {!Event} event
    * @private
    */
@@ -44,6 +45,11 @@ Polymer({
     inputElement.setSelectionRange(0, 0);
     inputElement.focus();
     inputElement.select();
-  }
+  },
+
+  /** Manually de-select texts for readonly inputs. */
+  onInputBlur_: function() {
+    this.shadowRoot.getSelection().removeAllRanges();
+  },
 });
 })();
