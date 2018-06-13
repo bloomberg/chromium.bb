@@ -35,6 +35,10 @@
 #include "components/viz/service/display_embedder/software_output_device_win.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "components/viz/service/display_embedder/gl_output_surface_android.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "components/viz/service/display_embedder/gl_output_surface_mac.h"
 #include "components/viz/service/display_embedder/software_output_device_mac.h"
@@ -171,6 +175,9 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       output_surface = std::make_unique<GLOutputSurfaceWin>(
           std::move(context_provider), synthetic_begin_frame_source.get(),
           use_overlays);
+#elif defined(OS_ANDROID)
+      output_surface = std::make_unique<GLOutputSurfaceAndroid>(
+          std::move(context_provider), synthetic_begin_frame_source.get());
 #else
       output_surface = std::make_unique<GLOutputSurface>(
           std::move(context_provider), synthetic_begin_frame_source.get());

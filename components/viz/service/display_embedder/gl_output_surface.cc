@@ -106,9 +106,8 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
 
   set_draw_rectangle_for_frame_ = false;
   if (frame.sub_buffer_rect) {
-    context_provider_->ContextSupport()->PartialSwapBuffers(
-        *frame.sub_buffer_rect, flags, std::move(swap_callback),
-        std::move(presentation_callback));
+    HandlePartialSwap(*frame.sub_buffer_rect, flags, std::move(swap_callback),
+                      std::move(presentation_callback));
   } else {
     context_provider_->ContextSupport()->Swap(flags, std::move(swap_callback),
                                               std::move(presentation_callback));
@@ -147,6 +146,16 @@ void GLOutputSurface::ApplyExternalStencil() {}
 
 void GLOutputSurface::DidReceiveSwapBuffersAck(gfx::SwapResult result) {
   client_->DidReceiveSwapBuffersAck();
+}
+
+void GLOutputSurface::HandlePartialSwap(
+    const gfx::Rect& sub_buffer_rect,
+    uint32_t flags,
+    gpu::ContextSupport::SwapCompletedCallback swap_callback,
+    gpu::ContextSupport::PresentationCallback presentation_callback) {
+  context_provider_->ContextSupport()->PartialSwapBuffers(
+      sub_buffer_rect, flags, std::move(swap_callback),
+      std::move(presentation_callback));
 }
 
 void GLOutputSurface::OnGpuSwapBuffersCompleted(

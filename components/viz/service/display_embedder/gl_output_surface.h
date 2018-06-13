@@ -9,6 +9,7 @@
 
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/viz_process_context_provider.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "ui/latency/latency_tracker.h"
 
 namespace viz {
@@ -54,6 +55,15 @@ class GLOutputSurface : public OutputSurface {
 
   // Called when a swap completion is signaled from ImageTransportSurface.
   virtual void DidReceiveSwapBuffersAck(gfx::SwapResult result);
+
+  // Called in SwapBuffers() when a swap is determined to be partial. Subclasses
+  // might override this method because different platforms handle partial swaps
+  // differently.
+  virtual void HandlePartialSwap(
+      const gfx::Rect& sub_buffer_rect,
+      uint32_t flags,
+      gpu::ContextSupport::SwapCompletedCallback swap_callback,
+      gpu::ContextSupport::PresentationCallback presentation_callback);
 
  private:
   // Called when a swap completion is signaled from ImageTransportSurface.
