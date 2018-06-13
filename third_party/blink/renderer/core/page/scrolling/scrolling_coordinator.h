@@ -104,9 +104,7 @@ class CORE_EXPORT ScrollingCoordinator final
   // Called when any layoutBox has transform changed
   void NotifyTransformChanged(LocalFrame*, const LayoutBox&);
 
-  // Update non-fast scrollable regions, touch event target rects, main thread
-  // scrolling reasons, and whether the visual viewport is user scrollable.
-  void UpdateAfterPrePaint(LocalFrameView*);
+  void UpdateAfterCompositingChangeIfNeeded(LocalFrameView*);
 
   // Set the touch action rects on cc Layer's. This is the BlinkGenPropertyTrees
   // version of |ComputeTouchEventTargetRects|.

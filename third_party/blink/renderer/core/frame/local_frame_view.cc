@@ -2769,17 +2769,18 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
       }
 
       if (target_state >= DocumentLifecycle::kPrePaintClean) {
+        if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+          if (layout_view->Compositor()->InCompositingMode()) {
+            GetScrollingCoordinator()->UpdateAfterCompositingChangeIfNeeded(
+                this);
+          }
+        }
+
         UpdateCompositedSelectionIfNeeded();
 
         // TODO(pdr): prePaint should be under the "Paint" devtools timeline
         // step for slimming paint v2.
         PrePaint();
-
-        if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-          if (layout_view->Compositor()->InCompositingMode()) {
-            GetScrollingCoordinator()->UpdateAfterPrePaint(this);
-          }
-        }
       }
     }
 

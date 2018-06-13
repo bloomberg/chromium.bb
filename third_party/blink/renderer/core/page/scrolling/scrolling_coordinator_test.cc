@@ -1454,8 +1454,8 @@ TEST_P(ScrollingCoordinatorTest, StickyTriggersMainThreadScroll) {
 }
 
 // LocalFrameView::FrameIsScrollableDidChange is used as a dirty bit and is
-// set to clean in ScrollingCoordinator::UpdateAfterPrePaint. This test ensures
-// that the dirty bit is set and unset properly.
+// set to clean in ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded.
+// This test ensures that the dirty bit is set and unset properly.
 TEST_P(ScrollingCoordinatorTest, FrameIsScrollableDidChange) {
   LoadHTML(R"HTML(
     <div id='bg' style='background: red; width: 10px; height: 10px;'></div>
