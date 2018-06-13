@@ -27980,6 +27980,7 @@ from previous Chrome versions.
   <int value="558873715" label="SiteDetails:disabled"/>
   <int value="562979188" label="DesktopIOSPromotion:enabled"/>
   <int value="564522013" label="Av1Decoder:disabled"/>
+  <int value="565406673" label="EnableVirtualKeyboardMdUi:enabled"/>
   <int value="567368307" label="enable-experimental-canvas-features"/>
   <int value="575394365" label="AndroidPaymentApps:disabled"/>
   <int value="576878329" label="enable-background-blur"/>
@@ -28410,6 +28411,7 @@ from previous Chrome versions.
   <int value="1466380480" label="enable-device-discovery-notifications"/>
   <int value="1466502102" label="DelayNavigation:disabled"/>
   <int value="1469407485" label="disable-accelerated-2d-canvas"/>
+  <int value="1473838479" label="EnableVirtualKeyboardMdUi:disabled"/>
   <int value="1474861626" label="disable-multi-mirroring"/>
   <int value="1479248574" label="disable-voice-input"/>
   <int value="1481562816" label="disable-password-link"/>

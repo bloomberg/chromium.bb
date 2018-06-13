@@ -2927,6 +2927,11 @@ const char kEnableUnifiedMultiDeviceSetupName[] =
 const char kEnableUnifiedMultiDeviceSetupDescription[] =
     "Enable the device to setup all MultiDevice services in a single workflow.";
 
+const char kEnableVirtualKeyboardMdUiName[] =
+    "Enable Material Design virtual keyboard";
+const char kEnableVirtualKeyboardMdUiDescription[] =
+    "If enabled, loads the Material Design UI for the virtual keyboard.";
+
 const char kEnableZipArchiverPackerName[] = "ZIP archiver - Packer";
 const char kEnableZipArchiverPackerDescription[] =
     "Enable the ability to archive files on Drive in the Files app";

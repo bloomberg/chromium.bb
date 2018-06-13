@@ -1802,6 +1802,9 @@ extern const char kEnableUnifiedMultiDeviceSettingsDescription[];
 extern const char kEnableUnifiedMultiDeviceSetupName[];
 extern const char kEnableUnifiedMultiDeviceSetupDescription[];
 
+extern const char kEnableVirtualKeyboardMdUiName[];
+extern const char kEnableVirtualKeyboardMdUiDescription[];
+
 extern const char kEnableZipArchiverPackerName[];
 extern const char kEnableZipArchiverPackerDescription[];
 

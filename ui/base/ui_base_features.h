@@ -18,6 +18,7 @@ UI_BASE_EXPORT extern const base::Feature kEnableFloatingVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature
     kEnableFullscreenHandwritingVirtualKeyboard;
 UI_BASE_EXPORT extern const base::Feature kEnableStylusVirtualKeyboard;
+UI_BASE_EXPORT extern const base::Feature kEnableVirtualKeyboardMdUi;
 UI_BASE_EXPORT extern const base::Feature kExperimentalUi;
 UI_BASE_EXPORT extern const base::Feature kSecondaryUiMd;
 UI_BASE_EXPORT extern const base::Feature kSystemKeyboardLock;
