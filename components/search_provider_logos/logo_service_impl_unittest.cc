@@ -45,8 +45,9 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
@@ -321,12 +322,15 @@ class LogoServiceImplTest : public ::testing::Test {
   LogoServiceImplTest()
       : template_url_service_(nullptr, 0),
         logo_cache_(new NiceMock<MockLogoCache>()),
-        fake_url_fetcher_factory_(
-            nullptr,
-            base::Bind(&LogoServiceImplTest::CapturingFakeURLFetcherCreator,
-                       base::Unretained(this))),
+        shared_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
+        fake_url_fetcher_factory_(nullptr),
         signin_helper_(&task_environment_, &fake_url_fetcher_factory_),
         use_gray_background_(false) {
+    test_url_loader_factory_.SetInterceptor(base::BindRepeating(
+        &LogoServiceImplTest::CapturingInterceptor, base::Unretained(this)));
+
     // Default search engine with logo. All 3P doodle_urls use ddljson API.
     AddSearchEngine("ex", "Logo Example",
                     "https://example.com/?q={searchTerms}",
@@ -337,8 +341,7 @@ class LogoServiceImplTest : public ::testing::Test {
     logo_service_ = std::make_unique<LogoServiceImpl>(
         base::FilePath(), signin_helper_.cookie_service(),
         &template_url_service_, std::make_unique<FakeImageDecoder>(),
-        new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get()),
+        shared_factory_,
         base::BindRepeating(&LogoServiceImplTest::use_gray_background,
                             base::Unretained(this)));
     logo_service_->SetClockForTests(&test_clock_);
@@ -359,8 +362,7 @@ class LogoServiceImplTest : public ::testing::Test {
 
   // Sets the response to be returned when the LogoTracker fetches the logo.
   void SetServerResponse(const std::string& response,
-                         net::URLRequestStatus::Status request_status =
-                             net::URLRequestStatus::SUCCESS,
+                         int error_code = net::OK,
                          net::HttpStatusCode response_code = net::HTTP_OK);
 
   // Sets the response to be returned when the LogoTracker fetches the logo and
@@ -368,8 +370,7 @@ class LogoServiceImplTest : public ::testing::Test {
   void SetServerResponseWhenFingerprint(
       const std::string& fingerprint,
       const std::string& response_when_fingerprint,
-      net::URLRequestStatus::Status request_status =
-          net::URLRequestStatus::SUCCESS,
+      int error_code = net::OK,
       net::HttpStatusCode response_code = net::HTTP_OK);
 
   const GURL& DoodleURL() const;
@@ -385,12 +386,7 @@ class LogoServiceImplTest : public ::testing::Test {
                        GURL doodle_url,
                        bool make_default);
 
-  std::unique_ptr<net::FakeURLFetcher> CapturingFakeURLFetcherCreator(
-      const GURL& url,
-      net::URLFetcherDelegate* delegate,
-      const std::string& response_data,
-      net::HttpStatusCode response_code,
-      net::URLRequestStatus::Status status);
+  void CapturingInterceptor(const network::ResourceRequest& request);
 
   bool use_gray_background() const { return use_gray_background_; }
 
@@ -398,24 +394,24 @@ class LogoServiceImplTest : public ::testing::Test {
   TemplateURLService template_url_service_;
   base::SimpleTestClock test_clock_;
   NiceMock<MockLogoCache>* logo_cache_;
-  net::FakeURLFetcherFactory fake_url_fetcher_factory_;
+
+  // There is a bit of transition pain here: |fake_url_fetcher_factory_| is used
+  // for signin_helper,  while |test_url_loader_factory_| is used for
+  // logo_service_.
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
   std::unique_ptr<LogoServiceImpl> logo_service_;
+
+  net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   SigninHelper signin_helper_;
 
   GURL latest_url_;
   bool use_gray_background_;
 };
 
-std::unique_ptr<net::FakeURLFetcher>
-LogoServiceImplTest::CapturingFakeURLFetcherCreator(
-    const GURL& url,
-    net::URLFetcherDelegate* delegate,
-    const std::string& response_data,
-    net::HttpStatusCode response_code,
-    net::URLRequestStatus::Status status) {
-  latest_url_ = url;
-  return std::make_unique<net::FakeURLFetcher>(url, delegate, response_data,
-                                               response_code, status);
+void LogoServiceImplTest::CapturingInterceptor(
+    const network::ResourceRequest& request) {
+  latest_url_ = request.url;
 }
 
 std::string LogoServiceImplTest::ServerResponse(const Logo& logo) {
@@ -425,23 +421,34 @@ std::string LogoServiceImplTest::ServerResponse(const Logo& logo) {
   return MakeServerResponse(logo, time_to_live);
 }
 
-void LogoServiceImplTest::SetServerResponse(
-    const std::string& response,
-    net::URLRequestStatus::Status request_status,
-    net::HttpStatusCode response_code) {
-  SetServerResponseWhenFingerprint(std::string(), response, request_status,
+void LogoServiceImplTest::SetServerResponse(const std::string& response,
+                                            int error_code,
+                                            net::HttpStatusCode response_code) {
+  SetServerResponseWhenFingerprint(std::string(), response, error_code,
                                    response_code);
 }
 
 void LogoServiceImplTest::SetServerResponseWhenFingerprint(
     const std::string& fingerprint,
     const std::string& response_when_fingerprint,
-    net::URLRequestStatus::Status request_status,
+    int error_code,
     net::HttpStatusCode response_code) {
   GURL url_with_fp = AppendFingerprintParamToDoodleURL(
       AppendPreliminaryParamsToDoodleURL(false, DoodleURL()), fingerprint);
-  fake_url_fetcher_factory_.SetFakeResponse(
-      url_with_fp, response_when_fingerprint, response_code, request_status);
+
+  network::ResourceResponseHead head;
+  std::string headers(base::StringPrintf(
+      "HTTP/1.1 %d %s\nContent-type: text/html\n\n",
+      static_cast<int>(response_code), GetHttpReasonPhrase(response_code)));
+  head.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  head.mime_type = "text/html";
+  network::URLLoaderCompletionStatus status;
+  status.error_code = error_code;
+  status.decoded_body_length = response_when_fingerprint.size();
+
+  test_url_loader_factory_.AddResponse(url_with_fp, head,
+                                       response_when_fingerprint, status);
 }
 
 const GURL& LogoServiceImplTest::DoodleURL() const {
@@ -498,10 +505,9 @@ TEST_F(LogoServiceImplTest, CTARequestedBackgroundCanUpdate) {
       AppendPreliminaryParamsToDoodleURL(false, DoodleURL()), std::string());
 
   use_gray_background_ = false;
-  fake_url_fetcher_factory_.ClearFakeResponses();
-  fake_url_fetcher_factory_.SetFakeResponse(query_without_gray_background,
-                                            response, net::HTTP_OK,
-                                            net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory_.ClearResponses();
+  test_url_loader_factory_.AddResponse(query_without_gray_background.spec(),
+                                       response, net::HTTP_OK);
   {
     StrictMock<MockLogoCallback> fresh;
     EXPECT_CALL(fresh, Run(_, _));
@@ -513,10 +519,9 @@ TEST_F(LogoServiceImplTest, CTARequestedBackgroundCanUpdate) {
   EXPECT_EQ(latest_url_.query().find("graybg:1"), std::string::npos);
 
   use_gray_background_ = true;
-  fake_url_fetcher_factory_.ClearFakeResponses();
-  fake_url_fetcher_factory_.SetFakeResponse(query_with_gray_background,
-                                            response, net::HTTP_OK,
-                                            net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory_.ClearResponses();
+  test_url_loader_factory_.AddResponse(query_with_gray_background.spec(),
+                                       response, net::HTTP_OK);
   {
     StrictMock<MockLogoCallback> fresh;
     EXPECT_CALL(fresh, Run(_, _));
@@ -589,7 +594,7 @@ TEST_F(LogoServiceImplTest, EmptyCacheAndFailedDownload) {
   {
     StrictMock<MockLogoCallback> cached;
     StrictMock<MockLogoCallback> fresh;
-    SetServerResponse("", net::URLRequestStatus::FAILED, net::HTTP_OK);
+    SetServerResponse("", net::ERR_FAILED, net::HTTP_OK);
     EXPECT_CALL(cached, Run(LogoCallbackReason::DETERMINED, Eq(base::nullopt)));
     EXPECT_CALL(fresh, Run(LogoCallbackReason::FAILED, Eq(base::nullopt)));
     GetDecodedLogo(cached.Get(), fresh.Get());
@@ -598,8 +603,7 @@ TEST_F(LogoServiceImplTest, EmptyCacheAndFailedDownload) {
   {
     StrictMock<MockLogoCallback> cached;
     StrictMock<MockLogoCallback> fresh;
-    SetServerResponse("", net::URLRequestStatus::SUCCESS,
-                      net::HTTP_BAD_GATEWAY);
+    SetServerResponse("", net::OK, net::HTTP_BAD_GATEWAY);
     EXPECT_CALL(cached, Run(LogoCallbackReason::DETERMINED, Eq(base::nullopt)));
     EXPECT_CALL(fresh, Run(LogoCallbackReason::FAILED, Eq(base::nullopt)));
     GetDecodedLogo(cached.Get(), fresh.Get());
@@ -632,7 +636,7 @@ TEST_F(LogoServiceImplTest, ReturnCachedLogo) {
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
   SetServerResponseWhenFingerprint(cached_logo.metadata.fingerprint, "",
-                                   net::URLRequestStatus::FAILED, net::HTTP_OK);
+                                   net::ERR_FAILED, net::HTTP_OK);
 
   EXPECT_CALL(*logo_cache_, UpdateCachedLogoMetadata(_)).Times(0);
   EXPECT_CALL(*logo_cache_, SetCachedLogo(_)).Times(0);
@@ -769,7 +773,7 @@ TEST_F(LogoServiceImplTest, InvalidateCachedLogo) {
 }
 
 TEST_F(LogoServiceImplTest, DeleteCachedLogoFromOldUrl) {
-  SetServerResponse("", net::URLRequestStatus::FAILED, net::HTTP_OK);
+  SetServerResponse("", net::ERR_FAILED, net::HTTP_OK);
   Logo cached_logo =
       GetSampleLogo(GURL("https://oldsearchprovider.com"), test_clock_.Now());
   logo_cache_->EncodeAndSetCachedLogo(cached_logo);
@@ -820,7 +824,7 @@ TEST_F(LogoServiceImplTest, LogoWithoutTTLCanBeShownAfterExpiration) {
 }
 
 TEST_F(LogoServiceImplTest, UseSoftExpiredCachedLogo) {
-  SetServerResponse("", net::URLRequestStatus::FAILED, net::HTTP_OK);
+  SetServerResponse("", net::ERR_FAILED, net::HTTP_OK);
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
   cached_logo.metadata.expiration_time =
       test_clock_.Now() - base::TimeDelta::FromSeconds(1);
@@ -862,7 +866,7 @@ TEST_F(LogoServiceImplTest, RerequestSoftExpiredCachedLogo) {
 }
 
 TEST_F(LogoServiceImplTest, DeleteAncientCachedLogo) {
-  SetServerResponse("", net::URLRequestStatus::FAILED, net::HTTP_OK);
+  SetServerResponse("", net::ERR_FAILED, net::HTTP_OK);
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
   cached_logo.metadata.expiration_time =
       test_clock_.Now() - base::TimeDelta::FromDays(200);
@@ -883,7 +887,7 @@ TEST_F(LogoServiceImplTest, DeleteAncientCachedLogo) {
 }
 
 TEST_F(LogoServiceImplTest, DeleteExpiredCachedLogo) {
-  SetServerResponse("", net::URLRequestStatus::FAILED, net::HTTP_OK);
+  SetServerResponse("", net::ERR_FAILED, net::HTTP_OK);
   Logo cached_logo = GetSampleLogo(DoodleURL(), test_clock_.Now());
   cached_logo.metadata.expiration_time =
       test_clock_.Now() - base::TimeDelta::FromSeconds(1);

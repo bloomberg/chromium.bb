@@ -17,9 +17,9 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace search_provider_logos {
 
@@ -81,7 +81,7 @@ void NotifyAndClear(std::vector<EncodedLogoCallback>* encoded_callbacks,
 }  // namespace
 
 LogoTracker::LogoTracker(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<LogoDelegate> delegate,
     std::unique_ptr<LogoCache> logo_cache,
     base::Clock* clock)
@@ -94,7 +94,7 @@ LogoTracker::LogoTracker(
       logo_cache_(logo_cache.release(),
                   base::OnTaskRunnerDeleter(cache_task_runner_)),
       clock_(clock),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(std::move(url_loader_factory)),
       weak_ptr_factory_(this) {}
 
 LogoTracker::~LogoTracker() {
@@ -169,7 +169,7 @@ void LogoTracker::ReturnToIdle(int outcome) {
                               DOWNLOAD_OUTCOME_COUNT);
   }
   // Cancel the current asynchronous operation, if any.
-  fetcher_.reset();
+  loader_.reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   // Reset state.
@@ -235,7 +235,7 @@ void LogoTracker::SetCachedMetadata(const LogoMetadata& metadata) {
 }
 
 void LogoTracker::FetchLogo() {
-  DCHECK(!fetcher_);
+  DCHECK(!loader_);
   DCHECK(!is_idle_);
 
   std::string fingerprint;
@@ -268,13 +268,18 @@ void LogoTracker::FetchLogo() {
             "Not implemented, considered not useful as it does not upload any"
             "data and just downloads a logo image."
         })");
-  fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this,
-                                     traffic_annotation);
-  fetcher_->SetRequestContext(request_context_getter_.get());
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher_.get(),
-      data_use_measurement::DataUseUserData::SEARCH_PROVIDER_LOGOS);
-  fetcher_->Start();
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = url;
+  // TODO(https://crbug.com/808498) re-add data use measurement once
+  // SimpleURLLoader supports it:
+  // data_use_measurement::DataUseUserData::SEARCH_PROVIDER_LOGOS
+  loader_ =
+      network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  loader_->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(&LogoTracker::OnURLLoadComplete, base::Unretained(this),
+                     loader_.get()),
+      kMaxDownloadBytes);
   logo_download_start_time_ = base::TimeTicks::Now();
 }
 
@@ -414,21 +419,19 @@ void LogoTracker::OnFreshLogoAvailable(
   ReturnToIdle(download_outcome);
 }
 
-void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
+void LogoTracker::OnURLLoadComplete(const network::SimpleURLLoader* source,
+                                    std::unique_ptr<std::string> body) {
   DCHECK(!is_idle_);
-  std::unique_ptr<net::URLFetcher> cleanup_fetcher(fetcher_.release());
+  std::unique_ptr<network::SimpleURLLoader> cleanup_loader(loader_.release());
 
-  if (!source->GetStatus().is_success()) {
+  if (source->NetError() != net::OK) {
     OnFreshLogoAvailable({}, /*download_failed=*/true, false, false,
                          SkBitmap());
     return;
   }
 
-  int response_code = source->GetResponseCode();
-  if (response_code != net::HTTP_OK &&
-      response_code != net::URLFetcher::RESPONSE_CODE_INVALID) {
-    // RESPONSE_CODE_INVALID is returned when fetching from a file: URL
-    // (for testing). In all other cases we would have had a non-success status.
+  if (!source->ResponseInfo() || !source->ResponseInfo()->headers ||
+      source->ResponseInfo()->headers->response_code() != net::HTTP_OK) {
     OnFreshLogoAvailable({}, /*download_failed=*/true, false, false,
                          SkBitmap());
     return;
@@ -437,11 +440,11 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   UMA_HISTOGRAM_TIMES("NewTabPage.LogoDownloadTime",
                       base::TimeTicks::Now() - logo_download_start_time_);
 
-  std::unique_ptr<std::string> response(new std::string());
-  source->GetResponseAsString(response.get());
+  std::unique_ptr<std::string> response =
+      body ? std::move(body) : std::make_unique<std::string>();
   base::Time response_time = clock_->Now();
 
-  bool from_http_cache = source->WasCached();
+  bool from_http_cache = !source->ResponseInfo()->network_accessed;
 
   bool* parsing_failed = new bool(false);
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -453,17 +456,6 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
       base::BindOnce(&LogoTracker::OnFreshLogoParsed,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Owned(parsing_failed), from_http_cache));
-}
-
-void LogoTracker::OnURLFetchDownloadProgress(const net::URLFetcher* source,
-                                             int64_t current,
-                                             int64_t total,
-                                             int64_t current_network_bytes) {
-  if (total > kMaxDownloadBytes || current > kMaxDownloadBytes) {
-    LOG(WARNING) << "Search provider logo exceeded download size limit";
-    OnFreshLogoAvailable({}, /*download_failed=*/true, false, false,
-                         SkBitmap());
-  }
 }
 
 }  // namespace search_provider_logos
