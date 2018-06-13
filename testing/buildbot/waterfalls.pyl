@@ -2309,6 +2309,13 @@
         },
       },
       'Mojo Linux': {
+        # Normally, FYI tests run with a lower priority than main CI tests.
+        # However, some optional CQ bots mirror FYI bots, so their tests need
+        # to run at the same priority as other non-optional CQ bots to avoid
+        # getting starved out.
+        'swarming': {
+          'priority_adjustment': 30,
+        },
         'test_suites': {
           'gtest_tests': 'network_service_gtests',
           'isolated_scripts': 'mojo_network_isolated_scripts',
@@ -2421,6 +2428,10 @@
         },
       },
       'WebKit Linux slimming_paint_v2 Dummy Builder': {
+        # Normally, FYI tests run with a lower priority than main CI tests.
+        # However, some optional CQ bots mirror FYI bots, so their tests need
+        # to run at the same priority as other non-optional CQ bots to avoid
+        # getting starved out.
         'swarming': {
           'dimension_sets': [
             {
@@ -2428,6 +2439,7 @@
             },
           ],
           'hard_timeout': 900,
+          'priority_adjustment': 30,
         },
         'test_suites': {
           'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
