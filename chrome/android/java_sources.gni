@@ -490,6 +490,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/ui/SpaceDisplay.java",
   "java/src/org/chromium/chrome/browser/download/ui/StorageSummary.java",
   "java/src/org/chromium/chrome/browser/engagement/SiteEngagementService.java",
+  "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesBridge.java",
+  "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesCategoryTile.java",
   "java/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtils.java",
   "java/src/org/chromium/chrome/browser/externalauth/UserRecoverableErrorHandler.java",
   "java/src/org/chromium/chrome/browser/externalauth/VerifiedHandler.java",
