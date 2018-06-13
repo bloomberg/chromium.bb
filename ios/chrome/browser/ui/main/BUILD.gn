@@ -87,9 +87,7 @@ source_set("test_support") {
   ]
   deps = [
     "//base",
-    "//base/test:test_support",
     "//ios/chrome/browser/ui/tab_switcher",
-    "//ios/chrome/test:block_cleanup_test",
-    "//testing/gtest",
+    "//ios/chrome/test:test_support",
   ]
 }

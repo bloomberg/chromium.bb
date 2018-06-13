@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
-#include "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -54,22 +53,4 @@
 
 id<TabSwitcher> MainViewControllerTest::CreateTestTabSwitcher() {
   return [[TestTabSwitcherViewController alloc] init];
-}
-
-// Sets the current key window's rootViewController and saves a pointer to
-// the original VC to allow restoring it at the end of the test.
-void MainViewControllerTest::SetRootViewController(
-    UIViewController* new_root_view_controller) {
-  original_root_view_controller_ =
-      [[[UIApplication sharedApplication] keyWindow] rootViewController];
-  [[UIApplication sharedApplication] keyWindow].rootViewController =
-      new_root_view_controller;
-}
-
-void MainViewControllerTest::TearDown() {
-  if (original_root_view_controller_) {
-    [[UIApplication sharedApplication] keyWindow].rootViewController =
-        original_root_view_controller_;
-    original_root_view_controller_ = nil;
-  }
 }
