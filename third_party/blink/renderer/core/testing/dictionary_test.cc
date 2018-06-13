@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/testing/internal_dictionary_derived.h"
 #include "third_party/blink/renderer/core/testing/internal_dictionary_derived_derived.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 namespace {

@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/core/events/message_event.h"
 
 #include <memory>
-#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
+
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"

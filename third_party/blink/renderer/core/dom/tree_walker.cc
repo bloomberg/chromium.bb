@@ -24,7 +24,6 @@
 
 #include "third_party/blink/renderer/core/dom/tree_walker.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node_filter.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"

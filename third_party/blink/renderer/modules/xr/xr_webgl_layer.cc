@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_messages.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
