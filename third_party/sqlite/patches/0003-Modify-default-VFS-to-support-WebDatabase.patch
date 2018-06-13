@@ -1,4 +1,4 @@
-From 41ae21b1b4cabce421e0d0454acee2d880183d65 Mon Sep 17 00:00:00 2001
+From 9cc577f4f55daa47ef6abcb2e3ce429b187b0699 Mon Sep 17 00:00:00 2001
 From: dumi <dumi@chromium.org>
 Date: Mon, 20 Jul 2009 23:40:51 +0000
 Subject: [PATCH 03/10] Modify default VFS to support WebDatabase.
@@ -23,7 +23,7 @@ https://codereview.chromium.org/377039
  3 files changed, 82 insertions(+)
 
 diff --git a/third_party/sqlite/src/src/os_unix.c b/third_party/sqlite/src/src/os_unix.c
-index 629c77b58b44..f19df3f0ba21 100644
+index ccf829e8c53b..07f8f9183b60 100644
 --- a/third_party/sqlite/src/src/os_unix.c
 +++ b/third_party/sqlite/src/src/os_unix.c
 @@ -1378,6 +1378,12 @@ static int fileHasMoved(unixFile *pFile){
@@ -124,10 +124,10 @@ index 629c77b58b44..f19df3f0ba21 100644
    }
    return rc;
 diff --git a/third_party/sqlite/src/src/os_win.c b/third_party/sqlite/src/src/os_win.c
-index 534426977f81..a69ca7be4d2d 100644
+index 3eb2f3c6123e..31aad736566f 100644
 --- a/third_party/sqlite/src/src/os_win.c
 +++ b/third_party/sqlite/src/src/os_win.c
-@@ -6085,4 +6085,12 @@ int sqlite3_os_end(void){
+@@ -6102,4 +6102,12 @@ int sqlite3_os_end(void){
    return SQLITE_OK;
  }
  
@@ -141,10 +141,10 @@ index 534426977f81..a69ca7be4d2d 100644
 +
  #endif /* SQLITE_OS_WIN */
 diff --git a/third_party/sqlite/src/src/sqlite.h.in b/third_party/sqlite/src/src/sqlite.h.in
-index 81e46024552b..d35b7d55f5a6 100644
+index 0b0f15abbf80..24721ef73e24 100644
 --- a/third_party/sqlite/src/src/sqlite.h.in
 +++ b/third_party/sqlite/src/src/sqlite.h.in
-@@ -7953,6 +7953,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
+@@ -8210,6 +8210,29 @@ int sqlite3_strnicmp(const char *, const char *, int);
  */
  int sqlite3_strglob(const char *zGlob, const char *zStr);
  
@@ -175,5 +175,5 @@ index 81e46024552b..d35b7d55f5a6 100644
  ** CAPI3REF: String LIKE Matching
  *
 -- 
-2.16.0
+2.17.0
 

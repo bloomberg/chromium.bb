@@ -1,4 +1,4 @@
-From e9aa46661e72451f7a418d76a1c0335338c2a43d Mon Sep 17 00:00:00 2001
+From 0a21fa9194431dc89b7f4b19233e22ab25f0a598 Mon Sep 17 00:00:00 2001
 From: rmcilroy <rmcilroy@chromium.org>
 Date: Thu, 20 Jun 2013 22:50:12 +0000
 Subject: [PATCH 02/10] Use seperate page-cache pools for each sqlite
@@ -40,5 +40,5 @@ index 2692bd6ac9d3..c93294a9df71 100644
  #elif SQLITE_THREADSAFE
    pcache1.separateCache = sqlite3GlobalConfig.pPage==0
 -- 
-2.16.0
+2.17.0
 
