@@ -1150,6 +1150,8 @@ namespace policy {
 
 namespace em = enterprise_management;
 
+namespace {
+
 std::unique_ptr<base::Value> DecodeIntegerValue(
     google::protobuf::int64 value) {
   if (value < std::numeric_limits<int>::min() ||
@@ -1182,6 +1184,32 @@ std::unique_ptr<base::Value> DecodeJson(const std::string& json) {
   // convert and check the concrete type.
   return root;
 }
+
+// Returns true and sets |level| to a PolicyLevel if the policy has been set
+// at that level. Returns false if the policy is not set, or has been set at
+// the level of PolicyOptions::UNSET.
+template <class AnyPolicyProto>
+bool GetPolicyLevel(const AnyPolicyProto& policy_proto, PolicyLevel* level) {
+  if (!policy_proto.has_value()) {
+    return false;
+  }
+  if (!policy_proto.has_policy_options()) {
+    *level = POLICY_LEVEL_MANDATORY;  // Default level.
+    return true;
+  }
+  switch (policy_proto.policy_options().mode()) {
+    case em::PolicyOptions::MANDATORY:
+      *level = POLICY_LEVEL_MANDATORY;
+      return true;
+    case em::PolicyOptions::RECOMMENDED:
+      *level = POLICY_LEVEL_RECOMMENDED;
+      return true;
+    case em::PolicyOptions::UNSET:
+      return false;
+  }
+}
+
+} // namespace
 
 void DecodePolicy(const em::CloudPolicySettings& policy,
                   base::WeakPtr<CloudExternalDataManager> external_data_manager,
@@ -1223,40 +1251,22 @@ def _WriteCloudPolicyDecoderCode(f, policy):
   f.write('  if (policy.has_%s()) {\n' % membername)
   f.write('    const em::%s& policy_proto = policy.%s();\n' %
           (proto_type, membername))
-  f.write('    if (policy_proto.has_value()) {\n')
-  f.write('      PolicyLevel level = POLICY_LEVEL_MANDATORY;\n'
-          '      bool do_set = true;\n'
-          '      if (policy_proto.has_policy_options()) {\n'
-          '        do_set = false;\n'
-          '        switch(policy_proto.policy_options().mode()) {\n'
-          '          case em::PolicyOptions::MANDATORY:\n'
-          '            do_set = true;\n'
-          '            level = POLICY_LEVEL_MANDATORY;\n'
-          '            break;\n'
-          '          case em::PolicyOptions::RECOMMENDED:\n'
-          '            do_set = true;\n'
-          '            level = POLICY_LEVEL_RECOMMENDED;\n'
-          '            break;\n'
-          '          case em::PolicyOptions::UNSET:\n'
-          '            break;\n'
-          '        }\n'
-          '      }\n'
-          '      if (do_set) {\n')
-  f.write('        std::unique_ptr<base::Value> value(%s);\n' %
+  f.write('    PolicyLevel level;\n'
+          '    if (GetPolicyLevel(policy_proto, &level)) {\n')
+  f.write('      std::unique_ptr<base::Value> value(%s);\n' %
           (_CreateValue(policy.policy_type, 'policy_proto.value()')))
   # TODO(bartfab): |value| == NULL indicates that the policy value could not be
   # parsed successfully. Surface such errors in the UI.
-  f.write('        if (value) {\n')
-  f.write('          std::unique_ptr<ExternalDataFetcher>\n')
-  f.write('              external_data_fetcher(%s);\n' %
+  f.write('      if (value) {\n')
+  f.write('        std::unique_ptr<ExternalDataFetcher>\n')
+  f.write('            external_data_fetcher(%s);\n' %
           _CreateExternalDataFetcher(policy.policy_type, policy.name))
-  f.write('          map->Set(key::k%s, \n' % policy.name)
-  f.write('                   level, \n'
-          '                   scope, \n'
-          '                   POLICY_SOURCE_CLOUD, \n'
-          '                   std::move(value), \n'
-          '                   std::move(external_data_fetcher));\n'
-          '        }\n'
+  f.write('        map->Set(key::k%s, \n' % policy.name)
+  f.write('                 level, \n'
+          '                 scope, \n'
+          '                 POLICY_SOURCE_CLOUD, \n'
+          '                 std::move(value), \n'
+          '                 std::move(external_data_fetcher));\n'
           '      }\n'
           '    }\n'
           '  }\n')
