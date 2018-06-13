@@ -120,6 +120,8 @@ class CORE_EXPORT DocumentMarkerController final
       const Node*,
       DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
   DocumentMarkerVector Markers();
+  // TODO(yoichio): Make const by making PossiblyHasMarkers const.
+  DocumentMarkerVector ComputeMarkersToPaint(const Node&);
 
   Vector<IntRect> LayoutRectsForTextMatchMarkers();
   void InvalidateRectsForAllTextMatchMarkers();
