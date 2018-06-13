@@ -903,6 +903,8 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   bool ValidateTransformFeedbackPrimitiveMode(const char* function_name,
                                               GLenum primitive_mode);
 
+  void OnBeforeDrawCall() override;
+
   /* Uniform Buffer Objects and Transform Feedback Buffers */
   void bindBufferBase(GLenum, GLuint, WebGLBuffer*);
   void bindBufferRange(GLenum, GLuint, WebGLBuffer*, long long, long long);

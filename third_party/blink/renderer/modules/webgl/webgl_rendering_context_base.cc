@@ -2500,9 +2500,8 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode,
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
                                                    drawing_buffer_.get());
-  ClearIfComposited();
+  OnBeforeDrawCall();
   ContextGL()->DrawArrays(mode, first, count);
-  MarkContextChanged(kCanvasChanged);
 }
 
 void WebGLRenderingContextBase::drawElements(GLenum mode,
@@ -2520,11 +2519,10 @@ void WebGLRenderingContextBase::drawElements(GLenum mode,
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
                                                    drawing_buffer_.get());
-  ClearIfComposited();
+  OnBeforeDrawCall();
   ContextGL()->DrawElements(
       mode, count, type,
       reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
-  MarkContextChanged(kCanvasChanged);
 }
 
 void WebGLRenderingContextBase::DrawArraysInstancedANGLE(GLenum mode,
@@ -2542,9 +2540,8 @@ void WebGLRenderingContextBase::DrawArraysInstancedANGLE(GLenum mode,
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
                                                    drawing_buffer_.get());
-  ClearIfComposited();
+  OnBeforeDrawCall();
   ContextGL()->DrawArraysInstancedANGLE(mode, first, count, primcount);
-  MarkContextChanged(kCanvasChanged);
 }
 
 void WebGLRenderingContextBase::DrawElementsInstancedANGLE(GLenum mode,
@@ -2563,11 +2560,10 @@ void WebGLRenderingContextBase::DrawElementsInstancedANGLE(GLenum mode,
 
   ScopedRGBEmulationColorMask emulation_color_mask(this, color_mask_,
                                                    drawing_buffer_.get());
-  ClearIfComposited();
+  OnBeforeDrawCall();
   ContextGL()->DrawElementsInstancedANGLE(
       mode, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)),
       primcount);
-  MarkContextChanged(kCanvasChanged);
 }
 
 void WebGLRenderingContextBase::enable(GLenum cap) {
@@ -7579,6 +7575,11 @@ bool WebGLRenderingContextBase::ValidateDrawElements(const char* function_name,
   }
 
   return true;
+}
+
+void WebGLRenderingContextBase::OnBeforeDrawCall() {
+  ClearIfComposited();
+  MarkContextChanged(kCanvasChanged);
 }
 
 void WebGLRenderingContextBase::DispatchContextLostEvent(TimerBase*) {
