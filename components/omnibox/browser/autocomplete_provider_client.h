@@ -37,8 +37,8 @@ class HistoryService;
 class URLDatabase;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 class SearchTermsData;
@@ -48,7 +48,8 @@ class AutocompleteProviderClient {
  public:
   virtual ~AutocompleteProviderClient() {}
 
-  virtual net::URLRequestContextGetter* GetRequestContext() = 0;
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactory() = 0;
   virtual PrefService* GetPrefs() = 0;
   virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;
   virtual AutocompleteClassifier* GetAutocompleteClassifier() = 0;

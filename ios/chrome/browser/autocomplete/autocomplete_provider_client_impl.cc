@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
     ios::ChromeBrowserState* browser_state)
@@ -33,9 +34,9 @@ AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
 
 AutocompleteProviderClientImpl::~AutocompleteProviderClientImpl() {}
 
-net::URLRequestContextGetter*
-AutocompleteProviderClientImpl::GetRequestContext() {
-  return browser_state_->GetRequestContext();
+scoped_refptr<network::SharedURLLoaderFactory>
+AutocompleteProviderClientImpl::GetURLLoaderFactory() {
+  return browser_state_->GetSharedURLLoaderFactory();
 }
 
 PrefService* AutocompleteProviderClientImpl::GetPrefs() {

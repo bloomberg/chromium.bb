@@ -27,7 +27,8 @@
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/device_form_factor.h"
 #include "url/url_constants.h"
 
@@ -365,11 +366,15 @@ bool SearchSuggestionParser::Results::HasServerProvidedScores() const {
 
 // static
 std::string SearchSuggestionParser::ExtractJsonData(
-    const net::URLFetcher* source) {
-  const net::HttpResponseHeaders* const response_headers =
-      source->GetResponseHeaders();
-  std::string json_data;
-  source->GetResponseAsString(&json_data);
+    const network::SimpleURLLoader* source,
+    std::unique_ptr<std::string> response_body) {
+  const net::HttpResponseHeaders* response_headers = nullptr;
+  if (source->ResponseInfo())
+    response_headers = source->ResponseInfo()->headers.get();
+  if (!response_body)
+    return std::string();
+
+  std::string json_data = std::move(*response_body);
 
   // JSON is supposed to be UTF-8, but some suggest service providers send
   // JSON files in non-UTF-8 encodings.  The actual encoding is usually
@@ -380,8 +385,7 @@ std::string SearchSuggestionParser::ExtractJsonData(
       base::string16 data_16;
       // TODO(jungshik): Switch to CodePageToUTF8 after it's added.
       if (base::CodepageToUTF16(json_data, charset.c_str(),
-                                base::OnStringConversionError::FAIL,
-                                &data_16))
+                                base::OnStringConversionError::FAIL, &data_16))
         json_data = base::UTF16ToUTF8(data_16);
     }
   }

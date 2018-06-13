@@ -17,7 +17,6 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/omnibox/browser/search_provider.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
 class AutocompleteProviderListener;
@@ -27,8 +26,8 @@ namespace base {
 class Value;
 }
 
-namespace net {
-class URLFetcher;
+namespace network {
+class SimpleURLLoader;
 }
 
 namespace user_prefs {
@@ -44,8 +43,7 @@ class PrefRegistrySyncable;
 // TODO(jered): Consider deleting this class and building this functionality
 // into SearchProvider after dogfood and after we break the association between
 // omnibox text and suggestions.
-class ZeroSuggestProvider : public BaseSearchProvider,
-                            public net::URLFetcherDelegate {
+class ZeroSuggestProvider : public BaseSearchProvider {
  public:
   // Creates and returns an instance of this provider.
   static ZeroSuggestProvider* Create(AutocompleteProviderClient* client,
@@ -93,8 +91,9 @@ class ZeroSuggestProvider : public BaseSearchProvider,
       const SearchSuggestionParser::SuggestResult& result) const override;
   void RecordDeletionResult(bool success) override;
 
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Called when loading is complete.
+  void OnURLLoadComplete(const network::SimpleURLLoader* source,
+                         std::unique_ptr<std::string> response_body);
 
   // The function updates |results_| with data parsed from |json_data|.
   //
@@ -136,11 +135,11 @@ class ZeroSuggestProvider : public BaseSearchProvider,
                                   const history::MostVisitedURLList& urls);
 
   // When the user is in the contextual omnibox suggestions field trial, we ask
-  // the ContextualSuggestionsService for a fetcher to retrieve recommendations.
-  // When the fetcher is ready, the contextual suggestion service then calls
-  // back to this function with the |fetcher| to use for the request.
-  void OnContextualSuggestionsFetcherAvailable(
-      std::unique_ptr<net::URLFetcher> fetcher);
+  // the ContextualSuggestionsService for a loader to retrieve recommendations.
+  // When the loader has started, the contextual suggestion service then calls
+  // back to this function with the |loader| to pass its ownership to |this|.
+  void OnContextualSuggestionsLoaderAvailable(
+      std::unique_ptr<network::SimpleURLLoader> loader);
 
   // Whether zero suggest suggestions are allowed in the given context.
   bool AllowZeroSuggestSuggestions(const GURL& current_page_url) const;
@@ -181,8 +180,8 @@ class ZeroSuggestProvider : public BaseSearchProvider,
   // Copy of OmniboxEditModel::permanent_text_.
   base::string16 permanent_text_;
 
-  // Fetcher used to retrieve results.
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  // Loader used to retrieve results.
+  std::unique_ptr<network::SimpleURLLoader> loader_;
 
   // Suggestion for the current URL.
   AutocompleteMatch current_url_match_;

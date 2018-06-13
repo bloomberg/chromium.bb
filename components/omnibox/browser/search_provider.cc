@@ -41,8 +41,9 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/url_constants.h"
@@ -371,7 +372,7 @@ void SearchProvider::OnTemplateURLServiceChanged() {
   // stored in |providers_|.
   const TemplateURL* template_url = providers_.GetDefaultProviderURL();
   if (!template_url) {
-    CancelFetcher(&default_fetcher_);
+    CancelLoader(&default_loader_);
     default_results_.Clear();
     providers_.set(client()
                        ->GetTemplateURLService()
@@ -381,7 +382,7 @@ void SearchProvider::OnTemplateURLServiceChanged() {
   }
   template_url = providers_.GetKeywordProviderURL();
   if (!providers_.keyword_provider().empty() && !template_url) {
-    CancelFetcher(&keyword_fetcher_);
+    CancelLoader(&keyword_loader_);
     keyword_results_.Clear();
     providers_.set(providers_.default_provider(), base::string16());
   }
@@ -395,18 +396,22 @@ void SearchProvider::OnTemplateURLServiceChanged() {
   listener_->OnProviderUpdate(true);  // always pretend something changed
 }
 
-void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
-  TRACE_EVENT0("omnibox", "SearchProvider::OnURLFetchComplete");
+void SearchProvider::OnURLLoadComplete(
+    const network::SimpleURLLoader* source,
+    std::unique_ptr<std::string> response_body) {
+  TRACE_EVENT0("omnibox", "SearchProvider::OnURLLoadComplete");
   DCHECK(!done_);
-  const bool is_keyword = source == keyword_fetcher_.get();
+  const bool is_keyword = source == keyword_loader_.get();
 
   // Ensure the request succeeded and that the provider used is still available.
   // A verbatim match cannot be generated without this provider, causing errors.
   const bool request_succeeded =
-      source->GetStatus().is_success() && (source->GetResponseCode() == 200) &&
+      response_body && source->NetError() == net::OK &&
+      (source->ResponseInfo() && source->ResponseInfo()->headers &&
+       source->ResponseInfo()->headers->response_code() == 200) &&
       GetTemplateURL(is_keyword);
 
-  LogFetchComplete(request_succeeded, is_keyword);
+  LogLoadComplete(request_succeeded, is_keyword);
 
   bool results_updated = false;
   // Ignore (i.e., don't display) any suggestions for on-focus inputs.
@@ -417,7 +422,8 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   if (!input_.from_omnibox_focus() && request_succeeded) {
     std::unique_ptr<base::Value> data(
         SearchSuggestionParser::DeserializeJsonData(
-            SearchSuggestionParser::ExtractJsonData(source)));
+            SearchSuggestionParser::ExtractJsonData(source,
+                                                    std::move(response_body))));
     if (data) {
       SearchSuggestionParser::Results* results =
           is_keyword ? &keyword_results_ : &default_results_;
@@ -427,11 +433,11 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
     }
   }
 
-  // Delete the fetcher now that we're done with it.
+  // Delete the loader now that we're done with it.
   if (is_keyword)
-    keyword_fetcher_.reset();
+    keyword_loader_.reset();
   else
-    default_fetcher_.reset();
+    default_loader_.reset();
 
   // Update matches, done status, etc., and send alerts if necessary.
   UpdateMatches();
@@ -440,8 +446,8 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void SearchProvider::StopSuggest() {
-  CancelFetcher(&default_fetcher_);
-  CancelFetcher(&keyword_fetcher_);
+  CancelLoader(&default_loader_);
+  CancelLoader(&keyword_loader_);
   timer_.Stop();
 }
 
@@ -492,7 +498,7 @@ void SearchProvider::SortResults(bool is_keyword,
                    comparator);
 }
 
-void SearchProvider::LogFetchComplete(bool success, bool is_keyword) {
+void SearchProvider::LogLoadComplete(bool success, bool is_keyword) {
   LogOmniboxSuggestRequest(REPLY_RECEIVED);
   // Record response time for suggest requests sent to Google.  We care
   // only about the common case: the Google default provider used in
@@ -608,17 +614,15 @@ void SearchProvider::Run(bool query_is_private) {
   time_suggest_request_sent_ = base::TimeTicks::Now();
 
   if (!query_is_private) {
-    default_fetcher_ =
-        CreateSuggestFetcher(kDefaultProviderURLFetcherID,
-                             providers_.GetDefaultProviderURL(), input_);
+    default_loader_ =
+        CreateSuggestLoader(providers_.GetDefaultProviderURL(), input_);
   }
-  keyword_fetcher_ =
-      CreateSuggestFetcher(kKeywordProviderURLFetcherID,
-                           providers_.GetKeywordProviderURL(), keyword_input_);
+  keyword_loader_ =
+      CreateSuggestLoader(providers_.GetKeywordProviderURL(), keyword_input_);
 
   // Both the above can fail if the providers have been modified or deleted
   // since the query began.
-  if (!default_fetcher_ && !keyword_fetcher_) {
+  if (!default_loader_ && !keyword_loader_) {
     UpdateDone();
     // We only need to update the listener if we're actually done.
     if (done_)
@@ -744,10 +748,11 @@ void SearchProvider::StartOrStopSuggestQuery(bool minimal_changes) {
                           query_is_private));
 }
 
-void SearchProvider::CancelFetcher(std::unique_ptr<net::URLFetcher>* fetcher) {
-  if (*fetcher) {
+void SearchProvider::CancelLoader(
+    std::unique_ptr<network::SimpleURLLoader>* loader) {
+  if (*loader) {
     LogOmniboxSuggestRequest(REQUEST_INVALIDATED);
-    fetcher->reset();
+    loader->reset();
   }
 }
 
@@ -868,8 +873,7 @@ void SearchProvider::ApplyCalculatedNavigationRelevance(
   }
 }
 
-std::unique_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
-    int id,
+std::unique_ptr<network::SimpleURLLoader> SearchProvider::CreateSuggestLoader(
     const TemplateURL* template_url,
     const AutocompleteInput& input) {
   if (!template_url || template_url->suggestions_url().empty())
@@ -935,24 +939,29 @@ std::unique_ptr<net::URLFetcher> SearchProvider::CreateSuggestFetcher(
             }
           }
         })");
-  std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
-      id, suggest_url, net::URLFetcher::GET, this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher.get(), data_use_measurement::DataUseUserData::OMNIBOX);
-  fetcher->SetRequestContext(client()->GetRequestContext());
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = suggest_url;
+  request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
   // Add Chrome experiment state to the request headers.
-  net::HttpRequestHeaders headers;
   // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
   // transmission of experiments coming from the variations server.
-  variations::AppendVariationHeaders(fetcher->GetOriginalURL(),
-                                     client()->IsOffTheRecord()
-                                         ? variations::InIncognito::kYes
-                                         : variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo, &headers);
-  fetcher->SetExtraRequestHeaders(headers.ToString());
-  fetcher->Start();
-  return fetcher;
+  variations::AppendVariationHeaders(
+      request->url,
+      client()->IsOffTheRecord() ? variations::InIncognito::kYes
+                                 : variations::InIncognito::kNo,
+      variations::SignedIn::kNo, &request->headers);
+
+  // TODO(https://crbug.com/808498) re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // data_use_measurement::DataUseUserData::OMNIBOX
+
+  std::unique_ptr<network::SimpleURLLoader> loader =
+      network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      client()->GetURLLoaderFactory().get(),
+      base::BindOnce(&SearchProvider::OnURLLoadComplete, base::Unretained(this),
+                     loader.get()));
+  return loader;
 }
 
 void SearchProvider::ConvertResultsToAutocompleteMatches() {
@@ -1546,7 +1555,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
 void SearchProvider::UpdateDone() {
   // We're done when the timer isn't running and there are no suggest queries
   // pending.
-  done_ = !timer_.IsRunning() && !default_fetcher_ && !keyword_fetcher_;
+  done_ = !timer_.IsRunning() && !default_loader_ && !keyword_loader_;
 }
 
 std::string SearchProvider::GetSessionToken() {

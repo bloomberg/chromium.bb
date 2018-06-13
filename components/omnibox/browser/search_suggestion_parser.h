@@ -24,8 +24,8 @@ namespace base {
 class Value;
 }
 
-namespace net {
-class URLFetcher;
+namespace network {
+class SimpleURLLoader;
 }
 
 class SearchSuggestionParser {
@@ -302,8 +302,16 @@ class SearchSuggestionParser {
     DISALLOW_COPY_AND_ASSIGN(Results);
   };
 
-  // Extracts JSON data fetched by |source| and converts it to UTF-8.
-  static std::string ExtractJsonData(const net::URLFetcher* source);
+  // Converts JSON loaded by a SimpleURLLoader into UTF-8 and returns the
+  // result.
+  //
+  // |source| must be the SimpleURLLoader that loaded the data; it is used to
+  // lookup the body's encoding from response headers.
+  //
+  // |response_body| must be the body of the response; it may be null.
+  static std::string ExtractJsonData(
+      const network::SimpleURLLoader* source,
+      std::unique_ptr<std::string> response_body);
 
   // Parses JSON response received from the provider, stripping XSSI
   // protection if needed. Returns the parsed data if successful, NULL

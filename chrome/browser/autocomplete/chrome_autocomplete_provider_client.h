@@ -22,7 +22,7 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
   ~ChromeAutocompleteProviderClient() override;
 
   // AutocompleteProviderClient:
-  net::URLRequestContextGetter* GetRequestContext() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   PrefService* GetPrefs() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;

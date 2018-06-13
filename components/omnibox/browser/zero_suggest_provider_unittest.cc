@@ -25,7 +25,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -182,10 +182,13 @@ class ZeroSuggestProviderTest : public testing::Test,
   // Needed for OmniboxFieldTrial::ActivateStaticTrials().
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
-  net::TestURLFetcherFactory test_factory_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<ZeroSuggestProvider> provider_;
   TemplateURL* default_t_url_;
+
+  network::TestURLLoaderFactory* test_loader_factory() {
+    return client_->test_url_loader_factory();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ZeroSuggestProviderTest);
@@ -196,8 +199,6 @@ ZeroSuggestProviderTest::ZeroSuggestProviderTest() {
 }
 
 void ZeroSuggestProviderTest::SetUp() {
-  // Make sure that fetchers are automatically unregistered upon destruction.
-  test_factory_.set_remove_fetcher_on_delete(true);
   client_.reset(new FakeAutocompleteProviderClient());
 
   TemplateURLService* turl_model = client_->GetTemplateURLService();
@@ -267,9 +268,8 @@ TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {
   // in zero suggest mode.
   EXPECT_TRUE(provider_->matches().empty());
 
-  // Expect that fetcher did not get created.
-  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(1);
-  EXPECT_FALSE(fetcher);
+  // Expect that loader did not get created.
+  EXPECT_EQ(0, test_loader_factory()->NumPending());
 }
 
 TEST_F(ZeroSuggestProviderTest, TestStartWillStopForSomeInput) {
@@ -402,14 +402,13 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestCachingFirstRun) {
   EXPECT_TRUE(prefs->GetString(omnibox::kZeroSuggestCachedResults).empty());
   EXPECT_TRUE(provider_->matches().empty());
 
-  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(1);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(200);
+  const char kUrl[] = "https://www.google.com/complete/?q=";
+  EXPECT_TRUE(test_loader_factory()->IsPending(kUrl));
+
   std::string json_response("[\"\",[\"search1\", \"search2\", \"search3\"],"
       "[],[],{\"google:suggestrelevance\":[602, 601, 600],"
       "\"google:verbatimrelevance\":1300}]");
-  fetcher->SetResponseString(json_response);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_loader_factory()->AddResponse(kUrl, json_response);
 
   base::RunLoop().RunUntilIdle();
 
@@ -445,14 +444,12 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestHasCachedResults) {
   EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[2].contents);
   EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[3].contents);
 
-  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(1);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(200);
+  const char kUrl[] = "https://www.google.com/complete/?q=";
+  EXPECT_TRUE(test_loader_factory()->IsPending(kUrl));
   std::string json_response2("[\"\",[\"search4\", \"search5\", \"search6\"],"
       "[],[],{\"google:suggestrelevance\":[602, 601, 600],"
       "\"google:verbatimrelevance\":1300}]");
-  fetcher->SetResponseString(json_response2);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_loader_factory()->AddResponse(kUrl, json_response2);
 
   base::RunLoop().RunUntilIdle();
 
@@ -494,12 +491,10 @@ TEST_F(ZeroSuggestProviderTest, TestPsuggestZeroSuggestReceivedEmptyResults) {
   EXPECT_EQ(base::ASCIIToUTF16("search2"), provider_->matches()[2].contents);
   EXPECT_EQ(base::ASCIIToUTF16("search3"), provider_->matches()[3].contents);
 
-  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(1);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(200);
+  const char kUrl[] = "https://www.google.com/complete/?q=";
+  EXPECT_TRUE(test_loader_factory()->IsPending(kUrl));
   std::string empty_response("[\"\",[],[],[],{}]");
-  fetcher->SetResponseString(empty_response);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  test_loader_factory()->AddResponse(kUrl, empty_response);
 
   base::RunLoop().RunUntilIdle();
 

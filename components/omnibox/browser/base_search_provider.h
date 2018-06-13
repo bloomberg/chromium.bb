@@ -39,15 +39,6 @@ class Value;
 // autocomplete providers utilizing its functionality.
 class BaseSearchProvider : public AutocompleteProvider {
  public:
-  // ID used in creating URLFetcher for default provider's suggest results.
-  static const int kDefaultProviderURLFetcherID;
-
-  // ID used in creating URLFetcher for keyword provider's suggest results.
-  static const int kKeywordProviderURLFetcherID;
-
-  // ID used in creating URLFetcher for deleting suggestion results.
-  static const int kDeletionURLFetcherID;
-
   BaseSearchProvider(AutocompleteProvider::Type type,
                      AutocompleteProviderClient* client);
 

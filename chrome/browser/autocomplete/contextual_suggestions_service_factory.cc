@@ -9,6 +9,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omnibox/browser/contextual_suggestions_service.h"
+#include "content/public/browser/storage_partition.h"
 
 // static
 ContextualSuggestionsService*
@@ -29,8 +30,10 @@ KeyedService* ContextualSuggestionsServiceFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  return new ContextualSuggestionsService(identity_manager,
-                                          profile->GetRequestContext());
+  return new ContextualSuggestionsService(
+      identity_manager,
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess());
 }
 
 ContextualSuggestionsServiceFactory::ContextualSuggestionsServiceFactory()
