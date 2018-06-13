@@ -305,7 +305,7 @@ static uint32_t read_frame_header_obu(AV1Decoder *pbi,
 
 static int32_t read_tile_group_header(AV1Decoder *pbi,
                                       struct aom_read_bit_buffer *rb,
-                                      int *startTile, int *endTile,
+                                      int *start_tile, int *end_tile,
                                       int tile_start_implicit) {
   AV1_COMMON *const cm = &pbi->common;
   uint32_t saved_bit_offset = rb->bit_offset;
@@ -317,8 +317,8 @@ static int32_t read_tile_group_header(AV1Decoder *pbi,
   }
   if (pbi->common.large_scale_tile || num_tiles == 1 ||
       !tile_start_and_end_present_flag) {
-    *startTile = 0;
-    *endTile = num_tiles - 1;
+    *start_tile = 0;
+    *end_tile = num_tiles - 1;
     return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
   }
   if (tile_start_implicit && tile_start_and_end_present_flag) {
@@ -328,8 +328,9 @@ static int32_t read_tile_group_header(AV1Decoder *pbi,
     cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
     return -1;
   }
-  *startTile = aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
-  *endTile = aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
+  *start_tile =
+      aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
+  *end_tile = aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
 
   return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
 }
@@ -339,21 +340,21 @@ static uint32_t read_one_tile_group_obu(
     const uint8_t *data, const uint8_t *data_end, const uint8_t **p_data_end,
     int *is_last_tg, int tile_start_implicit) {
   AV1_COMMON *const cm = &pbi->common;
-  int startTile, endTile;
+  int start_tile, end_tile;
   int32_t header_size, tg_payload_size;
 
-  header_size = read_tile_group_header(pbi, rb, &startTile, &endTile,
+  header_size = read_tile_group_header(pbi, rb, &start_tile, &end_tile,
                                        tile_start_implicit);
   if (header_size == -1) return 0;
-  if (startTile > endTile) return header_size;
+  if (start_tile > end_tile) return header_size;
   data += header_size;
-  av1_decode_tg_tiles_and_wrapup(pbi, data, data_end, p_data_end, startTile,
-                                 endTile, is_first_tg);
+  av1_decode_tg_tiles_and_wrapup(pbi, data, data_end, p_data_end, start_tile,
+                                 end_tile, is_first_tg);
 
   tg_payload_size = (uint32_t)(*p_data_end - data);
 
   // TODO(shan):  For now, assume all tile groups received in order
-  *is_last_tg = endTile == cm->tile_rows * cm->tile_cols - 1;
+  *is_last_tg = end_tile == cm->tile_rows * cm->tile_cols - 1;
   return header_size + tg_payload_size;
 }
 
@@ -366,8 +367,9 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
                                               int *frame_decoding_finished) {
   AV1_COMMON *const cm = &pbi->common;
   uint32_t tile_list_payload_size = 0;
-  int num_tiles = cm->tile_cols * cm->tile_rows;
-  int startTile, endTile;
+  const int num_tiles = cm->tile_cols * cm->tile_rows;
+  const int start_tile = 0;
+  const int end_tile = num_tiles - 1;
   int i = 0;
 
   // Process the tile list info.
@@ -382,10 +384,6 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
   uint32_t tile_list_info_bytes = 4;
   tile_list_payload_size += tile_list_info_bytes;
   data += tile_list_info_bytes;
-
-  // Always have 1 TG.
-  startTile = 0;
-  endTile = num_tiles - 1;
 
   for (i = 0; i <= pbi->tile_count_minus_1; i++) {
     // Process 1 tile.
@@ -419,7 +417,7 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
     }
 
     av1_decode_tg_tiles_and_wrapup(pbi, data, data + pbi->coded_tile_data_size,
-                                   p_data_end, startTile, endTile, 0);
+                                   p_data_end, start_tile, end_tile, 0);
     uint32_t tile_payload_size = (uint32_t)(*p_data_end - data);
 
     tile_list_payload_size += tile_info_bytes + tile_payload_size;
