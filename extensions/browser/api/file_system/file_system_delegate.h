@@ -44,6 +44,8 @@ class FileSystemDelegate {
   using VolumeListCallback =
       base::Callback<void(const std::vector<api::file_system::Volume>&)>;
 
+  enum GrantVolumesMode { kGrantAll, kGrantNone, kGrantPerVolume };
+
   virtual ~FileSystemDelegate() {}
 
   virtual base::FilePath GetDefaultDirectory() = 0;
@@ -73,9 +75,10 @@ class FileSystemDelegate {
 
 #if defined(OS_CHROMEOS)
   // Checks whether the extension can be granted access.
-  virtual bool IsGrantable(content::BrowserContext* browser_context,
-                           content::RenderFrameHost* render_frame_host,
-                           const Extension& extension) = 0;
+  virtual GrantVolumesMode GetGrantVolumesMode(
+      content::BrowserContext* browser_context,
+      content::RenderFrameHost* render_frame_host,
+      const Extension& extension) = 0;
 
   // Grants or denies an extension's request for access to the named file
   // system. May prompt the user for consent.
@@ -90,6 +93,7 @@ class FileSystemDelegate {
 
   // Immediately calls VolumeListCallback or ErrorCallback.
   virtual void GetVolumeList(content::BrowserContext* browser_context,
+                             const Extension& extension,
                              const VolumeListCallback& success_callback,
                              const ErrorCallback& error_callback) = 0;
 #endif

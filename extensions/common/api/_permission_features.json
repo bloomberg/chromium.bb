@@ -305,6 +305,16 @@
       "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"   // http://crbug.com/371562
     ]
   }],
+  "fileSystem.requestDownloads": {
+    "channel": "dev",
+    "extension_types": ["platform_app"],
+    "platforms": ["chromeos"],
+    "whitelist": [
+      "A3E3DE9E9F16B41D4A2FAD106BD6CA76B94A0C94",  // http://crbug.com/845423
+      "C2ABD68C33A5B485971C9638B80D6A2E9CBA78C4",  // http://crbug.com/845423
+      "B41E7F08E1179CC03CBD1F49E57CF353A40ADE07"   // http://crbug.com/845423
+    ]
+  },
   "fileSystem.requestFileSystem": {
     "platforms": ["chromeos"]
   },

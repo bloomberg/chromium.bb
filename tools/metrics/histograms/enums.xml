@@ -16139,6 +16139,8 @@ Called by update_net_error_codes.py.-->
   <int value="209" label="kWebrtcLoggingPrivateAudioDebug"/>
   <int value="210" label="kEnterpriseReportingPrivate"/>
   <int value="211" label="kCecPrivate"/>
+  <int value="212" label="kSafeBrowsingPrivate"/>
+  <int value="213" label="kFileSystemRequestDownloads"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">

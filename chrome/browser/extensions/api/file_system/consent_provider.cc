@@ -23,6 +23,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/api/file_system.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
+#include "extensions/common/permissions/permissions_data.h"
 
 namespace extensions {
 
@@ -34,7 +35,8 @@ const char* const kRequestFileSystemComponentWhitelist[] = {
     file_manager::kFileManagerAppId, file_manager::kVideoPlayerAppId,
     file_manager::kGalleryAppId, file_manager::kAudioPlayerAppId,
     file_manager::kImageLoaderExtensionId, file_manager::kZipArchiverId,
-    // TODO(mtomasz): Remove this extension id, and add it only for tests.
+    // TODO(henryhsu,b/110126438): Remove this extension id, and add it only
+    // for tests.
     "pkplfbidichfdicaijlchgnapepdginl"  // Testing extensions.
 };
 
@@ -86,11 +88,21 @@ void ConsentProvider::RequestConsent(
     const base::WeakPtr<file_manager::Volume>& volume,
     bool writable,
     const ConsentCallback& callback) {
-  DCHECK(IsGrantable(extension));
+  DCHECK(IsGrantableForVolume(extension, volume));
 
   // If a whitelisted component, then no need to ask or inform the user.
   if (extension.location() == Manifest::COMPONENT &&
       delegate_->IsWhitelistedComponent(extension)) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(callback, CONSENT_GRANTED));
+    return;
+  }
+
+  // If a whitelisted app or extensions to access Downloads folder, then no
+  // need to ask or inform the user.
+  if (volume.get() &&
+      volume->type() == file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY &&
+      delegate_->HasRequestDownloadsPermission(extension)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, CONSENT_GRANTED));
     return;
@@ -117,7 +129,8 @@ void ConsentProvider::RequestConsent(
   NOTREACHED() << "Cannot request consent for non-grantable extensions.";
 }
 
-bool ConsentProvider::IsGrantable(const Extension& extension) {
+FileSystemDelegate::GrantVolumesMode ConsentProvider::GetGrantVolumesMode(
+    const Extension& extension) {
   const bool is_whitelisted_component =
       delegate_->IsWhitelistedComponent(extension);
 
@@ -125,7 +138,27 @@ bool ConsentProvider::IsGrantable(const Extension& extension) {
       KioskModeInfo::IsKioskOnly(&extension) &&
       user_manager::UserManager::Get()->IsLoggedInAsKioskApp();
 
-  return is_whitelisted_component || is_running_in_kiosk_session;
+  if (is_whitelisted_component || is_running_in_kiosk_session) {
+    return FileSystemDelegate::kGrantAll;
+  }
+
+  const bool is_whitelisted_non_component =
+      delegate_->HasRequestDownloadsPermission(extension);
+
+  return is_whitelisted_non_component ? FileSystemDelegate::kGrantPerVolume
+                                      : FileSystemDelegate::kGrantNone;
+}
+
+bool ConsentProvider::IsGrantableForVolume(
+    const Extension& extension,
+    const base::WeakPtr<file_manager::Volume>& volume) {
+  if (volume.get() &&
+      volume->type() == file_manager::VOLUME_TYPE_DOWNLOADS_DIRECTORY &&
+      delegate_->HasRequestDownloadsPermission(extension)) {
+    return true;
+  }
+
+  return GetGrantVolumesMode(extension) == FileSystemDelegate::kGrantAll;
 }
 
 ConsentProviderDelegate::ConsentProviderDelegate(Profile* profile)
@@ -214,6 +247,12 @@ bool ConsentProviderDelegate::IsWhitelistedComponent(
       return true;
   }
   return false;
+}
+
+bool ConsentProviderDelegate::HasRequestDownloadsPermission(
+    const Extension& extension) {
+  return extension.permissions_data()->HasAPIPermission(
+      APIPermission::kFileSystemRequestDownloads);
 }
 
 }  // namespace file_system_api
