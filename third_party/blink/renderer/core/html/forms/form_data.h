@@ -83,8 +83,10 @@ class CORE_EXPORT FormData final
   class Entry;
   const HeapVector<Member<const Entry>>& Entries() const { return entries_; }
   size_t size() const { return entries_.size(); }
-  void append(const String& name, int value);
   void append(const String& name, Blob*, const String& filename = String());
+  void AppendFromElement(const String& name, int value);
+  void AppendFromElement(const String& name, File* file);
+  void AppendFromElement(const String& name, const String& value);
 
   // This flag is true if this FormData is created with a <form>, and its
   // associated elements contain a non-empty password field.

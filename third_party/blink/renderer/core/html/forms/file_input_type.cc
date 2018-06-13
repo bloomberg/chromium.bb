@@ -124,12 +124,13 @@ void FileInputType::AppendToFormData(FormData& form_data) const {
   FileList* file_list = GetElement().files();
   unsigned num_files = file_list->length();
   if (num_files == 0) {
-    form_data.append(GetElement().GetName(), File::Create(""));
+    form_data.AppendFromElement(GetElement().GetName(), File::Create(""));
     return;
   }
 
-  for (unsigned i = 0; i < num_files; ++i)
-    form_data.append(GetElement().GetName(), file_list->item(i));
+  for (unsigned i = 0; i < num_files; ++i) {
+    form_data.AppendFromElement(GetElement().GetName(), file_list->item(i));
+  }
 }
 
 bool FileInputType::ValueMissing(const String& value) const {

@@ -98,7 +98,7 @@ void FormData::Trace(blink::Visitor* visitor) {
 }
 
 void FormData::append(const String& name, const String& value) {
-  entries_.push_back(new Entry(Normalize(name), Normalize(value)));
+  entries_.push_back(new Entry(name, value));
 }
 
 void FormData::append(ScriptState* script_state,
@@ -113,10 +113,9 @@ void FormData::append(ScriptState* script_state,
 }
 
 void FormData::deleteEntry(const String& name) {
-  const String normalized_name = Normalize(name);
   size_t i = 0;
   while (i < entries_.size()) {
-    if (entries_[i]->name() == normalized_name) {
+    if (entries_[i]->name() == name) {
       entries_.EraseAt(i);
     } else {
       ++i;
@@ -125,9 +124,8 @@ void FormData::deleteEntry(const String& name) {
 }
 
 void FormData::get(const String& name, FormDataEntryValue& result) {
-  const String normalized_name = Normalize(name);
   for (const auto& entry : Entries()) {
-    if (entry->name() == normalized_name) {
+    if (entry->name() == name) {
       if (entry->IsString()) {
         result.SetUSVString(entry->Value());
       } else {
@@ -142,9 +140,8 @@ void FormData::get(const String& name, FormDataEntryValue& result) {
 HeapVector<FormDataEntryValue> FormData::getAll(const String& name) {
   HeapVector<FormDataEntryValue> results;
 
-  const String normalized_name = Normalize(name);
   for (const auto& entry : Entries()) {
-    if (entry->name() != normalized_name)
+    if (entry->name() != name)
       continue;
     FormDataEntryValue value;
     if (entry->IsString()) {
@@ -159,29 +156,27 @@ HeapVector<FormDataEntryValue> FormData::getAll(const String& name) {
 }
 
 bool FormData::has(const String& name) {
-  const String normalized_name = Normalize(name);
   for (const auto& entry : Entries()) {
-    if (entry->name() == normalized_name)
+    if (entry->name() == name)
       return true;
   }
   return false;
 }
 
 void FormData::set(const String& name, const String& value) {
-  SetEntry(new Entry(Normalize(name), Normalize(value)));
+  SetEntry(new Entry(name, value));
 }
 
 void FormData::set(const String& name, Blob* blob, const String& filename) {
-  SetEntry(new Entry(Normalize(name), blob, filename));
+  SetEntry(new Entry(name, blob, filename));
 }
 
 void FormData::SetEntry(const Entry* entry) {
   DCHECK(entry);
-  const String normalized_name = entry->name();
   bool found = false;
   size_t i = 0;
   while (i < entries_.size()) {
-    if (entries_[i]->name() != normalized_name) {
+    if (entries_[i]->name() != entry->name()) {
       ++i;
     } else if (found) {
       entries_.EraseAt(i);
@@ -195,12 +190,20 @@ void FormData::SetEntry(const Entry* entry) {
     entries_.push_back(entry);
 }
 
-void FormData::append(const String& name, int value) {
-  append(name, String::Number(value));
+void FormData::append(const String& name, Blob* blob, const String& filename) {
+  entries_.push_back(new Entry(name, blob, filename));
 }
 
-void FormData::append(const String& name, Blob* blob, const String& filename) {
-  entries_.push_back(new Entry(Normalize(name), blob, filename));
+void FormData::AppendFromElement(const String& name, int value) {
+  append(Normalize(name), String::Number(value));
+}
+
+void FormData::AppendFromElement(const String& name, File* file) {
+  entries_.push_back(new Entry(Normalize(name), file, String()));
+}
+
+void FormData::AppendFromElement(const String& name, const String& value) {
+  entries_.push_back(new Entry(Normalize(name), Normalize(value)));
 }
 
 CString FormData::Encode(const String& string) const {

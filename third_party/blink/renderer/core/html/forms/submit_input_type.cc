@@ -51,9 +51,10 @@ const AtomicString& SubmitInputType::FormControlType() const {
 }
 
 void SubmitInputType::AppendToFormData(FormData& form_data) const {
-  if (GetElement().IsActivatedSubmit())
-    form_data.append(GetElement().GetName(),
-                     GetElement().ValueOrDefaultLabel());
+  if (GetElement().IsActivatedSubmit()) {
+    form_data.AppendFromElement(GetElement().GetName(),
+                                GetElement().ValueOrDefaultLabel());
+  }
 }
 
 bool SubmitInputType::SupportsRequired() const {

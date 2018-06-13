@@ -220,11 +220,11 @@ void HTMLTextAreaElement::AppendToFormData(FormData& form_data) {
 
   const String& text =
       (wrap_ == kHardWrap) ? ValueWithHardLineBreaks() : value();
-  form_data.append(GetName(), text);
+  form_data.AppendFromElement(GetName(), text);
 
   const AtomicString& dirname_attr_value = FastGetAttribute(dirnameAttr);
   if (!dirname_attr_value.IsNull())
-    form_data.append(dirname_attr_value, DirectionForFormData());
+    form_data.AppendFromElement(dirname_attr_value, DirectionForFormData());
 }
 
 void HTMLTextAreaElement::ResetImpl() {
