@@ -35,7 +35,9 @@ class DrawQuad;
 class RenderPassDrawQuad;
 class SharedQuadState;
 
-// A list of DrawQuad objects, sorted internally in front-to-back order.
+// A list of DrawQuad objects, sorted internally in front-to-back order. To
+// add a new quad drawn behind another quad, it must be placed after the other
+// quad.
 class VIZ_COMMON_EXPORT QuadList : public cc::ListContainer<DrawQuad> {
  public:
   QuadList();
