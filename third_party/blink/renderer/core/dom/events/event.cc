@@ -200,10 +200,6 @@ bool Event::IsWheelEvent() const {
   return false;
 }
 
-bool Event::IsRelatedEvent() const {
-  return false;
-}
-
 bool Event::IsPointerEvent() const {
   return false;
 }
