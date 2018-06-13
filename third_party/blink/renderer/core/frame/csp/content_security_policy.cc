@@ -1425,13 +1425,12 @@ void ContentSecurityPolicy::DispatchViolationEvents(
   if (execution_context_->IsDocument()) {
     Document* document = ToDocument(execution_context_);
     if (element && element->isConnected() && element->GetDocument() == document)
-      event->SetTarget(element);
+      element->EnqueueAsyncEvent(event);
     else
-      event->SetTarget(document);
+      document->EnqueueAsyncEvent(event);
   } else if (execution_context_->IsWorkerGlobalScope()) {
-    event->SetTarget(ToWorkerGlobalScope(execution_context_));
+    ToWorkerGlobalScope(execution_context_)->EnqueueAsyncEvent(event);
   }
-  queue->EnqueueEvent(FROM_HERE, event);
 }
 
 void ContentSecurityPolicy::ReportMixedContent(const KURL& mixed_url,
