@@ -105,7 +105,8 @@ public class VrTestRuleUtils {
      */
     public static void ensureNoVrActivitiesDisplayed() {
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        if (uiDevice.getCurrentPackageName().contains("vr")) {
+        String currentPackageName = uiDevice.getCurrentPackageName();
+        if (currentPackageName != null && currentPackageName.contains("vr")) {
             uiDevice.pressHome();
             // Chrome startup would likely be slow enough that this sleep is unnecessary, but sleep
             // to be sure since this will be hit relatively infrequently.
