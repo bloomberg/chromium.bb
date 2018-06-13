@@ -424,11 +424,7 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
 
     batch.Delete(iter->key());
 
-    // Silently remove the notification if it doesn't have an ID assigned.
-    // TODO(peter): Remove this clause when Chrome 55 has branched.
-    if (notification_database_data.notification_id.empty())
-      continue;
-
+    DCHECK(!notification_database_data.notification_id.empty());
     deleted_notification_ids->insert(
         notification_database_data.notification_id);
   }
