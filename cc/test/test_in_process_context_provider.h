@@ -37,7 +37,8 @@ class TestInProcessContextProvider
       public viz::ContextProvider,
       public viz::RasterContextProvider {
  public:
-  explicit TestInProcessContextProvider(bool enable_oop_rasterization);
+  explicit TestInProcessContextProvider(bool enable_oop_rasterization,
+                                        bool support_locking);
 
   // viz::ContextProvider / viz::RasterContextProvider implementation.
   void AddRef() const override;
@@ -73,7 +74,7 @@ class TestInProcessContextProvider
   std::unique_ptr<gpu::RasterInProcessContext> raster_context_;
 
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
-  base::Lock context_lock_;
+  base::Optional<base::Lock> context_lock_;
   gpu::GpuFeatureInfo gpu_feature_info_;
 };
 
