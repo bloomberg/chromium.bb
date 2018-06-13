@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_text_decoration_offset.h"
 #include "third_party/blink/renderer/core/paint/document_marker_painter.h"
+#include "third_party/blink/renderer/core/paint/inline_text_box_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -119,8 +120,6 @@ unsigned ClampOffset(unsigned offset,
                   text_fragment.EndOffset());
 }
 
-// Copied from InlineTextBoxPainter
-enum class DocumentMarkerPaintPhase { kForeground, kBackground };
 // Copied from InlineTextBoxPainter
 void PaintDocumentMarkers(GraphicsContext& context,
                           const NGPaintFragment& paint_fragment,
