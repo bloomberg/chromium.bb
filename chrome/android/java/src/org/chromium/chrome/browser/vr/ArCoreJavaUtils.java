@@ -16,7 +16,7 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("vr")
 public class ArCoreJavaUtils {
-    private static final int MIN_SDK_VERSION = Build.VERSION_CODES.N;
+    private static final int MIN_SDK_VERSION = Build.VERSION_CODES.O;
 
     /**
      * Gets the current application context.
