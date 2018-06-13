@@ -89,16 +89,17 @@ class CORE_EXPORT CompositorAnimations {
   static void CancelIncompatibleAnimationsOnCompositor(const Element&,
                                                        const Animation&,
                                                        const EffectModel&);
-  static void StartAnimationOnCompositor(const Element&,
-                                         int group,
-                                         base::Optional<double> start_time,
-                                         double time_offset,
-                                         const Timing&,
-                                         const Animation*,
-                                         CompositorAnimation&,
-                                         const EffectModel&,
-                                         Vector<int>& started_animation_ids,
-                                         double animation_playback_rate);
+  static void StartAnimationOnCompositor(
+      const Element&,
+      int group,
+      base::Optional<double> start_time,
+      double time_offset,
+      const Timing&,
+      const Animation*,
+      CompositorAnimation&,
+      const EffectModel&,
+      Vector<int>& started_keyframe_model_ids,
+      double animation_playback_rate);
   static void CancelAnimationOnCompositor(const Element&,
                                           CompositorAnimation*,
                                           int id);

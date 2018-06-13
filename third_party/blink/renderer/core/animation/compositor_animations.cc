@@ -367,9 +367,9 @@ void CompositorAnimations::StartAnimationOnCompositor(
     const Animation* animation,
     CompositorAnimation& compositor_animation,
     const EffectModel& effect,
-    Vector<int>& started_animation_ids,
+    Vector<int>& started_keyframe_model_ids,
     double animation_playback_rate) {
-  DCHECK(started_animation_ids.IsEmpty());
+  DCHECK(started_keyframe_model_ids.IsEmpty());
   DCHECK(CheckCanStartAnimationOnCompositor(timing, element, animation, effect,
                                             animation_playback_rate)
              .Ok());
@@ -385,9 +385,9 @@ void CompositorAnimations::StartAnimationOnCompositor(
   for (auto& compositor_keyframe_model : keyframe_models) {
     int id = compositor_keyframe_model->Id();
     compositor_animation.AddKeyframeModel(std::move(compositor_keyframe_model));
-    started_animation_ids.push_back(id);
+    started_keyframe_model_ids.push_back(id);
   }
-  DCHECK(!started_animation_ids.IsEmpty());
+  DCHECK(!started_keyframe_model_ids.IsEmpty());
 }
 
 void CompositorAnimations::CancelAnimationOnCompositor(

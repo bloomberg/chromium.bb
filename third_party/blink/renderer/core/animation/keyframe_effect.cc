@@ -251,12 +251,12 @@ void KeyframeEffect::StartAnimationOnCompositor(
   CompositorAnimations::StartAnimationOnCompositor(
       *target_, group, start_time, current_time, SpecifiedTiming(),
       GetAnimation(), *compositor_animation, *Model(),
-      compositor_animation_ids_, animation_playback_rate);
-  DCHECK(!compositor_animation_ids_.IsEmpty());
+      compositor_keyframe_model_ids_, animation_playback_rate);
+  DCHECK(!compositor_keyframe_model_ids_.IsEmpty());
 }
 
 bool KeyframeEffect::HasActiveAnimationsOnCompositor() const {
-  return !compositor_animation_ids_.IsEmpty();
+  return !compositor_keyframe_model_ids_.IsEmpty();
 }
 
 bool KeyframeEffect::HasActiveAnimationsOnCompositor(
@@ -274,11 +274,12 @@ bool KeyframeEffect::CancelAnimationOnCompositor(
     return false;
   if (!target_ || !target_->GetLayoutObject())
     return false;
-  for (const auto& compositor_animation_id : compositor_animation_ids_) {
+  for (const auto& compositor_keyframe_model_id :
+       compositor_keyframe_model_ids_) {
     CompositorAnimations::CancelAnimationOnCompositor(
-        *target_, compositor_animation, compositor_animation_id);
+        *target_, compositor_animation, compositor_keyframe_model_id);
   }
-  compositor_animation_ids_.clear();
+  compositor_keyframe_model_ids_.clear();
   return true;
 }
 
@@ -294,9 +295,10 @@ void KeyframeEffect::PauseAnimationForTestingOnCompositor(double pause_time) {
   if (!target_ || !target_->GetLayoutObject())
     return;
   DCHECK(GetAnimation());
-  for (const auto& compositor_animation_id : compositor_animation_ids_) {
+  for (const auto& compositor_keyframe_model_id :
+       compositor_keyframe_model_ids_) {
     CompositorAnimations::PauseAnimationForTestingOnCompositor(
-        *target_, *GetAnimation(), compositor_animation_id, pause_time);
+        *target_, *GetAnimation(), compositor_keyframe_model_id, pause_time);
   }
 }
 
