@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/script/settings_object.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/workers/worklet_pending_tasks.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
@@ -121,7 +121,8 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   DCHECK(result);
 
   // Step 7: "Let outsideSettings be the relevant settings object of this."
-  SettingsObject outside_settings_object(*GetExecutionContext());
+  FetchClientSettingsObjectSnapshot outside_settings_object(
+      *GetExecutionContext());
   // Specify TaskType::kInternalLoading because it's commonly used for module
   // loading.
   scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner =

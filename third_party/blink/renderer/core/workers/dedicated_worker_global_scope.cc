@@ -38,8 +38,8 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
-#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -64,7 +64,7 @@ const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
 void DedicatedWorkerGlobalScope::ImportModuleScript(
     const KURL& module_url_record,
-    const SettingsObject& outside_settings_object,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."

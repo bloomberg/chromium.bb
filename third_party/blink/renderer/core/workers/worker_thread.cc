@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/script/settings_object.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/threaded_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
@@ -146,7 +146,7 @@ void WorkerThread::EvaluateClassicScript(
 
 void WorkerThread::ImportModuleScript(
     const KURL& script_url,
-    const SettingsObject& outside_settings_object,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
@@ -502,7 +502,7 @@ void WorkerThread::EvaluateClassicScriptOnWorkerThread(
 
 void WorkerThread::ImportModuleScriptOnWorkerThread(
     const KURL& script_url,
-    const SettingsObject& outside_settings_object,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   // Worklets have a different code path to import module scripts.
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like

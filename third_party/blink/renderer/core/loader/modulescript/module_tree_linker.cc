@@ -19,7 +19,7 @@ namespace blink {
 
 ModuleTreeLinker* ModuleTreeLinker::Fetch(
     const KURL& url,
-    const SettingsObject& fetch_client_settings_object,
+    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     const KURL& base_url,
     WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
@@ -34,7 +34,7 @@ ModuleTreeLinker* ModuleTreeLinker::Fetch(
 
 ModuleTreeLinker* ModuleTreeLinker::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
-    const SettingsObject& fetch_client_settings_object,
+    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     Modulator* modulator,
     ModuleTreeLinkerRegistry* registry,
@@ -47,7 +47,7 @@ ModuleTreeLinker* ModuleTreeLinker::FetchDescendantsForInlineScript(
 }
 
 ModuleTreeLinker::ModuleTreeLinker(
-    const SettingsObject& fetch_client_settings_object,
+    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     Modulator* modulator,
     ModuleTreeLinkerRegistry* registry,

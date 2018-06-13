@@ -22,10 +22,10 @@ namespace blink {
 
 class EventQueue;
 class EventQueueImpl;
+class FetchClientSettingsObjectSnapshot;
 class Modulator;
 class ModuleTreeClient;
 class ResourceFetcher;
-class SettingsObject;
 class V8AbstractEventListener;
 class WorkerOrWorkletScriptController;
 class WorkerReportingProxy;
@@ -115,11 +115,12 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // Implementation of the "fetch a module worker script graph" algorithm in the
   // HTML spec:
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
-  void FetchModuleScript(const KURL& module_url_record,
-                         const SettingsObject& fetch_client_settings_object,
-                         WebURLRequest::RequestContext destination,
-                         network::mojom::FetchCredentialsMode,
-                         ModuleTreeClient*);
+  void FetchModuleScript(
+      const KURL& module_url_record,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      WebURLRequest::RequestContext destination,
+      network::mojom::FetchCredentialsMode,
+      ModuleTreeClient*);
 
  private:
   CrossThreadPersistent<WorkerClients> worker_clients_;

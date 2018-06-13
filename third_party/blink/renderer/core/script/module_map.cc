@@ -105,7 +105,7 @@ void ModuleMap::Trace(blink::Visitor* visitor) {
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
 void ModuleMap::FetchSingleModuleScript(
     const ModuleScriptFetchRequest& request,
-    const SettingsObject& fetch_client_settings_object,
+    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     ModuleGraphLevel level,
     SingleModuleClient* client) {
   // <spec step="1">Let moduleMap be module map settings object's module

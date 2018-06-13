@@ -46,7 +46,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     const WorkerOptions& options,
     const KURL& script_url,
-    const SettingsObject& outside_settings_object,
+    const FetchClientSettingsObjectSnapshot& outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id,
     const String& source_code) {
   DCHECK(IsParentContextThread());

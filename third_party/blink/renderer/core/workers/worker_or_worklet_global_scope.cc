@@ -206,7 +206,7 @@ void WorkerOrWorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
 
 void WorkerOrWorkletGlobalScope::FetchModuleScript(
     const KURL& module_url_record,
-    const SettingsObject& fetch_client_settings_object,
+    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     network::mojom::FetchCredentialsMode credentials_mode,
     ModuleTreeClient* client) {

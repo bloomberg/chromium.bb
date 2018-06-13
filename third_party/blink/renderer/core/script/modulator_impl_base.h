@@ -48,26 +48,29 @@ class ModulatorImplBase : public Modulator {
     return task_runner_.get();
   }
 
-  void FetchTree(const KURL&,
-                 const SettingsObject& fetch_client_settings_object,
-                 WebURLRequest::RequestContext destination,
-                 const ScriptFetchOptions&,
-                 ModuleTreeClient*) override;
+  void FetchTree(
+      const KURL&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      WebURLRequest::RequestContext destination,
+      const ScriptFetchOptions&,
+      ModuleTreeClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
-      const SettingsObject& fetch_client_settings_object,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) override;
-  void FetchSingle(const ModuleScriptFetchRequest&,
-                   const SettingsObject& fetch_client_settings_object,
-                   ModuleGraphLevel,
-                   SingleModuleClient*) override;
+  void FetchSingle(
+      const ModuleScriptFetchRequest&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      ModuleGraphLevel,
+      SingleModuleClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   bool HasValidContext() override;
-  void FetchNewSingleModule(const ModuleScriptFetchRequest&,
-                            const SettingsObject& fetch_client_settings_object,
-                            ModuleGraphLevel,
-                            ModuleScriptLoaderClient*) override;
+  void FetchNewSingleModule(
+      const ModuleScriptFetchRequest&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      ModuleGraphLevel,
+      ModuleScriptLoaderClient*) override;
   KURL ResolveModuleSpecifier(const String& module_request,
                               const KURL& base_url,
                               String* failure_reason) final;

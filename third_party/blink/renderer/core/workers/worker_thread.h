@@ -55,9 +55,9 @@
 namespace blink {
 
 class ConsoleMessageStorage;
+class FetchClientSettingsObjectSnapshot;
 class InspectorTaskRunner;
 class InstalledScriptsManager;
-class SettingsObject;
 class WorkerBackingThread;
 class WorkerInspectorController;
 class WorkerOrWorkletGlobalScope;
@@ -113,9 +113,10 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   // Posts a task to import a top-level module script on the worker thread.
   // Called on the main thread after start().
-  void ImportModuleScript(const KURL& script_url,
-                          const SettingsObject& outside_settings_object,
-                          network::mojom::FetchCredentialsMode);
+  void ImportModuleScript(
+      const KURL& script_url,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      network::mojom::FetchCredentialsMode);
 
   // Posts a task to the worker thread to close the global scope and terminate
   // the underlying thread. This task may be blocked by JavaScript execution on
@@ -285,7 +286,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
       const v8_inspector::V8StackTraceId& stack_id);
   void ImportModuleScriptOnWorkerThread(
       const KURL& script_url,
-      const SettingsObject& outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode);
 
   void TerminateChildThreadsOnWorkerThread();
