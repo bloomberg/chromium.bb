@@ -88,7 +88,7 @@ void HttpPasswordStoreMigrator::ProcessPasswordStoreResults() {
     GURL::Replacements rep;
     rep.SetSchemeStr(url::kHttpsScheme);
     new_form.origin = form->origin.ReplaceComponents(rep);
-    new_form.signon_realm = new_form.origin.spec();
+    new_form.signon_realm = new_form.origin.GetOrigin().spec();
     // If |action| is not HTTPS then it's most likely obsolete. Otherwise, it
     // may still be valid.
     if (!form->action.SchemeIs(url::kHttpsScheme))
