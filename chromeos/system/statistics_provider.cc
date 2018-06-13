@@ -412,7 +412,7 @@ bool StatisticsProviderImpl::GetMachineStatistic(const std::string& name,
     if (result != nullptr &&
         base::SysInfo::IsRunningOnChromeOS() &&
         (oem_manifest_loaded_ || !HasOemPrefix(name))) {
-      LOG(WARNING) << "Requested statistic not found: " << name;
+      VLOG(1) << "Requested statistic not found: " << name;
     }
     return false;
   }
@@ -434,7 +434,7 @@ bool StatisticsProviderImpl::GetMachineFlag(const std::string& name,
     if (result != nullptr &&
         base::SysInfo::IsRunningOnChromeOS() &&
         (oem_manifest_loaded_ || !HasOemPrefix(name))) {
-      LOG(WARNING) << "Requested machine flag not found: " << name;
+      VLOG(1) << "Requested machine flag not found: " << name;
     }
     return false;
   }
@@ -613,7 +613,7 @@ void StatisticsProviderImpl::LoadMachineStatistics(bool load_oem_manifest) {
     region_ =
         command_line->GetSwitchValueASCII(chromeos::switches::kCrosRegion);
     machine_info_[kRegionKey] = region_;
-    LOG(WARNING) << "CrOS region set to '" << region_ << "'";
+    VLOG(1) << "CrOS region set to '" << region_ << "'";
   }
 
   if (regional_data_.get() && !region_.empty() && !GetRegionDictionary())
