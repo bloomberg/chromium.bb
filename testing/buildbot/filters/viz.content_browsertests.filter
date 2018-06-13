@@ -1,21 +1,11 @@
 #### WaitForChildFrameSurfaceReady
 # WaitForChildFrameSurfaceReady doesn't work http://crbug.com/763452
--PointerLockBrowserTest.*
 -SitePerProcessGestureHitTestBrowserTest.*
 -SitePerProcessHighDPIHitTestBrowserTest.*
 -SitePerProcessInternalsHitTestBrowserTest.*
 -SitePerProcessMouseWheelHitTestBrowserTest.*
--TouchSelectionForCrossProcessFramesTests/TouchSelectionControllerClientAuraSiteIsolationTest.*
 
 # Further WaitForChildFrameSurfaceReady doesn't work http://crbug.com/787945
--SitePerProcessBrowserTest.GestureFlingStartEventsBubble
--SitePerProcessBrowserTest.OOPIFDetachDuringAnimation
--SitePerProcessBrowserTest.ScrollBubblingFromNestedOOPIFTest
--SitePerProcessBrowserTest.ScrollBubblingFromOOPIFTest
--SitePerProcessBrowserTest.ScrollBubblingFromOOPIFWithBodyOverflowHidden
--SitePerProcessBrowserTest.ScrollLocalSubframeInOOPIF
--SitePerProcessBrowserTest.TouchscreenGestureFlingStart
--SitePerProcessBrowserTest.ViewBoundsInNestedFrameTest
 -SitePerProcessBrowserTouchActionTest.EffectiveTouchActionPropagatesAcrossFrames
 -SitePerProcessBrowserTouchActionTest.EffectiveTouchActionPropagatesAcrossNestedFrames
 -SitePerProcessBrowserTouchActionTest.EffectiveTouchActionPropagatesWhenChildFrameNavigates
@@ -48,6 +38,10 @@
 -SitePerProcessMacBrowserTest.InputEventRouterTouchpadGestureTargetTest
 -SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest*
 -SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled*
+
+# SynchronizeVisualPropertiesMessageFilter::WaitForRect() times out.
+# https://crbug.com/848825
+-SitePerProcessBrowserTest.ViewBoundsInNestedFrameTest
 
 #### Hit Testing
 # Flaky Result on Windows-7 http://crbug.com/883463
