@@ -314,6 +314,86 @@ void AXPlatformNodeWin::IntAttributeToIA2(
   }
 }
 
+// Static
+void AXPlatformNodeWin::SanitizeStringAttributeForUIAAriaProperty(
+    const base::string16& input,
+    base::string16* output) {
+  DCHECK(output);
+  // According to the UIA Spec, these characters need to be escaped with a
+  // backslash in an AriaProperties string: backslash, equals and semicolon.
+  // Note that backslash must be replaced first.
+  base::ReplaceChars(input, L"\\", L"\\\\", output);
+  base::ReplaceChars(*output, L"=", L"\\=", output);
+  base::ReplaceChars(*output, L";", L"\\;", output);
+}
+
+void AXPlatformNodeWin::StringAttributeToUIAAriaProperty(
+    std::vector<base::string16>& properties,
+    ax::mojom::StringAttribute attribute,
+    const char* uia_aria_property) {
+  base::string16 value;
+  if (GetString16Attribute(attribute, &value)) {
+    SanitizeStringAttributeForUIAAriaProperty(value, &value);
+    properties.push_back(base::ASCIIToUTF16(uia_aria_property) + L"=" + value);
+  }
+}
+
+void AXPlatformNodeWin::BoolAttributeToUIAAriaProperty(
+    std::vector<base::string16>& properties,
+    ax::mojom::BoolAttribute attribute,
+    const char* uia_aria_property) {
+  bool value;
+  if (GetBoolAttribute(attribute, &value)) {
+    properties.push_back((base::ASCIIToUTF16(uia_aria_property) + L"=") +
+                         (value ? L"true" : L"false"));
+  }
+}
+
+void AXPlatformNodeWin::IntAttributeToUIAAriaProperty(
+    std::vector<base::string16>& properties,
+    ax::mojom::IntAttribute attribute,
+    const char* uia_aria_property) {
+  int value;
+  if (GetIntAttribute(attribute, &value)) {
+    properties.push_back(base::ASCIIToUTF16(uia_aria_property) + L"=" +
+                         base::IntToString16(value));
+  }
+}
+
+void AXPlatformNodeWin::FloatAttributeToUIAAriaProperty(
+    std::vector<base::string16>& properties,
+    ax::mojom::FloatAttribute attribute,
+    const char* uia_aria_property) {
+  float value;
+  if (GetFloatAttribute(attribute, &value)) {
+    properties.push_back(base::ASCIIToUTF16(uia_aria_property) + L"=" +
+                         base::NumberToString16(value));
+  }
+}
+
+void AXPlatformNodeWin::StateToUIAAriaProperty(
+    std::vector<base::string16>& properties,
+    ax::mojom::State state,
+    const char* uia_aria_property) {
+  const AXNodeData& data = GetData();
+  bool value = data.HasState(state);
+  properties.push_back((base::ASCIIToUTF16(uia_aria_property) + L"=") +
+                       (value ? L"true" : L"false"));
+}
+
+void AXPlatformNodeWin::HtmlAttributeToUIAAriaProperty(
+    std::vector<base::string16>& properties,
+    const char* html_attribute_name,
+    const char* uia_aria_property) {
+  base::string16 html_attribute_value;
+  if (GetData().GetHtmlAttribute(html_attribute_name, &html_attribute_value)) {
+    SanitizeStringAttributeForUIAAriaProperty(html_attribute_value,
+                                              &html_attribute_value);
+    properties.push_back(base::ASCIIToUTF16(uia_aria_property) + L"=" +
+                         html_attribute_value);
+  }
+}
+
 //
 // AXPlatformNodeBase implementation.
 //
@@ -2529,7 +2609,8 @@ STDMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     // Supported by IAccessibleEx.
     // TODO(suproteem): Implementations where applicable.
     case UIA_AriaPropertiesPropertyId:
-      // TODO(suproteem)
+      result->vt = VT_BSTR;
+      result->bstrVal = SysAllocString(ComputeUIAProperties().c_str());
       break;
 
     case UIA_AriaRolePropertyId:
@@ -4254,6 +4335,127 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
 
   NOTREACHED();
   return L"document";
+}
+
+base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
+  std::vector<base::string16> properties;
+  const AXNodeData& data = GetData();
+
+  BoolAttributeToUIAAriaProperty(
+      properties, ax::mojom::BoolAttribute::kLiveAtomic, "atomic");
+  BoolAttributeToUIAAriaProperty(properties, ax::mojom::BoolAttribute::kBusy,
+                                 "busy");
+  HtmlAttributeToUIAAriaProperty(properties, "aria-channel", "channel");
+
+  if (HasIntAttribute(ax::mojom::IntAttribute::kCheckedState)) {
+    base::string16 checked_property =
+        data.role == ax::mojom::Role::kToggleButton ? L"pressed" : L"checked";
+    bool is_checked = static_cast<ax::mojom::CheckedState>(GetIntAttribute(
+                          ax::mojom::IntAttribute::kCheckedState)) ==
+                      ax::mojom::CheckedState::kTrue;
+    properties.push_back(checked_property + L"=" +
+                         (is_checked ? L"true" : L"false"));
+  }
+
+  const auto restriction = static_cast<ax::mojom::Restriction>(
+      GetIntAttribute(ax::mojom::IntAttribute::kRestriction));
+  switch (restriction) {
+    case ax::mojom::Restriction::kDisabled:
+      properties.push_back(L"disabled=true");
+      break;
+    case ax::mojom::Restriction::kReadOnly:
+      properties.push_back(L"readonly=true");
+      break;
+    default:
+      // The readonly property is complex on windows. We set "readonly=true"
+      // on *some* document structure roles such as paragraph, heading or list
+      // even if the node data isn't marked as read only, as long as the
+      // node is not editable.
+      if (!data.HasState(ax::mojom::State::kRichlyEditable) &&
+          ShouldNodeHaveReadonlyStateByDefault(data))
+        properties.push_back(L"readonly=true");
+      break;
+  }
+
+  HtmlAttributeToUIAAriaProperty(properties, "aria-dropeffect", "dropeffect");
+  StateToUIAAriaProperty(properties, ax::mojom::State::kExpanded, "expanded");
+  HtmlAttributeToUIAAriaProperty(properties, "aria-grabbed", "grabbed");
+
+  // TODO(suproteem) check if autofill check is necessary
+  if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup)) {
+    properties.push_back(L"haspopup=true");
+  }
+
+  if (data.HasState(ax::mojom::State::kInvisible) ||
+      GetData().role == ax::mojom::Role::kIgnored) {
+    properties.push_back(L"hidden=true");
+  }
+
+  if (HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) &&
+      GetIntAttribute(ax::mojom::IntAttribute::kInvalidState) !=
+          static_cast<int32_t>(ax::mojom::InvalidState::kFalse)) {
+    properties.push_back(L"invalid=true");
+  }
+
+  IntAttributeToUIAAriaProperty(
+      properties, ax::mojom::IntAttribute::kHierarchicalLevel, "level");
+  StringAttributeToUIAAriaProperty(
+      properties, ax::mojom::StringAttribute::kLiveStatus, "live");
+  StateToUIAAriaProperty(properties, ax::mojom::State::kMultiline, "multiline");
+  StateToUIAAriaProperty(properties, ax::mojom::State::kMultiselectable,
+                         "multiselectable");
+  IntAttributeToUIAAriaProperty(properties, ax::mojom::IntAttribute::kPosInSet,
+                                "posinset");
+  StringAttributeToUIAAriaProperty(
+      properties, ax::mojom::StringAttribute::kLiveRelevant, "relevant");
+  StateToUIAAriaProperty(properties, ax::mojom::State::kRequired, "required");
+  BoolAttributeToUIAAriaProperty(
+      properties, ax::mojom::BoolAttribute::kSelected, "selected");
+  IntAttributeToUIAAriaProperty(properties, ax::mojom::IntAttribute::kSetSize,
+                                "setsize");
+  HtmlAttributeToUIAAriaProperty(properties, "aria-secret", "secret");
+
+  int32_t sort_direction;
+  if ((data.role == ax::mojom::Role::kColumnHeader ||
+       data.role == ax::mojom::Role::kRowHeader) &&
+      GetIntAttribute(ax::mojom::IntAttribute::kSortDirection,
+                      &sort_direction)) {
+    switch (static_cast<ax::mojom::SortDirection>(sort_direction)) {
+      case ax::mojom::SortDirection::kNone:
+        break;
+      case ax::mojom::SortDirection::kUnsorted:
+        properties.push_back(L"sort=none");
+        break;
+      case ax::mojom::SortDirection::kAscending:
+        properties.push_back(L"sort=ascending");
+        break;
+      case ax::mojom::SortDirection::kDescending:
+        properties.push_back(L"sort=descending");
+        break;
+      case ax::mojom::SortDirection::kOther:
+        properties.push_back(L"sort=other");
+        break;
+    }
+  }
+
+  HtmlAttributeToUIAAriaProperty(properties, "aria-tabindex", "tabindex");
+
+  if (IsRangeValueSupported()) {
+    FloatAttributeToUIAAriaProperty(
+        properties, ax::mojom::FloatAttribute::kMaxValueForRange, "valuemax");
+    FloatAttributeToUIAAriaProperty(
+        properties, ax::mojom::FloatAttribute::kMinValueForRange, "valuemin");
+    StringAttributeToUIAAriaProperty(
+        properties, ax::mojom::StringAttribute::kValue, "valuetext");
+
+    base::string16 value_now = GetRangeValueText();
+    SanitizeStringAttributeForUIAAriaProperty(value_now, &value_now);
+    if (!value_now.empty())
+      properties.push_back(L"valuenow=" + value_now);
+  }
+
+  base::string16 result = base::JoinString(properties, L";");
+  return result;
 }
 
 base::string16 AXPlatformNodeWin::GetValue() {
