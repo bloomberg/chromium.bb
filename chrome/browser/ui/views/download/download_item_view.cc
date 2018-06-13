@@ -105,7 +105,7 @@ const int kProgressTextPadding = 8;
 
 // The space between the Save and Discard buttons when prompting for a dangerous
 // download.
-const int kButtonPadding = 5;
+const int kSaveDiscardButtonPadding = 5;
 
 // The touchable space around the dropdown button's icon.
 const int kDropdownBorderWidth = 10;
@@ -396,7 +396,7 @@ void DownloadItemView::Layout() {
     child_origin.set_y((height() - button_size.height()) / 2);
     if (save_button_) {
       save_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
-      child_origin.Offset(button_size.width() + kButtonPadding, 0);
+      child_origin.Offset(button_size.width() + kSaveDiscardButtonPadding, 0);
     }
     discard_button_->SetBoundsRect(gfx::Rect(child_origin, button_size));
   }
@@ -428,7 +428,7 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
             dangerous_download_label_->width() + kLabelPadding;
     gfx::Size button_size = GetButtonSize();
     if (save_button_)
-      width += button_size.width() + kButtonPadding;
+      width += button_size.width() + kSaveDiscardButtonPadding;
     width += button_size.width() + kEndPadding;
 
     // Height: make sure the button fits and the warning icon fits.
