@@ -809,23 +809,23 @@ TEST_F(UpdateServiceTest, InProgressUpdate_Batch) {
               testing::ElementsAre("A00", "A01", "A02", "A03", "A04", "A05",
                                    "A06", "A07", "A08", "A09", "A10", "A11",
                                    "A12", "A13", "A14", "A15", "A16", "A17",
-                                   "A18", "A19", "A20", "A21", "A22"));
+                                   "A18", "A19", "A20", "A21"));
   EXPECT_THAT(request2.extension_ids,
-              testing::ElementsAre("A23", "A24", "A25", "A26", "A27", "A28",
-                                   "A29", "A30", "A31", "A32", "A33", "A34",
-                                   "A35", "A36", "A37", "A38", "A39", "A40",
-                                   "A41", "A42", "A43", "A44", "A45"));
-  EXPECT_THAT(
-      request3.extension_ids,
-      testing::ElementsAre("A46", "A47", "A48", "A49", "A50", "A51", "A52",
-                           "A53", "A54", "A55", "A56", "A57", "A58", "A59"));
+              testing::ElementsAre("A22", "A23", "A24", "A25", "A26", "A27",
+                                   "A28", "A29", "A30", "A31", "A32", "A33",
+                                   "A34", "A35", "A36", "A37", "A38", "A39",
+                                   "A40", "A41", "A42", "A43"));
+  EXPECT_THAT(request3.extension_ids,
+              testing::ElementsAre("A44", "A45", "A46", "A47", "A48", "A49",
+                                   "A50", "A51", "A52", "A53", "A54", "A55",
+                                   "A56", "A57", "A58", "A59"));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
-      testing::ElementsAre(base::Bucket(14, 1), base::Bucket(23, 2)));
+      testing::ElementsAre(base::Bucket(16, 1), base::Bucket(22, 2)));
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
-              testing::ElementsAre(base::Bucket(14, 1), base::Bucket(23, 2)));
+              testing::ElementsAre(base::Bucket(16, 1), base::Bucket(22, 2)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_FALSE(executed);
@@ -879,24 +879,24 @@ TEST_F(UpdateServiceTest, InProgressUpdate_NoBatchAndBatch) {
               testing::ElementsAre("A00", "A01", "A02", "A03", "A04", "A05",
                                    "A06", "A07", "A08", "A09", "A10", "A11",
                                    "A12", "A13", "A14", "A15", "A16", "A17",
-                                   "A18", "A19", "A20", "A21", "A22"));
+                                   "A18", "A19", "A20", "A21"));
   EXPECT_THAT(request3.extension_ids,
-              testing::ElementsAre("A23", "A24", "A25", "A26", "A27", "A28",
-                                   "A29", "A30", "A31", "A32", "A33", "A34",
-                                   "A35", "A36", "A37", "A38", "A39", "A40",
-                                   "A41", "A42", "A43", "A44", "A45"));
+              testing::ElementsAre("A22", "A23", "A24", "A25", "A26", "A27",
+                                   "A28", "A29", "A30", "A31", "A32", "A33",
+                                   "A34", "A35", "A36", "A37", "A38", "A39",
+                                   "A40", "A41", "A42", "A43"));
   EXPECT_THAT(request4.extension_ids,
-              testing::ElementsAre("A46", "A47", "A48", "A49", "A50", "A51",
-                                   "A52", "A53", "A54"));
+              testing::ElementsAre("A44", "A45", "A46", "A47", "A48", "A49",
+                                   "A50", "A51", "A52", "A53", "A54"));
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
-      testing::ElementsAre(base::Bucket(4, 1), base::Bucket(9, 1),
-                           base::Bucket(23, 2)));
+      testing::ElementsAre(base::Bucket(4, 1), base::Bucket(11, 1),
+                           base::Bucket(22, 2)));
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "Extensions.UnifiedExtensionUpdaterUpdateCalls"),
-              testing::ElementsAre(base::Bucket(4, 1), base::Bucket(9, 1),
-                                   base::Bucket(23, 2)));
+              testing::ElementsAre(base::Bucket(4, 1), base::Bucket(11, 1),
+                                   base::Bucket(22, 2)));
 
   update_client()->RunDelayedUpdate(0);
   EXPECT_TRUE(executed1);

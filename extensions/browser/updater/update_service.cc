@@ -31,11 +31,28 @@ namespace extensions {
 
 namespace {
 
-// 98% of update checks have 23 or less extensions
-// (see Extensions.UpdateCheckExtension histogram).
-constexpr size_t kMaxExtensionsPerUpdate = 23;
+// 98% of update checks have 22 or less extensions.
+constexpr size_t kMaxExtensionsPerUpdate = 22;
 
 void SendUninstallPingCompleteCallback(update_client::Error error) {}
+
+void ReportUpdateCheckResult(ExtensionUpdaterUpdateResult update_result,
+                             int error_code) {
+  UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionUpdaterUpdateResults",
+                            update_result,
+                            ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+  // This UMA histogram measures update check results of the unified extension
+  // updater.
+  UMA_HISTOGRAM_ENUMERATION("Extensions.UnifiedExtensionUpdaterUpdateResults",
+                            update_result,
+                            ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+  if (update_result == ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR)
+    base::UmaHistogramSparse(
+        "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors", error_code);
+  else if (update_result == ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR)
+    base::UmaHistogramSparse("Extensions.UnifiedExtensionUpdaterDownloadErrors",
+                             error_code);
+}
 
 }  // namespace
 
@@ -111,10 +128,7 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
   switch (event) {
     case Events::COMPONENT_UPDATED:
       complete_event = true;
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.ExtensionUpdaterUpdateResults",
-          ExtensionUpdaterUpdateResult::UPDATE_SUCCESS,
-          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      ReportUpdateCheckResult(ExtensionUpdaterUpdateResult::UPDATE_SUCCESS, 0);
       break;
     case Events::COMPONENT_UPDATE_ERROR:
       complete_event = true;
@@ -125,46 +139,31 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
         }
         switch (update_item.error_category) {
           case update_client::ErrorCategory::kUpdateCheck:
-            UMA_HISTOGRAM_ENUMERATION(
-                "Extensions.ExtensionUpdaterUpdateResults",
+            ReportUpdateCheckResult(
                 ExtensionUpdaterUpdateResult::UPDATE_CHECK_ERROR,
-                ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
-            base::UmaHistogramSparse(
-                "Extensions.UnifiedExtensionUpdaterUpdateCheckErrors",
                 update_item.error_code);
             break;
           case update_client::ErrorCategory::kDownload:
-            UMA_HISTOGRAM_ENUMERATION(
-                "Extensions.ExtensionUpdaterUpdateResults",
+            ReportUpdateCheckResult(
                 ExtensionUpdaterUpdateResult::UPDATE_DOWNLOAD_ERROR,
-                ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
-            base::UmaHistogramSparse(
-                "Extensions.UnifiedExtensionUpdaterDownloadErrors",
                 update_item.error_code);
             break;
           case update_client::ErrorCategory::kUnpack:
           case update_client::ErrorCategory::kInstall:
-            UMA_HISTOGRAM_ENUMERATION(
-                "Extensions.ExtensionUpdaterUpdateResults",
-                ExtensionUpdaterUpdateResult::UPDATE_INSTALL_ERROR,
-                ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+            ReportUpdateCheckResult(
+                ExtensionUpdaterUpdateResult::UPDATE_INSTALL_ERROR, 0);
             break;
           case update_client::ErrorCategory::kNone:
           case update_client::ErrorCategory::kService:
-            UMA_HISTOGRAM_ENUMERATION(
-                "Extensions.ExtensionUpdaterUpdateResults",
-                ExtensionUpdaterUpdateResult::UPDATE_SERVICE_ERROR,
-                ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+            ReportUpdateCheckResult(
+                ExtensionUpdaterUpdateResult::UPDATE_SERVICE_ERROR, 0);
             break;
         }
       }
       break;
     case Events::COMPONENT_NOT_UPDATED:
       complete_event = true;
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.ExtensionUpdaterUpdateResults",
-          ExtensionUpdaterUpdateResult::NO_UPDATE,
-          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      ReportUpdateCheckResult(ExtensionUpdaterUpdateResult::NO_UPDATE, 0);
       // When no update is found, a previous update check might have queued an
       // update for this extension because it was in use at the time. We should
       // ask for the install of the queued update now if it's ready.

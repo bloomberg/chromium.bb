@@ -79,6 +79,9 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
             WaitOnComponentUpdaterCompleteEvent(kExtensionId));
 
   content::FetchHistogramsFromChildProcesses();
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.ExtensionUpdaterRawUpdateCalls"),
+              testing::ElementsAre(base::Bucket(1, 1)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
       testing::ElementsAre(base::Bucket(1, 1)));
@@ -134,6 +137,9 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UpdateCheckError) {
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
       testing::ElementsAre(base::Bucket(1, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.ExtensionUpdaterRawUpdateCalls"),
+              testing::ElementsAre(base::Bucket(1, 1)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
           "Extensions.ExtensionUpdaterUpdateResults"),
@@ -195,6 +201,9 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, TwoUpdateCheckErrors) {
   run_loop2.Run();
 
   content::FetchHistogramsFromChildProcesses();
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.ExtensionUpdaterRawUpdateCalls"),
+              testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
       testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
@@ -255,6 +264,9 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
   run_loop.Run();
 
   content::FetchHistogramsFromChildProcesses();
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Extensions.ExtensionUpdaterRawUpdateCalls"),
+              testing::ElementsAre(base::Bucket(1, 1)));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Extensions.ExtensionUpdaterUpdateCalls"),
       testing::ElementsAre(base::Bucket(1, 1)));

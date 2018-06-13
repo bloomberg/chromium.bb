@@ -457,17 +457,12 @@ void ExtensionDownloader::StartUpdateCheck(
     return;
   }
 
-  const std::set<std::string>& id_set(fetch_data->extension_ids());
-
   if (!ExtensionsBrowserClient::Get()->IsBackgroundUpdateAllowed()) {
-    NotifyExtensionsDownloadFailed(id_set,
+    NotifyExtensionsDownloadFailed(fetch_data->extension_ids(),
                                    fetch_data->request_ids(),
                                    ExtensionDownloaderDelegate::DISABLED);
     return;
   }
-
-  UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateCalls",
-                           id_set.size());
 
   RequestQueue<ManifestFetchData>::iterator i;
   for (i = manifests_queue_.begin(); i != manifests_queue_.end(); ++i) {
@@ -482,6 +477,8 @@ void ExtensionDownloader::StartUpdateCheck(
       manifests_queue_.active_request()->full_url() == fetch_data->full_url()) {
     manifests_queue_.active_request()->Merge(*fetch_data);
   } else {
+    UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateCalls",
+                             fetch_data->extension_ids().size());
     UMA_HISTOGRAM_COUNTS(
         "Extensions.UpdateCheckUrlLength",
         fetch_data->full_url().possibly_invalid_spec().length());

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -39,7 +40,8 @@ void ReportError(ParseUpdateManifestCallback callback,
 bool ParseSingleAppTag(const base::Value& app_element,
                        const std::string& xml_namespace,
                        UpdateManifestResult* result,
-                       std::string* error_detail) {
+                       std::string* error_detail,
+                       int* prodversionmin_count) {
   // Read the extension id.
   result->extension_id = GetXmlElementAttribute(app_element, "appid");
   if (result->extension_id.empty()) {
@@ -65,6 +67,20 @@ bool ParseSingleAppTag(const base::Value& app_element,
   if (GetXmlElementAttribute(*updatecheck, "status") == "noupdate")
     return true;
 
+  // Get the optional minimum browser version.
+  result->browser_min_version =
+      GetXmlElementAttribute(*updatecheck, "prodversionmin");
+  if (!result->browser_min_version.empty()) {
+    *prodversionmin_count += 1;
+    base::Version browser_min_version(result->browser_min_version);
+    if (!browser_min_version.IsValid()) {
+      *error_detail = "Invalid prodversionmin: '";
+      *error_detail += result->browser_min_version;
+      *error_detail += "'.";
+      return false;
+    }
+  }
+
   // Find the url to the crx file.
   result->crx_url = GURL(GetXmlElementAttribute(*updatecheck, "codebase"));
   if (!result->crx_url.is_valid()) {
@@ -86,19 +102,6 @@ bool ParseSingleAppTag(const base::Value& app_element,
     *error_detail += result->version;
     *error_detail += "'.";
     return false;
-  }
-
-  // Get the optional minimum browser version.
-  result->browser_min_version =
-      GetXmlElementAttribute(*updatecheck, "prodversionmin");
-  if (!result->browser_min_version.empty()) {
-    base::Version browser_min_version(result->browser_min_version);
-    if (!browser_min_version.IsValid()) {
-      *error_detail = "Invalid prodversionmin: '";
-      *error_detail += result->browser_min_version;
-      *error_detail += "'.";
-      return false;
-    }
   }
 
   // package_hash is optional. It is a sha256 hash of the package in hex format.
@@ -182,10 +185,12 @@ void ParseXmlDone(ParseUpdateManifestCallback callback,
   data_decoder::GetAllXmlElementChildrenWithTag(
       *root, GetXmlQualifiedName(gupdate_ns, "app"), &apps);
   std::string error_msg;
+  int prodversionmin_count = 0;
   for (const auto* app : apps) {
     UpdateManifestResult result;
     std::string app_error;
-    if (!ParseSingleAppTag(*app, gupdate_ns, &result, &app_error)) {
+    if (!ParseSingleAppTag(*app, gupdate_ns, &result, &app_error,
+                           &prodversionmin_count)) {
       if (!error_msg.empty())
         error_msg += "\r\n";  // Should we have an OS specific EOL?
       error_msg += app_error;
@@ -193,6 +198,9 @@ void ParseXmlDone(ParseUpdateManifestCallback callback,
       results->list.push_back(result);
     }
   }
+
+  UMA_HISTOGRAM_COUNTS_100("Extensions.UpdateManifestHasProdVersionMinCounts",
+                           prodversionmin_count);
 
   std::move(callback).Run(
       results->list.empty() ? nullptr : std::move(results),
