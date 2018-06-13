@@ -25,6 +25,8 @@ class CastBackGestureDispatcher : public CastSideSwipeGestureHandlerInterface {
                             const gfx::Point& touch_location) override;
   void HandleSideSwipeContinue(CastSideSwipeOrigin swipe_origin,
                                const gfx::Point& touch_location) override;
+  void HandleSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
+                          const gfx::Point& touch_location) override;
 
  private:
   // Number of pixels past swipe origin to consider as a back gesture.

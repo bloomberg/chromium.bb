@@ -50,5 +50,16 @@ void CastBackGestureDispatcher::HandleSideSwipeContinue(
   }
 }
 
+void CastBackGestureDispatcher::HandleSideSwipeEnd(
+    CastSideSwipeOrigin swipe_origin,
+    const gfx::Point& touch_location) {
+  if (swipe_origin != CastSideSwipeOrigin::LEFT) {
+    return;
+  }
+  if (!dispatched_back_ && touch_location.x() < horizontal_threshold_) {
+    delegate_->CancelGesture(GestureType::GO_BACK, touch_location);
+  }
+}
+
 }  // namespace shell
 }  // namespace chromecast
