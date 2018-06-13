@@ -211,36 +211,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
     base::OneShotTimer wedge_timer_;
   };
 
-  // Provides a thread-safe AudioSourceDiverter proxy, sitting in front of the
-  // simpler threading model of this OutputController.
-  // TODO(crbug/824019): Remove this legacy functionality.
-  class ThreadHoppingDiverter
-      : public base::SupportsWeakPtr<ThreadHoppingDiverter>,
-        public media::AudioSourceDiverter {
-   public:
-    explicit ThreadHoppingDiverter(OutputController* controller);
-    ~ThreadHoppingDiverter() final;
-
-    // AudioSourceDiverter implementation.
-    const media::AudioParameters& GetAudioParameters() final;
-    void StartDiverting(media::AudioOutputStream* to_stream) final;
-    void StopDiverting() final;
-    void StartDuplicating(media::AudioPushSink* sink) final;
-    void StopDuplicating(media::AudioPushSink* sink) final;
-
-   private:
-    OutputController* const controller_;
-    const base::WeakPtr<ThreadHoppingDiverter> weak_this_;
-  };
-
-  // Start/StopDiverting() and Start/StopDuplicating() trampoline to these
-  // methods through |task_runner_|.
-  // TODO(crbug/824019): Remove this legacy functionality.
-  void DoStartDiverting(media::AudioOutputStream* to_stream);
-  void DoStopDiverting();
-  void DoStartDuplicating(media::AudioPushSink* sink);
-  void DoStopDuplicating(media::AudioPushSink* sink);
-
   // Notifies the EventHandler that an error has occurred.
   void ReportError();
 
@@ -274,10 +244,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
 
   media::AudioOutputStream* stream_;
 
-  // When non-NULL, audio is being diverted to this stream.
-  // TODO(crbug/824019): Remove this legacy functionality.
-  media::AudioOutputStream* diverting_to_stream_;
-
   // When true, local audio output should be muted; either by having audio
   // diverted to |diverting_to_stream_|, or a fake AudioOutputStream.
   bool disable_local_output_;
@@ -285,10 +251,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // The targets for audio stream to be copied to. |should_duplicate_| is set to
   // 1 when the OnMoreData() call should proxy the data to
   // BroadcastDataToSnoopers().
-  //
-  // TODO(crbug/824019): Remove |duplication_targets_| (part of legacy
-  // functionality).
-  base::flat_set<media::AudioPushSink*> duplication_targets_;
   std::vector<Snooper*> snoopers_;
   base::AtomicRefCount should_duplicate_;
 
@@ -310,10 +272,6 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // and destroyed when a stream stops. Also reset every time there is a stream
   // being created due to device changes.
   base::Optional<ErrorStatisticsTracker> stats_tracker_;
-
-  // Instantiated in Create(), and destroyed in Close().
-  // TODO(crbug/824019): Remove this legacy functionality.
-  base::Optional<ThreadHoppingDiverter> diverter_;
 
   // WeakPtrFactory+WeakPtr that is used to post tasks that are canceled when a
   // stream is closed.
