@@ -40,7 +40,7 @@ public class BottomContainer extends FrameLayout implements FullscreenListener {
     public void initialize(ChromeFullscreenManager fullscreenManager) {
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
-        setTranslationY(-fullscreenManager.getBottomControlsHeight());
+        setTranslationY(mBaseYOffset);
     }
 
     /**
@@ -77,8 +77,7 @@ public class BottomContainer extends FrameLayout implements FullscreenListener {
 
         // Sit on top of either the bottom sheet or the bottom toolbar depending on which is larger
         // (offsets are negative).
-        super.setTranslationY(
-                Math.min(offsetFromControls - mBaseYOffset, mOffsetFromSheet - mBaseYOffset));
+        super.setTranslationY(mBaseYOffset + Math.min(offsetFromControls, mOffsetFromSheet));
     }
 
     @Override
