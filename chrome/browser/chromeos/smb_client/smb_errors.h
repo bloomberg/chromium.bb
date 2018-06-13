@@ -11,6 +11,21 @@
 namespace chromeos {
 namespace smb_client {
 
+// These values are written to logs. New enum values may be added, but existing
+// enums must never be renumbered or values reused. Must be kept in sync
+// with the SmbMountResult enum in
+// chrome/browser/resources/settings/downloads_page/smb_browser_proxy.js.
+enum class SmbMountResult {
+  // TODO(allenvic): Change syntax to kConstantSyntax.
+  SUCCESS = 0,                // Mount succeeded.
+  UNKNOWN_FAILURE = 1,        // Mount failed in an unrecognized way.
+  AUTHENTICATION_FAILED = 2,  // Authentication to the share failed.
+  NOT_FOUND = 3,              // The specified share was not found.
+  UNSUPPORTED_DEVICE = 4,     // The specified share is not supported.
+  MOUNT_EXISTS = 5,           // The specified share is already mounted.
+  kMaxValue = MOUNT_EXISTS    // Max enum value for use in metrics.
+};
+
 // Translates an smbprovider::ErrorType to a base::File::Error. Since
 // smbprovider::ErrorType is a superset of base::File::Error, errors that do not
 // map directly are logged and mapped to the generic failed error.
@@ -19,6 +34,12 @@ base::File::Error TranslateToFileError(smbprovider::ErrorType error);
 // Translates a base::File::Error to an smbprovider::ErrorType. There is an
 // explicit smbprovider::ErrorType for each base::File::Error.
 smbprovider::ErrorType TranslateToErrorType(base::File::Error error);
+
+// Translates an smbprovider::ErrorType to an SmbMountResult.
+SmbMountResult TranslateErrorToMountResult(smbprovider::ErrorType error);
+
+// Translates a base::File::Error to an SmbMountResult.
+SmbMountResult TranslateErrorToMountResult(base::File::Error error);
 
 }  // namespace smb_client
 }  // namespace chromeos
