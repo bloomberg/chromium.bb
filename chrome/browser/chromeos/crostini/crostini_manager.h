@@ -237,8 +237,6 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
       ShutdownContainerCallback shutdown_callback);
 
   // ConciergeClient::Observer:
-  void OnContainerStarted(
-      const vm_tools::concierge::ContainerStartedSignal& signal) override;
   void OnContainerStartupFailed(
       const vm_tools::concierge::ContainerStartedSignal& signal) override;
 
@@ -311,14 +309,14 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   // Callback for CrostiniManager::LaunchContainerApplication.
   void OnLaunchContainerApplication(
       LaunchContainerApplicationCallback callback,
-      base::Optional<vm_tools::concierge::LaunchContainerApplicationResponse>
+      base::Optional<vm_tools::cicerone::LaunchContainerApplicationResponse>
           reply);
 
   // Callback for CrostiniManager::GetContainerAppIcons. Called after the
   // Concierge service finishes.
   void OnGetContainerAppIcons(
       GetContainerAppIconsCallback callback,
-      base::Optional<vm_tools::concierge::ContainerAppIconResponse> reply);
+      base::Optional<vm_tools::cicerone::ContainerAppIconResponse> reply);
 
   // Callback for CrostiniManager::GetContainerSshKeys. Called after the
   // Concierge service finishes.

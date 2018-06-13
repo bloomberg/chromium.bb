@@ -341,16 +341,7 @@ TEST_F(CrostiniManagerTest, StartContainerContainerCryptohomeIdError) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniManagerTest, StartContainerSignalConciergeNotConnectedError) {
-  fake_concierge_client_->set_container_started_signal_connected(false);
-  CrostiniManager::GetInstance()->StartContainer(
-      kVmName, kContainerName, kContainerUserName, kCryptohomeId,
-      base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
-                     base::Unretained(this), run_loop()->QuitClosure()));
-  run_loop()->Run();
-}
-
-TEST_F(CrostiniManagerTest, StartContainerSignalCiceroneNotConnectedError) {
+TEST_F(CrostiniManagerTest, StartContainerSignalNotConnectedError) {
   fake_cicerone_client_->set_container_started_signal_connected(false);
   CrostiniManager::GetInstance()->StartContainer(
       kVmName, kContainerName, kContainerUserName, kCryptohomeId,
@@ -359,7 +350,7 @@ TEST_F(CrostiniManagerTest, StartContainerSignalCiceroneNotConnectedError) {
   run_loop()->Run();
 }
 
-TEST_F(CrostiniManagerTest, ShutdownContainerSignalCiceroneNotConnectedError) {
+TEST_F(CrostiniManagerTest, ShutdownContainerSignalNotConnectedError) {
   fake_cicerone_client_->set_container_shutdown_signal_connected(false);
   CrostiniManager::GetInstance()->StartContainer(
       kVmName, kContainerName, kContainerUserName, kCryptohomeId,

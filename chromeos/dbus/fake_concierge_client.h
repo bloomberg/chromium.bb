@@ -22,10 +22,6 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   // Removes an observer if added.
   void RemoveObserver(Observer* observer) override;
 
-  // IsContainerStartedSignalConnected must return true before StartContainer
-  // is called.
-  bool IsContainerStartedSignalConnected() override;
-
   // IsContainerStartupFailedSignalConnected must return true before
   // StartContainer is called.
   bool IsContainerStartupFailedSignalConnected() override;
@@ -75,21 +71,6 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
       DBusMethodCallback<vm_tools::concierge::StartContainerResponse> callback)
       override;
 
-  // Fake version of the method that launches an application inside a running
-  // Container. |callback| is called after the method call finishes.
-  void LaunchContainerApplication(
-      const vm_tools::concierge::LaunchContainerApplicationRequest& request,
-      DBusMethodCallback<
-          vm_tools::concierge::LaunchContainerApplicationResponse> callback)
-      override;
-
-  // Fake version of the method that gets application icons from inside a
-  // Container. |callback| is called after the method call finishes.
-  void GetContainerAppIcons(
-      const vm_tools::concierge::ContainerAppIconRequest& request,
-      DBusMethodCallback<vm_tools::concierge::ContainerAppIconResponse>
-          callback) override;
-
   // Fake version of the method that waits for the Concierge service to be
   // availble.  |callback| is called after the method call finishes.
   void WaitForServiceToBeAvailable(
@@ -114,11 +95,7 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool stop_vm_called() const { return stop_vm_called_; }
   // Indicates whether StartContainer has been called
   bool start_container_called() const { return start_container_called_; }
-  // Set ContainerStartedSignalConnected state
-  void set_container_started_signal_connected(bool connected) {
-    is_container_started_signal_connected_ = connected;
-  }
-  // Set ContainerStartedSignalConnected state
+  // Set ContainerStartupFailedSignalConnected state
   void set_container_startup_failed_signal_connected(bool connected) {
     is_container_startup_failed_signal_connected_ = connected;
   }
@@ -150,17 +127,6 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
           start_container_response) {
     start_container_response_ = start_container_response;
   }
-  void set_launch_container_application_response(
-      const vm_tools::concierge::LaunchContainerApplicationResponse&
-          launch_container_application_response) {
-    launch_container_application_response_ =
-        launch_container_application_response;
-  }
-  void set_container_app_icon_response(
-      const vm_tools::concierge::ContainerAppIconResponse&
-          container_app_icon_response) {
-    container_app_icon_response_ = container_app_icon_response;
-  }
   void set_container_ssh_keys_response(
       const vm_tools::concierge::ContainerSshKeysResponse&
           container_ssh_keys_response) {
@@ -179,7 +145,6 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool start_termina_vm_called_ = false;
   bool stop_vm_called_ = false;
   bool start_container_called_ = false;
-  bool is_container_started_signal_connected_ = true;
   bool is_container_startup_failed_signal_connected_ = true;
 
   vm_tools::concierge::CreateDiskImageResponse create_disk_image_response_;
@@ -188,9 +153,6 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   vm_tools::concierge::StartVmResponse start_vm_response_;
   vm_tools::concierge::StopVmResponse stop_vm_response_;
   vm_tools::concierge::StartContainerResponse start_container_response_;
-  vm_tools::concierge::LaunchContainerApplicationResponse
-      launch_container_application_response_;
-  vm_tools::concierge::ContainerAppIconResponse container_app_icon_response_;
   vm_tools::concierge::ContainerSshKeysResponse container_ssh_keys_response_;
 
   base::ObserverList<Observer> observer_list_;

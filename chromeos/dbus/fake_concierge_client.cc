@@ -26,11 +26,6 @@ void FakeConciergeClient::RemoveObserver(Observer* observer) {
 }
 
 // ConciergeClient override.
-bool FakeConciergeClient::IsContainerStartedSignalConnected() {
-  return is_container_started_signal_connected_;
-}
-
-// ConciergeClient override.
 bool FakeConciergeClient::IsContainerStartupFailedSignalConnected() {
   return is_container_startup_failed_signal_connected_;
 }
@@ -89,24 +84,6 @@ void FakeConciergeClient::StartContainer(
       base::BindOnce(std::move(callback), start_container_response_));
 }
 
-void FakeConciergeClient::LaunchContainerApplication(
-    const vm_tools::concierge::LaunchContainerApplicationRequest& request,
-    DBusMethodCallback<vm_tools::concierge::LaunchContainerApplicationResponse>
-        callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback),
-                                launch_container_application_response_));
-}
-
-void FakeConciergeClient::GetContainerAppIcons(
-    const vm_tools::concierge::ContainerAppIconRequest& request,
-    DBusMethodCallback<vm_tools::concierge::ContainerAppIconResponse>
-        callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), container_app_icon_response_));
-}
-
 void FakeConciergeClient::WaitForServiceToBeAvailable(
     dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -145,10 +122,6 @@ void FakeConciergeClient::InitializeProtoResponses() {
   start_container_response_.set_status(
       vm_tools::concierge::CONTAINER_STATUS_RUNNING);
 
-  launch_container_application_response_.Clear();
-  launch_container_application_response_.set_success(true);
-
-  container_app_icon_response_.Clear();
   container_ssh_keys_response_.Clear();
 }
 

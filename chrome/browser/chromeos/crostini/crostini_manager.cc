@@ -678,8 +678,7 @@ void CrostiniManager::StartContainer(std::string vm_name,
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
     return;
   }
-  if (!GetConciergeClient()->IsContainerStartedSignalConnected() ||
-      !GetConciergeClient()->IsContainerStartupFailedSignalConnected() ||
+  if (!GetConciergeClient()->IsContainerStartupFailedSignalConnected() ||
       !GetCiceroneClient()->IsContainerStartedSignalConnected() ||
       !GetCiceroneClient()->IsContainerShutdownSignalConnected()) {
     LOG(ERROR) << "Async call to StartContainer can't complete when signal "
@@ -707,13 +706,13 @@ void CrostiniManager::LaunchContainerApplication(
     std::string container_name,
     std::string desktop_file_id,
     LaunchContainerApplicationCallback callback) {
-  vm_tools::concierge::LaunchContainerApplicationRequest request;
+  vm_tools::cicerone::LaunchContainerApplicationRequest request;
   request.set_owner_id(CryptohomeIdForProfile(profile));
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
   request.set_desktop_file_id(std::move(desktop_file_id));
 
-  GetConciergeClient()->LaunchContainerApplication(
+  GetCiceroneClient()->LaunchContainerApplication(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnLaunchContainerApplication,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -727,7 +726,7 @@ void CrostiniManager::GetContainerAppIcons(
     int icon_size,
     int scale,
     GetContainerAppIconsCallback callback) {
-  vm_tools::concierge::ContainerAppIconRequest request;
+  vm_tools::cicerone::ContainerAppIconRequest request;
   request.set_owner_id(CryptohomeIdForProfile(profile));
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
@@ -738,7 +737,7 @@ void CrostiniManager::GetContainerAppIcons(
   request.set_size(icon_size);
   request.set_scale(scale);
 
-  GetConciergeClient()->GetContainerAppIcons(
+  GetCiceroneClient()->GetContainerAppIcons(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnGetContainerAppIcons,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -964,15 +963,10 @@ void CrostiniManager::OnStartContainer(
 }
 
 void CrostiniManager::OnContainerStarted(
-    const vm_tools::concierge::ContainerStartedSignal& signal) {
+    const vm_tools::cicerone::ContainerStartedSignal& signal) {
   // Find the callbacks to call, then erase them from the map.
-  std::string owner_id = signal.owner_id();
-  // TODO(nverne): remove this check once Concierge always fills in owner_id.
-  if (owner_id.empty()) {
-    owner_id = CryptohomeIdForProfile(ProfileManager::GetPrimaryUserProfile());
-  }
-  auto range = start_container_callbacks_.equal_range(
-      std::make_tuple(owner_id, signal.vm_name(), signal.container_name()));
+  auto range = start_container_callbacks_.equal_range(std::make_tuple(
+      signal.owner_id(), signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(ConciergeClientResult::SUCCESS);
   }
@@ -982,31 +976,10 @@ void CrostiniManager::OnContainerStarted(
 void CrostiniManager::OnContainerStartupFailed(
     const vm_tools::concierge::ContainerStartedSignal& signal) {
   // Find the callbacks to call, then erase them from the map.
-  std::string owner_id = signal.owner_id();
-  // TODO(nverne): remove this check once Concierge always fills in owner_id.
-  if (owner_id.empty()) {
-    owner_id = CryptohomeIdForProfile(ProfileManager::GetPrimaryUserProfile());
-  }
-  auto range = start_container_callbacks_.equal_range(
-      std::make_tuple(owner_id, signal.vm_name(), signal.container_name()));
+  auto range = start_container_callbacks_.equal_range(std::make_tuple(
+      signal.owner_id(), signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run(ConciergeClientResult::CONTAINER_START_FAILED);
-  }
-  start_container_callbacks_.erase(range.first, range.second);
-}
-
-void CrostiniManager::OnContainerStarted(
-    const vm_tools::cicerone::ContainerStartedSignal& signal) {
-  // Find the callbacks to call, then erase them from the map.
-  std::string owner_id = signal.owner_id();
-  // TODO(jkardatzke): remove this check once Cicerone always fills in owner_id.
-  if (owner_id.empty()) {
-    owner_id = CryptohomeIdForProfile(ProfileManager::GetPrimaryUserProfile());
-  }
-  auto range = start_container_callbacks_.equal_range(
-      std::make_tuple(owner_id, signal.vm_name(), signal.container_name()));
-  for (auto it = range.first; it != range.second; ++it) {
-    std::move(it->second).Run(ConciergeClientResult::SUCCESS);
   }
   start_container_callbacks_.erase(range.first, range.second);
 }
@@ -1014,13 +987,8 @@ void CrostiniManager::OnContainerStarted(
 void CrostiniManager::OnContainerShutdown(
     const vm_tools::cicerone::ContainerShutdownSignal& signal) {
   // Find the callbacks to call, then erase them from the map.
-  std::string owner_id = signal.owner_id();
-  // TODO(joelhockey): remove this check once Cicerone always fills in owner_id.
-  if (owner_id.empty()) {
-    owner_id = CryptohomeIdForProfile(ProfileManager::GetPrimaryUserProfile());
-  }
-  auto range = shutdown_container_callbacks_.equal_range(
-      std::make_tuple(owner_id, signal.vm_name(), signal.container_name()));
+  auto range = shutdown_container_callbacks_.equal_range(std::make_tuple(
+      signal.owner_id(), signal.vm_name(), signal.container_name()));
   for (auto it = range.first; it != range.second; ++it) {
     std::move(it->second).Run();
   }
@@ -1029,7 +997,7 @@ void CrostiniManager::OnContainerShutdown(
 
 void CrostiniManager::OnLaunchContainerApplication(
     LaunchContainerApplicationCallback callback,
-    base::Optional<vm_tools::concierge::LaunchContainerApplicationResponse>
+    base::Optional<vm_tools::cicerone::LaunchContainerApplicationResponse>
         reply) {
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to launch application. Empty response.";
@@ -1037,7 +1005,7 @@ void CrostiniManager::OnLaunchContainerApplication(
         ConciergeClientResult::LAUNCH_CONTAINER_APPLICATION_FAILED);
     return;
   }
-  vm_tools::concierge::LaunchContainerApplicationResponse response =
+  vm_tools::cicerone::LaunchContainerApplicationResponse response =
       reply.value();
 
   if (!response.success()) {
@@ -1051,14 +1019,14 @@ void CrostiniManager::OnLaunchContainerApplication(
 
 void CrostiniManager::OnGetContainerAppIcons(
     GetContainerAppIconsCallback callback,
-    base::Optional<vm_tools::concierge::ContainerAppIconResponse> reply) {
+    base::Optional<vm_tools::cicerone::ContainerAppIconResponse> reply) {
   std::vector<Icon> icons;
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to get container application icons. Empty response.";
     std::move(callback).Run(ConciergeClientResult::DBUS_ERROR, icons);
     return;
   }
-  vm_tools::concierge::ContainerAppIconResponse response = reply.value();
+  vm_tools::cicerone::ContainerAppIconResponse response = reply.value();
   for (auto& icon : *response.mutable_icons()) {
     icons.emplace_back(
         Icon{.desktop_file_id = std::move(*icon.mutable_desktop_file_id()),

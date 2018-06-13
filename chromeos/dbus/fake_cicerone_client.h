@@ -58,12 +58,28 @@ class CHROMEOS_EXPORT FakeCiceroneClient : public CiceroneClient {
     is_container_shutdown_signal_connected_ = connected;
   }
 
+  void set_launch_container_application_response(
+      const vm_tools::cicerone::LaunchContainerApplicationResponse&
+          launch_container_application_response) {
+    launch_container_application_response_ =
+        launch_container_application_response;
+  }
+  void set_container_app_icon_response(
+      const vm_tools::cicerone::ContainerAppIconResponse&
+          container_app_icon_response) {
+    container_app_icon_response_ = container_app_icon_response;
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {}
 
  private:
   bool is_container_started_signal_connected_ = true;
   bool is_container_shutdown_signal_connected_ = true;
+
+  vm_tools::cicerone::LaunchContainerApplicationResponse
+      launch_container_application_response_;
+  vm_tools::cicerone::ContainerAppIconResponse container_app_icon_response_;
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeCiceroneClient);
