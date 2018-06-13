@@ -753,7 +753,6 @@ class MetaBuildWrapper(object):
     gn_args_path = self.ToAbsPath(build_dir, 'args.gn')
     self.WriteFile(gn_args_path, gn_args, force_verbose=True)
 
-    labels = []
     swarming_targets = []
     if getattr(self.args, 'swarming_targets_file', None):
       # We need GN to generate the list of runtime dependencies for
@@ -786,17 +785,18 @@ class MetaBuildWrapper(object):
     android = 'target_os="android"' in vals['gn_args']
     fuchsia = 'target_os="fuchsia"' in vals['gn_args']
     win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
-
-    for label, target in zip(labels, swarming_targets):
+    for target in swarming_targets:
       if android:
         # Android targets may be either android_apk or executable. The former
         # will result in runtime_deps associated with the stamp file, while the
         # latter will result in runtime_deps associated with the executable.
+        label = isolate_map[target]['label']
         runtime_deps_targets = [
             target + '.runtime_deps',
             'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
       elif fuchsia:
         # Only emit a runtime deps file for the group() target on Fuchsia.
+        label = isolate_map[target]['label']
         runtime_deps_targets = [
           'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
       elif (isolate_map[target]['type'] == 'script' or
@@ -805,6 +805,7 @@ class MetaBuildWrapper(object):
         # for which gn generates the runtime_deps next to the stamp file
         # for the label, which lives under the obj/ directory, but it may
         # also be an executable.
+        label = isolate_map[target]['label']
         runtime_deps_targets = [
             'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
         if win:
@@ -1012,12 +1013,6 @@ class MetaBuildWrapper(object):
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
       ]
-    elif test_type == 'wrapper':
-      executable_suffix = '.bat' if is_win else ''
-      extra_files = []
-      cmdline = [
-        os.path.join('bin', 'run_%s%s' % (target, executable_suffix))
-      ]
     elif use_xvfb and test_type == 'windowed_test_launcher':
       extra_files.append('../../testing/xvfb.py')
       cmdline = [
@@ -1060,7 +1055,7 @@ class MetaBuildWrapper(object):
       self.WriteFailureAndRaise('No command line for %s found (test type %s).'
                                 % (target, test_type), output_path=None)
 
-    if is_win and asan and test_type != 'wrapper':
+    if is_win and asan:
       # Sandbox is not yet supported by ASAN for Windows.
       # Perhaps this is only needed for tests that use the sandbox?
       cmdline.append('--no-sandbox')
