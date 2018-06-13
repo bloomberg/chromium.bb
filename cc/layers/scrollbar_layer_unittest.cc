@@ -219,7 +219,6 @@ TEST_F(ScrollbarLayerTest, RepaintOverlayWhenResourceDisposed) {
     scrollbar_layer->SetBounds(gfx::Size(100, 100));
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
-    scrollbar_layer->set_visible_layer_rect(gfx::Rect(0, 0, 100, 200));
   }
 
   // First call to update should create a resource. The scrollbar itself thinks
@@ -1120,7 +1119,6 @@ class ScrollbarLayerTestResourceCreationAndRelease : public ScrollbarLayerTest {
     layer_tree_root->SetScrollOffset(gfx::ScrollOffset(10, 20));
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
-    scrollbar_layer->set_visible_layer_rect(gfx::Rect(0, 0, 100, 200));
 
     testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
     EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
@@ -1179,7 +1177,6 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   scrollbar_layer->SetPosition(gfx::PointF(scrollbar_location));
   layer_tree_root->SetBounds(gfx::Size(100, 200));
   content_layer->SetBounds(gfx::Size(100, 200));
-  scrollbar_layer->set_visible_layer_rect(gfx::Rect(0, 0, 100, 200));
 
   testing::Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
@@ -1306,7 +1303,10 @@ TEST_F(ScrollbarLayerTestResourceCreationAndRelease, TestResourceUpdate) {
   EXPECT_EQ(gfx::Size(90, 15), fake_ui_resource_manager_->ui_resource_size(
                                    scrollbar_layer->track_resource_id()));
 
-  scrollbar_layer->ResetNeedsDisplayForTesting();
+  // Simulate commit to compositor thread.
+  scrollbar_layer->PushPropertiesTo(
+      scrollbar_layer->CreateLayerImpl(layer_tree_host_->active_tree()).get());
+
   EXPECT_FALSE(scrollbar_layer->Update());
   EXPECT_NE(0, scrollbar_layer->track_resource_id());
   EXPECT_EQ(0, scrollbar_layer->thumb_resource_id());
@@ -1339,8 +1339,6 @@ class ScaledScrollbarLayerTestResourceCreation : public ScrollbarLayerTest {
     scrollbar_layer->SetPosition(gfx::PointF(scrollbar_location));
     layer_tree_root->SetBounds(gfx::Size(100, 200));
     content_layer->SetBounds(gfx::Size(100, 200));
-    scrollbar_layer->set_visible_layer_rect(
-        gfx::Rect(scrollbar_location, scrollbar_layer->bounds()));
 
     EXPECT_EQ(scrollbar_layer->GetLayerTreeHostForTesting(),
               layer_tree_host_.get());
@@ -1409,7 +1407,6 @@ class ScaledScrollbarLayerTestScaledRasterization : public ScrollbarLayerTest {
     scrollbar_layer->SetPosition(gfx::PointF(scrollbar_rect.origin()));
     scrollbar_layer->fake_scrollbar()->set_location(scrollbar_rect.origin());
     scrollbar_layer->fake_scrollbar()->set_track_rect(scrollbar_rect);
-    scrollbar_layer->set_visible_layer_rect(scrollbar_rect);
 
     layer_tree_host_->SetViewportSizeAndScale(
         layer_tree_host_->device_viewport_size(), test_scale,

@@ -9,7 +9,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/layers/layer.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
@@ -2882,6 +2884,11 @@ TEST_F(PaintArtifactCompositorTest, CompositedEffectWithNoOutputClip) {
 }
 
 TEST_F(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
+  cc::FakeImplTaskRunnerProvider task_runner_provider_;
+  cc::TestTaskGraphRunner task_graph_runner_;
+  cc::FakeLayerTreeHostImpl host_impl(&task_runner_provider_,
+                                      &task_graph_runner_);
+
   // The layer's painting is initially not clipped.
   auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(10, 20, 300, 400));
   TestPaintArtifact artifact1;
@@ -2897,12 +2904,14 @@ TEST_F(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
       layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 200, 200), Color::kBlack)));
 
-  // The layer's painting overflows the left, top, right edges of the clip .
+  // The layer's painting overflows the left, top, right edges of the clip.
   TestPaintArtifact artifact2;
   artifact2.Chunk(artifact1.Client(0), t0(), *clip, e0())
       .RectDrawing(artifact1.Client(1), FloatRect(0, 0, 400, 200),
                    Color::kBlack);
-  layer->ResetNeedsDisplayForTesting();
+  // Simluate commit to the compositor thread.
+  layer->PushPropertiesTo(
+      layer->CreateLayerImpl(host_impl.active_tree()).get());
   Update(artifact2.Build());
   ASSERT_EQ(1u, ContentLayerCount());
   ASSERT_EQ(layer, ContentLayerAt(0));
@@ -2920,7 +2929,9 @@ TEST_F(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
   artifact3.Chunk(artifact1.Client(0), t0(), *clip, e0())
       .RectDrawing(artifact1.Client(1), FloatRect(-100, -200, 500, 800),
                    Color::kBlack);
-  layer->ResetNeedsDisplayForTesting();
+  // Simluate commit to the compositor thread.
+  layer->PushPropertiesTo(
+      layer->CreateLayerImpl(host_impl.active_tree()).get());
   Update(artifact3.Build());
   ASSERT_EQ(1u, ContentLayerCount());
   ASSERT_EQ(layer, ContentLayerAt(0));

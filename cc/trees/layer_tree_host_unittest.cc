@@ -89,6 +89,13 @@ const char kCheckerboardArea[] = "CheckerboardedContentArea";
 const char kCheckerboardAreaRatio[] = "CheckerboardedContentAreaRatio";
 const char kMissingTiles[] = "NumMissingTiles";
 
+bool LayerSubtreeHasCopyRequest(Layer* layer) {
+  LayerTreeHost* host = layer->layer_tree_host();
+  int index = layer->effect_tree_index();
+  auto* node = host->property_trees()->effect_tree.Node(index);
+  return node->subtree_has_copy_request;
+}
+
 class LayerTreeHostTest : public LayerTreeTest {};
 
 class LayerTreeHostTestHasImplThreadTest : public LayerTreeHostTest {
@@ -2413,24 +2420,24 @@ class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
+        EXPECT_TRUE(child_layer_->update_rect().IsEmpty());
         layer_tree_host()->SetRasterColorSpace(space2_);
-        EXPECT_TRUE(child_layer_->NeedsDisplayForTesting());
+        EXPECT_FALSE(child_layer_->update_rect().IsEmpty());
         break;
       case 3:
         // The redundant SetRasterColorSpace should cause no commit and no
         // damage. Force a commit for the test to continue.
         layer_tree_host()->SetRasterColorSpace(space2_);
         PostSetNeedsCommitToMainThread();
-        EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
+        EXPECT_TRUE(child_layer_->update_rect().IsEmpty());
         break;
       case 4:
-        EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
+        EXPECT_TRUE(child_layer_->update_rect().IsEmpty());
         layer_tree_host()->SetRasterColorSpace(space1_);
-        EXPECT_TRUE(child_layer_->NeedsDisplayForTesting());
+        EXPECT_FALSE(child_layer_->update_rect().IsEmpty());
         break;
       case 5:
-        EXPECT_FALSE(child_layer_->NeedsDisplayForTesting());
+        EXPECT_TRUE(child_layer_->update_rect().IsEmpty());
         PostSetNeedsCommitToMainThread();
         break;
       case 6:
@@ -7351,7 +7358,7 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
   void WillCommit() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        EXPECT_TRUE(root->has_copy_requests_in_target_subtree());
+        EXPECT_TRUE(LayerSubtreeHasCopyRequest(root.get()));
         break;
     }
   }
@@ -7374,7 +7381,7 @@ class LayerTreeHostTestUpdateCopyRequests : public LayerTreeHostTest {
         child->SetTransform(transform);
         break;
       case 3:
-        EXPECT_FALSE(root->has_copy_requests_in_target_subtree());
+        EXPECT_FALSE(LayerSubtreeHasCopyRequest(root.get()));
         EndTest();
         break;
     }
