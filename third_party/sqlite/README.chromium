@@ -1,6 +1,6 @@
 Name: sqlite
 URL: https://sqlite.org/
-Version: 3.22.0
+Version: 3.24.0
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain
@@ -138,14 +138,14 @@ diffs. The second CL is still large, but it's a fraction of the first
 # The steps below are easier if done in the SQLite directory.
 cd third_party/sqlite
 
-export OLD=3220000
-export NEW=3230000
+export OLD=3240000
+export NEW=3250000
 export GNU_SED=sed  # OSX: "brew install gnu-sed", then use "gsed" here.
 
 #### Download and unpack the new SQLite release.
 git new-branch sqlite-new-upstream
 # URL from "Alternative Source Code Formats" at https://sqlite.org/download.html
-curl https://sqlite.org/2018/sqlite-src-3230000.zip > upstream.zip
+curl https://sqlite.org/2018/sqlite-src-${NEW}.zip > upstream.zip
 mkdir sqlite-src-$NEW
 unzip ./upstream.zip -d sqlite-src-$NEW
 rm ./upstream.zip
@@ -156,7 +156,7 @@ xdg-open sqlite-src-$NEW  # Make sure everything looks right.
 #### Add the new release code in a separate CL, for code review sanity.
 git add sqlite-src-$NEW  # Committing the code as downloaded, on purpose.
 git clean -i -d -x sqlite-src-$NEW  # Make sure no file is git-ignored.
-git commit -m "sqlite: Add code for release 3.23.0"
+git commit -m "sqlite: Add code for release 3.25.0"
 git cl upload  # Have the new code in a separate (impossible to review) CL.
 
 #### Create a branch for the old SQLite release's upstream version.
@@ -205,6 +205,7 @@ git rebase sqlite-new-base
 #### Finally, create the branch that we'll upload.
 git new-branch --upstream-current sqlite-new-cl
 ./scripts/generate_amalgamation.sh
+git cl format amalgamation/rename_exports.h
 
 #### Validate the upgrade.
 # The goal is to have a set of reasonably-independent CLs which can be

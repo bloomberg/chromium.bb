@@ -1,4 +1,4 @@
-From 4bd6a4e20fd5f40091c2043dee4715fc04b23ebd Mon Sep 17 00:00:00 2001
+From 5b92ff82266032064623c0bba8b53e1fd57833d7 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Fri, 16 Jan 2015 10:24:30 -0800
 Subject: [PATCH 01/10] [test] SQLite tests compiling on Linux.
@@ -103,10 +103,10 @@ index b838b844a312..62d029430803 100644
  #LIBTCL = /home/drh/tcltk/8.3hpux/libtcl8.3.a -ldld -lm -lc
  
 diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
-index d312545d16f3..77657f1a9201 100644
+index 1200b73f428b..3c7f14120b8b 100644
 --- a/third_party/sqlite/src/main.mk
 +++ b/third_party/sqlite/src/main.mk
-@@ -827,7 +827,7 @@ sqlite3_analyzer.c: sqlite3.c $(TOP)/src/tclsqlite.c $(TOP)/tool/spaceanal.tcl $
+@@ -829,7 +829,7 @@ sqlite3_analyzer.c: sqlite3.c $(TOP)/src/tclsqlite.c $(TOP)/tool/spaceanal.tcl $
  	tclsh $(TOP)/tool/mkccode.tcl $(TOP)/tool/sqlite3_analyzer.c.in >sqlite3_analyzer.c
  
  sqlite3_analyzer$(EXE): sqlite3_analyzer.c
@@ -116,5 +116,5 @@ index d312545d16f3..77657f1a9201 100644
  sqltclsh.c: sqlite3.c $(TOP)/src/tclsqlite.c $(TOP)/tool/sqltclsh.tcl $(TOP)/ext/misc/appendvfs.c $(TOP)/tool/mkccode.tcl
  	tclsh $(TOP)/tool/mkccode.tcl $(TOP)/tool/sqltclsh.c.in >sqltclsh.c
 -- 
-2.16.0
+2.17.0
 

@@ -1,5 +1,5 @@
 
-AM_CFLAGS = @THREADSAFE_FLAGS@ @DYNAMIC_EXTENSION_FLAGS@ @FTS5_FLAGS@ @JSON1_FLAGS@ @ZLIB_FLAGS@ @SESSION_FLAGS@ -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_RTREE
+AM_CFLAGS = @THREADSAFE_FLAGS@ @DYNAMIC_EXTENSION_FLAGS@ @FTS5_FLAGS@ @JSON1_FLAGS@ @ZLIB_FLAGS@ @SESSION_FLAGS@ -DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_RTREE @DEBUG_FLAGS@
 
 lib_LTLIBRARIES = libsqlite3.la
 libsqlite3_la_SOURCES = sqlite3.c
@@ -14,7 +14,7 @@ sqlite3_CFLAGS = $(AM_CFLAGS) -DSQLITE_ENABLE_EXPLAIN_COMMENTS -DSQLITE_ENABLE_D
 
 include_HEADERS = sqlite3.h sqlite3ext.h
 
-EXTRA_DIST = sqlite3.1 tea Makefile.msc sqlite3.rc README.txt Replace.cs
+EXTRA_DIST = sqlite3.1 tea Makefile.msc sqlite3.rc README.txt Replace.cs Makefile.fallback
 pkgconfigdir = ${libdir}/pkgconfig
 pkgconfig_DATA = sqlite3.pc
 

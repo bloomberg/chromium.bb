@@ -1,4 +1,4 @@
-From f63c9ffd71e362e10317ba95e0c10a300f317df8 Mon Sep 17 00:00:00 2001
+From 771f98288f8e77a732b31fc8441ba67349e50328 Mon Sep 17 00:00:00 2001
 From: "tc@google.com" <tc@google.com>
 Date: Tue, 6 Jan 2009 22:39:41 +0000
 Subject: [PATCH 05/10] Custom shell.c helpers to load Chromium's ICU data.
@@ -36,10 +36,10 @@ index 62d029430803..a37d41a0099d 100644
  #    Nothing for unix.
  #
 diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
-index 4b358c1f7c69..0f0e1f829d2b 100644
+index e975ed9a732c..05566f34dc46 100644
 --- a/third_party/sqlite/src/main.mk
 +++ b/third_party/sqlite/src/main.mk
-@@ -540,7 +540,7 @@ libsqlite3.a:	$(LIBOBJ)
+@@ -542,7 +542,7 @@ libsqlite3.a:	$(LIBOBJ)
  
  sqlite3$(EXE):	shell.c libsqlite3.a sqlite3.h
  	$(TCCX) $(READLINE_FLAGS) -o sqlite3$(EXE) $(SHELL_OPT) \
@@ -49,10 +49,10 @@ index 4b358c1f7c69..0f0e1f829d2b 100644
  sqldiff$(EXE):	$(TOP)/tool/sqldiff.c sqlite3.c sqlite3.h
  	$(TCCX) -o sqldiff$(EXE) -DSQLITE_THREADSAFE=0 \
 diff --git a/third_party/sqlite/src/src/shell.c.in b/third_party/sqlite/src/src/shell.c.in
-index 28a059d5645f..18751fc75270 100644
+index cbebab131071..e3e7a068c6c5 100644
 --- a/third_party/sqlite/src/src/shell.c.in
 +++ b/third_party/sqlite/src/src/shell.c.in
-@@ -8244,6 +8244,16 @@ int SQLITE_CDECL wmain(int argc, wchar_t **wargv){
+@@ -8393,6 +8393,16 @@ int SQLITE_CDECL wmain(int argc, wchar_t **wargv){
    }
  #endif
  
@@ -141,5 +141,5 @@ index 000000000000..67ebbf4fbdb4
 +  return 1;
 +}
 -- 
-2.16.0
+2.17.0
 

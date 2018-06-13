@@ -145,6 +145,7 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   const char *zMasterName;
   int openedTransaction = 0;
 
+  assert( (db->mDbFlags & DBFLAG_SchemaKnownOk)==0 );
   assert( iDb>=0 && iDb<db->nDb );
   assert( db->aDb[iDb].pSchema );
   assert( sqlite3_mutex_held(db->mutex) );
@@ -214,6 +215,9 @@ static int sqlite3InitOne(sqlite3 *db, int iDb, char **pzErrMsg){
   */
   for(i=0; i<ArraySize(meta); i++){
     sqlite3BtreeGetMeta(pDb->pBt, i+1, (u32 *)&meta[i]);
+  }
+  if( (db->flags & SQLITE_ResetDatabase)!=0 ){
+    memset(meta, 0, sizeof(meta));
   }
   pDb->pSchema->schema_cookie = meta[BTREE_SCHEMA_VERSION-1];
 
@@ -374,6 +378,7 @@ int sqlite3Init(sqlite3 *db, char **pzErrMsg){
   }
   /* All other schemas after the main schema. The "temp" schema must be last */
   for(i=db->nDb-1; i>0; i--){
+    assert( i==1 || sqlite3BtreeHoldsMutex(db->aDb[i].pBt) );
     if( !DbHasProperty(db, i, DB_SchemaLoaded) ){
       rc = sqlite3InitOne(db, i, pzErrMsg);
       if( rc ) return rc;
@@ -395,10 +400,12 @@ int sqlite3ReadSchema(Parse *pParse){
   assert( sqlite3_mutex_held(db->mutex) );
   if( !db->init.busy ){
     rc = sqlite3Init(db, &pParse->zErrMsg);
-  }
-  if( rc!=SQLITE_OK ){
-    pParse->rc = rc;
-    pParse->nErr++;
+    if( rc!=SQLITE_OK ){
+      pParse->rc = rc;
+      pParse->nErr++;
+    }else if( db->noSharedCache ){
+      db->mDbFlags |= DBFLAG_SchemaKnownOk;
+    }
   }
   return rc;
 }
@@ -609,7 +616,7 @@ static int sqlite3Prepare(
   if( rc==SQLITE_OK && sParse.pVdbe && sParse.explain ){
     static const char * const azColName[] = {
        "addr", "opcode", "p1", "p2", "p3", "p4", "p5", "comment",
-       "selectid", "order", "from", "detail"
+       "id", "parent", "notused", "detail"
     };
     int iFirst, mx;
     if( sParse.explain==2 ){

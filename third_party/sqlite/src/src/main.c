@@ -642,6 +642,17 @@ int sqlite3_config(int op, ...){
       break;
     }
 
+#ifdef SQLITE_ENABLE_SORTER_REFERENCES
+    case SQLITE_CONFIG_SORTERREF_SIZE: {
+      int iVal = va_arg(ap, int);
+      if( iVal<0 ){
+        iVal = SQLITE_DEFAULT_SORTERREF_SIZE;
+      }
+      sqlite3GlobalConfig.szSorterRef = (u32)iVal;
+      break;
+    }
+#endif /* SQLITE_ENABLE_SORTER_REFERENCES */
+
     default: {
       rc = SQLITE_ERROR;
       break;
@@ -823,6 +834,7 @@ int sqlite3_db_config(sqlite3 *db, int op, ...){
         { SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE,      SQLITE_NoCkptOnClose  },
         { SQLITE_DBCONFIG_ENABLE_QPSG,           SQLITE_EnableQPSG     },
         { SQLITE_DBCONFIG_TRIGGER_EQP,           SQLITE_TriggerEQP     },
+        { SQLITE_DBCONFIG_RESET_DATABASE,        SQLITE_ResetDatabase  },
       };
       unsigned int i;
       rc = SQLITE_ERROR; /* IMP: R-42790-23372 */
@@ -1796,11 +1808,13 @@ int sqlite3_create_function_v2(
 #endif
   sqlite3_mutex_enter(db->mutex);
   if( xDestroy ){
-    pArg = (FuncDestructor *)sqlite3DbMallocZero(db, sizeof(FuncDestructor));
+    pArg = (FuncDestructor *)sqlite3Malloc(sizeof(FuncDestructor));
     if( !pArg ){
+      sqlite3OomFault(db);
       xDestroy(p);
       goto out;
     }
+    pArg->nRef = 0;
     pArg->xDestroy = xDestroy;
     pArg->pUserData = p;
   }
@@ -1808,7 +1822,7 @@ int sqlite3_create_function_v2(
   if( pArg && pArg->nRef==0 ){
     assert( rc!=SQLITE_OK );
     xDestroy(p);
-    sqlite3DbFree(db, pArg);
+    sqlite3_free(pArg);
   }
 
  out:
@@ -1847,6 +1861,28 @@ int sqlite3_create_function16(
 
 
 /*
+** The following is the implementation of an SQL function that always
+** fails with an error message stating that the function is used in the
+** wrong context.  The sqlite3_overload_function() API might construct
+** SQL function that use this routine so that the functions will exist
+** for name resolution but are actually overloaded by the xFindFunction
+** method of virtual tables.
+*/
+static void sqlite3InvalidFunction(
+  sqlite3_context *context,  /* The function calling context */
+  int NotUsed,               /* Number of arguments to the function */
+  sqlite3_value **NotUsed2   /* Value of each argument */
+){
+  const char *zName = (const char*)sqlite3_user_data(context);
+  char *zErr;
+  UNUSED_PARAMETER2(NotUsed, NotUsed2);
+  zErr = sqlite3_mprintf(
+      "unable to use function %s in the requested context", zName);
+  sqlite3_result_error(context, zErr, -1);
+  sqlite3_free(zErr);
+}
+
+/*
 ** Declare that a function has been overloaded by a virtual table.
 **
 ** If the function already exists as a regular global function, then
@@ -1863,7 +1899,8 @@ int sqlite3_overload_function(
   const char *zName,
   int nArg
 ){
-  int rc = SQLITE_OK;
+  int rc;
+  char *zCopy;
 
 #ifdef SQLITE_ENABLE_API_ARMOR
   if( !sqlite3SafetyCheckOk(db) || zName==0 || nArg<-2 ){
@@ -1871,13 +1908,13 @@ int sqlite3_overload_function(
   }
 #endif
   sqlite3_mutex_enter(db->mutex);
-  if( sqlite3FindFunction(db, zName, nArg, SQLITE_UTF8, 0)==0 ){
-    rc = sqlite3CreateFunc(db, zName, nArg, SQLITE_UTF8,
-                           0, sqlite3InvalidFunction, 0, 0, 0);
-  }
-  rc = sqlite3ApiExit(db, rc);
+  rc = sqlite3FindFunction(db, zName, nArg, SQLITE_UTF8, 0)!=0;
   sqlite3_mutex_leave(db->mutex);
-  return rc;
+  if( rc ) return SQLITE_OK;
+  zCopy = sqlite3_mprintf(zName);
+  if( zCopy==0 ) return SQLITE_NOMEM;
+  return sqlite3_create_function_v2(db, zName, nArg, SQLITE_UTF8,
+                           zCopy, sqlite3InvalidFunction, 0, 0, sqlite3_free);
 }
 
 #ifndef SQLITE_OMIT_TRACE
@@ -3857,24 +3894,6 @@ int sqlite3_test_control(int op, ...){
       db->dbOptFlags = (u16)(va_arg(ap, int) & 0xffff);
       break;
     }
-
-#ifdef SQLITE_N_KEYWORD
-    /* sqlite3_test_control(SQLITE_TESTCTRL_ISKEYWORD, const char *zWord)
-    **
-    ** If zWord is a keyword recognized by the parser, then return the
-    ** number of keywords.  Or if zWord is not a keyword, return 0.
-    **
-    ** This test feature is only available in the amalgamation since
-    ** the SQLITE_N_KEYWORD macro is not defined in this file if SQLite
-    ** is built using separate source files.
-    */
-    case SQLITE_TESTCTRL_ISKEYWORD: {
-      const char *zWord = va_arg(ap, const char*);
-      int n = sqlite3Strlen30(zWord);
-      rc = (sqlite3KeywordCode((u8*)zWord, n)!=TK_ID) ? SQLITE_N_KEYWORD : 0;
-      break;
-    }
-#endif
 
     /*   sqlite3_test_control(SQLITE_TESTCTRL_LOCALTIME_FAULT, int onoff);
     **
