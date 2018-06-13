@@ -121,7 +121,7 @@ BUILT_SOURCES =					\
 
 CLEANFILES = $(BUILT_SOURCES) doc/doxygen/doxygen_sqlite3.db
 DISTCLEANFILES = src/wayland-version.h
-EXTRA_DIST =
+EXTRA_DIST = CONTRIBUTING.md
 
 
 
