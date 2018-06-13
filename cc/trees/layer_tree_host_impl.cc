@@ -135,6 +135,14 @@ bool IsMobileOptimized(LayerTreeImpl* active_tree) {
   return has_fixed_page_scale || has_mobile_viewport;
 }
 
+// Compares two presentation tokens, handling cases where the token
+// wraps around the 32-bit max value.
+bool PresentationTokenGT(uint32_t token1, uint32_t token2) {
+  // There will be underflow in the subtraction if token1 was created
+  // after token2.
+  return (token2 - token1) > 0x80000000u;
+}
+
 viz::ResourceFormat TileRasterBufferFormat(
     const LayerTreeSettings& settings,
     viz::ContextProvider* context_provider,
@@ -1757,7 +1765,7 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
   std::vector<LayerTreeHost::PresentationTimeCallback> all_callbacks;
   while (!frame_token_infos_.empty()) {
     auto info = frame_token_infos_.begin();
-    if (viz::FrameTokenGT(info->token, frame_token))
+    if (PresentationTokenGT(info->token, frame_token))
       break;
 
     // Update compositor frame latency and smoothness stats only for frames
