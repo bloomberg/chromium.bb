@@ -113,9 +113,9 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
 
   void AttachCompositedLayers();
 
-  void SetCompositorAnimationIdsForTesting(
-      const Vector<int>& compositor_animation_ids) {
-    compositor_animation_ids_ = compositor_animation_ids;
+  void SetCompositorKeyframeModelIdsForTesting(
+      const Vector<int>& compositor_keyframe_model_ids) {
+    compositor_keyframe_model_ids_ = compositor_keyframe_model_ids;
   }
 
   void DowngradeToNormal() { priority_ = kDefaultPriority; }
@@ -152,7 +152,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
 
   Priority priority_;
 
-  Vector<int> compositor_animation_ids_;
+  Vector<int> compositor_keyframe_model_ids_;
 };
 
 DEFINE_TYPE_CASTS(KeyframeEffect,
