@@ -94,7 +94,7 @@ enum FeaturePolicyFeature {
   // Controls the ability of the document to use several dynamic markup API
   // which interfere with document's input stream (document.write(),
   // document.close(), etc.).
-  kDocumentStreamInsertion,
+  kDocumentWrite,
 };
 
 // This struct holds feature policy whitelist data that needs to be replicated

@@ -172,9 +172,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
           "picture-in-picture", mojom::FeaturePolicyFeature::kPictureInPicture);
     }
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
-      default_feature_name_map.Set(
-          "document-stream-insertion",
-          mojom::FeaturePolicyFeature::kDocumentStreamInsertion);
+      default_feature_name_map.Set("document-write",
+                                   mojom::FeaturePolicyFeature::kDocumentWrite);
       default_feature_name_map.Set(
           "image-compression", mojom::FeaturePolicyFeature::kImageCompression);
       default_feature_name_map.Set(

@@ -6106,8 +6106,8 @@ bool Document::AllowedToUseDynamicMarkUpInsertion(
   if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
     return true;
   }
-  if (!frame_ || frame_->IsFeatureEnabled(
-                     mojom::FeaturePolicyFeature::kDocumentStreamInsertion)) {
+  if (!frame_ ||
+      frame_->IsFeatureEnabled(mojom::FeaturePolicyFeature::kDocumentWrite)) {
     return true;
   }
 
@@ -6120,7 +6120,7 @@ bool Document::AllowedToUseDynamicMarkUpInsertion(
       String::Format(
           "The use of method '%s' has been blocked by feature policy. The "
           "feature "
-          "'document-stream-insertion' is disabled in this document.",
+          "'document-write' is disabled in this document.",
           api_name));
   return false;
 }
