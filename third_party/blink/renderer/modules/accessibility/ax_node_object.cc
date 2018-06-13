@@ -1690,14 +1690,13 @@ AccessibilityRole AXNodeObject::AriaRoleAttribute() const {
   return aria_role_;
 }
 
-// Returns the nearest LayoutBlockFlow ancestor which does not have an
-// inlineBoxWrapper - i.e. is not itself an inline object.
+// Returns the nearest block-level LayoutBlockFlow ancestor
 static LayoutBlockFlow* NonInlineBlockFlow(LayoutObject* object) {
   LayoutObject* current = object;
   while (current) {
     if (current->IsLayoutBlockFlow()) {
       LayoutBlockFlow* block_flow = ToLayoutBlockFlow(current);
-      if (!block_flow->InlineBoxWrapper())
+      if (!block_flow->IsAtomicInlineLevel())
         return block_flow;
     }
     current = current->Parent();
