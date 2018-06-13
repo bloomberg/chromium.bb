@@ -733,14 +733,9 @@ TEST_F(FrameSchedulerImplTest,
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest,
-       LowPriorityForHiddenFrameDuringLoadingFeatureEnabled) {
+TEST_F(FrameSchedulerImplTest, LowPriorityForHiddenFrameFeatureEnabled) {
   base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(kLowPriorityForHiddenFrameDuringLoading);
-
-  // Main thread scheduler is in the loading use case.
-  scheduler_->DidStartProvisionalLoad(true);
-  EXPECT_TRUE(scheduler_->IsLoading());
+  feature_list_.InitAndEnableFeature(kLowPriorityForHiddenFrame);
 
   // Hidden Frame Task Queues.
   frame_scheduler_->SetFrameVisible(false);
@@ -771,12 +766,37 @@ TEST_F(FrameSchedulerImplTest,
             TaskQueue::QueuePriority::kNormalPriority);
   EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
+}
+
+TEST_F(FrameSchedulerImplTest,
+       LowPriorityForHiddenFrameDuringLoadingFeatureEnabled) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitWithFeatures(
+      {kLowPriorityForHiddenFrame, kExperimentOnlyWhenLoading}, {});
+
+  // Main thread scheduler is in the loading use case.
+  scheduler_->DidStartProvisionalLoad(true);
+  EXPECT_TRUE(scheduler_->IsLoading());
+
+  // Hidden Frame Task Queues.
+  frame_scheduler_->SetFrameVisible(false);
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
 
   // Main thread scheduler is no longer in loading use case.
   scheduler_->OnFirstMeaningfulPaint();
   EXPECT_FALSE(scheduler_->IsLoading());
 
-  frame_scheduler_->SetFrameVisible(false);
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
   EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
@@ -793,7 +813,28 @@ TEST_F(FrameSchedulerImplTest,
 
 TEST_F(FrameSchedulerImplTest, LowPriorityForSubFrameFeatureEnabled) {
   base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(kLowPriorityForSubFrameDuringLoading);
+  feature_list_.InitAndEnableFeature(kLowPriorityForSubFrame);
+
+  // Sub-Frame Task Queues.
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+}
+
+TEST_F(FrameSchedulerImplTest,
+       LowPriorityForSubFrameDuringLoadingFeatureEnabled) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitWithFeatures(
+      {kLowPriorityForSubFrame, kExperimentOnlyWhenLoading}, {});
 
   // Main thread scheduler is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
@@ -833,10 +874,31 @@ TEST_F(FrameSchedulerImplTest, LowPriorityForSubFrameFeatureEnabled) {
 }
 
 TEST_F(FrameSchedulerImplTest,
-       LowPriorityForSubFrameTimerDuringLoadingFeatureEnabled) {
+       kLowPriorityForSubFrameThrottleableTaskFeatureEnabled) {
   base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(
-      kLowPriorityForSubFrameThrottleableTaskDuringLoading);
+  feature_list_.InitAndEnableFeature(kLowPriorityForSubFrameThrottleableTask);
+
+  // Sub-Frame Task Queues.
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighestPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+}
+
+TEST_F(FrameSchedulerImplTest,
+       kLowPriorityForSubFrameThrottleableTaskDuringLoadingFeatureEnabled) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitWithFeatures(
+      {kLowPriorityForSubFrameThrottleableTask, kExperimentOnlyWhenLoading},
+      {});
 
   // Main thread scheduler is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
@@ -875,11 +937,47 @@ TEST_F(FrameSchedulerImplTest,
             TaskQueue::QueuePriority::kNormalPriority);
 }
 
-TEST_F(FrameSchedulerImplTest,
-       LowPriorityForTimerDuringLoadingFeatureEnabled_SubFrame) {
+TEST_F(FrameSchedulerImplTest, kLowPriorityForThrottleableTaskFeatureEnabled) {
   base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(
-      kLowPriorityForThrottleableTaskDuringLoading);
+  feature_list_.InitAndEnableFeature(kLowPriorityForThrottleableTask);
+
+  // Sub-Frame Task Queues.
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighestPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+
+  frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
+      nullptr, FrameScheduler::FrameType::kMainFrame);
+
+  // Main Frame Task Queues.
+  EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kHighestPriority);
+  EXPECT_EQ(DeferrableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(ThrottleableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kLowPriority);
+  EXPECT_EQ(PausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+  EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
+            TaskQueue::QueuePriority::kNormalPriority);
+}
+
+TEST_F(FrameSchedulerImplTest,
+       kLowPriorityForThrottleableTaskDuringLoadingFeatureEnabled_SubFrame) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitWithFeatures(
+      {kLowPriorityForThrottleableTask, kExperimentOnlyWhenLoading}, {});
 
   // Main thread is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
@@ -917,10 +1015,10 @@ TEST_F(FrameSchedulerImplTest,
 }
 
 TEST_F(FrameSchedulerImplTest,
-       LowPriorityForTimerDuringLoadingFeatureEnabled_MainFrame) {
+       kLowPriorityForThrottleableTaskDuringLoadingFeatureEnabled_MainFrame) {
   base::test::ScopedFeatureList feature_list_;
-  feature_list_.InitAndEnableFeature(
-      kLowPriorityForThrottleableTaskDuringLoading);
+  feature_list_.InitWithFeatures(
+      {kLowPriorityForThrottleableTask, kExperimentOnlyWhenLoading}, {});
 
   frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
       nullptr, FrameScheduler::FrameType::kMainFrame);
@@ -929,6 +1027,7 @@ TEST_F(FrameSchedulerImplTest,
   scheduler_->DidStartProvisionalLoad(true);
   EXPECT_TRUE(scheduler_->IsLoading());
 
+  // Main Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
   EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),
@@ -946,6 +1045,7 @@ TEST_F(FrameSchedulerImplTest,
   scheduler_->OnFirstMeaningfulPaint();
   EXPECT_FALSE(scheduler_->IsLoading());
 
+  // Main Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
   EXPECT_EQ(LoadingControlTaskQueue()->GetQueuePriority(),

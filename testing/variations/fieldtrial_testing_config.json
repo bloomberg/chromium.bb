@@ -1593,7 +1593,8 @@
                 {
                     "name": "LowPriorityForHiddenFrameDuringLoading",
                     "enable_features": [
-                        "BlinkSchedulerLowPriorityForHiddenFrameDuringLoading"
+                        "BlinkSchedulerExperimentOnlyWhenLoading",
+                        "BlinkSchedulerLowPriorityForHiddenFrame"
                     ]
                 }
             ]
