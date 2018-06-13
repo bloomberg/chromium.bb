@@ -527,12 +527,8 @@ config("compiler") {
 
   # Tells the compiler not to use absolute paths when passing the default
   # paths to the tools it invokes. We don't want this because we don't
-  # really need it and it can mess up the goma cache entries. It would
-  # be nice if it was on by default in clang, but it isn't.
-  #
-  # TODO(thakis): Figure out if this should be the default, and expose in
-  # clang-cl if not.
-  if (is_clang && !is_win && !is_nacl) {
+  # really need it and it can mess up the goma cache entries.
+  if (is_clang && !is_nacl) {
     cflags += [ "-no-canonical-prefixes" ]
   }
 
