@@ -127,10 +127,8 @@ const char* g_aria_interactive_widget_attributes[] = {
     "aria-checked",
     "aria-controls",
     "aria-disabled",  // If it's disabled, it can be made interactive.
-    "aria-expanded",
     "aria-haspopup",
     "aria-multiselectable",
-    "aria-pressed",
     "aria-required",
     "aria-selected"
     // clang-format on
