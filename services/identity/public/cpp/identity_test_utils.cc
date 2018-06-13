@@ -107,16 +107,20 @@ void SetRefreshTokenForPrimaryAccount(ProfileOAuth2TokenService* token_service,
   token_service->UpdateCredentials(account_id, refresh_token);
 }
 
-void SetInvalidRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
-                                      IdentityManager* identity_manager,
-                                      const std::string& account_id) {
+void SetInvalidRefreshTokenForPrimaryAccount(
+    ProfileOAuth2TokenService* token_service,
+    IdentityManager* identity_manager) {
+  DCHECK(identity_manager->HasPrimaryAccount());
+  std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
   token_service->UpdateCredentials(
       account_id, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
 }
 
-void RemoveRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
-                                  IdentityManager* identity_manager,
-                                  const std::string& account_id) {
+void RemoveRefreshTokenForPrimaryAccount(
+    ProfileOAuth2TokenService* token_service,
+    IdentityManager* identity_manager) {
+  DCHECK(identity_manager->HasPrimaryAccount());
+  std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
   token_service->RevokeCredentials(account_id);
 }
 

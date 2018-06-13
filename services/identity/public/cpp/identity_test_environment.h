@@ -34,13 +34,13 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // Blocks until the refresh token is set.
   void SetRefreshTokenForPrimaryAccount();
 
-  // Sets a special invalid refresh token that corresponds uniquely to
-  // |account_id|. Blocks until the refresh token is set.
-  void SetInvalidRefreshTokenForAccount(const std::string& account_id);
+  // Sets a special invalid refresh token for the primary account (which must
+  // already be set). Blocks until the refresh token is set.
+  void SetInvalidRefreshTokenForPrimaryAccount();
 
-  // Removes the refresh token that corresponds uniquely to |account_id|.
-  // Blocks until the refresh token is cleared.
-  void RemoveRefreshTokenForAccount(const std::string& account_id);
+  // Removes any refresh token for the primary account (which must already be
+  // set). Blocks until the refresh token is removed.
+  void RemoveRefreshTokenForPrimaryAccount();
 
   // Makes the primary account available for the given email address, generating
   // a GAIA ID and refresh token that correspond uniquely to that email address.

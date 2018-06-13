@@ -48,18 +48,19 @@ std::string SetPrimaryAccount(SigninManagerBase* signin_manager,
 void SetRefreshTokenForPrimaryAccount(ProfileOAuth2TokenService* token_service,
                                       IdentityManager* identity_manager);
 
-// Sets a special invalid refresh token. Blocks until the refresh token is set.
-// NOTE: See disclaimer at top of file re: direct usage.
-void SetInvalidRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
-                                      IdentityManager* identity_manager,
-                                      const std::string& account_id);
+// Sets a special invalid refresh token for the primary account (which must
+// already be set). Blocks until the refresh token is set. NOTE: See disclaimer
+// at top of file re: direct usage.
+void SetInvalidRefreshTokenForPrimaryAccount(
+    ProfileOAuth2TokenService* token_service,
+    IdentityManager* identity_manager);
 
-// Removes the refresh token for |account_id|, if ones exists. Blocks until the
-// refresh token is cleared.
-// NOTE: See disclaimer at top of file re: direct usage.
-void RemoveRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
-                                  IdentityManager* identity_manager,
-                                  const std::string& account_id);
+// Removes any refresh token for the primary account (which must already be
+// set). Blocks until the refresh token is removed. NOTE: See disclaimer at top
+// of file re: direct usage.
+void RemoveRefreshTokenForPrimaryAccount(
+    ProfileOAuth2TokenService* token_service,
+    IdentityManager* identity_manager);
 
 // Makes the primary account available for the given email address, generating a
 // GAIA ID and refresh token that correspond uniquely to that email address. On
