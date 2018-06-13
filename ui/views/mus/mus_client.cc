@@ -104,10 +104,8 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     wm_state_ = std::make_unique<wm::WMState>();
 
   service_manager::Connector* connector = params.connector;
-  if (params.bind_test_ws_interfaces) {
-    connector->BindInterface(ui::mojom::kServiceName, &server_test_ptr_);
+  if (params.bind_test_ws_interfaces)
     connector->BindInterface(ui::mojom::kServiceName, &event_injector_);
-  }
 
   if (!params.window_tree_client) {
     DCHECK(io_task_runner);
@@ -298,13 +296,6 @@ void MusClient::CloseAllWidgets() {
     if (widget)
       widget->CloseNow();
   }
-}
-
-ui::mojom::WindowServerTest* MusClient::GetTestingInterface() const {
-  // This will only be set in tests. CHECK to ensure it doesn't get used
-  // elsewhere.
-  CHECK(server_test_ptr_);
-  return server_test_ptr_.get();
 }
 
 ui::mojom::EventInjector* MusClient::GetTestingEventInjector() const {
