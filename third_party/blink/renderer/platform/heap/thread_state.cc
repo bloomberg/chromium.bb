@@ -83,15 +83,16 @@ namespace blink {
 WTF::ThreadSpecific<ThreadState*>* ThreadState::thread_specific_ = nullptr;
 uint8_t ThreadState::main_thread_state_storage_[sizeof(ThreadState)];
 
+namespace {
+
 const size_t kDefaultAllocatedObjectSizeThreshold = 100 * 1024;
 
 // Duration of one incremental marking step. Should be short enough that it
 // doesn't cause jank even though it is scheduled as a normal task.
-const double kIncrementalMarkingStepDurationInSeconds = 0.001;
+constexpr TimeDelta kIncrementalMarkingStepDuration =
+    TimeDelta::FromMilliseconds(1);
 
 constexpr size_t kMaxTerminationGCLoops = 20;
-
-namespace {
 
 const char* GcReasonString(BlinkGC::GCReason reason) {
   switch (reason) {
@@ -653,7 +654,7 @@ ThreadState* ThreadState::FromObject(const void* object) {
   return page->Arena()->GetThreadState();
 }
 
-void ThreadState::PerformIdleGC(double deadline_seconds) {
+void ThreadState::PerformIdleGC(TimeTicks deadline) {
   DCHECK(CheckThread());
   DCHECK(Platform::Current()->CurrentThread()->Scheduler());
 
@@ -666,10 +667,10 @@ void ThreadState::PerformIdleGC(double deadline_seconds) {
     return;
   }
 
-  double estimated_marking_time_in_seconds =
-      heap_->stats_collector()->estimated_marking_time_in_seconds();
-  double idle_delta_in_seconds = deadline_seconds - CurrentTimeTicksInSeconds();
-  if (idle_delta_in_seconds <= estimated_marking_time_in_seconds &&
+  TimeDelta estimated_marking_time = TimeDelta::FromSecondsD(
+      heap_->stats_collector()->estimated_marking_time_in_seconds());
+  TimeDelta idle_delta = deadline - CurrentTimeTicks();
+  if (idle_delta <= estimated_marking_time &&
       !Platform::Current()
            ->CurrentThread()
            ->Scheduler()
@@ -691,7 +692,7 @@ void ThreadState::PerformIdleGC(double deadline_seconds) {
                  BlinkGC::kLazySweeping, BlinkGC::kIdleGC);
 }
 
-void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
+void ThreadState::PerformIdleLazySweep(TimeTicks deadline) {
   DCHECK(CheckThread());
 
   // If we are not in a sweeping phase, there is nothing to do here.
@@ -713,8 +714,9 @@ void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
     SweepForbiddenScope scope(this);
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kLazySweepInIdle,
-        "idleDeltaInSeconds", deadline_seconds - CurrentTimeTicksInSeconds());
-    sweep_completed = Heap().AdvanceLazySweep(deadline_seconds);
+        "idleDeltaInSeconds", (deadline - CurrentTimeTicks()).InSecondsF());
+    sweep_completed =
+        Heap().AdvanceLazySweep(deadline.since_origin().InSecondsF());
     // We couldn't finish the sweeping within the deadline.
     // We request another idle task for the remaining sweeping.
     if (!sweep_completed)
@@ -1489,8 +1491,8 @@ void ThreadState::IncrementalMarkingStep() {
           << "IncrementalMarking: Step";
   AtomicPauseScope atomic_pause_scope(this);
   DCHECK(IsMarkingInProgress());
-  bool complete = MarkPhaseAdvanceMarking(
-      CurrentTimeTicksInSeconds() + kIncrementalMarkingStepDurationInSeconds);
+  bool complete = MarkPhaseAdvanceMarking(CurrentTimeTicks() +
+                                          kIncrementalMarkingStepDuration);
   if (complete)
     ScheduleIncrementalMarkingFinalize();
   else
@@ -1604,7 +1606,7 @@ void ThreadState::RunAtomicPause(BlinkGC::StackState stack_state,
           GcReasonString(reason));
       AtomicPausePrologue(stack_state, marking_type, reason);
       MarkPhaseVisitRoots();
-      CHECK(MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity()));
+      CHECK(MarkPhaseAdvanceMarking(TimeTicks::Max()));
       MarkPhaseEpilogue(marking_type);
     }
     AtomicPauseEpilogue(marking_type, sweeping_type);
@@ -1699,11 +1701,11 @@ void ThreadState::MarkPhaseVisitRoots() {
   }
 }
 
-bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
+bool ThreadState::MarkPhaseAdvanceMarking(TimeTicks deadline) {
   StackFrameDepthScope stack_depth_scope(&Heap().GetStackFrameDepth());
   // 3. Transitive closure to trace objects including ephemerons.
-  return Heap().AdvanceMarkingStackProcessing(current_gc_data_.visitor.get(),
-                                              deadline_seconds);
+  return Heap().AdvanceMarkingStackProcessing(
+      current_gc_data_.visitor.get(), deadline.since_origin().InSecondsF());
 }
 
 bool ThreadState::ShouldVerifyMarking() const {

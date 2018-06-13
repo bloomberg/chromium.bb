@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/wtf/thread_specific.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace v8 {
 class Isolate;
@@ -266,8 +267,8 @@ class PLATFORM_EXPORT ThreadState {
   // in the dangling pointer situation.
   void RunTerminationGC();
 
-  void PerformIdleGC(double deadline_seconds);
-  void PerformIdleLazySweep(double deadline_seconds);
+  void PerformIdleGC(TimeTicks deadline);
+  void PerformIdleLazySweep(TimeTicks deadline);
 
   void ScheduleIdleGC();
   void ScheduleIdleLazySweep();
@@ -601,7 +602,7 @@ class PLATFORM_EXPORT ThreadState {
   void AtomicPauseEpilogue(BlinkGC::MarkingType, BlinkGC::SweepingType);
   void MarkPhaseEpilogue(BlinkGC::MarkingType);
   void MarkPhaseVisitRoots();
-  bool MarkPhaseAdvanceMarking(double deadline_seconds);
+  bool MarkPhaseAdvanceMarking(TimeTicks deadline);
   void VerifyMarking(BlinkGC::MarkingType);
 
   void RunAtomicPause(BlinkGC::StackState,

@@ -76,7 +76,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   void Unpause() override;
 
   void CallbackFired(CallbackId,
-                     double deadline_seconds,
+                     TimeTicks deadline,
                      IdleDeadline::CallbackType);
 
  private:
@@ -94,9 +94,7 @@ class CORE_EXPORT ScriptedIdleTaskController
            !WTF::IsHashTraitsEmptyValue<Traits, CallbackId>(id);
   }
 
-  void RunCallback(CallbackId,
-                   double deadline_seconds,
-                   IdleDeadline::CallbackType);
+  void RunCallback(CallbackId, TimeTicks deadline, IdleDeadline::CallbackType);
 
   ThreadScheduler* scheduler_;  // Not owned.
   HeapHashMap<CallbackId, TraceWrapperMember<IdleTask>> idle_tasks_;

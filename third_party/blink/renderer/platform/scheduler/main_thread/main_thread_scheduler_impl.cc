@@ -2422,7 +2422,7 @@ MainThreadSchedulerImpl::CreateWebScopedVirtualTimePauser(
 
 void MainThreadSchedulerImpl::RunIdleTask(WebThread::IdleTask task,
                                           base::TimeTicks deadline) {
-  std::move(task).Run((deadline - base::TimeTicks()).InSecondsF());
+  std::move(task).Run(deadline);
 }
 
 void MainThreadSchedulerImpl::PostIdleTask(const base::Location& location,

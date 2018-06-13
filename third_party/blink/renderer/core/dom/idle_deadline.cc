@@ -11,21 +11,19 @@
 
 namespace blink {
 
-IdleDeadline::IdleDeadline(double deadline_seconds, CallbackType callback_type)
-    : deadline_seconds_(deadline_seconds), callback_type_(callback_type) {}
+IdleDeadline::IdleDeadline(TimeTicks deadline, CallbackType callback_type)
+    : deadline_(deadline), callback_type_(callback_type) {}
 
 double IdleDeadline::timeRemaining() const {
-  double time_remaining = deadline_seconds_ - CurrentTimeTicksInSeconds();
-  if (time_remaining < 0) {
-    return 0;
-  } else if (Platform::Current()
-                 ->CurrentThread()
-                 ->Scheduler()
-                 ->ShouldYieldForHighPriorityWork()) {
+  TimeDelta time_remaining = deadline_ - CurrentTimeTicks();
+  if (time_remaining < TimeDelta() || Platform::Current()
+                                          ->CurrentThread()
+                                          ->Scheduler()
+                                          ->ShouldYieldForHighPriorityWork()) {
     return 0;
   }
 
-  return 1000.0 * Performance::ClampTimeResolution(time_remaining);
+  return 1000.0 * Performance::ClampTimeResolution(time_remaining.InSecondsF());
 }
 
 }  // namespace blink

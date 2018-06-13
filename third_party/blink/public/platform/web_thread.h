@@ -29,6 +29,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 
@@ -69,9 +70,8 @@ struct BLINK_PLATFORM_EXPORT WebThreadCreationParams {
 // run.
 class BLINK_PLATFORM_EXPORT WebThread {
  public:
-  // An IdleTask is passed a deadline in CLOCK_MONOTONIC seconds and is
-  // expected to complete before this deadline.
-  using IdleTask = base::OnceCallback<void(double deadline_seconds)>;
+  // An IdleTask is expected to complete before the deadline it is passed.
+  using IdleTask = base::OnceCallback<void(base::TimeTicks deadline)>;
 
   class BLINK_PLATFORM_EXPORT TaskObserver {
    public:

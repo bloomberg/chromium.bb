@@ -114,8 +114,7 @@ void ScriptWrappableMarkingVisitor::ScheduleIdleLazyCleanup() {
   idle_cleanup_task_scheduled_ = true;
 }
 
-void ScriptWrappableMarkingVisitor::PerformLazyCleanup(
-    double deadline_seconds) {
+void ScriptWrappableMarkingVisitor::PerformLazyCleanup(TimeTicks deadline) {
   idle_cleanup_task_scheduled_ = false;
 
   if (!should_cleanup_)
@@ -124,7 +123,7 @@ void ScriptWrappableMarkingVisitor::PerformLazyCleanup(
   TRACE_EVENT1("blink_gc,devtools.timeline",
                "ScriptWrappableMarkingVisitor::performLazyCleanup",
                "idleDeltaInSeconds",
-               deadline_seconds - CurrentTimeTicksInSeconds());
+               (deadline - CurrentTimeTicks()).InSecondsF());
 
   const int kDeadlineCheckInterval = 2500;
   int processed_wrapper_count = 0;
@@ -142,7 +141,7 @@ void ScriptWrappableMarkingVisitor::PerformLazyCleanup(
 
     processed_wrapper_count++;
     if (processed_wrapper_count % kDeadlineCheckInterval == 0) {
-      if (deadline_seconds <= CurrentTimeTicksInSeconds()) {
+      if (deadline <= CurrentTimeTicks()) {
         ScheduleIdleLazyCleanup();
         return;
       }

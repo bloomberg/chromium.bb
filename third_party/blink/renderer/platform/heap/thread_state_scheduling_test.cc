@@ -39,7 +39,7 @@ class ThreadStateSchedulingTest : public testing::Test {
     // Simulate running idle GC task, instead of actually running the posted
     // task.
     EXPECT_EQ(ThreadState::kIdleGCScheduled, state_->GetGCState());
-    state_->PerformIdleGC(std::numeric_limits<double>::infinity());
+    state_->PerformIdleGC(TimeTicks::Max());
   }
 
   void StartLazySweepingForPreciseGC() {
