@@ -10411,8 +10411,16 @@ bool GLES2DecoderImpl::SimulateAttrib0(
     // casting to float type, but it is a corner case and once we migrate to
     // core profiles on desktop GL, it is no longer relevant.
     Vec4f fvalue(value);
-    std::vector<Vec4f> temp(num_vertices, fvalue);
-    api()->glBufferSubDataFn(GL_ARRAY_BUFFER, 0, size_needed, &temp[0].v[0]);
+    constexpr GLuint kMaxVerticesPerLoop = 32u << 10;
+    const GLuint vertices_per_loop =
+        std::min(num_vertices, kMaxVerticesPerLoop);
+    std::vector<Vec4f> temp(vertices_per_loop, fvalue);
+    for (GLuint offset = 0; offset < num_vertices;) {
+      size_t count = std::min(num_vertices - offset, vertices_per_loop);
+      api()->glBufferSubDataFn(GL_ARRAY_BUFFER, offset * sizeof(Vec4f),
+                               count * sizeof(Vec4f), temp.data());
+      offset += count;
+    }
     attrib_0_buffer_matches_value_ = true;
     attrib_0_value_ = value;
     attrib_0_size_ = size_needed;
