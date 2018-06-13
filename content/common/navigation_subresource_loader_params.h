@@ -11,7 +11,7 @@
 
 namespace content {
 
-class ServiceWorkerHandle;
+class ServiceWorkerObjectHost;
 
 // For NetworkService glues:
 // Navigation parameters that are necessary to set-up a subresource loader
@@ -34,10 +34,10 @@ struct CONTENT_EXPORT SubresourceLoaderParams {
   //
   // |controller_service_worker_info->object_info| is "incomplete". It must be
   // updated before being sent over Mojo and then registered with
-  // |controller_service_worker_handle|. See
-  // ServiceWorkerHandle::CreateIncompleteObjectInfo() for details.
+  // |controller_service_worker_object_host|. See
+  // ServiceWorkerObjectHost::CreateIncompleteObjectInfo() for details.
   mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info;
-  base::WeakPtr<ServiceWorkerHandle> controller_service_worker_handle;
+  base::WeakPtr<ServiceWorkerObjectHost> controller_service_worker_object_host;
 };
 
 }  // namespace content

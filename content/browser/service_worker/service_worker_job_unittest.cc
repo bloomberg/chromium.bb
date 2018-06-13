@@ -18,8 +18,8 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_handle.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
+#include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 #include "content/browser/service_worker/service_worker_registration_status.h"
@@ -316,16 +316,16 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   // One ServiceWorkerRegistrationObjectHost should have been created for the
   // new registration.
   EXPECT_EQ(1UL, provider_host->registration_object_hosts_.size());
-  // One ServiceWorkerHandle should have been created for the new service
+  // One ServiceWorkerObjectHost should have been created for the new service
   // worker.
-  EXPECT_EQ(1UL, provider_host->handles_.size());
+  EXPECT_EQ(1UL, provider_host->service_worker_object_hosts_.size());
 
   RunUnregisterJob(options.scope);
 
-  // The service worker registration object host and service worker handle have
-  // been destroyed together with |provider_host| by the above unregistration.
-  // Then |registration| and |version| should be the last one reference to the
-  // corresponding instance.
+  // The service worker registration object host and service worker object host
+  // have been destroyed together with |provider_host| by the above
+  // unregistration. Then |registration| and |version| should be the last one
+  // reference to the corresponding instance.
   EXPECT_TRUE(registration->HasOneRef());
   EXPECT_TRUE(version->HasOneRef());
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version->running_status());
@@ -386,8 +386,8 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
       old_registration->active_version()->provider_host();
   ASSERT_NE(nullptr, provider_host);
 
-  // Clear all service worker handles.
-  provider_host->handles_.clear();
+  // Clear all service worker object hosts.
+  provider_host->service_worker_object_hosts_.clear();
   // Ensure that the registration's object host doesn't have the reference.
   EXPECT_EQ(1UL, provider_host->registration_object_hosts_.size());
   provider_host->registration_object_hosts_.clear();
@@ -433,8 +433,8 @@ TEST_F(ServiceWorkerJobTest, RegisterWithDifferentUpdateViaCache) {
       old_registration->active_version()->provider_host();
   ASSERT_NE(nullptr, provider_host);
 
-  // Clear all service worker handles.
-  provider_host->handles_.clear();
+  // Clear all service worker object hosts.
+  provider_host->service_worker_object_hosts_.clear();
   // Ensure that the registration's object host doesn't have the reference.
   EXPECT_EQ(1UL, provider_host->registration_object_hosts_.size());
   provider_host->registration_object_hosts_.clear();

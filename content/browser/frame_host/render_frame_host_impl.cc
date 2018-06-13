@@ -3762,13 +3762,13 @@ void RenderFrameHostImpl::CommitNavigation(
 
     // |remote_object| is an associated interface ptr, so calls can't be made on
     // it until its request endpoint is sent. Now that the request endpoint was
-    // sent, it can be used, so add it to ServiceWorkerHandle.
+    // sent, it can be used, so add it to ServiceWorkerObjectHost.
     if (remote_object.is_valid()) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(
-              &ServiceWorkerHandle::AddRemoteObjectPtrAndUpdateState,
-              subresource_loader_params->controller_service_worker_handle,
+              &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
+              subresource_loader_params->controller_service_worker_object_host,
               std::move(remote_object), sent_state));
     }
 

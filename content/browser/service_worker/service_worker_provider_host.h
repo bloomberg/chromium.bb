@@ -19,7 +19,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/service_worker/service_worker_handle.h"
+#include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
@@ -40,8 +40,8 @@ namespace network {
 class ResourceRequestBody;
 }
 
-namespace service_worker_handle_unittest {
-class ServiceWorkerHandleTest;
+namespace service_worker_object_host_unittest {
+class ServiceWorkerObjectHostTest;
 }
 
 namespace storage {
@@ -289,7 +289,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // is in scope of all |matching_registrations_|.
   // |document_url_| is the service worker script URL if this is for a
   // service worker execution context. It will be used when creating
-  // ServiceWorkerHandle or handling ServiceWorkerRegistration#{*} calls etc.
+  // ServiceWorkerObjectHost or handling ServiceWorkerRegistration#{*} calls
+  // etc.
   // TODO(leonhsl): We should rename |document_url_| to something more
   // appropriate and/or split this class into one for clients vs one for service
   // workers.
@@ -350,10 +351,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   CreateServiceWorkerRegistrationObjectInfo(
       scoped_refptr<ServiceWorkerRegistration> registration);
 
-  // Returns a ServiceWorkerHandle instance for |version| for this provider
+  // Returns a ServiceWorkerObjectHost instance for |version| for this provider
   // host. A new instance is created if one does not already exist.
-  // ServiceWorkerHandle will have an ownership of the |version|.
-  base::WeakPtr<ServiceWorkerHandle> GetOrCreateServiceWorkerHandle(
+  // ServiceWorkerObjectHost will have an ownership of the |version|.
+  base::WeakPtr<ServiceWorkerObjectHost> GetOrCreateServiceWorkerObjectHost(
       scoped_refptr<ServiceWorkerVersion> version);
 
   // Returns true if |registration| can be associated with this provider.
@@ -417,8 +418,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // |registration_id|.
   void RemoveServiceWorkerRegistrationObjectHost(int64_t registration_id);
 
-  // Removes the ServiceWorkerHandle corresponding to |version_id|.
-  void RemoveServiceWorkerHandle(int64_t version_id);
+  // Removes the ServiceWorkerObjectHost corresponding to |version_id|.
+  void RemoveServiceWorkerObjectHost(int64_t version_id);
 
   // Calls ContentBrowserClient::AllowServiceWorker(). Returns true if content
   // settings allows service workers to run at |scope|. If this provider is for
@@ -438,7 +439,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   friend class ServiceWorkerProviderHostTest;
   friend class ServiceWorkerWriteToCacheJobTest;
   friend class ServiceWorkerContextRequestHandlerTest;
-  friend class service_worker_handle_unittest::ServiceWorkerHandleTest;
+  friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest, Update_SameScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
                            Update_SameSizeScript);
@@ -600,12 +601,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
            std::unique_ptr<ServiceWorkerRegistrationObjectHost>>
       registration_object_hosts_;
 
-  // Contains all ServiceWorkerHandle instances corresponding to
+  // Contains all ServiceWorkerObjectHost instances corresponding to
   // the service worker JavaScript objects for the hosted execution
   // context (service worker global scope or service worker client) in the
   // renderer process.
-  std::map<int64_t /* version_id */, std::unique_ptr<ServiceWorkerHandle>>
-      handles_;
+  std::map<int64_t /* version_id */, std::unique_ptr<ServiceWorkerObjectHost>>
+      service_worker_object_hosts_;
 
   // The ready() promise is only allowed to be created once.
   // |get_ready_callback_| has three states:

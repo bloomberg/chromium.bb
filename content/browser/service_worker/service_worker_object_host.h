@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_HANDLE_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_HANDLE_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_OBJECT_HOST_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_OBJECT_HOST_H_
 
 #include <memory>
 
@@ -23,35 +23,37 @@ namespace content {
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 
-namespace service_worker_handle_unittest {
-class ServiceWorkerHandleTest;
-}  // namespace service_worker_handle_unittest
+namespace service_worker_object_host_unittest {
+class ServiceWorkerObjectHostTest;
+}  // namespace service_worker_object_host_unittest
 
 // Roughly corresponds to one WebServiceWorker object in the renderer process.
 //
 // The WebServiceWorker object in the renderer process maintains a reference to
 // |this| by owning an associated interface pointer to
-// blink::mojom::ServiceWorkerObjectHost.
+// blink::mojom::ServiceWorkerObjectHost. When all Mojo connections bound with
+// |bindings_| are disconnected, |this| will be deleted. See also comments on
+// |bindings_|.
 //
 // Has references to the corresponding ServiceWorkerVersion in order to ensure
 // that the version is alive while this handle is around.
-class CONTENT_EXPORT ServiceWorkerHandle
+class CONTENT_EXPORT ServiceWorkerObjectHost
     : public blink::mojom::ServiceWorkerObjectHost,
       public ServiceWorkerVersion::Listener {
  public:
-  ServiceWorkerHandle(base::WeakPtr<ServiceWorkerContextCore> context,
-                      ServiceWorkerProviderHost* provider_host,
-                      scoped_refptr<ServiceWorkerVersion> version);
-  ~ServiceWorkerHandle() override;
+  ServiceWorkerObjectHost(base::WeakPtr<ServiceWorkerContextCore> context,
+                          ServiceWorkerProviderHost* provider_host,
+                          scoped_refptr<ServiceWorkerVersion> version);
+  ~ServiceWorkerObjectHost() override;
 
   // ServiceWorkerVersion::Listener overrides.
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
 
-  // Returns an info for the ServiceWorker object of this handle. The info
-  // contains a Mojo ptr to |this| which ensures |this| stays alive while the
-  // info is alive. Furthermore, it contains a Mojo request for the
-  // ServiceWorkerObject interface in the renderer. |this| will make calls to
-  // the ServiceWorkerObject to update its state.
+  // Returns an info for the ServiceWorker object. The info contains a Mojo
+  // ptr to |this| which ensures |this| stays alive while the info is alive.
+  // Furthermore, it contains a Mojo request for the ServiceWorkerObject
+  // interface in the renderer. |this| will make calls to the
+  // ServiceWorkerObject to update its state.
   //
   // WARNING: The returned info must be sent immediately over Mojo, because
   // |this| will start making calls on an associated interface ptr to
@@ -79,10 +81,10 @@ class CONTENT_EXPORT ServiceWorkerHandle
   int provider_id() const { return provider_id_; }
   ServiceWorkerVersion* version() { return version_.get(); }
 
-  base::WeakPtr<ServiceWorkerHandle> AsWeakPtr();
+  base::WeakPtr<ServiceWorkerObjectHost> AsWeakPtr();
 
  private:
-  friend class service_worker_handle_unittest::ServiceWorkerHandleTest;
+  friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
 
   // Implements blink::mojom::ServiceWorkerObjectHost.
   void PostMessageToServiceWorker(
@@ -109,25 +111,25 @@ class CONTENT_EXPORT ServiceWorkerHandle
   const url::Origin provider_origin_;
   const int provider_id_;
   scoped_refptr<ServiceWorkerVersion> version_;
+  // Typically both |bindings_| and |remote_objects_| contain only one Mojo
+  // connection, corresponding to the content::WebServiceWorkerImpl in the
+  // renderer which corresponds to the ServiceWorker JavaScript object. However,
+  // multiple Mojo connections may exist while propagating multiple service
+  // worker object infos to the renderer process, but only the first one that
+  // arrived there will be used to create the new content::WebServiceWorkerImpl
+  // instance and be bound to it.
   mojo::AssociatedBindingSet<blink::mojom::ServiceWorkerObjectHost> bindings_;
-  // Typically |remote_objects_| contains only one Mojo connection,
-  // corresponding to the content::WebServiceWorkerImpl in the renderer which
-  // corresponds to the ServiceWorker JavaScript object. However, multiple Mojo
-  // connections may exist while propagating multiple service worker object
-  // infos to the renderer process, but only the first one that arrived there
-  // will be used to create the new content::WebServiceWorkerImpl instance and
-  // be bound to it.
   mojo::AssociatedInterfacePtrSet<blink::mojom::ServiceWorkerObject>
       remote_objects_;
 
   // TODO(crbug.com/838410): Temporary debugging for the linked bug.
   bool in_dtor_ = false;
 
-  base::WeakPtrFactory<ServiceWorkerHandle> weak_ptr_factory_;
+  base::WeakPtrFactory<ServiceWorkerObjectHost> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandle);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerObjectHost);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_HANDLE_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_OBJECT_HOST_H_

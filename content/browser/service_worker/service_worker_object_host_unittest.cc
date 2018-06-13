@@ -12,7 +12,7 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
-#include "content/browser/service_worker/service_worker_handle.h"
+#include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -28,7 +28,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_state.mojom.h"
 
 namespace content {
-namespace service_worker_handle_unittest {
+namespace service_worker_object_host_unittest {
 
 static void SaveStatusCallback(bool* called,
                                ServiceWorkerStatusCode* out,
@@ -112,9 +112,9 @@ class MockServiceWorkerObject : public blink::mojom::ServiceWorkerObject {
   mojo::AssociatedBinding<blink::mojom::ServiceWorkerObject> binding_;
 };
 
-class ServiceWorkerHandleTest : public testing::Test {
+class ServiceWorkerObjectHostTest : public testing::Test {
  public:
-  ServiceWorkerHandleTest()
+  ServiceWorkerObjectHostTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void Initialize(std::unique_ptr<EmbeddedWorkerTestHelper> helper) {
@@ -146,8 +146,7 @@ class ServiceWorkerHandleTest : public testing::Test {
     // Make the registration findable via storage functions.
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
     helper_->context()->storage()->StoreRegistration(
-        registration_.get(),
-        version_.get(),
+        registration_.get(), version_.get(),
         CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
     ASSERT_EQ(SERVICE_WORKER_OK, status);
@@ -160,22 +159,22 @@ class ServiceWorkerHandleTest : public testing::Test {
   }
 
   void CallDispatchExtendableMessageEvent(
-      ServiceWorkerHandle* handle,
+      ServiceWorkerObjectHost* object_host,
       ::blink::TransferableMessage message,
       base::OnceCallback<void(ServiceWorkerStatusCode)> callback) {
-    handle->DispatchExtendableMessageEvent(std::move(message),
-                                           std::move(callback));
+    object_host->DispatchExtendableMessageEvent(std::move(message),
+                                                std::move(callback));
   }
 
-  size_t GetBindingsCount(ServiceWorkerHandle* handle) {
-    return handle->bindings_.size();
+  size_t GetBindingsCount(ServiceWorkerObjectHost* object_host) {
+    return object_host->bindings_.size();
   }
 
-  ServiceWorkerHandle* GetServiceWorkerHandle(
+  ServiceWorkerObjectHost* GetServiceWorkerObjectHost(
       ServiceWorkerProviderHost* provider_host,
       int64_t version_id) {
-    auto iter = provider_host->handles_.find(version_id);
-    if (iter != provider_host->handles_.end())
+    auto iter = provider_host->service_worker_object_hosts_.find(version_id);
+    if (iter != provider_host->service_worker_object_hosts_.end())
       return iter->second.get();
     return nullptr;
   }
@@ -211,10 +210,10 @@ class ServiceWorkerHandleTest : public testing::Test {
   scoped_refptr<ServiceWorkerVersion> version_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandleTest);
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerObjectHostTest);
 };
 
-TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
+TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
   const int64_t kProviderId = 99;
   const GURL pattern("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
@@ -245,7 +244,7 @@ TEST_F(ServiceWorkerHandleTest, OnVersionStateChanged) {
   EXPECT_EQ(blink::mojom::ServiceWorkerState::kInstalled, mock_object->state());
 }
 
-TEST_F(ServiceWorkerHandleTest,
+TEST_F(ServiceWorkerObjectHostTest,
        DispatchExtendableMessageEvent_FromServiceWorker) {
   const GURL pattern("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
@@ -274,25 +273,26 @@ TEST_F(ServiceWorkerHandleTest,
   base::TimeDelta remaining_time = version_->remaining_timeout();
   EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
 
-  // Prepare a ServiceWorkerHandle corresponding to a JavaScript ServiceWorker
-  // object in the service worker execution context for |version_|.
+  // Prepare a ServiceWorkerObjectHost corresponding to a JavaScript
+  // ServiceWorker object in the service worker execution context for
+  // |version_|.
   ServiceWorkerProviderHost* provider_host = version_->provider_host();
   blink::mojom::ServiceWorkerObjectInfoPtr info =
-      provider_host->GetOrCreateServiceWorkerHandle(version_)
+      provider_host->GetOrCreateServiceWorkerObjectHost(version_)
           ->CreateCompleteObjectInfoToSend();
-  ServiceWorkerHandle* sender_worker_handle =
-      GetServiceWorkerHandle(provider_host, version_->version_id());
-  EXPECT_EQ(1u, GetBindingsCount(sender_worker_handle));
+  ServiceWorkerObjectHost* sender_worker_object_host =
+      GetServiceWorkerObjectHost(provider_host, version_->version_id());
+  EXPECT_EQ(1u, GetBindingsCount(sender_worker_object_host));
 
   // Dispatch an ExtendableMessageEvent simulating calling
   // ServiceWorker#postMessage() on the ServiceWorker object corresponding to
-  // |service_worker_handle|.
+  // |service_worker_object_host|.
   blink::TransferableMessage message;
   SetUpDummyMessagePort(&message.ports);
   called = false;
   status = SERVICE_WORKER_ERROR_MAX_VALUE;
   CallDispatchExtendableMessageEvent(
-      sender_worker_handle, std::move(message),
+      sender_worker_object_host, std::move(message),
       base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -300,8 +300,8 @@ TEST_F(ServiceWorkerHandleTest,
   // The dispatched ExtendableMessageEvent should be kept in
   // ExtendableMessageEventTestHelper, and the source service worker object info
   // should correspond to the pair (|version_->provider_host()|, |version_|),
-  // means it should correspond to |sender_worker_handle|.
-  EXPECT_EQ(2u, GetBindingsCount(sender_worker_handle));
+  // means it should correspond to |sender_worker_object_host|.
+  EXPECT_EQ(2u, GetBindingsCount(sender_worker_object_host));
   const std::vector<mojom::ExtendableMessageEventPtr>& events =
       static_cast<ExtendableMessageEventTestHelper*>(helper_.get())->events();
   EXPECT_EQ(1u, events.size());
@@ -318,7 +318,7 @@ TEST_F(ServiceWorkerHandleTest,
   stop_loop.Run();
 }
 
-TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
+TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
   const int64_t kProviderId = 99;
   const GURL pattern("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
@@ -342,12 +342,12 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
                                         std::move(provider_host_info),
                                         helper_->context()->AsWeakPtr());
   provider_host->SetDocumentUrl(pattern);
-  // Prepare a ServiceWorkerHandle for the above |provider_host|.
+  // Prepare a ServiceWorkerObjectHost for the above |provider_host|.
   blink::mojom::ServiceWorkerObjectInfoPtr info =
-      provider_host->GetOrCreateServiceWorkerHandle(version_)
+      provider_host->GetOrCreateServiceWorkerObjectHost(version_)
           ->CreateCompleteObjectInfoToSend();
-  ServiceWorkerHandle* handle =
-      GetServiceWorkerHandle(provider_host.get(), version_->version_id());
+  ServiceWorkerObjectHost* object_host =
+      GetServiceWorkerObjectHost(provider_host.get(), version_->version_id());
 
   // Simulate dispatching an ExtendableMessageEvent.
   blink::TransferableMessage message;
@@ -355,7 +355,7 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
   bool called = false;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   CallDispatchExtendableMessageEvent(
-      handle, std::move(message),
+      object_host, std::move(message),
       base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -374,7 +374,7 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_FromClient) {
             events[0]->source_info_for_client->client_type);
 }
 
-TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_Fail) {
+TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_Fail) {
   const int64_t kProviderId = 99;
   const GURL pattern("https://www.example.com/");
   const GURL script_url("https://www.example.com/service_worker.js");
@@ -398,12 +398,12 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_Fail) {
                                         std::move(provider_host_info),
                                         helper_->context()->AsWeakPtr());
   provider_host->SetDocumentUrl(pattern);
-  // Prepare a ServiceWorkerHandle for the above |provider_host|.
+  // Prepare a ServiceWorkerObjectHost for the above |provider_host|.
   blink::mojom::ServiceWorkerObjectInfoPtr info =
-      provider_host->GetOrCreateServiceWorkerHandle(version_)
+      provider_host->GetOrCreateServiceWorkerObjectHost(version_)
           ->CreateCompleteObjectInfoToSend();
-  ServiceWorkerHandle* handle =
-      GetServiceWorkerHandle(provider_host.get(), version_->version_id());
+  ServiceWorkerObjectHost* object_host =
+      GetServiceWorkerObjectHost(provider_host.get(), version_->version_id());
 
   // Try to dispatch ExtendableMessageEvent. This should fail to start the
   // worker and to dispatch the event.
@@ -412,7 +412,7 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_Fail) {
   bool called = false;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   CallDispatchExtendableMessageEvent(
-      handle, std::move(message),
+      object_host, std::move(message),
       base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -423,5 +423,5 @@ TEST_F(ServiceWorkerHandleTest, DispatchExtendableMessageEvent_Fail) {
   EXPECT_EQ(0u, events.size());
 }
 
-}  // namespace service_worker_handle_unittest
+}  // namespace service_worker_object_host_unittest
 }  // namespace content
