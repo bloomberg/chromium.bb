@@ -5,14 +5,11 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.text.TextUtils;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadMetrics;
@@ -28,7 +25,6 @@ import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 import org.chromium.components.url_formatter.UrlFormatter;
-import org.chromium.ui.widget.Toast;
 
 import java.io.File;
 import java.util.Collections;
@@ -362,13 +358,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public void open() {
-            Context context = ContextUtils.getApplicationContext();
-
-            if (mItem.hasBeenExternallyRemoved()) {
-                Toast.makeText(context, context.getString(R.string.download_cant_open_file),
-                        Toast.LENGTH_SHORT).show();
-                return;
-            }
             if (DownloadUtils.openFile(getFile(), getMimeType(),
                         mItem.getDownloadInfo().getDownloadGuid(), isOffTheRecord(),
                         mItem.getDownloadInfo().getOriginalUrl(),
