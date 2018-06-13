@@ -3899,7 +3899,6 @@
 <translation id="6990081529015358884">저장 공간이 부족합니다.</translation>
 <translation id="6990778048354947307">다크 테마</translation>
 <translation id="6991665348624301627">대상 선택</translation>
-<translation id="699220179437400583">발생 가능성이 있는 보안 문제의 세부정보를 자동으로 Google에 신고합니다.</translation>
 <translation id="6997707937646349884">기기에서 다음과 같이 설정하세요.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />개의 폴더가 선택됨</translation>
 <translation id="6998793565256476099">화상회의용 기기 등록</translation>
@@ -4592,7 +4591,6 @@
 <translation id="8004582292198964060">브라우저</translation>
 <translation id="8005600846065423578"><ph name="HOST" />에서 클립보드를 볼 수 있도록 항상 허용</translation>
 <translation id="8008356846765065031">인터넷 연결이 끊겼습니다. 인터넷 연결을 확인하세요.</translation>
-<translation id="8008818777654712271">위험한 앱과 사이트를 감지할 수 있도록 일부 시스템 정보와 페이지 콘텐츠를 Google로 자동 전송</translation>
 <translation id="8009225694047762179">비밀번호 관리</translation>
 <translation id="8012382203418782830">페이지가 번역되었습니다.</translation>
 <translation id="8014154204619229810">업데이터가 현재 실행 중입니다. 잠시 후에 새로고침하여 다시 확인해 주세요.</translation>

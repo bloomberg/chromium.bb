@@ -3896,7 +3896,6 @@
 <translation id="6990081529015358884">沒有可用的空間</translation>
 <translation id="6990778048354947307">暗色主題</translation>
 <translation id="6991665348624301627">選取印表機</translation>
-<translation id="699220179437400583">自動將疑似安全性事件的詳細資料回報給 Google</translation>
 <translation id="6997707937646349884">在你的裝置上：</translation>
 <translation id="6998711733709403587">已選取 <ph name="SELCTED_FOLDERS_COUNT" /> 個資料夾</translation>
 <translation id="6998793565256476099">註冊視訊會議裝置</translation>
@@ -4586,7 +4585,6 @@
 <translation id="8004582292198964060">瀏覽器</translation>
 <translation id="8005600846065423578">一律允許 <ph name="HOST" /> 讀取剪貼簿</translation>
 <translation id="8008356846765065031">網路連線中斷，請檢查你的網際網路連線。</translation>
-<translation id="8008818777654712271">自動傳送部分系統資訊和網頁內容給 Google，協助偵測危險的應用程式和網站。</translation>
 <translation id="8009225694047762179">管理密碼</translation>
 <translation id="8012382203418782830">這個網頁的內容已經過翻譯。</translation>
 <translation id="8014154204619229810">正在執行更新程式。請稍後片刻，重新整理之後再試一次。</translation>

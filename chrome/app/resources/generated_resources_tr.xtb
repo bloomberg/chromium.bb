@@ -101,7 +101,7 @@
 <translation id="1145292499998999162">Eklenti engellendi</translation>
 <translation id="1145532888383813076">Cihazınızda, uygulamalarda, web'de arama yapın.</translation>
 <translation id="1146204723345436916">Yeri işaretlerini HTML dosyasından içe aktar...</translation>
-<translation id="114721135501989771">Chrome'da Google Smarts'ı alın</translation>
+<translation id="114721135501989771">Chrome'da Google'ın akıllı yaklaşımını elde edin</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> bulundu.
     <ph name="LINE_BREAK1" />
     Yerel depolama alanında yeterli boş alan yok. İlave <ph name="FILE_SIZE" /> boş alan gerek.
@@ -2154,7 +2154,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4296575653627536209">Denetlenen Kullanıcı Ekle</translation>
 <translation id="4297322094678649474">Dilleri Değiştir</translation>
 <translation id="4300305918532693141">Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
-<translation id="4301561945776138921">Bu site için kaydedilmiş hiç şifre yok</translation>
+<translation id="4301561945776138921">Bu site için kaydedilmiş şifre yok</translation>
 <translation id="4305227814872083840">uzun (2 sn.)</translation>
 <translation id="4306119971288449206">Uygulamalar "<ph name="CONTENT_TYPE" />" içerik türüyle yayınlanmalıdır</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K aktif)</translation>
@@ -3900,7 +3900,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6990081529015358884">Boş yeriniz kalmadı</translation>
 <translation id="6990778048354947307">Koyu Renkli Tema</translation>
 <translation id="6991665348624301627">Bir hedef seç</translation>
-<translation id="699220179437400583">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildir</translation>
 <translation id="6997707937646349884">Cihazlarınızda:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> klasör seçildi</translation>
 <translation id="6998793565256476099">Video konferans için cihazı kaydetme</translation>
@@ -4575,7 +4574,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7984068253310542383"><ph name="DISPLAY_NAME" /> adlı ekranı yansıt</translation>
 <translation id="7984180109798553540">Ek güvenlik sağlamak için, <ph name="PRODUCT_NAME" /> verilerinizi şifreleyecek.</translation>
 <translation id="7986295104073916105">Kaydedilmiş şifre ayarlarını okuma ve değiştirme</translation>
-<translation id="7987764905897278458">Daha fazla Google Smarts alın</translation>
+<translation id="7987764905897278458">Google'ın akıllı yaklaşımından daha fazla yararlanın</translation>
 <translation id="7988355189918024273">Erişilebilirlik özelliklerini etkinleştir</translation>
 <translation id="7994702968232966508">EAP yöntemi</translation>
 <translation id="799547531016638432">Kısayolu kaldır</translation>
@@ -4592,7 +4591,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8004582292198964060">Tarayıcı</translation>
 <translation id="8005600846065423578"><ph name="HOST" /> sitesinin panoyu görmesine her zaman izin ver</translation>
 <translation id="8008356846765065031">İnternet bağlantısı kesildi. Lütfen İnternet bağlantınızı kontrol edin.</translation>
-<translation id="8008818777654712271">Tehlikeli uygulamaların ve sitelerin tespit edilmesine yardımcı olmak için Google'a bazı sistem bilgilerini ve sayfa içeriklerini otomatik olarak gönder</translation>
 <translation id="8009225694047762179">Şifreleri Yönet</translation>
 <translation id="8012382203418782830">Bu sayfa çevrildi.</translation>
 <translation id="8014154204619229810">Güncelleyici şu anda çalışıyor. Tekrar kontrol etmek için bir dakika içinde yenileyin.</translation>

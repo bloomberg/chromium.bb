@@ -2417,13 +2417,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="7961779417826583251">Deaktiver håndhævelse af Certifikatgennemsigtighed for en liste over forældede certifikatautoriteter</translation>
 <translation id="7974114691960514888">Denne politik understøttes ikke længere. Muliggør brug af STUN- og relæservere ved oprettelse af forbindelse til en ekstern klient. Hvis denne indstilling er aktiveret, kan denne maskine finde og oprette forbindelse til eksterne værtsmaskiner, selvom de er adskilt af en firewall. Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, kan denne maskine kun oprette forbindelse til værtsmaskiner inden for det lokale netværk.</translation>
 <translation id="7976157349247117979">Navnet på destinationen for <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Hvis den ikke er angivet, kan Oprydningsværktøj til Chrome rapportere metadata om scanningen til Google i overensstemmelse med den politik, der er angivet af SafeBrowsingExtendedReportingEnabled, hvis scanningen finder uønsket software. Oprydningsværktøj til Chrome spørger derefter brugeren, om den uønskede software skal fjernes. Brugeren kan vælge at dele resultaterne af oprydningen med Google for at bidrage til registrering af uønsket software i fremtiden. Disse resultater indeholder filmetadata og registreringsdatabasenøgler som beskrevet i Chromes hvidbog om beskyttelse af personlige oplysninger.
-
-      Hvis den er angivet som falsk, rapporterer Oprydningsværktøj til Chrome ikke metadata om scanningen til Google og tilsidesætter alle politikker, der er angivet af SafeBrowsingExtendedReportingEnabled, hvis scanningen finder uønsket software. Oprydningsværktøj til Chrome spørger brugeren, om den uønskede software skal fjernes. Resultaterne af oprydningen rapporteres ikke til Google, og brugeren kan ikke vælge at gøre det.
-
-      Hvis den er angivet som sand, kan Oprydningsværktøj til Chrome rapportere metadata om scanningen til Google i overensstemmelse med den politik, der er angivet af SafeBrowsingExtendedReportingEnabled, hvis scanningen finder uønsket software. Oprydningsværktøj til Chrome spørger brugeren, om den uønskede software skal fjernes. Resultaterne af oprydningen rapporteres til Google, og brugeren har ikke mulighed for at forhindre det.
-
-      Denne politik er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="7980227303582973781">Ingen særlige begrænsninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Roter skærmen 0 grader</translation>

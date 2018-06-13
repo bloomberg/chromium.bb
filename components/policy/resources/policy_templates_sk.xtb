@@ -2351,7 +2351,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
           Pozrite si tiež pravidlá „CookiesAllowedForUrls“ a „CookiesBlockedForUrls“. Upozorňujeme, že medzi týmito troma pravidlami nesmú byť žiadne konfliktné vzory webových adries. Nie je určené, ktoré pravidlo má prednosť.
 
-          Ak pravidlo „RestoreOnStartup“ nastavíte tak, aby obnovilo webové adresy z predchádzajúcej relácie, toto pravidlo sa nebude rešpektovať a súbory cookie týchto webov na uložia natrvalo.</translation>
+          Ak pravidlo „RestoreOnStartup“ nastavíte tak, aby obnovilo webové adresy z predchádzajúcej relácie, toto pravidlo sa nebude rešpektovať a súbory cookie týchto webov sa uložia natrvalo.</translation>
 <translation id="7683777542468165012">Obnovenie dynamického pravidla</translation>
 <translation id="7694807474048279351">Naplánuje automatické reštartovanie po použití aktualizácie systému <ph name="PRODUCT_OS_NAME" />.
 
@@ -2500,13 +2500,6 @@ Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom
 
           Ak je toto nastavenie zakázané a brána firewall filtruje odchádzajúce pripojenia cez protokol UDP, môže sa tento počítač pripojiť len k počítačom hostiteľa v rámci miestnej siete.</translation>
 <translation id="7976157349247117979">Názov cieľového priečinka <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Ak toto pravidlo ponecháte nenastavené, Chrome Cleanup by mal zisťovať nechcený softvér, bude môcť nahlasovať metadáta hľadania Googlu v súlade s pravidlom, ktoré nastavila možnosť SafeBrowsingExtendedReportingEnabled. Chrome Cleanup sa potom opýta používateľa, či chce nechcený softvér odstrániť. Používateľ môže zvoliť, aby sa výsledky čistenia zdieľali s Googlom s cieľom pomôcť so zisťovaním nechceného softvéru v budúcnosti. Tieto výsledky obsahujú metadáta súborov a kľúče databázy Registry podľa popisu v informáciách o ochrane súkromia v Chrome.
-
-      Ak pravidlo nastavíte na hodnotu False, Chrome Cleanup pri zistení nechceného softvéru nenahlási metadáta hľadania Googlu, čím prepíše akékoľvek pravidlo nastavené možnosťou SafeBrowsingExtendedReportingEnabled. Chrome Cleanup sa opýta používateľa, či chce nechcený softvér odstrániť. Výsledky vyčistenia sa nenahlásia Googlu a používateľ to ani nebude môcť zvoliť.
-
-      Ak pravidlo nastavíte na hodnotu True, Chrome Cleanup pri zistení nechceného softvéru môže nahlásiť metadáta hľadania Googlu s súlade s pravidlom nastaveným možnosťou SafeBrowsingExtendedReportingEnabled. Chrome Cleanup sa opýta používateľa, či chce nechcený softvér odstrániť. Výsledky vyčistenia sa nahlásia Googlu a používateľ nebude mať možnosť tomu zabrániť.
-
-      Toto pravidlo nie je k dispozícii v reláciách systému Windows, ktoré nie sú pripojené k doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Žiadne špeciálne obmedzenia</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Otočiť obrazovku o 0 stupňov</translation>

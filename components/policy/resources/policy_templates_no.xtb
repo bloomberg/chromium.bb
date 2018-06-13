@@ -55,7 +55,7 @@
 <translation id="1160939557934457296">Deaktiver muligheten til å overse Safe Browsing-advarsler og fortsette til potensielt farlig nettsted</translation>
 <translation id="1189817621108632689">Lar deg angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke får vise bilder.
 
-          Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra DefaultImagesSetting-regelen, eller fra brukerens egen konfigurering hvis DefaultImagesSetting-regelen ikke er angitt.
+          Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra DefaultImagesSetting-regelen hvis den er angitt, eller fra brukerens egen konfigurasjon hvis ikke.
 
           Merk at denne regelen tidligere var aktivert på Android ved en feil, men den har aldri vært støttet fullt ut på Android.</translation>
 <translation id="1198465924256827162">Hvor ofte opplastinger av enhetsstatusen sendes, i millisekunder.
@@ -410,7 +410,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Hvis du angir denne innstillingen som «AllowMigration», har brukere med eCryptfs-hjemmekataloger muligheten til å overføre disse til ext4-kryptering der det er nødvendig (for øyeblikket når Android N blir tilgjengelig på enheten).
 
       Denne regelen gjelder ikke for kioskapper – disse overføres automatisk. Hvis denne innstillingen ikke angis, oppfører enheten seg som om «DisallowArc» er valgt.</translation>
-<translation id="2195032660890227692">Disse retningslinjene ble fjernet i <ph name="PRODUCT_NAME" /> 68 og erstattet av <ph name="ARC_BR_POLICY_NAME" />.</translation>
+<translation id="2195032660890227692">Denne regelen ble fjernet i <ph name="PRODUCT_NAME" /> 68 og erstattet av <ph name="ARC_BR_POLICY_NAME" />.</translation>
 <translation id="2201555246697292490">Konfigurer godkjenning av innebygde meldinger</translation>
 <translation id="2204753382813641270">Kontrollér automatisk skjuling av hyllen</translation>
 <translation id="2208976000652006649">Parametere for søkenettadresser som bruker POST</translation>
@@ -640,7 +640,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Når denne regelen ikke er konfigurert eller er angitt som <ph name="BR_DISABLED" />, er sikkerhetskopiering og gjenoppretting for Android deaktivert og kan ikke aktiveres av brukeren.
 
-      Når denne regelen er angitt som <ph name="BR_UNDER_USER_CONTROL" />, kan brukeren velge om sikkerhetskopiering og gjenoppretting for Android skal brukes. Hvis brukeren aktiverer sikkerhetskopiering og gjenoppretting, lastes Android-appdata opp til Android Backup-tjenere og gjenopprettes derfra når kompatible apper installeres på nytt.</translation>
+      Når denne regelen er angitt som <ph name="BR_UNDER_USER_CONTROL" />, kan brukeren velge om sikkerhetskopiering og gjenoppretting for Android skal brukes. Hvis brukeren aktiverer sikkerhetskopiering og gjenoppretting, lastes Android-appdata opp til Android-tjenere for sikkerhetskopiering og gjenopprettes derfra når kompatible apper installeres på nytt.</translation>
 <translation id="2757054304033424106">Utvidelser og apper som kan installeres</translation>
 <translation id="2759224876420453487">Kontrollér brukeradferd i flerprofilsøkter</translation>
 <translation id="2761483219396643566">Forsinkelse for advarsel om inaktivitet når enheten kjører på batteristrøm</translation>
@@ -754,7 +754,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="3086995894968271156">Konfigurer Cast-mottakeren i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Lar deg angi en liste over nettadressemønstre som spesifiserer nettsteder som får vise bilder.
 
-          Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra DefaultImagesSetting-regelen, eller fra brukerens egen konfigurering hvis denne DefaultImagesSetting-regelen ikke er angitt.
+          Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra DefaultImagesSetting-regelen hvis den er angitt, eller fra brukerens egen konfigurering hvis ikke.
 
           Merk at denne regelen tidligere var aktivert på Android ved en feil, men den har aldri vært støttet fullt ut på Android.</translation>
 <translation id="3096595567015595053">Liste over aktiverte programtillegg</translation>
@@ -1074,7 +1074,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="4056910949759281379">Deaktiver SPDY-protokoll</translation>
 <translation id="4059515172917655545">Denne regelen styrer tilgjengeligheten av Googles posisjonstjenester.
 
-      Når denne regelen ikke er konfigurert eller er angitts som <ph name="GLS_DISABLED" />, er Googles posisjonstjenester deaktivert og kan ikke aktiveres av brukeren.
+      Når denne regelen ikke er konfigurert eller er angitt som <ph name="GLS_DISABLED" />, er Googles posisjonstjenester deaktivert og kan ikke aktiveres av brukeren.
 
       Når denne regelen er angitt som <ph name="GLS_UNDER_USER_CONTROL" />, kan brukeren velge om Googles posisjonstjenester skal brukes. Da kan Android-apper bruke tjenesten til å søke etter enhetens posisjon, og anonyme posisjonsdata kan sendes til Google.
 
@@ -1578,7 +1578,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Vær oppmerksom på at dette ikke anbefales, ettersom det gjør det mulig å omgå nameConstraints-utvidelsen som begrenser vertsnavnene et gitt sertifikat kan autoriseres for
 
       Hvis denne innstillingen ikke angis, eller hvis den angis som «false» (usann), klareres ikke tjenersertifikater som mangler en subjectAlternativeName-utvidelse og har enten et DNS-navn eller en IP-adresse.</translation>
-<translation id="5584132346604748282">Kontroller Googles posisjonstjenester for Android</translation>
+<translation id="5584132346604748282">Kontrollér Googles posisjonstjenester for Android</translation>
 <translation id="5586942249556966598">Gjør ingenting</translation>
 <translation id="5630352020869108293">Gjenopprett den siste økten</translation>
 <translation id="5645779841392247734">Tillat informasjonskapsler på disse nettstedene</translation>
@@ -2008,7 +2008,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOriginsAndroid og SitePerProcessAndroid deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
       Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
 
-      MERK: Nettstedsisolering er på forsøksstadiet på Android. Den kan forårsake ytelsesproblemer, men kvaliteten på støtten økes etterhvert.
+      MERK: Nettstedsisolering er på forsøksstadiet på Android. Det kan foreløpig forårsake ytelsesproblemer, men kommer til å bli mer kompatibel.
 
       MERK: Denne regelen gjelder bare for Chrome på Android med mer enn 1 GB RAM. Bruk SitePerProcess for å anvende regelen på andre plattformer.
       </translation>
@@ -2062,7 +2062,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Disse innstillingene lar deg konfigurere hvordan <ph name="PRODUCT_OS_NAME" /> oppfører seg når brukeren er inaktiv i en periode.</translation>
 <translation id="7040229947030068419">Eksempelverdi:</translation>
-<translation id="7044883996351280650">Kontroller funksjonen for sikkerhetskopiering og gjenoppretting for Android</translation>
+<translation id="7044883996351280650">Kontrollér funksjonen for sikkerhetskopiering og gjenoppretting for Android</translation>
 <translation id="7049373494483449255">Gjør at <ph name="PRODUCT_NAME" /> kan sende dokumenter til <ph name="CLOUD_PRINT_NAME" /> for utskrift.  MERK: Dette påvirker bare støtte av <ph name="CLOUD_PRINT_NAME" /> i <ph name="PRODUCT_NAME" />. Det hindrer ikke brukeren i å sende utskriftsjobber på nettsteder.
 
       Hvis denne innstillingen er aktivert eller ikke konfigurert, kan brukerne sende utskrift til <ph name="CLOUD_PRINT_NAME" /> fra <ph name="PRODUCT_NAME" />-utskriftsdialogen.
@@ -2295,7 +2295,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           For nettadresser som ikke dekkes av de nevnte mønstrene, eller for alle nettadresser hvis denne regelen ikke er angitt, brukes den globale verdien fra enten DefaultCookiesSetting-regelen (hvis angitt) eller brukerens egen konfigurasjon hvis regelen ikke er angitt.
 
-          Vær oppmerksom på at hvis <ph name="PRODUCT_NAME" /> kjører i «bakgrunnsmodus», kan det hende økten ikke avsluttes når det siste nettleservinduet lukkes, og at den fortsetter å være aktiv til nettleseren avsluttes. Du finner mer informasjon om hvordan du konfigurerer denne atferden i «BackgroundModeEnabled»-regelen.
+          Vær oppmerksom på at hvis <ph name="PRODUCT_NAME" /> kjører i «bakgrunnsmodus», kan det hende økten ikke avsluttes når det siste nettleservinduet lukkes, og at den fortsetter å være aktiv til nettleseren avsluttes. Du finner mer informasjon om hvordan du konfigurerer denne atferden, i «BackgroundModeEnabled»-regelen.
 
           Se også reglene «CookiesAllowedForUrls» and «CookiesBlockedForUrls». Merk at det ikke må være motstridende nettadressemønstre mellom disse tre reglene. Det er ikke spesifisert hvilken regel som prioriteres.
 
@@ -2453,13 +2453,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7961779417826583251">Slå av tvungen sertifikatåpenhet for en liste med eldre sertifiseringsinstanser</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
 <translation id="7976157349247117979">Navnet på <ph name="PRODUCT_NAME" />-destinasjonen</translation>
-<translation id="7977445800390854860">Hvis denne regelen ikke er angitt og opprydningsverktøyet for Chrome oppdager uønsket programvare, kan det rapportere metadata om gjennomsøkingen til Google i henhold til regelen angitt av «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om han/hun ønsker å fjerne den uønskede programvaren. Disse resultatene inneholder filmetadata og registernøkler, som beskrevet i det tekniske dokumentet om personvern i Google Chrome.
-
-      Hvis den er angitt som «false» (usann) og opprydningsverktøyet for Chrome oppdager uønsket programvare, rapporteres ingen metadata om gjennomsøkingen til Google. Dette overstyrer regelen som kan være angitt for «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om den uønskede programvaren skal fjernes. Resultatene av opprydningen rapporteres ikke til Google, og brukeren får ikke noe valg om å gjøre dette.
-
-      Hvis den er angitt som «sann» (true) og opprydningsverktøyet for Chrome oppdager uønsket programvare, kan det rapportere metadata om gjennomsøkingen til Google, i henhold til regelen angitt for «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om han/hun ønsker å fjerne den uønskede programvaren. Resultatene av opprydningen rapporteres til Google, og brukeren får ikke noe valg om å forhindre dette.
-
-      Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="7980227303582973781">Ingen spesielle begrensninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotér skjermen 0 grader</translation>
@@ -2473,9 +2466,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Se også reglene CookiesBlockedForUrls og CookiesSessionOnlyForUrls. Merk at det ikke må være motstridende nettadressemønstre mellom disse tre reglene. Det er ikke spesifisert hvilken regel som prioriteres.</translation>
 <translation id="8099880303030573137">Inaktivitetsforsinkelse når enheten kjører på batteristrøm</translation>
 <translation id="8102913158860568230">Standard innstilling for direkteavspilling av medieinnhold</translation>
-<translation id="8104186956182795918">Lar deg angi om nettsteder kan vise bilder. Bildevisning kan enten tillates for alle nettsteder, eller nektes for alle nettsteder.
+<translation id="8104186956182795918">Lar deg angi om nettsteder kan vise bilder. Bildevisning kan enten tillates for alle nettsteder eller nektes for alle nettsteder.
 
-          Hvis denne retningslinjen ikke angis, brukes «AllowImages», og brukeren kan endre dette.
+          Hvis denne regelen ikke angis, brukes «AllowImages», og brukeren kan endre dette.
 
           Merk at denne regelen tidligere var aktivert på Android ved en feil, men den har aldri vært støttet fullt ut på Android.</translation>
 <translation id="8104962233214241919">Automatisk valg av klientsertifikater for disse nettstedene</translation>
@@ -2780,7 +2773,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 
       Hvis regelen ikke er angitt, brukes <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
-<translation id="8942616385591203339">Denne regelen bestemmer om samtykke for synkronisering skal vises til brukeren ved første pålogging. Den skal angis som «False» (usann) hvis samtykke for synkronisering ikke er nødvendig for denne brukeren..
+<translation id="8942616385591203339">Denne regelen bestemmer om samtykke for synkronisering skal vises til brukeren ved første pålogging. Den skal angis som «False» (usann) hvis samtykke for synkronisering ikke er nødvendig for denne brukeren.
       Hvis regelen er angitt som «False» (usann), vises ikke samtykke for synkronisering.
       Hvis regelen er angitt som «True» (sann) eller ikke er angitt, vises samtykke for synkronisering.</translation>
 <translation id="8947415621777543415">Rapportering av enhetsposisjonen</translation>

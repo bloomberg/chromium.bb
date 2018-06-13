@@ -2519,13 +2519,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hindi pinagana ang setting na ito at ang mga papalabas na UDP na koneksyon ay pini-filter ng firewall, makakakonekta lamang ang machine na ito sa mga host machine sa loob ng lokal na network.</translation>
 <translation id="7976157349247117979">Pangalan ng patutunguhan ng <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Kung hindi itatakda, at may ma-detect ang Chrome Cleanup na hindi gustong software, maaari itong mag-ulat sa Google ng metadata tungkol sa pag-scan nang naaayon sa patakarang itinakda ng SafeBrowsingExtendedReportingEnabled. Pagkatapos, tatanungin ng Chrome Cleanup ang user kung gusto niyang alisin ang hindi gustong software. Maaaring piliin ng user na ibahagi sa Google ang mga resulta ng cleanup para makatulong sa pag-detect ng hindi gustong software sa hinaharap. Naglalaman ang mga resultang ito ng metadata ng file at mga key ng registry gaya ng inilalarawan sa Chrome Privacy Whitepaper.
-
-      Kung itatakda sa false, at may ma-detect ang Chrome Cleanup na hindi gustong software, hindi ito mag-uulat sa Google ng metadata tungkol sa pag-scan, na mag-o-override sa anumang patakarang itinakda ng SafeBrowsingExtendedReportingEnabled. Tatanungin ng Chrome Cleanup ang user kung gusto niyang alisin ang hindi gustong software.  Hindi iuulat sa Google ang mga resulta ng cleanup at hindi magkakaroon ang user ng opsyong gawin ito.
-
-      Kung itatakda sa true, at may ma-detect ang Chrome Cleanup na hindi gustong software, maaari itong mag-ulat sa Google ng metadata tungkol sa pag-scan nang naaayon sa patakarang itinakda ng SafeBrowsingExtendedReportingEnabled. Tatanungin ng Chrome Cleanup ang user kung gusto niyang alisin ang hindi gustong software.  Iuulat sa Google ang mga resulta ng cleanup at hindi magkakaroon ang user ng opsyong pigilan ito.
-
-      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasama sa isang domain ng <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Walang espesyal na paghihigpit</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">I-rotate ang screen nang 0 degrees</translation>

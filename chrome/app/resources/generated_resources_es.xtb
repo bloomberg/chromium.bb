@@ -101,7 +101,7 @@
 <translation id="1145292499998999162">Complemento bloqueado</translation>
 <translation id="1145532888383813076">Busca en el dispositivo, las aplicaciones y la Web.</translation>
 <translation id="1146204723345436916">Importar marcadores desde archivo HTML...</translation>
-<translation id="114721135501989771">Funciones intel. en Chrome</translation>
+<translation id="114721135501989771">Obtén funciones inteligentes en Chrome</translation>
 <translation id="1148097584170732637">Se han encontrado <ph name="FILE_COUNT" /> archivos.
     <ph name="LINE_BREAK1" />
     No hay espacio suficiente en el almacenamiento local. Se necesitan <ph name="FILE_SIZE" /> más.
@@ -438,7 +438,7 @@
 <translation id="1637224376458524414">Obtener este marcador en tu iPhone</translation>
 <translation id="1637765355341780467">Se ha producido un error al abrir tu perfil. Es posible que algunas funciones no estén disponibles.</translation>
 <translation id="1639239467298939599">Cargando</translation>
-<translation id="163993578339087550"><ph name="SERVICE_NAME" /> quiere comprobar si estás utilizando un dispositivo Chrome OS adecuado.</translation>
+<translation id="163993578339087550"><ph name="SERVICE_NAME" /> quiere comprobar si estás utilizando un dispositivo Chrome OS apto.</translation>
 <translation id="1640283014264083726">PKCS #1 MD4 con cifrado RSA</translation>
 <translation id="1642494467033190216">Para poder habilitar otras funciones de depuración, es necesario eliminar la protección de rootfs y reiniciar.</translation>
 <translation id="1643050526526937107">Solo sincronización</translation>
@@ -936,7 +936,7 @@
 <translation id="2408955596600435184">Introduce tu PIN</translation>
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2413749388954403953">Cambiar la interfaz de usuario de marcadores</translation>
-<translation id="2419706071571366386">Por motivos de seguridad, cierra sesión cuando termines de utilizar tu ordenador.</translation>
+<translation id="2419706071571366386">Por motivos de seguridad, cierra la sesión cuando termines de utilizar tu ordenador.</translation>
 <translation id="2422426094670600218">&lt;sin nombre&gt;</translation>
 <translation id="2423578206845792524">Guar&amp;dar imagen como...</translation>
 <translation id="2425665904502185219">Tamaño total de los archivos</translation>
@@ -3894,7 +3894,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6990081529015358884">Te has quedado sin espacio.</translation>
 <translation id="6990778048354947307">Tema oscuro</translation>
 <translation id="6991665348624301627">Seleccionar un destino</translation>
-<translation id="699220179437400583">Enviar a Google automáticamente información sobre posibles incidentes de seguridad</translation>
 <translation id="6997707937646349884">En tus dispositivos:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> carpetas seleccionadas</translation>
 <translation id="6998793565256476099">Registrar dispositivo para hacer videoconferencias</translation>
@@ -4138,7 +4137,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7366415735885268578">Añadir un sitio web</translation>
 <translation id="7366909168761621528">Datos de navegación</translation>
 <translation id="7371006317849674875">Hora de inicio</translation>
-<translation id="737439367876257440">Envía información y uso del sistema a Google para mejorar Chrome y su seguridad</translation>
+<translation id="737439367876257440">Envía información de uso y del sistema a Google para mejorar Chrome y su seguridad</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Resaltar el cursor del ratón al moverlo</translation>
 <translation id="7377169924702866686">El bloqueo de mayúsculas está activado.</translation>
@@ -4586,7 +4585,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8004582292198964060">Navegador</translation>
 <translation id="8005600846065423578">Permitir siempre que <ph name="HOST" /> vea el portapapeles</translation>
 <translation id="8008356846765065031">No hay conexión a Internet. Comprueba la conexión.</translation>
-<translation id="8008818777654712271">Enviar automáticamente información del sistema y contenido de las páginas a Google para que pueda detectar aplicaciones y sitios web peligrosos</translation>
 <translation id="8009225694047762179">Administrar contraseñas</translation>
 <translation id="8012382203418782830">Esta página se ha traducido.</translation>
 <translation id="8014154204619229810">La herramienta de actualización se está ejecutando en este momento. Actualiza en un minuto para comprobarlo de nuevo.</translation>

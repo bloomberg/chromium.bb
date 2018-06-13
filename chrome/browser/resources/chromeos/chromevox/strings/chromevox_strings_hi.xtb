@@ -32,8 +32,8 @@
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1206619573307042055">मार्की</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome को ध्‍वनि देना</translation>
-<translation id="1225437811932752266">बधाई हो! आपने ChromeVox का उपयोग करने के लिए ज़रूरी बातें सफलतापूर्वक सीख ली हैं. याद रखें कि आप Search+Period दबाकर किसी भी समय ChromeVox का निर्देश मेन्यू खोल सकते हैं. ChromeVox और Chrome OS के बारे में और भी अधिक जानने के लिए, नीचे दिए गए लेखों पर जाएं.
-अगर आपने ट्यूटोरियल पूरा कर लिया है, तो ChromeVox का इस्तेमाल करके बंद करें बटन पर जाएं और उस पर क्लिक करें.</translation>
+<translation id="1225437811932752266">बधाई हो! आपने ChromeVox का उपयोग करने की ज़रूरी बातें सीख ली हैं. याद रखें कि आप Search+Period दबाकर किसी भी समय ChromeVox का निर्देश मेन्यू खोल सकते हैं. ChromeVox और Chrome OS के बारे में और भी ज़्यादा जानने के लिए, नीचे दिए गए लेखों पर जाएं.
+अगर आपने ट्यूटोरियल पूरा कर लिया है तो, ChromeVox का इस्तेमाल करके 'बंद करें' बटन पर जाएं और उस पर क्लिक करें.</translation>
 <translation id="1229276918471378188">पिछला जंप</translation>
 <translation id="1236794971743289975">एंड नोट</translation>
 <translation id="1237866625126425153">rdgrp</translation>
@@ -456,7 +456,7 @@
 <translation id="4729095194763193578">पिछली तालिका पंक्ति</translation>
 <translation id="4736221692378411923">अगस्त</translation>
 <translation id="4740661827607246557">सहायता आदेश</translation>
-<translation id="4755857887974653209">ChromeVox अक्षम करें</translation>
+<translation id="4755857887974653209">ChromeVox को बंद करें</translation>
 <translation id="4763296182459741068">नीचे तक लपेटा गया</translation>
 <translation id="4763480195061959176">वीडियो</translation>
 <translation id="4764692524839457597">डिफ़ॉल्ट</translation>

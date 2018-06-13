@@ -121,7 +121,7 @@
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">விருந்தினர்</translation>
 <translation id="332587331255250389">பேட்டரியை மாற்றவும்</translation>
-<translation id="3351879221545518001">தற்போது திரையை அனுப்புகிறீர்கள்.</translation>
+<translation id="3351879221545518001">தற்போது திரையை அலைபரப்புகிறீர்கள்.</translation>
 <translation id="3364721542077212959">ஸ்டைலஸ் கருவிகள்</translation>
 <translation id="3368922792935385530">இணைக்கப்பட்டது</translation>
 <translation id="3371140690572404006">USB-C சாதனம் (வலது பக்கம் முன்னே இருக்கும் போர்ட்)</translation>
@@ -260,7 +260,7 @@
 <translation id="6521655319214113338">கையெழுத்து உள்ளீடு</translation>
 <translation id="6528179044667508675">தொந்தரவு செய்யாதே</translation>
 <translation id="6537270692134705506">திரையைப் படமெடு</translation>
-<translation id="6542521951477560771"><ph name="RECEIVER_NAME" />க்கு அனுப்புகிறது</translation>
+<translation id="6542521951477560771"><ph name="RECEIVER_NAME" />க்கு அலைபரப்புகிறது</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
 <translation id="6627638273713273709">தேடல்+ஷிஃப்ட்+K</translation>
 <translation id="6650933572246256093">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்தக் கடவுச்சொல்லை உள்ளிடவும்: <ph name="PASSKEY" /></translation>
@@ -371,7 +371,7 @@
 <translation id="8940956008527784070">பேட்டரி குறைவு (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Quick launch</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> ஆல் நிர்வகிக்கப்படுகிறது</translation>
-<translation id="9033907480196064950">தற்போது <ph name="TAB_NAME" />ஐ அனுப்புகிறீர்கள்</translation>
+<translation id="9033907480196064950">தற்போது <ph name="TAB_NAME" />ஐ அலைபரப்புகிறீர்கள்</translation>
 <translation id="9074739597929991885">புளூடூத்</translation>
 <translation id="9079731690316798640">வைஃபை: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">மைக்ரோஃபோன் பயன்பாட்டில் உள்ளது.</translation>

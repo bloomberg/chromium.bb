@@ -2413,13 +2413,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7961779417826583251">Onemogući provedbu Transparentnosti certifikata za popis starih tijela za izdavanje certifikata</translation>
 <translation id="7974114691960514888">Ovo pravilo više se ne podržava. Omogućuje upotrebu STUN i relejnih poslužitelja prilikom povezivanja s udaljenim klijentom. Ako je ova postavka omogućena, onda ovo računalo može otkriti udaljena računala hostove i povezati se s njima, čak i ako su odvojena vatrozidom. Ako je ova postavka onemogućena, a izlazne UDP veze filtrirane su vatrozidom, onda se ovo računalo može jedino povezati s računalima hostovima unutar lokalne mreže.</translation>
 <translation id="7976157349247117979">Naziv odredišta za <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Ako se ne postavi, u slučaju da Chromeov alat za čišćenje otkrije neželjeni softver, može Googleu prijaviti metapodatke o pretraživanju u skladu s pravilima postavljenima pravilom SafeBrowsingExtendedReportingEnabled. Chromeov alat za čišćenje zatim će pitati korisnika želi li ukloniti neželjeni softver. Korisnik može podijeliti rezultate čišćenja s Googleom kako bi pomogao s budućim otkrivanjem neželjenog softvera. Ti rezultati sadrže metapodatke o datotekama i ključeve registra kao što je opisano u Dokumentu o privatnosti preglednika Google Chrome.
-
-      Ako se postavi na False, u slučaju da Chromeov alat za čišćenje otkrije neželjeni softver, neće Googleu prijaviti metapodatke o pretraživanju, nadjačavajući pravila postavljena pravilom SafeBrowsingExtendedReportingEnabled. Chromeov alat za čišćenje pitat će korisnika želi li ukloniti neželjeni softver. Rezultati čišćenja neće se prijaviti Googleu i korisnik to neće moći učiniti.
-
-      Ako se postavi na True, u slučaju da Chromeov alat za čišćenje otkrije neželjeni softver, može Googleu prijaviti metapodatke o pretraživanju u skladu s pravilima postavljenima pravilom SafeBrowsingExtendedReportingEnabled. Chromeov alat za čišćenje pitat će korisnika želi li ukloniti neželjeni softver. Rezultati čišćenja prijavit će se Googleu i korisnik to neće moći spriječiti.
-
-      To pravilo nije dostupno u instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Nema posebnih ograničenja</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Zakreni zaslon 0 stupnjeva</translation>

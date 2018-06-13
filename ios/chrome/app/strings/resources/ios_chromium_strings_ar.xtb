@@ -4,7 +4,7 @@
 <translation id="102360288709523007">‏ساعد في تحسين Chromium بإرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
 <translation id="1185134272377778587">‏حول Chromium</translation>
 <translation id="1289966288285062467">‏إشعار خصوصية Chromium</translation>
-<translation id="1341317949260424055">‏تحسين Chromium وإعدادات الأمان لديه عن طريق إرسال بيانات النظام والاستخدام إلى Google</translation>
+<translation id="1341317949260424055">‏تحسين Chromium وإعدادات الأمان فيه عن طريق إرسال بيانات النظام والاستخدام إلى Google</translation>
 <translation id="1472013873724362412">‏لا يعمل حسابك على Chromium. يُرجى الاتصال بمشرف النطاق أو استخدام حساب Google عادي لتسجيل الدخول.</translation>
 <translation id="1736662517232558588">‏تم مسح بيانات Chromium</translation>
 <translation id="1838412507805038478">‏لقد تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذه.</translation>
@@ -47,7 +47,7 @@
 <translation id="8175055321229419309">‏نصيحة: <ph name="BEGIN_LINK" />انقل Chromium إلى شريط الإرساء<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">‏احصل على تجربة أفضل لاستخدام Google في Chromium استنادًا إلى موقعك.</translation>
 <translation id="8353224596138547809">‏هل تريد من Chromium حفظ كلمة المرور لهذا الموقع؟</translation>
-<translation id="8508544542427105412">‏يمكن تخصيص <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" /> في أي وقت. قد تستخدم Google المحتوى على المواقع الإلكترونية التي تزورها، وتفاعلات المتصفّح ونشاطه لتخصيص Chromium وخدمات Google مثل "الترجمة" و"البحث" والإعلانات.</translation>
+<translation id="8508544542427105412">‏يمكن تخصيص <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" /> في أي وقت. قد تستخدم Google محتوى المواقع الإلكترونية التي تزورها وتفاعلات المتصفّح ونشاطه لتخصيص Chromium وخدمات Google، مثل "ترجمة" و"بحث" والإعلانات.</translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="8809780021347235332">‏لحفظ الصور، انقر على الإعدادات للسماح لمتصفح Chromium باستخدام صورك</translation>
 <translation id="9022552996538154597">‏تسجيل الدخول إلى Chromium</translation>

@@ -274,7 +274,7 @@
 <translation id="671928215901716392">Verrouillage d'écran</translation>
 <translation id="6723839937902243910">Alimentation</translation>
 <translation id="6725073593266469338">Service de gestion de l'interface utilisateur</translation>
-<translation id="6751826523481687655">Le suivi des performances et activé</translation>
+<translation id="6751826523481687655">Le suivi des performances est activé</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
 <translation id="6820676911989879663">Faites une pause !</translation>
@@ -388,5 +388,5 @@
 <translation id="923686485342484400">Appuyez deux fois sur Contrôle + Maj + Q pour vous déconnecter.</translation>
 <translation id="945522503751344254">Envoyer le commentaire</translation>
 <translation id="98515147261107953">Paysage</translation>
-<translation id="995927048686010764">Autoclick</translation>
+<translation id="995927048686010764">Clic automatique</translation>
 </translationbundle>

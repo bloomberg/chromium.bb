@@ -2530,13 +2530,6 @@
 
            Jei šis nustatymas neleidžiamas ir išeinantys UDP ryšiai filtruojami taikant užkardą, šis įrenginys gali prisijungti tik prie prieglobos įrenginių vietiniame tinkle.</translation>
 <translation id="7976157349247117979">„<ph name="PRODUCT_NAME" />“ paskirties vietos pavadinimas</translation>
-<translation id="7977445800390854860">Jei nenustatyta, „Chrome“ valymo įrankiui aptikus nepageidaujamos programinės įrangos, „Google“ gali būti pateikta nuskaitymo metaduomenų ataskaita, vadovaujantis „SafeBrowsingExtendedReportingEnabled“ nustatyta politika. Tada naudojant „Chrome“ valymo įrankį bus klausiama naudotojo, ar nori išvalyti nepageidaujamą programinę įrangą. Naudotojas gali pasirinkti bendrinti valymo rezultatus su „Google“, kad padėtų vėliau aptikti nepageidaujamą programinę įrangą. Šie rezultatai apima failų metaduomenis ir registro raktus, kaip aprašyta „Chrome“ privatumo baltojoje knygoje.
-
-      Jei nustatyta kaip „Netiesa“, „Chrome“ valymo įrankiui aptikus nepageidaujamos programinės įrangos, nebus teikiama nuskaitymo metaduomenų ataskaita „Google“, nepaisant bet kokios „SafeBrowsingExtendedReportingEnabled“ nustatytos politikos. Naudojant „Chrome“ valymo įrankį bus klausiama naudotojo, ar nori išvalyti nepageidaujamą programinę įrangą. „Google“ nebus teikiama valymo rezultatų ataskaita ir naudotojui nebus suteikta parinktis tai atlikti.
-
-      Jei nustatyta kaip „Tiesa“, „Chrome“ valymo įrankiui aptikus nepageidaujamos programinės įrangos, „Google“ gali būti pateikta nuskaitymo metaduomenų ataskaita, vadovaujantis „SafeBrowsingExtendedReportingEnabled“ nustatyta politika. Naudojant „Chrome“ valymo įrankį bus klausiama naudotojo, ar nori išvalyti nepageidaujamą programinę įrangą. Valymo rezultatų ataskaita bus pateikta „Google“ ir naudotojas negalės jos neteikti.
-
-      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="7980227303582973781">Nėra specialių apribojimų</translation>
 <translation id="7985242821674907985">„<ph name="PRODUCT_NAME" />“</translation>
 <translation id="802147957407376460">Pasukti ekraną 0 laipsnių kampu</translation>
