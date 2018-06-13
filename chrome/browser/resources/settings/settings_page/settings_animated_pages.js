@@ -206,8 +206,11 @@ Polymer({
    */
   ensureSubpageInstance_: function() {
     const routePath = settings.getCurrentRoute().path;
-    const template = Polymer.dom(this).querySelector(
-        'template[route-path="' + routePath + '"]');
+    /* TODO(dpapad): Remove conditional logic once migration to Polymer 2 is
+     * completed. */
+    const template = this.querySelector(
+        (Polymer.DomIf ? 'dom-if' : 'template') +
+        `[route-path='${routePath}']`);
 
     // Nothing to do if the subpage isn't wrapped in a <template> or the
     // template is already stamped.
@@ -215,8 +218,12 @@ Polymer({
       return;
 
     // Set the subpage's id for use by neon-animated-pages.
-    const subpage = /** @type {{_content: DocumentFragment}} */ (template)
-                        ._content.querySelector('settings-subpage');
+    // TODO(dpapad): Remove conditional logic once migration to Polymer 2 is
+    // completed.
+    const content = Polymer.DomIf ?
+        Polymer.DomIf._contentForTemplate(template.firstChild) :
+        /** @type {{_content: DocumentFragment}} */ (template)._content;
+    const subpage = content.querySelector('settings-subpage');
     subpage.setAttribute('route-path', routePath);
 
     // Carry over the 'no-search' attribute from the template to the stamped
