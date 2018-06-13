@@ -69,7 +69,8 @@ EmptyFolderController.prototype.onScanStarted_ = function() {
 
 /**
  * Handles scan fail.
- * @param {event} Event may contain error field containing DOMError for alert.
+ * @param {Event} event Event may contain error field containing DOMError for
+ *   alert.
  * @private
  */
 EmptyFolderController.prototype.onScanFailed_ = function(event) {

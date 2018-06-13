@@ -507,6 +507,7 @@ test.setupAndWaitUntilReady = function(resolve) {
   test.fakeMouseRightClick =
       test.util.sync.fakeMouseRightClick.bind(null, window);
   test.fakeKeyDown = test.util.sync.fakeKeyDown.bind(null, window);
+  test.sendEvent = test.util.sync.sendEvent.bind(null, window);
   test.getFileList = test.util.sync.getFileList.bind(null, window);
   test.inputText = test.util.sync.inputText.bind(null, window);
   test.selectFile = test.util.sync.selectFile.bind(null, window);

@@ -123,11 +123,13 @@ chrome.fileManagerPrivate = {
   isUMAEnabled: (callback) => {
     setTimeout(callback, 0, false);
   },
-  mountCrostiniContainer: (callback) => {
-    // Simulate startup of vm and container by taking 1s.
+  // Simulate startup of vm and container by taking 1s.
+  mountCrostiniContainerDelay_: 1000,
+  mountCrostiniContainer: function(callback) {
     setTimeout(() => {
       test.mountCrostini();
-    }, 1000);
+      callback();
+    }, this.mountCrostiniContainerDelay_);
   },
   onAppsUpdated: {
     addListener: () => {},
