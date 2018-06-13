@@ -10,6 +10,7 @@ import org.junit.runners.model.Statement;
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.rules.VrActivityRestriction.SupportedActivity;
 import org.chromium.chrome.browser.vr_shell.util.HeadTrackingUtils;
+import org.chromium.chrome.browser.vr_shell.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
 
 /**
@@ -24,6 +25,7 @@ public class WebappActivityVrTestRule extends WebappActivityTestRule implements 
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
                 HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(
                         WebappActivityVrTestRule.this, desc);
                 startWebappActivity();

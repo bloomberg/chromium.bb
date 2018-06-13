@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.rules.VrActivityRestriction.SupportedActivity;
 import org.chromium.chrome.browser.vr_shell.util.HeadTrackingUtils;
+import org.chromium.chrome.browser.vr_shell.util.VrTestRuleUtils;
 
 /**
  * VR extension of CustomTabActivityTestRule. Applies CustomTabActivityTestRule then
@@ -27,6 +28,7 @@ public class CustomTabActivityVrTestRule extends CustomTabActivityTestRule imple
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
                 HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(
                         CustomTabActivityVrTestRule.this, desc);
                 startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
