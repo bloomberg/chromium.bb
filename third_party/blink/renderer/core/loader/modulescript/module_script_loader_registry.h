@@ -12,11 +12,11 @@
 
 namespace blink {
 
+class FetchClientSettingsObjectSnapshot;
 class Modulator;
 class ModuleScriptFetchRequest;
 class ModuleScriptLoader;
 class ModuleScriptLoaderClient;
-class SettingsObject;
 enum class ModuleGraphLevel;
 
 // ModuleScriptLoaderRegistry keeps active ModuleLoaders alive.
@@ -28,11 +28,12 @@ class CORE_EXPORT ModuleScriptLoaderRegistry final
   }
   void Trace(blink::Visitor*);
 
-  ModuleScriptLoader* Fetch(const ModuleScriptFetchRequest&,
-                            const SettingsObject& fetch_client_settings_object,
-                            ModuleGraphLevel,
-                            Modulator*,
-                            ModuleScriptLoaderClient*);
+  ModuleScriptLoader* Fetch(
+      const ModuleScriptFetchRequest&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      ModuleGraphLevel,
+      Modulator*,
+      ModuleScriptLoaderClient*);
 
  private:
   ModuleScriptLoaderRegistry() = default;

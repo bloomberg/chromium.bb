@@ -23,6 +23,7 @@
 namespace blink {
 
 class ExceptionState;
+class FetchClientSettingsObjectSnapshot;
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptFetcher;
@@ -32,7 +33,6 @@ class ScriptModuleResolver;
 class ScriptPromiseResolver;
 class ScriptState;
 class ScriptValue;
-class SettingsObject;
 
 // A SingleModuleClient is notified when single module script node (node as in a
 // module tree graph) load is complete and its corresponding entry is created in
@@ -96,24 +96,26 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
   // Note that |this| is the "module map settings object" used in the "fetch a
   // module worker script graph" algorithm.
-  virtual void FetchTree(const KURL&,
-                         const SettingsObject& fetch_client_settings_object,
-                         WebURLRequest::RequestContext destination,
-                         const ScriptFetchOptions&,
-                         ModuleTreeClient*) = 0;
+  virtual void FetchTree(
+      const KURL&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      WebURLRequest::RequestContext destination,
+      const ScriptFetchOptions&,
+      ModuleTreeClient*) = 0;
 
   // Asynchronously retrieve a module script from the module map, or fetch it
   // and put it in the map if it's not there already.
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
   // Note that |this| is the "module map settings object".
-  virtual void FetchSingle(const ModuleScriptFetchRequest&,
-                           const SettingsObject& fetch_client_settings_object,
-                           ModuleGraphLevel,
-                           SingleModuleClient*) = 0;
+  virtual void FetchSingle(
+      const ModuleScriptFetchRequest&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      ModuleGraphLevel,
+      SingleModuleClient*) = 0;
 
   virtual void FetchDescendantsForInlineScript(
       ModuleScript*,
-      const SettingsObject& fetch_client_settings_object,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) = 0;
 
@@ -183,7 +185,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   // The client can be notified either synchronously or asynchronously.
   virtual void FetchNewSingleModule(
       const ModuleScriptFetchRequest&,
-      const SettingsObject& fetch_client_settings_object,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       ModuleGraphLevel,
       ModuleScriptLoaderClient*) = 0;
 };

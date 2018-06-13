@@ -40,12 +40,12 @@
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_pending_script.h"
 #include "third_party/blink/renderer/core/script/script.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
-#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -366,7 +366,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // object's environment settings object.</spec>
   //
   // Note: We use |element_document| as "settings object" in the steps below.
-  SettingsObject settings_object(element_document);
+  FetchClientSettingsObjectSnapshot settings_object(element_document);
 
   // <spec step="23">If the element has a src content attribute, then:</spec>
   if (element_->HasSourceAttribute()) {
@@ -698,10 +698,11 @@ void ScriptLoader::FetchClassicScript(const KURL& url,
   resource_keep_alive_ = pending_script->GetResource();
 }
 
-void ScriptLoader::FetchModuleScriptTree(const KURL& url,
-                                         const SettingsObject& settings_object,
-                                         Modulator* modulator,
-                                         const ScriptFetchOptions& options) {
+void ScriptLoader::FetchModuleScriptTree(
+    const KURL& url,
+    const FetchClientSettingsObjectSnapshot& settings_object,
+    Modulator* modulator,
+    const ScriptFetchOptions& options) {
   // <spec
   // href="https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script"
   // step="23.6.B">"module"

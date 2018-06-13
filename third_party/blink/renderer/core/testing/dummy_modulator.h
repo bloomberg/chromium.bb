@@ -12,10 +12,10 @@
 
 namespace blink {
 
+class FetchClientSettingsObjectSnapshot;
 class ModuleScriptFetchRequest;
 class ModuleScriptLoaderClient;
 class ScriptModuleResolver;
-class SettingsObject;
 
 // DummyModulator provides empty Modulator interface implementation w/
 // NOTREACHED().
@@ -36,26 +36,29 @@ class DummyModulator : public Modulator {
   base::SingleThreadTaskRunner* TaskRunner() override;
   ScriptState* GetScriptState() override;
 
-  void FetchTree(const KURL&,
-                 const SettingsObject& fetch_client_settings_object,
-                 WebURLRequest::RequestContext destination,
-                 const ScriptFetchOptions&,
-                 ModuleTreeClient*) override;
-  void FetchSingle(const ModuleScriptFetchRequest&,
-                   const SettingsObject& fetch_client_settings_object,
-                   ModuleGraphLevel,
-                   SingleModuleClient*) override;
+  void FetchTree(
+      const KURL&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      WebURLRequest::RequestContext destination,
+      const ScriptFetchOptions&,
+      ModuleTreeClient*) override;
+  void FetchSingle(
+      const ModuleScriptFetchRequest&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      ModuleGraphLevel,
+      SingleModuleClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
-      const SettingsObject& fetch_client_settings_object,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       ModuleTreeClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   KURL ResolveModuleSpecifier(const String&, const KURL&, String*) override;
-  void FetchNewSingleModule(const ModuleScriptFetchRequest&,
-                            const SettingsObject& fetch_client_settings_object,
-                            ModuleGraphLevel,
-                            ModuleScriptLoaderClient*) override;
+  void FetchNewSingleModule(
+      const ModuleScriptFetchRequest&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      ModuleGraphLevel,
+      ModuleScriptLoaderClient*) override;
   bool HasValidContext() override;
   void ResolveDynamically(const String& specifier,
                           const KURL&,

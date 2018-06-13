@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
-#include "third_party/blink/renderer/core/script/settings_object.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
 
@@ -17,7 +17,7 @@ void ModuleTreeLinkerRegistry::Trace(blink::Visitor* visitor) {
 
 ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
     const KURL& url,
-    const SettingsObject& fetch_client_settings_object,
+    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     const KURL& base_url,
     WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
@@ -33,7 +33,7 @@ ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
 
 ModuleTreeLinker* ModuleTreeLinkerRegistry::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
-    const SettingsObject& fetch_client_settings_object,
+    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     Modulator* modulator,
     ModuleTreeClient* client) {

@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class SettingsObject;
+class FetchClientSettingsObjectSnapshot;
 class ThreadedWorkletMessagingProxy;
 class WorkletPendingTasks;
 class WorkerThread;
@@ -36,7 +36,7 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
   void FetchAndInvokeScript(
       const KURL& module_url_record,
       network::mojom::FetchCredentialsMode,
-      const SettingsObject& outside_settings_object,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
       scoped_refptr<base::SingleThreadTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*,
       WorkerThread*);

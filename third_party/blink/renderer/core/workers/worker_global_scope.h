@@ -52,11 +52,11 @@ class InterfaceProvider;
 
 namespace blink {
 
-class FontFaceSet;
 class ConsoleMessage;
 class ExceptionState;
+class FetchClientSettingsObjectSnapshot;
+class FontFaceSet;
 class OffscreenFontSelector;
-class SettingsObject;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
@@ -136,9 +136,10 @@ class CORE_EXPORT WorkerGlobalScope
       std::unique_ptr<Vector<char>> cached_meta_data);
 
   // Imports the top-level module script for |module_url_record|.
-  virtual void ImportModuleScript(const KURL& module_url_record,
-                                  const SettingsObject& outside_settings_object,
-                                  network::mojom::FetchCredentialsMode) = 0;
+  virtual void ImportModuleScript(
+      const KURL& module_url_record,
+      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      network::mojom::FetchCredentialsMode) = 0;
 
   double TimeOrigin() const { return time_origin_; }
   WorkerSettings* GetWorkerSettings() const { return worker_settings_.get(); }

@@ -13,13 +13,13 @@
 
 namespace blink {
 
+class FetchClientSettingsObjectSnapshot;
 class KURL;
 class Modulator;
 class ModuleTreeClient;
 class ModuleTreeLinker;
 class ModuleScript;
 class ScriptFetchOptions;
-class SettingsObject;
 
 // ModuleTreeLinkerRegistry keeps active ModuleTreeLinkers alive.
 class CORE_EXPORT ModuleTreeLinkerRegistry
@@ -34,16 +34,17 @@ class CORE_EXPORT ModuleTreeLinkerRegistry
     return "ModuleTreeLinkerRegistry";
   }
 
-  ModuleTreeLinker* Fetch(const KURL&,
-                          const SettingsObject& fetch_client_settings_object,
-                          const KURL& base_url,
-                          WebURLRequest::RequestContext destination,
-                          const ScriptFetchOptions&,
-                          Modulator*,
-                          ModuleTreeClient*);
+  ModuleTreeLinker* Fetch(
+      const KURL&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      const KURL& base_url,
+      WebURLRequest::RequestContext destination,
+      const ScriptFetchOptions&,
+      Modulator*,
+      ModuleTreeClient*);
   ModuleTreeLinker* FetchDescendantsForInlineScript(
       ModuleScript*,
-      const SettingsObject& fetch_client_settings_object,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       Modulator*,
       ModuleTreeClient*);

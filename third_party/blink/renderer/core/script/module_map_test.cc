@@ -9,10 +9,10 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script_module_resolver.h"
-#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -103,10 +103,11 @@ class ModuleMapTestModulator final : public DummyModulator {
     return Platform::Current()->CurrentThread()->GetTaskRunner().get();
   };
 
-  void FetchNewSingleModule(const ModuleScriptFetchRequest&,
-                            const SettingsObject& fetch_client_settings_object,
-                            ModuleGraphLevel,
-                            ModuleScriptLoaderClient*) override;
+  void FetchNewSingleModule(
+      const ModuleScriptFetchRequest&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      ModuleGraphLevel,
+      ModuleScriptLoaderClient*) override;
 
   struct TestRequest final : public GarbageCollectedFinalized<TestRequest> {
     TestRequest(const KURL& in_url,
@@ -135,7 +136,7 @@ void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
 
 void ModuleMapTestModulator::FetchNewSingleModule(
     const ModuleScriptFetchRequest& request,
-    const SettingsObject& fetch_client_settings_object,
+    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     ModuleGraphLevel,
     ModuleScriptLoaderClient* client) {
   TestRequest* test_request =
@@ -182,7 +183,7 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
-  SettingsObject settings_object(GetDocument());
+  FetchClientSettingsObjectSnapshot settings_object(GetDocument());
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;
@@ -226,7 +227,7 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
-  SettingsObject settings_object(GetDocument());
+  FetchClientSettingsObjectSnapshot settings_object(GetDocument());
 
   // First request
   TestSingleModuleClient* client = new TestSingleModuleClient;

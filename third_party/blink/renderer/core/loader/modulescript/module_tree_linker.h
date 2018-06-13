@@ -7,8 +7,8 @@
 
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
-#include "third_party/blink/renderer/core/script/settings_object.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -42,7 +42,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   // removed soon once an upcoming spec change lands.
   static ModuleTreeLinker* Fetch(
       const KURL&,
-      const SettingsObject& fetch_client_settings_object,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       const KURL& base_url,
       WebURLRequest::RequestContext destination,
       const ScriptFetchOptions&,
@@ -53,7 +53,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   // [FDaI] for an inline script.
   static ModuleTreeLinker* FetchDescendantsForInlineScript(
       ModuleScript*,
-      const SettingsObject& fetch_client_settings_object,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
       Modulator*,
       ModuleTreeLinkerRegistry*,
@@ -68,11 +68,12 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   bool HasFinished() const { return state_ == State::kFinished; }
 
  private:
-  ModuleTreeLinker(const SettingsObject& fetch_client_settings_object,
-                   WebURLRequest::RequestContext destination,
-                   Modulator*,
-                   ModuleTreeLinkerRegistry*,
-                   ModuleTreeClient*);
+  ModuleTreeLinker(
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      WebURLRequest::RequestContext destination,
+      Modulator*,
+      ModuleTreeLinkerRegistry*,
+      ModuleTreeClient*);
 
   enum class State {
     kInitial,
@@ -112,7 +113,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   ScriptValue FindFirstParseError(ModuleScript*,
                                   HeapHashSet<Member<ModuleScript>>*) const;
 
-  const SettingsObject fetch_client_settings_object_;
+  const FetchClientSettingsObjectSnapshot fetch_client_settings_object_;
   const WebURLRequest::RequestContext destination_;
   const Member<Modulator> modulator_;
   HashSet<KURL> visited_set_;
