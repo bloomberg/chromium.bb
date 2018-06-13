@@ -175,7 +175,6 @@ Polymer({
   /** @private */
   onAddPrinterTap_: function() {
     this.$.addPrinterDialog.open();
-    this.$.addPrinterErrorMessage.hidden = true;
   },
 
   /** @private */
