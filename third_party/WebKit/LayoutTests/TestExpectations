@@ -1136,6 +1136,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fragmentation/table-overlapping-
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/table-row-dimensions-break-freely.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/table-row-dimensions-with-thead.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/table-row-dimensions.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fragmentation/table-row-page-break-collapsed-border.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/thead-under-repeating-thead.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/unbreakable-tall-float-before-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/unbreakable-tall-float-before-line.html [ Failure ]
