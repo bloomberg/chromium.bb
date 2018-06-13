@@ -9,6 +9,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -69,6 +70,21 @@ TEST(PreflightControllerCreatePreflightRequestTest, ExcludeSimpleHeaders) {
   std::string header;
   EXPECT_FALSE(preflight->headers.GetHeader(
       cors::header_names::kAccessControlRequestHeaders, &header));
+}
+
+TEST(PreflightControllerCreatePreflightRequestTest, Credentials) {
+  ResourceRequest request;
+  request.request_initiator = url::Origin();
+  request.headers.SetHeader("Orange", "Orange");
+
+  std::unique_ptr<ResourceRequest> preflight =
+      PreflightController::CreatePreflightRequestForTesting(request);
+
+  EXPECT_EQ(mojom::FetchCredentialsMode::kOmit,
+            preflight->fetch_credentials_mode);
+  EXPECT_TRUE(preflight->load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
+  EXPECT_TRUE(preflight->load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
+  EXPECT_TRUE(preflight->load_flags & net::LOAD_DO_NOT_SEND_AUTH_DATA);
 }
 
 TEST(PreflightControllerCreatePreflightRequestTest,
