@@ -9,7 +9,7 @@
   <release seq="1">
     <includes>
       <!-- Source/core/css/html.css processed through minimize_css.py -->
-      <include name="IDR_UASTYLE_HTML_CSS" file="${cwd}/${html_min_css}" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_HTML_CSS" file="${html_min_css}" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_QUIRKS_CSS" file="../renderer/core/css/quirks.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_VIEW_SOURCE_CSS" file="../renderer/core/css/view-source.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS" file="../renderer/core/css/themeChromiumAndroid.css" type="BINDATA" compress="gzip"/>

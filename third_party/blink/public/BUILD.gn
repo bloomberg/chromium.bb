@@ -636,7 +636,7 @@ grit("resources") {
   html_min_css = "$blink_core_output_dir/html.css"
   grit_flags = [
     "-E",
-    "html_min_css=" + rebase_path(html_min_css, root_build_dir),
+    "html_min_css=" + rebase_path(html_min_css, "."),
   ]
   deps = [
     "//third_party/blink/renderer/core:make_minimized_css",
