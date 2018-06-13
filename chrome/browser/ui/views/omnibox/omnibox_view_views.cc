@@ -139,12 +139,6 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
       scoped_template_url_service_observer_(this) {
   set_id(VIEW_ID_OMNIBOX);
   SetFontList(font_list);
-
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    InstallPlaceholderText();
-    scoped_template_url_service_observer_.Add(
-        model()->client()->GetTemplateURLService());
-  }
 }
 
 OmniboxViewViews::~OmniboxViewViews() {
@@ -167,6 +161,11 @@ void OmniboxViewViews::Init() {
     SetReadOnly(true);
 
   if (location_bar_view_) {
+    if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+      InstallPlaceholderText();
+      scoped_template_url_service_observer_.Add(
+          model()->client()->GetTemplateURLService());
+    }
     // Initialize the popup view using the same font.
     popup_view_.reset(
         new OmniboxPopupContentsView(this, model(), location_bar_view_));
