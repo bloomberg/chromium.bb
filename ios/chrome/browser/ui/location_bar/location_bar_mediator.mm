@@ -78,20 +78,20 @@
 
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(_webState, webState);
-  [self.consumer updateLocationText:[self currentLocationString]];
+  [self notifyConsumerOfChangedLocation];
 }
 
 - (void)webState:(web::WebState*)webState
     didStartNavigation:(web::NavigationContext*)navigation {
   DCHECK_EQ(_webState, webState);
-  [self.consumer updateLocationText:[self currentLocationString]];
+  [self notifyConsumerOfChangedLocation];
   [self notifyConsumerOfChangedSecurityIcon];
 }
 
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
   DCHECK_EQ(_webState, webState);
-  [self.consumer updateLocationText:[self currentLocationString]];
+  [self notifyConsumerOfChangedLocation];
   [self notifyConsumerOfChangedSecurityIcon];
 }
 
@@ -102,13 +102,13 @@
 
 - (void)webStateDidStartLoading:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  [self.consumer updateLocationText:[self currentLocationString]];
+  [self notifyConsumerOfChangedLocation];
   [self notifyConsumerOfChangedSecurityIcon];
 }
 
 - (void)webStateDidStopLoading:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
-  [self.consumer updateLocationText:[self currentLocationString]];
+  [self notifyConsumerOfChangedLocation];
   [self notifyConsumerOfChangedSecurityIcon];
 }
 
@@ -148,7 +148,7 @@
     _webState->AddObserver(_webStateObserver.get());
 
     if (self.consumer) {
-      [self.consumer updateLocationText:[self currentLocationString]];
+      [self notifyConsumerOfChangedLocation];
       [self notifyConsumerOfChangedSecurityIcon];
     }
   }
@@ -157,7 +157,7 @@
 - (void)setConsumer:(id<LocationBarConsumer>)consumer {
   _consumer = consumer;
   if (self.webState) {
-    [self.consumer updateLocationText:[self currentLocationString]];
+    [self notifyConsumerOfChangedLocation];
     [self notifyConsumerOfChangedSecurityIcon];
   }
 }
@@ -173,6 +173,15 @@
 }
 
 #pragma mark - private
+
+- (void)notifyConsumerOfChangedLocation {
+  [self.consumer updateLocationText:[self currentLocationString]];
+  GURL URL = self.webState->GetVisibleURL();
+  BOOL isNTP = URL.GetOrigin() == kChromeUINewTabURL;
+  if (isNTP) {
+    [self.consumer updateAfterNavigatingToNTP];
+  }
+}
 
 - (void)notifyConsumerOfChangedSecurityIcon {
   [self.consumer updateLocationIcon:[self currentLocationIcon]];

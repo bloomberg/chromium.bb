@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_view_controller.h"
 
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/activity_service_commands.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -11,6 +12,7 @@
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -35,6 +37,11 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 @property(nonatomic, assign) TrailingButtonState trailingButtonState;
 
+// When this flag is YES, the share button will not be displayed in situations
+// when it normally is shown. Setting it triggers a refresh of the button
+// visibility.
+@property(nonatomic, assign) BOOL hideShareButtonWhileOnIncognitoNTP;
+
 // Starts voice search, updating the NamedGuide to be constrained to the
 // trailing button.
 - (void)startVoiceSearch;
@@ -49,6 +56,8 @@ typedef NS_ENUM(int, TrailingButtonState) {
 @synthesize dispatcher = _dispatcher;
 @synthesize voiceSearchEnabled = _voiceSearchEnabled;
 @synthesize trailingButtonState = _trailingButtonState;
+@synthesize hideShareButtonWhileOnIncognitoNTP =
+    _hideShareButtonWhileOnIncognitoNTP;
 
 #pragma mark - public
 
@@ -95,10 +104,18 @@ typedef NS_ENUM(int, TrailingButtonState) {
     return;
   }
   _voiceSearchEnabled = enabled;
+  [self updateTrailingButtonState];
+}
+
+- (void)setHideShareButtonWhileOnIncognitoNTP:(BOOL)hide {
+  if (_hideShareButtonWhileOnIncognitoNTP == hide) {
+    return;
+  }
+  _hideShareButtonWhileOnIncognitoNTP = hide;
   [self updateTrailingButton];
 }
 
-- (void)updateTrailingButton {
+- (void)updateTrailingButtonState {
   BOOL shouldShowVoiceSearch =
       self.traitCollection.horizontalSizeClass ==
           UIUserInterfaceSizeClassRegular ||
@@ -134,7 +151,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [self updateTrailingButton];
+  [self updateTrailingButtonState];
   [super traitCollectionDidChange:previousTraitCollection];
 }
 
@@ -183,17 +200,28 @@ typedef NS_ENUM(int, TrailingButtonState) {
       [icon imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 
+- (void)updateForIncognitoNTP:(BOOL)isIncognitoNTP {
+  if (isIncognitoNTP) {
+    // Display a fake "placeholder".
+    NSString* placeholderString =
+        l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
+    UIColor* placeholderColor =
+        [LocationBarSteadyViewColorScheme incognitoScheme].placeholderColor;
+    self.locationBarSteadyView.locationLabel.attributedText = [
+        [NSAttributedString alloc]
+        initWithString:placeholderString
+            attributes:@{NSForegroundColorAttributeName : placeholderColor}];
+  }
+  self.hideShareButtonWhileOnIncognitoNTP = isIncognitoNTP;
+}
+
 #pragma mark - private
 
 - (void)locationBarSteadyViewTapped {
   [self.delegate locationBarSteadyViewTapped];
 }
 
-- (void)setTrailingButtonState:(TrailingButtonState)state {
-  if (_trailingButtonState == state) {
-    return;
-  }
-
+- (void)updateTrailingButton {
   // Stop constraining the voice guide to the trailing button if transitioning
   // from kVoiceSearchButton.
   NamedGuide* voiceGuide =
@@ -202,7 +230,6 @@ typedef NS_ENUM(int, TrailingButtonState) {
   if (voiceGuide.constrainedView == self.locationBarSteadyView.trailingButton)
     voiceGuide.constrainedView = nil;
 
-  _trailingButtonState = state;
 
   // Cancel previous possible state.
   [self.locationBarSteadyView.trailingButton
@@ -210,6 +237,11 @@ typedef NS_ENUM(int, TrailingButtonState) {
                 action:nil
       forControlEvents:UIControlEventAllEvents];
   self.locationBarSteadyView.trailingButton.hidden = NO;
+
+  TrailingButtonState state = self.trailingButtonState;
+  if (state == kShareButton && self.hideShareButtonWhileOnIncognitoNTP) {
+    state = kNoButton;
+  }
 
   switch (state) {
     case kNoButton: {
@@ -245,6 +277,15 @@ typedef NS_ENUM(int, TrailingButtonState) {
           forState:UIControlStateNormal];
     }
   }
+}
+
+- (void)setTrailingButtonState:(TrailingButtonState)state {
+  if (_trailingButtonState == state) {
+    return;
+  }
+  _trailingButtonState = state;
+
+  [self updateTrailingButton];
 }
 
 - (void)startVoiceSearch {
