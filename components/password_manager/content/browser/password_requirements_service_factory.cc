@@ -4,14 +4,19 @@
 
 #include "components/password_manager/content/browser/password_requirements_service_factory.h"
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/autofill/core/browser/password_requirements_spec_fetcher.h"
 #include "components/autofill/core/browser/password_requirements_spec_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -43,15 +48,49 @@ KeyedService* PasswordRequirementsServiceFactory::BuildServiceInstanceFor(
   if (context->IsOffTheRecord())
     return nullptr;
 
-  // TODO(crbug.com/846694): These should become finch parameters.
-  const int kVersion = 1;
-  const size_t kPrefixLength = 0;
-  const int kTimeout = 5000;
+  VLOG(1) << "PasswordGenerationRequirements experiment enabled? "
+          << base::FeatureList::IsEnabled(
+                 features::kPasswordGenerationRequirements);
+
+  if (!base::FeatureList::IsEnabled(features::kPasswordGenerationRequirements))
+    return nullptr;
+
+  bool enable_domain_overrides = base::FeatureList::IsEnabled(
+      features::kPasswordGenerationRequirementsDomainOverrides);
+
+  VLOG(1)
+      << "PasswordGenerationRequirementsDomainOverrides experiment enabled? "
+      << enable_domain_overrides;
+
+  if (!enable_domain_overrides)
+    return new PasswordRequirementsService(nullptr);
+
+  // Default parameters.
+  int version = 0;
+  int prefix_length = 0;
+  int timeout_in_ms = 5000;
+
+  // Override defaults with parameters from field trial if defined.
+  std::map<std::string, std::string> field_trial_params;
+  base::GetFieldTrialParams(features::kGenerationRequirementsFieldTrial,
+                            &field_trial_params);
+  base::StringToInt(
+      field_trial_params[features::kGenerationRequirementsVersion], &version);
+  base::StringToInt(
+      field_trial_params[features::kGenerationRequirementsPrefixLength],
+      &prefix_length);
+  base::StringToInt(
+      field_trial_params[features::kGenerationRequirementsTimeout],
+      &timeout_in_ms);
+
+  VLOG(1) << "PasswordGenerationRequirements parameters: " << version << ", "
+          << prefix_length << ", " << timeout_in_ms << " ms";
+
   std::unique_ptr<autofill::PasswordRequirementsSpecFetcher> fetcher =
       std::make_unique<autofill::PasswordRequirementsSpecFetcherImpl>(
           content::BrowserContext::GetDefaultStoragePartition(context)
               ->GetURLLoaderFactoryForBrowserProcess(),
-          kVersion, kPrefixLength, kTimeout);
+          version, prefix_length, timeout_in_ms);
   return new PasswordRequirementsService(std::move(fetcher));
 }
 
