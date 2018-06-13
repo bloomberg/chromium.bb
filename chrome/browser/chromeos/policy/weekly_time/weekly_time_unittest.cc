@@ -9,7 +9,10 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/policy/proto/chrome_device_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace em = enterprise_management;
 
 namespace policy {
 
@@ -24,6 +27,16 @@ enum {
   kSaturday = 6,
   kSunday = 7,
 };
+
+constexpr em::WeeklyTimeProto_DayOfWeek kWeekdays[] = {
+    em::WeeklyTimeProto::DAY_OF_WEEK_UNSPECIFIED,
+    em::WeeklyTimeProto::MONDAY,
+    em::WeeklyTimeProto::TUESDAY,
+    em::WeeklyTimeProto::WEDNESDAY,
+    em::WeeklyTimeProto::THURSDAY,
+    em::WeeklyTimeProto::FRIDAY,
+    em::WeeklyTimeProto::SATURDAY,
+    em::WeeklyTimeProto::SUNDAY};
 
 const int kMinutesInHour = 60;
 
@@ -56,6 +69,34 @@ TEST_P(SingleWeeklyTimeTest, ToValue) {
   expected_weekly_time.SetInteger("day_of_week", day_of_week());
   expected_weekly_time.SetInteger("time", minutes() * kMinute.InMilliseconds());
   EXPECT_EQ(*weekly_time_value, expected_weekly_time);
+}
+
+TEST_P(SingleWeeklyTimeTest, ExtractFromProto_InvalidDay) {
+  int milliseconds = minutes() * kMinute.InMilliseconds();
+  em::WeeklyTimeProto proto;
+  proto.set_day_of_week(kWeekdays[0]);
+  proto.set_time(milliseconds);
+  auto result = WeeklyTime::ExtractFromProto(proto);
+  ASSERT_FALSE(result);
+}
+
+TEST_P(SingleWeeklyTimeTest, ExtractFromProto_InvalidTime) {
+  em::WeeklyTimeProto proto;
+  proto.set_day_of_week(kWeekdays[day_of_week()]);
+  proto.set_time(-1);
+  auto result = WeeklyTime::ExtractFromProto(proto);
+  ASSERT_FALSE(result);
+}
+
+TEST_P(SingleWeeklyTimeTest, ExtractFromProto_Valid) {
+  int milliseconds = minutes() * kMinute.InMilliseconds();
+  em::WeeklyTimeProto proto;
+  proto.set_day_of_week(kWeekdays[day_of_week()]);
+  proto.set_time(milliseconds);
+  auto result = WeeklyTime::ExtractFromProto(proto);
+  ASSERT_TRUE(result);
+  EXPECT_EQ(result->day_of_week(), day_of_week());
+  EXPECT_EQ(result->milliseconds(), milliseconds);
 }
 
 INSTANTIATE_TEST_CASE_P(TheSmallestCase,

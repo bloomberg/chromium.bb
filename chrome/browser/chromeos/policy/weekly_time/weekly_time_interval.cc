@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/policy/weekly_time/weekly_time_interval.h"
+#include "base/logging.h"
 #include "base/time/time.h"
+
+namespace em = enterprise_management;
 
 namespace policy {
 
@@ -30,6 +33,20 @@ bool WeeklyTimeInterval::Contains(const WeeklyTime& w) const {
     return false;
   base::TimeDelta interval_duration = start_.GetDurationTo(end_);
   return start_.GetDurationTo(w) + w.GetDurationTo(end_) == interval_duration;
+}
+
+// static
+std::unique_ptr<WeeklyTimeInterval> WeeklyTimeInterval::ExtractFromProto(
+    const em::WeeklyTimeIntervalProto& container) {
+  if (!container.has_start() || !container.has_end()) {
+    LOG(WARNING) << "Interval without start or/and end.";
+    return nullptr;
+  }
+  auto start = WeeklyTime::ExtractFromProto(container.start());
+  auto end = WeeklyTime::ExtractFromProto(container.end());
+  if (!start || !end)
+    return nullptr;
+  return std::make_unique<WeeklyTimeInterval>(*start, *end);
 }
 
 }  // namespace policy

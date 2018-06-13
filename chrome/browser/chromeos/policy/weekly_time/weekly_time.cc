@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/policy/weekly_time/weekly_time.h"
+#include "base/logging.h"
 #include "base/time/time.h"
+
+namespace em = enterprise_management;
 
 namespace policy {
 namespace {
@@ -70,6 +73,28 @@ WeeklyTime WeeklyTime::GetCurrentWeeklyTime(base::Clock* clock) {
                     exploded.hour * kHour.InMilliseconds() +
                         exploded.minute * kMinute.InMilliseconds() +
                         exploded.second * kSecond.InMilliseconds());
+}
+
+// static
+std::unique_ptr<WeeklyTime> WeeklyTime::ExtractFromProto(
+    const em::WeeklyTimeProto& container) {
+  if (!container.has_day_of_week() ||
+      container.day_of_week() == em::WeeklyTimeProto::DAY_OF_WEEK_UNSPECIFIED) {
+    LOG(ERROR) << "Day of week is absent or unspecified.";
+    return nullptr;
+  }
+  if (!container.has_time()) {
+    LOG(ERROR) << "Time is absent.";
+    return nullptr;
+  }
+  int time_of_day = container.time();
+  if (!(time_of_day >= 0 && time_of_day < kDay.InMilliseconds())) {
+    LOG(ERROR) << "Invalid time value: " << time_of_day
+               << ", the value should be in [0; " << kDay.InMilliseconds()
+               << ").";
+    return nullptr;
+  }
+  return std::make_unique<WeeklyTime>(container.day_of_week(), time_of_day);
 }
 
 }  // namespace policy

@@ -18,11 +18,6 @@
 namespace policy {
 namespace off_hours {
 
-// Return WeeklyTime structure from WeeklyTimeProto. Return nullptr if
-// WeeklyTime structure isn't correct.
-std::unique_ptr<WeeklyTime> ExtractWeeklyTimeFromProto(
-    const enterprise_management::WeeklyTimeProto& container);
-
 // Return list of time intervals from DeviceOffHoursProto structure.
 std::vector<WeeklyTimeInterval> ExtractWeeklyTimeIntervalsFromProto(
     const enterprise_management::DeviceOffHoursProto& container);
