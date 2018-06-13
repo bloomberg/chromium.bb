@@ -45,8 +45,8 @@ public class SearchActivity extends AsyncInitializationActivity
     /** Notified about events happening inside a SearchActivity. */
     public static class SearchActivityDelegate {
         /**
-         * Called when {@link SearchActivity#setContentView} is deciding whether to continue loading
-         * the native library immediately.
+         * Called when {@link SearchActivity#triggerLayoutInflation} is deciding whether to continue
+         * loading the native library immediately.
          * @return Whether or not native initialization should proceed immediately.
          */
         boolean shouldDelayNativeInitialization() {
@@ -117,7 +117,7 @@ public class SearchActivity extends AsyncInitializationActivity
     }
 
     @Override
-    protected void setContentView() {
+    protected void triggerLayoutInflation() {
         mSnackbarManager = new SnackbarManager(this, null);
         mSearchBoxDataProvider = new SearchBoxDataProvider();
 
@@ -144,6 +144,7 @@ public class SearchActivity extends AsyncInitializationActivity
                 }
             });
         }
+        onInitialLayoutInflationComplete();
     }
 
     @Override

@@ -33,7 +33,7 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
             "org.chromium.chrome.browser.firstrun.AssociatedAppName";
 
     @Override
-    public void setContentView() {
+    public void triggerLayoutInflation() {
         setFinishOnTouchOutside(true);
 
         mFirstRunFlowSequencer = new FirstRunFlowSequencer(this) {
@@ -51,6 +51,7 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
             }
         };
         mFirstRunFlowSequencer.start();
+        onInitialLayoutInflationComplete();
     }
 
     /** Called once it is known whether the device has a child account. */

@@ -162,7 +162,17 @@ public class ChromeBrowserInitializer {
         if (parts.isActivityFinishing()) return;
 
         preInflationStartupDone();
-        parts.setContentViewAndLoadLibrary();
+        parts.setContentViewAndLoadLibrary(() -> this.onInflationComplete(parts));
+    }
+
+    /**
+     * This is called after the layout inflation has been completed (in the callback sent to {@link
+     * BrowserParts#setContentViewAndLoadLibrary}). This continues the post-inflation pre-native
+     * startup tasks. Namely {@link BrowserParts#postInflationStartup()}.
+     * @param parts The {@link BrowserParts} that has finished layout inflation
+     */
+    private void onInflationComplete(final BrowserParts parts) {
+        if (parts.isActivityFinishing()) return;
         postInflationStartup();
         parts.postInflationStartup();
     }
@@ -247,6 +257,11 @@ public class ChromeBrowserInitializer {
     public void handlePostNativeStartup(final boolean isAsync, final BrowserParts delegate)
             throws ProcessInitException {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
+        if (!mPostInflationStartupComplete) {
+            throw new IllegalStateException(
+                    "ChromeBrowserInitializer.handlePostNativeStartup called before "
+                    + "ChromeBrowserInitializer.postInflationStartup has been run.");
+        }
         final ChainedTasks tasks = new ChainedTasks();
         tasks.add(new Runnable() {
             @Override
