@@ -41619,16 +41619,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="REQUEST_JOB_ERROR_BAD_BLOB"/>
   <int value="7" label="REQUEST_JOB_ERROR_NO_PROVIDER_HOST"/>
   <int value="8" label="REQUEST_JOB_ERROR_NO_ACTIVE_VERSION"/>
-  <int value="9" label="REQUEST_JOB_ERROR_NO_REQUEST"/>
+  <int value="9" label="REQUEST_JOB_ERROR_NO_REQUEST (deprecated)"/>
   <int value="10" label="REQUEST_JOB_ERROR_FETCH_EVENT_DISPATCH"/>
   <int value="11" label="REQUEST_JOB_ERROR_BLOB_READ"/>
   <int value="12" label="REQUEST_JOB_ERROR_STREAM_ABORTED"/>
   <int value="13" label="REQUEST_JOB_ERROR_KILLED"/>
   <int value="14" label="REQUEST_JOB_ERROR_KILLED_WITH_BLOB"/>
   <int value="15" label="REQUEST_JOB_ERROR_KILLED_WITH_STREAM"/>
-  <int value="16" label="REQUEST_JOB_ERROR_DESTROYED"/>
-  <int value="17" label="REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB"/>
-  <int value="18" label="REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM"/>
+  <int value="16" label="REQUEST_JOB_ERROR_DESTROYED (deprecated)"/>
+  <int value="17" label="REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB (deprecated)"/>
+  <int value="18" label="REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM (deprecated)"/>
   <int value="19" label="REQUEST_JOB_ERROR_BAD_DELEGATE"/>
   <int value="20" label="REQUEST_JOB_ERROR_REQUEST_BODY_BLOB_FAILED"/>
 </enum>
