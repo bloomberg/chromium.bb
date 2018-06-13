@@ -33,6 +33,7 @@ Polymer({
 
   /** @override */
   attached: function() {
+    this.browserProxy_.startDiscovery();
     this.$.dialog.showModal();
   },
 

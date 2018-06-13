@@ -31,6 +31,9 @@ class SmbHandler : public ::settings::SettingsPageUIHandler {
   // WebUI call to mount an Smb Filesystem.
   void HandleSmbMount(const base::ListValue* args);
 
+  // WebUI call to start file share discovery on the network.
+  void HandleStartDiscovery(const base::ListValue* args);
+
   // Callback handler for SmbMount.
   void HandleSmbMountResponse(SmbMountResult result);
 

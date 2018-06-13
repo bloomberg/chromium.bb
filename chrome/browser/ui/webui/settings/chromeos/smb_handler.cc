@@ -25,6 +25,10 @@ void SmbHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "smbMount",
       base::BindRepeating(&SmbHandler::HandleSmbMount, base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "startDiscovery", base::BindRepeating(&SmbHandler::HandleStartDiscovery,
+                                            base::Unretained(this)));
 }
 
 void SmbHandler::HandleSmbMount(const base::ListValue* args) {
@@ -53,6 +57,10 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
 void SmbHandler::HandleSmbMountResponse(SmbMountResult result) {
   AllowJavascript();
   FireWebUIListener("on-add-smb-share", base::Value(result));
+}
+
+void SmbHandler::HandleStartDiscovery(const base::ListValue* args) {
+  // TODO(allenvic): Handle start discovery. Expected completion: 6/15/2018.
 }
 
 }  // namespace settings
