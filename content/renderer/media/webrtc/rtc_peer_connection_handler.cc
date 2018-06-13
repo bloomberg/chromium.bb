@@ -1305,7 +1305,7 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
 }
 
 RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   Stop();
 
@@ -1318,7 +1318,7 @@ RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
 }
 
 void RTCPeerConnectionHandler::associateWithFrame(blink::WebLocalFrame* frame) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(frame);
   frame_ = frame;
 }
@@ -1326,7 +1326,7 @@ void RTCPeerConnectionHandler::associateWithFrame(blink::WebLocalFrame* frame) {
 bool RTCPeerConnectionHandler::Initialize(
     const blink::WebRTCConfiguration& server_configuration,
     const blink::WebMediaConstraints& options) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(frame_);
 
   CHECK(!initialize_called_);
@@ -1379,7 +1379,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
     const blink::WebRTCConfiguration& server_configuration,
     const blink::WebMediaConstraints& options,
     const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   CHECK(!initialize_called_);
   initialize_called_ = true;
@@ -1403,7 +1403,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
 void RTCPeerConnectionHandler::CreateOffer(
     const blink::WebRTCSessionDescriptionRequest& request,
     const blink::WebMediaConstraints& options) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createOffer");
 
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
@@ -1425,7 +1425,7 @@ void RTCPeerConnectionHandler::CreateOffer(
 void RTCPeerConnectionHandler::CreateOffer(
     const blink::WebRTCSessionDescriptionRequest& request,
     const blink::WebRTCOfferOptions& options) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createOffer");
 
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
@@ -1447,7 +1447,7 @@ void RTCPeerConnectionHandler::CreateOffer(
 void RTCPeerConnectionHandler::CreateAnswer(
     const blink::WebRTCSessionDescriptionRequest& request,
     const blink::WebMediaConstraints& options) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createAnswer");
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
       new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
@@ -1467,7 +1467,7 @@ void RTCPeerConnectionHandler::CreateAnswer(
 void RTCPeerConnectionHandler::CreateAnswer(
     const blink::WebRTCSessionDescriptionRequest& request,
     const blink::WebRTCAnswerOptions& options) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createAnswer");
   scoped_refptr<CreateSessionDescriptionRequest> description_request(
       new rtc::RefCountedObject<CreateSessionDescriptionRequest>(
@@ -1492,7 +1492,7 @@ bool IsOfferOrAnswer(const webrtc::SessionDescriptionInterface* native_desc) {
 void RTCPeerConnectionHandler::SetLocalDescription(
     const blink::WebRTCVoidRequest& request,
     const blink::WebRTCSessionDescription& description) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setLocalDescription");
 
   std::string sdp = description.Sdp().Utf8();
@@ -1552,7 +1552,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
 void RTCPeerConnectionHandler::SetRemoteDescription(
     const blink::WebRTCVoidRequest& request,
     const blink::WebRTCSessionDescription& description) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setRemoteDescription");
   std::string sdp = description.Sdp().Utf8();
   std::string type = description.GetType().Utf8();
@@ -1620,7 +1620,7 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
 }
 
 blink::WebRTCSessionDescription RTCPeerConnectionHandler::LocalDescription() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::localDescription");
 
   // Since local_description returns a pointer to a non-reference-counted object
@@ -1641,7 +1641,7 @@ blink::WebRTCSessionDescription RTCPeerConnectionHandler::LocalDescription() {
 }
 
 blink::WebRTCSessionDescription RTCPeerConnectionHandler::RemoteDescription() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::remoteDescription");
   // Since local_description returns a pointer to a non-reference-counted object
   // that lives on the signaling thread, we cannot fetch a pointer to it and use
@@ -1662,7 +1662,7 @@ blink::WebRTCSessionDescription RTCPeerConnectionHandler::RemoteDescription() {
 
 webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
     const blink::WebRTCConfiguration& blink_config) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::setConfiguration");
   GetNativeRtcConfiguration(blink_config, &configuration_);
 
@@ -1681,7 +1681,7 @@ webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
 bool RTCPeerConnectionHandler::AddICECandidate(
     const blink::WebRTCVoidRequest& request,
     scoped_refptr<blink::WebRTCICECandidate> candidate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
   // Libjingle currently does not accept callbacks for addICECandidate.
   // For that reason we are going to call callbacks from here.
@@ -1699,7 +1699,7 @@ bool RTCPeerConnectionHandler::AddICECandidate(
 
 bool RTCPeerConnectionHandler::AddICECandidate(
     scoped_refptr<blink::WebRTCICECandidate> candidate) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
   std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
       dependency_factory_->CreateIceCandidate(candidate->SdpMid().Utf8(),
@@ -1725,7 +1725,7 @@ bool RTCPeerConnectionHandler::AddICECandidate(
 
 void RTCPeerConnectionHandler::OnaddICECandidateResult(
     const blink::WebRTCVoidRequest& webkit_request, bool result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnaddICECandidateResult");
   if (!result) {
     // We don't have the actual error code from the libjingle, so for now
@@ -1740,7 +1740,7 @@ void RTCPeerConnectionHandler::OnaddICECandidateResult(
 
 void RTCPeerConnectionHandler::GetStats(
     const blink::WebRTCStatsRequest& request) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   scoped_refptr<LocalRTCStatsRequest> inner_request(
       new rtc::RefCountedObject<LocalRTCStatsRequest>(request));
   getStats(inner_request);
@@ -1748,7 +1748,7 @@ void RTCPeerConnectionHandler::GetStats(
 
 void RTCPeerConnectionHandler::getStats(
     const scoped_refptr<LocalRTCStatsRequest>& request) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::getStats");
 
   rtc::scoped_refptr<webrtc::StatsObserver> observer(
@@ -1778,7 +1778,7 @@ void RTCPeerConnectionHandler::GetStats(
     webrtc::StatsObserver* observer,
     webrtc::PeerConnectionInterface::StatsOutputLevel level,
     rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> selector) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   signaling_thread()->PostTask(
       FROM_HERE,
       base::BindOnce(&GetStatsOnSignalingThread, native_peer_connection_, level,
@@ -1787,7 +1787,7 @@ void RTCPeerConnectionHandler::GetStats(
 
 void RTCPeerConnectionHandler::GetStats(
     std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   signaling_thread()->PostTask(
       FROM_HERE, base::BindOnce(&GetRTCStatsOnSignalingThread, task_runner_,
                                 native_peer_connection_, std::move(callback)));
@@ -1796,7 +1796,7 @@ void RTCPeerConnectionHandler::GetStats(
 std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
     const blink::WebMediaStreamTrack& track,
     const blink::WebVector<blink::WebMediaStream>& streams) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::AddTrack");
 
   // Get or create the associated track and stream adapters.
@@ -1839,7 +1839,7 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
 }
 
 bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::RemoveTrack");
   auto it = FindSender(web_sender->Id());
   if (it == rtp_senders_.end())
@@ -1869,14 +1869,14 @@ bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
 }
 
 void RTCPeerConnectionHandler::CloseClientPeerConnection() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!is_closed_)
     client_->ClosePeerConnection();
 }
 
 void RTCPeerConnectionHandler::StartEventLog(IPC::PlatformFileForTransit file,
                                              int64_t max_file_size_bytes) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(file != IPC::InvalidPlatformFileForTransit());
   // TODO(eladalon): StartRtcEventLog() return value is not useful; remove it
   // or find a way to be able to use it.
@@ -1886,7 +1886,7 @@ void RTCPeerConnectionHandler::StartEventLog(IPC::PlatformFileForTransit file,
 }
 
 void RTCPeerConnectionHandler::StartEventLog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   // TODO(eladalon): StartRtcEventLog() return value is not useful; remove it
   // or find a way to be able to use it.
   // https://crbug.com/775415
@@ -1897,13 +1897,13 @@ void RTCPeerConnectionHandler::StartEventLog() {
 }
 
 void RTCPeerConnectionHandler::StopEventLog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   native_peer_connection_->StopRtcEventLog();
 }
 
 void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(
     const std::string& output) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackRtcEventLogWrite(this, output);
   }
@@ -1912,7 +1912,7 @@ void RTCPeerConnectionHandler::OnWebRtcEventLogWrite(
 blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::CreateDataChannel(
     const blink::WebString& label,
     const blink::WebRTCDataChannelInit& init) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::createDataChannel");
   DVLOG(1) << "createDataChannel label " << label.Utf8();
 
@@ -1944,7 +1944,7 @@ blink::WebRTCDataChannelHandler* RTCPeerConnectionHandler::CreateDataChannel(
 }
 
 void RTCPeerConnectionHandler::Stop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DVLOG(1) << "RTCPeerConnectionHandler::stop";
 
   if (is_closed_ || !native_peer_connection_.get())
@@ -1965,7 +1965,7 @@ blink::WebString RTCPeerConnectionHandler::Id() const {
 
 void RTCPeerConnectionHandler::OnSignalingChange(
     webrtc::PeerConnectionInterface::SignalingState new_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnSignalingChange");
 
   if (peer_connection_tracker_)
@@ -1978,7 +1978,7 @@ void RTCPeerConnectionHandler::OnSignalingChange(
 void RTCPeerConnectionHandler::OnIceConnectionChange(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceConnectionChange");
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   ReportICEState(new_state);
   if (new_state == webrtc::PeerConnectionInterface::kIceConnectionChecking) {
     ice_connection_checking_start_ = base::TimeTicks::Now();
@@ -2013,7 +2013,7 @@ void RTCPeerConnectionHandler::OnIceConnectionChange(
 // Called any time the IceGatheringState changes
 void RTCPeerConnectionHandler::OnIceGatheringChange(
     webrtc::PeerConnectionInterface::IceGatheringState new_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceGatheringChange");
 
   if (new_state == webrtc::PeerConnectionInterface::kIceGatheringComplete) {
@@ -2038,7 +2038,7 @@ void RTCPeerConnectionHandler::OnIceGatheringChange(
 }
 
 void RTCPeerConnectionHandler::OnRenegotiationNeeded() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnRenegotiationNeeded");
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackOnRenegotiationNeeded(this);
@@ -2052,7 +2052,7 @@ void RTCPeerConnectionHandler::OnAddRemoteTrack(
         remote_track_adapter_ref,
     std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
         remote_stream_adapter_refs) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnAddRemoteTrack");
 
   for (const auto& remote_stream_adapter_ref : remote_stream_adapter_refs) {
@@ -2092,7 +2092,7 @@ void RTCPeerConnectionHandler::OnAddRemoteTrack(
 
 void RTCPeerConnectionHandler::OnRemoveRemoteTrack(
     scoped_refptr<webrtc::RtpReceiverInterface> webrtc_receiver) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnRemoveRemoteTrack");
 
   std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
@@ -2128,7 +2128,7 @@ void RTCPeerConnectionHandler::OnRemoveRemoteTrack(
 
 void RTCPeerConnectionHandler::OnDataChannel(
     std::unique_ptr<RtcDataChannelHandler> handler) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnDataChannelImpl");
 
   if (peer_connection_tracker_) {
@@ -2143,7 +2143,7 @@ void RTCPeerConnectionHandler::OnDataChannel(
 void RTCPeerConnectionHandler::OnIceCandidate(
     const std::string& sdp, const std::string& sdp_mid, int sdp_mline_index,
     int component, int address_family) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateImpl");
   scoped_refptr<blink::WebRTCICECandidate> web_candidate =
       blink::WebRTCICECandidate::Create(blink::WebString::FromUTF8(sdp),
@@ -2225,14 +2225,14 @@ RTCPeerConnectionHandler::FindSender(uintptr_t id) {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 RTCPeerConnectionHandler::signaling_thread() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   return dependency_factory_->GetWebRtcSignalingThread();
 }
 
 void RTCPeerConnectionHandler::RunSynchronousClosureOnSignalingThread(
     const base::Closure& closure,
     const char* trace_event_name) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   scoped_refptr<base::SingleThreadTaskRunner> thread(signaling_thread());
   if (!thread.get() || thread->BelongsToCurrentThread()) {
     TRACE_EVENT0("webrtc", trace_event_name);
@@ -2250,7 +2250,7 @@ void RTCPeerConnectionHandler::RunSynchronousClosureOnSignalingThread(
 
 void RTCPeerConnectionHandler::ReportICEState(
     webrtc::PeerConnectionInterface::IceConnectionState new_state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (ice_state_seen_[new_state])
     return;
   ice_state_seen_[new_state] = true;
@@ -2259,7 +2259,7 @@ void RTCPeerConnectionHandler::ReportICEState(
 }
 
 void RTCPeerConnectionHandler::ResetUMAStats() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   num_local_candidates_ipv6_ = 0;
   num_local_candidates_ipv4_ = 0;
   ice_connection_checking_start_ = base::TimeTicks();

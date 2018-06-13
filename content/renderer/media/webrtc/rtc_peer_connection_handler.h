@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
 #include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
@@ -256,8 +255,6 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   // Initialize() is never expected to be called more than once, even if the
   // first call fails.
   bool initialize_called_;
-
-  base::ThreadChecker thread_checker_;
 
   // |client_| is a weak pointer to the blink object (blink::RTCPeerConnection)
   // that owns this object.
