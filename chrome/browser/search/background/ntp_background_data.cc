@@ -45,8 +45,9 @@ CollectionImage& CollectionImage::operator=(CollectionImage&&) = default;
 
 bool operator==(const CollectionImage& lhs, const CollectionImage& rhs) {
   return lhs.collection_id == rhs.collection_id &&
-         lhs.asset_id == rhs.asset_id && lhs.image_url == rhs.image_url &&
-         lhs.attribution == rhs.attribution;
+         lhs.asset_id == rhs.asset_id &&
+         lhs.thumbnail_image_url == rhs.thumbnail_image_url &&
+         lhs.image_url == rhs.image_url && lhs.attribution == rhs.attribution;
 }
 
 bool operator!=(const CollectionImage& lhs, const CollectionImage& rhs) {
@@ -60,6 +61,9 @@ CollectionImage CollectionImage::CreateFromProto(
   CollectionImage collection_image;
   collection_image.collection_id = collection_id;
   collection_image.asset_id = image.asset_id();
+  // Without options added to the image, it is 512x512.
+  collection_image.thumbnail_image_url = GURL(image.image_url());
+  // TODO(ramyan): Request resolution from service, instead of setting it here.
   collection_image.image_url = GURL(
       image.image_url() + ((image.image_url().find('=') == std::string::npos)
                                ? default_image_options

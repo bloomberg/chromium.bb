@@ -59,6 +59,8 @@ struct CollectionImage {
   std::string collection_id;
   // A unique identifier for the image.
   uint64_t asset_id;
+  // The thumbnail image URL, typically lower resolution than the image_url.
+  GURL thumbnail_image_url;
   // The image URL.
   GURL image_url;
   // The attribution list for the image.

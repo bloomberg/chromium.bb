@@ -175,7 +175,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   for (var i = 0; i < coll_img.length; ++i) {
     var tile = document.createElement('div');
     tile.classList.add(customBackgrounds.CLASSES.COLLECTION_TILE);
-    tile.style.backgroundImage = 'url(' + coll_img[i].imageUrl + ')';
+    tile.style.backgroundImage = 'url(' + coll_img[i].thumbnailImageUrl + ')';
     tile.id = 'img_tile_' + i;
     tile.dataset.url = coll_img[i].imageUrl;
 
