@@ -275,18 +275,26 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest, LoadEvent) {
 
   EXPECT_CALL(*mock_writer, NotifySiteLoaded());
   observer()->OnLoadingStateChange(web_contents(),
+                                   TabLoadTracker::LoadingState::LOADING,
                                    TabLoadTracker::LoadingState::LOADED);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, NotifySiteUnloaded());
   observer()->OnLoadingStateChange(web_contents(),
+                                   TabLoadTracker::LoadingState::LOADED,
                                    TabLoadTracker::LoadingState::LOADING);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
-  EXPECT_CALL(*mock_writer, NotifySiteUnloaded());
   observer()->OnLoadingStateChange(web_contents(),
+                                   TabLoadTracker::LoadingState::LOADING,
                                    TabLoadTracker::LoadingState::UNLOADED);
   ::testing::Mock::VerifyAndClear(mock_writer);
+
+  // Ensure that a transition from UNLOADED to LOADING doesn't cause any call to
+  // NotifySiteUnloaded.
+  observer()->OnLoadingStateChange(web_contents(),
+                                   TabLoadTracker::LoadingState::LOADING,
+                                   TabLoadTracker::LoadingState::UNLOADED);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
 }

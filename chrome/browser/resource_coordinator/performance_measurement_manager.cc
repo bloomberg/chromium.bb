@@ -27,8 +27,9 @@ void PerformanceMeasurementManager::OnStartTracking(
 
 void PerformanceMeasurementManager::OnLoadingStateChange(
     content::WebContents* web_contents,
-    LoadingState loading_state) {
-  if (loading_state == TabLoadTracker::LOADED)
+    LoadingState old_loading_state,
+    LoadingState new_loading_state) {
+  if (new_loading_state == TabLoadTracker::LOADED)
     render_process_probe_->StartSingleGather();
 }
 

@@ -51,8 +51,9 @@ void TabMemoryMetricsReporter::OnStartTracking(
 
 void TabMemoryMetricsReporter::OnLoadingStateChange(
     content::WebContents* web_contents,
-    TabLoadTracker::LoadingState loading_state) {
-  if (loading_state != TabLoadTracker::LoadingState::LOADED)
+    TabLoadTracker::LoadingState old_loading_state,
+    LoadingState new_loading_state) {
+  if (new_loading_state != TabLoadTracker::LoadingState::LOADED)
     return;
 
   MonitorWebContents(web_contents);

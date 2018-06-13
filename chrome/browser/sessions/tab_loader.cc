@@ -222,12 +222,13 @@ void TabLoader::StartLoading(const std::vector<RestoredTab>& tabs) {
 }
 
 void TabLoader::OnLoadingStateChange(WebContents* contents,
-                                     LoadingState loading_state) {
+                                     LoadingState old_loading_state,
+                                     LoadingState new_loading_state) {
   ReentrancyHelper lifetime_helper(this);
 
   // Calls into this can come from observers that are still running even if
   // |is_loading_enabled_| is false.
-  switch (loading_state) {
+  switch (new_loading_state) {
     // It could be that a tab starts loading from outside of our control. In
     // this case we can consider it as having started to load, and the load
     // start doesn't need to be initiated by us.

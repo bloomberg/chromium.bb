@@ -49,7 +49,8 @@ class LocalSiteCharacteristicsWebContentsObserver
 
   // TabLoadTracker::Observer:
   void OnLoadingStateChange(content::WebContents* web_contents,
-                            LoadingState loading_state) override;
+                            LoadingState old_loading_state,
+                            LoadingState new_loading_state) override;
 
   // PageSignalObserver:
   void OnNonPersistentNotificationCreated(

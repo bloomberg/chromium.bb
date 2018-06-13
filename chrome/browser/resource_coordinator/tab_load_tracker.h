@@ -199,7 +199,8 @@ class TabLoadTracker::Observer {
 
   // Called for every loading state change observed on a |web_contents|.
   virtual void OnLoadingStateChange(content::WebContents* web_contents,
-                                    LoadingState loading_state) {}
+                                    LoadingState old_loading_state,
+                                    LoadingState new_loading_state) {}
 
   // Called when a |web_contents| is no longer being tracked.
   virtual void OnStopTracking(content::WebContents* web_contents,
