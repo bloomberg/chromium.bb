@@ -104,19 +104,6 @@ bool UseAecRefinedAdaptiveFilter() {
       switches::kAecRefinedAdaptiveFilter);
 }
 
-webrtc::Point WebrtcPointFromMediaPoint(const media::Point& point) {
-  return webrtc::Point(point.x(), point.y(), point.z());
-}
-
-std::vector<webrtc::Point> WebrtcPointsFromMediaPoints(
-    const std::vector<media::Point>& points) {
-  std::vector<webrtc::Point> webrtc_points;
-  webrtc_points.reserve(webrtc_points.size());
-  for (const auto& point : points)
-    webrtc_points.push_back(WebrtcPointFromMediaPoint(point));
-  return webrtc_points;
-}
-
 }  // namespace
 
 // Wraps AudioBus to provide access to the array of channel pointers, since this
@@ -469,7 +456,7 @@ bool MediaStreamAudioProcessor::WouldModifyAudio(
 
   if (properties.goog_noise_suppression ||
       properties.goog_experimental_noise_suppression ||
-      properties.goog_beamforming || properties.goog_highpass_filter) {
+      properties.goog_highpass_filter) {
     return true;
   }
 
@@ -571,8 +558,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (!properties.enable_sw_echo_cancellation && !goog_experimental_aec &&
       !properties.goog_noise_suppression && !properties.goog_highpass_filter &&
       !goog_typing_detection && !properties.goog_auto_gain_control &&
-      !properties.goog_experimental_noise_suppression &&
-      !properties.goog_beamforming) {
+      !properties.goog_experimental_noise_suppression) {
     // Sanity-check: WouldModifyAudio() should return true iff
     // |audio_mirroring_| is true.
     DCHECK_EQ(audio_mirroring_, WouldModifyAudio(properties));
@@ -594,12 +580,6 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   if (UseAecRefinedAdaptiveFilter()) {
     config.Set<webrtc::RefinedAdaptiveFilter>(
         new webrtc::RefinedAdaptiveFilter(true));
-  }
-  if (properties.goog_beamforming) {
-    // Only enable beamforming if we have at least two mics.
-    config.Set<webrtc::Beamforming>(new webrtc::Beamforming(
-        properties.goog_array_geometry.size() > 1,
-        WebrtcPointsFromMediaPoints(properties.goog_array_geometry)));
   }
 
   // If the experimental AGC is enabled, check for overridden config params.
@@ -655,15 +635,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
       echo_information_ = std::make_unique<EchoInformation>();
   }
 
-  if (properties.goog_noise_suppression) {
-    // The beamforming postfilter is effective at suppressing stationary noise,
-    // so reduce the single-channel NS aggressiveness when enabled.
-    const NoiseSuppression::Level ns_level =
-        config.Get<webrtc::Beamforming>().enabled ? NoiseSuppression::kLow
-                                                  : NoiseSuppression::kHigh;
-
-    EnableNoiseSuppression(audio_processing_.get(), ns_level);
-  }
+  if (properties.goog_noise_suppression)
+    EnableNoiseSuppression(audio_processing_.get(), NoiseSuppression::kHigh);
 
   apm_config.high_pass_filter.enabled = properties.goog_highpass_filter;
 
