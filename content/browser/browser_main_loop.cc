@@ -1524,6 +1524,7 @@ void BrowserMainLoop::MainMessageLoopRun() {
   }
 
   base::RunLoop run_loop;
+  parts_->PreDefaultMainMessageLoopRun(run_loop.QuitClosure());
   run_loop.Run();
 #endif
 }

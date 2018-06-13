@@ -32,6 +32,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   void PostMainMessageLoopStart() override;
   void PreMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
+  void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
   void PostMainMessageLoopRun() override;
   void PostDestroyThreads() override;
 

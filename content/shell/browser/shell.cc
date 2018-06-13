@@ -45,8 +45,8 @@
 
 namespace content {
 
-// Closure to run if set, and the last Shell instance is deleted.
-base::NoDestructor<base::OnceClosure> g_quit_closure;
+// Null until/unless the default main message loop is running.
+base::NoDestructor<base::OnceClosure> g_quit_main_message_loop;
 
 const int kDefaultTestWindowWidthDip = 800;
 const int kDefaultTestWindowHeightDip = 600;
@@ -125,8 +125,8 @@ Shell::~Shell() {
          it.Advance()) {
       it.GetCurrentValue()->DisableKeepAliveRefCount();
     }
-    if (*g_quit_closure)
-      std::move(*g_quit_closure).Run();
+    if (*g_quit_main_message_loop)
+      std::move(*g_quit_main_message_loop).Run();
   }
 
   web_contents_->SetDelegate(nullptr);
@@ -164,15 +164,17 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
 void Shell::CloseAllWindows() {
   DevToolsAgentHost::DetachAllClients();
   std::vector<Shell*> open_windows(windows_);
-  if (!open_windows.empty()) {
-    base::RunLoop run_loop;
-    *g_quit_closure = run_loop.QuitWhenIdleClosure();
-    for (size_t i = 0; i < open_windows.size(); ++i)
-      open_windows[i]->Close();
-    // Run the message loop until all Shell windows are closed.
-    run_loop.Run();
-  }
+  for (size_t i = 0; i < open_windows.size(); ++i)
+    open_windows[i]->Close();
+
+  // Pump the message loop to allow window teardown tasks to run.
+  base::RunLoop().RunUntilIdle();
+
   PlatformExit();
+}
+
+void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
+  *g_quit_main_message_loop = std::move(quit_closure);
 }
 
 void Shell::SetShellCreatedCallback(
@@ -191,7 +193,6 @@ Shell* Shell::FromRenderViewHost(RenderViewHost* rvh) {
   return nullptr;
 }
 
-// static
 void Shell::Initialize() {
   PlatformInitialize(GetShellDefaultSize());
 }
