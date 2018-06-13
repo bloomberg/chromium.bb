@@ -2964,9 +2964,13 @@ void WebViewImpl::PerformMediaPlayerAction(const WebMediaPlayerAction& action,
       break;
     case WebMediaPlayerAction::kPictureInPicture:
       DCHECK(media_element->IsHTMLVideoElement());
-      // TODO(crbug.com/840516): Toggle PiP instead.
-      PictureInPictureController::From(node->GetDocument())
-          .EnterPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
+      if (action.enable) {
+        PictureInPictureController::From(node->GetDocument())
+            .EnterPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
+      } else {
+        PictureInPictureController::From(node->GetDocument())
+            .ExitPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
+      }
       break;
     default:
       NOTREACHED();

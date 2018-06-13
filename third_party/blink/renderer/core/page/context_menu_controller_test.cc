@@ -135,6 +135,7 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
           {WebContextMenuData::kMediaCanPrint, false},
           {WebContextMenuData::kMediaCanRotate, false},
           {WebContextMenuData::kMediaCanPictureInPicture, false},
+          {WebContextMenuData::kMediaPictureInPicture, false},
       };
 
   for (const auto& expected_media_flag : expected_media_flags) {
@@ -189,6 +190,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
           {WebContextMenuData::kMediaCanPrint, false},
           {WebContextMenuData::kMediaCanRotate, false},
           {WebContextMenuData::kMediaCanPictureInPicture, true},
+          {WebContextMenuData::kMediaPictureInPicture, false},
       };
 
   for (const auto& expected_media_flag : expected_media_flags) {
@@ -243,6 +245,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
           {WebContextMenuData::kMediaCanPrint, false},
           {WebContextMenuData::kMediaCanRotate, false},
           {WebContextMenuData::kMediaCanPictureInPicture, false},
+          {WebContextMenuData::kMediaPictureInPicture, false},
       };
 
   for (const auto& expected_media_flag : expected_media_flags) {

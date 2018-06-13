@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -253,8 +254,13 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     HTMLMediaElement* media_element = ToHTMLMediaElement(r.InnerNode());
     if (IsHTMLVideoElement(*media_element)) {
       data.media_type = WebContextMenuData::kMediaTypeVideo;
-      if (media_element->SupportsPictureInPicture())
+      if (media_element->SupportsPictureInPicture()) {
         data.media_flags |= WebContextMenuData::kMediaCanPictureInPicture;
+        if (PictureInPictureController::From(media_element->GetDocument())
+                .IsPictureInPictureElement(media_element)) {
+          data.media_flags |= WebContextMenuData::kMediaPictureInPicture;
+        }
+      }
     } else if (IsHTMLAudioElement(*media_element))
       data.media_type = WebContextMenuData::kMediaTypeAudio;
 
