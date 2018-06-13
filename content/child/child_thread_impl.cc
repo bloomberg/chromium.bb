@@ -21,6 +21,7 @@
 #include "base/message_loop/timer_slack.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
@@ -78,7 +79,7 @@
 #endif
 
 #if defined(CLANG_COVERAGE)
-extern "C" int __llvm_profile_write_file(void);
+extern "C" int __llvm_profile_dump(void);
 #endif
 
 namespace content {
@@ -86,7 +87,14 @@ namespace {
 
 void WriteClangCoverageProfile() {
 #if defined(CLANG_COVERAGE)
-  __llvm_profile_write_file();
+  // __llvm_profile_dump() guarantees that it will not dump coverage information
+  // if it is being called twice or more. However, it is not thread safe, as it
+  // is supposed to be called from atexit() handler rather than being called
+  // directly from random places. Since we have to call it ourselves, we must
+  // ensure thread safety in order to prevent duplication of coverage counters.
+  static base::NoDestructor<base::Lock> lock;
+  base::AutoLock auto_lock(*lock);
+  __llvm_profile_dump();
 #endif
 }
 
