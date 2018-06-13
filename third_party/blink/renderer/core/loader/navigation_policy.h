@@ -35,6 +35,8 @@
 
 namespace blink {
 
+class Event;
+
 enum NavigationPolicy {
   kNavigationPolicyIgnore,
   kNavigationPolicyDownload,
@@ -47,12 +49,14 @@ enum NavigationPolicy {
   kNavigationPolicyHandledByClientForInitialHistory,
 };
 
-CORE_EXPORT bool NavigationPolicyFromMouseEvent(unsigned short button,
-                                                bool ctrl,
-                                                bool shift,
-                                                bool alt,
-                                                bool meta,
-                                                NavigationPolicy*);
+CORE_EXPORT NavigationPolicy NavigationPolicyFromEvent(Event*);
+
+CORE_EXPORT NavigationPolicy
+NavigationPolicyFromMouseEvent(unsigned short button,
+                               bool ctrl,
+                               bool shift,
+                               bool alt,
+                               bool meta);
 
 }  // namespace blink
 

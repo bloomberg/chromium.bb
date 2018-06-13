@@ -62,7 +62,6 @@ namespace blink {
 
 class Document;
 class DocumentLoader;
-class Event;
 class HTMLFormElement;
 class LocalFrame;
 class Frame;
@@ -96,10 +95,9 @@ class CORE_EXPORT FrameLoader final {
   // For reloads, an appropriate WebFrameLoadType should be given. Otherwise,
   // kStandard should be used (and the final WebFrameLoadType
   // will be computed).
-  // TODO(dgozman): remove history parameters.
   void StartNavigation(const FrameLoadRequest&,
                        WebFrameLoadType = WebFrameLoadType::kStandard,
-                       HistoryItem* = nullptr);
+                       NavigationPolicy = kNavigationPolicyCurrentTab);
 
   // Called when the browser process has asked this renderer process to commit
   // a navigation in this frame. This method skips most of the checks assuming
@@ -119,7 +117,7 @@ class CORE_EXPORT FrameLoader final {
       HistoryItem*,
       ClientRedirectPolicy,
       Document* origin_document = nullptr,
-      Event* triggering_event = nullptr);
+      bool has_event = false);
 
   // Warning: stopAllLoaders can and will detach the LocalFrame out from under
   // you. All callers need to either protect the LocalFrame or guarantee they

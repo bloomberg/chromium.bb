@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_clipper.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"

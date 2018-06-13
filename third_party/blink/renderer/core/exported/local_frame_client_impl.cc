@@ -503,12 +503,9 @@ static bool AllowCreatingBackgroundTabs() {
   bool shift = input_event->GetModifiers() & WebMouseEvent::kShiftKey;
   bool alt = input_event->GetModifiers() & WebMouseEvent::kAltKey;
   bool meta = input_event->GetModifiers() & WebMouseEvent::kMetaKey;
-
-  NavigationPolicy user_policy;
-  if (!NavigationPolicyFromMouseEvent(button_number, ctrl, shift, alt, meta,
-                                      &user_policy))
-    return false;
-  return user_policy == kNavigationPolicyNewBackgroundTab;
+  return NavigationPolicyFromMouseEvent(button_number, ctrl, shift, alt,
+                                        meta) ==
+         kNavigationPolicyNewBackgroundTab;
 }
 
 NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(

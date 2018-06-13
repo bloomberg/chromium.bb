@@ -94,16 +94,18 @@ void UpdatePolicyForEvent(const WebInputEvent* input_event,
   bool alt = input_event->GetModifiers() & WebInputEvent::kAltKey;
   bool meta = input_event->GetModifiers() & WebInputEvent::kMetaKey;
 
-  NavigationPolicy user_policy = *policy;
-  NavigationPolicyFromMouseEvent(button_number, ctrl, shift, alt, meta,
-                                 &user_policy);
+  NavigationPolicy user_policy =
+      NavigationPolicyFromMouseEvent(button_number, ctrl, shift, alt, meta);
 
   // User and app agree that we want a new window; let the app override the
   // decorations.
   if (user_policy == kNavigationPolicyNewWindow &&
       *policy == kNavigationPolicyNewPopup)
     return;
-  *policy = user_policy;
+
+  // User wants a specific policy, use it over app policy.
+  if (user_policy != kNavigationPolicyCurrentTab)
+    *policy = user_policy;
 }
 
 }  // anonymous namespace

@@ -49,11 +49,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/events/event.h"
-#include "third_party/blink/renderer/core/events/current_input_event.h"
-#include "third_party/blink/renderer/core/events/gesture_event.h"
-#include "third_party/blink/renderer/core/events/keyboard_event.h"
-#include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/frame/content_settings_client.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -783,56 +778,13 @@ static WebURLRequest::RequestContext DetermineRequestContextFromNavigationType(
   return WebURLRequest::kRequestContextHyperlink;
 }
 
-static NavigationPolicy NavigationPolicyForEvent(Event* event) {
-  NavigationPolicy policy = kNavigationPolicyCurrentTab;
-  if (event->IsMouseEvent()) {
-    MouseEvent* mouse_event = ToMouseEvent(event);
-    NavigationPolicyFromMouseEvent(
-        mouse_event->button(), mouse_event->ctrlKey(), mouse_event->shiftKey(),
-        mouse_event->altKey(), mouse_event->metaKey(), &policy);
-  } else if (event->IsKeyboardEvent()) {
-    // The click is simulated when triggering the keypress event.
-    KeyboardEvent* key_event = ToKeyboardEvent(event);
-    NavigationPolicyFromMouseEvent(0, key_event->ctrlKey(),
-                                   key_event->shiftKey(), key_event->altKey(),
-                                   key_event->metaKey(), &policy);
-  } else if (event->IsGestureEvent()) {
-    // The click is simulated when triggering the gesture-tap event
-    GestureEvent* gesture_event = ToGestureEvent(event);
-    NavigationPolicyFromMouseEvent(
-        0, gesture_event->ctrlKey(), gesture_event->shiftKey(),
-        gesture_event->altKey(), gesture_event->metaKey(), &policy);
-  }
-  return policy;
-}
-
-static NavigationPolicy NavigationPolicyForRequest(
-    const FrameLoadRequest& request) {
-  NavigationPolicy policy = kNavigationPolicyCurrentTab;
-  Event* event = request.TriggeringEvent();
-  if (!event)
-    return policy;
-
-  if (request.Form() && event->UnderlyingEvent())
-    event = event->UnderlyingEvent();
-
-  policy = NavigationPolicyForEvent(event);
-
-  if (policy == kNavigationPolicyDownload &&
-      EffectiveNavigationPolicy(policy, CurrentInputEvent::Get(),
-                                WebWindowFeatures()) !=
-          kNavigationPolicyDownload) {
-    return kNavigationPolicyCurrentTab;
-  }
-  return policy;
-}
-
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   WebFrameLoadType frame_load_type,
-                                  HistoryItem* history_item) {
+                                  NavigationPolicy policy) {
   CHECK(!passed_request.GetSubstituteData().IsValid());
   CHECK(!IsBackForwardLoadType(frame_load_type));
-  CHECK(!history_item);
+  DCHECK(passed_request.TriggeringEventInfo() !=
+         WebTriggeringEventInfo::kUnknown);
 
   DCHECK(frame_->GetDocument());
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
@@ -856,7 +808,6 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   AtomicString(request.FrameName()), *frame_,
                                   request.GetResourceRequest().Url());
 
-  NavigationPolicy policy = NavigationPolicyForRequest(request);
   if (target_frame && target_frame != frame_ &&
       ShouldNavigateTargetFrame(policy)) {
     if (target_frame->IsLocalFrame() &&
@@ -910,7 +861,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     CommitSameDocumentNavigation(
         request.GetResourceRequest().Url(), frame_load_type, nullptr,
         request.ClientRedirect(), request.OriginDocument(),
-        request.TriggeringEvent());
+        request.TriggeringEventInfo() != WebTriggeringEventInfo::kNotFromEvent);
     return;
   }
 
@@ -923,8 +874,9 @@ void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
                                    HistoryItem* history_item) {
   CHECK(!passed_request.OriginDocument());
   CHECK(passed_request.FrameName().IsEmpty());
-  CHECK(!passed_request.TriggeringEvent());
   CHECK(!passed_request.Form());
+  CHECK(passed_request.TriggeringEventInfo() ==
+        WebTriggeringEventInfo::kNotFromEvent);
 
   DCHECK(frame_->GetDocument());
   DCHECK(!in_stop_all_loaders_);
@@ -963,7 +915,7 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
     HistoryItem* history_item,
     ClientRedirectPolicy client_redirect_policy,
     Document* origin_document,
-    Event* triggering_event) {
+    bool has_event) {
   DCHECK(!IsReloadLoadType(frame_load_type));
   DCHECK(frame_->GetDocument());
 
@@ -992,7 +944,7 @@ mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
 
   if (!history_navigation) {
     document_loader_->SetNavigationType(
-        DetermineNavigationType(frame_load_type, false, triggering_event));
+        DetermineNavigationType(frame_load_type, false, has_event));
     if (ShouldTreatURLAsSameAsCurrent(url))
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
   }
@@ -1485,7 +1437,8 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   ResourceRequest& resource_request = frame_load_request.GetResourceRequest();
   WebNavigationType navigation_type = DetermineNavigationType(
       type, resource_request.HttpBody() || frame_load_request.Form(),
-      frame_load_request.TriggeringEvent());
+      frame_load_request.TriggeringEventInfo() !=
+          WebTriggeringEventInfo::kNotFromEvent);
   resource_request.SetRequestContext(
       DetermineRequestContextFromNavigationType(navigation_type));
   resource_request.SetFrameType(
@@ -1524,21 +1477,13 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   // Report-only CSP headers are checked in browser.
   ModifyRequestForCSP(resource_request, origin_document);
 
-  WebTriggeringEventInfo triggering_event_info =
-      WebTriggeringEventInfo::kNotFromEvent;
-  if (frame_load_request.TriggeringEvent()) {
-    triggering_event_info = frame_load_request.TriggeringEvent()->isTrusted()
-                                ? WebTriggeringEventInfo::kFromTrustedEvent
-                                : WebTriggeringEventInfo::kFromUntrustedEvent;
-  }
-
   navigation_policy = ShouldContinueForNavigationPolicy(
       resource_request, origin_document, frame_load_request.GetSubstituteData(),
       nullptr, frame_load_request.ShouldCheckMainWorldContentSecurityPolicy(),
       navigation_type, navigation_policy, type,
       frame_load_request.ClientRedirect() ==
           ClientRedirectPolicy::kClientRedirect,
-      triggering_event_info, frame_load_request.Form(),
+      frame_load_request.TriggeringEventInfo(), frame_load_request.Form(),
       frame_load_request.GetBlobURLToken(), check_with_client);
 
   if (navigation_policy == kNavigationPolicyIgnore) {

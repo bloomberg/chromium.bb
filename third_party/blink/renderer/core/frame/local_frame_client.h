@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/icon_url.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/link_resource.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -82,7 +83,6 @@ class HTMLMediaElement;
 class HTMLPlugInElement;
 class HistoryItem;
 class KURL;
-class LocalFrame;
 class WebPluginContainerImpl;
 class ResourceError;
 class ResourceRequest;

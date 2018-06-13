@@ -7583,53 +7583,6 @@ TEST_F(WebFrameTest, SiteForCookiesForRedirect) {
                   .SiteForCookies() == redirect_url);
 }
 
-class TestNavigationPolicyWebFrameClient
-    : public FrameTestHelpers::TestWebFrameClient {
- public:
-  TestNavigationPolicyWebFrameClient() = default;
-  ~TestNavigationPolicyWebFrameClient() override = default;
-
-  // FrameTestHelpers::TestWebFrameClient:
-  void DidFinishSameDocumentNavigation(const WebHistoryItem&,
-                                       WebHistoryCommitType,
-                                       bool) override {
-    EXPECT_TRUE(false);
-  }
-
-  WebNavigationPolicy DecidePolicyForNavigation(
-      const NavigationPolicyInfo& info) override {
-    return kWebNavigationPolicyIgnore;
-  }
-};
-
-TEST_F(WebFrameTest, SimulateFragmentAnchorMiddleClick) {
-  RegisterMockedHttpURLLoad("fragment_middle_click.html");
-  TestNavigationPolicyWebFrameClient client;
-  FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(&client);
-
-  KURL destination = ToKURL(base_url_ + "fragment_middle_click.html");
-  web_view_helper.LocalMainFrame()->StartNavigation(WebURLRequest(destination));
-
-  Document* document =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
-          ->GetDocument();
-  destination = document->Url();
-  destination.SetFragmentIdentifier("test");
-
-  MouseEventInit mouse_initializer;
-  mouse_initializer.setView(document->domWindow());
-  mouse_initializer.setButton(1);
-
-  Event* event =
-      MouseEvent::Create(nullptr, EventTypeNames::click, mouse_initializer);
-  FrameLoadRequest frame_request(document, ResourceRequest(destination));
-  frame_request.SetTriggeringEvent(event);
-  ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
-      ->Loader()
-      .StartNavigation(frame_request);
-}
-
 class TestNewWindowWebViewClient : public FrameTestHelpers::TestWebViewClient {
  public:
   TestNewWindowWebViewClient() = default;
@@ -7657,31 +7610,36 @@ class TestNewWindowWebFrameClient
   // FrameTestHelpers::TestWebFrameClient:
   WebNavigationPolicy DecidePolicyForNavigation(
       const NavigationPolicyInfo& info) override {
-    decide_policy_call_count_++;
-    return kWebNavigationPolicyIgnore;
+    if (ignore_navigations_) {
+      decide_policy_call_count_++;
+      return kWebNavigationPolicyIgnore;
+    }
+    return info.default_policy;
   }
 
   int DecidePolicyCallCount() const { return decide_policy_call_count_; }
+  void IgnoreNavigations() { ignore_navigations_ = true; }
 
  private:
+  bool ignore_navigations_ = false;
   int decide_policy_call_count_;
 };
 
 TEST_F(WebFrameTest, ModifiedClickNewWindow) {
+  // This test checks that ctrl+click does not just open a new window,
+  // but instead goes to client to decide the navigation policy.
   RegisterMockedHttpURLLoad("ctrl_click.html");
   RegisterMockedHttpURLLoad("hello_world.html");
   TestNewWindowWebViewClient web_view_client;
   TestNewWindowWebFrameClient web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
-  web_view_helper.Initialize(&web_frame_client, &web_view_client);
-
-  KURL destination = ToKURL(base_url_ + "ctrl_click.html");
-  web_view_helper.LocalMainFrame()->StartNavigation(WebURLRequest(destination));
+  web_view_helper.InitializeAndLoad(base_url_ + "ctrl_click.html",
+                                    &web_frame_client, &web_view_client);
 
   LocalFrame* frame =
       ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame());
   Document* document = frame->GetDocument();
-  destination = ToKURL(base_url_ + "hello_world.html");
+  KURL destination = ToKURL(base_url_ + "hello_world.html");
 
   // ctrl+click event
   MouseEventInit mouse_initializer;
@@ -7692,18 +7650,20 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   Event* event =
       MouseEvent::Create(nullptr, EventTypeNames::click, mouse_initializer);
   FrameLoadRequest frame_request(document, ResourceRequest(destination));
-  frame_request.SetTriggeringEvent(event);
+  frame_request.SetTriggeringEventInfo(
+      WebTriggeringEventInfo::kFromTrustedEvent);
   std::unique_ptr<UserGestureIndicator> gesture =
       Frame::NotifyUserActivation(frame);
+  web_frame_client.IgnoreNavigations();
   ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
       ->Loader()
-      .StartNavigation(frame_request);
+      .StartNavigation(frame_request, WebFrameLoadType::kStandard,
+                       NavigationPolicyFromEvent(event));
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.GetWebView()->MainFrame());
 
-  // decidePolicyForNavigation should be called both for the original request
-  // and the ctrl+click.
-  EXPECT_EQ(2, web_frame_client.DecidePolicyCallCount());
+  // decidePolicyForNavigation should be called for the ctrl+click.
+  EXPECT_EQ(1, web_frame_client.DecidePolicyCallCount());
 }
 
 TEST_F(WebFrameTest, BackToReload) {
@@ -8138,7 +8098,7 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
       ->Loader()
       .CommitSameDocumentNavigation(
           item->Url(), WebFrameLoadType::kBackForward, item.Get(),
-          ClientRedirectPolicy::kNotClientRedirect, nullptr, nullptr);
+          ClientRedirectPolicy::kNotClientRedirect, nullptr, false);
   EXPECT_EQ(kWebBackForwardCommit, client.LastCommitType());
 }
 

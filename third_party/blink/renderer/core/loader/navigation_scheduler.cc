@@ -331,7 +331,8 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
     frame_request.SetReplacesCurrentItem(ReplacesCurrentItem());
     MaybeLogScheduledNavigationClobber(
         ScheduledNavigationType::kScheduledFormSubmission, frame);
-    frame->Loader().StartNavigation(frame_request);
+    frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard,
+                                    submission_->GetNavigationPolicy());
   }
 
   KURL Url() const override { return submission_->RequestURL(); }
