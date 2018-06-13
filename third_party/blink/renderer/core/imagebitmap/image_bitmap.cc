@@ -618,7 +618,11 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
           IntSize(video->videoWidth(), video->videoHeight()),
-          CanvasResourceProvider::kSoftwareResourceUsage);
+          CanvasResourceProvider::kSoftwareResourceUsage,
+          nullptr,              // context_provider_wrapper
+          0,                    // msaa_sample_count
+          CanvasColorParams(),  // TODO: set color space here to avoid clamping
+          CanvasResourceProvider::kDefaultPresentationMode);
   if (!resource_provider)
     return;
 

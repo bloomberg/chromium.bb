@@ -465,7 +465,11 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
   // argument here? Currently we use unacceleration mode.
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
-          intrinsic_size, CanvasResourceProvider::kSoftwareResourceUsage);
+          intrinsic_size, CanvasResourceProvider::kSoftwareResourceUsage,
+          nullptr,  // context_provider_wrapper
+          0,        // msaa_sample_count
+          CanvasColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode);
   if (!resource_provider) {
     *status = kInvalidSourceImageStatus;
     return nullptr;

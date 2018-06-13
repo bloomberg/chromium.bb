@@ -63,7 +63,9 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider() {
             Platform::Current()->IsGpuCompositingDisabled()
                 ? CanvasResourceProvider::kSoftwareResourceUsage
                 : CanvasResourceProvider::kAcceleratedResourceUsage,
-            SharedGpuContext::ContextProviderWrapper(), 0, ColorParams()));
+            SharedGpuContext::ContextProviderWrapper(),
+            0,  // msaa_sample_count
+            ColorParams(), CanvasResourceProvider::kDefaultPresentationMode));
       } else {
         // 2d context
         // TODO: move resource provider ownership from canvas 2d layer bridge

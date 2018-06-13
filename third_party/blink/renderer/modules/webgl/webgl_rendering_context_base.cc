@@ -773,7 +773,8 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::Create(
           size, CanvasResourceProvider::kAcceleratedResourceUsage,
-          SharedGpuContext::ContextProviderWrapper(), 0, ColorParams());
+          SharedGpuContext::ContextProviderWrapper(), 0, ColorParams(),
+          CanvasResourceProvider::kDefaultPresentationMode);
   if (!resource_provider || !resource_provider->IsValid())
     return nullptr;
   if (!CopyRenderingResultsFromDrawingBuffer(resource_provider.get(),
@@ -5393,7 +5394,10 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
         CanvasResourceProvider::Create(
             IntSize(video->videoWidth(), video->videoHeight()),
             CanvasResourceProvider::kAcceleratedResourceUsage,
-            SharedGpuContext::ContextProviderWrapper());
+            SharedGpuContext::ContextProviderWrapper(),
+            0,  // msaa_sample_count
+            CanvasColorParams(),
+            CanvasResourceProvider::kDefaultPresentationMode);
     if (resource_provider && resource_provider->IsValid()) {
       // The video element paints an RGBA frame into our surface here. By
       // using an AcceleratedImageBufferSurface, we enable the WebMediaPlayer
@@ -7702,7 +7706,11 @@ CanvasResourceProvider* WebGLRenderingContextBase::
   }
 
   std::unique_ptr<CanvasResourceProvider> temp(CanvasResourceProvider::Create(
-      size, CanvasResourceProvider::kSoftwareResourceUsage));
+      size, CanvasResourceProvider::kSoftwareResourceUsage,
+      nullptr,              // resource_provider_wrapper
+      0,                    // msaa_sample_count,
+      CanvasColorParams(),  // TODO: should this use the canvas's colorspace?
+      CanvasResourceProvider::kDefaultPresentationMode));
   if (!temp)
     return nullptr;
   i = std::min(resource_providers_.size() - 1, i);
