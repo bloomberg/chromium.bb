@@ -52,12 +52,12 @@ constexpr base::TimeDelta PageSignalGeneratorImpl::kLoadedAndIdlingTimeout =
 constexpr base::TimeDelta PageSignalGeneratorImpl::kWaitingForIdleTimeout =
     base::TimeDelta::FromMinutes(1);
 
-// Ensure the timeouts make sense relative to each other.
-static_assert(PageSignalGeneratorImpl::kWaitingForIdleTimeout >
-                  PageSignalGeneratorImpl::kLoadedAndIdlingTimeout,
-              "timeouts must be well ordered");
-
-PageSignalGeneratorImpl::PageSignalGeneratorImpl() = default;
+PageSignalGeneratorImpl::PageSignalGeneratorImpl() {
+  // Ensure the timeouts make sense relative to each other.
+  static_assert(PageSignalGeneratorImpl::kWaitingForIdleTimeout >
+                    PageSignalGeneratorImpl::kLoadedAndIdlingTimeout,
+                "timeouts must be well ordered");
+}
 
 PageSignalGeneratorImpl::~PageSignalGeneratorImpl() = default;
 

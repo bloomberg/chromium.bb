@@ -6,6 +6,7 @@
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_PROCESS_COORDINATION_UNIT_IMPL_H_
 
 #include "base/macros.h"
+#include "base/process/process_handle.h"
 #include "base/time/time.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_base.h"
 
@@ -51,6 +52,8 @@ class ProcessCoordinationUnitImpl
   std::set<PageCoordinationUnitImpl*> GetAssociatedPageCoordinationUnits()
       const;
 
+  base::ProcessId process_id() const { return process_id_; }
+
  private:
   friend class FrameCoordinationUnitImpl;
 
@@ -64,6 +67,8 @@ class ProcessCoordinationUnitImpl
 
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;
+
+  base::ProcessId process_id_ = base::kNullProcessId;
 
   std::set<FrameCoordinationUnitImpl*> frame_coordination_units_;
 
