@@ -118,14 +118,13 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // all required information is collected.
   bool SetUpUserTriggeredGeneration();
 
+  // Shows a generation popup.
+  void ShowGenerationPopup(bool is_manual_generation);
+
   // Signals the browser that it should offer or rescind automatic password
   // generation depending whether the user has just focused a form field
   // suitable for generation or has changed focus from such a field.
   void AutomaticGenerationStatusChanged(bool available);
-
-  // Show password generation UI anchored at |generation_element_|. This is
-  // only called for manual password generation.
-  void ShowManualGenerationPopup();
 
   // Show UI for editing a generated password at |generation_element_|.
   void ShowEditingPopup();

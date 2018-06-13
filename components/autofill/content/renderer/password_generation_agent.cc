@@ -214,6 +214,30 @@ void PasswordGenerationAgent::DidCommitProvisionalLoad(
 void PasswordGenerationAgent::DidFinishDocumentLoad() {
   // Update stats for main frame navigation.
   if (!render_frame()->GetWebFrame()->Parent()) {
+    // Log statistics after navigation so that we only log once per page.
+    if (enabled_ || generation_form_data_) {
+      if (generation_form_data_ &&
+          !generation_form_data_->password_elements.empty()) {
+        password_generation::LogPasswordGenerationEvent(
+            password_generation::SIGN_UP_DETECTED);
+      } else {
+        password_generation::LogPasswordGenerationEvent(
+            password_generation::NO_SIGN_UP_DETECTED);
+      }
+      if (password_edited_) {
+        password_generation::LogPasswordGenerationEvent(
+            password_generation::PASSWORD_EDITED);
+      }
+      if (generation_popup_shown_) {
+        password_generation::LogPasswordGenerationEvent(
+            password_generation::GENERATION_POPUP_SHOWN);
+      }
+      if (editing_popup_shown_) {
+        password_generation::LogPasswordGenerationEvent(
+            password_generation::EDITING_POPUP_SHOWN);
+      }
+    }
+
     // In every navigation, the IPC message sent by the password autofill
     // manager to query whether the current form is blacklisted or not happens
     // when the document load finishes, so we need to clear previous states
@@ -226,34 +250,10 @@ void PasswordGenerationAgent::DidFinishDocumentLoad() {
     generation_enabled_forms_.clear();
     generation_element_.Reset();
     possible_account_creation_forms_.clear();
-
-    // Log statistics after navigation so that we only log once per page.
-    if (generation_form_data_ &&
-        generation_form_data_->password_elements.empty()) {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::NO_SIGN_UP_DETECTED);
-    } else {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::SIGN_UP_DETECTED);
-    }
     generation_form_data_.reset();
     password_is_generated_ = false;
-    if (password_edited_) {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::PASSWORD_EDITED);
-    }
     password_edited_ = false;
-
-    if (generation_popup_shown_) {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::GENERATION_POPUP_SHOWN);
-    }
     generation_popup_shown_ = false;
-
-    if (editing_popup_shown_) {
-      password_generation::LogPasswordGenerationEvent(
-          password_generation::EDITING_POPUP_SHOWN);
-    }
     editing_popup_shown_ = false;
   }
 
@@ -623,32 +623,13 @@ bool PasswordGenerationAgent::TextDidChangeInTextField(
   return true;
 }
 
-void PasswordGenerationAgent::AutomaticGenerationStatusChanged(bool available) {
-  if (available) {
-    if (!render_frame() || generation_element_.IsNull())
-      return;
-    LogMessage(
-        Logger::STRING_GENERATION_RENDERER_AUTOMATIC_GENERATION_AVAILABLE);
-    autofill::password_generation::PasswordGenerationUIData
-        password_generation_ui_data(
-            render_frame()->GetRenderView()->ElementBoundsInWindow(
-                generation_element_),
-            generation_element_.MaxLength(),
-            generation_element_.NameForAutofill().Utf16(),
-            *generation_form_data_->form);
-    GetPasswordManagerClient()->AutomaticGenerationStatusChanged(
-        true, password_generation_ui_data);
-    generation_popup_shown_ = true;
-  } else {
-    GetPasswordManagerClient()->AutomaticGenerationStatusChanged(false,
-                                                                 base::nullopt);
-  }
-}
-
-void PasswordGenerationAgent::ShowManualGenerationPopup() {
+void PasswordGenerationAgent::ShowGenerationPopup(bool is_manual_generation) {
   if (!render_frame() || generation_element_.IsNull())
     return;
-  LogMessage(Logger::STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP);
+  LogMessage(
+      is_manual_generation
+          ? Logger::STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP
+          : Logger::STRING_GENERATION_RENDERER_AUTOMATIC_GENERATION_AVAILABLE);
   autofill::password_generation::PasswordGenerationUIData
       password_generation_ui_data(
           render_frame()->GetRenderView()->ElementBoundsInWindow(
@@ -656,9 +637,24 @@ void PasswordGenerationAgent::ShowManualGenerationPopup() {
           generation_element_.MaxLength(),
           generation_element_.NameForAutofill().Utf16(),
           *generation_form_data_->form);
-  GetPasswordManagerClient()->ShowManualPasswordGenerationPopup(
-      password_generation_ui_data);
   generation_popup_shown_ = true;
+  if (is_manual_generation) {
+    GetPasswordManagerClient()->ShowManualPasswordGenerationPopup(
+        password_generation_ui_data);
+  } else {
+    GetPasswordManagerClient()->AutomaticGenerationStatusChanged(
+        true, password_generation_ui_data);
+  }
+}
+
+void PasswordGenerationAgent::AutomaticGenerationStatusChanged(bool available) {
+  if (available) {
+    ShowGenerationPopup(false /* is_manual_generation */);
+  } else {
+    // Hide the generation popup.
+    GetPasswordManagerClient()->AutomaticGenerationStatusChanged(false,
+                                                                 base::nullopt);
+  }
 }
 
 void PasswordGenerationAgent::ShowEditingPopup() {
@@ -695,7 +691,7 @@ void PasswordGenerationAgent::PasswordNoLongerGenerated() {
 
 void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
   if (SetUpUserTriggeredGeneration())
-    ShowManualGenerationPopup();
+    ShowGenerationPopup(true /* is_manual_generation */);
 }
 
 void PasswordGenerationAgent::UserSelectedManualGenerationOption() {
@@ -703,7 +699,7 @@ void PasswordGenerationAgent::UserSelectedManualGenerationOption() {
     last_focused_password_element_.SetAutofillValue(blink::WebString());
     last_focused_password_element_.SetAutofillState(
         WebAutofillState::kNotFilled);
-    ShowManualGenerationPopup();
+    ShowGenerationPopup(true /* is_manual_generation */);
   }
 }
 

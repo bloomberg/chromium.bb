@@ -310,6 +310,13 @@ void PasswordFormManager::Save() {
       DidPreferenceChange(best_matches_, pending_credentials_.username_value)) {
     SetUserAction(UserAction::kChoose);
   }
+  if (user_action_ == UserAction::kOverridePassword &&
+      pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
+      !has_generated_password_) {
+    metrics_util::LogPasswordGenerationSubmissionEvent(
+        metrics_util::PASSWORD_OVERRIDDEN);
+    pending_credentials_.type = PasswordForm::TYPE_MANUAL;
+  }
 
   if (is_new_login_) {
     SanitizePossibleUsernames(&pending_credentials_);
@@ -328,7 +335,7 @@ void PasswordFormManager::Save() {
   }
 
   // This is not in ProcessUpdate() to catch PSL matched credentials.
-  if (pending_credentials_.times_used != 0 &&
+  if (pending_credentials_.times_used == 1 &&
       pending_credentials_.type == PasswordForm::TYPE_GENERATED) {
     metrics_util::LogPasswordGenerationSubmissionEvent(
         metrics_util::PASSWORD_USED);
@@ -768,14 +775,6 @@ void PasswordFormManager::CreatePendingCredentials() {
     pending_credentials_.icon_url = submitted_form_->icon_url;
     // Take the correct signon_realm for federated credentials.
     pending_credentials_.signon_realm = submitted_form_->signon_realm;
-  }
-
-  if (user_action_ == UserAction::kOverridePassword &&
-      pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
-      !has_generated_password_) {
-    metrics_util::LogPasswordGenerationSubmissionEvent(
-        metrics_util::PASSWORD_OVERRIDDEN);
-    pending_credentials_.type = PasswordForm::TYPE_MANUAL;
   }
 
   if (has_generated_password_)
