@@ -56,6 +56,10 @@ base::CommandLine ActionRunner::MakeCommandLine(
   command_line.AppendSwitchASCII(
       "browser-version", component_.config()->GetBrowserVersion().GetString());
   command_line.AppendSwitchASCII("sessionid", component_.session_id());
+  const auto app_guid = component_.config()->GetAppGuid();
+  if (!app_guid.empty())
+    command_line.AppendSwitchASCII("appguid", app_guid);
+  VLOG(1) << "run action: " << command_line.GetCommandLineString();
   return command_line;
 }
 
