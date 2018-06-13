@@ -287,24 +287,18 @@ class FormStructure {
   FRIEND_TEST_ALL_PREFIXES(FormStructureTest, FindLongestCommonPrefix);
   FRIEND_TEST_ALL_PREFIXES(FormStructureTest,
                            RationalizePhoneNumber_RunsOncePerSection);
-  FRIEND_TEST_ALL_PREFIXES(FormStructureTest,
-                           RationalizeAddressFields_OneAddress);
-  FRIEND_TEST_ALL_PREFIXES(FormStructureTest,
-                           RationalizeAddressFields_TwoAddresses);
-  FRIEND_TEST_ALL_PREFIXES(FormStructureTest,
-                           RationalizeAddressFields_ThreeAddresses);
-  FRIEND_TEST_ALL_PREFIXES(FormStructureTest,
-                           RationalizeAddressFields_FourAddresses);
 
   // A function to fine tune the credit cards related predictions. For example:
   // lone credit card fields in an otherwise non-credit-card related form is
   // unlikely to be correct, the function will override that prediction.
   void RationalizeCreditCardFieldPredictions();
 
-  // A function to fine tune the address related predictions. For example: two
-  // fields predicted as the whole address should be address lines 1 and 2
-  // instead.
-  void RationalizeAddressFields();
+  // Two or three fields predicted as the whole address should be address lines
+  // 1, 2 and 3 instead.
+  void RationalizeAddressLineFields(const std::vector<size_t>& fields_index);
+
+  // Tunes the fields with identical predictions.
+  void RationalizeRepreatedFields();
 
   // A helper function to review the predictions and do appropriate adjustments
   // when it considers neccessary.

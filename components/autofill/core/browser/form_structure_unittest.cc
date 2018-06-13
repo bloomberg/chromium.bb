@@ -4631,9 +4631,9 @@ TEST_F(FormStructureTest, RationalizePhoneNumber_RunsOncePerSection) {
   EXPECT_TRUE(forms[0]->field(3)->only_fill_when_focused());
 }
 
-// Tests that a form that has only one address predicted as being a
+// Tests that a form that has only one address predicted as
 // ADDRESS_HOME_STREET_ADDRESS is not modified by the address rationalization.
-TEST_F(FormStructureTest, RationalizeAddressFields_OneAddress) {
+TEST_F(FormStructureTest, RationalizeRepeatedFields_OneAddress) {
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -4664,9 +4664,9 @@ TEST_F(FormStructureTest, RationalizeAddressFields_OneAddress) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  FormStructure::ParseQueryResponse(response_string, forms);
 
-  form_structure.RationalizeAddressFields();
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(3U, forms[0]->field_count());
@@ -4676,10 +4676,10 @@ TEST_F(FormStructureTest, RationalizeAddressFields_OneAddress) {
   EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(2)->Type().GetStorableType());
 }
 
-// Tests that a form that has two address predicted as being a
+// Tests that a form that has two address predicted as
 // ADDRESS_HOME_STREET_ADDRESS is modified by the address rationalization to be
 // ADDRESS_HOME_LINE1 and ADDRESS_HOME_LINE2 instead.
-TEST_F(FormStructureTest, RationalizeAddressFields_TwoAddresses) {
+TEST_F(FormStructureTest, RationalizeRepreatedFields_TwoAddresses) {
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -4716,9 +4716,9 @@ TEST_F(FormStructureTest, RationalizeAddressFields_TwoAddresses) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  FormStructure::ParseQueryResponse(response_string, forms);
 
-  form_structure.RationalizeAddressFields();
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
@@ -4728,10 +4728,10 @@ TEST_F(FormStructureTest, RationalizeAddressFields_TwoAddresses) {
   EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(3)->Type().GetStorableType());
 }
 
-// Tests that a form that has three address predicted as being a
+// Tests that a form that has three address lines predicted as
 // ADDRESS_HOME_STREET_ADDRESS is modified by the address rationalization to be
 // ADDRESS_HOME_LINE1, ADDRESS_HOME_LINE2 and ADDRESS_HOME_LINE3 instead.
-TEST_F(FormStructureTest, RationalizeAddressFields_ThreeAddresses) {
+TEST_F(FormStructureTest, RationalizeRepreatedFields_ThreeAddresses) {
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -4774,9 +4774,9 @@ TEST_F(FormStructureTest, RationalizeAddressFields_ThreeAddresses) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  FormStructure::ParseQueryResponse(response_string, forms);
 
-  form_structure.RationalizeAddressFields();
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(5U, forms[0]->field_count());
@@ -4787,9 +4787,11 @@ TEST_F(FormStructureTest, RationalizeAddressFields_ThreeAddresses) {
   EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(4)->Type().GetStorableType());
 }
 
-// Tests that a form that has four address predicted as being a
+// Tests that a form that has four address lines predicted as
 // ADDRESS_HOME_STREET_ADDRESS is not modified by the address rationalization.
-TEST_F(FormStructureTest, RationalizeAddressFields_FourAddresses) {
+// This doesn't happen in real world, bc four address lines mean multiple
+// sections according to the heuristics.
+TEST_F(FormStructureTest, RationalizeRepreatedFields_FourAddresses) {
   FormData form;
   form.origin = GURL("http://foo.com");
   FormFieldData field;
@@ -4838,9 +4840,9 @@ TEST_F(FormStructureTest, RationalizeAddressFields_FourAddresses) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  FormStructure::ParseQueryResponse(response_string, forms);
 
-  form_structure.RationalizeAddressFields();
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(6U, forms[0]->field_count());
@@ -4854,6 +4856,402 @@ TEST_F(FormStructureTest, RationalizeAddressFields_FourAddresses) {
   EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
             forms[0]->field(4)->Type().GetStorableType());
   EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(5)->Type().GetStorableType());
+}
+
+// Tests that a form that has only one address in each section predicted as
+// ADDRESS_HOME_STREET_ADDRESS is not modified by the address rationalization.
+TEST_F(FormStructureTest, RationalizeRepreatedFields_OneAddressEachSection) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.section = "Billing";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Billing";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.section = "Billing";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.section = "Shipping";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Shipping";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.section = "Shipping";
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  // Billing
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+  // Shipping
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
+  // Billing
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(6U, forms[0]->field_count());
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+            forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(2)->Type().GetStorableType());
+  // Shipping
+  EXPECT_EQ(NAME_FULL, forms[0]->field(3)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+            forms[0]->field(4)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(5)->Type().GetStorableType());
+}
+
+// Tests a form that has multiple sections with multiple number of address
+// fields predicted as ADDRESS_HOME_STREET_ADDRESS. The last section
+// doesn't happen in real world, bc it is in fact two sections according to
+// heuristics, and is only made for testing.
+TEST_F(
+    FormStructureTest,
+    RationalizeRepreatedFields_SectionTwoAddress_SectionThreeAddress_SectionFourAddresses) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  // Shipping
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.section = "Shipping";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Shipping";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Shipping";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.section = "Shipping";
+  form.fields.push_back(field);
+
+  // Billing
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.section = "Billing";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Billing";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Billing";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Billing";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.section = "Billing";
+  form.fields.push_back(field);
+
+  // Work address (not realistic)
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  field.section = "Work";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Work";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Work";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Work";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  field.section = "Work";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  field.section = "Work";
+  form.fields.push_back(field);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
+
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(15U, forms[0]->field_count());
+
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE2, forms[0]->field(2)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(3)->Type().GetStorableType());
+
+  EXPECT_EQ(NAME_FULL, forms[0]->field(4)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(5)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE2, forms[0]->field(6)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE3, forms[0]->field(7)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(8)->Type().GetStorableType());
+
+  EXPECT_EQ(NAME_FULL, forms[0]->field(9)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+            forms[0]->field(10)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+            forms[0]->field(11)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+            forms[0]->field(12)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+            forms[0]->field(13)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(14)->Type().GetStorableType());
+}
+
+// Tests that a form that has only one address in each section predicted as
+// ADDRESS_HOME_STREET_ADDRESS is not modified by the address rationalization,
+// while the sections are previously determined by the heuristics.
+TEST_F(FormStructureTest,
+       RationalizeRepreatedFields_MultipleSectionsByHeuristics_OneAddressEach) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+  // Will identify the sections based on the heuristics types.
+  form_structure.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
+                                         /*source_id=*/0);
+
+  AutofillQueryResponseContents response;
+  // Billing
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+  // Shipping
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
+  // Billing
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(6U, forms[0]->field_count());
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+            forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(2)->Type().GetStorableType());
+  // Shipping
+  EXPECT_EQ(NAME_FULL, forms[0]->field(3)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_STREET_ADDRESS,
+            forms[0]->field(4)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(5)->Type().GetStorableType());
+}
+
+// Tests a form that has multiple sections with multiple number of address
+// fields predicted as ADDRESS_HOME_STREET_ADDRES, while the sections are
+// identified by heuristics.
+TEST_F(
+    FormStructureTest,
+    RationalizeRepreatedFields_MultipleSectionsByHeuristics_TwoAddress_ThreeAddress) {
+  FormData form;
+  form.origin = GURL("http://foo.com");
+  FormFieldData field;
+  field.form_control_type = "text";
+  field.max_length = 10000;
+
+  // Shipping
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  form.fields.push_back(field);
+
+  // Billing
+  field.label = ASCIIToUTF16("Full Name");
+  field.name = ASCIIToUTF16("fullName");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Address");
+  field.name = ASCIIToUTF16("address");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("City");
+  field.name = ASCIIToUTF16("city");
+  form.fields.push_back(field);
+
+  FormStructure form_structure(form);
+  std::vector<FormStructure*> forms;
+  forms.push_back(&form_structure);
+  // Will identify the sections based on the heuristics types.
+  form_structure.DetermineHeuristicTypes(/*ukm_service=*/nullptr,
+                                         /*source_id=*/0);
+
+  AutofillQueryResponseContents response;
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+
+  response.add_field()->set_overall_type_prediction(NAME_FULL);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(
+      ADDRESS_HOME_STREET_ADDRESS);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_CITY);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+  // Will call RationalizeFieldTypePredictions
+  FormStructure::ParseQueryResponse(response_string, forms);
+
+  ASSERT_EQ(1U, forms.size());
+  ASSERT_EQ(9U, forms[0]->field_count());
+
+  EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE2, forms[0]->field(2)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(3)->Type().GetStorableType());
+
+  EXPECT_EQ(NAME_FULL, forms[0]->field(4)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, forms[0]->field(5)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE2, forms[0]->field(6)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_LINE3, forms[0]->field(7)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_CITY, forms[0]->field(8)->Type().GetStorableType());
 }
 
 }  // namespace autofill
