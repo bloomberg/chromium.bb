@@ -154,6 +154,8 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
 
   DispatchEventResult DispatchEvent(Event*);
 
+  void EnqueueAsyncEvent(Event*);
+
   // dispatchEventForBindings is intended to only be called from
   // javascript originated calls. This method will validate and may adjust
   // the Event object before dispatching.
@@ -216,6 +218,8 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   void CountLegacyEvents(const AtomicString& legacy_type_name,
                          EventListenerVector*,
                          EventListenerVector*);
+
+  void DispatchAsyncEvent(Event*, ExecutionContext*);
 
   friend class EventListenerIterator;
 };

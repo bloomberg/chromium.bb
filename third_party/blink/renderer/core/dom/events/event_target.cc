@@ -870,6 +870,28 @@ void EventTarget::RemoveAllEventListeners() {
   }
 }
 
+void EventTarget::EnqueueAsyncEvent(Event* event) {
+  ExecutionContext* context = GetExecutionContext();
+  if (!context)
+    return;
+  probe::AsyncTaskScheduled(context, event->type(), event);
+  // TODO(hajimehoshi): Specify better task type based on the event.
+  context->GetTaskRunner(TaskType::kInternalDefault)
+      ->PostTask(
+          FROM_HERE,
+          WTF::Bind(&EventTarget::DispatchAsyncEvent, WrapPersistent(this),
+                    WrapPersistent(event), WrapPersistent(context)));
+}
+
+void EventTarget::DispatchAsyncEvent(Event* event, ExecutionContext* context) {
+  if (!GetExecutionContext()) {
+    probe::AsyncTaskCanceled(context, event);
+    return;
+  }
+  probe::AsyncTask async_task(context, event);
+  DispatchEvent(event);
+}
+
 STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kFalse,
                    PassiveListenerDefault::kFalse);
 STATIC_ASSERT_ENUM(WebSettings::PassiveEventListenerDefault::kTrue,
