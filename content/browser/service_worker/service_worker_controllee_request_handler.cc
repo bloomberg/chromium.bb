@@ -258,13 +258,13 @@ ServiceWorkerControlleeRequestHandler::MaybeCreateSubresourceLoaderParams() {
 
   // Otherwise let's send the controller service worker information along
   // with the navigation commit.
-  // Note that |controller_info->endpoint| could be null if the controller
-  // service worker isn't starting up or running, e.g. in no-fetch worker
-  // cases. In that case the renderer frame won't get the controller pointer
-  // upon the navigation commit, and subresource loading will not be intercepted
-  // at least until the frame gets a new controller ptr by SetController.
   SubresourceLoaderParams params;
   auto controller_info = mojom::ControllerServiceWorkerInfo::New();
+  // Note that |controller_info->endpoint| is null if the controller has no
+  // fetch event handler. In that case the renderer frame won't get the
+  // controller pointer upon the navigation commit, and subresource loading will
+  // not be intercepted. (It might get intercepted later if the controller
+  // changes due to skipWaiting() so SetController is sent.)
   controller_info->endpoint =
       provider_host_->GetControllerServiceWorkerPtr().PassInterface();
   controller_info->client_id = provider_host_->client_uuid();

@@ -55,7 +55,7 @@ interface ControllerServiceWorker {
 // commit, and also as a parameter of ServiceWorkerContainer.SetController().
 struct ControllerServiceWorkerInfo {
   // S13nServiceWorker:
-  // Non-null if the controller has fetch event handlers.
+  // Non-null iff the controller has a fetch event handler.
   ControllerServiceWorker? endpoint;
   // S13nServiceWorker:
   // The client being controlled, used for FetchEvent#clientId. The ID is
