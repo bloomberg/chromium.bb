@@ -18,6 +18,8 @@ namespace {
 content::WebUIDataSource* CreateSupervisedUserInternalsHTMLSource() {
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUISupervisedUserInternalsHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self' 'unsafe-eval';");
 
   source->AddResourcePath("supervised_user_internals.js",
                           IDR_SUPERVISED_USER_INTERNALS_JS);

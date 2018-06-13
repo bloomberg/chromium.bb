@@ -25,6 +25,8 @@ namespace {
 content::WebUIDataSource* CreateConflictsUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIConflictsHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self' 'unsafe-eval';");
 
   source->AddLocalizedString("loadingMessage", IDS_CONFLICTS_LOADING_MESSAGE);
   source->AddLocalizedString("modulesLongTitle",

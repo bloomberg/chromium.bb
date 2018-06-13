@@ -19,6 +19,8 @@ SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui), binding_(this) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISnippetsInternalsHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self' 'unsafe-eval';");
   source->AddResourcePath("snippets_internals.css", IDR_SNIPPETS_INTERNALS_CSS);
   source->AddResourcePath("snippets_internals.js", IDR_SNIPPETS_INTERNALS_JS);
   source->AddResourcePath("snippets_internals.mojom.js",

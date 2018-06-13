@@ -103,8 +103,8 @@ class CONTENT_EXPORT URLDataSource {
   // may be marginally better than disabling CSP outright.
   // Do not override this method without first contacting the chrome security
   // team.
-  // By default, "script-src chrome://resources 'self' 'unsafe-eval';" is added
-  // to CSP. Override to change this.
+  // By default, "script-src chrome://resources 'self';" is added to CSP.
+  // Override to change this.
   virtual std::string GetContentSecurityPolicyScriptSrc() const;
 
   // It is OK to override the following methods to a custom CSP directive

@@ -19,6 +19,8 @@ DownloadInternalsUI::DownloadInternalsUI(content::WebUI* web_ui)
   // chrome://download-internals source.
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadInternalsHost);
+  html_source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self' 'unsafe-eval';");
 
   // Required resources.
   html_source->SetJsonPath("strings.js");

@@ -19,6 +19,8 @@ namespace {
 content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncInternalsHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self' 'unsafe-eval';");
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath(syncer::sync_ui_util::kSyncIndexJS,

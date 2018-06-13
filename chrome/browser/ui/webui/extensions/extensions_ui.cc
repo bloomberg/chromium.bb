@@ -114,9 +114,6 @@ std::string GetLoadTimeClasses(bool in_dev_mode) {
 content::WebUIDataSource* CreateMdExtensionsSource(bool in_dev_mode) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
-      "script-src chrome://resources 'self';");
-
   source->SetJsonPath("strings.js");
 
   constexpr LocalizedString localized_strings[] = {

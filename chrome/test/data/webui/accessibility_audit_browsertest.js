@@ -19,7 +19,7 @@ function WebUIAccessibilityAuditBrowserTest() {}
 WebUIAccessibilityAuditBrowserTest.prototype = {
   __proto__: testing.Test.prototype,
 
-  browsePreload: 'chrome://terms',
+  browsePreload: 'chrome://dummyurl',
 
   runAccessibilityChecks: true,
   accessibilityIssuesAreErrors: true,
@@ -91,6 +91,9 @@ function addAuditFailures() {
   style.innerText = 'body { background-color: #ffff }\n' +
       'p { color: #ffffff }';
   document.head.appendChild(style);
+  var p = document.createElement('p');
+  p.textContent = 'Low contrast ratio text';
+  document.body.appendChild(p);
 
   // Bad ARIA role
   var div = document.createElement('div');

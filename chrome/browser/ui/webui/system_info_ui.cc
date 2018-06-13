@@ -56,7 +56,7 @@ class SystemInfoUIHTMLSource : public content::URLDataSource{
     return "text/html";
   }
   std::string GetContentSecurityPolicyScriptSrc() const override {
-    // 'unsafe-inline' is added to script-src.
+    // 'unsafe-eval' and 'unsafe-inline' are added to script-src.
     return "script-src 'self' chrome://resources 'unsafe-eval' "
         "'unsafe-inline';";
   }

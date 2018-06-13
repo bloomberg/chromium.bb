@@ -114,6 +114,8 @@ void ChromeNTPTilesInternalsMessageHandlerClient::CallJavascriptFunctionVector(
 content::WebUIDataSource* CreateNTPTilesInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINTPTilesInternalsHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self' 'unsafe-eval';");
 
   source->AddResourcePath("ntp_tiles_internals.js", IDR_NTP_TILES_INTERNALS_JS);
   source->AddResourcePath("ntp_tiles_internals.css",

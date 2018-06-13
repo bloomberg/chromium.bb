@@ -19,6 +19,8 @@ content::WebUIDataSource* CreateInvalidationsHTMLSource() {
   // This method does not fire when refreshing the page
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIInvalidationsHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self' 'unsafe-eval';");
   source->AddResourcePath("about_invalidations.js", IDR_ABOUT_INVALIDATIONS_JS);
   source->SetDefaultResource(IDR_ABOUT_INVALIDATIONS_HTML);
   source->UseGzip();
@@ -35,4 +37,3 @@ InvalidationsUI::InvalidationsUI(content::WebUI* web_ui)
 }
 
 InvalidationsUI::~InvalidationsUI() { }
-
