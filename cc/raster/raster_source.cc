@@ -135,23 +135,21 @@ void RasterSource::PlaybackToCanvas(
   }
 
   bool is_partial_raster = canvas_bitmap_rect != canvas_playback_rect;
-  if (settings.clear_canvas_before_raster) {
-    if (!requires_clear_) {
-      // Clear opaque raster sources.  Opaque rasters sources guarantee that all
-      // pixels inside the opaque region are painted.  However, due to scaling
-      // it's possible that the last row and column might include pixels that
-      // are not painted.  Because this raster source is required to be opaque,
-      // we may need to do extra clearing outside of the clip.  This needs to
-      // be done for both full and partial raster.
-      ClearForOpaqueRaster(raster_canvas, content_size, canvas_bitmap_rect,
-                           canvas_playback_rect);
-    } else if (!is_partial_raster) {
-      // For non-opaque raster sources that are rastering the full tile,
-      // just clear the entire canvas (even if stretches past the canvas
-      // bitmap rect) as it's cheap to do so.
-      TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
-      raster_canvas->clear(SK_ColorTRANSPARENT);
-    }
+  if (!requires_clear_) {
+    // Clear opaque raster sources.  Opaque rasters sources guarantee that all
+    // pixels inside the opaque region are painted.  However, due to scaling
+    // it's possible that the last row and column might include pixels that
+    // are not painted.  Because this raster source is required to be opaque,
+    // we may need to do extra clearing outside of the clip.  This needs to
+    // be done for both full and partial raster.
+    ClearForOpaqueRaster(raster_canvas, content_size, canvas_bitmap_rect,
+                         canvas_playback_rect);
+  } else if (!is_partial_raster) {
+    // For non-opaque raster sources that are rastering the full tile,
+    // just clear the entire canvas (even if stretches past the canvas
+    // bitmap rect) as it's cheap to do so.
+    TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
+    raster_canvas->clear(SK_ColorTRANSPARENT);
   }
 
   raster_canvas->save();
@@ -162,8 +160,7 @@ void RasterSource::PlaybackToCanvas(
   raster_canvas->scale(raster_transform.scale() / recording_scale_factor_,
                        raster_transform.scale() / recording_scale_factor_);
 
-  if (is_partial_raster && settings.clear_canvas_before_raster &&
-      requires_clear_) {
+  if (is_partial_raster && requires_clear_) {
     // TODO(enne): Should this be considered a partial clear?
     TrackRasterSourceNeededClear(RasterSourceClearType::kFull);
     // Because Skia treats painted regions as transparent by default, we don't
