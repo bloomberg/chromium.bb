@@ -133,10 +133,22 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
       setContentCompressionResistancePriority:UILayoutPriorityRequired
                                       forAxis:UILayoutConstraintAxisVertical];
   [_leadingImageView
-      setContentHuggingPriority:UILayoutPriorityRequired
+      setContentHuggingPriority:UILayoutPriorityDefaultLow
                         forAxis:UILayoutConstraintAxisHorizontal];
   [_leadingImageView setContentHuggingPriority:UILayoutPriorityRequired
                                        forAxis:UILayoutConstraintAxisVertical];
+
+  // Sometimes the image view is not hidden and has no image. Then it doesn't
+  // have an intrinsic size. In this case the omnibox should appear the same as
+  // with hidden image view. Add a placeholder width constraint.
+  CGFloat placeholderSize = kTextFieldLeadingOffsetNoImage -
+                            kleadingImageViewEdgeOffset -
+                            kTextFieldLeadingOffsetImage;
+  NSLayoutConstraint* placeholderWidthConstraint =
+      [_leadingImageView.widthAnchor constraintEqualToConstant:placeholderSize];
+  // The priority must be higher than content hugging.
+  placeholderWidthConstraint.priority = UILayoutPriorityDefaultLow + 1;
+  placeholderWidthConstraint.active = YES;
 }
 
 @end
