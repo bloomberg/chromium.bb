@@ -326,8 +326,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
   PostToSelf();
 
   for (auto* frame : contents->GetAllFrames()) {
-    // if (contents->GetMainFrame() == frame)
-    //   continue;
+    if (contents->GetMainFrame() == frame)
+      continue;
     std::string create_image_script =
         std::string(
             "var image = document.createElement('img'); "
