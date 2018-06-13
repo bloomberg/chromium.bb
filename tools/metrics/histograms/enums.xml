@@ -46811,28 +46811,36 @@ Full version information for the fingerprint enum values:
     these using sheet available at http://bit.ly/2sKxPdR.
   </summary>
   <int value="-2115497279" label="network"/>
+  <int value="-2071993701" label="shape_detection"/>
+  <int value="-2061353184" label="content_gpu"/>
+  <int value="-2006071118" label="tracing"/>
+  <int value="-1913809341" label="chrome_printing"/>
+  <int value="-1866379343" label="service_manager"/>
+  <int value="-1656677225" label="file"/>
+  <int value="-1632474908" label="viz"/>
+  <int value="-1450594275" label="identity"/>
+  <int value="-1307090589" label="ui"/>
+  <int value="-1289115149" label="device"/>
+  <int value="-1015990949" label="proxy_resolver"/>
+  <int value="-988537037" label="video_capture"/>
+  <int value="-725144915" label="local_state"/>
+  <int value="-461949820" label="heap_profiling"/>
+  <int value="-407184831" label="catalog"/>
+  <int value="-400619253" label="mus_demo"/>
+  <int value="-254080081" label="cdm"/>
+  <int value="-2816355" label="profile_import"/>
   <int value="357224138" label="user_id"/>
   <int value="498331100" label="preferences"/>
   <int value="685091421" label="unzip_service"/>
   <int value="692677280" label="audio"/>
+  <int value="737685379" label="file_util"/>
   <int value="862971321" label="data_decoder"/>
   <int value="882338710" label="metrics"/>
   <int value="1051118555" label="resource_coordinator"/>
+  <int value="1395049324" label="patch_service"/>
+  <int value="1967189975" label="util_win"/>
   <int value="1998508722" label="echo"/>
-  <int value="2222973595" label="shape_detection"/>
-  <int value="2233614112" label="content_gpu"/>
-  <int value="2288896178" label="tracing"/>
-  <int value="2428587953" label="service_manager"/>
-  <int value="2638290071" label="file"/>
-  <int value="2662492388" label="viz"/>
-  <int value="2844373021" label="identity"/>
-  <int value="2987876707" label="ui"/>
-  <int value="3005852147" label="device"/>
-  <int value="3278976347" label="proxy_resolver"/>
-  <int value="3306430259" label="video_capture"/>
-  <int value="3569822381" label="local_state"/>
-  <int value="3887782465" label="catalog"/>
-  <int value="3894348043" label="mus_demo"/>
+  <int value="2077967579" label="pdf_compositor"/>
 </enum>
 
 <enum name="V8CacheBehaviour">
