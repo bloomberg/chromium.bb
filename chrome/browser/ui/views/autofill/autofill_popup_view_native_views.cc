@@ -120,21 +120,21 @@ class AutofillPopupItemView : public AutofillPopupRowView {
  protected:
   AutofillPopupItemView(AutofillPopupController* controller,
                         int line_number,
-                        int extra_bottom_padding = 0)
+                        int extra_height = 0)
       : AutofillPopupRowView(controller, line_number),
-        extra_bottom_padding_(extra_bottom_padding) {}
+        extra_height_(extra_height) {}
 
   // AutofillPopupRowView:
   void CreateContent() override {
     auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal,
-        gfx::Insets(extra_bottom_padding_,
-                    views::MenuConfig::instance().item_horizontal_padding)));
+        gfx::Insets(0, views::MenuConfig::instance().item_horizontal_padding +
+                           GetCornerRadius())));
 
     layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
     layout->set_minimum_cross_axis_size(
-        views::MenuConfig::instance().touchable_menu_height);
+        views::MenuConfig::instance().touchable_menu_height + extra_height_);
 
     // TODO(crbug.com/831603): Remove elision responsibilities from controller.
     text_label_ = new views::Label(
@@ -202,7 +202,7 @@ class AutofillPopupItemView : public AutofillPopupRowView {
     layout->SetFlexForView(spacer, /*flex=*/resize ? 1 : 0);
   }
 
-  const int extra_bottom_padding_;
+  const int extra_height_;
   views::Label* text_label_ = nullptr;
   views::Label* subtext_label_ = nullptr;
 
@@ -244,10 +244,9 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
   ~AutofillPopupFooterView() override = default;
 
   static AutofillPopupFooterView* Create(AutofillPopupController* controller,
-                                         int line_number,
-                                         int extra_bottom_padding) {
-    AutofillPopupFooterView* result = new AutofillPopupFooterView(
-        controller, line_number, extra_bottom_padding);
+                                         int line_number) {
+    AutofillPopupFooterView* result =
+        new AutofillPopupFooterView(controller, line_number);
     result->Init();
     return result;
   }
@@ -270,10 +269,8 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
   }
 
  private:
-  AutofillPopupFooterView(AutofillPopupController* controller,
-                          int line_number,
-                          int extra_bottom_padding)
-      : AutofillPopupItemView(controller, line_number, extra_bottom_padding) {
+  AutofillPopupFooterView(AutofillPopupController* controller, int line_number)
+      : AutofillPopupItemView(controller, line_number, GetCornerRadius()) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
   }
 
@@ -527,10 +524,8 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
         views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
     while (line_number < controller_->GetLineCount()) {
-      rows_.push_back(AutofillPopupFooterView::Create(
-          controller_, line_number,
-          line_number == controller_->GetLineCount() - 1 ? GetCornerRadius()
-                                                         : 0));
+      rows_.push_back(
+          AutofillPopupFooterView::Create(controller_, line_number));
       footer_container->AddChildView(rows_.back());
       line_number++;
     }
