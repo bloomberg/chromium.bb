@@ -42,7 +42,7 @@ CastSystemGestureEventHandler::CastSystemGestureEventHandler(
 }
 
 CastSystemGestureEventHandler::~CastSystemGestureEventHandler() {
-  DCHECK(swipe_gesture_handlers_.empty());
+  DCHECK(gesture_handlers_.empty());
   root_window_->RemovePreTargetHandler(this);
 }
 
@@ -67,7 +67,7 @@ CastSideSwipeOrigin CastSystemGestureEventHandler::GetDragPosition(
 }
 
 void CastSystemGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
-  if (swipe_gesture_handlers_.empty()) {
+  if (gesture_handlers_.empty()) {
     return;
   }
 
@@ -90,8 +90,8 @@ void CastSystemGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
     // Check to see if we have any potential consumers of events on this side.
     // If not, we can continue on without consuming it.
     bool have_swipe_consumer = false;
-    for (auto* side_swipe_handler : swipe_gesture_handlers_) {
-      if (side_swipe_handler->CanHandleSwipe(side_swipe_origin)) {
+    for (auto* gesture_handler : gesture_handlers_) {
+      if (gesture_handler->CanHandleSwipe(side_swipe_origin)) {
         have_swipe_consumer = true;
         break;
       }
@@ -104,10 +104,10 @@ void CastSystemGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
     if (event->type() == ui::ET_TOUCH_PRESSED) {
       event->StopPropagation();
       current_swipe_ = side_swipe_origin;
-      for (auto* side_swipe_handler : swipe_gesture_handlers_) {
+      for (auto* gesture_handler : gesture_handlers_) {
         // Let the subscriber know about the gesture begin.
-        side_swipe_handler->HandleSideSwipeBegin(side_swipe_origin,
-                                                 touch_location);
+        gesture_handler->HandleSideSwipeBegin(side_swipe_origin,
+                                              touch_location);
       }
     }
 
@@ -124,8 +124,8 @@ void CastSystemGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
   // The system gesture has ended.
   if (event->type() == ui::ET_TOUCH_RELEASED) {
-    for (auto* side_swipe_handler : swipe_gesture_handlers_) {
-      side_swipe_handler->HandleSideSwipeEnd(current_swipe_, touch_location);
+    for (auto* gesture_handler : gesture_handlers_) {
+      gesture_handler->HandleSideSwipeEnd(current_swipe_, touch_location);
     }
     current_swipe_ = CastSideSwipeOrigin::NONE;
 
@@ -133,20 +133,40 @@ void CastSystemGestureEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   }
 
   // The system gesture is ongoing...
-  for (auto* side_swipe_handler : swipe_gesture_handlers_) {
+  for (auto* gesture_handler : gesture_handlers_) {
     // Let the subscriber know about the gesture begin.
-    side_swipe_handler->HandleSideSwipeContinue(current_swipe_, touch_location);
+    gesture_handler->HandleSideSwipeContinue(current_swipe_, touch_location);
   }
 }
 
-void CastSystemGestureEventHandler::AddSideSwipeGestureHandler(
-    CastSideSwipeGestureHandlerInterface* handler) {
-  swipe_gesture_handlers_.insert(handler);
+void CastSystemGestureEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP ||
+      event->type() == ui::ET_GESTURE_TAP_DOWN ||
+      event->type() == ui::ET_GESTURE_LONG_PRESS) {
+    ProcessPressedEvent(event);
+  }
 }
 
-void CastSystemGestureEventHandler::RemoveSideSwipeGestureHandler(
-    CastSideSwipeGestureHandlerInterface* handler) {
-  swipe_gesture_handlers_.erase(handler);
+void CastSystemGestureEventHandler::ProcessPressedEvent(
+    ui::GestureEvent* event) {
+  if (gesture_handlers_.empty()) {
+    return;
+  }
+  gfx::Point touch_location(event->location());
+  for (auto* gesture_handler : gesture_handlers_) {
+    // Let the subscriber know about the gesture begin.
+    gesture_handler->HandleTapGesture(touch_location);
+  }
+}
+
+void CastSystemGestureEventHandler::AddGestureHandler(
+    CastGestureHandler* handler) {
+  gesture_handlers_.insert(handler);
+}
+
+void CastSystemGestureEventHandler::RemoveGestureHandler(
+    CastGestureHandler* handler) {
+  gesture_handlers_.erase(handler);
 }
 
 }  // namespace chromecast

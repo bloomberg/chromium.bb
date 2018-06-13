@@ -19,8 +19,6 @@ cast_source_set("browser") {
     "application_media_capabilities.h",
     "bluetooth/cast_bluetooth_chooser.cc",
     "bluetooth/cast_bluetooth_chooser.h",
-    "cast_back_gesture_dispatcher.cc",
-    "cast_back_gesture_dispatcher.h",
     "cast_browser_context.cc",
     "cast_browser_context.h",
     "cast_browser_main_parts.cc",
@@ -31,6 +29,8 @@ cast_source_set("browser") {
     "cast_content_browser_client.h",
     "cast_download_manager_delegate.cc",
     "cast_download_manager_delegate.h",
+    "cast_gesture_dispatcher.cc",
+    "cast_gesture_dispatcher.h",
     "cast_http_user_agent_settings.cc",
     "cast_http_user_agent_settings.h",
     "cast_media_blocker.cc",
@@ -438,7 +438,7 @@ cast_source_set("test_support") {
 cast_source_set("browsertests") {
   testonly = true
   sources = [
-    "cast_back_gesture_dispatcher_test.cc",
+    "cast_gesture_dispatcher_test.cc",
     "cast_media_blocker_browsertest.cc",
     "renderer_prelauncher_test.cc",
     "test/cast_features_browsertest.cc",

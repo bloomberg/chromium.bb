@@ -305,17 +305,15 @@ void CastWindowManagerAura::AddWindow(gfx::NativeView child) {
   }
 }
 
-void CastWindowManagerAura::AddSideSwipeGestureHandler(
-    CastSideSwipeGestureHandlerInterface* handler) {
+void CastWindowManagerAura::AddGestureHandler(CastGestureHandler* handler) {
   DCHECK(system_gesture_event_handler_);
-  system_gesture_event_handler_->AddSideSwipeGestureHandler(handler);
+  system_gesture_event_handler_->AddGestureHandler(handler);
 }
 
-void CastWindowManagerAura::CastWindowManagerAura::
-    RemoveSideSwipeGestureHandler(
-        CastSideSwipeGestureHandlerInterface* handler) {
+void CastWindowManagerAura::CastWindowManagerAura::RemoveGestureHandler(
+    CastGestureHandler* handler) {
   DCHECK(system_gesture_event_handler_);
-  system_gesture_event_handler_->RemoveSideSwipeGestureHandler(handler);
+  system_gesture_event_handler_->RemoveGestureHandler(handler);
 }
 
 void CastWindowManagerAura::CastWindowManagerAura::SetColorInversion(

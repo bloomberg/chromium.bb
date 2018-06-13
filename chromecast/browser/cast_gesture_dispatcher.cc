@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/browser/cast_back_gesture_dispatcher.h"
+#include "chromecast/browser/cast_gesture_dispatcher.h"
 
 #include "chromecast/base/chromecast_switches.h"
 
@@ -13,7 +13,7 @@ namespace {
 constexpr int kDefaultBackGestureHorizontalThreshold = 80;
 }  // namespace
 
-CastBackGestureDispatcher::CastBackGestureDispatcher(
+CastGestureDispatcher::CastGestureDispatcher(
     CastContentWindow::Delegate* delegate)
     : horizontal_threshold_(
           GetSwitchValueInt(switches::kBackGestureHorizontalThreshold,
@@ -22,13 +22,12 @@ CastBackGestureDispatcher::CastBackGestureDispatcher(
       dispatched_back_(false) {
   DCHECK(delegate_);
 }
-bool CastBackGestureDispatcher::CanHandleSwipe(
-    CastSideSwipeOrigin swipe_origin) {
+bool CastGestureDispatcher::CanHandleSwipe(CastSideSwipeOrigin swipe_origin) {
   return swipe_origin == CastSideSwipeOrigin::LEFT &&
          delegate_->CanHandleGesture(GestureType::GO_BACK);
 }
 
-void CastBackGestureDispatcher::HandleSideSwipeBegin(
+void CastGestureDispatcher::HandleSideSwipeBegin(
     CastSideSwipeOrigin swipe_origin,
     const gfx::Point& touch_location) {
   if (swipe_origin == CastSideSwipeOrigin::LEFT) {
@@ -36,7 +35,7 @@ void CastBackGestureDispatcher::HandleSideSwipeBegin(
   }
 }
 
-void CastBackGestureDispatcher::HandleSideSwipeContinue(
+void CastGestureDispatcher::HandleSideSwipeContinue(
     CastSideSwipeOrigin swipe_origin,
     const gfx::Point& touch_location) {
   if (swipe_origin != CastSideSwipeOrigin::LEFT) {
@@ -50,7 +49,7 @@ void CastBackGestureDispatcher::HandleSideSwipeContinue(
   }
 }
 
-void CastBackGestureDispatcher::HandleSideSwipeEnd(
+void CastGestureDispatcher::HandleSideSwipeEnd(
     CastSideSwipeOrigin swipe_origin,
     const gfx::Point& touch_location) {
   if (swipe_origin != CastSideSwipeOrigin::LEFT) {
@@ -59,6 +58,10 @@ void CastBackGestureDispatcher::HandleSideSwipeEnd(
   if (!dispatched_back_ && touch_location.x() < horizontal_threshold_) {
     delegate_->CancelGesture(GestureType::GO_BACK, touch_location);
   }
+}
+
+void CastGestureDispatcher::HandleTapGesture(const gfx::Point& touch_location) {
+  delegate_->ConsumeGesture(GestureType::TAP);
 }
 
 }  // namespace shell

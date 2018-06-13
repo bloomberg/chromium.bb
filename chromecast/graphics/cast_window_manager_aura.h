@@ -62,11 +62,9 @@ class CastWindowManagerAura : public CastWindowManager,
   aura::Window* GetDefaultParent(aura::Window* window,
                                  const gfx::Rect& bounds) override;
 
-  void AddSideSwipeGestureHandler(
-      CastSideSwipeGestureHandlerInterface* handler) override;
+  void AddGestureHandler(CastGestureHandler* handler) override;
 
-  void RemoveSideSwipeGestureHandler(
-      CastSideSwipeGestureHandlerInterface* handler) override;
+  void RemoveGestureHandler(CastGestureHandler* handler) override;
 
   void SetColorInversion(bool enable) override;
 

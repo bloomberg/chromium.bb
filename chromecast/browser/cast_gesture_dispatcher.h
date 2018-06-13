@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_BROWSER_CAST_BACK_GESTURE_DISPATCHER_H_
-#define CHROMECAST_BROWSER_CAST_BACK_GESTURE_DISPATCHER_H_
+#ifndef CHROMECAST_BROWSER_CAST_GESTURE_DISPATCHER_H_
+#define CHROMECAST_BROWSER_CAST_GESTURE_DISPATCHER_H_
 
 #include "base/macros.h"
 #include "chromecast/browser/cast_content_window.h"
-#include "chromecast/graphics/cast_side_swipe_gesture_handler.h"
+#include "chromecast/graphics/cast_gesture_handler.h"
 
 namespace chromecast {
+
 namespace shell {
 
-// Takes side swipe gestures destined for implementations of
-// CastContentWindow and dispatches them to a CastContentWindow::Delegate if the
-// side swipe is a back gesture.
-class CastBackGestureDispatcher : public CastSideSwipeGestureHandlerInterface {
+// Receives root window level gestures, interprets them, and dispatches them to
+// the CastContentWindow::Delegate.
+class CastGestureDispatcher : public CastGestureHandler {
  public:
-  explicit CastBackGestureDispatcher(CastContentWindow::Delegate* delegate);
+  explicit CastGestureDispatcher(CastContentWindow::Delegate* delegate);
 
-  // CastSideSwipeGestureHandlerInterface implementation:
+  // CastGestureHandler implementation:
   bool CanHandleSwipe(CastSideSwipeOrigin swipe_origin) override;
   void HandleSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
                             const gfx::Point& touch_location) override;
@@ -27,6 +27,7 @@ class CastBackGestureDispatcher : public CastSideSwipeGestureHandlerInterface {
                                const gfx::Point& touch_location) override;
   void HandleSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
                           const gfx::Point& touch_location) override;
+  void HandleTapGesture(const gfx::Point& touch_location) override;
 
  private:
   // Number of pixels past swipe origin to consider as a back gesture.
@@ -38,4 +39,4 @@ class CastBackGestureDispatcher : public CastSideSwipeGestureHandlerInterface {
 }  // namespace shell
 }  // namespace chromecast
 
-#endif  // CHROMECAST_BROWSER_CAST_BACK_GESTURE_DISPATCHER_H_
+#endif  // CHROMECAST_BROWSER_CAST_GESTURE_DISPATCHER_H_

@@ -7,7 +7,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "chromecast/graphics/cast_side_swipe_gesture_handler.h"
+#include "chromecast/graphics/cast_gesture_handler.h"
 #include "ui/events/event_handler.h"
 
 namespace aura {
@@ -30,18 +30,19 @@ class CastSystemGestureEventHandler : public ui::EventHandler {
 
   ~CastSystemGestureEventHandler() override;
 
-  // Register a new handler for a side swipe event.
-  void AddSideSwipeGestureHandler(
-      CastSideSwipeGestureHandlerInterface* handler);
+  // Register a new handler for gesture events, including side swipe and tap.
+  void AddGestureHandler(CastGestureHandler* handler);
 
-  // Remove the registration of a side swipe event handler.
-  void RemoveSideSwipeGestureHandler(
-      CastSideSwipeGestureHandlerInterface* handler);
+  // Remove the registration of a gesture handler.
+  void RemoveGestureHandler(CastGestureHandler* handler);
 
   CastSideSwipeOrigin GetDragPosition(const gfx::Point& point,
                                       const gfx::Rect& screen_bounds) const;
 
+  void ProcessPressedEvent(ui::GestureEvent* event);
+
   void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   const int gesture_start_width_;
@@ -50,7 +51,7 @@ class CastSystemGestureEventHandler : public ui::EventHandler {
   aura::Window* root_window_;
   CastSideSwipeOrigin current_swipe_;
 
-  base::flat_set<CastSideSwipeGestureHandlerInterface*> swipe_gesture_handlers_;
+  base::flat_set<CastGestureHandler*> gesture_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSystemGestureEventHandler);
 };
