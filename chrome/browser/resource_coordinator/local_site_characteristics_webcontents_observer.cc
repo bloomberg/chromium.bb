@@ -145,7 +145,8 @@ void LocalSiteCharacteristicsWebContentsObserver::OnAudioStateChanged(
 
 void LocalSiteCharacteristicsWebContentsObserver::OnLoadingStateChange(
     content::WebContents* contents,
-    LoadingState loading_state) {
+    LoadingState old_loading_state,
+    LoadingState new_loading_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (web_contents() != contents)
     return;
@@ -153,10 +154,11 @@ void LocalSiteCharacteristicsWebContentsObserver::OnLoadingStateChange(
   if (!writer_)
     return;
 
-  if (loading_state == TabLoadTracker::LoadingState::LOADED) {
+  if (new_loading_state == TabLoadTracker::LoadingState::LOADED) {
     writer_->NotifySiteLoaded();
   } else {
-    writer_->NotifySiteUnloaded();
+    if (old_loading_state == TabLoadTracker::LoadingState::LOADED)
+      writer_->NotifySiteUnloaded();
   }
 }
 

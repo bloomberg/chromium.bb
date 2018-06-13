@@ -105,7 +105,8 @@ class TabLoader : public base::RefCounted<TabLoader>,
 
   // resource_coordinator::TabLoadTracker::Observer implementation:
   void OnLoadingStateChange(content::WebContents* contents,
-                            LoadingState loading_state) override;
+                            LoadingState old_loading_state,
+                            LoadingState new_loading_state) override;
   void OnStopTracking(content::WebContents* contents,
                       LoadingState loading_state) override;
 

@@ -32,7 +32,8 @@ class TabMemoryMetricsReporter : public TabLoadTracker::Observer {
   void OnStartTracking(content::WebContents* web_contents,
                        LoadingState loading_state) override;
   void OnLoadingStateChange(content::WebContents* web_contents,
-                            LoadingState loading_state) override;
+                            LoadingState old_loading_state,
+                            LoadingState new_loading_state) override;
   void OnStopTracking(content::WebContents* web_contents,
                       LoadingState loading_state) override;
 

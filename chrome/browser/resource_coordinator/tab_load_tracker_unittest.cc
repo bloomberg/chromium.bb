@@ -55,7 +55,8 @@ class LenientMockObserver : public TabLoadTracker::Observer {
 
   // TabLoadTracker::Observer implementation:
   MOCK_METHOD2(OnStartTracking, void(content::WebContents*, LoadingState));
-  MOCK_METHOD2(OnLoadingStateChange, void(content::WebContents*, LoadingState));
+  MOCK_METHOD3(OnLoadingStateChange,
+               void(content::WebContents*, LoadingState, LoadingState));
   MOCK_METHOD2(OnStopTracking, void(content::WebContents*, LoadingState));
 
  private:
@@ -218,7 +219,8 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
 
   // Finish the loading for contents2.
   EXPECT_CALL(observer(),
-              OnLoadingStateChange(contents2(), TestTabLoadTracker::LOADED));
+              OnLoadingStateChange(contents2(), TestTabLoadTracker::LOADING,
+                                   TestTabLoadTracker::LOADED));
   tester2->TestSetIsLoading(false);
   if (enable_pai) {
     // The state transition should only occur *after* the PAI signal when that
@@ -231,7 +233,8 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
 
   // Start the loading for contents1.
   EXPECT_CALL(observer(),
-              OnLoadingStateChange(contents1(), TestTabLoadTracker::LOADING));
+              OnLoadingStateChange(contents1(), TestTabLoadTracker::UNLOADED,
+                                   TestTabLoadTracker::LOADING));
   tester1->NavigateAndCommit(GURL("http://baz.com"));
   EXPECT_TAB_COUNTS(3, 0, 1, 2);
   testing::Mock::VerifyAndClearExpectations(&observer());
@@ -239,7 +242,8 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
   // Stop the loading with an error. The tab should go back to a LOADED
   // state.
   EXPECT_CALL(observer(),
-              OnLoadingStateChange(contents1(), TestTabLoadTracker::LOADED));
+              OnLoadingStateChange(contents1(), TestTabLoadTracker::LOADING,
+                                   TestTabLoadTracker::LOADED));
   tester1->TestDidFailLoadWithError(GURL("http://baz.com"), 500,
                                     base::UTF8ToUTF16("server error"));
   ExpectTabCounts(3, 0, 0, 3);

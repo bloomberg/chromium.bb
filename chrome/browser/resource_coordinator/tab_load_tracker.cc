@@ -219,7 +219,8 @@ void TabLoadTracker::TransitionState(TabMap::iterator it,
   }
 #endif
 
-  --state_counts_[it->second.loading_state];
+  LoadingState previous_state = it->second.loading_state;
+  --state_counts_[previous_state];
   it->second.loading_state = loading_state;
   ++state_counts_[loading_state];
 
@@ -233,7 +234,7 @@ void TabLoadTracker::TransitionState(TabMap::iterator it,
   content::WebContents* web_contents = it->first;
 
   for (Observer& observer : observers_)
-    observer.OnLoadingStateChange(web_contents, loading_state);
+    observer.OnLoadingStateChange(web_contents, previous_state, loading_state);
 }
 
 TabLoadTracker::Observer::Observer() {}

@@ -55,11 +55,12 @@ class WaitForLoadingStateHelper : public TabLoadTracker::Observer {
 
  protected:
   void OnLoadingStateChange(content::WebContents* web_contents,
-                            LoadingState loading_state) override {
+                            LoadingState old_loading_state,
+                            LoadingState new_loading_state) override {
     if (waiting_for_no_longer_tracked_)
       return;
     if (waiting_for_contents_ == web_contents &&
-        waiting_for_state_ == loading_state) {
+        waiting_for_state_ == new_loading_state) {
       wait_successful_ = true;
       run_loop_quit_closure_.Run();
     }

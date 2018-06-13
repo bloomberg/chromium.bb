@@ -588,10 +588,11 @@ void TabManager::OnStartTracking(content::WebContents* web_contents,
 }
 
 void TabManager::OnLoadingStateChange(content::WebContents* web_contents,
-                                      LoadingState loading_state) {
-  GetWebContentsData(web_contents)->SetTabLoadingState(loading_state);
+                                      LoadingState old_loading_state,
+                                      LoadingState new_loading_state) {
+  GetWebContentsData(web_contents)->SetTabLoadingState(new_loading_state);
 
-  if (loading_state == TabLoadTracker::LOADED) {
+  if (new_loading_state == TabLoadTracker::LOADED) {
     bool was_in_background_tab_opening_session =
         IsInBackgroundTabOpeningSession();
 
