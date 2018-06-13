@@ -186,7 +186,13 @@ class SnapshotAuraTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SnapshotAuraTest);
 };
 
-TEST_F(SnapshotAuraTest, FullScreenWindow) {
+#if defined(OS_WIN) && !defined(NDEBUG)
+// https://crbug.com/852512
+#define MAYBE_FullScreenWindow DISABLED_FullScreenWindow
+#else
+#define MAYBE_FullScreenWindow FullScreenWindow
+#endif
+TEST_F(SnapshotAuraTest, MAYBE_FullScreenWindow) {
 #if defined(OS_WIN)
   // TODO(https://crbug.com/850556): Make work on Win10.
   base::win::Version version = base::win::GetVersion();
