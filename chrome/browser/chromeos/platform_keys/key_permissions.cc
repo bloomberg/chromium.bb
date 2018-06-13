@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
@@ -147,9 +148,8 @@ bool PolicyAllowsCorporateKeyUsageForExtension(
 
 bool IsKeyOnUserSlot(
     const std::vector<KeyPermissions::KeyLocation>& key_locations) {
-  return std::find(key_locations.begin(), key_locations.end(),
-                   KeyPermissions::KeyLocation::kUserSlot) !=
-         key_locations.end();
+  return base::ContainsValue(key_locations,
+                             KeyPermissions::KeyLocation::kUserSlot);
 }
 
 }  // namespace

@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "base/json/json_writer.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -559,8 +560,7 @@ void Intent::AddExtraParam(const std::string& extra_param) {
 }
 
 bool Intent::HasExtraParam(const std::string& extra_param) const {
-  return std::find(extra_params_.begin(), extra_params_.end(), extra_param) !=
-         extra_params_.end();
+  return base::ContainsValue(extra_params_, extra_param);
 }
 
 }  // namespace arc
