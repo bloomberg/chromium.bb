@@ -27,6 +27,25 @@ namespace ash {
 namespace wm {
 namespace {
 
+class InitialStateTestState : public WindowState::State {
+ public:
+  explicit InitialStateTestState(WindowStateType initial_state_type)
+      : state_type_(initial_state_type) {}
+  ~InitialStateTestState() override = default;
+
+  // WindowState::State overrides:
+  void OnWMEvent(WindowState* window_state, const WMEvent* event) override {}
+  WindowStateType GetType() const override { return state_type_; }
+  void AttachState(WindowState* window_state,
+                   WindowState::State* previous_state) override {}
+  void DetachState(WindowState* window_state) override {}
+
+ private:
+  WindowStateType state_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitialStateTestState);
+};
+
 class AlwaysMaximizeTestState : public WindowState::State {
  public:
   explicit AlwaysMaximizeTestState(WindowStateType initial_state_type)
@@ -132,6 +151,19 @@ TEST_F(WindowStateTest, SnapWindowMinimumSize) {
   // It should be possible to snap a window with a maximum size, if it
   // can be maximized.
   EXPECT_TRUE(window_state->CanSnap());
+}
+
+// Test that a PIP window cannot be snapped.
+TEST_F(WindowStateTest, PipWindowCannotSnap) {
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+
+  WindowState* window_state = GetWindowState(window.get());
+  EXPECT_TRUE(window_state->CanSnap());
+
+  window_state->SetStateObject(std::unique_ptr<WindowState::State>(
+      new InitialStateTestState(mojom::WindowStateType::PIP)));
+  EXPECT_FALSE(window_state->CanSnap());
 }
 
 // Test that modal window dialogs can be snapped.
