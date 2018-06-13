@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -71,6 +70,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
@@ -1252,11 +1252,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 }
                 if (tab != null) tab.addObserver(mTabObserver);
             }
-            int defaultPrimaryColor = isIncognito
-                    ? ApiCompatibilityUtils.getColor(mToolbar.getResources(),
-                            R.color.incognito_primary_color)
-                    : ApiCompatibilityUtils.getColor(mToolbar.getResources(),
-                            R.color.default_primary_color);
+            int defaultPrimaryColor = ColorUtils.getDefaultThemeColor(mToolbar.getResources(),
+                    FeatureUtilities.isChromeModernDesignEnabled(), isIncognito);
             int primaryColor = tab != null ? tab.getThemeColor() : defaultPrimaryColor;
             updatePrimaryColor(primaryColor, false);
 

@@ -852,10 +852,20 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     /**
      * Set device status bar to a given color.
-     * @param tab The tab that is currently showing.
+     * @param tab The tab that is currently showing, used to determine whether {@code color} is the
+     *            default theme color.
      * @param color The color that the status bar should be set to.
      */
     protected void setStatusBarColor(@Nullable Tab tab, int color) {
+        setStatusBarColor(color, tab != null && tab.isDefaultThemeColor());
+    }
+
+    /**
+     * Set device status bar to a given color.
+     * @param color The color that the status bar should be set to.
+     * @param isDefaultThemeColor Whether {@code color} is the default theme color.
+     */
+    protected void setStatusBarColor(int color, boolean isDefaultThemeColor) {
         boolean useModernDesign =
                 supportsModernDesign() && FeatureUtilities.isChromeModernDesignEnabled();
         int statusBarColor = color;
@@ -884,9 +894,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             }
             root.setSystemUiVisibility(systemUiVisibility);
         } else {
-            statusBarColor = (tab != null && tab.isDefaultThemeColor())
-                    ? Color.BLACK
-                    : ColorUtils.getDarkenedColorForStatusBar(color);
+            statusBarColor = isDefaultThemeColor ? Color.BLACK
+                                                 : ColorUtils.getDarkenedColorForStatusBar(color);
         }
 
         ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);

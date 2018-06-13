@@ -83,6 +83,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebappCustomTabTimeSpentLogger;
@@ -358,11 +359,11 @@ public class CustomTabActivity extends ChromeActivity {
         if (!mIntentDataProvider.isOpenedByChrome()) {
             getToolbarManager().setShouldUpdateToolbarPrimaryColor(false);
         }
-        if (toolbarColor != ApiCompatibilityUtils.getColor(
-                getResources(), R.color.default_primary_color)) {
-            ApiCompatibilityUtils.setStatusBarColor(getWindow(),
-                    ColorUtils.getDarkenedColorForStatusBar(toolbarColor));
-        }
+
+        super.setStatusBarColor(toolbarColor,
+                ColorUtils.isUsingDefaultToolbarColor(getResources(),
+                        FeatureUtilities.isChromeModernDesignEnabled(), false, toolbarColor));
+
         // Properly attach tab's infobar to the view hierarchy, as the main tab might have been
         // initialized prior to inflation.
         if (mMainTab != null) {
@@ -935,6 +936,11 @@ public class CustomTabActivity extends ChromeActivity {
                 finishAndClose(false);
             }
         }
+        return true;
+    }
+
+    @Override
+    public boolean supportsModernDesign() {
         return true;
     }
 
