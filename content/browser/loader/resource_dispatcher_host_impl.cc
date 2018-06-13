@@ -549,7 +549,8 @@ scoped_refptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
   scoped_refptr<LoginDelegate> login_delegate =
       GetContentClient()->browser()->CreateLoginDelegate(
           auth_info, resource_request_info->GetWebContentsGetterForRequest(),
-          is_request_for_main_frame, url,
+          request_id, is_request_for_main_frame, url,
+          request->response_headers(),
           resource_request_info->first_auth_attempt(),
           base::BindOnce(&ResourceDispatcherHostImpl::RunAuthRequiredCallback,
                          base::Unretained(this), request_id));

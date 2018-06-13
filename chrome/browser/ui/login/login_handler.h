@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/resource_request_info.h"
@@ -146,8 +147,10 @@ class LoginHandler : public content::LoginDelegate,
   friend scoped_refptr<LoginHandler> CreateLoginPrompt(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      const content::GlobalRequestID& request_id,
       bool is_request_for_main_frame,
       const GURL& url,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
       LoginAuthRequiredCallback auth_required_callback);
   FRIEND_TEST_ALL_PREFIXES(LoginHandlerTest, DialogStringsAndRealm);
 
@@ -216,10 +219,26 @@ class LoginHandler : public content::LoginDelegate,
   // created directly in this callback. In both cases, the response will be sent
   // to LoginHandler, which then routes it to the net::URLRequest on the I/O
   // thread.
-  static void LoginDialogCallback(const GURL& request_url,
-                                  net::AuthChallengeInfo* auth_info,
-                                  LoginHandler* handler,
-                                  bool is_main_frame);
+  static void LoginDialogCallback(
+      const GURL& request_url,
+      const content::GlobalRequestID& request_id,
+      net::AuthChallengeInfo* auth_info,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      LoginHandler* handler,
+      bool is_main_frame);
+
+  // Continuation from |LoginDialogCallback()| after any potential interception
+  // from the extensions WebRequest API. If |should_cancel| is |true| the
+  // request is cancelled. Otherwise |credentials| are used if supplied. Finally
+  // if the request is NOT cancelled AND |credentials| is empty, then we'll
+  // actually show a login prompt.
+  static void MaybeSetUpLoginPrompt(
+      const GURL& request_url,
+      net::AuthChallengeInfo* auth_info,
+      LoginHandler* handler,
+      bool is_main_frame,
+      const base::Optional<net::AuthCredentials>& credentials,
+      bool should_cancel);
 
   // True if we've handled auth (SetAuth or CancelAuth has been called).
   bool handled_auth_;
@@ -316,8 +335,10 @@ class AuthSuppliedLoginNotificationDetails : public LoginNotificationDetails {
 scoped_refptr<LoginHandler> CreateLoginPrompt(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    const content::GlobalRequestID& request_id,
     bool is_main_frame,
     const GURL& url,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
     LoginAuthRequiredCallback auth_required_callback);
 
 #endif  // CHROME_BROWSER_UI_LOGIN_LOGIN_HANDLER_H_

@@ -25,6 +25,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -46,6 +47,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_base.h"
+#include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/view_type_utils.h"
 #endif
 
@@ -594,10 +596,13 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url,
 }
 
 // static
-void LoginHandler::LoginDialogCallback(const GURL& request_url,
-                                       net::AuthChallengeInfo* auth_info,
-                                       LoginHandler* handler,
-                                       bool is_request_for_main_frame) {
+void LoginHandler::LoginDialogCallback(
+    const GURL& request_url,
+    const content::GlobalRequestID& request_id,
+    net::AuthChallengeInfo* auth_info,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    LoginHandler* handler,
+    bool is_main_frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebContents* parent_contents = handler->GetWebContentsForLogin();
   if (!parent_contents || handler->WasAuthHandled()) {
@@ -605,6 +610,56 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
     // hosted by a tab (e.g. an extension). Cancel just in case (canceling twice
     // is a no-op).
     handler->CancelAuth();
+    return;
+  }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // If the WebRequest API wants to take a shot at intercepting this, we can
+  // return immediately. |continuation| will eventually be invoked if the
+  // request isn't cancelled.
+  auto* api =
+      extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
+          parent_contents->GetBrowserContext());
+  auto continuation = base::BindOnce(&LoginHandler::MaybeSetUpLoginPrompt,
+                                     request_url, base::RetainedRef(auth_info),
+                                     base::RetainedRef(handler), is_main_frame);
+  if (api->MaybeProxyAuthRequest(auth_info, std::move(response_headers),
+                                 request_id, is_main_frame,
+                                 std::move(continuation))) {
+    return;
+  }
+#endif
+
+  MaybeSetUpLoginPrompt(request_url, auth_info, handler, is_main_frame,
+                        base::nullopt, false /* should_cancel */);
+}
+
+// static
+void LoginHandler::MaybeSetUpLoginPrompt(
+    const GURL& request_url,
+    net::AuthChallengeInfo* auth_info,
+    LoginHandler* handler,
+    bool is_request_for_main_frame,
+    const base::Optional<net::AuthCredentials>& credentials,
+    bool should_cancel) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  WebContents* parent_contents = handler->GetWebContentsForLogin();
+  if (!parent_contents || handler->WasAuthHandled()) {
+    // The request may have been canceled, or it may be for a renderer not
+    // hosted by a tab (e.g. an extension). Cancel just in case (canceling twice
+    // is a no-op).
+    handler->CancelAuth();
+    return;
+  }
+
+  if (should_cancel) {
+    handler->CancelAuth();
+    return;
+  }
+
+  if (credentials) {
+    handler->SetAuth(credentials->username(), credentials->password());
     return;
   }
 
@@ -674,15 +729,17 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
 scoped_refptr<LoginHandler> CreateLoginPrompt(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    const content::GlobalRequestID& request_id,
     bool is_request_for_main_frame,
     const GURL& url,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
     LoginAuthRequiredCallback auth_required_callback) {
   scoped_refptr<LoginHandler> handler = LoginHandler::Create(
       auth_info, web_contents_getter, std::move(auth_required_callback));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&LoginHandler::LoginDialogCallback, url,
-                     base::RetainedRef(auth_info), base::RetainedRef(handler),
-                     is_request_for_main_frame));
+      base::BindOnce(&LoginHandler::LoginDialogCallback, url, request_id,
+                     base::RetainedRef(auth_info), std::move(response_headers),
+                     base::RetainedRef(handler), is_request_for_main_frame));
   return handler;
 }

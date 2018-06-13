@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/certificate_request_result_type.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/resource_request_info.h"
@@ -1180,8 +1181,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual scoped_refptr<LoginDelegate> CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
+      const GlobalRequestID& request_id,
       bool is_request_for_main_frame,
       const GURL& url,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
       bool first_auth_attempt,
       LoginAuthRequiredCallback auth_required_callback);
 

@@ -39,7 +39,8 @@ interface AuthChallengeResponder {
 interface NetworkServiceClient {
   // Called when we receive an authentication failure.
   // The |auth_challenge_responder| will respond to auth challenge with
-  // credentials.
+  // credentials. |head| can provide response headers for the response
+  // which has elicited this auth request, if applicable.
   OnAuthRequired(uint32 process_id,
                  uint32 routing_id,
                  uint32 request_id,
@@ -48,6 +49,7 @@ interface NetworkServiceClient {
                  bool first_auth_attempt,
                  AuthChallengeInfo auth_info,
                  int32 resource_type,
+                 URLResponseHead? head,
                  AuthChallengeResponder auth_challenge_responder);
   // Called when an SSL certificate requested message is received for client
   // authentication.

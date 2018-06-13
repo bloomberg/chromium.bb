@@ -14,6 +14,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
@@ -166,11 +167,14 @@ class LoginHandlerDelegate {
       uint32_t routing_id,
       uint32_t request_id,
       const GURL& url,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
       bool first_auth_attempt)
       : auth_challenge_responder_(std::move(auth_challenge_responder)),
         auth_info_(auth_info),
+        request_id_(process_id, request_id),
         is_request_for_main_frame_(is_request_for_main_frame),
         url_(url),
+        response_headers_(std::move(response_headers)),
         first_auth_attempt_(first_auth_attempt),
         web_contents_getter_(web_contents_getter) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -226,8 +230,9 @@ class LoginHandlerDelegate {
   void CreateLoginDelegate() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     login_delegate_ = GetContentClient()->browser()->CreateLoginDelegate(
-        auth_info_.get(), web_contents_getter_, is_request_for_main_frame_,
-        url_, first_auth_attempt_,
+        auth_info_.get(), web_contents_getter_, request_id_,
+        is_request_for_main_frame_, url_, response_headers_,
+        first_auth_attempt_,
         base::BindOnce(&LoginHandlerDelegate::RunAuthCredentials,
                        base::Unretained(this)));
 
@@ -255,8 +260,10 @@ class LoginHandlerDelegate {
 
   network::mojom::AuthChallengeResponderPtr auth_challenge_responder_;
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
+  const content::GlobalRequestID request_id_;
   bool is_request_for_main_frame_;
   GURL url_;
+  const scoped_refptr<net::HttpResponseHeaders> response_headers_;
   bool first_auth_attempt_;
   ResourceRequestInfo::WebContentsGetter web_contents_getter_;
   scoped_refptr<LoginDelegate> login_delegate_;
@@ -279,6 +286,7 @@ void NetworkServiceClient::OnAuthRequired(
     bool first_auth_attempt,
     const scoped_refptr<net::AuthChallengeInfo>& auth_info,
     int32_t resource_type,
+    const base::Optional<network::ResourceResponseHead>& head,
     network::mojom::AuthChallengeResponderPtr auth_challenge_responder) {
   base::Callback<WebContents*(void)> web_contents_getter =
       process_id ? base::Bind(WebContentsImpl::FromRenderFrameHostID,
@@ -302,7 +310,7 @@ void NetworkServiceClient::OnAuthRequired(
   new LoginHandlerDelegate(std::move(auth_challenge_responder),
                            std::move(web_contents_getter), auth_info,
                            is_request_for_main_frame, process_id, routing_id,
-                           request_id, url,
+                           request_id, url, head ? head->headers : nullptr,
                            first_auth_attempt);  // deletes self
 }
 

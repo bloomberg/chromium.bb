@@ -371,6 +371,7 @@ class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
                       bool first_auth_attempt,
                       const scoped_refptr<net::AuthChallengeInfo>& auth_info,
                       int32_t resource_type,
+                      const base::Optional<network::ResourceResponseHead>& head,
                       network::mojom::AuthChallengeResponderPtr
                           auth_challenge_responder) override {
     NOTREACHED();

@@ -55,6 +55,7 @@ runTests([
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
             statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           }
         },
         { label: "onResponseStarted",
@@ -134,6 +135,7 @@ runTests([
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
             statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           }
         },
         { label: "onResponseStarted",
@@ -215,6 +217,7 @@ runTests([
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
             statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           },
           retval: {cancel: true}
         },
@@ -298,6 +301,7 @@ runTests([
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
             statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           },
           retval: {authCredentials: {username: "foo", password: "secret"}}
         },
@@ -379,6 +383,7 @@ runTests([
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
             statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           }
         },
         { label: "onResponseStarted",
@@ -460,6 +465,7 @@ runTests([
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
             statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           },
           retval: {cancel: true}
         },
@@ -543,6 +549,7 @@ runTests([
             challenger: {host: testServer, port: testServerPort},
             responseHeadersExist: true,
             statusLine: "HTTP/1.1 401 Unauthorized",
+            statusCode: 401,
           },
           retval: {authCredentials: {username: "foo", password: "secret"}}
         },
