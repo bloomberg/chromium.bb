@@ -77,6 +77,8 @@ component("cpp_base") {
     "http_raw_request_response_info.h",
     "mutable_network_traffic_annotation_tag_mojom_traits.h",
     "mutable_partial_network_traffic_annotation_tag_mojom_traits.h",
+    "net_ipc_param_traits.cc",
+    "net_ipc_param_traits.h",
     "network_ipc_param_traits.cc",
     "network_ipc_param_traits.h",
     "proxy_config_mojom_traits.cc",
