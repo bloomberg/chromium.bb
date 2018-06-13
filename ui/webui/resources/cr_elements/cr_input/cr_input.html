@@ -33,6 +33,11 @@
         pointer-events: none;
       }
 
+      /* Margin between <input> and <paper-button> in the 'suffix' slot */
+      :host ::slotted(paper-button[slot=suffix]) {
+        -webkit-margin-start: var(--cr-button-edge-spacing);
+      }
+
       :host([invalid]) #label {
         color: var(--cr-input-error-color);
       }
