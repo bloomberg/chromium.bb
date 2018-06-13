@@ -98,7 +98,8 @@ struct PLATFORM_EXPORT ErrorParameter {
   const HTTPHeaderMap& header_map;
   const SecurityOrigin& origin;
   const WebURLRequest::RequestContext context;
-  const String& hint;
+  // Do not use a reference here. See https://crbug.com/851419.
+  const String hint;
 
   // Set to true when an ErrorParameter was created in a wrong way. Used in
   // GetErrorString() to be robust for coding errors.
