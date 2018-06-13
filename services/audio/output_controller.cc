@@ -101,7 +101,6 @@ OutputController::OutputController(media::AudioManager* audio_manager,
       output_device_id_(output_device_id),
       group_id_(group_id),
       stream_(NULL),
-      diverting_to_stream_(NULL),
       disable_local_output_(false),
       should_duplicate_(0),
       volume_(1.0),
@@ -121,7 +120,6 @@ OutputController::~OutputController() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(kClosed, state_);
   DCHECK_EQ(nullptr, stream_);
-  DCHECK(duplication_targets_.empty());
   DCHECK(snoopers_.empty());
   DCHECK(should_duplicate_.IsZero());
 }
@@ -141,10 +139,7 @@ bool OutputController::Create(bool is_for_device_change) {
   StopCloseAndClearStream();  // Calls RemoveOutputDeviceChangeListener().
   DCHECK_EQ(kEmpty, state_);
 
-  if (diverting_to_stream_) {
-    // TODO(crbug/824019): Remove this legacy functionality.
-    stream_ = diverting_to_stream_;
-  } else if (disable_local_output_) {
+  if (disable_local_output_) {
     // Create a fake AudioOutputStream that will continue pumping the audio
     // data, but does not play it out anywhere. Pumping the audio data is
     // necessary because video playback is synchronized to the audio stream and
@@ -178,9 +173,6 @@ bool OutputController::Create(bool is_for_device_change) {
 
   LogStreamCreationResult(is_for_device_change, STREAM_CREATION_OK);
 
-  // Everything started okay, so re-register for state change callbacks if
-  // stream_ was created via AudioManager.
-  if (stream_ != diverting_to_stream_)
     audio_manager_->AddOutputDeviceChangeListener(this);
 
   // We have successfully opened the stream. Set the initial volume.
@@ -188,12 +180,6 @@ bool OutputController::Create(bool is_for_device_change) {
 
   // Finally set the state to kCreated.
   state_ = kCreated;
-
-  // TODO(crbug/824019): This should be done much earlier. For now, just
-  // preserve the "legacy mirroring" order-of-operations until the new mirroring
-  // impl is in-place.
-  if (!diverter_)
-    diverter_.emplace(this);
 
   return true;
 }
@@ -271,15 +257,6 @@ void OutputController::Close() {
   if (state_ != kClosed) {
     StopCloseAndClearStream();
     sync_reader_->Close();
-
-    // TODO(crbug/824019): Remove this legacy functionality.
-    diverter_ = base::nullopt;
-    for (media::AudioPushSink* sink : duplication_targets_)
-      sink->Close();
-    if (!duplication_targets_.empty()) {
-      duplication_targets_.clear();
-      should_duplicate_.Decrement();
-    }
 
     state_ = kClosed;
   }
@@ -375,21 +352,6 @@ void OutputController::BroadcastDataToSnoopers(
 
   for (Snooper* snooper : snoopers_)
     snooper->OnData(*audio_bus, reference_time, volume_);
-
-  // TODO(crbug/824019): The rest of this method will be deleted.
-  if (duplication_targets_.empty())
-    return;
-
-  // Note: Do not need to acquire lock since this is running on the same thread
-  // as where the set is modified.
-  for (auto target = std::next(duplication_targets_.begin(), 1);
-       target != duplication_targets_.end(); ++target) {
-    std::unique_ptr<media::AudioBus> copy(media::AudioBus::Create(params_));
-    audio_bus->CopyTo(copy.get());
-    (*target)->OnData(std::move(copy), reference_time);
-  }
-
-  (*duplication_targets_.begin())->OnData(std::move(audio_bus), reference_time);
 }
 
 void OutputController::LogAudioPowerLevel(const char* call_name) {
@@ -420,15 +382,12 @@ void OutputController::StopCloseAndClearStream() {
 
     // De-register from state change callbacks if stream_ was created via
     // AudioManager.
-    if (stream_ != diverting_to_stream_)
       audio_manager_->RemoveOutputDeviceChangeListener(this);
 
     StopStream();
     stream_->Close();
     stats_tracker_.reset();
 
-    if (stream_ == diverting_to_stream_)
-      diverting_to_stream_ = NULL;
     stream_ = NULL;
   }
 
@@ -472,7 +431,7 @@ void OutputController::StartMuting() {
 
   // If there is an active |stream_| that plays out audio locally, invoke a
   // device change to switch to a fake AudioOutputStream for muting.
-  if (state_ != kClosed && stream_ && stream_ != diverting_to_stream_)
+  if (state_ != kClosed && stream_)
     OnDeviceChange();
 }
 
@@ -485,7 +444,7 @@ void OutputController::StopMuting() {
 
   // If there is an active |stream_| and it is the fake stream for muting,
   // invoke a device change to switch back to the normal AudioOutputStream.
-  if (state_ != kClosed && stream_ && stream_ != diverting_to_stream_)
+  if (state_ != kClosed && stream_)
     OnDeviceChange();
 }
 
@@ -541,142 +500,6 @@ void OutputController::OnDeviceChange() {
   }
 }
 
-OutputController::ThreadHoppingDiverter::ThreadHoppingDiverter(
-    OutputController* controller)
-    : controller_(controller), weak_this_(AsWeakPtr()) {
-  controller_->audio_manager_->AddDiverter(controller_->group_id_, this);
-}
-
-OutputController::ThreadHoppingDiverter::~ThreadHoppingDiverter() {
-  controller_->audio_manager_->RemoveDiverter(this);
-}
-
-const media::AudioParameters&
-OutputController::ThreadHoppingDiverter::GetAudioParameters() {
-  return controller_->params_;
-}
-
-void OutputController::ThreadHoppingDiverter::StartDiverting(
-    media::AudioOutputStream* to_stream) {
-  controller_->task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](base::WeakPtr<ThreadHoppingDiverter> weak_self,
-                        media::AudioOutputStream* to_stream) {
-                       if (auto* self = weak_self.get()) {
-                         self->controller_->DoStartDiverting(to_stream);
-                       } else {
-                         // The OutputController went away. Close the stream
-                         // here to avoid leaks.
-                         to_stream->Close();
-                       }
-                     },
-                     weak_this_, to_stream));
-}
-
-void OutputController::ThreadHoppingDiverter::StopDiverting() {
-  controller_->task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](base::WeakPtr<ThreadHoppingDiverter> weak_self) {
-                       if (auto* self = weak_self.get()) {
-                         self->controller_->DoStopDiverting();
-                       } else {
-                         // The OutputController went away, but it will have
-                         // closed the stream perforce.
-                       }
-                     },
-                     weak_this_));
-}
-
-void OutputController::ThreadHoppingDiverter::StartDuplicating(
-    media::AudioPushSink* sink) {
-  controller_->task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](base::WeakPtr<ThreadHoppingDiverter> weak_self,
-                        media::AudioPushSink* sink) {
-                       if (auto* self = weak_self.get()) {
-                         self->controller_->DoStartDuplicating(sink);
-                       } else {
-                         // The OutputController went away. Close the sink here
-                         // to avoid leaks.
-                         sink->Close();
-                       }
-                     },
-                     weak_this_, sink));
-}
-
-void OutputController::ThreadHoppingDiverter::StopDuplicating(
-    media::AudioPushSink* sink) {
-  controller_->task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](base::WeakPtr<ThreadHoppingDiverter> weak_self,
-                        media::AudioPushSink* sink) {
-                       if (auto* self = weak_self.get()) {
-                         self->controller_->DoStopDuplicating(sink);
-                       } else {
-                         // The OutputController went away, but it will have
-                         // closed the sink perforce.
-                       }
-                     },
-                     weak_this_, sink));
-}
-
-void OutputController::DoStartDiverting(media::AudioOutputStream* to_stream) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ == kClosed) {
-    to_stream->Close();
-    return;
-  }
-
-  DCHECK(!diverting_to_stream_);
-  diverting_to_stream_ = to_stream;
-  // Note: OnDeviceChange() will engage the "re-create" process, which will
-  // detect and use the alternate AudioOutputStream rather than create a new one
-  // via AudioManager.
-  OnDeviceChange();
-}
-
-void OutputController::DoStopDiverting() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ == kClosed)
-    return;
-
-  // Note: OnDeviceChange() will cause the existing stream (the consumer of the
-  // diverted audio data) to be closed, and diverting_to_stream_ will be set
-  // back to NULL.
-  OnDeviceChange();
-  DCHECK(!diverting_to_stream_);
-}
-
-void OutputController::DoStartDuplicating(media::AudioPushSink* sink) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ == kClosed) {
-    sink->Close();
-    return;
-  }
-
-  if (duplication_targets_.empty())
-    should_duplicate_.Increment();
-
-  duplication_targets_.insert(sink);
-}
-
-void OutputController::DoStopDuplicating(media::AudioPushSink* sink) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  if (state_ == kClosed)
-    return;
-
-  sink->Close();
-
-  duplication_targets_.erase(sink);
-  if (duplication_targets_.empty()) {
-    const bool is_nonzero = should_duplicate_.Decrement();
-    DCHECK(!is_nonzero);
-  }
-}
 
 std::pair<float, bool> OutputController::ReadCurrentPowerAndClip() {
   DCHECK(will_monitor_audio_levels());

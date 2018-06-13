@@ -27,7 +27,6 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/audio_source_diverter.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
@@ -50,7 +49,6 @@ using media::AudioBus;
 using media::AudioManager;
 using media::AudioOutputStream;
 using media::AudioParameters;
-using media::AudioPushSink;
 using media::RunClosure;
 using media::RunOnceClosure;
 
@@ -218,22 +216,6 @@ class MockAudioOutputStream : public AudioOutputStream,
   DISALLOW_COPY_AND_ASSIGN(MockAudioOutputStream);
 };
 
-class MockAudioPushSink : public AudioPushSink {
- public:
-  MockAudioPushSink() = default;
-
-  MOCK_METHOD0(Close, void());
-  MOCK_METHOD1(OnDataCheck, void(float));
-
-  void OnData(std::unique_ptr<AudioBus> source,
-              base::TimeTicks reference_time) override {
-    OnDataCheck(source->channel(0)[0]);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAudioPushSink);
-};
-
 class MockSnooper : public GroupMember::Snooper {
  public:
   MockSnooper() = default;
@@ -327,11 +309,6 @@ ACTION(PopulateBuffer) {
 class OutputControllerTest : public ::testing::Test {
  public:
   OutputControllerTest() : group_id_(base::UnguessableToken::Create()) {
-    audio_manager_.SetDiverterCallbacks(
-        base::BindRepeating(&OutputControllerTest::AddDiverter,
-                            base::Unretained(this)),
-        base::BindRepeating(&OutputControllerTest::RemoveDiverter,
-                            base::Unretained(this)));
   }
 
   ~OutputControllerTest() override { audio_manager_.Shutdown(); }
@@ -353,19 +330,8 @@ class OutputControllerTest : public ::testing::Test {
     return audio_manager_.last_closed_stream();
   }
 
-  // Creates an "external-to-AudioManager" stream, simulating a diverter stream.
-  MockAudioOutputStream* MakeDiverterStream() {
-    auto* const stream =
-        new MockAudioOutputStream(nullptr, AudioParameters::AUDIO_PCM_LINEAR);
-    // Eventually, Close() *must* be called. Otherwise, both OutputController
-    // and these unit tests would be leaking memory.
-    EXPECT_CALL(*stream, DidClose()).RetiresOnSaturation();
-    return stream;
-  }
-
   void Create() {
     controller_->Create(false);
-    ASSERT_TRUE(diverter_);
     controller_->SetVolume(kTestVolume);
   }
 
@@ -391,39 +357,6 @@ class OutputControllerTest : public ::testing::Test {
 
     // Waits for all gmock expectations to be satisfied.
     loop.Run();
-  }
-
-  void PlayWhileDiverting(MockAudioOutputStream* diverter_stream) {
-    base::RunLoop loop;
-    // The barrier is used to wait for all of the expectations to be fulfilled.
-    base::RepeatingClosure barrier =
-        base::BarrierClosure(4, loop.QuitClosure());
-    EXPECT_CALL(*diverter_stream, DidStart())
-        .WillOnce(RunClosure(barrier))
-        .RetiresOnSaturation();
-    EXPECT_CALL(mock_event_handler_, OnControllerPlaying())
-        .WillOnce(RunClosure(barrier));
-    // The mock stream will start pulling data. We verify that the calls are
-    // forwarded to SyncReader, and write some data to the buffer that we can
-    // verify later.
-    EXPECT_CALL(mock_sync_reader_, RequestMoreData(_, _, _))
-        .WillOnce(RunClosure(barrier))
-        .WillRepeatedly(Return());
-    EXPECT_CALL(mock_sync_reader_, Read(_))
-        .WillOnce(Invoke([barrier](AudioBus* data) {
-          data->channel(0)[0] = kBufferNonZeroData;
-          barrier.Run();
-        }))
-        .WillRepeatedly(PopulateBuffer());
-
-    controller_->Play();
-    Mock::VerifyAndClearExpectations(&mock_event_handler_);
-
-    // Waits for all gmock expectations to be satisfied.
-    loop.Run();
-
-    // At some point in the future, the stream must be stopped.
-    EXPECT_CALL(*diverter_stream, DidStop()).RetiresOnSaturation();
   }
 
   void Pause() {
@@ -485,137 +418,6 @@ class OutputControllerTest : public ::testing::Test {
     controller_->StopSnooping(snooper);
   }
 
-  void DivertBeforePlaying(MockAudioOutputStream* diverter_stream) {
-    EXPECT_CALL(*diverter_stream, DidOpen()).RetiresOnSaturation();
-    EXPECT_CALL(*diverter_stream, DidSetVolume(kTestVolume))
-        .RetiresOnSaturation();
-
-    ASSERT_TRUE(diverter_);
-    diverter_->StartDiverting(diverter_stream);
-
-    base::RunLoop loop;
-    // Wait for controller to start diverting.
-    audio_manager_.GetTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
-    loop.Run();
-  }
-
-  void DivertAfterClose(MockAudioOutputStream* diverter_stream) {
-    ASSERT_TRUE(diverter_);
-    diverter_->StartDiverting(diverter_stream);
-
-    // Note: Not running the TaskRunner yet. Close() will do that later.
-  }
-
-  void DivertWhilePlaying(MockAudioOutputStream* diverter_stream) {
-    base::RunLoop loop;
-    // The barrier is used to wait for all of the expectations to be fulfilled.
-    base::RepeatingClosure barrier =
-        base::BarrierClosure(4, loop.QuitClosure());
-    // Expect the diverter stream to be initialized and started.
-    EXPECT_CALL(*diverter_stream, DidOpen())
-        .WillOnce(RunClosure(barrier))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*diverter_stream, DidSetVolume(kTestVolume))
-        .WillOnce(RunClosure(barrier))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*diverter_stream, DidStart())
-        .WillOnce(RunClosure(barrier))
-        .RetiresOnSaturation();
-    // Expect event handler to be informed.
-    EXPECT_CALL(mock_event_handler_, OnControllerPlaying())
-        .WillOnce(RunClosure(barrier));
-
-    ASSERT_TRUE(diverter_);
-    diverter_->StartDiverting(diverter_stream);
-    // Wait until callbacks has started.
-    loop.Run();
-    Mock::VerifyAndClearExpectations(&mock_event_handler_);
-
-    // At some point in the future, the stream must be stopped.
-    EXPECT_CALL(*diverter_stream, DidStop()).RetiresOnSaturation();
-  }
-
-  void StartDuplicating(MockAudioPushSink* sink) {
-    base::RunLoop loop;
-    EXPECT_CALL(*sink, OnDataCheck(kBufferNonZeroData))
-        .WillOnce(RunOnceClosure(loop.QuitClosure()))
-        .WillRepeatedly(Return());
-    ASSERT_TRUE(diverter_);
-    diverter_->StartDuplicating(sink);
-    loop.Run();
-  }
-
-  void StartDuplicatingAfterClose(MockAudioPushSink* sink) {
-    EXPECT_CALL(*sink, Close());
-
-    ASSERT_TRUE(diverter_);
-    diverter_->StartDuplicating(sink);
-
-    // Note: Not running the TaskRunner yet. Close() will do that later.
-  }
-
-  void Revert(bool was_playing) {
-    if (was_playing) {
-      // Expect the handler to receive one OnControllerPlaying() call as a
-      // result of the stream switching back.
-      EXPECT_CALL(mock_event_handler_, OnControllerPlaying());
-    }
-
-    ASSERT_TRUE(diverter_);
-    diverter_->StopDiverting();
-    base::RunLoop loop;
-    audio_manager_.GetTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
-    loop.Run();
-    Mock::VerifyAndClearExpectations(&mock_event_handler_);
-  }
-
-  void RevertAfterClose() {
-    ASSERT_TRUE(diverter_);
-    diverter_->StopDiverting();
-
-    // Note: Not running the TaskRunner yet. Close() will do that later.
-  }
-
-  void StopDuplicating(MockAudioPushSink* sink) {
-    {
-      // First, verify we're still getting callbacks. Must be done on the AM
-      // task runner, since it may be a separate thread, and EXPECTing from the
-      // main thread would be racy.
-      base::RunLoop loop;
-      audio_manager_.GetTaskRunner()->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              [](MockAudioPushSink* sink, base::RepeatingClosure done_closure) {
-                Mock::VerifyAndClear(sink);
-                EXPECT_CALL(*sink, OnDataCheck(kBufferNonZeroData))
-                    .WillOnce(RunClosure(done_closure))
-                    .WillRepeatedly(Return());
-              },
-              sink, loop.QuitClosure()));
-      loop.Run();
-    }
-
-    {
-      EXPECT_CALL(*sink, Close());
-      ASSERT_TRUE(diverter_);
-      diverter_->StopDuplicating(sink);
-      base::RunLoop loop;
-      audio_manager_.GetTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
-      loop.Run();
-    }
-  }
-
-  void StopDuplicatingAfterClose(MockAudioPushSink* sink,
-                                 bool already_expecting_close_call) {
-    if (!already_expecting_close_call)
-      EXPECT_CALL(*sink, Close());
-
-    ASSERT_TRUE(diverter_);
-    diverter_->StopDuplicating(sink);
-
-    // Note: Not running the TaskRunner yet. Close() will do that later.
-  }
-
   void Close() {
     EXPECT_CALL(mock_sync_reader_, Close());
     controller_->Close();
@@ -637,10 +439,6 @@ class OutputControllerTest : public ::testing::Test {
     loop.Run();
   }
 
-  // These help make test sequences more readable.
-  void RevertWasNotPlaying() { Revert(false); }
-  void RevertWhilePlaying() { Revert(true); }
-
   void TriggerErrorThenDeviceChange() {
     DCHECK(audio_manager_.GetTaskRunner()->BelongsToCurrentThread());
 
@@ -656,27 +454,12 @@ class OutputControllerTest : public ::testing::Test {
   }
 
  private:
-  void AddDiverter(const base::UnguessableToken& group_id,
-                   media::AudioSourceDiverter* diverter) {
-    EXPECT_EQ(group_id_, group_id);
-    ASSERT_FALSE(diverter_);
-    diverter_ = diverter;
-    ASSERT_TRUE(diverter_);
-  }
-
-  void RemoveDiverter(media::AudioSourceDiverter* diverter) {
-    ASSERT_EQ(diverter_, diverter);
-    diverter_ = nullptr;
-  }
-
   base::TestMessageLoop message_loop_;
   AudioManagerForControllerTest audio_manager_;
   base::UnguessableToken group_id_;
   StrictMock<MockOutputControllerEventHandler> mock_event_handler_;
   StrictMock<MockOutputControllerSyncReader> mock_sync_reader_;
   base::Optional<OutputController> controller_;
-
-  media::AudioSourceDiverter* diverter_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OutputControllerTest);
 };
@@ -892,123 +675,6 @@ TEST_F(OutputControllerTest, SnoopWhileMuting) {
   Close();
   EXPECT_EQ(mute_stream, last_created_stream());
   EXPECT_EQ(mute_stream, last_closed_stream());
-}
-
-TEST_F(OutputControllerTest, PlayDivertRevertClose) {
-  Create();
-  Play();
-  auto* const diverter_stream = MakeDiverterStream();
-  DivertWhilePlaying(diverter_stream);
-  RevertWhilePlaying();
-  Close();
-}
-
-TEST_F(OutputControllerTest, PlayDivertRevertDivertRevertClose) {
-  Create();
-  Play();
-  auto* const diverter_stream1 = MakeDiverterStream();
-  DivertWhilePlaying(diverter_stream1);
-  RevertWhilePlaying();
-  auto* const diverter_stream2 = MakeDiverterStream();
-  DivertWhilePlaying(diverter_stream2);
-  RevertWhilePlaying();
-  Close();
-}
-
-TEST_F(OutputControllerTest, DivertPlayPausePlayRevertClose) {
-  Create();
-  auto* const diverter_stream = MakeDiverterStream();
-  DivertBeforePlaying(diverter_stream);
-  PlayWhileDiverting(diverter_stream);
-  Pause();
-  PlayWhileDiverting(diverter_stream);
-  RevertWhilePlaying();
-  Close();
-}
-
-TEST_F(OutputControllerTest, DivertRevertClose) {
-  Create();
-  auto* const diverter_stream = MakeDiverterStream();
-  DivertBeforePlaying(diverter_stream);
-  RevertWasNotPlaying();
-  Close();
-}
-
-TEST_F(OutputControllerTest, PlayDivertCloseRevert) {
-  Create();
-  Play();
-  auto* const diverter_stream = MakeDiverterStream();
-  DivertWhilePlaying(diverter_stream);
-  RevertAfterClose();
-  Close();
-}
-
-TEST_F(OutputControllerTest, PlayDivertClose) {
-  Create();
-  Play();
-  auto* const diverter_stream = MakeDiverterStream();
-  DivertWhilePlaying(diverter_stream);
-  Close();
-}
-
-TEST_F(OutputControllerTest, PlayCloseDivertRevert) {
-  Create();
-  Play();
-  auto* const diverter_stream = MakeDiverterStream();
-  DivertAfterClose(diverter_stream);
-  RevertAfterClose();
-  Close();
-}
-
-TEST_F(OutputControllerTest, PlayDuplicateStopClose) {
-  Create();
-  MockAudioPushSink mock_sink;
-  Play();
-  StartDuplicating(&mock_sink);
-  StopDuplicating(&mock_sink);
-  Close();
-}
-
-TEST_F(OutputControllerTest, PlayDuplicateCloseStop) {
-  Create();
-  MockAudioPushSink mock_sink;
-  Play();
-  StartDuplicating(&mock_sink);
-  StopDuplicatingAfterClose(&mock_sink, false);
-  Close();
-}
-
-TEST_F(OutputControllerTest, PlayCloseDuplicateStop) {
-  Create();
-  MockAudioPushSink mock_sink;
-  Play();
-  StartDuplicatingAfterClose(&mock_sink);
-  StopDuplicatingAfterClose(&mock_sink, true);
-  Close();
-}
-
-TEST_F(OutputControllerTest, TwoDuplicates) {
-  Create();
-  MockAudioPushSink mock_sink_1;
-  MockAudioPushSink mock_sink_2;
-  Play();
-  StartDuplicating(&mock_sink_1);
-  StartDuplicating(&mock_sink_2);
-  StopDuplicating(&mock_sink_1);
-  StopDuplicating(&mock_sink_2);
-  Close();
-}
-
-TEST_F(OutputControllerTest, DuplicateDivertInteract) {
-  Create();
-  MockAudioPushSink mock_sink;
-  Play();
-  StartDuplicating(&mock_sink);
-  auto* const diverter_stream = MakeDiverterStream();
-  DivertWhilePlaying(diverter_stream);
-  StopDuplicating(&mock_sink);
-  RevertWhilePlaying();
-  Close();
 }
 
 }  // namespace
