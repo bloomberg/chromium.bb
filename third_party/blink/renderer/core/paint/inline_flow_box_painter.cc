@@ -254,6 +254,10 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground);
+
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    RecordHitTestData(paint_info, paint_offset);
+
   if (inline_flow_box_.GetLineLayoutItem().Style()->Visibility() !=
       EVisibility::kVisible)
     return;
@@ -285,28 +289,20 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
   DrawingRecorder recorder(paint_info.context, inline_flow_box_,
                            DisplayItem::kBoxDecorationBackground);
 
-  LayoutRect frame_rect = FrameRectClampedToLineTopAndBottomIfNeeded();
-
-  // Move x/y to our coordinates.
-  LayoutRect local_rect(frame_rect);
-  inline_flow_box_.FlipForWritingMode(local_rect);
-  LayoutPoint adjusted_paint_offset = paint_offset + local_rect.Location();
-
-  LayoutRect adjusted_frame_rect =
-      LayoutRect(adjusted_paint_offset, frame_rect.Size());
+  LayoutRect paint_rect = AdjustedPaintRect(paint_offset);
 
   IntRect adjusted_clip_rect;
   BorderPaintingType border_painting_type =
-      GetBorderPaintType(adjusted_frame_rect, adjusted_clip_rect);
+      GetBorderPaintType(paint_rect, adjusted_clip_rect);
 
   // Shadow comes first and is behind the background and border.
-  PaintNormalBoxShadow(paint_info, *style_to_use, adjusted_frame_rect);
+  PaintNormalBoxShadow(paint_info, *style_to_use, paint_rect);
 
   Color background_color = inline_flow_box_layout_object->ResolveColor(
       *style_to_use, GetCSSPropertyBackgroundColor());
   PaintFillLayers(paint_info, background_color,
-                  style_to_use->BackgroundLayers(), adjusted_frame_rect);
-  PaintInsetBoxShadow(paint_info, *style_to_use, adjusted_frame_rect);
+                  style_to_use->BackgroundLayers(), paint_rect);
+  PaintInsetBoxShadow(paint_info, *style_to_use, paint_rect);
 
   const LayoutObject* box_model = ToLayoutBoxModelObject(
       LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.BoxModelObject()));
@@ -315,20 +311,20 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
     case kDontPaintBorders:
       break;
     case kPaintBordersWithoutClip:
-      BoxPainterBase::PaintBorder(
-          *box_model, box_model->GetDocument(), GetNode(box_model), paint_info,
-          adjusted_frame_rect,
-          inline_flow_box_.GetLineLayoutItem().StyleRef(
-              inline_flow_box_.IsFirstLineStyle()),
-          kBackgroundBleedNone, inline_flow_box_.IncludeLogicalLeftEdge(),
-          inline_flow_box_.IncludeLogicalRightEdge());
+      BoxPainterBase::PaintBorder(*box_model, box_model->GetDocument(),
+                                  GetNode(box_model), paint_info, paint_rect,
+                                  inline_flow_box_.GetLineLayoutItem().StyleRef(
+                                      inline_flow_box_.IsFirstLineStyle()),
+                                  kBackgroundBleedNone,
+                                  inline_flow_box_.IncludeLogicalLeftEdge(),
+                                  inline_flow_box_.IncludeLogicalRightEdge());
       break;
     case kPaintBordersWithClip:
       // FIXME: What the heck do we do with RTL here? The math we're using is
       // obviously not right, but it isn't even clear how this should work at
       // all.
       LayoutRect image_strip_paint_rect = PaintRectForImageStrip(
-          adjusted_paint_offset, frame_rect.Size(), TextDirection::kLtr);
+          paint_rect.Location(), paint_rect.Size(), TextDirection::kLtr);
       GraphicsContextStateSaver state_saver(paint_info.context);
       paint_info.context.Clip(adjusted_clip_rect);
       BoxPainterBase::PaintBorder(*box_model, box_model->GetDocument(),
@@ -357,19 +353,13 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
       paint_info.context, inline_flow_box_,
       DisplayItem::PaintPhaseToDrawingType(paint_info.phase));
 
-  LayoutRect frame_rect = FrameRectClampedToLineTopAndBottomIfNeeded();
-
-  // Move x/y to our coordinates.
-  LayoutRect local_rect(frame_rect);
-  inline_flow_box_.FlipForWritingMode(local_rect);
-  LayoutPoint adjusted_paint_offset = paint_offset + local_rect.Location();
+  LayoutRect paint_rect = AdjustedPaintRect(paint_offset);
 
   const auto& mask_nine_piece_image = box_model.StyleRef().MaskBoxImage();
   const auto* mask_box_image = mask_nine_piece_image.GetImage();
 
   // Figure out if we need to push a transparency layer to render our mask.
   bool push_transparency_layer = false;
-  LayoutRect paint_rect = LayoutRect(adjusted_paint_offset, frame_rect.Size());
   DCHECK(box_model.HasLayer());
   if (!box_model.Layer()->MaskBlendingAppliedByCompositor(paint_info)) {
     push_transparency_layer = true;
@@ -400,7 +390,7 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     // FIXME: What the heck do we do with RTL here? The math we're using is
     // obviously not right, but it isn't even clear how this should work at all.
     LayoutRect image_strip_paint_rect = PaintRectForImageStrip(
-        adjusted_paint_offset, frame_rect.Size(), TextDirection::kLtr);
+        paint_rect.Location(), paint_rect.Size(), TextDirection::kLtr);
     FloatRect clip_rect(ClipRectForNinePieceImageStrip(
         inline_flow_box_, mask_nine_piece_image, paint_rect));
     GraphicsContextStateSaver state_saver(paint_info.context);
@@ -444,6 +434,29 @@ LayoutRect InlineFlowBoxPainter::FrameRectClampedToLineTopAndBottomIfNeeded()
     }
   }
   return rect;
+}
+
+LayoutRect InlineFlowBoxPainter::AdjustedPaintRect(
+    const LayoutPoint& paint_offset) const {
+  LayoutRect frame_rect = FrameRectClampedToLineTopAndBottomIfNeeded();
+  LayoutRect local_rect(frame_rect);
+  inline_flow_box_.FlipForWritingMode(local_rect);
+  LayoutPoint adjusted_paint_offset = paint_offset + local_rect.Location();
+  return LayoutRect(adjusted_paint_offset, frame_rect.Size());
+}
+
+void InlineFlowBoxPainter::RecordHitTestData(const PaintInfo& paint_info,
+                                             const LayoutPoint& paint_offset) {
+  LayoutObject* layout_object =
+      LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.GetLineLayoutItem());
+
+  auto touch_action = layout_object->EffectiveWhitelistedTouchAction();
+  if (touch_action == TouchAction::kTouchActionAuto)
+    return;
+
+  HitTestData::RecordTouchActionRect(
+      paint_info.context, inline_flow_box_,
+      TouchActionRect(AdjustedPaintRect(paint_offset), touch_action));
 }
 
 }  // namespace blink

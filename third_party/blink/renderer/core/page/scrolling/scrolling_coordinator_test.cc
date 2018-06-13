@@ -121,6 +121,8 @@ class ScrollingCoordinatorTest : public testing::Test,
     return GetWebView()->LayerTreeView();
   }
 
+  void LoadAhem() { helper_.LoadAhem(); }
+
  protected:
   std::string base_url_;
 
@@ -826,6 +828,43 @@ TEST_P(ScrollingCoordinatorTest, touchActionExcludesBoxShadow) {
   cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
       TouchAction::kTouchActionNone);
   EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 100, 100));
+}
+
+TEST_P(ScrollingCoordinatorTest, touchActionOnInline) {
+  RegisterMockedHttpURLLoad("touch-action-on-inline.html");
+  NavigateTo(base_url_ + "touch-action-on-inline.html");
+  LoadAhem();
+  ForceFullCompositingUpdate();
+
+  auto* layout_view = GetFrame()->View()->GetLayoutView();
+  auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
+  GraphicsLayer* graphics_layer = mapping->ScrollingContentsLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
+
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_EQ(region.bounds(), gfx::Rect(8, 8, 80, 50));
+}
+
+TEST_P(ScrollingCoordinatorTest, touchActionWithVerticalRLWritingMode) {
+  // Touch action rects are incorrect with vertical-rl. See: crbug.com/852013.
+  // This is fixed with PaintTouchActionRects.
+  if (!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
+    return;
+
+  RegisterMockedHttpURLLoad("touch-action-with-vertical-rl-writing-mode.html");
+  NavigateTo(base_url_ + "touch-action-with-vertical-rl-writing-mode.html");
+  LoadAhem();
+  ForceFullCompositingUpdate();
+
+  auto* layout_view = GetFrame()->View()->GetLayoutView();
+  auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
+  GraphicsLayer* graphics_layer = mapping->ScrollingContentsLayer();
+  cc::Layer* cc_layer = graphics_layer->CcLayer();
+
+  cc::Region region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_EQ(region.bounds(), gfx::Rect(292, 8, 20, 80));
 }
 
 TEST_P(ScrollingCoordinatorTest, touchActionBlockingHandler) {

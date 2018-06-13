@@ -71,6 +71,13 @@ class InlineFlowBoxPainter {
   BorderPaintingType GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
                                         IntRect& adjusted_clip_rect) const;
 
+  LayoutRect AdjustedPaintRect(const LayoutPoint& paint_offset) const;
+
+  // Paint a hit test display item and record hit test data. This should be
+  // called when painting the background even if there is no other painted
+  // content.
+  void RecordHitTestData(const PaintInfo&, const LayoutPoint& paint_offset);
+
   const InlineFlowBox& inline_flow_box_;
 };
 
