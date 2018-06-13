@@ -87,6 +87,11 @@ class CastContentWindow {
     virtual void GestureProgress(GestureType gesture_type,
                                  const gfx::Point& touch_location){};
 
+    // Called when an in-progress system UI gesture is cancelled (for example
+    // when the finger is lifted before the completion of the gesture.)
+    virtual void CancelGesture(GestureType gesture_type,
+                               const gfx::Point& touch_location){};
+
     // Consume and handle a completed UI gesture. Returns whether the gesture
     // was handled or not.
     virtual bool ConsumeGesture(GestureType gesture_type) = 0;

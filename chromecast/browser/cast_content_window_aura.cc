@@ -145,5 +145,11 @@ void CastContentWindowAura::HandleSideSwipeContinue(
                                                     touch_location);
 }
 
+void CastContentWindowAura::HandleSideSwipeEnd(
+    CastSideSwipeOrigin swipe_origin,
+    const gfx::Point& touch_location) {
+  back_gesture_dispatcher_->HandleSideSwipeEnd(swipe_origin, touch_location);
+}
+
 }  // namespace shell
 }  // namespace chromecast
