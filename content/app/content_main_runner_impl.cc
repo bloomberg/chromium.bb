@@ -74,6 +74,7 @@
 #elif defined(OS_MACOSX)
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "content/browser/mach_broker_mac.h"
+#include "sandbox/mac/seatbelt_exec.h"
 #endif  // OS_WIN
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -901,7 +902,7 @@ int ContentMainRunnerImpl::Initialize(const ContentMainParams& params) {
     // Do not initialize the sandbox at this point if the V2
     // sandbox is enabled for the process type.
     bool v2_enabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableV2Sandbox);
+        sandbox::switches::kSeatbeltClientName);
 
     if (process_type == switches::kRendererProcess ||
         process_type == switches::kPpapiPluginProcess || v2_enabled ||

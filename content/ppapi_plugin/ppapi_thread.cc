@@ -63,6 +63,10 @@
 #include "sandbox/win/src/sandbox.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "sandbox/mac/seatbelt_exec.h"
+#endif
+
 #if defined(OS_WIN)
 extern sandbox::TargetServices* g_target_services;
 
@@ -426,7 +430,7 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
 #if defined(OS_MACOSX)
     // TODO(kerrnel): Delete this once the V2 sandbox is default.
     const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-    if (!cmdline->HasSwitch(switches::kEnableV2Sandbox)) {
+    if (!cmdline->HasSwitch(sandbox::switches::kSeatbeltClientName)) {
       // We need to do this after getting |PPP_GetInterface()| (or presumably
       // doing something nontrivial with the library), else the sandbox
       // intercedes.
