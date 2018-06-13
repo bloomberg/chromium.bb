@@ -963,6 +963,9 @@ bool CreateV9Schema(sql::Connection* db) {
   return true;
 }
 
+bool AddV9CookiesToDBImpl(sql::Connection* db,
+                          const std::vector<CanonicalCookie>& cookies);
+
 // Add a selection of cookies to the DB.
 bool AddV9CookiesToDB(sql::Connection* db) {
   static base::Time cookie_time(base::Time::Now());
@@ -992,7 +995,11 @@ bool AddV9CookiesToDB(sql::Connection* db) {
       "C", "B", "example.com", "/path", cookie_time, cookie_time, cookie_time,
       false, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
+  return AddV9CookiesToDBImpl(db, cookies);
+}
 
+bool AddV9CookiesToDBImpl(sql::Connection* db,
+                          const std::vector<CanonicalCookie>& cookies) {
   sql::Statement add_smt(db->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO cookies (creation_utc, host_key, name, value, "
@@ -1045,31 +1052,37 @@ void ConfirmV9CookiesFromDB(
   std::sort(read_in_cookies.begin(), read_in_cookies.end(), &CompareCookies);
   int i = 0;
   EXPECT_EQ("A", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
   EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
   EXPECT_EQ("/", read_in_cookies[i]->Path());
 
   i++;
   EXPECT_EQ("A", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
   EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
   EXPECT_EQ("/path", read_in_cookies[i]->Path());
 
   i++;
   EXPECT_EQ("A", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
   EXPECT_EQ("example2.com", read_in_cookies[i]->Domain());
   EXPECT_EQ("/", read_in_cookies[i]->Path());
 
   i++;
   EXPECT_EQ("C", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
   EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
   EXPECT_EQ("/", read_in_cookies[i]->Path());
 
   i++;
   EXPECT_EQ("C", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
   EXPECT_EQ("example.com", read_in_cookies[i]->Domain());
   EXPECT_EQ("/path", read_in_cookies[i]->Path());
 
   i++;
   EXPECT_EQ("C", read_in_cookies[i]->Name());
+  EXPECT_EQ("B", read_in_cookies[i]->Value());
   EXPECT_EQ("example2.com", read_in_cookies[i]->Domain());
   EXPECT_EQ("/", read_in_cookies[i]->Path());
 }
@@ -1100,16 +1113,30 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion10Corrupted) {
 
   ASSERT_TRUE(CreateV9Schema(&connection));
 
+  base::Time old_time = base::Time::Now() - base::TimeDelta::FromMinutes(90);
+  base::Time old_time2 = base::Time::Now() - base::TimeDelta::FromMinutes(91);
+  CanonicalCookie old_cookie1(
+      "A", "old_value", "example.com", "/", old_time, old_time, old_time, false,
+      false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
+  AddV9CookiesToDBImpl(&connection, {old_cookie1});
+
   // Add the same set of cookies twice to create duplicates.
   ASSERT_TRUE(AddV9CookiesToDB(&connection));
   ASSERT_TRUE(AddV9CookiesToDB(&connection));
+
+  // Add some others as well.
+  CanonicalCookie old_cookie2(
+      "A", "old_value", "example.com", "/path", old_time2, old_time2, old_time2,
+      false, false, CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
+  AddV9CookiesToDBImpl(&connection, {old_cookie2});
 
   connection.Close();
 
   std::vector<std::unique_ptr<CanonicalCookie>> read_in_cookies;
   CreateAndLoad(false, false, &read_in_cookies);
-  // Finding failures of the uniqueness constraint should result in a nuked DB.
-  EXPECT_EQ(0u, read_in_cookies.size());
+  // Finding failures of the uniqueness constraint should resolve them by
+  // timestamp.
+  ConfirmV9CookiesFromDB(std::move(read_in_cookies));
 }
 
 // Confirm the store can handle having cookies with identical creation
