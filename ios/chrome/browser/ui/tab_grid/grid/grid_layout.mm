@@ -68,6 +68,7 @@
 
 - (void)prepareForCollectionViewUpdates:
     (NSArray<UICollectionViewUpdateItem*>*)updateItems {
+  [super prepareForCollectionViewUpdates:updateItems];
   // Track which items in this update are explicitly being deleted or inserted.
   NSMutableArray<NSIndexPath*>* deletingItems =
       [NSMutableArray arrayWithCapacity:updateItems.count];
@@ -104,15 +105,16 @@ finalLayoutAttributesForDisappearingItemAtIndexPath:
   if (![self.indexPathsOfDeletingItems containsObject:itemIndexPath]) {
     return attributes;
   }
-  // Cells being deleted fade out, are scaled down, and drop downwards slightly.
-  attributes.alpha = 0.0;
-  // Scaled down to 60%.
+  // Cells being deleted scale to 0, and are z-positioned behind all others.
+  // (Note that setting the zIndex here actually has no effect, despite what is
+  // implied in the UIKit documentation).
+  attributes.zIndex = -10;
+  // Scaled down to 0% (or near enough).
   CGAffineTransform transform =
-      CGAffineTransformScale(attributes.transform, /*sx=*/0.6, /*sy=*/0.6);
-  // Translated down (positive-y direction) by 50% of the cell cell size.
-  transform = CGAffineTransformTranslate(transform, /*tx=*/0,
-                                         /*ty=*/attributes.size.height * 0.5);
+      CGAffineTransformScale(attributes.transform, /*sx=*/0.01, /*sy=*/0.01);
   attributes.transform = transform;
+  // Fade out.
+  attributes.alpha = 0.0;
   return attributes;
 }
 
