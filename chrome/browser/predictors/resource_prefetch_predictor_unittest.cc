@@ -24,10 +24,6 @@
 #include "components/sessions/core/session_id.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
-#include "net/http/http_response_headers.h"
-#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,8 +35,6 @@ namespace {
 
 using RedirectDataMap = std::map<std::string, RedirectData>;
 using OriginDataMap = std::map<std::string, OriginData>;
-
-constexpr SessionID kTabId = SessionID::FromSerializedValue(1);
 
 template <typename T>
 class FakeGlowplugKeyValueTable : public GlowplugKeyValueTable<T> {
@@ -137,7 +131,6 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   scoped_refptr<base::TestSimpleTaskRunner> db_task_runner_;
-  net::TestURLRequestContext url_request_context_;
 
   std::unique_ptr<LoadingPredictor> loading_predictor_;
   ResourcePrefetchPredictor* predictor_;
@@ -145,8 +138,6 @@ class ResourcePrefetchPredictorTest : public testing::Test {
 
   RedirectDataMap test_host_redirect_data_;
   OriginDataMap test_origin_data_;
-
-  MockURLRequestJobFactory url_request_job_factory_;
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
@@ -179,9 +170,6 @@ void ResourcePrefetchPredictorTest::SetUp() {
   InitializePredictor();
   CHECK_EQ(predictor_->initialization_state_,
            ResourcePrefetchPredictor::INITIALIZED);
-
-  url_request_job_factory_.Reset();
-  url_request_context_.set_job_factory(&url_request_job_factory_);
 
   histogram_tester_ = std::make_unique<base::HistogramTester>();
 }
@@ -253,52 +241,34 @@ TEST_F(ResourcePrefetchPredictorTest, LazilyInitializeWithData) {
 // Single navigation that will be recorded. Will check for duplicate
 // resources and also for number of resources saved.
 TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
-  URLRequestSummary main_frame =
-      CreateURLRequestSummary(kTabId, "http://www.google.com");
-
-  std::vector<URLRequestSummary> resources;
-  resources.push_back(CreateURLRequestSummary(
-      kTabId, "http://www.google.com", "http://google.com/style1.css",
+  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/style1.css", content::RESOURCE_TYPE_STYLESHEET));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
+                                             content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/script2.js",
+                                             content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
+                                             content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/image1.png",
+                                             content::RESOURCE_TYPE_IMAGE));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/image2.png",
+                                             content::RESOURCE_TYPE_IMAGE));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/style2.css", content::RESOURCE_TYPE_STYLESHEET));
+  resources.push_back(
+      CreateResourceLoadInfo("http://static.google.com/style2-no-store.css",
+                             content::RESOURCE_TYPE_STYLESHEET,
+                             /* always_access_network */ true));
+  resources.push_back(CreateResourceLoadInfoWithRedirects(
+      {"http://reader.google.com/style.css",
+       "http://dev.null.google.com/style.css"},
       content::RESOURCE_TYPE_STYLESHEET));
-  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                              "http://google.com/script1.js",
-                                              content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                              "http://google.com/script2.js",
-                                              content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                              "http://google.com/script1.js",
-                                              content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                              "http://google.com/image1.png",
-                                              content::RESOURCE_TYPE_IMAGE));
-  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                              "http://google.com/image2.png",
-                                              content::RESOURCE_TYPE_IMAGE));
-  resources.push_back(CreateURLRequestSummary(
-      kTabId, "http://www.google.com", "http://google.com/style2.css",
-      content::RESOURCE_TYPE_STYLESHEET));
-
-  auto no_store =
-      CreateURLRequestSummary(kTabId, "http://www.google.com",
-                              "http://static.google.com/style2-no-store.css",
-                              content::RESOURCE_TYPE_STYLESHEET);
-  no_store.is_no_store = true;
-
-  auto redirected = CreateURLRequestSummary(
-      kTabId, "http://www.google.com", "http://reader.google.com/style.css",
-      content::RESOURCE_TYPE_STYLESHEET);
-  redirected.redirect_url = GURL("http://dev.null.google.com/style.css");
+  resources.back()->network_info->always_access_network = true;
 
   auto page_summary = CreatePageRequestSummary(
       "http://www.google.com", "http://www.google.com", resources);
-  page_summary.UpdateOrAddToOrigins(no_store);
-  page_summary.UpdateOrAddToOrigins(redirected);
-
-  redirected.is_no_store = true;
-  redirected.request_url = redirected.redirect_url;
-  redirected.redirect_url = GURL();
-  page_summary.UpdateOrAddToOrigins(redirected);
 
   StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(mock_observer, OnNavigationLearned(page_summary));
@@ -335,41 +305,28 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
   ResetPredictor();
   InitializePredictor();
 
-  URLRequestSummary main_frame = CreateURLRequestSummary(
-      kTabId, "http://www.google.com", "http://www.google.com",
-      content::RESOURCE_TYPE_MAIN_FRAME);
-
-  std::vector<URLRequestSummary> resources;
-  resources.push_back(CreateURLRequestSummary(
-      kTabId, "http://www.google.com", "http://google.com/style1.css",
-      content::RESOURCE_TYPE_STYLESHEET));
-  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                              "http://google.com/script1.js",
-                                              content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                              "http://google.com/script2.js",
-                                              content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                              "http://google.com/script1.js",
-                                              content::RESOURCE_TYPE_SCRIPT));
-  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                              "http://google.com/image1.png",
-                                              content::RESOURCE_TYPE_IMAGE));
-  resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                              "http://google.com/image2.png",
-                                              content::RESOURCE_TYPE_IMAGE));
-  resources.push_back(CreateURLRequestSummary(
-      kTabId, "http://www.google.com", "http://google.com/style2.css",
-      content::RESOURCE_TYPE_STYLESHEET));
-  auto no_store =
-      CreateURLRequestSummary(kTabId, "http://www.google.com",
-                              "http://static.google.com/style2-no-store.css",
-                              content::RESOURCE_TYPE_STYLESHEET);
-  no_store.is_no_store = true;
+  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/style1.css", content::RESOURCE_TYPE_STYLESHEET));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
+                                             content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/script2.js",
+                                             content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/script1.js",
+                                             content::RESOURCE_TYPE_SCRIPT));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/image1.png",
+                                             content::RESOURCE_TYPE_IMAGE));
+  resources.push_back(CreateResourceLoadInfo("http://google.com/image2.png",
+                                             content::RESOURCE_TYPE_IMAGE));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://google.com/style2.css", content::RESOURCE_TYPE_STYLESHEET));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://static.google.com/style2-no-store.css",
+      content::RESOURCE_TYPE_STYLESHEET, /* always_access_network */ true));
 
   auto page_summary = CreatePageRequestSummary(
       "http://www.google.com", "http://www.google.com", resources);
-  page_summary.UpdateOrAddToOrigins(no_store);
 
   StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(mock_observer, OnNavigationLearned(page_summary));
@@ -403,19 +360,15 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
   ResetPredictor();
   InitializePredictor();
 
-  URLRequestSummary main_frame = CreateURLRequestSummary(
-      kTabId, "http://www.nike.com", "http://www.nike.com",
-      content::RESOURCE_TYPE_MAIN_FRAME);
-
-  URLRequestSummary resource1 = CreateURLRequestSummary(
-      kTabId, "http://www.nike.com", "http://nike.com/style1.css",
-      content::RESOURCE_TYPE_STYLESHEET);
-  URLRequestSummary resource2 = CreateURLRequestSummary(
-      kTabId, "http://www.nike.com", "http://nike.com/image2.png",
-      content::RESOURCE_TYPE_IMAGE);
+  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  resources.push_back(CreateResourceLoadInfo("http://www.nike.com"));
+  resources.push_back(CreateResourceLoadInfo(
+      "http://nike.com/style1.css", content::RESOURCE_TYPE_STYLESHEET));
+  resources.push_back(CreateResourceLoadInfo("http://nike.com/image2.png",
+                                             content::RESOURCE_TYPE_IMAGE));
 
   auto page_summary = CreatePageRequestSummary(
-      "http://www.nike.com", "http://www.nike.com", {resource1, resource2});
+      "http://www.nike.com", "http://www.nike.com", resources);
 
   StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(mock_observer, OnNavigationLearned(page_summary));
@@ -444,18 +397,16 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
 
 TEST_F(ResourcePrefetchPredictorTest,
        NavigationManyResourcesWithDifferentOrigins) {
-  URLRequestSummary main_frame =
-      CreateURLRequestSummary(kTabId, "http://www.google.com");
+  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  resources.push_back(CreateResourceLoadInfo("http://www.google.com"));
 
   auto gen = [](int i) {
     return base::StringPrintf("http://cdn%d.google.com/script.js", i);
   };
-  std::vector<URLRequestSummary> resources;
   const int num_resources = predictor_->config_.max_origins_per_entry + 10;
   for (int i = 1; i <= num_resources; ++i) {
-    resources.push_back(CreateURLRequestSummary(kTabId, "http://www.google.com",
-                                                gen(i),
-                                                content::RESOURCE_TYPE_SCRIPT));
+    resources.push_back(
+        CreateResourceLoadInfo(gen(i), content::RESOURCE_TYPE_SCRIPT));
   }
 
   auto page_summary = CreatePageRequestSummary(
@@ -483,9 +434,11 @@ TEST_F(ResourcePrefetchPredictorTest,
 }
 
 TEST_F(ResourcePrefetchPredictorTest, RedirectUrlNotInDB) {
+  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  resources.push_back(CreateResourceLoadInfoWithRedirects(
+      {"http://fb.com/google", "https://facebook.com/google"}));
   auto page_summary = CreatePageRequestSummary(
-      "https://facebook.com/google", "http://fb.com/google",
-      std::vector<URLRequestSummary>());
+      "https://facebook.com/google", "http://fb.com/google", resources);
 
   StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(mock_observer, OnNavigationLearned(page_summary));
@@ -510,9 +463,11 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB) {
   ResetPredictor();
   InitializePredictor();
 
+  std::vector<content::mojom::ResourceLoadInfoPtr> resources;
+  resources.push_back(CreateResourceLoadInfoWithRedirects(
+      {"http://fb.com/google", "https://facebook.com/google"}));
   auto page_summary = CreatePageRequestSummary(
-      "https://facebook.com/google", "http://fb.com/google",
-      std::vector<URLRequestSummary>());
+      "https://facebook.com/google", "http://fb.com/google", resources);
 
   StrictMock<MockResourcePrefetchPredictorObserver> mock_observer(predictor_);
   EXPECT_CALL(mock_observer, OnNavigationLearned(page_summary));
