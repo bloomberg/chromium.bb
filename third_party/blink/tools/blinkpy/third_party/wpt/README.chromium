@@ -53,56 +53,21 @@ dependency.
 These certificates will expire in January 2025. Here is an instruction to
 re-generate them:
 
-1. Add "openssl" command to PATH.
-2. Apply the following change locally:
-
-diff --git a/third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json b/third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json
-index 6243954..84fd3f4 100644
---- a/third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json
-+++ b/third_party/blink/tools/blinkpy/third_party/wpt/wpt.config.json
-@@ -9,13 +9,5 @@
-     "https": [8444],
-     "ws": [9001],
-     "wss": [9444]
--  },
--  "ssl": {
--    "type": "pregenerated",
--    "encrypt_after_connect": false,
--    "pregenerated": {
--      "host_key_path": "../certs/127.0.0.1.key",
--      "host_cert_path": "../certs/127.0.0.1.pem"
--    }
-   }
- }
-diff --git a/third_party/blink/tools/blinkpy/third_party/wpt/wpt/tools/sslutils/openssl.py b/third_party/blink/tools/blinkpy/third_party/wpt/wpt/tools/sslutils/openssl.py
-index 5b571c0..223a18b 100644
---- a/third_party/blink/tools/blinkpy/third_party/wpt/wpt/tools/sslutils/openssl.py
-+++ b/third_party/blink/tools/blinkpy/third_party/wpt/wpt/tools/sslutils/openssl.py
-@@ -207,7 +207,7 @@ class OpenSSLEnvironment(object):
-
-     def __init__(self, logger, openssl_binary="openssl", base_path=None,
-                  password="web-platform-tests", force_regenerate=False,
--                 duration=30, base_conf_path=None):
-+                 duration=3000, base_conf_path=None):
-         """SSL environment that creates a local CA and host certificate using OpenSSL.
-
-         By default this will look in base_path for existing certificates that are still
-
-3. Run third_party/blink/tools/run_blink_wptserve.py
-4. Type Enter key to terminate it.
-5. Revert the local change.  e.g. git reset --hard HEAD
-6. Replace certs/ with wpt/_certs/
-   % rm -fr certs
-   % mv wpt/_certs certs
-7. Look at *.pem, and update "January 2025" in this document and expiration_date
-   in wptserve.py to new expiration date.
-8. git commit -a
-9. git cl upload, etc.
-
-Please refer to third_party/WebKit/LayoutTests/http/tests/loading/htxg/resources/README.md
-for how to update the 127.0.0.1.sxg.* files.
-
-TODO(tkent): Make a script to re-generate keys and certificates.
+1. Make sure the following commands are in $PATH.
+ - base64
+ - git
+ - grep
+ - openssl
+ - sed
+2. Run update_certs.py
+3. Look at the "Not After" date in the output of the command, and update
+  "January 2025" in this document and expiration_date in wptserve.py to new
+  expiration date.
+4. Update certs/127.0.0.1.sxg.*.
+  Please refer to
+  third_party/WebKit/LayoutTests/http/tests/loading/htxg/resources/README.md
+5. git commit
+6. git cl upload, etc.
 
 **
 

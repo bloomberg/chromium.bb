@@ -96,6 +96,13 @@ FONT_FILES = [
     [[CONTENT_SHELL_FONTS_DIR], 'Tinos-Regular.ttf', None],
 ]
 
+# This is the fingerprint of wpt's certificate found in
+# blinkpy/third_party/wpt/certs.  The following line is updated by
+# update_cert.py.
+WPT_FINGERPRINT = 'Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY='
+# One for 127.0.0.1.sxg.pem
+SXG_FINGERPRINT = '55qC1nKu2A88ESbFmk5sTPQS/ScG+8DD7P+2bgFA9iM='
+
 
 class Port(object):
     """Abstract class for Port-specific hooks for the layout_test package."""
@@ -242,20 +249,10 @@ class Port(object):
         if flags and flags[0] == self.primary_driver_flag():
             flags = flags[1:]
         if self.driver_name() == self.CONTENT_SHELL_NAME:
-            # This is the fingerprint of wpt's certificate found in
-            # blinkpy/third_party/wpt/certs.  To regenerate, use:
-            #
-            #   openssl x509 -noout -pubkey -in 127.0.0.1.pem |
-            #   openssl pkey -pubin -outform der |
-            #   openssl dgst -sha256 -binary |
-            #   base64
-            #
-            fingerprint = 'Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY='
-            # Add one for 127.0.0.1.sxg.pem
-            fingerprint += ',55qC1nKu2A88ESbFmk5sTPQS/ScG+8DD7P+2bgFA9iM='
             flags += [
                 '--run-web-tests',
-                '--ignore-certificate-errors-spki-list=' + fingerprint,
+                '--ignore-certificate-errors-spki-list=' + WPT_FINGERPRINT +
+                ',' + SXG_FINGERPRINT,
                 '--user-data-dir']
         return flags
 
