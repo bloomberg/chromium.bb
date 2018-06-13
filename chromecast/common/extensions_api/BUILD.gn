@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//extensions/buildflags/buildflags.gni")
-import("//extensions/common/api/schema.gni")
 import("//tools/json_schema_compiler/json_features.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
 
@@ -30,7 +29,7 @@ schema_sources = [
 
 root_namespace = "extensions::cast::api::%(namespace)s"
 
-extensions_api_uncompiled_sources += [ "extension.json" ]
+extensions_api_uncompiled_sources = [ "extension.json" ]
 
 json_schema_api("api") {
   sources = schema_sources
