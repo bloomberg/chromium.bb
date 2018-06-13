@@ -90,7 +90,6 @@ struct ScrollData {
 };
 
 struct PinchData {
-  bool zoom_disabled;
   float scale;
 };
 
