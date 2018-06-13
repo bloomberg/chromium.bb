@@ -72,7 +72,11 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
   void ResetForTest(base::TimeTicks now);
 
  private:
+  void ReportLowThreadLoadForPageAlmostIdleSignal(int load_percentage);
+
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
+
+  const bool is_page_almost_idle_signal_enabled_;
 
   base::Optional<base::TimeTicks> last_reported_task_;
 
