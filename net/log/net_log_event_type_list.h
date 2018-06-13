@@ -2200,10 +2200,6 @@ EVENT_TYPE(SERVICE_WORKER_ERROR_NO_PROVIDER_HOST)
 EVENT_TYPE(SERVICE_WORKER_ERROR_NO_ACTIVE_VERSION)
 
 // This event is emitted when Service Worker fails to respond because
-// the underlying request was detached.
-EVENT_TYPE(SERVICE_WORKER_ERROR_NO_REQUEST)
-
-// This event is emitted when Service Worker fails to respond because
 // the job delegate behaved incorrectly.
 EVENT_TYPE(SERVICE_WORKER_ERROR_BAD_DELEGATE)
 

@@ -106,12 +106,6 @@ net::NetLogEventType RequestJobResultToNetEventType(
       return n::SERVICE_WORKER_ERROR_BAD_DELEGATE;
     case m::REQUEST_JOB_ERROR_REQUEST_BODY_BLOB_FAILED:
       return n::SERVICE_WORKER_ERROR_REQUEST_BODY_BLOB_FAILED;
-    // We can't log if there's no request; fallthrough.
-    case m::REQUEST_JOB_ERROR_NO_REQUEST:
-    // Obsolete types; fallthrough.
-    case m::REQUEST_JOB_ERROR_DESTROYED:
-    case m::REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB:
-    case m::REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM:
     // Invalid type.
     case m::NUM_REQUEST_JOB_RESULT_TYPES:
       NOTREACHED() << result;
