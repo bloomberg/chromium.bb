@@ -51,7 +51,7 @@ public class DownloadForegroundServiceManager {
 
     private static final String TAG = "DownloadFg";
     // Delay to ensure start/stop foreground doesn't happen too quickly (b/74236718).
-    private static final int WAIT_TIME_MS = 100;
+    private static final int WAIT_TIME_MS = 200;
 
     // Used to track existing notifications for UMA stats.
     private final List<Integer> mExistingNotifications = new ArrayList<>();
@@ -61,9 +61,11 @@ public class DownloadForegroundServiceManager {
     private final Runnable mMaybeStopServiceRunnable = new Runnable() {
         @Override
         public void run() {
+            Log.w(TAG, "Checking if delayed stopAndUnbindService needs to be resolved.");
             mStopServiceDelayed = false;
             processDownloadUpdateQueue(false /* not isProcessingPending */);
             mHandler.removeCallbacks(mMaybeStopServiceRunnable);
+            Log.w(TAG, "Done checking if delayed stopAndUnbindService needs to be resolved.");
         }
     };
     private boolean mStopServiceDelayed = false;
@@ -130,6 +132,7 @@ public class DownloadForegroundServiceManager {
 
         // In the pending case, start foreground with specific notificationId and notification.
         if (isProcessingPending) {
+            Log.w(TAG, "Starting service with type " + downloadUpdate.mDownloadStatus);
             startOrUpdateForegroundService(
                     downloadUpdate.mNotificationId, downloadUpdate.mNotification);
 
@@ -145,6 +148,8 @@ public class DownloadForegroundServiceManager {
             if (!mStopServiceDelayed) {
                 stopAndUnbindService(downloadUpdate.mDownloadStatus);
                 cleanDownloadUpdateQueue();
+            } else {
+                Log.w(TAG, "Delaying call to stopAndUnbindService.");
             }
             return;
         }
