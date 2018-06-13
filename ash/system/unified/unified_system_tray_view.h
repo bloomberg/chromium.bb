@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_UNIFIED_SYSTEM_TRAY_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_UNIFIED_SYSTEM_TRAY_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -42,7 +43,7 @@ class UnifiedSlidersContainerView : public views::View {
 };
 
 // View class of the main bubble in UnifiedSystemTray.
-class UnifiedSystemTrayView : public views::View {
+class ASH_EXPORT UnifiedSystemTrayView : public views::View {
  public:
   UnifiedSystemTrayView(UnifiedSystemTrayController* controller,
                         bool initially_expanded);
