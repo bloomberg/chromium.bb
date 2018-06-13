@@ -32,7 +32,7 @@ class HostResolverMojo::Job : public interfaces::HostResolverRequestClient {
  public:
   Job(const HostCache::Key& key,
       AddressList* addresses,
-      const CompletionCallback& callback,
+      CompletionOnceCallback callback,
       mojo::InterfaceRequest<interfaces::HostResolverRequestClient> request,
       base::WeakPtr<HostCache> host_cache);
 
@@ -45,7 +45,7 @@ class HostResolverMojo::Job : public interfaces::HostResolverRequestClient {
 
   const HostCache::Key key_;
   AddressList* addresses_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   mojo::Binding<interfaces::HostResolverRequestClient> binding_;
   base::WeakPtr<HostCache> host_cache_;
 };
@@ -73,7 +73,7 @@ HostResolverMojo::~HostResolverMojo() = default;
 int HostResolverMojo::Resolve(const RequestInfo& info,
                               RequestPriority priority,
                               AddressList* addresses,
-                              const CompletionCallback& callback,
+                              CompletionOnceCallback callback,
                               std::unique_ptr<Request>* request,
                               const NetLogWithSource& source_net_log) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -89,7 +89,7 @@ int HostResolverMojo::Resolve(const RequestInfo& info,
   }
 
   interfaces::HostResolverRequestClientPtr handle;
-  std::unique_ptr<Job> job(new Job(key, addresses, callback,
+  std::unique_ptr<Job> job(new Job(key, addresses, std::move(callback),
                                    mojo::MakeRequest(&handle),
                                    host_cache_weak_factory_.GetWeakPtr()));
   request->reset(new RequestImpl(std::move(job)));
@@ -147,12 +147,12 @@ int HostResolverMojo::ResolveFromCacheInternal(const RequestInfo& info,
 HostResolverMojo::Job::Job(
     const HostCache::Key& key,
     AddressList* addresses,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     mojo::InterfaceRequest<interfaces::HostResolverRequestClient> request,
     base::WeakPtr<HostCache> host_cache)
     : key_(key),
       addresses_(addresses),
-      callback_(callback),
+      callback_(std::move(callback)),
       binding_(this, std::move(request)),
       host_cache_(host_cache) {
   binding_.set_connection_error_handler(base::Bind(
@@ -172,7 +172,7 @@ void HostResolverMojo::Job::ReportResult(int32_t error,
   }
   if (binding_.is_bound())
     binding_.Close();
-  base::ResetAndReturn(&callback_).Run(error);
+  std::move(callback_).Run(error);
 }
 
 void HostResolverMojo::Job::OnConnectionError() {

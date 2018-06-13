@@ -21,7 +21,7 @@ MappedHostResolver::~MappedHostResolver() = default;
 int MappedHostResolver::Resolve(const RequestInfo& original_info,
                                 RequestPriority priority,
                                 AddressList* addresses,
-                                const CompletionCallback& callback,
+                                CompletionOnceCallback callback,
                                 std::unique_ptr<Request>* request,
                                 const NetLogWithSource& net_log) {
   RequestInfo info = original_info;
@@ -29,7 +29,8 @@ int MappedHostResolver::Resolve(const RequestInfo& original_info,
   if (rv != OK)
     return rv;
 
-  return impl_->Resolve(info, priority, addresses, callback, request, net_log);
+  return impl_->Resolve(info, priority, addresses, std::move(callback), request,
+                        net_log);
 }
 
 int MappedHostResolver::ResolveFromCache(const RequestInfo& original_info,

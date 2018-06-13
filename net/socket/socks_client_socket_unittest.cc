@@ -110,7 +110,7 @@ class HangingHostResolverWithCancel : public HostResolver {
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
-              const CompletionCallback& callback,
+              CompletionOnceCallback callback,
               std::unique_ptr<Request>* out_req,
               const NetLogWithSource& net_log) override {
     DCHECK(addresses);

@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/test/test_mojo_proxy_resolver_factory.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
@@ -115,12 +116,12 @@ class LoggingMockHostResolver : public net::MockHostResolver {
   int Resolve(const RequestInfo& info,
               net::RequestPriority priority,
               net::AddressList* addresses,
-              const net::CompletionCallback& callback,
+              net::CompletionOnceCallback callback,
               std::unique_ptr<Request>* out_req,
               const net::NetLogWithSource& net_log) override {
     net_log.AddEvent(net::NetLogEventType::HOST_RESOLVER_IMPL_JOB);
-    return net::MockHostResolver::Resolve(info, priority, addresses, callback,
-                                          out_req, net_log);
+    return net::MockHostResolver::Resolve(
+        info, priority, addresses, std::move(callback), out_req, net_log);
   }
 };
 

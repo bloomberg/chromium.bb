@@ -15,7 +15,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
-#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/host_cache.h"
@@ -697,7 +696,7 @@ class BlockableHostResolver : public HostResolver {
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
-              const CompletionCallback& callback,
+              CompletionOnceCallback callback,
               std::unique_ptr<Request>* out_req,
               const NetLogWithSource& net_log) override {
     EXPECT_FALSE(callback.is_null());

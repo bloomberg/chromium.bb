@@ -12,7 +12,7 @@
 #include <string>
 
 #include "net/base/address_family.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/prioritized_dispatcher.h"
 #include "net/base/request_priority.h"
@@ -166,7 +166,7 @@ class NET_EXPORT HostResolver {
   virtual int Resolve(const RequestInfo& info,
                       RequestPriority priority,
                       AddressList* addresses,
-                      const CompletionCallback& callback,
+                      CompletionOnceCallback callback,
                       std::unique_ptr<Request>* out_req,
                       const NetLogWithSource& net_log) = 0;
 

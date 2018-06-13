@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/chromeos_export.h"
+#include "net/base/completion_once_callback.h"
 #include "net/dns/host_resolver_impl.h"
 
 namespace base {
@@ -47,7 +48,7 @@ class CHROMEOS_EXPORT HostResolverImplChromeOS : public net::HostResolverImpl {
   int Resolve(const RequestInfo& info,
               net::RequestPriority priority,
               net::AddressList* addresses,
-              const net::CompletionCallback& callback,
+              net::CompletionOnceCallback callback,
               std::unique_ptr<Request>* out_req,
               const net::NetLogWithSource& source_net_log) override;
 

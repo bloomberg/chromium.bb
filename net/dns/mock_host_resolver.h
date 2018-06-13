@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
+#include "net/base/completion_once_callback.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
 
@@ -85,7 +86,7 @@ class MockHostResolverBase
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
-              const CompletionCallback& callback,
+              CompletionOnceCallback callback,
               std::unique_ptr<Request>* request,
               const NetLogWithSource& net_log) override;
   int ResolveFromCache(const RequestInfo& info,
@@ -289,7 +290,7 @@ class HangingHostResolver : public HostResolver {
   int Resolve(const RequestInfo& info,
               RequestPriority priority,
               AddressList* addresses,
-              const CompletionCallback& callback,
+              CompletionOnceCallback callback,
               std::unique_ptr<Request>* out_req,
               const NetLogWithSource& net_log) override;
   int ResolveFromCache(const RequestInfo& info,

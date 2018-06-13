@@ -8,10 +8,13 @@
 #include <winsock2.h>
 #endif
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/test/scoped_task_environment.h"
 #include "net/base/address_list.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/ip_address.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,12 +33,12 @@ IPEndPoint MakeEndPoint(const std::string& str) {
 }
 
 void OnSortComplete(AddressList* result_buf,
-                    const CompletionCallback& callback,
+                    CompletionOnceCallback callback,
                     bool success,
                     const AddressList& result) {
   if (success)
     *result_buf = result;
-  callback.Run(success ? OK : ERR_FAILED);
+  std::move(callback).Run(success ? OK : ERR_FAILED);
 }
 
 TEST(AddressSorterTest, Sort) {

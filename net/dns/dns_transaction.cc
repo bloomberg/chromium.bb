@@ -207,7 +207,12 @@ class DnsUDPAttempt : public DnsAttempt {
         socket_lease_(std::move(socket_lease)),
         query_(std::move(query)) {}
 
-  // DnsAttempt:
+  // DnsAttempt methods.
+
+  // TODO(https://crbug.com/779589):  This method violates the usual convention
+  // that |callback| is only called once.  In particular, this method might
+  // return ERR_IO_PENDING, then |callback| might be called with
+  // ERR_DNS_MALFORMED_RESPONSE, then again with some other error code.
   int Start(const CompletionCallback& callback) override {
     DCHECK_EQ(STATE_NONE, next_state_);
     callback_ = callback;
