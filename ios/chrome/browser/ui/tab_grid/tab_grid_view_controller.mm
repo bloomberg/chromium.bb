@@ -149,8 +149,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
   // Call the current page setter to sync the scroll view offset to the current
-  // page value. Don't animate this.
-  self.currentPage = _currentPage;
+  // page value, if the scroll view isn't scrolling. Don't animate this.
+  if (!self.scrollView.dragging && !self.scrollView.decelerating) {
+    self.currentPage = _currentPage;
+  }
   // The content inset of the tab grids must be modified so that the toolbars
   // do not obscure the tabs. This may change depending on orientation.
   UIEdgeInsets contentInset = UIEdgeInsetsZero;
