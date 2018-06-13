@@ -101,18 +101,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
 // Verify that when the sync directory's backing store becomes corrupted, we
 // trigger an unrecoverable error and delete the database.
-//
-// TODO(treib): Update the below comment; it refers to something that does
-// not exist.
-// If this test fails, see the definition of kNumEntriesRequiredForCorruption
-// for one possible cause.
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_DeleteDirectoryWhenCorrupted DISABLED_DeleteDirectoryWhenCorrupted
-#else
-#define MAYBE_DeleteDirectoryWhenCorrupted DeleteDirectoryWhenCorrupted
-#endif
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
-                       MAYBE_DeleteDirectoryWhenCorrupted) {
+                       DeleteDirectoryWhenCorrupted) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   // Sync and wait for syncing to complete.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -146,6 +136,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   // Wait for an unrecoverable error to occur.
   ASSERT_TRUE(SyncUnrecoverableErrorChecker(sync_service).Wait());
   ASSERT_TRUE(sync_service->HasUnrecoverableError());
+
+  // An unrecoverable error causes ProfileSyncService to post a shutdown task to
+  // its task runner. Make sure that task gets run before we wait for the sync
+  // thread.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                run_loop.QuitClosure());
+  run_loop.Run();
 
   // Wait until the sync loop has processed any existing tasks and see that the
   // directory no longer exists.
