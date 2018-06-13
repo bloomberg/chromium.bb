@@ -15,7 +15,6 @@
 
 namespace vr {
 class MailboxToSurfaceBridge;
-class ArCoreJavaUtils;
 }  // namespace vr
 
 namespace content {
@@ -43,8 +42,6 @@ class ARCoreDevice : public VRDeviceBase {
   base::WeakPtr<ARCoreDevice> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
-
-  void OnRequestInstallSupportedARCoreCanceled();
 
  private:
   // VRDeviceBase implementation
@@ -82,17 +79,6 @@ class ARCoreDevice : public VRDeviceBase {
 
   bool IsOnMainThread();
 
-  void SatisfyRequestSessionPreconditions(
-      int render_process_id,
-      int render_frame_id,
-      bool has_user_activation,
-      mojom::VRDisplayHost::RequestSessionCallback callback);
-  void OnRequestARCoreInstallOrUpdateComplete(
-      int render_process_id,
-      int render_frame_id,
-      bool has_user_activation,
-      mojom::VRDisplayHost::RequestSessionCallback callback);
-  void CallDeferredRequestInstallSupportedARCore();
   void RequestCameraPermission(
       int render_process_id,
       int render_frame_id,
@@ -115,7 +101,6 @@ class ARCoreDevice : public VRDeviceBase {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
   std::unique_ptr<ARCoreGlThread> arcore_gl_thread_;
-  std::unique_ptr<vr::ArCoreJavaUtils> arcore_java_utils_;
 
   bool is_arcore_gl_thread_initialized_ = false;
   bool is_arcore_gl_initialized_ = false;
@@ -125,10 +110,6 @@ class ARCoreDevice : public VRDeviceBase {
   // paused before initialization completes, then the underlying runtime will
   // not be resumed.
   bool is_paused_ = false;
-
-  // TODO(https://)
-  std::vector<base::OnceCallback<void()>>
-      deferred_request_install_supported_arcore_callbacks_;
 
   // Must be last.
   base::WeakPtrFactory<ARCoreDevice> weak_ptr_factory_;
