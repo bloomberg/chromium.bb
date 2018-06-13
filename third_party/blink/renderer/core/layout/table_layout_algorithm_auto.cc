@@ -208,11 +208,24 @@ void TableLayoutAlgorithmAuto::FullRecalc() {
 
 static bool ShouldScaleColumnsForParent(LayoutTable* table) {
   LayoutBlock* cb = table->ContainingBlock();
+  // TODO(layout-dev): We can probably abort before reaching LayoutView in many
+  // cases. For example, if we find an object with contain:size, or even if we
+  // find a regular block with fixed logical width.
   while (!cb->IsLayoutView()) {
     // It doesn't matter if our table is auto or fixed: auto means we don't
     // scale. Fixed doesn't care if we do or not because it doesn't depend
     // on the cell contents' preferred widths.
     if (cb->IsTableCell())
+      return false;
+    // The max logical width of a table may be "infinity" (or kTableMaxWidth, to
+    // be more exact) if the sum of the columns' percentages is 100% or more,
+    // AND there is at least one column that has a non-percentage-based positive
+    // logical width. In such situations no table logical width will be large
+    // enough to satisfy the constraint set by the contents. So the idea is to
+    // use ~infinity to make sure we use all available size in the containing
+    // block. However, this just doesn't work if this is a flex or grid item, so
+    // disallow scaling in that case.
+    if (cb->IsFlexibleBox() || cb->IsLayoutGrid())
       return false;
     cb = cb->ContainingBlock();
   }
