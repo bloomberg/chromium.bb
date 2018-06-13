@@ -329,6 +329,12 @@ void AccountManager::RemoveObserver(AccountManager::Observer* observer) {
 }
 
 net::URLRequestContextGetter* AccountManager::GetUrlRequestContext() {
+  // LSTs on Chrome are not channel/token bound for now and hence we can use
+  // the system request context.
+  // Note that we cannot use the Profile's request context since
+  // |AccountManager| acts outside the scope of Profiles.
+  // TODO(sinhak): Create a new |URLRequestContext| for |AccountManager| which
+  // conforms to token binding when those details are finalized.
   DCHECK(request_context_);
   return request_context_;
 }
