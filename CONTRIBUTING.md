@@ -197,5 +197,54 @@ New source code files should specify the MIT Expat license in their
 boilerplate, as part of the copyright statement.
 
 
+Review
+======
+
+All patches, even trivial ones, require at least one positive review
+(Reviewed-by). Additionally, if no Reviewed-by's have been given by
+people with commit access, there needs to be at least one Acked-by from
+someone with commit access. A person with commit access is expected to be
+able to evaluate the patch with respect to the project scope and architecture.
+
+During review, the following matters should be checked:
+
+- The commit message explains why the change is being made.
+
+- The code fits the project's scope.
+
+- The code license is the same MIT licence the project generally uses.
+
+- Stable ABI or API is not broken.
+
+- Stable ABI or API additions must be justified by actual use cases, not only
+by speculation. They must also be documented, and it is strongly recommended to
+include tests excercising the additions in the test suite.
+
+- The code fits the existing software architecture, e.g. no layering
+violations.
+
+- The code is correct and does not ignore corner-cases.
+
+- In a patch series, every intermediate step produces correct code as well.
+
+- The code does what it says in the commit message and changes nothing else.
+
+- The test suite passes.
+
+- The code does not depend on API or ABI which has no working free open source
+implementation.
+
+- The code is not dead or untestable. E.g. if there are no free open source
+software users for it then it is effectively dead code.
+
+- The code is written to be easy to understand, or if code cannot be clear
+enough on its own there are code comments to explain it.
+
+- The code is minimal, i.e. prefer refactor and re-use when possible unless
+clarity suffers.
+
+- The code adheres to the style guidelines.
+
+
 [git documentation]: http://git-scm.com/documentation
 [notes on commit messages]: http://who-t.blogspot.de/2009/12/on-commit-messages.html
