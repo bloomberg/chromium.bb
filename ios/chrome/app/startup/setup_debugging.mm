@@ -6,6 +6,7 @@
 
 #include <objc/runtime.h>
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/crash/core/common/objc_zombie.h"
@@ -35,6 +36,13 @@ void swizzleUIImageImageNamed() {
   // TODO(crbug.com/721338): Add missing image.
   [whiteList addObject:@"voice_icon_keyboard_accessory"];
   [whiteList addObject:@"voice_icon"];
+
+#if defined(__IPHONE_12_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_12_0)
+  // TODO(crbug.com/852431): radar://41088480 Asset catalogs fail for jpg
+  // imagesets with the iOS 12 SDK running with iOS 11. whiteList these for now.
+  if (!base::ios::IsRunningOnIOS12OrLater())
+    [whiteList addObject:@"stack_view_background_noise"];
+#endif
 
   // The original implementation of [UIImage imageNamed:].
   // Called by the new implementation.
