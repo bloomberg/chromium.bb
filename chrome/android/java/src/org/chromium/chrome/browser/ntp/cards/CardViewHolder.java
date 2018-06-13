@@ -230,8 +230,6 @@ public abstract class CardViewHolder
             case ItemViewType.PROMO:
                 return true;
             case ItemViewType.ABOVE_THE_FOLD:
-            case ItemViewType.LOGO:
-            case ItemViewType.SITE_SECTION:
             case ItemViewType.HEADER:
             case ItemViewType.PROGRESS:
             case ItemViewType.FOOTER:

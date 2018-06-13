@@ -21,13 +21,18 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
  * The model and controller for a group of site suggestions.
+ * @deprecated This class is still being used, but not in the New Tab Page RecyclerView
+ *         anymore. It still uses the latter's base classes until SiteSection is migrated to the new
+ *         UI architecture.
  */
+@Deprecated
 public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
     /**
      * The maximum number of tiles to try and fit in a row. On smaller screens, there may not be
      * enough space to fit all of them.
      */
     private static final int MAX_TILE_COLUMNS = 4;
+    private static final int TILE_TITLE_LINES = 1;
 
     private final TileGroup mTileGroup;
     private final TileRenderer mTileRenderer;
@@ -45,7 +50,7 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
             TileGroup.Delegate tileGroupDelegate, OfflinePageBridge offlinePageBridge,
             UiConfig uiConfig) {
         mTileRenderer = new TileRenderer(ContextUtils.getApplicationContext(),
-                SuggestionsConfig.getTileStyle(uiConfig), getTileTitleLines(),
+                SuggestionsConfig.getTileStyle(uiConfig), TILE_TITLE_LINES,
                 uiDelegate.getImageFetcher());
         mTileGroup = new TileGroup(mTileRenderer, uiDelegate, contextMenuManager, tileGroupDelegate,
                 /* observer = */ this, offlinePageBridge);
@@ -55,7 +60,9 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
     @Override
     @ItemViewType
     protected int getItemViewType() {
-        return ItemViewType.SITE_SECTION;
+        // Throw an exception instead of just `assert false` to avoid compiler warnings about the
+        // return value.
+        throw new IllegalStateException();
     }
 
     @Override
@@ -67,7 +74,7 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
 
     @Override
     protected void visitOptionalItem(NodeVisitor visitor) {
-        visitor.visitTileGrid();
+        assert false;
     }
 
     @Override
@@ -94,7 +101,7 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
         notifyItemChanged(0, (holder) -> ((SiteSectionViewHolder) holder).updateOfflineBadge(tile));
     }
 
-    public TileGroup getTileGroup() {
+    TileGroup getTileGroupForTesting() {
         return mTileGroup;
     }
 
@@ -103,10 +110,6 @@ public class SiteSection extends OptionalLeaf implements TileGroup.Observer {
             return 1;
         }
         return 2;
-    }
-
-    private static int getTileTitleLines() {
-        return 1;
     }
 
     @LayoutRes

@@ -15,7 +15,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.LogoView;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -26,12 +25,9 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
-import org.chromium.chrome.browser.suggestions.LogoItem;
-import org.chromium.chrome.browser.suggestions.SiteSection;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.suggestions.TileGroup;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 import java.util.List;
@@ -50,13 +46,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private final OfflinePageBridge mOfflinePageBridge;
 
     private final @Nullable View mAboveTheFoldView;
-    private final @Nullable LogoView mLogoView;
     private final UiConfig mUiConfig;
     private SuggestionsRecyclerView mRecyclerView;
 
     private final InnerNode mRoot;
 
-    private final @Nullable SiteSection mSiteSection;
     private final SectionList mSections;
     private final @Nullable SignInPromo mSigninPromo;
     private final AllDismissedItem mAllDismissed;
@@ -68,24 +62,17 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      * @param aboveTheFoldView the layout encapsulating all the above-the-fold elements
      *         (logo, search box, most visited tiles), or null if only suggestions should
      *         be displayed.
-     * @param logoView the view for the logo, which may be provided when {@code aboveTheFoldView} is
-     *         null. They are not expected to be both non-null as that would lead to showing the
-     *         logo twice.
      * @param uiConfig the NTP UI configuration, to be passed to created views.
      * @param offlinePageBridge used to determine if articles are available.
      * @param contextMenuManager used to build context menus.
-     * @param tileGroupDelegate if not null this is used to build a {@link SiteSection}.
      */
     public NewTabPageAdapter(SuggestionsUiDelegate uiDelegate, @Nullable View aboveTheFoldView,
-            @Nullable LogoView logoView, UiConfig uiConfig, OfflinePageBridge offlinePageBridge,
-            ContextMenuManager contextMenuManager, @Nullable TileGroup.Delegate tileGroupDelegate) {
-        assert !(aboveTheFoldView != null && logoView != null);
-
+            UiConfig uiConfig, OfflinePageBridge offlinePageBridge,
+            ContextMenuManager contextMenuManager) {
         mUiDelegate = uiDelegate;
         mContextMenuManager = contextMenuManager;
 
         mAboveTheFoldView = aboveTheFoldView;
-        mLogoView = logoView;
         mUiConfig = uiConfig;
         mRoot = new InnerNode();
         mSections = new SectionList(mUiDelegate, offlinePageBridge);
@@ -93,16 +80,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mAllDismissed = new AllDismissedItem();
 
         if (mAboveTheFoldView != null) mRoot.addChildren(new AboveTheFoldItem());
-
-        if (mLogoView != null) mRoot.addChildren(new LogoItem());
-
-        if (tileGroupDelegate == null) {
-            mSiteSection = null;
-        } else {
-            mSiteSection = new SiteSection(uiDelegate, mContextMenuManager, tileGroupDelegate,
-                    offlinePageBridge, uiConfig);
-            mRoot.addChildren(mSiteSection);
-        }
 
         if (SuggestionsConfig.scrollToLoad()) {
             // If scroll-to-load is enabled, show the sign-in promo above suggested content.
@@ -134,19 +111,12 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     @Override
-    public NewTabPageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public NewTabPageViewHolder onCreateViewHolder(ViewGroup parent, @ItemViewType int viewType) {
         assert parent == mRecyclerView;
 
         switch (viewType) {
             case ItemViewType.ABOVE_THE_FOLD:
                 return new NewTabPageViewHolder(mAboveTheFoldView);
-
-            case ItemViewType.LOGO:
-                return new LogoItem.ViewHolder(mLogoView);
-
-            case ItemViewType.SITE_SECTION:
-                return SiteSection.createViewHolder(
-                        SiteSection.inflateSiteSection(parent), mUiConfig);
 
             case ItemViewType.HEADER:
                 return new SectionHeaderViewHolder(mRecyclerView, mUiConfig);
@@ -204,10 +174,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     /** Resets suggestions, pulling the current state as known by the backend. */
     public void refreshSuggestions() {
         mSections.refreshSuggestions();
-
-        if (mSiteSection != null) {
-            mSiteSection.getTileGroup().onSwitchToForeground(/* trackLoadTask = */ true);
-        }
     }
 
     public int getFirstHeaderPosition() {

@@ -57,14 +57,4 @@ public class NodeVisitor {
      * Visits a header.
      */
     public void visitHeader() {}
-
-    /**
-     * Visits the tile grid.
-     */
-    public void visitTileGrid() {}
-
-    /**
-     * Visits a logo.
-     */
-    public void visitLogo() {}
 }

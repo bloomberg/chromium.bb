@@ -324,7 +324,7 @@ public class TileGridLayoutTest {
             uiConfig.updateDisplayStyle();
 
             SiteSection siteSection = createSiteSection(viewHolder, uiConfig, offlineUrls);
-            siteSection.getTileGroup().onSwitchToForeground(false);
+            siteSection.getTileGroupForTesting().onSwitchToForeground(false);
             assertTrue("Tile Data should be visible.", siteSection.isVisible());
 
             siteSection.onBindViewHolder(viewHolder, 0);

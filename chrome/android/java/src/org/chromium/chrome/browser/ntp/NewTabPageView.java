@@ -288,9 +288,8 @@ public class NewTabPageView
         mRecyclerView.init(mUiConfig, mContextMenuManager);
 
         // Set up snippets
-        NewTabPageAdapter newTabPageAdapter =
-                new NewTabPageAdapter(mManager, mNewTabPageLayout, /* logoView = */ null, mUiConfig,
-                        offlinePageBridge, mContextMenuManager, /* tileGroupDelegate = */ null);
+        NewTabPageAdapter newTabPageAdapter = new NewTabPageAdapter(
+                mManager, mNewTabPageLayout, mUiConfig, offlinePageBridge, mContextMenuManager);
         newTabPageAdapter.refreshSuggestions();
         mRecyclerView.setAdapter(newTabPageAdapter);
         mRecyclerView.getLinearLayoutManager().scrollToPosition(scrollPosition);
