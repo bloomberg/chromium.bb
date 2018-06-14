@@ -176,7 +176,7 @@ def WriteCab(output_file, input_file, cab_stored_filename, input_size,
     # last block in a folder may be smaller. A two-byte MSZIP signature precedes
     # the compressed encoding in each block, consisting of the bytes 0x43, 0x4B.
     # The maximum compressed size of each MSZIP block is 32k + 12 bytes."
-    assert compressed_size < chunk_size + 12
+    assert compressed_size <= chunk_size + 12
     output_file.write(struct.pack(CFDATA, 0, compressed_size, len(chunk)))
     output_file.write('\x43\x4b')  # MSZIP magic block header.
     output_file.write(compressed)
