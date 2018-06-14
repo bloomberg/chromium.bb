@@ -38,6 +38,10 @@ class SmbShareFinder : public base::SupportsWeakPtr<SmbShareFinder> {
   // Registers HostLocator |locator| to |scanner_|.
   void RegisterHostLocator(std::unique_ptr<HostLocator> locator);
 
+  // Attempts to resolve |url|. Returns the resolved url if successful,
+  // otherwise returns ToString of |url|.
+  std::string GetResolvedUrl(const SmbUrl& url) const;
+
  private:
   // Handles the response from finding hosts in the network.
   void OnHostsFound(GatherSharesResponse callback,

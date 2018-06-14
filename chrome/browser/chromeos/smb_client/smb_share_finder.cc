@@ -25,6 +25,17 @@ void SmbShareFinder::RegisterHostLocator(std::unique_ptr<HostLocator> locator) {
   scanner_.RegisterHostLocator(std::move(locator));
 }
 
+std::string SmbShareFinder::GetResolvedUrl(const SmbUrl& url) const {
+  DCHECK(url.IsValid());
+
+  const std::string ip_address = scanner_.ResolveHost(url.GetHost());
+  if (ip_address.empty()) {
+    return url.ToString();
+  }
+
+  return url.ReplaceHost(ip_address);
+}
+
 void SmbShareFinder::OnHostsFound(GatherSharesResponse callback,
                                   bool success,
                                   const HostMap& hosts) {
