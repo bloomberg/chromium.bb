@@ -462,7 +462,7 @@ class CORE_EXPORT LocalFrameView final
   PaintLayer* Layer() const override;
   int ScrollSize(ScrollbarOrientation) const override;
   bool IsScrollCornerVisible() const override { return false; }
-  bool UpdateAfterCompositingChange() override;
+  void UpdateAfterCompositingChange() override;
   bool UserInputScrollable(ScrollbarOrientation) const override {
     return false;
   }

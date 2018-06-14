@@ -287,8 +287,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   virtual bool ScrollbarsHiddenIfOverlay() const;
   virtual void SetScrollbarsHiddenIfOverlay(bool);
 
-  // Returns true if the GraphicsLayer tree needs to be rebuilt.
-  virtual bool UpdateAfterCompositingChange() { return false; }
+  virtual void UpdateAfterCompositingChange() {}
 
   virtual bool UserInputScrollable(ScrollbarOrientation) const = 0;
   virtual bool ShouldPlaceVerticalScrollbarOnLeft() const = 0;
