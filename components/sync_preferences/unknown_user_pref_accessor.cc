@@ -30,9 +30,10 @@ UnknownUserPrefAccessor::~UnknownUserPrefAccessor() {}
 
 UnknownUserPrefAccessor::PreferenceState
 UnknownUserPrefAccessor::GetPreferenceState(
+    syncer::ModelType type,
     const std::string& pref_name) const {
   PreferenceState result;
-  result.registration_state = GetRegistrationState(pref_name);
+  result.registration_state = GetRegistrationState(type, pref_name);
   switch (result.registration_state) {
     case RegistrationState::kUnknown:
     case RegistrationState::kUnknownWhitelisted:
@@ -159,13 +160,32 @@ void UnknownUserPrefAccessor::EnforceRegisteredTypeInStore(
 
 UnknownUserPrefAccessor::RegistrationState
 UnknownUserPrefAccessor::GetRegistrationState(
+    syncer::ModelType type,
     const std::string& pref_name) const {
+  uint32_t type_flag = 0;
+  switch (type) {
+    case syncer::PRIORITY_PREFERENCES:
+      type_flag = user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF;
+      break;
+    case syncer::PREFERENCES:
+      type_flag = user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
+      break;
+    default:
+      NOTREACHED() << "unexpected model type for preferences: " << type;
+  }
   if (pref_registry_->defaults()->GetValue(pref_name, nullptr)) {
     uint32_t flags = pref_registry_->GetRegistrationFlags(pref_name);
-    if ((flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PREF) ||
-        (flags & user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF)) {
+    if (flags & type_flag) {
       return RegistrationState::kSyncable;
     }
+    // Imagine the case where a preference has been synced as SYNCABLE_PREF
+    // first and then got changed to SYNCABLE_PRIORITY_PREF:
+    // In that situation, it could be argued for both, the preferences to be
+    // considered unknown or not synced. However, as we plan to eventually also
+    // sync unknown preferences, we cannot label them as unknown and treat them
+    // as not synced instead. (The underlying problem is that priority
+    // preferences are a concept only known to sync. The persistent stores don't
+    // distinguish between those two).
     return RegistrationState::kNotSyncable;
   }
   if (pref_registry_->IsWhitelistedLateRegistrationPref(pref_name)) {

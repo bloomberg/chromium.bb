@@ -68,6 +68,9 @@ class PrefModelAssociator : public syncer::SyncableService {
       std::unique_ptr<syncer::SyncErrorFactory> sync_error_factory) override;
   void StopSyncing(syncer::ModelType type) override;
 
+  // TODO(tschumann): Replace the RegisterPref() call with a
+  // VerifyPersistedPrefType() method. All pref registration checks are now
+  // done via the registry; no need to duplicate that concept.
   // Register a preference with the specified name for syncing. We do not care
   // about the type at registration time, but when changes arrive from the
   // syncer, we check if they can be applied and if not drop them.

@@ -80,7 +80,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
     const std::string& pref_name,
     syncer::SyncChangeList* sync_changes) {
   UnknownUserPrefAccessor::PreferenceState local_pref_state =
-      pref_accessor_->GetPreferenceState(pref_name);
+      pref_accessor_->GetPreferenceState(type_, pref_name);
   if (local_pref_state.registration_state ==
           UnknownUserPrefAccessor::RegistrationState::kUnknown ||
       local_pref_state.registration_state ==
@@ -334,7 +334,7 @@ syncer::SyncDataList PrefModelAssociator::GetAllSyncData(
   for (PreferenceSet::const_iterator iter = synced_preferences_.begin();
        iter != synced_preferences_.end(); ++iter) {
     std::string name = *iter;
-    if (pref_accessor_->GetPreferenceState(name).registration_state !=
+    if (pref_accessor_->GetPreferenceState(type_, name).registration_state !=
         UnknownUserPrefAccessor::RegistrationState::kSyncable) {
       continue;
     }
@@ -368,7 +368,7 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
         GetSpecifics(iter->sync_data());
 
     UnknownUserPrefAccessor::PreferenceState local_pref_state =
-        pref_accessor_->GetPreferenceState(pref_specifics.name());
+        pref_accessor_->GetPreferenceState(type_, pref_specifics.name());
     if (local_pref_state.registration_state ==
         UnknownUserPrefAccessor::RegistrationState::kUnknown) {
       // It is possible that we may receive a change to a preference we do not
