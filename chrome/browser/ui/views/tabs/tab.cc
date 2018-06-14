@@ -560,11 +560,11 @@ void Tab::Layout() {
   UpdateIconVisibility();
 
   int extra_padding = 0;
-
-  if (MD::IsRefreshUi())
-    extra_padding = kRefreshExtraLeftFavIconPadding;
-  else if (extra_padding_before_content_)
-    extra_padding = kExtraLeftPaddingToBalanceCloseButtonPadding;
+  if (extra_padding_before_content_) {
+    extra_padding = MD::IsRefreshUi()
+                        ? kRefreshExtraLeftFavIconPadding
+                        : kExtraLeftPaddingToBalanceCloseButtonPadding;
+  }
 
   const int start = contents_rect.x() + extra_padding;
 
@@ -1384,7 +1384,9 @@ void Tab::UpdateIconVisibility() {
       (is_touch_optimized ? close_button_->GetInsets().right()
                           : close_button_->GetInsets().width());
 
-  int extra_padding = kExtraLeftPaddingToBalanceCloseButtonPadding;
+  int extra_padding = MD::IsRefreshUi()
+                          ? kRefreshExtraLeftFavIconPadding
+                          : kExtraLeftPaddingToBalanceCloseButtonPadding;
 
   const bool is_pinned = data().pinned;
   const bool is_active = IsActive();
