@@ -3363,29 +3363,26 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
 
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(features::kModuleDatabase)) {
-    // Add the ModuleEventSink interface. This is the interface used by renderer
-    // processes to notify the browser of modules in their address space. The
-    // process handle is not yet available at this point so pass in a callback
-    // to allow to retrieve a duplicate at the time the interface is actually
-    // created. It is safe to pass a raw pointer to |render_process_host|: the
-    // callback will be invoked in the context of ModuleDatabase::GetInstance,
-    // which is invoked by Mojo initialization, which occurs while the
-    // |render_process_host| is alive.
-    auto get_process = base::BindRepeating(
-        [](content::RenderProcessHost* host) -> base::Process {
-          return host->GetProcess().Duplicate();
-        },
-        base::Unretained(render_process_host));
-    // The ModuleDatabase is a global singleton so passing an unretained pointer
-    // is safe.
-    registry->AddInterface(
-        base::BindRepeating(&ModuleEventSinkImpl::Create,
-                            std::move(get_process),
-                            content::PROCESS_TYPE_RENDERER,
-                            base::Unretained(ModuleDatabase::GetInstance())),
-        ui_task_runner);
-  }
+  // Add the ModuleEventSink interface. This is the interface used by renderer
+  // processes to notify the browser of modules in their address space. The
+  // process handle is not yet available at this point so pass in a callback
+  // to allow to retrieve a duplicate at the time the interface is actually
+  // created. It is safe to pass a raw pointer to |render_process_host|: the
+  // callback will be invoked in the context of ModuleDatabase::GetInstance,
+  // which is invoked by Mojo initialization, which occurs while the
+  // |render_process_host| is alive.
+  auto get_process = base::BindRepeating(
+      [](content::RenderProcessHost* host) -> base::Process {
+        return host->GetProcess().Duplicate();
+      },
+      base::Unretained(render_process_host));
+  // The ModuleDatabase is a global singleton so passing an unretained pointer
+  // is safe.
+  registry->AddInterface(
+      base::BindRepeating(&ModuleEventSinkImpl::Create, std::move(get_process),
+                          content::PROCESS_TYPE_RENDERER,
+                          base::Unretained(ModuleDatabase::GetInstance())),
+      ui_task_runner);
 #endif
 
   for (auto* ep : extra_parts_) {

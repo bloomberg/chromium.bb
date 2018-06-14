@@ -24,7 +24,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/persistent_system_profile.h"
@@ -209,7 +208,6 @@ void SetupDesktopFieldTrials() {
   SetupStunProbeTrial();
 #if defined(OS_WIN)
   SetupStabilityDebugging();
-  base::FeatureList::IsEnabled(features::kModuleDatabase);
 #endif  // defined(OS_WIN)
 }
 

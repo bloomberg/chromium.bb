@@ -1565,8 +1565,6 @@ jumbo_split_static_library("browser") {
     "win/chrome_elf_init.h",
     "win/chrome_select_file_dialog_factory.cc",
     "win/chrome_select_file_dialog_factory.h",
-    "win/enumerate_modules_model.cc",
-    "win/enumerate_modules_model.h",
     "win/jumplist.cc",
     "win/jumplist.h",
     "win/jumplist_factory.cc",

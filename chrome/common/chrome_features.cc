@@ -137,8 +137,7 @@ const base::Feature kTabMetricsLogging{"TabMetricsLogging",
 #endif
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-// Enables the blocking of third-party modules. This feature depends on
-// ModuleDatabase and IncompatibleApplicationsWarning.
+// Enables the blocking of third-party modules.
 const base::Feature kThirdPartyModulesBlocking{
     "ThirdPartyModulesBlocking", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
@@ -384,12 +383,6 @@ const base::Feature kMaterialDesignIncognitoNTP{
 // Enables or disables modal permission prompts.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if defined(OS_WIN)
-// Enables or disables the ModuleDatabase backend for the conflicts UI.
-const base::Feature kModuleDatabase{"ModuleDatabase",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Enables the use of native notification centers instead of using the Message
 // Center for displaying the toasts. The feature is hardcoded to enabled for

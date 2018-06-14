@@ -29,7 +29,6 @@
 #include "components/version_info/version_info.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/win/enumerate_modules_model.h"
 #include "chrome/installer/util/install_util.h"
 #endif
 

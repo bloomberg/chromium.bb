@@ -11,13 +11,6 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/upgrade_detector.h"
 
-#if defined(OS_WIN)
-#include "base/feature_list.h"
-#include "base/win/windows_version.h"
-#include "chrome/browser/win/enumerate_modules_model.h"
-#include "chrome/common/chrome_features.h"
-#endif
-
 namespace {
 
 // Maps an upgrade level to a severity level.

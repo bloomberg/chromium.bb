@@ -388,25 +388,24 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   }
 
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(features::kModuleDatabase)) {
-    thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
-                                          &module_event_sink_);
+  // Bind the ModuleEventSink interface.
+  thread->GetConnector()->BindInterface(content::mojom::kBrowserServiceName,
+                                        &module_event_sink_);
 
-    // Rebind the ModuleEventSink to the IO task runner.
-    // The use of base::Unretained() is safe here because |module_event_sink_|
-    // is never deleted and is only used on the IO task runner.
-    thread->GetIOTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&BindModuleEventSink,
-                                  base::Unretained(&module_event_sink_),
-                                  module_event_sink_.PassInterface()));
+  // Rebind the ModuleEventSink to the IO task runner.
+  // The use of base::Unretained() is safe here because |module_event_sink_|
+  // is never deleted and is only used on the IO task runner.
+  thread->GetIOTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&BindModuleEventSink,
+                                base::Unretained(&module_event_sink_),
+                                module_event_sink_.PassInterface()));
 
-    // It is safe to pass an unretained pointer to |module_event_sink_|, as it
-    // is owned by the process singleton ChromeContentRendererClient, which is
-    // leaked.
-    module_watcher_ = ModuleWatcher::Create(
-        base::BindRepeating(&OnModuleEvent, thread->GetIOTaskRunner(),
-                            base::ConstRef(module_event_sink_)));
-  }
+  // It is safe to pass an unretained pointer to |module_event_sink_|, as it
+  // is owned by the process singleton ChromeContentRendererClient, which is
+  // leaked.
+  module_watcher_ = ModuleWatcher::Create(
+      base::BindRepeating(&OnModuleEvent, thread->GetIOTaskRunner(),
+                          base::ConstRef(module_event_sink_)));
 #endif
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());

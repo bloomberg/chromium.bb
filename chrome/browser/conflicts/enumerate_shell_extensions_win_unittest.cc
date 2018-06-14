@@ -99,7 +99,7 @@ TEST_F(EnumerateShellExtensionsTest, EnumerateShellExtensionPaths) {
   }
 
   std::vector<base::FilePath> shell_extension_paths;
-  EnumerateShellExtensionPaths(
+  internal::EnumerateShellExtensionPaths(
       base::BindRepeating(&OnShellExtensionPathEnumerated,
                           base::Unretained(&shell_extension_paths)));
 

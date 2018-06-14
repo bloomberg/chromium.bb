@@ -64,7 +64,7 @@ void EnumerateShellExtensionsOnBlockingSequence(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     OnShellExtensionEnumeratedCallback on_shell_extension_enumerated,
     base::OnceClosure on_enumeration_finished) {
-  EnumerateShellExtensionPaths(
+  internal::EnumerateShellExtensionPaths(
       base::BindRepeating(&OnShellExtensionPathEnumerated, task_runner,
                           std::move(on_shell_extension_enumerated)));
 
@@ -75,18 +75,6 @@ void EnumerateShellExtensionsOnBlockingSequence(
 
 const wchar_t kShellExtensionRegistryKey[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved";
-
-void EnumerateShellExtensionPaths(
-    const base::RepeatingCallback<void(const base::FilePath&)>& callback) {
-  base::AssertBlockingAllowed();
-
-  int nb_shell_extensions = 0;
-  ReadShellExtensions(HKEY_LOCAL_MACHINE, callback, &nb_shell_extensions);
-  ReadShellExtensions(HKEY_CURRENT_USER, callback, &nb_shell_extensions);
-
-  base::UmaHistogramCounts100("ThirdPartyModules.ShellExtensionsCount",
-                              nb_shell_extensions);
-}
 
 void EnumerateShellExtensions(
     OnShellExtensionEnumeratedCallback on_shell_extension_enumerated,
@@ -100,3 +88,19 @@ void EnumerateShellExtensions(
                      std::move(on_shell_extension_enumerated),
                      std::move(on_enumeration_finished)));
 }
+
+namespace internal {
+
+void EnumerateShellExtensionPaths(
+    const base::RepeatingCallback<void(const base::FilePath&)>& callback) {
+  base::AssertBlockingAllowed();
+
+  int nb_shell_extensions = 0;
+  ReadShellExtensions(HKEY_LOCAL_MACHINE, callback, &nb_shell_extensions);
+  ReadShellExtensions(HKEY_CURRENT_USER, callback, &nb_shell_extensions);
+
+  base::UmaHistogramCounts100("ThirdPartyModules.ShellExtensionsCount",
+                              nb_shell_extensions);
+}
+
+}  // namespace internal

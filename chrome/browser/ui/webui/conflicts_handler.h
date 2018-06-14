@@ -5,17 +5,21 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CONFLICTS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CONFLICTS_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/win/enumerate_modules_model.h"
+#include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "content/public/browser/web_ui_message_handler.h"
+
+namespace base {
+class Listvalue;
+}
 
 // This class takes care of sending the list of all loaded modules to the
 // chrome://conflicts WebUI page when it is requested.
 class ConflictsHandler : public content::WebUIMessageHandler,
-                         public EnumerateModulesModel::Observer {
+                         public ModuleDatabaseObserver {
  public:
   ConflictsHandler();
   ~ConflictsHandler() override;
@@ -24,20 +28,20 @@ class ConflictsHandler : public content::WebUIMessageHandler,
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
 
-  // EnumerateModulesModel::Observer:
-  void OnScanCompleted() override;
+  // ModuleDatabaseObserver:
+  void OnNewModuleFound(const ModuleInfoKey& module_key,
+                        const ModuleInfoData& module_data) override;
+  void OnModuleDatabaseIdle() override;
 
   // Callback for the "requestModuleList" message.
   void HandleRequestModuleList(const base::ListValue* args);
 
-  // Sends the module list back to the WebUI page.
-  void SendModuleList();
-
-  ScopedObserver<EnumerateModulesModel, EnumerateModulesModel::Observer>
-      observer_;
-
   // The ID of the callback that will get invoked with the module list.
   std::string module_list_callback_id_;
+
+  // Temporarily holds the module list while the modules are being
+  // enumerated.
+  std::unique_ptr<base::ListValue> module_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ConflictsHandler);
 };
