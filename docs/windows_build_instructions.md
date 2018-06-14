@@ -233,15 +233,10 @@ don't' set enable_nacl = false then build times may get worse.
 * `remove_webcore_debug_symbols = true` - turn off source-level debugging for
 blink to reduce build times, appropriate if you don't plan to debug blink.
 
-In order to ensure that linking is fast enough we recommend that you use one of
-these settings - they all have tradeoffs:
-* `use_lld = true` - this linker is very fast on full links but does not support
-incremental linking.
-* `is_win_fastlink = true` - this option makes the Visual Studio linker run much
-faster, and incremental linking is supported, but it can lead to debugger
-slowdowns or out-of-memory crashes.
-* `symbol_level = 1` - this option reduces the work the linker has to do but
-when this option is set you cannot do source-level debugging.
+In order to speed up linking you can set `symbol_level = 1` - this option
+reduces the work the linker has to do but when this option is set you cannot do
+source-level debugging. Switching from `symbol_level = 2` (the default) to
+`symbol_level = 1` requires recompiling everything.
 
 In addition, Google employees should use goma, a distributed compilation system.
 Detailed information is available internally but the relevant gn arg is:
