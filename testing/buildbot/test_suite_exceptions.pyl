@@ -1636,25 +1636,38 @@
   'network_service_browser_tests': {
     'remove_from': [
       # chromium.win
-      'Win10 Tests x64 (dbg)',
+      'Win7 Tests (1)',  # For swarming capacity reasons.
+      'Win10 Tests x64 (dbg)',  # Matches browser_tests.
     ],
   },
   'network_service_components_browsertests': {
     'remove_from': [
       # chromium.win
-      'Win10 Tests x64 (dbg)',
+      'Win7 Tests (1)',  # For swarming capacity reasons.
+      'Win10 Tests x64 (dbg)',  # Matches components_browsertests.
+    ],
+  },
+  'network_service_content_browsertests': {
+    'remove_from': [
+      # chromium.win
+      'Win7 Tests (1)',  # For swarming capacity reasons.
     ],
   },
   'network_service_extensions_browsertests': {
     'remove_from': [
       # chromium.win
-      'Win10 Tests x64 (dbg)',
+      'Win7 Tests (1)',  # For swarming capacity reasons.
+      'Win10 Tests x64 (dbg)',  # Matches extensions_browsertests.
     ],
   },
   'network_service_interactive_ui_tests': {
+    'remove_from': [
+      # chromium.win
+      'Win7 Tests (1)',  # For swarming capacity reasons.
+    ],
     'modifications': {
-      # chromium.win; temporary, https://crbug.com/818832
-      'Win10 Tests x64 (dbg)': {
+      # chromium.win
+      'Win10 Tests x64 (dbg)': {  # temporary, https://crbug.com/818832
         'experiment_percentage': 100,
       },
     },
