@@ -82,6 +82,8 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     BOOL shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
 // YES if there is an outstanding history query.
 @property(nonatomic, assign, getter=isLoading) BOOL loading;
+// YES if there is a search happening.
+@property(nonatomic, assign) BOOL searchInProgress;
 // YES if there are no more history entries to load.
 @property(nonatomic, assign, getter=hasFinishedLoading) BOOL finishedLoading;
 // YES if the table should be filtered by the next received query result.
@@ -113,6 +115,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 @synthesize loading = _loading;
 @synthesize localDispatcher = _localDispatcher;
 @synthesize searchController = _searchController;
+@synthesize searchInProgress = _searchInProgress;
 @synthesize shouldShowNoticeAboutOtherFormsOfBrowsingHistory =
     _shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
 @synthesize presentationDelegate = _presentationDelegate;
@@ -188,18 +191,10 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 
 - (void)loadModel {
   [super loadModel];
-  // Add initial info section as header.
+  // Add Status section, this section will always exist during the lifetime of
+  // HistoryTableVC. Its content will be driven by |updateEntriesStatusMessage|.
   [self.tableViewModel
       addSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-  // TODO(crbug.com/833623): Temporary loading indicator, will update once we
-  // decide on a standard.
-  TableViewTextItem* entriesStatusItem =
-      [[TableViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
-  entriesStatusItem.text = @"Loading";
-  entriesStatusItem.textColor = TextItemColorBlack;
-  [self.tableViewModel addItem:entriesStatusItem
-       toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-
   _entryInserter =
       [[HistoryEntryInserter alloc] initWithModel:self.tableViewModel];
   _entryInserter.delegate = self;
@@ -231,6 +226,9 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     [self showHistoryMatchingQuery:_currentQuery];
     return;
   }
+
+  // At this point there has been a response, we can stop the loading indicator.
+  [self stopLoadingIndicatorWithCompletion:nil];
 
   // If there are no results and no URLs have been loaded, report that no
   // history entries were found.
@@ -269,7 +267,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 
     [self updateToolbarButtons];
 
-    if ((self.searchController.isActive && [searchQuery length] > 0 &&
+    if ((self.searchInProgress && [searchQuery length] > 0 &&
          [self.currentQuery isEqualToString:searchQuery]) ||
         self.filterQueryResult) {
       // If in search mode, filter out entries that are not part of the
@@ -360,10 +358,12 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 #pragma mark UISearchBarDelegate
 
 - (void)searchBarTextDidBeginEditing:(UISearchBar*)searchBar {
+  self.searchInProgress = YES;
   [self updateEntriesStatusMessage];
 }
 
 - (void)searchBarTextDidEndEditing:(UISearchBar*)searchBar {
+  self.searchInProgress = NO;
   [self updateEntriesStatusMessage];
 }
 
@@ -439,7 +439,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
     // Only navigate and record metrics if a ItemTypeHistoryEntry was selected.
     if (item.type == ItemTypeHistoryEntry) {
-      if (self.searchController.isActive) {
+      if (self.searchInProgress) {
         // Set the searchController active property to NO or the SearchBar will
         // cause the navigation controller to linger for a second  when
         // dismissing.
@@ -542,8 +542,9 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 - (void)fetchHistoryForQuery:(NSString*)query continuation:(BOOL)continuation {
   self.loading = YES;
   // Add loading indicator if no items are shown.
-  if (self.empty && !self.searchController.isActive) {
-    [self addLoadingIndicator];
+  if (self.empty && !self.searchInProgress) {
+    [self startLoadingIndicatorWithLoadingMessage:l10n_util::GetNSString(
+                                                      IDS_HISTORY_NO_RESULTS)];
   }
 
   if (continuation) {
@@ -582,17 +583,14 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 // section.
 - (void)updateEntriesStatusMessage {
   NSString* messageText = nil;
-  TextItemColor messageColor;
   if (self.empty) {
-    messageText = self.searchController.isActive
+    messageText = self.searchInProgress
                       ? l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS)
-                      : l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS);
-    messageColor = TextItemColorBlack;
+                      : nil;
   } else if (self.shouldShowNoticeAboutOtherFormsOfBrowsingHistory &&
-             !self.searchController.isActive) {
+             !self.searchInProgress) {
     messageText =
         l10n_util::GetNSString(IDS_IOS_HISTORY_OTHER_FORMS_OF_HISTORY);
-    messageColor = TextItemColorLightGrey;
   }
 
   // Get the number of items currently at the StatusMessageSection.
@@ -624,7 +622,6 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     if ([messageText isEqualToString:oldEntriesStatusTextItem.text])
       return;
     oldEntriesStatusTextItem.text = messageText;
-    oldEntriesStatusTextItem.textColor = messageColor;
     NSIndexPath* statusMessageIndexPath = [self.tableViewModel
         indexPathForItemType:ItemTypeEntriesStatus
            sectionIdentifier:kEntriesStatusSectionIdentifier];
@@ -635,7 +632,6 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     TableViewTextItem* entriesStatusItem =
         [[TableViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
     entriesStatusItem.text = messageText;
-    entriesStatusItem.textColor = messageColor;
     [self.tableViewModel addItem:entriesStatusItem
          toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
     NSIndexPath* statusMessageIndexPath =
@@ -695,12 +691,6 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
       }
     }
   }
-}
-
-// Adds loading indicator to the top of the history tableView, if one is not
-// already present.
-- (void)addLoadingIndicator {
-  // TODO(crbug.com/805190): Migrate.
 }
 
 #pragma mark Navigation Toolbar Configuration
