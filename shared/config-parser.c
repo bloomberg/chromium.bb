@@ -330,18 +330,6 @@ weston_config_section_get_bool(struct weston_config_section *section,
 	return 0;
 }
 
-WL_EXPORT
-const char *
-weston_config_get_libexec_dir(void)
-{
-	const char *path = getenv("WESTON_BUILD_DIR");
-
-	if (path)
-		return path;
-
-	return LIBEXECDIR;
-}
-
 const char *
 weston_config_get_name_from_env(void)
 {

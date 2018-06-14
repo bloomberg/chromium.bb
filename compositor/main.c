@@ -738,8 +738,7 @@ wet_get_binary_path(const char *name)
 	if (len > 0)
 		return strdup(path);
 
-	len = snprintf(path, sizeof path, "%s/%s",
-		       weston_config_get_libexec_dir(), name);
+	len = snprintf(path, sizeof path, "%s/%s", LIBEXECDIR, name);
 	if (len >= sizeof path)
 		return NULL;
 
