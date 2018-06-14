@@ -7,8 +7,7 @@
 /**
  * Query used to find USB removable volume.
  */
-var USB_VOLUME_QUERY = '#directory-tree > .tree-item > .tree-row > ' +
-    '.item-icon[volume-type-icon="removable"]';
+const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
 /**
  * Opens two window of given root paths.
