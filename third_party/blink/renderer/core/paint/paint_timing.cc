@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 
@@ -204,6 +205,7 @@ void PaintTiming::RegisterNotifySwapTime(PaintEvent event,
 void PaintTiming::ReportSwapTime(PaintEvent event,
                                  WebLayerTreeView::SwapResult result,
                                  base::TimeTicks timestamp) {
+  DCHECK(IsMainThread());
   // If the swap fails for any reason, we use the timestamp when the SwapPromise
   // was broken. |result| == WebLayerTreeView::SwapResult::kDidNotSwapSwapFails
   // usually means the compositor decided not swap because there was no actual
