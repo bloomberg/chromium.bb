@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_DECIMAL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_DECIMAL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DECIMAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DECIMAL_H_
 
-#include <stdint.h>
-#include "third_party/blink/renderer/platform/platform_export.h"
+#include <cstdint>
+
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -49,7 +49,7 @@ class SpecialValueHandler;
 // class to compiler supported one. See below URI for current status of decimal
 // type for C++:
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1977.html
-class PLATFORM_EXPORT Decimal {
+class WTF_EXPORT Decimal {
   USING_FAST_MALLOC(Decimal);
 
  public:
@@ -187,8 +187,8 @@ class PLATFORM_EXPORT Decimal {
   EncodedData data_;
 };
 
-PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const Decimal&);
+WTF_EXPORT std::ostream& operator<<(std::ostream&, const Decimal&);
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_DECIMAL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_DECIMAL_H_

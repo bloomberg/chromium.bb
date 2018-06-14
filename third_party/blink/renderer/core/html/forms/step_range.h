@@ -22,8 +22,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_STEP_RANGE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {

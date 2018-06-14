@@ -16,7 +16,6 @@ include_rules = [
     "+third_party/blink/renderer/platform/cross_thread_copier.h",
     "+third_party/blink/renderer/platform/cross_thread_functional.h",
     "+third_party/blink/renderer/platform/crypto.h",
-    "+third_party/blink/renderer/platform/decimal.h",
     "+third_party/blink/renderer/platform/exported",
     "+third_party/blink/renderer/platform/heap",
     "+third_party/blink/renderer/platform/histogram.h",

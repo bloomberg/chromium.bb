@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_animation_agent.h"
 
 #include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
@@ -30,7 +31,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
-#include "third_party/blink/renderer/platform/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
 namespace AnimationAgentState {

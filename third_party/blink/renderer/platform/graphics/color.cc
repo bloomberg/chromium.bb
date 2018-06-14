@@ -26,9 +26,9 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 
 #include "build/build_config.h"
-#include "third_party/blink/renderer/platform/decimal.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/hex_number.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"

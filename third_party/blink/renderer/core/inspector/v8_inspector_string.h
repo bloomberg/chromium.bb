@@ -6,10 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_V8_INSPECTOR_STRING_H_
 
 #include <memory>
+
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"

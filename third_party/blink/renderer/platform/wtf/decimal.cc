@@ -28,15 +28,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/decimal.h"
+#include "third_party/blink/renderer/platform/wtf/decimal.h"
+
+#include <algorithm>
+#include <cfloat>
 
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-
-#include <algorithm>
-#include <float.h>
 
 namespace blink {
 
