@@ -339,11 +339,9 @@ are exported to translation interchange files (e.g. XMB files), etc.
                        'gzipped_resource_file_map_source'):
       return 'cp1252'
     if output_type in ('android', 'c_format', 'js_map_format', 'plist',
-                       'plist_strings', 'doc', 'json', 'android_policy'):
+                       'plist_strings', 'doc', 'json', 'android_policy',
+                       'chrome_messages_json'):
       return 'utf_8'
-    if output_type in ('chrome_messages_json'):
-      # Chrome Web Store currently expects BOM for UTF-8 files :-(
-      return 'utf-8-sig'
     # TODO(gfeher) modify here to set utf-8 encoding for admx/adml
     return 'utf_16'
 
