@@ -115,7 +115,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     // Compute blacklist and driver bug workaround decisions based on basic GPU
     // info.
     gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(
-        gpu_info_, gpu_preferences, command_line, &needs_more_info);
+        gpu_info_, gpu_preferences_, command_line, &needs_more_info);
   }
 #endif  // !OS_ANDROID && !IS_CHROMECAST
   gpu_info_.in_process_gpu = false;
@@ -136,7 +136,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     use_swiftshader = true;
   }
 
-  bool enable_watchdog = !gpu_preferences.disable_gpu_watchdog &&
+  bool enable_watchdog = !gpu_preferences_.disable_gpu_watchdog &&
                          !command_line->HasSwitch(switches::kHeadless);
 
   // Disable the watchdog in debug builds because they tend to only be run by
@@ -180,7 +180,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // On Chrome OS ARM Mali, GPU driver userspace creates threads when
   // initializing a GL context, so start the sandbox early.
   // TODO(zmo): Need to collect OS version before this.
-  if (gpu_preferences.gpu_sandbox_start_early) {
+  if (gpu_preferences_.gpu_sandbox_start_early) {
     gpu_info_.sandboxed = sandbox_helper_->EnsureSandboxInitialized(
         watchdog_thread_.get(), &gpu_info_, gpu_preferences_);
     attempted_startsandbox = true;
@@ -199,9 +199,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #endif
 
   if (!use_swiftshader) {
-    use_swiftshader = ShouldEnableSwiftShader(
+    use_swiftshader = EnableSwiftShaderIfNeeded(
         command_line, gpu_feature_info_,
-        gpu_preferences.disable_software_rasterizer, needs_more_info);
+        gpu_preferences_.disable_software_rasterizer, needs_more_info);
   }
   if (gl_initialized && use_swiftshader &&
       gl::GetGLImplementation() != gl::kGLImplementationSwiftShaderGL) {
@@ -218,14 +218,14 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   // We need to collect GL strings (VENDOR, RENDERER) for blacklisting purposes.
   if (!gl_disabled && !use_swiftshader) {
-    if (!CollectGraphicsInfo(&gpu_info_, gpu_preferences))
+    if (!CollectGraphicsInfo(&gpu_info_, gpu_preferences_))
       return false;
     gpu::SetKeysForCrashLogging(gpu_info_);
-    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, gpu_preferences,
+    gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
                                                    command_line, nullptr);
-    use_swiftshader = ShouldEnableSwiftShader(
+    use_swiftshader = EnableSwiftShaderIfNeeded(
         command_line, gpu_feature_info_,
-        gpu_preferences.disable_software_rasterizer, false);
+        gpu_preferences_.disable_software_rasterizer, false);
     if (use_swiftshader) {
       gl::init::ShutdownGL(true);
       if (!gl::init::InitializeGLNoExtensionsOneOff()) {
@@ -307,11 +307,11 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
                                   const GpuPreferences& gpu_preferences) {
   gpu_preferences_ = gpu_preferences;
   init_successful_ = true;
-  DCHECK(!ShouldEnableSwiftShader(command_line, gpu_feature_info_,
-                                  gpu_preferences.disable_software_rasterizer,
-                                  false));
+  DCHECK(!EnableSwiftShaderIfNeeded(
+      command_line, gpu_feature_info_,
+      gpu_preferences_.disable_software_rasterizer, false));
 
-  InitializeGLThreadSafe(command_line, gpu_preferences, &gpu_info_,
+  InitializeGLThreadSafe(command_line, gpu_preferences_, &gpu_info_,
                          &gpu_feature_info_);
 }
 #else
@@ -337,7 +337,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
     CollectBasicGraphicsInfo(command_line, &gpu_info_);
   }
   if (!PopGpuFeatureInfoCache(&gpu_feature_info_)) {
-    gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences,
+    gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
                                               command_line, &needs_more_info);
   }
   if (SwitchableGPUsSupported(gpu_info_, *command_line)) {
@@ -346,9 +346,9 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   }
 #endif  // !IS_CHROMECAST
 
-  bool use_swiftshader = ShouldEnableSwiftShader(
+  bool use_swiftshader = EnableSwiftShaderIfNeeded(
       command_line, gpu_feature_info_,
-      gpu_preferences.disable_software_rasterizer, needs_more_info);
+      gpu_preferences_.disable_software_rasterizer, needs_more_info);
   if (!gl::init::InitializeGLNoExtensionsOneOff()) {
     VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
     return;
@@ -356,12 +356,12 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;
 
   if (!gl_disabled && !use_swiftshader) {
-    CollectContextGraphicsInfo(&gpu_info_, gpu_preferences);
-    gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences,
+    CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
+    gpu_feature_info_ = ComputeGpuFeatureInfo(gpu_info_, gpu_preferences_,
                                               command_line, nullptr);
-    use_swiftshader = ShouldEnableSwiftShader(
+    use_swiftshader = EnableSwiftShaderIfNeeded(
         command_line, gpu_feature_info_,
-        gpu_preferences.disable_software_rasterizer, false);
+        gpu_preferences_.disable_software_rasterizer, false);
     if (use_swiftshader) {
       gl::init::ShutdownGL(true);
       if (!gl::init::InitializeGLNoExtensionsOneOff()) {
@@ -393,9 +393,7 @@ void GpuInit::AdjustInfoToSwiftShader() {
   gpu_info_for_hardware_gpu_ = gpu_info_;
   gpu_feature_info_for_hardware_gpu_ = gpu_feature_info_;
   gpu_feature_info_ = ComputeGpuFeatureInfoForSwiftShader();
-  gpu_info_.gl_vendor = "Google Inc.";
-  gpu_info_.gl_renderer = "Google SwiftShader";
-  gpu_info_.gl_version = "OpenGL ES 2.0 SwiftShader";
+  CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
 }
 
 void GpuInit::AdjustInfoToNoGpu() {

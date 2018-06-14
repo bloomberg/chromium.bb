@@ -58,9 +58,7 @@ base::OnceClosure MaybeWrapWithGPUSandboxHook(
           gpu::InitializeSwitchableGPUs(
               gpu_feature_info.enabled_gpu_driver_bug_workarounds);
         }
-        // Calling ShouldEnableSwiftShader will append the proper command line
-        // switch in order to enable SwiftShader if required.
-        gpu::ShouldEnableSwiftShader(
+        gpu::EnableSwiftShaderIfNeeded(
             command_line, gpu_feature_info,
             gpu_preferences.disable_software_rasterizer, needs_more_info);
         // Preload either the desktop GL or the osmesa so, depending on the
