@@ -1242,16 +1242,6 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
     float top_controls_shown_ratio,
     float bottom_controls_height,
     float bottom_controls_shown_ratio) {
-  // TODO(carlosil, https://crbug.com/825765): Remove the IsInVR() check here,
-  // which is a temporary hack. Interstitial pages are not committed navigations
-  // and their metadata updates never leave the content layer, so Chrome and the
-  // content layer end up mismatched and hit testing is offset. They rely on the
-  // previous (erroneous) behavior of ignoring the initial control offset update
-  // if offset is 0. The fix is still crucial for VR as VR needs the top
-  // controls to be initially hidden correctly (so we don't want the offset of 0
-  // to get ignored. Tracking bug for the interstitial work to fix this by
-  // converting interstitials to committed navigations is
-  // https://crbug.com/755632.
   float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
   float top_controls_pix = top_controls_height * to_pix;
   // |top_content_offset| is in physical pixels if --use-zoom-for-dsf is
@@ -1262,7 +1252,7 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
   float top_shown_pix = top_content_offset * to_pix;
   float top_translate = top_shown_pix - top_controls_pix;
   bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
-  if (top_changed || (!controls_initialized_ && IsInVR()))
+  if (top_changed || !controls_initialized_)
     view_.OnTopControlsChanged(top_translate, top_shown_pix);
   prev_top_shown_pix_ = top_shown_pix;
   prev_top_controls_translate_ = top_translate;
@@ -1271,7 +1261,7 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
   float bottom_shown_pix = bottom_controls_pix * bottom_controls_shown_ratio;
   bool bottom_changed = !FloatEquals(bottom_shown_pix, prev_bottom_shown_pix_);
   float bottom_translate = bottom_controls_pix - bottom_shown_pix;
-  if (bottom_changed || (!controls_initialized_ && IsInVR()))
+  if (bottom_changed || !controls_initialized_)
     view_.OnBottomControlsChanged(bottom_translate, bottom_shown_pix);
   prev_bottom_shown_pix_ = bottom_shown_pix;
   prev_bottom_controls_translate_ = bottom_translate;
@@ -1905,17 +1895,6 @@ void RenderWidgetHostViewAndroid::SetIsInVR(bool is_in_vr) {
   } else if (view_.parent()) {
     touch_selection_controller_ = CreateSelectionController(
         touch_selection_controller_client_manager_.get(), view_.parent());
-  }
-
-  if (is_in_vr_ && controls_initialized_) {
-    // TODO(carlosil, https://crbug.com/825765): See the TODO in
-    // RenderWidgetHostViewAndroid::OnFrameMetadataUpdated. RWHVA isn't
-    // initialized with VR state so the initial frame metadata top controls
-    // height can be dropped when a new RWHVA is created.
-    view_.OnTopControlsChanged(prev_top_controls_translate_,
-                               prev_top_shown_pix_);
-    view_.OnBottomControlsChanged(prev_bottom_controls_translate_,
-                                  prev_bottom_shown_pix_);
   }
 }
 
