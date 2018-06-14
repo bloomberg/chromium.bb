@@ -230,7 +230,7 @@ void WebServiceWorkerProviderImpl::OnRegistered(
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration) {
   TRACE_EVENT_ASYNC_END2(
       "ServiceWorker", "WebServiceWorkerProviderImpl::RegisterServiceWorker",
-      this, "Error", ServiceWorkerUtils::ErrorTypeToString(error), "Message",
+      this, "Error", ServiceWorkerUtils::MojoEnumToString(error), "Message",
       error_msg ? *error_msg : "Success");
   if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
     DCHECK(error_msg);
@@ -256,7 +256,7 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistration(
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration) {
   TRACE_EVENT_ASYNC_END2("ServiceWorker",
                          "WebServiceWorkerProviderImpl::GetRegistration", this,
-                         "Error", ServiceWorkerUtils::ErrorTypeToString(error),
+                         "Error", ServiceWorkerUtils::MojoEnumToString(error),
                          "Message", error_msg ? *error_msg : "Success");
   if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
     DCHECK(error_msg);
@@ -292,7 +292,7 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistrations(
         infos) {
   TRACE_EVENT_ASYNC_END2("ServiceWorker",
                          "WebServiceWorkerProviderImpl::GetRegistrations", this,
-                         "Error", ServiceWorkerUtils::ErrorTypeToString(error),
+                         "Error", ServiceWorkerUtils::MojoEnumToString(error),
                          "Message", error_msg ? *error_msg : "Success");
   if (error != blink::mojom::ServiceWorkerErrorType::kNone) {
     DCHECK(error_msg);
