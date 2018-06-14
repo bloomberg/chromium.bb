@@ -1100,19 +1100,16 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                             int_mv ref_mv[2], int_mv nearest_mv[2],
                             int_mv near_mv[2], int mi_row, int mi_col,
                             int is_compound, int allow_hp, aom_reader *r) {
-  int ret = 1;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   MB_MODE_INFO *mbmi = xd->mi[0];
   BLOCK_SIZE bsize = mbmi->sb_type;
   if (cm->cur_frame_force_integer_mv) {
     allow_hp = MV_SUBPEL_NONE;
   }
-  (void)is_compound;
   switch (mode) {
     case NEWMV: {
       nmv_context *const nmvc = &ec_ctx->nmvc;
       read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, allow_hp);
-      ret = ret && is_mv_valid(&mv[0].as_mv);
       break;
     }
     case NEARESTMV: {
@@ -1136,7 +1133,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       for (int i = 0; i < 2; ++i) {
         nmv_context *const nmvc = &ec_ctx->nmvc;
         read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, nmvc, allow_hp);
-        ret = ret && is_mv_valid(&mv[i].as_mv);
       }
       break;
     }
@@ -1156,7 +1152,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       nmv_context *const nmvc = &ec_ctx->nmvc;
       read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, allow_hp);
       assert(is_compound);
-      ret = ret && is_mv_valid(&mv[0].as_mv);
       mv[1].as_int = nearest_mv[1].as_int;
       break;
     }
@@ -1165,7 +1160,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       mv[0].as_int = nearest_mv[0].as_int;
       read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, nmvc, allow_hp);
       assert(is_compound);
-      ret = ret && is_mv_valid(&mv[1].as_mv);
       break;
     }
     case NEAR_NEWMV: {
@@ -1173,15 +1167,12 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       mv[0].as_int = near_mv[0].as_int;
       read_mv(r, &mv[1].as_mv, &ref_mv[1].as_mv, nmvc, allow_hp);
       assert(is_compound);
-
-      ret = ret && is_mv_valid(&mv[1].as_mv);
       break;
     }
     case NEW_NEARMV: {
       nmv_context *const nmvc = &ec_ctx->nmvc;
       read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, allow_hp);
       assert(is_compound);
-      ret = ret && is_mv_valid(&mv[0].as_mv);
       mv[1].as_int = near_mv[1].as_int;
       break;
     }
@@ -1200,6 +1191,11 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       break;
     }
     default: { return 0; }
+  }
+
+  int ret = is_mv_valid(&mv[0].as_mv);
+  if (is_compound) {
+    ret = ret && is_mv_valid(&mv[1].as_mv);
   }
   return ret;
 }
