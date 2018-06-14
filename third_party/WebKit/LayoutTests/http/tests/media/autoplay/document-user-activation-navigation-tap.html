@@ -6,6 +6,7 @@
 <script>
   testRunner.waitUntilDone();
   internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.runtimeFlags.autoplayIgnoresWebAudioEnabled = false;
   var bounds = document.querySelector('#target').getBoundingClientRect();
   var x = bounds.left + bounds.width / 2;
   var y = bounds.top + bounds.height / 2;
