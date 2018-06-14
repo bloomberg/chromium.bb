@@ -147,6 +147,8 @@ void FilterCategories(FetchedCategoriesVector* categories,
 
 }  // namespace
 
+bool RemoteSuggestionsFetcherImpl::skip_api_key_check_for_testing_ = false;
+
 RemoteSuggestionsFetcherImpl::RemoteSuggestionsFetcherImpl(
     identity::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -219,7 +221,7 @@ void RemoteSuggestionsFetcherImpl::FetchSnippets(
 void RemoteSuggestionsFetcherImpl::FetchSnippetsNonAuthenticated(
     JsonRequest::Builder builder,
     SnippetsAvailableCallback callback) {
-  if (api_key_.empty()) {
+  if (api_key_.empty() && !skip_api_key_check_for_testing_) {
     // If we don't have an API key, don't even try.
     FetchFinished(OptionalFetchedCategories(), std::move(callback),
                   FetchResult::MISSING_API_KEY, std::string(),
@@ -377,6 +379,11 @@ void RemoteSuggestionsFetcherImpl::FetchFinished(
 
   std::move(callback).Run(FetchResultToStatus(fetch_result),
                           std::move(categories));
+}
+
+// static
+void RemoteSuggestionsFetcherImpl::set_skip_api_key_check_for_testing() {
+  skip_api_key_check_for_testing_ = true;
 }
 
 }  // namespace ntp_snippets
