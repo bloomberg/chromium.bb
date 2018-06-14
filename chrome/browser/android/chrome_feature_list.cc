@@ -129,7 +129,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kVrBrowsingFeedback,
     &kVrBrowsingInCustomTab,
     &kVrBrowsingNativeAndroidUi,
-    &kVrIconInDaydreamHome,
     &payments::features::kWebPaymentsMethodSectionOrderV2,
     &payments::features::kWebPaymentsModifiers,
     &payments::features::kWebPaymentsSingleAppUiSkip,
@@ -370,9 +369,6 @@ const base::Feature kVrBrowsingNativeAndroidUi{
 
 const base::Feature kVrBrowsingTabsView{"VrBrowsingTabsView",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kVrIconInDaydreamHome{"VrIconInDaydreamHome",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kWebVrAutopresentFromIntent{
     "WebVrAutopresentFromIntent", base::FEATURE_ENABLED_BY_DEFAULT};
