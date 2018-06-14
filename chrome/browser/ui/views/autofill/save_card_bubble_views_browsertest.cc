@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
@@ -102,6 +103,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Local_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
+  // Pre-Harmony tests are not applicable to Refresh.
+  if (ui::MaterialDesignController::IsRefreshUi())
+    return;
+
   // Disable the SecondaryUiMd experiment.
   scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
 
@@ -229,6 +234,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SaveCardBubbleViewsFullFormBrowserTest,
     Upload_ClickingNoThanksClosesBubbleIfSecondaryUiMdExpOff) {
+  // Pre-Harmony tests are not applicable to Refresh.
+  if (ui::MaterialDesignController::IsRefreshUi())
+    return;
+
   // Disable the SecondaryUiMd experiment.
   scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
 
