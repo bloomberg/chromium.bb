@@ -6026,8 +6026,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     warp_types.local_warp_allowed = mbmi->motion_mode == WARPED_CAUSAL;
 
     for (ref = 0; ref < 2; ++ref) {
-      ref_mv[ref] = x->mbmi_ext->ref_mvs[refs[ref]][0];
-
+      ref_mv[ref] = av1_get_ref_mv(x, ref);
       // Swap out the reference frame for a version that's been scaled to
       // match the resolution of the current frame, allowing the existing
       // motion search code to be used without additional modifications.
@@ -6159,8 +6158,8 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
         x, ref,
         mbmi->ref_mv_idx + (have_nearmv_in_inter_mode(mbmi->mode) ? 1 : 0));
 
-    *rate_mv += av1_mv_bit_cost(&cur_mv[ref].as_mv,
-                                &x->mbmi_ext->ref_mvs[refs[ref]][0].as_mv,
+    const int_mv curr_ref_mv = av1_get_ref_mv(x, ref);
+    *rate_mv += av1_mv_bit_cost(&cur_mv[ref].as_mv, &curr_ref_mv.as_mv,
                                 x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
   }
 }
