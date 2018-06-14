@@ -89,7 +89,8 @@ class KeyboardAccessoryViewBinder
             view.clearTabs();
             for (int i = 0; i < model.getItemCount(); ++i) {
                 Tab tab = model.get(i);
-                view.addTabAt(i, tab.getIcon(), tab.getContentDescription());
+                // Mutate tab icons so we can apply color filters.
+                view.addTabAt(i, tab.getIcon().mutate(), tab.getContentDescription());
             }
         }
     }
@@ -121,6 +122,16 @@ class KeyboardAccessoryViewBinder
             KeyboardAccessoryModel model, KeyboardAccessoryView view, PropertyKey propertyKey) {
         if (propertyKey == PropertyKey.VISIBLE) {
             view.setVisible(model.isVisible());
+            return;
+        }
+        if (propertyKey == PropertyKey.ACTIVE_TAB) {
+            view.setActiveTabColor(model.activeTab());
+            return;
+        }
+        if (propertyKey == PropertyKey.TAB_SELECTION_CALLBACKS) {
+            // Don't add null as listener. It's a valid state but an invalid argument.
+            if (model.getTabSelectionCallbacks() == null) return;
+            view.setTabSelectionAdapter(model.getTabSelectionCallbacks());
             return;
         }
         if (propertyKey == PropertyKey.SUGGESTIONS) {

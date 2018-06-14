@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -18,8 +19,9 @@ import org.chromium.ui.base.WindowAndroid;
  * fields.
  */
 public class ManualFillingCoordinator {
-    private final KeyboardAccessoryCoordinator mKeyboardAccessory;
-    private final AccessorySheetCoordinator mAccessorySheet;
+    private final ManualFillingMediator mMediator = new ManualFillingMediator();
+    // TODO(fhorschig): Manual filling needs a model to map from tab/URL to sheet state/providers.
+    // Ideally, it just manages |Provider|s and attaches them to the accessory when tabs change.
 
     /**
      * Creates a the manual filling controller.
@@ -29,39 +31,40 @@ public class ManualFillingCoordinator {
      */
     public ManualFillingCoordinator(WindowAndroid windowAndroid, ViewStub keyboardAccessoryStub,
             ViewStub accessorySheetStub) {
-        mKeyboardAccessory = new KeyboardAccessoryCoordinator(windowAndroid, keyboardAccessoryStub);
-        mAccessorySheet = new AccessorySheetCoordinator(accessorySheetStub);
+        assert windowAndroid.getActivity().get() != null;
+        KeyboardAccessoryCoordinator keyboardAccessory =
+                new KeyboardAccessoryCoordinator(windowAndroid, keyboardAccessoryStub, mMediator);
+        AccessorySheetCoordinator accessorySheet = new AccessorySheetCoordinator(
+                accessorySheetStub, keyboardAccessory::getPageChangeListener);
+        mMediator.initialize(keyboardAccessory, accessorySheet,
+                (ChromeActivity) windowAndroid.getActivity().get());
     }
 
     /**
      * Cleans up the manual UI by destroying the accessory bar and its bottom sheet.
      */
     public void destroy() {
-        mKeyboardAccessory.destroy();
+        mMediator.destroy();
     }
 
-    /**
-     * Links a tab to the manual UI by adding it to the held {@link AccessorySheetCoordinator} and
-     * the {@link KeyboardAccessoryCoordinator}.
-     * @param tab The tab component to be added.
-     */
-    public void addTab(KeyboardAccessoryData.Tab tab) {
-        mKeyboardAccessory.addTab(tab);
-        mAccessorySheet.addTab(tab);
+    // TODO(fhorschig): Ideally, this isn't exposed. (Apply Hollywood principle to tabs).
+    void addTab(KeyboardAccessoryData.Tab tab) {
+        mMediator.addTab(tab);
     }
 
-    public void removeTab(KeyboardAccessoryData.Tab tab) {
-        mKeyboardAccessory.removeTab(tab);
-        mAccessorySheet.removeTab(tab);
+    // TODO(fhorschig): Ideally, this isn't exposed neither.
+    void removeTab(KeyboardAccessoryData.Tab tab) {
+        mMediator.removeTab(tab);
     }
 
+    // TODO(fhorschig): Should be @VisibleForTesting.
     /**
      * Allows access to the keyboard accessory. This can be used to explicitly modify the the bar of
      * the keyboard accessory (e.g. by providing suggestions or actions).
      * @return The coordinator of the Keyboard accessory component.
      */
     public KeyboardAccessoryCoordinator getKeyboardAccessory() {
-        return mKeyboardAccessory;
+        return mMediator.getKeyboardAccessory();
     }
 
     /**
@@ -69,7 +72,7 @@ public class ManualFillingCoordinator {
      * @return The coordinator of the Accessory sheet component.
      */
     @VisibleForTesting
-    public AccessorySheetCoordinator getAccessorySheetForTesting() {
-        return mAccessorySheet;
+    AccessorySheetCoordinator getAccessorySheetForTesting() {
+        return mMediator.getAccessorySheet();
     }
 }

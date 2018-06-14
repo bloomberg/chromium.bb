@@ -61,8 +61,18 @@ public class AccessorySheetViewTest {
         mStubHolder = new LazyViewBinderAdapter.StubHolder<>(
                 mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_sheet_stub));
         mModel = new AccessorySheetModel();
-        mModel.addObserver(new PropertyModelChangeProcessor<>(
-                mModel, mStubHolder, new LazyViewBinderAdapter<>(new AccessorySheetViewBinder())));
+        mModel.addObserver(new PropertyModelChangeProcessor<>(mModel, mStubHolder,
+                new LazyViewBinderAdapter<>(new AccessorySheetViewBinder(),
+                        view -> view.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+                            @Override
+                            public void onPageScrolled(int i, float v, int i1) {}
+
+                            @Override
+                            public void onPageSelected(int i) {}
+
+                            @Override
+                            public void onPageScrollStateChanged(int i) {}
+                        }))));
     }
 
     @Test

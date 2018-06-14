@@ -11,6 +11,7 @@ import static org.junit.Assert.assertThat;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.support.test.filters.MediumTest;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.widget.TextView;
@@ -57,37 +58,35 @@ public class PasswordAccessorySheetViewTest {
      */
     private void openLayoutInAccessorySheet(
             @LayoutRes int layout, KeyboardAccessoryData.Tab.Listener listener) {
-        mActivityTestRule.getActivity()
-                .getManualFillingController()
-                .getAccessorySheetForTesting()
-                .addTab(new KeyboardAccessoryData.Tab() {
+        AccessorySheetCoordinator accessorySheet = new AccessorySheetCoordinator(
+                mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_sheet_stub),
+                () -> new ViewPager.OnPageChangeListener() {
                     @Override
-                    public Drawable getIcon() {
-                        return null;
-                    }
-
+                    public void onPageScrolled(int i, float v, int i1) {}
                     @Override
-                    public String getContentDescription() {
-                        return null;
-                    }
-
+                    public void onPageSelected(int i) {}
                     @Override
-                    public @LayoutRes int getTabLayout() {
-                        return layout;
-                    }
-
-                    @Override
-                    public Listener getListener() {
-                        return listener;
-                    }
+                    public void onPageScrollStateChanged(int i) {}
                 });
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mActivityTestRule.getActivity()
-                    .getManualFillingController()
-                    .getAccessorySheetForTesting()
-                    .getMediatorForTesting()
-                    .show();
+        accessorySheet.addTab(new KeyboardAccessoryData.Tab() {
+            @Override
+            public Drawable getIcon() {
+                return null;
+            }
+            @Override
+            public String getContentDescription() {
+                return null;
+            }
+            @Override
+            public @LayoutRes int getTabLayout() {
+                return layout;
+            }
+            @Override
+            public Listener getListener() {
+                return listener;
+            }
         });
+        ThreadUtils.runOnUiThreadBlocking(accessorySheet::show);
     }
 
     @Before

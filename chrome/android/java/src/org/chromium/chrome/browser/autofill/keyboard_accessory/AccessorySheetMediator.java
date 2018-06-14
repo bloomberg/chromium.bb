@@ -40,6 +40,10 @@ class AccessorySheetMediator {
         mModel.setVisible(false);
     }
 
+    boolean isShown() {
+        return mModel.isVisible();
+    }
+
     void addTab(KeyboardAccessoryData.Tab tab) {
         mModel.getTabList().add(tab);
         if (mModel.getActiveTabIndex() == NO_ACTIVE_TAB) {
@@ -51,6 +55,13 @@ class AccessorySheetMediator {
         assert mModel.getActiveTabIndex() != NO_ACTIVE_TAB;
         mModel.setActiveTabIndex(getNextActiveTab(tab));
         mModel.getTabList().remove(tab);
+        if (mModel.getActiveTabIndex() == NO_ACTIVE_TAB) hide();
+    }
+
+    void setActiveTab(int position) {
+        assert position < mModel.getTabList().getItemCount()
+                || position >= 0 : position + " is not a valid tab index!";
+        mModel.setActiveTabIndex(position);
     }
 
     /**

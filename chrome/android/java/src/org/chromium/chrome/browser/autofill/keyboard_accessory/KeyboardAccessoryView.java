@@ -7,9 +7,12 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.ui.base.LocalizationUtils.isLayoutRtl;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -33,6 +36,7 @@ class KeyboardAccessoryView extends LinearLayout {
     private HorizontalScrollView mSuggestionsView;
     private RecyclerView mActionsView;
     private TabLayout mTabLayout;
+    private TabLayout.TabLayoutOnPageChangeListener mPageChangeListener;
 
     private static class HorizontalDividerItemDecoration extends RecyclerView.ItemDecoration {
         private final int mHorizontalMargin;
@@ -95,21 +99,49 @@ class KeyboardAccessoryView extends LinearLayout {
      * @param contentDescription The contentDescription to be used for the tab icon.
      */
     void addTabAt(int position, Drawable icon, CharSequence contentDescription) {
-        TabLayout.Tab tab = mTabLayout.newTab();
-        tab.setIcon(icon); // TODO(fhorschig): Call .mutate() when changing the active tint.
-        tab.setContentDescription(contentDescription);
-        mTabLayout.addTab(tab, position);
+        this.post(() -> { // Using |post| ensures this is cannot happen before inflation finishes.
+            TabLayout.Tab tab = mTabLayout.newTab();
+            tab.setIcon(icon.mutate()); // mutate() needed to change the active tint.
+            tab.setContentDescription(contentDescription);
+            mTabLayout.addTab(tab, position, false);
+        });
     }
 
     void removeTabAt(int position) {
-        mTabLayout.removeTabAt(position);
+        this.post(() -> mTabLayout.removeTabAt(position));
     }
 
     /**
      * Removes all tabs.
      */
     void clearTabs() {
-        mTabLayout.removeAllTabs();
+        this.post(() -> {
+            if (mTabLayout != null) mTabLayout.removeAllTabs();
+        });
+    }
+
+    ViewPager.OnPageChangeListener getPageChangeListener() {
+        if (mPageChangeListener == null) {
+            mPageChangeListener = new TabLayout.TabLayoutOnPageChangeListener(mTabLayout);
+        }
+        return mPageChangeListener;
+    }
+
+    void setTabSelectionAdapter(TabLayout.OnTabSelectedListener tabSelectionCallbacks) {
+        mTabLayout.clearOnTabSelectedListeners();
+        mTabLayout.addOnTabSelectedListener(tabSelectionCallbacks);
+    }
+
+    void setActiveTabColor(Integer activeTab) {
+        for (int i = mTabLayout.getTabCount() - 1; i >= 0; i--) {
+            TabLayout.Tab t = mTabLayout.getTabAt(i);
+            if (t == null || t.getIcon() == null) continue;
+            if (activeTab == null || i != activeTab) {
+                t.getIcon().clearColorFilter();
+            } else {
+                t.getIcon().setColorFilter(Color.BLUE, PorterDuff.Mode.SRC_ATOP);
+            }
+        }
     }
 
     // TODO(crbug/722897): Check to handle RTL.
@@ -125,6 +157,7 @@ class KeyboardAccessoryView extends LinearLayout {
     }
 
     private void show() {
+        bringToFront(); // Needs to overlay every component and the bottom sheet - like a keyboard.
         setVisibility(View.VISIBLE);
         announceForAccessibility(((ViewGroup) getParent()).getContentDescription());
     }

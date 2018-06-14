@@ -43,7 +43,6 @@ class AccessorySheetViewBinder
         if (propertyKey == PropertyKey.ACTIVE_TAB_INDEX) {
             if (model.getActiveTabIndex() != AccessorySheetModel.NO_ACTIVE_TAB) {
                 inflatedView.setCurrentItem(model.getActiveTabIndex());
-                // inflatedView.post(() -> inflatedView.setCurrentItem(model.getActiveTabIndex()));
             }
             return;
         }

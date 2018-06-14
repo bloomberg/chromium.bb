@@ -58,7 +58,7 @@ public class AccessorySheetControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mMockViewStub.inflate()).thenReturn(mMockView);
-        mCoordinator = new AccessorySheetCoordinator(mMockViewStub);
+        mCoordinator = new AccessorySheetCoordinator(mMockViewStub, /*unused*/ () -> null);
         mMediator = mCoordinator.getMediatorForTesting();
         mModel = mMediator.getModelForTesting();
     }

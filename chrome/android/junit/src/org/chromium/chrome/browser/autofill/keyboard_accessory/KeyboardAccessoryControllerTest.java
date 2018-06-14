@@ -15,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import android.support.test.filters.SmallTest;
 import android.view.ViewStub;
 
 import org.junit.Before;
@@ -26,7 +25,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
@@ -46,6 +44,8 @@ public class KeyboardAccessoryControllerTest {
     private ListObservable.ListObserver<Void> mMockTabListObserver;
     @Mock
     private ListObservable.ListObserver<Void> mMockActionListObserver;
+    @Mock
+    private KeyboardAccessoryCoordinator.VisibilityDelegate mMockVisibilityDelegate;
     @Mock
     private WindowAndroid mMockWindow;
     @Mock
@@ -75,14 +75,13 @@ public class KeyboardAccessoryControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mMockViewStub.inflate()).thenReturn(mMockView);
-        mCoordinator = new KeyboardAccessoryCoordinator(mMockWindow, mMockViewStub);
+        mCoordinator = new KeyboardAccessoryCoordinator(
+                mMockWindow, mMockViewStub, mMockVisibilityDelegate);
         mMediator = mCoordinator.getMediatorForTesting();
         mModel = mMediator.getModelForTesting();
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testCreatesValidSubComponents() {
         assertThat(mCoordinator, is(notNullValue()));
         assertThat(mMediator, is(notNullValue()));
@@ -91,8 +90,6 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testModelNotifiesVisibilityChangeOnShowAndHide() {
         mModel.addObserver(mMockPropertyObserver);
 
@@ -110,8 +107,6 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testChangingTabsNotifiesTabObserver() {
         mModel.addTabListObserver(mMockTabListObserver);
 
@@ -128,8 +123,6 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testModelNotifiesAboutActionsChangedByProvider() {
         final PropertyProvider<Action> testProvider = new PropertyProvider<>();
         final FakeAction testAction = new FakeAction();
@@ -160,8 +153,6 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testModelDoesntNotifyUnchangedData() {
         mModel.addObserver(mMockPropertyObserver);
 
@@ -179,8 +170,6 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testIsVisibleWithSuggestionsBeforeKeyboardComesUp() {
         // Without suggestions, the accessory should remain invisible - even if the keyboard shows.
         assertThat(mModel.getAutofillSuggestions(), is(nullValue()));
@@ -199,8 +188,6 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testIsVisibleWithSuggestionsAfterKeyboardComesUp() {
         // Without any suggestions, the accessory should remain invisible.
         assertThat(mModel.getAutofillSuggestions(), is(nullValue()));
@@ -216,8 +203,6 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testIsVisibleWithActions() {
         // Without any actions, the accessory should remain invisible.
         assertThat(mModel.getActionList().getItemCount(), is(0));
@@ -230,8 +215,6 @@ public class KeyboardAccessoryControllerTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"keyboard-accessory"})
     public void testIsVisibleWithTabs() {
         // Without any actions, the accessory should remain invisible.
         assertThat(mModel.getActionList().getItemCount(), is(0));
