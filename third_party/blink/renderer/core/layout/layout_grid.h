@@ -107,8 +107,8 @@ class LayoutGrid final : public LayoutBlock {
                          size_t span,
                          base::Optional<LayoutUnit> available_size) const;
   bool CachedHasDefiniteLogicalHeight() const;
-  bool IsBaselineAlignmentForChild(const LayoutBox& child,
-                                   GridAxis = kGridColumnAxis) const;
+  bool IsBaselineAlignmentForChild(const LayoutBox& child) const;
+  bool IsBaselineAlignmentForChild(const LayoutBox& child, GridAxis) const;
 
   StyleSelfAlignmentData SelfAlignmentForChild(
       GridAxis,
@@ -174,6 +174,8 @@ class LayoutGrid final : public LayoutBlock {
 
   void LayoutOrthogonalWritingModeRoots(const GridTrackSizingAlgorithm&,
                                         const Vector<LayoutBox*>&) const;
+  void LayoutBaselineAlignedItems(const GridTrackSizingAlgorithm&,
+                                  const Vector<LayoutBox*>&) const;
 
   void PlaceItemsOnGrid(
       GridTrackSizingAlgorithm&,

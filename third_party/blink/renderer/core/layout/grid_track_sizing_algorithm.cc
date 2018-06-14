@@ -408,7 +408,8 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
 bool GridTrackSizingAlgorithm::CanParticipateInBaselineAlignment(
     const LayoutBox& child,
     GridAxis baseline_axis) const {
-  if (!layout_grid_->IsBaselineAlignmentForChild(child, baseline_axis))
+  if (child.NeedsLayout() ||
+      !layout_grid_->IsBaselineAlignmentForChild(child, baseline_axis))
     return false;
 
   // Baseline cyclic dependencies only happen with synthesized
@@ -1582,15 +1583,6 @@ void GridTrackSizingAlgorithm::UpdateBaselineAlignmentContext(
   if (!can_participate_in_row_axis_baseline &&
       !can_participate_in_column_axis_baseline)
     return;
-
-  if ((can_participate_in_row_axis_baseline &&
-       child.HasRelativeLogicalWidth()) ||
-      (can_participate_in_column_axis_baseline &&
-       child.HasRelativeLogicalHeight())) {
-    layout_grid_->UpdateGridAreaLogicalSize(
-        child, EstimatedGridAreaBreadthForChild(child));
-  }
-  child.LayoutIfNeeded();
 
   if (can_participate_in_row_axis_baseline)
     UpdateBaselineAlignmentContext(child, kGridRowAxis);

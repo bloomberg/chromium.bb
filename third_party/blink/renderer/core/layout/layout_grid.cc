@@ -771,6 +771,7 @@ void LayoutGrid::PlaceItemsOnGrid(
   Vector<LayoutBox*> auto_major_axis_auto_grid_items;
   Vector<LayoutBox*> specified_major_axis_auto_grid_items;
   Vector<LayoutBox*> orthogonal_grid_items;
+  Vector<LayoutBox*> baseline_grid_items;
 #if DCHECK_IS_ON()
   DCHECK(!grid.HasAnyGridItemPaintOrder());
 #endif
@@ -791,6 +792,8 @@ void LayoutGrid::PlaceItemsOnGrid(
 
     if (GridLayoutUtils::IsOrthogonalChild(*this, *child))
       orthogonal_grid_items.push_back(child);
+    if (IsBaselineAlignmentForChild(*child))
+      baseline_grid_items.push_back(child);
     grid.SetGridItemPaintOrder(*child, child_index++);
 
     GridArea area = grid.GridItemArea(*child);
@@ -844,6 +847,11 @@ void LayoutGrid::PlaceItemsOnGrid(
   // and even wrong if they don't have their corresponding Grid Area.
   LayoutOrthogonalWritingModeRoots(algorithm, orthogonal_grid_items);
 
+  // We need to layout the item to know whether it must synthesize its
+  // baseline or not, which may imply a cyclic sizing dependency.
+  // TODO (jfernandez): Can we avoid it ?
+  LayoutBaselineAlignedItems(algorithm, baseline_grid_items);
+
 #if DCHECK_IS_ON()
   for (LayoutBox* child = grid.GetOrderIterator().First(); child;
        child = grid.GetOrderIterator().Next()) {
@@ -883,6 +891,22 @@ void LayoutGrid::LayoutOrthogonalWritingModeRoots(
           *root, algorithm.EstimatedGridAreaBreadthForChild(*root));
       root->LayoutIfNeeded();
     }
+  }
+}
+
+void LayoutGrid::LayoutBaselineAlignedItems(
+    const GridTrackSizingAlgorithm& algorithm,
+    const Vector<LayoutBox*>& items_list) const {
+  if (!GetDocument().View()->IsInPerformLayout())
+    return;
+
+  for (auto* item : items_list) {
+    DCHECK(IsBaselineAlignmentForChild(*item));
+    if (item->HasRelativeLogicalWidth() || item->HasRelativeLogicalHeight()) {
+      UpdateGridAreaLogicalSize(
+          *item, algorithm.EstimatedGridAreaBreadthForChild(*item));
+    }
+    item->LayoutIfNeeded();
   }
 }
 
@@ -1628,7 +1652,7 @@ LayoutUnit LayoutGrid::FirstLineBoxBaseline() const {
       const LayoutBox* child = grid_->Cell(0, column)[index];
       DCHECK(!child->IsOutOfFlowPositioned());
       // If an item participates in baseline alignment, we select such item.
-      if (IsBaselineAlignmentForChild(*child)) {
+      if (IsBaselineAlignmentForChild(*child, kGridColumnAxis)) {
         // TODO (lajava): self-baseline and content-baseline alignment
         // still not implemented.
         baseline_child = child;
@@ -1676,6 +1700,11 @@ LayoutUnit LayoutGrid::InlineBlockBaseline(LineDirectionMode direction) const {
   LayoutUnit margin_height =
       direction == kHorizontalLine ? MarginTop() : MarginRight();
   return SynthesizedBaselineFromContentBox(*this, direction) + margin_height;
+}
+
+bool LayoutGrid::IsBaselineAlignmentForChild(const LayoutBox& child) const {
+  return IsBaselineAlignmentForChild(child, kGridRowAxis) ||
+         IsBaselineAlignmentForChild(child, kGridColumnAxis);
 }
 
 bool LayoutGrid::IsBaselineAlignmentForChild(const LayoutBox& child,
