@@ -57,11 +57,23 @@ class FileManagerUITest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, CheckSelect) {
+// Fails on Linux Chromium OS ASan LSan https://crbug.com/852788
+#if defined(LEAK_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_CheckSelect DISABLED_CheckSelect
+#else
+#define MAYBE_CheckSelect CheckSelect
+#endif
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, MAYBE_CheckSelect) {
   RunTest("checkselect");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, Crostini) {
+// Fails on Linux Chromium OS ASan LSan https://crbug.com/852788
+#if defined(LEAK_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_Crostini DISABLED_Crostini
+#else
+#define MAYBE_Crostini Crostini
+#endif
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, MAYBE_Crostini) {
   RunTest("crostini");
 }
 
