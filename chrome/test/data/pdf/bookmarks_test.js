@@ -55,6 +55,7 @@ var tests = [
       bookmarks: viewer.bookmarks,
       depth: 1
     });
+    document.body.appendChild(bookmarkContent);
 
     Polymer.dom.flush();
 

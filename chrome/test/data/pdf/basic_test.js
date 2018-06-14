@@ -4,8 +4,8 @@
 
 var tests = [
   /**
-   * Test that some key elements exist and that they have the appropriate
-   * constructor name. This verifies that polymer is working correctly.
+   * Test that some key elements exist and that they have a shadowRoot. This
+   * verifies that Polymer is working correctly.
    */
   function testHasElements() {
     var elementNames = [
@@ -15,11 +15,9 @@ var tests = [
       'viewer-error-screen'
     ];
     for (var i = 0; i < elementNames.length; i++) {
-      var elements = document.querySelectorAll(elementNames[i]);
+      var elements = document.body.querySelectorAll(elementNames[i]);
       chrome.test.assertEq(1, elements.length);
-      var element = elements[0];
-      chrome.test.assertTrue(
-          String(element.constructor).indexOf(elementNames[i]) != -1);
+      chrome.test.assertTrue(elements[0].shadowRoot !== null);
     }
     chrome.test.succeed();
   },
