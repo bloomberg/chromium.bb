@@ -52,10 +52,15 @@ class CC_EXPORT RenderFrameMetadata {
   // empty or otherwise unused, the bound types will indicate such.
   viz::Selection<gfx::SelectionBound> selection;
 
-  // The page scale factor used on the content.
+  // These limits can be used together with the scroll/scale fields above to
+  // determine if scrolling/scaling in a particular direction is possible.
   float page_scale_factor = 1.f;
+  float min_page_scale_factor = 0.f;
+  float max_page_scale_factor = 0.f;
+  bool root_overflow_y_hidden = false;
 
   gfx::SizeF scrollable_viewport_size;
+  gfx::SizeF root_layer_size;
 
   // Determines whether the page is mobile optimized or not, which means at
   // least one of the following has to be true:

@@ -10,6 +10,7 @@
 
 #include "base/android/build_info.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -992,29 +993,31 @@ bool RenderWidgetHostViewAndroid::RequestRepaintForTesting() {
 }
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
-    viz::CompositorFrameMetadata frame_metadata) {
+    viz::CompositorFrameMetadata metadata) {
   if (!view_.parent())
     return;
 
-  bool is_mobile_optimized = IsMobileOptimizedFrame(frame_metadata);
+  bool is_mobile_optimized = IsMobileOptimizedFrame(
+      metadata.page_scale_factor, metadata.min_page_scale_factor,
+      metadata.max_page_scale_factor, metadata.scrollable_viewport_size,
+      metadata.root_layer_size);
 
   if (host() && host()->input_router()) {
     host()->input_router()->NotifySiteIsMobileOptimized(is_mobile_optimized);
   }
 
-  if (host() && frame_metadata.frame_token)
-    host()->DidProcessFrame(frame_metadata.frame_token);
+  if (host() && metadata.frame_token)
+    host()->DidProcessFrame(metadata.frame_token);
 
   // This is a subset of OnSwapCompositorFrame() used in the synchronous
   // compositor flow.
-  OnFrameMetadataUpdated(frame_metadata.Clone(), false);
+  OnFrameMetadataUpdated(metadata.Clone(), false);
 
   // DevTools ScreenCast support for Android WebView.
   RenderFrameHost* frame_host = RenderViewHost::From(host())->GetMainFrame();
   if (frame_host) {
     RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
-        frame_host,
-        std::move(frame_metadata));
+        frame_host, std::move(metadata));
   }
 }
 
@@ -1160,16 +1163,22 @@ RenderWidgetHostViewAndroid::GetWebContentsAccessibilityAndroid() const {
 }
 
 void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
-    const viz::CompositorFrameMetadata& frame_metadata,
+    const viz::CompositorFrameMetadata& metadata,
     bool is_transparent) {
-  bool is_mobile_optimized = IsMobileOptimizedFrame(frame_metadata);
+  if (features::IsSurfaceSynchronizationEnabled())
+    return;
+
+  bool is_mobile_optimized = IsMobileOptimizedFrame(
+      metadata.page_scale_factor, metadata.min_page_scale_factor,
+      metadata.max_page_scale_factor, metadata.scrollable_viewport_size,
+      metadata.root_layer_size);
+
   gesture_provider_.SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
 
   float dip_scale = view_.GetDipScale();
-  gfx::SizeF root_layer_size_dip = frame_metadata.root_layer_size;
-  gfx::SizeF scrollable_viewport_size_dip =
-      frame_metadata.scrollable_viewport_size;
-  gfx::Vector2dF root_scroll_offset_dip = frame_metadata.root_scroll_offset;
+  gfx::SizeF root_layer_size_dip = metadata.root_layer_size;
+  gfx::SizeF scrollable_viewport_size_dip = metadata.scrollable_viewport_size;
+  gfx::Vector2dF root_scroll_offset_dip = metadata.root_scroll_offset;
   if (IsUseZoomForDSFEnabled()) {
     float pix_to_dip = 1 / dip_scale;
     root_layer_size_dip.Scale(pix_to_dip);
@@ -1180,62 +1189,57 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
   // Note that the height of browser control is not affected by page scale
   // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
-  float top_content_offset = frame_metadata.top_controls_height *
-                             frame_metadata.top_controls_shown_ratio;
+  float top_content_offset =
+      metadata.top_controls_height * metadata.top_controls_shown_ratio;
   float top_shown_pix = top_content_offset * to_pix;
 
-  if (ime_adapter_android_)
-    ime_adapter_android_->UpdateFrameInfo(frame_metadata.selection.start,
-                                          dip_scale, top_shown_pix);
+  if (ime_adapter_android_) {
+    ime_adapter_android_->UpdateFrameInfo(metadata.selection.start, dip_scale,
+                                          top_shown_pix);
+  }
 
   auto* wcax = GetWebContentsAccessibilityAndroid();
   if (wcax)
-    wcax->UpdateFrameInfo(frame_metadata.page_scale_factor);
+    wcax->UpdateFrameInfo(metadata.page_scale_factor);
 
   if (!gesture_listener_manager_)
     return;
 
-  if (overscroll_controller_)
-    overscroll_controller_->OnFrameMetadataUpdated(frame_metadata);
-
-  if (!features::IsSurfaceSynchronizationEnabled()) {
-    UpdateTouchSelectionController(
-        frame_metadata.selection, frame_metadata.page_scale_factor,
-        frame_metadata.top_controls_height,
-        frame_metadata.top_controls_shown_ratio, scrollable_viewport_size_dip);
+  if (overscroll_controller_) {
+    overscroll_controller_->OnFrameMetadataUpdated(
+        metadata.page_scale_factor, metadata.device_scale_factor,
+        metadata.scrollable_viewport_size, metadata.root_layer_size,
+        metadata.root_scroll_offset, metadata.root_overflow_y_hidden);
   }
 
-  SetContentBackgroundColor(is_transparent
-                                ? SK_ColorTRANSPARENT
-                                : frame_metadata.root_background_color);
-
+  UpdateTouchSelectionController(metadata.selection, metadata.page_scale_factor,
+                                 metadata.top_controls_height,
+                                 metadata.top_controls_shown_ratio,
+                                 scrollable_viewport_size_dip);
   // ViewAndroid::content_offset() must be in CSS scale
   float top_content_offset_dip = IsUseZoomForDSFEnabled()
                                      ? top_content_offset / dip_scale
                                      : top_content_offset;
   view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset});
-  bool controls_changed =
-      features::IsSurfaceSynchronizationEnabled()
-          ? false
-          : UpdateControls(view_.GetDipScale(),
-                           frame_metadata.top_controls_height,
-                           frame_metadata.top_controls_shown_ratio,
-                           frame_metadata.bottom_controls_height,
-                           frame_metadata.bottom_controls_shown_ratio);
-
-  page_scale_ = frame_metadata.page_scale_factor;
-  min_page_scale_ = frame_metadata.min_page_scale_factor;
-  max_page_scale_ = frame_metadata.max_page_scale_factor;
+  bool controls_changed = UpdateControls(
+      view_.GetDipScale(), metadata.top_controls_height,
+      metadata.top_controls_shown_ratio, metadata.bottom_controls_height,
+      metadata.bottom_controls_shown_ratio);
 
   // All offsets and sizes except |top_shown_pix| are in CSS pixels.
-  // TODO(fsamuel): This needs to be synchronized with RenderFrameMetadata when
-  // surface synchronization is enabled.
   gesture_listener_manager_->UpdateScrollInfo(
-      root_scroll_offset_dip, frame_metadata.page_scale_factor,
-      frame_metadata.min_page_scale_factor,
-      frame_metadata.max_page_scale_factor, root_layer_size_dip,
-      scrollable_viewport_size_dip, top_content_offset_dip, top_shown_pix,
-      controls_changed);
+      root_scroll_offset_dip, metadata.page_scale_factor,
+      metadata.min_page_scale_factor, metadata.max_page_scale_factor,
+      root_layer_size_dip, scrollable_viewport_size_dip, top_content_offset_dip,
+      top_shown_pix, controls_changed);
+
+  // TODO(fsamuel): Plumb the |is_transparent| flag through RenderFrameMetadata.
+  SetContentBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
+                                           : metadata.root_background_color);
+
+  page_scale_ = metadata.page_scale_factor;
+  min_page_scale_ = metadata.min_page_scale_factor;
+  max_page_scale_ = metadata.max_page_scale_factor;
 
   EvictFrameIfNecessary();
 }
@@ -1308,35 +1312,90 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
 
 void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
-  if (local_surface_id_allocator_.UpdateFromChild(
+  base::ScopedClosureRunner sync_visual_props_runner(base::BindOnce(
+      base::IgnoreResult(
+          &RenderWidgetHostViewAndroid::SynchronizeVisualProperties),
+      base::Unretained(this)));
+
+  if (!local_surface_id_allocator_.UpdateFromChild(
           metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
-    if (features::IsSurfaceSynchronizationEnabled()) {
-      // A synchronization event was initiated by the renderer so let's updated
-      // the top/bottom bar controls now.
-      UpdateControls(view_.GetDipScale(), metadata.top_controls_height,
-                     metadata.top_controls_shown_ratio,
-                     metadata.bottom_controls_height,
-                     metadata.bottom_controls_shown_ratio);
-      float dip_scale = view_.GetDipScale();
-      gfx::SizeF scrollable_viewport_size_dip =
-          metadata.scrollable_viewport_size;
-      if (IsUseZoomForDSFEnabled()) {
-        float pix_to_dip = 1.f / dip_scale;
-        scrollable_viewport_size_dip.Scale(pix_to_dip);
-      }
-      UpdateTouchSelectionController(
-          metadata.selection, metadata.page_scale_factor,
-          metadata.top_controls_height, metadata.top_controls_shown_ratio,
-          scrollable_viewport_size_dip);
-    }
-    if (delegated_frame_host_) {
-      delegated_frame_host_->EmbedSurface(
-          local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
-          GetCompositorViewportPixelSize(),
-          cc::DeadlinePolicy::UseDefaultDeadline());
-    }
+    return;
   }
-  host()->SynchronizeVisualProperties();
+
+  if (!features::IsSurfaceSynchronizationEnabled())
+    return;
+
+  bool is_mobile_optimized = IsMobileOptimizedFrame(
+      metadata.page_scale_factor, metadata.min_page_scale_factor,
+      metadata.max_page_scale_factor, metadata.scrollable_viewport_size,
+      metadata.root_layer_size);
+
+  gesture_provider_.SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
+
+  float dip_scale = view_.GetDipScale();
+  gfx::SizeF root_layer_size_dip = metadata.root_layer_size;
+  gfx::SizeF scrollable_viewport_size_dip = metadata.scrollable_viewport_size;
+  gfx::Vector2dF root_scroll_offset_dip =
+      metadata.root_scroll_offset.value_or(gfx::Vector2dF());
+  if (IsUseZoomForDSFEnabled()) {
+    float pix_to_dip = 1 / dip_scale;
+    root_layer_size_dip.Scale(pix_to_dip);
+    scrollable_viewport_size_dip.Scale(pix_to_dip);
+    root_scroll_offset_dip.Scale(pix_to_dip);
+  }
+
+  float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
+  // Note that the height of browser control is not affected by page scale
+  // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
+  float top_content_offset =
+      metadata.top_controls_height * metadata.top_controls_shown_ratio;
+  float top_shown_pix = top_content_offset * to_pix;
+
+  if (ime_adapter_android_) {
+    ime_adapter_android_->UpdateFrameInfo(metadata.selection.start, dip_scale,
+                                          top_shown_pix);
+  }
+
+  auto* wcax = GetWebContentsAccessibilityAndroid();
+  if (wcax)
+    wcax->UpdateFrameInfo(metadata.page_scale_factor);
+
+  if (!gesture_listener_manager_)
+    return;
+
+  if (overscroll_controller_) {
+    overscroll_controller_->OnFrameMetadataUpdated(
+        metadata.page_scale_factor, metadata.device_scale_factor,
+        metadata.scrollable_viewport_size, metadata.root_layer_size,
+        metadata.root_scroll_offset.value_or(gfx::Vector2dF()),
+        metadata.root_overflow_y_hidden);
+  }
+
+  UpdateTouchSelectionController(metadata.selection, metadata.page_scale_factor,
+                                 metadata.top_controls_height,
+                                 metadata.top_controls_shown_ratio,
+                                 scrollable_viewport_size_dip);
+
+  // ViewAndroid::content_offset() must be in CSS scale
+  float top_content_offset_dip = IsUseZoomForDSFEnabled()
+                                     ? top_content_offset / dip_scale
+                                     : top_content_offset;
+  view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset});
+  bool controls_changed = UpdateControls(
+      view_.GetDipScale(), metadata.top_controls_height,
+      metadata.top_controls_shown_ratio, metadata.bottom_controls_height,
+      metadata.bottom_controls_shown_ratio);
+
+  // All offsets and sizes except |top_shown_pix| are in CSS pixels.
+  gesture_listener_manager_->UpdateScrollInfo(
+      root_scroll_offset_dip, metadata.page_scale_factor,
+      metadata.min_page_scale_factor, metadata.max_page_scale_factor,
+      root_layer_size_dip, scrollable_viewport_size_dip, top_content_offset_dip,
+      top_shown_pix, controls_changed);
+
+  page_scale_ = metadata.page_scale_factor;
+  min_page_scale_ = metadata.min_page_scale_factor;
+  max_page_scale_ = metadata.max_page_scale_factor;
 }
 
 void RenderWidgetHostViewAndroid::ShowInternal() {

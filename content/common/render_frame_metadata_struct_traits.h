@@ -29,6 +29,18 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.page_scale_factor;
   }
 
+  static float min_page_scale_factor(const cc::RenderFrameMetadata& metadata) {
+    return metadata.min_page_scale_factor;
+  }
+
+  static float max_page_scale_factor(const cc::RenderFrameMetadata& metadata) {
+    return metadata.max_page_scale_factor;
+  }
+
+  static bool root_overflow_y_hidden(const cc::RenderFrameMetadata& metadata) {
+    return metadata.root_overflow_y_hidden;
+  }
+
   static bool is_scroll_offset_at_top(const cc::RenderFrameMetadata& metadata) {
     return metadata.is_scroll_offset_at_top;
   }
@@ -41,6 +53,11 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
   static const gfx::SizeF& scrollable_viewport_size(
       const cc::RenderFrameMetadata& metadata) {
     return metadata.scrollable_viewport_size;
+  }
+
+  static const gfx::SizeF& root_layer_size(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.root_layer_size;
   }
 
   static bool is_mobile_optimized(const cc::RenderFrameMetadata& metadata) {

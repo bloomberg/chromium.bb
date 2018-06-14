@@ -1922,6 +1922,19 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
   metadata.root_scroll_offset =
       gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
   metadata.page_scale_factor = active_tree_->current_page_scale_factor();
+  metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
+  metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
+  metadata.root_layer_size = active_tree_->ScrollableSize();
+  if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
+    metadata.root_overflow_y_hidden =
+        !outer_viewport_scroll_node->user_scrollable_vertical;
+  }
+  const auto* inner_viewport_scroll_node = InnerViewportScrollNode();
+  if (inner_viewport_scroll_node) {
+    metadata.root_overflow_y_hidden |=
+        !inner_viewport_scroll_node->user_scrollable_vertical;
+  }
+
   metadata.root_background_color = active_tree_->background_color();
   metadata.is_scroll_offset_at_top = active_tree_->TotalScrollOffset().y() == 0;
   metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
