@@ -22,6 +22,8 @@ class SecureChannelBase;
 // implementation and shares it among all connection requests.
 class SecureChannelService : public service_manager::Service {
  public:
+  static std::unique_ptr<service_manager::Service> CreateService();
+
   SecureChannelService();
   ~SecureChannelService() override;
 

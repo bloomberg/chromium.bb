@@ -317,7 +317,10 @@
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chromeos/chromeos_constants.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
+#include "chromeos/services/secure_channel/secure_channel_service.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 #elif defined(OS_LINUX)
@@ -3475,6 +3478,16 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
         base::Bind(&proxy_resolver::ProxyResolverService::CreateService);
     services->insert(
         std::make_pair(proxy_resolver::mojom::kProxyResolverServiceName, info));
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::Bind(
+        &chromeos::secure_channel::SecureChannelService::CreateService);
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    services->emplace(chromeos::secure_channel::mojom::kServiceName, info);
   }
 #endif
   g_browser_process->platform_part()->RegisterInProcessServices(services,
