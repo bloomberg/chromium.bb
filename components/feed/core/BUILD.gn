@@ -24,10 +24,13 @@ source_set("feed_core") {
     "pref_names.h",
     "time_serialization.cc",
     "time_serialization.h",
+    "user_classifier.cc",
+    "user_classifier.h",
   ]
 
   public_deps = [
     "//base",
+    "//components/feed:feature_list",
     "//components/feed/core/proto",
     "//components/image_fetcher/core:core",
     "//components/keyed_service/core",
@@ -65,6 +68,7 @@ source_set("core_unit_tests") {
     "feed_networking_host_unittest.cc",
     "feed_scheduler_host_unittest.cc",
     "feed_storage_database_unittest.cc",
+    "user_classifier_unittest.cc",
   ]
 
   deps = [
@@ -73,6 +77,7 @@ source_set("core_unit_tests") {
     "//base/test:test_support",
     "//components/leveldb_proto:test_support",
     "//components/prefs:test_support",
+    "//components/variations:test_support",
     "//net:test_support",
     "//services/identity/public/cpp",
     "//services/identity/public/cpp:test_support",

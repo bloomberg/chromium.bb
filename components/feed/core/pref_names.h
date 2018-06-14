@@ -12,6 +12,19 @@ namespace prefs {
 // The pref name for the last time when a background fetch was attempted.
 extern const char kLastFetchAttemptTime[];
 
+// The pref name for the discounted average number of browsing sessions per hour
+// that involve opening a new NTP.
+extern const char kUserClassifierAverageNTPOpenedPerHour[];
+// The pref name for the discounted average number of browsing sessions per hour
+// that involve using content suggestions (i.e. opening one or clicking on the
+// "More" button).
+extern const char kUserClassifierAverageSuggestionsUsedPerHour[];
+
+// The pref name for the last time a new NTP was opened.
+extern const char kUserClassifierLastTimeToOpenNTP[];
+// The pref name for the last time content suggestions were used by the user.
+extern const char kUserClassifierLastTimeToUseSuggestions[];
+
 }  // namespace prefs
 
 }  // namespace feed

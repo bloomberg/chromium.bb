@@ -191,6 +191,7 @@
 #include "components/ntp_tiles/popular_sites_impl.h"
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #include "components/feed/core/feed_scheduler_host.h"
+#include "components/feed/core/user_classifier.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else
 #include "chrome/browser/gcm/gcm_product_util.h"
@@ -595,6 +596,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RecentTabsPagePrefs::RegisterProfilePrefs(registry);
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
   feed::FeedSchedulerHost::RegisterProfilePrefs(registry);
+  feed::UserClassifier::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else
   AppShortcutManager::RegisterProfilePrefs(registry);
