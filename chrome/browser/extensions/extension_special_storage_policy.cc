@@ -113,10 +113,10 @@ bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return cookie_settings_->IsCookieSessionOnly(origin);
 }
 
-storage::SpecialStoragePolicy::DeleteCookiePredicate
+network::SessionCleanupCookieStore::DeleteCookiePredicate
 ExtensionSpecialStoragePolicy::CreateDeleteCookieOnExitPredicate() {
   if (cookie_settings_.get() == NULL)
-    return DeleteCookiePredicate();
+    return network::SessionCleanupCookieStore::DeleteCookiePredicate();
   // Fetch the list of cookies related content_settings and bind it
   // to CookieSettings::ShouldDeleteCookieOnExit to avoid fetching it on
   // every call.

@@ -215,6 +215,7 @@ component("browser") {
     "//base/third_party/dynamic_annotations",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//services/network:network_service",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//sql",
@@ -356,6 +357,7 @@ static_library("test_support") {
     ":browser",
     "//base/test:test_support",
     "//net:test_support",
+    "//services/network:network_service",
     "//testing/gtest",
     "//third_party/leveldatabase",
   ]

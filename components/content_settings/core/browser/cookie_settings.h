@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/cookie_settings_base.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -28,7 +29,8 @@ const char kDummyExtensionScheme[] = ":no-extension-scheme:";
 // A frontend to the cookie settings of |HostContentSettingsMap|. Handles
 // cookie-specific logic such as blocking third-party cookies. Written on the UI
 // thread and read on any thread.
-class CookieSettings : public RefcountedKeyedService {
+class CookieSettings : public CookieSettingsBase,
+                       public RefcountedKeyedService {
  public:
   // Creates a new CookieSettings instance.
   // The caller is responsible for ensuring that |extension_scheme| is valid for
@@ -58,20 +60,6 @@ class CookieSettings : public RefcountedKeyedService {
   //
   // This may be called on any thread.
   bool IsCookieSessionOnly(const GURL& url) const;
-
-  // Returns true if the cookie associated with |domain| should be deleted
-  // on exit.
-  // This uses domain matching as described in section 5.1.3 of RFC 6265 to
-  // identify content setting rules that could have influenced the cookie
-  // when it was created.
-  // As |cookie_settings| can be expensive to create, it should be cached if
-  // multiple calls to ShouldDeleteCookieOnExit() are made.
-  //
-  // This may be called on any thread.
-  bool ShouldDeleteCookieOnExit(
-      const ContentSettingsForOneType& cookie_settings,
-      const std::string& domain,
-      bool is_https) const;
 
   // Returns all patterns with a non-default cookie setting, mapped to their
   // actual settings, in the precedence order of the setting rules. |settings|
@@ -103,11 +91,11 @@ class CookieSettings : public RefcountedKeyedService {
   // called.
   void ShutdownOnUIThread() override;
 
-  // A helper for applying third party cookie blocking rules.
+  // content_settings::CookieSettingsBase:
   void GetCookieSetting(const GURL& url,
                         const GURL& first_party_url,
                         content_settings::SettingSource* source,
-                        ContentSetting* cookie_setting) const;
+                        ContentSetting* cookie_setting) const override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

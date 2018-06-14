@@ -10,6 +10,7 @@ include_rules = [
   "+components/arc",
   "+components/vector_icons",
   "+services/network/public/mojom",
+  "+services/network/session_cleanup_cookie_store.h",
 
   # For access to testing command line switches.
   "+ppapi/shared_impl",

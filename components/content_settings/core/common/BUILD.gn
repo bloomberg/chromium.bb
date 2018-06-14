@@ -15,6 +15,8 @@ static_library("common") {
     "content_settings_types.h",
     "content_settings_utils.cc",
     "content_settings_utils.h",
+    "cookie_settings_base.cc",
+    "cookie_settings_base.h",
     "pref_names.cc",
     "pref_names.h",
   ]
@@ -35,10 +37,12 @@ source_set("unit_tests") {
   sources = [
     "content_settings_pattern_parser_unittest.cc",
     "content_settings_pattern_unittest.cc",
+    "cookie_settings_base_unittest.cc",
   ]
 
   deps = [
     ":common",
+    "//base",
     "//net",
     "//testing/gmock",
     "//testing/gtest",

@@ -419,12 +419,13 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
             &SaveSessionStateOnIOThread,
-            base::WrapRefCounted(
-                BrowserContext::GetDefaultStoragePartition(browser_context)
-                    ->GetURLRequestContext()),
+            base::WrapRefCounted(storage_partition->GetURLRequestContext()),
             static_cast<AppCacheServiceImpl*>(
                 storage_partition->GetAppCacheService())));
   }
+
+  storage_partition->GetCookieManagerForBrowserProcess()
+      ->SetForceKeepSessionState();
 
   DOMStorageContextWrapper* dom_storage_context_proxy =
       static_cast<DOMStorageContextWrapper*>(

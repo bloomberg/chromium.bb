@@ -32,6 +32,7 @@ include_rules = [
   "+net",
 
   "+ppapi",
+  "+services/network/session_cleanup_cookie_store.h",
   "+storage/browser/quota",
   "+third_party/skia/include",
 

@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_impl_io_data.h"
 #include "chrome/common/buildflags.h"
+#include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/buildflags/buildflags.h"
@@ -64,7 +65,7 @@ class PrefRegistrySyncable;
 }
 
 // The default profile implementation.
-class ProfileImpl : public Profile {
+class ProfileImpl : public Profile, public content_settings::Observer {
  public:
   // Value written to prefs when the exit type is EXIT_NORMAL. Public for tests.
   static const char kPrefExitTypeNormal[];
@@ -192,6 +193,12 @@ class ProfileImpl : public Profile {
   void ScheduleUpdateCTPolicy();
 
   void GetMediaCacheParameters(base::FilePath* cache_path, int* max_size);
+
+  // content_settings::Observer:
+  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
+                               const ContentSettingsPattern& secondary_pattern,
+                               ContentSettingsType content_type,
+                               std::string resource_identifier) override;
 
   std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
   CreateDomainReliabilityMonitor(PrefService* local_state);

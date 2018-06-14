@@ -6,11 +6,14 @@
 
 #include <utility>
 
+#include "components/content_settings/core/common/content_settings_pattern.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
+#include "services/network/session_cleanup_cookie_store.h"
 #include "url/gurl.h"
 
 using CookieDeletionInfo = net::CookieDeletionInfo;
@@ -54,10 +57,18 @@ void CookieManager::ListenerRegistration::DispatchCookieStoreChange(
   listener->OnCookieChange(cookie, ChangeCauseTranslation(cause));
 }
 
-CookieManager::CookieManager(net::CookieStore* cookie_store)
-    : cookie_store_(cookie_store) {}
+CookieManager::CookieManager(net::CookieStore* cookie_store,
+                             scoped_refptr<network::SessionCleanupCookieStore>
+                                 session_cleanup_cookie_store)
+    : cookie_store_(cookie_store),
+      session_cleanup_cookie_store_(std::move(session_cleanup_cookie_store)) {}
 
-CookieManager::~CookieManager() {}
+CookieManager::~CookieManager() {
+  if (session_cleanup_cookie_store_) {
+    session_cleanup_cookie_store_->DeleteSessionCookies(
+        cookie_settings_.CreateDeleteCookieOnExitPredicate());
+  }
+}
 
 void CookieManager::AddRequest(network::mojom::CookieManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
@@ -81,6 +92,11 @@ void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
   cookie_store_->SetCanonicalCookieAsync(
       std::make_unique<net::CanonicalCookie>(cookie), secure_source,
       modify_http_only, std::move(callback));
+}
+
+void CookieManager::SetContentSettings(
+    const ContentSettingsForOneType& settings) {
+  cookie_settings_.set_content_settings(settings);
 }
 
 void CookieManager::DeleteCookies(
@@ -175,6 +191,10 @@ void CookieManager::CloneInterface(
 void CookieManager::FlushCookieStore(FlushCookieStoreCallback callback) {
   // Flushes the backing store (if any) to disk.
   cookie_store_->FlushStore(std::move(callback));
+}
+
+void CookieManager::SetForceKeepSessionState() {
+  cookie_store_->SetForceKeepSessionState();
 }
 
 CookieDeletionInfo DeletionFilterToInfo(

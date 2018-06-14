@@ -11,7 +11,6 @@
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
 -NewlibPackagedAppTest.SuccessfulLoad
--PolicyTest.DefaultCookiesSetting
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
@@ -79,7 +78,6 @@
 -DnsProbeBrowserTest.NoInternetProbeResultWithSlowBrokenCorrections
 
 # crbug.com/776589 Intercepting requests with net::URLRequestFilter.
--ContinueWhereILeftOffTest.CookiesClearedOnExit
 -DownloadExtensionTest.DownloadExtensionTest_Download_FileSystemURL
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/0
 -PolicyTest.CertificateTransparencyEnforcementDisabledForUrls/1

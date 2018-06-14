@@ -24,9 +24,9 @@ bool MockExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
   return false;
 }
 
-storage::SpecialStoragePolicy::DeleteCookiePredicate
+network::SessionCleanupCookieStore::DeleteCookiePredicate
 MockExtensionSpecialStoragePolicy::CreateDeleteCookieOnExitPredicate() {
-  return DeleteCookiePredicate();
+  return network::SessionCleanupCookieStore::DeleteCookiePredicate();
 }
 
 MockExtensionSpecialStoragePolicy::~MockExtensionSpecialStoragePolicy() {}
