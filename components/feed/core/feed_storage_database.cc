@@ -29,12 +29,36 @@ const char kStorageDatabaseFolder[] = "storage";
 const size_t kDatabaseWriteBufferSizeBytes = 512 * 1024;
 const size_t kDatabaseWriteBufferSizeBytesForLowEndDevice = 128 * 1024;
 
-// Key prefix for content storage.
+// Key prefixes for content's storage key and journal's storage key. Because we
+// put both content data and journal data into one storage, we need to add
+// prefixes to their keys to distinguish between content keys and journal keys.
 const char kContentStoragePrefix[] = "cs-";
+const char kJournalStoragePrefix[] = "js-";
 
-// Formats key prefix for content data's key.
-std::string FormatContentDatabaseKey(const std::string& key) {
-  return kContentStoragePrefix + key;
+// Formats content key to storage key by adding a prefix.
+std::string FormatContentKeyToStorageKey(const std::string& content_key) {
+  return kContentStoragePrefix + content_key;
+}
+
+// Formats journal key to storage key by adding a prefix.
+std::string FormatJournalKeyToStorageKey(const std::string& journal_key) {
+  return kJournalStoragePrefix + journal_key;
+}
+
+// Check if the |storage_key| is for journal data.
+bool IsValidJournalKey(const std::string& storage_key) {
+  return base::StartsWith(storage_key, kJournalStoragePrefix,
+                          base::CompareCase::SENSITIVE);
+}
+
+// Parse journal key from storage key. Return an empty string if |storage_key|
+// is not recognized as journal key. ex. content's storage key.
+std::string ParseJournalKey(const std::string& storage_key) {
+  if (!IsValidJournalKey(storage_key)) {
+    return std::string();
+  }
+
+  return storage_key.substr(strlen(kJournalStoragePrefix));
 }
 
 bool DatabaseKeyFilter(const std::unordered_set<std::string>& key_set,
@@ -85,79 +109,131 @@ bool FeedStorageDatabase::IsInitialized() const {
   return INITIALIZED == database_status_;
 }
 
-void FeedStorageDatabase::LoadContentEntries(
-    const std::vector<std::string>& keys,
-    FeedContentStorageDatabaseCallback callback) {
+void FeedStorageDatabase::LoadContent(const std::vector<std::string>& keys,
+                                      ContentLoadCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::unordered_set<std::string> key_set;
   for (const auto& key : keys) {
-    key_set.insert(FormatContentDatabaseKey(key));
+    key_set.insert(FormatContentKeyToStorageKey(key));
   }
 
   storage_database_->LoadEntriesWithFilter(
       base::BindRepeating(&DatabaseKeyFilter, std::move(key_set)),
-      base::BindOnce(&FeedStorageDatabase::OnContentEntriesLoaded,
+      base::BindOnce(&FeedStorageDatabase::OnLoadEntriesForLoadContent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FeedStorageDatabase::LoadContentEntriesByPrefix(
-    const std::string& prefix,
-    FeedContentStorageDatabaseCallback callback) {
+void FeedStorageDatabase::LoadContentByPrefix(const std::string& prefix,
+                                              ContentLoadCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::string key_prefix = FormatContentDatabaseKey(prefix);
+  std::string key_prefix = FormatContentKeyToStorageKey(prefix);
 
   storage_database_->LoadEntriesWithFilter(
       base::BindRepeating(&DatabasePrefixFilter, std::move(key_prefix)),
-      base::BindOnce(&FeedStorageDatabase::OnContentEntriesLoaded,
+      base::BindOnce(&FeedStorageDatabase::OnLoadEntriesForLoadContent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FeedStorageDatabase::SaveContentEntries(
-    std::vector<KeyAndData> entries,
-    FeedStorageCommitCallback callback) {
+void FeedStorageDatabase::SaveContent(std::vector<KeyAndData> pairs,
+                                      ConfirmationCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  auto entries_to_save = std::make_unique<StorageEntryVector>();
-  for (const auto& entry : entries) {
+  auto contents_to_save = std::make_unique<StorageEntryVector>();
+  for (auto entry : pairs) {
     FeedStorageProto proto;
-    proto.set_key(entry.first);
-    proto.set_content_data(entry.second);
-    entries_to_save->emplace_back(FormatContentDatabaseKey(entry.first),
-                                  std::move(proto));
+    proto.set_key(std::move(entry.first));
+    proto.set_content_data(std::move(entry.second));
+    contents_to_save->emplace_back(FormatContentKeyToStorageKey(proto.key()),
+                                   std::move(proto));
   }
 
   storage_database_->UpdateEntries(
-      std::move(entries_to_save), std::make_unique<std::vector<std::string>>(),
+      std::move(contents_to_save), std::make_unique<std::vector<std::string>>(),
       base::BindOnce(&FeedStorageDatabase::OnStorageCommitted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FeedStorageDatabase::DeleteContentEntries(
-    std::vector<std::string> keys_to_delete,
-    FeedStorageCommitCallback callback) {
+void FeedStorageDatabase::DeleteContent(
+    const std::vector<std::string>& keys_to_delete,
+    ConfirmationCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::unordered_set<std::string> key_set;
   for (const auto& key : keys_to_delete) {
-    key_set.insert(FormatContentDatabaseKey(key));
+    key_set.insert(FormatContentKeyToStorageKey(key));
   }
   storage_database_->LoadEntriesWithFilter(
       base::BindRepeating(&DatabaseKeyFilter, std::move(key_set)),
-      base::BindOnce(&FeedStorageDatabase::OnContentDeletedEntriesLoaded,
+      base::BindOnce(&FeedStorageDatabase::OnLoadEntriesForDeleteContent,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FeedStorageDatabase::DeleteContentEntriesByPrefix(
+void FeedStorageDatabase::DeleteContentByPrefix(
     const std::string& prefix_to_delete,
-    FeedStorageCommitCallback callback) {
+    ConfirmationCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::string key_prefix = FormatContentDatabaseKey(prefix_to_delete);
+  std::string key_prefix = FormatContentKeyToStorageKey(prefix_to_delete);
   storage_database_->LoadEntriesWithFilter(
       base::BindRepeating(&DatabasePrefixFilter, std::move(key_prefix)),
-      base::BindOnce(&FeedStorageDatabase::OnContentDeletedEntriesLoaded,
+      base::BindOnce(&FeedStorageDatabase::OnLoadEntriesForDeleteContent,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FeedStorageDatabase::LoadJournal(const std::string& key,
+                                      JournalLoadCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  storage_database_->GetEntry(
+      FormatJournalKeyToStorageKey(key),
+      base::BindOnce(&FeedStorageDatabase::OnGetEntryForLoadJournal,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FeedStorageDatabase::LoadAllJournalKeys(JournalLoadCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  storage_database_->LoadKeys(
+      base::BindOnce(&FeedStorageDatabase::OnLoadKeysForLoadAllJournalKeys,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FeedStorageDatabase::AppendToJournal(const std::string& key,
+                                          std::vector<std::string> entries,
+                                          ConfirmationCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  storage_database_->GetEntry(
+      FormatJournalKeyToStorageKey(key),
+      base::BindOnce(&FeedStorageDatabase::OnGetEntryAppendToJournal,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback), key,
+                     std::move(entries)));
+}
+
+void FeedStorageDatabase::CopyJournal(const std::string& from_key,
+                                      const std::string& to_key,
+                                      ConfirmationCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  storage_database_->GetEntry(
+      FormatJournalKeyToStorageKey(from_key),
+      base::BindOnce(&FeedStorageDatabase::OnGetEntryForCopyJournal,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     to_key));
+}
+
+void FeedStorageDatabase::DeleteJournal(const std::string& key,
+                                        ConfirmationCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto journals_to_delete = std::make_unique<std::vector<std::string>>();
+  journals_to_delete->push_back(FormatJournalKeyToStorageKey(key));
+
+  storage_database_->UpdateEntries(
+      std::make_unique<StorageEntryVector>(), std::move(journals_to_delete),
+      base::BindOnce(&FeedStorageDatabase::OnStorageCommitted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -172,52 +248,145 @@ void FeedStorageDatabase::OnDatabaseInitialized(bool success) {
   }
 }
 
-void FeedStorageDatabase::OnContentEntriesLoaded(
-    FeedContentStorageDatabaseCallback callback,
+void FeedStorageDatabase::OnLoadEntriesForLoadContent(
+    ContentLoadCallback callback,
     bool success,
-    std::unique_ptr<std::vector<FeedStorageProto>> entries) {
+    std::unique_ptr<std::vector<FeedStorageProto>> content) {
   std::vector<KeyAndData> results;
 
-  if (!success || !entries) {
+  if (!success || !content) {
     DVLOG_IF(1, !success) << "FeedStorageDatabase load content failed.";
     std::move(callback).Run(std::move(results));
     return;
   }
 
-  for (const auto& entry : *entries) {
-    DCHECK(entry.has_key());
-    DCHECK(entry.has_content_data());
+  for (const auto& proto : *content) {
+    DCHECK(proto.has_key());
+    DCHECK(proto.has_content_data());
 
-    results.emplace_back(std::make_pair(entry.key(), entry.content_data()));
+    results.emplace_back(proto.key(), proto.content_data());
   }
 
   std::move(callback).Run(std::move(results));
 }
 
-void FeedStorageDatabase::OnContentDeletedEntriesLoaded(
-    FeedStorageCommitCallback callback,
+void FeedStorageDatabase::OnLoadEntriesForDeleteContent(
+    ConfirmationCallback callback,
     bool success,
-    std::unique_ptr<std::vector<FeedStorageProto>> entries) {
-  auto entries_to_delete = std::make_unique<std::vector<std::string>>();
-
-  if (!success || !entries) {
+    std::unique_ptr<std::vector<FeedStorageProto>> content) {
+  if (!success || !content) {
     DVLOG_IF(1, !success) << "FeedStorageDatabase load content failed.";
     std::move(callback).Run(success);
     return;
   }
 
-  for (const auto& entry : *entries) {
-    DCHECK(entry.has_content_data());
-    entries_to_delete->push_back(FormatContentDatabaseKey(entry.key()));
+  auto contents_to_delete = std::make_unique<std::vector<std::string>>();
+  for (const auto& proto : *content) {
+    DCHECK(proto.has_content_data());
+    contents_to_delete->push_back(FormatContentKeyToStorageKey(proto.key()));
   }
 
   storage_database_->UpdateEntries(
-      std::make_unique<StorageEntryVector>(), std::move(entries_to_delete),
+      std::make_unique<StorageEntryVector>(), std::move(contents_to_delete),
       base::BindOnce(&FeedStorageDatabase::OnStorageCommitted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FeedStorageDatabase::OnStorageCommitted(FeedStorageCommitCallback callback,
+void FeedStorageDatabase::OnGetEntryForLoadJournal(
+    JournalLoadCallback callback,
+    bool success,
+    std::unique_ptr<FeedStorageProto> journal) {
+  std::vector<std::string> results;
+
+  if (!success || !journal) {
+    DVLOG_IF(1, !success) << "FeedStorageDatabase load journal failed.";
+    std::move(callback).Run(std::move(results));
+    return;
+  }
+
+  for (int i = 0; i < journal->journal_data_size(); ++i) {
+    results.emplace_back(journal->journal_data(i));
+  }
+
+  std::move(callback).Run(std::move(results));
+}
+
+void FeedStorageDatabase::OnGetEntryAppendToJournal(
+    ConfirmationCallback callback,
+    std::string key,
+    std::vector<std::string> entries,
+    bool success,
+    std::unique_ptr<FeedStorageProto> journal) {
+  if (!success) {
+    DVLOG(1) << "FeedStorageDatabase load journal failed.";
+    std::move(callback).Run(success);
+    return;
+  }
+
+  if (journal == nullptr) {
+    // The journal does not exist, create a new one.
+    journal = std::make_unique<FeedStorageProto>();
+    journal->set_key(key);
+  }
+  DCHECK_EQ(journal->key(), key);
+
+  for (const std::string& entry : entries) {
+    journal->add_journal_data(entry);
+  }
+  auto journals_to_save = std::make_unique<StorageEntryVector>();
+  journals_to_save->emplace_back(FormatJournalKeyToStorageKey(key),
+                                 std::move(*journal));
+
+  storage_database_->UpdateEntries(
+      std::move(journals_to_save), std::make_unique<std::vector<std::string>>(),
+      base::BindOnce(&FeedStorageDatabase::OnStorageCommitted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FeedStorageDatabase::OnGetEntryForCopyJournal(
+    ConfirmationCallback callback,
+    std::string to_key,
+    bool success,
+    std::unique_ptr<FeedStorageProto> journal) {
+  if (!success || !journal) {
+    DVLOG_IF(1, !success) << "FeedStorageDatabase load journal failed.";
+    std::move(callback).Run(success);
+    return;
+  }
+
+  journal->set_key(to_key);
+  auto journal_to_save = std::make_unique<StorageEntryVector>();
+  journal_to_save->emplace_back(FormatJournalKeyToStorageKey(to_key),
+                                std::move(*journal));
+
+  storage_database_->UpdateEntries(
+      std::move(journal_to_save), std::make_unique<std::vector<std::string>>(),
+      base::BindOnce(&FeedStorageDatabase::OnStorageCommitted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FeedStorageDatabase::OnLoadKeysForLoadAllJournalKeys(
+    JournalLoadCallback callback,
+    bool success,
+    std::unique_ptr<std::vector<std::string>> keys) {
+  std::vector<std::string> results;
+
+  if (!success || !keys) {
+    DVLOG_IF(1, !success) << "FeedStorageDatabase load journal keys failed.";
+    std::move(callback).Run(std::move(results));
+    return;
+  }
+
+  // Filter out content keys, only keep journal keys.
+  for (const std::string& key : *keys) {
+    if (IsValidJournalKey(key))
+      results.emplace_back(ParseJournalKey(key));
+  }
+
+  std::move(callback).Run(std::move(results));
+}
+
+void FeedStorageDatabase::OnStorageCommitted(ConfirmationCallback callback,
                                              bool success) {
   DVLOG_IF(1, !success) << "FeedStorageDatabase committed failed.";
   std::move(callback).Run(success);

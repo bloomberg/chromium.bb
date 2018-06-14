@@ -27,11 +27,14 @@ class FeedStorageDatabase {
 
   // Returns the storage data as a vector of key-value pairs when calling
   // loading data.
-  using FeedContentStorageDatabaseCallback =
-      base::OnceCallback<void(std::vector<KeyAndData>)>;
+  using ContentLoadCallback = base::OnceCallback<void(std::vector<KeyAndData>)>;
 
-  // Returns the commit operations success or not.
-  using FeedStorageCommitCallback = base::OnceCallback<void(bool)>;
+  // Returns the journal data as a vector of strings when calling loading data.
+  using JournalLoadCallback =
+      base::OnceCallback<void(std::vector<std::string>)>;
+
+  // Returns whether the commit operation succeeded.
+  using ConfirmationCallback = base::OnceCallback<void(bool)>;
 
   // Initializes the database with |database_folder|.
   FeedStorageDatabase(
@@ -52,36 +55,83 @@ class FeedStorageDatabase {
   // failed.
   bool IsInitialized() const;
 
-  // content storage.
-  void LoadContentEntries(const std::vector<std::string>& keys,
-                          FeedContentStorageDatabaseCallback callback);
-  void LoadContentEntriesByPrefix(const std::string& prefix,
-                                  FeedContentStorageDatabaseCallback callback);
-  void SaveContentEntries(std::vector<KeyAndData> entries,
-                          FeedStorageCommitCallback callback);
-  void DeleteContentEntries(std::vector<std::string> keys_to_delete,
-                            FeedStorageCommitCallback callback);
-  void DeleteContentEntriesByPrefix(const std::string& prefix_to_delete,
-                                    FeedStorageCommitCallback callback);
+  // Loads the content data for the |keys| and passes them to |callback|.
+  void LoadContent(const std::vector<std::string>& keys,
+                   ContentLoadCallback callback);
+
+  // Loads the content data whose key matches |prefix|, and passes them to
+  // |callback|.
+  void LoadContentByPrefix(const std::string& prefix,
+                           ContentLoadCallback callback);
+
+  // Inserts or updates the content data |pairs|, |callback| will be called when
+  // the data are saved or if there is an error. The fields in |pairs| will be
+  // std::move.
+  void SaveContent(std::vector<KeyAndData> pairs,
+                   ConfirmationCallback callback);
+
+  // Deletes the content data for |keys_to_delete|, |callback| will be called
+  // when the data are deleted or if there is an error.
+  void DeleteContent(const std::vector<std::string>& keys_to_delete,
+                     ConfirmationCallback callback);
+
+  // Deletes the content data whose key matches |prefix_to_delete|, |callback|
+  // will be called when the content are deleted or if there is an error.
+  void DeleteContentByPrefix(const std::string& prefix_to_delete,
+                             ConfirmationCallback callback);
+
+  // Loads the journal data for the |key| and passes it to |callback|.
+  void LoadJournal(const std::string& key, JournalLoadCallback callback);
+
+  // Loads all journal keys in the storage, and passes them to |callback|.
+  void LoadAllJournalKeys(JournalLoadCallback callback);
+
+  // Appends |entries| to a journal whose key is |key|, if there the journal do
+  // not exist, create one. |callback| will be called when the data are saved or
+  // if there is an error.
+  void AppendToJournal(const std::string& key,
+                       std::vector<std::string> entries,
+                       ConfirmationCallback callback);
+
+  // Creates a new journal with name |to_key|, and copys all data from the
+  // journal with |from_key| to it. |callback| will be called when the data are
+  // saved or if there is an error.
+  void CopyJournal(const std::string& from_key,
+                   const std::string& to_key,
+                   ConfirmationCallback callback);
+
+  // Deletes the journal with |key|, |callback| will be called when the journal
+  // is deleted or if there is an error.
+  void DeleteJournal(const std::string& key, ConfirmationCallback callback);
 
  private:
-  // Initialization
+  // Callback methods given to |storage_database_| for async responses.
   void OnDatabaseInitialized(bool success);
-
-  // Loading
-  void OnContentEntriesLoaded(
-      FeedContentStorageDatabaseCallback callback,
+  void OnLoadEntriesForLoadContent(
+      ContentLoadCallback callback,
       bool success,
-      std::unique_ptr<std::vector<FeedStorageProto>> entries);
-
-  // Deleting
-  void OnContentDeletedEntriesLoaded(
-      FeedStorageCommitCallback callback,
+      std::unique_ptr<std::vector<FeedStorageProto>> content);
+  void OnLoadEntriesForDeleteContent(
+      ConfirmationCallback callback,
       bool success,
-      std::unique_ptr<std::vector<FeedStorageProto>> entries);
-
-  // Commit callback
-  void OnStorageCommitted(FeedStorageCommitCallback callback, bool success);
+      std::unique_ptr<std::vector<FeedStorageProto>> content);
+  void OnGetEntryForLoadJournal(JournalLoadCallback callback,
+                                bool success,
+                                std::unique_ptr<FeedStorageProto> journal);
+  void OnGetEntryAppendToJournal(ConfirmationCallback callback,
+                                 std::string key,
+                                 std::vector<std::string> entries,
+                                 bool success,
+                                 std::unique_ptr<FeedStorageProto> journal);
+  void OnGetEntryForCopyJournal(ConfirmationCallback callback,
+                                std::string to_key,
+                                bool success,
+                                std::unique_ptr<FeedStorageProto> journal);
+  void OnLoadKeysForLoadAllJournalKeys(
+      JournalLoadCallback callback,
+      bool success,
+      std::unique_ptr<std::vector<std::string>> keys);
+  void OnStorageCommitted(ConfirmationCallback callback, bool success);
 
   State database_status_;
 
