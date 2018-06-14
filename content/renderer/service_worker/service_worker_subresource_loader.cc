@@ -204,9 +204,6 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   mojom::ControllerServiceWorker* controller =
       controller_connector_->GetControllerServiceWorker(
           mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
-  // When |controller| is null, the network request will be aborted soon since
-  // the network provider has already been discarded. In that case, we don't
-  // need to return an error as the client must be shutting down.
   if (!controller) {
     auto controller_state = controller_connector_->state();
     if (controller_state ==
@@ -220,6 +217,10 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
       delete this;
       return;
     }
+
+    // When kNoContainerHost, the network request will be aborted soon since the
+    // network provider has already been discarded. In that case, we don't need
+    // to return an error as the client must be shutting down.
     DCHECK_EQ(ControllerServiceWorkerConnector::State::kNoContainerHost,
               controller_state);
     SettleFetchEventDispatch();
