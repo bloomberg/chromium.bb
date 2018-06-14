@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/transport_security_state_generator/trie/trie_bit_buffer.h"
-#include "net/tools/transport_security_state_generator/bit_writer.h"
-#include "net/tools/transport_security_state_generator/huffman/huffman_builder.h"
+#include "net/tools/huffman_trie/trie/trie_bit_buffer.h"
+#include "net/tools/huffman_trie/bit_writer.h"
+#include "net/tools/huffman_trie/huffman/huffman_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
-namespace transport_security_state {
+namespace huffman_trie {
 
 namespace {
 
@@ -221,6 +221,6 @@ TEST(TrieBitBufferTest, WriteMix) {
 
 }  // namespace
 
-}  // namespace transport_security_state
+}  // namespace huffman_trie
 
 }  // namespace net

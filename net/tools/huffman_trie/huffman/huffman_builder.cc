@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/transport_security_state_generator/huffman/huffman_builder.h"
+#include "net/tools/huffman_trie/huffman/huffman_builder.h"
 
 #include <algorithm>
 
@@ -10,7 +10,7 @@
 
 namespace net {
 
-namespace transport_security_state {
+namespace huffman_trie {
 
 namespace {
 
@@ -160,6 +160,6 @@ std::unique_ptr<HuffmanNode> HuffmanBuilder::BuildTree() {
   return std::move(nodes[0]);
 }
 
-}  // namespace transport_security_state
+}  // namespace huffman_trie
 
 }  // namespace net

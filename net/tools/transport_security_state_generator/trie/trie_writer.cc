@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "net/tools/transport_security_state_generator/trie/trie_bit_buffer.h"
+#include "net/tools/huffman_trie/trie/trie_bit_buffer.h"
 
 namespace net {
 
@@ -36,11 +36,12 @@ ReversedEntry::ReversedEntry(std::vector<uint8_t> reversed_name,
 
 ReversedEntry::~ReversedEntry() = default;
 
-TrieWriter::TrieWriter(const HuffmanRepresentationTable& huffman_table,
-                       const NameIDMap& expect_ct_report_uri_map,
-                       const NameIDMap& expect_staple_report_uri_map,
-                       const NameIDMap& pinsets_map,
-                       HuffmanBuilder* huffman_builder)
+TrieWriter::TrieWriter(
+    const huffman_trie::HuffmanRepresentationTable& huffman_table,
+    const NameIDMap& expect_ct_report_uri_map,
+    const NameIDMap& expect_staple_report_uri_map,
+    const NameIDMap& pinsets_map,
+    huffman_trie::HuffmanBuilder* huffman_builder)
     : huffman_table_(huffman_table),
       expect_ct_report_uri_map_(expect_ct_report_uri_map),
       expect_staple_report_uri_map_(expect_staple_report_uri_map),
@@ -73,7 +74,7 @@ bool TrieWriter::WriteDispatchTables(ReversedEntries::iterator start,
                                      uint32_t* position) {
   DCHECK(start != end) << "No entries passed to WriteDispatchTables";
 
-  TrieBitBuffer writer;
+  huffman_trie::TrieBitBuffer writer;
 
   std::vector<uint8_t> prefix = LongestCommonPrefix(start, end);
   for (size_t i = 0; i < prefix.size(); ++i) {
@@ -131,7 +132,7 @@ bool TrieWriter::WriteDispatchTables(ReversedEntries::iterator start,
 }
 
 bool TrieWriter::WriteEntry(const TransportSecurityStateEntry* entry,
-                            TrieBitBuffer* writer) {
+                            huffman_trie::TrieBitBuffer* writer) {
   if (IsSimpleEntry(entry)) {
     writer->WriteBit(1);
     return true;

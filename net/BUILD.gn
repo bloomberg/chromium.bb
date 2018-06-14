@@ -5708,7 +5708,10 @@ test("net_unittests") {
 
   # Include transport_security_state_generator tests.
   if (host_toolchain == current_toolchain) {
-    deps += [ "//net/tools/transport_security_state_generator:transport_security_state_generator_test_sources" ]
+    deps += [
+      "//net/tools/huffman_trie:huffman_trie_generator_test_sources",
+      "//net/tools/transport_security_state_generator:transport_security_state_generator_test_sources",
+    ]
   }
 
   # Add back some sources that were otherwise filtered out.
