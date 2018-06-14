@@ -44,7 +44,7 @@ namespace {
 // This should only be set during tests.
 ScopedInstallVerifierBypassForTest::ForceType* g_bypass_for_test = nullptr;
 
-enum VerifyStatus {
+enum class VerifyStatus {
   NONE = 0,   // Do not request install signatures, and do not enforce them.
   BOOTSTRAP,  // Request install signatures, but do not enforce them.
   ENFORCE,    // Request install signatures, and enforce them.
@@ -68,23 +68,23 @@ VerifyStatus GetExperimentStatus() {
   if (forced_trials.find(kExperimentName) != std::string::npos) {
     // We don't want to allow turning off enforcement by forcing the field
     // trial group to something other than enforcement.
-    return ENFORCE_STRICT;
+    return VerifyStatus::ENFORCE_STRICT;
   }
 
 #if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_MACOSX))
-  VerifyStatus default_status = ENFORCE;
+  VerifyStatus default_status = VerifyStatus::ENFORCE;
 #else
-  VerifyStatus default_status = NONE;
+  VerifyStatus default_status = VerifyStatus::NONE;
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   if (group == "EnforceStrict")
-    return ENFORCE_STRICT;
+    return VerifyStatus::ENFORCE_STRICT;
   else if (group == "Enforce")
-    return ENFORCE;
+    return VerifyStatus::ENFORCE;
   else if (group == "Bootstrap")
-    return BOOTSTRAP;
+    return VerifyStatus::BOOTSTRAP;
   else if (group == "None" || group == "Control")
-    return NONE;
+    return VerifyStatus::NONE;
 
   return default_status;
 }
@@ -92,29 +92,29 @@ VerifyStatus GetExperimentStatus() {
 VerifyStatus GetCommandLineStatus() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   if (!InstallSigner::GetForcedNotFromWebstore().empty())
-    return ENFORCE;
+    return VerifyStatus::ENFORCE;
 
   if (cmdline->HasSwitch(::switches::kExtensionsInstallVerification)) {
     std::string value = cmdline->GetSwitchValueASCII(
         ::switches::kExtensionsInstallVerification);
     if (value == "bootstrap")
-      return BOOTSTRAP;
+      return VerifyStatus::BOOTSTRAP;
     else if (value == "enforce_strict")
-      return ENFORCE_STRICT;
+      return VerifyStatus::ENFORCE_STRICT;
     else
-      return ENFORCE;
+      return VerifyStatus::ENFORCE;
   }
 
-  return NONE;
+  return VerifyStatus::NONE;
 }
 
 VerifyStatus GetStatus() {
   if (g_bypass_for_test) {
     switch (*g_bypass_for_test) {
       case ScopedInstallVerifierBypassForTest::kForceOn:
-        return ENFORCE_STRICT;
+        return VerifyStatus::ENFORCE_STRICT;
       case ScopedInstallVerifierBypassForTest::kForceOff:
-        return NONE;
+        return VerifyStatus::NONE;
     }
   }
 
@@ -122,7 +122,7 @@ VerifyStatus GetStatus() {
 }
 
 bool ShouldFetchSignature() {
-  return GetStatus() >= BOOTSTRAP;
+  return GetStatus() >= VerifyStatus::BOOTSTRAP;
 }
 
 enum InitResult {
@@ -203,7 +203,7 @@ InstallVerifier* InstallVerifier::Get(
 
 // static
 bool InstallVerifier::ShouldEnforce() {
-  return GetStatus() >= ENFORCE;
+  return GetStatus() >= VerifyStatus::ENFORCE;
 }
 
 // static
@@ -220,9 +220,10 @@ bool InstallVerifier::IsFromStore(const Extension& extension) {
 void InstallVerifier::Init() {
   TRACE_EVENT0("browser,startup", "extensions::InstallVerifier::Init");
   UMA_HISTOGRAM_ENUMERATION("ExtensionInstallVerifier.ExperimentStatus",
-                            GetExperimentStatus(), VERIFY_STATUS_MAX);
+                            GetExperimentStatus(),
+                            VerifyStatus::VERIFY_STATUS_MAX);
   UMA_HISTOGRAM_ENUMERATION("ExtensionInstallVerifier.ActualStatus",
-                            GetStatus(), VERIFY_STATUS_MAX);
+                            GetStatus(), VerifyStatus::VERIFY_STATUS_MAX);
 
   const base::DictionaryValue* pref = prefs_->GetInstallSignature();
   if (pref) {
@@ -405,7 +406,8 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
     verified = false;
     outcome = NOT_FROM_STORE;
   } else if (signature_.get() == NULL &&
-             (!bootstrap_check_complete_ || GetStatus() < ENFORCE_STRICT)) {
+             (!bootstrap_check_complete_ ||
+              GetStatus() < VerifyStatus::ENFORCE_STRICT)) {
     // If we don't have a signature yet, we'll temporarily consider every
     // extension from the webstore verified to avoid false positives on existing
     // profiles hitting this code for the first time. The InstallVerifier
@@ -418,7 +420,7 @@ bool InstallVerifier::MustRemainDisabled(const Extension* extension,
     // as invalid.
     if (signature_.get() &&
         !base::ContainsKey(signature_->invalid_ids, extension->id()) &&
-        GetStatus() < ENFORCE_STRICT) {
+        GetStatus() < VerifyStatus::ENFORCE_STRICT) {
       outcome = NOT_VERIFIED_BUT_UNKNOWN_ID;
     } else {
       verified = false;
@@ -516,7 +518,7 @@ void InstallVerifier::OnVerificationComplete(bool success, OperationType type) {
           }
         }
       }
-      if (success || GetStatus() == ENFORCE_STRICT) {
+      if (success || GetStatus() == VerifyStatus::ENFORCE_STRICT) {
         ExtensionSystem::Get(context_)
             ->extension_service()
             ->CheckManagementPolicy();
