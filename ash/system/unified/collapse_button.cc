@@ -24,56 +24,89 @@ namespace ash {
 
 namespace {
 
+// TODO(tetsui): Remove when the asset is arrived.
 const int kCollapseIconSize = 20;
 
-SkPath CreateCollapseButtonPath(const gfx::Rect& bounds) {
-  SkPath path;
-  SkScalar bottom_radius = SkIntToScalar(kTrayItemSize / 2);
-  SkScalar radii[8] = {
-      0, 0, 0, 0, bottom_radius, bottom_radius, bottom_radius, bottom_radius};
-  path.addRoundRect(gfx::RectToSkRect(bounds), radii);
-  return path;
-}
-
-// Ink drop mask that masks non-standard shape of CollapseButton.
-class CollapseButtonInkDropMask : public views::InkDropMask {
+// Ink drop mask that masks non-standard shape of CustomShapeButton.
+class CustomShapeInkDropMask : public views::InkDropMask {
  public:
-  CollapseButtonInkDropMask(const gfx::Size& layer_size);
+  CustomShapeInkDropMask(const gfx::Size& layer_size,
+                         const CustomShapeButton* button);
 
  private:
   // InkDropMask:
   void OnPaintLayer(const ui::PaintContext& context) override;
 
-  DISALLOW_COPY_AND_ASSIGN(CollapseButtonInkDropMask);
+  const CustomShapeButton* const button_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomShapeInkDropMask);
 };
 
-CollapseButtonInkDropMask::CollapseButtonInkDropMask(
-    const gfx::Size& layer_size)
-    : views::InkDropMask(layer_size) {}
+CustomShapeInkDropMask::CustomShapeInkDropMask(const gfx::Size& layer_size,
+                                               const CustomShapeButton* button)
+    : views::InkDropMask(layer_size), button_(button) {}
 
-void CollapseButtonInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
+void CustomShapeInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
   cc::PaintFlags flags;
   flags.setAlpha(255);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
 
   ui::PaintRecorder recorder(context, layer()->size());
-  recorder.canvas()->DrawPath(CreateCollapseButtonPath(layer()->bounds()),
+  recorder.canvas()->DrawPath(button_->CreateCustomShapePath(layer()->bounds()),
                               flags);
 }
 
 }  // namespace
 
-CollapseButton::CollapseButton(views::ButtonListener* listener)
+CustomShapeButton::CustomShapeButton(views::ButtonListener* listener)
     : ImageButton(listener) {
+  TrayPopupUtils::ConfigureTrayPopupButton(this);
+}
+
+CustomShapeButton::~CustomShapeButton() = default;
+
+void CustomShapeButton::PaintButtonContents(gfx::Canvas* canvas) {
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setColor(kUnifiedMenuButtonColor);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+
+  canvas->DrawPath(CreateCustomShapePath(GetLocalBounds()), flags);
+
+  views::ImageButton::PaintButtonContents(canvas);
+}
+
+std::unique_ptr<views::InkDrop> CustomShapeButton::CreateInkDrop() {
+  return TrayPopupUtils::CreateInkDrop(this);
+}
+
+std::unique_ptr<views::InkDropRipple> CustomShapeButton::CreateInkDropRipple()
+    const {
+  return TrayPopupUtils::CreateInkDropRipple(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      GetInkDropCenterBasedOnLastEvent(), kUnifiedMenuIconColor);
+}
+
+std::unique_ptr<views::InkDropHighlight>
+CustomShapeButton::CreateInkDropHighlight() const {
+  return TrayPopupUtils::CreateInkDropHighlight(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedMenuIconColor);
+}
+
+std::unique_ptr<views::InkDropMask> CustomShapeButton::CreateInkDropMask()
+    const {
+  return std::make_unique<CustomShapeInkDropMask>(size(), this);
+}
+
+CollapseButton::CollapseButton(views::ButtonListener* listener)
+    : CustomShapeButton(listener) {
   UpdateIcon(true /* expanded */);
   SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
                     VerticalAlignment::ALIGN_BOTTOM);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_COLLAPSE));
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets((kTrayItemSize - kCollapseIconSize) / 2)));
-
-  TrayPopupUtils::ConfigureTrayPopupButton(this);
 }
 
 CollapseButton::~CollapseButton() = default;
@@ -92,40 +125,13 @@ gfx::Size CollapseButton::CalculatePreferredSize() const {
   return gfx::Size(kTrayItemSize, kTrayItemSize * 3 / 2);
 }
 
-int CollapseButton::GetHeightForWidth(int width) const {
-  return CalculatePreferredSize().height();
-}
-
-void CollapseButton::PaintButtonContents(gfx::Canvas* canvas) {
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setColor(kUnifiedMenuButtonColor);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-
-  canvas->DrawPath(CreateCollapseButtonPath(GetLocalBounds()), flags);
-
-  views::ImageButton::PaintButtonContents(canvas);
-}
-
-std::unique_ptr<views::InkDrop> CollapseButton::CreateInkDrop() {
-  return TrayPopupUtils::CreateInkDrop(this);
-}
-
-std::unique_ptr<views::InkDropRipple> CollapseButton::CreateInkDropRipple()
-    const {
-  return TrayPopupUtils::CreateInkDropRipple(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent(), kUnifiedMenuIconColor);
-}
-
-std::unique_ptr<views::InkDropHighlight>
-CollapseButton::CreateInkDropHighlight() const {
-  return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedMenuIconColor);
-}
-
-std::unique_ptr<views::InkDropMask> CollapseButton::CreateInkDropMask() const {
-  return std::make_unique<CollapseButtonInkDropMask>(size());
+SkPath CollapseButton::CreateCustomShapePath(const gfx::Rect& bounds) const {
+  SkPath path;
+  SkScalar bottom_radius = SkIntToScalar(kTrayItemSize / 2);
+  SkScalar radii[8] = {
+      0, 0, 0, 0, bottom_radius, bottom_radius, bottom_radius, bottom_radius};
+  path.addRoundRect(gfx::RectToSkRect(bounds), radii);
+  return path;
 }
 
 }  // namespace ash
