@@ -280,7 +280,6 @@ class CORE_EXPORT StyleResolver final
 
   bool PseudoStyleForElementInternal(Element&,
                                      const PseudoStyleRequest&,
-                                     const ComputedStyle* parent_style,
                                      StyleResolverState&);
 
   bool HasAuthorBorder(const StyleResolverState&);

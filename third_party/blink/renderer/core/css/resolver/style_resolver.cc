@@ -841,7 +841,7 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
 
   StyleResolverState state(GetDocument(), &parent, parent_style,
                            layout_parent_style);
-  if (!PseudoStyleForElementInternal(parent, pseudo_id, parent_style, state))
+  if (!PseudoStyleForElementInternal(parent, pseudo_id, state))
     return nullptr;
   scoped_refptr<ComputedStyle> style = state.TakeStyle();
   DCHECK(style);
@@ -861,7 +861,6 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
 bool StyleResolver::PseudoStyleForElementInternal(
     Element& element,
     const PseudoStyleRequest& pseudo_style_request,
-    const ComputedStyle* parent_style,
     StyleResolverState& state) {
   DCHECK(GetDocument().GetFrame());
   DCHECK(GetDocument().GetSettings());
@@ -951,8 +950,7 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
 
   StyleResolverState state(GetDocument(), element, parent_style,
                            parent_layout_object_style);
-  if (!PseudoStyleForElementInternal(*element, pseudo_style_request,
-                                     parent_style, state)) {
+  if (!PseudoStyleForElementInternal(*element, pseudo_style_request, state)) {
     if (pseudo_style_request.type == PseudoStyleRequest::kForRenderer)
       return nullptr;
     return state.TakeStyle();
