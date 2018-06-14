@@ -8,6 +8,8 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modelutil.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -16,7 +18,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
-import org.chromium.chrome.browser.toolbar.TabSwitcherButtonModel.PropertyKey;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 
 import java.util.List;
@@ -31,7 +32,7 @@ public class TabSwitcherButtonCoordinator {
      *  should acces the mediator which then updates the model. Since this component is very simple
      *  the mediator is omitted.
      */
-    private final TabSwitcherButtonModel mTabSwitcherButtonModel;
+    private final PropertyModel mTabSwitcherButtonModel;
 
     private TabModelSelector mTabModelSelector;
     private TabModelSelectorObserver mTabModelSelectorObserver;
@@ -42,17 +43,17 @@ public class TabSwitcherButtonCoordinator {
      * @param root The root {@link ViewGroup} for locating the view to inflate.
      */
     public TabSwitcherButtonCoordinator(ViewGroup root) {
-        mTabSwitcherButtonModel = new TabSwitcherButtonModel();
+        mTabSwitcherButtonModel = new PropertyModel(TabSwitcherButtonProperties.ALL_KEYS);
 
         final TabSwitcherButtonView view =
                 (TabSwitcherButtonView) root.findViewById(R.id.tab_switcher_button);
-        PropertyModelChangeProcessor<TabSwitcherButtonModel, TabSwitcherButtonView, PropertyKey>
-                processor = new PropertyModelChangeProcessor<>(
+        PropertyModelChangeProcessor<PropertyModel, TabSwitcherButtonView, PropertyKey> processor =
+                new PropertyModelChangeProcessor<>(
                         mTabSwitcherButtonModel, view, new TabSwitcherButtonViewBinder());
         mTabSwitcherButtonModel.addObserver(processor);
 
         CharSequence description = root.getResources().getString(R.string.open_tabs);
-        mTabSwitcherButtonModel.setOnLongClickListener(
+        mTabSwitcherButtonModel.setValue(TabSwitcherButtonProperties.ON_LONG_CLICK_LISTENER,
                 v -> AccessibilityUtil.showAccessibilityToast(root.getContext(), v, description));
     }
 
@@ -61,7 +62,8 @@ public class TabSwitcherButtonCoordinator {
      *                        button is clicked.
      */
     public void setTabSwitcherListener(OnClickListener onClickListener) {
-        mTabSwitcherButtonModel.setOnClickListener(onClickListener);
+        mTabSwitcherButtonModel.setValue(
+                TabSwitcherButtonProperties.ON_CLICK_LISTENER, onClickListener);
     }
 
     /**
@@ -125,6 +127,7 @@ public class TabSwitcherButtonCoordinator {
     }
 
     private void updateTabCount() {
-        mTabSwitcherButtonModel.setNumberOfTabs(mTabModelSelector.getCurrentModel().getCount());
+        mTabSwitcherButtonModel.setValue(TabSwitcherButtonProperties.NUMBER_OF_TABS,
+                mTabModelSelector.getCurrentModel().getCount());
     }
 }
