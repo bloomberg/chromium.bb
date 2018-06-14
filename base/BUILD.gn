@@ -6,6 +6,7 @@ source_set("base") {
   sources = [
     "ip_address.cc",
     "ip_address.h",
+    "make_unique.h",
   ]
 }
 
