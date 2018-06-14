@@ -138,35 +138,35 @@ ParsedFeaturePolicy ParseFeaturePolicy(
 const FeatureNameMap& GetDefaultFeatureNameMap() {
   DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
   if (default_feature_name_map.IsEmpty()) {
-    default_feature_name_map.Set("fullscreen",
-                                 mojom::FeaturePolicyFeature::kFullscreen);
-    default_feature_name_map.Set("payment",
-                                 mojom::FeaturePolicyFeature::kPayment);
-    default_feature_name_map.Set("usb", mojom::FeaturePolicyFeature::kUsb);
-    default_feature_name_map.Set("camera",
-                                 mojom::FeaturePolicyFeature::kCamera);
-    default_feature_name_map.Set("encrypted-media",
-                                 mojom::FeaturePolicyFeature::kEncryptedMedia);
-    default_feature_name_map.Set("microphone",
-                                 mojom::FeaturePolicyFeature::kMicrophone);
-    default_feature_name_map.Set("speaker",
-                                 mojom::FeaturePolicyFeature::kSpeaker);
-    default_feature_name_map.Set("geolocation",
-                                 mojom::FeaturePolicyFeature::kGeolocation);
-    default_feature_name_map.Set("midi",
-                                 mojom::FeaturePolicyFeature::kMidiFeature);
-    default_feature_name_map.Set("sync-xhr",
-                                 mojom::FeaturePolicyFeature::kSyncXHR);
-    default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
     default_feature_name_map.Set("accelerometer",
                                  mojom::FeaturePolicyFeature::kAccelerometer);
     default_feature_name_map.Set(
         "ambient-light-sensor",
         mojom::FeaturePolicyFeature::kAmbientLightSensor);
+    default_feature_name_map.Set("camera",
+                                 mojom::FeaturePolicyFeature::kCamera);
+    default_feature_name_map.Set("encrypted-media",
+                                 mojom::FeaturePolicyFeature::kEncryptedMedia);
+    default_feature_name_map.Set("fullscreen",
+                                 mojom::FeaturePolicyFeature::kFullscreen);
+    default_feature_name_map.Set("geolocation",
+                                 mojom::FeaturePolicyFeature::kGeolocation);
     default_feature_name_map.Set("gyroscope",
                                  mojom::FeaturePolicyFeature::kGyroscope);
     default_feature_name_map.Set("magnetometer",
                                  mojom::FeaturePolicyFeature::kMagnetometer);
+    default_feature_name_map.Set("microphone",
+                                 mojom::FeaturePolicyFeature::kMicrophone);
+    default_feature_name_map.Set("midi",
+                                 mojom::FeaturePolicyFeature::kMidiFeature);
+    default_feature_name_map.Set("payment",
+                                 mojom::FeaturePolicyFeature::kPayment);
+    default_feature_name_map.Set("speaker",
+                                 mojom::FeaturePolicyFeature::kSpeaker);
+    default_feature_name_map.Set("sync-xhr",
+                                 mojom::FeaturePolicyFeature::kSyncXHR);
+    default_feature_name_map.Set("usb", mojom::FeaturePolicyFeature::kUsb);
+    default_feature_name_map.Set("vr", mojom::FeaturePolicyFeature::kWebVr);
     if (RuntimeEnabledFeatures::PictureInPictureAPIEnabled()) {
       default_feature_name_map.Set(
           "picture-in-picture", mojom::FeaturePolicyFeature::kPictureInPicture);
@@ -182,8 +182,6 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set(
           "max-downscaling-image",
           mojom::FeaturePolicyFeature::kMaxDownscalingImage);
-      default_feature_name_map.Set("sync-script",
-                                   mojom::FeaturePolicyFeature::kSyncScript);
       default_feature_name_map.Set("unsized-media",
                                    mojom::FeaturePolicyFeature::kUnsizedMedia);
       default_feature_name_map.Set(
@@ -192,10 +190,6 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
     if (RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled()) {
       default_feature_name_map.Set("animations",
                                    mojom::FeaturePolicyFeature::kAnimations);
-      default_feature_name_map.Set(
-          "cookie", mojom::FeaturePolicyFeature::kDocumentCookie);
-      default_feature_name_map.Set(
-          "domain", mojom::FeaturePolicyFeature::kDocumentDomain);
     }
     if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled()) {
       default_feature_name_map.Set("autoplay",
