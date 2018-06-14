@@ -66,11 +66,7 @@
 -DockedMagnifierTest.TextInputFieldEvents
 -DockedMagnifierTest.TouchEvents
 -DockedMagnifierTest.TransformSimple
-
-#TODO: Confirmation dialog for enabling accessibility features using accelerators
-# https://crbug.com/724164
 -MagnifiersAcceleratorsTester.TestToggleDockedMagnifier
--MagnifiersAcceleratorsTester.TestToggleFullscreenMagnifier
 
 # TODO: CursorManagerTestApi. http://crbug.com/780637
 -DragWindowResizerTest.CursorDeviceScaleFactor
@@ -155,6 +151,8 @@
 -MagnificationControllerTest.PanWindowToLeft
 -MagnificationControllerTest.PanWindowToRight
 -MagnificationControllerTest.TextfieldFocusedWithKeyboard
+-MagnifiersAcceleratorsTester.TestToggleFullscreenMagnifier
+
 
 # TODO: CursorManagerTestApi. http://crbug.com/780637
 -MirrorWindowControllerTest.MirrorCursorBasic
