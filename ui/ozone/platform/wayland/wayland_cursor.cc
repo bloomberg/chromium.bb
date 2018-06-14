@@ -97,7 +97,7 @@ bool WaylandCursor::CreateSHMBuffer(const gfx::Size& size) {
   SkImageInfo info = SkImageInfo::MakeN32Premul(size_.width(), size_.height());
   int stride = info.minRowBytes();
   size_t image_buffer_size = info.computeByteSize(stride);
-  if (image_buffer_size == SK_MaxSizeT)
+  if (image_buffer_size == SIZE_MAX)
     return false;
 
   if (shared_memory_->handle().GetHandle()) {
