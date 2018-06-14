@@ -73,6 +73,7 @@ void IdleSpellCheckCallback::Deactivate() {
   state_ = State::kInactive;
   if (cold_mode_timer_.IsActive())
     cold_mode_timer_.Stop();
+  cold_mode_requester_->ClearProgress();
   if (idle_callback_handle_ != kInvalidHandle && IsAvailable())
     GetDocument().CancelIdleCallback(idle_callback_handle_);
   idle_callback_handle_ = kInvalidHandle;
