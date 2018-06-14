@@ -90,7 +90,9 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
     if (expected_failure_temporary_) {
       verification_message = base::ASCIIToUTF16("This is a temporary error.");
     } else if (expected_failure_permanent_) {
-      verification_message = base::ASCIIToUTF16("This is a permanent error.");
+      verification_message = base::ASCIIToUTF16(
+          "Chrome was unable to confirm your card at this time. Please try "
+          "again later.");
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,

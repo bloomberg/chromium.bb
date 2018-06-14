@@ -41,6 +41,7 @@
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
@@ -72,7 +73,7 @@ void CardUnmaskPromptViews::ControllerGone() {
 void CardUnmaskPromptViews::DisableAndWaitForVerification() {
   SetInputsEnabled(false);
   controls_container_->SetVisible(false);
-  progress_overlay_->SetVisible(true);
+  overlay_->SetVisible(true);
   progress_throbber_->Start();
   DialogModelChanged();
   Layout();
@@ -83,7 +84,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
     bool allow_retry) {
   progress_throbber_->Stop();
   if (error_message.empty()) {
-    progress_label_->SetText(l10n_util::GetStringUTF16(
+    overlay_label_->SetText(l10n_util::GetStringUTF16(
         IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS));
     progress_throbber_->SetChecked(true);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -92,10 +93,9 @@ void CardUnmaskPromptViews::GotVerificationResult(
                        weak_ptr_factory_.GetWeakPtr()),
         controller_->GetSuccessMessageDuration());
   } else {
-    progress_overlay_->SetVisible(false);
-    controls_container_->SetVisible(true);
-
     if (allow_retry) {
+      controls_container_->SetVisible(true);
+      overlay_->SetVisible(false);
       SetInputsEnabled(true);
 
       if (!controller_->ShouldRequestExpirationDate()) {
@@ -111,9 +111,28 @@ void CardUnmaskPromptViews::GotVerificationResult(
       // TODO(estade): When do we hide |error_label_|?
       SetRetriableErrorMessage(error_message);
     } else {
-      permanent_error_label_->SetText(error_message);
-      permanent_error_label_->SetVisible(true);
       SetRetriableErrorMessage(base::string16());
+
+      // Rows cannot be replaced in GridLayout, so we reset it.
+      overlay_->RemoveAllChildViews(/*delete_children=*/true);
+      views::GridLayout* layout = ResetOverlayLayout();
+
+      // The label of the overlay will now show the error in red.
+      views::Label* error_label = new views::Label(error_message);
+      const SkColor warning_text_color = views::style::GetColor(
+          *error_label, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_RED);
+      error_label->SetEnabledColor(warning_text_color);
+      error_label->SetMultiLine(true);
+
+      // Replace the throbber with a warning icon. Since this is a permanent
+      // error we do not intend to return to a previous state.
+      views::ImageView* error_icon = new views::ImageView();
+      error_icon->SetImage(
+          gfx::CreateVectorIcon(kBrowserToolsErrorIcon, warning_text_color));
+
+      layout->StartRow(1, 0);
+      layout->AddView(error_icon);
+      layout->AddView(error_label);
     }
     DialogModelChanged();
   }
@@ -218,10 +237,9 @@ gfx::Size CardUnmaskPromptViews::CalculatePreferredSize() const {
 void CardUnmaskPromptViews::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SkColor bg_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
-  progress_overlay_->SetBackground(views::CreateSolidBackground(bg_color));
-  progress_label_->SetBackgroundColor(bg_color);
-  progress_label_->SetEnabledColor(theme->GetSystemColor(
-      ui::NativeTheme::kColorId_ThrobberSpinningColor));
+  overlay_->SetBackground(views::CreateSolidBackground(bg_color));
+  if (overlay_label_)
+    overlay_label_->SetBackgroundColor(bg_color);
 }
 
 ui::ModalType CardUnmaskPromptViews::GetModalType() const {
@@ -320,44 +338,19 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  // The main content view is a box layout with two things in it: the permanent
-  // error label layout, and |main_contents|.
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, gfx::Insets()));
-
-  // This is a big red-background section at the top of the dialog in case there
-  // is a permanent error. It is not in an inset layout because the red
-  // background needs the full width.
-  permanent_error_label_ = new views::Label();
-  permanent_error_label_->SetFontList(
-      rb.GetFontList(ui::ResourceBundle::BoldFont));
-  permanent_error_label_->SetBorder(views::CreateEmptyBorder(
-      provider->GetInsetsMetric(views::INSETS_DIALOG_SUBSECTION)));
-  permanent_error_label_->SetBackground(views::CreateSolidBackground(
-      permanent_error_label_->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_AlertSeverityHigh)));
-  permanent_error_label_->SetEnabledColor(SK_ColorWHITE);
-  permanent_error_label_->SetAutoColorReadabilityEnabled(false);
-  permanent_error_label_->SetVisible(false);
-  permanent_error_label_->SetMultiLine(true);
-  permanent_error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(permanent_error_label_);
-
-  // The |main_contents| layout is a FillLayout that will contain the progress
-  // overlay on top of the actual contents in |controls_container|
-  // (instructions, input fields).
-  views::View* main_contents = new views::View();
-  main_contents->SetLayoutManager(std::make_unique<views::FillLayout>());
+  // The layout is a FillLayout that will contain the progress or error overlay
+  // on top of the actual contents in |controls_container| (instructions, input
+  // fields).
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   // Inset the whole main section.
-  main_contents->SetBorder(views::CreateEmptyBorder(
+  SetBorder(views::CreateEmptyBorder(
       provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL)));
-  AddChildView(main_contents);
 
   controls_container_ = new views::View();
   controls_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
-  main_contents->AddChildView(controls_container_);
+  AddChildView(controls_container_);
 
   // Instruction text of the dialog.
   instructions_ = new views::Label(controller_->GetInstructionsMessage());
@@ -418,42 +411,40 @@ void CardUnmaskPromptViews::InitIfNecessary() {
   temporary_error_layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
 
-  const SkColor kWarningTextColor = views::style::GetColor(
+  const SkColor warning_text_color = views::style::GetColor(
       *instructions_, ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_RED);
   views::ImageView* error_icon = new views::ImageView();
   error_icon->SetImage(
-      gfx::CreateVectorIcon(kBrowserToolsErrorIcon, kWarningTextColor));
+      gfx::CreateVectorIcon(kBrowserToolsErrorIcon, warning_text_color));
   temporary_error_->SetVisible(false);
   temporary_error_->AddChildView(error_icon);
 
   error_label_ = new views::Label();
   error_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  error_label_->SetEnabledColor(kWarningTextColor);
+  error_label_->SetEnabledColor(warning_text_color);
   temporary_error_->AddChildView(error_label_);
   temporary_error_layout->SetFlexForView(error_label_, 1);
   input_container->AddChildView(temporary_error_);
 
   controls_container_->AddChildView(input_container);
 
-  // On top of the main contents, we add the progress overlay and hide it.
-  progress_overlay_ = new views::View();
-  auto progress_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL));
-  progress_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  progress_layout->set_main_axis_alignment(
-      views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  progress_overlay_->SetLayoutManager(std::move(progress_layout));
-  progress_overlay_->SetVisible(false);
+  // On top of the main contents, we add the progress/error overlay and hide it.
+  // A child view will be added to it when about to be shown.
+  overlay_ = new views::View();
+  views::GridLayout* overlay_layout = ResetOverlayLayout();
+  overlay_->SetVisible(false);
 
   progress_throbber_ = new views::Throbber();
-  progress_overlay_->AddChildView(progress_throbber_);
+  overlay_layout->AddView(progress_throbber_);
 
-  progress_label_ = new views::Label(l10n_util::GetStringUTF16(
+  overlay_label_ = new views::Label(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_IN_PROGRESS));
-  progress_overlay_->AddChildView(progress_label_);
-  main_contents->AddChildView(progress_overlay_);
+  overlay_label_->SetEnabledColor(
+      overlay_label_->GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberSpinningColor));
+  overlay_layout->AddView(overlay_label_);
+
+  AddChildView(overlay_);
 }
 
 bool CardUnmaskPromptViews::ExpirationDateIsValid() const {
@@ -467,6 +458,21 @@ bool CardUnmaskPromptViews::ExpirationDateIsValid() const {
 
 void CardUnmaskPromptViews::ClosePrompt() {
   GetWidget()->Close();
+}
+
+views::GridLayout* CardUnmaskPromptViews::ResetOverlayLayout() {
+  views::GridLayout* overlay_layout =
+      overlay_->SetLayoutManager(std::make_unique<views::GridLayout>(overlay_));
+  views::ColumnSet* columns = overlay_layout->AddColumnSet(0);
+  // The throbber's checkmark is 18dp.
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                     0.5, views::GridLayout::FIXED, 18, 0);
+  columns->AddPaddingColumn(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                   views::DISTANCE_RELATED_LABEL_HORIZONTAL));
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0.5,
+                     views::GridLayout::USE_PREF, 0, 0);
+  overlay_layout->StartRow(1, 0);
+  return overlay_layout;
 }
 
 CardUnmaskPromptView* CreateCardUnmaskPromptView(
