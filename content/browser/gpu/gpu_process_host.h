@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_mode.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -292,6 +293,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   bool in_process_;
 
   GpuProcessKind kind_;
+
+  gpu::GpuMode mode_ = gpu::GpuMode::UNKNOWN;
 
   // Whether we actually launched a GPU process.
   bool process_launched_;
