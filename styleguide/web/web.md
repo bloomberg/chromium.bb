@@ -331,11 +331,11 @@ Guide](https://google.github.io/styleguide/jsguide.html).
   compiler](https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md)
   to identify JS type errors and enforce correct JSDoc annotations.
 
-* Add a `compiled_resources2.gyp` file to any new web UI code directory.
+* Add a `BUILD.gn` file to any new web UI code directory.
 
-* Ensure that your `compiled_resources2.gyp` file is included in
-  `third_party/closure_compiler/compiled_resources2.gyp` (or somewhere in its
-  include hierarchy) so that your code is typechecked in an automated way.
+* Ensure that your `BUILD.gn` file is included in
+  `src/BUILD.gn:webui_closure_compile` (or somewhere in its
+  deps hierarchy) so that your code is typechecked in an automated way.
 
 * Type Polymer elements by appending 'Element' to the element name, e.g.
   `/** @type {IronIconElement} */`
@@ -381,8 +381,8 @@ Also see the [Google Polymer Style Guide](http://go/polymer-style).
     * `created`, `ready`, `attached`, `detached`
     * public methods
     * event handlers, computed functions, and private methods
- 
-* Use camelCase for element IDs to simplify local DOM accessors (i.e. 
+
+* Use camelCase for element IDs to simplify local DOM accessors (i.e.
   `this.$.camelCase` instead of `this.$[‘dash-case’]`).
 
 * Use `this.foo` instead of `newFoo` arguments in observers when possible.
