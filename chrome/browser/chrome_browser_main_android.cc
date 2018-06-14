@@ -104,12 +104,13 @@ int ChromeBrowserMainPartsAndroid::PreEarlyInitialization() {
   // Android specific MessageLoop.
   DCHECK(!main_message_loop_.get());
 
-  // Create and start the MessageLoop.
+  // Create and start the MessageLoop if doesn't yet exist.
   // This is a critical point in the startup process.
   {
     TRACE_EVENT0("startup",
       "ChromeBrowserMainPartsAndroid::PreEarlyInitialization:CreateUiMsgLoop");
-    main_message_loop_.reset(new base::MessageLoopForUI);
+    if (!base::MessageLoopCurrent::IsSet())
+      main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
   }
 
   {

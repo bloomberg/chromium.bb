@@ -398,6 +398,12 @@ void ShellMainDelegate::InitializeResourceBundle() {
 #endif
 }
 
+void ShellMainDelegate::PreContentInitialization() {
+#if defined(OS_MACOSX)
+  RegisterShellCrApp();
+#endif
+}
+
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
   browser_client_.reset(switches::IsRunWebTestsSwitchPresent()
                             ? new LayoutTestContentBrowserClient

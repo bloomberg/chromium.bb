@@ -315,6 +315,7 @@ void BrowserTestBase::SetUp() {
   MainFunctionParams params(*command_line);
   params.ui_task = ui_task.release();
   params.created_main_parts_closure = created_main_parts_closure.release();
+  base::TaskScheduler::Create("Browser");
   // TODO(phajdan.jr): Check return code, http://crbug.com/374738 .
   BrowserMain(params, nullptr);
 #else

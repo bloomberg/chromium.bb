@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_runner.h"
@@ -80,6 +81,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   base::Closure* ui_task_ = nullptr;
 
   CreatedMainPartsClosure* created_main_parts_closure_ = nullptr;
+
+  std::unique_ptr<base::MessageLoop> main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentMainRunnerImpl);
 };

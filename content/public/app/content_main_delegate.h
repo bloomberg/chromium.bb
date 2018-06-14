@@ -125,6 +125,11 @@ class CONTENT_EXPORT ContentMainDelegate {
       const base::Closure& quit_closure,
       service_manager::BackgroundServiceManager* service_manager);
 
+  // Allows the embedder to perform platform-specific initializatioion. For
+  // example, things that should be done immediately before the creation of the
+  // main message loop.
+  virtual void PreContentInitialization() {}
+
  protected:
   friend class ContentClientInitializer;
 

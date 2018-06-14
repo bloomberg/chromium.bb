@@ -1138,3 +1138,9 @@ service_manager::ProcessType ChromeMainDelegate::OverrideProcessType() {
   }
   return service_manager::ProcessType::kDefault;
 }
+
+void ChromeMainDelegate::PreContentInitialization() {
+#if defined(OS_MACOSX)
+  RegisterBrowserCrApp();
+#endif
+}

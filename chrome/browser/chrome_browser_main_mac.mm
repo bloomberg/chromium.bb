@@ -84,17 +84,6 @@ int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
     singleton_command_line->AppendSwitch(switches::kNoStartupWindow);
   }
 
-  // Tell Cocoa to finish its initialization, which we want to do manually
-  // instead of calling NSApplicationMain(). The primary reason is that NSAM()
-  // never returns, which would leave all the objects currently on the stack
-  // in scoped_ptrs hanging and never cleaned up. We then load the main nib
-  // directly. The main event loop is run from common code using the
-  // MessageLoop API, which works out ok for us because it's a wrapper around
-  // CFRunLoop.
-
-  // Initialize NSApplication using the custom subclass.
-  chrome_browser_application_mac::RegisterBrowserCrApp();
-
   // If ui_task is not NULL, the app is actually a browser_test.
   if (!parameters().ui_task) {
     // The browser process only wants to support the language Cocoa will use,

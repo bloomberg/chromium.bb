@@ -36,6 +36,7 @@ class ShellMainDelegate : public ContentMainDelegate {
 #if defined(OS_LINUX)
   void ZygoteForked() override;
 #endif
+  void PreContentInitialization() override;
   ContentBrowserClient* CreateContentBrowserClient() override;
   ContentGpuClient* CreateContentGpuClient() override;
   ContentRendererClient* CreateContentRendererClient() override;

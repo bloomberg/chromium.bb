@@ -962,10 +962,28 @@ int ContentMainRunnerImpl::Run() {
   // The thread used to start the ServiceManager is handed-off to
   // BrowserMain() which may elect to promote it (e.g. to BrowserThread::IO).
   if (process_type.empty()) {
+    if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
+      // Create the TaskScheduler early to allow upcoming code to use
+      // the post_task.h API. Note: This is okay because RunBrowserProcessMain()
+      // will soon result in invoking TaskScheduler::GetInstance()->Start().
+      // The TaskScheduler being started soon is a strict requirement (delaying
+      // this start would result in posted tasks not running).
+      base::TaskScheduler::Create("Browser");
+    }
+
+    if (delegate_)
+      delegate_->PreContentInitialization();
+
+    // Create a MessageLoop if one does not already exist for the current
+    // thread. This thread won't be promoted as BrowserThread::UI until
+    // BrowserMainLoop::MainMessageLoopStart().
+    if (!base::MessageLoopCurrentForUI::IsSet())
+      main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
+
     return RunBrowserProcessMain(main_params, delegate_,
                                  std::move(service_manager_thread_));
   }
-#endif
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
   return RunOtherNamedProcessTypeMain(process_type, main_params, delegate_);
 }
@@ -982,6 +1000,9 @@ void ContentMainRunnerImpl::Shutdown() {
 
     delegate_->ProcessExiting(process_type);
   }
+
+  // The message loop needs to be destroyed before |exit_manager_|.
+  main_message_loop_.reset();
 
 #if defined(OS_WIN)
 #ifdef _CRTDBG_MAP_ALLOC
