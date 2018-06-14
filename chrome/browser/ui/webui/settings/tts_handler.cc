@@ -49,19 +49,18 @@ void TtsHandler::HandleGetTtsExtensions(const base::ListValue* args) {
       continue;
     }
     base::DictionaryValue response;
-    response.SetPath({"name"}, base::Value(extension->name()));
-    response.SetPath({"extensionId"}, base::Value(extension_id));
+    response.SetString("name", extension->name());
+    response.SetString("extensionId", extension_id);
     if (extensions::OptionsPageInfo::HasOptionsPage(extension)) {
-      response.SetPath(
-          {"optionsPage"},
-          base::Value(
-              extensions::OptionsPageInfo::GetOptionsPage(extension).spec()));
+      response.SetString(
+          "optionsPage",
+
+          extensions::OptionsPageInfo::GetOptionsPage(extension).spec());
     }
     responses.GetList().push_back(std::move(response));
   }
 
-  CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::Value("tts-extensions-updated"), responses);
+  FireWebUIListener("tts-extensions-updated", responses);
 }
 
 void TtsHandler::OnVoicesChanged() {
@@ -74,30 +73,27 @@ void TtsHandler::OnVoicesChanged() {
     base::DictionaryValue response;
     int language_score = GetVoiceLangMatchScore(&voice, app_locale);
     std::string language_code;
-    // TODO(katie): Find a way to put all these string constants into constants
-    // that can be accessed by the settings web UI as well.
     if (voice.lang.empty()) {
       language_code = "noLanguageCode";
-      response.SetPath({"displayLanguage"},
-                       base::Value(l10n_util::GetStringUTF8(
-                           IDS_TEXT_TO_SPEECH_SETTINGS_NO_LANGUAGE)));
+      response.SetString(
+          "displayLanguage",
+          l10n_util::GetStringUTF8(IDS_TEXT_TO_SPEECH_SETTINGS_NO_LANGUAGE));
     } else {
       language_code = l10n_util::GetLanguage(voice.lang);
-      response.SetPath(
-          {"displayLanguage"},
-          base::Value(l10n_util::GetDisplayNameForLocale(
-              language_code, g_browser_process->GetApplicationLocale(), true)));
+      response.SetString(
+          "displayLanguage",
+          l10n_util::GetDisplayNameForLocale(
+              language_code, g_browser_process->GetApplicationLocale(), true));
     }
-    response.SetPath({"name"}, base::Value(voice.name));
-    response.SetPath({"languageCode"}, base::Value(language_code));
-    response.SetPath({"fullLanguageCode"}, base::Value(voice.lang));
-    response.SetPath({"languageScore"}, base::Value(language_score));
-    response.SetPath({"extensionId"}, base::Value(voice.extension_id));
+    response.SetString("name", voice.name);
+    response.SetString("languageCode", language_code);
+    response.SetString("fullLanguageCode", voice.lang);
+    response.SetInteger("languageScore", language_score);
+    response.SetString("extensionId", voice.extension_id);
     responses.GetList().push_back(std::move(response));
   }
   AllowJavascript();
-  CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::Value("all-voice-data-updated"), responses);
+  FireWebUIListener("all-voice-data-updated", responses);
 
   // Also refresh the TTS extensions in case they have changed.
   HandleGetTtsExtensions(nullptr);
