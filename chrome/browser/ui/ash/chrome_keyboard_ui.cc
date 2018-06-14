@@ -384,11 +384,6 @@ void ChromeKeyboardUI::InitInsets(const gfx::Rect& new_bounds) {
         gfx::Rect window_bounds = window->GetBoundsInScreen();
         gfx::Rect intersect = gfx::IntersectRects(window_bounds, new_bounds);
         int overlap = intersect.height();
-
-        // TODO(crbug.com/826617): get the actual obscured height from IME side.
-        if (keyboard::IsFullscreenHandwritingVirtualKeyboardEnabled())
-          overlap = 0;
-
         if (overlap > 0 && overlap < window_bounds.height())
           view->SetInsets(gfx::Insets(0, 0, overlap, 0));
         else

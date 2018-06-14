@@ -31,6 +31,10 @@ const char kUnknownError[] = "Unknown error.";
 
 namespace keyboard = api::virtual_keyboard_private;
 
+gfx::Rect KeyboardBoundsToRect(const keyboard::Bounds& bounds) {
+  return {bounds.left, bounds.top, bounds.width, bounds.height};
+}
+
 }  // namespace
 
 bool VirtualKeyboardPrivateFunction::PreRunValidation(std::string* error) {
@@ -133,11 +137,9 @@ VirtualKeyboardPrivateSetContainerBehaviorFunction::Run() {
       keyboard::SetContainerBehavior::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
   base::Optional<gfx::Rect> target_bounds(base::nullopt);
-  if (params->options.bounds) {
-    target_bounds = gfx::Rect(
-        params->options.bounds->top, params->options.bounds->left,
-        params->options.bounds->width, params->options.bounds->height);
-  }
+  if (params->options.bounds)
+    target_bounds = KeyboardBoundsToRect(*params->options.bounds);
+
   if (!delegate()->SetVirtualKeyboardMode(
           params->options.mode, std::move(target_bounds),
           base::BindOnce(&VirtualKeyboardPrivateSetContainerBehaviorFunction::
@@ -168,6 +170,22 @@ VirtualKeyboardPrivateSetKeyboardStateFunction::Run() {
       keyboard::SetKeyboardState::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
   if (!delegate()->SetRequestedKeyboardState(params->state))
+    return RespondNow(Error(kVirtualKeyboardNotEnabled));
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+VirtualKeyboardPrivateSetOccludedBoundsFunction::Run() {
+  std::unique_ptr<keyboard::SetOccludedBounds::Params> params =
+      keyboard::SetOccludedBounds::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  std::vector<gfx::Rect> occluded_bounds;
+  occluded_bounds.reserve(params->bounds_list.size());
+  for (const auto& bounds : params->bounds_list)
+    occluded_bounds.push_back(KeyboardBoundsToRect(bounds));
+
+  if (!delegate()->SetOccludedBounds(occluded_bounds))
     return RespondNow(Error(kVirtualKeyboardNotEnabled));
   return RespondNow(NoArguments());
 }

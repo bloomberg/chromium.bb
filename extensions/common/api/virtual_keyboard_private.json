@@ -241,8 +241,23 @@
             "description": "The value of the virtual keyboard state to change to."
           }
         ]
+      },
+      {
+        "name": "setOccludedBounds",
+        "type": "function",
+        "description": "Sets the areas on the screen that are blocked by the virtual keyboard.",
+        "parameters": [
+          {
+            "name": "boundsList",
+            "type": "array",
+            "description": "List of rectangles representing regions occluded by the keyboard.",
+            "items": {
+              "type": "object",
+              "$ref": "Bounds"
+            }
+          }
+        ]
       }
-
     ],
     "events": [
       {

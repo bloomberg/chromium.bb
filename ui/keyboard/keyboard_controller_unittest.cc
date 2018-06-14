@@ -604,6 +604,36 @@ TEST_F(KeyboardControllerTest, CloseKeyboard) {
   EXPECT_TRUE(IsKeyboardClosed());
 }
 
+TEST_F(KeyboardControllerTest, SetOccludedBoundsChangesFullscreenBounds) {
+  aura::Window* keyboard_container(controller().GetContainerWindow());
+  root_window()->AddChild(keyboard_container);
+  controller().LoadKeyboardUiInBackground();
+
+  // Keyboard is hidden, so SetContainerType should be synchronous.
+  controller().SetContainerType(ContainerType::FULLSCREEN, base::nullopt,
+                                base::DoNothing());
+
+  // KeyboardController only notifies occluded bound changes when the keyboard
+  // is visible.
+  ShowKeyboard();
+
+  const gfx::Rect test_occluded_bounds(0, 10, 20, 30);
+
+  // Expect that setting the occluded bounds raises
+  // OnKeyboardWorkspaceOccludedBoundsChanged event.
+  struct MockObserver : public KeyboardControllerObserver {
+    MOCK_METHOD1(OnKeyboardWorkspaceOccludedBoundsChanged,
+                 void(const gfx::Rect& new_bounds));
+  } observer;
+
+  EXPECT_CALL(observer,
+              OnKeyboardWorkspaceOccludedBoundsChanged(test_occluded_bounds));
+
+  controller().AddObserver(&observer);
+  controller().SetOccludedBounds(test_occluded_bounds);
+  controller().RemoveObserver(&observer);
+}
+
 class KeyboardControllerAnimationTest : public KeyboardControllerTest {
  public:
   KeyboardControllerAnimationTest() {}

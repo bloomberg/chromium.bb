@@ -1318,6 +1318,7 @@ enum HistogramValue {
   MEDIAPERCEPTIONPRIVATE_SETCOMPONENTPROCESSSTATE = 1255,
   USERSPRIVATE_GETCURRENTUSER = 1256,
   WALLPAPERPRIVATE_GETSURPRISEMEIMAGE = 1257,
+  VIRTUALKEYBOARDPRIVATE_SETOCCLUDEDBOUNDS = 1258,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

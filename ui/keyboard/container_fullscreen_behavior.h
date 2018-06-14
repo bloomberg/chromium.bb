@@ -27,6 +27,14 @@ class KEYBOARD_EXPORT ContainerFullscreenBehavior
   ContainerType GetType() const override;
   gfx::Rect GetOccludedBounds(
       const gfx::Rect& visual_bounds_in_screen) const override;
+
+  // Sets the occluded bounds that is returned by |GetOccludedBounds|.
+  void SetOccludedBounds(const gfx::Rect& occluded_bounds);
+
+ private:
+  // The occluded bounds for fullscreen behavior is determined on the IME
+  // extension side, so it has to be passed here via the extension API.
+  gfx::Rect occluded_bounds_;
 };
 
 }  // namespace keyboard
