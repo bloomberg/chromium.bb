@@ -1234,11 +1234,17 @@ TEST_F(HarfBuzzShaperTest, DISABLED_SafeToBreakArabicCommonLigatures) {
 // RTL on Mac may not have runs for all characters. crbug.com/774034
 TEST_P(ShapeParameterTest, SafeToBreakMissingRun) {
   TextDirection direction = GetParam();
-  scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 7, direction);
+  scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 8, direction);
   result->InsertRunForTesting(2, 1, direction, {0});
   result->InsertRunForTesting(3, 3, direction, {0, 1});
-  // The character index 7 is missing.
+  // The character index 6 and 7 is missing.
   result->InsertRunForTesting(8, 2, direction, {0});
+#if DCHECK_IS_ON()
+  result->CheckConsistency();
+#endif
+
+  EXPECT_EQ(2u, result->StartIndexForResult());
+  EXPECT_EQ(10u, result->EndIndexForResult());
 
   EXPECT_EQ(2u, result->NextSafeToBreakOffset(2));
   EXPECT_EQ(3u, result->NextSafeToBreakOffset(3));
