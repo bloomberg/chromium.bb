@@ -58,9 +58,14 @@ def read_runtime_files(runtime_deps_path, outdir):
   return rel_file_paths
 
 
-def host_cmd(args):
+def host_cmd(args, unknown_args):
   if not args.cmd:
     logging.error('Must specify command to run on the host.')
+    return 1
+  elif unknown_args:
+    logging.error(
+        'Args "%s" unsupported. Is your host command correctly formatted?',
+        ' '.join(unknown_args))
     return 1
 
   cros_run_vm_test_cmd = [
@@ -84,7 +89,7 @@ def host_cmd(args):
       cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr)
 
 
-def vm_test(args):
+def vm_test(args, unknown_args):
   is_sanity_test = args.test_exe == 'cros_vm_sanity_test'
 
   # To keep things easy for us, ensure both types of output locations are
@@ -189,6 +194,7 @@ def vm_test(args):
         './' + args.test_exe,
         '--test-launcher-shard-index=%d' % args.test_launcher_shard_index,
         '--test-launcher-total-shards=%d' % args.test_launcher_total_shards,
+    ] + unknown_args + [
         '"',
     ]
 
@@ -278,17 +284,14 @@ def main():
            '(eg: loads a simple webpage, executes some javascript), so a '
            'fully-built Chrome binary that can get deployed to the VM is '
            'expected to available in the out-dir.')
-  vm_test_parser.add_argument(
-      '--path-to-outdir', type=str, required=True,
-      help='Path to output directory, all of whose contents will be deployed '
-           'to the device.')
-  vm_test_parser.add_argument(
-      '--runtime-deps-path', type=str,
-      help='Runtime data dependency file from GN.')
+
+  # GTest args. Some are passed down to the test binary in the VM. Others are
+  # parsed here since they might need tweaking or special handling.
   vm_test_parser.add_argument(
       '--test-launcher-summary-output', type=str,
       help='When set, will pass the same option down to the test and retrieve '
            'its result file at the specified location.')
+  # Shard args are parsed here since we might also specify them via env vars.
   vm_test_parser.add_argument(
       '--test-launcher-shard-index',
       type=int, default=os.environ.get('GTEST_SHARD_INDEX', 0),
@@ -297,6 +300,15 @@ def main():
       '--test-launcher-total-shards',
       type=int, default=os.environ.get('GTEST_TOTAL_SHARDS', 1),
       help='Total number of external shards.')
+
+  # Misc args.
+  vm_test_parser.add_argument(
+      '--path-to-outdir', type=str, required=True,
+      help='Path to output directory, all of whose contents will be deployed '
+           'to the device.')
+  vm_test_parser.add_argument(
+      '--runtime-deps-path', type=str,
+      help='Runtime data dependency file from GN.')
   vm_test_parser.add_argument(
       '--vpython-dir', type=str,
       help='Location on host of a directory containing a vpython binary to '
@@ -308,7 +320,7 @@ def main():
       '--vm-logs-dir', type=str,
       help='Will copy everything under /var/log/ from the VM after the test '
            'into the specified dir.')
-  args = parser.parse_args()
+  args, unknown_args = parser.parse_known_args()
 
   logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
 
@@ -321,7 +333,7 @@ def main():
     return 1
 
   args.cros_cache = os.path.abspath(args.cros_cache)
-  return args.func(args)
+  return args.func(args, unknown_args)
 
 
 if __name__ == '__main__':
