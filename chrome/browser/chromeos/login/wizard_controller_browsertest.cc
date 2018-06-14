@@ -1958,7 +1958,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_enable_debugging_screen_, Show()).Times(1);
 
-  ASSERT_TRUE(JSExecute("$('connect-debugging-features-link').click()"));
+  ASSERT_TRUE(
+      JSExecute("chrome.send('login.NetworkScreen.userActed', "
+                "['connect-debugging-features']);"));
 
   // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();

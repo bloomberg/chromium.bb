@@ -44,8 +44,6 @@ constexpr const char kUserActionConnectDebuggingFeaturesClicked[] =
 constexpr const char kContextKeyLocale[] = "locale";
 constexpr const char kContextKeyInputMethod[] = "input-method";
 constexpr const char kContextKeyTimezone[] = "timezone";
-constexpr const char kContextKeyContinueButtonEnabled[] =
-    "continue-button-enabled";
 
 }  // namespace
 
@@ -357,8 +355,6 @@ void NetworkScreen::StopWaitingForConnection(const base::string16& network_id) {
   if (view_)
     view_->ShowConnectingStatus(false, network_id_);
 
-  GetContextEditor().SetBoolean(kContextKeyContinueButtonEnabled, is_connected);
-
   // Automatically continue if we are using Hands-Off Enrollment.
   if (is_connected && continue_attempts_ == 0 &&
       WizardController::UsingHandsOffEnrollment()) {
@@ -377,8 +373,6 @@ void NetworkScreen::WaitForConnection(const base::string16& network_id) {
   network_id_ = network_id;
   if (view_)
     view_->ShowConnectingStatus(continue_pressed_, network_id_);
-
-  GetContextEditor().SetBoolean(kContextKeyContinueButtonEnabled, false);
 }
 
 void NetworkScreen::OnContinueButtonPressed() {
