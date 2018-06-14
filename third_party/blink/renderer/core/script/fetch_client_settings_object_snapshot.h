@@ -15,25 +15,21 @@ namespace blink {
 class ExecutionContext;
 
 // This is a partial implementation of the "settings object" concept defined in
-// the HTML spec.
-// "An environment settings object, containing various settings that are shared
-// with other scripts in the same context."
+// the HTML spec:
 // https://html.spec.whatwg.org/multipage/webappapis.html#settings-object
 //
-// This is used as the "fetch client settings object" on script fetch. For
-// example:
-// "To fetch a module worker script graph given a url, a fetch client settings
-// object, a destination, a credentials mode, and a module map settings object,
-// run these steps."
+// This is also a partial implementation of the "fetch client settings object"
+// used in module script fetch. Actually, it's used with ResourceFetcher and
+// FetchContext to compensate "fetch client settings object" that are not
+// included in this class.
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
 //
-// In the HTML spec, the "settings object" concept is defined as master data of
-// the execution context's states, and each spec algorithm takes a reference to
-// the master data. On the other hand, this class takes a partial snapshot of
-// the execution context's states so that an instance of this class can be
-// passed to another thread without cross-thread synchronization. This means the
-// instance can be out of sync with the master data. If you need a fresh data,
-// you have to create a new instance again.
+// This takes a partial snapshot of the execution context's states so that an
+// instance of this class can be passed to another thread without cross-thread
+// synchronization. Don't keep this object persistently, instead create a new
+// instance per each "fetch a module script graph" algorithm:
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
 class CORE_EXPORT FetchClientSettingsObjectSnapshot final {
  public:
   explicit FetchClientSettingsObjectSnapshot(ExecutionContext&);
