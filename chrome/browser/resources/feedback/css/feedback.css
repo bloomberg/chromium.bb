@@ -138,10 +138,12 @@ body {
 
 .content #privacy-note {
   color: #969696;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 15px;
   margin-bottom: 20px;
   margin-top: 20px;
+  text-align: justify;
+  text-justify: inter-word;
 }
 
 .content .buttons-pane {

@@ -13,3 +13,18 @@ var FEEDBACK_LANDING_PAGE =
  */
 var FEEDBACK_LANDING_PAGE_TECHSTOP =
     'https://support.google.com/pixelbook/answer/7659411';
+
+/** @type {string}
+ * @const
+ */
+var FEEDBACK_LEGAL_HELP_URL = 'https://support.google.com/legal/answer/3110420';
+
+/** @type {string}
+ * @const
+ */
+var FEEDBACK_PRIVACY_POLICY_URL = 'https://policies.google.com/privacy';
+
+/** @type {string}
+ * @const
+ */
+var FEEDBACK_TERM_OF_SERVICE_URL = 'https://policies.google.com/terms';

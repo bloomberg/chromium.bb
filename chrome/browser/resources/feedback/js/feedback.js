@@ -446,6 +446,25 @@ function initialize() {
           $('histograms-url').onclick =
               windowOpener(STATS_WINDOW_ID, 'chrome://histograms');
         }
+
+        if ($('legal-help-page-url')) {
+          $('legal-help-page-url').onclick = function() {
+            window.open(FEEDBACK_LEGAL_HELP_URL, '_blank');
+          };
+        }
+
+        if ($('privacy-policy-url')) {
+          $('privacy-policy-url').onclick = function() {
+            window.open(FEEDBACK_PRIVACY_POLICY_URL, '_blank');
+          };
+        }
+
+        if ($('terms-of-service-url')) {
+          $('terms-of-service-url').onclick = function() {
+            window.open(FEEDBACK_TERM_OF_SERVICE_URL, '_blank');
+          };
+        }
+
         // Make sure our focus starts on the description field.
         $('description-text').focus();
       });
