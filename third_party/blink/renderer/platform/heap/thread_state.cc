@@ -667,10 +667,9 @@ void ThreadState::PerformIdleGC(TimeTicks deadline) {
     return;
   }
 
-  TimeDelta estimated_marking_time = TimeDelta::FromSecondsD(
-      heap_->stats_collector()->estimated_marking_time_in_seconds());
-  TimeDelta idle_delta = deadline - CurrentTimeTicks();
-  if (idle_delta <= estimated_marking_time &&
+  TimeDelta estimated_marking_time =
+      heap_->stats_collector()->estimated_marking_time();
+  if ((deadline - CurrentTimeTicks()) <= estimated_marking_time &&
       !Platform::Current()
            ->CurrentThread()
            ->Scheduler()
@@ -1113,17 +1112,20 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
   DEFINE_STATIC_LOCAL(CustomCountHistogram, marking_time_histogram,
                       ("BlinkGC.CollectGarbage", 0, 10 * 1000, 50));
   marking_time_histogram.Count(
-      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);
+      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]
+          .InMilliseconds());
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, atomic_phase_marking_histogram,
                       ("BlinkGC.AtomicPhaseMarking", 0, 10 * 1000, 50));
   atomic_phase_marking_histogram.Count(
-      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);
+      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]
+          .InMilliseconds());
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, complete_sweep_histogram,
                       ("BlinkGC.CompleteSweep", 1, 10 * 1000, 50));
   complete_sweep_histogram.Count(
-      event.scope_data[ThreadHeapStatsCollector::kCompleteSweep]);
+      event.scope_data[ThreadHeapStatsCollector::kCompleteSweep]
+          .InMilliseconds());
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, time_for_sweep_histogram,
                       ("BlinkGC.TimeForSweepingAllObjects", 1, 10 * 1000, 50));
@@ -1133,12 +1135,14 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       CustomCountHistogram, pre_finalizers_histogram,
       ("BlinkGC.TimeForInvokingPreFinalizers", 1, 10 * 1000, 50));
   pre_finalizers_histogram.Count(
-      event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]);
+      event.scope_data[ThreadHeapStatsCollector::kInvokePreFinalizers]
+          .InMilliseconds());
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, time_for_heap_compaction_histogram,
                       ("BlinkGC.TimeForHeapCompaction", 1, 10 * 1000, 50));
   time_for_heap_compaction_histogram.Count(
-      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseCompaction]);
+      event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseCompaction]
+          .InMilliseconds());
 
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, object_size_freed_by_heap_compaction,
@@ -1150,7 +1154,8 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
       CustomCountHistogram, weak_processing_time_histogram,
       ("BlinkGC.TimeForGlobalWeakProcessing", 1, 10 * 1000, 50));
   weak_processing_time_histogram.Count(
-      event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]);
+      event.scope_data[ThreadHeapStatsCollector::kMarkWeakProcessing]
+          .InMilliseconds());
 
   DEFINE_STATIC_LOCAL(CustomCountHistogram, object_size_before_gc_histogram,
                       ("BlinkGC.ObjectSizeBeforeGC", 1, 4 * 1024 * 1024, 50));
@@ -1174,7 +1179,8 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
         CustomCountHistogram, atomic_marking_phase_histogram,               \
         ("BlinkGC.AtomicPhaseMarking_" #GCReason, 0, 10000, 50));           \
     atomic_marking_phase_histogram.Count(                                   \
-        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]);   \
+        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]     \
+            .InMilliseconds());                                             \
     DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,    \
                         ("BlinkGC.CollectionRate_" #GCReason, 1, 100, 20)); \
     collection_rate_histogram.Count(collection_rate_percent);               \
@@ -1523,8 +1529,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   if (SweepForbidden())
     return;
 
-  double start_total_collect_garbage_time =
-      WTF::CurrentTimeTicksInMilliseconds();
+  TimeTicks start_total_collect_garbage_time = WTF::CurrentTimeTicks();
   RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(
       GetIsolate(), RuntimeCallStats::CounterId::kCollectGarbage);
 
@@ -1551,19 +1556,20 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
     RunAtomicPause(stack_state, marking_type, sweeping_type, reason);
   }
 
-  const double total_collect_garbage_time =
-      WTF::CurrentTimeTicksInMilliseconds() - start_total_collect_garbage_time;
+  const TimeDelta total_collect_garbage_time =
+      WTF::CurrentTimeTicks() - start_total_collect_garbage_time;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       CustomCountHistogram, time_for_total_collect_garbage_histogram,
       ("BlinkGC.TimeForTotalCollectGarbage", 1, 10 * 1000, 50));
-  time_for_total_collect_garbage_histogram.Count(total_collect_garbage_time);
+  time_for_total_collect_garbage_histogram.Count(
+      total_collect_garbage_time.InMilliseconds());
 
 #define COUNT_BY_GC_REASON(GCReason)                                      \
   case BlinkGC::k##GCReason: {                                            \
     DEFINE_THREAD_SAFE_STATIC_LOCAL(                                      \
         CustomCountHistogram, histogram,                                  \
         ("BlinkGC.TimeForTotalCollectGarbage_" #GCReason, 0, 10000, 50)); \
-    histogram.Count(total_collect_garbage_time);                          \
+    histogram.Count(total_collect_garbage_time.InMilliseconds());         \
     break;                                                                \
   }
 
@@ -1583,7 +1589,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
 
   VLOG(1) << "[state:" << this << "]"
           << " CollectGarbage: time: " << std::setprecision(2)
-          << total_collect_garbage_time << "ms"
+          << total_collect_garbage_time.InMillisecondsF() << "ms"
           << " stack: " << StackStateString(stack_state)
           << " marking: " << MarkingTypeString(marking_type)
           << " sweeping: " << SweepingTypeString(sweeping_type)

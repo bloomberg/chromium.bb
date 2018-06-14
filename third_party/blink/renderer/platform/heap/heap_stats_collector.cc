@@ -105,11 +105,16 @@ double ThreadHeapStatsCollector::estimated_marking_time_in_seconds() const {
                             : kInitialMarkingTimeInSeconds;
 }
 
+TimeDelta ThreadHeapStatsCollector::estimated_marking_time() const {
+  return TimeDelta::FromSecondsD(estimated_marking_time_in_seconds());
+}
+
 double ThreadHeapStatsCollector::Event::marking_time_in_ms() const {
-  return scope_data[kIncrementalMarkingStartMarking] +
-         scope_data[kIncrementalMarkingStep] +
-         scope_data[kIncrementalMarkingFinalizeMarking] +
-         scope_data[kAtomicPhaseMarking];
+  return (scope_data[kIncrementalMarkingStartMarking] +
+          scope_data[kIncrementalMarkingStep] +
+          scope_data[kIncrementalMarkingFinalizeMarking] +
+          scope_data[kAtomicPhaseMarking])
+      .InMillisecondsF();
 }
 
 double ThreadHeapStatsCollector::Event::marking_time_in_bytes_per_second()
@@ -118,8 +123,9 @@ double ThreadHeapStatsCollector::Event::marking_time_in_bytes_per_second()
 }
 
 double ThreadHeapStatsCollector::Event::sweeping_time_in_ms() const {
-  return scope_data[kCompleteSweep] + scope_data[kEagerSweep] +
-         scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
+  return (scope_data[kCompleteSweep] + scope_data[kEagerSweep] +
+          scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation])
+      .InMillisecondsF();
 }
 
 size_t ThreadHeapStatsCollector::allocated_bytes_since_prev_gc() const {

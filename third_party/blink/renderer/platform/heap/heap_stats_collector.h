@@ -114,16 +114,13 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
    public:
     template <typename... Args>
     inline InternalScope(ThreadHeapStatsCollector* tracer, Id id, Args... args)
-        : tracer_(tracer),
-          start_time_(WTF::CurrentTimeTicksInMilliseconds()),
-          id_(id) {
+        : tracer_(tracer), start_time_(WTF::CurrentTimeTicks()), id_(id) {
       StartTrace(args...);
     }
 
     inline ~InternalScope() {
       TRACE_EVENT_END0(TraceCategory(), ToString(id_));
-      tracer_->IncreaseScopeTime(
-          id_, WTF::CurrentTimeTicksInMilliseconds() - start_time_);
+      tracer_->IncreaseScopeTime(id_, WTF::CurrentTimeTicks() - start_time_);
     }
 
    private:
@@ -146,7 +143,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     }
 
     ThreadHeapStatsCollector* const tracer_;
-    const double start_time_;
+    const TimeTicks start_time_;
     const Id id_;
   };
 
@@ -166,7 +163,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     size_t marked_bytes = 0;
     size_t compaction_freed_bytes = 0;
     size_t compaction_freed_pages = 0;
-    double scope_data[kNumScopeIds] = {0};
+    TimeDelta scope_data[kNumScopeIds];
     BlinkGC::GCReason reason;
     size_t object_size_in_bytes_before_sweeping = 0;
     size_t allocated_space_in_bytes_before_sweeping = 0;
@@ -186,7 +183,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // is finished at this point.
   void NotifySweepingCompleted();
 
-  void IncreaseScopeTime(Id id, double time) {
+  void IncreaseScopeTime(Id id, TimeDelta time) {
     DCHECK(is_started_);
     current_.scope_data[id] += time;
   }
@@ -211,6 +208,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
   // the previous cycle assuming that the collection rate of the current cycle
   // is similar to the rate of the last GC.
   double estimated_marking_time_in_seconds() const;
+  TimeDelta estimated_marking_time() const;
 
   size_t allocated_bytes_since_prev_gc() const;
 
