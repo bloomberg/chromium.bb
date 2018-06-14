@@ -101,14 +101,12 @@ class TabMetricsTest : public TabActivityWatcherTest {
     ukm_entry_checker_.ExpectNewEntry(kEntryName, source_url, expected_metrics);
 
     const size_t num_entries = ukm_entry_checker_.NumEntries(kEntryName);
-    const ukm::mojom::UkmEntry* last_entry =
-        ukm_entry_checker_.LastUkmEntry(kEntryName);
-    ukm::TestUkmRecorder::ExpectEntryMetric(
-        last_entry, TabManager_TabMetrics::kSequenceIdName, num_entries);
+    EXPECT_EQ(num_entries, ++num_previous_entries);
   }
 
  protected:
   const char* kEntryName = TabManager_TabMetrics::kEntryName;
+  size_t num_previous_entries = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabMetricsTest);

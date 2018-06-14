@@ -4,8 +4,10 @@
 
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
 
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
 #include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
@@ -13,6 +15,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -120,4 +123,108 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
   }
 
   tab_strip_model->CloseAllTabs();
+}
+
+// Checks that ForegroundedOrClosed event is logged correctly.
+// TODO(charleszhao): add checks for TabMetrics event.
+class TabMetricsLoggerUKMTest : public ::testing::Test {
+ protected:
+  TabMetricsLoggerUKMTest() = default;
+
+  // Returns a new source_id associated with the test url.
+  ukm::SourceId GetSourceId() {
+    const ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+    test_ukm_recorder_.UpdateSourceURL(source_id,
+                                       GURL("https://www.chromium.org"));
+    return source_id;
+  }
+
+  // Returns the fake UKM test recorder.
+  ukm::TestUkmRecorder* GetTestUkmRecorder() { return &test_ukm_recorder_; }
+
+  // Returns the TabMetricsLogger being tested.
+  TabMetricsLogger* GetLogger() { return &logger_; }
+
+ private:
+  // Sets up the task scheduling/task-runner environment for each test.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  // Sets itself as the global UkmRecorder on construction.
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
+  // The object being tested:
+  TabMetricsLogger logger_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabMetricsLoggerUKMTest);
+};
+
+// Checks the foregrounded event is logged correctly.
+TEST_F(TabMetricsLoggerUKMTest, LogBackgroundTabShown) {
+  const tab_ranker::MRUFeatures& mru_metrics{4, 7};
+  const int64_t inactive_duration_ms = 1234;
+
+  GetLogger()->LogBackgroundTabShown(
+      GetSourceId(), base::TimeDelta::FromMilliseconds(inactive_duration_ms),
+      mru_metrics);
+
+  // Checks that the size is logged correctly.
+  EXPECT_EQ(1U, GetTestUkmRecorder()->sources_count());
+  EXPECT_EQ(1U, GetTestUkmRecorder()->entries_count());
+  const std::vector<const ukm::mojom::UkmEntry*> entries =
+      GetTestUkmRecorder()->GetEntriesByName(
+          "TabManager.Background.ForegroundedOrClosed");
+  EXPECT_EQ(1U, entries.size());
+
+  // Checks that all the fields are logged correctly.
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "SequenceId", 1);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "IsForegrounded", 1);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "MRUIndex",
+                                          mru_metrics.index);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "TimeFromBackgrounded",
+                                          inactive_duration_ms);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "TotalTabCount",
+                                          mru_metrics.total);
+}
+
+// Checks the closed event is logged correctly.
+TEST_F(TabMetricsLoggerUKMTest, LogBackgroundTabClosed) {
+  const tab_ranker::MRUFeatures& mru_metrics{4, 7};
+  const int64_t inactive_duration_ms = 1234;
+  GetLogger()->LogBackgroundTabClosed(
+      GetSourceId(), base::TimeDelta::FromMilliseconds(inactive_duration_ms),
+      mru_metrics);
+
+  // Checks that the size is logged correctly.
+  EXPECT_EQ(1U, GetTestUkmRecorder()->sources_count());
+  EXPECT_EQ(1U, GetTestUkmRecorder()->entries_count());
+  const std::vector<const ukm::mojom::UkmEntry*> entries =
+      GetTestUkmRecorder()->GetEntriesByName(
+          "TabManager.Background.ForegroundedOrClosed");
+  EXPECT_EQ(1U, entries.size());
+
+  // Checks that all the fields are logged correctly.
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "SequenceId", 1);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "IsForegrounded", 0);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "MRUIndex",
+                                          mru_metrics.index);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "TimeFromBackgrounded",
+                                          inactive_duration_ms);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "TotalTabCount",
+                                          mru_metrics.total);
+}
+
+// Checks the sequence id is logged as sequentially incremental sequence across
+// different events.
+TEST_F(TabMetricsLoggerUKMTest, SequenceIdShouldBeLoggedSequentially) {
+  GetLogger()->LogBackgroundTabShown(GetSourceId(), base::TimeDelta(),
+                                     tab_ranker::MRUFeatures());
+  GetLogger()->LogBackgroundTabClosed(GetSourceId(), base::TimeDelta(),
+                                      tab_ranker::MRUFeatures());
+
+  EXPECT_EQ(2U, GetTestUkmRecorder()->sources_count());
+  EXPECT_EQ(2U, GetTestUkmRecorder()->entries_count());
+  const std::vector<const ukm::mojom::UkmEntry*> entries =
+      GetTestUkmRecorder()->GetEntriesByName(
+          "TabManager.Background.ForegroundedOrClosed");
+  EXPECT_EQ(2U, entries.size());
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[0], "SequenceId", 1);
+  GetTestUkmRecorder()->ExpectEntryMetric(entries[1], "SequenceId", 2);
 }
