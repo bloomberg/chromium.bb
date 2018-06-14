@@ -223,7 +223,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     // Passing a new input state with a new animation id should cause the
     // worklet to create and animate an animator.
     CompositorMutatorInputState state;
-    state.animations.emplace_back(1, "test", 5000, nullptr);
+    state.added_and_updated_animations.emplace_back(1, "test", 5000, nullptr);
 
     std::unique_ptr<CompositorMutatorOutputState> output =
         global_scope->Mutate(state);
@@ -271,7 +271,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     // Passing a new input state with a new animation id should cause the
     // worklet to create and animate an animator.
     CompositorMutatorInputState state;
-    state.animations.emplace_back(1, "test", 5000, nullptr);
+    state.added_and_updated_animations.emplace_back(1, "test", 5000, nullptr);
 
     std::unique_ptr<CompositorMutatorOutputState> output =
         global_scope->Mutate(state);
@@ -281,12 +281,104 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
     EXPECT_EQ(output->animations[0].local_time,
               WTF::TimeDelta::FromMillisecondsD(123));
 
-    // Passing a new empty input state should cause the worklet to remove the
-    // previously constructed animator.
-    CompositorMutatorInputState empty_state;
-    output = global_scope->Mutate(empty_state);
-    EXPECT_TRUE(output);
-    EXPECT_EQ(output->animations.size(), 0ul);
+    waitable_event->Signal();
+  }
+
+  // This test verifies that an animator instance is not created if
+  // MutatorInputState does not have an animation in
+  // added_and_updated_animations.
+  void RunAnimatorInstanceCreationTestOnWorklet(WorkerThread* thread,
+                                                WaitableEvent* waitable_event) {
+    AnimationWorkletGlobalScope* global_scope =
+        static_cast<AnimationWorkletGlobalScope*>(thread->GlobalScope());
+    ASSERT_TRUE(global_scope);
+    ASSERT_TRUE(global_scope->IsAnimationWorkletGlobalScope());
+    ScriptState* script_state =
+        global_scope->ScriptController()->GetScriptState();
+    ASSERT_TRUE(script_state);
+    v8::Isolate* isolate = script_state->GetIsolate();
+    ASSERT_TRUE(isolate);
+
+    EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
+
+    ScriptState::Scope scope(script_state);
+    global_scope->ScriptController()->Evaluate(ScriptSourceCode(
+        R"JS(
+            registerAnimator('test', class {
+              animate (currentTime, effect) {
+                effect.localTime = 123;
+              }
+            });
+          )JS"));
+
+    int animation_id = 1;
+    CompositorMutatorInputState state;
+    state.updated_animations.push_back({animation_id, 5000});
+    EXPECT_EQ(state.added_and_updated_animations.size(), 0u);
+    EXPECT_EQ(state.updated_animations.size(), 1u);
+    global_scope->Mutate(state);
+    EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
+
+    state.removed_animations.push_back(animation_id);
+    EXPECT_EQ(state.added_and_updated_animations.size(), 0u);
+    EXPECT_EQ(state.removed_animations.size(), 1u);
+    global_scope->Mutate(state);
+    EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
+
+    state.added_and_updated_animations.push_back(
+        {animation_id, "test", 5000, nullptr});
+    EXPECT_EQ(state.added_and_updated_animations.size(), 1u);
+    global_scope->Mutate(state);
+    EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 1u);
+    waitable_event->Signal();
+  }
+
+  // This test verifies that an animator instance is created and removed
+  // properly.
+  void RunAnimatorInstanceUpdateTestOnWorklet(WorkerThread* thread,
+                                              WaitableEvent* waitable_event) {
+    AnimationWorkletGlobalScope* global_scope =
+        static_cast<AnimationWorkletGlobalScope*>(thread->GlobalScope());
+    ASSERT_TRUE(global_scope);
+    ASSERT_TRUE(global_scope->IsAnimationWorkletGlobalScope());
+    ScriptState* script_state =
+        global_scope->ScriptController()->GetScriptState();
+    ASSERT_TRUE(script_state);
+    v8::Isolate* isolate = script_state->GetIsolate();
+    ASSERT_TRUE(isolate);
+
+    EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
+
+    ScriptState::Scope scope(script_state);
+    global_scope->ScriptController()->Evaluate(ScriptSourceCode(
+        R"JS(
+            registerAnimator('test', class {
+              animate (currentTime, effect) {
+                effect.localTime = 123;
+              }
+            });
+          )JS"));
+
+    int animation_id = 1;
+    CompositorMutatorInputState state;
+    state.added_and_updated_animations.push_back(
+        {animation_id, "test", 5000, nullptr});
+    EXPECT_EQ(state.added_and_updated_animations.size(), 1u);
+    global_scope->Mutate(state);
+    EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 1u);
+
+    state.added_and_updated_animations.clear();
+    state.updated_animations.push_back({animation_id, 6000});
+    EXPECT_EQ(state.added_and_updated_animations.size(), 0u);
+    EXPECT_EQ(state.updated_animations.size(), 1u);
+    global_scope->Mutate(state);
+    EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 1u);
+
+    state.updated_animations.clear();
+    state.removed_animations.push_back(animation_id);
+    EXPECT_EQ(state.updated_animations.size(), 0u);
+    EXPECT_EQ(state.removed_animations.size(), 1u);
+    global_scope->Mutate(state);
     EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
 
     waitable_event->Signal();
@@ -327,6 +419,16 @@ TEST_F(AnimationWorkletGlobalScopeTest, ConstructAndAnimate) {
 TEST_F(AnimationWorkletGlobalScopeTest, AnimationOutput) {
   RunTestOnWorkletThread(
       &AnimationWorkletGlobalScopeTest::RunAnimateOutputTestOnWorklet);
+}
+
+TEST_F(AnimationWorkletGlobalScopeTest, AnimatorInstanceCreation) {
+  RunTestOnWorkletThread(&AnimationWorkletGlobalScopeTest::
+                             RunAnimatorInstanceCreationTestOnWorklet);
+}
+
+TEST_F(AnimationWorkletGlobalScopeTest, AnimatorInstanceUpdate) {
+  RunTestOnWorkletThread(
+      &AnimationWorkletGlobalScopeTest::RunAnimatorInstanceUpdateTestOnWorklet);
 }
 
 TEST_F(AnimationWorkletGlobalScopeTest,

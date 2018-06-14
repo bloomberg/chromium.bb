@@ -23,7 +23,6 @@
 namespace cc {
 
 class Animation;
-class KeyframeModel;
 struct PropertyAnimationState;
 
 typedef size_t KeyframeEffectId;

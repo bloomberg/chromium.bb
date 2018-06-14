@@ -16,32 +16,35 @@
 
 namespace cc {
 
-// TODO(majidvp): Currently the sync mechanism between cc and worklet is
-// stateless meaning that it sends a new copy of the world every sync cycle.
-// This has the benefit of keeping things very simple but we should revisit this
-// and only send data relevant to particular phase of animator lifecycle e.g.,
-// name and options dictionary are used just for construction.
 struct CC_EXPORT MutatorInputState {
-  struct CC_EXPORT AnimationState {
-    int animation_id = 0;
+  struct CC_EXPORT AddAndUpdateState {
+    int animation_id;
     // Name associated with worklet animation.
     std::string name;
     // Worklet animation's current time, from its associated timeline.
-    double current_time = 0;
-    std::unique_ptr<AnimationOptions> options = nullptr;
+    double current_time;
+    std::unique_ptr<AnimationOptions> options;
 
-    AnimationState(int animation_id,
-                   std::string name,
-                   double current_time,
-                   std::unique_ptr<AnimationOptions> options = nullptr);
-    AnimationState(AnimationState&&);
-    ~AnimationState();
+    AddAndUpdateState(int animation_id,
+                      std::string name,
+                      double current_time,
+                      std::unique_ptr<AnimationOptions> options);
+    AddAndUpdateState(AddAndUpdateState&&);
+    ~AddAndUpdateState();
+  };
+  struct CC_EXPORT UpdateState {
+    int animation_id = 0;
+    // Worklet animation's current time, from its associated timeline.
+    double current_time = 0;
   };
 
   MutatorInputState();
   ~MutatorInputState();
 
-  std::vector<AnimationState> animations;
+  std::vector<int> removed_animations;
+  std::vector<AddAndUpdateState> added_and_updated_animations;
+  std::vector<UpdateState> updated_animations;
+
   DISALLOW_COPY_AND_ASSIGN(MutatorInputState);
 };
 

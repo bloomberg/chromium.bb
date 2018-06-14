@@ -362,10 +362,9 @@ std::unique_ptr<MutatorInputState> AnimationHost::CollectWorkletAnimationsState(
     if (!animation->IsWorkletAnimation())
       continue;
 
-    MutatorInputState::AnimationState state =
-        ToWorkletAnimation(animation.get())
-            ->GetInputState(monotonic_time, scroll_tree, is_active_tree);
-    result->animations.push_back(std::move(state));
+    ToWorkletAnimation(animation.get())
+        ->UpdateInputState(result.get(), monotonic_time, scroll_tree,
+                           is_active_tree);
   }
 
   return result;
