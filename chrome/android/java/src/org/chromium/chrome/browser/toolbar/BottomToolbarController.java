@@ -84,6 +84,8 @@ public class BottomToolbarController {
      *                                  tab switcher button is clicked.
      * @param searchAcceleratorListener An {@link OnClickListener} that is triggered when the
      *                                  search accelerator is clicked.
+     * @param homeButtonListener An {@link OnClickListener} that is triggered when the
+     *                           home button is clicked.
      * @param menuButtonListener An {@link OnTouchListener} that is triggered when the
      *                           menu button is clicked.
      * @param tabModelSelector A {@link TabModelSelector} that the tab switcher button uses to
@@ -91,8 +93,10 @@ public class BottomToolbarController {
      */
     public void initializeWithNative(ResourceManager resourceManager, LayoutManager layoutManager,
             OnClickListener tabSwitcherListener, OnClickListener searchAcceleratorListener,
-            OnTouchListener menuButtonListener, TabModelSelector tabModelSelector) {
-        mMediator.setButtonListeners(searchAcceleratorListener, menuButtonListener);
+            OnClickListener homeButtonListener, OnTouchListener menuButtonListener,
+            TabModelSelector tabModelSelector) {
+        mMediator.setButtonListeners(
+                searchAcceleratorListener, homeButtonListener, menuButtonListener);
         mMediator.setLayoutManager(layoutManager);
 
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);

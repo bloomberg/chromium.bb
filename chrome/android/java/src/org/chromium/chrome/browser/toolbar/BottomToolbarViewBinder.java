@@ -64,6 +64,9 @@ public class BottomToolbarViewBinder
         } else if (BottomToolbarModel.LAYOUT_MANAGER == propertyKey) {
             model.getValue(BottomToolbarModel.LAYOUT_MANAGER)
                     .addSceneOverlayToBack(view.sceneLayer);
+        } else if (BottomToolbarModel.HOME_BUTTON_LISTENER == propertyKey) {
+            view.toolbarRoot.findViewById(R.id.home_button)
+                    .setOnClickListener(model.getValue(BottomToolbarModel.HOME_BUTTON_LISTENER));
         } else {
             assert false : "Unhandled property detected in BottomToolbarViewBinder!";
         }

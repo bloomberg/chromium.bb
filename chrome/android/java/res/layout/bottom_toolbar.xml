@@ -39,6 +39,18 @@
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
+            <org.chromium.chrome.browser.widget.TintedImageButton
+                android:id="@+id/home_button"
+                style="@style/ToolbarButton"
+                android:src="@drawable/btn_toolbar_home"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:contentDescription="@string/accessibility_toolbar_btn_home"/>
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
             <ImageView
                 android:id="@+id/search_button"
                 style="@style/ToolbarMenuButtonPhone"
