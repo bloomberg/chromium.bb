@@ -109,7 +109,7 @@ static_library("devtools") {
       "//chrome/app/theme:theme_resources",
       "//chrome/common",
       "//components/viz/host",
-      "//net:http_server",
+      "//net/server:http_server",
       "//skia",
       "//third_party/icu",
       "//third_party/leveldatabase",

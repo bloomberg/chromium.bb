@@ -2321,28 +2321,6 @@ if (!is_proto_quic) {
   }
 }
 
-static_library("http_server") {
-  sources = [
-    "server/http_connection.cc",
-    "server/http_connection.h",
-    "server/http_server.cc",
-    "server/http_server.h",
-    "server/http_server_request_info.cc",
-    "server/http_server_request_info.h",
-    "server/http_server_response_info.cc",
-    "server/http_server_response_info.h",
-    "server/web_socket.cc",
-    "server/web_socket.h",
-    "server/web_socket_encoder.cc",
-    "server/web_socket_encoder.h",
-  ]
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
-  deps = [
-    ":net",
-    "//base",
-  ]
-}
-
 if (!is_ios) {
   executable("dump_cache") {
     testonly = true
@@ -5334,6 +5312,10 @@ test("net_unittests") {
     "//url:url_features",
   ]
 
+  if (enable_websockets) {
+    deps += [ "//net/server:tests" ]
+  }
+
   if (is_posix || is_fuchsia) {
     sources += [ "socket/udp_socket_posix_unittest.cc" ]
   }
@@ -5503,10 +5485,6 @@ test("net_unittests") {
 
   if (enable_websockets) {
     sources += [
-      "server/http_connection_unittest.cc",
-      "server/http_server_response_info_unittest.cc",
-      "server/http_server_unittest.cc",
-      "server/web_socket_encoder_unittest.cc",
       "websockets/websocket_basic_stream_adapters_test.cc",
       "websockets/websocket_basic_stream_test.cc",
       "websockets/websocket_channel_test.cc",
@@ -5530,7 +5508,6 @@ test("net_unittests") {
       "websockets/websocket_test_util.cc",
       "websockets/websocket_test_util.h",
     ]
-    deps += [ ":http_server" ]
   }
 
   if (disable_file_support) {
@@ -6253,21 +6230,6 @@ fuzzer_test("net_http_transport_security_state_static_fuzzer") {
   ]
   dict =
       "data/fuzzer_dictionaries/net_http_transport_security_state_fuzzer.dict"
-}
-
-fuzzer_test("net_http_server_fuzzer") {
-  sources = [
-    "server/http_server_fuzzer.cc",
-  ]
-  deps = [
-    ":http_server",
-    ":net_fuzzer_test_support",
-    ":test_support",
-    "//base",
-    "//net",
-  ]
-  dict = "data/fuzzer_dictionaries/net_http_server_fuzzer.dict"
-  seed_corpus = "data/fuzzer_data/http_server_requests/"
 }
 
 fuzzer_test("net_spdy_session_fuzzer") {
