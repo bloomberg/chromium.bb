@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/window_icon_util.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
@@ -21,11 +20,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/resource/resource_bundle.h"
-
-#if defined(OS_CHROMEOS)
 #include "ui/aura/window.h"
-#endif
+#include "ui/base/resource/resource_bundle.h"
 
 using content::DesktopMediaID;
 
