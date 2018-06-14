@@ -9,6 +9,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/wait_util.h"
 #include "ios/web/public/features.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -78,8 +79,17 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
   [[EarlGrey selectElementWithMatcher:DownloadButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:OpenInButton()]
-      assertWithMatcher:grey_notNil()];
+  // Wait until Open in... button is shown.
+  ConditionBlock openInShown = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:OpenInButton()]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return (error == nil);
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(
+                 testing::kWaitForDownloadTimeout, openInShown),
+             @"Open in... button did not show up");
 }
 
 // Tests cancelling download UI.
