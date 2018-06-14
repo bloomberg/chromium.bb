@@ -137,7 +137,7 @@ TEST_F(ErrorPageTest, GoForwardAfterServerIsDownAndReload) {
 
 // Sucessfully loads the page, then loads the URL which fails to load, then
 // sucessfully goes back to the first page.
-TEST_F(ErrorPageTest, GoBackFromErrorPage) {
+TEST_F(ErrorPageTest, GoBackFromErrorPageAndForwardToErrorPage) {
   // First page loads sucessfully.
   test::LoadUrl(web_state(), server_.GetURL("/echo"));
   ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
@@ -150,6 +150,11 @@ TEST_F(ErrorPageTest, GoBackFromErrorPage) {
   // Going back should sucessfully load the first page.
   web_state()->GetNavigationManager()->GoBack();
   ASSERT_TRUE(test::WaitForWebViewContainingText(web_state(), "Echo"));
+
+  // Going forward fails the load.
+  web_state()->GetNavigationManager()->GoForward();
+  ASSERT_TRUE(test::WaitForWebViewContainingText(
+      web_state(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 0"));
 }
 
 // Loads the URL which redirects to unresponsive server.

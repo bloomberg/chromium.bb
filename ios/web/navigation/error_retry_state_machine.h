@@ -78,12 +78,6 @@ class ErrorRetryStateMachine {
   // Returns the current error retry state.
   ErrorRetryState state() const;
 
-  // Resets the state to kNewRequest. This is needed for legacy navigation
-  // manager when using features::kWebErrorPages.
-  // TODO(crbug.com/738020): Remove this state after legacy navigation manager
-  // is deprecated.
-  void ResetState();
-
   // Transitions the state machine to kDisplayingNativeErrorForFailedNavigation.
   void SetDisplayingNativeError();
 

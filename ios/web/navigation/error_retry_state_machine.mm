@@ -28,10 +28,6 @@ ErrorRetryState ErrorRetryStateMachine::state() const {
   return state_;
 }
 
-void ErrorRetryStateMachine::ResetState() {
-  state_ = ErrorRetryState::kNewRequest;
-}
-
 void ErrorRetryStateMachine::SetDisplayingNativeError() {
   DCHECK_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation, state_);
   state_ = ErrorRetryState::kDisplayingNativeErrorForFailedNavigation;
@@ -120,6 +116,14 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFinishNavigation(
       break;
 
     case ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:
+      if (web_view_url ==
+          wk_navigation_util::CreatePlaceholderUrlForUrl(url_)) {
+        // (4) Back/forward to or reload of placeholder URL. Rewrite WebView URL
+        // to prepare for retry.
+        state_ = ErrorRetryState::kNavigatingToFailedNavigationItem;
+        return ErrorRetryCommand::kRewriteWebViewURL;
+      }
+
       // (3) Finished loading error in web view.
       DCHECK_EQ(web_view_url, url_);
       state_ = ErrorRetryState::kDisplayingWebErrorForFailedNavigation;
