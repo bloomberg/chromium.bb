@@ -178,6 +178,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, DISABLED_CloseAndReload) {
   ASSERT_EQ(crash_count_before, GetTerminatedExtensionCount());
 }
 
+// Flaky. crbug.com/846172
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_ReloadIndependently DISABLED_ReloadIndependently
+#else
+#define MAYBE_ReloadIndependently ReloadIndependently
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
   const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
@@ -199,14 +205,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
 }
 
 // Flaky. crbug.com/846172
-
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_ReloadIndependentlyChangeTabs \
   DISABLED_ReloadIndependentlyChangeTabs
 #else
 #define MAYBE_ReloadIndependentlyChangeTabs ReloadIndependentlyChangeTabs
 #endif
-
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
                        MAYBE_ReloadIndependentlyChangeTabs) {
   const size_t count_before = GetEnabledExtensionCount();
