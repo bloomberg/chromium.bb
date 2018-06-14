@@ -22,14 +22,15 @@ bool AreVirtualMachinesAllowedByPolicy() {
   return true;
 }
 
-// Disabled for beta/stable channel for M67 and all versions older than M67.
+// Disabled for beta/stable channel for M67 and M68
+// and all versions older than M67.
 bool AreVirtualMachinesAllowedByVersionAndChannel() {
   const base::Version& current_version = version_info::GetVersion();
   if (!current_version.IsValid())
     return false;
   if (current_version.CompareToWildcardString("67.*") < 0)
     return false;
-  if (current_version.CompareToWildcardString("67.*") == 0) {
+  if (current_version.CompareToWildcardString("68.*") <= 0) {
     version_info::Channel channel = chrome::GetChannel();
     return channel != version_info::Channel::STABLE &&
            channel != version_info::Channel::BETA;
