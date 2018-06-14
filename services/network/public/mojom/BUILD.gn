@@ -87,6 +87,7 @@ mojom("mojom") {
     "network_types.mojom",
     "proxy_config.mojom",
     "proxy_config_with_annotation.mojom",
+    "proxy_resolving_socket.mojom",
     "request_context_frame_type.mojom",
     "restricted_cookie_manager.mojom",
     "signed_tree_head.mojom",

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -57,6 +58,23 @@ int ProxyResolvingClientSocket::Read(net::IOBuffer* buf,
                                      net::CompletionOnceCallback callback) {
   if (socket_handle_->socket())
     return socket_handle_->socket()->Read(buf, buf_len, std::move(callback));
+  return net::ERR_SOCKET_NOT_CONNECTED;
+}
+
+int ProxyResolvingClientSocket::ReadIfReady(
+    net::IOBuffer* buf,
+    int buf_len,
+    net::CompletionOnceCallback callback) {
+  if (socket_handle_->socket()) {
+    return socket_handle_->socket()->ReadIfReady(buf, buf_len,
+                                                 std::move(callback));
+  }
+  return net::ERR_SOCKET_NOT_CONNECTED;
+}
+
+int ProxyResolvingClientSocket::CancelReadIfReady() {
+  if (socket_handle_->socket())
+    return socket_handle_->socket()->CancelReadIfReady();
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 

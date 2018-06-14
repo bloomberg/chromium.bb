@@ -24,6 +24,7 @@
 #include "services/network/cookie_manager.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
@@ -179,6 +180,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::TCPConnectedSocketRequest request,
       mojom::SocketObserverPtr observer,
       CreateTCPConnectedSocketCallback callback) override;
+  void CreateProxyResolvingSocketFactory(
+      mojom::ProxyResolvingSocketFactoryRequest request) override;
   void CreateWebSocket(mojom::WebSocketRequest request,
                        int32_t process_id,
                        int32_t render_frame_id,
@@ -255,6 +258,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<CookieManager> cookie_manager_;
 
   std::unique_ptr<SocketFactory> socket_factory_;
+
+  mojo::StrongBindingSet<mojom::ProxyResolvingSocketFactory>
+      proxy_resolving_socket_factories_;
 
 #if !defined(OS_IOS)
   std::unique_ptr<WebSocketFactory> websocket_factory_;

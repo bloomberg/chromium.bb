@@ -18,6 +18,7 @@ import "services/network/public/mojom/proxy_config_with_annotation.mojom";
 import "services/network/public/mojom/ssl_config.mojom";
 import "services/network/public/mojom/tcp_socket.mojom";
 import "services/network/public/mojom/udp_socket.mojom";
+import "services/network/public/mojom/proxy_resolving_socket.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/network/public/mojom/websocket.mojom";
@@ -422,6 +423,13 @@ interface NetworkContext {
          net.interfaces.IPEndPoint? peer_addr,
          handle<data_pipe_consumer>? receive_stream,
          handle<data_pipe_producer>? send_stream);
+
+  // Creates a ProxyResolvingSocketFactory that shares some configuration params
+  // with this NetworkContext, but uses separate socket pools.
+  //
+  // Any sockets that are created but are yet to be destroyed will be destroyed
+  // when NetworkContext goes away.
+  CreateProxyResolvingSocketFactory(ProxyResolvingSocketFactory& factory);
 
   // Creates a WebSocket connection.
   CreateWebSocket(WebSocket& request,

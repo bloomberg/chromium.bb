@@ -17,6 +17,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom.h"
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
@@ -87,6 +88,8 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::TCPConnectedSocketRequest socket,
       mojom::SocketObserverPtr observer,
       CreateTCPConnectedSocketCallback callback) override {}
+  void CreateProxyResolvingSocketFactory(
+      mojom::ProxyResolvingSocketFactoryRequest request) override {}
   void CreateWebSocket(
       mojom::WebSocketRequest request,
       int32_t process_id,
