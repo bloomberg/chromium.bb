@@ -1531,8 +1531,6 @@ bool RenderProcessHostImpl::Init() {
   if (IsInitializedAndNotDead())
     return true;
 
-  is_dead_ = false;
-
   base::CommandLine::StringType renderer_prefix;
   // A command prefix is something prepended to the command line of the spawned
   // process.
@@ -1554,10 +1552,12 @@ bool RenderProcessHostImpl::Init() {
   if (renderer_path.empty())
     return false;
 
+  is_initialized_ = true;
+  is_dead_ = false;
+  sent_render_process_ready_ = false;
+
   if (gpu_client_)
     gpu_client_->PreEstablishGpuChannel();
-
-  sent_render_process_ready_ = false;
 
   // We may reach Init() during process death notification (e.g.
   // RenderProcessExited on some observer). In this case the Channel may be
@@ -1665,7 +1665,6 @@ bool RenderProcessHostImpl::Init() {
     ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
   }
 
-  is_initialized_ = true;
   init_time_ = base::TimeTicks::Now();
   return true;
 }
@@ -2132,6 +2131,11 @@ void RenderProcessHostImpl::BindInterface(
 
 const service_manager::Identity& RenderProcessHostImpl::GetChildIdentity()
     const {
+  // GetChildIdentity should only be called if the RPH is (or soon will be)
+  // backed by an actual renderer process.  This helps prevent leaks similar to
+  // the ones raised in https://crbug.com/813045.
+  DCHECK(IsInitializedAndNotDead());
+
   return child_connection_->child_identity();
 }
 
