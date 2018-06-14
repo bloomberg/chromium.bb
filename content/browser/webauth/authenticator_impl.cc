@@ -646,16 +646,6 @@ void AuthenticatorImpl::OnRegisterResponse(
 
       if (attestation_preference_ !=
           webauth::mojom::AttestationConveyancePreference::NONE) {
-        // Check for focus before (potentially) showing a permissions bubble
-        // that might take focus.
-        if (!IsFocused()) {
-          InvokeCallbackAndCleanup(
-              std::move(make_credential_response_callback_),
-              webauth::mojom::AuthenticatorStatus::NOT_FOCUSED, nullptr,
-              Focus::kDontCheck);
-          return;
-        }
-
         request_delegate_->ShouldReturnAttestation(
             relying_party_id_,
             base::BindOnce(
@@ -688,15 +678,11 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
   DCHECK(attestation_preference_ !=
          webauth::mojom::AttestationConveyancePreference::NONE);
 
-  // At this point, the final focus check has already been done because it's
-  // possible that a permissions bubble might have focus and thus, if we did a
-  // focus check, it would (incorrectly) fail.
-
   if (!attestation_permitted) {
     InvokeCallbackAndCleanup(
         std::move(make_credential_response_callback_),
         webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr,
-        Focus::kDontCheck);
+        Focus::kDoCheck);
     return;
   }
 
@@ -725,7 +711,7 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
       webauth::mojom::AuthenticatorStatus::SUCCESS,
       CreateMakeCredentialResponse(std::move(client_data_json_),
                                    std::move(response_data)),
-      Focus::kDontCheck);
+      Focus::kDoCheck);
 }
 
 void AuthenticatorImpl::OnSignResponse(

@@ -151,16 +151,8 @@ bool ChromeAuthenticatorRequestDelegate::IsFocused() {
 #else
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
-  for (const auto* browser : *BrowserList::GetInstance()) {
-    const int tab_index =
-        browser->tab_strip_model()->GetIndexOfWebContents(web_contents);
-    if (tab_index != TabStripModel::kNoTab &&
-        browser->tab_strip_model()->active_index() == tab_index) {
-      return browser->window()->IsActive();
-    }
-  }
-
-  return false;
+  DCHECK(web_contents);
+  return web_contents->GetVisibility() == content::Visibility::VISIBLE;
 #endif
 }
 
