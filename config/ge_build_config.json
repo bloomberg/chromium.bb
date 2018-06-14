@@ -1738,6 +1738,12 @@
         },
         {
           "board_name": "coral",
+          "name": "rabbid",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "coral",
           "name": "robo",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
