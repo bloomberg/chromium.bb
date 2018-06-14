@@ -7438,9 +7438,8 @@ static INLINE int64_t interpolation_filter_rd(
 static INLINE int is_interp_filter_match(const INTERPOLATION_FILTER_STATS *st,
                                          MB_MODE_INFO *const mi) {
   for (int i = 0; i < 2; ++i) {
-    const MV *mv = &mi->mv[i].as_mv;
-    if ((st->ref_frames[i] != mi->ref_frame[i]) || (st->mv[i].row != mv->row) ||
-        (st->mv[i].col != mv->col)) {
+    if ((st->ref_frames[i] != mi->ref_frame[i]) ||
+        (st->mv[i].as_int != mi->mv[i].as_int)) {
       return 0;
     }
   }
@@ -7466,11 +7465,9 @@ static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
   const int comp_idx = mbmi->compound_idx;
   const int offset = x->interp_filter_stats_idx[comp_idx];
   if (offset < MAX_INTERP_FILTER_STATS) {
-    const MV mv0 = mbmi->mv[0].as_mv;
-    const MV mv1 = mbmi->mv[1].as_mv;
     INTERPOLATION_FILTER_STATS stat = {
       mbmi->interp_filters,
-      { mv0, mv1 },
+      { mbmi->mv[0], mbmi->mv[1] },
       { mbmi->ref_frame[0], mbmi->ref_frame[1] },
     };
     x->interp_filter_stats[comp_idx][offset] = stat;

@@ -169,7 +169,7 @@ typedef struct {
 #define MAX_INTERP_FILTER_STATS 64
 typedef struct {
   InterpFilters filters;
-  MV mv[2];
+  int_mv mv[2];
   int8_t ref_frames[2];
 } INTERPOLATION_FILTER_STATS;
 
