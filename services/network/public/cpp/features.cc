@@ -19,7 +19,7 @@ const base::Feature kOutOfBlinkCORS{"OutOfBlinkCORS",
 
 // Port some content::ResourceScheduler functionalities to renderer.
 const base::Feature kRendererSideResourceScheduler{
-    "RendererSideResourceScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
+    "RendererSideResourceScheduler", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kReporting{"Reporting", base::FEATURE_DISABLED_BY_DEFAULT};
 
