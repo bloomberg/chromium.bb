@@ -43,6 +43,7 @@ android_library("build_hooks_android_java") {
 
   jar_excluded_patterns = [ "*/BuildHooksAndroidImpl.class" ]
   no_build_hooks = true
+  proguard_configs = [ "proguard/build_hooks_android_impl.flags" ]
 }
 
 # This default implementation is used if an android_apk target doesn't

@@ -79,6 +79,11 @@ template("chrome_public_apk_tmpl") {
           "*R\$*",  # Should not use resources from non-browser process.
         ]
       }
+
+      # Allow targets to append to the default list.
+      if (defined(extra_negative_main_dex_globs)) {
+        negative_main_dex_globs += extra_negative_main_dex_globs
+      }
     }
     if (!is_java_debug) {
       proguard_enabled = true
