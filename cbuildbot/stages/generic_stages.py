@@ -629,7 +629,7 @@ class BuilderStage(object):
 
   def HandleSkip(self):
     """Run if the stage is skipped."""
-    pass
+    # This is a hook used by some subclasses.
 
   def _RecordResult(self, *args, **kwargs):
     """Record a successful or failed result."""
@@ -646,7 +646,8 @@ class BuilderStage(object):
     skip_stage = self._ShouldSkipStage()
     previous_record = results_lib.Results.PreviouslyCompletedRecord(self.name)
     if skip_stage:
-      self._BeginStepForBuildbot(' : [SKIPPED]')
+      # We do not log the beginning of a skipped stage.
+      pass
     elif previous_record is not None:
       self._BeginStepForBuildbot(' : [PREVIOUSLY PROCESSED]')
     else:
@@ -663,7 +664,6 @@ class BuilderStage(object):
 
       if skip_stage:
         self._StartBuildStageInCIDB()
-        self._PrintLoudly('Not running Stage %s' % self.name)
         self.HandleSkip()
         result = results_lib.Results.SKIPPED
         return
