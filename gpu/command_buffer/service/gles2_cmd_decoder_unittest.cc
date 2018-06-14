@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/test_helper.h"
+#include "gpu/command_buffer/service/validating_abstract_texture_impl.h"
 #include "gpu/config/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_image_stub.h"
@@ -255,6 +256,29 @@ TEST_P(GLES2DecoderTest, IsTexture) {
   EXPECT_FALSE(DoIsTexture(client_texture_id_));
 }
 
+TEST_P(GLES2DecoderTest, TestImageBindingForDecoderManagement) {
+  EXPECT_CALL(*gl_, GenTextures(1, _)).Times(1).RetiresOnSaturation();
+  const GLenum target = GL_TEXTURE_EXTERNAL_OES;
+  std::unique_ptr<AbstractTexture> abstract_texture =
+      GetDecoder()->CreateAbstractTexture(target, GL_RGBA, 256, /* width */
+                                          256,                  /* height */
+                                          1,                    /* depth */
+                                          0,                    /* border */
+                                          GL_RGBA, GL_UNSIGNED_BYTE);
+  scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
+  abstract_texture->BindImage(image.get(), GetParam());
+  ValidatingAbstractTextureImpl* validating_texture =
+      static_cast<ValidatingAbstractTextureImpl*>(abstract_texture.get());
+  TextureRef* texture_ref = validating_texture->GetTextureRefForTesting();
+  Texture::ImageState state;
+  EXPECT_NE(texture_ref->texture()->GetLevelImage(target, 0, &state), nullptr);
+  EXPECT_EQ(state, GetParam() ? Texture::ImageState::BOUND
+                              : Texture::ImageState::UNBOUND);
+
+  EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
+  abstract_texture.reset();
+}
+
 TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   const GLuint service_id = 123;
   EXPECT_CALL(*gl_, GenTextures(1, _))
@@ -288,7 +312,7 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
 
   // Attach an image and see if it works.
   scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
-  abstract_texture->SetOverlayImage(image.get());
+  abstract_texture->BindImage(image.get(), true);
   EXPECT_EQ(texture->GetLevelImage(target, 0), image.get());
 
   // Attach a stream image, and verify that the image changes and the service_id
@@ -296,8 +320,8 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   scoped_refptr<gpu::gles2::GLStreamTextureImage> stream_image(
       new gpu::gles2::GLStreamTextureImageStub);
   const GLuint surface_texture_service_id = service_id + 1;
-  abstract_texture->SetStreamTextureImage(stream_image.get(),
-                                          surface_texture_service_id);
+  abstract_texture->BindStreamTextureImage(stream_image.get(),
+                                           surface_texture_service_id);
   EXPECT_EQ(texture->GetLevelStreamTextureImage(target, 0), stream_image.get());
   EXPECT_EQ(abstract_texture->service_id(), surface_texture_service_id);
 

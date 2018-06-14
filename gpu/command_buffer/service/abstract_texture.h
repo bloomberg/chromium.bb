@@ -52,18 +52,19 @@ class GPU_GLES2_EXPORT AbstractTexture {
   // Set a texture parameter.  The GL context must be current.
   virtual void SetParameteri(GLenum pname, GLint param) = 0;
 
-  // Set |image| onto this texture, marked appropriately such that
-  // ScheduleOverlayPlane will be called if this texture is used as an
-  // overlay later.  This will do nothing if the texture has been destroyd.
-  virtual void SetOverlayImage(gl::GLImage* image) = 0;
-
   // Set |image| to be our stream texture image, using |service_id| in place
   // of our real service id when the client tries to bind us.  This must also
   // guarantee that CopyTexImage() is called before drawing, so that |image|
   // may update the stream texture.  This will do nothing if the texture has
   // been destroyed.
-  virtual void SetStreamTextureImage(GLStreamTextureImage* image,
-                                     GLuint service_id) = 0;
+  virtual void BindStreamTextureImage(GLStreamTextureImage* image,
+                                      GLuint service_id) = 0;
+
+  // Attaches |image| to the AbstractTexture.  If |client_managed| is true, then
+  // the decoder does not call GLImage::Copy/Bind.  Further, the decoder
+  // guarantees that ScheduleOverlayPlane will be called if the texture is ever
+  // promoted to an overlay.
+  virtual void BindImage(gl::GLImage* image, bool client_managed) = 0;
 
   unsigned int service_id() const { return GetTextureBase()->service_id(); }
 };

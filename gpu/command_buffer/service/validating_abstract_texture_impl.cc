@@ -45,22 +45,25 @@ void ValidatingAbstractTextureImpl::SetParameteri(GLenum pname, GLint param) {
                                      texture_ref_.get(), pname, param);
 }
 
-void ValidatingAbstractTextureImpl::SetOverlayImage(gl::GLImage* image) {
-  // We set the state to BOUND, since that's required for us to call
-  // ScheduleOverlayPlane later.
-
+void ValidatingAbstractTextureImpl::BindImage(gl::GLImage* image,
+                                              bool client_managed) {
   if (!texture_ref_)
     return;
 
   const GLint level = 0;
-  GetTextureManager()->SetLevelImage(
-      texture_ref_.get(), texture_ref_->texture()->target(), level, image,
-      image ? Texture::ImageState::BOUND : Texture::ImageState::UNBOUND);
+
+  Texture::ImageState state = Texture::ImageState::UNBOUND;
+  if (client_managed && image)
+    state = Texture::ImageState::BOUND;
+
+  GetTextureManager()->SetLevelImage(texture_ref_.get(),
+                                     texture_ref_->texture()->target(), level,
+                                     image, state);
   GetTextureManager()->SetLevelCleared(
       texture_ref_.get(), texture_ref_->texture()->target(), level, true);
 }
 
-void ValidatingAbstractTextureImpl::SetStreamTextureImage(
+void ValidatingAbstractTextureImpl::BindStreamTextureImage(
     GLStreamTextureImage* image,
     GLuint service_id) {
   if (!texture_ref_)
@@ -106,6 +109,10 @@ void ValidatingAbstractTextureImpl::OnDecoderWillDestroy(bool have_context) {
   if (!have_context)
     texture_ref_->ForceContextLost();
   texture_ref_ = nullptr;
+}
+
+TextureRef* ValidatingAbstractTextureImpl::GetTextureRefForTesting() {
+  return texture_ref_.get();
 }
 
 }  // namespace gles2
