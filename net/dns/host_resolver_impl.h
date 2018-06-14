@@ -170,6 +170,8 @@ class NET_EXPORT HostResolverImpl
   void SetRequestContext(URLRequestContext* request_context) override;
   void AddDnsOverHttpsServer(std::string server, bool use_post) override;
   void ClearDnsOverHttpsServers() override;
+  const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
+  GetDnsOverHttpsServersForTesting() const override;
 
   void set_proc_params_for_test(const ProcTaskParams& proc_params) {
     proc_params_ = proc_params;

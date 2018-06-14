@@ -13,6 +13,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/log/net_log.h"
@@ -113,6 +114,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void SetClient(mojom::NetworkServiceClientPtr client) override;
   void CreateNetworkContext(mojom::NetworkContextRequest request,
                             mojom::NetworkContextParamsPtr params) override;
+  void ConfigureStubHostResolver(
+      bool stub_resolver_enabled,
+      base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
+          dns_over_https_servers) override;
   void DisableQuic() override;
   void SetUpHttpAuth(
       mojom::HttpAuthStaticParamsPtr http_auth_static_params) override;

@@ -5,12 +5,15 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "net/base/mock_network_change_notifier.h"
+#include "net/dns/dns_config_service.h"
+#include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_handler_negotiate.h"
 #include "net/http/http_auth_scheme.h"
@@ -28,6 +31,7 @@
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace network {
 
@@ -403,6 +407,140 @@ TEST_F(NetworkServiceTest, AuthEnableNegotiatePort) {
       auth_handler_factory->http_auth_preferences()->NegotiateEnablePort());
 }
 
+// DnsClient isn't supported on iOS.
+#if !defined(OS_IOS)
+
+TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
+  // HostResolver::GetDnsConfigAsValue() returns nullptr if the stub resolver is
+  // disabled.
+  EXPECT_FALSE(service()->host_resolver()->GetDnsConfigAsValue());
+  service()->ConfigureStubHostResolver(
+      true /* stub_resolver_enabled */,
+      base::nullopt /* dns_over_https_servers */);
+  EXPECT_TRUE(service()->host_resolver()->GetDnsConfigAsValue());
+  service()->ConfigureStubHostResolver(
+      false /* stub_resolver_enabled */,
+      base::nullopt /* dns_over_https_servers */);
+  EXPECT_FALSE(service()->host_resolver()->GetDnsConfigAsValue());
+}
+
+TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
+  const GURL kServer1 = GURL("https://foo/");
+  const bool kServer1UsePost = false;
+  const GURL kServer2 = GURL("https://bar/");
+  const bool kServer2UsePost = true;
+  const GURL kServer3 = GURL("https://grapefruit/");
+  const bool kServer3UsePost = false;
+
+  // HostResolver::GetDnsClientForTesting() returns nullptr if the stub resolver
+  // is disabled.
+  EXPECT_FALSE(service()->host_resolver()->GetDnsConfigAsValue());
+
+  // Create the primary NetworkContext before enabling DNS over HTTPS.
+  mojom::NetworkContextPtr network_context;
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+  context_params->primary_network_context = true;
+  service()->CreateNetworkContext(mojo::MakeRequest(&network_context),
+                                  std::move(context_params));
+
+  // Enable DNS over HTTPS for one server.
+
+  std::vector<mojom::DnsOverHttpsServerPtr> dns_over_https_servers_ptr;
+
+  mojom::DnsOverHttpsServerPtr dns_over_https_server =
+      mojom::DnsOverHttpsServer::New();
+  dns_over_https_server->url = kServer1;
+  dns_over_https_server->use_posts = kServer1UsePost;
+  dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
+
+  service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
+                                       std::move(dns_over_https_servers_ptr));
+  EXPECT_TRUE(service()->host_resolver()->GetDnsConfigAsValue());
+  const auto* dns_over_https_servers =
+      service()->host_resolver()->GetDnsOverHttpsServersForTesting();
+  ASSERT_TRUE(dns_over_https_servers);
+  ASSERT_EQ(1u, dns_over_https_servers->size());
+  EXPECT_EQ(kServer1, (*dns_over_https_servers)[0].server);
+  EXPECT_EQ(kServer1UsePost, (*dns_over_https_servers)[0].use_post);
+
+  // Enable DNS over HTTPS for two servers.
+
+  dns_over_https_servers_ptr.clear();
+  dns_over_https_server = mojom::DnsOverHttpsServer::New();
+  dns_over_https_server->url = kServer2;
+  dns_over_https_server->use_posts = kServer2UsePost;
+  dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
+
+  dns_over_https_server = mojom::DnsOverHttpsServer::New();
+  dns_over_https_server->url = kServer3;
+  dns_over_https_server->use_posts = kServer3UsePost;
+  dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
+
+  service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
+                                       std::move(dns_over_https_servers_ptr));
+  EXPECT_TRUE(service()->host_resolver()->GetDnsConfigAsValue());
+  dns_over_https_servers =
+      service()->host_resolver()->GetDnsOverHttpsServersForTesting();
+  ASSERT_TRUE(dns_over_https_servers);
+  ASSERT_EQ(2u, dns_over_https_servers->size());
+  EXPECT_EQ(kServer2, (*dns_over_https_servers)[0].server);
+  EXPECT_EQ(kServer2UsePost, (*dns_over_https_servers)[0].use_post);
+  EXPECT_EQ(kServer3, (*dns_over_https_servers)[1].server);
+  EXPECT_EQ(kServer3UsePost, (*dns_over_https_servers)[1].use_post);
+
+  // Destroying the primary NetworkContext should disable DNS over HTTPS.
+  network_context.reset();
+  base::RunLoop().RunUntilIdle();
+  // DnsClient is still enabled.
+  EXPECT_TRUE(service()->host_resolver()->GetDnsConfigAsValue());
+  // DNS over HTTPS is not.
+  EXPECT_FALSE(service()->host_resolver()->GetDnsOverHttpsServersForTesting());
+}
+
+// Make sure that enabling DNS over HTTP without a primary NetworkContext fails.
+TEST_F(NetworkServiceTest,
+       DnsOverHttpsEnableDoesNothingWithoutPrimaryNetworkContext) {
+  // HostResolver::GetDnsClientForTesting() returns nullptr if the stub resolver
+  // is disabled.
+  EXPECT_FALSE(service()->host_resolver()->GetDnsConfigAsValue());
+
+  // Try to enable DnsClient and DNS over HTTPS. Only the first should take
+  // effect.
+  std::vector<mojom::DnsOverHttpsServerPtr> dns_over_https_servers;
+  mojom::DnsOverHttpsServerPtr dns_over_https_server =
+      mojom::DnsOverHttpsServer::New();
+  dns_over_https_server->url = GURL("https://foo/");
+  dns_over_https_servers.emplace_back(std::move(dns_over_https_server));
+  service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
+                                       std::move(dns_over_https_servers));
+  // DnsClient is enabled.
+  EXPECT_TRUE(service()->host_resolver()->GetDnsConfigAsValue());
+  // DNS over HTTPS is not.
+  EXPECT_FALSE(service()->host_resolver()->GetDnsOverHttpsServersForTesting());
+
+  // Create a NetworkContext that is not the primary one.
+  mojom::NetworkContextPtr network_context;
+  service()->CreateNetworkContext(mojo::MakeRequest(&network_context),
+                                  CreateContextParams());
+  // There should be no change in host resolver state.
+  EXPECT_TRUE(service()->host_resolver()->GetDnsConfigAsValue());
+  EXPECT_FALSE(service()->host_resolver()->GetDnsOverHttpsServersForTesting());
+
+  // Try to enable DNS over HTTPS again, which should not work, since there's
+  // still no primary NetworkContext.
+  dns_over_https_servers.clear();
+  dns_over_https_server = mojom::DnsOverHttpsServer::New();
+  dns_over_https_server->url = GURL("https://foo2/");
+  dns_over_https_servers.emplace_back(std::move(dns_over_https_server));
+  service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
+                                       std::move(dns_over_https_servers));
+  // There should be no change in host resolver state.
+  EXPECT_TRUE(service()->host_resolver()->GetDnsConfigAsValue());
+  EXPECT_FALSE(service()->host_resolver()->GetDnsOverHttpsServersForTesting());
+}
+
+#endif  // !defined(OS_IOS)
+
 // |ntlm_v2_enabled| is only supported on POSIX platforms.
 #if defined(OS_POSIX)
 TEST_F(NetworkServiceTest, AuthNtlmV2Enabled) {
@@ -776,12 +914,12 @@ class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
   DISALLOW_COPY_AND_ASSIGN(AllowBadCertsNetworkServiceClient);
 };
 
-// Test |use_to_validate_certs|, which is required by AIA fetching, among other
-// things.
+// Test |primary_network_context|, which is required by AIA fetching, among
+// other things.
 TEST_F(NetworkServiceTestWithService, AIAFetching) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   mojom::NetworkServiceClientPtr network_service_client;
-  context_params->use_to_validate_certs = true;
+  context_params->primary_network_context = true;
 
   // Have to allow bad certs when using
   // SpawnedTestServer::SSLOptions::CERT_AUTO_AIA_INTERMEDIATE.
@@ -812,12 +950,12 @@ TEST_F(NetworkServiceTestWithService, AIAFetching) {
 }
 #endif  // !defined(OS_IOS)
 
-// Check that destroying a NetworkContext with |use_to_validate_certs| set
+// Check that destroying a NetworkContext with |primary_network_context| set
 // destroys all other NetworkContexts.
 TEST_F(NetworkServiceTestWithService,
-       DestryingUseToValidateCertsContextDestroysOtherContexts) {
+       DestroyingPrimaryNetworkContextDestroysOtherContexts) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->use_to_validate_certs = true;
+  context_params->primary_network_context = true;
   mojom::NetworkContextPtr cert_validating_network_context;
   network_service_->CreateNetworkContext(
       mojo::MakeRequest(&cert_validating_network_context),

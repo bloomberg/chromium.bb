@@ -295,7 +295,7 @@ NetworkContext::~NetworkContext() {
   if (network_service_)
     network_service_->DeregisterNetworkContext(this);
 
-  if (UseToValidateCerts()) {
+  if (IsPrimaryNetworkContext()) {
 #if defined(USE_NSS_CERTS)
     net::SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
@@ -339,8 +339,8 @@ void NetworkContext::SetCertVerifierForTesting(
   g_cert_verifier_for_testing = cert_verifier;
 }
 
-bool NetworkContext::UseToValidateCerts() const {
-  return params_ && params_->use_to_validate_certs;
+bool NetworkContext::IsPrimaryNetworkContext() const {
+  return params_ && params_->primary_network_context;
 }
 
 void NetworkContext::CreateURLLoaderFactory(
@@ -900,7 +900,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 
   // These must be matched by cleanup code just before the URLRequestContext is
   // destroyed.
-  if (network_context_params->use_to_validate_certs) {
+  if (network_context_params->primary_network_context) {
 #if defined(USE_NSS_CERTS)
     net::SetURLRequestContextForNSSHttpIO(result.url_request_context.get());
 #endif

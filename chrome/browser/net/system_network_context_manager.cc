@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
@@ -21,10 +22,12 @@
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/network_session_configurator/common/network_features.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
@@ -34,6 +37,11 @@
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part.h"
@@ -51,6 +59,53 @@ void DisableQuicOnIOThread(IOThread* io_thread) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
     content::GetNetworkServiceImpl()->DisableQuic();
   io_thread->DisableQuic();
+}
+
+void GetStubResolverConfig(
+    bool* stub_resolver_enabled,
+    base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
+        dns_over_https_servers) {
+  DCHECK(!dns_over_https_servers->has_value());
+
+  PrefService* local_state = g_browser_process->local_state();
+
+  const auto& doh_server_list =
+      local_state->GetList(prefs::kDnsOverHttpsServers)->GetList();
+  const auto& doh_server_method_list =
+      local_state->GetList(prefs::kDnsOverHttpsServerMethods)->GetList();
+  DCHECK_EQ(doh_server_list.size(), doh_server_method_list.size());
+
+  for (size_t i = 0;
+       i < doh_server_list.size() && i < doh_server_method_list.size(); ++i) {
+    if (!doh_server_list[i].is_string() ||
+        !doh_server_method_list[i].is_string()) {
+      continue;
+    }
+
+    if (!dns_over_https_servers) {
+      *dns_over_https_servers = base::make_optional<
+          std::vector<network::mojom::DnsOverHttpsServerPtr>>();
+    }
+    network::mojom::DnsOverHttpsServerPtr dns_over_https_server =
+        network::mojom::DnsOverHttpsServer::New();
+    dns_over_https_server->url = GURL(doh_server_list[i].GetString());
+    dns_over_https_server->use_posts =
+        (doh_server_method_list[i].GetString() == "POST");
+    (*dns_over_https_servers)->emplace_back(std::move(dns_over_https_server));
+  }
+
+  *stub_resolver_enabled =
+      !!dns_over_https_servers ||
+      local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
+}
+
+void OnStubResolverConfigChanged(const std::string& pref_name) {
+  bool stub_resolver_enabled;
+  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
+      dns_over_https_servers;
+  GetStubResolverConfig(&stub_resolver_enabled, &dns_over_https_servers);
+  content::GetNetworkService()->ConfigureStubHostResolver(
+      stub_resolver_enabled, std::move(dns_over_https_servers));
 }
 
 // Constructs HttpAuthStaticParams based on global state.
@@ -110,6 +165,20 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams() {
 void OnAuthPrefsChanged(const std::string& pref_name) {
   content::GetNetworkService()->ConfigureHttpAuthPrefs(
       CreateHttpAuthDynamicParams());
+}
+
+// Check the AsyncDns field trial and return true if it should be enabled. On
+// Android this includes checking the Android version in the field trial.
+bool ShouldEnableAsyncDns() {
+  bool feature_can_be_enabled = true;
+#if defined(OS_ANDROID)
+  int min_sdk =
+      base::GetFieldTrialParamByFeatureAsInt(features::kAsyncDns, "min_sdk", 0);
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < min_sdk)
+    feature_can_be_enabled = false;
+#endif
+  return feature_can_be_enabled &&
+         base::FeatureList::IsEnabled(features::kAsyncDns);
 }
 
 }  // namespace
@@ -212,6 +281,9 @@ SystemNetworkContextManager::GetSharedURLLoaderFactory() {
 void SystemNetworkContextManager::SetUp(
     network::mojom::NetworkContextRequest* network_context_request,
     network::mojom::NetworkContextParamsPtr* network_context_params,
+    bool* stub_resolver_enabled,
+    base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
+        dns_over_https_servers,
     network::mojom::HttpAuthStaticParamsPtr* http_auth_static_params,
     network::mojom::HttpAuthDynamicParamsPtr* http_auth_dynamic_params,
     bool* is_quic_allowed) {
@@ -226,6 +298,7 @@ void SystemNetworkContextManager::SetUp(
   *is_quic_allowed = is_quic_allowed_;
   *http_auth_static_params = CreateHttpAuthStaticParams();
   *http_auth_dynamic_params = CreateHttpAuthDynamicParams();
+  GetStubResolverConfig(stub_resolver_enabled, dns_over_https_servers);
 }
 
 SystemNetworkContextManager::SystemNetworkContextManager()
@@ -241,6 +314,14 @@ SystemNetworkContextManager::SystemNetworkContextManager()
   shared_url_loader_factory_ = new URLLoaderFactoryForSystem(this);
 
   pref_change_registrar_.Init(g_browser_process->local_state());
+
+  PrefChangeRegistrar::NamedChangeCallback dns_pref_callback =
+      base::BindRepeating(&OnStubResolverConfigChanged);
+  pref_change_registrar_.Add(prefs::kBuiltInDnsClientEnabled,
+                             dns_pref_callback);
+  pref_change_registrar_.Add(prefs::kDnsOverHttpsServers, dns_pref_callback);
+  pref_change_registrar_.Add(prefs::kDnsOverHttpsServerMethods,
+                             dns_pref_callback);
 
   PrefChangeRegistrar::NamedChangeCallback auth_pref_callback =
       base::BindRepeating(&OnAuthPrefsChanged);
@@ -267,6 +348,30 @@ SystemNetworkContextManager::~SystemNetworkContextManager() {
 }
 
 void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
+  // DnsClient prefs.
+  registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled,
+                                ShouldEnableAsyncDns());
+  // Set default DNS over HTTPS server list and server methods, based on whether
+  // or not the DNS over HTTPS feature is enabled.
+  std::unique_ptr<base::ListValue> default_doh_servers =
+      std::make_unique<base::ListValue>();
+  std::unique_ptr<base::ListValue> default_doh_server_methods =
+      std::make_unique<base::ListValue>();
+  if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
+    base::Value server(variations::GetVariationParamValueByFeature(
+        features::kDnsOverHttps, "server"));
+    base::Value method(variations::GetVariationParamValueByFeature(
+        features::kDnsOverHttps, "method"));
+    if (!server.GetString().empty()) {
+      default_doh_servers->GetList().push_back(std::move(server));
+      default_doh_server_methods->GetList().push_back(std::move(method));
+    }
+  }
+  registry->RegisterListPref(prefs::kDnsOverHttpsServers,
+                             std::move(default_doh_servers));
+  registry->RegisterListPref(prefs::kDnsOverHttpsServerMethods,
+                             std::move(default_doh_server_methods));
+
   // Static auth params
   registry->RegisterStringPref(prefs::kAuthSchemes,
                                "basic,digest,ntlm,negotiate");
@@ -303,10 +408,19 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   network_service->ConfigureHttpAuthPrefs(CreateHttpAuthDynamicParams());
 
   // The system NetworkContext must be created first, since it sets
-  // |use_to_validate_certs| to true.
+  // |primary_network_context| to true.
   network_service->CreateNetworkContext(
       MakeRequest(&network_service_network_context_),
       CreateNetworkContextParams());
+
+  // Configure the stub resolver. This must be done after the system
+  // NetworkContext is created, but before anything has the chance to use it.
+  bool stub_resolver_enabled;
+  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
+      dns_over_https_servers;
+  GetStubResolverConfig(&stub_resolver_enabled, &dns_over_https_servers);
+  content::GetNetworkService()->ConfigureStubHostResolver(
+      stub_resolver_enabled, std::move(dns_over_https_servers));
 }
 
 void SystemNetworkContextManager::DisableQuic() {
@@ -373,7 +487,7 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
   network_context_params->enable_ftp_url_support = true;
 #endif
 
-  network_context_params->use_to_validate_certs = true;
+  network_context_params->primary_network_context = true;
 
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 

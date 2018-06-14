@@ -98,7 +98,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/android/build_info.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "components/data_usage/android/traffic_stats_amortizer.h"
 #include "net/cert/cert_verify_proc_android.h"
@@ -235,20 +234,6 @@ void UpdateMetricsUsagePrefsOnUIThread(const std::string& service_name,
                               service_name, message_size, is_cellular));
 }
 
-// Check the AsyncDns field trial and return true if it should be enabled. On
-// Android this includes checking the Android version in the field trial.
-bool ShouldEnableAsyncDns() {
-  bool feature_can_be_enabled = true;
-#if defined(OS_ANDROID)
-  int min_sdk =
-      base::GetFieldTrialParamByFeatureAsInt(features::kAsyncDns, "min_sdk", 0);
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < min_sdk)
-    feature_can_be_enabled = false;
-#endif
-  return feature_can_be_enabled &&
-         base::FeatureList::IsEnabled(features::kAsyncDns);
-}
-
 }  // namespace
 
 class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
@@ -318,44 +303,11 @@ IOThread::IOThread(
       nullptr,
       local_state);
 
-  local_state->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
-                                   base::Value(ShouldEnableAsyncDns()));
-
-  dns_client_enabled_.Init(prefs::kBuiltInDnsClientEnabled,
-                           local_state,
-                           base::Bind(&IOThread::UpdateDnsClientEnabled,
-                                      base::Unretained(this)));
-  dns_client_enabled_.MoveToThread(io_thread_proxy);
-
-  if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
-    base::Value specs(base::Value::Type::LIST);
-    base::Value methods(base::Value::Type::LIST);
-    base::Value spec(variations::GetVariationParamValueByFeature(
-        features::kDnsOverHttps, "server"));
-    base::Value method(variations::GetVariationParamValueByFeature(
-        features::kDnsOverHttps, "method"));
-    if (spec.GetString().size() > 0) {
-      specs.GetList().push_back(std::move(spec));
-      methods.GetList().push_back(std::move(method));
-      local_state->SetDefaultPrefValue(prefs::kDnsOverHttpsServers,
-                                       std::move(specs));
-      local_state->SetDefaultPrefValue(prefs::kDnsOverHttpsServerMethods,
-                                       std::move(methods));
-    }
-  }
-  dns_over_https_servers_.Init(
-      prefs::kDnsOverHttpsServers, local_state,
-      base::Bind(&IOThread::UpdateDnsClientEnabled, base::Unretained(this)));
-  dns_over_https_server_methods_.Init(
-      prefs::kDnsOverHttpsServerMethods, local_state,
-      base::Bind(&IOThread::UpdateDnsClientEnabled, base::Unretained(this)));
-  dns_over_https_servers_.MoveToThread(io_thread_proxy);
-  dns_over_https_server_methods_.MoveToThread(io_thread_proxy);
-
   BrowserThread::SetIOThreadDelegate(this);
 
   system_network_context_manager->SetUp(
       &network_context_request_, &network_context_params_,
+      &stub_resolver_enabled_, &dns_over_https_servers_,
       &http_auth_static_params_, &http_auth_dynamic_params_,
       &is_quic_allowed_on_init_);
 }
@@ -456,9 +408,6 @@ void IOThread::Init() {
 #endif
 
   ConstructSystemRequestContext();
-
-  UpdateDnsClientEnabled();
-
 }
 
 void IOThread::CleanUp() {
@@ -487,9 +436,6 @@ void IOThread::CleanUp() {
 void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
   data_reduction_proxy::RegisterPrefs(registry);
-  registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, true);
-  registry->RegisterListPref(prefs::kDnsOverHttpsServers);
-  registry->RegisterListPref(prefs::kDnsOverHttpsServerMethods);
 }
 
 // static
@@ -500,25 +446,6 @@ void IOThread::SetCertVerifierForTesting(net::CertVerifier* cert_verifier) {
 void IOThread::DisableQuic() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   globals_->quic_disabled = true;
-}
-
-void IOThread::UpdateDnsClientEnabled() {
-  globals()->system_request_context->host_resolver()->SetDnsClientEnabled(
-      *dns_client_enabled_ || (*dns_over_https_servers_).size() > 0);
-
-  net::HostResolver* resolver =
-      globals()->system_request_context->host_resolver();
-  if ((*dns_over_https_servers_).size()) {
-    resolver->SetRequestContext(globals_->system_request_context);
-  }
-  DCHECK((*dns_over_https_servers_).size() ==
-         (*dns_over_https_server_methods_).size());
-  resolver->ClearDnsOverHttpsServers();
-  for (unsigned int i = 0; i < (*dns_over_https_servers_).size(); i++) {
-    resolver->AddDnsOverHttpsServer(
-        (*dns_over_https_servers_)[i],
-        (*dns_over_https_server_methods_)[i].compare("POST") == 0);
-  }
 }
 
 void IOThread::SetUpProxyService(
@@ -604,6 +531,10 @@ void IOThread::ConstructSystemRequestContext() {
             std::move(network_context_request_),
             std::move(network_context_params_), std::move(builder),
             &globals_->system_request_context);
+
+    // This must be done after the system NetworkContext is created.
+    network_service->ConfigureStubHostResolver(
+        stub_resolver_enabled_, std::move(dns_over_https_servers_));
   }
 
   // TODO(mmenke): This class currently requires an in-process

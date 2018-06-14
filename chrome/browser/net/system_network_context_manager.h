@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -59,6 +60,7 @@ class SystemNetworkContextManager {
   //
   // Must be called before the system NetworkContext is first used.
   //
+  // |stub_resolver_enabled|, |dns_over_https_servers|,
   // |http_auth_static_params|, |http_auth_dynamic_params|, and
   // |is_quic_allowed| are used to pass initial NetworkService state to the
   // caller, so the NetworkService can be configured appropriately. Using
@@ -67,6 +69,9 @@ class SystemNetworkContextManager {
   // execution order relative to PostTasks.
   void SetUp(network::mojom::NetworkContextRequest* network_context_request,
              network::mojom::NetworkContextParamsPtr* network_context_params,
+             bool* stub_resolver_enabled,
+             base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
+                 dns_over_https_servers,
              network::mojom::HttpAuthStaticParamsPtr* http_auth_static_params,
              network::mojom::HttpAuthDynamicParamsPtr* http_auth_dynamic_params,
              bool* is_quic_allowed);

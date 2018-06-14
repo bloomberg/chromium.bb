@@ -16,6 +16,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/prioritized_dispatcher.h"
 #include "net/base/request_priority.h"
+#include "net/dns/dns_config_service.h"
 #include "net/dns/host_cache.h"
 
 namespace base {
@@ -25,6 +26,7 @@ class Value;
 namespace net {
 
 class AddressList;
+class DnsClient;
 class HostResolverImpl;
 class NetLog;
 class NetLogWithSource;
@@ -216,6 +218,11 @@ class NET_EXPORT HostResolver {
   virtual void SetRequestContext(URLRequestContext* request_context) {}
   virtual void AddDnsOverHttpsServer(std::string spec, bool use_post) {}
   virtual void ClearDnsOverHttpsServers() {}
+
+  // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
+  // DNS over HTTPS is not enabled.
+  virtual const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
+  GetDnsOverHttpsServersForTesting() const;
 
   // Creates a HostResolver implementation that queries the underlying system.
   // (Except if a unit-test has changed the global HostResolverProc using

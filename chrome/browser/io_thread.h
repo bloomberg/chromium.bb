@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
@@ -185,8 +186,6 @@ class IOThread : public content::BrowserThreadDelegate {
   void Init() override;
   void CleanUp() override;
 
-  void UpdateDnsClientEnabled();
-
   extensions::EventRouterForwarder* extension_event_router_forwarder() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     return extension_event_router_forwarder_;
@@ -218,12 +217,6 @@ class IOThread : public content::BrowserThreadDelegate {
 
   BooleanPrefMember system_enable_referrers_;
 
-  BooleanPrefMember dns_client_enabled_;
-
-  StringListPrefMember dns_over_https_servers_;
-
-  StringListPrefMember dns_over_https_server_methods_;
-
   // These are set on the UI thread, and then consumed during initialization on
   // the IO thread.
   network::mojom::NetworkContextRequest network_context_request_;
@@ -231,6 +224,10 @@ class IOThread : public content::BrowserThreadDelegate {
 
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;
+
+  bool stub_resolver_enabled_ = false;
+  base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
+      dns_over_https_servers_;
 
   // Initial HTTP auth configuration used when setting up the NetworkService on
   // the IO Thread. Future updates are sent using the NetworkService mojo
