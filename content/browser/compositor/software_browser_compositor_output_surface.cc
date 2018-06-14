@@ -92,7 +92,6 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
 void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback(
     const std::vector<ui::LatencyInfo>& latency_info,
     bool need_presentation_feedback) {
-  RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck();
   if (need_presentation_feedback) {

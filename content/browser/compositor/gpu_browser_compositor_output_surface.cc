@@ -52,7 +52,6 @@ void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     client_->DidReceiveTextureInUseResponses(params.texture_in_use_responses);
   client_->DidReceiveSwapBuffersAck();
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
-  RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
 }
 
@@ -102,9 +101,6 @@ void GpuBrowserCompositorOutputSurface::Reshape(
 
 void GpuBrowserCompositorOutputSurface::SwapBuffers(
     viz::OutputSurfaceFrame frame) {
-  if (LatencyInfoHasSnapshotRequest(frame.latency_info))
-    GetCommandBufferProxy()->SetSnapshotRequested();
-
   gfx::Size surface_size = frame.size;
   if (reflector_) {
     if (frame.sub_buffer_rect && reflector_texture_defined_) {

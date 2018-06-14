@@ -79,13 +79,6 @@ int64_t StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::trace_id(
 }
 
 // static
-const ui::LatencyInfo::SnapshotMap&
-StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::snapshots(
-    const ui::LatencyInfo& info) {
-  return info.Snapshots();
-}
-
-// static
 ukm::SourceId
 StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::ukm_source_id(
     const ui::LatencyInfo& info) {
@@ -126,8 +119,6 @@ bool StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo>::Read(
   if (!data.ReadLatencyComponents(&out->latency_components_))
     return false;
   out->trace_id_ = data.trace_id();
-  if (!data.ReadSnapshots(&out->snapshots_))
-    return false;
   out->ukm_source_id_ = data.ukm_source_id();
   out->coalesced_ = data.coalesced();
   out->began_ = data.began();

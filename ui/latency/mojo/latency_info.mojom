@@ -77,8 +77,6 @@ struct LatencyInfo {
   string trace_name;
   map<LatencyComponentType, mojo_base.mojom.TimeTicks> latency_components;
   int64 trace_id;
-  // Mapping of frame sink ids to snapshot ids.
-  map<int64, int64> snapshots;
   int64 ukm_source_id;
   bool coalesced;
   bool began;

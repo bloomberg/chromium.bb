@@ -405,15 +405,10 @@ bool Display::DrawAndSwap() {
         stored_latency_info_.swap(frame.metadata.latency_info);
       }
     } else {
-      // There was no damage, so tracking latency info at this point isn't
-      // useful unless there's a snapshot request.
+      // There was no damage. Terminate the latency info objects.
       while (!frame.metadata.latency_info.empty()) {
         auto& latency = frame.metadata.latency_info.back();
-        if (latency.Snapshots().size()) {
-          stored_latency_info_.push_back(std::move(latency));
-        } else {
-          latency.Terminate();
-        }
+        latency.Terminate();
         frame.metadata.latency_info.pop_back();
       }
     }
@@ -470,16 +465,6 @@ void Display::DidReceivePresentationFeedback(
 
 void Display::DidFinishLatencyInfo(
     const std::vector<ui::LatencyInfo>& latency_info) {
-  std::vector<ui::LatencyInfo> latency_info_with_snapshot_component;
-  for (const auto& latency : latency_info) {
-    if (latency.Snapshots().size())
-      latency_info_with_snapshot_component.push_back(latency);
-  }
-
-  if (!latency_info_with_snapshot_component.empty()) {
-    client_->DidSwapAfterSnapshotRequestReceived(
-        latency_info_with_snapshot_component);
-  }
 }
 
 void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {

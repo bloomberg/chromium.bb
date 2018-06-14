@@ -91,9 +91,6 @@ void GLOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
   if (synthetic_begin_frame_source_)
     flags |= gpu::SwapBuffersFlags::kVSyncParams;
 
-  if (LatencyInfoHasSnapshotRequest(frame.latency_info))
-    context_provider_->ContextSupport()->SetSnapshotRequested();
-
   auto swap_callback = base::BindOnce(
       &GLOutputSurface::OnGpuSwapBuffersCompleted,
       weak_ptr_factory_.GetWeakPtr(), std::move(frame.latency_info), size_);

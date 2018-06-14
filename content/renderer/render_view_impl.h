@@ -529,7 +529,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnSetPageScale(float page_scale_factor);
-  void OnForceRedraw(const ui::LatencyInfo& latency_info);
+  void OnForceRedraw(int snapshot_id);
   void OnSelectWordAroundCaret();
   void OnAudioStateChanged(bool is_audio_playing);
   void OnPausePageScheduledTasks(bool paused);
@@ -548,6 +548,9 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // Misc private functions ----------------------------------------------------
   // Check whether the preferred size has changed.
   void CheckPreferredSize();
+
+  void OnForceDrawFramePresented(int snapshot_id,
+                                 const gfx::PresentationFeedback& feedback);
 
 #if defined(OS_ANDROID)
   // Make the video capture devices (e.g. webcam) stop/resume delivering video

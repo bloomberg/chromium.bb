@@ -530,13 +530,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void DidReceiveRendererFrame();
 
-  // Returns an identifier for this RenderWidgetHostImpl instance. This is used
-  // for snapshot requests made to the compositor.
-  int64_t GetFrameSinkIdForSnapshot() const;
-
-  static void OnGpuSwapBuffersCompleted(
-      const std::vector<ui::LatencyInfo>& latency_info);
-
   // Don't check whether we expected a resize ack during layout tests.
   static void DisableResizeAckCheckForTesting();
 
@@ -722,11 +715,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void GetContentRenderingTimeoutFrom(RenderWidgetHostImpl* other);
 
-  using LatencyInfoProcessor =
-      base::RepeatingCallback<void(const std::vector<ui::LatencyInfo>&)>;
-  static void SetLatencyInfoProcessorForTesting(
-      const LatencyInfoProcessor& processor);
-
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -735,8 +723,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Callback for notification that we failed to receive any rendered graphics
   // from a newly loaded page. Used for testing.
   virtual void NotifyNewContentRenderingTimeoutForTesting() {}
-
-  void ProcessSnapshotResponses(const ui::LatencyInfo& latency_info);
 
   // InputAckHandler
   void OnKeyboardEventAck(const NativeWebKeyboardEventWithLatencyInfo& event,
@@ -802,12 +788,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                                          RenderProcessHost*,
                                          RenderWidgetHost*);
 
-  // Helper for notifying corresponding RenderWidgetHosts
-  static void NotifyCorrespondingRenderWidgetHost(
-      int64_t frame_id,
-      std::set<RenderWidgetHostImpl*>&,
-      const ui::LatencyInfo&);
-
   // Tell this object to destroy itself. If |also_delete| is specified, the
   // destructor is called as well.
   void Destroy(bool also_delete);
@@ -856,6 +836,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnUpdateDragCursor(blink::WebDragOperation current_op);
   void OnFrameSwapMessagesReceived(uint32_t frame_token,
                                    std::vector<IPC::Message> messages);
+  void OnForceRedrawComplete(int snapshot_id);
 
   // Called when visual properties have changed in the renderer.
   void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);

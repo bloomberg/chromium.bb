@@ -52,8 +52,6 @@ struct StructTraits<ui::mojom::LatencyInfoDataView, ui::LatencyInfo> {
   static const ui::LatencyInfo::LatencyMap& latency_components(
       const ui::LatencyInfo& info);
   static int64_t trace_id(const ui::LatencyInfo& info);
-  static const ui::LatencyInfo::SnapshotMap& snapshots(
-      const ui::LatencyInfo& info);
   static ukm::SourceId ukm_source_id(const ui::LatencyInfo& info);
   static bool coalesced(const ui::LatencyInfo& info);
   static bool began(const ui::LatencyInfo& info);

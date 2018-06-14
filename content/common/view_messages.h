@@ -481,8 +481,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 // Sent by the browser to ask the renderer to redraw. Robust to events that can
 // happen in renderer (abortion of the commit or draw, loss of output surface
 // etc.).
-IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
-                    ui::LatencyInfo /* latency_info */)
+IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw, int /* snapshot_id */)
 
 // Sets the viewport intersection and compositor raster area on the widget for
 // an out-of-process iframe.
@@ -521,6 +520,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
 // this message.  Otherwise, the browser will generates a ViewMsg_Close
 // message to close the view.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Close)
+
+// Sent by the renderer process in response to an earlier ViewMsg_ForceRedraw
+// message. The reply includes the snapshot-id from the request.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_ForceRedrawComplete, int /* snapshot_id */)
 
 // Send in response to a ViewMsg_UpdateScreenRects so that the renderer can
 // throttle these messages.

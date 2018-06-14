@@ -375,9 +375,6 @@ class AndroidOutputSurface : public viz::OutputSurface {
   ~AndroidOutputSurface() override = default;
 
   void SwapBuffers(viz::OutputSurfaceFrame frame) override {
-    if (LatencyInfoHasSnapshotRequest(frame.latency_info))
-      GetCommandBufferProxy()->SetSnapshotRequested();
-
     auto callback =
         base::BindOnce(&AndroidOutputSurface::OnSwapBuffersCompleted,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -465,7 +462,6 @@ class AndroidOutputSurface : public viz::OutputSurface {
     client_->DidReceiveSwapBuffersAck();
     swap_buffers_callback_.Run(swap_size);
     UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
-    RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
     latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   }
 

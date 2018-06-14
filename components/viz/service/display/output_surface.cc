@@ -55,15 +55,6 @@ void OutputSurface::UpdateLatencyInfoOnSwap(
   }
 }
 
-bool OutputSurface::LatencyInfoHasSnapshotRequest(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  for (const auto& latency : latency_info) {
-    if (latency.Snapshots().size())
-      return true;
-  }
-  return false;
-}
-
 void OutputSurface::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {
   DCHECK(!needs_swap_size_notifications);

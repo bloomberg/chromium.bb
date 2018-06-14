@@ -113,9 +113,6 @@ class LatencyInfo {
   // timestamp.
   using LatencyMap = base::flat_map<LatencyComponentType, base::TimeTicks>;
 
-  // Map a frame sink id to the snapshot id.
-  using SnapshotMap = std::map<int64_t, int64_t>;
-
   LatencyInfo();
   LatencyInfo(const LatencyInfo& other);
   LatencyInfo(SourceEventType type);
@@ -178,11 +175,6 @@ class LatencyInfo {
     source_event_type_ = type;
   }
 
-  void AddSnapshot(int64_t frame_sink_id, int64_t snapshot_id) {
-    snapshots_[frame_sink_id] = snapshot_id;
-  }
-  const SnapshotMap& Snapshots() const { return snapshots_; }
-  void RemoveSnapshots() { snapshots_.clear(); }
   bool began() const { return began_; }
   bool terminated() const { return terminated_; }
   void set_coalesced() { coalesced_ = true; }
@@ -211,8 +203,6 @@ class LatencyInfo {
 
   // The unique id for matching the ASYNC_BEGIN/END trace event.
   int64_t trace_id_;
-  // Snapshot ids to be used to sync snapshot requests.
-  SnapshotMap snapshots_;
   // UKM Source id to be used for recording UKM metrics associated with this
   // event.
   ukm::SourceId ukm_source_id_;
