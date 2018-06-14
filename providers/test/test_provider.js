@@ -186,6 +186,19 @@ mr.TestProvider = class {
   }
 
   /**
+   * Determines if the media source should be used as a 1UA presentation source
+   * for the purposes of this provider.
+   * @param {string} sourceUrn The media source.
+   * @return {boolean} True if the source is a 1UA source.
+   * @private
+   */
+  static is1UAPresentationSource_(sourceUrn) {
+    return mr.MediaSourceUtils.isPresentationSource(sourceUrn) &&
+        new URL(sourceUrn).origin !=
+        mr.TestProvider.PRESENTATION_URL_2UA_TEST_ORIGIN_;
+  }
+
+  /**
    * @param {string} sourceUrn
    * @param {string} sinkId The ID of the target sink.
    * @param {!string} presentationId A presentation ID to use.
@@ -207,7 +220,7 @@ mr.TestProvider = class {
     this.providerManagerCallbacks_.requestKeepAlive(
         mr.TestProvider.COMPONENT_ID, true);
 
-    if (mr.MediaSourceUtils.isPresentationSource(sourceUrn)) {
+    if (mr.TestProvider.is1UAPresentationSource_(sourceUrn)) {
       route.isOffscreenPresentation = true;
       this.captureOffscreenTab_(sourceUrn, presentationId);
     }
@@ -433,6 +446,7 @@ mr.TestProvider = class {
    * @private
    */
   isValidSource_(sourceUrn) {
+
     return sourceUrn.startsWith('test:') || sourceUrn.startsWith('urn:') ||
         mr.MediaSourceUtils.isPresentationSource(sourceUrn);
   }
@@ -505,6 +519,11 @@ mr.TestProvider = class {
 /** @const {string} */
 mr.TestProvider.COMPONENT_ID = 'mr.TestProvider';
 
+/**
+ * @private @const {string} The origin to use for presentation URLs that are 2UA
+ * sources.
+ */
+mr.TestProvider.PRESENTATION_URL_2UA_TEST_ORIGIN_ = 'https://www.example.com';
 
 /** @const @private {mr.Logger} */
 mr.TestProvider.prototype.logger_ = mr.Logger.getInstance('mr.TestProvider');
