@@ -3368,10 +3368,10 @@ crbug.com/648295 external/wpt/service-workers/service-worker/update-bytecheck.ht
 crbug.com/648295 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
-crbug.com/626703 external/wpt/wasm/wasm_indexeddb_test.https.html [ Failure ]
-crbug.com/626703 external/wpt/wasm/wasm_local_iframe_test.html [ Failure ]
-crbug.com/626703 external/wpt/wasm/wasm_serialization_tests.html [ Failure ]
-crbug.com/626703 external/wpt/wasm/wasm_service_worker_test.https.html [ Failure ]
+crbug.com/642912 external/wpt/wasm/wasm_indexeddb_test.https.html [ Failure ]
+crbug.com/642912 external/wpt/wasm/wasm_local_iframe_test.html [ Failure ]
+crbug.com/642912 external/wpt/wasm/wasm_serialization_tests.html [ Failure ]
+crbug.com/642912 external/wpt/wasm/wasm_service_worker_test.https.html [ Failure ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/the-mediaelementaudiosourcenode-interface/mediaElementAudioSourceToScriptProcessorTest.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription.html [ Pass Failure ]
 crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription.html [ Pass Failure ]
@@ -4032,7 +4032,6 @@ crbug.com/737959 http/tests/misc/video-poster-image-load-outlives-gc-without-cra
 crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure ]
 
 crbug.com/736255 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001b.html [ Skip ]
-crbug.com/736732 virtual/enable_wasm/external/wpt/wasm/wasm_local_iframe_test.html [ Timeout Pass ]
 
 # module script lacks XHTML support
 crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/module/module-in-xhtml.xhtml [ Failure ]
