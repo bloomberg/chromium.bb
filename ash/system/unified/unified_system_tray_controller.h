@@ -69,6 +69,8 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   void ShowVPNDetailedView();
   // Show the detailed view of IME. Called from the view.
   void ShowIMEDetailedView();
+  // Show the detailed view of audio. Called from the view.
+  void ShowAudioDetailedView();
 
   // If you want to add a new detailed view, add here.
 

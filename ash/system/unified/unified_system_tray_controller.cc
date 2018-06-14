@@ -9,6 +9,7 @@
 #include "ash/multi_profile_uma.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/system/audio/unified_audio_detailed_view_controller.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
 #include "ash/system/bluetooth/unified_bluetooth_detailed_view_controller.h"
@@ -68,7 +69,8 @@ UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   unified_view_ = new UnifiedSystemTrayView(this, model_->expanded_on_open());
   InitFeaturePods();
 
-  volume_slider_controller_ = std::make_unique<UnifiedVolumeSliderController>();
+  volume_slider_controller_ =
+      std::make_unique<UnifiedVolumeSliderController>(this);
   unified_view_->AddSliderView(volume_slider_controller_->CreateView());
 
   brightness_slider_controller_ =
@@ -217,6 +219,10 @@ void UnifiedSystemTrayController::ShowVPNDetailedView() {
 
 void UnifiedSystemTrayController::ShowIMEDetailedView() {
   ShowDetailedView(std::make_unique<UnifiedIMEDetailedViewController>(this));
+}
+
+void UnifiedSystemTrayController::ShowAudioDetailedView() {
+  ShowDetailedView(std::make_unique<UnifiedAudioDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {

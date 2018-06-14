@@ -7,6 +7,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
+#include "ash/system/unified/top_shortcut_button.h"
 
 using chromeos::CrasAudioHandler;
 
@@ -42,12 +43,18 @@ const gfx::VectorIcon& GetVolumeIconForLevel(float level) {
 
 }  // namespace
 
-UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller)
+UnifiedVolumeView::UnifiedVolumeView(UnifiedVolumeSliderController* controller,
+                                     bool is_main_view)
     : UnifiedSliderView(controller,
                         kSystemMenuVolumeHighIcon,
-                        IDS_ASH_STATUS_TRAY_VOLUME) {
+                        IDS_ASH_STATUS_TRAY_VOLUME),
+      more_button_(new TopShortcutButton(controller,
+                                         kSystemMenuArrowRightIcon,
+                                         IDS_ASH_STATUS_TRAY_AUDIO)),
+      is_main_view_(is_main_view) {
   DCHECK(CrasAudioHandler::IsInitialized());
   CrasAudioHandler::Get()->AddAudioObserver(this);
+  AddChildView(more_button_);
   Update();
 }
 
@@ -65,6 +72,10 @@ void UnifiedVolumeView::Update() {
 
   button()->SetToggled(!is_muted);
   button()->SetVectorIcon(GetVolumeIconForLevel(is_muted ? 0.f : level));
+
+  more_button_->SetVisible(is_main_view_ &&
+                           (CrasAudioHandler::Get()->has_alternative_input() ||
+                            CrasAudioHandler::Get()->has_alternative_output()));
 
   // Slider's value is in finer granularity than audio volume level(0.01),
   // there will be a small discrepancy between slider's value and volume level
@@ -95,6 +106,10 @@ void UnifiedVolumeView::OnActiveOutputNodeChanged() {
 
 void UnifiedVolumeView::OnActiveInputNodeChanged() {
   Update();
+}
+
+void UnifiedVolumeView::ChildVisibilityChanged(views::View* child) {
+  Layout();
 }
 
 }  // namespace ash
