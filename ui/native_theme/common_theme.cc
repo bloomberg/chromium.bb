@@ -105,7 +105,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   // Separator:
   static const SkColor kSeparatorColor = SkColorSetRGB(0xE9, 0xE9, 0xE9);
   // Link:
-  static const SkColor kLinkEnabledColor = gfx::kGoogleBlue700;
+  static const SkColor kLinkEnabledColor = gfx::kGoogleBlue600;
   // Text selection colors:
   static const SkColor kTextSelectionBackgroundFocused =
       SkColorSetARGB(0x54, 0x60, 0xA8, 0xEB);
