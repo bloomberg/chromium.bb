@@ -15,34 +15,9 @@ void ModuleTreeLinkerRegistry::Trace(blink::Visitor* visitor) {
   visitor->Trace(active_tree_linkers_);
 }
 
-ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
-    const KURL& url,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-    const KURL& base_url,
-    WebURLRequest::RequestContext destination,
-    const ScriptFetchOptions& options,
-    Modulator* modulator,
-    ModuleTreeClient* client) {
-  ModuleTreeLinker* fetcher =
-      ModuleTreeLinker::Fetch(url, fetch_client_settings_object, base_url,
-                              destination, options, modulator, this, client);
-  DCHECK(fetcher->IsFetching());
+void ModuleTreeLinkerRegistry::AddFetcher(ModuleTreeLinker* fetcher) {
+  DCHECK(!active_tree_linkers_.Contains(fetcher));
   active_tree_linkers_.insert(fetcher);
-  return fetcher;
-}
-
-ModuleTreeLinker* ModuleTreeLinkerRegistry::FetchDescendantsForInlineScript(
-    ModuleScript* module_script,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-    WebURLRequest::RequestContext destination,
-    Modulator* modulator,
-    ModuleTreeClient* client) {
-  ModuleTreeLinker* fetcher = ModuleTreeLinker::FetchDescendantsForInlineScript(
-      module_script, fetch_client_settings_object, destination, modulator, this,
-      client);
-  DCHECK(fetcher->IsFetching());
-  active_tree_linkers_.insert(fetcher);
-  return fetcher;
 }
 
 void ModuleTreeLinkerRegistry::ReleaseFinishedFetcher(
