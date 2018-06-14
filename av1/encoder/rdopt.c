@@ -6652,7 +6652,7 @@ static void compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
   const int ref = mbmi->ref_frame[ref_idx];
-  int_mv ref_mv = x->mbmi_ext->ref_mvs[ref][0];
+  const int_mv ref_mv = av1_get_ref_mv(x, ref_idx);
   struct macroblockd_plane *const pd = &xd->plane[0];
 
   struct buf_2d backup_yv12[MAX_MB_PLANE];
