@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.browseractions.BrowserActionsService;
 import org.chromium.chrome.browser.browseractions.BrowserActionsTabModelSelector;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromePhone;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromeTablet;
@@ -1857,6 +1858,10 @@ public class ChromeTabbedActivity
             getCompositorViewHolder().hideKeyboard(() -> mLayoutManager.showOverview(true));
             updateAccessibilityState(false);
         } else {
+            Layout activeLayout = mLayoutManager.getActiveLayout();
+            if (activeLayout instanceof StackLayout) {
+                ((StackLayout) activeLayout).commitOutstandingModelState(LayoutManager.time());
+            }
             if (getCurrentTabModel().getCount() != 0) {
                 // Don't hide overview if current tab stack is empty()
                 mLayoutManager.hideOverview(true);
