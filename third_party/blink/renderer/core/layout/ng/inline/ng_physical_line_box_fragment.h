@@ -36,7 +36,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   }
 
   // Compute baseline for the specified baseline type.
-  LayoutUnit BaselinePosition(FontBaseline) const;
+  NGLineHeightMetrics BaselineMetrics(FontBaseline) const;
 
   // Ink overflow of itself including contents, in the local coordinate.
   NGPhysicalOffsetRect InkOverflow() const;

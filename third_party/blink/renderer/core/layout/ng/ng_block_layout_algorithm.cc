@@ -1814,6 +1814,31 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
   return space_builder.ToConstraintSpace(writing_mode);
 }
 
+LayoutUnit NGBlockLayoutAlgorithm::ComputeLineBoxBaselineOffset(
+    const NGBaselineRequest& request,
+    const NGPhysicalLineBoxFragment& line_box) const {
+  NGLineHeightMetrics metrics = line_box.BaselineMetrics(request.baseline_type);
+
+  // NGLineHeightMetrics is line-relative, which matches to the flow-relative
+  // unless this box is in flipped-lines writing-mode.
+  if (!Style().IsFlippedLinesWritingMode())
+    return metrics.ascent;
+
+  if (Node().IsInlineLevel()) {
+    // If this box is inline-level, since we're in NGBlockLayoutAlgorithm, this
+    // is an inline-block.
+    DCHECK(Node().IsAtomicInlineLevel());
+    // This box will be flipped when the containing line is flipped. Compute the
+    // baseline offset from the block-end (right in vertical-lr) content edge.
+    return metrics.ascent + border_scrollbar_padding_.block_end -
+           border_scrollbar_padding_.block_start;
+  }
+
+  // Otherwise, the baseline is offset by the descent from the block-start
+  // content edge.
+  return metrics.descent;
+}
+
 // Add a baseline from a child box fragment.
 // @return false if the specified child is not a box or is OOF.
 bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
@@ -1828,7 +1853,7 @@ bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
     if (line_box->Children().IsEmpty())
       return false;
 
-    LayoutUnit offset = line_box->BaselinePosition(request.baseline_type);
+    LayoutUnit offset = ComputeLineBoxBaselineOffset(request, *line_box);
     container_builder_.AddBaseline(request, offset + child_offset);
     return true;
   }

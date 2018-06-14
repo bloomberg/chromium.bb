@@ -33,11 +33,12 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
   base_direction_ = static_cast<unsigned>(base_direction);
 }
 
-LayoutUnit NGPhysicalLineBoxFragment::BaselinePosition(FontBaseline) const {
+NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics(
+    FontBaseline) const {
   // TODO(kojii): Computing other baseline types than the used one is not
   // implemented yet.
   // TODO(kojii): We might need locale/script to look up OpenType BASE table.
-  return metrics_.ascent;
+  return metrics_;
 }
 
 NGPhysicalOffsetRect NGPhysicalLineBoxFragment::InkOverflow() const {

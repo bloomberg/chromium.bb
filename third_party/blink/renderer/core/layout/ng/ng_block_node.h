@@ -57,6 +57,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   NGLayoutInputNode FirstChild() const;
 
+  bool IsInlineLevel() const;
+  bool IsAtomicInlineLevel() const;
+
   // Layout an atomic inline; e.g., inline block.
   scoped_refptr<NGLayoutResult> LayoutAtomicInline(const NGConstraintSpace&,
                                                    FontBaseline,
