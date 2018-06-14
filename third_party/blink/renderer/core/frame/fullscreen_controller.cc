@@ -219,6 +219,12 @@ void FullscreenController::FullscreenElementChanged(Element* old_element,
     if (auto* video_element = ToHTMLVideoElementOrNull(*old_element))
       video_element->DidExitFullscreen();
   }
+
+  // Tell the browser the fullscreen state has changed.
+  if (Element* owner = new_element ? new_element : old_element) {
+    if (LocalFrame* frame = owner->GetDocument().GetFrame())
+      GetWebFrameClient(*frame).FullscreenStateChanged(!!new_element);
+  }
 }
 
 void FullscreenController::RestoreBackgroundColorOverride() {
