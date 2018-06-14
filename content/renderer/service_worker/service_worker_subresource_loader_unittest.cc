@@ -82,6 +82,48 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   FakeControllerServiceWorker() = default;
   ~FakeControllerServiceWorker() override = default;
 
+  static ServiceWorkerResponse OkResponse() {
+    return ServiceWorkerResponse(
+        std::make_unique<std::vector<GURL>>(), 200, "OK",
+        network::mojom::FetchResponseType::kDefault,
+        std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
+        0 /* blob_size */, nullptr /* blob */,
+        blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
+        false /* response_is_in_cache_storage */,
+        std::string() /* response_cache_storage_cache_name */,
+        std::make_unique<
+            ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
+  }
+
+  static ServiceWorkerResponse ErrorResponse() {
+    return ServiceWorkerResponse(
+        std::make_unique<std::vector<GURL>>(), 0 /* status_code */,
+        "" /* status_text */, network::mojom::FetchResponseType::kDefault,
+        std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
+        0 /* blob_size */, nullptr /* blob */,
+        blink::mojom::ServiceWorkerResponseError::kPromiseRejected,
+        base::Time(), false /* response_is_in_cache_storage */,
+        std::string() /* response_cache_storage_cache_name */,
+        std::make_unique<
+            ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
+  }
+
+  static ServiceWorkerResponse RedirectResponse(
+      const std::string& redirect_location_header) {
+    auto headers = std::make_unique<ServiceWorkerHeaderMap>();
+    (*headers)["Location"] = redirect_location_header;
+
+    return ServiceWorkerResponse(
+        std::make_unique<std::vector<GURL>>(), 302, "Found",
+        network::mojom::FetchResponseType::kDefault, std::move(headers),
+        "" /* blob_uuid */, 0 /* blob_size */, nullptr /* blob */,
+        blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
+        false /* response_is_in_cache_storage */,
+        std::string() /* response_cache_storage_cache_name */,
+        std::make_unique<
+            ServiceWorkerHeaderList>() /* cors_exposed_header_names */);
+  }
+
   void CloseAllBindings() { bindings_.CloseAllBindings(); }
 
   // Tells this controller to abort the fetch event without a response.
@@ -164,17 +206,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
         break;
       case ResponseMode::kStream:
         response_callback->OnResponseStream(
-            ServiceWorkerResponse(
-                std::make_unique<std::vector<GURL>>(), 200, "OK",
-                network::mojom::FetchResponseType::kDefault,
-                std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
-                0 /* blob_size */, nullptr /* blob */,
-                blink::mojom::ServiceWorkerResponseError::kUnknown,
-                base::Time(), false /* response_is_in_cache_storage */,
-                std::string() /* response_cache_storage_cache_name */,
-                std::make_unique<
-                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-            std::move(stream_handle_), base::Time::Now());
+            OkResponse(), std::move(stream_handle_), base::Time::Now());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
         break;
@@ -185,37 +217,14 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
             base::Time::Now());
         break;
       case ResponseMode::kErrorResponse:
-        response_callback->OnResponse(
-            ServiceWorkerResponse(
-                std::make_unique<std::vector<GURL>>(), 0 /* status_code */,
-                "" /* status_text */,
-                network::mojom::FetchResponseType::kDefault,
-                std::make_unique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
-                0 /* blob_size */, nullptr /* blob */,
-                blink::mojom::ServiceWorkerResponseError::kPromiseRejected,
-                base::Time(), false /* response_is_in_cache_storage */,
-                std::string() /* response_cache_storage_cache_name */,
-                std::make_unique<
-                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-            base::Time::Now());
+        response_callback->OnResponse(ErrorResponse(), base::Time::Now());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::REJECTED,
             base::Time::Now());
         break;
       case ResponseMode::kRedirectResponse: {
-        auto headers = std::make_unique<ServiceWorkerHeaderMap>();
-        (*headers)["Location"] = redirect_location_header_;
         response_callback->OnResponse(
-            ServiceWorkerResponse(
-                std::make_unique<std::vector<GURL>>(), 302, "Found",
-                network::mojom::FetchResponseType::kDefault, std::move(headers),
-                "" /* blob_uuid */, 0 /* blob_size */, nullptr /* blob */,
-                blink::mojom::ServiceWorkerResponseError::kUnknown,
-                base::Time(), false /* response_is_in_cache_storage */,
-                std::string() /* response_cache_storage_cache_name */,
-                std::make_unique<
-                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
-            base::Time::Now());
+            RedirectResponse(redirect_location_header_), base::Time::Now());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
         break;
