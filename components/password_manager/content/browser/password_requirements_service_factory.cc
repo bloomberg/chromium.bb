@@ -19,6 +19,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "ui/base/ui_base_features.h"
 
 namespace password_manager {
 
@@ -52,11 +53,16 @@ KeyedService* PasswordRequirementsServiceFactory::BuildServiceInstanceFor(
           << base::FeatureList::IsEnabled(
                  features::kPasswordGenerationRequirements);
 
-  if (!base::FeatureList::IsEnabled(features::kPasswordGenerationRequirements))
+  if (!base::FeatureList::IsEnabled(
+          features::kPasswordGenerationRequirements) &&
+      !base::FeatureList::IsEnabled(::features::kExperimentalUi)) {
     return nullptr;
+  }
 
-  bool enable_domain_overrides = base::FeatureList::IsEnabled(
-      features::kPasswordGenerationRequirementsDomainOverrides);
+  bool enable_domain_overrides =
+      base::FeatureList::IsEnabled(
+          features::kPasswordGenerationRequirementsDomainOverrides) ||
+      base::FeatureList::IsEnabled(::features::kExperimentalUi);
 
   VLOG(1)
       << "PasswordGenerationRequirementsDomainOverrides experiment enabled? "
@@ -89,6 +95,15 @@ KeyedService* PasswordRequirementsServiceFactory::BuildServiceInstanceFor(
   if (base::StringToInt(
           field_trial_params[features::kGenerationRequirementsTimeout], &tmp)) {
     timeout_in_ms = tmp;
+  }
+
+  // If no experiment configuration is set to a user with experimental-ui flag,
+  // set a default that exercises the full new code.
+  if (version == 0 &&
+      base::FeatureList::IsEnabled(::features::kExperimentalUi)) {
+    version = 1;
+    prefix_length = 0;
+    timeout_in_ms = 5000;
   }
 
   VLOG(1) << "PasswordGenerationRequirements parameters: " << version << ", "
