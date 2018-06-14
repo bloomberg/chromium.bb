@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class DOMRect;
+class DOMRectReadOnly;
 class Landmark;
 
 class MODULES_EXPORT DetectedFace final : public ScriptWrappable {
@@ -18,19 +18,19 @@ class MODULES_EXPORT DetectedFace final : public ScriptWrappable {
 
  public:
   static DetectedFace* Create();
-  static DetectedFace* Create(DOMRect*);
-  static DetectedFace* Create(DOMRect*, const HeapVector<Landmark>&);
+  static DetectedFace* Create(DOMRectReadOnly*);
+  static DetectedFace* Create(DOMRectReadOnly*, const HeapVector<Landmark>&);
 
-  DOMRect* boundingBox() const;
+  DOMRectReadOnly* boundingBox() const;
   const HeapVector<Landmark>& landmarks() const;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit DetectedFace(DOMRect*);
-  DetectedFace(DOMRect*, const HeapVector<Landmark>&);
+  explicit DetectedFace(DOMRectReadOnly*);
+  DetectedFace(DOMRectReadOnly*, const HeapVector<Landmark>&);
 
-  const Member<DOMRect> bounding_box_;
+  const Member<DOMRectReadOnly> bounding_box_;
   const HeapVector<Landmark> landmarks_;
 };
 
