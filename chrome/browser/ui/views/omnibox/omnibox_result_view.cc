@@ -135,12 +135,15 @@ void OmniboxResultView::Invalidate() {
       omnibox::kKeywordSearchIcon, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
       GetColor(OmniboxPart::RESULTS_ICON)));
 
+  // The content text is set to the match text and calculated classifications.
+  // Answers use their own styling for additional content text and the
+  // description text, whereas non-answer suggestions use the match text and
+  // calculated classifications for the description text.
+  suggestion_view_->content()->SetText(match_.contents, match_.contents_class);
   if (match_.answer) {
-    suggestion_view_->content()->SetText(match_.answer->first_line());
+    suggestion_view_->content()->AppendExtraText(match_.answer->first_line());
     suggestion_view_->description()->SetText(match_.answer->second_line());
   } else {
-    suggestion_view_->content()->SetText(match_.contents,
-                                         match_.contents_class);
     suggestion_view_->description()->SetText(match_.description,
                                              match_.description_class);
   }
