@@ -97,7 +97,9 @@ void HistoryTabHelper::DidFinishNavigation(
     return;
   }
 
-  if (!navigation_context->HasCommitted()) {
+  if (!navigation_context->HasCommitted() &&
+      !navigation_context->IsSameDocument()) {
+    // Navigation was replaced.
     return;
   }
 
