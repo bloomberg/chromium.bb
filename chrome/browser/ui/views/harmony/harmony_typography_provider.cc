@@ -192,11 +192,11 @@ SkColor HarmonyTypographyProvider::GetColor(const views::View& view,
     case views::style::STYLE_DISABLED:
       return SkColorSetRGB(0x9e, 0x9e, 0x9e);
     case views::style::STYLE_LINK:
-      return gfx::kGoogleBlue700;
+      return gfx::kGoogleBlue600;
     case STYLE_SECONDARY:
     case STYLE_EMPHASIZED_SECONDARY:
     case STYLE_HINT:
-      return SkColorSetRGB(0x75, 0x75, 0x75);
+      return gfx::kGoogleGrey700;
     case STYLE_RED:
       return gfx::kGoogleRed700;
     case STYLE_GREEN:
