@@ -228,7 +228,6 @@ RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
   UpdateNativeViewTree(nullptr);
   view_.set_event_handler(nullptr);
   DCHECK(!ime_adapter_android_);
-  DCHECK(ack_callbacks_.empty());
   DCHECK(!delegated_frame_host_);
 }
 
@@ -851,21 +850,9 @@ bool RenderWidgetHostViewAndroid::ShouldRouteEvents() const {
          host()->delegate()->GetInputEventRouter();
 }
 
-void RenderWidgetHostViewAndroid::SendReclaimCompositorResources(
-    bool is_swap_ack) {
-  DCHECK(host());
-  if (is_swap_ack) {
-    renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(
-        surface_returned_resources_);
-  } else {
-    renderer_compositor_frame_sink_->ReclaimResources(
-        surface_returned_resources_);
-  }
-  surface_returned_resources_.clear();
-}
-
-void RenderWidgetHostViewAndroid::DidReceiveCompositorFrameAck() {
-  RunAckCallbacks();
+void RenderWidgetHostViewAndroid::DidReceiveCompositorFrameAck(
+    const std::vector<viz::ReturnedResource>& resources) {
+  renderer_compositor_frame_sink_->DidReceiveCompositorFrameAck(resources);
 }
 
 void RenderWidgetHostViewAndroid::DidPresentCompositorFrame(
@@ -878,12 +865,7 @@ void RenderWidgetHostViewAndroid::DidPresentCompositorFrame(
 
 void RenderWidgetHostViewAndroid::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
-  if (resources.empty())
-    return;
-  std::copy(resources.begin(), resources.end(),
-            std::back_inserter(surface_returned_resources_));
-  if (ack_callbacks_.empty())
-    SendReclaimCompositorResources(false /* is_swap_ack */);
+  renderer_compositor_frame_sink_->ReclaimResources(resources);
 }
 
 void RenderWidgetHostViewAndroid::OnFrameTokenChanged(uint32_t frame_token) {
@@ -906,9 +888,6 @@ void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
   }
   delegated_frame_host_->CompositorFrameSinkChanged();
   renderer_compositor_frame_sink_ = renderer_compositor_frame_sink;
-  // Accumulated resources belong to the old RendererCompositorFrameSink and
-  // should not be returned.
-  surface_returned_resources_.clear();
 }
 
 void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
@@ -947,18 +926,9 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
 
   viz::CompositorFrameMetadata metadata = frame.metadata.Clone();
 
-  base::Closure ack_callback =
-      base::Bind(&RenderWidgetHostViewAndroid::SendReclaimCompositorResources,
-                 weak_ptr_factory_.GetWeakPtr(), true /* is_swap_ack */);
-
-  ack_callbacks_.push(ack_callback);
-
   delegated_frame_host_->SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list));
   AcknowledgeBeginFrame();
-
-  if (host()->is_hidden())
-    RunAckCallbacks();
 
   // As the metadata update may trigger view invalidation, always call it after
   // any potential compositor scheduling.
@@ -1463,8 +1433,6 @@ void RenderWidgetHostViewAndroid::HideInternal() {
 
   if (overscroll_controller_)
     overscroll_controller_->Disable();
-
-  RunAckCallbacks();
 
   // Inform the renderer that we are being hidden so it can reduce its resource
   // utilization.
@@ -1994,7 +1962,6 @@ void RenderWidgetHostViewAndroid::UpdateNativeViewTree(
   bool resize = false;
   if (will_build_tree != has_view_tree) {
     touch_selection_controller_.reset();
-    RunAckCallbacks();
     if (has_view_tree) {
       view_.RemoveObserver(this);
       view_.RemoveFromParent();
@@ -2050,13 +2017,6 @@ void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
 
   delegated_frame_host_->EvictDelegatedFrame();
   current_surface_size_.SetSize(0, 0);
-}
-
-void RenderWidgetHostViewAndroid::RunAckCallbacks() {
-  while (!ack_callbacks_.empty()) {
-    ack_callbacks_.front().Run();
-    ack_callbacks_.pop();
-  }
 }
 
 TouchSelectionControllerClientManager*
@@ -2170,7 +2130,6 @@ void RenderWidgetHostViewAndroid::OnAttachCompositor() {
 
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   DCHECK(view_.parent());
-  RunAckCallbacks();
   overscroll_controller_.reset();
   if (using_browser_compositor_)
     delegated_frame_host_->DetachFromCompositor();
@@ -2267,7 +2226,6 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
 
 void RenderWidgetHostViewAndroid::OnLostResources() {
   EvictDelegatedFrame();
-  DCHECK(ack_callbacks_.empty());
 }
 
 void RenderWidgetHostViewAndroid::SetTextHandlesHiddenForStylus(
