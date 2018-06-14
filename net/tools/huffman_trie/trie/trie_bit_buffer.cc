@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/transport_security_state_generator/trie/trie_bit_buffer.h"
+#include "net/tools/huffman_trie/trie/trie_bit_buffer.h"
 
 #include "base/logging.h"
-#include "net/tools/transport_security_state_generator/bit_writer.h"
+#include "net/tools/huffman_trie/bit_writer.h"
 
 namespace net {
 
-namespace transport_security_state {
+namespace huffman_trie {
 
 TrieBitBuffer::TrieBitBuffer() = default;
 
@@ -128,6 +128,6 @@ void TrieBitBuffer::Flush() {
   }
 }
 
-}  // namespace transport_security_state
+}  // namespace huffman_trie
 
 }  // namespace net

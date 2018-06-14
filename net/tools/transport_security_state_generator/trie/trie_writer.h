@@ -8,16 +8,19 @@
 #include <string>
 #include <vector>
 
-#include "net/tools/transport_security_state_generator/bit_writer.h"
-#include "net/tools/transport_security_state_generator/huffman/huffman_builder.h"
+#include "net/tools/huffman_trie/bit_writer.h"
+#include "net/tools/huffman_trie/huffman/huffman_builder.h"
 #include "net/tools/transport_security_state_generator/transport_security_state_entry.h"
 
 namespace net {
 
+namespace huffman_trie {
+class TrieBitBuffer;
+}
+
 namespace transport_security_state {
 
 struct TransportSecurityStateEntry;
-class TrieBitBuffer;
 
 // Maps a name to an index. This is used to track the index of several values
 // in the C++ code. The trie refers to the array index of the values. For
@@ -30,11 +33,11 @@ class TrieWriter {
  public:
   enum : uint8_t { kTerminalValue = 0, kEndOfTableValue = 127 };
 
-  TrieWriter(const HuffmanRepresentationTable& huffman_table,
+  TrieWriter(const huffman_trie::HuffmanRepresentationTable& huffman_table,
              const NameIDMap& expect_ct_report_uri_map,
              const NameIDMap& expect_staple_report_uri_map,
              const NameIDMap& pinsets_map,
-             HuffmanBuilder* huffman_builder);
+             huffman_trie::HuffmanBuilder* huffman_builder);
   ~TrieWriter();
 
   // Constructs a trie containing all |entries|. The output is written to
@@ -61,7 +64,7 @@ class TrieWriter {
 
   // Serializes |*entry| and writes it to |*writer|.
   bool WriteEntry(const TransportSecurityStateEntry* entry,
-                  TrieBitBuffer* writer);
+                  huffman_trie::TrieBitBuffer* writer);
 
   // Removes the first |length| characters from all entries between |start| and
   // |end|.
@@ -79,12 +82,12 @@ class TrieWriter {
   // will be terminated by |kTerminalValue|.
   std::vector<uint8_t> ReverseName(const std::string& hostname) const;
 
-  BitWriter buffer_;
-  const HuffmanRepresentationTable& huffman_table_;
+  huffman_trie::BitWriter buffer_;
+  const huffman_trie::HuffmanRepresentationTable& huffman_table_;
   const NameIDMap& expect_ct_report_uri_map_;
   const NameIDMap& expect_staple_report_uri_map_;
   const NameIDMap& pinsets_map_;
-  HuffmanBuilder* huffman_builder_;
+  huffman_trie::HuffmanBuilder* huffman_builder_;
 };
 
 }  // namespace transport_security_state

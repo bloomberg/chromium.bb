@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/transport_security_state_generator/bit_writer.h"
+#include "net/tools/huffman_trie/bit_writer.h"
 
 #include "base/logging.h"
 
 namespace net {
 
-namespace transport_security_state {
+namespace huffman_trie {
 
 BitWriter::BitWriter() = default;
 
@@ -40,6 +40,6 @@ void BitWriter::Flush() {
   current_byte_ = 0;
 }
 
-}  // namespace transport_security_state
+}  // namespace huffman_trie
 
 }  // namespace net

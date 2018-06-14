@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_BIT_WRITER_H_
-#define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_BIT_WRITER_H_
+#ifndef NET_TOOLS_HUFFMAN_TRIE_BIT_WRITER_H_
+#define NET_TOOLS_HUFFMAN_TRIE_BIT_WRITER_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 
 namespace net {
 
-namespace transport_security_state {
+namespace huffman_trie {
 
 // BitWriter acts as a buffer to which bits can be written. The bits are stored
 // as bytes in a vector. BitWriter will buffer bits until it contains 8 bits at
@@ -55,8 +55,8 @@ class BitWriter {
   DISALLOW_COPY_AND_ASSIGN(BitWriter);
 };
 
-}  // namespace transport_security_state
+}  // namespace huffman_trie
 
 }  // namespace net
 
-#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_BIT_WRITER_H_
+#endif  // NET_TOOLS_HUFFMAN_TRIE_BIT_WRITER_H_

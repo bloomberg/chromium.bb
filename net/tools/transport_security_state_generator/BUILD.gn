@@ -6,12 +6,8 @@ assert(current_toolchain == host_toolchain)
 
 source_set("transport_security_state_generator_sources") {
   sources = [
-    "bit_writer.cc",
-    "bit_writer.h",
     "cert_util.cc",
     "cert_util.h",
-    "huffman/huffman_builder.cc",
-    "huffman/huffman_builder.h",
     "input_file_parsers.cc",
     "input_file_parsers.h",
     "pinset.cc",
@@ -24,13 +20,12 @@ source_set("transport_security_state_generator_sources") {
     "spki_hash.h",
     "transport_security_state_entry.cc",
     "transport_security_state_entry.h",
-    "trie/trie_bit_buffer.cc",
-    "trie/trie_bit_buffer.h",
     "trie/trie_writer.cc",
     "trie/trie_writer.h",
   ]
   deps = [
     "//base",
+    "//net/tools/huffman_trie:huffman_trie_generator_sources",
     "//third_party/boringssl",
   ]
 }
@@ -38,12 +33,9 @@ source_set("transport_security_state_generator_sources") {
 source_set("transport_security_state_generator_test_sources") {
   testonly = true
   sources = [
-    "bit_writer_unittest.cc",
     "cert_util_unittest.cc",
-    "huffman/huffman_builder_unittest.cc",
     "input_file_parsers_unittest.cc",
     "spki_hash_unittest.cc",
-    "trie/trie_bit_buffer_unittest.cc",
   ]
   deps = [
     ":transport_security_state_generator_sources",

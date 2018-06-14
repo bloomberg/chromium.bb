@@ -9,8 +9,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/tools/huffman_trie/huffman/huffman_builder.h"
 #include "net/tools/transport_security_state_generator/cert_util.h"
-#include "net/tools/transport_security_state_generator/huffman/huffman_builder.h"
 #include "net/tools/transport_security_state_generator/spki_hash.h"
 
 namespace net {
@@ -107,9 +107,9 @@ std::string WritePinsetList(const std::string& name,
   return output;
 }
 
-HuffmanRepresentationTable ApproximateHuffman(
+huffman_trie::HuffmanRepresentationTable ApproximateHuffman(
     const TransportSecurityStateEntries& entries) {
-  HuffmanBuilder huffman_builder;
+  huffman_trie::HuffmanBuilder huffman_builder;
   for (const auto& entry : entries) {
     for (const auto& c : entry->hostname) {
       huffman_builder.RecordUsage(c);
@@ -150,8 +150,8 @@ std::string PreloadedStateGenerator::Generate(
   // frequencies are collected which are then used to calculate the most space
   // efficient Huffman table for the given inputs. This table is used for the
   // second run.
-  HuffmanRepresentationTable table = ApproximateHuffman(entries);
-  HuffmanBuilder huffman_builder;
+  huffman_trie::HuffmanRepresentationTable table = ApproximateHuffman(entries);
+  huffman_trie::HuffmanBuilder huffman_builder;
   TrieWriter writer(table, expect_ct_report_uri_map,
                     expect_staple_report_uri_map, pinsets_map,
                     &huffman_builder);
@@ -160,7 +160,8 @@ std::string PreloadedStateGenerator::Generate(
     return std::string();
   }
 
-  HuffmanRepresentationTable optimal_table = huffman_builder.ToTable();
+  huffman_trie::HuffmanRepresentationTable optimal_table =
+      huffman_builder.ToTable();
   TrieWriter new_writer(optimal_table, expect_ct_report_uri_map,
                         expect_staple_report_uri_map, pinsets_map, nullptr);
 

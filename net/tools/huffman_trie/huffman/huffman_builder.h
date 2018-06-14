@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_HUFFMAN_HUFFMAN_BUILDER_H_
-#define NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_HUFFMAN_HUFFMAN_BUILDER_H_
+#ifndef NET_TOOLS_HUFFMAN_TRIE_HUFFMAN_HUFFMAN_BUILDER_H_
+#define NET_TOOLS_HUFFMAN_TRIE_HUFFMAN_HUFFMAN_BUILDER_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 
 namespace net {
 
-namespace transport_security_state {
+namespace huffman_trie {
 
 namespace {
 class HuffmanNode;
@@ -78,8 +78,8 @@ class HuffmanBuilder {
   std::map<uint8_t, uint32_t> counts_;
 };
 
-}  // namespace transport_security_state
+}  // namespace huffman_trie
 
 }  // namespace net
 
-#endif  // NET_TOOLS_TRANSPORT_SECURITY_STATE_GENERATOR_HUFFMAN_HUFFMAN_BUILDER_H_
+#endif  // NET_TOOLS_HUFFMAN_TRIE_HUFFMAN_HUFFMAN_BUILDER_H_
