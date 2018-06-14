@@ -344,12 +344,8 @@ Polymer({
     this.proxyIsUserModified_ = true;
   },
 
-  /**
-   * Event triggered when a proxy exclusion is added.
-   * @param {!Event} event The add proxy exclusion event.
-   * @private
-   */
-  onAddProxyExclusionTap_: function(event) {
+  /** @private */
+  onAddProxyExclusionTap_: function() {
     var value = this.$.proxyExclusion.value;
     if (!value)
       return;
@@ -357,6 +353,17 @@ Polymer({
     // Clear input.
     this.$.proxyExclusion.value = '';
     this.proxyIsUserModified_ = true;
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onAddProxyExclusionKeypress_: function(event) {
+    if (event.key != 'Enter')
+      return;
+    event.stopPropagation();
+    this.onAddProxyExclusionTap_();
   },
 
   /**

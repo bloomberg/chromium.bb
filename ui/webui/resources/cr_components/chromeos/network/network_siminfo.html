@@ -8,7 +8,6 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -96,9 +95,7 @@
       <div slot="title">[[i18n('networkSimEnterPinTitle')]]</div>
       <div slot="body">
         <network-password-input id="enterPin" value="{{pin_}}"
-            label="[[i18n('networkSimEnterPin')]]">
-          <iron-a11y-keys keys="enter" on-keys-pressed="sendEnterPin_">
-          </iron-a11y-keys>
+            label="[[i18n('networkSimEnterPin')]]" on-enter="sendEnterPin_">
         </network-password-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
@@ -127,9 +124,8 @@
             label="[[i18n('networkSimEnterNewPin')]]">
         </network-password-input>
         <network-password-input id="changePinNew2" value="{{pin_new2_}}"
-            label="[[i18n('networkSimReEnterNewPin')]]">
-          <iron-a11y-keys keys="enter" on-keys-pressed="sendChangePin_">
-          </iron-a11y-keys>
+            label="[[i18n('networkSimReEnterNewPin')]]"
+            on-enter="sendChangePin_">
         </network-password-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
@@ -152,9 +148,7 @@
       <div slot="title">[[i18n('networkSimLockedTitle')]]</div>
       <div slot="body">
         <network-password-input id="unlockPin" value="{{pin_}}"
-            label="[[i18n('networkSimEnterPin')]]">
-          <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPin_">
-          </iron-a11y-keys>
+            label="[[i18n('networkSimEnterPin')]]" on-enter="sendUnlockPin_">
         </network-password-input>
         <div class="dialog-error">
           [[getErrorMsg_(error_, networkProperties)]]
@@ -186,9 +180,8 @@
             label="[[i18n('networkSimEnterNewPin')]]">
         </network-password-input>
         <network-password-input id="unlockPin2" value="{{pin_new2_}}"
-            label="[[i18n('networkSimReEnterNewPin')]]">
-          <iron-a11y-keys keys="enter" on-keys-pressed="sendUnlockPuk_">
-          </iron-a11y-keys>
+            label="[[i18n('networkSimReEnterNewPin')]]"
+            on-enter="sendUnlockPuk_">
         </network-password-input>
         <div class="dialog-error">
           [[i18n('networkSimLockedWarning')]]
