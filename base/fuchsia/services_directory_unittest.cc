@@ -6,6 +6,7 @@
 
 #include <lib/fdio/util.h>
 #include <lib/zx/channel.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/fuchsia/component_context.h"
@@ -51,8 +52,7 @@ TEST(ServicesDirectoryTest, Connect) {
             ZX_OK);
 
   // Create ComponentContext and connect to the test service.
-  ComponentContext client_context(
-      base::ScopedZxHandle(public_dir_client_channel.release()));
+  ComponentContext client_context(std::move(public_dir_client_channel));
   auto stub = client_context.ConnectToService<test_fidl::TestInterface>();
 
   // Call the service and wait for response.
