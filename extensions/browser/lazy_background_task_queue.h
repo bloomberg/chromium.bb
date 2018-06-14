@@ -122,6 +122,8 @@ class LazyBackgroundTaskQueue : public KeyedService,
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(LazyBackgroundTaskQueue);
 };
 
 }  // namespace extensions
