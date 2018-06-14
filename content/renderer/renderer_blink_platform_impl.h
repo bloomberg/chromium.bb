@@ -59,6 +59,7 @@ class SharedURLLoaderFactory;
 
 namespace content {
 class BlinkInterfaceProviderImpl;
+class GamepadSharedMemoryReader;
 class ChildURLLoaderFactoryBundle;
 class LocalStorageCachedAreas;
 class PlatformEventObserverBase;
@@ -263,11 +264,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 
-  // Factory that takes a type and return PlatformEventObserverBase that matches
-  // it.
-  static std::unique_ptr<PlatformEventObserverBase>
-  CreatePlatformEventObserverFromType(blink::WebPlatformEventType type);
-
   // TODO(crbug.com/850997): Remove when Device*EventPump classes are
   // moved to blink
   void InitDeviceSensorEventPump(blink::WebPlatformEventType type,
@@ -324,6 +320,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<DeviceMotionEventPump> motion_event_pump_;
   std::unique_ptr<DeviceOrientationEventPump> orientation_event_pump_;
   std::unique_ptr<DeviceOrientationEventPump> absolute_orientation_event_pump_;
+
+  // TODO(crbug.com/612330): Remove when GamepadSharedMemoryReader class is
+  // moved to blink
+  std::unique_ptr<GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 
   // NOT OWNED
   blink::scheduler::WebThreadScheduler* main_thread_scheduler_;
