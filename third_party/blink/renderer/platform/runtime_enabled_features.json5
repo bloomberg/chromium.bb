@@ -400,6 +400,10 @@
       status: "stable",
     },
     {
+      name: "EncryptedMediaEncryptionSchemeQuery",
+      status: "test",
+    },
+    {
       name: "EncryptedMediaHdcpPolicyCheck",
       origin_trial_feature_name: "EncryptedMediaHdcpPolicyCheck",
       status: "experimental",

@@ -29,6 +29,8 @@ namespace media {
 
 using EmeFeatureRequirement =
     blink::WebMediaKeySystemConfiguration::Requirement;
+using EmeEncryptionScheme =
+    blink::WebMediaKeySystemMediaCapability::EncryptionScheme;
 
 namespace {
 
@@ -360,6 +362,31 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   return true;
 }
 
+bool KeySystemConfigSelector::IsSupportedEncryptionScheme(
+    const std::string& key_system,
+    const EmeEncryptionScheme encryption_scheme) {
+  switch (encryption_scheme) {
+    // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md.
+    // "A missing or null value indicates that any encryption scheme is
+    //  acceptable."
+    // "Even if the application does not specify an encryption scheme,
+    //  MediaKeySystemAccess.getConfiguration() must fill in a supported
+    //  value."
+    // As Chrome has always supported 'cenc', assume this if encryption
+    // scheme is not specified.
+    case EmeEncryptionScheme::kNotSpecified:
+    case EmeEncryptionScheme::kCenc:
+      return key_systems_->IsEncryptionSchemeSupported(key_system,
+                                                       EncryptionMode::kCenc);
+    case EmeEncryptionScheme::kCbcs:
+      return key_systems_->IsEncryptionSchemeSupported(key_system,
+                                                       EncryptionMode::kCbcs);
+  }
+
+  NOTREACHED();
+  return false;
+}
+
 bool KeySystemConfigSelector::GetSupportedCapabilities(
     const std::string& key_system,
     EmeMediaType media_type,
@@ -424,6 +451,14 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
     //       restrictions:
     if (!proposed_config_state.IsRuleSupported(robustness_rule)) {
       DVLOG(3) << "The current robustness rule is not supported.";
+      continue;
+    }
+
+    // Check for encryption scheme support.
+    // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md.
+    if (!IsSupportedEncryptionScheme(key_system,
+                                     capability.encryption_scheme)) {
+      DVLOG(3) << "Encryption scheme is not supported.";
       continue;
     }
 

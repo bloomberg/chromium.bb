@@ -61,9 +61,11 @@ const char kSuccessResult[] = "success";
 const char kUnsupportedResult[] =
     "Unsupported keySystem or supportedConfigurations.";
 const char kUnexpectedResult[] = "unexpected result";
+const char kTypeErrorResult[] = "TypeError";
 
 #define EXPECT_SUCCESS(test) EXPECT_EQ(kSuccessResult, test)
 #define EXPECT_UNSUPPORTED(test) EXPECT_EQ(kUnsupportedResult, test)
+#define EXPECT_TYPEERROR(test) EXPECT_EQ(kTypeErrorResult, test)
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #define EXPECT_PROPRIETARY EXPECT_SUCCESS
@@ -171,14 +173,16 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     return clear_key_exclusive_video_common_codecs_;
   }
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
     InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
     test_launcher_utils::RemoveCommandLineSwitch(
         default_command_line, switches::kDisableComponentUpdate, command_line);
-  }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+    command_line->AppendSwitchASCII("enable-blink-features",
+                                    "EncryptedMediaEncryptionSchemeQuery");
+  }
 
   void SetUpOnMainThread() override {
     // Load the test page needed so that checkKeySystemWithMediaMimeType()
@@ -201,29 +205,40 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     return content_type;
   }
 
-  // Format: {contentType: |content_type|, robustness: |robustness|}, or
-  // {contentType: |content_type|} if |robustness| is null.
+  // Format: {contentType: |content_type|, encryptionScheme:
+  // |encryption_scheme|, robustness: |robustness|}. encryptionScheme and
+  // robustness will not be included if |encryption_scheme| or |robustness|
+  // is null, respectively.
   static std::string MakeMediaCapability(const std::string& content_type,
-                                         const char* robustness) {
-    if (!robustness)
-      return base::StringPrintf("{contentType: '%s'}", content_type.c_str());
-
-    return base::StringPrintf("{contentType: '%s', robustness: '%s'}",
-                              content_type.c_str(), robustness);
+                                         const char* robustness,
+                                         const char* encryption_scheme) {
+    std::string capability =
+        base::StringPrintf("{contentType: '%s'", content_type.c_str());
+    if (encryption_scheme) {
+      base::StringAppendF(&capability, ", encryptionScheme: '%s'",
+                          encryption_scheme);
+    }
+    if (robustness) {
+      base::StringAppendF(&capability, ", robustness: '%s'", robustness);
+    }
+    base::StringAppendF(&capability, "}");
+    return capability;
   }
 
   static std::string MakeMediaCapabilities(const std::string& mime_type,
                                            const CodecVector& codecs,
-                                           const char* robustness) {
+                                           const char* robustness,
+                                           const char* encryption_scheme) {
     std::string capabilities("[");
     if (codecs.empty()) {
-      capabilities += MakeMediaCapability(
-          MakeContentType(mime_type, std::string()), robustness);
+      capabilities +=
+          MakeMediaCapability(MakeContentType(mime_type, std::string()),
+                              robustness, encryption_scheme);
     } else {
       for (auto codec : codecs) {
-        capabilities +=
-            MakeMediaCapability(MakeContentType(mime_type, codec), robustness) +
-            ",";
+        capabilities += MakeMediaCapability(MakeContentType(mime_type, codec),
+                                            robustness, encryption_scheme) +
+                        ",";
       }
       // Remove trailing comma.
       capabilities.erase(capabilities.length() - 1);
@@ -238,6 +253,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
                                         base::ASCIIToUTF16(kSuccessResult));
     title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kUnsupportedResult));
     title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kUnexpectedResult));
+    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kTypeErrorResult));
     EXPECT_TRUE(content::ExecuteScript(contents, command));
     base::string16 result = title_watcher.WaitAndGetTitle();
     return base::UTF16ToASCII(result);
@@ -265,7 +281,8 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
       const std::string& mime_type,
       const CodecVector& codecs,
       SessionType session_type = SessionType::kTemporary,
-      const char* robustness = nullptr) {
+      const char* robustness = nullptr,
+      const char* encryption_scheme = nullptr) {
     // Choose the appropriate init data type for the sub type.
     size_t pos = mime_type.find('/');
     DCHECK(pos > 0);
@@ -280,7 +297,8 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 
     bool is_audio = mime_type.compare(0, 5, "audio") == 0;
     DCHECK(is_audio || mime_type.compare(0, 5, "video") == 0);
-    auto capabilities = MakeMediaCapabilities(mime_type, codecs, robustness);
+    auto capabilities =
+        MakeMediaCapabilities(mime_type, codecs, robustness, encryption_scheme);
     auto audio_capabilities = is_audio ? capabilities : "null";
     auto video_capabilities = !is_audio ? capabilities : "null";
     auto session_type_string = GetSessionTypeString(session_type);
@@ -313,6 +331,20 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     return IsSupportedByKeySystem(key_system, kVideoWebMMimeType,
                                   video_webm_codecs(), SessionType::kTemporary,
                                   robustness);
+  }
+
+  std::string IsAudioEncryptionSchemeSupported(const std::string& key_system,
+                                               const char* encryption_scheme) {
+    return IsSupportedByKeySystem(key_system, kAudioWebMMimeType,
+                                  audio_webm_codecs(), SessionType::kTemporary,
+                                  nullptr, encryption_scheme);
+  }
+
+  std::string IsVideoEncryptionSchemeSupported(const std::string& key_system,
+                                               const char* encryption_scheme) {
+    return IsSupportedByKeySystem(key_system, kVideoWebMMimeType,
+                                  video_webm_codecs(), SessionType::kTemporary,
+                                  nullptr, encryption_scheme);
   }
 
  private:
@@ -587,6 +619,24 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest, Robustness) {
   EXPECT_UNSUPPORTED(IsAudioRobustnessSupported(kClearKey, "SW_SECURE_CRYPTO"));
 }
 
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesClearKeyTest,
+                       EncryptionScheme) {
+  EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kClearKey, nullptr));
+  EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kClearKey, "cenc"));
+  EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kClearKey, "cbcs"));
+  EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kClearKey, nullptr));
+  EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kClearKey, "cenc"));
+  EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kClearKey, "cbcs"));
+
+  // Invalid encryption schemes will be rejected. However, invalid values
+  // generate a TypeError (The provided value '...' is not a valid enum value
+  // of type EncryptionScheme), which is not handled by the test page.
+  EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kClearKey, "Invalid"));
+  EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kClearKey, "Invalid"));
+  EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kClearKey, ""));
+  EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kClearKey, ""));
+}
+
 //
 // External Clear Key
 //
@@ -772,6 +822,26 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
       IsAudioRobustnessSupported(kExternalClearKey, "Invalid String"));
   EXPECT_UNSUPPORTED(
       IsAudioRobustnessSupported(kExternalClearKey, "SW_SECURE_CRYPTO"));
+}
+
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesExternalClearKeyTest,
+                       EncryptionScheme) {
+  EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kExternalClearKey, nullptr));
+  EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kExternalClearKey, "cenc"));
+  EXPECT_SUCCESS(IsAudioEncryptionSchemeSupported(kExternalClearKey, "cbcs"));
+  EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kExternalClearKey, nullptr));
+  EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kExternalClearKey, "cenc"));
+  EXPECT_SUCCESS(IsVideoEncryptionSchemeSupported(kExternalClearKey, "cbcs"));
+
+  // Invalid encryption schemes will be rejected. However, invalid values
+  // generate a TypeError (The provided value '...' is not a valid enum value
+  // of type EncryptionScheme), which is not handled by the test page.
+  EXPECT_TYPEERROR(
+      IsAudioEncryptionSchemeSupported(kExternalClearKey, "Invalid"));
+  EXPECT_TYPEERROR(
+      IsVideoEncryptionSchemeSupported(kExternalClearKey, "Invalid"));
+  EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kExternalClearKey, ""));
+  EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kExternalClearKey, ""));
 }
 
 // External Clear Key is disabled by default.

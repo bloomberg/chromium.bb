@@ -29,6 +29,7 @@ using blink::WebMediaKeySystemConfiguration;
 using blink::WebMediaKeySystemMediaCapability;
 using blink::WebString;
 using MediaKeysRequirement = WebMediaKeySystemConfiguration::Requirement;
+using EncryptionScheme = WebMediaKeySystemMediaCapability::EncryptionScheme;
 
 // Key system strings. Clear Key support is hardcoded in KeySystemConfigSelector
 // so kClearKeyKeySystem is the real key system string. The rest key system
@@ -69,6 +70,26 @@ const char kExtendedVideoCodecStripped[] = "video_extended_codec";
 // A special codec that is supported by the key systems, but is not supported
 // in IsSupportedMediaType() when |use_aes_decryptor| is true.
 const char kUnsupportedByAesDecryptorCodec[] = "unsupported_by_aes_decryptor";
+
+// Encryption schemes. For testing 'cenc' is supported, while 'cbcs' is not.
+// Note that WebMediaKeySystemMediaCapability defaults to kNotSpecified,
+// which is treated as 'cenc' by KeySystemConfigSelector.
+constexpr EncryptionScheme kSupportedEncryptionScheme = EncryptionScheme::kCenc;
+constexpr EncryptionScheme kUnSupportedEncryptionScheme =
+    EncryptionScheme::kCbcs;
+
+EncryptionMode ConvertEncryptionScheme(EncryptionScheme encryption_scheme) {
+  switch (encryption_scheme) {
+    case EncryptionScheme::kNotSpecified:
+    case EncryptionScheme::kCenc:
+      return EncryptionMode::kCenc;
+    case EncryptionScheme::kCbcs:
+      return EncryptionMode::kCbcs;
+  }
+
+  NOTREACHED();
+  return EncryptionMode::kUnencrypted;
+}
 
 WebString MakeCodecs(const std::string& a, const std::string& b) {
   return WebString::FromUTF8(a + "," + b);
@@ -196,9 +217,8 @@ class FakeKeySystems : public KeySystems {
   bool IsEncryptionSchemeSupported(
       const std::string& key_system,
       EncryptionMode encryption_scheme) const override {
-    // TODO(crbug.com/658026): Implement this once value passed from blink.
-    NOTREACHED();
-    return false;
+    return encryption_scheme ==
+           ConvertEncryptionScheme(kSupportedEncryptionScheme);
   }
 
   EmeConfigRule GetContentTypeConfigRule(
@@ -1041,6 +1061,39 @@ TEST_F(KeySystemConfigSelectorTest,
 
   SelectConfigRequestsPermissionAndReturnsConfig();
   EXPECT_EQ(MediaKeysRequirement::kNotAllowed, config_.distinctive_identifier);
+}
+
+TEST_F(KeySystemConfigSelectorTest,
+       VideoCapabilities_EncryptionScheme_Supported) {
+  std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
+  video_capabilities[0].content_type = "a";
+  video_capabilities[0].mime_type = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kSupportedVideoCodec;
+  video_capabilities[0].encryption_scheme = kSupportedEncryptionScheme;
+
+  blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
+  config.video_capabilities = video_capabilities;
+  configs_.push_back(config);
+
+  SelectConfigReturnsConfig();
+  ASSERT_EQ(1u, config_.video_capabilities.size());
+  EXPECT_EQ(kSupportedEncryptionScheme,
+            config_.video_capabilities[0].encryption_scheme);
+}
+
+TEST_F(KeySystemConfigSelectorTest,
+       VideoCapabilities_EncryptionScheme_Unsupported) {
+  std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
+  video_capabilities[0].content_type = "a";
+  video_capabilities[0].mime_type = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kSupportedVideoCodec;
+  video_capabilities[0].encryption_scheme = kUnSupportedEncryptionScheme;
+
+  blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
+  config.video_capabilities = video_capabilities;
+  configs_.push_back(config);
+
+  SelectConfigReturnsError();
 }
 
 // --- HW Secure Codecs and Robustness ---

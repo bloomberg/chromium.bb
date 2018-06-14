@@ -50,6 +50,17 @@ static WebVector<WebEncryptedMediaInitDataType> ConvertInitDataTypes(
   return result;
 }
 
+static WebMediaKeySystemMediaCapability::EncryptionScheme
+ConvertEncryptionScheme(const String& encryption_scheme) {
+  if (encryption_scheme == "cenc")
+    return WebMediaKeySystemMediaCapability::EncryptionScheme::kCenc;
+  if (encryption_scheme == "cbcs")
+    return WebMediaKeySystemMediaCapability::EncryptionScheme::kCbcs;
+
+  NOTREACHED();
+  return WebMediaKeySystemMediaCapability::EncryptionScheme::kNotSpecified;
+}
+
 static WebVector<WebMediaKeySystemMediaCapability> ConvertCapabilities(
     const HeapVector<MediaKeySystemMediaCapability>& capabilities) {
   WebVector<WebMediaKeySystemMediaCapability> result(capabilities.size());
@@ -70,6 +81,17 @@ static WebVector<WebMediaKeySystemMediaCapability> ConvertCapabilities(
         result[i].codecs = type.ParameterValueForName("codecs");
     }
     result[i].robustness = capabilities[i].robustness();
+
+    // From
+    // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md
+    // "Asking for "any" encryption scheme is unrealistic. Defining null as
+    // "any scheme" is convenient for backward compatibility, though.
+    // Applications which ignore this feature by leaving encryptionScheme null
+    // get the same user agent behavior they did before this feature existed."
+    result[i].encryption_scheme =
+        capabilities[i].hasEncryptionScheme()
+            ? ConvertEncryptionScheme(capabilities[i].encryptionScheme())
+            : WebMediaKeySystemMediaCapability::EncryptionScheme::kNotSpecified;
   }
   return result;
 }

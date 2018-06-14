@@ -4,7 +4,7 @@
       // Since promises run asynchronously, use the pages title to keep track
       // of the result.
       function setResultInTitle(title) {
-        if (title == "" || title == "success" ||
+        if (title == "" || title == "success" || title == "TypeError" ||
             title == "Unsupported keySystem or supportedConfigurations.") {
           document.title = title;
         } else {
@@ -82,7 +82,9 @@
               }
               setResultInTitle("success");
             })
-            .catch(function(err) { setResultInTitle(err.message); });
+            .catch(function(err) {
+              setResultInTitle((err.name == 'TypeError') ? err.name : err.message);
+            });
       };
 
       function checkKeySystemWithMediaMimeType(keySystem, initDataType,
