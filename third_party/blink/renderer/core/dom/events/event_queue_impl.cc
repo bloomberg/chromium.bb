@@ -34,19 +34,21 @@
 
 namespace blink {
 
-EventQueueImpl* EventQueueImpl::Create(ExecutionContext* context,
+EventQueueImpl* EventQueueImpl::Create(EventTarget* target,
                                        TaskType task_type) {
-  return new EventQueueImpl(context, task_type);
+  return new EventQueueImpl(target, task_type);
 }
 
-EventQueueImpl::EventQueueImpl(ExecutionContext* context, TaskType task_type)
-    : ContextLifecycleObserver(context),
+EventQueueImpl::EventQueueImpl(EventTarget* target, TaskType task_type)
+    : ContextLifecycleObserver(target->GetExecutionContext()),
       task_type_(task_type),
+      target_(target),
       is_closed_(false) {}
 
 EventQueueImpl::~EventQueueImpl() = default;
 
 void EventQueueImpl::Trace(blink::Visitor* visitor) {
+  visitor->Trace(target_);
   visitor->Trace(queued_events_);
   EventQueue::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
@@ -99,14 +101,10 @@ void EventQueueImpl::DispatchEvent(Event* event) {
   DCHECK(GetExecutionContext());
 
   probe::AsyncTask async_task(GetExecutionContext(), event);
-  // TODO(hajimehoshi): Don't use |event->target()| here. Assuming the taget
-  // exists here is weird since event target is set later at
-  // |EventTarget::DispatchEvent|.
-  EventTarget* event_target = event->target();
-  if (LocalDOMWindow* window = event_target->ToLocalDOMWindow())
+  if (LocalDOMWindow* window = target_->ToLocalDOMWindow())
     window->DispatchEvent(event, nullptr);
   else
-    event_target->DispatchEvent(event);
+    target_->DispatchEvent(event);
 }
 
 void EventQueueImpl::ContextDestroyed(ExecutionContext* context) {
