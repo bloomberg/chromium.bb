@@ -3,7 +3,7 @@ PASS WebUSB on Workers IDL test
 PASS Partial interface Navigator: original interface defined
 PASS Partial interface Navigator: valid exposure set
 PASS Partial interface WorkerNavigator: original interface defined
-FAIL Partial interface WorkerNavigator: valid exposure set Partial WorkerNavigator interface is exposed to 'DedicatedWorker', the original interface is not.
+PASS Partial interface WorkerNavigator: valid exposure set
 PASS USB interface: existence and properties of interface object
 PASS USB interface object length
 PASS USB interface object name
@@ -310,9 +310,11 @@ PASS USBEndpoint interface: usbEndpoint must inherit property "endpointNumber" w
 PASS USBEndpoint interface: usbEndpoint must inherit property "direction" with the proper type
 PASS USBEndpoint interface: usbEndpoint must inherit property "type" with the proper type
 PASS USBEndpoint interface: usbEndpoint must inherit property "packetSize" with the proper type
-PASS EventHandler interface: existence and properties of interface object
+PASS USBPermissionResult interface: existence and properties of interface object
 PASS Navigator interface: existence and properties of interface object
-FAIL WorkerNavigator interface: existence and properties of interface object assert_false: expected false got true
+PASS WorkerNavigator interface: attribute usb
+PASS Unscopable handled correctly for usb property on WorkerNavigator
 PASS WorkerNavigator interface: navigator must inherit property "usb" with the proper type
+FAIL PermissionStatus interface: existence and properties of interface object assert_false: expected false got true
 Harness: the test ran to completion.
 
