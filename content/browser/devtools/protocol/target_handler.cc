@@ -4,10 +4,14 @@
 
 #include "content/browser/devtools/protocol/target_handler.h"
 
+#include "base/base64.h"
+#include "base/containers/flat_map.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "content/browser/devtools/browser_devtools_agent_host.h"
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -23,6 +27,19 @@ namespace {
 
 static const char kMethod[] = "method";
 static const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
+static const char kInitializerScript[] = R"(
+  (function() {
+    const bindingName = "%s";
+    const binding = window[bindingName];
+    delete window[bindingName];
+    if (window.self === window.top) {
+      window[bindingName] = {
+        onmessage: () => {},
+        send: binding
+      };
+    }
+  })();
+)";
 
 std::unique_ptr<Target::TargetInfo> CreateInfo(DevToolsAgentHost* host) {
   std::unique_ptr<Target::TargetInfo> target_info =
@@ -75,6 +92,116 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
   NOTREACHED() << "Unknown Termination Status.";
   return "unknown";
 }
+
+class BrowserToPageConnector;
+
+base::LazyInstance<base::flat_map<DevToolsAgentHost*,
+                                  std::unique_ptr<BrowserToPageConnector>>>::
+    Leaky g_browser_to_page_connectors;
+
+class BrowserToPageConnector : public DevToolsAgentHostClient {
+ public:
+  BrowserToPageConnector(const std::string& binding_name,
+                         DevToolsAgentHost* page_host)
+      : binding_name_(binding_name), page_host_(page_host) {
+    browser_host_ = BrowserDevToolsAgentHost::CreateForDiscovery();
+    browser_host_->AttachClient(this);
+    page_host_->AttachClient(this);
+
+    SendProtocolMessageToPage("Page.enable", std::make_unique<base::Value>());
+    SendProtocolMessageToPage("Runtime.enable",
+                              std::make_unique<base::Value>());
+
+    std::unique_ptr<base::DictionaryValue> add_binding_params =
+        std::make_unique<base::DictionaryValue>();
+    add_binding_params->SetString("name", binding_name);
+    SendProtocolMessageToPage("Runtime.addBinding",
+                              std::move(add_binding_params));
+
+    std::string initializer_script =
+        base::StringPrintf(kInitializerScript, binding_name.c_str());
+
+    std::unique_ptr<base::DictionaryValue> params =
+        std::make_unique<base::DictionaryValue>();
+    params->SetString("scriptSource", initializer_script);
+    SendProtocolMessageToPage("Page.addScriptToEvaluateOnLoad",
+                              std::move(params));
+
+    std::unique_ptr<base::DictionaryValue> evaluate_params =
+        std::make_unique<base::DictionaryValue>();
+    evaluate_params->SetString("expression", initializer_script);
+    SendProtocolMessageToPage("Runtime.evaluate", std::move(evaluate_params));
+    g_browser_to_page_connectors.Get()[page_host_.get()].reset(this);
+  }
+
+ private:
+  void SendProtocolMessageToPage(const char* method,
+                                 std::unique_ptr<base::Value> params) {
+    base::DictionaryValue message;
+    message.SetInteger("id", page_message_id_++);
+    message.SetString("method", method);
+    message.Set("params", std::move(params));
+    std::string json_message;
+    base::JSONWriter::Write(message, &json_message);
+    page_host_->DispatchProtocolMessage(this, json_message);
+  }
+
+  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
+                               const std::string& message) override {
+    if (agent_host == page_host_.get()) {
+      std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
+      if (!value || !value->is_dict())
+        return;
+      // Make sure this is a binding call.
+      base::Value* method = value->FindKey("method");
+      if (!method || !method->is_string() ||
+          method->GetString() != "Runtime.bindingCalled")
+        return;
+      base::Value* params = value->FindKey("params");
+      if (!params || !params->is_dict())
+        return;
+      base::Value* name = params->FindKey("name");
+      if (!name || !name->is_string() || name->GetString() != binding_name_)
+        return;
+      base::Value* payload = params->FindKey("payload");
+      if (!payload || !payload->is_string())
+        return;
+      browser_host_->DispatchProtocolMessage(this, payload->GetString());
+      return;
+    }
+    DCHECK(agent_host == browser_host_.get());
+
+    std::string encoded;
+    base::Base64Encode(message, &encoded);
+    std::string eval_code = "window." + binding_name_ + ".onmessage(atob(\"";
+    std::string eval_suffix = "\"))";
+    eval_code.reserve(eval_code.size() + encoded.size() + eval_suffix.size());
+    eval_code.append(encoded);
+    eval_code.append(eval_suffix);
+
+    std::unique_ptr<base::DictionaryValue> params =
+        std::make_unique<base::DictionaryValue>();
+    params->SetString("expression", eval_code);
+    SendProtocolMessageToPage("Runtime.evaluate", std::move(params));
+  }
+
+  void AgentHostClosed(DevToolsAgentHost* agent_host) override {
+    if (agent_host == browser_host_.get()) {
+      page_host_->DetachClient(this);
+    } else {
+      DCHECK(agent_host == page_host_.get());
+      browser_host_->DetachClient(this);
+    }
+    g_browser_to_page_connectors.Get().erase(page_host_.get());
+  }
+
+  std::string binding_name_;
+  scoped_refptr<DevToolsAgentHost> browser_host_;
+  scoped_refptr<DevToolsAgentHost> page_host_;
+  int page_message_id_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserToPageConnector);
+};
 
 }  // namespace
 
@@ -434,6 +561,32 @@ Response TargetHandler::CloseTarget(const std::string& target_id,
   if (!agent_host)
     return Response::InvalidParams("No target with given id found");
   *out_success = agent_host->Close();
+  return Response::OK();
+}
+
+Response TargetHandler::ExposeDevToolsProtocol(
+    const std::string& target_id,
+    Maybe<std::string> binding_name) {
+  if (!browser_only_) {
+    return Response::InvalidParams(
+        "Cannot grant remote debugging capability from non-browser session.");
+  }
+  scoped_refptr<DevToolsAgentHost> agent_host =
+      DevToolsAgentHost::GetForId(target_id);
+  if (!agent_host)
+    return Response::InvalidParams("No target with given id found");
+
+  if (g_browser_to_page_connectors.Get()[agent_host.get()]) {
+    return Response::Error(base::StringPrintf(
+        "Target with id %s is already granted remote debugging bindings.",
+        target_id.c_str()));
+  }
+  if (!agent_host->GetWebContents()) {
+    return Response::Error(
+        "RemoteDebuggingBinding can be granted only to page targets");
+  }
+
+  new BrowserToPageConnector(binding_name.fromMaybe("cdp"), agent_host.get());
   return Response::OK();
 }
 
