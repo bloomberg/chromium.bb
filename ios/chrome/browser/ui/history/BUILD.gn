@@ -120,6 +120,7 @@ source_set("history_ui") {
     "//components/url_formatter",
     "//components/url_formatter",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/sync",

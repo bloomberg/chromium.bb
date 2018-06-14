@@ -12,6 +12,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
@@ -28,6 +29,7 @@
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -50,6 +52,7 @@ namespace {
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeHistoryEntry = kItemTypeEnumZero,
   ItemTypeEntriesStatus,
+  ItemTypeEntriesStatusWithLink,
   ItemTypeActivityIndicator,
 };
 // Section identifier for the header (sync information) section.
@@ -62,6 +65,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 
 @interface HistoryTableViewController ()<HistoryEntriesStatusItemDelegate,
                                          HistoryEntryInserterDelegate,
+                                         TableViewTextLinkCellDelegate,
                                          UISearchResultsUpdating,
                                          UISearchBarDelegate> {
   // Closure to request next page of history.
@@ -74,6 +78,8 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 @property(nonatomic, strong) ContextMenuCoordinator* contextMenuCoordinator;
 // The current query for visible history entries.
 @property(nonatomic, copy) NSString* currentQuery;
+// The current status message for the tableView, it might be nil.
+@property(nonatomic, copy) NSString* currentStatusMessage;
 // YES if there are no results to show.
 @property(nonatomic, assign) BOOL empty;
 // YES if the history panel should show a notice about additional forms of
@@ -103,6 +109,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 @synthesize clearBrowsingDataButton = _clearBrowsingDataButton;
 @synthesize contextMenuCoordinator = _contextMenuCoordinator;
 @synthesize currentQuery = _currentQuery;
+@synthesize currentStatusMessage = _currentStatusMessage;
 @synthesize deleteButton = _deleteButton;
 @synthesize editButton = _editButton;
 @synthesize empty = _empty;
@@ -140,6 +147,9 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.clearsSelectionOnViewWillAppear = NO;
   self.tableView.allowsMultipleSelection = YES;
+  // Add a tableFooterView in order to disable separators at the bottom of the
+  // tableView.
+  self.tableView.tableFooterView = [[UIView alloc] init];
 
   // ContextMenu gesture recognizer.
   UILongPressGestureRecognizer* longPressRecognizer = [
@@ -347,6 +357,13 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 // TODO(crbug.com/805190): Migrate once we decide how to handle favicons and the
 // a11y callback on HistoryEntryItem.
 
+#pragma mark TableViewTextLinkCellDelegate
+
+- (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
+            didRequestOpenURL:(const GURL&)URL {
+  [self openURLInNewTab:URL];
+}
+
 #pragma mark UISearchResultsUpdating
 
 - (void)updateSearchResultsForSearchController:
@@ -427,6 +444,9 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForFooterInSection:(NSInteger)section {
+  if ([self.tableViewModel sectionIdentifierForSection:section] ==
+      kEntriesStatusSectionIdentifier)
+    return 0;
   return kSeparationSpaceBetweenSections;
 }
 
@@ -464,14 +484,21 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     [self updateToolbarButtons];
 }
 
+- (BOOL)tableView:(UITableView*)tableView
+    canEditRowAtIndexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  return (item.type == ItemTypeHistoryEntry);
+}
+
+#pragma mark - UITableViewDataSource
+
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   UITableViewCell* cellToReturn =
       [super tableView:tableView cellForRowAtIndexPath:indexPath];
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type == ItemTypeEntriesStatus) {
-    cellToReturn.userInteractionEnabled = NO;
-  } else if (item.type == ItemTypeHistoryEntry) {
+  cellToReturn.userInteractionEnabled = !(item.type == ItemTypeEntriesStatus);
+  if (item.type == ItemTypeHistoryEntry) {
     HistoryEntryItem* URLItem =
         base::mac::ObjCCastStrict<HistoryEntryItem>(item);
     TableViewURLCell* URLCell =
@@ -489,17 +516,12 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     DCHECK(cachedAttributes);
     [URLCell.faviconView configureWithAttributes:cachedAttributes];
   }
-  return cellToReturn;
-}
-
-- (BOOL)tableView:(UITableView*)tableView
-    canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type == ItemTypeEntriesStatus) {
-    return NO;
-  } else {
-    return YES;
+  if (item.type == ItemTypeEntriesStatusWithLink) {
+    TableViewTextLinkCell* tableViewTextLinkCell =
+        base::mac::ObjCCastStrict<TableViewTextLinkCell>(cellToReturn);
+    [tableViewTextLinkCell setDelegate:self];
   }
+  return cellToReturn;
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -582,63 +604,117 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 // displayed history entries. There should only ever be at most one item in this
 // section.
 - (void)updateEntriesStatusMessage {
-  NSString* messageText = nil;
+  // Get the new status message, newStatusMessage could be nil.
+  NSString* newStatusMessage = nil;
+  BOOL messageWillContainLink = NO;
   if (self.empty) {
-    messageText = self.searchInProgress
-                      ? l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS)
-                      : nil;
+    newStatusMessage =
+        self.searchController.isActive
+            ? l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS)
+            : nil;
   } else if (self.shouldShowNoticeAboutOtherFormsOfBrowsingHistory &&
-             !self.searchInProgress) {
-    messageText =
+             !self.searchController.isActive) {
+    newStatusMessage =
         l10n_util::GetNSString(IDS_IOS_HISTORY_OTHER_FORMS_OF_HISTORY);
+    messageWillContainLink = YES;
   }
 
-  // Get the number of items currently at the StatusMessageSection.
-  NSArray* items = [self.tableViewModel
-      itemsInSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-  DCHECK([items count] <= 1);
-
-  // If no message remove message cell/item if exists, then return.
-  if (messageText == nil) {
-    if ([items count]) {
-      NSIndexPath* statusMessageIndexPath = [self.tableViewModel
-          indexPathForItemType:ItemTypeEntriesStatus
-             sectionIdentifier:kEntriesStatusSectionIdentifier];
-      [self.tableViewModel removeItemWithType:ItemTypeEntriesStatus
-                    fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-      [self.tableView deleteRowsAtIndexPaths:@[ statusMessageIndexPath ]
-                            withRowAnimation:UITableViewRowAnimationNone];
-    }
+  // If the new message is the same as the old one, there's no need to do
+  // anything else. Compare the objects since they might both be nil.
+  if ([self.currentStatusMessage isEqualToString:newStatusMessage] ||
+      newStatusMessage == self.currentStatusMessage)
     return;
+
+  // Get the previous status item and its information, if any.
+  NSArray* previousStatusItems = [self.tableViewModel
+      itemsInSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+  DCHECK([previousStatusItems count] <= 1);
+  TableViewItem* previousStatusItem = nil;
+  NSIndexPath* previousStatusItemIndexPath = nil;
+  if ([previousStatusItems count]) {
+    previousStatusItem = [previousStatusItems lastObject];
+    previousStatusItemIndexPath = [self.tableViewModel
+        indexPathForItemType:previousStatusItem.type
+           sectionIdentifier:kEntriesStatusSectionIdentifier];
   }
 
-  if ([items count]) {
-    // If a previous item exists, update its message.
-    TableViewItem* oldEntriesStatusItem = items[0];
-    TableViewTextItem* oldEntriesStatusTextItem =
-        base::mac::ObjCCastStrict<TableViewTextItem>(oldEntriesStatusItem);
-    // If its the same message there's no need to update the item or reload the
-    // table.
-    if ([messageText isEqualToString:oldEntriesStatusTextItem.text])
-      return;
-    oldEntriesStatusTextItem.text = messageText;
-    NSIndexPath* statusMessageIndexPath = [self.tableViewModel
-        indexPathForItemType:ItemTypeEntriesStatus
-           sectionIdentifier:kEntriesStatusSectionIdentifier];
-    [self.tableView reloadRowsAtIndexPaths:@[ statusMessageIndexPath ]
-                          withRowAnimation:UITableViewRowAnimationNone];
+  // Block to hold any tableView and model updates that will be performed.
+  void (^tableUpdates)(void) = nil;
+
+  // If no new status message remove the previous status item if it exists.
+  if (newStatusMessage == nil) {
+    if (previousStatusItem) {
+      tableUpdates = ^{
+        [self.tableViewModel
+                   removeItemWithType:previousStatusItem.type
+            fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+        [self.tableView
+            deleteRowsAtIndexPaths:@[ previousStatusItemIndexPath ]
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+      };
+    }
   } else {
-    // If a previous item doesn't exist it create a new one and insert it.
+    // Since there's a new status message, create the new status item.
+    TableViewItem* updatedMessageItem =
+        [self statusItemWithMessage:newStatusMessage
+             messageWillContainLink:messageWillContainLink];
+
+    // If there was a previous status item delete it, insert the new status item
+    // and reload. If not simply insert the new status item.
+    tableUpdates = ^{
+      if (previousStatusItem) {
+        [self.tableViewModel
+                   removeItemWithType:previousStatusItem.type
+            fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+        [self.tableViewModel addItem:updatedMessageItem
+             toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+        [self.tableView
+            reloadRowsAtIndexPaths:@[ [self.tableViewModel
+                                       indexPathForItem:updatedMessageItem] ]
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+      } else {
+        [self.tableViewModel addItem:updatedMessageItem
+             toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+        [self.tableView
+            insertRowsAtIndexPaths:@[ [self.tableViewModel
+                                       indexPathForItem:updatedMessageItem] ]
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+      }
+    };
+  }
+
+  // If there's any tableUpdates, run them.
+  if (tableUpdates) {
+    // If iOS11+ use performBatchUpdates: instead of beginUpdates/endUpdates.
+    if (@available(iOS 11, *)) {
+      [self.tableView performBatchUpdates:tableUpdates completion:nil];
+    } else {
+      [self.tableView beginUpdates];
+      tableUpdates();
+      [self.tableView endUpdates];
+    }
+  }
+  self.currentStatusMessage = newStatusMessage;
+}
+
+// Helper function that creates a new item for the Status message.
+- (TableViewItem*)statusItemWithMessage:(NSString*)statusMessage
+                 messageWillContainLink:(BOOL)messageWillContainLink {
+  TableViewItem* statusMessageItem = nil;
+  if (messageWillContainLink) {
+    TableViewTextLinkItem* entriesStatusItem = [[TableViewTextLinkItem alloc]
+        initWithType:ItemTypeEntriesStatusWithLink];
+    entriesStatusItem.text = statusMessage;
+    entriesStatusItem.linkURL = GURL(kHistoryMyActivityURL);
+    statusMessageItem = entriesStatusItem;
+  } else {
     TableViewTextItem* entriesStatusItem =
         [[TableViewTextItem alloc] initWithType:ItemTypeEntriesStatus];
-    entriesStatusItem.text = messageText;
-    [self.tableViewModel addItem:entriesStatusItem
-         toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-    NSIndexPath* statusMessageIndexPath =
-        [self.tableViewModel indexPathForItem:entriesStatusItem];
-    [self.tableView insertRowsAtIndexPaths:@[ statusMessageIndexPath ]
-                          withRowAnimation:UITableViewRowAnimationNone];
+    entriesStatusItem.text = statusMessage;
+    entriesStatusItem.textColor = TextItemColorBlack;
+    statusMessageItem = entriesStatusItem;
   }
+  return statusMessageItem;
 }
 
 // Deletes all items in the tableView which indexes are included in indexArray,
