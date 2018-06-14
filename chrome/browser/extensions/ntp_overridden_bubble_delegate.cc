@@ -41,8 +41,8 @@ bool g_acknowledge_existing_extensions =
     false;
 #endif
 
-base::LazyInstance<std::set<std::pair<Profile*, std::string>>>::Leaky g_shown =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<std::set<std::pair<Profile*, std::string>>>::Leaky
+    g_ntp_overridden_shown = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -178,13 +178,15 @@ bool NtpOverriddenBubbleDelegate::ShouldLimitToEnabledExtensions() const {
 bool NtpOverriddenBubbleDelegate::ShouldShow(
     const ExtensionIdList& extensions) const {
   DCHECK_EQ(1u, extensions.size());
-  return !g_shown.Get().count(std::make_pair(profile_, extensions[0]));
+  return !g_ntp_overridden_shown.Get().count(
+      std::make_pair(profile_, extensions[0]));
 }
 
 void NtpOverriddenBubbleDelegate::OnShown(const ExtensionIdList& extensions) {
   DCHECK_EQ(1u, extensions.size());
-  DCHECK(!g_shown.Get().count(std::make_pair(profile_, extensions[0])));
-  g_shown.Get().insert(std::make_pair(profile_, extensions[0]));
+  DCHECK(!g_ntp_overridden_shown.Get().count(
+      std::make_pair(profile_, extensions[0])));
+  g_ntp_overridden_shown.Get().insert(std::make_pair(profile_, extensions[0]));
 }
 
 void NtpOverriddenBubbleDelegate::OnAction() {
@@ -192,11 +194,11 @@ void NtpOverriddenBubbleDelegate::OnAction() {
   // extension. Thus if that extension or another takes effect, it is worth
   // mentioning to the user (ShouldShow() would return true) because it is
   // contrary to the user's choice.
-  g_shown.Get().clear();
+  g_ntp_overridden_shown.Get().clear();
 }
 
 void NtpOverriddenBubbleDelegate::ClearProfileSetForTesting() {
-  g_shown.Get().clear();
+  g_ntp_overridden_shown.Get().clear();
 }
 
 void NtpOverriddenBubbleDelegate::LogExtensionCount(size_t count) {

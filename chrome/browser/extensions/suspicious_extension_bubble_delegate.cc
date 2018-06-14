@@ -31,7 +31,7 @@ namespace extensions {
 
 namespace {
 
-base::LazyInstance<std::set<Profile*>>::Leaky g_shown =
+base::LazyInstance<std::set<Profile*>>::Leaky g_suspicious_extension_shown =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
@@ -118,14 +118,14 @@ bool SuspiciousExtensionBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
 bool SuspiciousExtensionBubbleDelegate::ShouldShow(
     const ExtensionIdList& extensions) const {
   DCHECK_LE(1u, extensions.size());
-  return !g_shown.Get().count(profile_);
+  return !g_suspicious_extension_shown.Get().count(profile_);
 }
 
 void SuspiciousExtensionBubbleDelegate::OnShown(
     const ExtensionIdList& extensions) {
   DCHECK_LE(1u, extensions.size());
-  DCHECK(!g_shown.Get().count(profile_));
-  g_shown.Get().insert(profile_);
+  DCHECK(!g_suspicious_extension_shown.Get().count(profile_));
+  g_suspicious_extension_shown.Get().insert(profile_);
 }
 
 void SuspiciousExtensionBubbleDelegate::OnAction() {
@@ -133,11 +133,11 @@ void SuspiciousExtensionBubbleDelegate::OnAction() {
   // extension. Thus if that extension or another takes effect, it is worth
   // mentioning to the user (ShouldShow() would return true) because it is
   // contrary to the user's choice.
-  g_shown.Get().clear();
+  g_suspicious_extension_shown.Get().clear();
 }
 
 void SuspiciousExtensionBubbleDelegate::ClearProfileSetForTesting() {
-  g_shown.Get().clear();
+  g_suspicious_extension_shown.Get().clear();
 }
 
 bool SuspiciousExtensionBubbleDelegate::ShouldShowExtensionList() const {
