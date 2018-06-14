@@ -684,11 +684,15 @@ void av1_mv_pred(const AV1_COMP *cpi, MACROBLOCK *x, uint8_t *ref_y_buffer,
   uint8_t *ref_y_ptr;
   MV pred_mv[MAX_MV_REF_CANDIDATES + 1];
   int num_mv_refs = 0;
+  const MV_REFERENCE_FRAME ref_frames[2] = { ref_frame, NONE_FRAME };
+  const int_mv ref_mv =
+      av1_get_ref_mv_from_stack(0, ref_frames, 0, x->mbmi_ext);
+  const int_mv ref_mv1 =
+      av1_get_ref_mv_from_stack(0, ref_frames, 1, x->mbmi_ext);
 
-  pred_mv[num_mv_refs++] = x->mbmi_ext->ref_mvs[ref_frame][0].as_mv;
-  if (x->mbmi_ext->ref_mvs[ref_frame][0].as_int !=
-      x->mbmi_ext->ref_mvs[ref_frame][1].as_int) {
-    pred_mv[num_mv_refs++] = x->mbmi_ext->ref_mvs[ref_frame][1].as_mv;
+  pred_mv[num_mv_refs++] = ref_mv.as_mv;
+  if (ref_mv.as_int != ref_mv1.as_int) {
+    pred_mv[num_mv_refs++] = ref_mv1.as_mv;
   }
   if (cpi->sf.adaptive_motion_search && block_size < x->max_partition_size)
     pred_mv[num_mv_refs++] = x->pred_mv[ref_frame];
