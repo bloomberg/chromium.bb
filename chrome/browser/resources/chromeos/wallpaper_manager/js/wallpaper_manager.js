@@ -325,7 +325,6 @@ WallpaperManager.prototype.placeWallpaperPicker_ = function() {
   var totalWidth = this.document_.body.offsetWidth;
   centerElement($('set-successfully-message'), totalWidth, null);
   centerElement($('top-header'), totalWidth, null);
-  centerElement($('current-wallpaper-info-bar'), totalWidth, null);
 
   centerElement(
       $('no-images-message'), $('no-images-message').parentNode.offsetWidth,
@@ -354,6 +353,8 @@ WallpaperManager.prototype.placeWallpaperPicker_ = function() {
   var imageGridTotalWidth = columnCount * columnWidth;
   this.document_.querySelector('.dialog-main').style.WebkitMarginStart =
       (totalWidth - imageGridTotalWidth - totalPadding) + 'px';
+  $('current-wallpaper-info-bar').style.width =
+      (imageGridTotalWidth - GRID_IMAGE_PADDING_CSS) + 'px';
 };
 
 /**
@@ -441,16 +442,6 @@ WallpaperManager.prototype.preDownloadDomInit_ = function() {
     $('close-button').addEventListener('click', function() {
       window.close();
     });
-    this.document_.querySelector('.dialog-topbar')
-        .addEventListener('mouseover', () => {
-          this.isHoveringOverCollection_ = true;
-          this.updateInfoBarVisibility_();
-        });
-    this.document_.querySelector('.dialog-topbar')
-        .addEventListener('mouseleave', () => {
-          this.isHoveringOverCollection_ = false;
-          this.updateInfoBarVisibility_();
-        });
   } else {
     $('window-close-button').addEventListener('click', function() {
       window.close();
@@ -832,7 +823,7 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
         });
   }
 
-  this.updateInfoBarVisibility_();
+  $('current-wallpaper-info-bar').classList.add('show-info-bar');
 };
 
 /**
@@ -1769,24 +1760,11 @@ WallpaperManager.prototype.shouldPreviewWallpaper_ = function() {
  * @param {number} scrollTop The distance between the scroll bar and the top.
  */
 WallpaperManager.prototype.onScrollPositionChanged = function(scrollTop) {
-  var isScrollAtTop = scrollTop == 0;
-  if (this.isScrollAtTop_ !== isScrollAtTop) {
-    this.isScrollAtTop_ = isScrollAtTop;
-    this.updateInfoBarVisibility_();
-  }
-};
-
-/**
- * Updates the visibility of the current wallpaper info bar.
- * @private
- */
-WallpaperManager.prototype.updateInfoBarVisibility_ = function() {
-  var isWindowMaximized = chrome.app.window.current().isMaximized() ||
-      chrome.app.window.current().isFullscreen();
-  var shouldShowInfoBar = this.useNewWallpaperPicker_ && this.isScrollAtTop_ &&
-      (!this.isHoveringOverCollection_ || isWindowMaximized);
-  $('current-wallpaper-info-bar')
-      .classList.toggle('show-info-bar', shouldShowInfoBar);
+  // The current wallpaper info bar should scroll together with the image grid.
+  $('current-wallpaper-info-bar').style.top = -scrollTop + 'px';
+  var needTopPadding =
+      scrollTop <= $('current-wallpaper-info-bar').offsetHeight;
+  $('wallpaper-grid').classList.toggle('top-padding', needTopPadding);
 };
 
 })();
