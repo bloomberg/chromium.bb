@@ -106,8 +106,9 @@ class COMPONENTS_PREFS_EXPORT PrefService {
     // policy, this is the controlling pref if set.
     bool IsManagedByCustodian() const;
 
-    // Returns true if the Preference is recommended, i.e. set by an admin
-    // policy but the user is allowed to change it.
+    // Returns true if the Preference's current value is one recommended by
+    // admin policy. Note that this will be false if any other higher-priority
+    // source overrides the value (e.g., the user has set a value).
     bool IsRecommended() const;
 
     // Returns true if the Preference has a value set by an extension, even if
