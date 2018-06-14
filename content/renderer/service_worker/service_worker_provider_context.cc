@@ -57,6 +57,11 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
   // The Client#id value of the client.
   std::string client_id;
 
+  // S13nServiceWorker:
+  // True when the controller has a fetch event handler. If false,
+  // ServiceWorkerSubresourceLoader will be bypassed.
+  bool controller_has_fetch_event_handler = false;
+
   // Tracks feature usage for UseCounter.
   std::set<blink::mojom::WebFeature> used_features;
 
@@ -155,6 +160,8 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
     // No controller is attached.
     return nullptr;
   }
+  if (!state->controller_has_fetch_event_handler)
+    return nullptr;
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   if (!state->subresource_loader_factory) {
     ServiceWorkerSubresourceLoaderFactory::Create(
@@ -285,6 +292,8 @@ void ServiceWorkerProviderContext::SetController(
   DCHECK(state->client_id.empty() ||
          state->client_id == controller_info->client_id);
   state->client_id = controller_info->client_id;
+  // |endpoint| is set only when the controller has a fetch event handler.
+  state->controller_has_fetch_event_handler = !!controller_info->endpoint;
 
   // Propagate the controller to workers related to this provider.
   if (state->controller) {
