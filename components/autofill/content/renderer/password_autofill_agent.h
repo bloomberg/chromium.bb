@@ -312,6 +312,30 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   void HidePopup();
 
+  // TODO(https://crbug.com/831123): Rename to FillPasswordForm when browser
+  // form parsing is launched.
+  void FillUsingRendererIDs(int key, const PasswordFormFillData& form_data);
+
+  // Returns pair(username_element, password_element) based on renderer ids from
+  // |username_field| and |password_field| from |form_data|.
+  std::pair<blink::WebInputElement, blink::WebInputElement>
+  FindUsernamePasswordElements(const PasswordFormFillData& form_data);
+
+  // Populates |web_input_to_password_info_| and |password_to_username_| in
+  // order to provide fill on account select on |username_element| and
+  // |password_element| with credentials from |form_data|.
+  void StoreDataForFillOnAccountSelect(int key,
+                                       const PasswordFormFillData& form_data,
+                                       blink::WebInputElement username_element,
+                                       blink::WebInputElement password_element);
+
+  // In case when |web_input_to_password_info_| is empty (i.e. no fill on
+  // account select data yet) this function populates
+  // |web_input_to_password_info_| in order to provide fill on account select on
+  // any password field (aka filling fallback) with credentials from
+  // |form_data|.
+  void MaybeStoreFallbackData(int key, const PasswordFormFillData& form_data);
+
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;
   // A (sort-of) reverse map to |web_input_to_password_info_|.

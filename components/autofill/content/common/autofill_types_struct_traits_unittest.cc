@@ -36,6 +36,7 @@ void CreateTestFieldDataPredictions(const std::string& signature,
 }
 
 void CreateTestPasswordFormFillData(PasswordFormFillData* fill_data) {
+  fill_data->form_renderer_id = 1234;
   fill_data->name = base::ASCIIToUTF16("TestName");
   fill_data->origin = GURL("https://foo.com/");
   fill_data->action = GURL("https://foo.com/login");
@@ -146,6 +147,7 @@ void CreateTestFormsPredictionsMap(FormsPredictionsMap* predictions) {
 
 void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
                                     const PasswordFormFillData& actual) {
+  EXPECT_EQ(expected.form_renderer_id, actual.form_renderer_id);
   EXPECT_EQ(expected.name, actual.name);
   EXPECT_EQ(expected.origin, actual.origin);
   EXPECT_EQ(expected.action, actual.action);

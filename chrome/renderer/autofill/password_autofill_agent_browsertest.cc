@@ -389,6 +389,24 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password_element_ = element.To<WebInputElement>();
   }
 
+  // TODO(https://crbug.com/831123): Make the code of this function to be part
+  // of UpdateUsernameAndPasswordElements() when the old parsing is removed and
+  // filling by renderer ids is by default.
+  void UpdateRendererIDs() {
+    fill_data_.has_renderer_ids = true;
+    if (!username_element_.IsNull()) {
+      fill_data_.username_field.unique_renderer_id =
+          username_element_.UniqueRendererFormControlId();
+    }
+    ASSERT_FALSE(password_element_.IsNull());
+    fill_data_.password_field.unique_renderer_id =
+        password_element_.UniqueRendererFormControlId();
+    WebFormElement form = password_element_.Form();
+    fill_data_.form_renderer_id = form.IsNull()
+                                      ? FormData::kNotSetFormRendererId
+                                      : form.UniqueRendererFormId();
+  }
+
   void UpdateOnlyPasswordElement() {
     WebDocument document = GetMainFrame()->GetDocument();
     WebElement element =
@@ -3475,6 +3493,45 @@ TEST_F(PasswordAutofillAgentTest, PSLMatchedPasswordIsNotAutofill) {
   // Test that PSL matched password is not autofilled.
   CheckUsernameDOMStatePasswordSuggestedState("prefilledusername", false, "",
                                               false);
+}
+
+// Tests that the password form is filled as expected on load with using
+// renderer ids.
+TEST_F(PasswordAutofillAgentTest, FillOnLoadWithRendererIDs) {
+  UpdateRendererIDs();
+  SimulateOnFillPasswordForm(fill_data_);
+  CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
+}
+
+// Tests that the password form is filled as expected on load even if form/field
+// attributes were changed between from load and filling.
+TEST_F(PasswordAutofillAgentTest, FillOnLoadWithRendererIDsFormChanged) {
+  UpdateRendererIDs();
+  // Simulate JavaScript changed field names and form name.
+  fill_data_.name += ASCIIToUTF16("1");
+  fill_data_.username_field.name += ASCIIToUTF16("1");
+  fill_data_.password_field.name += ASCIIToUTF16("1");
+
+  SimulateOnFillPasswordForm(fill_data_);
+  CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
+}
+
+TEST_F(PasswordAutofillAgentTest, FillOnLoadWithRendererIDsNoForm) {
+  LoadHTML(kNoFormHTML);
+  UpdateUsernameAndPasswordElements();
+  UpdateRendererIDs();
+  SimulateOnFillPasswordForm(fill_data_);
+  CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
+}
+
+TEST_F(PasswordAutofillAgentTest, FillOnLoadWithRendererIDsNoUsername) {
+  LoadHTML(kTwoNoUsernameFormsHTML);
+  username_element_.Reset();
+  fill_data_.username_field.value.clear();
+  password_element_ = GetInputElementByID("password2");
+  UpdateRendererIDs();
+  SimulateOnFillPasswordForm(fill_data_);
+  EXPECT_EQ(kAlicePassword, password_element_.SuggestedValue().Utf8());
 }
 
 }  // namespace autofill
