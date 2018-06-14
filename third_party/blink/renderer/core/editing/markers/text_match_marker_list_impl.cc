@@ -86,7 +86,7 @@ static void UpdateMarkerLayoutRect(const Node& node, TextMatchMarker& marker) {
 
   DCHECK(frame_view);
   marker.SetLayoutRect(
-      frame_view->AbsoluteToDocument(LayoutRect(ComputeTextRect(range))));
+      frame_view->FrameToDocument(LayoutRect(ComputeTextRect(range))));
 }
 
 Vector<IntRect> TextMatchMarkerListImpl::LayoutRects(const Node& node) const {

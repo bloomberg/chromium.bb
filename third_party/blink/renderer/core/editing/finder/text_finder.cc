@@ -190,7 +190,7 @@ bool TextFinder::Find(int identifier,
           ->GetTextAutosizer()
           ->PageNeedsAutosizing()) {
     OwnerFrame().ViewImpl()->ZoomToFindInPageRect(
-        OwnerFrame().GetFrameView()->AbsoluteToRootFrame(
+        OwnerFrame().GetFrameView()->ConvertToRootFrame(
             EnclosingIntRect(LayoutObject::AbsoluteBoundingBoxRectForRange(
                 EphemeralRange(active_match_.Get())))));
   }
@@ -232,7 +232,7 @@ bool TextFinder::Find(int identifier,
       else if (active_match_index_ < 0)
         active_match_index_ = last_match_count_ - 1;
     }
-    WebRect selection_rect = OwnerFrame().GetFrameView()->AbsoluteToRootFrame(
+    WebRect selection_rect = OwnerFrame().GetFrameView()->ConvertToRootFrame(
         active_match_->BoundingBox());
     ReportFindInPageSelection(selection_rect, active_match_index_ + 1,
                               identifier);
@@ -495,7 +495,7 @@ void TextFinder::ScopeStringMatches(int identifier,
 
       // Notify browser of new location for the selected rectangle.
       ReportFindInPageSelection(
-          OwnerFrame().GetFrameView()->AbsoluteToRootFrame(result_bounds),
+          OwnerFrame().GetFrameView()->ConvertToRootFrame(result_bounds),
           active_match_index_ + 1, identifier);
     }
 
@@ -778,7 +778,7 @@ int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
     }
 
     // Zoom to the active match.
-    active_match_rect = OwnerFrame().GetFrameView()->AbsoluteToRootFrame(
+    active_match_rect = OwnerFrame().GetFrameView()->ConvertToRootFrame(
         active_match_bounding_box);
     OwnerFrame().ViewImpl()->ZoomToFindInPageRect(active_match_rect);
   }

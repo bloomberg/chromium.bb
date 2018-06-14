@@ -354,7 +354,7 @@ class WebFrameTest : public testing::Test {
     caret_bounds =
         helper.GetWebView()->GetPage()->GetVisualViewport().ViewportToRootFrame(
             caret_in_viewport);
-    element_bounds = element->GetDocument().View()->AbsoluteToRootFrame(
+    element_bounds = element->GetDocument().View()->ConvertToRootFrame(
         PixelSnappedIntRect(element->Node::BoundingBox()));
   }
 
@@ -11692,7 +11692,7 @@ TEST_F(WebFrameSimTest, HitTestWithIgnoreClippingAtNegativeOffset) {
                            HitTestRequest::kActive |
                            HitTestRequest::kIgnoreClipping;
   HitTestResult result(request,
-                       frame_view->RootFrameToAbsolute(LayoutPoint(100, -50)));
+                       frame_view->ConvertFromRootFrame(LayoutPoint(100, -50)));
   frame_view->GetLayoutView()->HitTest(result);
 
   EXPECT_EQ(GetDocument().getElementById("top"), result.InnerNode());

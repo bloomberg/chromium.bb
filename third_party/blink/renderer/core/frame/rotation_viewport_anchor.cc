@@ -159,13 +159,13 @@ void RotationViewportAnchor::SetAnchor() {
           visual_viewport_->ViewportToRootFrame(anchor_offset));
 
   Node* node = FindNonEmptyAnchorNode(
-      root_frame_view_->DocumentToAbsolute(anchor_point_in_document),
+      root_frame_view_->DocumentToFrame(anchor_point_in_document),
       inner_view_rect, root_frame_view_->GetFrame().GetEventHandler());
   if (!node || !node->GetLayoutObject())
     return;
 
   anchor_node_ = node;
-  anchor_node_bounds_ = root_frame_view_->AbsoluteToDocument(
+  anchor_node_bounds_ = root_frame_view_->FrameToDocument(
       LayoutRect(node->GetLayoutObject()->AbsoluteBoundingBoxRect()));
   anchor_in_node_coords_ =
       anchor_point_in_document - FloatPoint(anchor_node_bounds_.Location());
@@ -239,7 +239,7 @@ FloatPoint RotationViewportAnchor::GetInnerOrigin(
       !anchor_node_->GetLayoutObject())
     return visual_viewport_in_document_;
 
-  const LayoutRect current_node_bounds = root_frame_view_->AbsoluteToDocument(
+  const LayoutRect current_node_bounds = root_frame_view_->FrameToDocument(
       LayoutRect(anchor_node_->GetLayoutObject()->AbsoluteBoundingBoxRect()));
   if (anchor_node_bounds_ == current_node_bounds)
     return visual_viewport_in_document_;

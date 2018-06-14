@@ -454,8 +454,7 @@ void MouseEvent::ComputePageLocation() {
   DoublePoint scaled_page_location =
       page_location_.ScaledBy(PageZoomFactor(this));
   if (frame && frame->View()) {
-    absolute_location_ =
-        frame->View()->DocumentToAbsolute(scaled_page_location);
+    absolute_location_ = frame->View()->DocumentToFrame(scaled_page_location);
   } else {
     absolute_location_ = scaled_page_location;
   }
@@ -509,7 +508,7 @@ void MouseEvent::ComputeRelativePosition() {
     DoublePoint scaled_page_location =
         page_location_.ScaledBy(PageZoomFactor(this));
     if (LocalFrameView* view = n->GetLayoutObject()->View()->GetFrameView())
-      layer_location_ = view->DocumentToAbsolute(scaled_page_location);
+      layer_location_ = view->DocumentToFrame(scaled_page_location);
 
     // FIXME: This logic is a wrong implementation of convertToLayerCoords.
     for (PaintLayer* layer = n->GetLayoutObject()->EnclosingLayer(); layer;

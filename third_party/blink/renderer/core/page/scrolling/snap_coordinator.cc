@@ -381,7 +381,7 @@ SnapAreaData SnapCoordinator::CalculateSnapAreaData(
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
   if (scrollable_area) {
     if (snap_container.IsLayoutView())
-      area_rect = snap_container.GetFrameView()->AbsoluteToDocument(area_rect);
+      area_rect = snap_container.GetFrameView()->FrameToDocument(area_rect);
     else
       area_rect.MoveBy(LayoutPoint(scrollable_area->ScrollPosition()));
   }

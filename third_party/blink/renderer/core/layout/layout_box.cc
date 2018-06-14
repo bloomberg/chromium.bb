@@ -1029,7 +1029,7 @@ void LayoutBox::Autoscroll(const IntPoint& position_in_root_frame) {
     return;
 
   IntPoint absolute_position =
-      frame_view->RootFrameToAbsolute(position_in_root_frame);
+      frame_view->ConvertFromRootFrame(position_in_root_frame);
   ScrollRectToVisibleRecursive(
       LayoutRect(absolute_position, LayoutSize(1, 1)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
@@ -1065,7 +1065,7 @@ IntSize LayoutBox::CalculateAutoscrollDirection(
   ExcludeScrollbars(absolute_scrolling_box,
                     kExcludeOverlayScrollbarSizeForHitTesting);
 
-  IntRect belt_box = View()->GetFrameView()->AbsoluteToRootFrame(
+  IntRect belt_box = View()->GetFrameView()->ConvertToRootFrame(
       PixelSnappedIntRect(absolute_scrolling_box));
   belt_box.Inflate(-kAutoscrollBeltSize);
   IntPoint point = point_in_root_frame;

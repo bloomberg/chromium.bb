@@ -1068,7 +1068,7 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
   LayoutRect unclipped_absolute_rect(box->ContentBoxRect());
   box->MapToVisualRectInAncestorSpace(root_view, unclipped_absolute_rect);
   unclipped_absolute_rect =
-      box->View()->GetFrameView()->DocumentToAbsolute(unclipped_absolute_rect);
+      box->View()->GetFrameView()->DocumentToFrame(unclipped_absolute_rect);
 
   // The frameRect is already in absolute space of the local frame to the
   // plugin so map it up to the root frame.
@@ -1081,11 +1081,6 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
                                            kTraverseDocumentBoundaries)
                      .BoundingBox());
 
-  // Finally, adjust for scrolling of the root frame, which the above does not
-  // take into account (until root-layer-scrolling ships at which point we can
-  // remove the AbsoluteToRootFrame).
-  layout_window_rect =
-      root_view->GetFrameView()->AbsoluteToRootFrame(layout_window_rect);
   window_rect = PixelSnappedIntRect(layout_window_rect);
 
   LayoutRect layout_clipped_local_rect = unclipped_absolute_rect;

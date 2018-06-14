@@ -594,13 +594,14 @@ class CORE_EXPORT LocalFrameView final
   IntPoint SoonToBeRemovedUnscaledViewportToContents(const IntPoint&) const;
 
   // Functions for converting to screen coordinates.
-  IntRect ContentsToScreen(const IntRect&) const;
+  IntRect FrameToScreen(const IntRect&) const;
 
   // Converts from/to local frame coordinates to the root frame coordinates.
   IntRect ConvertToRootFrame(const IntRect&) const;
   IntPoint ConvertToRootFrame(const IntPoint&) const;
   LayoutPoint ConvertToRootFrame(const LayoutPoint&) const;
   FloatPoint ConvertToRootFrame(const FloatPoint&) const;
+  LayoutRect ConvertToRootFrame(const LayoutRect&) const;
   IntRect ConvertFromRootFrame(const IntRect&) const;
   IntPoint ConvertFromRootFrame(const IntPoint&) const override;
   FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
@@ -608,29 +609,15 @@ class CORE_EXPORT LocalFrameView final
   IntPoint ConvertSelfToChild(const EmbeddedContentView&,
                               const IntPoint&) const;
 
-  // root-layer-scrolls agnostic conversion functions:
-  // Maps from "absolute" coordinates to root frame coordinates.  TODO(bokan)
-  // This is a temporary shim to hide the difference between root-layer-scrolls
-  // being on and off. Once RLS is turned on, this becomes (and can be replaced
-  // with) ConvertToRootFrame since "frame coordinates" == "absolute
-  // coordinates" in RLS. Without RLS, "absolute coordinates" == "document
-  // coordinates". https://crbug.com/417782.
-  IntRect AbsoluteToRootFrame(const IntRect&) const;
-  IntPoint AbsoluteToRootFrame(const IntPoint&) const;
-  LayoutRect AbsoluteToRootFrame(const LayoutRect&) const;
   IntRect RootFrameToDocument(const IntRect&);
   IntPoint RootFrameToDocument(const IntPoint&);
   FloatPoint RootFrameToDocument(const FloatPoint&);
-  LayoutPoint RootFrameToAbsolute(const LayoutPoint&) const;
-  IntPoint RootFrameToAbsolute(const IntPoint&) const;
-  IntRect RootFrameToAbsolute(const IntRect&) const;
-  DoublePoint DocumentToAbsolute(const DoublePoint&) const;
-  FloatPoint DocumentToAbsolute(const FloatPoint&) const;
-  LayoutPoint DocumentToAbsolute(const LayoutPoint&) const;
-  LayoutRect DocumentToAbsolute(const LayoutRect&) const;
-
-  LayoutPoint AbsoluteToDocument(const LayoutPoint&) const;
-  LayoutRect AbsoluteToDocument(const LayoutRect&) const;
+  DoublePoint DocumentToFrame(const DoublePoint&) const;
+  FloatPoint DocumentToFrame(const FloatPoint&) const;
+  LayoutPoint DocumentToFrame(const LayoutPoint&) const;
+  LayoutRect DocumentToFrame(const LayoutRect&) const;
+  LayoutPoint FrameToDocument(const LayoutPoint&) const;
+  LayoutRect FrameToDocument(const LayoutRect&) const;
 
   // Handles painting of the contents of the view as well as the scrollbars.
   void Paint(GraphicsContext&,

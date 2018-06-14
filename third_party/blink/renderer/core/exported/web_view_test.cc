@@ -2519,8 +2519,7 @@ bool WebViewTest::TapElement(WebInputEvent::Type type, Element* element) {
       web_view_helper_.GetWebView()
           ->MainFrameImpl()
           ->GetFrameView()
-          ->ContentsToScreen(
-              element->GetLayoutObject()->AbsoluteBoundingBoxRect())
+          ->FrameToScreen(element->GetLayoutObject()->AbsoluteBoundingBoxRect())
           .Center());
 
   WebGestureEvent event(type, WebInputEvent::kNoModifiers,
