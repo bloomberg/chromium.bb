@@ -52,11 +52,17 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
 //    information. Requests' priority information can be modified via
 //    SetPriority().
 //  - A ResourceLoadScheulder won't initiate a new resource loading which can
-//    be throttable when there are active resource loading activities more than
-//    its internal threshold (i.e., what GetOutstandingLimit() returns)".
+//    be throttable when there are more active throttlable requests loading
+//    activities more than its internal threshold (i.e., what
+//    GetOutstandingLimit() returns)".
 //
-// By default, ResourceLoadScheduler is disabled, which means it doesn't
-// throttle any resource loading requests.
+//  ResourceLoadScheduler has two modes each of which has its own threshold.
+//   - Tight mode (used until the frame sees a <body> element):
+//     ResourceLoadScheduler considers a request throttable if its priority
+//     is less than |kHigh|.
+//   - Normal mode:
+//     ResourceLoadScheduler considers a request throttable if its priority
+//     is less than |kMedium|.
 //
 // Here are running experiments (as of M65):
 //  - "ResourceLoadScheduler"
@@ -67,14 +73,6 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
 //     and sub frames. When the frame has been background for more than five
 //     minutes, all throttable resource loading requests are throttled
 //     indefinitely (i.e., threshold is zero in such a circumstance).
-//  - RendererSideResourceScheduler
-//    ResourceLoadScheduler has two modes each of which has its own threshold.
-//    - Tight mode (used until the frame sees a <body> element):
-//      ResourceLoadScheduler considers a request throttable if its priority
-//      is less than |kHigh|.
-//    - Normal mode:
-//      ResourceLoadScheduler considers a request throttable if its priority
-//      is less than |kMedium|.
 class PLATFORM_EXPORT ResourceLoadScheduler final
     : public GarbageCollectedFinalized<ResourceLoadScheduler>,
       public FrameScheduler::Observer {

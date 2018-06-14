@@ -184,6 +184,23 @@ class ResourceSchedulerTest : public testing::Test {
                                 &network_quality_estimator_);
   }
 
+  ResourceSchedulerParamsManager FixedParamsManager(
+      size_t max_delayable_requests) const {
+    ResourceSchedulerParamsManager::ParamsForNetworkQualityContainer c;
+    for (int i = 0; i != net::EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
+      auto type = static_cast<net::EffectiveConnectionType>(i);
+      c[type] = ResourceSchedulerParamsManager::ParamsForNetworkQuality(
+          max_delayable_requests, 0.0, false);
+    }
+    return ResourceSchedulerParamsManager(std::move(c));
+  }
+
+  void SetMaxDelayableRequests(size_t max_delayable_requests) {
+    scheduler()->SetResourceSchedulerParamsManagerForTests(
+        ResourceSchedulerParamsManager(
+            FixedParamsManager(max_delayable_requests)));
+  }
+
   void CleanupScheduler() {
     if (scheduler_) {
       scheduler_->OnClientDeleted(kChildId, kRouteId);
@@ -445,25 +462,8 @@ TEST_F(ResourceSchedulerTest, OneIsolatedLowRequest) {
   EXPECT_TRUE(request->started());
 }
 
-TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInserted) {
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(low->started());
-  EXPECT_FALSE(low2->started());
-
-  high.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(low2->started());
-
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low2->started());
-}
-
 TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
+  SetMaxDelayableRequests(1);
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
   std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
@@ -472,32 +472,13 @@ TEST_F(ResourceSchedulerTest, OneLowLoadsUntilCriticalComplete) {
   EXPECT_TRUE(low->started());
   EXPECT_FALSE(low2->started());
 
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+  SetMaxDelayableRequests(10);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(low2->started());
 
   high.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(low2->started());
-}
-
-TEST_F(ResourceSchedulerTest, MediumDoesNotBlockCriticalComplete) {
-  // kLayoutBlockingPriorityThreshold determines what priority level above which
-  // requests are considered layout-blocking and must be completed before the
-  // critical loading period is complete.  It is currently set to net::MEDIUM.
-  std::unique_ptr<TestRequest> medium(
-      NewRequest("http://host/low", net::MEDIUM));
-  std::unique_ptr<TestRequest> lowest(
-      NewRequest("http://host/lowest", net::LOWEST));
-  std::unique_ptr<TestRequest> lowest2(
-      NewRequest("http://host/lowest", net::LOWEST));
-  EXPECT_TRUE(medium->started());
-  EXPECT_TRUE(lowest->started());
-  EXPECT_FALSE(lowest2->started());
-
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(lowest2->started());
 }
 
 TEST_F(ResourceSchedulerTest, SchedulerYieldsOnSpdy) {
@@ -607,6 +588,7 @@ TEST_F(ResourceSchedulerTest, SchedulerDoesNotYieldH1) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(kNetworkSchedulerYielding, "");
   InitializeScheduler();
+  SetMaxDelayableRequests(1);
 
   // Use a testing task runner so that we can control time.
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
@@ -680,109 +662,6 @@ TEST_F(ResourceSchedulerTest, SchedulerDoesNotYieldSyncRequests) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request2->started());
-}
-
-TEST_F(ResourceSchedulerTest, OneLowLoadsUntilBodyInsertedExceptSpdy) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("",
-                                          kPrioritySupportedRequestsDelayable);
-  InitializeScheduler();
-
-  http_server_properties_.SetSupportsSpdy(
-      url::SchemeHostPort("https", "spdyhost", 443), true);
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low_spdy(
-      NewRequest("https://spdyhost/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(low->started());
-  EXPECT_FALSE(low2->started());
-  EXPECT_TRUE(low_spdy->started());
-
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-  high.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low2->started());
-}
-
-TEST_F(ResourceSchedulerTest,
-       OneLowLoadsUntilBodyInsertedEvenSpdyWhenDelayable) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine(kPrioritySupportedRequestsDelayable,
-                                          "");
-
-  InitializeScheduler();
-  http_server_properties_.SetSupportsSpdy(
-      url::SchemeHostPort("https", "spdyhost", 443), true);
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low_spdy(
-      NewRequest("https://spdyhost/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(low->started());
-  EXPECT_FALSE(low2->started());
-  EXPECT_FALSE(low_spdy->started());
-
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-  high.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low2->started());
-  EXPECT_TRUE(low_spdy->started());
-}
-
-// Verify that requests to SPDY servers are delayed when
-// |delay_requests_on_multiplexed_connections| is true.
-TEST_F(ResourceSchedulerTest,
-       OneLowLoadsUntilBodyInsertedEvenSpdyWhenDelayableSlowConnection) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  ConfigureDelayRequestsOnMultiplexedConnectionsFieldTrial();
-
-  const struct {
-    net::EffectiveConnectionType effective_connection_type;
-    bool expected_spdy_delayed;
-  } tests[] = {
-      {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN, false},
-      {net::EFFECTIVE_CONNECTION_TYPE_OFFLINE, false},
-      {net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G, true},
-      {net::EFFECTIVE_CONNECTION_TYPE_2G, true},
-      {net::EFFECTIVE_CONNECTION_TYPE_3G, false},
-  };
-  for (const auto& test : tests) {
-    network_quality_estimator_.set_effective_connection_type(
-        test.effective_connection_type);
-
-    InitializeScheduler();
-    http_server_properties_.SetSupportsSpdy(
-        url::SchemeHostPort("https", "spdyhost", 443), true);
-    std::unique_ptr<TestRequest> high(
-        NewRequest("http://host/high", net::HIGHEST));
-    std::unique_ptr<TestRequest> low(
-        NewRequest("http://host/low", net::LOWEST));
-    std::unique_ptr<TestRequest> low2(
-        NewRequest("http://host/low", net::LOWEST));
-    std::unique_ptr<TestRequest> low_spdy(
-        NewRequest("https://spdyhost/low", net::LOWEST));
-    EXPECT_TRUE(high->started());
-    EXPECT_TRUE(low->started());
-    // Only 1 low priority non-spdy request should be allowed.
-    EXPECT_FALSE(low2->started());
-    // SPDY proxy low-priority requests are started only if connection quality
-    // is fast.
-    EXPECT_NE(test.expected_spdy_delayed, low_spdy->started());
-
-    if (test.expected_spdy_delayed) {
-      // When body tag is inserted, low priority requests should be unthrottled.
-      scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-      high.reset();
-      base::RunLoop().RunUntilIdle();
-      EXPECT_TRUE(low2->started());
-      EXPECT_TRUE(low_spdy->started());
-    }
-  }
 }
 
 TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenNotDelayable) {
@@ -869,16 +748,6 @@ TEST_F(ResourceSchedulerTest, ThrottlesHeadWhenHeadDelayable) {
   for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
     requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
 
-  // While in head, only one low-priority request is allowed.
-  for (size_t i = 0u; i < requests.size(); ++i) {
-    if (i == 0u)
-      EXPECT_TRUE(requests[i]->started());
-    else
-      EXPECT_FALSE(requests[i]->started());
-  }
-
-  // Body has been reached.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
   base::RunLoop().RunUntilIdle();
 
   // No throttling.
@@ -981,74 +850,9 @@ TEST_F(ResourceSchedulerTest, ThrottlesHeadForSpdyProxyWhenHeadDelayable) {
   scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
   base::RunLoop().RunUntilIdle();
 
-  // While in head, only one low-priority request is allowed.
-  for (size_t i = 0u; i < requests.size(); ++i) {
-    if (i == 0u)
-      EXPECT_TRUE(requests[i]->started());
-    else
-      EXPECT_FALSE(requests[i]->started());
-  }
-
-  // Body has been reached.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-  base::RunLoop().RunUntilIdle();
-
   // No throttling.
   for (const auto& request : requests)
     EXPECT_TRUE(request->started());
-}
-
-TEST_F(ResourceSchedulerTest, SpdyLowBlocksOtherLowUntilBodyInserted) {
-  http_server_properties_.SetSupportsSpdy(
-      url::SchemeHostPort("https", "spdyhost", 443), true);
-  std::unique_ptr<TestRequest> high(
-      NewRequest("http://host/high", net::HIGHEST));
-  std::unique_ptr<TestRequest> low_spdy(
-      NewRequest("https://spdyhost/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_TRUE(high->started());
-  EXPECT_TRUE(low_spdy->started());
-  EXPECT_FALSE(low->started());
-
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-  high.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low->started());
-}
-
-TEST_F(ResourceSchedulerTest, NavigationResetsState) {
-  base::HistogramTester histogram_tester;
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-  scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
-
-  {
-    std::unique_ptr<TestRequest> high(
-        NewRequest("http://host/high", net::HIGHEST));
-    std::unique_ptr<TestRequest> low(
-        NewRequest("http://host/low", net::LOWEST));
-    std::unique_ptr<TestRequest> low2(
-        NewRequest("http://host/low", net::LOWEST));
-    EXPECT_TRUE(high->started());
-    EXPECT_TRUE(low->started());
-    EXPECT_FALSE(low2->started());
-  }
-
-  histogram_tester.ExpectTotalCount("ResourceScheduler.RequestsCount.All", 2);
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples("ResourceScheduler.RequestsCount.All"),
-      testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
-
-  histogram_tester.ExpectTotalCount("ResourceScheduler.RequestsCount.Delayable",
-                                    2);
-  histogram_tester.ExpectTotalCount(
-      "ResourceScheduler.RequestsCount.NonDelayable", 2);
-  histogram_tester.ExpectTotalCount(
-      "ResourceScheduler.RequestsCount.TotalLayoutBlocking", 2);
-
-  histogram_tester.ExpectUniqueSample(
-      "ResourceScheduler.PeakDelayableRequestsInFlight.LayoutBlocking", 1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "ResourceScheduler.PeakDelayableRequestsInFlight.NonDelayable", 1, 1);
 }
 
 TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
@@ -1058,29 +862,9 @@ TEST_F(ResourceSchedulerTest, BackgroundRequestStartsImmediately) {
   EXPECT_TRUE(request->started());
 }
 
-TEST_F(ResourceSchedulerTest, MoreThanOneHighRequestBlocksDelayableRequests) {
-  // If there are more than kInFlightNonDelayableRequestCountThreshold (=1)
-  // high-priority / non-delayable requests, block all low priority fetches and
-  // allow them through one at a time once the number of high priority requests
-  // drops.
-  std::unique_ptr<TestRequest> high1(
-      NewRequest("http://host/high1", net::HIGHEST));
-  std::unique_ptr<TestRequest> high2(
-      NewRequest("http://host/high2", net::HIGHEST));
-  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
-  std::unique_ptr<TestRequest> low2(NewRequest("http://host/low", net::LOWEST));
-  EXPECT_TRUE(high1->started());
-  EXPECT_TRUE(high2->started());
-  EXPECT_FALSE(low->started());
-  EXPECT_FALSE(low2->started());
-
-  high1.reset();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(low->started());
-  EXPECT_FALSE(low2->started());
-}
-
 TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
+  SetMaxDelayableRequests(1);
+
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
   std::unique_ptr<TestRequest> low1(
@@ -1103,7 +887,7 @@ TEST_F(ResourceSchedulerTest, CancelOtherRequestsWhileResuming) {
   EXPECT_TRUE(high->started());
   EXPECT_FALSE(low2->started());
 
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+  SetMaxDelayableRequests(10);
   high.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(low1->started());
@@ -1171,6 +955,7 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
 
 TEST_F(ResourceSchedulerTest, RaisePriorityAndStart) {
   // Dummies to enforce scheduling.
+  SetMaxDelayableRequests(1);
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
   std::unique_ptr<TestRequest> low(NewRequest("http://host/req", net::LOWEST));
@@ -1186,6 +971,7 @@ TEST_F(ResourceSchedulerTest, RaisePriorityAndStart) {
 
 TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
   // Dummies to enforce scheduling.
+  SetMaxDelayableRequests(1);
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
   std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
@@ -1201,15 +987,14 @@ TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
 
-  const int kDefaultMaxNumDelayableRequestsPerClient =
-      10;  // Should match the .cc.
+  const int kDefaultMaxNumDelayableRequestsPerClient = 10;
   std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient - 1; ++i) {
     string url = "http://host/low" + base::IntToString(i);
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
 
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+  SetMaxDelayableRequests(kDefaultMaxNumDelayableRequestsPerClient);
   high.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -1218,6 +1003,7 @@ TEST_F(ResourceSchedulerTest, RaisePriorityInQueue) {
 }
 
 TEST_F(ResourceSchedulerTest, LowerPriority) {
+  SetMaxDelayableRequests(1);
   // Dummies to enforce scheduling.
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
@@ -1245,7 +1031,7 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
 
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+  SetMaxDelayableRequests(10);
   high.reset();
   base::RunLoop().RunUntilIdle();
 
@@ -1255,6 +1041,7 @@ TEST_F(ResourceSchedulerTest, LowerPriority) {
 
 TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
   // Dummies to enforce scheduling.
+  SetMaxDelayableRequests(1);
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
   std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
@@ -1265,15 +1052,14 @@ TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
 
-  const int kDefaultMaxNumDelayableRequestsPerClient =
-      10;  // Should match the .cc.
+  const int kDefaultMaxNumDelayableRequestsPerClient = 0;
   std::vector<std::unique_ptr<TestRequest>> lows;
   for (int i = 0; i < kDefaultMaxNumDelayableRequestsPerClient; ++i) {
     string url = "http://host/low" + base::IntToString(i);
     lows.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
 
-  ChangeRequestPriority(request.get(), net::IDLE);
+  SetMaxDelayableRequests(kDefaultMaxNumDelayableRequestsPerClient);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
@@ -1319,12 +1105,17 @@ TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
 
 TEST_F(ResourceSchedulerTest, NonHTTPSchedulesImmediately) {
   // Dummies to enforce scheduling.
+  SetMaxDelayableRequests(1);
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
   std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  std::unique_ptr<TestRequest> low2(
+      NewRequest("http://host/low2", net::LOWEST));
 
   std::unique_ptr<TestRequest> request(
       NewRequest("chrome-extension://req", net::LOWEST));
+  EXPECT_TRUE(low->started());
+  EXPECT_FALSE(low2->started());
   EXPECT_TRUE(request->started());
 }
 
@@ -1333,6 +1124,7 @@ TEST_F(ResourceSchedulerTest, SpdyProxySchedulesImmediately) {
   scoped_feature_list.InitFromCommandLine("",
                                           kPrioritySupportedRequestsDelayable);
   InitializeScheduler();
+  SetMaxDelayableRequests(1);
 
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
@@ -1356,6 +1148,7 @@ TEST_F(ResourceSchedulerTest, SpdyProxyDelayable) {
   scoped_feature_list.InitFromCommandLine(kPrioritySupportedRequestsDelayable,
                                           "");
   InitializeScheduler();
+  SetMaxDelayableRequests(1);
 
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
@@ -1509,6 +1302,7 @@ TEST_F(ResourceSchedulerTest, NewDelayableSpdyHostInDelayableRequests) {
 // started at some point, or they will hang around forever and prevent other
 // async revalidations to the same URL from being issued.
 TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeleted) {
+  SetMaxDelayableRequests(1);
   scheduler_->OnClientCreated(kChildId2, kRouteId2,
                               &network_quality_estimator_);
   std::unique_ptr<TestRequest> high(NewRequestWithChildAndRoute(
@@ -1624,7 +1418,6 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
   // The limit will matter only once the page has a body, since delayable
   // requests are not loaded before that.
   scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
 
   // Throw in one high priority request to ensure that it does not matter once
   // a body exists.
@@ -1669,7 +1462,11 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
 
   // The limit should change when there is a new page navigation.
   scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
+  std::unique_ptr<TestRequest> high2(
+      NewRequest("http://host/high2", net::HIGHEST));
+  EXPECT_TRUE(high2->started());
+  high2.reset();
+
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(last_singlehost->started());
 }
@@ -1946,6 +1743,7 @@ TEST_F(ResourceSchedulerTest,
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("SpdyProxiesRequestsDelayable", "");
   InitializeScheduler();
+  SetMaxDelayableRequests(1);
 
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
@@ -1977,6 +1775,7 @@ TEST_F(
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("", "SpdyProxiesRequestsDelayable");
   InitializeScheduler();
+  SetMaxDelayableRequests(1);
 
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
@@ -2002,6 +1801,7 @@ TEST_F(
 }
 
 TEST_F(ResourceSchedulerTest, SchedulerEnabled) {
+  SetMaxDelayableRequests(1);
   std::unique_ptr<TestRequest> high(
       NewRequest("http://host/high", net::HIGHEST));
   std::unique_ptr<TestRequest> low(NewRequest("http://host/req", net::LOWEST));
@@ -2028,6 +1828,7 @@ TEST_F(ResourceSchedulerTest, SchedulerDisabled) {
 }
 
 TEST_F(ResourceSchedulerTest, MultipleInstances_1) {
+  SetMaxDelayableRequests(1);
   // In some circumstances there may exist multiple instances.
   ResourceScheduler another_scheduler(false);
 
@@ -2044,6 +1845,7 @@ TEST_F(ResourceSchedulerTest, MultipleInstances_1) {
 }
 
 TEST_F(ResourceSchedulerTest, MultipleInstances_2) {
+  SetMaxDelayableRequests(1);
   ResourceScheduler another_scheduler(true);
   another_scheduler.OnClientCreated(kChildId, kRouteId,
                                     &network_quality_estimator_);
@@ -2058,6 +1860,8 @@ TEST_F(ResourceSchedulerTest, MultipleInstances_2) {
   EXPECT_FALSE(request->started());
 
   {
+    another_scheduler.SetResourceSchedulerParamsManagerForTests(
+        FixedParamsManager(1));
     std::unique_ptr<net::URLRequest> url_request(NewURLRequestWithChildAndRoute(
         "http://host/another", net::LOWEST, kChildId, kRouteId));
     auto scheduled_request = another_scheduler.ScheduleRequest(

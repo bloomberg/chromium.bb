@@ -77,6 +77,8 @@
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/resource_scheduler.h"
+#include "services/network/resource_scheduler_params_manager.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -837,6 +839,18 @@ class ResourceDispatcherHostTest : public testing::Test {
            request_info->detachable_handler()->is_detached();
   }
 
+  void SetMaxDelayableRequests(size_t max_delayable_requests) {
+    network::ResourceSchedulerParamsManager::ParamsForNetworkQualityContainer c;
+    for (int i = 0; i != net::EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
+      auto type = static_cast<net::EffectiveConnectionType>(i);
+      c[type] =
+          network::ResourceSchedulerParamsManager::ParamsForNetworkQuality(
+              max_delayable_requests, 0.0, false);
+    }
+    host_.scheduler()->SetResourceSchedulerParamsManagerForTests(
+        network::ResourceSchedulerParamsManager(c));
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<TestURLRequestJobFactory> job_factory_;
@@ -1466,6 +1480,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsOnRenderFrameDeleted) {
   host_.SetDelegate(&delegate);
   host_.OnRenderViewHostCreated(filter_->child_id(), 0,
                                 request_context_getter_.get());
+  SetMaxDelayableRequests(1);
 
   // One RenderView issues a high priority request and a low priority one. Both
   // should be started.

@@ -44,11 +44,10 @@ constexpr int32_t kReportBucketCount = 25;
 constexpr char kRendererSideResourceScheduler[] =
     "RendererSideResourceScheduler";
 
-// These values are copied from resource_scheduler.cc, but the meaning is a bit
-// different because ResourceScheduler counts the running delayable requests
-// while ResourceLoadScheduler counts all the running requests.
-constexpr size_t kTightLimitForRendererSideResourceScheduler = 1u;
-constexpr size_t kLimitForRendererSideResourceScheduler = 10u;
+// Used in the tight mode (see the header file for details).
+constexpr size_t kTightLimitForRendererSideResourceScheduler = 2u;
+// Used in the normal mode (see the header file for details).
+constexpr size_t kLimitForRendererSideResourceScheduler = 1024u;
 
 constexpr char kTightLimitForRendererSideResourceSchedulerName[] =
     "tight_limit";

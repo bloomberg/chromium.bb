@@ -534,14 +534,6 @@ class ResourceScheduler::Client {
     }
   }
 
- private:
-  enum ShouldStartReqResult {
-    DO_NOT_START_REQUEST_AND_STOP_SEARCHING,
-    DO_NOT_START_REQUEST_AND_KEEP_SEARCHING,
-    START_REQUEST,
-    YIELD_SCHEDULER
-  };
-
   // Updates the params based on the current network quality estimate.
   void UpdateParamsForNetworkQuality() {
     params_for_network_quality_ =
@@ -551,6 +543,14 @@ class ResourceScheduler::Client {
                     ? network_quality_estimator_->GetEffectiveConnectionType()
                     : net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
   }
+
+ private:
+  enum ShouldStartReqResult {
+    DO_NOT_START_REQUEST_AND_STOP_SEARCHING,
+    DO_NOT_START_REQUEST_AND_KEEP_SEARCHING,
+    START_REQUEST,
+    YIELD_SCHEDULER
+  };
 
   // Records the metrics related to number of requests in flight.
   void RecordRequestCountMetrics() const {
@@ -1276,6 +1276,9 @@ void ResourceScheduler::SetResourceSchedulerParamsManagerForTests(
     const ResourceSchedulerParamsManager& resource_scheduler_params_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   resource_scheduler_params_manager_.Reset(resource_scheduler_params_manager);
+  for (const auto& pair : client_map_) {
+    pair.second->UpdateParamsForNetworkQuality();
+  }
 }
 
 }  // namespace network
