@@ -48,6 +48,12 @@ enum ChangeType {
   CHANGE_TYPE_REQUEST_CLOSE,
   CHANGE_TYPE_SURFACE_CHANGED,
   CHANGE_TYPE_TRANSFORM_CHANGED,
+  CHANGE_TYPE_DRAG_DROP_START,
+  CHANGE_TYPE_DRAG_ENTER,
+  CHANGE_TYPE_DRAG_OVER,
+  CHANGE_TYPE_DRAG_LEAVE,
+  CHANGE_TYPE_COMPLETE_DROP,
+  CHANGE_TYPE_DRAG_DROP_DONE,
 };
 
 // TODO(sky): consider nuking and converting directly to WindowData.
@@ -104,6 +110,7 @@ struct Change {
   int64_t display_id;
   gfx::Point location1;
   gfx::PointF location2;
+  base::flat_map<std::string, std::vector<uint8_t>> drag_data;
 };
 
 // The ChangeToDescription related functions convert a Change into a string.
@@ -212,6 +219,13 @@ class TestChangeTracker {
                          bool drawn);
   void OnWindowSurfaceChanged(Id window_id,
                               const viz::SurfaceInfo& surface_info);
+  void OnDragDropStart(
+      const base::flat_map<std::string, std::vector<uint8_t>>& drag_data);
+  void OnDragEnter(Id window_id);
+  void OnDragOver(Id window_id);
+  void OnDragLeave(Id widnow_id);
+  void OnCompleteDrop(Id window_id);
+  void OnDragDropDone();
   void RequestClose(Id window_id);
 
  private:

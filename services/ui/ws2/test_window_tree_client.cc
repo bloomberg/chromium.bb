@@ -237,40 +237,52 @@ void TestWindowTreeClient::OnWindowCursorChanged(Id window_id,
   tracker_.OnWindowCursorChanged(window_id, cursor);
 }
 
-void TestWindowTreeClient::OnDragDropStart(
-    const base::flat_map<std::string, std::vector<uint8_t>>& drag_data) {}
-
 void TestWindowTreeClient::OnWindowSurfaceChanged(
     Id window_id,
     const viz::SurfaceInfo& surface_info) {
   tracker_.OnWindowSurfaceChanged(window_id, surface_info);
 }
 
+void TestWindowTreeClient::OnDragDropStart(
+    const base::flat_map<std::string, std::vector<uint8_t>>& drag_data) {
+  tracker_.OnDragDropStart(drag_data);
+}
+
 void TestWindowTreeClient::OnDragEnter(Id window,
                                        uint32_t key_state,
                                        const gfx::Point& position,
                                        uint32_t effect_bitmask,
-                                       OnDragEnterCallback callback) {}
+                                       OnDragEnterCallback callback) {
+  tracker_.OnDragEnter(window);
+}
 
 void TestWindowTreeClient::OnDragOver(Id window,
                                       uint32_t key_state,
                                       const gfx::Point& position,
                                       uint32_t effect_bitmask,
-                                      OnDragOverCallback callback) {}
+                                      OnDragOverCallback callback) {
+  tracker_.OnDragOver(window);
+}
 
-void TestWindowTreeClient::OnDragLeave(Id window) {}
+void TestWindowTreeClient::OnDragLeave(Id window) {
+  tracker_.OnDragLeave(window);
+}
 
 void TestWindowTreeClient::OnCompleteDrop(Id window,
                                           uint32_t key_state,
                                           const gfx::Point& position,
                                           uint32_t effect_bitmask,
-                                          OnCompleteDropCallback callback) {}
+                                          OnCompleteDropCallback callback) {
+  tracker_.OnCompleteDrop(window);
+}
 
 void TestWindowTreeClient::OnPerformDragDropCompleted(uint32_t change_id,
                                                       bool success,
                                                       uint32_t action_taken) {}
 
-void TestWindowTreeClient::OnDragDropDone() {}
+void TestWindowTreeClient::OnDragDropDone() {
+  tracker_.OnDragDropDone();
+}
 
 void TestWindowTreeClient::OnChangeCompleted(uint32_t change_id, bool success) {
   tracker_.OnChangeCompleted(change_id, success);

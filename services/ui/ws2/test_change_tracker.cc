@@ -159,6 +159,22 @@ std::string ChangeToDescription(const Change& change,
     case CHANGE_TYPE_TRANSFORM_CHANGED:
       return base::StringPrintf("TransformChanged window_id=%s",
                                 WindowIdToString(change.window_id).c_str());
+    case CHANGE_TYPE_DRAG_DROP_START:
+      return "DragDropStart";
+    case CHANGE_TYPE_DRAG_ENTER:
+      return base::StringPrintf("DragEnter window_id=%s",
+                                WindowIdToString(change.window_id).c_str());
+    case CHANGE_TYPE_DRAG_OVER:
+      return base::StringPrintf("DragOver window_id=%s",
+                                WindowIdToString(change.window_id).c_str());
+    case CHANGE_TYPE_DRAG_LEAVE:
+      return base::StringPrintf("DragLeave window_id=%s",
+                                WindowIdToString(change.window_id).c_str());
+    case CHANGE_TYPE_COMPLETE_DROP:
+      return base::StringPrintf("CompleteDrop window_id=%s",
+                                WindowIdToString(change.window_id).c_str());
+    case CHANGE_TYPE_DRAG_DROP_DONE:
+      return "DragDropDone";
   }
   return std::string();
 }
@@ -497,6 +513,48 @@ void TestChangeTracker::OnWindowSurfaceChanged(
   change.surface_id = surface_info.id();
   change.frame_size = surface_info.size_in_pixels();
   change.device_scale_factor = surface_info.device_scale_factor();
+  AddChange(change);
+}
+
+void TestChangeTracker::OnDragDropStart(
+    const base::flat_map<std::string, std::vector<uint8_t>>& drag_data) {
+  Change change;
+  change.type = CHANGE_TYPE_DRAG_DROP_START;
+  change.drag_data = drag_data;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnDragEnter(Id window_id) {
+  Change change;
+  change.type = CHANGE_TYPE_DRAG_ENTER;
+  change.window_id = window_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnDragOver(Id window_id) {
+  Change change;
+  change.type = CHANGE_TYPE_DRAG_OVER;
+  change.window_id = window_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnDragLeave(Id window_id) {
+  Change change;
+  change.type = CHANGE_TYPE_DRAG_LEAVE;
+  change.window_id = window_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnCompleteDrop(Id window_id) {
+  Change change;
+  change.type = CHANGE_TYPE_COMPLETE_DROP;
+  change.window_id = window_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnDragDropDone() {
+  Change change;
+  change.type = CHANGE_TYPE_DRAG_DROP_DONE;
   AddChange(change);
 }
 
