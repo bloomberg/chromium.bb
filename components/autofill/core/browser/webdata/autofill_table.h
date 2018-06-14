@@ -403,6 +403,11 @@ class AutofillTable : public WebDatabaseTable,
   // rather than "error").
   bool ClearAllServerData();
 
+  // Deletes all data from the local card and profiles table. Returns true if
+  // any data was deleted, false if not (so false means "commit not needed"
+  // rather than "error").
+  bool ClearAllLocalData();
+
   // Removes rows from autofill_profiles and credit_cards if they were created
   // on or after |delete_begin| and strictly before |delete_end|.  Returns the
   // list of deleted profile guids in |profile_guids|.  Return value is true if
@@ -439,6 +444,9 @@ class AutofillTable : public WebDatabaseTable,
 
   // Clear all profiles.
   bool ClearAutofillProfiles();
+
+  // Clear all credit cards.
+  bool ClearCreditCards();
 
   // Read all the stored metadata for |model_type| and fill |metadata_batch|
   // with it.

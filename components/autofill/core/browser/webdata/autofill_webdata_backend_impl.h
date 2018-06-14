@@ -164,6 +164,7 @@ class AutofillWebDataBackendImpl
                                                  WebDatabase* db);
 
   WebDatabase::State ClearAllServerData(WebDatabase* db);
+  WebDatabase::State ClearAllLocalData(WebDatabase* db);
 
   // Removes Autofill records from the database. Valid only for local
   // cards/profiles.
