@@ -232,10 +232,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // browser fullscreen.
   virtual void ExitFullscreenMode(bool will_cause_resize) {}
 
-  // Notification that this frame has changed fullscreen state.
-  virtual void FullscreenStateChanged(RenderFrameHost* rfh,
-                                      bool is_fullscreen) {}
-
   // Let the delegate decide whether postMessage should be delivered to
   // |target_rfh| from a source frame in the given SiteInstance.  This defaults
   // to false and overrides the RenderFrameHost's decision if true.
