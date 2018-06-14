@@ -28,32 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/network/web_socket_handshake_request.h"
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_WEBSOCKET_HANDSHAKE_RESPONSE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_WEBSOCKET_HANDSHAKE_RESPONSE_H_
+
+#include "third_party/blink/renderer/platform/network/http_header_map.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-WebSocketHandshakeRequest::WebSocketHandshakeRequest(const KURL& url)
-    : url_(url) {}
+class PLATFORM_EXPORT WebSocketHandshakeResponse final {
+ public:
+  WebSocketHandshakeResponse();
+  ~WebSocketHandshakeResponse();
 
-WebSocketHandshakeRequest::WebSocketHandshakeRequest() = default;
+  int StatusCode() const;
+  void SetStatusCode(int);
+  const String& StatusText() const;
+  void SetStatusText(const String&);
+  const HTTPHeaderMap& HeaderFields() const;
+  void AddHeaderField(const AtomicString& name, const AtomicString& value);
+  const String& HeadersText() const { return headers_text_; }
+  void SetHeadersText(const String& text) { headers_text_ = text; }
 
-WebSocketHandshakeRequest::WebSocketHandshakeRequest(
-    const WebSocketHandshakeRequest& request)
-    : url_(request.url_),
-      header_fields_(request.header_fields_),
-      headers_text_(request.headers_text_) {}
-
-WebSocketHandshakeRequest::~WebSocketHandshakeRequest() = default;
-
-void WebSocketHandshakeRequest::AddAndMergeHeader(HTTPHeaderMap* map,
-                                                  const AtomicString& name,
-                                                  const AtomicString& value) {
-  HTTPHeaderMap::AddResult result = map->Add(name, value);
-  if (!result.is_new_entry) {
-    // Inspector expects the "\n" separated format.
-    result.stored_value->value =
-        result.stored_value->value + "\n" + String(value);
-  }
-}
+ private:
+  int status_code_;
+  String status_text_;
+  HTTPHeaderMap header_fields_;
+  String headers_text_;
+};
 
 }  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_WEBSOCKET_HANDSHAKE_RESPONSE_H_

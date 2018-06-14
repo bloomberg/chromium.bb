@@ -58,7 +58,7 @@
 #include "third_party/blink/renderer/modules/websockets/websocket_handle_impl.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/network_log.h"
-#include "third_party/blink/renderer/platform/network/web_socket_handshake_request.h"
+#include "third_party/blink/renderer/platform/network/websocket_handshake_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"

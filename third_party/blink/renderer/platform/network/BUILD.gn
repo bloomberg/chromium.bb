@@ -62,10 +62,10 @@ blink_platform_sources("network") {
     "parsed_content_type.h",
     "server_timing_header.cc",
     "server_timing_header.h",
-    "web_socket_handshake_request.cc",
-    "web_socket_handshake_request.h",
-    "web_socket_handshake_response.cc",
-    "web_socket_handshake_response.h",
+    "websocket_handshake_request.cc",
+    "websocket_handshake_request.h",
+    "websocket_handshake_response.cc",
+    "websocket_handshake_response.h",
   ]
 
   sources += get_target_outputs(":http_names")
