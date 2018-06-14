@@ -31,6 +31,9 @@ class FakeBleAdvertiser : public BleAdvertiser {
   base::Optional<ConnectionPriority> GetPriorityForRequest(
       const DeviceIdPair& request) const;
 
+  std::vector<DeviceIdPair> GetAllRequestsForRemoteDevice(
+      const std::string& remote_device_id);
+
   void NotifyAdvertisingSlotEnded(
       const DeviceIdPair& device_id_pair,
       bool replaced_by_higher_priority_advertisement);

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/ble_scanner.h"
+#include "chromeos/services/secure_channel/device_id_pair.h"
 
 namespace chromeos {
 
@@ -25,7 +26,11 @@ class FakeBleScanner : public BleScanner {
     return num_scan_filter_changes_handled_;
   }
 
+  std::vector<DeviceIdPair> GetAllScanFiltersForRemoteDevice(
+      const std::string& remote_device_id);
+
   // Public for testing.
+  using BleScanner::scan_filters;
   using BleScanner::NotifyReceivedAdvertisementFromDevice;
 
  private:

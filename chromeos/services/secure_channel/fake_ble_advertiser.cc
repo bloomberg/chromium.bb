@@ -33,6 +33,16 @@ base::Optional<ConnectionPriority> FakeBleAdvertiser::GetPriorityForRequest(
   return base::nullopt;
 }
 
+std::vector<DeviceIdPair> FakeBleAdvertiser::GetAllRequestsForRemoteDevice(
+    const std::string& remote_device_id) {
+  std::vector<DeviceIdPair> all_requests_for_remote_device;
+  for (const auto& map_entry : request_to_priority_map()) {
+    if (map_entry.first.remote_device_id() == remote_device_id)
+      all_requests_for_remote_device.push_back(map_entry.first);
+  }
+  return all_requests_for_remote_device;
+}
+
 void FakeBleAdvertiser::NotifyAdvertisingSlotEnded(
     const DeviceIdPair& device_id_pair,
     bool replaced_by_higher_priority_advertisement) {
