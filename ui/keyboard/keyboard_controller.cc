@@ -41,12 +41,9 @@
 #include "ui/keyboard/notification_manager.h"
 #include "ui/keyboard/queued_container_type.h"
 #include "ui/keyboard/queued_display_change.h"
-#include "ui/wm/core/window_animations.h"
-
-#if defined(OS_CHROMEOS)
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
-#endif  // if defined(OS_CHROMEOS)
+#include "ui/wm/core/window_animations.h"
 
 namespace {
 
@@ -143,7 +140,6 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
 };
 
 void SetTouchEventLogging(bool enable) {
-#if defined(OS_CHROMEOS)
   // TODO(moshayedi): crbug.com/642863. Revisit when we have mojo interface for
   // InputController for processes that aren't mus-ws.
   if (aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS)
@@ -152,7 +148,6 @@ void SetTouchEventLogging(bool enable) {
       ui::OzonePlatform::GetInstance()->GetInputController();
   if (controller)
     controller->SetTouchEventLoggingEnabled(enable);
-#endif  // defined(OS_CHROMEOS)
 }
 
 std::string StateToStr(keyboard::KeyboardControllerState state) {
