@@ -222,6 +222,7 @@ common_lib_list="\
   libspeechd2
   libstdc++6
   libsqlite3-0
+  libuuid1
   libwayland-egl1-mesa
   libx11-6
   libx11-xcb1
@@ -331,6 +332,7 @@ nacl_list="\
   libtinfo-dev
   libtinfo-dev:i386
   libtool
+  libuuid1:i386
   libxcomposite1:i386
   libxcursor1:i386
   libxdamage1:i386
