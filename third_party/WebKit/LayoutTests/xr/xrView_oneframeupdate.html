@@ -18,7 +18,7 @@ xr_session_promise_test( (session) => {
   // Session must have a baseLayer or frame requests will be ignored.
   session.baseLayer = new XRWebGLLayer(session, gl);
 
-  return session.requestFrameOfReference("eyeLevel")
+  return session.requestFrameOfReference("eye-level")
     .then((frameOfRef) => new Promise((resolve) =>{
       let counter = 0;
 

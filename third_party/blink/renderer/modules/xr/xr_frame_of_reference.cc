@@ -115,7 +115,7 @@ std::unique_ptr<TransformationMatrix> XRFrameOfReference::TransformBasePose(
 }
 
 // Serves the same purpose as TransformBasePose, but for input poses. Needs to
-// know the head pose so that cases like the headModel frame of reference can
+// know the head pose so that cases like the head-model frame of reference can
 // properly adjust the input's relative position.
 std::unique_ptr<TransformationMatrix>
 XRFrameOfReference::TransformBaseInputPose(

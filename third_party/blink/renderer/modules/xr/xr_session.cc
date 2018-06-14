@@ -169,10 +169,10 @@ ScriptPromise XRSession::requestFrameOfReference(
   }
 
   XRFrameOfReference* frameOfRef = nullptr;
-  if (type == "headModel") {
+  if (type == "head-model") {
     frameOfRef =
         new XRFrameOfReference(this, XRFrameOfReference::kTypeHeadModel);
-  } else if (type == "eyeLevel") {
+  } else if (type == "eye-level") {
     frameOfRef =
         new XRFrameOfReference(this, XRFrameOfReference::kTypeEyeLevel);
   } else if (type == "stage") {

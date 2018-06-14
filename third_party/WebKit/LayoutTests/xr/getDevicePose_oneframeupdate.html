@@ -17,7 +17,7 @@ xr_session_promise_test( (session, t) =>  {
 
   setPose(null);
 
-  return session.requestFrameOfReference("eyeLevel")
+  return session.requestFrameOfReference("eye-level")
     .then((frameOfRef) => new Promise((resolve, reject) => {
       let expected_pose = VALID_POSE;
       let counter = 0;
