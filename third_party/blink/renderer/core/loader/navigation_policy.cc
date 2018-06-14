@@ -31,22 +31,28 @@
 #include "third_party/blink/renderer/core/loader/navigation_policy.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/public/platform/web_keyboard_event.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
+#include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
-NavigationPolicy NavigationPolicyFromMouseEvent(unsigned short button,
-                                                bool ctrl,
-                                                bool shift,
-                                                bool alt,
-                                                bool meta) {
+namespace {
+
+NavigationPolicy NavigationPolicyFromEventModifiers(unsigned short button,
+                                                    bool ctrl,
+                                                    bool shift,
+                                                    bool alt,
+                                                    bool meta) {
 #if defined(OS_MACOSX)
   const bool new_tab_modifier = (button == 1) || meta;
 #else
@@ -69,27 +75,25 @@ NavigationPolicy NavigationPolicyFromMouseEvent(unsigned short button,
   return kNavigationPolicyCurrentTab;
 }
 
-namespace {
-
 NavigationPolicy NavigationPolicyFromEventInternal(Event* event) {
   if (!event)
     return kNavigationPolicyCurrentTab;
 
   if (event->IsMouseEvent()) {
     MouseEvent* mouse_event = ToMouseEvent(event);
-    return NavigationPolicyFromMouseEvent(
+    return NavigationPolicyFromEventModifiers(
         mouse_event->button(), mouse_event->ctrlKey(), mouse_event->shiftKey(),
         mouse_event->altKey(), mouse_event->metaKey());
   } else if (event->IsKeyboardEvent()) {
     // The click is simulated when triggering the keypress event.
     KeyboardEvent* key_event = ToKeyboardEvent(event);
-    return NavigationPolicyFromMouseEvent(
+    return NavigationPolicyFromEventModifiers(
         0, key_event->ctrlKey(), key_event->shiftKey(), key_event->altKey(),
         key_event->metaKey());
   } else if (event->IsGestureEvent()) {
     // The click is simulated when triggering the gesture-tap event
     GestureEvent* gesture_event = ToGestureEvent(event);
-    return NavigationPolicyFromMouseEvent(
+    return NavigationPolicyFromEventModifiers(
         0, gesture_event->ctrlKey(), gesture_event->shiftKey(),
         gesture_event->altKey(), gesture_event->metaKey());
   }
@@ -99,15 +103,63 @@ NavigationPolicy NavigationPolicyFromEventInternal(Event* event) {
 }  // namespace
 
 NavigationPolicy NavigationPolicyFromEvent(Event* event) {
-  NavigationPolicy policy = NavigationPolicyFromEventInternal(event);
-  // TODO(dgozman): move navigation policy helpers from CreateWindow here.
-  if (policy == kNavigationPolicyDownload &&
-      EffectiveNavigationPolicy(policy, CurrentInputEvent::Get(),
-                                WebWindowFeatures()) !=
-          kNavigationPolicyDownload) {
+  NavigationPolicy event_policy = NavigationPolicyFromEventInternal(event);
+  NavigationPolicy input_policy =
+      NavigationPolicyFromEvent(CurrentInputEvent::Get());
+
+  if (event_policy == kNavigationPolicyDownload &&
+      input_policy != kNavigationPolicyDownload) {
+    // No downloads from synthesized events without user intention.
     return kNavigationPolicyCurrentTab;
   }
-  return policy;
+
+  if (event_policy == kNavigationPolicyNewBackgroundTab &&
+      input_policy != kNavigationPolicyNewBackgroundTab &&
+      !UIEventWithKeyState::NewTabModifierSetFromIsolatedWorld()) {
+    // No "tab-unders" from synthesized events without user intention.
+    // Events originating from an isolated world are exempt.
+    return kNavigationPolicyNewForegroundTab;
+  }
+
+  return event_policy;
+}
+
+NavigationPolicy NavigationPolicyFromEvent(const WebInputEvent* event) {
+  if (!event)
+    return kNavigationPolicyCurrentTab;
+
+  unsigned short button = 0;
+  if (event->GetType() == WebInputEvent::kMouseUp) {
+    const WebMouseEvent* mouse_event = static_cast<const WebMouseEvent*>(event);
+
+    switch (mouse_event->button) {
+      case WebMouseEvent::Button::kLeft:
+        button = 0;
+        break;
+      case WebMouseEvent::Button::kMiddle:
+        button = 1;
+        break;
+      case WebMouseEvent::Button::kRight:
+        button = 2;
+        break;
+      default:
+        return kNavigationPolicyCurrentTab;
+    }
+  } else if ((WebInputEvent::IsKeyboardEventType(event->GetType()) &&
+              static_cast<const WebKeyboardEvent*>(event)->windows_key_code ==
+                  VKEY_RETURN) ||
+             WebInputEvent::IsGestureEventType(event->GetType())) {
+    // Keyboard and gesture events can simulate mouse events.
+    button = 0;
+  } else {
+    return kNavigationPolicyCurrentTab;
+  }
+
+  return NavigationPolicyFromEventModifiers(
+      button, event->GetModifiers() & WebInputEvent::kControlKey,
+      event->GetModifiers() & WebInputEvent::kShiftKey,
+      event->GetModifiers() & WebInputEvent::kAltKey,
+      event->GetModifiers() & WebInputEvent::kMetaKey);
 }
 
 STATIC_ASSERT_ENUM(kWebNavigationPolicyIgnore, kNavigationPolicyIgnore);

@@ -28,8 +28,6 @@
 
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
@@ -46,7 +44,6 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -54,64 +51,9 @@
 
 namespace blink {
 
-namespace {
-
-void UpdatePolicyForEvent(const WebInputEvent* input_event,
-                          NavigationPolicy* policy) {
-  if (!input_event)
-    return;
-
-  unsigned short button_number = 0;
-  if (input_event->GetType() == WebInputEvent::kMouseUp) {
-    const WebMouseEvent* mouse_event =
-        static_cast<const WebMouseEvent*>(input_event);
-
-    switch (mouse_event->button) {
-      case WebMouseEvent::Button::kLeft:
-        button_number = 0;
-        break;
-      case WebMouseEvent::Button::kMiddle:
-        button_number = 1;
-        break;
-      case WebMouseEvent::Button::kRight:
-        button_number = 2;
-        break;
-      default:
-        return;
-    }
-  } else if ((WebInputEvent::IsKeyboardEventType(input_event->GetType()) &&
-              static_cast<const WebKeyboardEvent*>(input_event)
-                      ->windows_key_code == VKEY_RETURN) ||
-             WebInputEvent::IsGestureEventType(input_event->GetType())) {
-    // Keyboard and gesture events can simulate mouse events.
-    button_number = 0;
-  } else {
-    return;
-  }
-
-  bool ctrl = input_event->GetModifiers() & WebInputEvent::kControlKey;
-  bool shift = input_event->GetModifiers() & WebInputEvent::kShiftKey;
-  bool alt = input_event->GetModifiers() & WebInputEvent::kAltKey;
-  bool meta = input_event->GetModifiers() & WebInputEvent::kMetaKey;
-
-  NavigationPolicy user_policy =
-      NavigationPolicyFromMouseEvent(button_number, ctrl, shift, alt, meta);
-
-  // User and app agree that we want a new window; let the app override the
-  // decorations.
-  if (user_policy == kNavigationPolicyNewWindow &&
-      *policy == kNavigationPolicyNewPopup)
-    return;
-
-  // User wants a specific policy, use it over app policy.
-  if (user_policy != kNavigationPolicyCurrentTab)
-    *policy = user_policy;
-}
-
-}  // anonymous namespace
-
 // Check that the desired NavigationPolicy |policy| is compatible with the
 // observed input event |current_event|.
+// TODO(dgozman): move this to navigation_policy.cc.
 NavigationPolicy EffectiveNavigationPolicy(NavigationPolicy policy,
                                            const WebInputEvent* current_event,
                                            const WebWindowFeatures& features) {
@@ -121,9 +63,19 @@ NavigationPolicy EffectiveNavigationPolicy(NavigationPolicy policy,
   bool as_popup = !features.tool_bar_visible || !features.status_bar_visible ||
                   !features.scrollbars_visible || !features.menu_bar_visible ||
                   !features.resizable;
-  NavigationPolicy user_policy =
+  NavigationPolicy app_policy =
       as_popup ? kNavigationPolicyNewPopup : kNavigationPolicyNewForegroundTab;
-  UpdatePolicyForEvent(current_event, &user_policy);
+  NavigationPolicy user_policy = NavigationPolicyFromEvent(current_event);
+
+  if (user_policy == kNavigationPolicyNewWindow &&
+      app_policy == kNavigationPolicyNewPopup) {
+    // User and app agree that we want a new window; let the app override the
+    // decorations.
+    user_policy = app_policy;
+  } else if (user_policy == kNavigationPolicyCurrentTab) {
+    // User doesn't want a specific policy, use app policy instead.
+    user_policy = app_policy;
+  }
 
   if (policy == kNavigationPolicyIgnore) {
     // When the input event suggests a download, but the navigation was
