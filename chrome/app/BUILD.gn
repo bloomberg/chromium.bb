@@ -387,50 +387,6 @@ static_library("test_support") {
   }
 }
 
-chrome_packaged_services = [
-  ":chrome_manifest",
-  "//components/services/patch:manifest",
-  "//components/services/unzip:manifest",
-  "//chrome/services/file_util:manifest",
-  "//services/proxy_resolver:proxy_resolver_manifest",
-  "//services/preferences:local_state_manifest",
-]
-
-if (enable_basic_printing) {
-  chrome_packaged_services +=
-      [ "//components/services/pdf_compositor:pdf_compositor_manifest" ]
-}
-
-if (enable_print_preview) {
-  chrome_packaged_services += [ "//chrome/services/printing:manifest" ]
-}
-
-if (enable_extensions) {
-  chrome_packaged_services +=
-      [ "//chrome/services/removable_storage_writer:manifest" ]
-}
-
-if (enable_extensions || is_android) {
-  chrome_packaged_services +=
-      [ "//chrome/services/media_gallery_util:manifest" ]
-}
-
-if (is_chromeos) {
-  chrome_packaged_services +=
-      [ "//chrome/browser/chromeos:ash_pref_connector_manifest" ]
-}
-
-if (is_win) {
-  chrome_packaged_services += [
-    "//chrome/services/util_win:manifest",
-    "//chrome/services/wifi_util_win:manifest",
-  ]
-}
-
-if (!is_android) {
-  chrome_packaged_services += [ "//chrome/utility:profile_import_manifest" ]
-}
-
 service_manifest("chrome_manifest") {
   source = "chrome_manifest.json"
 }
@@ -439,10 +395,41 @@ service_manifest("chrome_renderer_manifest") {
   source = "chrome_renderer_manifest.json"
 }
 
+# Singleton services shared across profiles.
 service_manifest("chrome_content_packaged_services_manifest_overlay") {
   source =
       "//chrome/browser/chrome_content_packaged_services_manifest_overlay.json"
-  packaged_services = chrome_packaged_services
+  packaged_services = [
+    ":chrome_manifest",
+    "//components/services/patch:manifest",
+    "//components/services/unzip:manifest",
+    "//chrome/services/file_util:manifest",
+    "//services/proxy_resolver:proxy_resolver_manifest",
+    "//services/preferences:local_state_manifest",
+  ]
+  if (enable_basic_printing) {
+    packaged_services +=
+        [ "//components/services/pdf_compositor:pdf_compositor_manifest" ]
+  }
+  if (enable_print_preview) {
+    packaged_services += [ "//chrome/services/printing:manifest" ]
+  }
+  if (enable_extensions) {
+    packaged_services +=
+        [ "//chrome/services/removable_storage_writer:manifest" ]
+  }
+  if (enable_extensions || is_android) {
+    packaged_services += [ "//chrome/services/media_gallery_util:manifest" ]
+  }
+  if (is_win) {
+    packaged_services += [
+      "//chrome/services/util_win:manifest",
+      "//chrome/services/wifi_util_win:manifest",
+    ]
+  }
+  if (!is_android) {
+    packaged_services += [ "//chrome/utility:profile_import_manifest" ]
+  }
   if (is_chromeos) {
     packaged_services += [
       "//ash/components/autoclick:manifest",
@@ -450,12 +437,14 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
       "//ash/components/shortcut_viewer:manifest",
       "//ash/components/tap_visualizer:manifest",
       "//ash:manifest",
+      "//chrome/browser/chromeos:ash_pref_connector_manifest",
       "//chromeos/services/secure_channel:manifest",
       "//components/services/font:manifest",
     ]
   }
 }
 
+# Per-profile services.
 service_manifest("chrome_content_browser_manifest_overlay") {
   source = "//chrome/browser/chrome_content_browser_manifest_overlay.json"
   packaged_services = [
