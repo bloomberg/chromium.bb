@@ -74,27 +74,27 @@
     </div>
     <div id="attribution"><div id="attribution-text"></div></div>
 
-    <div id="edit-bg" hidden>
+    <div id="edit-bg" tabindex="0" hidden>
       <button id="edit-bg-gear"></button>
     </div>
 
     <div id="edit-bg-overlay">
       <div id="edit-bg-dialog">
         <div id="edit-bg-title"></div>
-        <div id="edit-bg-google-photos" class="bg-option">
+        <div id="edit-bg-google-photos" class="bg-option" tabindex="0" hidden>
           <div class="bg-option-img"></div>
           <div id="edit-bg-google-photos-text" class="bg-option-text"></div>
         </div>
-        <div id="edit-bg-default-wallpapers" class="bg-option">
+        <div id="edit-bg-default-wallpapers" class="bg-option" tabindex="0">
           <div class="bg-option-img"></div>
           <div id="edit-bg-default-wallpapers-text" class="bg-option-text">
           </div>
         </div>
-        <div id="edit-bg-upload-image" class="bg-option">
+        <div id="edit-bg-upload-image" class="bg-option" tabindex="0" hidden>
           <div class="bg-option-img"></div>
           <div id="edit-bg-upload-image-text" class="bg-option-text"></div>
         </div>
-        <div id="edit-bg-restore-default" class="bg-option">
+        <div id="edit-bg-restore-default" class="bg-option" tabindex="0">
           <div class="bg-option-img"></div>
           <div id="edit-bg-restore-default-text" class="bg-option-text"></div>
         </div>
@@ -103,7 +103,7 @@
 
   </div>
 
-  <div id="bg-sel-menu-overlay">
+  <dialog id="bg-sel-menu-overlay">
     <div id="bg-sel-menu">
       <div id="bg-sel-title-bar">
       <div id="bg-sel-back"></div>
@@ -119,7 +119,7 @@
         <div id="bg-sel-footer-done"></div>
       </div>
     </div>
-  </div>
+  </dialog>
 
   <dialog id="voice-overlay-dialog" class="overlay-dialog">
     <div id="voice-overlay" class="overlay-hidden">

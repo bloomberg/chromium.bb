@@ -276,7 +276,6 @@ function getIsThemeDark() {
   return luminance >= 128;
 }
 
-
 /**
  * Updates the NTP based on the current theme.
  * @private
@@ -307,21 +306,6 @@ function renderTheme() {
   if (configData.isGooglePage) {
     $('edit-bg').hidden =
         !configData.isCustomBackgroundsEnabled || !info.usingDefaultTheme;
-    $('edit-bg').onclick = function(event) {
-      var collElement = $('ntp-collection-loader');
-      if (collElement) {
-        collElement.parentNode.removeChild(collElement);
-      }
-      // Load the NTPBackgroundCollections script. It'll create a global
-      // variable name "coll" which is a dict of background collections data.
-      var collScript = document.createElement('script');
-      collScript.id = 'ntp-collection-loader';
-      collScript.src =
-          'chrome-search://local-ntp/ntp-background-collections.js';
-      document.body.appendChild(collScript);
-    };
-    if (configData.isCustomBackgroundsEnabled && info.usingDefaultTheme)
-      customBackgrounds.initCustomBackgrounds();
   }
 }
 
@@ -824,6 +808,9 @@ function init() {
     } else if (configData.isMDIconsEnabled) {
       enableMDIcons();
     }
+
+    if (configData.isCustomBackgroundsEnabled)
+      customBackgrounds.initCustomBackgrounds();
 
     // Set up the fakebox (which only exists on the Google NTP).
     ntpApiHandle.oninputstart = onInputStart;

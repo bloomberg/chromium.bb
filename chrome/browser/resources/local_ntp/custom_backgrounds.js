@@ -8,6 +8,18 @@
 let customBackgrounds = {};
 
 /**
+ * Enum for key codes.
+ * @enum {int}
+ * @const
+ */
+customBackgrounds.KEYCODES = {
+  BACKSPACE: 8,
+  ENTER: 13,
+  ESC: 27,
+  TAB: 9,
+};
+
+/**
  * Enum for HTML element ids.
  * @enum {string}
  * @const
@@ -20,6 +32,7 @@ customBackgrounds.IDS = {
   DEFAULT_WALLPAPERS_TEXT: 'edit-bg-default-wallpapers-text',
   DONE: 'bg-sel-footer-done',
   EDIT_BG: 'edit-bg',
+  EDIT_BG_DIALOG: 'edit-bg-dialog',
   EDIT_BG_GEAR: 'edit-bg-gear',
   EDIT_BG_OVERLAY: 'edit-bg-overlay',
   MENU: 'bg-sel-menu',
@@ -81,11 +94,11 @@ customBackgrounds.resetSelectionDialog = function() {
  * dialog.
  */
 customBackgrounds.showCollectionSelectionDialog = function() {
-  var doneButton = $(customBackgrounds.IDS.DONE);
   var tileContainer = $(customBackgrounds.IDS.TILES);
   var overlay = $(customBackgrounds.IDS.OVERLAY);
 
-  overlay.classList.add(customBackgrounds.CLASSES.SHOW_OVERLAY);
+  if (!overlay.open)
+    overlay.showModal();
 
   // Create dialog header
   $(customBackgrounds.IDS.TITLE).textContent =
@@ -100,15 +113,19 @@ customBackgrounds.showCollectionSelectionDialog = function() {
     var tile = document.createElement('div');
     tile.classList.add(customBackgrounds.CLASSES.COLLECTION_TILE);
     tile.style.backgroundImage = 'url(' + coll[i].previewImageUrl + ')';
+    tile.id = 'coll_tile_' + i;
     tile.dataset.id = coll[i].collectionId;
     tile.dataset.name = coll[i].collectionName;
+    tile.tabIndex = 0;
 
     var title = document.createElement('div');
     title.classList.add(customBackgrounds.CLASSES.COLLECTION_TITLE);
     title.textContent = tile.dataset.name;
 
-    tile.onclick = function(event) {
-      var tile = this;
+    var tileInteraction = function(event) {
+      var tile = event.target;
+      if (tile.classList.contains(customBackgrounds.CLASSES.COLLECTION_TITLE))
+        tile = tile.parentNode;
 
       // Load images for selected collection
       var imgElement = $('ntp-images-loader');
@@ -118,7 +135,7 @@ customBackgrounds.showCollectionSelectionDialog = function() {
       var imgScript = document.createElement('script');
       imgScript.id = 'ntp-images-loader';
       imgScript.src = 'chrome-search://local-ntp/ntp-background-images.js?' +
-          'collection_id=' + this.dataset.id;
+          'collection_id=' + tile.dataset.id;
       document.body.appendChild(imgScript);
 
       imgScript.onload = function() {
@@ -127,15 +144,24 @@ customBackgrounds.showCollectionSelectionDialog = function() {
             coll_img[0].collectionId == tile.dataset.id) {
           customBackgrounds.showImageSelectionDialog(tile.dataset.name);
         } else {
-          overlay.classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
+          overlay.close();
           customBackgrounds.resetSelectionDialog();
         }
       };
     };
 
+    tile.onclick = tileInteraction;
+    tile.onkeyup = function(event) {
+      if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+        tileInteraction(event);
+      }
+    };
+
     tile.appendChild(title);
     tileContainer.appendChild(tile);
   }
+
+  $(customBackgrounds.IDS.DONE).tabIndex = -1;
 
   // Create dialog footer
   $(customBackgrounds.IDS.DONE).textContent =
@@ -143,7 +169,7 @@ customBackgrounds.showCollectionSelectionDialog = function() {
 
   overlay.onclick = function(event) {
     if (event.target == overlay) {
-      overlay.classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
+      overlay.close();
       customBackgrounds.resetSelectionDialog();
     }
   };
@@ -155,8 +181,6 @@ customBackgrounds.showCollectionSelectionDialog = function() {
  * data should previous have been loaded into coll_img via
  * chrome-search://local-ntp/ntp-background-images.js?collection_id=<collection_id>
  * @param {string} dialogTitle The title to be displayed at the top of the
- * @param {string} prevDialogTitle The title for the previous dialog, needed
- * when the back button is clicked.
  */
 customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   var backButton = $(customBackgrounds.IDS.BACK);
@@ -178,8 +202,9 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     tile.style.backgroundImage = 'url(' + coll_img[i].thumbnailImageUrl + ')';
     tile.id = 'img_tile_' + i;
     tile.dataset.url = coll_img[i].imageUrl;
+    tile.tabIndex = 0;
 
-    tile.onclick = function(event) {
+    var tileInteraction = function(event) {
       var tile = event.target;
       if (selectedTile) {
         selectedTile.classList.remove(
@@ -194,8 +219,19 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
           .classList.add(customBackgrounds.CLASSES.DONE_AVAILABLE);
     };
 
+    tile.onclick = tileInteraction;
+    tile.onkeyup = function(event) {
+      if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+        tileInteraction(event);
+        doneButton.focus();
+      }
+    };
+
     tileContainer.appendChild(tile);
   }
+
+  $('img_tile_0').focus();
+  doneButton.tabIndex = 0;
 
   dailyRefresh.onclick = function(event) {
     if (selectedTile) {
@@ -207,14 +243,22 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
         .classList.add(customBackgrounds.CLASSES.DONE_AVAILABLE);
   };
 
-  doneButton.onclick = function(event) {
+  var setBackground = function(event) {
     if (!selectedTile)
       return;
 
-    overlay.classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
+    overlay.close();
     window.chrome.embeddedSearch.newTabPage.setBackgroundURL(
         selectedTile.dataset.url);
     customBackgrounds.resetSelectionDialog();
+  };
+
+  doneButton.onclick = setBackground;
+  doneButton.onkeyup = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+      setBackground(event);
+      $(customBackgrounds.IDS.EDIT_BG).focus();
+    }
   };
 
   backButton.onclick = function(event) {
@@ -224,10 +268,28 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
 };
 
 /**
+ * Load the NTPBackgroundCollections script. It'll create a global
+ * variable name "coll" which is a dict of background collections data.
+ * TODO(kmilka): add error UI as part of crbug.com/848981.
+ * @private
+ */
+customBackgrounds.loadCollections = function() {
+  var collElement = $('ntp-collection-loader');
+  if (collElement) {
+    collElement.parentNode.removeChild(collElement);
+  }
+  var collScript = document.createElement('script');
+  collScript.id = 'ntp-collection-loader';
+  collScript.src = 'chrome-search://local-ntp/ntp-background-collections.js';
+  document.body.appendChild(collScript);
+};
+
+/**
  * Display dialog with various options for custom background source.
  */
 customBackgrounds.initCustomBackgrounds = function() {
   var editDialogOverlay = $(customBackgrounds.IDS.EDIT_BG_OVERLAY);
+  var editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
 
   $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS_TEXT).textContent =
       configData.translatedStrings.connectGooglePhotos;
@@ -242,33 +304,99 @@ customBackgrounds.initCustomBackgrounds = function() {
   $(customBackgrounds.IDS.REFRESH_TEXT).textContent =
       configData.translatedStrings.dailyRefresh;
 
-  $(customBackgrounds.IDS.EDIT_BG_GEAR).onclick = function() {
-    $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS).hidden = true;
-    $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).hidden = false;
-    $(customBackgrounds.IDS.UPLOAD_IMAGE).hidden = true;
+  // Control tab cycling through background options.
+  $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onkeydown = function(event) {
+    if (event.keyCode == customBackgrounds.KEYCODES.TAB) {
+      event.preventDefault();
+      $(customBackgrounds.IDS.RESTORE_DEFAULT).focus();
+    }
+  };
 
-    $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onclick = function() {
-      $(customBackgrounds.IDS.EDIT_BG_OVERLAY)
-          .classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
-      if (typeof coll != 'undefined') {
-        customBackgrounds.showCollectionSelectionDialog(
-            configData.translatedStrings.selectChromeWallpaper);
-      }
-    };
+  $(customBackgrounds.IDS.RESTORE_DEFAULT).onkeydown = function(event) {
+    if (event.keyCode == customBackgrounds.KEYCODES.TAB) {
+      event.preventDefault();
+      $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).focus();
+    }
+  };
 
-    $(customBackgrounds.IDS.RESTORE_DEFAULT).onclick = function() {
-      $(customBackgrounds.IDS.EDIT_BG_OVERLAY)
-          .classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
-      window.chrome.embeddedSearch.newTabPage.setBackgroundURL('');
-    };
+  $(customBackgrounds.IDS.RESTORE_DEFAULT).onfocus = function() {
+    if (this.hidden) {
+      $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).focus();
+    }
+  };
 
-    editDialogOverlay.classList.add(customBackgrounds.CLASSES.SHOW_OVERLAY);
+  var editBackgroundInteraction = function(event) {
+    customBackgrounds.loadCollections();
+    $(customBackgrounds.IDS.EDIT_BG_OVERLAY)
+        .classList.add(customBackgrounds.CLASSES.SHOW_OVERLAY);
+    $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).focus();
+  };
+
+  $(customBackgrounds.IDS.EDIT_BG).onclick = editBackgroundInteraction;
+  $(customBackgrounds.IDS.EDIT_BG).onkeyup = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+      editBackgroundInteraction(event);
+    }
+  };
+
+  var editDialogOverlayInteraction = function(event) {
+    editDialogOverlay.classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
+    $(customBackgrounds.IDS.EDIT_BG).focus();
   };
 
   editDialogOverlay.onclick = function(event) {
-    if (event.target == editDialogOverlay) {
-      editDialogOverlay.classList.remove(
-          customBackgrounds.CLASSES.SHOW_OVERLAY);
+    if (event.target == editDialogOverlay)
+      editDialogOverlayInteraction(event);
+  };
+  editDialogOverlay.onkeyup = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ESC ||
+        event.keyCode === customBackgrounds.KEYCODES.BACKSPACE) {
+      editDialogOverlayInteraction(event);
+    }
+  };
+
+  var restoreDefaultInteraction = function(event) {
+    $(customBackgrounds.IDS.EDIT_BG_OVERLAY)
+        .classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
+    window.chrome.embeddedSearch.newTabPage.setBackgroundURL('');
+    $(customBackgrounds.IDS.EDIT_BG).focus();
+  };
+  $(customBackgrounds.IDS.RESTORE_DEFAULT).onclick = restoreDefaultInteraction;
+  $(customBackgrounds.IDS.RESTORE_DEFAULT).onkeyup = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+      restoreDefaultInteraction(event);
+    }
+  };
+
+  var defaultWallpapersInteraction = function(event) {
+    $(customBackgrounds.IDS.EDIT_BG_OVERLAY)
+        .classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
+    if (typeof coll != 'undefined') {
+      customBackgrounds.showCollectionSelectionDialog();
+      $('coll_tile_0').focus();
+    }
+  };
+  $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onclick =
+      defaultWallpapersInteraction;
+  $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onkeyup = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+      defaultWallpapersInteraction(event);
+    }
+  };
+
+  $(customBackgrounds.IDS.MENU).onkeyup = function(event) {
+    if (event.keyCode === customBackgrounds.KEYCODES.ESC ||
+        event.keyCode === customBackgrounds.KEYCODES.BACKSPACE) {
+      if ($(customBackgrounds.IDS.MENU)
+              .classList.contains(
+                  customBackgrounds.CLASSES.COLLECTION_DIALOG)) {
+        $(customBackgrounds.IDS.OVERLAY).close();
+        $(customBackgrounds.IDS.EDIT_BG).focus();
+      } else {
+        customBackgrounds.resetSelectionDialog();
+        customBackgrounds.showCollectionSelectionDialog();
+        $('coll_tile_0').focus();
+      }
     }
   };
 };

@@ -94,7 +94,7 @@
 
 #bg-sel-menu-overlay {
   background-color: rgba(255, 255, 255, .75);
-  display: none;
+  border: none;
   height: 100%;
   left: 0;
   position: fixed;
