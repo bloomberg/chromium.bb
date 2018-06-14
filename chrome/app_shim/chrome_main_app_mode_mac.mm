@@ -40,11 +40,9 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/peer_connection.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/system/isolated_connection.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -149,7 +147,7 @@ class AppShimController : public IPC::Listener {
   void Close();
 
   base::FilePath user_data_dir_;
-  mojo::edk::PeerConnection peer_connection_;
+  mojo::IsolatedConnection mojo_connection_;
   std::unique_ptr<IPC::ChannelProxy> channel_;
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
@@ -223,10 +221,8 @@ void AppShimController::CreateChannelAndSendLaunchApp(
     const base::FilePath& socket_path) {
   channel_ = IPC::ChannelProxy::Create(
       IPC::ChannelMojo::CreateClientFactory(
-          peer_connection_.Connect(mojo::edk::ConnectionParams(
-              mojo::edk::TransportProtocol::kLegacy,
-              mojo::edk::CreateClientHandle(
-                  mojo::edk::NamedPlatformHandle(socket_path.value())))),
+          mojo_connection_.Connect(
+              mojo::NamedPlatformChannel::ConnectToServer(socket_path.value())),
           g_io_thread->task_runner().get(),
           base::ThreadTaskRunnerHandle::Get()),
       this, g_io_thread->task_runner().get(),

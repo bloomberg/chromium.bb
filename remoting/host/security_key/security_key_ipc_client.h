@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ipc/ipc_listener.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/peer_connection.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
+#include "mojo/public/cpp/system/isolated_connection.h"
 
 namespace IPC {
 class Channel;
@@ -63,7 +63,7 @@ class SecurityKeyIpcClient : public IPC::Listener {
 
   // Allows tests to override the IPC channel.
   void SetIpcChannelHandleForTest(
-      const mojo::edk::NamedPlatformHandle& channel_handle);
+      const mojo::NamedPlatformChannel::ServerName& server_name);
 
   // Allows tests to override the expected session ID.
   void SetExpectedIpcServerSessionIdForTest(uint32_t expected_session_id);
@@ -91,10 +91,10 @@ class SecurityKeyIpcClient : public IPC::Listener {
   uint32_t expected_ipc_server_session_id_ = 0;
 
   // Name of the initial IPC channel used to retrieve connection info.
-  mojo::edk::NamedPlatformHandle named_channel_handle_;
+  mojo::NamedPlatformChannel::ServerName named_channel_handle_;
 
   // A handle for the IPC channel used for exchanging security key messages.
-  mojo::edk::ScopedInternalPlatformHandle channel_handle_;
+  mojo::PlatformChannelEndpoint channel_handle_;
 
   // Signaled when the IPC connection is ready for security key requests.
   ConnectedCallback connected_callback_;
@@ -106,7 +106,7 @@ class SecurityKeyIpcClient : public IPC::Listener {
   ResponseCallback response_callback_;
 
   // Used for sending/receiving security key messages between processes.
-  mojo::edk::PeerConnection peer_connection_;
+  mojo::IsolatedConnection mojo_connection_;
   std::unique_ptr<IPC::Channel> ipc_channel_;
 
   base::ThreadChecker thread_checker_;

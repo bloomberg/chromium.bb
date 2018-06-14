@@ -28,9 +28,7 @@ class Message;
 }  // IPC
 
 namespace mojo {
-namespace edk {
-class PeerConnection;
-}
+class IsolatedConnection;
 }
 
 namespace remoting {
@@ -50,7 +48,7 @@ class SecurityKeyIpcServerImpl : public SecurityKeyIpcServer,
   ~SecurityKeyIpcServerImpl() override;
 
   // SecurityKeyIpcServer implementation.
-  bool CreateChannel(const mojo::edk::NamedPlatformHandle& channel_handle,
+  bool CreateChannel(const mojo::NamedPlatformChannel::ServerName& server_name,
                      base::TimeDelta request_timeout) override;
   bool SendResponse(const std::string& message_data) override;
 
@@ -94,7 +92,7 @@ class SecurityKeyIpcServerImpl : public SecurityKeyIpcServer,
   SecurityKeyAuthHandler::SendMessageCallback message_callback_;
 
   // Used for sending/receiving security key messages between processes.
-  std::unique_ptr<mojo::edk::PeerConnection> peer_connection_;
+  std::unique_ptr<mojo::IsolatedConnection> mojo_connection_;
   std::unique_ptr<IPC::Channel> ipc_channel_;
 
   // Ensures SecurityKeyIpcServerImpl methods are called on the same thread.

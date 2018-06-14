@@ -22,9 +22,9 @@
 
 namespace {
 
-void CreateAppShimHost(mojo::edk::ScopedInternalPlatformHandle handle) {
+void CreateAppShimHost(mojo::PlatformChannelEndpoint endpoint) {
   // AppShimHost takes ownership of itself.
-  (new AppShimHost)->ServeChannel(std::move(handle));
+  (new AppShimHost)->ServeChannel(std::move(endpoint));
 }
 
 base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
@@ -157,11 +157,11 @@ void AppShimHostManager::ListenOnIOThread() {
 }
 
 void AppShimHostManager::OnClientConnected(
-    mojo::edk::ScopedInternalPlatformHandle handle) {
+    mojo::PlatformChannelEndpoint endpoint) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
       ->PostTask(FROM_HERE,
-                 base::Bind(&CreateAppShimHost, base::Passed(&handle)));
+                 base::BindOnce(&CreateAppShimHost, std::move(endpoint)));
 }
 
 void AppShimHostManager::OnListenError() {

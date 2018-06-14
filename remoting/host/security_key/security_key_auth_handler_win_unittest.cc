@@ -50,7 +50,7 @@ class SecurityKeyAuthHandlerWinTest : public testing::Test {
 
   // Creates a new security key connection on the object under test.
   void CreateSecurityKeyConnection(
-      const mojo::edk::NamedPlatformHandle& channel_handle);
+      const mojo::NamedPlatformChannel::ServerName& server_name);
 
   // Uses |fake_ipc_client| to connect to the IPC server channel, it then
   // validates internal state of the object under test and closes the connection
@@ -58,7 +58,7 @@ class SecurityKeyAuthHandlerWinTest : public testing::Test {
   void EstablishIpcConnection(
       FakeSecurityKeyIpcClient* fake_ipc_client,
       int expected_connection_id,
-      const mojo::edk::NamedPlatformHandle& channel_handle,
+      const mojo::NamedPlatformChannel::ServerName& server_name,
       bool close_connection);
 
   // Sends a security key response message using |fake_ipc_server| and
@@ -82,7 +82,7 @@ class SecurityKeyAuthHandlerWinTest : public testing::Test {
 
   // Returns a unique IPC channel handle which prevents conflicts when running
   // tests concurrently.
-  std::string GetUniqueTestChannelHandle();
+  mojo::NamedPlatformChannel::ServerName GetUniqueTestChannelHandle();
 
   // IPC tests require a valid MessageLoop to run.
   base::MessageLoopForIO message_loop_;
@@ -141,10 +141,10 @@ void SecurityKeyAuthHandlerWinTest::SendMessageToClient(
 }
 
 void SecurityKeyAuthHandlerWinTest::CreateSecurityKeyConnection(
-    const mojo::edk::NamedPlatformHandle& channel_handle) {
+    const mojo::NamedPlatformChannel::ServerName& server_name) {
   ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 
-  remoting::SetSecurityKeyIpcChannelForTest(channel_handle);
+  remoting::SetSecurityKeyIpcChannelForTest(server_name);
 
   // Create a new SecurityKey IPC Server connection.
   auth_handler_->CreateSecurityKeyConnection();
@@ -153,7 +153,7 @@ void SecurityKeyAuthHandlerWinTest::CreateSecurityKeyConnection(
 void SecurityKeyAuthHandlerWinTest::EstablishIpcConnection(
     FakeSecurityKeyIpcClient* fake_ipc_client,
     int expected_connection_id,
-    const mojo::edk::NamedPlatformHandle& channel_handle,
+    const mojo::NamedPlatformChannel::ServerName& server_name,
     bool close_connection) {
   size_t expected_connection_count =
       auth_handler_->GetActiveConnectionCountForTest() + 1;
@@ -162,7 +162,7 @@ void SecurityKeyAuthHandlerWinTest::EstablishIpcConnection(
   fake_ipc_client->set_on_channel_connected_callback(
       base::Bind(&SecurityKeyAuthHandlerWinTest::OperationComplete,
                  base::Unretained(this)));
-  ASSERT_TRUE(fake_ipc_client->ConnectViaIpc(channel_handle));
+  ASSERT_TRUE(fake_ipc_client->ConnectViaIpc(server_name));
   WaitForOperationComplete();
 
   // Retrieve the IPC server instance created when the client connected.
@@ -243,23 +243,24 @@ void SecurityKeyAuthHandlerWinTest::CloseSecurityKeySessionIpcChannel(
   ASSERT_FALSE(fake_ipc_server.get());
 }
 
-std::string SecurityKeyAuthHandlerWinTest::GetUniqueTestChannelHandle() {
+mojo::NamedPlatformChannel::ServerName
+SecurityKeyAuthHandlerWinTest::GetUniqueTestChannelHandle() {
   std::string channel_name("Uber_Awesome_Super_Mega_Test_Channel.");
   channel_name.append(IPC::Channel::GenerateUniqueRandomChannelID());
-
-  return channel_name;
+  return mojo::NamedPlatformChannel::ServerNameFromUTF8(channel_name);
 }
 
 TEST_F(SecurityKeyAuthHandlerWinTest, HandleSingleSecurityKeyRequest) {
-  mojo::edk::NamedPlatformHandle channel_handle(GetUniqueTestChannelHandle());
-  CreateSecurityKeyConnection(channel_handle);
+  mojo::NamedPlatformChannel::ServerName server_name =
+      GetUniqueTestChannelHandle();
+  CreateSecurityKeyConnection(server_name);
   ASSERT_FALSE(auth_handler_->IsValidConnectionId(kConnectionId1));
 
   // Create a fake client and connect to the IPC server channel.
   FakeSecurityKeyIpcClient fake_ipc_client(
       base::Bind(&SecurityKeyAuthHandlerWinTest::OperationComplete,
                  base::Unretained(this)));
-  EstablishIpcConnection(&fake_ipc_client, kConnectionId1, channel_handle,
+  EstablishIpcConnection(&fake_ipc_client, kConnectionId1, server_name,
                          /*close_connection=*/true);
 
   // Retrieve the IPC server instance created when the client connected.
@@ -283,8 +284,9 @@ TEST_F(SecurityKeyAuthHandlerWinTest, HandleSingleSecurityKeyRequest) {
 }
 
 TEST_F(SecurityKeyAuthHandlerWinTest, HandleConcurrentSecurityKeyRequests) {
-  mojo::edk::NamedPlatformHandle channel_handle(GetUniqueTestChannelHandle());
-  CreateSecurityKeyConnection(channel_handle);
+  mojo::NamedPlatformChannel::ServerName server_name =
+      GetUniqueTestChannelHandle();
+  CreateSecurityKeyConnection(server_name);
 
   // Create fake clients and connect each to the IPC server channel.
   FakeSecurityKeyIpcClient fake_ipc_client_1(
@@ -294,9 +296,9 @@ TEST_F(SecurityKeyAuthHandlerWinTest, HandleConcurrentSecurityKeyRequests) {
       base::Bind(&SecurityKeyAuthHandlerWinTest::OperationComplete,
                  base::Unretained(this)));
 
-  EstablishIpcConnection(&fake_ipc_client_1, kConnectionId1, channel_handle,
+  EstablishIpcConnection(&fake_ipc_client_1, kConnectionId1, server_name,
                          /*close_connection=*/true);
-  EstablishIpcConnection(&fake_ipc_client_2, kConnectionId2, channel_handle,
+  EstablishIpcConnection(&fake_ipc_client_2, kConnectionId2, server_name,
                          /*close_connection=*/true);
 
   base::WeakPtr<FakeSecurityKeyIpcServer> fake_ipc_server_1 =
@@ -336,15 +338,16 @@ TEST_F(SecurityKeyAuthHandlerWinTest, HandleConcurrentSecurityKeyRequests) {
 }
 
 TEST_F(SecurityKeyAuthHandlerWinTest, HandleSequentialSecurityKeyRequests) {
-  mojo::edk::NamedPlatformHandle channel_handle(GetUniqueTestChannelHandle());
-  CreateSecurityKeyConnection(channel_handle);
+  mojo::NamedPlatformChannel::ServerName server_name =
+      GetUniqueTestChannelHandle();
+  CreateSecurityKeyConnection(server_name);
 
   // Create fake clients to connect to the IPC server channel.
   FakeSecurityKeyIpcClient fake_ipc_client_1(
       base::Bind(&SecurityKeyAuthHandlerWinTest::OperationComplete,
                  base::Unretained(this)));
 
-  EstablishIpcConnection(&fake_ipc_client_1, kConnectionId1, channel_handle,
+  EstablishIpcConnection(&fake_ipc_client_1, kConnectionId1, server_name,
                          /*close_connection=*/true);
 
   base::WeakPtr<FakeSecurityKeyIpcServer> fake_ipc_server_1 =
@@ -370,7 +373,7 @@ TEST_F(SecurityKeyAuthHandlerWinTest, HandleSequentialSecurityKeyRequests) {
   FakeSecurityKeyIpcClient fake_ipc_client_2(
       base::Bind(&SecurityKeyAuthHandlerWinTest::OperationComplete,
                  base::Unretained(this)));
-  EstablishIpcConnection(&fake_ipc_client_2, kConnectionId2, channel_handle,
+  EstablishIpcConnection(&fake_ipc_client_2, kConnectionId2, server_name,
                          /*close_connection=*/true);
 
   base::WeakPtr<FakeSecurityKeyIpcServer> fake_ipc_server_2 =
@@ -394,15 +397,16 @@ TEST_F(SecurityKeyAuthHandlerWinTest, HandleSequentialSecurityKeyRequests) {
 }
 
 TEST_F(SecurityKeyAuthHandlerWinTest, HandleSecurityKeyErrorResponse) {
-  mojo::edk::NamedPlatformHandle channel_handle(GetUniqueTestChannelHandle());
-  CreateSecurityKeyConnection(channel_handle);
+  mojo::NamedPlatformChannel::ServerName server_name =
+      GetUniqueTestChannelHandle();
+  CreateSecurityKeyConnection(server_name);
   ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 
   // Create a fake client and connect to the IPC server channel.
   FakeSecurityKeyIpcClient fake_ipc_client(
       base::Bind(&SecurityKeyAuthHandlerWinTest::OperationComplete,
                  base::Unretained(this)));
-  EstablishIpcConnection(&fake_ipc_client, kConnectionId1, channel_handle,
+  EstablishIpcConnection(&fake_ipc_client, kConnectionId1, server_name,
                          /*close_connection=*/true);
 
   // Retrieve the IPC server instance created when the client connected.
@@ -429,7 +433,7 @@ TEST_F(SecurityKeyAuthHandlerWinTest, HandleSecurityKeyErrorResponse) {
   ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 
   // Attempt to connect again after the error.
-  EstablishIpcConnection(&fake_ipc_client, kConnectionId2, channel_handle,
+  EstablishIpcConnection(&fake_ipc_client, kConnectionId2, server_name,
                          /*close_connection=*/true);
 }
 

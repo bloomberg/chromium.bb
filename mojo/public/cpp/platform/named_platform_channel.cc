@@ -5,6 +5,7 @@
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 
 namespace mojo {
 
@@ -23,6 +24,16 @@ NamedPlatformChannel::~NamedPlatformChannel() = default;
 
 NamedPlatformChannel& NamedPlatformChannel::operator=(
     NamedPlatformChannel&& other) = default;
+
+// static
+NamedPlatformChannel::ServerName NamedPlatformChannel::ServerNameFromUTF8(
+    base::StringPiece name) {
+#if defined(OS_WIN)
+  return base::UTF8ToUTF16(name);
+#else
+  return name.as_string();
+#endif
+}
 
 void NamedPlatformChannel::PassServerNameOnCommandLine(
     base::CommandLine* command_line) {

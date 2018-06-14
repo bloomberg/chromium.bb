@@ -14,9 +14,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/peer_connection.h"
+#include "mojo/public/cpp/system/isolated_connection.h"
 #include "remoting/host/chromoting_messages.h"
 
 namespace remoting {
@@ -61,24 +59,21 @@ bool FakeSecurityKeyIpcClient::SendSecurityKeyRequest(
 
 void FakeSecurityKeyIpcClient::CloseIpcConnection() {
   client_channel_.reset();
-  peer_connection_.reset();
+  mojo_connection_.reset();
   channel_event_callback_.Run();
 }
 
 bool FakeSecurityKeyIpcClient::ConnectViaIpc(
-    const mojo::edk::NamedPlatformHandle& channel_handle) {
-  mojo::edk::ScopedInternalPlatformHandle handle =
-      mojo::edk::CreateClientHandle(channel_handle);
-  if (!handle.is_valid()) {
+    const mojo::NamedPlatformChannel::ServerName& server_name) {
+  mojo::PlatformChannelEndpoint endpoint =
+      mojo::NamedPlatformChannel::ConnectToServer(server_name);
+  if (!endpoint.is_valid())
     return false;
-  }
-  peer_connection_ = std::make_unique<mojo::edk::PeerConnection>();
+
+  mojo_connection_ = std::make_unique<mojo::IsolatedConnection>();
   client_channel_ = IPC::Channel::CreateClient(
-      peer_connection_
-          ->Connect(mojo::edk::ConnectionParams(
-              mojo::edk::TransportProtocol::kLegacy, std::move(handle)))
-          .release(),
-      this, base::ThreadTaskRunnerHandle::Get());
+      mojo_connection_->Connect(std::move(endpoint)).release(), this,
+      base::ThreadTaskRunnerHandle::Get());
   return client_channel_->Connect();
 }
 

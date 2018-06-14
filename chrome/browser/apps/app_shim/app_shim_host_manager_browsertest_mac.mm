@@ -27,9 +27,8 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/peer_connection.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/system/isolated_connection.h"
 
 namespace {
 
@@ -52,7 +51,7 @@ class TestShimClient : public IPC::Listener {
   void OnChannelError() override;
 
   base::Thread io_thread_;
-  mojo::edk::PeerConnection peer_connection_;
+  mojo::IsolatedConnection mojo_connection_;
   std::unique_ptr<IPC::ChannelProxy> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShimClient);
@@ -75,10 +74,8 @@ TestShimClient::TestShimClient() : io_thread_("TestShimClientIO") {
 
   channel_ = IPC::ChannelProxy::Create(
       IPC::ChannelMojo::CreateClientFactory(
-          peer_connection_.Connect(mojo::edk::ConnectionParams(
-              mojo::edk::TransportProtocol::kLegacy,
-              mojo::edk::CreateClientHandle(
-                  mojo::edk::NamedPlatformHandle(socket_path.value())))),
+          mojo_connection_.Connect(
+              mojo::NamedPlatformChannel::ConnectToServer(socket_path.value())),
           io_thread_.task_runner().get(), base::ThreadTaskRunnerHandle::Get()),
       this, io_thread_.task_runner().get(),
       base::ThreadTaskRunnerHandle::Get());

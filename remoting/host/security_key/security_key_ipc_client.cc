@@ -14,8 +14,6 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/ipc_constants.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
@@ -34,7 +32,8 @@ bool SecurityKeyIpcClient::CheckForSecurityKeyIpcServerChannel() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!channel_handle_.is_valid()) {
-    channel_handle_ = mojo::edk::CreateClientHandle(named_channel_handle_);
+    channel_handle_ =
+        mojo::NamedPlatformChannel::ConnectToServer(named_channel_handle_);
   }
   return channel_handle_.is_valid();
 }
@@ -82,8 +81,8 @@ void SecurityKeyIpcClient::CloseIpcConnection() {
 }
 
 void SecurityKeyIpcClient::SetIpcChannelHandleForTest(
-    const mojo::edk::NamedPlatformHandle& channel_handle) {
-  named_channel_handle_ = channel_handle;
+    const mojo::NamedPlatformChannel::ServerName& server_name) {
+  named_channel_handle_ = server_name;
 }
 
 void SecurityKeyIpcClient::SetExpectedIpcServerSessionIdForTest(
@@ -193,13 +192,9 @@ void SecurityKeyIpcClient::ConnectToIpcChannel() {
     return;
   }
 
-  ipc_channel_ =
-      IPC::Channel::CreateClient(peer_connection_
-                                     .Connect(mojo::edk::ConnectionParams(
-                                         mojo::edk::TransportProtocol::kLegacy,
-                                         std::move(channel_handle_)))
-                                     .release(),
-                                 this, base::ThreadTaskRunnerHandle::Get());
+  ipc_channel_ = IPC::Channel::CreateClient(
+      mojo_connection_.Connect(std::move(channel_handle_)).release(), this,
+      base::ThreadTaskRunnerHandle::Get());
   if (ipc_channel_->Connect()) {
     return;
   }

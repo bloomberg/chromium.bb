@@ -36,7 +36,8 @@ source_set("security_key") {
 
   deps = [
     "//ipc",
-    "//mojo/edk",
+    "//mojo/public/cpp/platform",
+    "//mojo/public/cpp/system",
     "//remoting/proto",
     "//third_party/webrtc/modules/desktop_capture",
   ]
@@ -59,6 +60,7 @@ source_set("main") {
   ]
   deps = [
     "//base:debugging_buildflags",
+    "//mojo/edk",
   ]
 }
 
