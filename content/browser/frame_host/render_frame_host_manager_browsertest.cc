@@ -4255,4 +4255,221 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
             new_shell->web_contents()->GetSiteInstance()->GetProcess());
 }
 
+// Helper class to simplify testing of unload handlers.  It allows waiting for
+// particular HTTP requests to be made to the embedded_test_server(); the tests
+// use this to wait for termination pings (e.g., navigator.sendBeacon()) made
+// from unload handlers.
+class RenderFrameHostManagerUnloadBrowserTest
+    : public RenderFrameHostManagerTest {
+ public:
+  RenderFrameHostManagerUnloadBrowserTest() {}
+
+  // Starts monitoring requests made to the embedded_http_server() looking for
+  // one made to |url|.  To be used together with WaitForMonitoredRequest().
+  void StartMonitoringRequestsFor(const GURL& url) {
+    request_url_ = url;
+    saw_request_url_ = false;
+  }
+
+  // Waits for a request to a URL set earlier via StartMonitoringRequestsFor().
+  // Returns right away if that request was already made.
+  void WaitForMonitoredRequest() {
+    if (saw_request_url_)
+      return;
+
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+  // Returns the body of the monitored request if it was a POST.
+  const std::string& GetRequestContent() { return request_content_; }
+
+  // Adds an unload handler to |rfh| and verifies that the unload state
+  // bookkeeping on |rfh| is updated properly.
+  void AddUnloadHandler(RenderFrameHostImpl* rfh, const std::string& script) {
+    EXPECT_FALSE(rfh->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+    EXPECT_TRUE(ExecuteScript(
+        rfh, base::StringPrintf("window.onunload = function(e) { %s }",
+                                script.c_str())));
+    EXPECT_TRUE(rfh->GetSuddenTerminationDisablerState(blink::kUnloadHandler));
+  }
+
+  // Extend the timeout for keeping the subframe process alive for unload
+  // processing to prevent any test flakiness.  This is the time that the ping
+  // request will have to make it from the renderer to the test server.
+  void ExtendSubframeUnloadTimeoutForTerminationPing(RenderFrameHostImpl* rfh) {
+    rfh->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
+  }
+
+ protected:
+  void SetUpOnMainThread() override {
+    // Request interceptor needs to be installed before the test server is
+    // started.
+    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+        &RenderFrameHostManagerUnloadBrowserTest::MonitorResourceRequest,
+        base::Unretained(this)));
+
+    RenderFrameHostManagerTest::SetUpOnMainThread();
+
+    StartEmbeddedServer();
+  }
+
+ private:
+  void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
+    // |request.GetURL()| gives us the URL after it's already resolved to
+    // 127.0.0.1, so reconstruct the requested host via the Host header (which
+    // includes host+port).
+    GURL requested_url = request.GetURL();
+    auto it = request.headers.find("Host");
+    if (it != request.headers.end())
+      requested_url = GURL("http://" + it->second + request.relative_url);
+
+    if (!saw_request_url_ && request_url_ == requested_url) {
+      saw_request_url_ = true;
+      request_content_ = request.content;
+      if (run_loop_)
+        run_loop_->Quit();
+    }
+  }
+
+  GURL request_url_;
+  std::string request_content_;
+  bool saw_request_url_ = false;
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManagerUnloadBrowserTest);
+};
+
+// Ensure that after a main frame with a cross-site iframe is itself navigated
+// cross-site, the unload handler in the iframe can use navigator.sendBeacon()
+// to do a termination ping.  See https://crbug.com/852204, where this was
+// broken with site isolation if the iframe was in its own process.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
+                       SubframeTerminationPing_SendBeacon) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  RenderFrameHostImpl* child_rfh = root->child_at(0)->current_frame_host();
+
+  // Add a subframe unload handler to do a termination ping via sendBeacon.
+  GURL ping_url(embedded_test_server()->GetURL("b.com", "/empty.html"));
+  AddUnloadHandler(child_rfh,
+                   base::StringPrintf("navigator.sendBeacon('%s', 'ping');",
+                                      ping_url.spec().c_str()));
+  ExtendSubframeUnloadTimeoutForTerminationPing(child_rfh);
+
+  // Navigate the main frame to c.com and wait for the ping.
+  StartMonitoringRequestsFor(ping_url);
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), c_url));
+  // Test succeeds if this doesn't time out while waiting for |ping_url|.
+  WaitForMonitoredRequest();
+  EXPECT_EQ("ping", GetRequestContent());
+}
+
+// Ensure that after a main frame with a cross-site iframe is itself navigated
+// cross-site, the unload handler in the iframe can use an image load to do a
+// termination ping. See https://crbug.com/852204, where this was broken with
+// site isolation if the iframe was in its own process.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
+                       SubframeTerminationPing_Image) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  RenderFrameHostImpl* child_rfh = root->child_at(0)->current_frame_host();
+
+  // Add a subframe unload handler to do a termination ping by loading an
+  // image.
+  GURL ping_url(embedded_test_server()->GetURL("b.com", "/blank.jpg"));
+  AddUnloadHandler(child_rfh,
+                   base::StringPrintf("var img = document.createElement('img');"
+                                      "img.src = '%s';"
+                                      "document.body.appendChild(img);",
+                                      ping_url.spec().c_str()));
+  ExtendSubframeUnloadTimeoutForTerminationPing(child_rfh);
+
+  // Navigate the main frame to c.com and wait for the ping.
+  StartMonitoringRequestsFor(ping_url);
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), c_url));
+  // Test succeeds if this doesn't time out while waiting for |ping_url|.
+  WaitForMonitoredRequest();
+}
+
+// Ensure that when closing a window containing a page with a cross-site
+// iframe, the iframe still runs its unload handler and can do a sendBeacon
+// termination ping.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
+                       SubframeTerminationPingWhenWindowCloses) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Open a popup window with a page containing a cross-site iframe.
+  GURL popup_url(embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b(c)"));
+  Shell* popup = OpenPopup(root, popup_url, "popup");
+  WebContentsImpl* popup_contents =
+      static_cast<WebContentsImpl*>(popup->web_contents());
+  EXPECT_TRUE(WaitForLoadStop(popup_contents));
+  EXPECT_EQ(popup_url, popup_contents->GetLastCommittedURL());
+
+  FrameTreeNode* popup_root = popup_contents->GetFrameTree()->root();
+  RenderFrameHostImpl* child_rfh =
+      popup_root->child_at(0)->current_frame_host();
+
+  // In the popup, add a subframe unload handler to do a termination ping via
+  // sendBeacon.
+  GURL ping_url(embedded_test_server()->GetURL("c.com", "/empty.html"));
+  AddUnloadHandler(child_rfh,
+                   base::StringPrintf("navigator.sendBeacon('%s', 'ping');",
+                                      ping_url.spec().c_str()));
+  ExtendSubframeUnloadTimeoutForTerminationPing(child_rfh);
+
+  // Close the popup and wait for the ping.
+  StartMonitoringRequestsFor(ping_url);
+  popup->Close();
+  // Test succeeds if this doesn't time out while waiting for |ping_url|.
+  WaitForMonitoredRequest();
+  EXPECT_EQ("ping", GetRequestContent());
+}
+
+// Ensure that after a main frame with a cross-site iframe is navigated
+// cross-site, and the iframe had an unload handler which never finishes, the
+// iframe's process eventually exits.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
+                       SubframeProcessGoesAwayAfterUnloadTimeout) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  RenderFrameHostImpl* child_rfh = root->child_at(0)->current_frame_host();
+
+  // Add an unload handler which never finishes to b.com subframe.
+  AddUnloadHandler(child_rfh, "while(1);");
+
+  // Navigate the main frame to c.com and wait for the subframe process to
+  // shut down.  This should happen when the subframe unload timeout happens,
+  // roughly in one second.  Note that depending on whether site isolation is
+  // enabled, the subframe process may or may not be the same as the old main
+  // frame process, but it should shut down regardless.
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  RenderProcessHostWatcher process_exit_observer(
+      child_rfh->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  EXPECT_TRUE(NavigateToURL(shell(), c_url));
+  process_exit_observer.Wait();
+}
+
 }  // namespace content
