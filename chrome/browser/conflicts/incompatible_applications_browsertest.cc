@@ -83,21 +83,27 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
   ~IncompatibleApplicationsBrowserTest() override = default;
 
   void SetUp() override {
-    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
+    // TODO(crbug.com/850517): Don't do test-specific setup if the test isn't
+    // going to do anything. It seems to conflict with the VizDisplayCompositor
+    // feature.
+    if (!base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+      ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
 
-    ASSERT_NO_FATAL_FAILURE(
-        registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
-    ASSERT_NO_FATAL_FAILURE(
-        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+      ASSERT_NO_FATAL_FAILURE(
+          registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
+      ASSERT_NO_FATAL_FAILURE(
+          registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
-    scoped_feature_list_.InitWithFeatures(
-        // Enabled features.
-        {features::kModuleDatabase, features::kIncompatibleApplicationsWarning},
-        // Disabled features.
-        {});
+      scoped_feature_list_.InitWithFeatures(
+          // Enabled features.
+          {features::kModuleDatabase,
+           features::kIncompatibleApplicationsWarning},
+          // Disabled features.
+          {});
 
-    ASSERT_NO_FATAL_FAILURE(CreateModuleList());
-    ASSERT_NO_FATAL_FAILURE(InstallThirdPartyApplication());
+      ASSERT_NO_FATAL_FAILURE(CreateModuleList());
+      ASSERT_NO_FATAL_FAILURE(InstallThirdPartyApplication());
+    }
 
     InProcessBrowserTest::SetUp();
   }
@@ -197,11 +203,9 @@ IN_PROC_BROWSER_TEST_F(IncompatibleApplicationsBrowserTest,
   if (base::win::GetVersion() < base::win::VERSION_WIN10)
     return;
 
-#if defined(OFFICIAL_BUILD)
   // TODO(crbug.com/850517) This fails in viz_browser_tests in official builds.
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
     return;
-#endif
 
   ModuleDatabase* module_database = ModuleDatabase::GetInstance();
 
