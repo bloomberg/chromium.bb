@@ -7,8 +7,8 @@
 
 #include "content/common/content_export.h"
 
-namespace viz {
-class CompositorFrameMetadata;
+namespace gfx {
+class SizeF;
 }
 
 namespace content {
@@ -19,7 +19,11 @@ namespace content {
 //   (indicating that this is a mobile-optimized or responsive web design);
 // - page that prevents zooming in or out.
 CONTENT_EXPORT bool IsMobileOptimizedFrame(
-    const viz::CompositorFrameMetadata& frame_metadata);
+    float page_scale_factor,
+    float min_page_scale_factor,
+    float max_page_scale_factor,
+    const gfx::SizeF& scrollable_viewport_size,
+    const gfx::SizeF& root_layer_size);
 
 }  // namespace content
 

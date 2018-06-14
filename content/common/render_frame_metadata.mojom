@@ -29,8 +29,12 @@ struct RenderFrameMetadata {
 
   // The page scale factor used on the content.
   float page_scale_factor;
+  float min_page_scale_factor;
+  float max_page_scale_factor;
+  bool root_overflow_y_hidden;
 
   gfx.mojom.SizeF scrollable_viewport_size;
+  gfx.mojom.SizeF root_layer_size;
 
   // Determines whether the page is mobile optimized or not, which means at
   // least one of the following has to be true:

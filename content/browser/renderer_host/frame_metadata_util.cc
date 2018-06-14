@@ -13,16 +13,16 @@ namespace {
 // V1 saw errors of ~0.065 between computed window and content widths.
 const float kMobileViewportWidthEpsilon = 0.15f;
 
-bool HasFixedPageScale(const viz::CompositorFrameMetadata& frame_metadata) {
-  return frame_metadata.min_page_scale_factor ==
-         frame_metadata.max_page_scale_factor;
+bool HasFixedPageScale(float min_page_scale_factor,
+                       float max_page_scale_factor) {
+  return min_page_scale_factor == max_page_scale_factor;
 }
 
-bool HasMobileViewport(const viz::CompositorFrameMetadata& frame_metadata) {
-  float window_width_dip =
-      frame_metadata.page_scale_factor *
-          frame_metadata.scrollable_viewport_size.width();
-  float content_width_css = frame_metadata.root_layer_size.width();
+bool HasMobileViewport(float page_scale_factor,
+                       const gfx::SizeF& scrollable_viewport_size,
+                       const gfx::SizeF& root_layer_size) {
+  float window_width_dip = page_scale_factor * scrollable_viewport_size.width();
+  float content_width_css = root_layer_size.width();
   return content_width_css <= window_width_dip + kMobileViewportWidthEpsilon;
 }
 
@@ -30,10 +30,15 @@ bool HasMobileViewport(const viz::CompositorFrameMetadata& frame_metadata) {
 
 namespace content {
 
-bool IsMobileOptimizedFrame(
-    const viz::CompositorFrameMetadata& frame_metadata) {
-  bool has_mobile_viewport = HasMobileViewport(frame_metadata);
-  bool has_fixed_page_scale = HasFixedPageScale(frame_metadata);
+bool IsMobileOptimizedFrame(float page_scale_factor,
+                            float min_page_scale_factor,
+                            float max_page_scale_factor,
+                            const gfx::SizeF& scrollable_viewport_size,
+                            const gfx::SizeF& root_layer_size) {
+  bool has_mobile_viewport = HasMobileViewport(
+      page_scale_factor, scrollable_viewport_size, root_layer_size);
+  bool has_fixed_page_scale =
+      HasFixedPageScale(min_page_scale_factor, max_page_scale_factor);
   return has_fixed_page_scale || has_mobile_viewport;
 }
 

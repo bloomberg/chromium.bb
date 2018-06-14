@@ -287,26 +287,30 @@ bool OverscrollControllerAndroid::Animate(base::TimeTicks current_time,
 }
 
 void OverscrollControllerAndroid::OnFrameMetadataUpdated(
-    const viz::CompositorFrameMetadata& frame_metadata) {
+    float page_scale_factor,
+    float device_scale_factor,
+    const gfx::SizeF& scrollable_viewport_size,
+    const gfx::SizeF& root_layer_size,
+    const gfx::Vector2dF& root_scroll_offset,
+    bool root_overflow_y_hidden) {
   if (!refresh_effect_ && !glow_effect_)
     return;
 
   // When use-zoom-for-dsf is enabled, frame_metadata.page_scale_factor was
   // already scaled by the device scale factor.
-  float scale_factor = frame_metadata.page_scale_factor;
+  float scale_factor = page_scale_factor;
   if (!IsUseZoomForDSFEnabled()) {
-    scale_factor *= frame_metadata.device_scale_factor;
+    scale_factor *= device_scale_factor;
   }
   gfx::SizeF viewport_size =
-      gfx::ScaleSize(frame_metadata.scrollable_viewport_size, scale_factor);
-  gfx::SizeF content_size =
-      gfx::ScaleSize(frame_metadata.root_layer_size, scale_factor);
+      gfx::ScaleSize(scrollable_viewport_size, scale_factor);
+  gfx::SizeF content_size = gfx::ScaleSize(root_layer_size, scale_factor);
   gfx::Vector2dF content_scroll_offset =
-      gfx::ScaleVector2d(frame_metadata.root_scroll_offset, scale_factor);
+      gfx::ScaleVector2d(root_scroll_offset, scale_factor);
 
   if (refresh_effect_) {
     refresh_effect_->OnFrameUpdated(content_scroll_offset,
-                                    frame_metadata.root_overflow_y_hidden);
+                                    root_overflow_y_hidden);
   }
 
   if (glow_effect_) {

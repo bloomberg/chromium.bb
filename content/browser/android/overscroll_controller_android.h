@@ -29,10 +29,6 @@ class WindowAndroidCompositor;
 struct DidOverscrollParams;
 }
 
-namespace viz {
-class CompositorFrameMetadata;
-}
-
 namespace content {
 
 // Glue class for handling all inputs into Android-specific overscroll effects,
@@ -70,7 +66,12 @@ class CONTENT_EXPORT OverscrollControllerAndroid
   bool Animate(base::TimeTicks current_time, cc::Layer* parent_layer);
 
   // To be called whenever the content frame has been updated.
-  void OnFrameMetadataUpdated(const viz::CompositorFrameMetadata& metadata);
+  void OnFrameMetadataUpdated(float page_scale_factor,
+                              float device_scale_factor,
+                              const gfx::SizeF& scrollable_viewport_size,
+                              const gfx::SizeF& root_layer_size,
+                              const gfx::Vector2dF& root_scroll_offset,
+                              bool root_overflow_y_hidden);
 
   // Toggle activity of any overscroll effects. When disabled, events will be
   // ignored until the controller is re-enabled.

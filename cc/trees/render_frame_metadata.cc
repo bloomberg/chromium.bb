@@ -25,8 +25,13 @@ bool RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
          rfm1.is_scroll_offset_at_top != rfm2.is_scroll_offset_at_top ||
          rfm1.selection != rfm2.selection ||
 #if defined(OS_ANDROID)
+         rfm1.root_scroll_offset != rfm2.root_scroll_offset ||
          rfm1.page_scale_factor != rfm2.page_scale_factor ||
+         rfm1.min_page_scale_factor != rfm2.min_page_scale_factor ||
+         rfm1.max_page_scale_factor != rfm2.max_page_scale_factor ||
+         rfm1.root_overflow_y_hidden != rfm2.root_overflow_y_hidden ||
          rfm1.scrollable_viewport_size != rfm2.scrollable_viewport_size ||
+         rfm1.root_layer_size != rfm2.root_layer_size ||
 #endif
          rfm1.is_mobile_optimized != rfm2.is_mobile_optimized ||
          rfm1.device_scale_factor != rfm2.device_scale_factor ||
@@ -50,7 +55,11 @@ bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) const {
          is_scroll_offset_at_top == other.is_scroll_offset_at_top &&
          selection == other.selection &&
          page_scale_factor == other.page_scale_factor &&
+         min_page_scale_factor == other.min_page_scale_factor &&
+         max_page_scale_factor == other.max_page_scale_factor &&
+         root_overflow_y_hidden == other.root_overflow_y_hidden &&
          scrollable_viewport_size == other.scrollable_viewport_size &&
+         root_layer_size == other.root_layer_size &&
          is_mobile_optimized == other.is_mobile_optimized &&
          device_scale_factor == other.device_scale_factor &&
          viewport_size_in_pixels == other.viewport_size_in_pixels &&
