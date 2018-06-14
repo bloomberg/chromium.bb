@@ -1878,6 +1878,27 @@ void RenderProcessHostImpl::BindCacheStorage(
                      origin));
 }
 
+void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {
+  if (IsKeepAliveRefCountDisabled())
+    return;
+  DecrementKeepAliveRefCount(RenderProcessHost::KeepAliveClientType::kUnload);
+}
+
+void RenderProcessHostImpl::DelayProcessShutdownForUnload(
+    const base::TimeDelta& timeout) {
+  // No need to delay shutdown if the process is already shutting down.
+  if (IsKeepAliveRefCountDisabled() || deleting_soon_ || fast_shutdown_started_)
+    return;
+
+  IncrementKeepAliveRefCount(RenderProcessHost::KeepAliveClientType::kUnload);
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &RenderProcessHostImpl::CancelProcessShutdownDelayForUnload,
+          weak_factory_.GetWeakPtr()),
+      timeout);
+}
+
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
   auto registry = std::make_unique<service_manager::BinderRegistry>();
 
@@ -2207,6 +2228,10 @@ void RenderProcessHostImpl::RecordKeepAliveDuration(
     case RenderProcessHost::KeepAliveClientType::kFetch:
       UMA_HISTOGRAM_LONG_TIMES(
           "BrowserRenderProcessHost.KeepAliveDuration.Fetch", end - start);
+      break;
+    case RenderProcessHost::KeepAliveClientType::kUnload:
+      UMA_HISTOGRAM_LONG_TIMES(
+          "BrowserRenderProcessHost.KeepAliveDuration.Unload", end - start);
       break;
   }
 }

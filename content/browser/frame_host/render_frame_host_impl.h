@@ -733,6 +733,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // running renderer, or in case of Network Service connection errors.
   void UpdateSubresourceLoaderFactories();
 
+  // Allow tests to override the timeout used to keep subframe processes alive
+  // for unload handler processing.
+  void SetSubframeUnloadTimeoutForTesting(const base::TimeDelta& timeout);
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -1542,6 +1546,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
   base::TimeDelta keep_alive_timeout_;
+
+  base::TimeDelta subframe_unload_timeout_;
 
   // For observing Network Service connection errors only. Will trigger
   // |OnNetworkServiceConnectionError()| and push updated factories to

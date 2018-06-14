@@ -336,6 +336,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
     kServiceWorker = 0,
     kSharedWorker = 1,
     kFetch = 2,
+    kUnload = 3,
   };
   // "Keep alive ref count" represents the number of the customers of this
   // render process who wish the renderer process to be alive. While the ref
@@ -358,6 +359,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //    When a fetch request with keepalive flag
   //    (https://fetch.spec.whatwg.org/#request-keepalive-flag) specified is
   //    pending, it wishes the renderer process to be kept alive.
+  //  - Unload handlers:
+  //    Keeps the process alive briefly to give subframe unload handlers a
+  //    chance to execute after their parent frame navigates or is detached.
+  //    See https://crbug.com/852204.
   virtual void IncrementKeepAliveRefCount(KeepAliveClientType) = 0;
   virtual void DecrementKeepAliveRefCount(KeepAliveClientType) = 0;
 

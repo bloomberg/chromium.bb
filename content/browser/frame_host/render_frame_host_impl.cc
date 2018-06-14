@@ -550,6 +550,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       active_sandbox_flags_(blink::WebSandboxFlags::kNone),
       document_scoped_interface_provider_binding_(this),
       keep_alive_timeout_(base::TimeDelta::FromSeconds(30)),
+      subframe_unload_timeout_(base::TimeDelta::FromMilliseconds(
+          RenderViewHostImpl::kUnloadTimeoutMS)),
       weak_ptr_factory_(this) {
   frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
@@ -646,10 +648,6 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
 
   SetLastCommittedSiteUrl(GURL());
 
-  GetProcess()->RemoveRoute(routing_id_);
-  g_routing_id_frame_map.Get().erase(
-      RenderFrameHostID(GetProcess()->GetID(), routing_id_));
-
   if (overlay_routing_token_)
     g_token_frame_map.Get().erase(*overlay_routing_token_);
 
@@ -673,7 +671,22 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (is_active() && render_frame_created_ &&
       !will_render_view_clean_up_render_frame) {
     Send(new FrameMsg_Delete(routing_id_));
+
+    // If this subframe has an unload handler, ensure that it has a chance to
+    // execute by delaying process cleanup.  This will prevent the process from
+    // shutting down immediately in the case where this is the last active
+    // frame in the process.  See https://crbug.com/852204.
+    if (!frame_tree_node_->IsMainFrame() &&
+        GetSuddenTerminationDisablerState(blink::kUnloadHandler)) {
+      RenderProcessHostImpl* process =
+          static_cast<RenderProcessHostImpl*>(GetProcess());
+      process->DelayProcessShutdownForUnload(subframe_unload_timeout_);
+    }
   }
+
+  GetProcess()->RemoveRoute(routing_id_);
+  g_routing_id_frame_map.Get().erase(
+      RenderFrameHostID(GetProcess()->GetID(), routing_id_));
 
   // Null out the swapout timer; in crash dumps this member will be null only if
   // the dtor has run.  (It may also be null in tests.)
@@ -2030,6 +2043,11 @@ void RenderFrameHostImpl::OnSwappedOut() {
 
 void RenderFrameHostImpl::DisableSwapOutTimerForTesting() {
   swapout_event_monitor_timeout_.reset();
+}
+
+void RenderFrameHostImpl::SetSubframeUnloadTimeoutForTesting(
+    const base::TimeDelta& timeout) {
+  subframe_unload_timeout_ = timeout;
 }
 
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
