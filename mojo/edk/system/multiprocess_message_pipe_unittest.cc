@@ -32,6 +32,7 @@
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -431,13 +432,10 @@ DEFINE_TEST_CLIENT_WITH_PIPE(CheckInternalPlatformHandleFile,
   CHECK_GT(num_handles, 0);
 
   for (int i = 0; i < num_handles; ++i) {
-    ScopedInternalPlatformHandle h;
-    CHECK_EQ(PassWrappedInternalPlatformHandle(handles[i], &h), MOJO_RESULT_OK);
+    PlatformHandle h = UnwrapPlatformHandle(ScopedHandle(Handle(handles[i])));
     CHECK(h.is_valid());
-    MojoClose(handles[i]);
 
-    base::ScopedFILE fp(
-        test::FILEFromInternalPlatformHandle(std::move(h), "r"));
+    base::ScopedFILE fp = test::FILEFromPlatformHandle(std::move(h), "r");
     CHECK(fp);
     std::string fread_buffer(100, '\0');
     size_t bytes_read =
@@ -470,13 +468,10 @@ TEST_P(MultiprocessMessagePipeTestWithPipeCount,
       CHECK_EQ(fwrite(&world[0], 1, world.size(), fp.get()), world.size());
       fflush(fp.get());
       rewind(fp.get());
-      MojoHandle handle;
-      ASSERT_EQ(CreateInternalPlatformHandleWrapper(
-                    ScopedInternalPlatformHandle(
-                        test::InternalPlatformHandleFromFILE(std::move(fp))),
-                    &handle),
-                MOJO_RESULT_OK);
-      handles.push_back(handle);
+      ScopedHandle handle =
+          WrapPlatformHandle(test::PlatformHandleFromFILE(std::move(fp)));
+      ASSERT_TRUE(handle.is_valid());
+      handles.push_back(handle.release().value());
     }
 
     char message[128];

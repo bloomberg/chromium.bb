@@ -11,43 +11,18 @@
 #include <string>
 
 #include "base/files/scoped_file.h"
-#include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace mojo {
 namespace edk {
 namespace test {
 
-// On success, |bytes_written| is updated to the number of bytes written;
-// otherwise it is untouched.
-bool BlockingWrite(const InternalPlatformHandle& handle,
-                   const void* buffer,
-                   size_t bytes_to_write,
-                   size_t* bytes_written);
-
-// On success, |bytes_read| is updated to the number of bytes read; otherwise it
-// is untouched.
-bool BlockingRead(const InternalPlatformHandle& handle,
-                  void* buffer,
-                  size_t buffer_size,
-                  size_t* bytes_read);
-
-// If the read is done successfully or would block, the function returns true
-// and updates |bytes_read| to the number of bytes read (0 if the read would
-// block); otherwise it returns false and leaves |bytes_read| untouched.
-// |handle| must already be in non-blocking mode.
-bool NonBlockingRead(const InternalPlatformHandle& handle,
-                     void* buffer,
-                     size_t buffer_size,
-                     size_t* bytes_read);
-
-// Gets a (scoped) |InternalPlatformHandle| from the given (scoped) |FILE|.
-ScopedInternalPlatformHandle InternalPlatformHandleFromFILE(
-    base::ScopedFILE fp);
+// Gets a (scoped) |PlatformHandle| from the given (scoped) |FILE|.
+PlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp);
 
 // Gets a (scoped) |FILE| from a (scoped) |InternalPlatformHandle|.
-base::ScopedFILE FILEFromInternalPlatformHandle(ScopedInternalPlatformHandle h,
-                                                const char* mode);
+base::ScopedFILE FILEFromPlatformHandle(PlatformHandle h, const char* mode);
 
 }  // namespace test
 }  // namespace edk

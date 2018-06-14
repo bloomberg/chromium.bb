@@ -156,8 +156,8 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
           base::CreateAndOpenTemporaryFileInDir(temp_dir.GetPath(), &unused));
       ASSERT_TRUE(fp);
       ASSERT_EQ(j, fwrite(std::string(j, c).data(), 1, j, fp.get()));
-      platform_handles.push_back(
-          test::InternalPlatformHandleFromFILE(std::move(fp)));
+      platform_handles.emplace_back(InternalPlatformHandle(
+          test::PlatformHandleFromFILE(std::move(fp)).ReleaseFD()));
       ASSERT_TRUE(platform_handles.back().is_valid());
     }
 
@@ -180,8 +180,10 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     EXPECT_EQ(i, received_handles.size());
 
     for (size_t j = 0; j < received_handles.size(); j++) {
-      base::ScopedFILE fp(test::FILEFromInternalPlatformHandle(
-          std::move(received_handles.front()), "rb"));
+      base::ScopedFILE fp(test::FILEFromPlatformHandle(
+          PlatformHandle(
+              base::ScopedFD(received_handles.front().release().handle)),
+          "rb"));
       received_handles.pop_front();
       ASSERT_TRUE(fp);
       rewind(fp.get());
@@ -213,7 +215,8 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
     ASSERT_EQ(file_contents.size(),
               fwrite(file_contents.data(), 1, file_contents.size(), fp.get()));
     std::vector<ScopedInternalPlatformHandle> platform_handles(1);
-    platform_handles[0] = test::InternalPlatformHandleFromFILE(std::move(fp));
+    platform_handles[0].reset(InternalPlatformHandle(
+        test::PlatformHandleFromFILE(std::move(fp)).ReleaseFD()));
     ASSERT_TRUE(platform_handles.back().is_valid());
 
     // Send the FD (+ "hello").
@@ -241,8 +244,9 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
   EXPECT_TRUE(received_handles[1].is_valid());
 
   {
-    base::ScopedFILE fp(test::FILEFromInternalPlatformHandle(
-        std::move(received_handles[1]), "rb"));
+    base::ScopedFILE fp(test::FILEFromPlatformHandle(
+        PlatformHandle(base::ScopedFD(received_handles[1].release().handle)),
+        "rb"));
     ASSERT_TRUE(fp);
     rewind(fp.get());
     char read_buf[100];
