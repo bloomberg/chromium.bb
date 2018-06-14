@@ -14,6 +14,13 @@
 
 namespace feed {
 
+enum class FeedSchedulerHost::TriggerType {
+  NTP_SHOWN = 0,
+  FOREGROUNDED = 1,
+  FIXED_TIMER = 2,
+  COUNT
+};
+
 FeedSchedulerHost::FeedSchedulerHost(PrefService* pref_service,
                                      base::Clock* clock)
     : pref_service_(pref_service), clock_(clock) {}
@@ -29,7 +36,24 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
     bool has_content,
     base::Time content_creation_date_time,
     bool has_outstanding_request) {
-  return REQUEST_WITH_WAIT;
+  // TODO(skym): Record requested behavior into histogram.
+  if (!has_outstanding_request && ShouldRefresh(TriggerType::NTP_SHOWN)) {
+    if (!has_content) {
+      return REQUEST_WITH_WAIT;
+    } else if (IsContentStale(content_creation_date_time)) {
+      return REQUEST_WITH_TIMEOUT;
+    } else {
+      return REQUEST_WITH_CONTENT;
+    }
+  } else {
+    if (!has_content) {
+      return NO_REQUEST_WITH_WAIT;
+    } else if (IsContentStale(content_creation_date_time)) {
+      return NO_REQUEST_WITH_TIMEOUT;
+    } else {
+      return NO_REQUEST_WITH_CONTENT;
+    }
+  }
 }
 
 void FeedSchedulerHost::OnReceiveNewContent(
@@ -42,6 +66,20 @@ void FeedSchedulerHost::OnRequestError(int network_response_code) {
   pref_service_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
 }
 
+void FeedSchedulerHost::OnForegrounded() {
+  DCHECK(trigger_refresh_);
+  if (ShouldRefresh(TriggerType::FOREGROUNDED)) {
+    trigger_refresh_.Run();
+  }
+}
+
+void FeedSchedulerHost::OnFixedTimer() {
+  DCHECK(trigger_refresh_);
+  if (ShouldRefresh(TriggerType::FIXED_TIMER)) {
+    trigger_refresh_.Run();
+  }
+}
+
 void FeedSchedulerHost::RegisterTriggerRefreshCallback(
     base::RepeatingClosure callback) {
   // There should only ever be one scheduler host and bridge created. This may
@@ -49,6 +87,22 @@ void FeedSchedulerHost::RegisterTriggerRefreshCallback(
   DCHECK(trigger_refresh_.is_null());
 
   trigger_refresh_ = std::move(callback);
+}
+
+bool FeedSchedulerHost::ShouldRefresh(TriggerType trigger) {
+  // TODO(skym): Check various criteria are met, record metrics.
+  return true;
+}
+
+bool FeedSchedulerHost::IsContentStale(base::Time content_creation_date_time) {
+  // TODO(skym): Compare |content_creation_date_time| to foregrounded trigger's
+  // threshold.
+  return false;
+}
+
+base::TimeDelta FeedSchedulerHost::GetTriggerThreshold(TriggerType trigger) {
+  // TODO(skym): Select Finch param based on trigger and user classification.
+  return base::TimeDelta();
 }
 
 void FeedSchedulerHost::ScheduleFixedTimerWakeUp() {

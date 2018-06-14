@@ -72,6 +72,16 @@ void FeedSchedulerBridge::OnRequestError(JNIEnv* env,
   scheduler_host_->OnRequestError(j_network_response_code);
 }
 
+void FeedSchedulerBridge::OnForegrounded(JNIEnv* env,
+                                         const JavaRef<jobject>& j_this) {
+  scheduler_host_->OnForegrounded();
+}
+
+void FeedSchedulerBridge::OnFixedTimer(JNIEnv* env,
+                                       const JavaRef<jobject>& j_this) {
+  scheduler_host_->OnFixedTimer();
+}
+
 void FeedSchedulerBridge::TriggerRefresh() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_FeedSchedulerBridge_triggerRefresh(env, j_this_);

@@ -40,6 +40,11 @@ class FeedSchedulerBridge {
                       const base::android::JavaRef<jobject>& j_this,
                       jint j_network_response_code);
 
+  void OnForegrounded(JNIEnv* env,
+                      const base::android::JavaRef<jobject>& j_this);
+
+  void OnFixedTimer(JNIEnv* env, const base::android::JavaRef<jobject>& j_this);
+
   // Callable by native code to invoke Java code. Sends a request to the Feed
   // library to make the refresh call.
   void TriggerRefresh();
