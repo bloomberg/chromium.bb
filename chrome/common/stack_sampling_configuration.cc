@@ -189,27 +189,16 @@ StackSamplingConfiguration::GenerateConfiguration() {
     return PROFILE_DISABLED;
 
   switch (chrome::GetChannel()) {
-    // Enable the profiler in the ultimate production configuration for
-    // development/waterfall builds.
+    // Enable the profiler unconditionally for development/waterfall builds.
     case version_info::Channel::UNKNOWN:
       return PROFILE_ENABLED;
 
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
+#if (defined(OS_WIN) && defined(ARCH_CPU_X86_64)) || defined(OS_MACOSX)
     case version_info::Channel::CANARY:
     case version_info::Channel::DEV:
       return ChooseConfiguration({{PROFILE_ENABLED, 80},
                                   {PROFILE_CONTROL, 10},
                                   {PROFILE_DISABLED, 10}});
-#elif defined(OS_MACOSX)
-    case version_info::Channel::CANARY:
-      return ChooseConfiguration({{PROFILE_ENABLED, 80},
-                                  {PROFILE_CONTROL, 10},
-                                  {PROFILE_DISABLED, 10}});
-
-    case version_info::Channel::DEV:
-      return ChooseConfiguration({{PROFILE_ENABLED, 50},
-                                  {PROFILE_CONTROL, 0},
-                                  {PROFILE_DISABLED, 50}});
 #endif
 
     default:
