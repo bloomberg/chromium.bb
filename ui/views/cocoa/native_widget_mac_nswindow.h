@@ -18,6 +18,11 @@ VIEWS_EXPORT
 // Set a CommandDispatcherDelegate, i.e. to implement key event handling.
 - (void)setCommandDispatcherDelegate:(id<CommandDispatcherDelegate>)delegate;
 
+// Selector passed to [NSApp beginSheet:]. Forwards to [self delegate], if set.
+- (void)sheetDidEnd:(NSWindow*)sheet
+         returnCode:(NSInteger)returnCode
+        contextInfo:(void*)contextInfo;
+
 @end
 
 #endif  // UI_VIEWS_COCOA_NATIVE_WIDGET_MAC_NSWINDOW_H_

@@ -1354,6 +1354,7 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
 TEST_F(NativeWidgetMacTest, CloseWithWindowModalSheet) {
   NSWindow* native_parent =
       MakeNativeParentWithStyle(NSClosableWindowMask | NSTitledWindowMask);
+
   {
     Widget* sheet_widget = ShowWindowModalWidget(native_parent);
     EXPECT_TRUE([sheet_widget->GetNativeWindow() isVisible]);
@@ -1384,15 +1385,110 @@ TEST_F(NativeWidgetMacTest, CloseWithWindowModalSheet) {
     base::RunLoop().RunUntilIdle();
   }
 
+  // Similar, but invoke -[NSWindow close] immediately after an asynchronous
+  // Close(). This exercises a scenario where two tasks to end the sheet may be
+  // posted. Experimentally (on 10.13) both tasks run, but the second will never
+  // attempt to invoke -didEndSheet: on the |modalDelegate| arg of -beginSheet:.
+  // (If it did, it would be fine.)
+  {
+    Widget* sheet_widget = ShowWindowModalWidget(native_parent);
+    base::scoped_nsobject<NSWindow> sheet_window(
+        sheet_widget->GetNativeWindow(), base::scoped_policy::RETAIN);
+    EXPECT_TRUE([sheet_window isVisible]);
+
+    WidgetChangeObserver widget_observer(sheet_widget);
+    sheet_widget->Close();  // Asynchronous. Can't be called after -close.
+    EXPECT_FALSE(widget_observer.widget_closed());
+    [sheet_window close];
+    EXPECT_TRUE(widget_observer.widget_closed());
+    base::RunLoop().RunUntilIdle();
+
+    // Pretend both tasks ran fully. Note that |sheet_window| serves as its own
+    // |modalDelegate|.
+    [base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(sheet_window)
+        sheetDidEnd:sheet_window
+         returnCode:NSModalResponseStop
+        contextInfo:nullptr];
+  }
+
+  // Test another hypothetical: What if -sheetDidEnd: was invoked somehow
+  // without going through [NSApp endSheet:] or -[NSWindow endSheet:].
+  {
+    base::mac::ScopedNSAutoreleasePool pool;
+    Widget* sheet_widget = ShowWindowModalWidget(native_parent);
+    NSWindow* sheet_window = sheet_widget->GetNativeWindow();
+    EXPECT_TRUE([sheet_window isVisible]);
+
+    WidgetChangeObserver widget_observer(sheet_widget);
+    sheet_widget->Close();
+
+    [base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(sheet_window)
+        sheetDidEnd:sheet_window
+         returnCode:NSModalResponseStop
+        contextInfo:nullptr];
+
+    EXPECT_TRUE(widget_observer.widget_closed());
+    // Here, the ViewsNSWindowDelegate should be dealloc'd.
+  }
+  base::RunLoop().RunUntilIdle();  // Run the task posted in Close().
+
+  // Test -[NSWindow close] on the parent window.
   {
     Widget* sheet_widget = ShowWindowModalWidget(native_parent);
     EXPECT_TRUE([sheet_widget->GetNativeWindow() isVisible]);
     WidgetChangeObserver widget_observer(sheet_widget);
 
-    // Test -[NSWindow close] on the parent window.
     [native_parent close];
     EXPECT_TRUE(widget_observer.widget_closed());
   }
+}
+
+// Exercise a scenario where the task posted in the asynchronous Close() could
+// eventually complete on a destroyed NSWindowDelegate. Regression test for
+// https://crbug.com/851376.
+TEST_F(NativeWidgetMacTest, CloseWindowModalSheetWithoutSheetParent) {
+  NSWindow* native_parent =
+      MakeNativeParentWithStyle(NSClosableWindowMask | NSTitledWindowMask);
+  {
+    base::mac::ScopedNSAutoreleasePool pool;
+    Widget* sheet_widget = ShowWindowModalWidget(native_parent);
+    NSWindow* sheet_window = sheet_widget->GetNativeWindow();
+    EXPECT_TRUE([sheet_window isVisible]);
+
+    sheet_widget->Close();  // Asynchronous. Can't be called after -close.
+
+    // Now there's a task to end the sheet in the message queue. But destroying
+    // the NSWindowDelegate without _also_ posting a task that will _retain_ it
+    // is hard. It _is_ possible for a -performSelector:afterDelay: already in
+    // the queue to happen _after_ a PostTask posted now, but it's a very rare
+    // occurrence. So to simulate it, we pretend the sheet isn't actually a
+    // sheet by hiding its sheetParent. This avoids a task being posted that
+    // would retain the delegate, but also puts |native_parent| into a weird
+    // state.
+    //
+    // In fact, the "real" suspected trigger for this bug requires the PostTask
+    // to still be posted, then run to completion, and to dealloc the delegate
+    // it retains all before the -performSelector:afterDelay runs. That's the
+    // theory anyway.
+    //
+    // In reality, it didn't seem possible for -sheetDidEnd: to be invoked twice
+    // (AppKit would suppress it on subsequent calls to -[NSApp endSheet:] or
+    // -[NSWindow endSheet:]), so if the PostTask were to run to completion, the
+    // waiting -performSelector would always no- op. So this is actually testing
+    // a hypothetical where the sheetParent may be somehow nil during teardown
+    // (perhaps due to the parent window being further along in its teardown).
+    EXPECT_TRUE([sheet_window sheetParent]);
+    [sheet_window setValue:nil forKey:@"sheetParent"];
+    EXPECT_FALSE([sheet_window sheetParent]);
+    [sheet_window close];
+
+    // To repro the crash, we need a dealloc to occur here on |sheet_widget|'s
+    // NSWindowDelegate.
+  }
+  // Now there is still a task to end the sheet in the message queue, which
+  // should not crash.
+  base::RunLoop().RunUntilIdle();
+  [native_parent close];
 }
 
 // Test calls to Widget::ReparentNativeView() that result in a no-op on Mac.

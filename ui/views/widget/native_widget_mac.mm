@@ -392,7 +392,12 @@ void NativeWidgetMac::Close() {
     // sheet has finished animating, it will call sheetDidEnd: on the parent
     // window's delegate. Note it still needs to be asynchronous, since code
     // calling Widget::Close() doesn't expect things to be deleted upon return.
-    [NSApp performSelector:@selector(endSheet:) withObject:window afterDelay:0];
+    // Ensure |window| is retained by a block. Note in some cases during
+    // teardown, [window sheetParent] may be nil.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(base::RetainBlock(^{
+          [NSApp endSheet:window];
+        })));
     return;
   }
 
