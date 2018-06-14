@@ -97,7 +97,7 @@ MockLaunchd::MockLaunchd(
     bool create_socket,
     bool as_service)
     : file_(file),
-      pipe_name_(GetServiceProcessChannel().name),
+      pipe_name_(GetServiceProcessServerName()),
       main_task_runner_(std::move(main_task_runner)),
       create_socket_(create_socket),
       as_service_(as_service),

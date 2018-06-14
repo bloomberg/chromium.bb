@@ -4,6 +4,8 @@
 
 #include "chrome/common/service_process_util.h"
 
+#include <windows.h>
+
 #include <algorithm>
 #include <memory>
 
@@ -80,8 +82,8 @@ class ServiceProcessTerminateMonitor
 }  // namespace
 
 // Gets the name of the service process IPC channel.
-mojo::edk::NamedPlatformHandle GetServiceProcessChannel() {
-  return mojo::edk::NamedPlatformHandle(
+mojo::NamedPlatformChannel::ServerName GetServiceProcessServerName() {
+  return mojo::NamedPlatformChannel::ServerNameFromUTF8(
       GetServiceProcessScopedVersionedName("_service_ipc"));
 }
 
