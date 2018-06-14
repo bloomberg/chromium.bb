@@ -8,8 +8,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
-#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
-#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 #include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
@@ -31,7 +29,6 @@ ModulatorImplBase::ModulatorImplBase(scoped_refptr<ScriptState> script_state)
       task_runner_(ExecutionContext::From(script_state_.get())
                        ->GetTaskRunner(TaskType::kNetworking)),
       map_(ModuleMap::Create(this)),
-      loader_registry_(ModuleScriptLoaderRegistry::Create()),
       tree_linker_registry_(ModuleTreeLinkerRegistry::Create()),
       script_module_resolver_(ScriptModuleResolverImpl::Create(
           this,
@@ -98,15 +95,6 @@ void ModulatorImplBase::FetchSingle(
     SingleModuleClient* client) {
   map_->FetchSingleModuleScript(request, fetch_client_settings_object, level,
                                 client);
-}
-
-void ModulatorImplBase::FetchNewSingleModule(
-    const ModuleScriptFetchRequest& request,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-    ModuleGraphLevel level,
-    ModuleScriptLoaderClient* client) {
-  ModuleScriptLoader::Fetch(request, fetch_client_settings_object, level, this,
-                            loader_registry_, client);
 }
 
 ModuleScript* ModulatorImplBase::GetFetchedModuleScript(const KURL& url) {
@@ -306,7 +294,6 @@ ScriptValue ModulatorImplBase::ExecuteModule(
 void ModulatorImplBase::Trace(blink::Visitor* visitor) {
   Modulator::Trace(visitor);
   visitor->Trace(map_);
-  visitor->Trace(loader_registry_);
   visitor->Trace(tree_linker_registry_);
   visitor->Trace(script_module_resolver_);
   visitor->Trace(dynamic_module_resolver_);

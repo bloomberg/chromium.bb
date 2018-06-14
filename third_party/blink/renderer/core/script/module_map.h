@@ -20,6 +20,7 @@ class FetchClientSettingsObjectSnapshot;
 class Modulator;
 class ModuleScript;
 class ModuleScriptFetchRequest;
+class ModuleScriptLoaderRegistry;
 class SingleModuleClient;
 enum class ModuleGraphLevel;
 
@@ -59,6 +60,7 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   MapImpl map_;
 
   Member<Modulator> modulator_;
+  Member<ModuleScriptLoaderRegistry> loader_registry_;
   DISALLOW_COPY_AND_ASSIGN(ModuleMap);
 };
 

@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/core/script/module_map.h"
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 
@@ -93,13 +95,16 @@ ModuleScript* ModuleMap::Entry::GetModuleScript() const {
   return module_script_.Get();
 }
 
-ModuleMap::ModuleMap(Modulator* modulator) : modulator_(modulator) {
+ModuleMap::ModuleMap(Modulator* modulator)
+    : modulator_(modulator),
+      loader_registry_(ModuleScriptLoaderRegistry::Create()) {
   DCHECK(modulator);
 }
 
 void ModuleMap::Trace(blink::Visitor* visitor) {
   visitor->Trace(map_);
   visitor->Trace(modulator_);
+  visitor->Trace(loader_registry_);
 }
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
@@ -123,8 +128,8 @@ void ModuleMap::FetchSingleModuleScript(
 
     // Steps 4-9 loads a new single module script.
     // Delegates to ModuleScriptLoader via Modulator.
-    modulator_->FetchNewSingleModule(request, fetch_client_settings_object,
-                                     level, entry);
+    ModuleScriptLoader::Fetch(request, fetch_client_settings_object, level,
+                              modulator_, loader_registry_, entry);
   }
   DCHECK(entry);
 

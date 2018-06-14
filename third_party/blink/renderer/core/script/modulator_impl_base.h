@@ -18,7 +18,6 @@ namespace blink {
 class DynamicModuleResolver;
 class ExecutionContext;
 class ModuleMap;
-class ModuleScriptLoaderRegistry;
 class ModuleTreeLinkerRegistry;
 class ScriptState;
 
@@ -66,11 +65,6 @@ class ModulatorImplBase : public Modulator {
       SingleModuleClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   bool HasValidContext() override;
-  void FetchNewSingleModule(
-      const ModuleScriptFetchRequest&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-      ModuleGraphLevel,
-      ModuleScriptLoaderClient*) override;
   KURL ResolveModuleSpecifier(const String& module_request,
                               const KURL& base_url,
                               String* failure_reason) final;
@@ -100,7 +94,6 @@ class ModulatorImplBase : public Modulator {
   scoped_refptr<ScriptState> script_state_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TraceWrapperMember<ModuleMap> map_;
-  Member<ModuleScriptLoaderRegistry> loader_registry_;
   TraceWrapperMember<ModuleTreeLinkerRegistry> tree_linker_registry_;
   Member<ScriptModuleResolver> script_module_resolver_;
   Member<DynamicModuleResolver> dynamic_module_resolver_;

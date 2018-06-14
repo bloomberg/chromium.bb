@@ -27,7 +27,6 @@ class FetchClientSettingsObjectSnapshot;
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptFetcher;
-class ModuleScriptLoaderClient;
 class ReferrerScriptInfo;
 class ScriptModuleResolver;
 class ScriptPromiseResolver;
@@ -175,19 +174,6 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
                                     CaptureEvalErrorFlag) = 0;
 
   virtual ModuleScriptFetcher* CreateModuleScriptFetcher() = 0;
-
- private:
-  friend class ModuleMap;
-
-  // Fetches a single module script.
-  // This is triggered from fetchSingle() implementation (which is in ModuleMap)
-  // if the cached entry doesn't exist.
-  // The client can be notified either synchronously or asynchronously.
-  virtual void FetchNewSingleModule(
-      const ModuleScriptFetchRequest&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-      ModuleGraphLevel,
-      ModuleScriptLoaderClient*) = 0;
 };
 
 }  // namespace blink
