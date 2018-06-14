@@ -49,4 +49,8 @@ void NetworkFeaturePodController::OnLabelPressed() {
   tray_controller_->ShowNetworkDetailedView();
 }
 
+SystemTrayItemUmaType NetworkFeaturePodController::GetUmaType() const {
+  return SystemTrayItemUmaType::UMA_NETWORK;
+}
+
 }  // namespace ash

@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_UNIFIED_FEATURE_POD_CONTROLLER_BASE_H_
 
 #include "ash/ash_export.h"
+#include "ash/system/tray/system_tray_item_uma_type.h"
 
 namespace ash {
 
@@ -32,6 +33,10 @@ class ASH_EXPORT FeaturePodControllerBase {
   // If the feature pod has a detailed view, it is expected to show the detailed
   // view. Defaults to OnIconPressed().
   virtual void OnLabelPressed();
+
+  // Return histogram value for Ash.SystemMenu.DefaultView.VisibleRows. If the
+  // button is not recorded, UMA_NOT_RECORDED will be used.
+  virtual SystemTrayItemUmaType GetUmaType() const = 0;
 };
 
 }  // namespace ash

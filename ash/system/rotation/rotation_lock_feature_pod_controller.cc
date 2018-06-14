@@ -39,6 +39,10 @@ void RotationLockFeaturePodController::OnIconPressed() {
   Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
 }
 
+SystemTrayItemUmaType RotationLockFeaturePodController::GetUmaType() const {
+  return SystemTrayItemUmaType::UMA_ROTATION_LOCK;
+}
+
 void RotationLockFeaturePodController::OnTabletModeStarted() {
   UpdateButton();
 }

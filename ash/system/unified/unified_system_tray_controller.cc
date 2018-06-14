@@ -24,8 +24,10 @@
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
 #include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/tray/system_tray_item_uma_type.h"
 #include "ash/system/unified/accessibility_feature_pod_controller.h"
 #include "ash/system/unified/detailed_view_controller.h"
+#include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
@@ -262,7 +264,17 @@ void UnifiedSystemTrayController::InitFeaturePods() {
 void UnifiedSystemTrayController::AddFeaturePodItem(
     std::unique_ptr<FeaturePodControllerBase> controller) {
   DCHECK(unified_view_);
-  unified_view_->AddFeaturePodButton(controller->CreateButton());
+  FeaturePodButton* button = controller->CreateButton();
+
+  // Record DefaultView.VisibleRows UMA.
+  SystemTrayItemUmaType uma_type = controller->GetUmaType();
+  if (uma_type != SystemTrayItemUmaType::UMA_NOT_RECORDED &&
+      button->visible_preferred()) {
+    UMA_HISTOGRAM_ENUMERATION("Ash.SystemMenu.DefaultView.VisibleRows",
+                              uma_type, SystemTrayItemUmaType::UMA_COUNT);
+  }
+
+  unified_view_->AddFeaturePodButton(button);
   feature_pod_controllers_.push_back(std::move(controller));
 }
 

@@ -168,7 +168,8 @@ void BrightnessView::SliderDragEnded(views::Slider* slider) {
 }  // namespace tray
 
 TrayBrightness::TrayBrightness(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_DISPLAY_BRIGHTNESS),
+    : SystemTrayItem(system_tray,
+                     SystemTrayItemUmaType::UMA_DISPLAY_BRIGHTNESS),
       brightness_view_(nullptr),
       current_percent_(100.0),
       got_current_percent_(false),

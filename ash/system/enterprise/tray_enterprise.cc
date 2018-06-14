@@ -41,7 +41,8 @@ base::string16 GetEnterpriseMessage() {
 }  // namespace
 
 TrayEnterprise::TrayEnterprise(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_ENTERPRISE), tray_view_(nullptr) {
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_ENTERPRISE),
+      tray_view_(nullptr) {
   Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
 }
 

@@ -34,6 +34,10 @@ void NightLightFeaturePodController::OnIconPressed() {
   UpdateButton();
 }
 
+SystemTrayItemUmaType NightLightFeaturePodController::GetUmaType() const {
+  return SystemTrayItemUmaType::UMA_NIGHT_LIGHT;
+}
+
 void NightLightFeaturePodController::UpdateButton() {
   if (!features::IsNightLightEnabled())
     return;

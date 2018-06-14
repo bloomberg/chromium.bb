@@ -21,7 +21,9 @@ namespace ash {
 using chromeos::CrasAudioHandler;
 
 TrayAudio::TrayAudio(SystemTray* system_tray)
-    : TrayImageItem(system_tray, kSystemTrayVolumeMuteIcon, UMA_AUDIO),
+    : TrayImageItem(system_tray,
+                    kSystemTrayVolumeMuteIcon,
+                    SystemTrayItemUmaType::UMA_AUDIO),
       volume_view_(nullptr),
       pop_up_volume_view_(false),
       audio_detail_view_(nullptr),

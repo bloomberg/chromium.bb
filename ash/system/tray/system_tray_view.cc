@@ -121,12 +121,12 @@ void SystemTrayView::RecordVisibleRowMetrics() {
   if (system_tray_type_ != SYSTEM_TRAY_TYPE_DEFAULT)
     return;
 
-  for (const std::pair<SystemTrayItem::UmaType, views::View*>& pair :
+  for (const std::pair<SystemTrayItemUmaType, views::View*>& pair :
        tray_item_view_map_) {
     if (pair.second->visible() &&
-        pair.first != SystemTrayItem::UMA_NOT_RECORDED) {
+        pair.first != SystemTrayItemUmaType::UMA_NOT_RECORDED) {
       UMA_HISTOGRAM_ENUMERATION("Ash.SystemMenu.DefaultView.VisibleRows",
-                                pair.first, SystemTrayItem::UMA_COUNT);
+                                pair.first, SystemTrayItemUmaType::UMA_COUNT);
     }
   }
 }

@@ -43,6 +43,10 @@ void BluetoothFeaturePodController::OnLabelPressed() {
   tray_controller_->ShowBluetoothDetailedView();
 }
 
+SystemTrayItemUmaType BluetoothFeaturePodController::GetUmaType() const {
+  return SystemTrayItemUmaType::UMA_BLUETOOTH;
+}
+
 void BluetoothFeaturePodController::UpdateButton() {
   bool is_available =
       Shell::Get()->tray_bluetooth_helper()->GetBluetoothAvailable();

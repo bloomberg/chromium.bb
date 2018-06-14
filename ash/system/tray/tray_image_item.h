@@ -26,7 +26,7 @@ class ASH_EXPORT TrayImageItem : public SystemTrayItem {
  public:
   TrayImageItem(SystemTray* system_tray,
                 const gfx::VectorIcon& icon,
-                UmaType uma_type);
+                SystemTrayItemUmaType uma_type);
   ~TrayImageItem() override;
 
   views::View* tray_view();

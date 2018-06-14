@@ -91,7 +91,8 @@ void ScreenStatusView::UpdateFromScreenTrayItem() {
 
 }  // namespace tray
 
-ScreenTrayItem::ScreenTrayItem(SystemTray* system_tray, UmaType uma_type)
+ScreenTrayItem::ScreenTrayItem(SystemTray* system_tray,
+                               SystemTrayItemUmaType uma_type)
     : SystemTrayItem(system_tray, uma_type),
       tray_view_(nullptr),
       default_view_(nullptr),

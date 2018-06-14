@@ -458,7 +458,7 @@ void AccessibilityDetailedView::ShowHelp() {
 TrayAccessibility::TrayAccessibility(SystemTray* system_tray)
     : TrayImageItem(system_tray,
                     kSystemTrayAccessibilityIcon,
-                    UMA_ACCESSIBILITY),
+                    SystemTrayItemUmaType::UMA_ACCESSIBILITY),
       default_(nullptr),
       detailed_menu_(nullptr),
       tray_icon_visible_(false),

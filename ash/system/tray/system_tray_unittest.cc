@@ -467,7 +467,7 @@ TEST_F(SystemTrayTest, OnlyVisibleItemsRecorded) {
   tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
-                                     SystemTrayItem::UMA_TEST, 1);
+                                     SystemTrayItemUmaType::UMA_TEST, 1);
 
   ASSERT_TRUE(tray->HasSystemBubble());
   tray->CloseBubble();
@@ -476,7 +476,7 @@ TEST_F(SystemTrayTest, OnlyVisibleItemsRecorded) {
   tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
-                                     SystemTrayItem::UMA_TEST, 2);
+                                     SystemTrayItemUmaType::UMA_TEST, 2);
 
   ASSERT_TRUE(tray->HasSystemBubble());
   tray->CloseBubble();
@@ -487,7 +487,7 @@ TEST_F(SystemTrayTest, OnlyVisibleItemsRecorded) {
   tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
-                                     SystemTrayItem::UMA_TEST, 2);
+                                     SystemTrayItemUmaType::UMA_TEST, 2);
 
   ASSERT_TRUE(tray->HasSystemBubble());
   tray->CloseBubble();
@@ -505,15 +505,15 @@ TEST_F(SystemTrayTest, NotRecordedtemsAreNotRecorded) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
-  tray->AddTrayItem(
-      std::make_unique<TestSystemTrayItem>(SystemTrayItem::UMA_NOT_RECORDED));
+  tray->AddTrayItem(std::make_unique<TestSystemTrayItem>(
+      SystemTrayItemUmaType::UMA_NOT_RECORDED));
 
   base::HistogramTester histogram_tester;
 
   tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
-  histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
-                                     SystemTrayItem::UMA_NOT_RECORDED, 0);
+  histogram_tester.ExpectBucketCount(
+      kVisibleRowsHistogramName, SystemTrayItemUmaType::UMA_NOT_RECORDED, 0);
 
   ASSERT_TRUE(tray->HasSystemBubble());
   tray->CloseBubble();
@@ -540,7 +540,7 @@ TEST_F(SystemTrayTest, NullDefaultViewIsNotRecorded) {
   tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
-                                     SystemTrayItem::UMA_TEST, 0);
+                                     SystemTrayItemUmaType::UMA_TEST, 0);
 
   ASSERT_TRUE(tray->HasSystemBubble());
   tray->CloseBubble();
@@ -592,17 +592,17 @@ TEST_F(SystemTrayTest, VisibleDefaultViewIsNotRecordedOnReshow) {
   tray->ShowDefaultView(BUBBLE_CREATE_NEW, false /* show_by_click */);
   RunAllPendingInMessageLoop();
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
-                                     SystemTrayItem::UMA_TEST, 1);
+                                     SystemTrayItemUmaType::UMA_TEST, 1);
 
   tray->ShowDetailedView(test_item, 0, BUBBLE_USE_EXISTING);
   RunAllPendingInMessageLoop();
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
-                                     SystemTrayItem::UMA_TEST, 1);
+                                     SystemTrayItemUmaType::UMA_TEST, 1);
 
   tray->ShowDefaultView(BUBBLE_USE_EXISTING, false /* show_by_click */);
   RunAllPendingInMessageLoop();
   histogram_tester.ExpectBucketCount(kVisibleRowsHistogramName,
-                                     SystemTrayItem::UMA_TEST, 1);
+                                     SystemTrayItemUmaType::UMA_TEST, 1);
 
   ASSERT_TRUE(tray->HasSystemBubble());
   tray->CloseBubble();

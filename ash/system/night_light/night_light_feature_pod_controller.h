@@ -19,6 +19,7 @@ class NightLightFeaturePodController : public FeaturePodControllerBase {
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
   void OnIconPressed() override;
+  SystemTrayItemUmaType GetUmaType() const override;
 
  private:
   void UpdateButton();

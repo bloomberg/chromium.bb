@@ -102,7 +102,8 @@ void KeyboardBrightnessView::OnBoundsChanged(const gfx::Rect& old_bounds) {
 }  // namespace tray
 
 TrayKeyboardBrightness::TrayKeyboardBrightness(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_DISPLAY_BRIGHTNESS),
+    : SystemTrayItem(system_tray,
+                     SystemTrayItemUmaType::UMA_DISPLAY_BRIGHTNESS),
       weak_ptr_factory_(this) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);

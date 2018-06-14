@@ -417,7 +417,7 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
 }  // namespace tray
 
 TrayCast::TrayCast(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_CAST),
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_CAST),
       detailed_view_delegate_(
           std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {
   Shell::Get()->AddShellObserver(this);

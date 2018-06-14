@@ -52,7 +52,8 @@ class TestDetailsView : public TrayDetailedView {
 class TestItem : public SystemTrayItem {
  public:
   TestItem()
-      : SystemTrayItem(AshTestBase::GetPrimarySystemTray(), UMA_TEST),
+      : SystemTrayItem(AshTestBase::GetPrimarySystemTray(),
+                       SystemTrayItemUmaType::UMA_TEST),
         tray_view_(nullptr),
         default_view_(nullptr),
         detailed_view_(nullptr),

@@ -79,8 +79,7 @@ void PowerTrayView::UpdateImage() {
 }  // namespace tray
 
 TrayPower::TrayPower(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_POWER) {
-}
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_POWER) {}
 
 TrayPower::~TrayPower() = default;
 

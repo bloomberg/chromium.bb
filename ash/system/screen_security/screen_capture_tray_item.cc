@@ -19,7 +19,7 @@
 namespace ash {
 
 ScreenCaptureTrayItem::ScreenCaptureTrayItem(SystemTray* system_tray)
-    : ScreenTrayItem(system_tray, UMA_SCREEN_CAPTURE) {
+    : ScreenTrayItem(system_tray, SystemTrayItemUmaType::UMA_SCREEN_CAPTURE) {
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->system_tray_notifier()->AddScreenCaptureObserver(this);
 }

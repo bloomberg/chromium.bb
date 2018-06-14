@@ -133,7 +133,9 @@ class CapsLockDefaultView : public ActionableView {
 };
 
 TrayCapsLock::TrayCapsLock(SystemTray* system_tray)
-    : TrayImageItem(system_tray, kSystemTrayCapsLockIcon, UMA_CAPS_LOCK),
+    : TrayImageItem(system_tray,
+                    kSystemTrayCapsLockIcon,
+                    SystemTrayItemUmaType::UMA_CAPS_LOCK),
       default_(nullptr),
       caps_lock_enabled_(IsCapsLockEnabled()) {
   Shell::Get()->ime_controller()->AddObserver(this);

@@ -18,7 +18,7 @@ namespace ash {
 
 TrayImageItem::TrayImageItem(SystemTray* system_tray,
                              const gfx::VectorIcon& icon,
-                             UmaType uma_type)
+                             SystemTrayItemUmaType uma_type)
     : SystemTrayItem(system_tray, uma_type),
       icon_(icon),
       icon_color_(kTrayIconColor),

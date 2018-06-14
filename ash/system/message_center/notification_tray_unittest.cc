@@ -75,7 +75,8 @@ SystemTray* GetSystemTray() {
 // Trivial item implementation for testing PopupAndSystemTray test case.
 class TestItem : public SystemTrayItem {
  public:
-  TestItem() : SystemTrayItem(GetSystemTray(), UMA_TEST) {}
+  TestItem()
+      : SystemTrayItem(GetSystemTray(), SystemTrayItemUmaType::UMA_TEST) {}
 
   views::View* CreateDefaultView(LoginStatus status) override {
     views::View* default_view = new views::View;

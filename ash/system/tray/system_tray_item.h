@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/system/tray/system_tray_item_uma_type.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 
@@ -28,44 +29,7 @@ class TrayItemView;
 // Detailed view - The submenu shown when the top-level menu row is clicked.
 class ASH_EXPORT SystemTrayItem {
  public:
-  // The different types of SystemTrayItems.
-  //
-  // NOTE: These values are used for UMA metrics so do NOT re-order this enum
-  // and only insert items before the COUNT item.
-  enum UmaType {
-    // SystemTrayItem's with this type are not recorded in the histogram.
-    UMA_NOT_RECORDED = 0,
-    // Used for testing purposes only.
-    UMA_TEST = 1,
-    UMA_ACCESSIBILITY = 2,
-    UMA_AUDIO = 3,
-    UMA_BLUETOOTH = 4,
-    UMA_CAPS_LOCK = 5,
-    UMA_CAST = 6,
-    UMA_DATE = 7,
-    UMA_DISPLAY = 8,
-    UMA_DISPLAY_BRIGHTNESS = 9,
-    UMA_ENTERPRISE = 10,
-    UMA_IME = 11,
-    UMA_MULTI_PROFILE_MEDIA = 12,
-    UMA_NETWORK = 13,
-    UMA_SETTINGS = 14,
-    UMA_UPDATE = 15,
-    UMA_POWER = 16,
-    UMA_ROTATION_LOCK = 17,
-    UMA_SCREEN_CAPTURE = 18,
-    UMA_SCREEN_SHARE = 19,
-    UMA_SESSION_LENGTH_LIMIT = 20,
-    UMA_SMS = 21,
-    UMA_SUPERVISED_USER = 22,
-    UMA_TRACING = 23,
-    UMA_USER = 24,
-    UMA_VPN = 25,
-    UMA_NIGHT_LIGHT = 26,
-    UMA_COUNT = 27,
-  };
-
-  SystemTrayItem(SystemTray* system_tray, UmaType type);
+  SystemTrayItem(SystemTray* system_tray, SystemTrayItemUmaType type);
   virtual ~SystemTrayItem();
 
   // Create* functions may return NULL if nothing should be displayed for the
@@ -150,10 +114,10 @@ class ASH_EXPORT SystemTrayItem {
   // Accesses uma_type().
   friend class SystemTrayView;
 
-  UmaType uma_type() const { return uma_type_; }
+  SystemTrayItemUmaType uma_type() const { return uma_type_; }
 
   SystemTray* system_tray_;
-  UmaType uma_type_;
+  SystemTrayItemUmaType uma_type_;
   bool restore_focus_;
 
   // Used to delay the transition to the detailed view.

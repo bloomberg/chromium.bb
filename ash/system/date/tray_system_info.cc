@@ -17,7 +17,7 @@
 namespace ash {
 
 TraySystemInfo::TraySystemInfo(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_DATE),
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_DATE),
       tray_view_(nullptr),
       default_view_(nullptr) {}
 
