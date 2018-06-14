@@ -17,7 +17,9 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
@@ -451,7 +453,8 @@ TEST_F(TreeSynchronizerTest, SyncMaskLayer) {
   layer_tree_root->AddChild(Layer::Create());
 
   // First child gets a mask layer.
-  scoped_refptr<Layer> mask_layer = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask_layer = PictureLayer::Create(&client);
   layer_tree_root->children()[0]->SetMaskLayer(mask_layer.get());
 
   host_->SetRootLayer(layer_tree_root);

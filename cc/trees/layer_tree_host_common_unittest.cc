@@ -4376,7 +4376,8 @@ TEST_F(LayerTreeHostCommonTest, LayerSearch) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
   scoped_refptr<Layer> grand_child = Layer::Create();
-  scoped_refptr<Layer> mask_layer = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask_layer = PictureLayer::Create(&client);
 
   child->AddChild(grand_child.get());
   child->SetMaskLayer(mask_layer.get());

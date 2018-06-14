@@ -115,6 +115,7 @@ _CONFIG = [
 
             # cc::Layers.
             'cc::Layer',
+            'cc::PictureLayer',
 
             # cc::Layer helper data structs.
             'cc::ElementId',
@@ -216,7 +217,6 @@ _CONFIG = [
             'cc::ContentLayerClient',
             'cc::DisplayItemList',
             'cc::DrawRecordOp',
-            'cc::PictureLayer',
         ],
     },
     {

@@ -32,6 +32,7 @@
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/painted_overlay_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
 #include "third_party/blink/renderer/core/dom/document.h"

@@ -32,7 +32,7 @@
 
 #include <memory>
 
-#include "cc/layers/layer.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"

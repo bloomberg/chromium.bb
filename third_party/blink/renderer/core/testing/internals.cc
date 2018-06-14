@@ -31,6 +31,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "cc/layers/picture_layer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_client.h"

@@ -26,6 +26,7 @@
 
 #include "build/build_config.h"
 #include "cc/layers/layer_sticky_position_constraint.h"
+#include "cc/layers/picture_layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_cache.h"

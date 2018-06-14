@@ -13,8 +13,10 @@
 #include "cc/base/math_util.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -255,7 +257,8 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   scoped_refptr<Layer> child = Layer::Create();
   scoped_refptr<Layer> child2 = Layer::Create();
   scoped_refptr<Layer> grand_child = Layer::Create();
-  scoped_refptr<Layer> dummy_layer1 = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask_layer1 = PictureLayer::Create(&client);
 
   layer_tree_host_->SetRootLayer(root);
   root->AddChild(child);
@@ -265,6 +268,18 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   child->SetForceRenderSurfaceForTesting(true);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   child2->SetScrollParent(grand_child.get());
+
+  // Resizing without a mask layer or masks_to_bounds, should only require a
+  // regular commit. Note that a layer and its mask should match sizes, but
+  // the mask isn't in the tree yet, so won't need its own commit.
+  gfx::Size arbitrary_size = gfx::Size(1, 2);
+  EXPECT_SET_NEEDS_COMMIT(1, root->SetBounds(arbitrary_size));
+  EXPECT_SET_NEEDS_COMMIT(0, mask_layer1->SetBounds(arbitrary_size));
+  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMaskLayer(mask_layer1.get()));
+
+  // Set up the impl layers after the full tree is constructed, including the
+  // mask layer.
   SkBlendMode arbitrary_blend_mode = SkBlendMode::kMultiply;
   std::unique_ptr<LayerImpl> root_impl =
       LayerImpl::Create(host_impl_.active_tree(), root->id());
@@ -274,30 +289,21 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       LayerImpl::Create(host_impl_.active_tree(), child2->id());
   std::unique_ptr<LayerImpl> grand_child_impl =
       LayerImpl::Create(host_impl_.active_tree(), grand_child->id());
-  std::unique_ptr<LayerImpl> dummy_layer1_impl =
-      LayerImpl::Create(host_impl_.active_tree(), dummy_layer1->id());
+  std::unique_ptr<LayerImpl> mask_layer1_impl =
+      mask_layer1->CreateLayerImpl(host_impl_.active_tree());
 
-  // Resizing without a mask layer or masks_to_bounds, should only require a
-  // regular commit. Note that a layer and its mask should match sizes, but
-  // the mask isn't in the tree yet, so won't need its own commit.
-  gfx::Size arbitrary_size = gfx::Size(1, 2);
-  EXPECT_SET_NEEDS_COMMIT(1, root->SetBounds(arbitrary_size));
-  EXPECT_SET_NEEDS_COMMIT(0, dummy_layer1->SetBounds(arbitrary_size));
-
-  EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMaskLayer(dummy_layer1.get()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
-      dummy_layer1->PushPropertiesTo(dummy_layer1_impl.get()));
+      mask_layer1->PushPropertiesTo(mask_layer1_impl.get()););
 
   // Once there is a mask layer, resizes require subtree properties to update.
   arbitrary_size = gfx::Size(11, 22);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBounds(arbitrary_size));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(dummy_layer1->SetBounds(arbitrary_size));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(mask_layer1->SetBounds(arbitrary_size));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMasksToBounds(true));
@@ -360,7 +366,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   arbitrary_size = gfx::Size(111, 222);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBounds(arbitrary_size));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(dummy_layer1->SetBounds(arbitrary_size));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(mask_layer1->SetBounds(arbitrary_size));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
@@ -888,7 +894,8 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
                                   layer_tree_host_->SetRootLayer(test_layer));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
 
-  scoped_refptr<Layer> dummy_layer1 = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask_layer1 = PictureLayer::Create(&client);
 
   // sanity check of initial test condition
   EXPECT_FALSE(LayerNeedsDisplay(test_layer.get()));
@@ -926,8 +933,8 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHideLayerAndSubtree(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetElementId(ElementId(2)));
 
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, test_layer->SetMaskLayer(
-      dummy_layer1.get()));
+  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
+                                  test_layer->SetMaskLayer(mask_layer1.get()));
 
   // The above tests should not have caused a change to the needs_display flag.
   EXPECT_FALSE(LayerNeedsDisplay(test_layer.get()));
@@ -1011,8 +1018,9 @@ TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForOpacity) {
 TEST_F(LayerTest, MaskHasParent) {
   scoped_refptr<Layer> parent = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> mask = Layer::Create();
-  scoped_refptr<Layer> mask_replacement = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  scoped_refptr<PictureLayer> mask_replacement = PictureLayer::Create(&client);
 
   parent->AddChild(child);
   child->SetMaskLayer(mask.get());
@@ -1064,7 +1072,8 @@ class LayerLayerTreeHostTest : public testing::Test {};
 TEST_F(LayerLayerTreeHostTest, EnteringTree) {
   scoped_refptr<Layer> parent = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> mask = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
 
   // Set up a detached tree of layers. The host pointer should be nil for these
   // layers.
@@ -1110,7 +1119,8 @@ TEST_F(LayerLayerTreeHostTest, AddingLayerSubtree) {
   child->AddChild(grand_child);
 
   // Masks should pick up the new host too.
-  scoped_refptr<Layer> child_mask = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> child_mask = PictureLayer::Create(&client);
   child->SetMaskLayer(child_mask.get());
 
   parent->AddChild(child);
@@ -1122,7 +1132,8 @@ TEST_F(LayerLayerTreeHostTest, AddingLayerSubtree) {
 TEST_F(LayerLayerTreeHostTest, ChangeHost) {
   scoped_refptr<Layer> parent = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
-  scoped_refptr<Layer> mask = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
 
   // Same setup as the previous test.
   parent->AddChild(child);
@@ -1191,10 +1202,12 @@ TEST_F(LayerLayerTreeHostTest, ChangeHostInSubtree) {
 }
 
 TEST_F(LayerLayerTreeHostTest, ReplaceMaskLayer) {
+  FakeContentLayerClient client;
+
   scoped_refptr<Layer> parent = Layer::Create();
-  scoped_refptr<Layer> mask = Layer::Create();
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
   scoped_refptr<Layer> mask_child = Layer::Create();
-  scoped_refptr<Layer> mask_replacement = Layer::Create();
+  scoped_refptr<PictureLayer> mask_replacement = PictureLayer::Create(&client);
 
   parent->SetMaskLayer(mask.get());
   mask->AddChild(mask_child);

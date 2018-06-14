@@ -13,6 +13,7 @@
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -774,7 +775,7 @@ void FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
 
     // Append mask layers to the update layer list. They don't have valid
     // visible rects, so need to get added after the above calculation.
-    if (Layer* mask_layer = layer->mask_layer()) {
+    if (PictureLayer* mask_layer = layer->mask_layer()) {
       // Layers with empty bounds should never be painted, including masks.
       if (!mask_layer->bounds().IsEmpty())
         update_layer_list->push_back(mask_layer);

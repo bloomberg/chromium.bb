@@ -586,7 +586,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // Ownership of the layer is held through one of the strongly typed layer
   // pointers, depending on which sort of layer this is.
-  scoped_refptr<cc::Layer> content_layer_;
+  scoped_refptr<cc::PictureLayer> content_layer_;
   scoped_refptr<cc::NinePatchLayer> nine_patch_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_refptr<cc::SolidColorLayer> solid_color_layer_;

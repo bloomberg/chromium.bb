@@ -19,7 +19,7 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/scrollbar_layer_interface.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
@@ -433,7 +433,7 @@ void Layer::SetMasksToBounds(bool masks_to_bounds) {
   SetSubtreePropertyChanged();
 }
 
-void Layer::SetMaskLayer(Layer* mask_layer) {
+void Layer::SetMaskLayer(PictureLayer* mask_layer) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.mask_layer.get() == mask_layer)
     return;

@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "cc/base/region.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "cc/layers/picture_layer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"

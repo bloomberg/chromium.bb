@@ -451,12 +451,16 @@ void Layer::SetMaskLayer(Layer* layer_mask) {
          (!layer_mask->layer_mask_layer() && layer_mask->children().empty() &&
           !layer_mask->layer_mask_back_link_));
   DCHECK(!layer_mask_back_link_);
+  DCHECK(!layer_mask || layer_mask->type_ == LAYER_TEXTURED);
+  // Masks must be backed by a PictureLayer.
+  DCHECK(!layer_mask || layer_mask->content_layer_);
   // We need to de-reference the currently linked object so that no problem
   // arises if the mask layer gets deleted before this object.
   if (layer_mask_)
     layer_mask_->layer_mask_back_link_ = nullptr;
   layer_mask_ = layer_mask;
-  cc_layer_->SetMaskLayer(layer_mask ? layer_mask->cc_layer_ : nullptr);
+  cc_layer_->SetMaskLayer(layer_mask ? layer_mask->content_layer_.get()
+                                     : nullptr);
   // We need to reference the linked object so that it can properly break the
   // link to us when it gets deleted.
   if (layer_mask) {
@@ -641,9 +645,9 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
 }
 
 void Layer::SwitchCCLayerForTest() {
-  scoped_refptr<cc::Layer> new_layer = cc::PictureLayer::Create(this);
+  scoped_refptr<cc::PictureLayer> new_layer = cc::PictureLayer::Create(this);
   SwitchToLayer(new_layer);
-  content_layer_ = new_layer;
+  content_layer_ = std::move(new_layer);
 }
 
 // Note: The code that sets this flag would be responsible to unset it on that

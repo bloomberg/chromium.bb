@@ -28,7 +28,7 @@
 #include <memory>
 #include <utility>
 
-#include "cc/layers/layer.h"
+#include "cc/layers/picture_layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
