@@ -14,8 +14,8 @@
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
-#include "mojo/edk/embedder/peer_connection.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
+#include "mojo/public/cpp/system/isolated_connection.h"
 
 namespace IPC {
 class ChannelProxy;
@@ -33,10 +33,10 @@ class AppShimHost : public IPC::Listener,
   AppShimHost();
   ~AppShimHost() override;
 
-  // Creates a new server-side IPC channel at |handle|, which should contain a
+  // Creates a new server-side IPC channel at |endpoint|, which should contain a
   // file descriptor of a channel created by an UnixDomainSocketAcceptor,
   // and begins listening for messages on it.
-  void ServeChannel(mojo::edk::ScopedInternalPlatformHandle handle);
+  void ServeChannel(mojo::PlatformChannelEndpoint endpoint);
 
  protected:
   // IPC::Listener implementation.
@@ -77,7 +77,7 @@ class AppShimHost : public IPC::Listener,
   // Closes the channel and destroys the AppShimHost.
   void Close();
 
-  mojo::edk::PeerConnection peer_connection_;
+  mojo::IsolatedConnection mojo_connection_;
   std::unique_ptr<IPC::ChannelProxy> channel_;
   std::string app_id_;
   base::FilePath profile_path_;

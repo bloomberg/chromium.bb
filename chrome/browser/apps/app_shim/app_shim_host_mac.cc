@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "mojo/edk/embedder/embedder.h"
 
 AppShimHost::AppShimHost() : initial_launch_finished_(false) {}
 
@@ -25,13 +24,12 @@ AppShimHost::~AppShimHost() {
     handler->OnShimClose(this);
 }
 
-void AppShimHost::ServeChannel(mojo::edk::ScopedInternalPlatformHandle handle) {
+void AppShimHost::ServeChannel(mojo::PlatformChannelEndpoint endpoint) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!channel_.get());
   channel_ = IPC::ChannelProxy::Create(
       IPC::ChannelMojo::CreateServerFactory(
-          peer_connection_.Connect(mojo::edk::ConnectionParams(
-              mojo::edk::TransportProtocol::kLegacy, std::move(handle))),
+          mojo_connection_.Connect(std::move(endpoint)),
           content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::IO)
               .get(),

@@ -13,10 +13,8 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/peer_connection.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/system/isolated_connection.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/security_key/security_key_auth_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,7 +42,7 @@ void FakeSecurityKeyIpcServer::SendRequest(const std::string& message_data) {
 
 void FakeSecurityKeyIpcServer::CloseChannel() {
   ipc_channel_.reset();
-  peer_connection_.reset();
+  mojo_connection_.reset();
   channel_closed_callback_.Run();
 }
 
@@ -69,20 +67,19 @@ void FakeSecurityKeyIpcServer::OnChannelConnected(int32_t peer_pid) {
 }
 
 bool FakeSecurityKeyIpcServer::CreateChannel(
-    const mojo::edk::NamedPlatformHandle& channel_handle,
+    const mojo::NamedPlatformChannel::ServerName& server_name,
     base::TimeDelta request_timeout) {
-  mojo::edk::CreateServerHandleOptions options;
+  mojo::NamedPlatformChannel::Options options;
+  options.server_name = server_name;
 #if defined(OS_WIN)
   options.enforce_uniqueness = false;
 #endif
-  peer_connection_ = std::make_unique<mojo::edk::PeerConnection>();
+  mojo::NamedPlatformChannel channel(options);
+
+  mojo_connection_ = std::make_unique<mojo::IsolatedConnection>();
   ipc_channel_ = IPC::Channel::CreateServer(
-      peer_connection_
-          ->Connect(mojo::edk::ConnectionParams(
-              mojo::edk::TransportProtocol::kLegacy,
-              mojo::edk::CreateServerHandle(channel_handle, options)))
-          .release(),
-      this, base::ThreadTaskRunnerHandle::Get());
+      mojo_connection_->Connect(channel.TakeServerEndpoint()).release(), this,
+      base::ThreadTaskRunnerHandle::Get());
   EXPECT_NE(nullptr, ipc_channel_);
   return ipc_channel_->Connect();
 }

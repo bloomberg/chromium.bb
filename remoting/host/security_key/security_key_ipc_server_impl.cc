@@ -18,10 +18,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/peer_connection.h"
+#include "mojo/public/cpp/system/isolated_connection.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/client_session_details.h"
@@ -69,13 +66,14 @@ SecurityKeyIpcServerImpl::~SecurityKeyIpcServerImpl() {
 }
 
 bool SecurityKeyIpcServerImpl::CreateChannel(
-    const mojo::edk::NamedPlatformHandle& channel_handle,
+    const mojo::NamedPlatformChannel::ServerName& server_name,
     base::TimeDelta request_timeout) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!ipc_channel_);
   security_key_request_timeout_ = request_timeout;
 
-  mojo::edk::CreateServerHandleOptions options;
+  mojo::NamedPlatformChannel::Options options;
+  options.server_name = server_name;
 #if defined(OS_WIN)
   options.enforce_uniqueness = false;
   // Create a named pipe owned by the current user (the LocalService account
@@ -91,14 +89,12 @@ bool SecurityKeyIpcServerImpl::CreateChannel(
       "O:%sG:%sD:(A;;GA;;;AU)", user_sid_utf8.c_str(), user_sid_utf8.c_str()));
 
 #endif  // defined(OS_WIN)
-  peer_connection_ = std::make_unique<mojo::edk::PeerConnection>();
+  mojo::NamedPlatformChannel channel(options);
+
+  mojo_connection_ = std::make_unique<mojo::IsolatedConnection>();
   ipc_channel_ = IPC::Channel::CreateServer(
-      peer_connection_
-          ->Connect(mojo::edk::ConnectionParams(
-              mojo::edk::TransportProtocol::kLegacy,
-              mojo::edk::CreateServerHandle(channel_handle, options)))
-          .release(),
-      this, base::ThreadTaskRunnerHandle::Get());
+      mojo_connection_->Connect(channel.TakeServerEndpoint()).release(), this,
+      base::ThreadTaskRunnerHandle::Get());
 
   if (!ipc_channel_->Connect()) {
     ipc_channel_.reset();
@@ -215,7 +211,7 @@ void SecurityKeyIpcServerImpl::CloseChannel() {
     ipc_channel_->Close();
     connection_close_pending_ = false;
   }
-  peer_connection_.reset();
+  mojo_connection_.reset();
 }
 
 }  // namespace remoting

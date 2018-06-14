@@ -73,6 +73,9 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) NamedPlatformChannel {
     return server_endpoint_;
   }
 
+  // Helper to create a ServerName from a UTF8 string regardless of platform.
+  static ServerName ServerNameFromUTF8(base::StringPiece name);
+
   // Passes the local server endpoint for the channel. On Windows, this is a
   // named pipe server; on POSIX it's a bound, listening domain socket. In each
   // case it should accept a single new connection.

@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/apps/app_shim/unix_domain_socket_acceptor.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 
 namespace apps {
 class ExtensionAppShimHandler;
@@ -52,8 +52,7 @@ class AppShimHostManager : public apps::UnixDomainSocketAcceptor::Delegate,
   virtual ~AppShimHostManager();
 
   // UnixDomainSocketAcceptor::Delegate implementation.
-  void OnClientConnected(
-      mojo::edk::ScopedInternalPlatformHandle handle) override;
+  void OnClientConnected(mojo::PlatformChannelEndpoint endpoint) override;
   void OnListenError() override;
 
   // The |acceptor_| must be created on a thread which allows blocking I/O.

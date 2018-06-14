@@ -8,8 +8,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/platform_channel_utils_posix.h"
+#include "mojo/public/cpp/platform/socket_utils_posix.h"
 
 namespace apps {
 
@@ -17,8 +16,11 @@ UnixDomainSocketAcceptor::UnixDomainSocketAcceptor(const base::FilePath& path,
                                                    Delegate* delegate)
     : server_listen_connection_watcher_(FROM_HERE),
       named_pipe_(path.value()),
-      delegate_(delegate),
-      listen_handle_(mojo::edk::CreateServerHandle(named_pipe_)) {
+      delegate_(delegate) {
+  mojo::NamedPlatformChannel::Options options;
+  options.server_name = named_pipe_;
+  mojo::NamedPlatformChannel channel(options);
+  listen_handle_ = channel.TakeServerEndpoint();
   DCHECK(delegate_);
 }
 
@@ -33,28 +35,30 @@ bool UnixDomainSocketAcceptor::Listen() {
   // Watch the fd for connections, and turn any connections into
   // active sockets.
   base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
-      listen_handle_.get().handle, true, base::MessagePumpForIO::WATCH_READ,
-      &server_listen_connection_watcher_, this);
+      listen_handle_.platform_handle().GetFD().get(), true,
+      base::MessagePumpForIO::WATCH_READ, &server_listen_connection_watcher_,
+      this);
   return true;
 }
 
 // Called by libevent when we can read from the fd without blocking.
 void UnixDomainSocketAcceptor::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK(fd == listen_handle_.get().handle);
-  mojo::edk::ScopedInternalPlatformHandle connection_handle;
-  if (!mojo::edk::ServerAcceptConnection(listen_handle_, &connection_handle)) {
+  DCHECK_EQ(fd, listen_handle_.platform_handle().GetFD().get());
+  base::ScopedFD connection_fd;
+  if (!mojo::AcceptSocketConnection(fd, &connection_fd)) {
     Close();
     delegate_->OnListenError();
     return;
   }
 
-  if (!connection_handle.is_valid()) {
+  if (!connection_fd.is_valid()) {
     // The accept() failed, but not in such a way that the factory needs to be
     // shut down.
     return;
   }
 
-  delegate_->OnClientConnected(std::move(connection_handle));
+  delegate_->OnClientConnected(mojo::PlatformChannelEndpoint(
+      mojo::PlatformHandle(std::move(connection_fd))));
 }
 
 void UnixDomainSocketAcceptor::OnFileCanWriteWithoutBlocking(int fd) {
@@ -65,7 +69,7 @@ void UnixDomainSocketAcceptor::Close() {
   if (!listen_handle_.is_valid())
     return;
   listen_handle_.reset();
-  if (unlink(named_pipe_.name.c_str()) < 0)
+  if (unlink(named_pipe_.c_str()) < 0)
     PLOG(ERROR) << "unlink";
 
   // Unregister libevent for the listening socket and close it.

@@ -11,7 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "remoting/host/security_key/security_key_ipc_client.h"
 
 namespace IPC {
@@ -20,9 +20,7 @@ class Message;
 }  // IPC
 
 namespace mojo {
-namespace edk {
-class PeerConnection;
-}
+class IsolatedConnection;
 }
 
 namespace remoting {
@@ -46,8 +44,8 @@ class FakeSecurityKeyIpcClient : public SecurityKeyIpcClient {
       const ResponseCallback& response_callback) override;
   void CloseIpcConnection() override;
 
-  // Connects as a client to the |channel_name| IPC Channel.
-  bool ConnectViaIpc(const mojo::edk::NamedPlatformHandle& channel_handle);
+  // Connects as a client to the |server_name| IPC Channel.
+  bool ConnectViaIpc(const mojo::NamedPlatformChannel::ServerName& server_name);
 
   // Override of SendSecurityKeyRequest() interface method for tests which use
   // an IPC channel for testing.
@@ -107,7 +105,7 @@ class FakeSecurityKeyIpcClient : public SecurityKeyIpcClient {
   base::Closure on_channel_connected_callback_;
 
   // Used for sending/receiving security key messages between processes.
-  std::unique_ptr<mojo::edk::PeerConnection> peer_connection_;
+  std::unique_ptr<mojo::IsolatedConnection> mojo_connection_;
   std::unique_ptr<IPC::Channel> client_channel_;
 
   // Provides the contents of the last IPC message received.

@@ -11,7 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/time/time.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "remoting/host/security_key/security_key_auth_handler.h"
 
 namespace remoting {
@@ -40,7 +40,7 @@ class SecurityKeyIpcServer {
 
   // Creates and starts listening on an IPC channel with the given name.
   virtual bool CreateChannel(
-      const mojo::edk::NamedPlatformHandle& channel_handle,
+      const mojo::NamedPlatformChannel::ServerName& server_name,
       base::TimeDelta request_timeout) = 0;
 
   // Sends a security key response IPC message via the IPC channel.

@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ipc/ipc_channel.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "remoting/host/security_key/fake_security_key_ipc_server.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -71,7 +71,7 @@ class SecurityKeyIpcClientTest : public testing::Test {
                               const std::string& response_data);
 
   // Creates a unique IPC channel name to use for testing.
-  std::string GenerateUniqueTestChannelName();
+  mojo::NamedPlatformChannel::ServerName GenerateUniqueTestChannelName();
 
   // IPC tests require a valid MessageLoop to run.
   base::MessageLoopForIO message_loop_;
@@ -177,20 +177,22 @@ void SecurityKeyIpcClientTest::ClientMessageReceived(
   OperationComplete(/*failed=*/false);
 }
 
-std::string SecurityKeyIpcClientTest::GenerateUniqueTestChannelName() {
-  return GetChannelNamePathPrefixForTest() + kValidIpcChannelName +
-         IPC::Channel::GenerateUniqueRandomChannelID();
+mojo::NamedPlatformChannel::ServerName
+SecurityKeyIpcClientTest::GenerateUniqueTestChannelName() {
+  return mojo::NamedPlatformChannel::ServerNameFromUTF8(
+      GetChannelNamePathPrefixForTest() + kValidIpcChannelName +
+      IPC::Channel::GenerateUniqueRandomChannelID());
 }
 
 void SecurityKeyIpcClientTest::EstablishConnection(bool expect_connected,
                                                    bool expect_error) {
   // Start up the security key forwarding session IPC channel first, that way
   // we can provide the channel using the fake SecurityKeyAuthHandler later on.
-  mojo::edk::NamedPlatformHandle channel_handle(
-      GenerateUniqueTestChannelName());
-  security_key_ipc_client_.SetIpcChannelHandleForTest(channel_handle);
+  mojo::NamedPlatformChannel::ServerName server_name =
+      GenerateUniqueTestChannelName();
+  security_key_ipc_client_.SetIpcChannelHandleForTest(server_name);
   ASSERT_TRUE(fake_ipc_server_.CreateChannel(
-      channel_handle,
+      server_name,
       /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
 
   ASSERT_TRUE(security_key_ipc_client_.CheckForSecurityKeyIpcServerChannel());
@@ -311,7 +313,8 @@ TEST_F(SecurityKeyIpcClientTest, SendRequestBeforeEstablishingConnection) {
 
 TEST_F(SecurityKeyIpcClientTest, NonExistentIpcServerChannel) {
   security_key_ipc_client_.SetIpcChannelHandleForTest(
-      mojo::edk::NamedPlatformHandle(kNonexistentIpcChannelName));
+      mojo::NamedPlatformChannel::ServerNameFromUTF8(
+          kNonexistentIpcChannelName));
 
   // Attempt to establish the conection (should fail since the IPC channel does
   // not exist).

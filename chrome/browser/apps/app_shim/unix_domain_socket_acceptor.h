@@ -8,8 +8,9 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_for_io.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
+#include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
 
 namespace apps {
 
@@ -24,8 +25,7 @@ class UnixDomainSocketAcceptor : public base::MessagePumpForIO::FdWatcher {
     // Called when a client connects to the factory. It is the delegate's
     // responsibility to create an IPC::Channel for the handle, or else close
     // the file descriptor contained therein.
-    virtual void OnClientConnected(
-        mojo::edk::ScopedInternalPlatformHandle handle) = 0;
+    virtual void OnClientConnected(mojo::PlatformChannelEndpoint endpoint) = 0;
 
     // Called when an error occurs and the channel is closed.
     virtual void OnListenError() = 0;
@@ -46,9 +46,9 @@ class UnixDomainSocketAcceptor : public base::MessagePumpForIO::FdWatcher {
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
   base::MessagePumpForIO::FdWatchController server_listen_connection_watcher_;
-  mojo::edk::NamedPlatformHandle named_pipe_;
+  mojo::NamedPlatformChannel::ServerName named_pipe_;
   Delegate* delegate_;
-  mojo::edk::ScopedInternalPlatformHandle listen_handle_;
+  mojo::PlatformChannelServerEndpoint listen_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(UnixDomainSocketAcceptor);
 };

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "mojo/edk/embedder/named_platform_handle.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
 
 namespace remoting {
 
@@ -16,11 +16,11 @@ extern const char kSecurityKeyConnectionError[];
 
 // Returns the name of the well-known IPC server channel used to initiate a
 // security key forwarding session.
-const mojo::edk::NamedPlatformHandle& GetSecurityKeyIpcChannel();
+const mojo::NamedPlatformChannel::ServerName& GetSecurityKeyIpcChannel();
 
 // Sets the name of the well-known IPC server channel for testing purposes.
 void SetSecurityKeyIpcChannelForTest(
-    const mojo::edk::NamedPlatformHandle& channel_handle);
+    const mojo::NamedPlatformChannel::ServerName& server_name);
 
 // Returns a path appropriate for placing a channel name.  Without this path
 // prefix, we may not have permission on linux to bind(2) a socket to a name in
