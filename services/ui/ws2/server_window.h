@@ -27,6 +27,7 @@ class EventHandler;
 
 namespace ws2 {
 
+class DragDropDelegate;
 class Embedding;
 class WindowTree;
 
@@ -105,6 +106,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
     return local_surface_id_;
   }
 
+  bool HasDragDropDelegate() const {
+    return drag_drop_delegate_.get() != nullptr;
+  }
+  void SetDragDropDelegate(
+      std::unique_ptr<DragDropDelegate> drag_drop_delegate);
+
  private:
   friend class ServerWindowTestHelper;
 
@@ -157,6 +164,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   WindowTree* focus_owner_ = nullptr;
 
   base::Optional<viz::LocalSurfaceId> local_surface_id_;
+
+  std::unique_ptr<DragDropDelegate> drag_drop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindow);
 };

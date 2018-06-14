@@ -4,8 +4,11 @@
 
 #include "services/ui/ws2/server_window.h"
 
+#include <utility>
+
 #include "base/containers/flat_map.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "services/ui/ws2/drag_drop_delegate.h"
 #include "services/ui/ws2/embedding.h"
 #include "services/ui/ws2/window_tree.h"
 #include "ui/aura/client/capture_client_observer.h"
@@ -471,6 +474,11 @@ bool ServerWindow::HasNonClientArea() const {
 
 bool ServerWindow::IsTopLevel() const {
   return owning_window_tree_ && owning_window_tree_->IsTopLevel(window_);
+}
+
+void ServerWindow::SetDragDropDelegate(
+    std::unique_ptr<DragDropDelegate> drag_drop_delegate) {
+  drag_drop_delegate_ = std::move(drag_drop_delegate);
 }
 
 void ServerWindow::AttachCompositorFrameSink(

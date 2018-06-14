@@ -32,6 +32,8 @@ component("lib") {
     "client_change_tracker.h",
     "client_root.cc",
     "client_root.h",
+    "drag_drop_delegate.cc",
+    "drag_drop_delegate.h",
     "embedding.cc",
     "embedding.h",
     "focus_handler.cc",
@@ -134,6 +136,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "drag_drop_delegate_unittest.cc",
     "embedding_unittest.cc",
     "focus_handler_unittest.cc",
     "screen_provider_unittest.cc",

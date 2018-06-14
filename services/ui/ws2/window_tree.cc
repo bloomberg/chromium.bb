@@ -16,6 +16,7 @@
 #include "services/ui/ws2/client_change.h"
 #include "services/ui/ws2/client_change_tracker.h"
 #include "services/ui/ws2/client_root.h"
+#include "services/ui/ws2/drag_drop_delegate.h"
 #include "services/ui/ws2/embedding.h"
 #include "services/ui/ws2/pointer_watcher.h"
 #include "services/ui/ws2/server_window.h"
@@ -1117,7 +1118,27 @@ void WindowTree::SetHitTestMask(Id window_id,
 }
 
 void WindowTree::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  aura::Window* window = GetWindowByTransportId(window_id);
+  if (!window) {
+    DVLOG(1) << "SetCanAcceptDrops failed (no window)";
+    return;
+  }
+  if (!IsClientCreatedWindow(window)) {
+    DVLOG(1) << "SetCanAcceptDrops failed (access denied)";
+    return;
+  }
+
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  DCHECK(server_window);  // Must exist because of preceeding conditionals.
+  if (accepts_drops && !server_window->HasDragDropDelegate()) {
+    auto drag_drop_delegate = std::make_unique<DragDropDelegate>(
+        window_tree_client_, window, window_id);
+    aura::client::SetDragDropDelegate(window, drag_drop_delegate.get());
+    server_window->SetDragDropDelegate(std::move(drag_drop_delegate));
+  } else if (!accepts_drops && server_window->HasDragDropDelegate()) {
+    aura::client::SetDragDropDelegate(window, nullptr);
+    server_window->SetDragDropDelegate(nullptr);
+  }
 }
 
 void WindowTree::SetWindowVisibility(uint32_t change_id,
