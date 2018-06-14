@@ -85,6 +85,10 @@ void SyncConsentScreenHandler::Show() {
 
 void SyncConsentScreenHandler::Hide() {}
 
+void SyncConsentScreenHandler::SetThrobberVisible(bool visible) {
+  CallJS("setThrobberVisible", visible);
+}
+
 void SyncConsentScreenHandler::Initialize() {}
 
 void SyncConsentScreenHandler::GetAdditionalParameters(

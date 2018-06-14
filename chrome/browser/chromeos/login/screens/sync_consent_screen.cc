@@ -57,12 +57,15 @@ void SyncConsentScreen::Show() {
   }
 
   shown_ = true;
-  if (behavior_ == SyncScreenBehavior::SHOW) {
-    view_->Show();
-  } else {
-    // Wait for updates if not shown.
+  if (behavior_ != SyncScreenBehavior::SHOW) {
+    // Wait for updates and set the loading throbber to be visible.
+    view_->SetThrobberVisible(true /*visible*/);
     GetSyncService(profile_)->AddObserver(this);
   }
+  // Show the entire screen.
+  // If SyncScreenBehavior is show, this should show the sync consent screen.
+  // If SyncScreenBehavior is unknown, this should show the loading throbber.
+  view_->Show();
 }
 
 void SyncConsentScreen::Hide() {
@@ -152,7 +155,7 @@ void SyncConsentScreen::UpdateScreen() {
     Finish(ScreenExitCode::SYNC_CONSENT_FINISHED);
 
   if (behavior_ == SyncScreenBehavior::SHOW) {
-    view_->Show();
+    view_->SetThrobberVisible(false /*visible*/);
     GetSyncService(profile_)->RemoveObserver(this);
   }
 }
