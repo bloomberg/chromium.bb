@@ -131,8 +131,7 @@ SaveCardBubbleView* SaveCardBubbleControllerImpl::save_card_bubble_view()
 
 base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(
-      is_uploading_ ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3
-                    : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
+      IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
 }
 
 base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
