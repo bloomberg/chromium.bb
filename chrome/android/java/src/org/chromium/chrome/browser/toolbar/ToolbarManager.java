@@ -704,10 +704,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         if (mBottomToolbarController != null) {
             final OnClickListener searchAcceleratorListener = v -> setUrlBarFocus(true);
+            final OnClickListener homeButtonListener = v -> openHomepage();
             mBottomToolbarController.initializeWithNative(
                     mActivity.getCompositorViewHolder().getResourceManager(),
                     mActivity.getCompositorViewHolder().getLayoutManager(), tabSwitcherClickHandler,
-                    searchAcceleratorListener, mAppMenuButtonHelper, mTabModelSelector);
+                    searchAcceleratorListener, homeButtonListener, mAppMenuButtonHelper,
+                    mTabModelSelector);
         }
 
         onNativeLibraryReady();
