@@ -8,40 +8,36 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_container_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// Font size used in the omnibox.
+const CGFloat kFontSize = 19.0f;
+
+}  // namespace
+
 @interface OmniboxViewController ()
 
 // Override of UIViewController's view with a different type.
 @property(nonatomic, strong) OmniboxContainerView* view;
 
-@property(nonatomic, strong) UIFont* textFieldFont;
-@property(nonatomic, strong) UIColor* textFieldTintColor;
-@property(nonatomic, strong) UIColor* textFieldTextColor;
 @property(nonatomic, assign) BOOL incognito;
 
 @end
 
 @implementation OmniboxViewController
-@synthesize textFieldFont = _textFieldFont;
-@synthesize textFieldTintColor = _textFieldTintColor;
-@synthesize textFieldTextColor = _textFieldTextColor;
 @synthesize incognito = _incognito;
 @dynamic view;
 
-- (instancetype)initWithFont:(UIFont*)font
-                   textColor:(UIColor*)textColor
-                   tintColor:(UIColor*)tintColor
-                   incognito:(BOOL)isIncognito {
+- (instancetype)initWithIncognito:(BOOL)isIncognito {
   self = [super init];
   if (self) {
-    _textFieldFont = font;
-    _textFieldTextColor = textColor;
-    _textFieldTintColor = tintColor;
     _incognito = isIncognito;
   }
   return self;
@@ -50,12 +46,24 @@
 #pragma mark - UIViewController
 
 - (void)loadView {
-  self.view =
-      [[OmniboxContainerView alloc] initWithFrame:CGRectZero
-                                             font:self.textFieldFont
-                                        textColor:self.textFieldTextColor
-                                        tintColor:self.textFieldTintColor];
+  UIColor* textColor = self.incognito ? [UIColor whiteColor]
+                                      : [UIColor colorWithWhite:0 alpha:0.7];
+  UIColor* textFieldTintColor =
+      self.incognito ? [UIColor whiteColor] : [UIColor blackColor];
+  UIColor* iconTintColor = self.incognito
+                               ? [UIColor whiteColor]
+                               : [UIColor colorWithWhite:0 alpha:0.7];
+
+  self.view = [[OmniboxContainerView alloc]
+      initWithFrame:CGRectZero
+               font:[UIFont systemFontOfSize:kFontSize]
+          textColor:textColor
+      textFieldTint:textFieldTintColor
+           iconTint:iconTintColor];
   self.view.incognito = self.incognito;
+
+  SetA11yLabelAndUiAutomationName(self.textField, IDS_ACCNAME_LOCATION,
+                                  @"Address");
 }
 
 - (void)viewDidLoad {
