@@ -239,8 +239,6 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
     return context()->embedded_worker_registry();
   }
 
-  IPC::TestSink* ipc_sink() { return helper_->ipc_sink(); }
-
   std::vector<std::unique_ptr<
       EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient>>*
   mock_instance_clients() {

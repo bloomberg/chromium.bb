@@ -93,10 +93,6 @@ class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
         bad_messages_received_count_(0),
         helper_(helper) {}
 
-  bool Send(IPC::Message* message) override { return helper_->Send(message); }
-
-  IPC::TestSink* ipc_sink() { return helper_->ipc_sink(); }
-
   void ShutdownForBadMessage() override { ++bad_messages_received_count_; }
 
   int bad_messages_received_count_;

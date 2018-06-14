@@ -442,18 +442,6 @@ EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
     wrapper_->Shutdown();
 }
 
-bool EmbeddedWorkerTestHelper::Send(IPC::Message* message) {
-  OnMessageReceived(*message);
-  delete message;
-  return true;
-}
-
-bool EmbeddedWorkerTestHelper::OnMessageReceived(const IPC::Message& message) {
-  sink_.OnMessageReceived(message);
-
-  return false;
-}
-
 void EmbeddedWorkerTestHelper::RegisterMockInstanceClient(
     std::unique_ptr<MockEmbeddedWorkerInstanceClient> client) {
   mock_instance_clients_.push_back(std::move(client));

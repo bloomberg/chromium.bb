@@ -22,8 +22,6 @@
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/http/http_response_info.h"
@@ -60,8 +58,7 @@ struct PushEventPayload;
 // methods to add their own logic/verification code.
 //
 // See embedded_worker_instance_unittest.cc for example usages.
-class EmbeddedWorkerTestHelper : public IPC::Sender,
-                                 public IPC::Listener {
+class EmbeddedWorkerTestHelper {
  public:
   enum class Event { Install, Activate };
 
@@ -101,13 +98,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   EmbeddedWorkerTestHelper(
       const base::FilePath& user_data_directory,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
-  ~EmbeddedWorkerTestHelper() override;
-
-  // IPC::Sender implementation.
-  bool Send(IPC::Message* message) override;
-
-  // IPC::Listener implementation.
-  bool OnMessageReceived(const IPC::Message& msg) override;
+  virtual ~EmbeddedWorkerTestHelper();
 
   // Registers a Mojo endpoint object derived from
   // MockEmbeddedWorkerInstanceClient.
@@ -116,9 +107,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   template <typename MockType, typename... Args>
   MockType* CreateAndRegisterMockInstanceClient(Args&&... args);
-
-  // IPC sink for EmbeddedWorker messages.
-  IPC::TestSink* ipc_sink() { return &sink_; }
 
   std::vector<Event>* dispatched_events() { return &events_; }
 
@@ -362,8 +350,6 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   std::unique_ptr<MockRenderProcessHost> new_render_process_host_;
 
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
-
-  IPC::TestSink sink_;
 
   std::unique_ptr<MockRendererInterface> mock_renderer_interface_;
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>
