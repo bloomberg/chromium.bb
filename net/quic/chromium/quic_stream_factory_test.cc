@@ -2088,7 +2088,7 @@ TEST_P(QuicStreamFactoryTest, GoAwaySessionsOnIPAddressChanged) {
 }
 
 TEST_P(QuicStreamFactoryTest, OnIPAddressChangedWithConnectionMigration) {
-  InitializeConnectionMigrationTest(
+  InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -3653,7 +3653,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNoNewNetwork) {
 }
 
 TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
-  InitializeConnectionMigrationTest(
+  InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -3710,7 +3710,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyNonMigratableStream) {
 }
 
 TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyConnectionMigrationDisabled) {
-  InitializeConnectionMigrationTest(
+  InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -3772,7 +3772,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionEarlyConnectionMigrationDisabled) {
 
 void QuicStreamFactoryTestBase::TestMigrationOnWriteError(
     IoMode write_error_mode) {
-  InitializeConnectionMigrationTest(
+  InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -3868,7 +3868,7 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnWriteErrorAsync) {
 
 void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNoNewNetwork(
     IoMode write_error_mode) {
-  InitializeConnectionMigrationTest({kDefaultNetworkForTests});
+  InitializeConnectionMigrationV2Test({kDefaultNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
@@ -3962,7 +3962,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorNonMigratableStream(
     IoMode write_error_mode) {
   DVLOG(1) << "Mode: "
            << ((write_error_mode == SYNCHRONOUS) ? "SYNCHRONOUS" : "ASYNC");
-  InitializeConnectionMigrationTest(
+  InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -4029,7 +4029,7 @@ TEST_P(QuicStreamFactoryTest,
 
 void QuicStreamFactoryTestBase::TestMigrationOnWriteErrorMigrationDisabled(
     IoMode write_error_mode) {
-  InitializeConnectionMigrationTest(
+  InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -4297,7 +4297,7 @@ TEST_P(QuicStreamFactoryTest,
 
 void QuicStreamFactoryTestBase::TestMigrationOnNotificationWithWriteErrorQueued(
     bool disconnected) {
-  InitializeConnectionMigrationTest(
+  InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
