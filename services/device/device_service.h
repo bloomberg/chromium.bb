@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop_current.h"
 #include "build/build_config.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "device/geolocation/geolocation_provider_impl.h"
@@ -85,7 +86,8 @@ std::unique_ptr<service_manager::Service> CreateDeviceService(
     const CustomLocationProviderCallback& custom_location_provider_callback);
 #endif
 
-class DeviceService : public service_manager::Service {
+class DeviceService : public service_manager::Service,
+                      public base::MessageLoopCurrent::DestructionObserver {
  public:
 #if defined(OS_ANDROID)
   DeviceService(scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
@@ -102,9 +104,17 @@ class DeviceService : public service_manager::Service {
                     geolocation_request_context_producer,
                 const std::string& geolocation_api_key);
 #endif
+  // Not guaranteed to run on embedder shutdown; see Shutdown().
   ~DeviceService() override;
 
  private:
+  // base::MessageLoopCurrent::DestructionObserver:
+  void WillDestroyCurrentMessageLoop() override;
+
+  // Any state that *must* be cleaned up when the embedder shuts down should be
+  // placed in this method.
+  void ShutDown();
+
   // service_manager::Service:
   void OnStart() override;
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
