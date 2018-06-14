@@ -195,7 +195,7 @@ void AssistantController::OnInteractionStateChanged(
   assistant_->StopActiveInteraction();
 
   assistant_interaction_model_.ClearInteraction();
-  assistant_interaction_model_.SetInputModality(InputModality::kVoice);
+  assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
 }
 
 void AssistantController::OnHighlighterEnabledChanged(

@@ -121,7 +121,7 @@ class AssistantInteractionModel {
   void NotifySpeechLevelChanged(float speech_level_db);
 
   InteractionState interaction_state_ = InteractionState::kInactive;
-  InputModality input_modality_ = InputModality::kVoice;
+  InputModality input_modality_ = InputModality::kKeyboard;
   MicState mic_state_ = MicState::kClosed;
   std::unique_ptr<AssistantQuery> query_;
   std::vector<AssistantSuggestionPtr> suggestions_;
