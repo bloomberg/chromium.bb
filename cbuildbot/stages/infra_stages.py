@@ -43,9 +43,9 @@ class EmergeInfraGoBinariesStage(generic_stages.BuilderStage):
   def _EmergePackages(self):
     cmd = ['emerge', '--deep']
     cmd.extend(_GO_PACKAGES)
+    # TODO(crbug.com/852633): Disable tests until fixed
     commands.RunBuildScript(self._build_root, cmd,
-                            sudo=True, enter_chroot=True,
-                            extra_env={'FEATURES': 'test'})
+                            sudo=True, enter_chroot=True)
 
 
 class PackageInfraGoBinariesStage(generic_stages.BuilderStage,
