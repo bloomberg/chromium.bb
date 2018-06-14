@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/raster/playback_image_provider.h"
+#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
@@ -38,6 +39,7 @@ class GLES2Interface;
 
 namespace blink {
 
+class CanvasResourceDispatcher;
 class StaticBitmapImage;
 class WebGraphicsContext3DProviderWrapper;
 
@@ -78,7 +80,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       unsigned msaa_sample_count,
       const CanvasColorParams&,
-      PresentationMode);
+      PresentationMode,
+      base::WeakPtr<CanvasResourceDispatcher>);
 
   // Use this method for capturing a frame that is intended to be displayed via
   // the compositor. Cases that need to acquire a snaptshot that is not destined
@@ -98,6 +101,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
   virtual bool IsValid() const = 0;
   virtual bool IsAccelerated() const = 0;
   uint32_t ContentUniqueID() const;
+  CanvasResourceDispatcher* ResourceDispatcher() {
+    return resource_dispatcher_.get();
+  }
 
   void RecycleResource(scoped_refptr<CanvasResource>);
   void SetResourceRecyclingEnabled(bool);
@@ -135,7 +141,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   CanvasResourceProvider(const IntSize&,
                          const CanvasColorParams&,
-                         base::WeakPtr<WebGraphicsContext3DProviderWrapper>);
+                         base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+                         base::WeakPtr<CanvasResourceDispatcher>);
 
  private:
   class CanvasImageProvider : public cc::ImageProvider {
@@ -161,6 +168,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   cc::ImageDecodeCache* ImageDecodeCache();
 
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher_;
   IntSize size_;
   CanvasColorParams color_params_;
   base::Optional<CanvasImageProvider> canvas_image_provider_;

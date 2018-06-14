@@ -287,7 +287,8 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
 
     ReplaceResourceProvider(CanvasResourceProvider::Create(
         surface_size, usage, SharedGpuContext::ContextProviderWrapper(), 0,
-        context_->ColorParams(), presentation_mode));
+        context_->ColorParams(), presentation_mode,
+        nullptr));  // canvas_resource_dispatcher
 
     if (ResourceProvider() && ResourceProvider()->IsValid()) {
       ResourceProvider()->Clear();
