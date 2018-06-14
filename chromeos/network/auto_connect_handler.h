@@ -48,7 +48,6 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
   void ConnectToNetworkRequested(const std::string& service_path) override;
 
   // NetworkPolicyObserver
-  void PoliciesChanged(const std::string& userhash) override;
   void PoliciesApplied(const std::string& userhash) override;
 
   // NetworkStateHandlerObserver
@@ -76,19 +75,38 @@ class CHROMEOS_EXPORT AutoConnectHandler : public LoginState::Observer,
 
   void NotifyAutoConnectInitiated(int auto_connect_reasons);
 
-  // If the user logged in already and the policy to prevent unmanaged & shared
-  // networks to autoconnect is enabled, then disconnects all such networks
-  // except wired networks. It will do this only once after the user logged in
-  // and the device policy and user policy was available.
-  // This is enforced once after a user logs in 1) to allow mananged networks to
-  // autoconnect and 2) to prevent a previous user from foisting a network on
-  // the new user. Therefore, this function is called at login and when the
-  // device policy is changed after user policy is fetched and applied.
+  // This function is called whenever the logged in state changes or when a new
+  // policy is applied. Once both device and user policy have been applied and
+  // either of AllowOnlyPolicyNetworksToConnect or
+  // AllowOnlyPolicyNetworksToAutoconnect is enabled, we disconnect from all
+  // connecting/connected unmanaged networks and either remove the network
+  // configuration (for AllowOnlyPolicyNetworksToConnect) or only disable
+  // auto-connect (for AllowOnlyPolicyNetworksToAutoconnect) for all aunmanaged
+  // networks (see |DisconnectFromAllUnmanagedWiFiNetworks(...)|).
+  // For the AllowOnlyPolicyNetworksToAutoconnect policy we only disconnect once
+  // to allow managed networks to auto-connect and prevent disconnects with
+  // manually connected unmanaged networks on every policy update.
   void DisconnectIfPolicyRequires();
 
-  // Disconnects from all unmanaged and shared WiFi networks that are currently
-  // connected or connecting.
-  void DisconnectFromUnmanagedSharedWiFiNetworks();
+  // Disconnects from all currently connected/connecting unmanaged WiFis.
+  // When |remove_configuration|==true, we also remove the corresponding network
+  // configuration for all unmanaged networks from Shill.
+  // When |disable_auto_connect|==true, we also disable auto-connect for all
+  // unmanaged networks in Shill.
+  // With both options we can prevent Shill from re-connecting to the unmanaged
+  // networks when looking for a best service to connect to.
+  void DisconnectFromAllUnmanagedWiFiNetworks(bool remove_configuration,
+                                              bool disable_auto_connect);
+
+  // Disconnects the connection to the network represented by |service_path|.
+  void DisconnectNetwork(const std::string& service_path);
+
+  // Removes the network configuration for the network represented by
+  // |service_path|.
+  void RemoveNetworkConfigurationForNetwork(const std::string& service_path);
+
+  // Sets WiFi.AutoConnect=false for the network represented by |service_path|.
+  void DisableAutoconnectForWiFiNetwork(const std::string& service_path);
 
   // Requests and if possible connects to the 'best' available network, see
   // CheckBestConnection().
