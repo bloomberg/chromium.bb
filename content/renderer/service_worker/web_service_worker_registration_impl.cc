@@ -314,7 +314,7 @@ WebServiceWorkerRegistrationImpl::GetOrCreateServiceWorkerObject(
           provider_context_for_client_->GetOrCreateServiceWorkerObject(
               std::move(info));
     }
-  } else {
+  } else if (ServiceWorkerContextClient::ThreadSpecificInstance()) {
     service_worker = ServiceWorkerContextClient::ThreadSpecificInstance()
                          ->GetOrCreateServiceWorkerObject(std::move(info));
   }
