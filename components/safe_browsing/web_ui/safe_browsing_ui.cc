@@ -47,8 +47,12 @@ WebUIInfoSingleton* WebUIInfoSingleton::GetInstance() {
 
 void WebUIInfoSingleton::AddToReportsSent(
     std::unique_ptr<ClientSafeBrowsingReportRequest> report_request) {
+  if (webui_instances_.empty())
+    return;
+
   for (auto* webui_listener : webui_instances_)
     webui_listener->NotifyThreatDetailsJsListener(report_request.get());
+
   reports_sent_.push_back(std::move(report_request));
 }
 
@@ -367,12 +371,12 @@ void SafeBrowsingUIHandler::GetSentThreatDetails(const base::ListValue* args) {
   for (const auto& report : reports) {
     sent_reports.GetList().push_back(
         base::Value(ParseThreatDetailsInfo(*report)));
-
-    AllowJavascript();
-    std::string callback_id;
-    args->GetString(0, &callback_id);
-    ResolveJavascriptCallback(base::Value(callback_id), sent_reports);
   }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), sent_reports);
 }
 
 void SafeBrowsingUIHandler::NotifyThreatDetailsJsListener(

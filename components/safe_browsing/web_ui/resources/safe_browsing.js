@@ -21,7 +21,10 @@ cr.define('safe_browsing', function() {
         addFullHashCacheInfo(fullHashCacheState);
     });
     cr.sendWithPromise('getSentThreatDetails', []).then((threatDetails) =>
-        addThreatDetailsInfo(threatDetails));
+        threatDetails.forEach(function(td) {
+          addThreatDetailsInfo(td);
+        })
+    );
     cr.addWebUIListener('threat-details-update', function(result) {
       addThreatDetailsInfo(result);
     });
