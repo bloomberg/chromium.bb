@@ -42,6 +42,10 @@ void CastGestureDispatcher::HandleSideSwipeContinue(
     return;
   }
 
+  if (!delegate_->CanHandleGesture(GestureType::GO_BACK)) {
+    return;
+  }
+
   delegate_->GestureProgress(GestureType::GO_BACK, touch_location);
   if (!dispatched_back_ && touch_location.x() >= horizontal_threshold_) {
     dispatched_back_ = true;
@@ -55,12 +59,18 @@ void CastGestureDispatcher::HandleSideSwipeEnd(
   if (swipe_origin != CastSideSwipeOrigin::LEFT) {
     return;
   }
+  if (!delegate_->CanHandleGesture(GestureType::GO_BACK)) {
+    return;
+  }
   if (!dispatched_back_ && touch_location.x() < horizontal_threshold_) {
     delegate_->CancelGesture(GestureType::GO_BACK, touch_location);
   }
 }
 
 void CastGestureDispatcher::HandleTapGesture(const gfx::Point& touch_location) {
+  if (!delegate_->CanHandleGesture(GestureType::TAP)) {
+    return;
+  }
   delegate_->ConsumeGesture(GestureType::TAP);
 }
 
