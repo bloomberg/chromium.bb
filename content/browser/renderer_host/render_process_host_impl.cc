@@ -1784,7 +1784,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       base::MakeRefCounted<RenderMessageFilter>(
           GetID(), GetBrowserContext(), request_context.get(),
           widget_helper_.get(), media_internals,
-          storage_partition_impl_->GetDOMStorageContext(),
           storage_partition_impl_->GetCacheStorageContext());
   AddFilter(render_message_filter.get());
 

@@ -29,8 +29,6 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
-#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
-#include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -98,7 +96,6 @@ RenderMessageFilter::RenderMessageFilter(
     net::URLRequestContextGetter* request_context,
     RenderWidgetHelper* render_widget_helper,
     MediaInternals* media_internals,
-    DOMStorageContextWrapper* dom_storage_context,
     CacheStorageContextImpl* cache_storage_context)
     : BrowserMessageFilter(kRenderFilteredMessageClasses,
                            arraysize(kRenderFilteredMessageClasses)),
@@ -107,7 +104,6 @@ RenderMessageFilter::RenderMessageFilter(
       request_context_(request_context),
       resource_context_(browser_context->GetResourceContext()),
       render_widget_helper_(render_widget_helper),
-      dom_storage_context_(dom_storage_context),
       render_process_id_(render_process_id),
       media_internals_(media_internals),
       cache_storage_context_(cache_storage_context),
