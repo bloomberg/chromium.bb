@@ -7676,11 +7676,10 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
           // Keep the refined MV and WM parameters.
           if (mv0.as_int != mbmi->mv[0].as_int) {
             const int ref = refs[0];
-            const MV ref_mv = x->mbmi_ext->ref_mvs[ref][0].as_mv;
-
+            const int_mv ref_mv = av1_get_ref_mv(x, 0);
             tmp_rate_mv =
-                av1_mv_bit_cost(&mbmi->mv[0].as_mv, &ref_mv, x->nmvjointcost,
-                                x->mvcost, MV_COST_WEIGHT);
+                av1_mv_bit_cost(&mbmi->mv[0].as_mv, &ref_mv.as_mv,
+                                x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
 
             if (cpi->sf.adaptive_motion_search)
               x->pred_mv[ref] = mbmi->mv[0].as_mv;
@@ -7795,7 +7794,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
             // get negative of mask
             const uint8_t *mask = av1_get_contiguous_soft_mask(
                 mbmi->interintra_wedge_index, 1, bsize);
-            tmp_mv.as_int = x->mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_int;
+            tmp_mv = av1_get_ref_mv(x, 0);
             compound_single_motion_search(cpi, x, bsize, &tmp_mv.as_mv, mi_row,
                                           mi_col, intrapred, mask, bw,
                                           &tmp_rate_mv, 0);
