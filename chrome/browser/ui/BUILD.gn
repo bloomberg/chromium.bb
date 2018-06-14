@@ -1025,6 +1025,7 @@ split_static_library("ui") {
     "//ppapi/buildflags",
     "//printing/buildflags",
     "//rlz/buildflags",
+    "//services/identity/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/mojom",
     "//services/service_manager/runner/common",
