@@ -1542,19 +1542,21 @@ TEST_F(LayerTreeHostImplTest, ScrollByReturnsCorrectValue) {
           .did_scroll);
 }
 
+// TODO(sunyunjia): Move scroll snap tests to a separate file.
+// https://crbug.com/851690
 TEST_F(LayerTreeHostImplTest, ScrollSnapOnX) {
   LayerImpl* overflow = CreateLayerForSnapping();
 
-  gfx::Point scroll_position(10, 10);
+  gfx::Point pointer_position(10, 10);
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
   gfx::Vector2dF x_delta(20, 0);
-  host_impl_->ScrollBy(UpdateState(scroll_position, x_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, x_delta).get());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
@@ -1573,16 +1575,16 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnX) {
 TEST_F(LayerTreeHostImplTest, ScrollSnapOnY) {
   LayerImpl* overflow = CreateLayerForSnapping();
 
-  gfx::Point scroll_position(10, 10);
+  gfx::Point pointer_position(10, 10);
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
   gfx::Vector2dF y_delta(0, 20);
-  host_impl_->ScrollBy(UpdateState(scroll_position, y_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, y_delta).get());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
@@ -1601,16 +1603,16 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnY) {
 TEST_F(LayerTreeHostImplTest, ScrollSnapOnBoth) {
   LayerImpl* overflow = CreateLayerForSnapping();
 
-  gfx::Point scroll_position(10, 10);
+  gfx::Point pointer_position(10, 10);
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
   gfx::Vector2dF delta(20, 20);
-  host_impl_->ScrollBy(UpdateState(scroll_position, delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, delta).get());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
@@ -1626,24 +1628,108 @@ TEST_F(LayerTreeHostImplTest, ScrollSnapOnBoth) {
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), overflow->CurrentScrollOffset());
 }
 
+TEST_F(LayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
+  LayerImpl* overflow = CreateLayerForSnapping();
+
+  gfx::Point pointer_position(10, 10);
+  gfx::Vector2dF delta(20, 20);
+
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_->ScrollAnimated(pointer_position, delta).thread);
+
+  EXPECT_EQ(overflow->scroll_tree_index(),
+            host_impl_->CurrentlyScrollingNode()->id);
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+  viz::BeginFrameArgs begin_frame_args =
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  BeginImplFrameAndAnimate(begin_frame_args, start_time);
+
+  // Animating for the wheel scroll.
+  BeginImplFrameAndAnimate(begin_frame_args,
+                           start_time + base::TimeDelta::FromMilliseconds(50));
+  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  gfx::ScrollOffset current_offset = overflow->CurrentScrollOffset();
+  EXPECT_LT(0, current_offset.x());
+  EXPECT_GT(20, current_offset.x());
+  EXPECT_LT(0, current_offset.y());
+  EXPECT_GT(20, current_offset.y());
+
+  // Animating for the snap.
+  BeginImplFrameAndAnimate(
+      begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
+  EXPECT_TRUE(host_impl_->is_animating_for_snap_for_testing());
+
+  // Finish the animation.
+  BeginImplFrameAndAnimate(
+      begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1500));
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), overflow->CurrentScrollOffset());
+  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+}
+
+TEST_F(LayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
+  LayerImpl* overflow = CreateLayerForSnapping();
+
+  gfx::Point pointer_position(10, 10);
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
+          .thread);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
+
+  gfx::Vector2dF x_delta(20, 0);
+  host_impl_->ScrollBy(UpdateState(pointer_position, x_delta).get());
+  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+
+  viz::BeginFrameArgs begin_frame_args =
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
+  host_impl_->ScrollEnd(EndState().get(), true);
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+  BeginImplFrameAndAnimate(begin_frame_args, start_time);
+
+  // Animating for the snap.
+  BeginImplFrameAndAnimate(begin_frame_args,
+                           start_time + base::TimeDelta::FromMilliseconds(100));
+  EXPECT_TRUE(host_impl_->is_animating_for_snap_for_testing());
+  gfx::ScrollOffset current_offset = overflow->CurrentScrollOffset();
+  EXPECT_GT(50, current_offset.x());
+  EXPECT_LT(20, current_offset.x());
+  EXPECT_EQ(0, current_offset.y());
+
+  // Interrup the snap animation with ScrollBegin.
+  EXPECT_EQ(
+      InputHandler::SCROLL_ON_IMPL_THREAD,
+      host_impl_
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
+          .thread);
+  EXPECT_FALSE(host_impl_->is_animating_for_snap_for_testing());
+  BeginImplFrameAndAnimate(begin_frame_args,
+                           start_time + base::TimeDelta::FromMilliseconds(150));
+  EXPECT_VECTOR_EQ(ScrollOffsetToVector2dF(current_offset),
+                   overflow->CurrentScrollOffset());
+}
+
 TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoWhenZoomed) {
   LayerImpl* overflow = CreateLayerForSnapping();
   // Scales the page to its 1/5.
   host_impl_->active_tree()->PushPageScaleFromMainThread(0.2f, 0.1f, 5.f);
 
   // Should be (10, 10) in the scroller's coordinate.
-  gfx::Point scroll_position(2, 2);
+  gfx::Point pointer_position(2, 2);
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
   // Should be (20, 20) in the scroller's coordinate.
   gfx::Vector2dF delta(4, 4);
   InputHandlerScrollResult result =
-      host_impl_->ScrollBy(UpdateState(scroll_position, delta).get());
+      host_impl_->ScrollBy(UpdateState(pointer_position, delta).get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 20), overflow->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), result.current_visual_offset);
 
@@ -1673,13 +1759,13 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   scroll_layer->SetCurrentScrollOffset(gfx::ScrollOffset(30, 30));
 
   DrawFrame();
-  gfx::Point scroll_position(50, 50);
+  gfx::Point pointer_position(50, 50);
 
   // OverscrollBehaviorTypeAuto shouldn't prevent scroll propagation.
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(30, 30), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(), overflow->CurrentScrollOffset());
@@ -1687,7 +1773,7 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   gfx::Vector2dF x_delta(-10, 0);
   gfx::Vector2dF y_delta(0, -10);
   gfx::Vector2dF diagonal_delta(-10, -10);
-  host_impl_->ScrollBy(UpdateState(scroll_position, x_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, x_delta).get());
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 30), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
@@ -1704,12 +1790,12 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 30), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
-  host_impl_->ScrollBy(UpdateState(scroll_position, x_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, x_delta).get());
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 30), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
@@ -1719,12 +1805,12 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 30), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
-  host_impl_->ScrollBy(UpdateState(scroll_position, y_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, y_delta).get());
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
@@ -1734,12 +1820,12 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
-  host_impl_->ScrollBy(UpdateState(scroll_position, diagonal_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, diagonal_delta).get());
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
@@ -1757,12 +1843,12 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
-  host_impl_->ScrollBy(UpdateState(scroll_position, x_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, x_delta).get());
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
@@ -1772,12 +1858,12 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
-  host_impl_->ScrollBy(UpdateState(scroll_position, y_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, y_delta).get());
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
@@ -1787,12 +1873,12 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
-  host_impl_->ScrollBy(UpdateState(scroll_position, diagonal_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, diagonal_delta).get());
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
@@ -1809,15 +1895,15 @@ TEST_F(LayerTreeHostImplTest, OverscrollBehaviorPreventsPropagation) {
   EXPECT_EQ(
       InputHandler::SCROLL_ON_IMPL_THREAD,
       host_impl_
-          ->ScrollBegin(BeginState(scroll_position).get(), InputHandler::WHEEL)
+          ->ScrollBegin(BeginState(pointer_position).get(), InputHandler::WHEEL)
           .thread);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), overflow->CurrentScrollOffset());
 
-  host_impl_->ScrollBy(UpdateState(scroll_position, x_delta).get());
-  host_impl_->ScrollBy(UpdateState(scroll_position, -x_delta).get());
-  host_impl_->ScrollBy(UpdateState(scroll_position, y_delta).get());
-  host_impl_->ScrollBy(UpdateState(scroll_position, -y_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, x_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, -x_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, y_delta).get());
+  host_impl_->ScrollBy(UpdateState(pointer_position, -y_delta).get());
   host_impl_->ScrollEnd(EndState().get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), overflow->CurrentScrollOffset());
