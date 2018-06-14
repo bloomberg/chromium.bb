@@ -488,24 +488,26 @@ void StackSamplingProfiler::SamplingThread::FinishCollection(
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
   DCHECK_EQ(0u, active_collections_.count(collection->collection_id));
 
-    collection->profile.profile_duration = Time::Now() -
-                                           collection->profile_start_time +
-                                           collection->params.sampling_interval;
-    collection->native_sampler->ProfileRecordingStopped();
+  collection->profile.profile_duration = Time::Now() -
+                                         collection->profile_start_time +
+                                         collection->params.sampling_interval;
+  collection->native_sampler->ProfileRecordingStopped();
 
-    // Extract some information so callback and event-signalling can still be
-    // done after the collection has been removed from the list of "active"
-    // ones. This allows the the controlling object (and tests using it) to be
-    // confident that collection is fully finished when those things occur.
-    const CompletedCallback callback = collection->callback;
-    CallStackProfile profile = std::move(collection->profile);
-    WaitableEvent* finished = collection->finished;
+  // Extract some information so callback and event-signalling can still be
+  // done after the collection has been removed from the list of "active"
+  // ones. This allows the the controlling object (and tests using it) to be
+  // confident that collection is fully finished when those things occur.
+  const CompletedCallback callback = collection->callback;
+  CallStackProfile profile = std::move(collection->profile);
+  WaitableEvent* finished = collection->finished;
 
-    // Run the associated callback, passing the collected profile.
-    callback.Run(std::move(profile));
+  // Run the associated callback, passing the collected profile.
+  callback.Run(std::move(profile));
 
-    // Signal that this collection is finished.
-    finished->Signal();
+  // Signal that this collection is finished.
+  finished->Signal();
+
+  ScheduleShutdownIfIdle();
 }
 
 void StackSamplingProfiler::SamplingThread::ScheduleShutdownIfIdle() {
@@ -567,7 +569,6 @@ void StackSamplingProfiler::SamplingThread::RemoveCollectionTask(
   DCHECK_EQ(1U, count);
 
   FinishCollection(collection.get());
-  ScheduleShutdownIfIdle();
 }
 
 void StackSamplingProfiler::SamplingThread::RecordSampleTask(
@@ -621,7 +622,6 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
 
   // All capturing has completed so finish the collection.
   FinishCollection(collection);
-  ScheduleShutdownIfIdle();
 }
 
 void StackSamplingProfiler::SamplingThread::ShutdownTask(int add_events) {
