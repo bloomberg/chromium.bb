@@ -14,30 +14,44 @@ namespace identity {
 
 namespace {
 
+enum class IdentityManagerEvent {
+  PRIMARY_ACCOUNT_SET,
+  PRIMARY_ACCOUNT_CLEARED,
+  REFRESH_TOKEN_UPDATED,
+  REFRESH_TOKEN_REMOVED
+};
+
 class OneShotIdentityManagerObserver : public IdentityManager::Observer {
  public:
   OneShotIdentityManagerObserver(IdentityManager* identity_manager,
-                                 base::OnceClosure done_closure);
+                                 base::OnceClosure done_closure,
+                                 IdentityManagerEvent event_to_wait_on);
   ~OneShotIdentityManagerObserver() override;
 
  private:
   // IdentityManager::Observer:
   void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
-
   void OnPrimaryAccountCleared(
       const AccountInfo& previous_primary_account_info) override;
+  void OnRefreshTokenUpdatedForAccount(const AccountInfo& account_info,
+                                       bool is_valid) override;
+  void OnRefreshTokenRemovedForAccount(
+      const AccountInfo& account_info) override;
 
   IdentityManager* identity_manager_;
   base::OnceClosure done_closure_;
+  IdentityManagerEvent event_to_wait_on_;
 
   DISALLOW_COPY_AND_ASSIGN(OneShotIdentityManagerObserver);
 };
 
 OneShotIdentityManagerObserver::OneShotIdentityManagerObserver(
     IdentityManager* identity_manager,
-    base::OnceClosure done_closure)
+    base::OnceClosure done_closure,
+    IdentityManagerEvent event_to_wait_on)
     : identity_manager_(identity_manager),
-      done_closure_(std::move(done_closure)) {
+      done_closure_(std::move(done_closure)),
+      event_to_wait_on_(event_to_wait_on) {
   identity_manager_->AddObserver(this);
 }
 
@@ -47,14 +61,58 @@ OneShotIdentityManagerObserver::~OneShotIdentityManagerObserver() {
 
 void OneShotIdentityManagerObserver::OnPrimaryAccountSet(
     const AccountInfo& primary_account_info) {
+  if (event_to_wait_on_ != IdentityManagerEvent::PRIMARY_ACCOUNT_SET)
+    return;
+
   DCHECK(done_closure_);
   std::move(done_closure_).Run();
 }
 
 void OneShotIdentityManagerObserver::OnPrimaryAccountCleared(
     const AccountInfo& previous_primary_account_info) {
+  if (event_to_wait_on_ != IdentityManagerEvent::PRIMARY_ACCOUNT_CLEARED)
+    return;
+
   DCHECK(done_closure_);
   std::move(done_closure_).Run();
+}
+
+void OneShotIdentityManagerObserver::OnRefreshTokenUpdatedForAccount(
+    const AccountInfo& account_info,
+    bool is_valid) {
+  if (event_to_wait_on_ != IdentityManagerEvent::REFRESH_TOKEN_UPDATED)
+    return;
+
+  DCHECK(done_closure_);
+  std::move(done_closure_).Run();
+}
+
+void OneShotIdentityManagerObserver::OnRefreshTokenRemovedForAccount(
+    const AccountInfo& account_info) {
+  if (event_to_wait_on_ != IdentityManagerEvent::REFRESH_TOKEN_REMOVED)
+    return;
+
+  DCHECK(done_closure_);
+  std::move(done_closure_).Run();
+}
+
+// Helper function that updates the refresh token for the primary account to
+// |new_token|. Blocks until the update is processed by |identity_manager|.
+void UpdateRefreshTokenForPrimaryAccount(
+    ProfileOAuth2TokenService* token_service,
+    IdentityManager* identity_manager,
+    const std::string& new_token) {
+  DCHECK(identity_manager->HasPrimaryAccount());
+  std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
+
+  base::RunLoop run_loop;
+  OneShotIdentityManagerObserver token_updated_observer(
+      identity_manager, run_loop.QuitClosure(),
+      IdentityManagerEvent::REFRESH_TOKEN_UPDATED);
+
+  token_service->UpdateCredentials(account_id, new_token);
+
+  run_loop.Run();
 }
 
 }  // namespace
@@ -75,8 +133,9 @@ std::string SetPrimaryAccount(SigninManagerBase* signin_manager,
 #else
 
   base::RunLoop run_loop;
-  OneShotIdentityManagerObserver signin_observer(identity_manager,
-                                                 run_loop.QuitClosure());
+  OneShotIdentityManagerObserver signin_observer(
+      identity_manager, run_loop.QuitClosure(),
+      IdentityManagerEvent::PRIMARY_ACCOUNT_SET);
 
   SigninManager* real_signin_manager =
       SigninManager::FromSigninManagerBase(signin_manager);
@@ -103,17 +162,18 @@ void SetRefreshTokenForPrimaryAccount(ProfileOAuth2TokenService* token_service,
                                       IdentityManager* identity_manager) {
   DCHECK(identity_manager->HasPrimaryAccount());
   std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
+
   std::string refresh_token = "refresh_token_for_" + account_id;
-  token_service->UpdateCredentials(account_id, refresh_token);
+  UpdateRefreshTokenForPrimaryAccount(token_service, identity_manager,
+                                      refresh_token);
 }
 
 void SetInvalidRefreshTokenForPrimaryAccount(
     ProfileOAuth2TokenService* token_service,
     IdentityManager* identity_manager) {
-  DCHECK(identity_manager->HasPrimaryAccount());
-  std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
-  token_service->UpdateCredentials(
-      account_id, OAuth2TokenServiceDelegate::kInvalidRefreshToken);
+  UpdateRefreshTokenForPrimaryAccount(
+      token_service, identity_manager,
+      OAuth2TokenServiceDelegate::kInvalidRefreshToken);
 }
 
 void RemoveRefreshTokenForPrimaryAccount(
@@ -121,7 +181,15 @@ void RemoveRefreshTokenForPrimaryAccount(
     IdentityManager* identity_manager) {
   DCHECK(identity_manager->HasPrimaryAccount());
   std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
+
+  base::RunLoop run_loop;
+  OneShotIdentityManagerObserver token_updated_observer(
+      identity_manager, run_loop.QuitClosure(),
+      IdentityManagerEvent::REFRESH_TOKEN_REMOVED);
+
   token_service->RevokeCredentials(account_id);
+
+  run_loop.Run();
 }
 
 std::string MakePrimaryAccountAvailable(
@@ -144,8 +212,9 @@ void ClearPrimaryAccount(SigninManagerForTest* signin_manager,
   NOTREACHED();
 #else
   base::RunLoop run_loop;
-  OneShotIdentityManagerObserver signout_observer(identity_manager,
-                                                  run_loop.QuitClosure());
+  OneShotIdentityManagerObserver signout_observer(
+      identity_manager, run_loop.QuitClosure(),
+      IdentityManagerEvent::PRIMARY_ACCOUNT_CLEARED);
 
   signin_manager->ForceSignOut();
 
