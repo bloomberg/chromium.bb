@@ -169,15 +169,18 @@ void CoordinationUnitGraph::DestroyCoordinationUnit(CoordinationUnitBase* cu) {
 void CoordinationUnitGraph::BeforeProcessPidChange(
     ProcessCoordinationUnitImpl* process,
     base::ProcessId new_pid) {
+  // On Windows, PIDs are agressively reused, and because not all process
+  // creation/death notifications are synchronized, it's possible for more than
+  // one CU to have the same PID. To handle this, the second and subsequent
+  // registration override earlier registrations, while unregistration will only
+  // unregister the current holder of the PID.
   if (process->process_id() != base::kNullProcessId) {
-    size_t erased = processes_by_pid_.erase(process->process_id());
-    DCHECK_EQ(1u, erased);
+    auto it = processes_by_pid_.find(process->process_id());
+    if (it != processes_by_pid_.end() && it->second == process)
+      processes_by_pid_.erase(it);
   }
-  if (new_pid != base::kNullProcessId) {
-    bool inserted =
-        processes_by_pid_.insert(std::make_pair(new_pid, process)).second;
-    DCHECK(inserted);
-  }
+  if (new_pid != base::kNullProcessId)
+    processes_by_pid_[new_pid] = process;
 }
 
 }  // namespace resource_coordinator
