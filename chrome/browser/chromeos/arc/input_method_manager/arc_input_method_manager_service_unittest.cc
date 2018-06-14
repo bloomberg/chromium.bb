@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
+#include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_service.h"
 
 #include <memory>
 
@@ -15,30 +15,30 @@
 namespace arc {
 namespace {
 
-class ArcInputMethodManagerBridgeTest : public testing::Test {
+class ArcInputMethodManagerServiceTest : public testing::Test {
  protected:
-  ArcInputMethodManagerBridgeTest()
+  ArcInputMethodManagerServiceTest()
       : arc_service_manager_(std::make_unique<ArcServiceManager>()),
         context_(std::make_unique<TestBrowserContext>()),
-        service_(ArcInputMethodManagerBridge::GetForBrowserContextForTesting(
+        service_(ArcInputMethodManagerService::GetForBrowserContextForTesting(
             context_.get())) {}
-  ~ArcInputMethodManagerBridgeTest() override { service_->Shutdown(); }
+  ~ArcInputMethodManagerServiceTest() override { service_->Shutdown(); }
 
-  ArcInputMethodManagerBridge* service() { return service_; }
+  ArcInputMethodManagerService* service() { return service_; }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestBrowserContext> context_;
 
-  ArcInputMethodManagerBridge* const service_;
+  ArcInputMethodManagerService* const service_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcInputMethodManagerBridgeTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcInputMethodManagerServiceTest);
 };
 
 }  // anonymous namespace
 
-TEST_F(ArcInputMethodManagerBridgeTest, ConstructAndDestruct) {
+TEST_F(ArcInputMethodManagerServiceTest, ConstructAndDestruct) {
   // These two method are not implemented yet.
   ASSERT_TRUE(service() != nullptr);
   service()->OnActiveImeChanged("");

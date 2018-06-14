@@ -5,42 +5,37 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_INPUT_METHOD_MANAGER_ARC_INPUT_METHOD_MANAGER_BRIDGE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_INPUT_METHOD_MANAGER_ARC_INPUT_METHOD_MANAGER_BRIDGE_H_
 
-#include <string>
-
-#include "base/macros.h"
 #include "components/arc/common/input_method_manager.mojom.h"
-#include "components/keyed_service/core/keyed_service.h"
-
-namespace content {
-class BrowserContext;
-}  // namespace content
 
 namespace arc {
 
-class ArcBridgeService;
-
-class ArcInputMethodManagerBridge : public KeyedService,
-                                    public mojom::InputMethodManagerHost {
+// The interface class encapsulates the detail of input method manager related
+// IPC between Chrome and the ARC container.
+class ArcInputMethodManagerBridge {
  public:
-  // Returns the instance for the given BrowserContext, or nullptr if the
-  // browser |context| is not allowed to use ARC.
-  static ArcInputMethodManagerBridge* GetForBrowserContext(
-      content::BrowserContext* context);
-  static ArcInputMethodManagerBridge* GetForBrowserContextForTesting(
-      content::BrowserContext* context);
+  virtual ~ArcInputMethodManagerBridge() = default;
 
-  ArcInputMethodManagerBridge(content::BrowserContext* context,
-                              ArcBridgeService* bridge_service);
-  ~ArcInputMethodManagerBridge() override;
+  // Received mojo calls are passed to this delegate.
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
 
-  // mojom::InputMethodManagerHost overrides:
-  void OnActiveImeChanged(const std::string& ime_id) override;
-  void OnImeInfoChanged(std::vector<mojom::ImeInfoPtr> ime_infos) override;
+    virtual void OnActiveImeChanged(const std::string& ime_id) = 0;
+    virtual void OnImeInfoChanged(
+        const std::vector<mojom::ImeInfoPtr> ime_info_array) = 0;
+  };
 
- private:
-  ArcBridgeService* const bridge_service_;  // Owned by ArcServiceManager
+  // Sends mojo calls.
+  using EnableImeCallback =
+      mojom::InputMethodManagerInstance::EnableImeCallback;
+  using SwitchImeToCallback =
+      mojom::InputMethodManagerInstance::SwitchImeToCallback;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcInputMethodManagerBridge);
+  virtual void SendEnableIme(const std::string& ime_id,
+                             bool enable,
+                             EnableImeCallback callback) = 0;
+  virtual void SendSwitchImeTo(const std::string& ime_id,
+                               SwitchImeToCallback callback) = 0;
 };
 
 }  // namespace arc
