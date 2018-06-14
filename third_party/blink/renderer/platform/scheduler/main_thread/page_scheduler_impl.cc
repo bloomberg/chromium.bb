@@ -261,21 +261,17 @@ void PageSchedulerImpl::SetIsMainFrameLocal(bool is_local) {
   is_main_frame_local_ = is_local;
 }
 
-std::unique_ptr<FrameSchedulerImpl> PageSchedulerImpl::CreateFrameSchedulerImpl(
-    base::trace_event::BlameContext* blame_context,
-    FrameScheduler::FrameType frame_type) {
+void PageSchedulerImpl::RegisterFrameSchedulerImpl(
+    FrameSchedulerImpl* frame_scheduler) {
   MaybeInitializeBackgroundCPUTimeBudgetPool();
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler(new FrameSchedulerImpl(
-      main_thread_scheduler_, this, blame_context, frame_type));
+  frame_schedulers_.insert(frame_scheduler);
   frame_scheduler->UpdatePolicy();
-  frame_schedulers_.insert(frame_scheduler.get());
-  return frame_scheduler;
 }
 
 std::unique_ptr<blink::FrameScheduler> PageSchedulerImpl::CreateFrameScheduler(
     blink::BlameContext* blame_context,
     FrameScheduler::FrameType frame_type) {
-  return CreateFrameSchedulerImpl(blame_context, frame_type);
+  return FrameSchedulerImpl::Create(this, blame_context, frame_type);
 }
 
 void PageSchedulerImpl::Unregister(FrameSchedulerImpl* frame_scheduler) {
@@ -556,6 +552,10 @@ void PageSchedulerImpl::SetMaxVirtualTimeTaskStarvationCount(
     int max_task_starvation_count) {
   main_thread_scheduler_->SetMaxVirtualTimeTaskStarvationCount(
       max_task_starvation_count);
+}
+
+MainThreadSchedulerImpl* PageSchedulerImpl::GetMainThreadScheduler() const {
+  return main_thread_scheduler_;
 }
 
 ukm::UkmRecorder* PageSchedulerImpl::GetUkmRecorder() {

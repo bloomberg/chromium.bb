@@ -60,8 +60,8 @@ class PageSchedulerImplTest : public testing::Test {
             nullptr, test_task_runner_, test_task_runner_->GetMockTickClock()),
         base::nullopt));
     page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
-    frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
-        nullptr, FrameScheduler::FrameType::kSubframe);
+    frame_scheduler_ = FrameSchedulerImpl::Create(
+        page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kSubframe);
   }
 
   void TearDown() override {
@@ -296,8 +296,8 @@ TEST_F(PageSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   std::unique_ptr<PageSchedulerImpl> page_scheduler2(
       new PageSchedulerImpl(nullptr, scheduler_.get()));
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler2 =
-      page_scheduler2->CreateFrameSchedulerImpl(
-          nullptr, FrameScheduler::FrameType::kSubframe);
+      FrameSchedulerImpl::Create(page_scheduler2.get(), nullptr,
+                                 FrameScheduler::FrameType::kSubframe);
 
   page_scheduler_->SetPageVisible(true);
   page_scheduler2->SetPageVisible(false);
@@ -548,8 +548,8 @@ TEST_F(PageSchedulerImplTest, VirtualTimeSettings_NewFrameScheduler) {
   page_scheduler_->EnableVirtualTime();
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      page_scheduler_->CreateFrameSchedulerImpl(
-          nullptr, FrameScheduler::FrameType::kSubframe);
+      FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr,
+                                 FrameScheduler::FrameType::kSubframe);
 
   ThrottleableTaskQueueForScheduler(frame_scheduler.get())
       ->PostDelayedTask(
@@ -578,9 +578,8 @@ base::OnceClosure MakeDeletionTask(T* obj) {
 TEST_F(PageSchedulerImplTest, DeleteFrameSchedulers_InTask) {
   for (int i = 0; i < 10; i++) {
     FrameSchedulerImpl* frame_scheduler =
-        page_scheduler_
-            ->CreateFrameSchedulerImpl(nullptr,
-                                       FrameScheduler::FrameType::kSubframe)
+        FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr,
+                                   FrameScheduler::FrameType::kSubframe)
             .release();
     ThrottleableTaskQueueForScheduler(frame_scheduler)
         ->PostDelayedTask(FROM_HERE, MakeDeletionTask(frame_scheduler),
@@ -599,9 +598,8 @@ TEST_F(PageSchedulerImplTest, DeleteThrottledQueue_InTask) {
   page_scheduler_->SetPageVisible(false);
 
   FrameSchedulerImpl* frame_scheduler =
-      page_scheduler_
-          ->CreateFrameSchedulerImpl(nullptr,
-                                     FrameScheduler::FrameType::kSubframe)
+      FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr,
+                                 FrameScheduler::FrameType::kSubframe)
           .release();
   scoped_refptr<TaskQueue> timer_task_queue =
       ThrottleableTaskQueueForScheduler(frame_scheduler);
@@ -653,8 +651,8 @@ TEST_F(PageSchedulerImplTest,
       VirtualTimePolicy::kDeterministicLoading);
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      page_scheduler_->CreateFrameSchedulerImpl(
-          nullptr, FrameScheduler::FrameType::kSubframe);
+      FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr,
+                                 FrameScheduler::FrameType::kSubframe);
 
   {
     WebScopedVirtualTimePauser virtual_time_pauser =
@@ -720,8 +718,8 @@ TEST_F(PageSchedulerImplTest,
   base::TimeTicks time_second_task;
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      page_scheduler_->CreateFrameSchedulerImpl(
-          nullptr, FrameScheduler::FrameType::kSubframe);
+      FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr,
+                                 FrameScheduler::FrameType::kSubframe);
 
   // Pauses and unpauses virtual time, thereby advancing virtual time by an
   // additional 10ms due to WebScopedVirtualTimePauser's delay.
@@ -756,8 +754,8 @@ TEST_F(PageSchedulerImplTest,
       VirtualTimePolicy::kDeterministicLoading);
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      page_scheduler_->CreateFrameSchedulerImpl(
-          nullptr, FrameScheduler::FrameType::kSubframe);
+      FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr,
+                                 FrameScheduler::FrameType::kSubframe);
 
   WebScopedVirtualTimePauser virtual_time_pauser1 =
       frame_scheduler->CreateWebScopedVirtualTimePauser(
@@ -795,8 +793,8 @@ TEST_F(PageSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
   std::vector<int> run_order;
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      page_scheduler_->CreateFrameSchedulerImpl(
-          nullptr, FrameScheduler::FrameType::kSubframe);
+      FrameSchedulerImpl::Create(page_scheduler_.get(), nullptr,
+                                 FrameScheduler::FrameType::kSubframe);
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kPause);
   page_scheduler_->EnableVirtualTime();
 
@@ -1077,8 +1075,8 @@ TEST_F(PageSchedulerImplTest, BackgroundTimerThrottling) {
   EXPECT_FALSE(page_scheduler_->IsThrottled());
 
   std::vector<base::TimeTicks> run_times;
-  frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
-      nullptr, FrameScheduler::FrameType::kSubframe);
+  frame_scheduler_ = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kSubframe);
   page_scheduler_->SetPageVisible(true);
   EXPECT_FALSE(page_scheduler_->IsThrottled());
 
@@ -1143,11 +1141,11 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
   std::vector<base::TimeTicks> run_times;
 
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler1 =
-      page_scheduler->CreateFrameSchedulerImpl(
-          nullptr, FrameScheduler::FrameType::kSubframe);
+      FrameSchedulerImpl::Create(page_scheduler.get(), nullptr,
+                                 FrameScheduler::FrameType::kSubframe);
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler2 =
-      page_scheduler->CreateFrameSchedulerImpl(
-          nullptr, FrameScheduler::FrameType::kSubframe);
+      FrameSchedulerImpl::Create(page_scheduler.get(), nullptr,
+                                 FrameScheduler::FrameType::kSubframe);
 
   page_scheduler->SetPageVisible(false);
 

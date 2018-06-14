@@ -91,9 +91,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool IsThrottled() const;
   bool KeepActive() const;
 
-  std::unique_ptr<FrameSchedulerImpl> CreateFrameSchedulerImpl(
-      base::trace_event::BlameContext*,
-      FrameScheduler::FrameType);
+  void RegisterFrameSchedulerImpl(FrameSchedulerImpl* frame_scheduler);
+
+  MainThreadSchedulerImpl* GetMainThreadScheduler() const;
 
   void Unregister(FrameSchedulerImpl*);
   void OnNavigation();
