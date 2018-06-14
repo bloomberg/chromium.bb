@@ -48,7 +48,7 @@ FloatPoint ContentsOffset(LocalFrame* frame) {
 LayoutPoint PageToAbsolute(LocalFrame* frame, const FloatPoint& page_pos) {
   FloatPoint converted_point;
   if (frame && frame->View())
-    converted_point = frame->View()->DocumentToAbsolute(page_pos);
+    converted_point = frame->View()->DocumentToFrame(page_pos);
   else
     converted_point = page_pos;
 

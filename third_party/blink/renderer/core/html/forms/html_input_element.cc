@@ -1869,7 +1869,7 @@ bool HTMLInputElement::SetupDateTimeChooserParameters(
   }
 
   parameters.anchor_rect_in_screen =
-      GetDocument().View()->ContentsToScreen(PixelSnappedBoundingBox());
+      GetDocument().View()->FrameToScreen(PixelSnappedBoundingBox());
   parameters.double_value = input_type_->ValueAsDouble();
   parameters.is_anchor_element_rtl =
       input_type_view_->ComputedTextDirection() == TextDirection::kRtl;

@@ -1032,7 +1032,7 @@ WebRect WebViewImpl::ComputeBlockBound(const WebPoint& point_in_root_frame,
     return WebRect();
 
   // Use the point-based hit test to find the node.
-  LayoutPoint point = MainFrameImpl()->GetFrameView()->RootFrameToAbsolute(
+  LayoutPoint point = MainFrameImpl()->GetFrameView()->ConvertFromRootFrame(
       LayoutPoint(point_in_root_frame));
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kReadOnly | HitTestRequest::kActive |
@@ -1057,7 +1057,7 @@ WebRect WebViewImpl::ComputeBlockBound(const WebPoint& point_in_root_frame,
   if (node) {
     IntRect absolute_rect = node->GetLayoutObject()->AbsoluteBoundingBoxRect();
     LocalFrame* frame = node->GetDocument().GetFrame();
-    return frame->View()->AbsoluteToRootFrame(absolute_rect);
+    return frame->View()->ConvertToRootFrame(absolute_rect);
   }
   return WebRect();
 }
@@ -2112,9 +2112,9 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor_web,
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
   anchor_web = visual_viewport.RootFrameToViewport(
-      frame_view->AbsoluteToRootFrame(anchor));
+      frame_view->ConvertToRootFrame(anchor));
   focus_web = visual_viewport.RootFrameToViewport(
-      frame_view->AbsoluteToRootFrame(focus));
+      frame_view->ConvertToRootFrame(focus));
   return true;
 }
 
@@ -2327,10 +2327,10 @@ bool WebViewImpl::ScrollFocusedEditableElementIntoView() {
 
   ZoomAndScrollToFocusedEditableElementRect(
       main_frame_view->RootFrameToDocument(
-          element->GetDocument().View()->AbsoluteToRootFrame(
+          element->GetDocument().View()->ConvertToRootFrame(
               layout_object->AbsoluteBoundingBoxRect())),
       main_frame_view->RootFrameToDocument(
-          element->GetDocument().View()->AbsoluteToRootFrame(
+          element->GetDocument().View()->ConvertToRootFrame(
               element->GetDocument()
                   .GetFrame()
                   ->Selection()

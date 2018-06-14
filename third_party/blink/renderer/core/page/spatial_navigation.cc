@@ -416,7 +416,7 @@ LayoutRect NodeRectInRootFrame(const Node* node, bool ignore_border) {
   DCHECK(node->GetLayoutObject());
   DCHECK(!node->GetDocument().View()->NeedsLayout());
 
-  LayoutRect rect = node->GetDocument().GetFrame()->View()->AbsoluteToRootFrame(
+  LayoutRect rect = node->GetDocument().GetFrame()->View()->ConvertToRootFrame(
       node->BoundingBox());
 
   // For authors that use border instead of outline in their CSS, we compensate
@@ -694,7 +694,7 @@ LayoutRect VirtualRectForAreaElementAndDirection(const HTMLAreaElement& area,
   // areas.
   LayoutRect rect = VirtualRectForDirection(
       direction,
-      area.GetDocument().GetFrame()->View()->AbsoluteToRootFrame(
+      area.GetDocument().GetFrame()->View()->ConvertToRootFrame(
           area.ComputeAbsoluteRect(area.ImageElement()->GetLayoutObject())),
       LayoutUnit(1));
   return rect;
@@ -710,7 +710,7 @@ LayoutRect FindSearchStartPoint(const LocalFrame* frame,
                                 WebFocusType direction) {
   LayoutRect starting_rect = VirtualRectForDirection(
       direction,
-      frame->View()->AbsoluteToRootFrame(frame->View()->DocumentToAbsolute(
+      frame->View()->ConvertToRootFrame(frame->View()->DocumentToFrame(
           LayoutRect(frame->View()
                          ->LayoutViewportScrollableArea()
                          ->VisibleContentRect()))));

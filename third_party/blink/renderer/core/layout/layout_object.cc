@@ -1536,7 +1536,7 @@ LayoutRect LayoutObject::AbsoluteSelectionRect() const {
     MapToVisualRectInAncestorSpace(View(), selection_rect);
 
   if (LocalFrameView* frame_view = GetFrameView())
-    selection_rect = frame_view->DocumentToAbsolute(selection_rect);
+    selection_rect = frame_view->DocumentToFrame(selection_rect);
 
   return selection_rect;
 }

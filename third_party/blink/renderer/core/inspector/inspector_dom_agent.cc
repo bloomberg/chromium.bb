@@ -1309,7 +1309,7 @@ Response InspectorDOMAgent::getNodeForLocation(
   HitTestRequest request(HitTestRequest::kMove | HitTestRequest::kReadOnly |
                          HitTestRequest::kAllowChildFrameContent);
   HitTestResult result(request,
-                       document_->View()->DocumentToAbsolute(document_point));
+                       document_->View()->DocumentToFrame(document_point));
   document_->GetFrame()->ContentLayoutObject()->HitTest(result);
   if (!include_user_agent_shadow_dom)
     result.SetToShadowHostIfInRestrictedShadowRoot();

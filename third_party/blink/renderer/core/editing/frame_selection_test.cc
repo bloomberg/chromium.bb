@@ -1063,17 +1063,15 @@ TEST_F(FrameSelectionTest, SelectionBounds) {
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, scroll_offset), kProgrammaticScroll);
-  EXPECT_EQ(
-      LayoutRect(0, node_margin_top, node_width, node_height),
-      frame_view->AbsoluteToDocument(Selection().AbsoluteUnclippedBounds()));
+  EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
+            frame_view->FrameToDocument(Selection().AbsoluteUnclippedBounds()));
 
   // Adjust the page scale factor which changes the selection bounds as seen
   // through the viewport. The unclipped selection bounds should not be clipped.
   const int page_scale_factor = 2;
   GetPage().SetPageScaleFactor(page_scale_factor);
-  EXPECT_EQ(
-      LayoutRect(0, node_margin_top, node_width, node_height),
-      frame_view->AbsoluteToDocument(Selection().AbsoluteUnclippedBounds()));
+  EXPECT_EQ(LayoutRect(0, node_margin_top, node_width, node_height),
+            frame_view->FrameToDocument(Selection().AbsoluteUnclippedBounds()));
 }
 
 }  // namespace blink

@@ -1746,7 +1746,7 @@ bool PaintLayer::HitTest(HitTestResult& result) {
   LayoutRect hit_test_area = FrameVisibleRect(GetLayoutObject());
   if (request.IgnoreClipping()) {
     if (LocalFrameView* frame_view = GetLayoutObject().GetDocument().View()) {
-      hit_test_area.Unite(frame_view->DocumentToAbsolute(
+      hit_test_area.Unite(frame_view->DocumentToFrame(
           LayoutRect(GetLayoutObject().View()->DocumentRect())));
     }
   }

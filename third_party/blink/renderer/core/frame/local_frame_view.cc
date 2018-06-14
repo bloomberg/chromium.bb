@@ -2319,7 +2319,7 @@ IntRect LocalFrameView::ScrollableAreaBoundingBox() const {
     return FrameRect();
 
   LocalFrameView* local_root = GetFrame().LocalFrameRoot().View();
-  return local_root->RootFrameToDocument(local_root->AbsoluteToRootFrame(
+  return local_root->RootFrameToDocument(local_root->ConvertToRootFrame(
       owner_layout_object->AbsoluteContentQuad(kTraverseDocumentBoundaries)
           .EnclosingBoundingBox()));
 }
@@ -3328,29 +3328,6 @@ IntPoint LocalFrameView::ConvertSelfToChild(const EmbeddedContentView& child,
   return new_point;
 }
 
-IntRect LocalFrameView::AbsoluteToRootFrame(
-    const IntRect& absolute_rect) const {
-  IntRect root_frame_rect(absolute_rect);
-  root_frame_rect.Move(-ScrollOffsetInt());
-  return ConvertToRootFrame(root_frame_rect);
-}
-
-IntPoint LocalFrameView::AbsoluteToRootFrame(
-    const IntPoint& absolute_point) const {
-  IntPoint point_in_frame(absolute_point);
-  // With RLS turned on, this will be a no-op.
-  point_in_frame -= ScrollOffsetInt();
-  return ConvertToRootFrame(point_in_frame);
-}
-
-LayoutRect LocalFrameView::AbsoluteToRootFrame(
-    const LayoutRect& layout_rect) const {
-  LayoutPoint point_in_frame(layout_rect.Location());
-  // With RLS turned on, this will be a no-op.
-  point_in_frame -= LayoutSize(ScrollOffsetInt());
-  return LayoutRect(ConvertToRootFrame(point_in_frame), layout_rect.Size());
-}
-
 IntRect LocalFrameView::RootFrameToDocument(const IntRect& rect_in_root_frame) {
   IntPoint offset = RootFrameToDocument(rect_in_root_frame.Location());
   IntRect local_rect = rect_in_root_frame;
@@ -3369,60 +3346,39 @@ FloatPoint LocalFrameView::RootFrameToDocument(
   return local_frame + LayoutViewportScrollableArea()->GetScrollOffset();
 }
 
-LayoutPoint LocalFrameView::RootFrameToAbsolute(
-    const LayoutPoint& point_in_root_frame) const {
-  LayoutPoint local_frame = ConvertFromRootFrame(point_in_root_frame);
-  // With RLS turned on, this will be a no-op.
-  return local_frame + LayoutSize(GetScrollOffset());
-}
-
-IntPoint LocalFrameView::RootFrameToAbsolute(
-    const IntPoint& point_in_root_frame) const {
-  IntPoint local_frame = ConvertFromRootFrame(point_in_root_frame);
-  // With RLS turned on, this will be a no-op.
-  return local_frame + FlooredIntSize(GetScrollOffset());
-}
-
-IntRect LocalFrameView::RootFrameToAbsolute(
-    const IntRect& rect_in_root_frame) const {
-  IntRect absolute_rect = ConvertFromRootFrame(rect_in_root_frame);
-  absolute_rect.Move(FlooredIntSize(GetScrollOffset()));
-  return absolute_rect;
-}
-
-DoublePoint LocalFrameView::DocumentToAbsolute(
+DoublePoint LocalFrameView::DocumentToFrame(
     const DoublePoint& point_in_document) const {
   return point_in_document -
          GetLayoutView()->GetScrollableArea()->GetScrollOffset();
 }
 
-FloatPoint LocalFrameView::DocumentToAbsolute(
+FloatPoint LocalFrameView::DocumentToFrame(
     const FloatPoint& point_in_document) const {
-  return FloatPoint(DocumentToAbsolute(DoublePoint(point_in_document)));
+  return FloatPoint(DocumentToFrame(DoublePoint(point_in_document)));
 }
 
-LayoutPoint LocalFrameView::DocumentToAbsolute(
+LayoutPoint LocalFrameView::DocumentToFrame(
     const LayoutPoint& point_in_document) const {
   return point_in_document -
          LayoutSize(GetLayoutView()->GetScrollableArea()->GetScrollOffset());
 }
 
-LayoutRect LocalFrameView::DocumentToAbsolute(
+LayoutRect LocalFrameView::DocumentToFrame(
     const LayoutRect& rect_in_document) const {
   // With RLS turned off, this will be a no-op.
-  return LayoutRect(DocumentToAbsolute(rect_in_document.Location()),
+  return LayoutRect(DocumentToFrame(rect_in_document.Location()),
                     rect_in_document.Size());
 }
 
-LayoutPoint LocalFrameView::AbsoluteToDocument(
+LayoutPoint LocalFrameView::FrameToDocument(
     const LayoutPoint& point_in_absolute) const {
   return point_in_absolute +
          LayoutSize(GetLayoutView()->GetScrollableArea()->GetScrollOffset());
 }
 
-LayoutRect LocalFrameView::AbsoluteToDocument(
+LayoutRect LocalFrameView::FrameToDocument(
     const LayoutRect& rect_in_absolute) const {
-  return LayoutRect(AbsoluteToDocument(rect_in_absolute.Location()),
+  return LayoutRect(FrameToDocument(rect_in_absolute.Location()),
                     rect_in_absolute.Size());
 }
 
@@ -3993,7 +3949,7 @@ void LocalFrameView::ScrollRectToVisibleInRemoteParent(
     const WebScrollIntoViewParams& params) {
   DCHECK(GetFrame().IsLocalRoot() && !GetFrame().IsMainFrame() &&
          safe_to_propagate_scroll_to_parent_);
-  LayoutRect new_rect = AbsoluteToRootFrame(rect_to_scroll);
+  LayoutRect new_rect = ConvertToRootFrame(rect_to_scroll);
   GetFrame().Client()->ScrollRectToVisibleInParentFrame(
       WebRect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
               new_rect.Width().ToInt(), new_rect.Height().ToInt()),
@@ -4047,7 +4003,7 @@ IntPoint LocalFrameView::FrameToViewport(const IntPoint& point_in_frame) const {
       point_in_root_frame);
 }
 
-IntRect LocalFrameView::ContentsToScreen(const IntRect& rect) const {
+IntRect LocalFrameView::FrameToScreen(const IntRect& rect) const {
   ChromeClient* client = GetChromeClient();
   if (!client)
     return IntRect();
@@ -4198,6 +4154,17 @@ FloatPoint LocalFrameView::ConvertToRootFrame(
     return parent->ConvertToRootFrame(parent_point);
   }
   return local_point;
+}
+
+LayoutRect LocalFrameView::ConvertToRootFrame(
+    const LayoutRect& local_rect) const {
+  if (LocalFrameView* parent = ParentFrameView()) {
+    LayoutPoint parent_point =
+        ConvertToContainingEmbeddedContentView(local_rect.Location());
+    LayoutRect parent_rect(parent_point, local_rect.Size());
+    return parent->ConvertToRootFrame(parent_rect);
+  }
+  return local_rect;
 }
 
 IntRect LocalFrameView::ConvertFromRootFrame(

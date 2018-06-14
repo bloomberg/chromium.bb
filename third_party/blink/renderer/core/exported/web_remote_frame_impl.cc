@@ -387,7 +387,7 @@ void WebRemoteFrameImpl::ScrollRectToVisible(
   IntRect rect_in_document =
       view_impl->MainFrameImpl()->GetFrame()->View()->RootFrameToDocument(
           EnclosingIntRect(
-              owner_element->GetDocument().View()->AbsoluteToRootFrame(
+              owner_element->GetDocument().View()->ConvertToRootFrame(
                   absolute_rect)));
   IntRect element_bounds_in_document = EnclosingIntRect(
       DeNormalizeRect(params.relative_element_bounds, rect_in_document));
