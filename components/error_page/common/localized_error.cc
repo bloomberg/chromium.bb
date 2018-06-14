@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/error_page/common/error.h"
+#include "components/error_page/common/error_page_features.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/error_page/common/net_error_info.h"
@@ -939,8 +940,8 @@ void LocalizedError::GetStrings(
   }
 
   if (command_line->HasSwitch(error_page::switches::kEnableEasterEggBdayMode) ||
-      base::FieldTrialList::FindFullName("EnableEasterEggBdayMode") ==
-          "enabled") {
+      base::FeatureList::IsEnabled(
+          error_page::features::kDinoEasterEggBdayMode)) {
     error_strings->SetBoolean("bdayMode", true);
   }
 
