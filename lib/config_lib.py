@@ -619,7 +619,7 @@ def DefaultSettings():
       # this bot passed or failed. Set this to False if you are setting up a
       # new bot. Once the bot is on the waterfall and is consistently green,
       # mark the builder as important=True.
-      important=False,
+      important=True,
 
       # If True, build config should always be run as if --debug was set
       # on the cbuildbot command line. This is different from 'important'

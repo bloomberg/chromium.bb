@@ -395,6 +395,18 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
         self.assertEqual(config.slave_configs, expected)
 
+  def testOnlySlaveConfigsNotImportant(self):
+    """Configs listing slave configs, must list valid configs."""
+    all_slaves = set()
+    for config in self.site_config.itervalues():
+      if config.master:
+        all_slaves.update(config.slave_configs)
+
+    for config in self.site_config.itervalues():
+      self.assertTrue(config.important or config.name in all_slaves,
+                      '%s is not marked important, but is not a slave.' %
+                      config.name)
+
   def testConfigUseflags(self):
     """Useflags must be lists.
 

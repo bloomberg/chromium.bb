@@ -1001,7 +1001,6 @@ def GeneralTemplates(site_config, ge_build_config):
           pool=constants.HWTEST_TRYBOT_POOL,
           file_bugs=False),
       chroot_replace=False,
-      important=True,
       display_label=config_lib.DISPLAY_LABEL_CQ,
       build_type=constants.PALADIN_TYPE,
       overlays=constants.PUBLIC_OVERLAYS,
@@ -1253,7 +1252,6 @@ def GeneralTemplates(site_config, ge_build_config):
       'external_chromium_pfq',
       site_config.templates.default_hw_tests_override,
       build_type=constants.CHROME_PFQ_TYPE,
-      important=True,
       uprev=False,
       # Increase the master timeout to 6 hours crbug.com/611139.
       build_timeout=6 * 60 * 60,
@@ -1286,7 +1284,6 @@ def GeneralTemplates(site_config, ge_build_config):
       'chrome_pfq',
       site_config.templates.chromium_pfq,
       site_config.templates.official,
-      important=True,
       overlays=constants.BOTH_OVERLAYS,
       description='Preflight Chrome Uprev & Build (internal)',
       prebuilts=constants.PRIVATE,
@@ -1296,7 +1293,6 @@ def GeneralTemplates(site_config, ge_build_config):
       'chrome_try',
       build_type=constants.CHROME_PFQ_TYPE,
       chrome_rev=constants.CHROME_REV_TOT,
-      important=False,
       manifest_version=False,
   )
 
@@ -1354,7 +1350,6 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.official_chrome,
       build_type=constants.PFQ_TYPE,
       build_timeout=20 * 60,
-      important=True,
       manifest_version=True,
       branch=True,
       master=True,
@@ -1522,7 +1517,6 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.release,
       description='Moblab release builders',
       images=['base', 'recovery', 'test'],
-      important=False,
       afdo_use=False,
       signer_tests=False,
       hw_tests=[
@@ -1839,7 +1833,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       health_alert_recipients=['c-compiler-chrome@google.com'],
       health_threshold=1,
       afdo_use=False,
-      important=True,
       active_waterfall=waterfall.WATERFALL_INTERNAL,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       slave_configs=[],
@@ -1852,7 +1845,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
             site_config.templates.llvm_next_toolchain,
             *args,
             boards=[board],
-            important=True,
             active_waterfall=waterfall.WATERFALL_INTERNAL,
             hw_tests=hw_test_list.ToolchainTestMedium(
                 constants.HWTEST_MACH_POOL),
@@ -2164,7 +2156,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       site_config.templates.default_hw_tests_override,
       build_type=constants.ANDROID_PFQ_TYPE,
-      important=True,
       uprev=False,
       overlays=constants.BOTH_OVERLAYS,
       manifest_version=True,
@@ -2458,7 +2449,6 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
           config_lib.CONFIG_TYPE_FULL,
           active_builders,
           active_waterfall=waterfall.WATERFALL_SWARMING,
-          important=True,
           manifest_version=True,
       )
   )
@@ -2714,7 +2704,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       customizations.update(
           hw_tests=hw_test_list.BluestreakPoolPreCQ(),
           hw_tests_override=hw_test_list.BluestreakPoolPreCQ())
-    if board not in _paladin_important_boards:
+    if board in _paladin_experimental_boards:
       customizations.update(important=False)
     if board in _paladin_chroot_replace_boards:
       customizations.update(chroot_replace=True)
@@ -2835,7 +2825,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       board_configs,
       site_config.templates.paladin,
       site_config.templates.internal_nowithdebug_paladin,
-      important=False,
   )
 
   master_config.AddSlaves([
@@ -2892,7 +2881,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       board_configs['x86-generic'],
       site_config.templates.asan,
       description='Paladin build with Address Sanitizer (Clang)',
-      important=False,
   )
 
   site_config.Add(
@@ -2904,7 +2892,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       description='Paladin build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
-      important=False,
   )
 
   site_config.Add(
@@ -2916,7 +2903,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       description='Paladin build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
-      important=False,
   )
 
 
@@ -2938,7 +2924,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.beaglebone,
       boards=['beaglebone'],
       description='Incremental Beaglebone Builder',
-      important=True,
   )
 
   # Build external source, for an internal board.
@@ -2949,7 +2934,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.external,
       useflags=append_useflags(['-chrome_internal']),
       active_waterfall=waterfall.WATERFALL_EXTERNAL,
-      important=True,
   )
 
   site_config.Add(
@@ -2959,7 +2943,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       board_configs['amd64-generic'],
       active_waterfall=waterfall.WATERFALL_EXTERNAL,
-      important=True,
   )
 
   # TODO(ihf): Delete this builder.
@@ -2979,7 +2962,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=waterfall.WATERFALL_INTERNAL,
       vm_tests=getInfoVMTest(),
       vm_tests_override=getInfoVMTest(),
-      important=True,
   )
 
   site_config.Add(
@@ -2988,7 +2970,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal_incremental,
       boards=['chell'],
       active_waterfall=waterfall.WATERFALL_INTERNAL,
-      important=True,
   )
 
   site_config.Add(
@@ -2999,7 +2980,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       board_configs['lakitu'],
       site_config.templates.lakitu_test_customizations,
       active_waterfall=waterfall.WATERFALL_INTERNAL,
-      important=True,
   )
 
   site_config.Add(
@@ -3009,7 +2989,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu-gpu'],
       site_config.templates.lakitu_test_customizations,
-      important=True,
   )
 
   site_config.Add(
@@ -3019,7 +2998,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu-st'],
       site_config.templates.lakitu_test_customizations,
-      important=True,
   )
 
   site_config.Add(
@@ -3029,7 +3007,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.lakitu_notification_emails,
       board_configs['lakitu_next'],
       site_config.templates.lakitu_test_customizations,
-      important=True,
   )
 
 
@@ -3142,15 +3119,13 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'tot-chrome-pfq-informational',
       informational_boards,
       _tot_chrome_pfq_informational_board_configs,
-      site_config.templates.chrome_pfq_informational,
-      important=False)
+      site_config.templates.chrome_pfq_informational)
 
   # TODO(ihf): Remove as obsolete.
   site_config.Add(
       'x86-generic-tot-asan-informational',
       site_config.templates.tot_asan_informational,
       boards=['x86-generic'],
-      important=True,
   )
 
   site_config.Add(
@@ -3166,7 +3141,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # Every 3 hours.
       schedule='0 */3 * * *',
-      important=True,
   )
 
   site_config.Add(
@@ -3193,8 +3167,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       disk_layout='4gb-rootfs',
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # Once every day. 3 PM UTC is 7 AM PST (no daylight savings).
-      schedule='0 15 * * *',
-      important=True,
+      schedule='0 15 * * *'
   )
 
   site_config.Add(
@@ -3215,8 +3188,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       disk_layout='4gb-rootfs',
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # Every 3 hours.
-      schedule='0 */3 * * *',
-      important=True,
+      schedule='0 */3 * * *'
   )
 
   site_config.Add(
@@ -3224,7 +3196,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.chromium_pfq_informational,
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
-      important=True,
       description='Test canary versions of goma.',
       boards=[
           'amd64-generic',
@@ -3270,7 +3241,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       _tot_chromium_pfq_informational_board_configs,
       site_config.templates.chromium_pfq_informational,
       site_config.templates.build_external_chrome,
-      important=False,
       internal=False,
       manifest_repo_url=site_config.params['MANIFEST_URL'],
       overlays=constants.PUBLIC_OVERLAYS,
@@ -3281,7 +3251,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       ['amd64-generic', 'daisy'],
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
-      important=True,
   )
 
   site_config.ApplyForBoards(
@@ -3289,7 +3258,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       ['caroline', 'eve', 'peach_pit', 'tricky', 'veyron_minnie',],
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
-      important=True,
   )
 
   _telemetry_boards = frozenset([
@@ -3309,7 +3277,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   site_config['amd64-generic-telemetry'].apply(
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
-      important=True,
   )
 
 
@@ -3371,7 +3338,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       external_board_configs,
       site_config.templates.chromium_pfq,
       site_config.templates.build_external_chrome,
-      important=False)
+  )
 
   _chrome_pfq_important_boards = frozenset([
       'betty',
@@ -3411,7 +3378,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           _chrome_pfq_important_boards,
           internal_board_configs,
           site_config.templates.chrome_pfq,
-          important=True,
           active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
@@ -3431,7 +3397,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       _chrome_pfq_tryjob_boards,
       internal_board_configs,
       site_config.templates.chrome_pfq,
-      important=False,
   )
 
 
@@ -3543,7 +3508,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       afdo_use=False,
       branch_util_test=True,
-      important=True,
       active_waterfall=master_waterfall,
   )
 
@@ -4019,7 +3983,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Continuous',
       schedule='with 30m interval',
-      important=True,
   )
 
   site_config.AddWithoutTemplate(
@@ -4027,7 +3990,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
-      important=True,
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       description=('Updates alerts displayed on SoM website. go/som/chromeos'),
       build_type=constants.GENERIC_TYPE,
@@ -4043,7 +4005,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.internal,
       site_config.templates.no_hwtest_builder,
       site_config.templates.no_vmtest_builder,
-      important=True,
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       description=('Build Config Updater reads updated GE config files from'
                    ' GS, and commits them to chromite after running tests.'),
@@ -4109,7 +4070,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # 3 PM UTC is 7 AM PST (no daylight savings).
       schedule='0 15 * * *',
-      important=True,
   )
 
   # Create our unittest stress build configs (used for tryjobs only)
@@ -4180,7 +4140,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_timeout=60 * 60,
       description='Build Chromium OS infra Go binaries',
       doc='https://goto.google.com/cros-infra-go-packaging',
-      important=True,
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='triggered',
       triggered_gitiles=[[
