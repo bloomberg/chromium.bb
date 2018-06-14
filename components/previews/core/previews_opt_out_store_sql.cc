@@ -111,12 +111,6 @@ void DatabaseErrorCallback(sql::Connection* db,
     ignore_result(sql::Connection::IsExpectedSqliteError(extended_error));
     return;
   }
-
-  // The default handling is to assert on debug and to ignore on release.
-  if (!sql::Connection::IsExpectedSqliteError(extended_error)) {
-    DLOG(WARNING) << db->GetErrorMessage();
-    base::UmaHistogramSparse("Previews.OptOut.SQLiteLoadError", extended_error);
-  }
 }
 
 void InitDatabase(sql::Connection* db, base::FilePath path) {
@@ -341,8 +335,6 @@ void LoadBlackListFromDataBase(
         statement.ColumnBool(2),
         base::Time::FromInternalValue(statement.ColumnInt64(1)));
   }
-
-  UMA_HISTOGRAM_COUNTS_10000("Previews.OptOut.DBRowCount", count);
 
   if (count > MaxRowsInOptOutDB()) {
     // Delete the oldest entries if there are more than |kMaxEntriesInDB|.
