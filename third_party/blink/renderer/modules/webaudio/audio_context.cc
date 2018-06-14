@@ -76,7 +76,8 @@ AudioContext* AudioContext::Create(Document& document,
   // quantum". NOTE: for now AudioContext does not need an explicit
   // startRendering() call from JavaScript.  We may want to consider
   // requiring it for symmetry with OfflineAudioContext.
-  audio_context->MaybeUnlockUserGesture();
+  audio_context->MaybeAllowAutoplayWithUnlockType(
+      AutoplayUnlockType::kContextConstructor);
   if (audio_context->IsAllowedToStart()) {
     audio_context->StartRendering();
     audio_context->SetContextState(kRunning);
@@ -110,8 +111,7 @@ AudioContext* AudioContext::Create(Document& document,
 AudioContext::AudioContext(Document& document,
                            const WebAudioLatencyHint& latency_hint)
     : BaseAudioContext(&document, kRealtimeContext),
-      context_id_(g_context_id++),
-      user_gesture_required_(false) {
+      context_id_(g_context_id++) {
   destination_node_ = DefaultAudioDestinationNode::Create(this, latency_hint);
 
   switch (GetAutoplayPolicy()) {
@@ -137,7 +137,7 @@ AudioContext::AudioContext(Document& document,
 void AudioContext::Uninitialize() {
   DCHECK(IsMainThread());
 
-  RecordAutoplayStatus();
+  RecordAutoplayMetrics();
   BaseAudioContext::Uninitialize();
 }
 
@@ -199,7 +199,7 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
   }
   // Restart the destination node to pull on the audio graph.
   if (destination()) {
-    MaybeUnlockUserGesture();
+    MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType::kContextResume);
     if (IsAllowedToStart()) {
       // Do not set the state to running here.  We wait for the
       // destination to start to set the state.
@@ -302,13 +302,14 @@ double AudioContext::baseLatency() const {
   return FramesPerBuffer() / static_cast<double>(sampleRate());
 }
 
-void AudioContext::MaybeRecordStartAttempt() {
-  if (!user_gesture_required_ || !AreAutoplayRequirementsFulfilled())
+void AudioContext::NotifySourceNodeStart() {
+  if (!user_gesture_required_)
     return;
 
-  DCHECK(!autoplay_status_.has_value() ||
-         autoplay_status_ != AutoplayStatus::kAutoplayStatusSucceeded);
-  autoplay_status_ = AutoplayStatus::kAutoplayStatusFailedWithStart;
+  MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType::kSourceNodeStart);
+
+  if (IsAllowedToStart())
+    StartRendering();
 }
 
 AutoplayPolicy::Type AudioContext::GetAutoplayPolicy() const {
@@ -343,7 +344,7 @@ bool AudioContext::AreAutoplayRequirementsFulfilled() const {
   return false;
 }
 
-void AudioContext::MaybeUnlockUserGesture() {
+void AudioContext::MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType type) {
   if (!user_gesture_required_ || !AreAutoplayRequirementsFulfilled())
     return;
 
@@ -352,6 +353,9 @@ void AudioContext::MaybeUnlockUserGesture() {
 
   user_gesture_required_ = false;
   autoplay_status_ = AutoplayStatus::kAutoplayStatusSucceeded;
+
+  DCHECK(!autoplay_unlock_type_.has_value());
+  autoplay_unlock_type_ = type;
 }
 
 bool AudioContext::IsAllowedToStart() const {
@@ -385,10 +389,11 @@ bool AudioContext::IsAllowedToStart() const {
   return false;
 }
 
-void AudioContext::RecordAutoplayStatus() {
+void AudioContext::RecordAutoplayMetrics() {
   if (!autoplay_status_.has_value())
     return;
 
+  // Record autoplay_status_ value.
   DEFINE_STATIC_LOCAL(
       EnumerationHistogram, autoplay_histogram,
       ("WebAudio.Autoplay", AutoplayStatus::kAutoplayStatusCount));
@@ -404,6 +409,18 @@ void AudioContext::RecordAutoplayStatus() {
   }
 
   autoplay_status_.reset();
+
+  // Record autoplay_unlock_type_ value.
+  if (autoplay_unlock_type_.has_value()) {
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, autoplay_unlock_type_histogram,
+                        ("WebAudio.Autoplay.UnlockType",
+                         static_cast<int>(AutoplayUnlockType::kCount)));
+
+    autoplay_unlock_type_histogram.Count(
+        static_cast<int>(autoplay_unlock_type_.value()));
+
+    autoplay_unlock_type_.reset();
+  }
 }
 
 }  // namespace blink

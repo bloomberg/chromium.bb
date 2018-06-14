@@ -45,10 +45,10 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   void getOutputTimestamp(ScriptState*, AudioTimestamp&);
   double baseLatency() const;
 
-  // For metrics purpose, records when start() is called on a
-  // AudioScheduledSourceHandler or a AudioBufferSourceHandler without a user
-  // gesture while the AudioContext requires a user gesture.
-  void MaybeRecordStartAttempt() final;
+  // Called by handlers of AudioScheduledSourceNode and AudioBufferSourceNode to
+  // notify their associated AudioContext when start() is called. It may resume
+  // the AudioContext if it is now allowed to start.
+  void NotifySourceNodeStart() final;
 
  protected:
   AudioContext(Document&, const WebAudioLatencyHint&);
@@ -65,7 +65,9 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
     kAutoplayStatusFailed = 0,
     // Same as AutoplayStatusFailed but start() on a node was called with a user
     // gesture.
-    kAutoplayStatusFailedWithStart = 1,
+    // This value is no longer used but the enum entry should not be re-used
+    // because it is used for metrics.
+    // kAutoplayStatusFailedWithStart = 1,
     // The AudioContext had user gesture requirements and was able to activate
     // with a user gesture.
     kAutoplayStatusSucceeded = 2,
@@ -80,15 +82,23 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   // Returns whether the autoplay requirements are fulfilled.
   bool AreAutoplayRequirementsFulfilled() const;
 
-  // If any, unlock user gesture requirements if a user gesture is being
-  // processed.
-  void MaybeUnlockUserGesture();
+  // Do not change the order of this enum, it is used for metrics.
+  enum class AutoplayUnlockType {
+    kContextConstructor = 0,
+    kContextResume = 1,
+    kSourceNodeStart = 2,
+    kCount
+  };
+
+  // If possible, allows autoplay for the AudioContext and marke it as allowed
+  // by the given type.
+  void MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType);
 
   // Returns whether the AudioContext is allowed to start rendering.
   bool IsAllowedToStart() const;
 
-  // Record the current autoplay status and clear it.
-  void RecordAutoplayStatus();
+  // Record the current autoplay metrics.
+  void RecordAutoplayMetrics();
 
   void StopRendering();
 
@@ -96,8 +106,17 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   Member<ScriptPromiseResolver> close_resolver_;
 
   // Whether a user gesture is required to start this AudioContext.
-  bool user_gesture_required_;
+  bool user_gesture_required_ = false;
+
+  // Autoplay status associated with this AudioContext, if any.
+  // Will only be set if there is an autoplay policy in place.
+  // Will never be set for OfflineAudioContext.
   base::Optional<AutoplayStatus> autoplay_status_;
+
+  // Autoplay unlock type for this AudioContext.
+  // Will only be set if there is an autoplay policy in place.
+  // Will never be set for OfflineAudioContext.
+  base::Optional<AutoplayUnlockType> autoplay_unlock_type_;
 };
 
 }  // namespace blink

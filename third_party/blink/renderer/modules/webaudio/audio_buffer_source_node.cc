@@ -502,7 +502,7 @@ void AudioBufferSourceHandler::StartSource(double when,
                                            ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  Context()->MaybeRecordStartAttempt();
+  Context()->NotifySourceNodeStart();
 
   if (GetPlaybackState() != UNSCHEDULED_STATE) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,

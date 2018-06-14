@@ -324,8 +324,9 @@ class MODULES_EXPORT BaseAudioContext
   // initialized internally if necessary.
   PeriodicWave* GetPeriodicWave(int type);
 
-  // Called by AudioScheduledSourceNode.start() for the Autoplay metric.
-  virtual void MaybeRecordStartAttempt() = 0;
+  // Called by handlers of AudioScheduledSourceNode and AudioBufferSourceNode to
+  // notify their associated AudioContext when start() is called.
+  virtual void NotifySourceNodeStart() = 0;
 
   // AudioWorklet IDL
   AudioWorklet* audioWorklet() const;

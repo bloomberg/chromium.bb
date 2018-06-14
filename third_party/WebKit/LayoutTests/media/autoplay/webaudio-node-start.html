@@ -67,16 +67,13 @@ promise_test(t => {
     const node = createNode(context);
 
     // resume() will be resolved when the playback will start.
-    context.resume().then(t.step_func(resolve => {
-      assert_unreached();
+    context.resume().then(t.step_func(() => {
+      resolve();
     }));
 
     await activateDocument(t);
 
     node.start();
-    assert_equals(context.state, 'suspended');
-
-    resolve();
   });
 }, 'Calling start() on a node on an activated document is a no-op.');
 </script>
