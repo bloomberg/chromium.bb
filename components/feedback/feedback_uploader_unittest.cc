@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/feedback/feedback_report.h"
 #include "components/feedback/feedback_uploader_factory.h"
 #include "content/public/test/test_browser_context.h"
@@ -46,6 +47,15 @@ class MockFeedbackUploader : public FeedbackUploader {
     run_loop_->Run();
   }
 
+  void SimulateLoadingOfflineReports() {
+    task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &FeedbackReport::LoadReportsAndQueue, feedback_reports_path(),
+            base::Bind(&MockFeedbackUploader::QueueSingleReport,
+                       base::SequencedTaskRunnerHandle::Get(), this)));
+  }
+
   const std::map<std::string, unsigned int>& dispatched_reports() const {
     return dispatched_reports_;
   }
@@ -53,6 +63,15 @@ class MockFeedbackUploader : public FeedbackUploader {
   void set_simulate_failure(bool value) { simulate_failure_ = value; }
 
  private:
+  static void QueueSingleReport(
+      scoped_refptr<base::SequencedTaskRunner> main_task_runner,
+      MockFeedbackUploader* uploader,
+      const std::string& data) {
+    main_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(&MockFeedbackUploader::QueueReport,
+                                  uploader->AsWeakPtr(), data));
+  }
+
   // FeedbackUploaderChrome:
   void StartDispatchingReport() override {
     if (base::ContainsKey(dispatched_reports_,
@@ -93,10 +112,14 @@ class FeedbackUploaderTest : public testing::Test {
  public:
   FeedbackUploaderTest() {
     FeedbackUploader::SetMinimumRetryDelayForTesting(kRetryDelayForTest);
-    uploader_ = std::make_unique<MockFeedbackUploader>(&context_);
+    RecreateUploader();
   }
 
   ~FeedbackUploaderTest() override = default;
+
+  void RecreateUploader() {
+    uploader_ = std::make_unique<MockFeedbackUploader>(&context_);
+  }
 
   void QueueReport(const std::string& data) {
     uploader_->QueueReport(data);
@@ -154,6 +177,34 @@ TEST_F(FeedbackUploaderTest, QueueMultipleWithFailures) {
   EXPECT_EQ(uploader()->dispatched_reports().at(kReportThree), 2u);
   EXPECT_EQ(uploader()->dispatched_reports().at(kReportFour), 1u);
   EXPECT_EQ(uploader()->dispatched_reports().at(kReportFive), 1u);
+}
+
+TEST_F(FeedbackUploaderTest, SimulateOfflineReports) {
+  // Simulate offline reports by failing to upload three reports.
+  uploader()->set_simulate_failure(true);
+  QueueReport(kReportOne);
+  QueueReport(kReportTwo);
+  QueueReport(kReportThree);
+
+  // All three reports will be attempted to be uploaded, but the uploader queue
+  // will remain having three reports since they all failed.
+  uploader()->set_expected_reports(3);
+  uploader()->RunMessageLoop();
+  EXPECT_EQ(uploader()->dispatched_reports().size(), 3u);
+  EXPECT_FALSE(uploader()->QueueEmpty());
+
+  // Simulate a sign out / resign in by recreating the uploader. This should not
+  // clear any pending feedback report files on disk, and hence they can be
+  // reloaded.
+  RecreateUploader();
+  uploader()->SimulateLoadingOfflineReports();
+  uploader()->set_expected_reports(3);
+  uploader()->RunMessageLoop();
+
+  // The three reports were loaded, successfully uploaded, and the uploader
+  // queue is now empty.
+  EXPECT_EQ(uploader()->dispatched_reports().size(), 3u);
+  EXPECT_TRUE(uploader()->QueueEmpty());
 }
 
 }  // namespace feedback

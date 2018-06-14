@@ -84,6 +84,7 @@ void FeedbackUploader::OnReportUploadSuccess() {
   retry_delay_ = g_minimum_retry_delay;
   is_dispatching_ = false;
   // Explicitly release the successfully dispatched report.
+  report_being_dispatched_->DeleteReportOnDisk();
   report_being_dispatched_ = nullptr;
   UpdateUploadTimer();
 }
@@ -94,6 +95,9 @@ void FeedbackUploader::OnReportUploadFailure(bool should_retry) {
     retry_delay_ *= 2;
     report_being_dispatched_->set_upload_at(retry_delay_ + base::Time::Now());
     reports_queue_.emplace(report_being_dispatched_);
+  } else {
+    // The report won't be retried, hence explicitly delete its file on disk.
+    report_being_dispatched_->DeleteReportOnDisk();
   }
 
   // The report dispatching failed, and should either be retried or not. In all
