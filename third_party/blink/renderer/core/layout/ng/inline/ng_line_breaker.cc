@@ -191,6 +191,11 @@ bool NGLineBreaker::NextLine(const NGLineLayoutOpportunity& line_opportunity,
   PrepareNextLine(line_opportunity, line_info);
   BreakLine(line_info);
 
+#if DCHECK_IS_ON()
+  for (const auto& result : line_info->Results())
+    result.CheckConsistency();
+#endif
+
   if (line_info->Results().IsEmpty())
     return false;
 
@@ -231,7 +236,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
       state = HandleText(item, state, line_info);
 #if DCHECK_IS_ON()
       if (!item_results->IsEmpty())
-        item_results->back().CheckConsistency();
+        item_results->back().CheckConsistency(true);
 #endif
       continue;
     }
@@ -336,11 +341,13 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
 
     LayoutUnit next_position = line_.position + item_result->inline_size;
     bool is_overflow = next_position > available_width;
+    DCHECK(is_overflow || item_result->shape_result);
     line_.position = next_position;
     item_result->may_break_inside = !is_overflow;
     MoveToNextOf(*item_result);
 
-    if (!is_overflow || state == LineBreakState::kTrailing) {
+    if (!is_overflow ||
+        (state == LineBreakState::kTrailing && item_result->shape_result)) {
       if (item_result->end_offset < item.EndOffset()) {
         // The break point found, and text follows. Break here, after trailing
         // spaces.
@@ -395,12 +402,32 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   if (!enable_soft_hyphen_)
     breaker.DisableSoftHyphen();
   available_width = std::max(LayoutUnit(0), available_width);
+
+  // Use kStartShouldBeSafe if at the beginning of a line.
+  unsigned options = 0;
+  if (offset_ == line_info->StartOffset())
+    options |= ShapingLineBreaker::kStartShouldBeSafe;
+
+  // Use kNoResultIfOverflow if 'break-word' and we're trying to break normally
+  // because if this item overflows, we will rewind and break line again. The
+  // overflowing ShapeResult is not needed.
+  if (break_anywhere_if_overflow_ && !override_break_anywhere_)
+    options |= ShapingLineBreaker::kNoResultIfOverflow;
   ShapingLineBreaker::Result result;
-  scoped_refptr<ShapeResult> shape_result =
-      breaker.ShapeLine(item_result->start_offset, available_width,
-                        offset_ == line_info->StartOffset(), &result);
+  scoped_refptr<ShapeResult> shape_result = breaker.ShapeLine(
+      item_result->start_offset, available_width, options, &result);
+
+  // If this item overflows and 'break-word' is set, this line will be
+  // rewinded. Making this item long enough to overflow is enough.
+  if (!shape_result) {
+    DCHECK(options & ShapingLineBreaker::kNoResultIfOverflow);
+    item_result->inline_size = available_width + 1;
+    item_result->end_offset = item.EndOffset();
+    return;
+  }
   DCHECK_EQ(shape_result->NumCharacters(),
             result.break_offset - item_result->start_offset);
+
   if (result.is_hyphenated) {
     AppendHyphen(item, line_info);
     // TODO(kojii): Implement when adding a hyphen caused overflow.
@@ -932,7 +959,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
       SetCurrentStyle(*item.Style());
       BreakText(item_result, item, item_available_width, line_info);
 #if DCHECK_IS_ON()
-      item_result->CheckConsistency();
+      item_result->CheckConsistency(true);
 #endif
       if (item_result->inline_size <= item_available_width) {
         DCHECK(item_result->end_offset < item.EndOffset());

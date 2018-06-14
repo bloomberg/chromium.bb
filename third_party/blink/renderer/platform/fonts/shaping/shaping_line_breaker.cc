@@ -213,7 +213,7 @@ inline scoped_refptr<ShapeResult> ShapingLineBreaker::Shape(TextDirection direct
 scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
     unsigned start,
     LayoutUnit available_space,
-    bool start_should_be_safe,
+    unsigned options,
     ShapingLineBreaker::Result* result_out) {
   DCHECK_GE(available_space, LayoutUnit(0));
   unsigned range_start = result_->StartIndexForResult();
@@ -237,8 +237,9 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   unsigned candidate_break =
       result_->OffsetForPosition(end_position, false) + range_start;
 
-  unsigned first_safe =
-      start_should_be_safe ? result_->NextSafeToBreakOffset(start) : start;
+  unsigned first_safe = (options & kStartShouldBeSafe)
+                            ? result_->NextSafeToBreakOffset(start)
+                            : start;
   DCHECK_GE(first_safe, start);
   if (candidate_break >= range_end) {
     // The |result_| does not have glyphs to fill the available space,
@@ -258,6 +259,8 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
       PreviousBreakOpportunity(candidate_break, start);
   bool is_overflow = break_opportunity.offset <= start;
   if (is_overflow) {
+    if (options & kNoResultIfOverflow)
+      return nullptr;
     break_opportunity =
         NextBreakOpportunity(std::max(candidate_break, start + 1), start);
     // |range_end| may not be a break opportunity, but this function cannot

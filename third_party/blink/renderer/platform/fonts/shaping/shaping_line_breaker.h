@@ -65,16 +65,24 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
 
   // Shapes a line of text by finding a valid and appropriate break opportunity
   // based on the shaping results for the entire paragraph.
-  // |start_should_be_safe| is true for the beginning of each wrapped line, but
-  // is false for subsequent ShapeResults.
+  enum Options {
+    // Enforce the start to be safe-to-break. Set for the beginning of each
+    // wrapped line, but not for subsequent ShapeResults.
+    kStartShouldBeSafe = 1,
+    // Returns nullptr if this line overflows. When the word is very long, such
+    // as URL or data, creating ShapeResult is expensive. Set this option to
+    // suppress if ShapeResult is not needed when this line overflows.
+    kNoResultIfOverflow = 2,
+  };
   scoped_refptr<ShapeResult> ShapeLine(unsigned start_offset,
                                        LayoutUnit available_space,
-                                       bool start_should_be_safe,
+                                       unsigned options,
                                        Result* result_out);
   scoped_refptr<ShapeResult> ShapeLine(unsigned start_offset,
                                        LayoutUnit available_space,
                                        Result* result_out) {
-    return ShapeLine(start_offset, available_space, true, result_out);
+    return ShapeLine(start_offset, available_space, kStartShouldBeSafe,
+                     result_out);
   }
 
   // Disable breaking at soft hyphens (U+00AD).
