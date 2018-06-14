@@ -9,6 +9,7 @@
 
 #include <utility>
 
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/process/launch.h"
@@ -16,7 +17,7 @@
 #include "base/task_scheduler/task_traits.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace {
 
@@ -27,11 +28,9 @@ void RunCrashReporter(const std::string& crash_type,
                       const std::string& device,
                       const std::string& board,
                       const std::string& cpu_abi,
-                      mojo::edk::ScopedInternalPlatformHandle pipe) {
+                      base::ScopedFD pipe) {
   base::LaunchOptions options;
-  options.fds_to_remap.push_back(
-      std::make_pair(pipe.get().handle, STDIN_FILENO));
-
+  options.fds_to_remap.emplace_back(pipe.get(), STDIN_FILENO);
   auto process =
       base::LaunchProcess({kCrashReporterPath, "--arc_java_crash=" + crash_type,
                            "--arc_device=" + device, "--arc_board=" + board,
@@ -91,14 +90,10 @@ ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
 
 void ArcCrashCollectorBridge::DumpCrash(const std::string& type,
                                         mojo::ScopedHandle pipe) {
-  mojo::edk::ScopedInternalPlatformHandle pipe_handle;
-  mojo::edk::PassWrappedInternalPlatformHandle(pipe.release().value(),
-                                               &pipe_handle);
-
   base::PostTaskWithTraits(
       FROM_HERE, {base::WithBaseSyncPrimitives()},
       base::BindOnce(&RunCrashReporter, type, device_, board_, cpu_abi_,
-                     std::move(pipe_handle)));
+                     mojo::UnwrapPlatformHandle(std::move(pipe)).TakeFD()));
 }
 
 void ArcCrashCollectorBridge::SetBuildProperties(const std::string& device,

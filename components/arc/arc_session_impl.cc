@@ -26,11 +26,11 @@
 #include "components/arc/arc_bridge_host_impl.h"
 #include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
-#include "mojo/edk/embedder/platform_channel_utils_posix.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
+#include "mojo/public/cpp/platform/socket_utils_posix.h"
 #include "mojo/public/cpp/system/invitation.h"
 
 namespace arc {
@@ -174,12 +174,10 @@ mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
     return mojo::ScopedMessagePipeHandle();
   }
 
-  mojo::edk::ScopedInternalPlatformHandle server_handle(
-      mojo::edk::InternalPlatformHandle(socket_fd.release()));
-  mojo::edk::ScopedInternalPlatformHandle scoped_fd;
-  if (!mojo::edk::ServerAcceptConnection(server_handle, &scoped_fd,
-                                         /* check_peer_user = */ false) ||
-      !scoped_fd.is_valid()) {
+  base::ScopedFD connection_fd;
+  if (!mojo::AcceptSocketConnection(socket_fd.get(), &connection_fd,
+                                    /* check_peer_user = */ false) ||
+      !connection_fd.is_valid()) {
     return mojo::ScopedMessagePipeHandle();
   }
 
@@ -193,9 +191,8 @@ mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
                                  base::kNullProcessHandle,
                                  channel.TakeLocalEndpoint());
 
-  std::vector<mojo::edk::ScopedInternalPlatformHandle> handles;
-  handles.emplace_back(mojo::edk::InternalPlatformHandle(
-      channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD().release()));
+  std::vector<base::ScopedFD> fds;
+  fds.emplace_back(channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD());
 
   // We need to send the length of the message as a single byte, so make sure it
   // fits.
@@ -203,8 +200,8 @@ mojo::ScopedMessagePipeHandle ArcSessionDelegateImpl::ConnectMojoInternal(
   uint8_t message_length = static_cast<uint8_t>(token.size());
   struct iovec iov[] = {{&message_length, sizeof(message_length)},
                         {const_cast<char*>(token.c_str()), token.size()}};
-  ssize_t result = mojo::edk::PlatformChannelSendmsgWithHandles(
-      scoped_fd, iov, sizeof(iov) / sizeof(iov[0]), handles);
+  ssize_t result = mojo::SendmsgWithHandles(connection_fd.get(), iov,
+                                            sizeof(iov) / sizeof(iov[0]), fds);
   if (result == -1) {
     PLOG(ERROR) << "sendmsg";
     return mojo::ScopedMessagePipeHandle();

@@ -92,7 +92,6 @@ static_library("arc") {
     "//device/usb/mojo",
     "//device/usb/public/mojom",
     "//google_apis",
-    "//mojo/edk",
     "//services/device/public/mojom",
     "//skia",
     "//third_party/re2:re2",
@@ -260,7 +259,7 @@ static_library("arc_test_support") {
     "//components/prefs:test_support",
     "//components/user_prefs",
     "//content/test:test_support",
-    "//mojo/edk",
+    "//mojo/public/cpp/platform",
     "//mojo/public/cpp/system",
   ]
 }

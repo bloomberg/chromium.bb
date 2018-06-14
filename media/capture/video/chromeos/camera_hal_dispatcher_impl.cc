@@ -18,10 +18,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/edk/embedder/platform_channel_utils_posix.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/platform/socket_utils_posix.h"
 #include "mojo/public/cpp/system/invitation.h"
 
 namespace media {
@@ -277,18 +276,18 @@ void CameraHalDispatcherImpl::StartServiceLoop(base::ScopedFD socket_fd,
     return;
   }
 
-  proxy_fd_.reset(mojo::edk::InternalPlatformHandle(socket_fd.release()));
+  proxy_fd_ = std::move(socket_fd);
   started->Signal();
   VLOG(1) << "CameraHalDispatcherImpl started; waiting for incoming connection";
 
   while (true) {
-    if (!WaitForSocketReadable(proxy_fd_.get().handle, cancel_fd.get())) {
+    if (!WaitForSocketReadable(proxy_fd_.get(), cancel_fd.get())) {
       VLOG(1) << "Quit CameraHalDispatcherImpl IO thread";
       return;
     }
 
-    mojo::edk::ScopedInternalPlatformHandle accepted_fd;
-    if (mojo::edk::ServerAcceptConnection(proxy_fd_, &accepted_fd, false) &&
+    base::ScopedFD accepted_fd;
+    if (mojo::AcceptSocketConnection(proxy_fd_.get(), &accepted_fd, false) &&
         accepted_fd.is_valid()) {
       VLOG(1) << "Accepted a connection";
       // Hardcode pid 0 since it is unused in mojo.
@@ -305,13 +304,12 @@ void CameraHalDispatcherImpl::StartServiceLoop(base::ScopedFD socket_fd,
                                      channel.TakeLocalEndpoint());
 
       auto remote_endpoint = channel.TakeRemoteEndpoint();
-      std::vector<mojo::edk::ScopedInternalPlatformHandle> handles;
-      handles.emplace_back(mojo::edk::InternalPlatformHandle(
-          remote_endpoint.TakePlatformHandle().TakeFD().release()));
+      std::vector<base::ScopedFD> fds;
+      fds.emplace_back(remote_endpoint.TakePlatformHandle().TakeFD());
 
       struct iovec iov = {const_cast<char*>(token.c_str()), token.length()};
-      ssize_t result = mojo::edk::PlatformChannelSendmsgWithHandles(
-          accepted_fd, &iov, 1, handles);
+      ssize_t result =
+          mojo::SendmsgWithHandles(accepted_fd.get(), &iov, 1, fds);
       if (result == -1) {
         PLOG(ERROR) << "sendmsg()";
       } else {

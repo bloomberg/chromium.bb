@@ -21,8 +21,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/escape.h"
 #include "storage/browser/fileapi/file_system_context.h"
 
@@ -253,17 +253,14 @@ void ArcFileSystemBridge::OnOpenFile(const GURL& url_decoded,
   DCHECK_EQ(id_to_url_.count(id), 0u);
   id_to_url_[id] = url_decoded;
 
-  mojo::edk::ScopedInternalPlatformHandle platform_handle{
-      mojo::edk::InternalPlatformHandle(fd.release())};
-  MojoHandle wrapped_handle = MOJO_HANDLE_INVALID;
-  MojoResult result = mojo::edk::CreateInternalPlatformHandleWrapper(
-      std::move(platform_handle), &wrapped_handle);
-  if (result != MOJO_RESULT_OK) {
-    LOG(ERROR) << "Failed to wrap handle: " << result;
+  mojo::ScopedHandle wrapped_handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
+  if (!wrapped_handle.is_valid()) {
+    LOG(ERROR) << "Failed to wrap handle";
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  std::move(callback).Run(mojo::ScopedHandle(mojo::Handle(wrapped_handle)));
+  std::move(callback).Run(std::move(wrapped_handle));
 }
 
 bool ArcFileSystemBridge::HandleReadRequest(const std::string& id,
