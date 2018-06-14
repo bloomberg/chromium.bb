@@ -550,6 +550,33 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   EXPECT_EQ(1UL, fake_loader_factory_.clients_count());
 }
 
+TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {
+  EnableS13nServiceWorker();
+  const int kProviderId = 10;
+  auto object_host =
+      std::make_unique<MockServiceWorkerObjectHost>(200 /* version_id */);
+
+  // Set a controller without ControllerServiceWorker ptr to emulate no
+  // fetch event handler.
+  blink::mojom::ServiceWorkerObjectInfoPtr object_info =
+      object_host->CreateObjectInfo();
+  auto controller_info = mojom::ControllerServiceWorkerInfo::New();
+  mojom::ControllerServiceWorkerPtr controller_ptr;
+  controller_info->object_info = std::move(object_info);
+
+  mojom::ServiceWorkerContainerAssociatedPtr container_ptr;
+  mojom::ServiceWorkerContainerAssociatedRequest container_request =
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&container_ptr);
+  auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow,
+      std::move(container_request), nullptr /* host_ptr_info */,
+      std::move(controller_info), loader_factory_);
+  base::RunLoop().RunUntilIdle();
+
+  // Subresource loader factory must not be available.
+  EXPECT_EQ(nullptr, provider_context->GetSubresourceLoaderFactory());
+}
+
 TEST_F(ServiceWorkerProviderContextTest, PostMessageToClient) {
   const int kProviderId = 10;
 
