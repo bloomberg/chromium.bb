@@ -2311,6 +2311,74 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
   }
 }
 
+void WebContentsImpl::FullscreenStateChanged(RenderFrameHost* rfh,
+                                             bool is_fullscreen) {
+  int frame_tree_node_id = rfh->GetFrameTreeNodeId();
+  auto it = fullscreen_frame_tree_nodes_.find(frame_tree_node_id);
+  bool changed = false;
+
+  if (is_fullscreen) {
+    // If we are fullscreen then add the FrameTreeNode ID to the set.
+    if (it == fullscreen_frame_tree_nodes_.end()) {
+      fullscreen_frame_tree_nodes_.insert(frame_tree_node_id);
+      changed = true;
+    }
+  } else {
+    FrameTreeNode* ancestor =
+        static_cast<RenderFrameHostImpl*>(rfh)->frame_tree_node();
+    DCHECK(ancestor);
+
+    // If we are not fullscreen then remove this frame and any descendants
+    // from the set.
+    for (it = fullscreen_frame_tree_nodes_.begin();
+         it != fullscreen_frame_tree_nodes_.end();) {
+      FrameTreeNode* node = FrameTreeNode::GloballyFindByID(*it);
+
+      if (!node || frame_tree_node_id == *it ||
+          node->IsDescendantOf(ancestor)) {
+        it = fullscreen_frame_tree_nodes_.erase(it);
+        changed = true;
+      } else {
+        ++it;
+      }
+    }
+  }
+
+  // If we have changed then find the current fullscreen FrameTreeNode
+  // and call the observers. If we have exited fullscreen then this
+  // will be the last frame that was fullscreen.
+  if (changed && fullscreen_frame_tree_nodes_.size() > 0) {
+    unsigned int max_depth = 0;
+    RenderFrameHost* max_depth_rfh = nullptr;
+
+    for (auto node_id : fullscreen_frame_tree_nodes_) {
+      FrameTreeNode* fullscreen_node = FrameTreeNode::GloballyFindByID(node_id);
+      DCHECK(fullscreen_node);
+
+      if (max_depth_rfh == nullptr || fullscreen_node->depth() > max_depth) {
+        max_depth = fullscreen_node->depth();
+        max_depth_rfh = fullscreen_node->current_frame_host();
+      }
+    }
+
+    // If we have already notified observers about this frame then we should not
+    // fire the observers again.
+    DCHECK(max_depth_rfh);
+    if (max_depth_rfh->GetFrameTreeNodeId() ==
+        current_fullscreen_frame_tree_node_id_)
+      return;
+
+    current_fullscreen_frame_tree_node_id_ =
+        max_depth_rfh->GetFrameTreeNodeId();
+
+    for (auto& observer : observers_)
+      observer.DidAcquireFullscreen(max_depth_rfh);
+  } else if (fullscreen_frame_tree_nodes_.size() == 0) {
+    current_fullscreen_frame_tree_node_id_ =
+        RenderFrameHost::kNoFrameTreeNodeId;
+  }
+}
+
 bool WebContentsImpl::IsFullscreenForCurrentTab() const {
   return delegate_ ? delegate_->IsFullscreenForTabOrPending(this) : false;
 }
@@ -4895,6 +4963,9 @@ void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   pepper_playback_observer_->RenderFrameDeleted(render_frame_host);
 #endif
   display_cutout_host_impl_->RenderFrameDeleted(render_frame_host);
+
+  // Remove any fullscreen state that the frame has stored.
+  FullscreenStateChanged(render_frame_host, false /* is_fullscreen */);
 }
 
 void WebContentsImpl::ShowContextMenu(RenderFrameHost* render_frame_host,

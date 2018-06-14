@@ -338,4 +338,8 @@ interface FrameHost {
   // correctly set the initial size of the frame in case of a cross-process
   // navigation.
   FrameSizeChanged(gfx.mojom.Size size);
+
+  // Notifies the browser that the current frame has either become or is no
+  // longer fullscreen.
+  FullscreenStateChanged(bool is_fullscreen);
 };

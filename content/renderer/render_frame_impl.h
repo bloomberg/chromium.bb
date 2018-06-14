@@ -735,6 +735,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeManifest() override;
   void EnterFullscreen(const blink::WebFullscreenOptions& options) override;
   void ExitFullscreen() override;
+  void FullscreenStateChanged(bool is_fullscreen) override;
   void SuddenTerminationDisablerChanged(
       bool present,
       blink::WebSuddenTerminationDisablerType disabler_type) override;

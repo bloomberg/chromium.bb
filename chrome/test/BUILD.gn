@@ -4676,6 +4676,7 @@ if (!is_android) {
       "../browser/ui/exclusive_access/flash_fullscreen_interactive_browsertest.cc",
       "../browser/ui/exclusive_access/fullscreen_controller_interactive_browsertest.cc",
       "../browser/ui/exclusive_access/fullscreen_controller_state_interactive_browsertest.cc",
+      "../browser/ui/exclusive_access/fullscreen_interactive_browsertest.cc",
       "../browser/ui/find_bar/find_bar_host_interactive_uitest.cc",
       "../browser/ui/fullscreen_keyboard_browsertest_base.cc",
       "../browser/ui/fullscreen_keyboard_browsertest_base.h",
