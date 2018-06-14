@@ -49,6 +49,12 @@ const char* WebThreadScheduler::InputEventStateToString(
 
 // Stubs for main thread only virtual functions.
 scoped_refptr<base::SingleThreadTaskRunner>
+WebThreadScheduler::DefaultTaskRunner() {
+  NOTREACHED();
+  return nullptr;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
 WebThreadScheduler::CompositorTaskRunner() {
   NOTREACHED();
   return nullptr;

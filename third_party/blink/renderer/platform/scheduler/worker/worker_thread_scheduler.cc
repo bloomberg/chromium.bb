@@ -140,12 +140,6 @@ WorkerThreadScheduler::~WorkerThreadScheduler() {
   DCHECK(worker_schedulers_.empty());
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-WorkerThreadScheduler::DefaultTaskRunner() {
-  NOTREACHED();
-  return nullptr;
-}
-
 scoped_refptr<SingleThreadIdleTaskRunner>
 WorkerThreadScheduler::IdleTaskRunner() {
   DCHECK(initialized_);
