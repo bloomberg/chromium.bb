@@ -490,26 +490,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     if (!oobe_ui_ready)
       run_loop.Run();
 
-    // The network selection screen changes the application locale on load and
-    // once again on blur. Wait for the screen to load and blur it so that any
-    // locale changes caused by this screen happen now and do not affect any
-    // subsequent parts of the test.
-    bool done = false;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        contents_,
-        "var languageSelect = document.getElementById('language-select');"
-        "var blurAndReportSuccess = function() {"
-        "  languageSelect.blur();"
-        "  domAutomationController.send(true);"
-        "};"
-        "var screenLoading = document.getElementById('outer-container')"
-        "    .classList.contains('down');"
-        "if (document.activeElement == languageSelect || !screenLoading)"
-        "  blurAndReportSuccess();"
-        "else"
-        "  languageSelect.addEventListener('focus', blurAndReportSuccess);",
-        &done));
-
     // Skip to the login screen.
     chromeos::WizardController* wizard_controller =
         chromeos::WizardController::default_controller();

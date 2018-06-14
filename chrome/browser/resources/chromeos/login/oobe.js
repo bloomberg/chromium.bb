@@ -79,14 +79,11 @@ cr.define('cr.ui.Oobe', function() {
      */
     initializeA11yMenu: function() {
       cr.ui.Bubble.decorate($('accessibility-menu'));
-      $('connect-accessibility-link')
-          .addEventListener('click', Oobe.handleAccessibilityLinkClick);
       // Same behaviour on hitting spacebar. See crbug.com/342991.
       function reactOnSpace(event) {
         if (event.keyCode == 32)
           Oobe.handleAccessibilityLinkClick(event);
       }
-      $('connect-accessibility-link').addEventListener('keyup', reactOnSpace);
 
       $('high-contrast')
           .addEventListener('click', Oobe.handleHighContrastClick);
@@ -244,11 +241,6 @@ cr.define('cr.ui.Oobe', function() {
       // Reload global local strings, process DOM tree again.
       loadTimeData.overrideValues(data);
       i18nTemplate.process(document, loadTimeData);
-
-      // Update language and input method menu lists.
-      setupSelect($('language-select'), data.languageList);
-      setupSelect($('keyboard-select'), data.inputMethodsList);
-      setupSelect($('timezone-select'), data.timezoneList);
 
       this.setMDMode_();
 

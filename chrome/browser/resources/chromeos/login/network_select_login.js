@@ -19,6 +19,16 @@ Polymer({
       value: false,
       notify: true,
     },
+
+    /**
+     * If true, when a connected network is selected the configure UI will be
+     * requested instead of sending 'userActed' + 'continue'.
+     * @private
+     */
+    configureConnected: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /**
@@ -161,8 +171,10 @@ Polymer({
   onNetworkListNetworkItemSelected_: function(event) {
     var state = event.detail;
     assert(state);
-    // If a connected network is selected, continue to the next screen.
-    if (state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
+    // If |configureConnected| is false and a connected network is selected,
+    // continue to the next screen.
+    if (!this.configureConnected &&
+        state.ConnectionState == CrOnc.ConnectionState.CONNECTED) {
       this.onSelectedNetworkConnected_();
       return;
     }
