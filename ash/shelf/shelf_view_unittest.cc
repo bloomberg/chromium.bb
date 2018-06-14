@@ -2018,6 +2018,23 @@ TEST_F(ShelfViewTest, AppListButtonShowsContextMenu) {
   EXPECT_TRUE(test_api_->CloseMenu());
 }
 
+// Tests that a ShelfButton ink drop highlight is set to ACTIVATED when a menu
+// is shown by mouse.
+TEST_F(ShelfViewTest, ShelfButtonShowsInkDropHighlightOnMenuShow) {
+  const ShelfID id_0 = AddApp();
+  ShelfButton* button_0 = GetButtonByID(id_0);
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(button_0->GetBoundsInScreen().CenterPoint());
+  generator.PressRightButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            button_0->GetInkDropForTesting()->GetTargetInkDropState());
+
+  // Close the menu, the InkDropState should transition to HIDDEN.
+  EXPECT_TRUE(test_api_->CloseMenu());
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            button_0->GetInkDropForTesting()->GetTargetInkDropState());
+}
+
 // Tests that ShelfWindowWatcher buttons show a context menu on right click.
 TEST_F(ShelfViewTest, ShelfWindowWatcherButtonShowsContextMenu) {
   ui::test::EventGenerator& generator = GetEventGenerator();
