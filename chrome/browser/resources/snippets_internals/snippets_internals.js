@@ -7,7 +7,7 @@
 /** @type {snippetsInternals.mojom.PageHandlerPtr} */
 let pageHandler = null;
 
-/** @type {snippetsInternals.mojom.PagePtr} */
+/** @type {snippetsInternals.mojom.PageImpl} */
 let page = null;
 
 /* Javascript module for chrome://snippets-internals. */
@@ -276,15 +276,11 @@ function setupEventListeners() {
 }
 
 /* Represents the js-side of the IPC link. Backend talks to this. */
-// TODO (calamity): Add a closure interface.
-class SnippetsInternalsPageImpl extends snippetsInternals.mojom.PagePtr {
+/** @implements {snippetsInternals.mojom.PageImpl} */
+class SnippetsInternalsPageImpl {
   constructor(request) {
-    super();
-
-    const page = snippetsInternals.mojom.Page;
-    assert(page !== null);
-
-    this.binding_ = new mojo.Binding(page, this, request);
+    this.binding_ =
+        new mojo.Binding(snippetsInternals.mojom.Page, this, request);
   }
 
   /* Callback for when suggestions change on the backend. */
