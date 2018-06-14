@@ -869,21 +869,43 @@ bool GpuDataManagerImplPrivate::NeedsCompleteGpuInfoCollection() const {
 #endif
 }
 
-void GpuDataManagerImplPrivate::OnGpuProcessInitFailure() {
+gpu::GpuMode GpuDataManagerImplPrivate::GetGpuMode() const {
+  if (HardwareAccelerationEnabled()) {
+    return gpu::GpuMode::HARDWARE_ACCELERATED;
+  } else if (SwiftShaderAllowed()) {
+    return gpu::GpuMode::SWIFTSHADER;
+  } else if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+    return gpu::GpuMode::DISPLAY_COMPOSITOR;
+  } else {
+    return gpu::GpuMode::DISABLED;
+  }
+}
+
+void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // Android and Chrome OS can't switch to software compositing. If the GPU
+  // process initialization fails or GPU process is too unstable then crash the
+  // browser process to reset everything.
+  LOG(FATAL) << "GPU process isn't usable. Goodbye.";
+#else
+  // TODO(kylechar): Use GpuMode to store the current mode instead of
+  // multiple bools.
+
   if (!card_disabled_) {
     DisableHardwareAcceleration();
-    return;
-  }
-  if (SwiftShaderAllowed()) {
+  } else if (SwiftShaderAllowed()) {
     BlockSwiftShader();
-    return;
-  }
-  if (!base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
-    // When Viz display compositor is not enabled, if GPU process fails to
-    // launch with hardware GPU, and then fails to launch with SwiftShader if
-    // available, then GPU process should not launch again.
+  } else if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+    // The GPU process is frequently crashing with only the display compositor
+    // running. This should never happen so something is wrong. Crash the
+    // browser process to reset everything.
+    LOG(FATAL) << "The display compositor is frequently crashing. Goodbye.";
+  } else {
+    // We are already at GpuMode::DISABLED. We shouldn't be launching the GPU
+    // process for it to fail.
     NOTREACHED();
   }
+#endif
 }
 
 }  // namespace content

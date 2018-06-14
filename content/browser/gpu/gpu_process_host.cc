@@ -884,6 +884,9 @@ bool GpuProcessHost::Init() {
 
   process_->GetHost()->CreateChannelMojo();
 
+  mode_ = GpuDataManagerImpl::GetInstance()->GetGpuMode();
+  DCHECK_NE(mode_, gpu::GpuMode::DISABLED);
+
   if (in_process_) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(GetGpuMainThreadFactory());
@@ -1204,7 +1207,7 @@ void GpuProcessHost::DidFailInitialize() {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", false);
   status_ = FAILURE;
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
-  gpu_data_manager->OnGpuProcessInitFailure();
+  gpu_data_manager->FallBackToNextGpuMode();
   RunRequestGPUInfoCallbacks(gpu_data_manager->GetGPUInfo());
 }
 
@@ -1416,6 +1419,8 @@ bool GpuProcessHost::LaunchGpuProcess() {
   GetContentClient()->browser()->AppendExtraCommandLineSwitches(
       cmd_line.get(), process_->GetData().id);
 
+  // TODO(kylechar): The command line flags added here should be based on
+  // |mode_|.
   GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line.get());
   bool swiftshader_rendering =
       (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
@@ -1438,14 +1443,13 @@ bool GpuProcessHost::LaunchGpuProcess() {
   process_launched_ = true;
 
   if (kind_ == GPU_PROCESS_KIND_SANDBOXED) {
-    auto* gpu_data_manager = GpuDataManagerImpl::GetInstance();
-    if (gpu_data_manager->HardwareAccelerationEnabled()) {
+    if (mode_ == gpu::GpuMode::HARDWARE_ACCELERATED) {
       UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsHardwareAccelerated,
                                 LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
-    } else if (gpu_data_manager->SwiftShaderAllowed()) {
+    } else if (mode_ == gpu::GpuMode::SWIFTSHADER) {
       UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsSwiftShader, LAUNCHED,
                                 GPU_PROCESS_LIFETIME_EVENT_MAX);
-    } else {
+    } else if (mode_ == gpu::GpuMode::DISPLAY_COMPOSITOR) {
       UMA_HISTOGRAM_ENUMERATION(kProcessLifetimeEventsDisplayCompositor,
                                 LAUNCHED, GPU_PROCESS_LIFETIME_EVENT_MAX);
     }
@@ -1495,83 +1499,64 @@ void GpuProcessHost::BlockLiveOffscreenContexts() {
 }
 
 void GpuProcessHost::RecordProcessCrash() {
-#if !defined(OS_ANDROID)
-  // Maximum number of times the GPU process is allowed to crash in a session.
-  // Once this limit is reached, any request to launch the GPU process will
-  // fail.
-  const int kGpuMaxCrashCount = 3;
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  // Maximum number of times the GPU process can crash before we try something
+  // different, like disabling hardware acceleration or all GL.
+  constexpr int kGpuFallbackCrashCount = 3;
 #else
-  // On android there is no way to recover without gpu, and the OS can kill the
-  // gpu process arbitrarily, so use a higher count to allow for that.
-  const int kGpuMaxCrashCount = 6;
+  // Android and Chrome OS switch to software compositing and fallback crashes
+  // the browser process. For Android the OS can also kill the GPU process
+  // arbitrarily. Use a larger maximum crash count here.
+  constexpr int kGpuFallbackCrashCount = 6;
 #endif
-
-  bool disable_crash_limit = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableGpuProcessCrashLimit);
 
   // Ending only acts as a failure if the GPU process was actually started and
   // was intended for actual rendering (and not just checking caps or other
   // options).
-  if (process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED) {
-    // Keep track of the total number of GPU crashes.
-    base::subtle::NoBarrier_AtomicIncrement(&gpu_crash_count_, 1);
+  if (!process_launched_ || kind_ != GPU_PROCESS_KIND_SANDBOXED)
+    return;
 
-    if (GpuDataManagerImpl::GetInstance()->HardwareAccelerationEnabled()) {
-      IncrementCrashCount(kForgiveGpuCrashMinutes,
-                          &hardware_accelerated_recent_crash_count_);
-      UMA_HISTOGRAM_EXACT_LINEAR(
-          kProcessLifetimeEventsHardwareAccelerated,
-          DIED_FIRST_TIME + hardware_accelerated_recent_crash_count_ - 1,
-          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
+  // Keep track of the total number of GPU crashes.
+  base::subtle::NoBarrier_AtomicIncrement(&gpu_crash_count_, 1);
 
-      if ((hardware_accelerated_recent_crash_count_ >= kGpuMaxCrashCount ||
-           status_ == FAILURE) &&
-          !disable_crash_limit) {
-#if defined(OS_ANDROID)
-        // Android can not fall back to software. If things are too unstable
-        // then we just crash chrome to reset everything. Sorry.
-        LOG(FATAL) << "Unable to start gpu process, giving up.";
-#elif defined(OS_CHROMEOS)
-        // ChromeOS also can not fall back to software. There we will just
-        // keep retrying to make the gpu process forever. Good luck.
-        DLOG(ERROR) << "Gpu process is unstable and crashing repeatedly, if "
-                       "you didn't notice already.";
-#else
-        // The GPU process is too unstable to use. Disable it for current
-        // session.
-        GpuDataManagerImpl::GetInstance()->DisableHardwareAcceleration();
-#endif
-      }
-    } else if (GpuDataManagerImpl::GetInstance()->SwiftShaderAllowed()) {
-      IncrementCrashCount(kForgiveGpuCrashMinutes,
-                          &swiftshader_recent_crash_count_);
-      UMA_HISTOGRAM_EXACT_LINEAR(
-          kProcessLifetimeEventsSwiftShader,
-          DIED_FIRST_TIME + swiftshader_recent_crash_count_ - 1,
-          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
-
-      if (swiftshader_recent_crash_count_ >= kGpuMaxCrashCount &&
-          !disable_crash_limit) {
-        // SwiftShader is too unstable to use. Disable it for current session.
-        GpuDataManagerImpl::GetInstance()->BlockSwiftShader();
-      }
-    } else {
-      IncrementCrashCount(kForgiveDisplayCompositorCrashMinutes,
-                          &display_compositor_recent_crash_count_);
-      UMA_HISTOGRAM_EXACT_LINEAR(
-          kProcessLifetimeEventsDisplayCompositor,
-          DIED_FIRST_TIME + display_compositor_recent_crash_count_ - 1,
-          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
-
-      if (display_compositor_recent_crash_count_ >= kGpuMaxCrashCount &&
-          !disable_crash_limit) {
-        // Something is very wrong and the GPU process keeps crashing with only
-        // the display compositor running. Kill the browser process to reset
-        // everything and attempt to improve stability.
-        LOG(FATAL) << "The display compositor is frequently crashing. Goodbye.";
-      }
-    }
+  int recent_crash_count = 0;
+  if (mode_ == gpu::GpuMode::HARDWARE_ACCELERATED) {
+    IncrementCrashCount(kForgiveGpuCrashMinutes,
+                        &hardware_accelerated_recent_crash_count_);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        kProcessLifetimeEventsHardwareAccelerated,
+        DIED_FIRST_TIME + hardware_accelerated_recent_crash_count_ - 1,
+        static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
+    recent_crash_count = hardware_accelerated_recent_crash_count_;
+  } else if (mode_ == gpu::GpuMode::SWIFTSHADER) {
+    IncrementCrashCount(kForgiveGpuCrashMinutes,
+                        &swiftshader_recent_crash_count_);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        kProcessLifetimeEventsSwiftShader,
+        DIED_FIRST_TIME + swiftshader_recent_crash_count_ - 1,
+        static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
+    recent_crash_count = swiftshader_recent_crash_count_;
+  } else if (mode_ == gpu::GpuMode::DISPLAY_COMPOSITOR) {
+    IncrementCrashCount(kForgiveDisplayCompositorCrashMinutes,
+                        &display_compositor_recent_crash_count_);
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        kProcessLifetimeEventsDisplayCompositor,
+        DIED_FIRST_TIME + display_compositor_recent_crash_count_ - 1,
+        static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
+    recent_crash_count = display_compositor_recent_crash_count_;
   }
+
+  // GPU process initialization failed and fallback already happened.
+  if (status_ == FAILURE)
+    return;
+
+  bool disable_crash_limit = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableGpuProcessCrashLimit);
+
+  // GPU process crashed too many times, fallback on a different GPU process
+  // mode.
+  if (recent_crash_count >= kGpuFallbackCrashCount && !disable_crash_limit)
+    GpuDataManagerImpl::GetInstance()->FallBackToNextGpuMode();
 }
 
 std::string GpuProcessHost::GetShaderPrefixKey() {
