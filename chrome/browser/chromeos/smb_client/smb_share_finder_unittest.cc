@@ -80,6 +80,11 @@ class SmbShareFinderTest : public testing::Test {
   // Helper function that expects expected_shares_ to be empty.
   void ExpectAllSharesHaveBeenFound() { EXPECT_TRUE(expected_shares_.empty()); }
 
+  // Helper function that expects |url| to resolve to |expected|.
+  void ExpectResolvedHost(const SmbUrl& url, const std::string& expected) {
+    EXPECT_EQ(expected, share_finder_->GetResolvedUrl(url));
+  }
+
  private:
   // Removes shares discovered from expected_shares_.
   void SharesFoundCallback(const std::vector<SmbUrl>& shares_found) {
@@ -152,6 +157,37 @@ TEST_F(SmbShareFinderTest, SharesFoundOnOneHostWithMultipleHosts) {
 
   ExpectSharesFound();
   ExpectAllSharesHaveBeenFound();
+}
+
+TEST_F(SmbShareFinderTest, ResolvesHostToOriginalUrlIfNoHostFound) {
+  const std::string url = std::string(kDefaultUrl) + "share";
+  SmbUrl smb_url(url);
+
+  // Trigger the NetworkScanner to scan the network with its HostLocators.
+  ExpectSharesFound();
+
+  ExpectResolvedHost(smb_url, url);
+}
+
+TEST_F(SmbShareFinderTest, ResolvesHost) {
+  AddDefaultHost();
+
+  // Trigger the NetworkScanner to scan the network with its HostLocators.
+  ExpectSharesFound();
+
+  SmbUrl url(std::string(kDefaultUrl) + "share");
+  ExpectResolvedHost(url, std::string(kDefaultResolvedUrl) + "/share");
+}
+
+TEST_F(SmbShareFinderTest, ResolvesHostWithMultipleHosts) {
+  AddDefaultHost();
+  AddHost("host2", "4.5.6.7");
+
+  // Trigger the NetworkScanner to scan the network with its HostLocators.
+  ExpectSharesFound();
+
+  SmbUrl url("smb://host2/share");
+  ExpectResolvedHost(url, "smb://4.5.6.7/share");
 }
 
 }  // namespace smb_client
