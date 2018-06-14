@@ -15,7 +15,6 @@
 #include "base/lazy_instance.h"
 #include "cc/layers/layer.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/android/content_view_layer_renderer.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContentViewRenderView_jni.h"
 #include "ui/android/view_android.h"
