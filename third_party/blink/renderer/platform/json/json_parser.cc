@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 
 #include "base/numerics/safe_conversions.h"
-#include "third_party/blink/renderer/platform/decimal.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/wtf/decimal.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_to_number.h"
 

@@ -66,6 +66,8 @@ jumbo_component("wtf") {
     "cpu.h",
     "date_math.cc",
     "date_math.h",
+    "decimal.cc",
+    "decimal.h",
     "deque.h",
     "doubly_linked_list.h",
     "dtoa.cc",
@@ -309,6 +311,7 @@ jumbo_source_set("wtf_unittests_sources") {
   sources = [
     "ascii_ctype_test.cc",
     "assertions_test.cc",
+    "decimal_test.cc",
     "deque_test.cc",
     "dtoa_test.cc",
     "experimental/container_type_operations_test.cc",
