@@ -37,7 +37,8 @@ namespace content {
 
 class CONTENT_EXPORT GpuDataManagerImplPrivate {
  public:
-  static GpuDataManagerImplPrivate* Create(GpuDataManagerImpl* owner);
+  explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
+  virtual ~GpuDataManagerImplPrivate();
 
   void BlacklistWebGLForTesting();
   gpu::GPUInfo GetGPUInfo() const;
@@ -57,7 +58,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UnblockDomainFrom3DAPIs(const GURL& url);
   void DisableHardwareAcceleration();
   bool HardwareAccelerationEnabled() const;
-  void BlockSwiftShader();
   bool SwiftShaderAllowed() const;
 
   void UpdateGpuInfo(
@@ -109,8 +109,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void SetApplicationVisible(bool is_visible);
 
-  virtual ~GpuDataManagerImplPrivate();
-
  private:
   friend class GpuDataManagerImplPrivateTest;
 
@@ -131,10 +129,10 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
     GpuDataManagerImpl::DomainGuilt last_guilt;
   };
 
-  typedef std::map<std::string, DomainBlockEntry> DomainBlockMap;
+  using DomainBlockMap = std::map<std::string, DomainBlockEntry>;
 
-  typedef base::ObserverListThreadSafe<GpuDataManagerObserver>
-      GpuDataManagerObserverList;
+  using GpuDataManagerObserverList =
+      base::ObserverListThreadSafe<GpuDataManagerObserver>;
 
   struct LogMessage {
     int level;
@@ -148,8 +146,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
           header(_header),
           message(_message) { }
   };
-
-  explicit GpuDataManagerImplPrivate(GpuDataManagerImpl* owner);
 
   // Called when GPU access (hardware acceleration and swiftshader) becomes
   // blocked.
@@ -173,7 +169,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   //   3) all other platforms, this returns false.
   bool NeedsCompleteGpuInfoCollection() const;
 
-  bool complete_gpu_info_already_requested_;
+  GpuDataManagerImpl* const owner_;
+
+  bool complete_gpu_info_already_requested_ = false;
 
   gpu::GpuFeatureInfo gpu_feature_info_;
   gpu::GPUInfo gpu_info_;
@@ -190,25 +188,23 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   // Current card force-disabled due to GPU crashes, or disabled through
   // the --disable-gpu commandline switch.
-  bool card_disabled_;
+  bool card_disabled_ = false;
 
   // SwiftShader force-blocked due to GPU crashes using SwiftShader.
-  bool swiftshader_blocked_;
+  bool swiftshader_blocked_ = false;
 
   // We disable histogram stuff in testing, especially in unit tests because
   // they cause random failures.
-  bool update_histograms_;
+  bool update_histograms_ = true;
 
   DomainBlockMap blocked_domains_;
   mutable std::list<base::Time> timestamps_of_gpu_resets_;
-  bool domain_blocking_enabled_;
+  bool domain_blocking_enabled_ = true;
 
   bool application_is_visible_ = true;
 
-  GpuDataManagerImpl* owner_;
-
   // True if --single-process or --in-process-gpu is passed in.
-  bool in_process_gpu_;
+  bool in_process_gpu_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GpuDataManagerImplPrivate);
 };

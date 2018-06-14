@@ -16,7 +16,8 @@ GpuDataManager* GpuDataManager::GetInstance() {
 
 // static
 GpuDataManagerImpl* GpuDataManagerImpl::GetInstance() {
-  return base::Singleton<GpuDataManagerImpl>::get();
+  static base::NoDestructor<GpuDataManagerImpl> instance;
+  return instance.get();
 }
 
 void GpuDataManagerImpl::BlacklistWebGLForTesting() {
@@ -77,16 +78,6 @@ void GpuDataManagerImpl::RemoveObserver(
 void GpuDataManagerImpl::DisableHardwareAcceleration() {
   base::AutoLock auto_lock(lock_);
   private_->DisableHardwareAcceleration();
-}
-
-void GpuDataManagerImpl::BlockSwiftShader() {
-  base::AutoLock auto_lock(lock_);
-  private_->BlockSwiftShader();
-}
-
-bool GpuDataManagerImpl::SwiftShaderAllowed() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->SwiftShaderAllowed();
 }
 
 bool GpuDataManagerImpl::HardwareAccelerationEnabled() const {
@@ -228,10 +219,8 @@ void GpuDataManagerImpl::SetApplicationVisible(bool is_visible) {
 }
 
 GpuDataManagerImpl::GpuDataManagerImpl()
-    : private_(GpuDataManagerImplPrivate::Create(this)) {
-}
+    : private_(std::make_unique<GpuDataManagerImplPrivate>(this)) {}
 
-GpuDataManagerImpl::~GpuDataManagerImpl() {
-}
+GpuDataManagerImpl::~GpuDataManagerImpl() = default;
 
 }  // namespace content

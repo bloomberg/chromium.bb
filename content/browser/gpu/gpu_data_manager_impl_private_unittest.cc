@@ -21,12 +21,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
-#define LONG_STRING_CONST(...) #__VA_ARGS__
-
 namespace content {
 namespace {
 
@@ -72,18 +66,14 @@ class GpuDataManagerImplPrivateTest : public testing::Test {
   // so we can make a little helper class here.
   class ScopedGpuDataManagerImpl {
    public:
-    ScopedGpuDataManagerImpl() : impl_(new GpuDataManagerImpl()) {
-      EXPECT_TRUE(impl_);
-      EXPECT_TRUE(impl_->private_.get());
-    }
-    ~ScopedGpuDataManagerImpl() { delete impl_; }
+    ScopedGpuDataManagerImpl() { EXPECT_TRUE(impl_.private_.get()); }
+    ~ScopedGpuDataManagerImpl() = default;
 
-    GpuDataManagerImpl* get() const { return impl_; }
-
-    GpuDataManagerImpl* operator->() const { return impl_; }
+    GpuDataManagerImpl* get() { return &impl_; }
+    GpuDataManagerImpl* operator->() { return &impl_; }
 
    private:
-    GpuDataManagerImpl* impl_;
+    GpuDataManagerImpl impl_;
     DISALLOW_COPY_AND_ASSIGN(ScopedGpuDataManagerImpl);
   };
 
@@ -91,28 +81,16 @@ class GpuDataManagerImplPrivateTest : public testing::Test {
   // in the GpuDataManagerImpl constructor.
   class ScopedGpuDataManagerImplPrivate {
    public:
-    ScopedGpuDataManagerImplPrivate() : impl_(new GpuDataManagerImpl()) {
-      EXPECT_TRUE(impl_);
-      EXPECT_TRUE(impl_->private_.get());
-    }
-    ~ScopedGpuDataManagerImplPrivate() { delete impl_; }
+    ScopedGpuDataManagerImplPrivate() { EXPECT_TRUE(impl_.private_.get()); }
+    ~ScopedGpuDataManagerImplPrivate() = default;
 
-    GpuDataManagerImplPrivate* get() const {
-      return impl_->private_.get();
-    }
-
-    GpuDataManagerImplPrivate* operator->() const {
-      return impl_->private_.get();
-    }
+    GpuDataManagerImplPrivate* get() { return impl_.private_.get(); }
+    GpuDataManagerImplPrivate* operator->() { return impl_.private_.get(); }
 
    private:
-    GpuDataManagerImpl* impl_;
+    GpuDataManagerImpl impl_;
     DISALLOW_COPY_AND_ASSIGN(ScopedGpuDataManagerImplPrivate);
   };
-
-  void SetUp() override {}
-
-  void TearDown() override {}
 
   base::Time JustBeforeExpiration(const GpuDataManagerImplPrivate* manager);
   base::Time JustAfterExpiration(const GpuDataManagerImplPrivate* manager);

@@ -266,6 +266,35 @@ void UpdateGpuInfoOnIO(const gpu::GPUInfo& gpu_info) {
 
 }  // anonymous namespace
 
+GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
+    : owner_(owner),
+      observer_list_(base::MakeRefCounted<GpuDataManagerObserverList>()) {
+  DCHECK(owner_);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableGpu))
+    DisableHardwareAcceleration();
+
+  if (command_line->HasSwitch(switches::kSingleProcess) ||
+      command_line->HasSwitch(switches::kInProcessGPU)) {
+    in_process_gpu_ = true;
+    AppendGpuCommandLine(command_line);
+  }
+
+#if defined(OS_MACOSX)
+  CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, owner_);
+#endif  // OS_MACOSX
+
+  // For testing only.
+  if (command_line->HasSwitch(switches::kDisableDomainBlockingFor3DAPIs))
+    domain_blocking_enabled_ = false;
+}
+
+GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
+#if defined(OS_MACOSX)
+  CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, owner_);
+#endif
+}
+
 void GpuDataManagerImplPrivate::BlacklistWebGLForTesting() {
   // This function is for testing only, so disable histograms.
   update_histograms_ = false;
@@ -289,8 +318,7 @@ gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfoForHardwareGpu() const {
   return gpu_info_for_hardware_gpu_;
 }
 
-bool GpuDataManagerImplPrivate::GpuAccessAllowed(
-    std::string* reason) const {
+bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
   bool swiftshader_available = false;
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -398,13 +426,11 @@ void GpuDataManagerImplPrivate::RequestVideoMemoryUsageStatsUpdate(
 }
 
 void GpuDataManagerImplPrivate::AddObserver(GpuDataManagerObserver* observer) {
-  GpuDataManagerImpl::UnlockedSession session(owner_);
   observer_list_->AddObserver(observer);
 }
 
 void GpuDataManagerImplPrivate::RemoveObserver(
     GpuDataManagerObserver* observer) {
-  GpuDataManagerImpl::UnlockedSession session(owner_);
   observer_list_->RemoveObserver(observer);
 }
 
@@ -577,11 +603,6 @@ bool GpuDataManagerImplPrivate::HardwareAccelerationEnabled() const {
   return !card_disabled_;
 }
 
-void GpuDataManagerImplPrivate::BlockSwiftShader() {
-  swiftshader_blocked_ = true;
-  OnGpuBlocked();
-}
-
 bool GpuDataManagerImplPrivate::SwiftShaderAllowed() const {
 #if !BUILDFLAG(ENABLE_SWIFTSHADER)
   return false;
@@ -618,27 +639,15 @@ void GpuDataManagerImplPrivate::AddLogMessage(
 
 void GpuDataManagerImplPrivate::ProcessCrashed(
     base::TerminationStatus exit_code) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    // Unretained is ok, because it's posted to UI thread, the thread
-    // where the singleton GpuDataManagerImpl lives until the end.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&GpuDataManagerImpl::ProcessCrashed,
-                       base::Unretained(owner_), exit_code));
-    return;
-  }
-  {
-    GpuDataManagerImpl::UnlockedSession session(owner_);
-    observer_list_->Notify(
-        FROM_HERE, &GpuDataManagerObserver::OnGpuProcessCrashed, exit_code);
-  }
+  observer_list_->Notify(
+      FROM_HERE, &GpuDataManagerObserver::OnGpuProcessCrashed, exit_code);
 }
 
 std::unique_ptr<base::ListValue> GpuDataManagerImplPrivate::GetLogMessages()
     const {
   auto value = std::make_unique<base::ListValue>();
   for (size_t ii = 0; ii < log_messages_.size(); ++ii) {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+    auto dict = std::make_unique<base::DictionaryValue>();
     dict->SetInteger("level", log_messages_[ii].level);
     dict->SetString("header", log_messages_[ii].header);
     dict->SetString("message", log_messages_[ii].message);
@@ -648,7 +657,7 @@ std::unique_ptr<base::ListValue> GpuDataManagerImplPrivate::GetLogMessages()
 }
 
 void GpuDataManagerImplPrivate::HandleGpuSwitch() {
-  GpuDataManagerImpl::UnlockedSession session(owner_);
+  base::AutoUnlock unlock(owner_->lock_);
   // Notify observers in the browser process.
   ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
   // Pass the notification to the GPU process to notify observers there.
@@ -706,48 +715,6 @@ void GpuDataManagerImplPrivate::DisableDomainBlockingFor3DAPIsForTesting() {
   domain_blocking_enabled_ = false;
 }
 
-// static
-GpuDataManagerImplPrivate* GpuDataManagerImplPrivate::Create(
-    GpuDataManagerImpl* owner) {
-  return new GpuDataManagerImplPrivate(owner);
-}
-
-GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
-    : complete_gpu_info_already_requested_(false),
-      observer_list_(new GpuDataManagerObserverList),
-      card_disabled_(false),
-      swiftshader_blocked_(false),
-      update_histograms_(true),
-      domain_blocking_enabled_(true),
-      owner_(owner),
-      in_process_gpu_(false) {
-  DCHECK(owner_);
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableGpu))
-    DisableHardwareAcceleration();
-
-  if (command_line->HasSwitch(switches::kSingleProcess) ||
-      command_line->HasSwitch(switches::kInProcessGPU)) {
-    in_process_gpu_ = true;
-    AppendGpuCommandLine(command_line);
-  }
-
-#if defined(OS_MACOSX)
-  CGDisplayRegisterReconfigurationCallback(DisplayReconfigCallback, owner_);
-#endif  // OS_MACOSX
-
-  // For testing only.
-  if (command_line->HasSwitch(switches::kDisableDomainBlockingFor3DAPIs)) {
-    domain_blocking_enabled_ = false;
-  }
-}
-
-GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
-#if defined(OS_MACOSX)
-  CGDisplayRemoveReconfigurationCallback(DisplayReconfigCallback, owner_);
-#endif
-}
-
 void GpuDataManagerImplPrivate::NotifyGpuInfoUpdate() {
   observer_list_->Notify(FROM_HERE, &GpuDataManagerObserver::OnGpuInfoUpdate);
 }
@@ -765,8 +732,7 @@ void GpuDataManagerImplPrivate::SetApplicationVisible(bool is_visible) {
   application_is_visible_ = is_visible;
 }
 
-std::string GpuDataManagerImplPrivate::GetDomainFromURL(
-    const GURL& url) const {
+std::string GpuDataManagerImplPrivate::GetDomainFromURL(const GURL& url) const {
   // For the moment, we just use the host, or its IP address, as the
   // entry in the set, rather than trying to figure out the top-level
   // domain. This does mean that a.foo.com and b.foo.com will be
@@ -894,7 +860,8 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
   if (!card_disabled_) {
     DisableHardwareAcceleration();
   } else if (SwiftShaderAllowed()) {
-    BlockSwiftShader();
+    swiftshader_blocked_ = true;
+    OnGpuBlocked();
   } else if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
     // The GPU process is frequently crashing with only the display compositor
     // running. This should never happen so something is wrong. Crash the
