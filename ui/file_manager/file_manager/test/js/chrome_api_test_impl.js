@@ -6,15 +6,31 @@
 // These APIs are provided natively to a chrome app, but since we are
 // running as a regular web page, we must provide test implementations.
 
+// All testing functions in namespace 'test'.
+var test = test || {};
+
+/** @constructor */
+test.Event = function() {
+  this.listeners_ = [];
+};
+/** @param {function} callback */
+test.Event.prototype.addListener = function(callback) {
+  this.listeners_.push(callback);
+};
+/** @param {function} callback */
+test.Event.prototype.removeListener = function(callback) {
+  this.listeners_ = this.listeners_.filter(l => l !== callback);
+};
+/** @param {...*} var_args */
+test.Event.prototype.dispatchEvent = function(var_args) {
+  this.listeners_.forEach(l => l.apply(null, arguments));
+};
+
 chrome = {
   app: {
     runtime: {
-      onLaunched: {
-        addListener: () => {},
-      },
-      onRestarted: {
-        addListener: () => {},
-      },
+      onLaunched: new test.Event(),
+      onRestarted: new test.Event(),
     },
     window: {
       current: () => {
@@ -32,9 +48,7 @@ chrome = {
 
   contextMenus: {
     create: () => {},
-    onClicked: {
-      addListener: () => {},
-    },
+    onClicked: new test.Event(),
   },
 
   echoPrivate: {
@@ -57,9 +71,7 @@ chrome = {
   },
 
   fileBrowserHandler: {
-    onExecute: {
-      addListener: () => {},
-    },
+    onExecute: new test.Event(),
   },
 
   i18n: {
@@ -87,15 +99,9 @@ chrome = {
   },
 
   notifications: {
-    onButtonClicked: {
-      addListener: () => {},
-    },
-    onClicked: {
-      addListener: () => {},
-    },
-    onClosed: {
-      addListener: () => {},
-    },
+    onButtonClicked: new test.Event(),
+    onClicked: new test.Event(),
+    onClosed: new test.Event(),
   },
 
   power: {
@@ -109,9 +115,7 @@ chrome = {
     },
     // FileManager extension ID.
     id: 'hhaomjibdihmijegdhdafkllkbggdgoj',
-    onMessageExternal: {
-      addListener: () => {},
-    },
+    onMessageExternal: new test.Event(),
     sendMessage: (extensionId, message, options, opt_callback) => {
       // Returns JSON.
       if (opt_callback)
@@ -139,9 +143,7 @@ chrome = {
           setTimeout(opt_callback, 0);
       },
     },
-    onChanged: {
-      addListener: () => {},
-    },
+    onChanged: new test.Event(),
     sync: {
       get: (keys, callback) => {
         setTimeout(callback, 0, {});
@@ -153,9 +155,7 @@ chrome = {
 // cws_widget_container.js loads the chrome web store widget as
 // a WebView.  It calls WebView.request.onBeforeSendHeaders.
 HTMLElement.prototype.request = {
-  onBeforeSendHeaders: {
-    addListener: () => {},
-  },
+  onBeforeSendHeaders: new test.Event(),
 };
 
 // cws_widget_container.js also calls WebView.stop.

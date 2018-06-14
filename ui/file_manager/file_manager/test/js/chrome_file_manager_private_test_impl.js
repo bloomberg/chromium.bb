@@ -15,11 +15,6 @@ mockVolumeManager
 
 chrome.fileManagerPrivate = {
   currentId_: 'test@example.com',
-  dispatchEvent_: function(listenerType, event) {
-    setTimeout(() => {
-      this[listenerType].listeners_.forEach(l => l.call(null, event));
-    }, 0);
-  },
   displayedId_: 'test@example.com',
   preferences_: {
     allowRedeemOffers: true,
@@ -131,55 +126,22 @@ chrome.fileManagerPrivate = {
       callback();
     }, this.mountCrostiniContainerDelay_);
   },
-  onAppsUpdated: {
-    addListener: () => {},
-  },
-  onCopyProgress: {
-    listeners_: [],
-    addListener: function(l) {
-      this.listeners_.push(l);
-    },
-    removeListener: function(l) {
-      this.listeners_ = this.listeners_.filter(e => e !== l);
-    },
-  },
-  onDeviceChanged: {
-    addListener: () => {},
-  },
-  onDirectoryChanged: {
-    listeners_: [],
-    addListener: function(l) {
-      this.listeners_.push(l);
-    },
-    removeListener: function(l) {
-      this.listeners_.splice(this.listeners_.indexOf(l), 1);
-    },
-  },
-  onDriveConnectionStatusChanged: {
-    addListener: () => {},
-  },
-  onDriveSyncError: {
-    addListener: () => {},
-  },
-  onFileTransfersUpdated: {
-    addListener: () => {},
-  },
-  onMountCompleted: {
-    listeners_: [],
-    addListener: function(l) {
-      this.listeners_.push(l);
-    },
-  },
-  onPreferencesChanged: {
-    addListener: () => {},
-  },
+  onAppsUpdated: new test.Event(),
+  onCopyProgress: new test.Event(),
+  onDeviceChanged: new test.Event(),
+  onDirectoryChanged: new test.Event(),
+  onDriveConnectionStatusChanged: new test.Event(),
+  onDriveSyncError: new test.Event(),
+  onFileTransfersUpdated: new test.Event(),
+  onMountCompleted: new test.Event(),
+  onPreferencesChanged: new test.Event(),
   openInspector: (type) => {},
   openSettingsSubpage: (sub_page) => {},
   removeFileWatch: (entry, callback) => {
     setTimeout(callback, 0, true);
   },
   removeMount(volumeId) {
-    chrome.fileManagerPrivate.dispatchEvent_('onMountCompleted', {
+    chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
       status: 'success',
       eventType: 'unmount',
       volumeMetadata: {
