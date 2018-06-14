@@ -669,7 +669,9 @@ void SpdyHttpStream::PopulateNetErrorDetails(NetErrorDetails* details) {
 }
 
 void SpdyHttpStream::SetPriority(RequestPriority priority) {
-  // TODO(bnc): Call stream_->SetPriority(priority).  https://crbug.com/841511
+  if (stream_) {
+    stream_->SetPriority(priority);
+  }
 }
 
 }  // namespace net

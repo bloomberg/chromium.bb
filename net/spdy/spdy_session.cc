@@ -889,15 +889,8 @@ int SpdySession::GetPushedStream(const GURL& url,
   streams_pushed_and_claimed_count_++;
 
   // If the stream is still open, update its priority to that of the request.
-  if (!(*stream)->IsClosed() && (*stream)->priority() != priority) {
+  if (!(*stream)->IsClosed()) {
     (*stream)->SetPriority(priority);
-
-    auto updates = priority_dependency_state_.OnStreamUpdate(
-        (*stream)->stream_id(), ConvertRequestPriorityToSpdyPriority(priority));
-    for (auto u : updates) {
-      DCHECK(IsStreamActive(u.id));
-      EnqueuePriorityFrame(u.id, u.parent_stream_id, u.weight, u.exclusive);
-    }
   }
 
   return OK;
@@ -1136,6 +1129,30 @@ std::unique_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(
   }
 
   return data_buffer;
+}
+
+void SpdySession::UpdateStreamPriority(SpdyStream* stream,
+                                       RequestPriority old_priority,
+                                       RequestPriority new_priority) {
+  // There might be write frames enqueued for |stream| regardless of whether it
+  // is active (stream_id != 0) or inactive (no HEADERS frame has been sent out
+  // yet and stream_id == 0).
+  write_queue_.ChangePriorityOfWritesForStream(stream, old_priority,
+                                               new_priority);
+
+  // PRIORITY frames only need to be sent if |stream| is active.
+  const spdy::SpdyStreamId stream_id = stream->stream_id();
+  if (stream_id == 0)
+    return;
+
+  DCHECK(IsStreamActive(stream_id));
+
+  auto updates = priority_dependency_state_.OnStreamUpdate(
+      stream_id, ConvertRequestPriorityToSpdyPriority(new_priority));
+  for (auto u : updates) {
+    DCHECK(IsStreamActive(u.id));
+    EnqueuePriorityFrame(u.id, u.parent_stream_id, u.weight, u.exclusive);
+  }
 }
 
 void SpdySession::CloseActiveStream(spdy::SpdyStreamId stream_id, int status) {
