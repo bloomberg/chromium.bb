@@ -251,6 +251,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetFilters(const FilterOperations& filters);
   const FilterOperations& filters() const { return inputs_.filters; }
 
+  // Set or get the origin to be used when applying the filters given to
+  // SetFilters(). By default the origin is at the origin of this layer, but
+  // may be moved positively or negatively relative to that. The origin effects
+  // any filters which do not apply uniformly to the entire layer and its
+  // subtree.
+  void SetFiltersOrigin(const gfx::PointF& origin);
+  gfx::PointF filters_origin() const { return inputs_.filters_origin; }
+
   // Set or get the list of filters that should be applied to the content this
   // layer and its subtree will be drawn into. The effect is clipped to only
   // apply directly behind this layer and its subtree.
@@ -459,8 +467,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.should_flatten_transform;
   }
 
-  bool Is3dSorted() const { return inputs_.sorting_context_id != 0; }
-
   void SetUseParentBackfaceVisibility(bool use);
   bool use_parent_backface_visibility() const {
     return inputs_.use_parent_backface_visibility;
@@ -485,13 +491,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // given SetIsDrawable(true).
   bool DrawsContent() const;
 
+  // Returns the number of layers in this layers subtree (excluding itself) for
+  // which DrawsContent() is true.
+  int NumDescendantsThatDrawContent() const;
+
+  // Set or get if this layer and its subtree should be part of the compositor's
+  // output to the screen. When set to true, the layer's subtree does not appear
+  // to the user, but still remains part of the tree with all its normal drawing
+  // properties. This can be used to execute a CopyOutputRequest on this layer
+  // or another in its subtree, since the layers are still able to be drawn by
+  // the compositor, while not being composed into the result shown to the user.
   void SetHideLayerAndSubtree(bool hide);
   bool hide_layer_and_subtree() const { return inputs_.hide_layer_and_subtree; }
-
-  void SetFiltersOrigin(const gfx::PointF& origin);
-  gfx::PointF filters_origin() const { return inputs_.filters_origin; }
-
-  int NumDescendantsThatDrawContent() const;
 
   void UpdateDebugInfo();
 
@@ -520,6 +531,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   int clip_tree_index() const;
   int effect_tree_index() const;
   int scroll_tree_index() const;
+
+  // While all layers have an index into the transform tree, this value
+  // indicates whether the transform tree node was created for this layer.
+  void SetHasTransformNode(bool val) { has_transform_node_ = val; }
+  bool has_transform_node() { return has_transform_node_; }
 
   void SetOffsetToTransformParent(gfx::Vector2dF offset);
   gfx::Vector2dF offset_to_transform_parent() const {
@@ -560,10 +576,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // Called on the scroll layer to trigger showing the overlay scrollbars.
   void ShowScrollbars() { needs_show_scrollbars_ = true; }
-
-  bool has_transform_node() { return has_transform_node_; }
-  void SetHasTransformNode(bool val) { has_transform_node_ = val; }
-  TransformNode* GetTransformNode() const;
 
   // Internal method to create the compositor thread type for this Layer.
   // Subclasses should override this method if they want to return their own
@@ -852,9 +864,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool subtree_property_changed_ : 1;
   bool may_contain_video_ : 1;
   bool needs_show_scrollbars_ : 1;
-  // Whether the nodes referred to by *_tree_index_ "belong" to this
-  // layer. Only applicable if LayerTreeSettings.use_layer_lists is
-  // false.
   bool has_transform_node_ : 1;
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
