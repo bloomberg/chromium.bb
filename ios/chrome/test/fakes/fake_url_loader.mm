@@ -53,6 +53,9 @@
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
 }
 
+- (void)restoreTabWithSessionID:(const SessionID)sessionID {
+}
+
 - (void)loadJavaScriptFromLocationBar:(NSString*)script {
 }
 

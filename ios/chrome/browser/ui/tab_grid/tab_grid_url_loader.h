@@ -15,7 +15,11 @@ class ChromeBrowserState;
 
 class WebStateList;
 
-// Specialized URLLoader for the tab grid, which behaves differently than BVC.
+// Specialized URLLoader for the tab grid.
+// Loading a URL or sessionTab normally navigates the currently visible tab
+// view, which meaning replacing the active WebState. When there is no currently
+// visible tab view, loading a URL means adding a new WebState to the
+// WebStateList.
 @interface TabGridURLLoader : NSObject<UrlLoader>
 - (instancetype)
 initWithRegularWebStateList:(WebStateList*)regularWebStateList

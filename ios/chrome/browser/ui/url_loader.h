@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/strings/string16.h"
+#include "components/sessions/core/session_id.h"
 #import "ios/web/public/navigation_manager.h"
 
 class GURL;
@@ -48,6 +49,9 @@ enum OpenPosition {
 
 // Load a tab with the given session.
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab;
+
+// Restores a closed tab with |sessionID|.
+- (void)restoreTabWithSessionID:(const SessionID)sessionID;
 
 // Loads the text entered in the location bar as javascript.
 - (void)loadJavaScriptFromLocationBar:(NSString*)script;

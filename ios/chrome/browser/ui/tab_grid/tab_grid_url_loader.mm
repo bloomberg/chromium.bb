@@ -5,8 +5,12 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_url_loader.h"
 
 #include "components/sessions/core/session_types.h"
+#include "components/sessions/core/tab_restore_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #include "ios/chrome/browser/sessions/session_util.h"
+#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
+#include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_opener.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -108,7 +112,8 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
   AppendAndActivateWebState(webStateList, std::move(webState));
 }
 
-// Opens |loadParams| in a new regular tab.
+// Opens |loadParams| in a new regular tab, rather than replacing the active
+// tab.
 - (void)loadURLWithParams:
     (const web::NavigationManager::WebLoadParams&)loadParams {
   DCHECK(self.regularBrowserState);
@@ -118,8 +123,21 @@ initWithRegularWebStateList:(WebStateList*)regularWebStateList
   AppendAndActivateWebState(self.regularWebStateList, std::move(webState));
 }
 
+// Restores |sessionID| in a new foreground tab, instead of replacing the active
+// tab.
+- (void)restoreTabWithSessionID:(const SessionID)sessionID {
+  TabRestoreServiceDelegateImplIOS* delegate =
+      TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
+          self.regularBrowserState);
+  sessions::TabRestoreService* restoreService =
+      IOSChromeTabRestoreServiceFactory::GetForBrowserState(
+          self.regularBrowserState);
+  restoreService->RestoreEntryById(delegate, sessionID,
+                                   WindowOpenDisposition::NEW_FOREGROUND_TAB);
+}
+
 - (void)loadJavaScriptFromLocationBar:(NSString*)script {
-  NOTREACHED() << "This is intentionally NO-OP in TabGridMediator.";
+  NOTREACHED() << "This is intentionally NO-OP in TabGridURLLoader.";
 }
 
 @end

@@ -96,6 +96,8 @@ const int kRelativeTimeMaxHours = 4;
 const CGFloat kSingleLineSectionHeaderHeight = 44;
 // Height for double line headers.
 const CGFloat kDoubleLineSectionHeaderHeight = 56;
+// Section index for recently closed tabs.
+const int kRecentlyClosedTabsSectionIndex = 0;
 
 }  // namespace
 
@@ -194,7 +196,8 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
   TableViewModel* model = self.tableViewModel;
 
   // Recently Closed Section.
-  [model addSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
+  [model insertSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs
+                             atIndex:kRecentlyClosedTabsSectionIndex];
   [model setSectionIdentifier:SectionIdentifierRecentlyClosedTabs
                  collapsedKey:kRecentlyClosedCollapsedKey];
   TableViewDisclosureHeaderFooterItem* header =
@@ -218,6 +221,8 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
       toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
 }
 
+// Iterates through all the TabRestoreService entries and adds items to the
+// recently closed tabs section. This method performs no UITableView operations.
 - (void)addRecentlyClosedTabItems {
   if (!self.tabRestoreService)
     return;
@@ -239,6 +244,19 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
     [self.tableViewModel addItem:recentlyClosedTab
          toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
   }
+}
+
+// Updates the recently closed tabs section by clobbering and reinserting
+// section. Needs to be called inside a [UITableView beginUpdates] block on
+// iOS10, or performBatchUpdates on iOS11+.
+- (void)updateRecentlyClosedSection {
+  [self.tableViewModel
+      removeSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
+  [self addRecentlyClosedSection];
+  NSUInteger index = [self.tableViewModel
+      sectionForSectionIdentifier:SectionIdentifierRecentlyClosedTabs];
+  [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:index]
+                withRowAnimation:UITableViewRowAnimationNone];
 }
 
 #pragma mark Sessions Section
@@ -560,7 +578,16 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
 }
 
 - (void)refreshRecentlyClosedTabs {
-  [self.tableView reloadData];
+  if (@available(iOS 11, *)) {
+    [self.tableView performBatchUpdates:^{
+      [self updateRecentlyClosedSection];
+    }
+                             completion:nil];
+  } else {
+    [self.tableView beginUpdates];
+    [self updateRecentlyClosedSection];
+    [self.tableView endUpdates];
+  }
 }
 
 - (void)setTabRestoreService:(sessions::TabRestoreService*)tabRestoreService {
@@ -807,21 +834,13 @@ const CGFloat kDoubleLineSectionHeaderHeight = 56;
 
 - (void)openTabWithTabRestoreEntry:
     (const sessions::TabRestoreService::Entry*)entry {
-  DCHECK(entry);
-  if (!entry)
-    return;
   // Only TAB type is handled.
-  if (entry->type != sessions::TabRestoreService::TAB)
-    return;
-  TabRestoreServiceDelegateImplIOS* delegate =
-      TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
-          self.browserState);
+  DCHECK_EQ(entry->type, sessions::TabRestoreService::TAB);
   base::RecordAction(
       base::UserMetricsAction("MobileRecentTabManagerRecentTabOpened"));
   new_tab_page_uma::RecordAction(
       self.browserState, new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
-  self.tabRestoreService->RestoreEntryById(delegate, entry->id,
-                                           WindowOpenDisposition::CURRENT_TAB);
+  [self.loader restoreTabWithSessionID:entry->id];
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 

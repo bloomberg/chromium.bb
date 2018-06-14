@@ -356,6 +356,8 @@
                     browserState:self.regularTabModel.browserState];
   self.historyCoordinator.loader = self.URLLoader;
   self.historyCoordinator.presentationDelegate = self;
+  self.historyCoordinator.dispatcher =
+      static_cast<id<ApplicationCommands>>(self.dispatcher);
   [self.historyCoordinator start];
 }
 
