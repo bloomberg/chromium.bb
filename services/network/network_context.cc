@@ -62,6 +62,7 @@
 #include "services/network/network_service.h"
 #include "services/network/network_service_network_delegate.h"
 #include "services/network/proxy_config_service_mojo.h"
+#include "services/network/proxy_resolving_socket_factory_mojo.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/resource_scheduler_client.h"
@@ -594,6 +595,13 @@ void NetworkContext::CreateTCPConnectedSocket(
       local_addr, remote_addr_list,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(request), std::move(observer), std::move(callback));
+}
+
+void NetworkContext::CreateProxyResolvingSocketFactory(
+    mojom::ProxyResolvingSocketFactoryRequest request) {
+  proxy_resolving_socket_factories_.AddBinding(
+      std::make_unique<ProxyResolvingSocketFactoryMojo>(url_request_context()),
+      std::move(request));
 }
 
 void NetworkContext::CreateWebSocket(
