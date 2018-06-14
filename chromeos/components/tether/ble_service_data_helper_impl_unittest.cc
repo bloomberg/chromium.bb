@@ -19,7 +19,6 @@
 #include "components/cryptauth/mock_local_device_data_provider.h"
 #include "components/cryptauth/remote_device_cache.h"
 #include "components/cryptauth/remote_device_test_util.h"
-#include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -48,28 +47,6 @@ const int64_t fake_beacon_seed1_end_ms = current_eid_end_ms;
 const char fake_beacon_seed2_data[] = "fakeBeaconSeed2Data";
 const int64_t fake_beacon_seed2_start_ms = adjacent_eid_start_ms;
 const int64_t fake_beacon_seed2_end_ms = adjacent_eid_end_ms;
-
-class MockBluetoothDeviceWithServiceData : public device::MockBluetoothDevice {
- public:
-  MockBluetoothDeviceWithServiceData(device::MockBluetoothAdapter* adapter,
-                                     const std::string& device_address,
-                                     const std::string& service_data)
-      : device::MockBluetoothDevice(adapter,
-                                    /* bluetooth_class */ 0,
-                                    "name",
-                                    device_address,
-                                    false,
-                                    false) {
-    for (size_t i = 0; i < service_data.size(); i++) {
-      service_data_.push_back(static_cast<uint8_t>(service_data[i]));
-    }
-  }
-
-  const std::vector<uint8_t>* service_data() { return &service_data_; }
-
- private:
-  std::vector<uint8_t> service_data_;
-};
 
 std::unique_ptr<cryptauth::ForegroundEidGenerator::EidData>
 CreateFakeBackgroundScanFilter() {

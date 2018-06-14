@@ -11,6 +11,9 @@
 #include "components/cryptauth/foreground_eid_generator.h"
 
 namespace chromeos {
+namespace secure_channel {
+class SecureChannelBleServiceDataHelperImplTest;
+}  // namespace secure_channel
 namespace tether {
 class BleAdvertiserImplTest;
 class BleServiceDataHelperImplTest;
@@ -43,6 +46,8 @@ class BleAdvertisementGenerator {
 
  private:
   friend class CryptAuthBleAdvertisementGeneratorTest;
+  friend class chromeos::secure_channel::
+      SecureChannelBleServiceDataHelperImplTest;
   friend class chromeos::tether::BleAdvertiserImplTest;
   friend class chromeos::tether::BleServiceDataHelperImplTest;
   friend class chromeos::tether::AdHocBleAdvertiserImplTest;

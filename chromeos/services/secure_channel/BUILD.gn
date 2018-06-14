@@ -101,11 +101,13 @@ static_library("secure_channel") {
 
   deps = [
     "//base",
+    "//chromeos",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/services/secure_channel/public/cpp/shared",
     "//chromeos/services/secure_channel/public/cpp/shared:connection_priority",
     "//chromeos/services/secure_channel/public/mojom",
     "//components/cryptauth",
+    "//components/cryptauth/ble",
     "//device/bluetooth",
     "//services/service_manager/public/cpp",
   ]
@@ -211,6 +213,8 @@ source_set("unit_tests") {
     "//chromeos/services/secure_channel/public/mojom",
     "//chromeos/services/secure_channel/public/mojom:unit_tests",
     "//components/cryptauth:test_support",
+    "//components/cryptauth/ble",
+    "//components/cryptauth/ble:test_support",
     "//device/bluetooth:mocks",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",

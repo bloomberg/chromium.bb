@@ -91,7 +91,6 @@ class BleServiceDataHelperImpl : public secure_channel::BleServiceDataHelper,
   std::unique_ptr<cryptauth::ForegroundEidGenerator> foreground_eid_generator_;
 
   cryptauth::RemoteDeviceRefList tether_hosts_from_last_fetch_;
-  std::vector<std::string> registered_remote_device_ids_;
 
   base::WeakPtrFactory<BleServiceDataHelperImpl> weak_ptr_factory_;
 
