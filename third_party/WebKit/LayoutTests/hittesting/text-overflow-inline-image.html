@@ -13,21 +13,17 @@
 <a id="target" href="#">this is a link</a>
 <div id="result"></div>
 <script>
-// Tests 
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+}
+
+// Tests
 function test() {
-  var finished = false;
   target.onclick = function() {
     var result = document.getElementById("result");
     result.innerHTML += "clicked<br>";
-    if (window.testRunner && finished) {
-        testRunner.dumpAsText();
-        testRunner.notifyDone();
-    }
   };
-  if (window.testRunner) {
-    testRunner.waitUntilDone();
-  }
-
   let x = image.offsetLeft + 10;
   let y = image.offsetTop + image.offsetHeight;
 
@@ -43,6 +39,8 @@ function test() {
     finished = true;
     eventSender.mouseDown();
     eventSender.mouseUp();
+
+    testRunner.notifyDone();
   }
 }
 window.onload = test;
