@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <vector>
 
 #include "base/component_export.h"
@@ -28,7 +29,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
  public:
   static base::Optional<AuthenticatorMakeCredentialResponse>
   CreateFromU2fRegisterResponse(
-      const std::vector<uint8_t>& relying_party_id_hash,
+      base::span<const uint8_t, kRpIdHashLength> relying_party_id_hash,
       base::span<const uint8_t> u2f_data);
 
   AuthenticatorMakeCredentialResponse(AttestationObject attestation_object);
@@ -52,7 +53,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
   bool IsAttestationCertificateInappropriatelyIdentifying();
 
   // ResponseData:
-  const std::vector<uint8_t>& GetRpIdHash() const override;
+  const std::array<uint8_t, kRpIdHashLength>& GetRpIdHash() const override;
 
  private:
   AttestationObject attestation_object_;

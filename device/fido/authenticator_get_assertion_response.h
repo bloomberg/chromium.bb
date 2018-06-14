@@ -27,9 +27,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse
     : public ResponseData {
  public:
   static base::Optional<AuthenticatorGetAssertionResponse>
-  CreateFromU2fSignResponse(const std::vector<uint8_t>& relying_party_id_hash,
-                            const std::vector<uint8_t>& u2f_data,
-                            const std::vector<uint8_t>& key_handle);
+  CreateFromU2fSignResponse(
+      base::span<const uint8_t, kRpIdHashLength> relying_party_id_hash,
+      base::span<const uint8_t> u2f_data,
+      base::span<const uint8_t> key_handle);
 
   AuthenticatorGetAssertionResponse(AuthenticatorData authenticator_data,
                                     std::vector<uint8_t> signature);
@@ -39,7 +40,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse
   ~AuthenticatorGetAssertionResponse() override;
 
   // ResponseData:
-  const std::vector<uint8_t>& GetRpIdHash() const override;
+  const std::array<uint8_t, kRpIdHashLength>& GetRpIdHash() const override;
 
   AuthenticatorGetAssertionResponse& SetCredential(
       PublicKeyCredentialDescriptor credential);

@@ -6,12 +6,15 @@
 #define DEVICE_FIDO_RESPONSE_DATA_H_
 
 #include <stdint.h>
+
+#include <array>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -21,7 +24,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ResponseData {
  public:
   virtual ~ResponseData();
 
-  virtual const std::vector<uint8_t>& GetRpIdHash() const = 0;
+  virtual const std::array<uint8_t, kRpIdHashLength>& GetRpIdHash() const = 0;
 
   std::string GetId() const;
 

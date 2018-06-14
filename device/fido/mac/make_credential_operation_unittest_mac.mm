@@ -4,12 +4,15 @@
 
 #include "device/fido/mac/make_credential_operation.h"
 
+#include <array>
+
 #include <Foundation/Foundation.h>
 #include <Security/Security.h>
 
 #include "base/strings/string_number_conversions.h"
 
 #include "base/test/scoped_task_environment.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/test_callback_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,7 +24,7 @@ namespace {
 
 using test::TestCallbackReceiver;
 
-const std::vector<uint8_t> kClientDataHash = {1, 2, 3, 4, 5};
+const std::array<uint8_t, kClientDataHashLength> kClientDataHash = {};
 const std::string kRpId = "rp.example.com";
 const std::vector<uint8_t> kUserId = {10, 11, 12, 13, 14, 15};
 const char kKeychainAccessGroup[] =

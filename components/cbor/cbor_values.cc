@@ -63,8 +63,9 @@ CBORValue::CBORValue(int64_t integer_value) : integer_value_(integer_value) {
   type_ = integer_value >= 0 ? Type::UNSIGNED : Type::NEGATIVE;
 }
 
-CBORValue::CBORValue(const BinaryValue& in_bytes)
-    : type_(Type::BYTE_STRING), bytestring_value_(in_bytes) {}
+CBORValue::CBORValue(base::span<const uint8_t> in_bytes)
+    : type_(Type::BYTE_STRING),
+      bytestring_value_(in_bytes.begin(), in_bytes.end()) {}
 
 CBORValue::CBORValue(BinaryValue&& in_bytes) noexcept
     : type_(Type::BYTE_STRING), bytestring_value_(std::move(in_bytes)) {}

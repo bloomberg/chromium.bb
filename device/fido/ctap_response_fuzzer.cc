@@ -30,7 +30,7 @@ IcuEnvironment* env = new IcuEnvironment();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::vector<uint8_t> input(data, data + size);
-  std::vector<uint8_t> relying_party_id_hash(32);
+  std::array<uint8_t, 32> relying_party_id_hash = {};
   auto response = device::ReadCTAPMakeCredentialResponse(input);
   if (response)
     response->EraseAttestationStatement();

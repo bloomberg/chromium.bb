@@ -41,7 +41,6 @@ const uint8_t kP1TupRequiredConsumed = kP1TupRequired | kP1TupConsumed;
 const uint8_t kP1CheckOnly = 0x07;
 const uint8_t kP1IndividualAttestation = 0x80;
 const size_t kMaxKeyHandleLength = 255;
-const size_t kU2fParameterLength = 32;
 
 const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(3);
 const base::TimeDelta kU2fRetryDelay = base::TimeDelta::FromMilliseconds(200);

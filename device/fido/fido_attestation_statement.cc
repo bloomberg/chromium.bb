@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 
@@ -88,8 +89,7 @@ FidoAttestationStatement::CreateFromU2fRegisterResponse(
   // The format of |u2f_data| is specified here:
   // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#registration-response-message-success
   uint8_t credential_length;
-  if (!CBS_skip(&response,
-                fido_parsing_utils::kU2fResponseKeyHandleLengthPos) ||
+  if (!CBS_skip(&response, kU2fKeyHandleLengthOffset) ||
       !CBS_get_u8(&response, &credential_length) ||
       !CBS_skip(&response, credential_length) ||
       !CBS_get_asn1_element(&response, &cert, CBS_ASN1_SEQUENCE)) {

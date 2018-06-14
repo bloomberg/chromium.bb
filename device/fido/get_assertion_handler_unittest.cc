@@ -40,9 +40,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   std::unique_ptr<GetAssertionRequestHandler> CreateGetAssertionHandler() {
     ForgeNextHidDiscovery();
 
-    CtapGetAssertionRequest request_param(
-        test_data::kRelyingPartyId,
-        fido_parsing_utils::Materialize(test_data::kClientDataHash));
+    CtapGetAssertionRequest request_param(test_data::kRelyingPartyId,
+                                          test_data::kClientDataHash);
     request_param.SetAllowList(
         {{CredentialType::kPublicKey,
           fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)}});

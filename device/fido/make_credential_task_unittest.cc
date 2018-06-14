@@ -51,8 +51,7 @@ class FidoMakeCredentialTaskTest : public testing::Test {
     return std::make_unique<MakeCredentialTask>(
         device,
         CtapMakeCredentialRequest(
-            fido_parsing_utils::Materialize(test_data::kClientDataHash),
-            std::move(rp), std::move(user),
+            test_data::kClientDataHash, std::move(rp), std::move(user),
             PublicKeyCredentialParams(
                 std::vector<PublicKeyCredentialParams::CredentialInfo>(1))),
         AuthenticatorSelectionCriteria(), callback_receiver_.callback());
@@ -68,8 +67,7 @@ class FidoMakeCredentialTaskTest : public testing::Test {
     return std::make_unique<MakeCredentialTask>(
         device,
         CtapMakeCredentialRequest(
-            fido_parsing_utils::Materialize(test_data::kClientDataHash),
-            std::move(rp), std::move(user),
+            test_data::kClientDataHash, std::move(rp), std::move(user),
             PublicKeyCredentialParams(
                 std::vector<PublicKeyCredentialParams::CredentialInfo>(1))),
         std::move(criteria), callback_receiver_.callback());

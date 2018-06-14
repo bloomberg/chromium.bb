@@ -56,17 +56,17 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fSignCommand(
 // TODO(hongjunchoi): Move this logic inside ConvertToU2fRegisterCommand()
 // once U2fRegister is removed.
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<std::vector<uint8_t>> ConstructU2fRegisterCommand(
-    base::span<const uint8_t> application_parameter,
-    base::span<const uint8_t> challenge_parameter,
+std::vector<uint8_t> ConstructU2fRegisterCommand(
+    base::span<const uint8_t, kU2fApplicationParamLength> application_parameter,
+    base::span<const uint8_t, kU2fChallengeParamLength> challenge_parameter,
     bool is_individual_attestation = false);
 
 // TODO(hongjunchoi): Move this logic inside ConvertToU2fSignCommand() once
 // U2fSign is deleted.
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::vector<uint8_t>> ConstructU2fSignCommand(
-    base::span<const uint8_t> application_parameter,
-    base::span<const uint8_t> challenge_parameter,
+    base::span<const uint8_t, kU2fApplicationParamLength> application_parameter,
+    base::span<const uint8_t, kU2fChallengeParamLength> challenge_parameter,
     base::span<const uint8_t> key_handle,
     bool check_only = false);
 

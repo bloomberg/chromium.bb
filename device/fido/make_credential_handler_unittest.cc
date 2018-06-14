@@ -50,8 +50,8 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
         std::vector<PublicKeyCredentialParams::CredentialInfo>(1));
 
     auto request_parameter = CtapMakeCredentialRequest(
-        fido_parsing_utils::Materialize(test_data::kClientDataHash),
-        std::move(rp), std::move(user), std::move(credential_params));
+        test_data::kClientDataHash, std::move(rp), std::move(user),
+        std::move(credential_params));
 
     return std::make_unique<MakeCredentialRequestHandler>(
         nullptr,

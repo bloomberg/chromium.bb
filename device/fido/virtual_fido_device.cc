@@ -40,10 +40,11 @@ constexpr uint8_t kAttestationKey[]{
 VirtualFidoDevice::RegistrationData::RegistrationData() = default;
 VirtualFidoDevice::RegistrationData::RegistrationData(
     std::unique_ptr<crypto::ECPrivateKey> private_key,
-    std::vector<uint8_t> application_parameter,
+    base::span<const uint8_t, kRpIdHashLength> application_parameter,
     uint32_t counter)
     : private_key(std::move(private_key)),
-      application_parameter(std::move(application_parameter)),
+      application_parameter(
+          fido_parsing_utils::Materialize(application_parameter)),
       counter(counter) {}
 VirtualFidoDevice::RegistrationData::RegistrationData(RegistrationData&& data) =
     default;

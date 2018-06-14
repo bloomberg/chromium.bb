@@ -5,7 +5,6 @@
 #include "device/fido/fido_parsing_utils.h"
 
 #include "base/logging.h"
-#include "crypto/sha2.h"
 
 namespace device {
 namespace fido_parsing_utils {
@@ -20,8 +19,6 @@ constexpr bool AreSpansDisjoint(base::span<const uint8_t> lhs,
 
 }  // namespace
 
-const uint32_t kU2fResponseKeyHandleLengthPos = 66u;
-const uint32_t kU2fResponseKeyHandleStartPos = 67u;
 const char kEs256[] = "ES256";
 
 std::vector<uint8_t> Materialize(base::span<const uint8_t> span) {
@@ -80,8 +77,9 @@ std::vector<base::span<const uint8_t>> SplitSpan(base::span<const uint8_t> span,
   return chunks;
 }
 
-std::vector<uint8_t> CreateSHA256Hash(base::StringPiece data) {
-  std::vector<uint8_t> hashed_data(crypto::kSHA256Length);
+std::array<uint8_t, crypto::kSHA256Length> CreateSHA256Hash(
+    base::StringPiece data) {
+  std::array<uint8_t, crypto::kSHA256Length> hashed_data;
   crypto::SHA256HashString(data, hashed_data.data(), hashed_data.size());
   return hashed_data;
 }

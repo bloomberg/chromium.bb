@@ -7,10 +7,12 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <string>
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/public_key_credential_descriptor.h"
@@ -26,7 +28,7 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
  public:
   CtapMakeCredentialRequest(
-      std::vector<uint8_t> client_data_hash,
+      base::span<const uint8_t, kClientDataHashLength> client_data_hash,
       PublicKeyCredentialRpEntity rp,
       PublicKeyCredentialUserEntity user,
       PublicKeyCredentialParams public_key_credential_params);
@@ -51,7 +53,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   CtapMakeCredentialRequest& SetIsIndividualAttestation(
       bool is_individual_attestation);
 
-  const std::vector<uint8_t>& client_data_hash() const {
+  const std::array<uint8_t, kClientDataHashLength>& client_data_hash() const {
     return client_data_hash_;
   }
   const PublicKeyCredentialRpEntity& rp() const { return rp_; }
@@ -70,7 +72,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   }
 
  private:
-  std::vector<uint8_t> client_data_hash_;
+  std::array<uint8_t, kClientDataHashLength> client_data_hash_;
   PublicKeyCredentialRpEntity rp_;
   PublicKeyCredentialUserEntity user_;
   PublicKeyCredentialParams public_key_credential_params_;

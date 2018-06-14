@@ -6,12 +6,15 @@
 #define DEVICE_FIDO_ATTESTATION_OBJECT_H_
 
 #include <stdint.h>
+
+#include <array>
 #include <memory>
 #include <vector>
 
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "device/fido/authenticator_data.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -50,7 +53,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationObject {
   //  "attStmt": attestation statement bytes }
   std::vector<uint8_t> SerializeToCBOREncodedBytes() const;
 
-  const std::vector<uint8_t>& rp_id_hash() const {
+  const std::array<uint8_t, kRpIdHashLength>& rp_id_hash() const {
     return authenticator_data_.application_parameter();
   }
 

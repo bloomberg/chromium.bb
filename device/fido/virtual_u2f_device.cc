@@ -120,8 +120,8 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
     mutable_state()->simulate_press_callback.Run();
   }
 
-  auto challenge_param = data.first(32);
-  auto application_parameter = data.last(32);
+  auto challenge_param = data.first<32>();
+  auto application_parameter = data.last<32>();
 
   // Create key to register.
   // Note: Non-deterministic, you need to mock this out if you rely on
@@ -134,7 +134,8 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   DCHECK_EQ(public_key.size(), 65ul);
 
   // Our key handles are simple hashes of the public key.
-  auto key_handle = fido_parsing_utils::CreateSHA256Hash(public_key);
+  auto hash = fido_parsing_utils::CreateSHA256Hash(public_key);
+  std::vector<uint8_t> key_handle(hash.begin(), hash.end());
 
   // Data to be signed.
   std::vector<uint8_t> sign_buffer;
@@ -180,9 +181,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   bool did_insert = false;
   std::tie(std::ignore, did_insert) = mutable_state()->registrations.emplace(
       std::move(key_handle),
-      RegistrationData(std::move(private_key),
-                       fido_parsing_utils::Materialize(application_parameter),
-                       1));
+      RegistrationData(std::move(private_key), application_parameter, 1));
   DCHECK(did_insert);
 
   return apdu::ApduResponse(std::move(response),
@@ -205,8 +204,12 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
     mutable_state()->simulate_press_callback.Run();
   }
 
-  auto challenge_param = data.first(32);
-  auto application_parameter = data.subspan(32, 32);
+  if (data.size() < 32 + 32 + 1) {
+    return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_LENGTH);
+  }
+
+  auto challenge_param = data.first<32>();
+  auto application_parameter = data.subspan<32, 32>();
   size_t key_handle_length = data[64];
   if (data.size() != 32 + 32 + 1 + key_handle_length) {
     return ErrorStatus(apdu::ApduResponse::Status::SW_WRONG_LENGTH);

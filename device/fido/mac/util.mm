@@ -83,7 +83,7 @@ base::Optional<AuthenticatorData> MakeAuthenticatorData(
   constexpr uint8_t flags =
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserVerification) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
-  std::vector<uint8_t> counter = {0, 0, 0, 0};  // implement
+  std::array<uint8_t, 4> counter = {0, 0, 0, 0};  // implement
   auto ec_public_key = MakeECPublicKey(public_key);
   if (!ec_public_key) {
     LOG(ERROR) << "MakeECPublicKey failed";
@@ -98,7 +98,7 @@ base::Optional<AuthenticatorData> MakeAuthenticatorData(
 
 base::Optional<std::vector<uint8_t>> GenerateSignature(
     const AuthenticatorData& authenticator_data,
-    const std::vector<uint8_t>& client_data_hash,
+    base::span<const uint8_t, kClientDataHashLength> client_data_hash,
     SecKeyRef private_key) API_AVAILABLE(macosx(10.12.2)) {
   const std::vector<uint8_t> serialized_authenticator_data =
       authenticator_data.SerializeToByteArray();

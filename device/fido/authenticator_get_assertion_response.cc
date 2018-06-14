@@ -25,35 +25,27 @@ constexpr size_t kSignatureIndex = 5;
 // static
 base::Optional<AuthenticatorGetAssertionResponse>
 AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-    const std::vector<uint8_t>& relying_party_id_hash,
-    const std::vector<uint8_t>& u2f_data,
-    const std::vector<uint8_t>& key_handle) {
+    base::span<const uint8_t, kRpIdHashLength> relying_party_id_hash,
+    base::span<const uint8_t> u2f_data,
+    base::span<const uint8_t> key_handle) {
+  if (u2f_data.size() <= kSignatureIndex)
+    return base::nullopt;
+
   if (key_handle.empty())
     return base::nullopt;
 
-  auto flags = fido_parsing_utils::Extract(u2f_data, kFlagIndex, kFlagLength);
-  if (flags.empty())
-    return base::nullopt;
+  auto flags = u2f_data.subspan<kFlagIndex, kFlagLength>();
+  auto counter = u2f_data.subspan<kCounterIndex, kCounterLength>();
+  AuthenticatorData authenticator_data(relying_party_id_hash, flags[0], counter,
+                                       base::nullopt);
 
-  auto counter =
-      fido_parsing_utils::Extract(u2f_data, kCounterIndex, kCounterLength);
-  if (counter.empty())
-    return base::nullopt;
-
-  AuthenticatorData authenticator_data(relying_party_id_hash, flags[0],
-                                       std::move(counter), base::nullopt);
-
-  auto signature = fido_parsing_utils::Extract(
-      u2f_data, kSignatureIndex, u2f_data.size() - kSignatureIndex);
-  if (signature.empty())
-    return base::nullopt;
-
+  auto signature =
+      fido_parsing_utils::Materialize(u2f_data.subspan(kSignatureIndex));
   AuthenticatorGetAssertionResponse response(std::move(authenticator_data),
                                              std::move(signature));
-  response.SetCredential(
-      PublicKeyCredentialDescriptor(CredentialType::kPublicKey, key_handle));
-
-  return std::move(response);
+  response.SetCredential(PublicKeyCredentialDescriptor(
+      CredentialType::kPublicKey, fido_parsing_utils::Materialize(key_handle)));
+  return response;
 }
 
 AuthenticatorGetAssertionResponse::AuthenticatorGetAssertionResponse(
@@ -71,8 +63,8 @@ AuthenticatorGetAssertionResponse& AuthenticatorGetAssertionResponse::operator=(
 AuthenticatorGetAssertionResponse::~AuthenticatorGetAssertionResponse() =
     default;
 
-const std::vector<uint8_t>& AuthenticatorGetAssertionResponse::GetRpIdHash()
-    const {
+const std::array<uint8_t, kRpIdHashLength>&
+AuthenticatorGetAssertionResponse::GetRpIdHash() const {
   return authenticator_data_.application_parameter();
 }
 
