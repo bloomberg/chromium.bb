@@ -16,10 +16,6 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace {
-// The legacy features histogram will be removed in crbug.com/811948.
-// The browser side use counter (renamed to "Blink.UseCounter.Features") is
-// responsinle for recording the metrics instead.
-const char kLegacyFeaturesHistogramName[] = "Blink.UseCounter.Features_Legacy";
 const char kExtensionFeaturesHistogramName[] =
     "Blink.UseCounter.Extensions.Features";
 
@@ -28,13 +24,12 @@ const char kSVGCSSHistogramName[] = "Blink.UseCounter.SVGImage.CSSProperties";
 const char kSVGAnimatedCSSHistogramName[] =
     "Blink.UseCounter.SVGImage.AnimatedCSSProperties";
 
-const char* kHistogramList[] = {
-    kLegacyFeaturesHistogramName, kExtensionFeaturesHistogramName,
-    kSVGCSSHistogramName, kSVGCSSHistogramName, kSVGAnimatedCSSHistogramName};
+const char* kHistogramList[] = {kExtensionFeaturesHistogramName,
+                                kSVGCSSHistogramName,
+                                kSVGAnimatedCSSHistogramName};
 
 // In practice, SVGs always appear to be loaded with an about:blank URL
 const char kSvgUrl[] = "about:blank";
-const char kHttpsUrl[] = "https://dummysite.com/";
 const char kExtensionUrl[] = "chrome-extension://dummysite/";
 
 int GetPageVisitsBucketforHistogram(const std::string& histogram_name) {
@@ -133,14 +128,16 @@ void UseCounterTest::HistogramBasicTest(
 
     // The expected total count for "Features" of unaffected histograms should
     // be either:
-    //    a. pageVisits, for "CSSFeatures"; or
-    //    b. 0 (pageVisits is 0), for others, including "SVGImage.CSSFeatures"
+    //    a. pageVisits, for "CSSProperties"; or
+    //    b. 0 (pageVisits is 0), for others, including "SVGImage.CSSProperties"
     //      since no SVG images are loaded at all.
     histogram_tester_.ExpectTotalCount(
         unaffected_histogram,
-        0 + histogram_tester_.GetBucketCount(
-                unaffected_histogram,
-                GetPageVisitsBucketforHistogram(unaffected_histogram)));
+        unaffected_histogram.find("CSS") != std::string::npos
+            ? histogram_tester_.GetBucketCount(
+                  unaffected_histogram,
+                  GetPageVisitsBucketforHistogram(unaffected_histogram))
+            : 0);
   }
 }
 
@@ -272,22 +269,6 @@ TEST_F(UseCounterTest, CSSSelectorPseudoMatches) {
   document.documentElement()->SetInnerHTMLFromString(
       "<style>.a+:matches(.b, .c+.d) { color: red; }</style>");
   EXPECT_TRUE(UseCounter::IsCounted(document, feature));
-}
-
-TEST_F(UseCounterTest, DropMeasurementOnViewSourcePages) {
-  UseCounter use_counter;
-  SetIsViewSource();
-  SetURL(URLTestHelpers::ToKURL(kHttpsUrl));
-  use_counter.DidCommitLoad(GetFrame());
-
-  WebFeature feature = WebFeature::kFetch;
-  EXPECT_FALSE(use_counter.HasRecordedMeasurement(feature));
-  histogram_tester_.ExpectTotalCount(kLegacyFeaturesHistogramName, 0);
-  use_counter.RecordMeasurement(feature, *GetFrame());
-  // The feature will be marked as seen.
-  EXPECT_TRUE(use_counter.HasRecordedMeasurement(feature));
-  // But the feature is not recorded to UMA.
-  histogram_tester_.ExpectTotalCount(kLegacyFeaturesHistogramName, 0);
 }
 
 TEST_F(UseCounterTest, CSSContainLayoutNonPositionedDescendants) {

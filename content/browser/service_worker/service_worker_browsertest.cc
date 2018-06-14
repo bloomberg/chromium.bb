@@ -1048,7 +1048,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 
   // Expect no PageVisits count.
   EXPECT_EQ(nullptr, base::StatisticsRecorder::FindHistogram(
-                         "Blink.UseCounter.Features_Legacy"));
+                         "Blink.UseCounter.Features"));
 
   // Stop the worker.
   base::RunLoop stop_run_loop;
@@ -1059,7 +1059,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   stop_run_loop.Run();
   // Expect no PageVisits count.
   EXPECT_EQ(nullptr, base::StatisticsRecorder::FindHistogram(
-                         "Blink.UseCounter.Features_Legacy"));
+                         "Blink.UseCounter.Features"));
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartNotFound) {
