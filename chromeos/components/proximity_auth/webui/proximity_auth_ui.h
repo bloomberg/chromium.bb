@@ -12,6 +12,12 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
+namespace chromeos {
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
+}  // namespace chromeos
+
 namespace proximity_auth {
 
 class ProximityAuthClient;
@@ -19,9 +25,11 @@ class ProximityAuthClient;
 // The WebUI controller for chrome://proximity-auth.
 class ProximityAuthUI : public ui::MojoWebUIController {
  public:
-  // Note: |web_ui| and |delegate| are not owned by this instance and must
-  // outlive this instance.
-  ProximityAuthUI(content::WebUI* web_ui, ProximityAuthClient* delegate);
+  // Note: |web_ui| and |proximity_auth_client| are not owned by this instance
+  // and must outlive this instance.
+  ProximityAuthUI(content::WebUI* web_ui,
+                  ProximityAuthClient* proximity_auth_client,
+                  chromeos::device_sync::DeviceSyncClient* device_sync_client);
   ~ProximityAuthUI() override;
 
  protected:

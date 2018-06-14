@@ -19,9 +19,12 @@ static_library("webui") {
   deps = [
     "//base",
     "//base:i18n",
+    "//chromeos",
     "//chromeos/components/proximity_auth",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/resources",
+    "//chromeos/services/device_sync/public/cpp",
+    "//chromeos/services/device_sync/public/mojom",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//components/cryptauth",
     "//components/prefs",
