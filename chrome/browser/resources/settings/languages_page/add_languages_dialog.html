@@ -45,7 +45,8 @@
       <div slot="title">$i18n{addLanguagesDialogTitle}</div>
       <div slot="body" scrollable>
         <settings-subpage-search label="$i18n{searchLanguages}" id="search"
-            on-search-changed="onSearchChanged_" autofocus>
+            on-search-changed="onSearchChanged_"
+            on-keydown="onKeydown_" autofocus>
         </settings-subpage-search>
         <iron-list class="ripple-padding" scroll-target="[[$$('[slot=body]')]]"
             items="[[getLanguages_(
