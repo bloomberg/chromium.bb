@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_registry.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_tree_linker_registry.h"
 #include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
@@ -64,9 +65,9 @@ void ModulatorImplBase::FetchTree(
   // of this algorithm specified custom perform the fetch steps, pass those
   // along as well.</spec>
 
-  tree_linker_registry_->Fetch(url, fetch_client_settings_object,
-                               GetExecutionContext()->BaseURL(), destination,
-                               options, this, client);
+  ModuleTreeLinker::Fetch(url, fetch_client_settings_object,
+                          GetExecutionContext()->BaseURL(), destination,
+                          options, this, tree_linker_registry_, client);
 
   // <spec label="fetch-a-module-script-tree" step="3">When the internal module
   // script graph fetching procedure asynchronously completes with result,
@@ -84,8 +85,9 @@ void ModulatorImplBase::FetchDescendantsForInlineScript(
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
     WebURLRequest::RequestContext destination,
     ModuleTreeClient* client) {
-  tree_linker_registry_->FetchDescendantsForInlineScript(
-      module_script, fetch_client_settings_object, destination, this, client);
+  ModuleTreeLinker::FetchDescendantsForInlineScript(
+      module_script, fetch_client_settings_object, destination, this,
+      tree_linker_registry_, client);
 }
 
 void ModulatorImplBase::FetchSingle(

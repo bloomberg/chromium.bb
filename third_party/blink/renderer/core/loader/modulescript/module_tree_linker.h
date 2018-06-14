@@ -40,7 +40,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   //
   // TODO(hiroshige): |base_url| is used only for Layered APIs and will be
   // removed soon once an upcoming spec change lands.
-  static ModuleTreeLinker* Fetch(
+  static void Fetch(
       const KURL&,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       const KURL& base_url,
@@ -51,7 +51,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
       ModuleTreeClient*);
 
   // [FDaI] for an inline script.
-  static ModuleTreeLinker* FetchDescendantsForInlineScript(
+  static void FetchDescendantsForInlineScript(
       ModuleScript*,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
       WebURLRequest::RequestContext destination,
