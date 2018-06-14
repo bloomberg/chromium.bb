@@ -326,7 +326,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
               base::Unretained(this)),
           settings_.enable_image_animation_resync),
       frame_metrics_(LTHI_FrameMetricsSettings(settings_)),
-      skipped_frame_tracker_(&frame_metrics_) {
+      skipped_frame_tracker_(&frame_metrics_),
+      is_animating_for_snap_(false) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
 
@@ -3392,6 +3393,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   }
   scroll_status.thread = SCROLL_ON_IMPL_THREAD;
   mutator_host_->ScrollAnimationAbort();
+  is_animating_for_snap_ = false;
 
   browser_controls_offset_manager_->ScrollBegin();
 
@@ -3722,6 +3724,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
             viewport()->ScrollAnimated(pending_delta, delayed_by);
         // Viewport::ScrollAnimated returns pending_delta as long as it starts
         // an animation.
+        did_scroll_x_for_scroll_gesture_ |= scrolled.x() != 0;
+        did_scroll_y_for_scroll_gesture_ |= scrolled.y() != 0;
         if (scrolled == pending_delta) {
           scroll_animating_latched_element_id_ = scroll_node->element_id;
           return scroll_status;
@@ -3732,6 +3736,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       gfx::Vector2dF scroll_delta =
           ComputeScrollDelta(*scroll_node, pending_delta);
       if (ScrollAnimationCreate(scroll_node, scroll_delta, delayed_by)) {
+        did_scroll_x_for_scroll_gesture_ |= scroll_delta.x() != 0;
+        did_scroll_y_for_scroll_gesture_ |= scroll_delta.y() != 0;
         scroll_animating_latched_element_id_ = scroll_node->element_id;
         return scroll_status;
       }
@@ -4264,6 +4270,8 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   } else {
     ScrollAnimationCreate(scroll_node, delta, base::TimeDelta());
   }
+  DCHECK(!is_animating_for_snap_);
+  is_animating_for_snap_ = true;
   return true;
 }
 
@@ -4323,6 +4331,7 @@ void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
   accumulated_root_overscroll_ = gfx::Vector2dF();
   did_scroll_x_for_scroll_gesture_ = false;
   did_scroll_y_for_scroll_gesture_ = false;
+  is_animating_for_snap_ = false;
 }
 
 void LayerTreeHostImpl::ScrollEndImpl(ScrollState* scroll_state) {
@@ -5307,7 +5316,7 @@ void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
   // TODO(majidvp): We should pass in the original starting scroll position here
   ScrollStateData scroll_state_data;
   ScrollState scroll_state(scroll_state_data);
-  ScrollEndImpl(&scroll_state);
+  ScrollEnd(&scroll_state, !is_animating_for_snap_);
 }
 
 gfx::ScrollOffset LayerTreeHostImpl::GetScrollOffsetForAnimation(

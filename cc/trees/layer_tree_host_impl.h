@@ -529,6 +529,10 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void SetVisible(bool visible);
   bool visible() const { return visible_; }
 
+  bool is_animating_for_snap_for_testing() const {
+    return is_animating_for_snap_;
+  }
+
   void SetNeedsCommit() { client_->SetNeedsCommitOnImplThread(); }
   void SetNeedsOneBeginImplFrame();
   void SetNeedsRedraw();
@@ -1103,6 +1107,7 @@ class CC_EXPORT LayerTreeHostImpl
   base::circular_deque<FrameTokenInfo> frame_token_infos_;
   ui::FrameMetrics frame_metrics_;
   ui::SkippedFrameTracker skipped_frame_tracker_;
+  bool is_animating_for_snap_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };
