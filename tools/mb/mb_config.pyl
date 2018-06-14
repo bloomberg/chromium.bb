@@ -1237,7 +1237,7 @@
     ],
 
     'debug_libfuzzer_asan': [
-      'debug', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+      'debug', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'debug_trybot': [
