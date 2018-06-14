@@ -48,6 +48,8 @@ const float kImageWidth = 28.0f;
 
   cell.imageView.backgroundColor = styler.tableViewBackgroundColor;
   cell.titleLabel.backgroundColor = styler.tableViewBackgroundColor;
+  if (styler.cellTitleColor)
+    cell.titleLabel.textColor = styler.cellTitleColor;
 }
 
 @end

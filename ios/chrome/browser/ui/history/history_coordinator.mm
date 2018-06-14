@@ -4,8 +4,6 @@
 
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 
-#include <memory>
-
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/history/core/browser/browsing_history_service.h"
 #include "components/keyed_service/core/service_access_type.h"

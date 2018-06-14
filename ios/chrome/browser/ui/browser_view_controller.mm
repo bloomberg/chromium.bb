@@ -4149,11 +4149,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     return;
 
   [self.dispatcher openNewTab:[OpenNewTabCommand command]];
-  TabRestoreServiceDelegateImplIOS* const delegate =
-      TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
-          _browserState);
-  tabRestoreService->RestoreEntryById(delegate, entry->id,
-                                      WindowOpenDisposition::CURRENT_TAB);
+  [self restoreTabWithSessionID:entry->id];
 }
 
 #pragma mark - MainContentUI
@@ -4351,6 +4347,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       session_util::CreateWebStateWithNavigationEntries(
           [_model browserState], sessionTab->current_navigation_index,
           sessionTab->navigations));
+}
+
+- (void)restoreTabWithSessionID:(const SessionID)sessionID {
+  TabRestoreServiceDelegateImplIOS* delegate =
+      TabRestoreServiceDelegateImplIOSFactory::GetForBrowserState(
+          self.browserState);
+  sessions::TabRestoreService* restoreService =
+      IOSChromeTabRestoreServiceFactory::GetForBrowserState(self.browserState);
+  restoreService->RestoreEntryById(delegate, sessionID,
+                                   WindowOpenDisposition::CURRENT_TAB);
 }
 
 #pragma mark - UrlLoader helpers
