@@ -27,7 +27,7 @@ using GatherSharesResponse =
 // available shares for each host found.
 class SmbShareFinder : public base::SupportsWeakPtr<SmbShareFinder> {
  public:
-  SmbShareFinder();
+  explicit SmbShareFinder(SmbProviderClient* client);
   ~SmbShareFinder();
 
   // Gathers the hosts in the network using |scanner_| and gets the shares for
@@ -51,6 +51,8 @@ class SmbShareFinder : public base::SupportsWeakPtr<SmbShareFinder> {
                      const smbprovider::DirectoryEntryListProto& entries);
 
   NetworkScanner scanner_;
+
+  SmbProviderClient* client_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(SmbShareFinder);
 };
