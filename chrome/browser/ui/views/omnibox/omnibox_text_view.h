@@ -36,17 +36,20 @@ class OmniboxTextView : public views::View {
   int GetHeightForWidth(int width) const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
-  // Dim the text (i.e. make it gray). This is used for secondary text (so that
-  // the non-dimmed text stands out more).
+  // Dims the text (i.e. makes it gray). This is used for secondary text (so
+  // that the non-dimmed text stands out more).
   void Dim();
 
-  // Creates a RenderText with default rendering for the given |text|. The
+  // Sets the render text with default rendering for the given |text|. The
   // |classifications| are used to style the text. An ImageLine incorporates
   // both the text and the styling.
+  void SetText(const base::string16& text);
   void SetText(const base::string16& text,
                const ACMatchClassifications& classifications);
   void SetText(const SuggestionAnswer::ImageLine& line);
-  void SetText(const base::string16& text);
+
+  // Adds the "additional" and "status" text from |line|, if any.
+  void AppendExtraText(const SuggestionAnswer::ImageLine& line);
 
   // Get the height of one line of text.  This is handy if the view might have
   // multiple lines.
@@ -56,30 +59,13 @@ class OmniboxTextView : public views::View {
   std::unique_ptr<gfx::RenderText> CreateRenderText(
       const base::string16& text) const;
 
-  // Similar to CreateRenderText, but also apply styling (classifications).
-  std::unique_ptr<gfx::RenderText> CreateClassifiedRenderText(
-      const base::string16& text,
-      const ACMatchClassifications& classifications) const;
-
-  // Creates a RenderText with text and styling from the image line.
-  std::unique_ptr<gfx::RenderText> CreateText(
-      const SuggestionAnswer::ImageLine& line) const;
-
-  // Adds |text| to |destination|.  |text_type| is an index into the
+  // Adds |text| to the render text.  |text_type| is an index into the
   // kTextStyles constant defined in the .cc file and is used to style the text,
   // including setting the font size, color, and baseline style.  See the
   // TextStyle struct in the .cc file for more.
-  void AppendText(gfx::RenderText* destination,
-                  const base::string16& text,
-                  int text_type) const;
+  void AppendText(const base::string16& text, int text_type) const;
 
-  // AppendText will break up the |text| into bold and non-bold pieces
-  // and pass each to this helper with the correct |is_bold| value.
-  void AppendTextHelper(gfx::RenderText* destination,
-                        const base::string16& text,
-                        int text_type,
-                        bool is_bold) const;
-
+  // Updates the cached maximum line height.
   void UpdateLineHeight();
 
   // To get color values.
