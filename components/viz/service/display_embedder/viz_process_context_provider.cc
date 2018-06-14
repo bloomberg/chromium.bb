@@ -17,6 +17,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/raster_implementation_gles.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
+#include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -101,9 +102,8 @@ class GrContext* VizProcessContextProvider::GrContext() {
 
   size_t max_resource_cache_bytes;
   size_t max_glyph_cache_texture_bytes;
-  skia_bindings::GrContextForGLES2Interface::
-      DetermineCacheLimitsFromAvailableMemory(&max_resource_cache_bytes,
-                                              &max_glyph_cache_texture_bytes);
+  gpu::DetermineGrCacheLimitsFromAvailableMemory(
+      &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
 
   gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
       ContextGL(), ContextSupport(), ContextCapabilities(),

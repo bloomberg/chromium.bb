@@ -79,6 +79,8 @@ source_set("common_sources") {
     "mailbox_holder.h",
     "scheduling_priority.cc",
     "scheduling_priority.h",
+    "skia_utils.cc",
+    "skia_utils.h",
     "swap_buffers_complete_params.cc",
     "swap_buffers_complete_params.h",
     "swap_buffers_flags.h",

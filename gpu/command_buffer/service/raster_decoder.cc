@@ -32,6 +32,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/command_buffer/common/raster_cmd_ids.h"
+#include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -984,7 +985,10 @@ ContextResult RasterDecoderImpl::Initialize(
       GrContextOptions options;
       options.fDriverBugWorkarounds =
           GrDriverBugWorkarounds(workarounds().ToIntSet());
-      glyph_cache_max_texture_bytes_ = options.fGlyphCacheTextureMaximumBytes;
+      size_t max_resource_cache_bytes = 0u;
+      DetermineGrCacheLimitsFromAvailableMemory(
+          &max_resource_cache_bytes, &glyph_cache_max_texture_bytes_);
+      options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes_;
       gr_context_ = GrContext::MakeGL(std::move(interface), options);
 
       if (gr_context_) {
@@ -993,10 +997,9 @@ ContextResult RasterDecoderImpl::Initialize(
         // rethought before shipping.  Most likely a different command buffer
         // context for raster-in-gpu, with a shared gl context / gr context
         // that different decoders can use.
-        static constexpr int kMaxGaneshResourceCacheCount = 8196;
-        static constexpr size_t kMaxGaneshResourceCacheBytes = 96 * 1024 * 1024;
+        constexpr int kMaxGaneshResourceCacheCount = 16384;
         gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
-                                            kMaxGaneshResourceCacheBytes);
+                                            max_resource_cache_bytes);
         transfer_cache_ = std::make_unique<ServiceTransferCache>();
       } else {
         bool was_lost = CheckResetStatus();

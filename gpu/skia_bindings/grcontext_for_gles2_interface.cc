@@ -22,42 +22,6 @@
 
 namespace skia_bindings {
 
-void GrContextForGLES2Interface::DetermineCacheLimitsFromAvailableMemory(
-    size_t* max_resource_cache_bytes,
-    size_t* max_glyph_cache_texture_bytes) {
-  // The limit of the bytes allocated toward GPU resources in the GrContext's
-  // GPU cache.
-  static const size_t kMaxLowEndGaneshResourceCacheBytes = 48 * 1024 * 1024;
-  static const size_t kMaxGaneshResourceCacheBytes = 96 * 1024 * 1024;
-  static const size_t kMaxHighEndGaneshResourceCacheBytes = 256 * 1024 * 1024;
-  // Limits for glyph cache textures.
-  static const size_t kMaxDefaultGlyphCacheTextureBytes = 2048 * 1024 * 4;
-  static const size_t kMaxLowEndGlyphCacheTextureBytes = 1024 * 512 * 4;
-  // High-end / low-end memory cutoffs.
-  static const int64_t kHighEndMemoryThreshold = (int64_t)4096 * 1024 * 1024;
-  static const int64_t kLowEndMemoryThreshold = (int64_t)512 * 1024 * 1024;
-
-  int64_t amount_of_physical_memory = base::SysInfo::AmountOfPhysicalMemory();
-
-  *max_resource_cache_bytes = kMaxGaneshResourceCacheBytes;
-  *max_glyph_cache_texture_bytes = kMaxDefaultGlyphCacheTextureBytes;
-  if (amount_of_physical_memory <= kLowEndMemoryThreshold) {
-    *max_resource_cache_bytes = kMaxLowEndGaneshResourceCacheBytes;
-    *max_glyph_cache_texture_bytes = kMaxLowEndGlyphCacheTextureBytes;
-  } else if (amount_of_physical_memory >= kHighEndMemoryThreshold) {
-    *max_resource_cache_bytes = kMaxHighEndGaneshResourceCacheBytes;
-  }
-}
-
-void GrContextForGLES2Interface::DefaultCacheLimitsForTests(
-    size_t* max_resource_cache_bytes,
-    size_t* max_glyph_cache_texture_bytes) {
-  static const size_t kDefaultGlyphCacheTextureBytes = 2048 * 1024 * 4;
-  static const size_t kDefaultGaneshResourceCacheBytes = 96 * 1024 * 1024;
-  *max_resource_cache_bytes = kDefaultGaneshResourceCacheBytes;
-  *max_glyph_cache_texture_bytes = kDefaultGlyphCacheTextureBytes;
-}
-
 GrContextForGLES2Interface::GrContextForGLES2Interface(
     gpu::gles2::GLES2Interface* gl,
     gpu::ContextSupport* context_support,
