@@ -4,6 +4,7 @@
 
 #include "ui/aura/mus/property_converter.h"
 
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -159,6 +160,13 @@ bool PropertyConverter::ConvertPropertyForTransport(
     return true;
   }
 
+  auto* unguessable_token_key =
+      static_cast<const WindowProperty<base::UnguessableToken*>*>(key);
+  if (unguessable_token_properties_.count(unguessable_token_key) > 0) {
+    *transport_value = GetArray(window, unguessable_token_key);
+    return true;
+  }
+
   // Handle primitive property types generically.
   DCHECK_GT(primitive_properties_.count(key), 0u);
   PrimitiveType default_value = primitive_properties_[key].default_value;
@@ -192,6 +200,11 @@ std::string PropertyConverter::GetTransportNameForPropertyKey(const void* key) {
   auto* string16_key = static_cast<const WindowProperty<base::string16*>*>(key);
   if (string16_properties_.count(string16_key) > 0)
     return string16_properties_[string16_key];
+
+  auto* unguessable_token_key =
+      static_cast<const WindowProperty<base::UnguessableToken*>*>(key);
+  if (unguessable_token_properties_.count(unguessable_token_key) > 0)
+    return unguessable_token_properties_[unguessable_token_key];
 
   return std::string();
 }
@@ -275,6 +288,18 @@ void PropertyConverter::SetPropertyFromTransportValue(
     }
   }
 
+  for (const auto& unguessable_token_property : unguessable_token_properties_) {
+    if (unguessable_token_property.second == transport_name) {
+      auto* token = new base::UnguessableToken();
+      *token = mojo::ConvertTo<base::UnguessableToken>(*data);
+      if (token->is_empty())
+        window->ClearProperty(unguessable_token_property.first);
+      else
+        window->SetProperty(unguessable_token_property.first, token);
+      return;
+    }
+  }
+
   DVLOG(2) << "Unknown mus property name: " << transport_name;
 }
 
@@ -344,6 +369,15 @@ void PropertyConverter::RegisterString16Property(
   DCHECK(!IsTransportNameRegistered(transport_name))
       << "Property already registered: " << transport_name;
   string16_properties_[property] = transport_name;
+  transport_names_.insert(transport_name);
+}
+
+void PropertyConverter::RegisterUnguessableTokenProperty(
+    const WindowProperty<base::UnguessableToken*>* property,
+    const char* transport_name) {
+  DCHECK(!IsTransportNameRegistered(transport_name))
+      << "Property already registered: " << transport_name;
+  unguessable_token_properties_[property] = transport_name;
   transport_names_.insert(transport_name);
 }
 

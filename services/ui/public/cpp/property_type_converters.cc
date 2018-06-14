@@ -7,6 +7,9 @@
 #include <stdint.h>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/unguessable_token.h"
+#include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
+#include "mojo/public/mojom/base/unguessable_token.mojom.h"
 #include "skia/public/interfaces/bitmap.mojom.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -163,6 +166,29 @@ SkBitmap TypeConverter<SkBitmap, std::vector<uint8_t>>::Convert(
   SkBitmap output;
   return skia::mojom::InlineBitmap::Deserialize(input, &output) ? output
                                                                 : SkBitmap();
+}
+
+// static
+std::vector<uint8_t>
+TypeConverter<std::vector<uint8_t>, base::UnguessableToken>::Convert(
+    const base::UnguessableToken& input) {
+  if (input.is_empty())
+    return std::vector<uint8_t>();
+
+  return mojo_base::mojom::UnguessableToken::Serialize(&input);
+}
+
+// static
+base::UnguessableToken
+TypeConverter<base::UnguessableToken, std::vector<uint8_t>>::Convert(
+    const std::vector<uint8_t>& input) {
+  if (input.empty())
+    return base::UnguessableToken();
+
+  base::UnguessableToken output;
+  return mojo_base::mojom::UnguessableToken::Deserialize(input, &output)
+             ? output
+             : base::UnguessableToken();
 }
 
 // static

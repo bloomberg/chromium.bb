@@ -13,6 +13,10 @@
 
 class SkBitmap;
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace gfx {
 class Rect;
 class Size;
@@ -94,6 +98,15 @@ struct TypeConverter<std::vector<uint8_t>, bool> {
 template <>
 struct TypeConverter<bool, std::vector<uint8_t>> {
   static bool Convert(const std::vector<uint8_t>& input);
+};
+
+template <>
+struct TypeConverter<std::vector<uint8_t>, base::UnguessableToken> {
+  static std::vector<uint8_t> Convert(const base::UnguessableToken& input);
+};
+template <>
+struct TypeConverter<base::UnguessableToken, std::vector<uint8_t>> {
+  static base::UnguessableToken Convert(const std::vector<uint8_t>& input);
 };
 
 }  // namespace mojo

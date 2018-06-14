@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/client_image_registry.h"
 #include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/caption_buttons/frame_back_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
@@ -35,13 +36,18 @@ class WindowPropertyAppearanceProvider
   ~WindowPropertyAppearanceProvider() override = default;
 
   SkColor GetFrameHeaderColor(bool active) override {
-    return window_->GetProperty(active ? ash::kFrameActiveColorKey
-                                       : ash::kFrameInactiveColorKey);
+    return window_->GetProperty(active ? kFrameActiveColorKey
+                                       : kFrameInactiveColorKey);
   }
 
   gfx::ImageSkia GetFrameHeaderImage(bool active) override {
     // TODO(estade): handle !active.
-    gfx::ImageSkia* image = window_->GetProperty(kFrameImageActiveKey);
+    const base::UnguessableToken* token =
+        window_->GetProperty(kFrameImageActiveKey);
+    const gfx::ImageSkia* image =
+        token ? Shell::Get()->client_image_registry()->GetImage(*token)
+              : nullptr;
+
     return image ? *image : gfx::ImageSkia();
   }
 
@@ -123,9 +129,8 @@ HeaderView::HeaderView(views::Widget* target_widget,
     frame_header_ = std::move(frame_header);
   }
   aura::Window* window = target_widget->GetNativeWindow();
-  frame_header_->SetFrameColors(
-      window->GetProperty(ash::kFrameActiveColorKey),
-      window->GetProperty(ash::kFrameInactiveColorKey));
+  frame_header_->SetFrameColors(window->GetProperty(kFrameActiveColorKey),
+                                window->GetProperty(kFrameInactiveColorKey));
   window_observer_.Add(target_widget_->GetNativeWindow());
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
@@ -261,11 +266,9 @@ void HeaderView::OnWindowPropertyChanged(aura::Window* window,
     gfx::ImageSkia* const avatar_icon =
         window->GetProperty(aura::client::kAvatarIconKey);
     SetAvatarIcon(avatar_icon ? *avatar_icon : gfx::ImageSkia());
-  } else if (key == ash::kFrameActiveColorKey ||
-             key == ash::kFrameInactiveColorKey) {
-    frame_header_->SetFrameColors(
-        window->GetProperty(ash::kFrameActiveColorKey),
-        window->GetProperty(ash::kFrameInactiveColorKey));
+  } else if (key == kFrameActiveColorKey || key == kFrameInactiveColorKey) {
+    frame_header_->SetFrameColors(window->GetProperty(kFrameActiveColorKey),
+                                  window->GetProperty(kFrameInactiveColorKey));
   }
 }
 

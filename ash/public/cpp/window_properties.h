@@ -19,6 +19,10 @@ template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
 }
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace gfx {
 class ImageSkia;
 class Rect;
@@ -55,9 +59,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<BackdropWindowMode>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanConsumeSystemKeysKey;
 
-// The frame's active image. Only set on themed windows.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::ImageSkia*>* const
-    kFrameImageActiveKey;
+// The frame's active image. Only set on themed windows. The type is a token
+// which can be redeemed with the ClientImageRegistry to get a gfx::ImageSkia.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    base::UnguessableToken*>* const kFrameImageActiveKey;
 
 // A property key to indicate whether we should hide this window in overview
 // mode and Alt + Tab.

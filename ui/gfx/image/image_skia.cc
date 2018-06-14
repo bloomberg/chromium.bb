@@ -363,6 +363,10 @@ bool ImageSkia::BackedBySameObjectAs(const gfx::ImageSkia& other) const {
   return storage_.get() == other.storage_.get();
 }
 
+const void* ImageSkia::GetBackingObject() const {
+  return storage_.get();
+}
+
 void ImageSkia::AddRepresentation(const ImageSkiaRep& image_rep) {
   DCHECK(!image_rep.is_null());
 
