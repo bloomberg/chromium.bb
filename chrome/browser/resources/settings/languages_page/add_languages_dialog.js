@@ -149,4 +149,14 @@ Polymer({
       this.languageHelper.enableLanguage(languageCode);
     });
   },
+
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  onKeydown_: function(e) {
+    // Close dialog if 'esc' is pressed and the search box is already empty.
+    if (e.key == 'Escape' && !this.$.search.getValue().trim())
+      this.$.dialog.close();
+  },
 });

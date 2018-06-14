@@ -213,6 +213,22 @@ cr.define('languages_page_tests', function() {
         Polymer.dom.flush();
         assertEquals(0, getItems().length);
       });
+
+      test('Escape key behavior', function() {
+        const searchInput = dialog.$$('settings-subpage-search');
+        searchInput.setValue('dummyquery');
+
+        // Test that dialog is not closed if 'Escape' is pressed on the input
+        // and a search query exists.
+        MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+        assertTrue(dialog.$.dialog.open);
+
+        // Test that dialog is closed if 'Escape' is pressed on the input and no
+        // search query exists.
+        searchInput.setValue('');
+        MockInteractions.keyDownOn(searchInput, 19, [], 'Escape');
+        assertFalse(dialog.$.dialog.open);
+      });
     });
 
     suite(TestNames.LanguageMenu, function() {
