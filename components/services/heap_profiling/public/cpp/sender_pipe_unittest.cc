@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(OS_MACOSX)
-#include "mojo/edk/embedder/platform_channel_pair.h"
+#if defined(OS_WIN)
+#include <windows.h>
 #endif
 
 namespace heap_profiling {
@@ -22,13 +22,10 @@ using Result = SenderPipe::Result;
 class SenderPipeTest : public testing::Test {
  public:
   void SetUp() override {
-    mojo::edk::ScopedInternalPlatformHandle write_handle;
-
     SenderPipe::PipePair pipes;
     read_handle_ = pipes.PassReceiver();
 
-    base::ScopedPlatformFile file(pipes.PassSender().release().handle);
-    sender_pipe_.reset(new SenderPipe(std::move(file)));
+    sender_pipe_.reset(new SenderPipe(pipes.PassSender()));
 
     // A large buffer for both writing and reading.
     buffer_.resize(64 * 1024);
@@ -38,21 +35,21 @@ class SenderPipeTest : public testing::Test {
 
   void Read(int size) {
 #if defined(OS_POSIX)
-    ssize_t bytes_read = read(read_handle_.get().handle, buffer_.data(), size);
+    ssize_t bytes_read = read(read_handle_.GetFD().get(), buffer_.data(), size);
     ASSERT_EQ(size, bytes_read);
 #else
     OVERLAPPED overlapped;
     DWORD bytes_read = 0;
     memset(&overlapped, 0, sizeof(OVERLAPPED));
-    BOOL result = ::ReadFile(read_handle_.get().handle, buffer_.data(), size,
-                             &bytes_read, &overlapped);
+    BOOL result = ::ReadFile(read_handle_.GetHandle().Get(), buffer_.data(),
+                             size, &bytes_read, &overlapped);
     ASSERT_TRUE(result);
     ASSERT_EQ(static_cast<DWORD>(size), bytes_read);
 #endif
   }
 
  private:
-  mojo::edk::ScopedInternalPlatformHandle read_handle_;
+  mojo::PlatformHandle read_handle_;
   std::unique_ptr<SenderPipe> sender_pipe_;
   std::vector<char> buffer_;
 };

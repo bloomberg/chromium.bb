@@ -66,12 +66,8 @@ void Client::StartProfiling(mojom::ProfilingParamsPtr params) {
     return;
   started_profiling_ = true;
 
-  base::PlatformFile platform_file;
-  CHECK_EQ(MOJO_RESULT_OK, mojo::UnwrapPlatformFile(
-                               std::move(params->sender_pipe), &platform_file));
-
-  base::ScopedPlatformFile scoped_platform_file(platform_file);
-  sender_pipe_.reset(new SenderPipe(std::move(scoped_platform_file)));
+  sender_pipe_.reset(new SenderPipe(
+      mojo::UnwrapPlatformHandle(std::move(params->sender_pipe))));
 
   StreamHeader header;
   header.signature = kStreamSignature;

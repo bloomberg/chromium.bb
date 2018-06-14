@@ -26,7 +26,6 @@ static_library("cpp") {
     "//base",
     "//base:debugging_buildflags",
     "//base/allocator:buildflags",
-    "//mojo/edk",
     "//services/resource_coordinator/public/mojom:",
     "//services/service_manager/public/cpp",
   ]
@@ -47,7 +46,6 @@ source_set("unit_tests") {
     "//base",
     "//base/allocator:buildflags",
     "//base/test:test_support",
-    "//mojo/edk",
     "//testing/gtest",
   ]
 }
