@@ -353,28 +353,33 @@ void OmniboxMatchCellView::Layout() {
                                      insets.bottom(), insets.right()));
   // Layout children *after* updating the margins.
   views::View::Layout();
+
+  const int icon_view_width = ui::MaterialDesignController::IsRefreshUi()
+                                  ? kRefreshImageBoxSize
+                                  : icon_view_->width();
+  const int text_indent = ui::MaterialDesignController::IsRefreshUi()
+                              ? kTextIndent
+                              : icon_view_->width() + HorizontalPadding();
+
   if (is_rich_suggestion_ || has_tab_match_) {
     LayoutNewStyleTwoLineSuggestion();
   } else if (is_old_style_answer_) {
-    LayoutOldStyleAnswer();
-  } else if (ui::MaterialDesignController::IsRefreshUi()) {
-    LayoutSplit(kTextIndent);
+    LayoutOldStyleAnswer(icon_view_width, text_indent);
   } else {
-    icon_view_->SetSize(icon_view_->CalculatePreferredSize());
-    LayoutSplit(icon_view_->width() + HorizontalPadding());
+    LayoutSplit(icon_view_width, text_indent);
   }
 }
 
-void OmniboxMatchCellView::LayoutOldStyleAnswer() {
+void OmniboxMatchCellView::LayoutOldStyleAnswer(int icon_view_width,
+                                                int text_indent) {
   // TODO(dschuyler): Remove this layout once rich layouts are enabled by
   // default.
   gfx::Rect child_area = GetContentsBounds();
   const int text_height = content_view_->GetLineHeight();
   int x = child_area.x();
   int y = child_area.y();
-  icon_view_->SetPosition(
-      gfx::Point(x, y + (text_height - icon_view_->height()) / 2));
-  x += icon_view_->width() + HorizontalPadding();
+  icon_view_->SetBounds(x, y, icon_view_width, text_height);
+  x += text_indent;
   content_view_->SetBounds(x, y, width() - x, text_height);
   y += text_height;
   if (!image_view_->GetImage().isNull()) {
@@ -410,18 +415,11 @@ void OmniboxMatchCellView::LayoutNewStyleTwoLineSuggestion() {
       description_view_->GetHeightForWidth(text_width));
 }
 
-void OmniboxMatchCellView::LayoutSplit(int text_indent) {
+void OmniboxMatchCellView::LayoutSplit(int icon_view_width, int text_indent) {
   gfx::Rect child_area = GetContentsBounds();
   int row_height = child_area.height();
   int y = child_area.y();
-  if (ui::MaterialDesignController::IsRefreshUi()) {
-    icon_view_->SetBounds(child_area.x(), y, kRefreshImageBoxSize, row_height);
-  } else {
-    int icon_x = child_area.x();
-    icon_view_->SetSize(icon_view_->CalculatePreferredSize());
-    icon_view_->SetPosition(
-        gfx::Point(icon_x, y + (row_height - icon_view_->height()) / 2));
-  }
+  icon_view_->SetBounds(child_area.x(), y, icon_view_width, row_height);
   int content_width = content_view_->CalculatePreferredSize().width();
   int description_width = description_view_->CalculatePreferredSize().width();
   gfx::Size separator_size = separator_view_->CalculatePreferredSize();
