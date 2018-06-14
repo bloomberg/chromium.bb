@@ -332,8 +332,6 @@ static int add_tpl_ref_mv(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int idx;
   const int weight_unit = 1;  // mi_size_wide[BLOCK_8X8];
 
-  (void)gm_mv_candidates;
-
   mi_pos.row = (mi_row & 0x01) ? blk_row : blk_row + 1;
   mi_pos.col = (mi_col & 0x01) ? blk_col : blk_col + 1;
 
