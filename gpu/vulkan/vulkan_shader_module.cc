@@ -5,74 +5,11 @@
 #include "gpu/vulkan/vulkan_shader_module.h"
 
 #include <memory>
-#include <shaderc/shaderc.h>
 #include <sstream>
 
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
-
-namespace {
-
-class ShaderCCompiler {
- public:
-  class CompilationResult {
-   public:
-    explicit CompilationResult(shaderc_compilation_result_t compilation_result)
-        : compilation_result_(compilation_result) {}
-
-    ~CompilationResult() { shaderc_result_release(compilation_result_); }
-
-    bool IsValid() const {
-      return shaderc_compilation_status_success ==
-             shaderc_result_get_compilation_status(compilation_result_);
-    }
-
-    std::string GetErrors() const {
-      return shaderc_result_get_error_message(compilation_result_);
-    }
-
-    std::string GetResult() const {
-      return std::string(shaderc_result_get_bytes(compilation_result_),
-                         shaderc_result_get_length(compilation_result_));
-    }
-
-   private:
-    shaderc_compilation_result_t compilation_result_;
-  };
-
-  ShaderCCompiler()
-      : compiler_(shaderc_compiler_initialize()),
-        compiler_options_(shaderc_compile_options_initialize()) {}
-
-  ~ShaderCCompiler() { shaderc_compiler_release(compiler_); }
-
-  void AddMacroDef(const std::string& name, const std::string& value) {
-    shaderc_compile_options_add_macro_definition(compiler_options_,
-                                                 name.c_str(), name.length(),
-                                                 value.c_str(), value.length());
-  }
-
-  std::unique_ptr<ShaderCCompiler::CompilationResult> CompileShaderModule(
-      gpu::VulkanShaderModule::ShaderType shader_type,
-      const std::string& name,
-      const std::string& entry_point,
-      const std::string& source) {
-    return std::make_unique<ShaderCCompiler::CompilationResult>(
-        shaderc_compile_into_spv(
-            compiler_, source.c_str(), source.length(),
-            (shader_type == gpu::VulkanShaderModule::ShaderType::VERTEX
-                 ? shaderc_glsl_vertex_shader
-                 : shaderc_glsl_fragment_shader),
-            name.c_str(), entry_point.c_str(), compiler_options_));
-  }
-
- private:
-  shaderc_compiler_t compiler_;
-  shaderc_compile_options_t compiler_options_;
-};
-
-}  // namespace
 
 namespace gpu {
 
@@ -83,23 +20,6 @@ VulkanShaderModule::VulkanShaderModule(VulkanDeviceQueue* device_queue)
 
 VulkanShaderModule::~VulkanShaderModule() {
   DCHECK_EQ(static_cast<VkShaderModule>(VK_NULL_HANDLE), handle_);
-}
-
-bool VulkanShaderModule::InitializeGLSL(ShaderType type,
-                                        std::string name,
-                                        std::string entry_point,
-                                        std::string source) {
-  ShaderCCompiler shaderc_compiler;
-  std::unique_ptr<ShaderCCompiler::CompilationResult> compilation_result(
-      shaderc_compiler.CompileShaderModule(type, name, entry_point, source));
-
-  if (!compilation_result->IsValid()) {
-    error_messages_ = compilation_result->GetErrors();
-    return false;
-  }
-
-  return InitializeSPIRV(type, std::move(name), std::move(entry_point),
-                         compilation_result->GetResult());
 }
 
 bool VulkanShaderModule::InitializeSPIRV(ShaderType type,
