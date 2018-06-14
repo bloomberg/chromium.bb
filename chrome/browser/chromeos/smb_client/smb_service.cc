@@ -10,7 +10,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/smb_client/smb_errors.h"
+#include "chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
@@ -69,6 +69,10 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
   }
 
   CallMount(options, share_path, username, password, std::move(callback));
+}
+
+void SmbService::GatherSharesInNetwork(GatherSharesResponse callback) {
+  share_finder_->GatherSharesInNetwork(std::move(callback));
 }
 
 void SmbService::InitTempFileManagerAndMount(
@@ -239,6 +243,9 @@ void SmbService::OnSetupKerberosResponse(bool success) {
 }
 
 void SmbService::CompleteSetup() {
+  share_finder_ = std::make_unique<SmbShareFinder>(GetSmbProviderClient());
+  RegisterHostLocators();
+
   GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>(
       base::BindRepeating(&SmbService::Unmount, base::Unretained(this))));
   RestoreMounts();
@@ -256,6 +263,14 @@ void SmbService::RecordMountCount() const {
       GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
   UMA_HISTOGRAM_COUNTS_100("NativeSmbFileShare.MountCount",
                            file_systems.size());
+}
+
+void SmbService::RegisterHostLocators() {
+  SetUpMdnsHostLocator();
+}
+
+void SmbService::SetUpMdnsHostLocator() {
+  share_finder_->RegisterHostLocator(std::make_unique<MDnsHostLocator>());
 }
 
 }  // namespace smb_client

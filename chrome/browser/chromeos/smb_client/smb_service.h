@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
+#include "chrome/browser/chromeos/smb_client/smb_share_finder.h"
 #include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/smb_provider_client.h"
@@ -62,6 +63,11 @@ class SmbService : public KeyedService,
                        const base::FilePath& share_path,
                        smbprovider::ErrorType error,
                        int32_t mount_id);
+
+  // Gathers the hosts in the network using |share_finder_| and gets the shares
+  // for each of the hosts found. |callback| will be called once per host and
+  // will contain the URLs to the shares found.
+  void GatherSharesInNetwork(GatherSharesResponse callback);
 
  private:
   // Initializes temp_file_manager_.
@@ -119,9 +125,16 @@ class SmbService : public KeyedService,
 
   void RecordMountCount() const;
 
+  // Registers host locators for |share_finder_|.
+  void RegisterHostLocators();
+
+  // Set up Multicast DNS host locator.
+  void SetUpMdnsHostLocator();
+
   const ProviderId provider_id_;
   Profile* profile_;
   std::unique_ptr<TempFileManager> temp_file_manager_;
+  std::unique_ptr<SmbShareFinder> share_finder_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };
