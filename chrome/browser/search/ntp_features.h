@@ -13,7 +13,6 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 extern const base::Feature kNtpBackgrounds;
-extern const base::Feature kNtpIcons;
 extern const base::Feature kNtpUIMd;
 
 // Returns whether the Material Design UI is enabled on the New Tab Page.

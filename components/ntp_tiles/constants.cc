@@ -5,6 +5,7 @@
 #include "components/ntp_tiles/constants.h"
 
 #include "base/feature_list.h"
+#include "ui/base/ui_base_features.h"
 
 namespace ntp_tiles {
 
@@ -21,5 +22,13 @@ const base::Feature kSiteExplorationUiFeature{
 
 const base::Feature kUsePopularSitesSuggestions{
     "UsePopularSitesSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kNtpIcons{"NewTabPageIcons",
+                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsMDIconsEnabled() {
+  return base::FeatureList::IsEnabled(kNtpIcons) ||
+         base::FeatureList::IsEnabled(features::kExperimentalUi);
+}
 
 }  // namespace ntp_tiles
