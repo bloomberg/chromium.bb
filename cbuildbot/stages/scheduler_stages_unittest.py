@@ -227,7 +227,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     results = self.fake_db.GetBuildRequestsForBuildConfig('important_external')
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].request_build_config, 'important_external')
-    self.assertEqual(results[0].request_buildbucket_id, 'bb_id_1')
+    self.assertEqual(results[0].request_buildbucket_id, 'bb_id_2')
     self.assertEqual(results[0].request_reason,
                      build_requests.REASON_IMPORTANT_CQ_SLAVE)
 
@@ -235,7 +235,7 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
         'experimental_external')
     self.assertEqual(len(results), 1)
     self.assertEqual(results[0].request_build_config, 'experimental_external')
-    self.assertEqual(results[0].request_buildbucket_id, 'bb_id_2')
+    self.assertEqual(results[0].request_buildbucket_id, 'bb_id_1')
     self.assertEqual(results[0].request_reason,
                      build_requests.REASON_EXPERIMENTAL_CQ_SLAVE)
 
@@ -243,10 +243,10 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
         constants.METADATA_SCHEDULED_IMPORTANT_SLAVES)
     self.assertEqual(len(scheduled_important_builds), 1)
     self.assertEqual(scheduled_important_builds[0],
-                     ('important_external', 'bb_id_1', None))
+                     ('important_external', 'bb_id_2', None))
 
     scheduled_experimental_builds = stage._run.attrs.metadata.GetValue(
         constants.METADATA_SCHEDULED_EXPERIMENTAL_SLAVES)
     self.assertEqual(len(scheduled_experimental_builds), 1)
     self.assertEqual(scheduled_experimental_builds[0],
-                     ('experimental_external', 'bb_id_2', None))
+                     ('experimental_external', 'bb_id_1', None))

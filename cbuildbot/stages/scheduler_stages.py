@@ -112,6 +112,8 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     logging.info('Build_name %s buildbucket_id %s created_timestamp %s',
                  result.build_config, result.buildbucket_id, result.created_ts)
+    logging.PrintBuildbotLink(result.build_config, result.url)
+
     return (result.buildbucket_id, result.created_ts)
 
   def ScheduleSlaveBuildsViaBuildbucket(self, important_only=False,
@@ -142,7 +144,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     # Get all active slave build configs.
     slave_config_map = self._GetSlaveConfigMap(important_only)
-    for slave_config_name, slave_config in slave_config_map.iteritems():
+    for slave_config_name, slave_config in sorted(slave_config_map.iteritems()):
       try:
         buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
             slave_config_name, slave_config, build_id, master_buildbucket_id,
