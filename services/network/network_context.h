@@ -235,7 +235,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnConnectionError();
 
   URLRequestContextOwner MakeURLRequestContext(
-      mojom::NetworkContextParams* network_context_params);
+      mojom::NetworkContextParams* network_context_params,
+      SessionCleanupCookieStore** session_cleanup_cookie_store);
 
   NetworkService* const network_service_;
 

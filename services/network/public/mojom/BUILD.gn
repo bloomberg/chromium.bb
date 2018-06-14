@@ -103,6 +103,7 @@ mojom("mojom") {
     ":mutable_network_traffic_annotation_interface",
     ":udp_socket_interface",
     ":websocket_mojom",
+    "//components/content_settings/core/common:mojo_bindings",
     "//mojo/public/mojom/base",
     "//net/interfaces",
     "//services/proxy_resolver/public/mojom",

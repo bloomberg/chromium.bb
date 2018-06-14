@@ -593,6 +593,11 @@ void ProfileImpl::DoFinalInit() {
         base::Bind(&ProfileImpl::UpdateBlockThirdPartyCookies,
                    base::Unretained(this)));
     UpdateBlockThirdPartyCookies();
+
+    // Observe content settings so they can be synced to the network service.
+    HostContentSettingsMapFactory::GetForProfile(this)->AddObserver(this);
+    OnContentSettingChanged(ContentSettingsPattern(), ContentSettingsPattern(),
+                            CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   }
 
   media_device_id_salt_ = new MediaDeviceIDSalt(prefs_.get());
@@ -1422,6 +1427,31 @@ void ProfileImpl::UpdateBlockThirdPartyCookies() {
                       block_third_party_cookies);
                 },
                 block_third_party_cookies));
+}
+
+void ProfileImpl::OnContentSettingChanged(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    std::string resource_identifier) {
+  if (content_type != CONTENT_SETTINGS_TYPE_COOKIES &&
+      content_type != CONTENT_SETTINGS_TYPE_DEFAULT) {
+    return;
+  }
+
+  ContentSettingsForOneType settings;
+  HostContentSettingsMapFactory::GetForProfile(this)->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
+  content::BrowserContext::ForEachStoragePartition(
+      this, base::BindRepeating(
+                [](const ContentSettingsForOneType& settings,
+                   content::StoragePartition* partition) {
+                  network::mojom::CookieManagerPtr cookie_manager;
+                  partition->GetNetworkContext()->GetCookieManager(
+                      mojo::MakeRequest(&cookie_manager));
+                  cookie_manager->SetContentSettings(settings);
+                },
+                std::move(settings)));
 }
 
 // Gets the media cache parameters from the command line. |cache_path| will be

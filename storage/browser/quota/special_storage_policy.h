@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "services/network/session_cleanup_cookie_store.h"
 #include "storage/browser/storage_browser_export.h"
 
 class GURL;
@@ -41,11 +42,6 @@ class STORAGE_EXPORT SpecialStoragePolicy
     virtual ~Observer();
   };
 
-  // Returns true if the cookie associated with the domain and is_https status
-  // should be deleted.
-  using DeleteCookiePredicate =
-      base::RepeatingCallback<bool(const std::string&, bool)>;
-
   SpecialStoragePolicy();
 
   // Protected storage is not subject to removal by the browsing data remover.
@@ -74,7 +70,8 @@ class STORAGE_EXPORT SpecialStoragePolicy
   // It uses domain matching as described in section 5.1.3 of RFC 6265 to
   // identify content setting rules that could have influenced the cookie
   // when it was created.
-  virtual DeleteCookiePredicate CreateDeleteCookieOnExitPredicate() = 0;
+  virtual network::SessionCleanupCookieStore::DeleteCookiePredicate
+  CreateDeleteCookieOnExitPredicate() = 0;
 
   // Adds/removes an observer, the policy does not take
   // ownership of the observer. Should only be called on the IO thread.

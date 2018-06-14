@@ -27,7 +27,7 @@ bool MockSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return base::ContainsKey(session_only_, origin);
 }
 
-storage::SpecialStoragePolicy::DeleteCookiePredicate
+network::SessionCleanupCookieStore::DeleteCookiePredicate
 MockSpecialStoragePolicy::CreateDeleteCookieOnExitPredicate() {
   return base::BindRepeating(
       &MockSpecialStoragePolicy::ShouldDeleteCookieOnExit,
