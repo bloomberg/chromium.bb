@@ -165,6 +165,28 @@
   <li>Accepting a suggestion from the <a href="omnibox">omnibox API</a>
 </ul>
 
+<h2 id="allow_access">Allowing Access</h2>
+
+<p>
+  If an extension needs to access <code>file://</code> URLs
+  or operate in incognito mode,
+  users will need to enable access for those features inside the extension’s
+  detail page at chrome://extensions.
+</p>
+
+<img id="allow_access_img" src="{{static}}/images/allow_access.png"
+alt="Allow file urls and incognito mode on the extension detial page">
+
+<p>
+  An extension can detect if it is enabled in incognito mode by calling
+  <a href="/extensions/extension#method-isAllowedIncognitoAccess"><code>
+    extension.isAllowedIncognitoAccess()
+  </a></code>
+  or able run on <code>file://</code> URLs with
+  <a href="/extensions/extension#method-isAllowedFileSchemeAccess"><code>
+    extension.isAllowedFileSchemeAccess()
+  </a></code>.
+</p>
 <h2 id="view_warnings">Understanding Permissions</h2>
 <p>
   Permission warnings exist to describe the capabilities
