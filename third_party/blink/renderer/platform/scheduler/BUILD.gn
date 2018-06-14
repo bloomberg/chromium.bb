@@ -22,7 +22,6 @@ blink_platform_sources("scheduler") {
     "base/task_queue_selector.cc",
     "base/task_queue_selector.h",
     "base/task_queue_selector_logic.h",
-    "base/task_time_observer.h",
     "base/thread_controller_impl.cc",
     "base/thread_controller_impl.h",
     "base/time_domain.cc",

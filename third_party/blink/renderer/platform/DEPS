@@ -36,6 +36,7 @@ include_rules = [
     "+base/synchronization/waitable_event.h",
     "+base/sys_info.h",
     "+base/android/sys_utils.h",
+    "+base/task/sequence_manager/task_time_observer.h",
     "+base/test",
     "+base/test/fuzzed_data_provider.h",
     "+base/threading/thread_task_runner_handle.h",

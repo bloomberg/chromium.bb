@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_PERFORMANCE_MONITOR_H_
 
 #include "base/macros.h"
+#include "base/task/sequence_manager/task_time_observer.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -13,7 +14,6 @@
 #include "third_party/blink/renderer/core/timing/sub_task_attribution.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
 

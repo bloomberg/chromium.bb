@@ -6,9 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_IDLENESS_DETECTOR_H_
 
 #include "base/macros.h"
+#include "base/task/sequence_manager/task_time_observer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {

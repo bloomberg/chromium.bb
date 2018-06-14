@@ -10,10 +10,10 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/sequence_manager/task_time_observer.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
 
 namespace base {
