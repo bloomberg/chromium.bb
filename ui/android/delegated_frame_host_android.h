@@ -43,12 +43,13 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
    public:
     virtual void SetBeginFrameSource(
         viz::BeginFrameSource* begin_frame_source) = 0;
-    virtual void DidReceiveCompositorFrameAck() = 0;
     virtual void DidPresentCompositorFrame(
         uint32_t presentation_token,
         const gfx::PresentationFeedback& feedback) = 0;
+    virtual void DidReceiveCompositorFrameAck(
+        const std::vector<viz::ReturnedResource>& resources) = 0;
     virtual void ReclaimResources(
-        const std::vector<viz::ReturnedResource>&) = 0;
+        const std::vector<viz::ReturnedResource>& resources) = 0;
     virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
     virtual void DidReceiveFirstFrameAfterNavigation() = 0;
   };

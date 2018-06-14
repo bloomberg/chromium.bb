@@ -328,8 +328,7 @@ void DelegatedFrameHostAndroid::PixelSizeWillChange(
 
 void DelegatedFrameHostAndroid::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
-  client_->ReclaimResources(resources);
-  client_->DidReceiveCompositorFrameAck();
+  client_->DidReceiveCompositorFrameAck(resources);
 }
 
 void DelegatedFrameHostAndroid::DidPresentCompositorFrame(

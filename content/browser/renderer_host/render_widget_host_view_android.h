@@ -237,10 +237,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // DelegatedFrameHostAndroid::Client implementation.
   void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source) override;
-  void DidReceiveCompositorFrameAck() override;
   void DidPresentCompositorFrame(
       uint32_t presentation_token,
       const gfx::PresentationFeedback& feedback) override;
+  void DidReceiveCompositorFrameAck(
+      const std::vector<viz::ReturnedResource>& resources) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
@@ -346,10 +347,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
   void EvictDelegatedFrame();
-  void RunAckCallbacks();
 
   bool ShouldRouteEvents() const;
-  void SendReclaimCompositorResources(bool is_swap_ack);
 
   void OnFrameMetadataUpdated(
       const viz::CompositorFrameMetadata& frame_metadata,
@@ -454,12 +453,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Manages the Compositor Frames received from the renderer.
   std::unique_ptr<ui::DelegatedFrameHostAndroid> delegated_frame_host_;
 
-  std::vector<viz::ReturnedResource> surface_returned_resources_;
-
   // The most recent surface size that was pushed to the surface layer.
   gfx::Size current_surface_size_;
-
-  base::queue<base::Closure> ack_callbacks_;
 
   // Used to control and render overscroll-related effects.
   std::unique_ptr<OverscrollControllerAndroid> overscroll_controller_;
