@@ -29,7 +29,7 @@ class Value;
 namespace identity {
 class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
-}
+}  // namespace identity
 
 namespace language {
 class UrlLanguageHistogram;
@@ -66,6 +66,8 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
 
   // Overrides internal clock for testing purposes.
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
+
+  static void set_skip_api_key_check_for_testing();
 
  private:
   void FetchSnippetsNonAuthenticated(internal::JsonRequest::Builder builder,
@@ -129,6 +131,8 @@ class RemoteSuggestionsFetcherImpl : public RemoteSuggestionsFetcher {
   std::string last_status_;
   std::string last_fetch_json_;
   bool last_fetch_authenticated_;
+
+  static bool skip_api_key_check_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteSuggestionsFetcherImpl);
 };

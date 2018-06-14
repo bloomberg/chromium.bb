@@ -53,4 +53,4 @@ void GetOperationRequest::OnCompleted(
                            assigned_operation_name, pages);
 }
 
-}  // offline_pages
+}  // namespace offline_pages
