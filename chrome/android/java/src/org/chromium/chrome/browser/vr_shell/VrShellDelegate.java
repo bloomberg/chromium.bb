@@ -1243,6 +1243,10 @@ public class VrShellDelegate
 
         addVrViews();
         boolean webVrMode = mRequestedWebVr || tentativeWebVrMode || mAutopresentWebVr;
+        // Make sure that assets component is registered when creating native VR shell.
+        if (!sRegisteredVrAssetsComponent) {
+            registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewer());
+        }
         mVrShell.initializeNative(webVrMode, mAutopresentWebVr,
                 mActivity instanceof CustomTabActivity, getVrClassesWrapper().bootsToVr());
         mVrShell.setWebVrModeEnabled(webVrMode);
