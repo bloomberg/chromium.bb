@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -21,7 +22,6 @@
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_media_stream_center_client.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -99,11 +99,9 @@ void CloneNativeVideoMediaStreamTrack(
 
 }  // namespace
 
-MediaStreamCenter::MediaStreamCenter(
-    blink::WebMediaStreamCenterClient* client,
-    PeerConnectionDependencyFactory* factory) {}
+MediaStreamCenter::MediaStreamCenter() = default;
 
-MediaStreamCenter::~MediaStreamCenter() {}
+MediaStreamCenter::~MediaStreamCenter() = default;
 
 void MediaStreamCenter::DidCreateMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {

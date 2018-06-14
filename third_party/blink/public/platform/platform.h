@@ -110,7 +110,6 @@ class WebMediaPlayer;
 class WebMediaRecorderHandler;
 class WebMediaStream;
 class WebMediaStreamCenter;
-class WebMediaStreamCenterClient;
 class WebMediaStreamTrack;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
@@ -600,8 +599,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // May return null if WebRTC functionality is not available or out of
   // resources.
-  virtual std::unique_ptr<WebMediaStreamCenter> CreateMediaStreamCenter(
-      WebMediaStreamCenterClient*);
+  virtual std::unique_ptr<WebMediaStreamCenter> CreateMediaStreamCenter();
 
   // Creates a WebCanvasCaptureHandler to capture Canvas output.
   virtual std::unique_ptr<WebCanvasCaptureHandler>

@@ -2143,12 +2143,10 @@ RenderThreadImpl::RequestCopyOfOutputForLayoutTest(
 }
 
 std::unique_ptr<blink::WebMediaStreamCenter>
-RenderThreadImpl::CreateMediaStreamCenter(
-    blink::WebMediaStreamCenterClient* client) {
+RenderThreadImpl::CreateMediaStreamCenter() {
   std::unique_ptr<blink::WebMediaStreamCenter> media_stream_center;
   if (!media_stream_center) {
-    media_stream_center = std::make_unique<MediaStreamCenter>(
-        client, GetPeerConnectionDependencyFactory());
+    media_stream_center = std::make_unique<MediaStreamCenter>();
   }
   return media_stream_center;
 }

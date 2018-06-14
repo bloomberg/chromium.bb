@@ -53,7 +53,7 @@ MediaStreamCenter& MediaStreamCenter::Instance() {
 }
 
 MediaStreamCenter::MediaStreamCenter()
-    : private_(Platform::Current()->CreateMediaStreamCenter(this)) {}
+    : private_(Platform::Current()->CreateMediaStreamCenter()) {}
 
 MediaStreamCenter::~MediaStreamCenter() = default;
 
@@ -111,13 +111,6 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
 void MediaStreamCenter::DidStopMediaStreamSource(MediaStreamSource* source) {
   if (private_)
     private_->DidStopMediaStreamSource(source);
-}
-
-void MediaStreamCenter::StopLocalMediaStream(const WebMediaStream& web_stream) {
-  MediaStreamDescriptor* stream = web_stream;
-  MediaStreamDescriptorClient* client = stream->Client();
-  if (client)
-    client->StreamEnded();
 }
 
 }  // namespace blink

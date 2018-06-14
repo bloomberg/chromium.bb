@@ -75,7 +75,6 @@ namespace scheduler {
 class WebThreadBase;
 }
 class WebMediaStreamCenter;
-class WebMediaStreamCenterClient;
 }
 
 namespace base {
@@ -350,8 +349,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Creates the embedder implementation of WebMediaStreamCenter.
   // The resulting object is owned by WebKit and deleted by WebKit at tear-down.
-  std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter(
-      blink::WebMediaStreamCenterClient* client);
+  std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter();
 
   BrowserPluginManager* browser_plugin_manager() const {
     return browser_plugin_manager_.get();

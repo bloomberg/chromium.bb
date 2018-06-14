@@ -213,7 +213,7 @@ Platform::CreateOffscreenGraphicsContext3DProvider(
     const WebURL& top_document_url,
     Platform::GraphicsInfo*) {
   return nullptr;
-};
+}
 
 std::unique_ptr<WebGraphicsContext3DProvider>
 Platform::CreateSharedOffscreenGraphicsContext3DProvider() {
@@ -244,8 +244,7 @@ Platform::CreateRTCCertificateGenerator() {
   return nullptr;
 }
 
-std::unique_ptr<WebMediaStreamCenter> Platform::CreateMediaStreamCenter(
-    WebMediaStreamCenterClient*) {
+std::unique_ptr<WebMediaStreamCenter> Platform::CreateMediaStreamCenter() {
   return nullptr;
 }
 
