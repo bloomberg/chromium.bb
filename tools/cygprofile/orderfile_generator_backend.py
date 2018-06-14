@@ -26,6 +26,7 @@ import sys
 import tempfile
 import time
 
+import cyglog_to_orderfile
 import cygprofile_utils
 import patch_orderfile
 import process_profiles
@@ -615,6 +616,9 @@ class OrderfileGenerator(object):
     profile_uploaded = False
     orderfile_uploaded = False
 
+    assert (bool(self._options.profile) ^
+            bool(self._options.manual_symbol_offsets))
+
     if self._options.profile:
       try:
         _UnstashOutputDirectory(self._instrumented_out_dir)
@@ -630,6 +634,22 @@ class OrderfileGenerator(object):
       finally:
         self._DeleteTempFiles()
         _StashOutputDirectory(self._instrumented_out_dir)
+    elif self._options.manual_symbol_offsets:
+      assert self._options.manual_libname
+      assert self._options.manual_objdir
+      with file(self._options.manual_symbol_offsets) as f:
+        symbol_offsets = [int(x) for x in f.xreadlines()]
+      processor = process_profiles.SymbolOffsetProcessor(
+          self._options.manual_libname)
+      generator = cyglog_to_orderfile.OffsetOrderfileGenerator(
+          processor, cyglog_to_orderfile.ObjectFileProcessor(
+              self._options.manual_objdir))
+      ordered_sections = generator.GetOrderedSections(symbol_offsets)
+      if not ordered_sections:  # Either None or empty is a problem.
+        raise Exception('Failed to get ordered sections')
+      with open(self._GetUnpatchedOrderfileFilename(), 'w') as orderfile:
+        orderfile.write('\n'.join(ordered_sections))
+
     if self._options.patch:
       if self._options.profile:
         self._RemoveBlanks(self._GetUnpatchedOrderfileFilename(),
@@ -711,6 +731,18 @@ def CreateArgumentParser():
   parser.add_argument(
       '--use-goma', action='store_true', help='Enable GOMA.', default=False)
   parser.add_argument('--adb-path', help='Path to the adb binary.')
+
+  parser.add_argument('--manual-symbol-offsets', default=None, type=str,
+                      help=('File of list of ordered symbol offsets generated '
+                            'by manual profiling. Must set other --manual* '
+                            'flags if this is used, and must --skip-profile.'))
+  parser.add_argument('--manual-libname', default=None, type=str,
+                      help=('Library filename corresponding to '
+                            '--manual-symbol-offsets.'))
+  parser.add_argument('--manual-objdir', default=None, type=str,
+                      help=('Root of object file directory corresponding to '
+                            '--manual-symbol-offsets.'))
+
   profile_android_startup.AddProfileCollectionArguments(parser)
   return parser
 
