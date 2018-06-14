@@ -63,7 +63,6 @@ class MockEasyUnlockNotificationController
   MOCK_METHOD0(ShowChromebookAddedNotification, void());
   MOCK_METHOD0(ShowPairingChangeNotification, void());
   MOCK_METHOD1(ShowPairingChangeAppliedNotification, void(const std::string&));
-  MOCK_METHOD0(ShowPromotionNotification, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEasyUnlockNotificationController);

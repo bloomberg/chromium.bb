@@ -33,7 +33,6 @@ class ToggleEasyUnlockResponse;
 }  // namespace cryptauth
 
 namespace proximity_auth {
-class PromotionManager;
 class ProximityAuthProfilePrefManager;
 }  // namespace proximity_auth
 
@@ -66,13 +65,6 @@ class EasyUnlockServiceRegular
 
   // Called when |remote_device_loader_| completes.
   void OnRemoteDevicesLoaded(const cryptauth::RemoteDeviceList& remote_devices);
-
-  // True if we should promote EasyUnlock.
-  bool ShouldPromote();
-
-  // Starts the promotion manager to periodically display an EasyUnlock
-  // promotion.
-  void StartPromotionManager();
 
   // EasyUnlockService implementation:
   proximity_auth::ProximityAuthPrefManager* GetProximityAuthPrefManager()
@@ -172,9 +164,6 @@ class EasyUnlockServiceRegular
   // Provides local device information from CryptAuth.
   std::unique_ptr<cryptauth::LocalDeviceDataProvider>
       local_device_data_provider_;
-
-  // Manager responsible for display EasyUnlock promotions to the user.
-  std::unique_ptr<proximity_auth::PromotionManager> promotion_manager_;
 
   // If a new RemoteDevice was synced while the screen is locked, we defer
   // loading the RemoteDevice until the screen is unlocked. For security,

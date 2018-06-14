@@ -614,10 +614,6 @@ const base::Feature kCrOSComponent{"CrOSComponent",
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables EasyUnlock promotions on Chrome OS.
-const base::Feature kEasyUnlockPromotions{"EasyUnlockPromotions",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables or disables TPM firmware update capability on Chrome OS.
 const base::Feature kTPMFirmwareUpdate{"TPMFirmwareUpdate",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

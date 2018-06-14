@@ -213,9 +213,6 @@ extern const char kDisplayList2dCanvasDescription[];
 extern const char kDriveSearchInChromeLauncherName[];
 extern const char kDriveSearchInChromeLauncherDescription[];
 
-extern const char kEasyUnlockPromotionsName[];
-extern const char kEasyUnlockPromotionsDescription[];
-
 extern const char kEmbeddedExtensionOptionsName[];
 extern const char kEmbeddedExtensionOptionsDescription[];
 
