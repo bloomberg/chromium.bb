@@ -568,6 +568,17 @@ void NGBlockNode::CopyChildFragmentPosition(
   }
 }
 
+bool NGBlockNode::IsInlineLevel() const {
+  return GetLayoutObject()->IsInline();
+}
+
+bool NGBlockNode::IsAtomicInlineLevel() const {
+  // LayoutObject::IsAtomicInlineLevel() returns true for e.g., <img
+  // style="display: block">. Check IsInline() as well.
+  return GetLayoutObject()->IsAtomicInlineLevel() &&
+         GetLayoutObject()->IsInline();
+}
+
 scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
     const NGConstraintSpace& parent_constraint_space,
     FontBaseline baseline_type,

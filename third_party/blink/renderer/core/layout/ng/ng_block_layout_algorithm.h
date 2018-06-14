@@ -18,6 +18,7 @@ namespace blink {
 class NGConstraintSpace;
 class NGFragment;
 class NGLayoutResult;
+class NGPhysicalLineBoxFragment;
 
 // This struct is used for communicating to a child the position of the previous
 // inflow child. This will be used to calculate the position of the next child.
@@ -183,6 +184,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   bool AddBaseline(const NGBaselineRequest&,
                    const NGPhysicalFragment*,
                    LayoutUnit child_offset);
+
+  // Compute the baseline offset of a line box from the content box.
+  // Line boxes are in line-relative coordinates. This function returns the
+  // offset in flow-relative coordinates.
+  LayoutUnit ComputeLineBoxBaselineOffset(
+      const NGBaselineRequest&,
+      const NGPhysicalLineBoxFragment&) const;
 
   // If still unresolved, resolve the fragment's BFC offset.
   //
