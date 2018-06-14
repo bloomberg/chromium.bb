@@ -121,6 +121,29 @@ testcase.closeQuickView = function() {
 };
 
 /**
+ * Tests opening Quick View on a Drive file.
+ */
+testcase.openQuickViewDrive = function() {
+  let appId;
+
+  StepsRunner.run([
+    // Open Files app on Drive.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
+    },
+    // Open a file in Quick View.
+    function(results) {
+      appId = results.windowId;
+      const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
+
+/**
  * Tests opening Quick View on a USB file.
  */
 testcase.openQuickViewUsb = function() {
