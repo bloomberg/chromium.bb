@@ -91,6 +91,10 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   virtual ScriptState* GetScriptState() = 0;
 
+  // https://html.spec.whatwg.org/multipage/webappapis.html#concept-bc-noscript
+  // "scripting is disabled for settings's responsible browsing context"
+  virtual bool IsScriptingDisabled() const = 0;
+
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
   // Note that |this| is the "module map settings object" used in the "fetch a
