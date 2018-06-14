@@ -14,18 +14,19 @@
 // Class for Autofill suggestion in the customized keyboard.
 @interface FormSuggestionLabel : UIView
 
-// Designated initializer. Initializes with |proposedFrame| and |client| for
-// |suggestion|. Its width will be adjusted according to the length of
-// |suggestion| and width in |proposedFrame| is ignored.
+// Designated initializer. Initializes with |client| for |suggestion|.
 // |userInteractionEnabled| is a boolean that denotes whether user interaction
 // is enabled on the suggestion.
-- (id)initWithSuggestion:(FormSuggestion*)suggestion
-             proposedFrame:(CGRect)proposedFrame
-                     index:(NSUInteger)index
-    userInteractionEnabled:(BOOL)userInteractionEnabled
-            numSuggestions:(NSUInteger)numSuggestions
-                    client:(id<FormSuggestionViewClient>)client;
+- (instancetype)initWithSuggestion:(FormSuggestion*)suggestion
+                             index:(NSUInteger)index
+            userInteractionEnabled:(BOOL)userInteractionEnabled
+                    numSuggestions:(NSUInteger)numSuggestions
+                            client:(id<FormSuggestionViewClient>)client
+    NS_DESIGNATED_INITIALIZER;
 
+- (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+
+- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 @end
 
 #endif  // IOS_CHROME_BROWSER_AUTOFILL_FORM_SUGGESTION_LABEL_H_

@@ -10,6 +10,7 @@
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
+#include "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -44,35 +45,33 @@ const CGFloat kSuggestionHorizontalMargin = 6;
     self.bounces = NO;
     self.canCancelContentTouches = YES;
 
-    // Total height occupied by the label content, padding, border and margin.
-    const CGFloat labelHeight =
-        CGRectGetHeight(frame) - kSuggestionVerticalMargin * 2;
+    UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
+    stackView.axis = UILayoutConstraintAxisHorizontal;
+    stackView.layoutMarginsRelativeArrangement = YES;
+    stackView.layoutMargins = UIEdgeInsetsMake(
+        kSuggestionVerticalMargin, kSuggestionHorizontalMargin,
+        kSuggestionVerticalMargin, kSuggestionHorizontalMargin);
+    stackView.spacing = kSuggestionHorizontalMargin;
+    stackView.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:stackView];
 
-    __block CGFloat currentX = kSuggestionHorizontalMargin;
     void (^setupBlock)(FormSuggestion* suggestion, NSUInteger idx, BOOL* stop) =
         ^(FormSuggestion* suggestion, NSUInteger idx, BOOL* stop) {
-          // FormSuggestionLabel will adjust the width, so here 0 is used for
-          // the width.
-          CGRect proposedFrame =
-              CGRectMake(currentX, kSuggestionVerticalMargin, 0, labelHeight);
           BOOL userInteractionEnabled =
               suggestion.identifier !=
               autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
           UIView* label = [[FormSuggestionLabel alloc]
                   initWithSuggestion:suggestion
-                       proposedFrame:proposedFrame
                                index:idx
               userInteractionEnabled:userInteractionEnabled
                       numSuggestions:[_suggestions count]
                               client:client];
-          [self addSubview:label];
-          currentX +=
-              CGRectGetWidth([label frame]) + kSuggestionHorizontalMargin;
+          [stackView addArrangedSubview:label];
         };
-    [_suggestions
-        enumerateObjectsWithOptions:(base::i18n::IsRTL() ? NSEnumerationReverse
-                                                         : 0)
-                         usingBlock:setupBlock];
+    [_suggestions enumerateObjectsUsingBlock:setupBlock];
+    AddSameConstraints(stackView, self);
+    [stackView.heightAnchor constraintEqualToAnchor:self.heightAnchor].active =
+        true;
   }
   return self;
 }
@@ -95,40 +94,6 @@ const CGFloat kSuggestionHorizontalMargin = 6;
     });
   }
   [super willMoveToSuperview:newSuperview];
-}
-
-- (void)layoutSubviews {
-  [super layoutSubviews];
-
-  CGRect frame = self.frame;
-
-  CGFloat contentwidth = kSuggestionHorizontalMargin;
-  for (UIView* label in self.subviews) {
-    contentwidth += CGRectGetWidth([label frame]) + kSuggestionHorizontalMargin;
-  }
-
-  if (base::i18n::IsRTL()) {
-    if (contentwidth < CGRectGetWidth(frame)) {
-      self.contentSize = frame.size;
-      // Offsets labels for right alignment.
-      CGFloat offset = CGRectGetWidth(frame) - contentwidth;
-      CGFloat currentX = kSuggestionHorizontalMargin + offset;
-      for (UIView* label in self.subviews) {
-        CGRect newFrame = label.frame;
-        newFrame.origin.x = currentX;
-        label.frame = newFrame;
-        currentX += CGRectGetWidth(label.frame) + kSuggestionHorizontalMargin;
-      }
-    } else {
-      self.contentSize = CGSizeMake(contentwidth, CGRectGetHeight(frame));
-      // Sets the visible rectangle so suggestions at the right end are
-      // initially visible.
-      CGRect initRect = {{contentwidth - CGRectGetWidth(frame), 0}, frame.size};
-      [self scrollRectToVisible:initRect animated:NO];
-    }
-  } else {
-    self.contentSize = CGSizeMake(contentwidth, CGRectGetHeight(frame));
-  }
 }
 
 - (NSArray*)suggestions {
