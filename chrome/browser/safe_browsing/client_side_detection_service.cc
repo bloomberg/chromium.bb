@@ -231,6 +231,8 @@ void ClientSideDetectionService::Observe(
 
 void ClientSideDetectionService::SendModelToProcess(
     content::RenderProcessHost* process) {
+  DCHECK(process->IsInitializedAndNotDead());
+
   // The ClientSideDetectionService is enabled if _any_ active profile has
   // SafeBrowsing turned on.  Here we check the profile for each renderer
   // process and only send the model to those that have SafeBrowsing enabled,
@@ -268,7 +270,9 @@ void ClientSideDetectionService::SendModelToRenderers() {
   for (content::RenderProcessHost::iterator i(
            content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    SendModelToProcess(i.GetCurrentValue());
+    content::RenderProcessHost* process = i.GetCurrentValue();
+    if (process->IsInitializedAndNotDead())
+      SendModelToProcess(process);
   }
 }
 

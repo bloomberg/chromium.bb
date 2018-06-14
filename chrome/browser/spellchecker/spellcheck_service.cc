@@ -4,7 +4,9 @@
 
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
+#include <algorithm>
 #include <set>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -288,8 +290,11 @@ void SpellcheckService::OnCustomDictionaryChanged(
   const std::vector<std::string> deletions(change.to_remove().begin(),
                                            change.to_remove().end());
   while (!process_hosts.IsAtEnd()) {
-    service_manager::Identity renderer_identity =
-        process_hosts.GetCurrentValue()->GetChildIdentity();
+    content::RenderProcessHost* process = process_hosts.GetCurrentValue();
+    if (!process->IsInitializedAndNotDead())
+      continue;
+
+    service_manager::Identity renderer_identity = process->GetChildIdentity();
     spellcheck::mojom::SpellCheckerPtr spellchecker;
     ChromeService::GetInstance()->connector()->BindInterface(
         service_manager::Identity(chrome::mojom::kRendererServiceName,
