@@ -52,6 +52,9 @@
 // YES if the selected cell is visible in the grid.
 @property(nonatomic, readonly, getter=isSelectedCellVisible)
     BOOL selectedCellVisible;
+// YES if the gid should show cell selection updates. This would be set to NO,
+// for example, if the grid was about to be transitioned out of.
+@property(nonatomic, assign) BOOL showsSelectionUpdates;
 
 // Returns the layout of the grid for use in an animated transition.
 - (GridTransitionLayout*)transitionLayout;

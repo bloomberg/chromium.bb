@@ -70,7 +70,6 @@
       break;
     case GridAnimationDirectionExpanding:
       [self positionSelectedItemInRegularGrid];
-      self.layout.selectedItem.cell.selected = YES;
       [self positionUnselectedItemsInRegularGrid];
       break;
   }
