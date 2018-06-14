@@ -859,16 +859,16 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopSafely) {
 
     // Ensure that the first sampler can be safely stopped while the second
     // continues to run. The stopped first profiler will still have a
-    // PerformCollectionTask pending that will do nothing when executed because
-    // the collection will have been removed by Stop().
+    // RecordSampleTask pending that will do nothing when executed because the
+    // collection will have been removed by Stop().
     profiler_info0.profiler.Stop();
     profiler_info0.completed.Wait();
     size_t count0 = samples_recorded[0].Get();
     size_t count1 = samples_recorded[1].Get();
 
     // Waiting for the second sampler to collect a couple samples ensures that
-    // the pending PerformCollectionTask for the first has executed because
-    // tasks are always ordered by their next scheduled time.
+    // the pending RecordSampleTask for the first has executed because tasks are
+    // always ordered by their next scheduled time.
     while (samples_recorded[1].Get() < count1 + 2)
       PlatformThread::Sleep(TimeDelta::FromMilliseconds(1));
 

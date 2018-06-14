@@ -238,22 +238,14 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   // as this is needed to avoid flakiness in unit tests.
   void FinishCollection(CollectionContext* collection);
 
-  // Records a single sample of a collection.
-  void RecordSample(CollectionContext* collection);
-
   // Check if the sampling thread is idle and begin a shutdown if it is.
   void ScheduleShutdownIfIdle();
 
   // These methods are tasks that get posted to the internal message queue.
   void AddCollectionTask(std::unique_ptr<CollectionContext> collection);
   void RemoveCollectionTask(int collection_id);
-  void PerformCollectionTask(int collection_id);
+  void RecordSampleTask(int collection_id);
   void ShutdownTask(int add_events);
-
-  // Updates |next_sample_time| and |sample_count| to schedule for the next
-  // sample recording.
-  // Returns true if there is a next sample recording to schedule.
-  bool ScheduleNextSample(CollectionContext* collection);
 
   // Thread:
   void CleanUp() override;
@@ -496,54 +488,24 @@ void StackSamplingProfiler::SamplingThread::FinishCollection(
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
   DCHECK_EQ(0u, active_collections_.count(collection->collection_id));
 
-  // If there is no duration for the profile (because it was stopped), calculate
-  // it now.
-  if (collection->profile.profile_duration == TimeDelta()) {
-    collection->profile.profile_duration = Time::Now() -
-                                           collection->profile_start_time +
-                                           collection->params.sampling_interval;
-  }
-
-  // Extract some information so callback and event-signalling can still be
-  // done after the collection has been removed from the list of "active" ones.
-  // This allows the the controlling object (and tests using it) to be confident
-  // that collection is fully finished when those things occur.
-  const CompletedCallback callback = collection->callback;
-  CallStackProfile profile = std::move(collection->profile);
-  WaitableEvent* finished = collection->finished;
-
-  // Run the associated callback, passing the collected profile.
-  callback.Run(std::move(profile));
-
-  // Signal that this collection is finished.
-  finished->Signal();
-}
-
-void StackSamplingProfiler::SamplingThread::RecordSample(
-    CollectionContext* collection) {
-  DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
-  DCHECK(collection->native_sampler);
-
-  // If this is the first sample, the Profile params needs to be filled.
-  if (collection->sample_count == 0) {
-    collection->profile.sampling_period = collection->params.sampling_interval;
-    collection->profile_start_time = Time::Now();
-    collection->native_sampler->ProfileRecordingStarting(
-        &collection->profile.modules);
-  }
-
-  // Record a single sample.
-  collection->profile.samples.push_back(Sample());
-  collection->native_sampler->RecordStackSample(
-      stack_buffer_.get(), &collection->profile.samples.back());
-
-  // If this is the last sample of a profile, record the total time.
-  if (collection->sample_count == collection->params.samples_per_profile - 1) {
     collection->profile.profile_duration = Time::Now() -
                                            collection->profile_start_time +
                                            collection->params.sampling_interval;
     collection->native_sampler->ProfileRecordingStopped();
-  }
+
+    // Extract some information so callback and event-signalling can still be
+    // done after the collection has been removed from the list of "active"
+    // ones. This allows the the controlling object (and tests using it) to be
+    // confident that collection is fully finished when those things occur.
+    const CompletedCallback callback = collection->callback;
+    CallStackProfile profile = std::move(collection->profile);
+    WaitableEvent* finished = collection->finished;
+
+    // Run the associated callback, passing the collected profile.
+    callback.Run(std::move(profile));
+
+    // Signal that this collection is finished.
+    finished->Signal();
 }
 
 void StackSamplingProfiler::SamplingThread::ScheduleShutdownIfIdle() {
@@ -578,7 +540,7 @@ void StackSamplingProfiler::SamplingThread::AddCollectionTask(
 
   GetTaskRunnerOnSamplingThread()->PostDelayedTask(
       FROM_HERE,
-      BindOnce(&SamplingThread::PerformCollectionTask, Unretained(this),
+      BindOnce(&SamplingThread::RecordSampleTask, Unretained(this),
                collection_id),
       initial_delay);
 
@@ -608,7 +570,7 @@ void StackSamplingProfiler::SamplingThread::RemoveCollectionTask(
   ScheduleShutdownIfIdle();
 }
 
-void StackSamplingProfiler::SamplingThread::PerformCollectionTask(
+void StackSamplingProfiler::SamplingThread::RecordSampleTask(
     int collection_id) {
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
 
@@ -620,26 +582,38 @@ void StackSamplingProfiler::SamplingThread::PerformCollectionTask(
 
   CollectionContext* collection = found->second.get();
 
-  // Handle first-run with no "next time".
-  if (collection->next_sample_time == Time())
+  // If this is the first sample, the profile params need to be filled.
+  if (collection->sample_count == 0) {
+    collection->profile.sampling_period = collection->params.sampling_interval;
+    collection->profile_start_time = Time::Now();
     collection->next_sample_time = Time::Now();
+    collection->native_sampler->ProfileRecordingStarting(
+        &collection->profile.modules);
+  }
 
-  // Do the collection of a single sample.
-  RecordSample(collection);
+  // Record a single sample.
+  collection->profile.samples.push_back(Sample());
+  collection->native_sampler->RecordStackSample(
+      stack_buffer_.get(), &collection->profile.samples.back());
 
   // Schedule the next sample recording if there is one.
-  if (ScheduleNextSample(collection)) {
+  if (++collection->sample_count < collection->params.samples_per_profile) {
+    // This will keep a consistent average interval between samples but will
+    // result in constant series of acquisitions, thus nearly locking out the
+    // target thread, if the interval is smaller than the time it takes to
+    // actually acquire the sample. Anything sampling that quickly is going
+    // to be a problem anyway so don't worry about it.
+    collection->next_sample_time += collection->params.sampling_interval;
     bool success = GetTaskRunnerOnSamplingThread()->PostDelayedTask(
         FROM_HERE,
-        BindOnce(&SamplingThread::PerformCollectionTask, Unretained(this),
+        BindOnce(&SamplingThread::RecordSampleTask, Unretained(this),
                  collection_id),
         std::max(collection->next_sample_time - Time::Now(), TimeDelta()));
     DCHECK(success);
     return;
   }
 
-  // Take ownership of |collection| and remove it from the map. If collection is
-  // to be restarted, a new collection task will be added below.
+  // Take ownership of |collection| and remove it from the map.
   std::unique_ptr<CollectionContext> owned_collection =
       std::move(found->second);
   size_t count = active_collections_.erase(collection_id);
@@ -682,21 +656,6 @@ void StackSamplingProfiler::SamplingThread::ShutdownTask(int add_events) {
   thread_execution_state_ = EXITING;
   thread_execution_state_task_runner_ = nullptr;
   stack_buffer_.reset();
-}
-
-bool StackSamplingProfiler::SamplingThread::ScheduleNextSample(
-    CollectionContext* collection) {
-  // This will keep a consistent average interval between samples but will
-  // result in constant series of acquisitions, thus nearly locking out the
-  // target thread, if the interval is smaller than the time it takes to
-  // actually acquire the sample. Anything sampling that quickly is going
-  // to be a problem anyway so don't worry about it.
-  if (++collection->sample_count < collection->params.samples_per_profile) {
-    collection->next_sample_time += collection->params.sampling_interval;
-    return true;
-  }
-
-  return false;
 }
 
 void StackSamplingProfiler::SamplingThread::CleanUp() {
