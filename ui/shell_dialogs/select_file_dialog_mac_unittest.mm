@@ -7,6 +7,7 @@
 #include <vector>
 
 #import "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
@@ -419,7 +420,11 @@ TEST_F(SelectFileDialogMacTest, DialogMessage) {
 }
 
 // Verify that multiple file dialogs are corrected handled.
-TEST_F(SelectFileDialogMacTest, DISABLED_MultipleDialogs) {
+TEST_F(SelectFileDialogMacTest, MultipleDialogs) {
+  // TODO(https://crbug.com/852536): Test fails on 10.10.
+  if (base::mac::IsOS10_10())
+    return;
+
   FileDialogArguments args(GetDefaultArguments());
   SelectFileWithParams(args);
   SelectFileWithParams(args);
