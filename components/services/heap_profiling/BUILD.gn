@@ -36,7 +36,6 @@ static_library("heap_profiling") {
   deps = [
     "//base",
     "//components/services/heap_profiling/public/cpp",
-    "//mojo/edk",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//third_party/zlib",
   ]

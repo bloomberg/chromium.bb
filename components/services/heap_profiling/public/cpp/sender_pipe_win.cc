@@ -4,6 +4,8 @@
 
 #include "components/services/heap_profiling/public/cpp/sender_pipe.h"
 
+#include <windows.h>
+
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
@@ -69,7 +71,7 @@ SenderPipe::PipePair::PipePair() {
              // nothing to do with Send() timeout.
       nullptr);
   PCHECK(handle != INVALID_HANDLE_VALUE);
-  receiver_.reset(mojo::edk::InternalPlatformHandle(handle));
+  receiver_ = mojo::PlatformHandle(base::win::ScopedHandle(handle));
 
   // Allow the handle to be inherited by child processes.
   SECURITY_ATTRIBUTES security_attributes;
@@ -84,19 +86,19 @@ SenderPipe::PipePair::PipePair() {
       SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS | FILE_FLAG_OVERLAPPED,
       nullptr);
   PCHECK(handle != INVALID_HANDLE_VALUE);
-  sender_.reset(mojo::edk::InternalPlatformHandle(handle));
+  sender_ = mojo::PlatformHandle(base::win::ScopedHandle(handle));
 
   // Since a client has connected, ConnectNamedPipe() should return zero and
   // GetLastError() should return ERROR_PIPE_CONNECTED.
-  BOOL result = ConnectNamedPipe(receiver_.get().handle, nullptr);
+  BOOL result = ConnectNamedPipe(receiver_.GetHandle().Get(), nullptr);
   DWORD error = GetLastError();
   CHECK((result == 0) && (error == ERROR_PIPE_CONNECTED));
 }
 
 SenderPipe::PipePair::PipePair(PipePair&& other) = default;
 
-SenderPipe::SenderPipe(base::ScopedPlatformFile file)
-    : file_(std::move(file)) {}
+SenderPipe::SenderPipe(mojo::PlatformHandle handle)
+    : file_(handle.TakeHandle()) {}
 
 SenderPipe::~SenderPipe() {}
 

@@ -13,12 +13,10 @@
 #include "components/services/heap_profiling/public/cpp/sender_pipe.h"
 #include "components/services/heap_profiling/receiver_pipe.h"
 #include "components/services/heap_profiling/stream_receiver.h"
-#include "mojo/edk/embedder/platform_channel_utils_posix.h"
-#include "mojo/edk/embedder/platform_handle.h"
 
 namespace heap_profiling {
 
-ReceiverPipe::ReceiverPipe(mojo::edk::ScopedInternalPlatformHandle handle)
+ReceiverPipe::ReceiverPipe(mojo::PlatformHandle handle)
     : ReceiverPipeBase(std::move(handle)),
       controller_(FROM_HERE),
       read_buffer_(new char[SenderPipe::kPipeSize]) {}
@@ -27,18 +25,16 @@ ReceiverPipe::~ReceiverPipe() {}
 
 void ReceiverPipe::StartReadingOnIOThread() {
   base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
-      handle_.get().handle, true, base::MessagePumpForIO::WATCH_READ,
+      handle_.GetFD().get(), true, base::MessagePumpForIO::WATCH_READ,
       &controller_, this);
-  OnFileCanReadWithoutBlocking(handle_.get().handle);
+  OnFileCanReadWithoutBlocking(handle_.GetFD().get());
 }
 
 void ReceiverPipe::OnFileCanReadWithoutBlocking(int fd) {
   ssize_t bytes_read = 0;
   do {
-    base::circular_deque<mojo::edk::InternalPlatformHandle> dummy_for_receive;
-
     bytes_read = HANDLE_EINTR(
-        read(handle_.get().handle, read_buffer_.get(), SenderPipe::kPipeSize));
+        read(handle_.GetFD().get(), read_buffer_.get(), SenderPipe::kPipeSize));
     if (bytes_read > 0) {
       receiver_task_runner_->PostTask(
           FROM_HERE,

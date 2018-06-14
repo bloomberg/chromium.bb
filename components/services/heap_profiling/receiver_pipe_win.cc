@@ -16,12 +16,12 @@
 
 namespace heap_profiling {
 
-ReceiverPipe::ReceiverPipe(mojo::edk::ScopedInternalPlatformHandle handle)
+ReceiverPipe::ReceiverPipe(mojo::PlatformHandle handle)
     : ReceiverPipeBase(std::move(handle)),
       read_buffer_(new char[SenderPipe::kPipeSize]) {
   ZeroOverlapped();
-  base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(handle_.get().handle,
-                                                          this);
+  base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(
+      handle_.GetHandle().Get(), this);
 }
 
 ReceiverPipe::~ReceiverPipe() {}
@@ -41,7 +41,7 @@ void ReceiverPipe::ReadUntilBlocking() {
 
   DCHECK(!read_outstanding_);
   read_outstanding_ = this;
-  if (!::ReadFile(handle_.get().handle, read_buffer_.get(),
+  if (!::ReadFile(handle_.GetHandle().Get(), read_buffer_.get(),
                   SenderPipe::kPipeSize, &bytes_read, &context_.overlapped)) {
     if (GetLastError() == ERROR_IO_PENDING) {
       return;

@@ -10,7 +10,7 @@
 #include "base/files/platform_file.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace heap_profiling {
 
@@ -32,20 +32,16 @@ class SenderPipe {
     // |kPipeSize|.
     PipePair();
     PipePair(PipePair&&);
-    mojo::edk::ScopedInternalPlatformHandle PassSender() {
-      return std::move(sender_);
-    }
-    mojo::edk::ScopedInternalPlatformHandle PassReceiver() {
-      return std::move(receiver_);
-    }
+    mojo::PlatformHandle PassSender() { return std::move(sender_); }
+    mojo::PlatformHandle PassReceiver() { return std::move(receiver_); }
 
    private:
-    mojo::edk::ScopedInternalPlatformHandle sender_;
-    mojo::edk::ScopedInternalPlatformHandle receiver_;
+    mojo::PlatformHandle sender_;
+    mojo::PlatformHandle receiver_;
     DISALLOW_COPY_AND_ASSIGN(PipePair);
   };
 
-  explicit SenderPipe(base::ScopedPlatformFile file);
+  explicit SenderPipe(mojo::PlatformHandle handle);
   ~SenderPipe();
 
   enum class Result { kSuccess, kTimeout, kError };

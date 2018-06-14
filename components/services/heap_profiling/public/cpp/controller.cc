@@ -50,12 +50,10 @@ void Controller::StartProfilingClient(mojom::ProfilingClientPtr client,
 
   mojom::ProfilingParamsPtr params = mojom::ProfilingParams::New();
   params->sampling_rate = sampling_rate_;
-  params->sender_pipe =
-      mojo::WrapPlatformFile(pipes.PassSender().release().handle);
+  params->sender_pipe = mojo::WrapPlatformHandle(pipes.PassSender());
   params->stack_mode = stack_mode_;
   heap_profiling_service_->AddProfilingClient(
-      pid, std::move(client),
-      mojo::WrapPlatformFile(pipes.PassReceiver().release().handle),
+      pid, std::move(client), mojo::WrapPlatformHandle(pipes.PassReceiver()),
       process_type, std::move(params));
 }
 

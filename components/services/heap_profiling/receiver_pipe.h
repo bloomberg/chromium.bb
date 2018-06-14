@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace base {
 class TaskRunner;
@@ -29,7 +29,7 @@ class ReceiverPipeBase : public base::RefCountedThreadSafe<ReceiverPipeBase> {
  protected:
   friend class base::RefCountedThreadSafe<ReceiverPipeBase>;
 
-  explicit ReceiverPipeBase(mojo::edk::ScopedInternalPlatformHandle handle);
+  explicit ReceiverPipeBase(mojo::PlatformHandle handle);
   virtual ~ReceiverPipeBase();
 
   // Callback that indicates an error has occurred and the connection should
@@ -46,7 +46,7 @@ class ReceiverPipeBase : public base::RefCountedThreadSafe<ReceiverPipeBase> {
   scoped_refptr<base::TaskRunner> receiver_task_runner_;
   scoped_refptr<StreamReceiver> receiver_;
 
-  mojo::edk::ScopedInternalPlatformHandle handle_;
+  mojo::PlatformHandle handle_;
 };
 
 }  // namespace heap_profiling

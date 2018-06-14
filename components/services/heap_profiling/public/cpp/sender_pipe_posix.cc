@@ -31,14 +31,13 @@ SenderPipe::PipePair::PipePair() {
   PCHECK(fcntl(fds[0], F_SETNOSIGPIPE, 1) == 0);
   PCHECK(fcntl(fds[1], F_SETNOSIGPIPE, 1) == 0);
 #endif
-  receiver_.reset(mojo::edk::InternalPlatformHandle(fds[0]));
-  sender_.reset(mojo::edk::InternalPlatformHandle(fds[1]));
+  receiver_ = mojo::PlatformHandle(base::ScopedFD(fds[0]));
+  sender_ = mojo::PlatformHandle(base::ScopedFD(fds[1]));
 }
 
 SenderPipe::PipePair::PipePair(PipePair&& other) = default;
 
-SenderPipe::SenderPipe(base::ScopedPlatformFile file)
-    : file_(std::move(file)) {}
+SenderPipe::SenderPipe(mojo::PlatformHandle handle) : file_(handle.TakeFD()) {}
 
 SenderPipe::~SenderPipe() = default;
 

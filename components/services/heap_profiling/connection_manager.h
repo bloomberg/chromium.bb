@@ -21,7 +21,6 @@
 #include "components/services/heap_profiling/allocation_tracker.h"
 #include "components/services/heap_profiling/backtrace_storage.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
 namespace base {
