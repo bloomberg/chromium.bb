@@ -7,7 +7,12 @@
 
 namespace feed {
 
-namespace prefs {}  // namespace prefs
+namespace prefs {
+
+// The pref name for the last time when a background fetch was attempted.
+extern const char kLastFetchAttemptTime[];
+
+}  // namespace prefs
 
 }  // namespace feed
 

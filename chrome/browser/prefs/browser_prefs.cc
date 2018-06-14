@@ -184,10 +184,14 @@
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
 #include "chrome/browser/ntp_snippets/download_suggestions_provider.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"
+#include "components/feed/buildflags.h"
 #include "components/ntp_snippets/breaking_news/breaking_news_gcm_app_handler.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager_impl.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_tiles/popular_sites_impl.h"
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
+#include "components/feed/core/feed_scheduler_host.h"
+#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -585,13 +589,16 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   GeolocationPermissionContextAndroid::RegisterProfilePrefs(registry);
   PartnerBookmarksShim::RegisterProfilePrefs(registry);
   RecentTabsPagePrefs::RegisterProfilePrefs(registry);
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
+  feed::FeedSchedulerHost::RegisterProfilePrefs(registry);
+#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #else
   AppShortcutManager::RegisterProfilePrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
 #if BUILDFLAG(ENABLE_APP_LIST)
   app_list::AppListSyncableService::RegisterProfilePrefs(registry);
-#endif
+#endif  // BUILDFLAG(ENABLE_APP_LIST)
   extensions::CommandService::RegisterProfilePrefs(registry);
   extensions::TabsCaptureVisibleTabFunction::RegisterProfilePrefs(registry);
   NewTabUI::RegisterProfilePrefs(registry);

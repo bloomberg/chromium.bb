@@ -6,6 +6,10 @@
 
 namespace feed {
 
-namespace prefs {}  // namespace prefs
+namespace prefs {
+
+const char kLastFetchAttemptTime[] = "feed.last_fetch_attempt";
+
+}  // namespace prefs
 
 }  // namespace feed
