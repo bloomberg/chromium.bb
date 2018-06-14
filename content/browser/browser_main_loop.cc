@@ -206,6 +206,7 @@
 #include <zircon/syscalls.h>
 
 #include "base/fuchsia/default_job.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -396,8 +397,7 @@ constexpr base::TimeDelta kSwapMetricsInterval =
 void InitDefaultJob() {
   base::ScopedZxHandle handle;
   zx_status_t result = zx_job_create(zx_job_default(), 0, handle.receive());
-  CHECK_EQ(ZX_OK, result) << "zx_job_create(job): "
-                          << zx_status_get_string(result);
+  ZX_CHECK(ZX_OK == result, result) << "zx_job_create";
   base::SetDefaultJob(std::move(handle));
 }
 #endif  // defined(OS_FUCHSIA)
