@@ -268,7 +268,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         storage_partition->GetCacheStorageContext();
     storage::FileSystemContext* file_system_context =
         storage_partition->GetFileSystemContext();
-    LocalDataContainer* container = new LocalDataContainer(
+    auto container = std::make_unique<LocalDataContainer>(
         new BrowsingDataCookieHelper(profile->GetRequestContext()),
         new BrowsingDataDatabaseHelper(profile),
         new BrowsingDataLocalStorageHelper(profile),
@@ -284,9 +284,8 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         new BrowsingDataCacheStorageHelper(cache_storage_context),
         BrowsingDataFlashLSOHelper::Create(profile),
         BrowsingDataMediaLicenseHelper::Create(file_system_context));
-    cookies_tree_model_.reset(
-        new CookiesTreeModel(container,
-                             profile->GetExtensionSpecialStoragePolicy()));
+    cookies_tree_model_ = std::make_unique<CookiesTreeModel>(
+        std::move(container), profile->GetExtensionSpecialStoragePolicy());
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }
 }
