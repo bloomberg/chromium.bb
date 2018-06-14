@@ -167,12 +167,16 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   // Return true if the node being laid out by this fragmentainer has used all
   // the available space in the current fragmentainer.
-  bool IsFragmentainerOutOfSpace() const;
+  // |block_offset| is the border-edge relative block offset we want to check
+  // whether fits within the fragmentainer or not.
+  bool IsFragmentainerOutOfSpace(LayoutUnit block_offset) const;
 
   // Insert a fragmentainer break before the child if necessary.
-  // Return true if a break was inserted, false otherwise.
+  // Update previous in-flow position and return true if a break was inserted.
+  // Otherwise return false.
   bool BreakBeforeChild(NGLayoutInputNode child,
                         const NGLayoutResult&,
+                        NGPreviousInflowPosition*,
                         LayoutUnit block_offset,
                         bool is_pushed_by_floats);
 

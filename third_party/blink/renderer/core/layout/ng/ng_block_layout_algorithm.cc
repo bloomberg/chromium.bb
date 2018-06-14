@@ -437,8 +437,6 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (node_.IsQuirkyContainer())
     previous_inflow_position.margin_strut.is_quirky_container_start = true;
 
-  intrinsic_block_size_ = content_edge;
-
   // Before we descend into children (but after we have determined our inline
   // size), give the autosizer an opportunity to adjust the font size on the
   // children.
@@ -483,13 +481,19 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
         // We need to abort the layout, as our BFC offset was resolved.
         return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
       }
-      if (container_builder_.DidBreak() && IsFragmentainerOutOfSpace())
+      if (container_builder_.DidBreak() &&
+          IsFragmentainerOutOfSpace(
+              previous_inflow_position.logical_block_offset))
         break;
       has_processed_first_child_ = true;
     }
   }
 
   NGMarginStrut end_margin_strut = previous_inflow_position.margin_strut;
+
+  // The intrinsic block size is not allowed to be less than the content edge
+  // offset, as that could give us a negative content box size.
+  intrinsic_block_size_ = content_edge;
 
   // If the current layout is a new formatting context, we need to encapsulate
   // all of our floats.
@@ -543,6 +547,12 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
     intrinsic_block_size_ += border_scrollbar_padding_.block_end;
     end_margin_strut = NGMarginStrut();
+  } else {
+    // Update our intrinsic block size to be just past the block-end border edge
+    // of the last in-flow child. The pending margin is to be propagated to our
+    // container, so ignore it.
+    intrinsic_block_size_ = std::max(
+        intrinsic_block_size_, previous_inflow_position.logical_block_offset);
   }
 
   // Recompute the block-axis size now that we know our content size.
@@ -839,8 +849,8 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
         child_margin_got_separated ||
         child_bfc_offset.block_offset > child_bfc_offset_estimate ||
         layout_result->IsPushedByFloats();
-    if (BreakBeforeChild(child, *layout_result, logical_offset.block_offset,
-                         is_pushed_by_floats))
+    if (BreakBeforeChild(child, *layout_result, previous_inflow_position,
+                         logical_offset.block_offset, is_pushed_by_floats))
       return true;
     EBreakBetween break_after = JoinFragmentainerBreakValues(
         layout_result->FinalBreakAfter(), child.Style().BreakAfter());
@@ -848,10 +858,6 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   }
 
   PositionOrPropagateListMarker(*layout_result, &logical_offset);
-
-  intrinsic_block_size_ =
-      std::max(intrinsic_block_size_,
-               logical_offset.block_offset + fragment.BlockSize());
 
   container_builder_.AddChild(layout_result, logical_offset);
   container_builder_.PropagateBreak(layout_result);
@@ -1177,7 +1183,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       child, fragment, child_data.margins, child_bfc_offset);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    if (BreakBeforeChild(child, *layout_result, logical_offset.block_offset,
+    if (BreakBeforeChild(child, *layout_result, previous_inflow_position,
+                         logical_offset.block_offset,
                          layout_result->IsPushedByFloats()))
       return true;
     EBreakBetween break_after = JoinFragmentainerBreakValues(
@@ -1187,20 +1194,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
 
   PositionOrPropagateListMarker(*layout_result, &logical_offset);
 
-  // Only modify intrinsic_block_size_ if the fragment is non-empty block.
-  //
-  // Empty blocks don't immediately contribute to our size, instead we wait to
-  // see what the final margin produced, e.g.
-  // <div style="display: flow-root">
-  //   <div style="margin-top: -8px"></div>
-  //   <div style="margin-top: 10px"></div>
-  // </div>
-  if (!is_empty_block) {
-    DCHECK(container_builder_.BfcOffset());
-    intrinsic_block_size_ =
-        std::max(intrinsic_block_size_,
-                 logical_offset.block_offset + fragment.BlockSize());
-  } else if (!container_builder_.BfcOffset()) {
+  if (is_empty_block && !container_builder_.BfcOffset()) {
     container_builder_.AddAdjoiningFloatTypes(
         layout_result->AdjoiningFloatTypes());
   }
@@ -1376,12 +1370,13 @@ LayoutUnit NGBlockLayoutAlgorithm::FragmentainerSpaceAvailable() const {
          container_builder_.BfcOffset()->block_offset;
 }
 
-bool NGBlockLayoutAlgorithm::IsFragmentainerOutOfSpace() const {
+bool NGBlockLayoutAlgorithm::IsFragmentainerOutOfSpace(
+    LayoutUnit block_offset) const {
   if (!ConstraintSpace().HasBlockFragmentation())
     return false;
   if (!container_builder_.BfcOffset().has_value())
     return false;
-  return intrinsic_block_size_ >= FragmentainerSpaceAvailable();
+  return block_offset >= FragmentainerSpaceAvailable();
 }
 
 void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
@@ -1464,6 +1459,7 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
 bool NGBlockLayoutAlgorithm::BreakBeforeChild(
     NGLayoutInputNode child,
     const NGLayoutResult& layout_result,
+    NGPreviousInflowPosition* previous_inflow_position,
     LayoutUnit block_offset,
     bool is_pushed_by_floats) {
   DCHECK(ConstraintSpace().HasBlockFragmentation());
@@ -1571,7 +1567,8 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
   // content, due to the break) should still be occupied by this container.
   // TODO(mstensho): Figure out if we really need to <0 here. It doesn't seem
   // right to have negative available space.
-  intrinsic_block_size_ = space_available.ClampNegativeToZero();
+  previous_inflow_position->logical_block_offset =
+      space_available.ClampNegativeToZero();
   // Drop the fragment on the floor and retry at the start of the next
   // fragmentainer.
   container_builder_.AddBreakBeforeChild(child);
