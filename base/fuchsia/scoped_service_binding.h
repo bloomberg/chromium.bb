@@ -29,9 +29,9 @@ class ScopedServiceBinding {
   ~ScopedServiceBinding() { directory_->RemoveService(Interface::Name_); }
 
  private:
-  void BindClient(ScopedZxHandle channel) {
-    binding_.Bind(typename fidl::InterfaceRequest<Interface>(
-        zx::channel(channel.release())));
+  void BindClient(zx::channel channel) {
+    binding_.Bind(
+        typename fidl::InterfaceRequest<Interface>(std::move(channel)));
   }
 
   ServicesDirectory* directory_;
