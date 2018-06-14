@@ -394,7 +394,7 @@ if package_exists libpng16-16; then
 else
   lib_list="${lib_list} libpng12-0"
 fi
-if package_exists libnspr4-dbg; then
+if package_exists libnspr4; then
   lib_list="${lib_list} libnspr4 libnss3"
 else
   lib_list="${lib_list} libnspr4-0d libnss3-1d"
