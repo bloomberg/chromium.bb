@@ -119,6 +119,10 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-script-base-url
   const KURL base_url_for_inline_script_;
 
+  // "element's child text content" snapshot taken at
+  // #prepare-a-script (Step 4).
+  const String source_text_for_inline_script_;
+
   const ScriptSourceLocationType source_location_type_;
   const bool is_external_;
   ReadyState ready_state_;

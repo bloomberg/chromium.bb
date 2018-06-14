@@ -81,6 +81,8 @@ ClassicPendingScript::ClassicPendingScript(
       options_(options),
       base_url_for_inline_script_(
           is_external ? KURL() : element->GetDocument().BaseURL()),
+      source_text_for_inline_script_(is_external ? String()
+                                                 : element->TextFromChildren()),
       source_location_type_(source_location_type),
       is_external_(is_external),
       ready_state_(is_external ? kWaitingForResource : kReady),
@@ -252,7 +254,6 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
   error_occurred = ErrorOccurred();
   if (!is_external_) {
     SingleCachedMetadataHandler* cache_handler = nullptr;
-    String source = GetElement()->TextFromChildren();
     // We only create an inline cache handler for html-embedded scripts, not
     // for scripts produced by document.write, or not parser-inserted. This is
     // because we expect those to be too dynamic to benefit from caching.
@@ -262,10 +263,11 @@ ClassicScript* ClassicPendingScript::GetSource(const KURL& document_url,
     // used for behavioural changes (and if yes, update its documentation), or
     // otherwise trigger this behaviour differently.
     if (source_location_type_ == ScriptSourceLocationType::kInline) {
-      cache_handler =
-          GetInlineCacheHandler(source, GetElement()->GetDocument());
+      cache_handler = GetInlineCacheHandler(source_text_for_inline_script_,
+                                            GetElement()->GetDocument());
     }
-    ScriptSourceCode source_code(source, source_location_type_, cache_handler,
+    ScriptSourceCode source_code(source_text_for_inline_script_,
+                                 source_location_type_, cache_handler,
                                  document_url, StartingPosition());
     return ClassicScript::Create(source_code, base_url_for_inline_script_,
                                  options_, kSharableCrossOrigin);
