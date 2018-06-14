@@ -182,6 +182,16 @@ constexpr int kUnifiedFeaturePodItemsInRow = 3;
 constexpr int kUnifiedFeaturePodMaxItemsInCollapsed = 5;
 constexpr int kUnifiedNotificationSeparatorThickness = 1;
 
+// Separators between multiple users are shorter than the full width.
+constexpr int kUnifiedUserChooserSeparatorSideMargin = 64;
+// Additional gap above and below the longer separator between user list and
+// "Sign in another user..." button.
+constexpr int kUnifiedUserChooserLargeSeparatorVerticalSpacing = 8;
+//
+constexpr int kUnifiedUserChooserRowHeight = 64;
+constexpr int kUnifiedUserChooserAvatorIconColumnWidth = 64;
+constexpr int kUnifiedUserChooserCloseIconColumnWidth = 64;
+
 // Gap between the buttons on the top shortcut row, other than the
 // expand/collapse button.
 constexpr int kUnifiedTopShortcutButtonDefaultSpacing = 16;
