@@ -211,13 +211,8 @@ static void JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
-  if (!ShouldDoOrderfileMemoryOptimization() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceNativePrefetch)) {
-    NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kNativePrefetchOrderedOnly));
-  }
+  return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(
+      ShouldDoOrderfileMemoryOptimization());
 #endif
 }
 
