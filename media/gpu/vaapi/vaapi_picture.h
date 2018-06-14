@@ -45,8 +45,7 @@ class MEDIA_GPU_EXPORT VaapiPicture {
 
   virtual bool AllowOverlay() const;
 
-  // Downloads the |va_surface| into the picture, potentially scaling
-  // it if needed.
+  // Downloads |va_surface| into the picture, potentially scaling it if needed.
   virtual bool DownloadFromSurface(
       const scoped_refptr<VASurface>& va_surface) = 0;
 
@@ -60,7 +59,7 @@ class MEDIA_GPU_EXPORT VaapiPicture {
                uint32_t client_texture_id,
                uint32_t texture_target);
 
-  scoped_refptr<VaapiWrapper> vaapi_wrapper_;
+  const scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
   const MakeGLContextCurrentCallback make_context_current_cb_;
   const BindGLImageCallback bind_image_cb_;

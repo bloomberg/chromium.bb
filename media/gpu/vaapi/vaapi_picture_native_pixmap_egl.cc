@@ -33,6 +33,8 @@ VaapiPictureNativePixmapEgl::VaapiPictureNativePixmapEgl(
                                client_texture_id,
                                texture_target) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(texture_id);
+  DCHECK(client_texture_id);
 }
 
 VaapiPictureNativePixmapEgl::~VaapiPictureNativePixmapEgl() {
@@ -58,14 +60,12 @@ bool VaapiPictureNativePixmapEgl::Initialize() {
   // because the dmabuf fds have been made from it.
   DCHECK(pixmap_->AreDmaBufFdsValid());
 
-  if (client_texture_id_ != 0 && !bind_image_cb_.is_null()) {
-    if (!bind_image_cb_.Run(client_texture_id_, texture_target_, gl_image_,
-                            true)) {
-      LOG(ERROR) << "Failed to bind client_texture_id";
-      return false;
-    }
+  if (bind_image_cb_ &&
+      !bind_image_cb_.Run(client_texture_id_, texture_target_, gl_image_,
+                          true /* can_bind_to_sampler */)) {
+    LOG(ERROR) << "Failed to bind client_texture_id";
+    return false;
   }
-
   return true;
 }
 
@@ -73,51 +73,44 @@ bool VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Export the gl texture as dmabuf.
-  if (texture_id_ != 0 && !make_context_current_cb_.is_null()) {
-    if (!make_context_current_cb_.Run())
-      return false;
+  if (make_context_current_cb_ && !make_context_current_cb_.Run())
+    return false;
 
-    scoped_refptr<gl::GLImageNativePixmap> image(new gl::GLImageNativePixmap(
-        size_, BufferFormatToInternalFormat(format)));
+  scoped_refptr<gl::GLImageNativePixmap> image(
+      new gl::GLImageNativePixmap(size_, BufferFormatToInternalFormat(format)));
 
-    // Create an EGLImage from a gl texture
-    if (!image->InitializeFromTexture(texture_id_)) {
-      DLOG(ERROR) << "Failed to initialize eglimage from texture id: "
-                  << texture_id_;
-      return false;
-    }
-
-    // Export the EGLImage as dmabuf.
-    gfx::NativePixmapHandle native_pixmap_handle = image->ExportHandle();
-    if (!native_pixmap_handle.planes.size()) {
-      DLOG(ERROR) << "Failed to export EGLImage as dmabuf fds";
-      return false;
-    }
-
-    // Convert NativePixmapHandle to NativePixmapDmaBuf.
-    scoped_refptr<gfx::NativePixmap> native_pixmap_dmabuf(
-        new gfx::NativePixmapDmaBuf(size_, format, native_pixmap_handle));
-    if (!native_pixmap_dmabuf->AreDmaBufFdsValid()) {
-      DLOG(ERROR) << "Invalid dmabuf fds";
-      return false;
-    }
-
-    if (!image->BindTexImage(texture_target_)) {
-      DLOG(ERROR) << "Failed to bind texture to GLImage";
-      return false;
-    }
-
-    // The |pixmap_| takes ownership of the dmabuf fds. So the only reason
-    // to keep a reference on the image is because the GPU service needs to
-    // track this image as it will be attached to a client texture.
-    pixmap_ = native_pixmap_dmabuf;
-    gl_image_ = image;
-  }
-
-  if (!pixmap_) {
-    DVLOG(1) << "Failed allocating a pixmap";
+  // Create an EGLImage from a gl texture
+  if (!image->InitializeFromTexture(texture_id_)) {
+    DLOG(ERROR) << "Failed to initialize eglimage from texture id: "
+                << texture_id_;
     return false;
   }
+
+  // Export the EGLImage as dmabuf.
+  gfx::NativePixmapHandle native_pixmap_handle = image->ExportHandle();
+  if (!native_pixmap_handle.planes.size()) {
+    DLOG(ERROR) << "Failed to export EGLImage as dmabuf fds";
+    return false;
+  }
+
+  // Convert NativePixmapHandle to NativePixmapDmaBuf.
+  scoped_refptr<gfx::NativePixmap> native_pixmap_dmabuf(
+      new gfx::NativePixmapDmaBuf(size_, format, native_pixmap_handle));
+  if (!native_pixmap_dmabuf->AreDmaBufFdsValid()) {
+    DLOG(ERROR) << "Invalid dmabuf fds";
+    return false;
+  }
+
+  if (!image->BindTexImage(texture_target_)) {
+    DLOG(ERROR) << "Failed to bind texture to GLImage";
+    return false;
+  }
+
+  // The |pixmap_| takes ownership of the dmabuf fds. So the only reason
+  // to keep a reference on the image is because the GPU service needs to
+  // track this image as it will be attached to a client texture.
+  pixmap_ = native_pixmap_dmabuf;
+  gl_image_ = image;
 
   return Initialize();
 }

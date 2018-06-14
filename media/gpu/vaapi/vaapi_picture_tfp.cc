@@ -33,6 +33,8 @@ VaapiTFPPicture::VaapiTFPPicture(
       x_display_(gfx::GetXDisplay()),
       x_pixmap_(0) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(texture_id);
+  DCHECK(client_texture_id);
 }
 
 VaapiTFPPicture::~VaapiTFPPicture() {
@@ -50,22 +52,20 @@ bool VaapiTFPPicture::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(x_pixmap_);
 
-  if (texture_id_ != 0 && !make_context_current_cb_.is_null()) {
-    if (!make_context_current_cb_.Run())
-      return false;
+  if (make_context_current_cb_ && !make_context_current_cb_.Run())
+    return false;
 
-    glx_image_ = new gl::GLImageGLX(size_, GL_RGB);
-    if (!glx_image_->Initialize(x_pixmap_)) {
-      // x_pixmap_ will be freed in the destructor.
-      DLOG(ERROR) << "Failed creating a GLX Pixmap for TFP";
-      return false;
-    }
+  glx_image_ = new gl::GLImageGLX(size_, GL_RGB);
+  if (!glx_image_->Initialize(x_pixmap_)) {
+    // x_pixmap_ will be freed in the destructor.
+    DLOG(ERROR) << "Failed creating a GLX Pixmap for TFP";
+    return false;
+  }
 
-    gl::ScopedTextureBinder texture_binder(texture_target_, texture_id_);
-    if (!glx_image_->BindTexImage(texture_target_)) {
-      DLOG(ERROR) << "Failed to bind texture to glx image";
-      return false;
-    }
+  gl::ScopedTextureBinder texture_binder(texture_target_, texture_id_);
+  if (!glx_image_->BindTexImage(texture_target_)) {
+    DLOG(ERROR) << "Failed to bind texture to glx image";
+    return false;
   }
 
   return true;

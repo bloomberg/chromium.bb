@@ -116,15 +116,14 @@ class MockVaapiPictureFactory : public VaapiPictureFactory {
       const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
-      int32_t picture_buffer_id,
-      const gfx::Size& size,
-      uint32_t texture_id,
-      uint32_t client_texture_id,
-      uint32_t texture_target) override {
-    MockCreateVaapiPicture(vaapi_wrapper.get(), size);
+      const PictureBuffer& picture_buffer) override {
+    const uint32_t service_texture_id = picture_buffer.service_texture_ids()[0];
+    const uint32_t client_texture_id = picture_buffer.client_texture_ids()[0];
+    MockCreateVaapiPicture(vaapi_wrapper.get(), picture_buffer.size());
     return std::make_unique<MockVaapiPicture>(
         vaapi_wrapper, make_context_current_cb, bind_image_cb,
-        picture_buffer_id, size, texture_id, client_texture_id, texture_target);
+        picture_buffer.id(), picture_buffer.size(), service_texture_id,
+        client_texture_id, picture_buffer.texture_target());
   }
 };
 
