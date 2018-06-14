@@ -67,70 +67,73 @@ void ContainerFloatingBehavior::InitializeShowAnimationStartingState(
 
 gfx::Rect ContainerFloatingBehavior::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
-    const gfx::Rect& requested_bounds) {
-  gfx::Rect keyboard_bounds = requested_bounds;
+    const gfx::Rect& requested_bounds_in_screen) {
+  gfx::Rect keyboard_bounds_in_screen = requested_bounds_in_screen;
 
-  if (!default_position_) {
+  if (!default_position_in_screen_) {
     // If the keyboard hasn't been shown yet, ignore the request and use
     // default.
-    gfx::Point default_location =
-        GetPositionForShowingKeyboard(keyboard_bounds.size(), display_bounds);
-    keyboard_bounds = gfx::Rect(default_location, keyboard_bounds.size());
+    gfx::Point default_location = GetPositionForShowingKeyboard(
+        keyboard_bounds_in_screen.size(), display_bounds);
+    keyboard_bounds_in_screen =
+        gfx::Rect(default_location, keyboard_bounds_in_screen.size());
   } else {
     // Otherwise, simply make sure that the new bounds are not off the edge of
     // the screen.
-    keyboard_bounds =
-        ContainKeyboardToScreenBounds(keyboard_bounds, display_bounds);
-    SavePosition(keyboard_bounds, display_bounds.size());
+    keyboard_bounds_in_screen = ContainKeyboardToScreenBounds(
+        keyboard_bounds_in_screen, display_bounds);
+    SavePosition(keyboard_bounds_in_screen, display_bounds.size());
   }
 
-  return keyboard_bounds;
+  return keyboard_bounds_in_screen;
 }
 
-void ContainerFloatingBehavior::SavePosition(const gfx::Rect& keyboard_bounds,
-                                             const gfx::Size& screen_size) {
-  int left_distance = keyboard_bounds.x();
-  int right_distance = screen_size.width() - (keyboard_bounds.right());
-  int top_distance = keyboard_bounds.y();
-  int bottom_distance = screen_size.height() - (keyboard_bounds.bottom());
+void ContainerFloatingBehavior::SavePosition(
+    const gfx::Rect& keyboard_bounds_in_screen,
+    const gfx::Size& screen_size) {
+  int left_distance = keyboard_bounds_in_screen.x();
+  int right_distance = screen_size.width() - keyboard_bounds_in_screen.right();
+  int top_distance = keyboard_bounds_in_screen.y();
+  int bottom_distance =
+      screen_size.height() - keyboard_bounds_in_screen.bottom();
 
   double available_width = left_distance + right_distance;
   double available_height = top_distance + bottom_distance;
 
-  if (!default_position_) {
-    default_position_ = std::make_unique<KeyboardPosition>();
+  if (!default_position_in_screen_) {
+    default_position_in_screen_ = std::make_unique<KeyboardPosition>();
   }
 
-  default_position_->left_padding_allotment_ratio =
+  default_position_in_screen_->left_padding_allotment_ratio =
       left_distance / available_width;
-  default_position_->top_padding_allotment_ratio =
+  default_position_in_screen_->top_padding_allotment_ratio =
       top_distance / available_height;
 }
 
 gfx::Rect ContainerFloatingBehavior::ContainKeyboardToScreenBounds(
-    const gfx::Rect& keyboard_bounds,
+    const gfx::Rect& keyboard_bounds_in_screen,
     const gfx::Rect& display_bounds) const {
-  int left = keyboard_bounds.x();
-  int top = keyboard_bounds.y();
-  int right = keyboard_bounds.right();
-  int bottom = keyboard_bounds.bottom();
+  int left = keyboard_bounds_in_screen.x();
+  int top = keyboard_bounds_in_screen.y();
+  int right = keyboard_bounds_in_screen.right();
+  int bottom = keyboard_bounds_in_screen.bottom();
 
   // Prevent keyboard from appearing off screen or overlapping with the edge.
   if (left < display_bounds.x()) {
     left = display_bounds.x();
-    right = left + keyboard_bounds.width();
+    right = left + keyboard_bounds_in_screen.width();
   }
   if (right >= display_bounds.right()) {
     right = display_bounds.right();
-    left = right - keyboard_bounds.width();
+    left = right - keyboard_bounds_in_screen.width();
   }
   if (top < display_bounds.y()) {
     top = display_bounds.y();
-    bottom = top + keyboard_bounds.height();
+    bottom = top + keyboard_bounds_in_screen.height();
   }
   if (bottom >= display_bounds.bottom()) {
     bottom = display_bounds.bottom();
-    top = bottom - keyboard_bounds.height();
+    top = bottom - keyboard_bounds_in_screen.height();
   }
 
   return gfx::Rect(left, top, right - left, bottom - top);
@@ -145,7 +148,7 @@ gfx::Point ContainerFloatingBehavior::GetPositionForShowingKeyboard(
     const gfx::Rect& display_bounds) const {
   // Start with the last saved position
   gfx::Point top_left_offset;
-  KeyboardPosition* position = default_position_.get();
+  KeyboardPosition* position = default_position_in_screen_.get();
   if (position == nullptr) {
     // If there is none, center the keyboard along the bottom of the screen.
     top_left_offset.set_x(display_bounds.width() - keyboard_size.width() -
@@ -189,10 +192,10 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
 
   aura::Window* container = controller_->GetContainerWindow();
 
-  const gfx::Rect& keyboard_bounds = container->bounds();
+  const gfx::Rect& keyboard_bounds_in_screen = container->GetBoundsInScreen();
 
   // Don't handle events if this runs in a partially initialized state.
-  if (keyboard_bounds.height() <= 0)
+  if (keyboard_bounds_in_screen.height() <= 0)
     return false;
 
   ui::PointerId pointer_id = -1;
@@ -205,7 +208,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
   switch (type) {
     case ui::ET_TOUCH_PRESSED:
     case ui::ET_MOUSE_PRESSED:
-      if (!IsDragHandle(kb_offset, keyboard_bounds.size())) {
+      if (!IsDragHandle(kb_offset, keyboard_bounds_in_screen.size())) {
         drag_descriptor_ = nullptr;
       } else if (type == ui::ET_MOUSE_PRESSED &&
                  !((const ui::MouseEvent*)&event)->IsOnlyLeftMouseButton()) {
@@ -215,7 +218,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
         // If there is no active drag descriptor, start a new one.
         bool drag_started_by_touch = (type == ui::ET_TOUCH_PRESSED);
         drag_descriptor_.reset(
-            new DragDescriptor{keyboard_bounds.origin(), kb_offset,
+            new DragDescriptor{keyboard_bounds_in_screen.origin(), kb_offset,
                                drag_started_by_touch, pointer_id});
       }
       break;
@@ -239,14 +242,14 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
             drag_descriptor_->original_keyboard_location +
             drag_descriptor_->original_click_offset;
         const gfx::Point current_drag_location =
-            keyboard_bounds.origin() + kb_offset;
+            keyboard_bounds_in_screen.origin() + kb_offset;
         const gfx::Vector2d cumulative_drag_offset =
             current_drag_location - original_click_location;
         const gfx::Point new_keyboard_location =
             drag_descriptor_->original_keyboard_location +
             cumulative_drag_offset;
         gfx::Rect new_bounds_in_local =
-            gfx::Rect(new_keyboard_location, keyboard_bounds.size());
+            gfx::Rect(new_keyboard_location, keyboard_bounds_in_screen.size());
 
         DisplayUtil display_util;
         const display::Display& new_display =
@@ -274,7 +277,7 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
           controller_->MoveToDisplayWithTransition(new_display,
                                                    new_bounds_in_local);
         }
-        SavePosition(container->bounds(), new_display.size());
+        SavePosition(container->GetBoundsInScreen(), new_display.size());
         return true;
       }
       break;
@@ -291,10 +294,10 @@ void ContainerFloatingBehavior::SetCanonicalBounds(
     const gfx::Rect& display_bounds) {
   gfx::Point keyboard_location =
       GetPositionForShowingKeyboard(container->bounds().size(), display_bounds);
-  gfx::Rect keyboard_bounds =
+  gfx::Rect keyboard_bounds_in_screen =
       gfx::Rect(keyboard_location, container->bounds().size());
-  SavePosition(keyboard_bounds, display_bounds.size());
-  container->SetBounds(keyboard_bounds);
+  SavePosition(keyboard_bounds_in_screen, display_bounds.size());
+  container->SetBounds(keyboard_bounds_in_screen);
 }
 
 bool ContainerFloatingBehavior::TextBlurHidesKeyboard() const {

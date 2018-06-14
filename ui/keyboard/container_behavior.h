@@ -61,7 +61,7 @@ class KEYBOARD_EXPORT ContainerBehavior {
   virtual bool IsDragHandle(const gfx::Vector2d& offset,
                             const gfx::Size& keyboard_size) const = 0;
 
-  virtual void SavePosition(const gfx::Rect& keyboard_bounds,
+  virtual void SavePosition(const gfx::Rect& keyboard_bounds_in_screen,
                             const gfx::Size& screen_size) = 0;
 
   virtual bool HandlePointerEvent(const ui::LocatedEvent& event,

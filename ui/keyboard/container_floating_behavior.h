@@ -47,7 +47,7 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
   bool IsOverscrollAllowed() const override;
   bool IsDragHandle(const gfx::Vector2d& offset,
                     const gfx::Size& keyboard_size) const override;
-  void SavePosition(const gfx::Rect& keyboard_bounds,
+  void SavePosition(const gfx::Rect& keyboard_bounds_in_screen,
                     const gfx::Size& screen_size) override;
   bool HandlePointerEvent(const ui::LocatedEvent& event,
                           const display::Display& current_display) override;
@@ -69,7 +69,7 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
   // Ensures that the keyboard is neither off the screen nor overlapping an
   // edge.
   gfx::Rect ContainKeyboardToScreenBounds(
-      const gfx::Rect& keyboard_bounds,
+      const gfx::Rect& keyboard_bounds_in_screen,
       const gfx::Rect& display_bounds) const;
 
   // Saves the current keyboard location for use the next time it is displayed.
@@ -78,8 +78,8 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
   KeyboardController* controller_;
 
   // TODO(blakeo): cache the default_position_ on a per-display basis.
-  std::unique_ptr<struct keyboard::KeyboardPosition> default_position_ =
-      nullptr;
+  std::unique_ptr<struct keyboard::KeyboardPosition>
+      default_position_in_screen_ = nullptr;
 
   // Current state of a cursor drag to move the keyboard, if one exists.
   // Otherwise nullptr.

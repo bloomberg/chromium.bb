@@ -927,8 +927,9 @@ void MagnificationController::MoveMagnifierWindowCenterPoint(
 
   // Reduce the viewport bounds if the keyboard is up.
   if (keyboard::KeyboardController::Get()->enabled()) {
-    gfx::Rect keyboard_rect =
-        keyboard::KeyboardController::Get()->GetContainerWindow()->bounds();
+    gfx::Rect keyboard_rect = keyboard::KeyboardController::Get()
+                                  ->GetContainerWindow()
+                                  ->GetBoundsInScreen();
     window_rect.set_height(window_rect.height() -
                            keyboard_rect.height() / scale_);
   }
