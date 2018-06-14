@@ -9,9 +9,11 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/unified/collapse_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -20,6 +22,9 @@
 namespace ash {
 
 namespace {
+
+// TODO(tetsui): Remove when the asset is arrived.
+const int kBackIconSize = 20;
 
 void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
   std::unique_ptr<views::BoxLayout> layout;
@@ -51,6 +56,40 @@ void ConfigureTitleTriView(TriView* tri_view, TriView::Container container) {
   tri_view->SetMinSize(container,
                        gfx::Size(0, kUnifiedDetailedViewTitleRowHeight));
 }
+
+class BackButton : public CustomShapeButton {
+ public:
+  BackButton(views::ButtonListener* listener) : CustomShapeButton(listener) {
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(kSystemMenuArrowBackIcon, kBackIconSize,
+                                   kUnifiedMenuIconColor));
+    SetImageAlignment(HorizontalAlignment::ALIGN_RIGHT,
+                      VerticalAlignment::ALIGN_MIDDLE);
+    SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_PREVIOUS_MENU));
+    SetBorder(views::CreateEmptyBorder(
+        gfx::Insets((kTrayItemSize - kBackIconSize) / 2)));
+  }
+
+  ~BackButton() override = default;
+
+  // CustomShapeButton:
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(kTrayItemSize * 3 / 2, kTrayItemSize);
+  }
+
+  SkPath CreateCustomShapePath(const gfx::Rect& bounds) const override {
+    SkPath path;
+    SkScalar bottom_radius = SkIntToScalar(kTrayItemSize / 2);
+    SkScalar radii[8] = {
+        0, 0, bottom_radius, bottom_radius, bottom_radius, bottom_radius, 0, 0};
+    path.addRoundRect(gfx::RectToSkRect(bounds), radii);
+    return path;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BackButton);
+};
 
 }  // namespace
 
@@ -91,7 +130,8 @@ TriView* UnifiedDetailedViewDelegate::CreateTitleRow(int string_id) {
   tri_view->AddView(TriView::Container::CENTER, label);
 
   tri_view->SetContainerVisible(TriView::Container::END, false);
-  tri_view->SetBorder(views::CreateEmptyBorder(kUnifiedTopShortcutPadding));
+  tri_view->SetBorder(
+      views::CreateEmptyBorder(kUnifiedDetailedViewTitlePadding));
 
   return tri_view;
 }
@@ -106,9 +146,7 @@ views::View* UnifiedDetailedViewDelegate::CreateTitleSeparator() {
 
 views::Button* UnifiedDetailedViewDelegate::CreateBackButton(
     views::ButtonListener* listener) {
-  // TODO(tetsui): Implement custom back button derived from CollapseButton.
-  return new TopShortcutButton(listener, kSystemMenuArrowBackIcon,
-                               IDS_ASH_STATUS_TRAY_PREVIOUS_MENU);
+  return new BackButton(listener);
 }
 
 views::Button* UnifiedDetailedViewDelegate::CreateInfoButton(

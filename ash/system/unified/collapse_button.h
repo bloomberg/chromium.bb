@@ -9,27 +9,43 @@
 
 namespace ash {
 
-// Collapse button shown in TopShortcutsView with TopShortcutButtons.
-// UnifiedSystemTrayBubble will support collapsed state where the height of the
-// bubble is smaller, and some rows and labels will be omitted.
-// By pressing the button, the state of the bubble will be toggled.
-class CollapseButton : public views::ImageButton {
+// Abstract base class of buttons that have custom shape with Material Design
+// ink drop.
+class CustomShapeButton : public views::ImageButton {
  public:
-  CollapseButton(views::ButtonListener* listener);
-  ~CollapseButton() override;
+  explicit CustomShapeButton(views::ButtonListener* listener);
+  ~CustomShapeButton() override;
 
-  // Change the icon for the |expanded| state.
-  void UpdateIcon(bool expanded);
+  // Return the custom shape for the button in SkPath.
+  virtual SkPath CreateCustomShapePath(const gfx::Rect& bounds) const = 0;
 
   // views::ImageButton:
-  gfx::Size CalculatePreferredSize() const override;
-  int GetHeightForWidth(int width) const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CustomShapeButton);
+};
+
+// Collapse button shown in TopShortcutsView with TopShortcutButtons.
+// UnifiedSystemTrayBubble will support collapsed state where the height of the
+// bubble is smaller, and some rows and labels will be omitted.
+// By pressing the button, the state of the bubble will be toggled.
+class CollapseButton : public CustomShapeButton {
+ public:
+  explicit CollapseButton(views::ButtonListener* listener);
+  ~CollapseButton() override;
+
+  // Change the icon for the |expanded| state.
+  void UpdateIcon(bool expanded);
+
+  // CustomShapeButton:
+  gfx::Size CalculatePreferredSize() const override;
+  SkPath CreateCustomShapePath(const gfx::Rect& bounds) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CollapseButton);
