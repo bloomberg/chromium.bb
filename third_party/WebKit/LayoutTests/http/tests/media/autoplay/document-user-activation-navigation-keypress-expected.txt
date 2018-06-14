@@ -1,4 +1,5 @@
 PASS undefined is undefined.
+PASS results.webAudio is "running"
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -4,20 +4,26 @@
 
 // Tracks the results and how many active tests we have running.
 let testExpectations = {};
-let callback;
+let doneCallback;
 let resultCallback = (data) => { top.postMessage(data, '*') };
 let completedTestResults = [];
+let results = {};
 
-function tearDown(result) {
+function tearDown() {
   // Reset the flag state.
   internals.settings.setAutoplayPolicy('no-user-gesture-required');
-  let canAutoplay = true;
 
   // Ensure that play failed because autoplay was blocked. If playback failed
   // for another reason then we don't care because autoplay is always checked
   // first.
-  if (result && result.name == 'NotAllowedError')
-    canAutoplay = false;
+  const canAutoplayMedia = !results.media ||
+                           results.media.name != 'NotAllowedError';
+  const canAutoplayWebAudio = results.webAudio == 'running';
+
+  // `canAutoplay` must match autoplay for both media element and Web Audio.
+  // Special value `undefined` will be propagated otherwise.
+  const canAutoplay = canAutoplayMedia == canAutoplayWebAudio ? canAutoplayMedia
+                                                              : undefined;
 
   receivedResult({
     url: window.location.href,
@@ -27,7 +33,7 @@ function tearDown(result) {
 
 function receivedResult(data) {
   // Forward the result to the top frame.
-  if (!callback) {
+  if (!doneCallback) {
     top.postMessage(data, '*');
     return;
   }
@@ -45,13 +51,28 @@ function processTestResults() {
     assert_equals(testExpectations[data.url], data.message);
   });
 
-  callback();
+  doneCallback();
 }
 
-function runVideoTest() {
-  const video = document.createElement('video');
-  video.src = '/media-resources/content/test.ogv';
-  video.play().then(tearDown, tearDown);
+function runMediaTest() {
+  return new Promise(resolve => {
+    const video = document.createElement('video');
+    video.src = '/media-resources/content/test.ogv';
+    video.play().then(result => results.media = result,
+                      result => results.media = result)
+                .then(resolve);
+  });
+}
+
+function runWebAudioTest() {
+  const audioContext = new AudioContext();
+  results.webAudio = audioContext.state;
+}
+
+async function runAutoplayTest() {
+  await runMediaTest();
+  runWebAudioTest();
+  tearDown();
 }
 
 function simulateViewportClick(callback) {
@@ -89,11 +110,11 @@ function runTest(pointerSequence, expectations) {
 
   // Run the test.
   async_test((t) => {
-    callback = t.step_func_done();
+    doneCallback = t.step_func_done();
 
     // Fire the pointer sequence and then run the video test.
     pointerSequence(t.step_func(() => {
-      runVideoTest();
+      runAutoplayTest();
 
       // Navigate the iframe now we have the gesture.
       document.getElementsByTagName('iframe')[0].src =
@@ -106,10 +127,11 @@ function runTest(pointerSequence, expectations) {
 
 // Setup the flags before the test is run.
 internals.settings.setAutoplayPolicy('document-user-activation-required');
+internals.runtimeFlags.autoplayIgnoresWebAudioEnabled = false;
 
 // Setup the event listener to forward messages.
 window.addEventListener('message', (e) => { resultCallback(e.data); });
 
 // If we are on an iframe then run the video test automatically.
 if (window.self !== window.top)
-  runVideoTest();
+  runAutoplayTest();

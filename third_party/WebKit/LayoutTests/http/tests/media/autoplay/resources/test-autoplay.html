@@ -3,23 +3,43 @@
 <script src="/js-test-resources/js-test.js"></script>
 <script>
 var jsTestIsAsync = true;
-function tearDown(result) {
+let results = {};
+
+function tearDown() {
   internals.settings.setAutoplayPolicy('no-user-gesture-required');
-  shouldBeUndefined(result);
+
+  shouldBeUndefined(results.media);
+  shouldBeEqualToString('results.webAudio', 'running');
+
   finishJSTest();
 }
 
-function runVideoTest() {
-  var video = document.createElement('video');
-  video.src = "/resources/test.ogv";
-  video.play().then(tearDown, tearDown);
+function runMediaTests() {
+  return new Promise(resolve => {
+    const video = document.createElement('video');
+    video.src = "/resources/test.ogv";
+    video.play().then(result => { results.media = result },
+                      result => { results.media = result })
+                .then(resolve);
+  });
 }
 
-window.addEventListener('load', function() {
+function runWebAudioTests() {
+  const audioContext = new AudioContext();
+  results.webAudio = audioContext.state;
+}
+
+async function runTests() {
+  await runMediaTests();
+  runWebAudioTests();
+}
+
+window.addEventListener('load', async function() {
   if (window.testRunner) {
     testRunner.dumpAsText();
-    runVideoTest();
+    await runTests();
     testRunner.dumpBackForwardList();
+    tearDown();
   }
 }, false);
 </script>
