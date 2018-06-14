@@ -65,6 +65,7 @@ class ChromeDownloadManagerDelegate
 
   void ChooseDownloadLocation(
       gfx::NativeWindow native_window,
+      int64_t total_bytes,
       DownloadLocationDialogType dialog_type,
       const base::FilePath& suggested_path,
       DownloadLocationDialogBridge::LocationCallback callback);

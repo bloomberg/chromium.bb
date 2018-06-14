@@ -27,6 +27,7 @@ DownloadLocationDialogBridgeImpl::~DownloadLocationDialogBridgeImpl() {
 
 void DownloadLocationDialogBridgeImpl::ShowDialog(
     gfx::NativeWindow native_window,
+    int64_t total_bytes,
     DownloadLocationDialogType dialog_type,
     const base::FilePath& suggested_path,
     LocationCallback location_callback) {
@@ -57,7 +58,7 @@ void DownloadLocationDialogBridgeImpl::ShowDialog(
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadLocationDialogBridge_showDialog(
       env, java_obj_, native_window->GetJavaObject(),
-      static_cast<int>(dialog_type),
+      static_cast<long>(total_bytes), static_cast<int>(dialog_type),
       base::android::ConvertUTF8ToJavaString(env,
                                              suggested_path.AsUTF8Unsafe()));
 }

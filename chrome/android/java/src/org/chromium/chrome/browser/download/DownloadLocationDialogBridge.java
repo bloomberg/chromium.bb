@@ -37,8 +37,8 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
     }
 
     @CalledByNative
-    public void showDialog(WindowAndroid windowAndroid, @DownloadLocationDialogType int dialogType,
-            String suggestedPath) {
+    public void showDialog(WindowAndroid windowAndroid, long totalBytes,
+            @DownloadLocationDialogType int dialogType, String suggestedPath) {
         ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
         // If the activity has gone away, just clean up the native pointer.
         if (activity == null) {
@@ -49,8 +49,8 @@ public class DownloadLocationDialogBridge implements ModalDialogView.Controller 
         mModalDialogManager = activity.getModalDialogManager();
 
         if (mLocationDialog != null) return;
-        mLocationDialog =
-                DownloadLocationDialog.create(this, activity, dialogType, new File(suggestedPath));
+        mLocationDialog = DownloadLocationDialog.create(
+                this, activity, totalBytes, dialogType, new File(suggestedPath));
 
         mModalDialogManager.showDialog(mLocationDialog, ModalDialogManager.APP_MODAL);
     }

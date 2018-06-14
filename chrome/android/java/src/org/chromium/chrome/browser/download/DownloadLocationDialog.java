@@ -40,12 +40,13 @@ public class DownloadLocationDialog extends ModalDialogView implements OnChecked
      *
      * @param controller    Controller that listens to the events from the dialog.
      * @param context       Context from which the dialog emerged.
+     * @param totalBytes    The total bytes of the file. Can be 0 if size is unknown.
      * @param dialogType    Type of dialog that should be displayed, dictates title/subtitle.
      * @param suggestedPath The path that was automatically generated, used as a starting point.
      * @return              A {@link DownloadLocationDialog} with the given properties.
      */
     public static DownloadLocationDialog create(Controller controller, Context context,
-            @DownloadLocationDialogType int dialogType, File suggestedPath) {
+            long totalBytes, @DownloadLocationDialogType int dialogType, File suggestedPath) {
         Params params = new Params();
         params.positiveButtonTextId = R.string.duplicate_download_infobar_download_button;
         params.negativeButtonTextId = R.string.cancel;
@@ -79,7 +80,12 @@ public class DownloadLocationDialog extends ModalDialogView implements OnChecked
                 break;
 
             case DownloadLocationDialogType.DEFAULT:
-            default:
+                if (totalBytes > 0) {
+                    StringBuilder title = new StringBuilder(params.title);
+                    title.append(" ");
+                    title.append(DownloadUtils.getStringForBytes(context, totalBytes));
+                    params.title = title.toString();
+                }
                 break;
         }
 
