@@ -50,6 +50,9 @@
 # https://crbug.com/789632.
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked
 -ClientHintsBrowserTest.ClientHintsNoLifetimeCookiesNotAllowed
+-CookieSettingsTest.AllowCookiesUsingExceptions/3
+-CookieSettingsTest.BlockCookiesUsingExceptions/3
+-CookieSettingsTest.BlockCookies/3
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions
 -ContentSettingsTest.RedirectCrossOrigin
 -ContentSettingsTest.RedirectLoopCookies

@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
@@ -35,6 +37,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
@@ -96,83 +99,191 @@ class ContentSettingsTest : public InProcessBrowserTest {
         base::BindOnce(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
-  // Check the cookie for the given URL in an incognito window.
-  void CookieCheckIncognitoWindow(const GURL& url, bool cookies_enabled) {
-    ASSERT_TRUE(content::GetCookies(browser()->profile(), url).empty());
+  net::EmbeddedTestServer https_server_;
+};
+
+// Test the combination of different ways of accessing cookies.
+// Cookies can be read by JS or http request headers.
+// Cookies can be written by JS or http response headers.
+enum class CookieMode {
+  kJSReadJSWrite,
+  kJSReadHttpWrite,
+  kHttpReadJSWrite,
+  kHttpReadHttpWrite
+};
+
+class CookieSettingsTest : public ContentSettingsTest,
+                           public testing::WithParamInterface<CookieMode> {
+ public:
+  void SetUpOnMainThread() override {
+    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+        &CookieSettingsTest::MonitorRequest, base::Unretained(this)));
+    https_server_.RegisterRequestMonitor(base::BindRepeating(
+        &CookieSettingsTest::MonitorRequest, base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(https_server_.Start());
+  }
+
+  void set_secure_scheme() { secure_scheme_ = true; }
+
+  std::string ReadCookie(Browser* browser) {
+    if (GetParam() == CookieMode::kJSReadJSWrite ||
+        GetParam() == CookieMode::kJSReadHttpWrite) {
+      return JSReadCookie(browser);
+    }
+
+    return HttpReadCookie(browser);
+  }
+
+  void WriteCookie(Browser* browser) {
+    if (GetParam() == CookieMode::kJSReadJSWrite ||
+        GetParam() == CookieMode::kHttpReadJSWrite) {
+      return JSWriteCookie(browser);
+    }
+
+    return HttpWriteCookie(browser);
+  }
+
+  // Check the cookie in an incognito window.
+  void CookieCheckIncognitoWindow(bool cookies_enabled) {
+    ASSERT_TRUE(ReadCookie(browser()).empty());
 
     Browser* incognito = CreateIncognitoBrowser();
-    ASSERT_TRUE(content::GetCookies(incognito->profile(), url).empty());
-    ui_test_utils::NavigateToURL(incognito, url);
-    ASSERT_EQ(cookies_enabled,
-              !content::GetCookies(incognito->profile(), url).empty());
+    ui_test_utils::NavigateToURL(incognito, GetPageURL());
+    ASSERT_TRUE(ReadCookie(incognito).empty());
+    WriteCookie(incognito);
+    ASSERT_EQ(cookies_enabled, !ReadCookie(incognito).empty());
 
     // Ensure incognito cookies don't leak to regular profile.
-    ASSERT_TRUE(content::GetCookies(browser()->profile(), url).empty());
+    ASSERT_TRUE(ReadCookie(browser()).empty());
 
     // Ensure cookies get wiped after last incognito window closes.
     CloseBrowserSynchronously(incognito);
 
     incognito = CreateIncognitoBrowser();
-    ASSERT_TRUE(content::GetCookies(incognito->profile(), url).empty());
+    ui_test_utils::NavigateToURL(incognito, GetPageURL());
+    ASSERT_TRUE(ReadCookie(incognito).empty());
     CloseBrowserSynchronously(incognito);
   }
 
-  void PreBasic(const GURL& url) {
-    ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
+  void PreBasic() {
+    ui_test_utils::NavigateToURL(browser(), GetPageURL());
+    ASSERT_TRUE(ReadCookie(browser()).empty());
 
-    CookieCheckIncognitoWindow(url, true);
+    CookieCheckIncognitoWindow(true);
 
-    ui_test_utils::NavigateToURL(browser(), url);
-    ASSERT_FALSE(GetCookies(browser()->profile(), url).empty());
+    WriteCookie(browser());
+    ASSERT_FALSE(ReadCookie(browser()).empty());
   }
 
-  void Basic(const GURL& url) {
-    ASSERT_FALSE(GetCookies(browser()->profile(), url).empty());
+  void Basic() {
+    ui_test_utils::NavigateToURL(browser(), GetPageURL());
+    ASSERT_FALSE(ReadCookie(browser()).empty());
   }
 
-  net::EmbeddedTestServer https_server_;
+  GURL GetPageURL() { return GetServer()->GetURL("/simple.html"); }
+
+  GURL GetSetCookieURL() {
+    return GetServer()->GetURL("/set_cookie_header.html");
+  }
+
+ private:
+  net::EmbeddedTestServer* GetServer() {
+    return secure_scheme_ ? &https_server_ : embedded_test_server();
+  }
+
+  // Read a cookie via JavaScript.
+  std::string JSReadCookie(Browser* browser) {
+    std::string cookies;
+    bool rv = content::ExecuteScriptAndExtractString(
+        browser->tab_strip_model()->GetActiveWebContents(),
+        "window.domAutomationController.send(document.cookie)", &cookies);
+    CHECK(rv);
+    return cookies;
+  }
+
+  // Read a cookie by fetching a url on the appropriate test server and checking
+  // what Cookie header (if any) it saw.
+  std::string HttpReadCookie(Browser* browser) {
+    {
+      base::AutoLock auto_lock(cookies_seen_lock_);
+      cookies_seen_.clear();
+    }
+
+    auto* network_context =
+        content::BrowserContext::GetDefaultStoragePartition(browser->profile())
+            ->GetNetworkContext();
+    content::LoadBasicRequest(network_context, browser->tab_strip_model()
+                                                   ->GetActiveWebContents()
+                                                   ->GetLastCommittedURL());
+
+    {
+      base::AutoLock auto_lock(cookies_seen_lock_);
+      return cookies_seen_[GetPageURL()];
+    }
+  }
+
+  // Set a cookie with JavaScript.
+  void JSWriteCookie(Browser* browser) {
+    bool rv = content::ExecuteScript(
+        browser->tab_strip_model()->GetActiveWebContents(),
+        "document.cookie = 'name=Good;Max-Age=3600'");
+    CHECK(rv);
+  }
+
+  // Set a cookie by visiting a page that has a Set-Cookie header.
+  void HttpWriteCookie(Browser* browser) {
+    auto* network_context =
+        content::BrowserContext::GetDefaultStoragePartition(browser->profile())
+            ->GetNetworkContext();
+    content::LoadBasicRequest(network_context, GetSetCookieURL());
+  }
+
+  void MonitorRequest(const net::test_server::HttpRequest& request) {
+    base::AutoLock auto_lock(cookies_seen_lock_);
+    auto it = request.headers.find("Cookie");
+    if (it != request.headers.end())
+      cookies_seen_[request.GetURL()] = it->second;
+  }
+
+  bool secure_scheme_ = false;
+  base::Lock cookies_seen_lock_;
+  std::map<GURL, std::string> cookies_seen_;
 };
 
 // Sanity check on cookies before we do other tests. While these can be written
 // in content_browsertests, we want to verify Chrome's cookie storage and how it
 // handles incognito windows.
-IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BasicCookies) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL http_url = embedded_test_server()->GetURL("/setcookie.html");
-  PreBasic(http_url);
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest, PRE_BasicCookies) {
+  PreBasic();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BasicCookies) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL http_url = embedded_test_server()->GetURL("/setcookie.html");
-  Basic(http_url);
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BasicCookies) {
+  Basic();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BasicCookiesHttps) {
-  ASSERT_TRUE(https_server_.Start());
-  GURL https_url = https_server_.GetURL("/setcookie.html");
-  PreBasic(https_url);
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest, PRE_BasicCookiesHttps) {
+  set_secure_scheme();
+  PreBasic();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BasicCookiesHttps) {
-  ASSERT_TRUE(https_server_.Start());
-  GURL https_url = https_server_.GetURL("/setcookie.html");
-  Basic(https_url);
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BasicCookiesHttps) {
+  set_secure_scheme();
+  Basic();
 }
 
 // Verify that cookies are being blocked.
-IN_PROC_BROWSER_TEST_F(ContentSettingsTest, PRE_BlockCookies) {
-  ASSERT_TRUE(embedded_test_server()->Start());
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest, PRE_BlockCookies) {
+  ui_test_utils::NavigateToURL(browser(), GetPageURL());
   CookieSettingsFactory::GetForProfile(browser()->profile())
       ->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
-  GURL url = embedded_test_server()->GetURL("/setcookie.html");
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
-  CookieCheckIncognitoWindow(url, false);
+  WriteCookie(browser());
+  ASSERT_TRUE(ReadCookie(browser()).empty());
+  CookieCheckIncognitoWindow(false);
 }
 
 // Ensure that the setting persists.
-IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookies) {
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookies) {
   ASSERT_EQ(CONTENT_SETTING_BLOCK,
             CookieSettingsFactory::GetForProfile(browser()->profile())
                 ->GetDefaultCookieSetting(NULL));
@@ -180,39 +291,44 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookies) {
 
 // Verify that cookies can be allowed and set using exceptions for particular
 // website(s) when all others are blocked.
-IN_PROC_BROWSER_TEST_F(ContentSettingsTest, AllowCookiesUsingExceptions) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/setcookie.html");
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest, AllowCookiesUsingExceptions) {
+  ui_test_utils::NavigateToURL(browser(), GetPageURL());
   content_settings::CookieSettings* settings =
       CookieSettingsFactory::GetForProfile(browser()->profile()).get();
   settings->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
 
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
+  WriteCookie(browser());
+  ASSERT_TRUE(ReadCookie(browser()).empty());
 
-  settings->SetCookieSetting(url, CONTENT_SETTING_ALLOW);
+  settings->SetCookieSetting(GetPageURL(), CONTENT_SETTING_ALLOW);
 
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_FALSE(GetCookies(browser()->profile(), url).empty());
+  WriteCookie(browser());
+  ASSERT_FALSE(ReadCookie(browser()).empty());
 }
 
 // Verify that cookies can be blocked for a specific website using exceptions.
-IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookiesUsingExceptions) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/setcookie.html");
+IN_PROC_BROWSER_TEST_P(CookieSettingsTest, BlockCookiesUsingExceptions) {
+  ui_test_utils::NavigateToURL(browser(), GetPageURL());
   content_settings::CookieSettings* settings =
       CookieSettingsFactory::GetForProfile(browser()->profile()).get();
-  settings->SetCookieSetting(url, CONTENT_SETTING_BLOCK);
+  settings->SetCookieSetting(GetPageURL(), CONTENT_SETTING_BLOCK);
 
-  ui_test_utils::NavigateToURL(browser(), url);
-  ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
+  WriteCookie(browser());
+  ASSERT_TRUE(ReadCookie(browser()).empty());
 
-  ASSERT_TRUE(https_server_.Start());
   GURL unblocked_url = https_server_.GetURL("/cookie1.html");
 
   ui_test_utils::NavigateToURL(browser(), unblocked_url);
   ASSERT_FALSE(GetCookies(browser()->profile(), unblocked_url).empty());
 }
+
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    CookieSettingsTest,
+    ::testing::Values(CookieMode::kJSReadJSWrite,
+                      CookieMode::kJSReadHttpWrite,
+                      CookieMode::kHttpReadJSWrite,
+                      CookieMode::kHttpReadHttpWrite));
 
 // This fails on ChromeOS because kRestoreOnStartup is ignored and the startup
 // preference is always "continue where I left off.
