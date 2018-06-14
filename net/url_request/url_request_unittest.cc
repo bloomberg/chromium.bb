@@ -328,6 +328,8 @@ class TestPowerMonitorSource : public base::PowerMonitorSource {
   TestPowerMonitorSource() = default;
   ~TestPowerMonitorSource() override = default;
 
+  void Shutdown() override {}
+
   void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
 
   void Resume() { ProcessPowerEvent(RESUME_EVENT); }
