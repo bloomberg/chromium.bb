@@ -86,7 +86,7 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   void ResolveSuspendOnMainThread(size_t);
 
   // OfflineAudioContext is not affected by Autoplay, so this MUST do nothing.
-  void MaybeRecordStartAttempt() final {}
+  void NotifySourceNodeStart() final {}
 
   // The HashMap with 'zero' key is needed because |currentSampleFrame| can be
   // zero.
