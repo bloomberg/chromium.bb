@@ -49,8 +49,8 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
-  // Returns true if the tracking of incompatible applications is enabled. The
-  // return value will not change throughout the lifetime of the process.
+  // Returns true if the tracking of incompatible applications is enabled. Note
+  // that this is a Windows 10+ feature only.
   static bool IsWarningEnabled();
 
   // Returns true if the cache contains at least one incompatible application.

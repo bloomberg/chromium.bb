@@ -8,14 +8,18 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/registry.h"
+#include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_info_util_win.h"
+#include "chrome/browser/conflicts/module_info_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/browser/conflicts/third_party_metrics_recorder_win.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -223,8 +227,11 @@ void IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(
 
 // static
 bool IncompatibleApplicationsUpdater::IsWarningEnabled() {
-  return ModuleDatabase::GetInstance() &&
-         ModuleDatabase::GetInstance()->third_party_conflicts_manager();
+  return base::win::GetVersion() >= base::win::VERSION_WIN10 &&
+         base::FeatureList::IsEnabled(features::kModuleDatabase) &&
+         ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() &&
+         base::FeatureList::IsEnabled(
+             features::kIncompatibleApplicationsWarning);
 }
 
 // static
