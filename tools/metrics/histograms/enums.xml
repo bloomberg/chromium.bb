@@ -30779,6 +30779,11 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="Open tab switcher"/>
 </enum>
 
+<enum name="MobileStartupIntent">
+  <int value="0" label="Intent to restore Chrome"/>
+  <int value="1" label="Intent for new page load"/>
+</enum>
+
 <enum name="ModuleBlacklistCacheReadResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed to open the file"/>
