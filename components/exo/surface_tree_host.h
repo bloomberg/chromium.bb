@@ -11,7 +11,6 @@
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_delegate.h"
-#include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -22,17 +21,12 @@ namespace gfx {
 class Path;
 }  // namespace gfx
 
-namespace viz {
-class BeginFrameSource;
-}  // namespace viz
-
 namespace exo {
 class LayerTreeFrameSinkHolder;
 
 // This class provides functionality for hosting a surface tree. The surface
 // tree is hosted in the |host_window_|.
 class SurfaceTreeHost : public SurfaceDelegate,
-                        public viz::BeginFrameObserverBase,
                         public ui::ContextFactoryObserver {
  public:
   explicit SurfaceTreeHost(const std::string& window_name);
@@ -58,12 +52,6 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void DidPresentCompositorFrame(uint32_t presentation_token,
                                  const gfx::PresentationFeedback& feedback);
 
-  // Called when the begin frame source has changed.
-  void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
-
-  // Adds/Removes begin frame observer based on state.
-  void UpdateNeedsBeginFrame();
-
   aura::Window* host_window() { return host_window_.get(); }
   const aura::Window* host_window() const { return host_window_.get(); }
 
@@ -87,10 +75,6 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void OnSetStartupId(const char* startup_id) override {}
   void OnSetApplicationId(const char* application_id) override {}
 
-  // Overridden from cc::BeginFrameObserverBase:
-  bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override {}
-
   // Overridden from ui::ContextFactoryObserver:
   void OnLostResources() override;
 
@@ -110,18 +94,11 @@ class SurfaceTreeHost : public SurfaceDelegate,
   std::unique_ptr<aura::Window> host_window_;
   std::unique_ptr<LayerTreeFrameSinkHolder> layer_tree_frame_sink_holder_;
 
-  // The begin frame source being observed.
-  viz::BeginFrameSource* begin_frame_source_ = nullptr;
-  bool needs_begin_frame_ = false;
-  viz::BeginFrameAck current_begin_frame_ack_;
-
-  // These lists contain the callbacks to notify the client when it is a good
+  // This list contains the callbacks to notify the client when it is a good
   // time to start producing a new frame. These callbacks move to
-  // |frame_callbacks_| when Commit() is called. Later they are moved to
-  // |active_frame_callbacks_| when the effect of the Commit() is scheduled to
-  // be drawn. They fire at the first begin frame notification after this.
+  // |frame_callbacks_| when Commit() is called. They fire when the effect
+  // of the Commit() is scheduled to be drawn.
   std::list<Surface::FrameCallback> frame_callbacks_;
-  std::list<Surface::FrameCallback> active_frame_callbacks_;
 
   // These lists contains the callbacks to notify the client when surface
   // contents have been presented.

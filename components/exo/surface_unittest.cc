@@ -812,44 +812,6 @@ TEST_P(SurfaceTest, Commit) {
   surface->Commit();
 }
 
-TEST_P(SurfaceTest, SendsBeginFrameAcks) {
-  viz::FakeExternalBeginFrameSource source(0.f, false);
-  gfx::Size buffer_size(1, 1);
-  auto buffer = std::make_unique<Buffer>(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
-      true, true);
-  auto surface = std::make_unique<Surface>();
-  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
-  shell_surface->SetBeginFrameSource(&source);
-  surface->Attach(buffer.get());
-
-  // Request a frame callback so that Surface now needs BeginFrames.
-  base::TimeTicks frame_time;
-  surface->RequestFrameCallback(
-      base::Bind(&SetFrameTime, base::Unretained(&frame_time)));
-  surface->Commit();  // Move callback from pending callbacks to current ones.
-  RunAllPendingInMessageLoop();
-
-  // Surface should add itself as observer during
-  // DidReceiveCompositorFrameAck().
-  shell_surface->DidReceiveCompositorFrameAck();
-  EXPECT_EQ(1u, source.num_observers());
-
-  viz::BeginFrameArgs args(source.CreateBeginFrameArgs(BEGINFRAME_FROM_HERE));
-  args.frame_time = base::TimeTicks::FromInternalValue(100);
-  source.TestOnBeginFrame(args);  // Runs the frame callback.
-  EXPECT_EQ(args.frame_time, frame_time);
-
-  surface->Commit();  // Acknowledges the BeginFrame via CompositorFrame.
-  RunAllPendingInMessageLoop();
-
-  const viz::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
-  viz::BeginFrameAck expected_ack(args.source_id, args.sequence_number, true);
-  EXPECT_EQ(expected_ack, frame.metadata.begin_frame_ack);
-
-  // TODO(eseckler): Add test for DidNotProduceFrame plumbing.
-}
-
 TEST_P(SurfaceTest, RemoveSubSurface) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(

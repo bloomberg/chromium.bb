@@ -50,7 +50,7 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
   base::WeakPtr<LayerTreeFrameSinkHolder> GetWeakPtr();
 
   // Overridden from cc::LayerTreeFrameSinkClient:
-  void SetBeginFrameSource(viz::BeginFrameSource* source) override;
+  void SetBeginFrameSource(viz::BeginFrameSource* source) override {}
   base::Optional<viz::HitTestRegionList> BuildHitTestData() override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
