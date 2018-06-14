@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -1275,8 +1276,17 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
 // This should cancel the login interstitial for the first page (www.a.com),
 // create a blank interstitial for second page (www.b.com) and show its URL in
 // the omnibox.
+
+// Fails occasionally on Mac. http://crbug.com/852703
+#if defined(OS_MACOSX)
+#define MAYBE_CancelLoginInterstitialOnRedirect \
+  DISABLED_CancelLoginInterstitialOnRedirect
+#else
+#define MAYBE_CancelLoginInterstitialOnRedirect \
+  CancelLoginInterstitialOnRedirect
+#endif
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       CancelLoginInterstitialOnRedirect) {
+                       MAYBE_CancelLoginInterstitialOnRedirect) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // The test page redirects to www.a.com which triggers an auth dialog.
