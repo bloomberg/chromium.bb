@@ -196,9 +196,11 @@ bool ScriptWrappableMarkingVisitor::AdvanceTracing(
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   CHECK(tracing_in_progress_);
   base::AutoReset<bool>(&advancing_tracing_, true);
+  TimeTicks deadline =
+      TimeTicks() + TimeDelta::FromMillisecondsD(deadline_in_ms);
   while (actions.force_completion ==
              v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION ||
-         WTF::CurrentTimeTicksInMilliseconds() < deadline_in_ms) {
+         WTF::CurrentTimeTicks() < deadline) {
     if (marking_deque_.IsEmpty()) {
       return false;
     }
