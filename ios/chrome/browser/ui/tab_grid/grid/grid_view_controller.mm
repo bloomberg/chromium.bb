@@ -63,6 +63,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @synthesize delegate = _delegate;
 @synthesize imageDataSource = _imageDataSource;
 @synthesize emptyStateView = _emptyStateView;
+@synthesize showsSelectionUpdates = _showsSelectionUpdates;
 // Private properties.
 @synthesize viewAppeared = _viewAppeared;
 @synthesize collectionView = _collectionView;
@@ -75,6 +76,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (instancetype)init {
   if (self = [super init]) {
     _items = [[NSMutableArray<GridItem*> alloc] init];
+    _showsSelectionUpdates = YES;
   }
   return self;
 }
@@ -185,7 +187,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
         [GridTransitionLayoutItem itemWithCell:[cell proxyForTransitions]
                                     attributes:attributes];
     [items addObject:item];
-    if (cell.selected) {
+    if ([cell.itemIdentifier isEqualToString:self.selectedItemID]) {
       selectedItem = item;
     }
   }
@@ -236,12 +238,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 #pragma mark - UICollectionViewDelegate
 
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
+// This method is used instead of -willSelectItemAtIndexPath, because any
+// selection events will be signalled through the model layer and handled in
+// the GridConsumer -selectItemWithID: method.
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    shouldSelectItemAtIndexPath:(NSIndexPath*)indexPath {
   NSUInteger index = base::checked_cast<NSUInteger>(indexPath.item);
   DCHECK_LT(index, self.items.count);
   NSString* itemID = self.items[index].identifier;
   [self.delegate gridViewController:self didSelectItemWithID:itemID];
+  return NO;
 }
 
 #pragma mark - GridCellDelegate
@@ -337,7 +343,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)selectItemWithID:(NSString*)selectedItemID {
   self.selectedItemID = selectedItemID;
-  if (![self isViewAppeared])
+  if (!([self isViewAppeared] && self.showsSelectionUpdates))
     return;
   [self.collectionView
       selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)

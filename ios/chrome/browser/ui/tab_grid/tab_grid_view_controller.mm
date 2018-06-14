@@ -755,6 +755,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)gridViewController:(GridViewController*)gridViewController
        didSelectItemWithID:(NSString*)itemID {
+  // Update the model with the tab selection, but don't have the grid view
+  // controller display the new selection, since there will be a transition
+  // away from it immediately afterwards.
+  gridViewController.showsSelectionUpdates = NO;
   if (gridViewController == self.regularTabsViewController) {
     [self.regularTabsDelegate selectItemWithID:itemID];
   } else if (gridViewController == self.incognitoTabsViewController) {
@@ -762,6 +766,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   self.activePage = self.currentPage;
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage];
+  gridViewController.showsSelectionUpdates = YES;
 }
 
 - (void)gridViewController:(GridViewController*)gridViewController
