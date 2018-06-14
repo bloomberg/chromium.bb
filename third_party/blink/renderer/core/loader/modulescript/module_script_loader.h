@@ -45,19 +45,15 @@ class CORE_EXPORT ModuleScriptLoader final
   };
 
  public:
-  static ModuleScriptLoader* Create(Modulator* modulator,
-                                    const ScriptFetchOptions& options,
-                                    ModuleScriptLoaderRegistry* registry,
-                                    ModuleScriptLoaderClient* client) {
-    return new ModuleScriptLoader(modulator, options, registry, client);
-  }
-
   ~ModuleScriptLoader();
 
-  void Fetch(
+  static void Fetch(
       const ModuleScriptFetchRequest&,
       const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-      ModuleGraphLevel);
+      ModuleGraphLevel,
+      Modulator* module_map_settings_object,
+      ModuleScriptLoaderRegistry*,
+      ModuleScriptLoaderClient*);
 
   // Implements ModuleScriptFetcher::Client.
   void NotifyFetchFinished(
@@ -74,6 +70,11 @@ class CORE_EXPORT ModuleScriptLoader final
                      const ScriptFetchOptions&,
                      ModuleScriptLoaderRegistry*,
                      ModuleScriptLoaderClient*);
+
+  void FetchInternal(
+      const ModuleScriptFetchRequest&,
+      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+      ModuleGraphLevel);
 
   void AdvanceState(State new_state);
 #if DCHECK_IS_ON()

@@ -80,9 +80,21 @@ void ModuleScriptLoader::AdvanceState(ModuleScriptLoader::State new_state) {
 void ModuleScriptLoader::Fetch(
     const ModuleScriptFetchRequest& module_request,
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-    ModuleGraphLevel level) {
-  // https://html.spec.whatwg.org/#fetch-a-single-module-script
+    ModuleGraphLevel level,
+    Modulator* module_map_settings_object,
+    ModuleScriptLoaderRegistry* registry,
+    ModuleScriptLoaderClient* client) {
+  ModuleScriptLoader* loader = new ModuleScriptLoader(
+      module_map_settings_object, module_request.Options(), registry, client);
+  registry->AddLoader(loader);
+  loader->FetchInternal(module_request, fetch_client_settings_object, level);
+}
 
+// https://html.spec.whatwg.org/#fetch-a-single-module-script
+void ModuleScriptLoader::FetchInternal(
+    const ModuleScriptFetchRequest& module_request,
+    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
+    ModuleGraphLevel level) {
   // Step 4. "Set moduleMap[url] to "fetching"." [spec text]
   AdvanceState(State::kFetching);
 
