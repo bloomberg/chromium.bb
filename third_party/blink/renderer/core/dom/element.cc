@@ -1277,7 +1277,7 @@ IntRect Element::BoundsInViewport() const {
   for (size_t i = 1; i < quads.size(); ++i)
     result.Unite(quads[i].EnclosingBoundingBox());
 
-  return view->ContentsToViewport(result);
+  return view->FrameToViewport(result);
 }
 
 IntRect Element::VisibleBoundsInVisualViewport() const {

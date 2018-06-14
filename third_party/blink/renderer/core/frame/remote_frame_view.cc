@@ -221,8 +221,7 @@ void RemoteFrameView::FrameRectsChanged() {
   IntRect screen_space_rect = frame_rect;
 
   if (LocalFrameView* parent = ParentFrameView()) {
-    screen_space_rect =
-        parent->ConvertToRootFrame(parent->ContentsToFrame(screen_space_rect));
+    screen_space_rect = parent->ConvertToRootFrame(screen_space_rect);
   }
   remote_frame_->Client()->FrameRectsChanged(frame_rect, screen_space_rect);
 }

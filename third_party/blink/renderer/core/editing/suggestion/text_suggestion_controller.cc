@@ -432,7 +432,7 @@ void TextSuggestionController::ShowSpellCheckMenu(
 
   const IntRect& absolute_bounds = GetFrame().Selection().AbsoluteCaretBounds();
   const IntRect& viewport_bounds =
-      GetFrame().View()->ContentsToViewport(absolute_bounds);
+      GetFrame().View()->FrameToViewport(absolute_bounds);
 
   text_suggestion_host_->ShowSpellCheckSuggestionMenu(
       viewport_bounds.X(), viewport_bounds.MaxY(), std::move(misspelled_word),
@@ -508,7 +508,7 @@ void TextSuggestionController::CallMojoShowTextSuggestionMenu(
 
   const IntRect& absolute_bounds = GetFrame().Selection().AbsoluteCaretBounds();
   const IntRect& viewport_bounds =
-      GetFrame().View()->ContentsToViewport(absolute_bounds);
+      GetFrame().View()->FrameToViewport(absolute_bounds);
 
   text_suggestion_host_->ShowTextSuggestionMenu(
       viewport_bounds.X(), viewport_bounds.MaxY(), misspelled_word,

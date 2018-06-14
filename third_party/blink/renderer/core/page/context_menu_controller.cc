@@ -203,8 +203,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   LocalFrame* selected_frame = r.InnerNodeFrame();
 
   WebContextMenuData data;
-  data.mouse_position = selected_frame->View()->ContentsToViewport(
-      r.RoundedPointInInnerNodeFrame());
+  data.mouse_position =
+      selected_frame->View()->FrameToViewport(r.RoundedPointInInnerNodeFrame());
 
   data.edit_flags = ComputeEditFlags(
       *selected_frame->GetDocument(),
@@ -456,8 +456,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   IntRect anchor;
   IntRect focus;
   selected_frame->Selection().ComputeAbsoluteBounds(anchor, focus);
-  anchor = selected_frame->View()->ContentsToViewport(anchor);
-  focus = selected_frame->View()->ContentsToViewport(focus);
+  anchor = selected_frame->View()->FrameToViewport(anchor);
+  focus = selected_frame->View()->FrameToViewport(focus);
   int left = std::min(focus.X(), anchor.X());
   int top = std::min(focus.Y(), anchor.Y());
   int right = std::max(focus.X() + focus.Width(), anchor.X() + anchor.Width());

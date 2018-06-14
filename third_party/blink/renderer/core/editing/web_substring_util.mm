@@ -143,7 +143,7 @@ NSAttributedString* AttributedSubstringFromRange(const EphemeralRange& range,
 WebPoint GetBaselinePoint(LocalFrameView* frame_view,
                           const EphemeralRange& range,
                           NSAttributedString* string) {
-  IntRect string_rect = frame_view->ContentsToViewport(ComputeTextRect(range));
+  IntRect string_rect = frame_view->FrameToViewport(ComputeTextRect(range));
   IntPoint string_point = string_rect.MinXMaxYCorner();
 
   // Adjust for the font's descender. AppKit wants the baseline point.

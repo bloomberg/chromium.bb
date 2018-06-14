@@ -1042,7 +1042,7 @@ bool WebLocalFrameImpl::FirstRectForCharacterRange(
     return false;
   IntRect int_rect = FirstRectForRange(range);
   rect_in_viewport = WebRect(int_rect);
-  rect_in_viewport = GetFrame()->View()->ContentsToViewport(rect_in_viewport);
+  rect_in_viewport = GetFrame()->View()->FrameToViewport(rect_in_viewport);
   return true;
 }
 
@@ -1051,7 +1051,7 @@ size_t WebLocalFrameImpl::CharacterIndexForPoint(
   if (!GetFrame())
     return kNotFound;
 
-  LayoutPoint point = GetFrame()->View()->ViewportToContents(point_in_viewport);
+  LayoutPoint point = GetFrame()->View()->ViewportToFrame(point_in_viewport);
   HitTestResult result = GetFrame()->GetEventHandler().HitTestResultAtPoint(
       point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   return GetFrame()->Selection().CharacterIndexForPoint(
@@ -1331,7 +1331,7 @@ void WebLocalFrameImpl::MoveRangeSelectionExtent(const WebPoint& point) {
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   GetFrame()->Selection().MoveRangeSelectionExtent(
-      GetFrame()->View()->ViewportToContents(point));
+      GetFrame()->View()->ViewportToFrame(point));
 }
 
 void WebLocalFrameImpl::MoveRangeSelection(
@@ -1348,8 +1348,8 @@ void WebLocalFrameImpl::MoveRangeSelection(
   if (granularity == WebFrame::kWordGranularity)
     blink_granularity = blink::TextGranularity::kWord;
   GetFrame()->Selection().MoveRangeSelection(
-      GetFrame()->View()->ViewportToContents(base_in_viewport),
-      GetFrame()->View()->ViewportToContents(extent_in_viewport),
+      GetFrame()->View()->ViewportToFrame(base_in_viewport),
+      GetFrame()->View()->ViewportToFrame(extent_in_viewport),
       blink_granularity);
 }
 
@@ -1360,7 +1360,7 @@ void WebLocalFrameImpl::MoveCaretSelection(const WebPoint& point_in_viewport) {
   // needs to be audited.  see http://crbug.com/590369 for more details.
   GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   const IntPoint point_in_contents =
-      GetFrame()->View()->ViewportToContents(point_in_viewport);
+      GetFrame()->View()->ViewportToFrame(point_in_viewport);
   GetFrame()->Selection().MoveCaretSelection(point_in_contents);
 }
 
@@ -1449,7 +1449,7 @@ void WebLocalFrameImpl::SetCaretVisible(bool visible) {
 VisiblePosition WebLocalFrameImpl::VisiblePositionForViewportPoint(
     const WebPoint& point_in_viewport) {
   return VisiblePositionForContentsPoint(
-      GetFrame()->View()->ViewportToContents(point_in_viewport), GetFrame());
+      GetFrame()->View()->ViewportToFrame(point_in_viewport), GetFrame());
 }
 
 WebPlugin* WebLocalFrameImpl::FocusedPluginIfInputMethodSupported() {
@@ -2438,8 +2438,8 @@ void WebLocalFrameImpl::ExtractSmartClipData(WebRect rect_in_viewport,
   WebPoint end_point(rect_in_viewport.x + rect_in_viewport.width,
                      rect_in_viewport.y + rect_in_viewport.height);
   clip_html = CreateMarkupInRect(
-      GetFrame(), GetFrame()->View()->ViewportToContents(start_point),
-      GetFrame()->View()->ViewportToContents(end_point));
+      GetFrame(), GetFrame()->View()->ViewportToFrame(start_point),
+      GetFrame()->View()->ViewportToFrame(end_point));
 }
 
 // TODO(editing-dev): We should move |CreateMarkupInRect()| to

@@ -343,9 +343,7 @@ void PointerEventManager::AdjustTouchPointerEvent(
   hit_test_point.Move(-hit_rect_size * 0.5f);
   HitTestResult hit_test_result =
       root_frame.GetEventHandler().HitTestResultAtRect(
-          LayoutRect(root_frame.View()->FrameToContents(hit_test_point),
-                     hit_rect_size),
-          hit_type);
+          LayoutRect(hit_test_point, hit_rect_size), hit_type);
   Node* adjusted_node = nullptr;
   IntPoint adjusted_point;
   bool adjusted = frame_->GetEventHandler().BestClickableNodeForHitTestResult(

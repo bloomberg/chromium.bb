@@ -45,7 +45,7 @@ namespace blink {
 static IntRect ConvertToContentCoordinatesWithoutCollapsingToZero(
     const IntRect& rect_in_viewport,
     const LocalFrameView* view) {
-  IntRect rect_in_contents = view->ViewportToContents(rect_in_viewport);
+  IntRect rect_in_contents = view->ViewportToFrame(rect_in_viewport);
   if (rect_in_viewport.Width() > 0 && !rect_in_contents.Width())
     rect_in_contents.SetWidth(1);
   if (rect_in_viewport.Height() > 0 && !rect_in_contents.Height())
@@ -92,7 +92,7 @@ SmartClipData SmartClip::DataForRect(const IntRect& crop_rect_in_viewport) {
   }
 
   return SmartClipData(
-      frame_->GetDocument()->View()->ContentsToViewport(united_rects),
+      frame_->GetDocument()->View()->FrameToViewport(united_rects),
       collected_text.ToString());
 }
 
