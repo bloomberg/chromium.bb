@@ -83,6 +83,17 @@ interface NetworkServiceClient {
                         bool fatal) => (int32 net_error);
 };
 
+// An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.
+// spec:  https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-07
+ struct DnsOverHttpsServer {
+  // DNS over HTTPS server URL. Must be HTTPS.
+  url.mojom.Url url;
+
+  // Whether to use POSTs to do DNS lookups. Otherwise, GETs are used. See spec
+  // for more details.
+  bool use_posts = false;
+};
+
 // Values for configuring HTTP authentication that can only be set once.
 struct HttpAuthStaticParams {
   // List of supported auth schemes. Unrecognized schemes are ignored.
@@ -132,6 +143,28 @@ interface NetworkService {
   // Creates a new network context with the given parameters.
   CreateNetworkContext(NetworkContext& context,
                        NetworkContextParams params);
+
+  // Configures whether the built-in stub host resolver is used in preference
+  // over getaddrinfo. When enabled, the stub resolver will attempt to use the
+  // system's DNS settings to do DNS lookups itself. See
+  // https://tools.ietf.org/html/rfc1034#section-5.3.1 for definition of a stub
+  // resolver.
+  //
+  // |dns_over_https_servers| is an optional list of DNS over HTTPS servers.
+  // When populated, all DNS lookups will try to use DNS over HTTPS in the order
+  // the servers are provided in and will only fall back to using system
+  // settings if DNS over HTTPS fails. It is illegal to have a populated
+  // |dns_over_https_servers| when |stub_resolver_enabled| is false.
+  //
+  // DNS over HTTPS will use the primary NetworkContext, so can only be enabled
+  // after the primary network context has been created. Other than that
+  // limitation, this method can be called at any time to change DNS
+  // configuration, though calling it will fail any DNS lookups that have
+  // already been started.
+  //
+  // Both the stub resolver and DNS over HTTPS are disabled by default.
+  ConfigureStubHostResolver(bool stub_resolver_enabled,
+                            array<DnsOverHttpsServer>? dns_over_https_servers);
 
   // Disables QUIC for the NetworkService. Affects all existing NetworkContexts,
   // and all new ones that are created. Once called, QUIC cannot be re-enabled.

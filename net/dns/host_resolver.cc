@@ -128,6 +128,11 @@ bool HostResolver::GetNoIPv6OnWifi() {
   return false;
 }
 
+const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
+HostResolver::GetDnsOverHttpsServersForTesting() const {
+  return nullptr;
+}
+
 // static
 std::unique_ptr<HostResolver> HostResolver::CreateSystemResolver(
     const Options& options,

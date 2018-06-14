@@ -2250,6 +2250,13 @@ void HostResolverImpl::AddDnsOverHttpsServer(std::string spec, bool use_post) {
     UpdateDNSConfig(true);
 }
 
+const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
+HostResolverImpl::GetDnsOverHttpsServersForTesting() const {
+  if (dns_over_https_servers_.empty())
+    return nullptr;
+  return &dns_over_https_servers_;
+}
+
 bool HostResolverImpl::ResolveAsIP(const Key& key,
                                    const RequestInfo& info,
                                    const IPAddress* ip_address,

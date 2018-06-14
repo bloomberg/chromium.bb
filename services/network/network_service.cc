@@ -198,9 +198,10 @@ std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
 }
 
 void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
-  // If UseToValidateCerts() is true, there must be no other NetworkContexts
-  // created yet.
-  DCHECK(!network_context->UseToValidateCerts() || network_contexts_.empty());
+  // If IsPrimaryNetworkContext() is true, there must be no other
+  // NetworkContexts created yet.
+  DCHECK(!network_context->IsPrimaryNetworkContext() ||
+         network_contexts_.empty());
 
   DCHECK_EQ(0u, network_contexts_.count(network_context));
   network_contexts_.insert(network_context);
@@ -209,9 +210,9 @@ void NetworkService::RegisterNetworkContext(NetworkContext* network_context) {
 }
 
 void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
-  // If the NetworkContext is being used to validate certs, all other
+  // If the NetworkContext is bthe primary network context, all other
   // NetworkContexts must already have been destroyed.
-  DCHECK(!network_context->UseToValidateCerts() ||
+  DCHECK(!network_context->IsPrimaryNetworkContext() ||
          network_contexts_.size() == 1);
 
   DCHECK_EQ(1u, network_contexts_.count(network_context));
@@ -233,14 +234,49 @@ void NetworkService::SetClient(mojom::NetworkServiceClientPtr client) {
 void NetworkService::CreateNetworkContext(
     mojom::NetworkContextRequest request,
     mojom::NetworkContextParamsPtr params) {
-  // Only the first created NetworkContext can have |use_to_validate_certs| set
+  // Only the first created NetworkContext can have |primary_next_context| set
   // to true.
-  DCHECK(!params->use_to_validate_certs || network_contexts_.empty());
+  DCHECK(!params->primary_network_context || network_contexts_.empty());
 
   owned_network_contexts_.emplace(std::make_unique<NetworkContext>(
       this, std::move(request), std::move(params),
       base::BindOnce(&NetworkService::OnNetworkContextConnectionClosed,
                      base::Unretained(this))));
+}
+
+void NetworkService::ConfigureStubHostResolver(
+    bool stub_resolver_enabled,
+    base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
+        dns_over_https_servers) {
+  // If the stub resolver is not enabled, |dns_over_https_servers| has no
+  // effect.
+  DCHECK(stub_resolver_enabled || !dns_over_https_servers);
+  DCHECK(!dns_over_https_servers || !dns_over_https_servers->empty());
+
+  // Enable or disable the stub resolver, as needed. "DnsClient" is class that
+  // implements the stub resolver.
+  host_resolver_->SetDnsClientEnabled(stub_resolver_enabled);
+
+  // Configure DNS over HTTPS.
+  host_resolver_->ClearDnsOverHttpsServers();
+  if (!dns_over_https_servers)
+    return;
+
+  for (auto* network_context : network_contexts_) {
+    if (!network_context->IsPrimaryNetworkContext())
+      continue;
+
+    host_resolver_->SetRequestContext(network_context->url_request_context());
+    for (const auto& doh_server : *dns_over_https_servers) {
+      host_resolver_->AddDnsOverHttpsServer(doh_server->url.spec(),
+                                            doh_server->use_posts);
+    }
+    return;
+  }
+
+  // Execution should generally not reach this line, but could run into races
+  // with teardown, or restarting a crashed network process, that could
+  // theoretically result in reaching it.
 }
 
 void NetworkService::DisableQuic() {
@@ -344,23 +380,31 @@ void NetworkService::OnBindInterface(
 }
 
 void NetworkService::DestroyNetworkContexts() {
-  // Delete NetworkContexts. If there's a NetworkContext that's being used to
-  // validate certs, it must be deleted after all other NetworkContexts, to
-  // avoid use-after-frees.
+  // Delete NetworkContexts. If there's a primary NetworkContext, it must be
+  // deleted after all other NetworkContexts, to avoid use-after-frees.
   for (auto it = owned_network_contexts_.begin();
        it != owned_network_contexts_.end();) {
     const auto last = it;
     ++it;
-    if (!(*last)->UseToValidateCerts())
+    if (!(*last)->IsPrimaryNetworkContext())
       owned_network_contexts_.erase(last);
   }
+
+  // If DNS over HTTPS is enabled, the HostResolver is currently using the
+  // primary NetworkContext to do DNS lookups, so need to tell the HostResolver
+  // to stop using DNS over HTTPS before destroying the primary NetworkContext.
+  // The ClearDnsOverHttpsServers() call will will fail any in-progress DNS
+  // lookups, but only if DNS over HTTPS is currently enabled.
+  host_resolver_->ClearDnsOverHttpsServers();
+  host_resolver_->SetRequestContext(nullptr);
+
   DCHECK_LE(owned_network_contexts_.size(), 1u);
   owned_network_contexts_.clear();
 }
 
 void NetworkService::OnNetworkContextConnectionClosed(
     NetworkContext* network_context) {
-  if (network_context->UseToValidateCerts()) {
+  if (network_context->IsPrimaryNetworkContext()) {
     DestroyNetworkContexts();
     return;
   }
