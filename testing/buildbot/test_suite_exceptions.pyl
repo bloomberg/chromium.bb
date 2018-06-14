@@ -1708,6 +1708,12 @@
       'linux-chromeos-dbg',
     ],
   },
+ 'remoting_unittests': {
+    'remove_from': [
+      # chromium.linux
+      'Linux Tests (dbg)(1)(32)',  # https://crbug.com/852895
+    ],
+  },
   'sandbox_linux_unittests': {
     'modifications': {
       'KitKat Tablet Tester': {
