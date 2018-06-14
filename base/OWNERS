@@ -17,6 +17,7 @@
 # multiple consumers across the codebase, consider placing it in a new directory
 # under components/ instead.
 
+ajwong@chromium.org
 danakj@chromium.org
 dcheng@chromium.org
 gab@chromium.org
