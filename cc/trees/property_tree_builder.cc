@@ -296,7 +296,7 @@ static inline int SortingContextId(LayerImpl* layer) {
 }
 
 static inline bool Is3dSorted(Layer* layer) {
-  return layer->Is3dSorted();
+  return layer->sorting_context_id() != 0;
 }
 
 static inline bool Is3dSorted(LayerImpl* layer) {

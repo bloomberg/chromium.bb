@@ -1524,7 +1524,9 @@ void LayerTreeHost::SetElementTransformMutated(
   DCHECK(layer);
   layer->OnTransformAnimated(transform);
 
-  if (TransformNode* node = layer->GetTransformNode()) {
+  if (layer->has_transform_node()) {
+    TransformNode* node =
+        property_trees_.transform_tree.Node(layer->transform_tree_index());
     if (node->local == transform)
       return;
 
