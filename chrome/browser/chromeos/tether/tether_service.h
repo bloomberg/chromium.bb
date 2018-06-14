@@ -28,6 +28,9 @@ class NetworkStateHandler;
 namespace device_sync {
 class DeviceSyncClient;
 }  // namespace device_sync
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
 namespace tether {
 class GmsCoreNotificationsStateTracker;
 class GmsCoreNotificationsStateTrackerImpl;
@@ -61,12 +64,14 @@ class TetherService : public KeyedService,
                       public chromeos::NetworkStateHandlerObserver,
                       public chromeos::tether::TetherComponent::Observer {
  public:
-  TetherService(Profile* profile,
-                chromeos::PowerManagerClient* power_manager_client,
-                cryptauth::CryptAuthService* cryptauth_service,
-                chromeos::device_sync::DeviceSyncClient* device_sync_client,
-                chromeos::NetworkStateHandler* network_state_handler,
-                session_manager::SessionManager* session_manager);
+  TetherService(
+      Profile* profile,
+      chromeos::PowerManagerClient* power_manager_client,
+      cryptauth::CryptAuthService* cryptauth_service,
+      chromeos::device_sync::DeviceSyncClient* device_sync_client,
+      chromeos::secure_channel::SecureChannelClient* secure_channel_client,
+      chromeos::NetworkStateHandler* network_state_handler,
+      session_manager::SessionManager* session_manager);
   ~TetherService() override;
 
   // Gets TetherService instance.
@@ -262,6 +267,7 @@ class TetherService : public KeyedService,
   chromeos::PowerManagerClient* power_manager_client_;
   cryptauth::CryptAuthService* cryptauth_service_;
   chromeos::device_sync::DeviceSyncClient* device_sync_client_;
+  chromeos::secure_channel::SecureChannelClient* secure_channel_client_;
   chromeos::NetworkStateHandler* network_state_handler_;
   session_manager::SessionManager* session_manager_;
   std::unique_ptr<chromeos::tether::NotificationPresenter>

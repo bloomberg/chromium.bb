@@ -27,6 +27,7 @@
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_service.h"
 #include "components/cryptauth/remote_device_provider_impl.h"
@@ -128,12 +129,14 @@ TetherService::TetherService(
     chromeos::PowerManagerClient* power_manager_client,
     cryptauth::CryptAuthService* cryptauth_service,
     chromeos::device_sync::DeviceSyncClient* device_sync_client,
+    chromeos::secure_channel::SecureChannelClient* secure_channel_client,
     chromeos::NetworkStateHandler* network_state_handler,
     session_manager::SessionManager* session_manager)
     : profile_(profile),
       power_manager_client_(power_manager_client),
       cryptauth_service_(cryptauth_service),
       device_sync_client_(device_sync_client),
+      secure_channel_client_(secure_channel_client),
       network_state_handler_(network_state_handler),
       session_manager_(session_manager),
       notification_presenter_(

@@ -4,7 +4,6 @@
 
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 
-#include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
 #include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {

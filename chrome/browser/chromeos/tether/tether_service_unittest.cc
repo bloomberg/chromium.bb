@@ -41,6 +41,8 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
+#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client_impl.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
@@ -106,16 +108,19 @@ class MockExtendedBluetoothAdapter : public device::MockBluetoothAdapter {
 
 class TestTetherService : public TetherService {
  public:
-  TestTetherService(Profile* profile,
-                    chromeos::PowerManagerClient* power_manager_client,
-                    cryptauth::CryptAuthService* cryptauth_service,
-                    chromeos::device_sync::DeviceSyncClient* device_sync_client,
-                    chromeos::NetworkStateHandler* network_state_handler,
-                    session_manager::SessionManager* session_manager)
+  TestTetherService(
+      Profile* profile,
+      chromeos::PowerManagerClient* power_manager_client,
+      cryptauth::CryptAuthService* cryptauth_service,
+      chromeos::device_sync::DeviceSyncClient* device_sync_client,
+      chromeos::secure_channel::SecureChannelClient* secure_channel_client,
+      chromeos::NetworkStateHandler* network_state_handler,
+      session_manager::SessionManager* session_manager)
       : TetherService(profile,
                       power_manager_client,
                       cryptauth_service,
                       device_sync_client,
+                      secure_channel_client,
                       network_state_handler,
                       session_manager) {}
   ~TestTetherService() override {}
@@ -259,6 +264,22 @@ class FakeDeviceSyncClientImplFactory
   }
 };
 
+class FakeSecureChannelClientImplFactory
+    : public chromeos::secure_channel::SecureChannelClientImpl::Factory {
+ public:
+  FakeSecureChannelClientImplFactory() = default;
+
+  ~FakeSecureChannelClientImplFactory() override = default;
+
+  // chromeos::secure_channel::SecureChannelClientImpl::Factory:
+  std::unique_ptr<chromeos::secure_channel::SecureChannelClient> BuildInstance(
+      service_manager::Connector* connector,
+      scoped_refptr<base::TaskRunner> task_runner) override {
+    return std::make_unique<
+        chromeos::secure_channel::FakeSecureChannelClient>();
+  }
+};
+
 }  // namespace
 
 class TetherServiceTest : public chromeos::NetworkStateTest {
@@ -289,11 +310,17 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
     fake_device_sync_client_ =
         std::make_unique<chromeos::device_sync::FakeDeviceSyncClient>();
-
     fake_device_sync_client_impl_factory_ =
         std::make_unique<FakeDeviceSyncClientImplFactory>();
     chromeos::device_sync::DeviceSyncClientImpl::Factory::SetInstanceForTesting(
         fake_device_sync_client_impl_factory_.get());
+
+    fake_secure_channel_client_ =
+        std::make_unique<chromeos::secure_channel::FakeSecureChannelClient>();
+    fake_secure_channel_client_impl_factory_ =
+        std::make_unique<FakeSecureChannelClientImplFactory>();
+    chromeos::secure_channel::SecureChannelClientImpl::Factory::
+        SetInstanceForTesting(fake_secure_channel_client_impl_factory_.get());
 
     fake_cryptauth_service_ =
         std::make_unique<cryptauth::FakeCryptAuthService>();
@@ -338,6 +365,8 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
 
     chromeos::device_sync::DeviceSyncClientImpl::Factory::SetInstanceForTesting(
         nullptr);
+    chromeos::secure_channel::SecureChannelClientImpl::Factory::
+        SetInstanceForTesting(nullptr);
 
     ShutdownTetherService();
 
@@ -375,7 +404,8 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     tether_service_ = base::WrapUnique(new TestTetherService(
         profile_.get(), fake_power_manager_client_.get(),
         fake_cryptauth_service_.get(), fake_device_sync_client_.get(),
-        network_state_handler(), nullptr /* session_manager */));
+        fake_secure_channel_client_.get(), network_state_handler(),
+        nullptr /* session_manager */));
 
     fake_notification_presenter_ =
         new chromeos::tether::FakeNotificationPresenter();
@@ -487,6 +517,10 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
       fake_device_sync_client_;
   std::unique_ptr<FakeDeviceSyncClientImplFactory>
       fake_device_sync_client_impl_factory_;
+  std::unique_ptr<chromeos::secure_channel::SecureChannelClient>
+      fake_secure_channel_client_;
+  std::unique_ptr<FakeSecureChannelClientImplFactory>
+      fake_secure_channel_client_impl_factory_;
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   std::unique_ptr<cryptauth::FakeCryptAuthEnrollmentManager>
       fake_enrollment_manager_;
