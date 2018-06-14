@@ -6042,10 +6042,6 @@ void GLES2Implementation::SetErrorMessageCallback(
   error_message_callback_ = std::move(callback);
 }
 
-void GLES2Implementation::SetSnapshotRequested() {
-  gpu_control_->SetSnapshotRequested();
-}
-
 bool GLES2Implementation::ThreadSafeShallowLockDiscardableTexture(
     uint32_t texture_id) {
   ClientDiscardableTextureManager* manager =

@@ -129,7 +129,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params) override;
   const gpu::gles2::FeatureInfo* GetFeatureInfo() const override;
   const gpu::GpuPreferences& GetGpuPreferences() const override;
-  void SetSnapshotRequestedCallback(const base::Closure& callback) override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;

@@ -27,9 +27,6 @@ struct GPU_EXPORT FlushParams {
   int32_t put_offset;
   // Increasing counter for the flush.
   uint32_t flush_id;
-  // Indicates whether a snapshot was requested so the service can wait for
-  // presentation of the swap when there is a snapshot request.
-  bool snapshot_requested;
   // Sync token dependencies of the flush. These are sync tokens for which waits
   // are in the commands that are part of this flush.
   std::vector<SyncToken> sync_token_fences;

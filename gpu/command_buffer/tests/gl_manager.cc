@@ -599,8 +599,6 @@ bool GLManager::CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) {
   return false;
 }
 
-void GLManager::SetSnapshotRequested() {}
-
 ContextType GLManager::GetContextType() const {
   return context_type_;
 }

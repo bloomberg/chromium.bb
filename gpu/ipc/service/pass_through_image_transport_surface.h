@@ -58,15 +58,11 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
  private:
   ~PassThroughImageTransportSurface() override;
 
-  void SetSnapshotRequested();
-  bool GetAndResetSnapshotRequested();
-
   void UpdateVSyncEnabled();
 
   void StartSwapBuffers(gfx::SwapResponse* response);
-  void FinishSwapBuffers(bool snapshot_requested, gfx::SwapResponse response);
+  void FinishSwapBuffers(gfx::SwapResponse response);
   void FinishSwapBuffersAsync(GLSurface::SwapCompletionCallback callback,
-                              bool snapshot_requested,
                               gfx::SwapResponse response,
                               gfx::SwapResult result);
 
@@ -76,7 +72,6 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   const bool is_gpu_vsync_disabled_;
   const bool is_multi_window_swap_vsync_override_enabled_;
   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
-  bool snapshot_requested_ = false;
   int swap_generation_ = 0;
   bool vsync_enabled_ = true;
   bool allow_running_presentation_callback_ = true;

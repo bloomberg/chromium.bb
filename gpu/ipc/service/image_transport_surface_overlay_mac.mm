@@ -62,16 +62,10 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
 
 ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
-  if (delegate_.get())
-    delegate_->SetSnapshotRequestedCallback(base::Closure());
   Destroy();
 }
 
 bool ImageTransportSurfaceOverlayMac::Initialize(gl::GLSurfaceFormat format) {
-  delegate_->SetSnapshotRequestedCallback(
-      base::Bind(&ImageTransportSurfaceOverlayMac::SetSnapshotRequested,
-                 base::Unretained(this)));
-
   // Create the CAContext to send this to the GPU process, and the layer for
   // the context.
   if (use_remote_layer_api_) {
@@ -106,15 +100,6 @@ void ImageTransportSurfaceOverlayMac::Destroy() {
 }
 
 bool ImageTransportSurfaceOverlayMac::IsOffscreen() {
-  return false;
-}
-
-void ImageTransportSurfaceOverlayMac::SetSnapshotRequested() {
-  // Mac doesn't wait for snapshots in the image transport.
-}
-
-bool ImageTransportSurfaceOverlayMac::GetAndResetSnapshotRequested() {
-  // Mac doesn't wait for snapshots in the image transport.
   return false;
 }
 

@@ -276,11 +276,6 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // offset.
   virtual gfx::Vector2d GetDrawOffset() const;
 
-  // This waits until rendering work is complete enough that an OS snapshot
-  // will capture the last swapped contents. A GL context must be current when
-  // calling this.
-  virtual void WaitForSnapshotRendering();
-
   // Tells the surface to rely on implicit sync when swapping buffers.
   virtual void SetRelyOnImplicitSync();
 
@@ -382,7 +377,6 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   bool SupportsProtectedVideo() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
-  void WaitForSnapshotRendering() override;
   void SetRelyOnImplicitSync() override;
   bool SupportsSwapTimestamps() const override;
   void SetEnableSwapTimestamps() override;

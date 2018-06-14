@@ -253,8 +253,7 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
     for (auto& flush_info : flush_list) {
       GpuCommandBufferMsg_AsyncFlush flush_message(
-          flush_info.route_id, flush_info.put_offset, flush_info.flush_id,
-          flush_info.snapshot_requested);
+          flush_info.route_id, flush_info.put_offset, flush_info.flush_id);
 
       auto it = route_sequences_.find(flush_info.route_id);
       if (it == route_sequences_.end()) {

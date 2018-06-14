@@ -614,9 +614,7 @@ void CommandBufferStub::CheckCompleteWaits() {
   }
 }
 
-void CommandBufferStub::OnAsyncFlush(int32_t put_offset,
-                                     uint32_t flush_id,
-                                     bool snapshot_requested) {
+void CommandBufferStub::OnAsyncFlush(int32_t put_offset, uint32_t flush_id) {
   TRACE_EVENT1("gpu", "CommandBufferStub::OnAsyncFlush", "put_offset",
                put_offset);
   DCHECK(command_buffer_);
@@ -624,9 +622,6 @@ void CommandBufferStub::OnAsyncFlush(int32_t put_offset,
   // to catch regressions. Ignore the message.
   DVLOG_IF(0, flush_id - last_flush_id_ >= 0x8000000U)
       << "Received a Flush message out-of-order";
-
-  if (snapshot_requested && snapshot_requested_callback_)
-    snapshot_requested_callback_.Run();
 
   last_flush_id_ = flush_id;
   CommandBuffer::State pre_state = command_buffer_->GetState();

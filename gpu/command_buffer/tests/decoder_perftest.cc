@@ -319,8 +319,6 @@ class RecordReplayContext : public GpuControl {
     return true;
   }
 
-  void SetSnapshotRequested() override { NOTIMPLEMENTED(); }
-
   GpuPreferences gpu_preferences_;
 
   gles2::MailboxManagerImpl mailbox_manager_;

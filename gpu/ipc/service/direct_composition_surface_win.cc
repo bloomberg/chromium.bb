@@ -1591,11 +1591,6 @@ gfx::Vector2d DirectCompositionSurfaceWin::GetDrawOffset() const {
   return gfx::Vector2d();
 }
 
-void DirectCompositionSurfaceWin::WaitForSnapshotRendering() {
-  DCHECK(gl::GLContext::GetCurrent()->IsCurrent(this));
-  glFinish();
-}
-
 bool DirectCompositionSurfaceWin::RecreateRootSurface() {
   root_surface_ = new DirectCompositionChildSurfaceWin(
       size_, is_hdr_, has_alpha_, enable_dc_layers_,

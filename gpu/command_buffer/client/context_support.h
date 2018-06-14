@@ -95,9 +95,6 @@ class ContextSupport {
   virtual void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)> callback) = 0;
 
-  // Indicates whether a snapshot is associated with the next swap.
-  virtual void SetSnapshotRequested() = 0;
-
   // Allows locking a GPU discardable texture from any thread. Any successful
   // call to ThreadSafeShallowLockDiscardableTexture must be paired with a
   // later call to CompleteLockDiscardableTexureOnContextThread.

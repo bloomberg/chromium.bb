@@ -117,9 +117,6 @@ class GPU_EXPORT GpuControl {
   // first so does not need to be flushed.
   virtual bool CanWaitUnverifiedSyncToken(const SyncToken& sync_token) = 0;
 
-  // Indicates whether a snapshot is associated with the next swap.
-  virtual void SetSnapshotRequested() = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(GpuControl);
 };

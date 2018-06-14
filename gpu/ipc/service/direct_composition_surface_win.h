@@ -79,7 +79,6 @@ class GPU_IPC_SERVICE_EXPORT DirectCompositionSurfaceWin
   bool SupportsProtectedVideo() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
-  void WaitForSnapshotRendering() override;
 
   // This schedules an overlay plane to be displayed on the next SwapBuffers
   // or PostSubBuffer call. Overlay planes must be scheduled before every swap

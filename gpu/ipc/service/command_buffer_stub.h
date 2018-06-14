@@ -172,8 +172,6 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   const int32_t stream_id_;
   const int32_t route_id_;
 
-  base::Closure snapshot_requested_callback_;
-
  private:
   GpuMemoryManager* GetMemoryManager() const;
 
@@ -193,9 +191,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
                                  int32_t start,
                                  int32_t end,
                                  IPC::Message* reply_message);
-  void OnAsyncFlush(int32_t put_offset,
-                    uint32_t flush_id,
-                    bool snapshot_requested);
+  void OnAsyncFlush(int32_t put_offset, uint32_t flush_id);
   void OnRegisterTransferBuffer(int32_t id,
                                 base::SharedMemoryHandle transfer_buffer,
                                 uint32_t size);

@@ -383,11 +383,6 @@ void RasterImplementation::SetErrorMessageCallback(
   error_message_callback_ = std::move(callback);
 }
 
-void RasterImplementation::SetSnapshotRequested() {
-  // Should only be called for real GL contexts.
-  NOTREACHED();
-}
-
 bool RasterImplementation::ThreadSafeShallowLockDiscardableTexture(
     uint32_t texture_id) {
   NOTREACHED();

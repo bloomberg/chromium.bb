@@ -149,7 +149,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
                        base::OnceClosure callback) override;
   void WaitSyncTokenHint(const SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const SyncToken& sync_token) override;
-  void SetSnapshotRequested() override;
 
   // CommandBufferServiceClient implementation:
   CommandBatchProcessedResult OnCommandBatchProcessed() override;
@@ -174,7 +173,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   const gles2::FeatureInfo* GetFeatureInfo() const override;
   const GpuPreferences& GetGpuPreferences() const override;
 
-  void SetSnapshotRequestedCallback(const base::Closure& callback) override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
 
   void AddFilter(IPC::MessageFilter* message_filter) override;
@@ -290,7 +288,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
       const InitializeOnGpuThreadParams& params);
   void Destroy();
   bool DestroyOnGpuThread();
-  void FlushOnGpuThread(int32_t put_offset, bool snapshot_requested);
+  void FlushOnGpuThread(int32_t put_offset);
   void UpdateLastStateOnGpuThread();
   void ScheduleDelayedWorkOnGpuThread();
   bool MakeCurrent();
@@ -345,9 +343,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   bool delayed_work_pending_ = false;
   ImageFactory* image_factory_ = nullptr;
   GpuChannelManagerDelegate* gpu_channel_manager_delegate_ = nullptr;
-
-  base::Closure snapshot_requested_callback_;
-  bool snapshot_requested_ = false;
 
   // Members accessed on the client thread:
   GpuControlClient* gpu_control_client_ = nullptr;

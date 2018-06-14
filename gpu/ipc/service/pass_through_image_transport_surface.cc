@@ -42,16 +42,11 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
       weak_ptr_factory_(this) {}
 
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {
-  if (delegate_)
-    delegate_->SetSnapshotRequestedCallback(base::Closure());
 }
 
 bool PassThroughImageTransportSurface::Initialize(gl::GLSurfaceFormat format) {
   DCHECK(gl::GLSurfaceAdapter::SupportsPresentationCallback());
   // The surface is assumed to have already been initialized.
-  delegate_->SetSnapshotRequestedCallback(
-      base::Bind(&PassThroughImageTransportSurface::SetSnapshotRequested,
-                 base::Unretained(this)));
   return true;
 }
 
@@ -63,7 +58,7 @@ gfx::SwapResult PassThroughImageTransportSurface::SwapBuffers(
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
                  weak_ptr_factory_.GetWeakPtr(), callback));
   response.result = result;
-  FinishSwapBuffers(GetAndResetSnapshotRequested(), std::move(response));
+  FinishSwapBuffers(std::move(response));
   return result;
 }
 
@@ -80,7 +75,7 @@ void PassThroughImageTransportSurface::SwapBuffersAsync(
   gl::GLSurfaceAdapter::SwapBuffersAsync(
       base::Bind(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
                  weak_ptr_factory_.GetWeakPtr(), completion_callback,
-                 GetAndResetSnapshotRequested(), base::Passed(&response)),
+                 base::Passed(&response)),
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
                  weak_ptr_factory_.GetWeakPtr(), presentation_callback));
 }
@@ -94,7 +89,7 @@ gfx::SwapResult PassThroughImageTransportSurface::SwapBuffersWithBounds(
       rects, base::Bind(&PassThroughImageTransportSurface::BufferPresented,
                         weak_ptr_factory_.GetWeakPtr(), callback));
   response.result = result;
-  FinishSwapBuffers(GetAndResetSnapshotRequested(), std::move(response));
+  FinishSwapBuffers(std::move(response));
   return result;
 }
 
@@ -111,7 +106,7 @@ gfx::SwapResult PassThroughImageTransportSurface::PostSubBuffer(
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
                  weak_ptr_factory_.GetWeakPtr(), callback));
   response.result = result;
-  FinishSwapBuffers(GetAndResetSnapshotRequested(), std::move(response));
+  FinishSwapBuffers(std::move(response));
 
   return result;
 }
@@ -129,7 +124,7 @@ void PassThroughImageTransportSurface::PostSubBufferAsync(
       x, y, width, height,
       base::Bind(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
                  weak_ptr_factory_.GetWeakPtr(), completion_callback,
-                 GetAndResetSnapshotRequested(), base::Passed(&response)),
+                 base::Passed(&response)),
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
                  weak_ptr_factory_.GetWeakPtr(), presentation_callback));
 }
@@ -142,7 +137,7 @@ gfx::SwapResult PassThroughImageTransportSurface::CommitOverlayPlanes(
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
                  weak_ptr_factory_.GetWeakPtr(), callback));
   response.result = result;
-  FinishSwapBuffers(GetAndResetSnapshotRequested(), std::move(response));
+  FinishSwapBuffers(std::move(response));
   return result;
 }
 
@@ -154,7 +149,7 @@ void PassThroughImageTransportSurface::CommitOverlayPlanesAsync(
   gl::GLSurfaceAdapter::CommitOverlayPlanesAsync(
       base::Bind(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
                  weak_ptr_factory_.GetWeakPtr(), callback,
-                 GetAndResetSnapshotRequested(), base::Passed(&response)),
+                 base::Passed(&response)),
       base::Bind(&PassThroughImageTransportSurface::BufferPresented,
                  weak_ptr_factory_.GetWeakPtr(), presentation_callback));
 }
@@ -164,16 +159,6 @@ void PassThroughImageTransportSurface::SetVSyncEnabled(bool enabled) {
     return;
   vsync_enabled_ = enabled;
   GLSurfaceAdapter::SetVSyncEnabled(enabled);
-}
-
-void PassThroughImageTransportSurface::SetSnapshotRequested() {
-  snapshot_requested_ = true;
-}
-
-bool PassThroughImageTransportSurface::GetAndResetSnapshotRequested() {
-  bool sr = snapshot_requested_;
-  snapshot_requested_ = false;
-  return sr;
 }
 
 void PassThroughImageTransportSurface::UpdateVSyncEnabled() {
@@ -221,11 +206,8 @@ void PassThroughImageTransportSurface::StartSwapBuffers(
 }
 
 void PassThroughImageTransportSurface::FinishSwapBuffers(
-    bool snapshot_requested,
     gfx::SwapResponse response) {
   response.swap_end = base::TimeTicks::Now();
-  if (snapshot_requested)
-    WaitForSnapshotRendering();
 
   if (delegate_) {
     SwapBuffersCompleteParams params;
@@ -237,11 +219,10 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
 
 void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
     GLSurface::SwapCompletionCallback callback,
-    bool snapshot_requested,
     gfx::SwapResponse response,
     gfx::SwapResult result) {
   response.result = result;
-  FinishSwapBuffers(snapshot_requested, std::move(response));
+  FinishSwapBuffers(std::move(response));
   callback.Run(result);
 }
 

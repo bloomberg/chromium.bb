@@ -199,7 +199,6 @@ class ContextSupportStub : public ContextSupport {
   uint64_t ShareGroupTracingGUID() const override { return 0; }
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)> callback) override {}
-  void SetSnapshotRequested() override {}
   bool ThreadSafeShallowLockDiscardableTexture(uint32_t texture_id) override {
     return true;
   }

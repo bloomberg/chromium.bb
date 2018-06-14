@@ -220,8 +220,6 @@ bool PpapiCommandBufferProxy::CanWaitUnverifiedSyncToken(
   return false;
 }
 
-void PpapiCommandBufferProxy::SetSnapshotRequested() {}
-
 void PpapiCommandBufferProxy::SignalQuery(uint32_t query,
                                           base::OnceClosure callback) {
   NOTREACHED();

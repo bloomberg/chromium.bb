@@ -88,7 +88,6 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
 uint32_t GpuChannelHost::OrderingBarrier(
     int32_t route_id,
     int32_t put_offset,
-    bool snapshot_requested,
     std::vector<SyncToken> sync_token_fences) {
   AutoLock lock(context_lock_);
 
@@ -99,7 +98,6 @@ uint32_t GpuChannelHost::OrderingBarrier(
   flush_params.flush_id = next_flush_id_++;
   flush_params.route_id = route_id;
   flush_params.put_offset = put_offset;
-  flush_params.snapshot_requested = snapshot_requested;
   flush_params.sync_token_fences.insert(
       flush_params.sync_token_fences.end(),
       std::make_move_iterator(sync_token_fences.begin()),
