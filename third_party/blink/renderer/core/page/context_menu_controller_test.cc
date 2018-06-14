@@ -24,6 +24,7 @@ namespace {
 
 class MockWebMediaPlayerForContextMenu : public EmptyWebMediaPlayer {
  public:
+  MOCK_CONST_METHOD0(HasAudio, bool());
   MOCK_CONST_METHOD0(HasVideo, bool());
 };
 
@@ -130,6 +131,65 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
           {WebContextMenuData::kMediaLoop, false},
           {WebContextMenuData::kMediaCanSave, true},
           {WebContextMenuData::kMediaHasAudio, false},
+          {WebContextMenuData::kMediaCanToggleControls, false},
+          {WebContextMenuData::kMediaControls, false},
+          {WebContextMenuData::kMediaCanPrint, false},
+          {WebContextMenuData::kMediaCanRotate, false},
+          {WebContextMenuData::kMediaCanPictureInPicture, false},
+          {WebContextMenuData::kMediaPictureInPicture, false},
+      };
+
+  for (const auto& expected_media_flag : expected_media_flags) {
+    EXPECT_EQ(expected_media_flag.second,
+              !!(context_menu_data.media_flags & expected_media_flag.first))
+        << "Flag 0x" << std::hex << expected_media_flag.first;
+  }
+}
+
+TEST_F(ContextMenuControllerTest, VideoWithAudioOnly) {
+  ContextMenuAllowedScope context_menu_allowed_scope;
+  HitTestResult hit_test_result;
+  const char video_url[] = "https://example.com/foo.webm";
+
+  // Make sure Picture-in-Picture is enabled.
+  GetDocument()->GetSettings()->SetPictureInPictureEnabled(true);
+
+  // Setup video element.
+  Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
+  video->SetSrc(video_url);
+  GetDocument()->body()->AppendChild(video);
+  test::RunPendingTasks();
+  SetReadyState(video.Get(), HTMLMediaElement::kHaveNothing);
+  test::RunPendingTasks();
+
+  EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(
+                  video->GetWebMediaPlayer()),
+              HasVideo())
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(
+                  video->GetWebMediaPlayer()),
+              HasAudio())
+      .WillRepeatedly(Return(true));
+
+  DOMRect* rect = video->getBoundingClientRect();
+  LayoutPoint location((rect->left() + rect->right()) / 2,
+                       (rect->top() + rect->bottom()) / 2);
+  EXPECT_TRUE(ShowContextMenu(location, kMenuSourceMouse));
+
+  // Context menu info are sent to the WebLocalFrameClient.
+  WebContextMenuData context_menu_data =
+      GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(WebContextMenuData::kMediaTypeAudio, context_menu_data.media_type);
+  EXPECT_EQ(video_url, context_menu_data.src_url.GetString());
+
+  const std::vector<std::pair<WebContextMenuData::MediaFlags, bool>>
+      expected_media_flags = {
+          {WebContextMenuData::kMediaInError, false},
+          {WebContextMenuData::kMediaPaused, true},
+          {WebContextMenuData::kMediaMuted, false},
+          {WebContextMenuData::kMediaLoop, false},
+          {WebContextMenuData::kMediaCanSave, true},
+          {WebContextMenuData::kMediaHasAudio, true},
           {WebContextMenuData::kMediaCanToggleControls, false},
           {WebContextMenuData::kMediaControls, false},
           {WebContextMenuData::kMediaCanPrint, false},

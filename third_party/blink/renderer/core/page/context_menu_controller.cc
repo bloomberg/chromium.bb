@@ -253,7 +253,12 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     // is a media element.
     HTMLMediaElement* media_element = ToHTMLMediaElement(r.InnerNode());
     if (IsHTMLVideoElement(*media_element)) {
-      data.media_type = WebContextMenuData::kMediaTypeVideo;
+      // A video element should be presented as an audio element when it has an
+      // audio track but no video track.
+      if (media_element->HasAudio() && !media_element->HasVideo())
+        data.media_type = WebContextMenuData::kMediaTypeAudio;
+      else
+        data.media_type = WebContextMenuData::kMediaTypeVideo;
       if (media_element->SupportsPictureInPicture()) {
         data.media_flags |= WebContextMenuData::kMediaCanPictureInPicture;
         if (PictureInPictureController::From(media_element->GetDocument())
