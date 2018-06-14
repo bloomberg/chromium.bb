@@ -302,6 +302,9 @@ void CrxUpdateService::OnDemandUpdateInternal(const std::string& id,
 bool CrxUpdateService::CheckForUpdates() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // TODO(xiaochu): remove this log after https://crbug.com/851151 is fixed.
+  VLOG(1) << "CheckForUpdates: automatic updatecheck for components.";
+
   UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.Calls", UPDATE_TYPE_AUTOMATIC,
                             UPDATE_TYPE_COUNT);
 
