@@ -90,6 +90,9 @@ class InterstitialPageImpl::InterstitialPageRVHDelegateView
   void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;
+  int GetTopControlsHeight() const override;
+  int GetBottomControlsHeight() const override;
+  bool DoBrowserControlsShrinkBlinkSize() const override;
   virtual void OnFindReply(int request_id,
                            int number_of_matches,
                            const gfx::Rect& selection_rect,
@@ -984,6 +987,39 @@ void InterstitialPageImpl::InterstitialPageRVHDelegateView::TakeFocus(
     return;
 
   web_contents->GetDelegateView()->TakeFocus(reverse);
+}
+
+int InterstitialPageImpl::InterstitialPageRVHDelegateView::
+    GetTopControlsHeight() const {
+  if (!interstitial_page_->web_contents())
+    return 0;
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(interstitial_page_->web_contents());
+  if (!web_contents || !web_contents->GetDelegateView())
+    return 0;
+  return web_contents->GetDelegateView()->GetTopControlsHeight();
+}
+
+int InterstitialPageImpl::InterstitialPageRVHDelegateView::
+    GetBottomControlsHeight() const {
+  if (!interstitial_page_->web_contents())
+    return 0;
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(interstitial_page_->web_contents());
+  if (!web_contents || !web_contents->GetDelegateView())
+    return 0;
+  return web_contents->GetDelegateView()->GetBottomControlsHeight();
+}
+
+bool InterstitialPageImpl::InterstitialPageRVHDelegateView::
+    DoBrowserControlsShrinkBlinkSize() const {
+  if (!interstitial_page_->web_contents())
+    return false;
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(interstitial_page_->web_contents());
+  if (!web_contents || !web_contents->GetDelegateView())
+    return false;
+  return web_contents->GetDelegateView()->DoBrowserControlsShrinkBlinkSize();
 }
 
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::OnFindReply(
