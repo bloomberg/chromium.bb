@@ -153,9 +153,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool generated_password_changed() const {
     return votes_uploader_.generated_password_changed();
   }
-  void set_generated_password_changed(bool generated_password_changed) {
-    votes_uploader_.set_generated_password_changed(generated_password_changed);
-  }
+  void SetGeneratedPasswordChanged(bool generated_password_changed);
 
   bool is_manual_generation() const {
     return votes_uploader_.is_manual_generation();

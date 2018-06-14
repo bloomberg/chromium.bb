@@ -676,7 +676,7 @@ class PasswordFormManagerTest : public testing::Test {
     form_manager.set_generation_popup_was_shown(true);
     form_manager.SetHasGeneratedPassword(has_generated_password);
     if (has_generated_password)
-      form_manager.set_generated_password_changed(generated_password_changed);
+      form_manager.SetGeneratedPasswordChanged(generated_password_changed);
 
     // Figure out expected generation event type.
     autofill::AutofillUploadContents::Field::PasswordGenerationType
@@ -716,6 +716,124 @@ class PasswordFormManagerTest : public testing::Test {
       histogram_tester.ExpectUniqueSample(
           "PasswordGeneration.IsTriggeredManually",
           is_manual_generation /* sample */, 1);
+    }
+    Mock::VerifyAndClearExpectations(
+        client()->mock_driver()->mock_autofill_download_manager());
+  }
+
+  void GeneratedPasswordUkmTest(bool is_manual_generation,
+                                bool is_change_password_form,
+                                bool has_generated_password,
+                                bool generated_password_changed,
+                                SavePromptInteraction interaction) {
+    SCOPED_TRACE(testing::Message()
+                 << "is_manual_generation=" << is_manual_generation
+                 << " is_change_password_form=" << is_change_password_form
+                 << " has_generated_password=" << has_generated_password
+                 << " generated_password_changed=" << generated_password_changed
+                 << " interaction=" << interaction);
+
+    ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+    test_ukm_recorder.UpdateSourceURL(client()->GetUkmSourceId(),
+                                      client()->GetMainFrameURL());
+
+    PasswordForm form(*observed_form());
+    form.form_data = saved_match()->form_data;
+
+    if (is_change_password_form) {
+      // Turn |form| to a change password form.
+      form.new_password_element = ASCIIToUTF16("NewPasswd");
+
+      autofill::FormFieldData field;
+      field.label = ASCIIToUTF16("password");
+      field.name = ASCIIToUTF16("NewPasswd");
+      field.form_control_type = "password";
+      form.form_data.fields.push_back(field);
+    }
+
+    // Create submitted form.
+    PasswordForm submitted_form(form);
+    submitted_form.preferred = true;
+    submitted_form.username_value = saved_match()->username_value;
+    submitted_form.password_value = saved_match()->password_value;
+
+    if (is_change_password_form) {
+      submitted_form.new_password_value =
+          saved_match()->password_value + ASCIIToUTF16("1");
+    }
+
+    FakeFormFetcher fetcher;
+    fetcher.Fetch();
+    auto metrics_recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+        form.origin.SchemeIsCryptographic(), client()->GetUkmSourceId());
+    auto form_manager = std::make_unique<PasswordFormManager>(
+        password_manager(), client(), client()->driver(), form,
+        std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
+    // *Move* the metrics recorder to not hold on to a reference.
+    form_manager->Init(std::move(metrics_recorder));
+    fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+
+    autofill::ServerFieldTypeSet expected_available_field_types;
+    // Don't send autofill votes if the user didn't press "Save" button.
+    if (interaction == SAVE)
+      expected_available_field_types.insert(autofill::PASSWORD);
+
+    form_manager->set_is_manual_generation(is_manual_generation);
+    base::string16 generation_element = is_change_password_form
+                                            ? form.new_password_element
+                                            : form.password_element;
+    form_manager->set_generation_element(generation_element);
+    form_manager->set_generation_popup_was_shown(true);
+    form_manager->SetHasGeneratedPassword(has_generated_password);
+    if (has_generated_password)
+      form_manager->SetGeneratedPasswordChanged(generated_password_changed);
+
+    // Figure out expected generation event type.
+    autofill::AutofillUploadContents::Field::PasswordGenerationType
+        expected_generation_type = GetExpectedPasswordGenerationType(
+            is_manual_generation, is_change_password_form,
+            has_generated_password);
+    std::map<base::string16,
+             autofill::AutofillUploadContents::Field::PasswordGenerationType>
+        expected_generation_types;
+    expected_generation_types[generation_element] = expected_generation_type;
+
+    EXPECT_CALL(
+        *client()->mock_driver()->mock_autofill_download_manager(),
+        StartUploadRequest(
+            AllOf(SignatureIsSameAs(submitted_form),
+                  UploadedGenerationTypesAre(expected_generation_types,
+                                             generated_password_changed)),
+            false, expected_available_field_types, std::string(), true));
+    form_manager->ProvisionallySave(submitted_form);
+    switch (interaction) {
+      case SAVE:
+        form_manager->Save();
+        break;
+      case NEVER:
+        form_manager->OnNeverClicked();
+        break;
+      case NO_INTERACTION:
+        form_manager->OnNoInteraction(false /* not an update prompt*/);
+        break;
+    }
+    // Reset form manager to flush UKM metrics.
+    form_manager.reset();
+
+    auto entries = test_ukm_recorder.GetEntriesByName(
+        ukm::builders::PasswordForm::kEntryName);
+    ASSERT_EQ(1u, entries.size());
+    ukm::TestUkmRecorder::ExpectEntryMetric(
+        entries[0],
+        ukm::builders::PasswordForm::kGeneration_GeneratedPasswordName,
+        has_generated_password ? 1 : 0);
+
+    if (has_generated_password) {
+      ukm::TestUkmRecorder::ExpectEntryMetric(
+          entries[0],
+          ukm::builders::PasswordForm::
+              kGeneration_GeneratedPasswordModifiedName,
+          generated_password_changed ? 1 : 0);
     }
     Mock::VerifyAndClearExpectations(
         client()->mock_driver()->mock_autofill_download_manager());
@@ -3147,6 +3265,26 @@ TEST_F(PasswordFormManagerTest, GeneratedVoteUpload) {
                                     is_change_password_form,
                                     has_generated_password,
                                     generated_password_changed, interaction);
+          }
+        }
+      }
+    }
+  }
+}
+
+TEST_F(PasswordFormManagerTest, GeneratedPasswordUkm) {
+  bool kFalseTrue[] = {false, true};
+  SavePromptInteraction kSavePromptInterations[] = {SAVE, NEVER,
+                                                    NO_INTERACTION};
+  for (bool is_manual_generation : kFalseTrue) {
+    for (bool is_change_password_form : kFalseTrue) {
+      for (bool has_generated_password : kFalseTrue) {
+        for (bool generated_password_changed : kFalseTrue) {
+          for (SavePromptInteraction interaction : kSavePromptInterations) {
+            GeneratedPasswordUkmTest(is_manual_generation,
+                                     is_change_password_form,
+                                     has_generated_password,
+                                     generated_password_changed, interaction);
           }
         }
       }
