@@ -839,7 +839,7 @@ void StackSamplingProfiler::RecordAnnotations(Sample* sample) {
 bool operator==(const StackSamplingProfiler::Module& a,
                 const StackSamplingProfiler::Module& b) {
   return a.base_address == b.base_address && a.id == b.id &&
-      a.filename == b.filename;
+         a.filename == b.filename;
 }
 
 bool operator==(const StackSamplingProfiler::Sample& a,
@@ -860,14 +860,14 @@ bool operator<(const StackSamplingProfiler::Sample& a,
   return a.frames < b.frames;
 }
 
-bool operator==(const StackSamplingProfiler::Frame &a,
-                const StackSamplingProfiler::Frame &b) {
+bool operator==(const StackSamplingProfiler::Frame& a,
+                const StackSamplingProfiler::Frame& b) {
   return a.instruction_pointer == b.instruction_pointer &&
-      a.module_index == b.module_index;
+         a.module_index == b.module_index;
 }
 
-bool operator<(const StackSamplingProfiler::Frame &a,
-               const StackSamplingProfiler::Frame &b) {
+bool operator<(const StackSamplingProfiler::Frame& a,
+               const StackSamplingProfiler::Frame& b) {
   if (a.module_index != b.module_index)
     return a.module_index < b.module_index;
 
