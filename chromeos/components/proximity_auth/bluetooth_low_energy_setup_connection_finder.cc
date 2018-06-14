@@ -37,8 +37,6 @@ bool BluetoothLowEnergySetupConnectionFinder::IsRightDevice(
     return false;
 
   BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
-  PA_LOG(INFO) << "Device " << device->GetAddress() << " has " << uuids.size()
-               << " services.";
   return base::ContainsKey(uuids, remote_service_uuid_);
 }
 
