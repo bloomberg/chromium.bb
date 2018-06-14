@@ -40,6 +40,7 @@ struct DeviceScaleFactorDPIThreshold {
 };
 
 const DeviceScaleFactorDPIThreshold kThresholdTableForInternal[] = {
+    {270.0f, 2.25f},
     {220.0f, 2.0f},
     {180.0f, 1.6f},
     {150.0f, 1.25f},
