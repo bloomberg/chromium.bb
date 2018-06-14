@@ -436,6 +436,7 @@ void LocalFrameView::Dispose() {
   ClearPrintContext();
 
   ukm_time_aggregator_.reset();
+  jank_tracker_.Dispose();
 
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;
