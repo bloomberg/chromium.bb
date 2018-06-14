@@ -278,7 +278,11 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/cocoa/apps/quit_with_apps_controller_mac.h"
-#include "chrome/browser/ui/cocoa/confirm_quit.h"
+#endif
+
+#if defined(OS_MACOSX) || defined(OS_WIN) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#include "chrome/browser/ui/confirm_quit.h"
 #endif
 
 #if defined(OS_WIN)
@@ -697,6 +701,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_ANDROID)
   NotificationChannelsProviderAndroid::RegisterProfilePrefs(registry);
+#endif
+
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  confirm_quit::RegisterLocalState(registry);
 #endif
 
   RegisterProfilePrefsForMigration(registry);

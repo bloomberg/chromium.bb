@@ -14,12 +14,13 @@ namespace ui {
 
 ui::Accelerator GetAcceleratorFromNativeWebKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
-  ui::Accelerator accelerator(
-      static_cast<ui::KeyboardCode>(event.windows_key_code),
-      WebEventModifiersToEventFlags(event.GetModifiers()));
-  if (event.GetType() == blink::WebInputEvent::kKeyUp)
-    accelerator.set_key_state(Accelerator::KeyState::RELEASED);
-  return accelerator;
+  Accelerator::KeyState key_state =
+      event.GetType() == blink::WebInputEvent::kKeyUp
+          ? Accelerator::KeyState::RELEASED
+          : Accelerator::KeyState::PRESSED;
+  return ui::Accelerator(static_cast<ui::KeyboardCode>(event.windows_key_code),
+                         WebEventModifiersToEventFlags(event.GetModifiers()),
+                         key_state, event.TimeStamp());
 }
 
 }  // namespace ui

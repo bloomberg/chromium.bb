@@ -170,8 +170,11 @@ extern const char kSearchSuggestEnabled[];
 #if defined(OS_ANDROID)
 extern const char kContextualSearchEnabled[];
 #endif  // defined(OS_ANDROID)
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_WIN) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 extern const char kConfirmToQuitEnabled[];
+#endif
+#if defined(OS_MACOSX)
 extern const char kShowFullscreenToolbar[];
 extern const char kAllowJavascriptAppleEvents[];
 #endif
