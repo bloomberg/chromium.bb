@@ -29,6 +29,12 @@ extern const base::Feature kSiteExplorationUiFeature;
 // If this feature is enabled, we enable popular sites in the suggestions UI.
 extern const base::Feature kUsePopularSitesSuggestions;
 
+// Feature that enables the GM2 design for Most Visited.
+extern const base::Feature kNtpIcons;
+
+// Returns whether the GM2 design for Most Visited is enabled.
+bool IsMDIconsEnabled();
+
 }  // namespace ntp_tiles
 
 #endif  // COMPONENTS_NTP_TILES_CONSTANTS_H_
