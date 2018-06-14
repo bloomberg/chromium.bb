@@ -654,8 +654,8 @@ camera.util.SmoothScroller.prototype.scrollTo = function(x, y, opt_mode) {
 
     case camera.util.SmoothScroller.Mode.SMOOTH:
       // Calculate translating offset using the accelerated CSS3 transform.
-      var dx = x - this.element_.scrollLeft;
-      var dy = y - this.element_.scrollTop;
+      var dx = Math.round(x - this.element_.scrollLeft);
+      var dy = Math.round(y - this.element_.scrollTop);
 
       var transformString =
           'translate(' + -dx + 'px, ' + -dy + 'px)';
