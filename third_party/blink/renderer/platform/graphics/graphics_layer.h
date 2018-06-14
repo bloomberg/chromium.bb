@@ -32,8 +32,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/input/scroll_snap_data.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
+#include "cc/layers/layer_sticky_position_constraint.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -235,7 +237,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   cc::Layer* ContentsLayer() const { return contents_layer_; }
 
   // For hosting this GraphicsLayer in a native layer hierarchy.
-  cc::Layer* CcLayer() const;
+  cc::PictureLayer* CcLayer() const;
 
   int PaintCount() const { return paint_count_; }
 

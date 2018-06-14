@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/page/page.h"
 
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"

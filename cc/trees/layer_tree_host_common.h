@@ -17,6 +17,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
@@ -185,7 +186,7 @@ void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeHost* host,
                                                     const Function& function) {
   for (auto* layer : *host) {
     function(layer);
-    if (Layer* mask_layer = layer->mask_layer())
+    if (PictureLayer* mask_layer = layer->mask_layer())
       function(mask_layer);
   }
 }

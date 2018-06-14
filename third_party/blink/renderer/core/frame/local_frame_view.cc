@@ -31,6 +31,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_rect.h"

@@ -12,6 +12,7 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
@@ -182,7 +183,7 @@ static inline const FilterOperations& Filters(LayerImpl* layer) {
   return layer->test_properties()->filters;
 }
 
-static Layer* MaskLayer(Layer* layer) {
+static PictureLayer* MaskLayer(Layer* layer) {
   return layer->mask_layer();
 }
 

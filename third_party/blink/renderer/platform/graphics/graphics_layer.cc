@@ -550,9 +550,9 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
   layer_->InsertChild(contents_layer_, 0);
-  cc::Layer* border_cc_layer = contents_clipping_mask_layer_
-                                   ? contents_clipping_mask_layer_->CcLayer()
-                                   : nullptr;
+  cc::PictureLayer* border_cc_layer =
+      contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
+                                    : nullptr;
   contents_layer_->SetMaskLayer(border_cc_layer);
 
   contents_layer_->Set3dSortingContextId(rendering_context3d_);
@@ -1105,7 +1105,7 @@ void GraphicsLayer::SetContentsClippingMaskLayer(
   cc::Layer* contents_layer = ContentsLayerIfRegistered();
   if (!contents_layer)
     return;
-  cc::Layer* contents_clipping_mask_cc_layer =
+  cc::PictureLayer* contents_clipping_mask_cc_layer =
       contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
                                     : nullptr;
   contents_layer->SetMaskLayer(contents_clipping_mask_cc_layer);
@@ -1248,7 +1248,7 @@ void GraphicsLayer::SetContentsToImage(
                 /*prevent_contents_opaque_changes=*/true);
 }
 
-cc::Layer* GraphicsLayer::CcLayer() const {
+cc::PictureLayer* GraphicsLayer::CcLayer() const {
   return layer_.get();
 }
 

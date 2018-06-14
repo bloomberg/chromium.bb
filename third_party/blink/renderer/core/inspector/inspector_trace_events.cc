@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "cc/layers/picture_layer.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"

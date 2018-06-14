@@ -34,7 +34,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
-#include "cc/layers/layer.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -47,7 +47,7 @@ namespace blink {
 
 namespace {
 
-cc::Layer* ToCcLayer(GraphicsLayer* layer) {
+cc::PictureLayer* ToCcLayer(GraphicsLayer* layer) {
   return layer ? layer->CcLayer() : nullptr;
 }
 

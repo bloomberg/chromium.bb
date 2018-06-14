@@ -37,9 +37,8 @@
 #include <memory>
 #include <set>
 
-#include "SkBitmap.h"
-#include "SkCanvas.h"
 #include "build/build_config.h"
+#include "cc/layers/picture_layer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
@@ -164,6 +163,8 @@
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/dtoa/utils.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "v8/include/v8.h"
 
 using blink::URLTestHelpers::ToKURL;

@@ -32,7 +32,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "cc/layers/layer.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"

@@ -57,6 +57,7 @@ class LayerTreeHost;
 class LayerTreeHostCommon;
 class LayerTreeImpl;
 class MutatorHost;
+class PictureLayer;
 
 // Base class for composited layers. Special layer types are derived from
 // this class. Each layer is an independent unit in the compositor, be that
@@ -198,9 +199,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // channel of the mask layer's content is used as an alpha mask of this
   // layer's content. IOW the mask's alpha is multiplied by this layer's alpha
   // for each matching pixel.
-  void SetMaskLayer(Layer* mask_layer);
-  Layer* mask_layer() { return inputs_.mask_layer.get(); }
-  const Layer* mask_layer() const { return inputs_.mask_layer.get(); }
+  void SetMaskLayer(PictureLayer* mask_layer);
+  PictureLayer* mask_layer() { return inputs_.mask_layer.get(); }
+  const PictureLayer* mask_layer() const { return inputs_.mask_layer.get(); }
 
   // Marks the |dirty_rect| as being changed, which will cause a commit and
   // the compositor to submit a new frame with a damage rect that includes the
@@ -600,12 +601,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // in other ways may leave it as the default.
   virtual bool HasNonAAPaint() const;
 
-  // TODO(danakj): This should not be part of Layer API.
-  // A virtual method because the mask layer is a Layer type, but it really is
-  // always a PictureLayer. Instead, mask layer should be a PictureLayer and
-  // this no longer needs to be virtual or part of the Layer base class.
-  virtual void SetLayerMaskType(Layer::LayerMaskType type) {}
-
   // Internal to property tree construction. A generation number for the
   // property trees, to verify the layer's indices are pointers into the trees
   // currently held by the LayerTreeHost. The number is updated when property
@@ -741,7 +736,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     gfx::Size bounds;
     bool masks_to_bounds;
 
-    scoped_refptr<Layer> mask_layer;
+    scoped_refptr<PictureLayer> mask_layer;
 
     float opacity;
     SkBlendMode blend_mode;

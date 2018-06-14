@@ -38,13 +38,10 @@ class CC_EXPORT PictureLayer : public Layer {
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
-  bool Update() override;
-  void SetLayerMaskType(LayerMaskType mask_type) override;
   sk_sp<SkPicture> GetPicture() const override;
-
+  bool Update() override;
   bool HasSlowPaths() const override;
   bool HasNonAAPaint() const override;
-
   void RunMicroBenchmark(MicroBenchmark* benchmark) override;
 
   ContentLayerClient* client() { return picture_layer_inputs_.client; }
@@ -55,6 +52,7 @@ class CC_EXPORT PictureLayer : public Layer {
 
   const DisplayItemList* GetDisplayItemList();
 
+  void SetLayerMaskType(LayerMaskType mask_type);
   LayerMaskType mask_type() { return mask_type_; }
 
  protected:

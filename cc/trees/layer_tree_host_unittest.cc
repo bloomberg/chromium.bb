@@ -1904,8 +1904,11 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestTransformTreeDamageIsUpdated);
 
-class UpdateCountingLayer : public Layer {
+class UpdateCountingLayer : public PictureLayer {
  public:
+  explicit UpdateCountingLayer(ContentLayerClient* client)
+      : PictureLayer(client) {}
+
   bool Update() override {
     update_count_++;
     return false;
@@ -1927,9 +1930,9 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
   void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
-    child_layer_ = base::MakeRefCounted<UpdateCountingLayer>();
+    child_layer_ = base::MakeRefCounted<UpdateCountingLayer>(&client_);
     child_layer_->SetBounds(gfx::Size(10, 10));
-    mask_layer_ = base::MakeRefCounted<UpdateCountingLayer>();
+    mask_layer_ = base::MakeRefCounted<UpdateCountingLayer>(&client_);
     mask_layer_->SetBounds(gfx::Size(10, 10));
     child_layer_->SetMaskLayer(mask_layer_.get());
     root->AddChild(child_layer_);
@@ -1976,6 +1979,7 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
 
   void AfterTest() override {}
 
+  FakeContentLayerClient client_;
   scoped_refptr<UpdateCountingLayer> mask_layer_;
   scoped_refptr<UpdateCountingLayer> child_layer_;
   int index_;
