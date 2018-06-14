@@ -2285,6 +2285,10 @@ const char kOfflineBookmarksName[] = "Enable offline bookmarks";
 const char kOfflineBookmarksDescription[] =
     "Enable saving bookmarked pages for offline viewing.";
 
+const char kOfflineIndicatorName[] = "Enable offline indicator";
+const char kOfflineIndicatorDescription[] =
+    "Enable showing offline indicator while offline.";
+
 const char kOfflinePagesCtName[] = "Enable Offline Pages CT features.";
 const char kOfflinePagesCtDescription[] = "Enable Offline Pages CT features.";
 

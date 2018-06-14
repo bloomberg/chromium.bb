@@ -27774,6 +27774,7 @@ from previous Chrome versions.
   <int value="19815558" label="EnableSettingsShortcutSearch:disabled"/>
   <int value="23556595" label="MarkHttpAs:enabled"/>
   <int value="27507364" label="apps-keep-chrome-alive"/>
+  <int value="29212695" label="OfflineIndicator:enabled"/>
   <int value="31848187" label="ViewsTaskManager:disabled"/>
   <int value="33778663" label="OriginTrials:enabled"/>
   <int value="37024318" label="disable-affiliation-based-matching"/>
@@ -28005,6 +28006,7 @@ from previous Chrome versions.
   <int value="582187448" label="DontPrefetchLibraries:enabled"/>
   <int value="584541349" label="ContextualSearchSingleActions:disabled"/>
   <int value="586021329" label="VibrateRequiresUserGesture:enabled"/>
+  <int value="588333474" label="OfflineIndicator:disabled"/>
   <int value="592050831" label="disable-slimming-paint"/>
   <int value="593707592" label="disable-network-portal-notification"/>
   <int value="595371145" label="OmniboxRichEntitySuggestions:disabled"/>

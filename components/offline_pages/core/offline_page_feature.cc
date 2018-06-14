@@ -76,6 +76,9 @@ const base::Feature kOfflinePagesCTSuppressNotificationsFeature{
 const base::Feature kOfflinePagesShowAlternateDinoPageFeature{
     "OfflinePagesShowAlternateDinoPage", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOfflineIndicatorFeature{"OfflineIndicator",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kPrefetchingOfflinePagesExperimentsOption[] = "exp";
 
 bool IsOfflineBookmarksEnabled() {
@@ -172,6 +175,10 @@ std::string GetPrefetchingOfflinePagesExperimentTag() {
   return base::GetFieldTrialParamValueByFeature(
       kPrefetchingOfflinePagesFeature,
       kPrefetchingOfflinePagesExperimentsOption);
+}
+
+bool IsOfflineIndicatorFeatureEnabled() {
+  return base::FeatureList::IsEnabled(kOfflineIndicatorFeature);
 }
 
 }  // namespace offline_pages

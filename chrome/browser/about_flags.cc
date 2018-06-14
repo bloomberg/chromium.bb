@@ -2329,6 +2329,9 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflinePagesShowAlternateDinoPageFeature)},
+    {"offline-indicator", flag_descriptions::kOfflineIndicatorName,
+     flag_descriptions::kOfflineIndicatorDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(offline_pages::kOfflineIndicatorFeature)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
