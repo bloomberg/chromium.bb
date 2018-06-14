@@ -71,7 +71,7 @@ class LoginDisplayMojo : public LoginDisplay,
   void OnUserImageChanged(const user_manager::User& user) override;
 
  private:
-  LoginDisplayHostMojo* const host_ = nullptr;
+  LoginDisplayHostMojo* const host_ = nullptr;  // Unowned.
   LoginDisplayWebUIHandler* webui_handler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayMojo);

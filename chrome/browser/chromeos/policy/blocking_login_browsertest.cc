@@ -12,9 +12,9 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
-#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -155,14 +155,10 @@ class BlockingLoginTest
         chrome::NOTIFICATION_SESSION_STARTED,
         content::NotificationService::AllSources());
 
-    ExistingUserController* controller =
-        ExistingUserController::current_controller();
-    ASSERT_TRUE(controller);
-    LoginDisplayWebUI* login_display =
-        static_cast<LoginDisplayWebUI*>(controller->login_display());
-    ASSERT_TRUE(login_display);
-
-    login_display->ShowSigninScreenForTest(username, "password", "[]");
+    LoginDisplayHost::default_host()
+        ->GetOobeUI()
+        ->GetGaiaScreenView()
+        ->ShowSigninScreenForTest(username, "password", "[]");
 
     // Wait for the session to start after submitting the credentials. This
     // will wait until all the background requests are done.

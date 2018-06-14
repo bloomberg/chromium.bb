@@ -53,6 +53,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void MaybePreloadAuthExtension() override;
   void DisableRestrictiveProxyCheckForTest() override;
   void ShowGaiaAsync(const base::Optional<AccountId>& account_id) override;
+  void ShowSigninScreenForTest(const std::string& username,
+                               const std::string& password,
+                               const std::string& services) override;
 
  private:
   // TODO (xiaoyinh): remove this dependency.
@@ -160,11 +163,6 @@ class GaiaScreenHandler : public BaseScreenHandler,
                 authpolicy::ErrorType error,
                 const authpolicy::ActiveDirectoryAccountInfo& account_info);
 
-  // Show sign-in screen for the given credentials.
-  // Should match the same method in SigninScreenHandler.
-  void ShowSigninScreenForTest(const std::string& username,
-                               const std::string& password,
-                               const std::string& services);
   // Attempts login for test.
   void SubmitLoginFormForTest();
 

@@ -1074,12 +1074,6 @@ void SigninScreenHandler::ShowPasswordChangedDialog(bool show_password_error,
   core_oobe_view_->ShowPasswordChangedScreen(show_password_error, email);
 }
 
-void SigninScreenHandler::ShowSigninScreenForTest(const std::string& username,
-                                                  const std::string& password,
-                                                  const std::string& services) {
-  gaia_screen_handler_->ShowSigninScreenForTest(username, password, services);
-}
-
 void SigninScreenHandler::ShowWhitelistCheckFailedError() {
   gaia_screen_handler_->ShowWhitelistCheckFailedError();
 }
