@@ -5,6 +5,7 @@
 package org.chromium.ui.widget;
 
 import android.graphics.Rect;
+import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
@@ -132,10 +133,10 @@ public class ViewRectProvider extends RectProvider
         // Account for the padding.
         if (!mIncludePadding) {
             boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(mView);
-            mRect.left += isRtl ? ApiCompatibilityUtils.getPaddingEnd(mView)
-                                : ApiCompatibilityUtils.getPaddingStart(mView);
-            mRect.right -= isRtl ? ApiCompatibilityUtils.getPaddingStart(mView)
-                                 : ApiCompatibilityUtils.getPaddingEnd(mView);
+            mRect.left +=
+                    isRtl ? ViewCompat.getPaddingEnd(mView) : ViewCompat.getPaddingStart(mView);
+            mRect.right -=
+                    isRtl ? ViewCompat.getPaddingStart(mView) : ViewCompat.getPaddingEnd(mView);
             mRect.top += mView.getPaddingTop();
             mRect.bottom -= mView.getPaddingBottom();
         }

@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.CallSuper;
 import android.support.annotation.StringRes;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.content.res.AppCompatResources;
@@ -298,7 +299,7 @@ public class SelectableListToolbar<E>
         });
 
         if (FeatureUtilities.isChromeModernDesignEnabled()) {
-            mClearTextButton.setPadding(ApiCompatibilityUtils.getPaddingStart(mClearTextButton),
+            mClearTextButton.setPadding(ViewCompat.getPaddingStart(mClearTextButton),
                     mClearTextButton.getPaddingTop(),
                     getResources().getDimensionPixelSize(R.dimen.clear_text_button_end_padding),
                     mClearTextButton.getPaddingBottom());
@@ -546,7 +547,7 @@ public class SelectableListToolbar<E>
         int actionMenuBarEndOffsetPx = mIsSelectionEnabled ? mModernToolbarActionMenuEndOffsetPx
                                                            : mModernToolbarSearchIconOffsetPx;
 
-        ApiCompatibilityUtils.setPaddingRelative(this,
+        ViewCompat.setPaddingRelative(this,
                 padding + paddingStartOffset + navigationButtonStartOffsetPx, this.getPaddingTop(),
                 padding + actionMenuBarEndOffsetPx, this.getPaddingBottom());
     }

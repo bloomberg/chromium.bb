@@ -862,10 +862,9 @@ class SuggestionView extends ViewGroup {
                 float paddingStart = (textWidth > maxRequiredWidth)
                         ? (mRequiredWidth - mMatchContentsWidth)
                         : Math.max(textWidth - maxMatchContentsWidth, 0);
-                ApiCompatibilityUtils.setPaddingRelative(
-                        mTextLine1, (int) paddingStart, mTextLine1.getPaddingTop(),
-                        0, // TODO(skanuj) : Change to ApiCompatibilityUtils.getPaddingEnd(...).
-                        mTextLine1.getPaddingBottom());
+                // TODO(skanuj) : Change to ViewCompat.getPaddingEnd(...).
+                ViewCompat.setPaddingRelative(mTextLine1, (int) paddingStart,
+                        mTextLine1.getPaddingTop(), 0, mTextLine1.getPaddingBottom());
             }
 
             int imageWidth = mAnswerImageMaxSize;

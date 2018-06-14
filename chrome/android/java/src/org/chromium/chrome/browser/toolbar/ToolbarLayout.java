@@ -14,6 +14,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -25,7 +26,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
@@ -912,9 +912,8 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         if (highlighting) {
             if (mHighlightDrawable == null) {
                 mHighlightDrawable = PulseDrawable.createCircle(getContext());
-                mHighlightDrawable.setInset(ApiCompatibilityUtils.getPaddingStart(mMenuButton),
-                        mMenuButton.getPaddingTop(),
-                        ApiCompatibilityUtils.getPaddingEnd(mMenuButton),
+                mHighlightDrawable.setInset(ViewCompat.getPaddingStart(mMenuButton),
+                        mMenuButton.getPaddingTop(), ViewCompat.getPaddingEnd(mMenuButton),
                         mMenuButton.getPaddingBottom());
             }
             mHighlightDrawable.setUseLightPulseColor(useLightDrawables());

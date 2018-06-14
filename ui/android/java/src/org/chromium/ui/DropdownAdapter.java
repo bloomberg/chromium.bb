@@ -7,6 +7,7 @@ package org.chromium.ui;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -109,9 +110,9 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         if (item.isMultilineLabel()) {
             // If there is a multiline label, we add extra padding at the top and bottom because
             // WRAP_CONTENT, defined above for multiline labels, leaves none.
-            int existingStart = ApiCompatibilityUtils.getPaddingStart(labelView);
-            int existingEnd = ApiCompatibilityUtils.getPaddingEnd(labelView);
-            ApiCompatibilityUtils.setPaddingRelative(
+            int existingStart = ViewCompat.getPaddingStart(labelView);
+            int existingEnd = ViewCompat.getPaddingEnd(labelView);
+            ViewCompat.setPaddingRelative(
                     labelView, existingStart, mLabelMargin, existingEnd, mLabelMargin);
         }
 

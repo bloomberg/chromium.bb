@@ -12,6 +12,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.widget.Button;
@@ -79,7 +80,7 @@ public class NewTabButton extends Button implements Drawable.Callback {
         super.onDraw(canvas);
 
         boolean isRtl = ApiCompatibilityUtils.isLayoutRtl(this);
-        int paddingStart = ApiCompatibilityUtils.getPaddingStart(this);
+        int paddingStart = ViewCompat.getPaddingStart(this);
         int widthWithoutPadding = getWidth() - paddingStart;
 
         canvas.save();
