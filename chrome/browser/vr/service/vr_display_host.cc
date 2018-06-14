@@ -14,6 +14,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "device/vr/vr_display_impl.h"
@@ -36,6 +37,17 @@ bool IsSecureContext(content::RenderFrameHost* host) {
   return true;
 }
 
+device::XRDeviceRuntimeSessionOptions GetRuntimeOptions(
+    device::mojom::XRSessionOptions* options) {
+  device::XRDeviceRuntimeSessionOptions runtime_options =
+      device::XRDeviceRuntimeSessionOptions();
+  runtime_options.exclusive = options->exclusive;
+  runtime_options.has_user_activation = options->has_user_activation;
+  runtime_options.use_legacy_webvr_render_path =
+      options->use_legacy_webvr_render_path;
+  return runtime_options;
+}
+
 }  // namespace
 
 VRDisplayHost::VRDisplayHost(BrowserXrDevice* device,
@@ -53,9 +65,7 @@ VRDisplayHost::VRDisplayHost(BrowserXrDevice* device,
   binding_.Bind(mojo::MakeRequest(&display));
   display_ = std::make_unique<device::VRDisplayImpl>(
       device->GetDevice(), std::move(service_client), std::move(display_info),
-      std::move(display), mojo::MakeRequest(&client_),
-      render_frame_host ? render_frame_host->GetProcess()->GetID() : -1,
-      render_frame_host ? render_frame_host->GetRoutingID() : -1);
+      std::move(display), mojo::MakeRequest(&client_));
   display_->SetFrameDataRestricted(!in_focused_frame_);
   browser_device_->OnDisplayHostAdded(this);
 }
@@ -66,64 +76,71 @@ VRDisplayHost::~VRDisplayHost() {
 }
 
 void VRDisplayHost::RequestSession(device::mojom::XRSessionOptionsPtr options,
+                                   bool triggered_by_displayactive,
                                    RequestSessionCallback callback) {
-  bool has_user_activation = options->has_user_activation;
-  if (!InternalSupportsSession(std::move(options)) ||
+  DCHECK(options);
+
+  if (!InternalSupportsSession(options.get()) ||
       !IsSecureContextRequirementSatisfied()) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(nullptr);
     return;
   }
 
-  if (IsAnotherHostPresenting() || !in_focused_frame_) {
-    std::move(callback).Run(false);
+  // Check with browser-side device for whether something is already
+  // presenting.
+  bool another_host_presenting =
+      (browser_device_->GetPresentingDisplayHost() != this &&
+       browser_device_->GetPresentingDisplayHost() != nullptr);
+  if (another_host_presenting || !in_focused_frame_) {
+    std::move(callback).Run(nullptr);
     return;
   }
 
-  display_->RequestSession(has_user_activation, std::move(callback));
-}
+  auto runtime_options = GetRuntimeOptions(options.get());
 
-bool VRDisplayHost::IsAnotherHostPresenting() {
-  return (browser_device_->GetPresentingDisplayHost() != this &&
-          browser_device_->GetPresentingDisplayHost() != nullptr);
+  runtime_options.render_process_id =
+      render_frame_host_ ? render_frame_host_->GetProcess()->GetID() : -1;
+  runtime_options.render_frame_id =
+      render_frame_host_ ? render_frame_host_->GetRoutingID() : -1;
+
+  // AR currently uses a non-exclusive session but we still want to call request
+  // session on it.
+  if (runtime_options.exclusive ||
+      base::FeatureList::IsEnabled(features::kWebXrHitTest)) {
+    if (!triggered_by_displayactive) {
+      ReportRequestPresent();
+    }
+
+    browser_device_->RequestSession(this, runtime_options, std::move(callback));
+  } else {
+    // TODO(offenwanger) When the XRMagicWindowProvider or equivalent is
+    // returned here, clean out this dummy code.
+    auto connection = device::mojom::XRPresentationConnection::New();
+    device::mojom::VRSubmitFrameClientPtr submit_client;
+    connection->client_request = mojo::MakeRequest(&submit_client);
+    device::mojom::VRPresentationProviderPtr provider;
+    mojo::MakeRequest(&provider);
+    connection->provider = provider.PassInterface();
+    connection->transport_options =
+        device::mojom::VRDisplayFrameTransportOptions::New();
+    // Non exclusive session setup happens on device initialization, so we don't
+    // need to do anything further.
+    std::move(callback).Run(std::move(connection));
+  }
 }
 
 void VRDisplayHost::SupportsSession(device::mojom::XRSessionOptionsPtr options,
                                     SupportsSessionCallback callback) {
-  std::move(callback).Run(InternalSupportsSession(std::move(options)));
+  std::move(callback).Run(InternalSupportsSession(options.get()));
 }
 
 bool VRDisplayHost::InternalSupportsSession(
-    device::mojom::XRSessionOptionsPtr options) {
+    device::mojom::XRSessionOptions* options) {
   if (options->exclusive) {
     return browser_device_->GetVRDisplayInfo()->capabilities->canPresent;
   }
 
   return true;
-}
-
-void VRDisplayHost::RequestPresent(
-    device::mojom::VRSubmitFrameClientPtr client,
-    device::mojom::VRPresentationProviderRequest request,
-    device::mojom::VRRequestPresentOptionsPtr options,
-    bool triggered_by_displayactive,
-    RequestPresentCallback callback) {
-  if (!IsSecureContextRequirementSatisfied()) {
-    std::move(callback).Run(false, nullptr);
-    return;
-  }
-
-  if (!triggered_by_displayactive) {
-    ReportRequestPresent();
-  }
-
-  // Check with browser-side device for whether something is already presenting.
-  if (IsAnotherHostPresenting() || !in_focused_frame_) {
-    std::move(callback).Run(false, nullptr);
-    return;
-  }
-
-  browser_device_->RequestPresent(this, std::move(client), std::move(request),
-                                  std::move(options), std::move(callback));
 }
 
 void VRDisplayHost::ReportRequestPresent() {

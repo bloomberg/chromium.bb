@@ -98,8 +98,7 @@ ARCoreGl::ARCoreGl(std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge)
 
 ARCoreGl::~ARCoreGl() {}
 
-void ARCoreGl::Initialize(
-    mojom::VRDisplayHost::RequestSessionCallback callback) {
+void ARCoreGl::Initialize(base::OnceCallback<void(bool)> callback) {
   DCHECK(IsOnGlThread());
 
   // Do not DCHECK !is_initialized to allow multiple calls to correctly

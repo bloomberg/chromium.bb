@@ -42,6 +42,10 @@ class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
                       base::OnceClosure ready_callback);
   ~VROrientationDevice() override;
 
+  // VRDevice
+  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
+                      VRDeviceRequestSessionCallback callback) override;
+
   // VRDeviceBase
   void OnMagicWindowPoseRequest(
       mojom::VRMagicWindowProvider::GetPoseCallback callback) override;

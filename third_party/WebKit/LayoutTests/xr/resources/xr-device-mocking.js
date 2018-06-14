@@ -303,11 +303,24 @@ class MockDevice {
     }
   }
 
-  requestSession(options) {
-    return this.supportsSession(options).then((result) => {
-      return result = {
-        success: result.supportsSession,
-      };
+  requestSession(sessionOptions, was_activation) {
+    return this.supportsSession(sessionOptions).then((result) => {
+      // The JavaScript bindings convert c_style_names to camelCase names.
+      var options = new device.mojom.VRDisplayFrameTransportOptions();
+      options.transportMethod =
+          device.mojom.VRDisplayFrameTransportMethod.SUBMIT_AS_MAILBOX_HOLDER;
+      options.waitForTransferNotification = true;
+      options.waitForRenderNotification = true;
+
+      let connection;
+      if (result.supportsSession)
+        connection = {
+          clientRequest: this.presentation_provider_.getClientRequest(),
+          provider: this.presentation_provider_.bindProvider(sessionOptions),
+          transportOptions: options
+        };
+
+      return Promise.resolve({connection: connection});
     });
   }
 
@@ -317,18 +330,6 @@ class MockDevice {
           !options.exclusive || this.displayInfo_.capabilities.canPresent
     });
   };
-
-  requestPresent(submitFrameClient, request, presentOptions) {
-    this.presentation_provider_.bind(
-        submitFrameClient, request, presentOptions);
-    // The JavaScript bindings convert c_style_names to camelCase names.
-    var options = new device.mojom.VRDisplayFrameTransportOptions();
-    options.transportMethod =
-        device.mojom.VRDisplayFrameTransportMethod.SUBMIT_AS_MAILBOX_HOLDER;
-    options.waitForTransferNotification = true;
-    options.waitForRenderNotification = true;
-    return Promise.resolve({success: true, transportOptions: options});
-  }
 
   setPose(pose) {
     if (pose == null) {
@@ -435,7 +436,8 @@ class MockDevice {
 
 class MockVRPresentationProvider {
   constructor() {
-    this.binding_ = new mojo.Binding(device.mojom.VRPresentationProvider, this);
+    this.binding_ =
+        new mojo.Binding(device.mojom.VRPresentationProviderPtr, this);
     this.pose_ = null;
     this.next_frame_id_ = 0;
     this.submit_frame_count_ = 0;
@@ -445,11 +447,23 @@ class MockVRPresentationProvider {
     this.next_input_source_index_ = 1;
   }
 
-  bind(client, request) {
-    this.submitFrameClient_ = client;
+  bindProvider(request) {
+    let providerPtr = new device.mojom.VRPresentationProviderPtr();
+    let providerRequest = mojo.makeRequest(providerPtr);
+
     this.binding_.close();
-    this.binding_.bind(request);
+
+    this.binding_ = new mojo.Binding(
+        device.mojom.VRPresentationProvider, this, providerRequest);
+
+    return providerPtr;
   }
+
+  getClientRequest() {
+    this.submitFrameClient_ = new device.mojom.VRSubmitFrameClientPtr();
+    return mojo.makeRequest(this.submitFrameClient_);
+  }
+
 
   submitFrameMissing(frameId, mailboxHolder, timeWaited) {
     this.missing_frame_count_++;

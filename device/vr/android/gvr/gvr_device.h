@@ -26,10 +26,8 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
   ~GvrDevice() override;
 
   // VRDeviceBase
-  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                      mojom::VRPresentationProviderRequest request,
-                      mojom::VRRequestPresentOptionsPtr present_options,
-                      RequestExclusiveSessionCallback callback) override;
+  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
+                      VRDeviceRequestSessionCallback callback) override;
   void PauseTracking() override;
   void ResumeTracking() override;
 
@@ -46,10 +44,8 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
   void OnMagicWindowPoseRequest(
       mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
 
-  void OnRequestPresentResult(
-      RequestExclusiveSessionCallback callback,
-      bool result,
-      mojom::VRDisplayFrameTransportOptionsPtr transport_options);
+  void OnRequestSessionResult(VRDeviceRequestSessionCallback callback,
+                              mojom::XRPresentationConnectionPtr connection);
 
   // XrSessionController
   void SetFrameDataRestricted(bool restricted) override;
