@@ -221,7 +221,6 @@ class GitWrapper(SCMWrapper):
     if self.out_cb:
       filter_kwargs['predicate'] = self.out_cb
     self.filter = gclient_utils.GitFilter(**filter_kwargs)
-    self._used_revision = None
 
   @staticmethod
   def BinaryExists():
@@ -344,48 +343,26 @@ class GitWrapper(SCMWrapper):
   def apply_patch_ref(self, patch_repo, patch_ref, options, file_list):
     base_rev = self._Capture(['rev-parse', 'HEAD'])
     self.Print('===Applying patch ref===')
-    self.Print('Repo is %r @ %r, ref is %r (%r), root is %r' % (
-        patch_repo, patch_ref, base_rev, self._used_revision,
-        self.checkout_path))
+    self.Print('Repo is %r @ %r, ref is %r, root is %r' % (
+        patch_repo, patch_ref, base_rev, self.checkout_path))
     self._Capture(['reset', '--hard'])
     self._Capture(['fetch', patch_repo, patch_ref])
-    patch_rev = self._Capture(['rev-parse', 'FETCH_HEAD'])
+    if file_list is not None:
+      file_list.extend(self._GetDiffFilenames('FETCH_HEAD'))
+    self._Capture(['checkout', 'FETCH_HEAD'])
 
-    try:
-      if not options.rebase_patch_ref:
-        self._Capture(['checkout', patch_rev])
-      else:
-        # If the revision we were asked to sync is a reference
-        # (e.g. refs/heads/master) we can use it as our "master revision".
-        if self._used_revision.startswith('refs/'):
-          master_rev = self._used_revision
-        else:
-          # Otherwise, fall back to refs/remotes/origin/master.
-          master_rev = 'refs/remotes/origin/master'
-          self._Capture(['fetch', self.remote, 'refs/heads/master'])
-
-        # Find the merge-base between the master_rev and patch_rev to find out
-        # the changes we need to cherry-pick on top of base_rev.
-        merge_base = self._Capture(['merge-base', master_rev, patch_rev])
-        self.Print('Merge base of %s and %s is %s' % (
-            master_rev, patch_rev, merge_base))
-        if merge_base == patch_rev:
-          # IF the merge-base is patch_rev, it means patch_rev is already part
-          # of the history, so just check it out.
-          self._Capture(['checkout', patch_rev])
-        else:
-          self._Capture(['cherry-pick', merge_base + '..' + patch_rev])
-
-      if file_list is not None:
-        file_list.extend(self._GetDiffFilenames(base_rev))
-
-    except subprocess2.CalledProcessError as e:
-      self.Print('Failed to apply %r @ %r to %r at %r' % (
-              patch_repo, patch_ref, base_rev, self.checkout_path))
-      self.Print('git returned non-zero exit status %s:\n%s' % (
-          e.returncode, e.stderr))
-      raise
-
+    if options.rebase_patch_ref:
+      try:
+        # TODO(ehmaldonado): Look into cherry-picking to avoid an expensive
+        # checkout + rebase.
+        self._Capture(['rebase', base_rev])
+      except subprocess2.CalledProcessError as e:
+        self.Print('Failed to apply %r @ %r to %r at %r' % (
+                patch_repo, patch_ref, base_rev, self.checkout_path))
+        self.Print('git returned non-zero exit status %s:\n%s' % (
+            e.returncode, e.stderr))
+        self._Capture(['rebase', '--abort'])
+        raise
     if options.reset_patch_ref:
       self._Capture(['reset', '--soft', base_rev])
 
@@ -440,8 +417,6 @@ class GitWrapper(SCMWrapper):
     else:
       # hash is also a tag, only make a distinction at checkout
       rev_type = "hash"
-
-    self._used_revision = revision
 
     mirror = self._GetMirror(url, options)
     if mirror:
