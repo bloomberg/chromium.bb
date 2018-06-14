@@ -897,6 +897,15 @@ void PasswordFormManager::SetGeneratedPasswordChanged(
   metrics_recorder_->SetHasGeneratedPasswordChanged(generated_password_changed);
 }
 
+void PasswordFormManager::SetGenerationPopupWasShown(
+    bool generation_popup_was_shown,
+    bool is_manual_generation) {
+  votes_uploader_.set_generation_popup_was_shown(generation_popup_was_shown);
+  votes_uploader_.set_is_manual_generation(is_manual_generation);
+  metrics_recorder_->SetPasswordGenerationPopupShown(generation_popup_was_shown,
+                                                     is_manual_generation);
+}
+
 void PasswordFormManager::LogSubmitPassed() {
   metrics_recorder_->LogSubmitPassed();
 }

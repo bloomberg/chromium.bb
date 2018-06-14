@@ -167,6 +167,13 @@ class PasswordFormMetricsRecorder
     kMax
   };
 
+  // Indicator whether the user has seen a password generation popup and why.
+  enum class PasswordGenerationPopupShown {
+    kNotShown = 0,
+    kShownAutomatically = 1,
+    kShownManually = 2,
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -203,6 +210,10 @@ class PasswordFormMetricsRecorder
   // These routines are used to update internal statistics ("ActionsTaken").
   void LogSubmitPassed();
   void LogSubmitFailed();
+
+  // This can be called multiple times in which case the last value is reported.
+  void SetPasswordGenerationPopupShown(bool generation_popup_was_shown,
+                                       bool is_manual_generation);
 
   // Call this once the submitted form type has been determined.
   void SetSubmittedFormType(SubmittedFormType form_type);
@@ -320,6 +331,11 @@ class PasswordFormMetricsRecorder
 
   // Whether the user was shown a prompt to save a new credential.
   bool save_prompt_shown_ = false;
+
+  // Whether the user was shown a password generation popup and why.
+  // Only reportet when a popup was shown.
+  PasswordGenerationPopupShown password_generation_popup_shown_ =
+      PasswordGenerationPopupShown::kNotShown;
 
   // These three fields record the "ActionsTaken" by the browser and
   // the user with this form, and the result. They are combined and

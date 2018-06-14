@@ -134,6 +134,11 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     ukm_entry_builder_.SetGeneration_GeneratedPasswordModified(
         has_generated_password_changed_ ? 1 : 0);
   }
+  if (password_generation_popup_shown_ !=
+      PasswordGenerationPopupShown::kNotShown) {
+    ukm_entry_builder_.SetGeneration_PopupShown(
+        static_cast<int64_t>(password_generation_popup_shown_));
+  }
 
   ukm_entry_builder_.Record(ukm::UkmRecorder::Get());
 }
@@ -204,6 +209,17 @@ void PasswordFormMetricsRecorder::LogSubmitFailed() {
   ukm_entry_builder_.SetSubmission_Observed(1 /*true*/);
   ukm_entry_builder_.SetSubmission_SubmissionResult(kSubmitResultFailed);
   submit_result_ = kSubmitResultFailed;
+}
+
+void PasswordFormMetricsRecorder::SetPasswordGenerationPopupShown(
+    bool generation_popup_was_shown,
+    bool is_manual_generation) {
+  password_generation_popup_shown_ =
+      generation_popup_was_shown
+          ? (is_manual_generation
+                 ? PasswordGenerationPopupShown::kShownManually
+                 : PasswordGenerationPopupShown::kShownAutomatically)
+          : PasswordGenerationPopupShown::kNotShown;
 }
 
 void PasswordFormMetricsRecorder::SetSubmittedFormType(
