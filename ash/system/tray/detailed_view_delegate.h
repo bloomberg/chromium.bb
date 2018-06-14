@@ -5,7 +5,12 @@
 #ifndef ASH_SYSTEM_TRAY_DETAILED_VIEW_DELEGATE_H_
 #define ASH_SYSTEM_TRAY_DETAILED_VIEW_DELEGATE_H_
 
+#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
 
 namespace ui {
 class NativeTheme;
@@ -19,7 +24,9 @@ class View;
 
 namespace ash {
 
+class HoverHighlightView;
 class TriView;
+class ViewClickListener;
 
 // A delegate of TrayDetailedView that handles bubble related actions e.g.
 // transition to the main view, closing the bubble, etc.
@@ -49,6 +56,13 @@ class DetailedViewDelegate {
   // Return the separator used between the title row and the contents. Caller
   // takes ownership of the returned view.
   virtual views::View* CreateTitleSeparator() = 0;
+
+  // Return a targetable row containing |icon| and |text|. Caller takes
+  // ownership of the returned view.
+  virtual HoverHighlightView* CreateScrollListItem(
+      ViewClickListener* listener,
+      const gfx::VectorIcon& icon,
+      const base::string16& text) = 0;
 
   // Return the back button used in the title row. Caller takes ownership of the
   // returned view.

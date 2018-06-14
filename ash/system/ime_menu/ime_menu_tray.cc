@@ -271,6 +271,12 @@ class ImeMenuListView : public ImeListView, public DetailedViewDelegate {
   bool IsOverflowIndicatorEnabled() const override { return true; }
   TriView* CreateTitleRow(int string_id) override { return nullptr; }
   views::View* CreateTitleSeparator() override { return nullptr; }
+  HoverHighlightView* CreateScrollListItem(
+      ViewClickListener* listener,
+      const gfx::VectorIcon& icon,
+      const base::string16& text) override {
+    return nullptr;
+  }
   views::Button* CreateBackButton(views::ButtonListener* listener) override {
     return nullptr;
   }

@@ -329,11 +329,7 @@ void TrayDetailedView::CreateScrollableList() {
 HoverHighlightView* TrayDetailedView::AddScrollListItem(
     const gfx::VectorIcon& icon,
     const base::string16& text) {
-  HoverHighlightView* item = new HoverHighlightView(this);
-  if (icon.is_empty())
-    item->AddLabelRow(text);
-  else
-    item->AddIconAndLabel(gfx::CreateVectorIcon(icon, kMenuIconColor), text);
+  HoverHighlightView* item = delegate_->CreateScrollListItem(this, icon, text);
   scroll_content_->AddChildView(item);
   return item;
 }

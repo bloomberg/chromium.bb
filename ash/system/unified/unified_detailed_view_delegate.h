@@ -26,6 +26,9 @@ class UnifiedDetailedViewDelegate : public DetailedViewDelegate {
   bool IsOverflowIndicatorEnabled() const override;
   TriView* CreateTitleRow(int string_id) override;
   views::View* CreateTitleSeparator() override;
+  HoverHighlightView* CreateScrollListItem(ViewClickListener* listener,
+                                           const gfx::VectorIcon& icon,
+                                           const base::string16& text) override;
   views::Button* CreateBackButton(views::ButtonListener* listener) override;
   views::Button* CreateInfoButton(views::ButtonListener* listener,
                                   int info_accessible_name_id) override;
