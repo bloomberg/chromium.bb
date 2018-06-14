@@ -14,6 +14,8 @@ component("cpp") {
     "cors/preflight_cache.h",
     "cors/preflight_result.cc",
     "cors/preflight_result.h",
+    "cross_thread_shared_url_loader_factory_info.cc",
+    "cross_thread_shared_url_loader_factory_info.h",
     "features.cc",
     "features.h",
     "net_adapters.cc",
@@ -130,6 +132,7 @@ source_set("tests") {
     "cors/cors_unittest.cc",
     "cors/preflight_cache_unittest.cc",
     "cors/preflight_result_unittest.cc",
+    "cross_thread_shared_url_loader_factory_info_unittest.cc",
     "digitally_signed_mojom_traits_unittest.cc",
     "mutable_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "mutable_partial_network_traffic_annotation_tag_mojom_traits_unittest.cc",
@@ -151,6 +154,7 @@ source_set("tests") {
     "//net",
     "//net:test_support",
     "//services/network:network_service",
+    "//services/network:test_support",
     "//testing/gtest",
   ]
 }

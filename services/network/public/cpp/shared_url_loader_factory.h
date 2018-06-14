@@ -35,6 +35,12 @@ class COMPONENT_EXPORT(NETWORK_CPP) SharedURLLoaderFactory
   // From network::mojom::URLLoaderFactory:
   void Clone(network::mojom::URLLoaderFactoryRequest request) override = 0;
 
+  // If implemented, creates a SharedURLLoaderFactoryInfo that can be used on
+  // any thread to create a SharedURLLoaderFactory that works there.
+  //
+  // A simple way of providing this API is to use
+  // CrossThreadSharedURLLoaderFactoryInfo; which will implement it at cost of
+  // a single thread hop on any different-thread fetch.
   virtual std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() = 0;
 
  protected:
