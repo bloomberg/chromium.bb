@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "device/geolocation/geolocation_export.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
@@ -21,8 +20,7 @@ class GeolocationImpl;
 // Provides information to a set of GeolocationImpl instances that are
 // associated with a given context. Notably, allows pausing and resuming
 // geolocation on these instances.
-class DEVICE_GEOLOCATION_EXPORT GeolocationContext
-    : public mojom::GeolocationContext {
+class GeolocationContext : public mojom::GeolocationContext {
  public:
   GeolocationContext();
   ~GeolocationContext() override;

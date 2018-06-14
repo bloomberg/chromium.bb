@@ -17,7 +17,6 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
-#include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/network_location_request.h"
 #include "device/geolocation/public/cpp/location_provider.h"
 #include "device/geolocation/wifi_data_provider_manager.h"
@@ -40,7 +39,7 @@ class NetworkLocationProvider : public LocationProvider {
 
   // Cache of recently resolved locations, keyed by the set of unique WiFi APs
   // used in the network query. Public for tests.
-  class DEVICE_GEOLOCATION_EXPORT PositionCache {
+  class PositionCache {
    public:
     // The maximum size of the cache of positions.
     static const size_t kMaximumSize;
@@ -74,10 +73,9 @@ class NetworkLocationProvider : public LocationProvider {
     CacheAgeList cache_age_list_;  // Oldest first.
   };
 
-  DEVICE_GEOLOCATION_EXPORT NetworkLocationProvider(
-      scoped_refptr<net::URLRequestContextGetter> context,
-      const std::string& api_key,
-      LastPositionCache* last_position_cache);
+  NetworkLocationProvider(scoped_refptr<net::URLRequestContextGetter> context,
+                          const std::string& api_key,
+                          LastPositionCache* last_position_cache);
   ~NetworkLocationProvider() override;
 
   // LocationProvider implementation

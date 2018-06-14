@@ -14,8 +14,7 @@
 
 namespace device {
 
-class DEVICE_GEOLOCATION_EXPORT WifiDataProviderChromeOs
-    : public WifiDataProvider {
+class WifiDataProviderChromeOs : public WifiDataProvider {
  public:
   WifiDataProviderChromeOs();
 

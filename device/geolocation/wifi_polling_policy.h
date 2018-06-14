@@ -9,12 +9,11 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "device/geolocation/geolocation_export.h"
 
 namespace device {
 
 // Allows sharing and mocking of the update polling policy function.
-class DEVICE_GEOLOCATION_EXPORT WifiPollingPolicy {
+class WifiPollingPolicy {
  public:
   virtual ~WifiPollingPolicy() = default;
 

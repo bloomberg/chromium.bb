@@ -23,7 +23,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/wifi_data.h"
 
 namespace device {
@@ -35,7 +34,7 @@ class WifiDataProvider;
 // We use a singleton instance of this class which is shared by multiple network
 // location providers. These location providers access the instance through the
 // Register and Unregister methods.
-class DEVICE_GEOLOCATION_EXPORT WifiDataProviderManager {
+class WifiDataProviderManager {
  public:
   typedef WifiDataProvider* (*ImplFactoryFunction)(void);
 

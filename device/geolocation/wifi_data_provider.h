@@ -11,13 +11,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/wifi_data.h"
 
 namespace device {
 
-class DEVICE_GEOLOCATION_EXPORT WifiDataProvider
-    : public base::RefCountedThreadSafe<WifiDataProvider> {
+class WifiDataProvider : public base::RefCountedThreadSafe<WifiDataProvider> {
  public:
   WifiDataProvider();
 

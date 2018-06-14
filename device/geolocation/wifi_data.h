@@ -8,12 +8,11 @@
 #include <set>
 
 #include "base/strings/string16.h"
-#include "device/geolocation/geolocation_export.h"
 
 namespace device {
 
 // Wifi data relating to a single access point.
-struct DEVICE_GEOLOCATION_EXPORT AccessPointData {
+struct AccessPointData {
   AccessPointData();
   ~AccessPointData();
 
@@ -35,7 +34,7 @@ struct AccessPointDataLess {
 };
 
 // All data for wifi.
-struct DEVICE_GEOLOCATION_EXPORT WifiData {
+struct WifiData {
   WifiData();
   WifiData(const WifiData& other);
   ~WifiData();

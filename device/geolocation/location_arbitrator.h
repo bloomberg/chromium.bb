@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider_impl.h"
 #include "device/geolocation/network_location_provider.h"
 #include "device/geolocation/public/cpp/location_provider.h"
@@ -31,9 +30,8 @@ namespace device {
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
 // moment.
-class DEVICE_GEOLOCATION_EXPORT LocationArbitrator
-    : public LocationProvider,
-      public NetworkLocationProvider::LastPositionCache {
+class LocationArbitrator : public LocationProvider,
+                           public NetworkLocationProvider::LastPositionCache {
  public:
   // The TimeDelta newer a location provider has to be that it's worth
   // switching to this location provider on the basis of it being fresher
