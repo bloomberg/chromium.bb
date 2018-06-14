@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/wifi_data_provider.h"
 #include "device/geolocation/wifi_polling_policy.h"
 
@@ -28,8 +27,7 @@ base::string16 MacAddressAsString16(const uint8_t mac_as_int[6]);
 // do polling behavior is taken care of by this base class, and all the platform
 // need do is provide the underlying WLAN access API and polling policy.
 // Also designed this way for ease of testing the cross-platform behavior.
-class DEVICE_GEOLOCATION_EXPORT WifiDataProviderCommon
-    : public WifiDataProvider {
+class WifiDataProviderCommon : public WifiDataProvider {
  public:
   // Interface to abstract the low level data OS library call, and to allow
   // mocking (hence public).

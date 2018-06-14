@@ -6,13 +6,11 @@
 #define DEVICE_GEOLOCATION_WIFI_DATA_PROVIDER_WIN_H_
 
 #include "base/macros.h"
-#include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/wifi_data_provider_common.h"
 
 namespace device {
 
-class DEVICE_GEOLOCATION_EXPORT WifiDataProviderWin
-    : public WifiDataProviderCommon {
+class WifiDataProviderWin : public WifiDataProviderCommon {
  public:
   WifiDataProviderWin();
 

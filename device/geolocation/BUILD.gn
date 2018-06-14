@@ -9,9 +9,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")  # For generate_jni().
 }
 
-component("geolocation") {
-  defines = [ "DEVICE_GEOLOCATION_IMPLEMENTATION" ]
-
+source_set("geolocation") {
   sources = [
     "empty_wifi_data_provider.cc",
     "empty_wifi_data_provider.h",
@@ -19,7 +17,6 @@ component("geolocation") {
     "geolocation_config.h",
     "geolocation_context.cc",
     "geolocation_context.h",
-    "geolocation_export.h",
     "geolocation_impl.cc",
     "geolocation_impl.h",
     "geolocation_provider.h",

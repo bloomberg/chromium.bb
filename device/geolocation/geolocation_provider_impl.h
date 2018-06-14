@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "device/geolocation/public/cpp/location_provider.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -34,10 +33,9 @@ namespace device {
 using CustomLocationProviderCallback =
     base::Callback<std::unique_ptr<LocationProvider>()>;
 
-class DEVICE_GEOLOCATION_EXPORT GeolocationProviderImpl
-    : public GeolocationProvider,
-      public mojom::GeolocationControl,
-      public base::Thread {
+class GeolocationProviderImpl : public GeolocationProvider,
+                                public mojom::GeolocationControl,
+                                public base::Thread {
  public:
   // GeolocationProvider implementation:
   std::unique_ptr<GeolocationProvider::Subscription> AddLocationUpdateCallback(

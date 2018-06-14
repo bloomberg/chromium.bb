@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_list.h"
-#include "device/geolocation/geolocation_export.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
 
@@ -32,7 +31,7 @@ namespace device {
 // removed.
 class GeolocationProvider {
  public:
-  DEVICE_GEOLOCATION_EXPORT static GeolocationProvider* GetInstance();
+  static GeolocationProvider* GetInstance();
 
   // Callback type for a function that asynchronously produces a
   // URLRequestContextGetter.

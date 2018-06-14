@@ -6,7 +6,6 @@
 #define DEVICE_GEOLOCATION_GEOLOCATION_CONFIG_H_
 
 #include "base/compiler_specific.h"
-#include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
@@ -14,8 +13,7 @@
 namespace device {
 
 // Implements the GeolocationConfig Mojo interface.
-class DEVICE_GEOLOCATION_EXPORT GeolocationConfig
-    : public mojom::GeolocationConfig {
+class GeolocationConfig : public mojom::GeolocationConfig {
  public:
   GeolocationConfig();
   ~GeolocationConfig() override;

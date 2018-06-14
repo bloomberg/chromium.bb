@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/wifi_data_provider_common.h"
 
 namespace dbus {
@@ -17,8 +16,7 @@ class Bus;
 
 namespace device {
 
-class DEVICE_GEOLOCATION_EXPORT WifiDataProviderLinux
-    : public WifiDataProviderCommon {
+class WifiDataProviderLinux : public WifiDataProviderCommon {
  public:
   WifiDataProviderLinux();
 
