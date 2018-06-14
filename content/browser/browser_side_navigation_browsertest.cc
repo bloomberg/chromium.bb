@@ -714,4 +714,94 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
   }
 }
 
+// Regression test for https://crbug.com/260144
+// Back/Forward navigation in an iframe must not stop ongoing XHR.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBaseBrowserTest,
+                       IframeNavigationsDoNotStopXHR) {
+  // A response for the XHR request. It will be delayed until the end of all the
+  // navigations.
+  net::test_server::ControllableHttpResponse xhr_response(
+      embedded_test_server(), "/xhr");
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  NavigateToURL(shell(), url);
+
+  DOMMessageQueue dom_message_queue(WebContents::FromRenderFrameHost(
+      shell()->web_contents()->GetMainFrame()));
+  std::string message;
+
+  // 1) Send an XHR.
+  ExecuteScriptAsync(
+      shell(),
+      "let xhr = new XMLHttpRequest();"
+      "xhr.open('GET', './xhr', true);"
+      "xhr.onabort = () => window.domAutomationController.send('xhr.onabort');"
+      "xhr.onerror = () => window.domAutomationController.send('xhr.onerror');"
+      "xhr.onload = () => window.domAutomationController.send('xhr.onload');"
+      "xhr.send();");
+
+  // 2) Create an iframe and wait for the initial load.
+  {
+    ExecuteScriptAsync(
+        shell(),
+        "var iframe = document.createElement('iframe');"
+        "iframe.src = './title1.html';"
+        "iframe.onload = function() {"
+        "   window.domAutomationController.send('iframe.onload');"
+        "};"
+        "document.body.appendChild(iframe);");
+
+    EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+    EXPECT_EQ("\"iframe.onload\"", message);
+  }
+
+  // 3) Navigate the iframe elsewhere.
+  {
+    ExecuteScriptAsync(shell(),
+                       "var iframe = document.querySelector('iframe');"
+                       "iframe.src = './title2.html';");
+
+    EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+    EXPECT_EQ("\"iframe.onload\"", message);
+  }
+
+  // 4) history.back() in the iframe.
+  {
+    ExecuteScriptAsync(shell(),
+                       "var iframe = document.querySelector('iframe');"
+                       "iframe.contentWindow.history.back()");
+
+    EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+    EXPECT_EQ("\"iframe.onload\"", message);
+  }
+
+  // 5) history.forward() in the iframe.
+  {
+    ExecuteScriptAsync(shell(),
+                       "var iframe = document.querySelector('iframe');"
+                       "iframe.contentWindow.history.forward()");
+
+    EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+    EXPECT_EQ("\"iframe.onload\"", message);
+  }
+
+  // 6) Wait for the XHR.
+  {
+    xhr_response.WaitForRequest();
+    xhr_response.Send(
+        "HTTP/1.1 200 OK\r\n"
+        "Connection: close\r\n"
+        "Content-Length: 2\r\n"
+        "Content-Type: text/plain; charset=utf-8\r\n"
+        "\r\n"
+        "OK");
+    xhr_response.Done();
+    EXPECT_TRUE(dom_message_queue.WaitForMessage(&message));
+    EXPECT_EQ("\"xhr.onload\"", message);
+  }
+
+  EXPECT_FALSE(dom_message_queue.PopMessage(&message));
+}
+
 }  // namespace content
