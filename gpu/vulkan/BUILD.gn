@@ -14,60 +14,57 @@ buildflag_header("buildflags") {
 }
 
 if (enable_vulkan) {
-  vulkan_lib_dir = getenv("VULKAN_SDK") + "/lib"
   component("vulkan") {
     output_name = "vulkan_wrapper"
 
-    if (is_linux) {
-      sources = [
-        "vulkan_command_buffer.cc",
-        "vulkan_command_buffer.h",
-        "vulkan_command_pool.cc",
-        "vulkan_command_pool.h",
-        "vulkan_descriptor_layout.cc",
-        "vulkan_descriptor_layout.h",
-        "vulkan_descriptor_pool.cc",
-        "vulkan_descriptor_pool.h",
-        "vulkan_descriptor_set.cc",
-        "vulkan_descriptor_set.h",
-        "vulkan_device_queue.cc",
-        "vulkan_device_queue.h",
-        "vulkan_export.h",
-        "vulkan_function_pointers.cc",
-        "vulkan_function_pointers.h",
-        "vulkan_image_view.cc",
-        "vulkan_image_view.h",
-        "vulkan_implementation.cc",
-        "vulkan_implementation.h",
-        "vulkan_instance.cc",
-        "vulkan_instance.h",
-        "vulkan_render_pass.cc",
-        "vulkan_render_pass.h",
-        "vulkan_sampler.cc",
-        "vulkan_sampler.h",
-        "vulkan_shader_module.cc",
-        "vulkan_shader_module.h",
-        "vulkan_surface.cc",
-        "vulkan_surface.h",
-        "vulkan_swap_chain.cc",
-        "vulkan_swap_chain.h",
-      ]
+    sources = [
+      "vulkan_command_buffer.cc",
+      "vulkan_command_buffer.h",
+      "vulkan_command_pool.cc",
+      "vulkan_command_pool.h",
+      "vulkan_descriptor_layout.cc",
+      "vulkan_descriptor_layout.h",
+      "vulkan_descriptor_pool.cc",
+      "vulkan_descriptor_pool.h",
+      "vulkan_descriptor_set.cc",
+      "vulkan_descriptor_set.h",
+      "vulkan_device_queue.cc",
+      "vulkan_device_queue.h",
+      "vulkan_export.h",
+      "vulkan_function_pointers.cc",
+      "vulkan_function_pointers.h",
+      "vulkan_image_view.cc",
+      "vulkan_image_view.h",
+      "vulkan_implementation.cc",
+      "vulkan_implementation.h",
+      "vulkan_instance.cc",
+      "vulkan_instance.h",
+      "vulkan_render_pass.cc",
+      "vulkan_render_pass.h",
+      "vulkan_sampler.cc",
+      "vulkan_sampler.h",
+      "vulkan_shader_module.cc",
+      "vulkan_shader_module.h",
+      "vulkan_surface.cc",
+      "vulkan_surface.h",
+      "vulkan_swap_chain.cc",
+      "vulkan_swap_chain.h",
+    ]
 
-      configs += [ "//build/config:precompiled_headers" ]
+    configs += [ "//build/config:precompiled_headers" ]
 
-      defines = [ "VULKAN_IMPLEMENTATION" ]
+    defines = [ "VULKAN_IMPLEMENTATION" ]
 
-      if (use_x11) {
-        defines += [ "VK_USE_PLATFORM_XLIB_KHR" ]
-      }
-
-      all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
-
-      deps = [
-        "//base",
-        "//ui/gfx",
-      ]
+    if (use_x11) {
+      defines += [ "VK_USE_PLATFORM_XLIB_KHR" ]
     }
+
+    all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
+
+    deps = [
+      "//base",
+      "//ui/gfx",
+    ]
   }
 
   test("vulkan_tests") {
@@ -78,15 +75,6 @@ if (enable_vulkan) {
       "tests/vulkan_test.cc",
       "tests/vulkan_tests_main.cc",
     ]
-
-    if (current_cpu == "x64") {
-      lib_dirs = [
-        "/usr/lib/x86_64-linux-gnu",
-        vulkan_lib_dir,
-      ]
-    } else {
-      assert(false, "Unsupported vulkan target: " + current_cpu)
-    }
 
     deps = [
       "//base/test:test_support",
