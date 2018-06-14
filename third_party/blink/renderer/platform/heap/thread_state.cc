@@ -394,30 +394,30 @@ size_t ThreadState::TotalMemorySize() {
 }
 
 size_t ThreadState::EstimatedLiveSize(size_t estimation_base_size,
-                                      size_t size_at_prev_gc) {
+                                      size_t size_at_last_gc) {
   const ThreadHeapStatsCollector& stats_collector = *heap_->stats_collector();
   const ThreadHeapStatsCollector::Event& prev = stats_collector.previous();
 
   if (prev.wrapper_count_before_sweeping == 0)
     return estimation_base_size;
 
-  // (estimated size) = (estimation base size) -
-  //     (heap size at the last GC) *
-  //     (# of persistent handles collected since the last GC) /
-  //     (# of persistent handles at the last GC)
-  size_t size_freed_by_collecting_persistents =
-      static_cast<size_t>(static_cast<double>(size_at_prev_gc) *
-                          stats_collector.collected_wrapper_count() /
-                          prev.wrapper_count_before_sweeping);
-  if (estimation_base_size < size_freed_by_collecting_persistents)
+  // (estimated size) = (estimation base size) - (heap size at the last GC) /
+  //   (# of persistent handles at the last GC) *
+  //     (# of persistent handles collected since the last GC)
+  size_t size_retained_by_collected_persistents = static_cast<size_t>(
+      1.0 * size_at_last_gc / prev.wrapper_count_before_sweeping *
+      stats_collector.collected_wrapper_count());
+  if (estimation_base_size < size_retained_by_collected_persistents)
     return 0;
-  return estimation_base_size - size_freed_by_collecting_persistents;
+  return estimation_base_size - size_retained_by_collected_persistents;
 }
 
 double ThreadState::HeapGrowingRate() {
   const size_t current_size = heap_->stats_collector()->object_size_in_bytes();
-  const size_t estimated_size = EstimatedLiveSize(
-      current_size, heap_->stats_collector()->previous().marked_bytes);
+  // TODO(mlippautz): Clarify those two parameters below.
+  const size_t estimated_size =
+      EstimatedLiveSize(heap_->stats_collector()->previous().marked_bytes,
+                        heap_->stats_collector()->previous().marked_bytes);
 
   // If the estimatedSize is 0, we set a high growing rate to trigger a GC.
   double growing_rate =
