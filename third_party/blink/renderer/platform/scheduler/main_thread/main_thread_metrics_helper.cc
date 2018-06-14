@@ -79,6 +79,7 @@ MainThreadMetricsHelper::MainThreadMetricsHelper(
     bool renderer_backgrounded)
     : MetricsHelper(WebThreadType::kMainThread),
       main_thread_scheduler_(main_thread_scheduler),
+      renderer_shutting_down_(false),
       is_page_almost_idle_signal_enabled_(
           ::resource_coordinator::IsPageAlmostIdleSignalEnabled()),
       main_thread_load_tracker_(
@@ -134,6 +135,7 @@ void MainThreadMetricsHelper::OnRendererBackgrounded(base::TimeTicks now) {
 }
 
 void MainThreadMetricsHelper::OnRendererShutdown(base::TimeTicks now) {
+  renderer_shutting_down_ = true;
   foreground_main_thread_load_tracker_.RecordIdle(now);
   background_main_thread_load_tracker_.RecordIdle(now);
   main_thread_load_tracker_.RecordIdle(now);
@@ -489,6 +491,13 @@ void MainThreadMetricsHelper::RecordBackgroundMainThreadTaskLoad(
 void MainThreadMetricsHelper::ReportLowThreadLoadForPageAlmostIdleSignal(
     int load_percentage) {
   if (!is_page_almost_idle_signal_enabled_)
+    return;
+
+  // Avoid sending IPCs when the renderer is shutting down as this wreaks havoc
+  // in test harnesses. These messages aren't needed in production code either
+  // as the endpoint receiving them dies shortly after and does nothing with
+  // them.
+  if (renderer_shutting_down_)
     return;
 
   static const int main_thread_task_load_low_threshold =

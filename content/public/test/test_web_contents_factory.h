@@ -36,6 +36,9 @@ class TestWebContentsFactory {
   // Ownership remains with the TestWebContentsFactory.
   WebContents* CreateWebContents(BrowserContext* context);
 
+  // Destroys the provided WebContents.
+  void DestroyWebContents(WebContents* contents);
+
  private:
   // The test factory (and friends) for creating test web contents.
   std::unique_ptr<RenderViewHostTestEnabler> rvh_enabler_;

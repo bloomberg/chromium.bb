@@ -113,6 +113,10 @@ class SessionRestoreObserverTest : public ChromeRenderViewHostTestHarness {
   void LoadWebContents(content::WebContents* contents) {
     WebContentsTester::For(contents)->NavigateAndCommit(GURL(kDefaultUrl));
     WebContentsTester::For(contents)->TestSetIsLoading(false);
+    // Transition through LOADING to LOADED in order to keep the
+    // SessionRestoreStatsCollector state machine happy.
+    TabLoadTracker::Get()->TransitionStateForTesting(contents,
+                                                     TabLoadTracker::LOADING);
     TabLoadTracker::Get()->TransitionStateForTesting(contents,
                                                      TabLoadTracker::LOADED);
     mock_observer_.OnDidRestoreTab(contents);
