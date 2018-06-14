@@ -14,8 +14,14 @@ namespace features {
 
 // If enabled, the emoji picker context menu item may be shown for editable
 // text areas.
-const base::Feature kEnableEmojiContextMenu{"EnableEmojiContextMenu",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableEmojiContextMenu {
+  "EnableEmojiContextMenu",
+#if defined(OS_MACOSX)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Enables the floating virtual keyboard behavior.
 const base::Feature kEnableFloatingVirtualKeyboard = {
