@@ -14,73 +14,7 @@ namespace mojo {
 namespace edk {
 namespace test {
 
-bool BlockingWrite(const InternalPlatformHandle& handle,
-                   const void* buffer,
-                   size_t bytes_to_write,
-                   size_t* bytes_written) {
-  OVERLAPPED overlapped = {0};
-  DWORD bytes_written_dword = 0;
-
-  if (!WriteFile(handle.handle, buffer, static_cast<DWORD>(bytes_to_write),
-                 &bytes_written_dword, &overlapped)) {
-    if (GetLastError() != ERROR_IO_PENDING ||
-        !GetOverlappedResult(handle.handle, &overlapped, &bytes_written_dword,
-                             TRUE)) {
-      return false;
-    }
-  }
-
-  *bytes_written = bytes_written_dword;
-  return true;
-}
-
-bool BlockingRead(const InternalPlatformHandle& handle,
-                  void* buffer,
-                  size_t buffer_size,
-                  size_t* bytes_read) {
-  OVERLAPPED overlapped = {0};
-  DWORD bytes_read_dword = 0;
-
-  if (!ReadFile(handle.handle, buffer, static_cast<DWORD>(buffer_size),
-                &bytes_read_dword, &overlapped)) {
-    if (GetLastError() != ERROR_IO_PENDING ||
-        !GetOverlappedResult(handle.handle, &overlapped, &bytes_read_dword,
-                             TRUE)) {
-      return false;
-    }
-  }
-
-  *bytes_read = bytes_read_dword;
-  return true;
-}
-
-bool NonBlockingRead(const InternalPlatformHandle& handle,
-                     void* buffer,
-                     size_t buffer_size,
-                     size_t* bytes_read) {
-  OVERLAPPED overlapped = {0};
-  DWORD bytes_read_dword = 0;
-
-  if (!ReadFile(handle.handle, buffer, static_cast<DWORD>(buffer_size),
-                &bytes_read_dword, &overlapped)) {
-    if (GetLastError() != ERROR_IO_PENDING)
-      return false;
-
-    CancelIo(handle.handle);
-
-    if (!GetOverlappedResult(handle.handle, &overlapped, &bytes_read_dword,
-                             TRUE)) {
-      *bytes_read = 0;
-      return true;
-    }
-  }
-
-  *bytes_read = bytes_read_dword;
-  return true;
-}
-
-ScopedInternalPlatformHandle InternalPlatformHandleFromFILE(
-    base::ScopedFILE fp) {
+PlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
   CHECK(fp);
 
   HANDLE rv = INVALID_HANDLE_VALUE;
@@ -89,11 +23,10 @@ ScopedInternalPlatformHandle InternalPlatformHandleFromFILE(
       reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(fp.get()))),
       GetCurrentProcess(), &rv, 0, TRUE, DUPLICATE_SAME_ACCESS))
       << "DuplicateHandle";
-  return ScopedInternalPlatformHandle(InternalPlatformHandle(rv));
+  return PlatformHandle(base::win::ScopedHandle(rv));
 }
 
-base::ScopedFILE FILEFromInternalPlatformHandle(ScopedInternalPlatformHandle h,
-                                                const char* mode) {
+base::ScopedFILE FILEFromPlatformHandle(PlatformHandle h, const char* mode) {
   CHECK(h.is_valid());
   // Microsoft's documentation for |_open_osfhandle()| only discusses these
   // flags (and |_O_WTEXT|). Hmmm.
@@ -105,7 +38,7 @@ base::ScopedFILE FILEFromInternalPlatformHandle(ScopedInternalPlatformHandle h,
   if (strchr(mode, 't'))
     flags |= _O_TEXT;
   base::ScopedFILE rv(_fdopen(
-      _open_osfhandle(reinterpret_cast<intptr_t>(h.release().handle), flags),
+      _open_osfhandle(reinterpret_cast<intptr_t>(h.ReleaseHandle()), flags),
       mode));
   PCHECK(rv) << "_fdopen";
   return rv;

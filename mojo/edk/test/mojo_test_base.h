@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
 #include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
@@ -37,7 +36,6 @@ class MojoTestBase : public testing::Test {
    public:
     ClientController(const std::string& client_name,
                      MojoTestBase* test,
-                     const ProcessErrorCallback& process_error_callback,
                      LaunchType launch_type);
     ~ClientController();
 
@@ -56,13 +54,6 @@ class MojoTestBase : public testing::Test {
 
     DISALLOW_COPY_AND_ASSIGN(ClientController);
   };
-
-  // Set the callback to handle bad messages received from test client
-  // processes. This can be set to a different callback before starting each
-  // client.
-  void set_process_error_callback(const ProcessErrorCallback& callback) {
-    process_error_callback_ = callback;
-  }
 
   ClientController& StartClient(const std::string& client_name);
 
@@ -174,8 +165,6 @@ class MojoTestBase : public testing::Test {
   friend class ClientController;
 
   std::vector<std::unique_ptr<ClientController>> clients_;
-
-  ProcessErrorCallback process_error_callback_;
 
   LaunchType launch_type_ = LaunchType::CHILD;
 

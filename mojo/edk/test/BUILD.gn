@@ -18,10 +18,8 @@ static_library("test_support") {
     ]
   }
 
-  if (is_fuchsia) {
-    sources += [ "test_utils_fuchsia.cc" ]
-  } else if (is_posix) {
-    sources += [ "test_utils_posix.cc" ]
+  if (is_fuchsia || is_posix) {
+    sources += [ "test_utils.cc" ]
   }
 
   public_deps = [

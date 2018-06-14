@@ -26,17 +26,12 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/peer_connection.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "mojo/public/cpp/system/isolated_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,7 +51,7 @@ const char kRunAsBrokerClient[] = "run-as-broker-client";
 const char kTestChildMessagePipeName[] = "test_pipe";
 
 // For use (and only valid) in a test child process:
-base::LazyInstance<PeerConnection>::Leaky g_child_peer_connection;
+base::LazyInstance<IsolatedConnection>::Leaky g_child_isolated_connection;
 
 template <typename Func>
 int RunClientFunction(Func handler, bool pass_pipe_ownership_to_main) {
@@ -66,20 +61,6 @@ int RunClientFunction(Func handler, bool pass_pipe_ownership_to_main) {
   MessagePipeHandle pipe_handle =
       pass_pipe_ownership_to_main ? pipe.release() : pipe.get();
   return handler(pipe_handle.value());
-}
-
-// TODO(https://844763): Clean this up. Some test code still relies on old EDK
-// APIs and thus internal platform handle types. We try to use the new public
-// types as much as possible, so this does a reliable conversion from the new
-// type to the old type.
-ScopedInternalPlatformHandle PlatformHandleToScopedInternalPlatformHandle(
-    PlatformHandle handle) {
-  MojoPlatformHandle platform_handle;
-  PlatformHandleToMojoPlatformHandle(std::move(handle), &platform_handle);
-  ScopedInternalPlatformHandle edk_handle;
-  MojoPlatformHandleToScopedInternalPlatformHandle(&platform_handle,
-                                                   &edk_handle);
-  return edk_handle;
 }
 
 }  // namespace
@@ -193,27 +174,17 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
     command_line.AppendSwitch(kRunAsBrokerClient);
   } else if (launch_type == LaunchType::PEER ||
              launch_type == LaunchType::NAMED_PEER) {
-    peer_connection_ = std::make_unique<PeerConnection>();
-
-    // TODO(https://844763): Either move peer connection into the C API or
-    // (preferably) get rid of it altogether. For now we do this dance to get
-    // the new public handle types to work with the peer connection API.
-    ScopedInternalPlatformHandle local_handle;
+    isolated_connection_ = std::make_unique<IsolatedConnection>();
     if (local_channel_endpoint.is_valid()) {
-      local_handle = PlatformHandleToScopedInternalPlatformHandle(
-          local_channel_endpoint.TakePlatformHandle());
+      pipe = isolated_connection_->Connect(std::move(local_channel_endpoint));
     } else {
 #if defined(OS_POSIX) || defined(OS_WIN)
       DCHECK(server_endpoint.is_valid());
-      local_handle = PlatformHandleToScopedInternalPlatformHandle(
-          server_endpoint.TakePlatformHandle());
-      local_handle.get().needs_connection = true;
+      pipe = isolated_connection_->Connect(std::move(server_endpoint));
 #else
       NOTREACHED();
 #endif
     }
-    pipe = peer_connection_->Connect(
-        ConnectionParams(TransportProtocol::kLegacy, std::move(local_handle)));
   }
 
   test_child_ =
@@ -225,12 +196,12 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
     DCHECK(local_channel_endpoint.is_valid());
     OutgoingInvitation::Send(std::move(child_invitation), test_child_.Handle(),
                              std::move(local_channel_endpoint),
-                             process_error_callback_);
+                             mojo::ProcessErrorCallback());
   } else if (launch_type == LaunchType::NAMED_CHILD) {
     DCHECK(server_endpoint.is_valid());
     OutgoingInvitation::Send(std::move(child_invitation), test_child_.Handle(),
                              std::move(server_endpoint),
-                             process_error_callback_);
+                             mojo::ProcessErrorCallback());
   }
 
   CHECK(test_child_.IsValid());
@@ -275,14 +246,11 @@ void MultiprocessTestHelper::ChildSetup() {
     primordial_pipe = invitation.ExtractMessagePipe(kTestChildMessagePipeName);
   } else {
     if (!named_pipe.empty()) {
-      NamedPlatformHandle pipe_name(named_pipe);
-      primordial_pipe = g_child_peer_connection.Get().Connect(ConnectionParams(
-          TransportProtocol::kLegacy, CreateClientHandle(pipe_name)));
+      primordial_pipe = g_child_isolated_connection.Get().Connect(
+          NamedPlatformChannel::ConnectToServer(named_pipe));
     } else {
-      primordial_pipe = g_child_peer_connection.Get().Connect(ConnectionParams(
-          TransportProtocol::kLegacy,
-          PlatformChannelPair::PassClientHandleFromParentProcess(
-              command_line)));
+      primordial_pipe = g_child_isolated_connection.Get().Connect(
+          PlatformChannel::RecoverPassedEndpointFromCommandLine(command_line));
     }
   }
 }
