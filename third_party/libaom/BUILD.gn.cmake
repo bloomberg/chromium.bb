@@ -62,39 +62,6 @@ if (enable_av1_decoder) {
 
   config("libaom_config") {
     include_dirs = libaom_include_dirs
-
-    # gn orders flags on a target before flags from configs. The default config
-    # adds -Wall, and these flags have to be after -Wall -- so they need to come
-    # from a config and can't be on the target directly.
-    if (is_clang) {
-      cflags = [
-        # TODO(johannkoenig): these may no longer apply.
-        # libvpx heavily relies on implicit enum casting.
-        "-Wno-conversion",
-
-        # libvpx does `if ((a == b))` in some places.
-        "-Wno-parentheses-equality",
-
-        # libvpx has many static functions in header, which trigger this warning.
-        "-Wno-unused-function",
-      ]
-
-      # TODO(johannkoenig): these may no longer apply.
-      # Fixes a mac / ios simulator link error for vpx_scaled_2d:
-      # Undefined symbols for architecture x86_64:
-      # "_vpx_scaled_2d", referenced from:
-      # _vp9_scale_and_extend_frame_c in libvpx.a(vp9_frame_scale.o)
-      # (maybe you meant: _vpx_scaled_2d_ssse3)
-      # ld: symbol(s) not found for architecture x86_64
-      if (is_mac || (is_ios && (current_cpu == "x86" || current_cpu == "x64"))) {
-        cflags += [ "-fno-common" ]
-      }
-    } else if (!is_win) {
-      cflags = [
-        "-Wno-unused-function",
-        "-Wno-sign-compare",
-      ]
-    }
   }
 
   # This config is applied to targets that depend on libaom.
