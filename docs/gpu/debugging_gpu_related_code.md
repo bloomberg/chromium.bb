@@ -197,17 +197,15 @@ after that. All of them go through `gpu::gles2::GLES2DecoderImpl::DoCommand`.
 
 To actually debug the GPU process:
 
-On Linux this works for me (the quotes around launcher can be omitted - they are
-there to stop Windows Defender from complaining about this file):
+On Linux this works for me:
 
-*   `out/Debug/chromium --no-sandbox --gpu-"launcher"="xterm -e gdb --args"
+*   `out/Debug/chromium --no-sandbox --gpu-launcher="xterm -e gdb --args"
     http://localhost:8000/page-to-repro.html`
 
-On OSX this works for me (the quotes around launcher can be omitted - they are
-there to stop Windows Defender from complaining about this file):
+On OSX this works for me:
 
 *   `out/Debug/Chromium.app/Contents/MacOSX/Chromium --no-sandbox
-    --gpu-"launcher"="xterm -e gdb --args"
+    --gpu-launcher="xterm -e gdb --args"
     http://localhost:8000/page-to-repro.html`
 
 On Windows I use `--gpu-startup-dialog` and then connect to the listed process.
