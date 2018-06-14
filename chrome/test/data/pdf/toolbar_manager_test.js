@@ -52,8 +52,10 @@ var tests = [
   function testToolbarManagerForceHideTopToolbar() {
     var mockWindow = new MockWindow(1920, 1080);
 
-    var toolbar = Polymer.Base.create('viewer-pdf-toolbar');
-    var zoomToolbar = Polymer.Base.create('viewer-zoom-toolbar');
+    var toolbar = document.createElement('viewer-pdf-toolbar');
+    document.body.appendChild(toolbar);
+    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    document.body.appendChild(zoomToolbar);
     var toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
     toolbarManager.getCurrentTimestamp_ = mockGetCurrentTimestamp;
 
@@ -122,7 +124,9 @@ var tests = [
     var mockWindow = new MockWindow(1920, 1080);
     var toolbar =
         Polymer.Base.create('viewer-pdf-toolbar', {loadProgress: 100});
-    var zoomToolbar = Polymer.Base.create('viewer-zoom-toolbar');
+    document.body.appendChild(toolbar);
+    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    document.body.appendChild(zoomToolbar);
     var toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
     toolbarManager.getCurrentTimestamp_ = mockGetCurrentTimestamp;
 
@@ -162,7 +166,9 @@ var tests = [
     var mockWindow = new MockWindow(1920, 1080);
     var toolbar =
         Polymer.Base.create('viewer-pdf-toolbar', {loadProgress: 100});
-    var zoomToolbar = Polymer.Base.create('viewer-zoom-toolbar');
+    document.body.appendChild(toolbar);
+    var zoomToolbar = document.createElement('viewer-zoom-toolbar');
+    document.body.appendChild(zoomToolbar);
     var toolbarManager = new ToolbarManager(mockWindow, toolbar, zoomToolbar);
 
     toolbarManager.hideToolbarsIfAllowed();
