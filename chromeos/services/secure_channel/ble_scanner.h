@@ -44,6 +44,8 @@ class BleScanner {
   // stop.
   void RemoveScanFilter(const DeviceIdPair& scan_filter);
 
+  bool HasScanFilter(const DeviceIdPair& scan_filter);
+
  protected:
   BleScanner(Delegate* delegate);
 

@@ -38,6 +38,10 @@ void BleScanner::RemoveScanFilter(const DeviceIdPair& scan_filter) {
   HandleScanFilterChange();
 }
 
+bool BleScanner::HasScanFilter(const DeviceIdPair& scan_filter) {
+  return base::ContainsKey(scan_filters_, scan_filter);
+}
+
 void BleScanner::NotifyReceivedAdvertisementFromDevice(
     const cryptauth::RemoteDeviceRef& remote_device,
     device::BluetoothDevice* bluetooth_device,

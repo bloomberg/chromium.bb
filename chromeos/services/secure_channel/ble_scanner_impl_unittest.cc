@@ -126,6 +126,18 @@ class SecureChannelBleScannerImplTest : public testing::Test {
         std::move(fake_service_data_provider));
   }
 
+  void AddScanFilter(const DeviceIdPair& scan_filter) {
+    EXPECT_FALSE(ble_scanner_->HasScanFilter(scan_filter));
+    ble_scanner_->AddScanFilter(scan_filter);
+    EXPECT_TRUE(ble_scanner_->HasScanFilter(scan_filter));
+  }
+
+  void RemoveScanFilter(const DeviceIdPair& scan_filter) {
+    EXPECT_TRUE(ble_scanner_->HasScanFilter(scan_filter));
+    ble_scanner_->RemoveScanFilter(scan_filter);
+    EXPECT_FALSE(ble_scanner_->HasScanFilter(scan_filter));
+  }
+
   void ProcessScanResultAndVerifyNoDeviceIdentified(
       const std::string& service_data,
       bool is_new_device) {
@@ -187,8 +199,6 @@ class SecureChannelBleScannerImplTest : public testing::Test {
     return fake_ble_synchronizer_->GetNumCommands();
   }
 
-  BleScanner* ble_scanner() { return ble_scanner_.get(); }
-
   FakeDiscoverySession* fake_discovery_session() {
     return fake_discovery_session_;
   }
@@ -246,7 +256,7 @@ TEST_F(SecureChannelBleScannerImplTest, UrelatedScanResults) {
   DeviceIdPair pair(test_devices()[0].GetDeviceId(),
                     test_devices()[1].GetDeviceId());
 
-  ble_scanner()->AddScanFilter(pair);
+  AddScanFilter(pair);
   InvokeStartDiscoveryCallback(true /* success */, 0u /* command_index */);
   EXPECT_TRUE(fake_discovery_session());
 
@@ -255,7 +265,7 @@ TEST_F(SecureChannelBleScannerImplTest, UrelatedScanResults) {
   ProcessScanResultAndVerifyNoDeviceIdentified("unrelatedServiceData",
                                                false /* is_new_device */);
 
-  ble_scanner()->RemoveScanFilter(pair);
+  RemoveScanFilter(pair);
   InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
   EXPECT_FALSE(fake_discovery_session());
 }
@@ -264,7 +274,7 @@ TEST_F(SecureChannelBleScannerImplTest, IdentifyDevice_NewDevice_Background) {
   DeviceIdPair pair(test_devices()[0].GetDeviceId(),
                     test_devices()[1].GetDeviceId());
 
-  ble_scanner()->AddScanFilter(pair);
+  AddScanFilter(pair);
   InvokeStartDiscoveryCallback(true /* success */, 0u /* command_index */);
   EXPECT_TRUE(fake_discovery_session());
 
@@ -273,7 +283,7 @@ TEST_F(SecureChannelBleScannerImplTest, IdentifyDevice_NewDevice_Background) {
                                    true /* is_new_device */, test_devices()[0],
                                    true /* is_background_advertisement */);
 
-  ble_scanner()->RemoveScanFilter(pair);
+  RemoveScanFilter(pair);
   InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
   EXPECT_FALSE(fake_discovery_session());
 }
@@ -283,7 +293,7 @@ TEST_F(SecureChannelBleScannerImplTest,
   DeviceIdPair pair(test_devices()[0].GetDeviceId(),
                     test_devices()[1].GetDeviceId());
 
-  ble_scanner()->AddScanFilter(pair);
+  AddScanFilter(pair);
   InvokeStartDiscoveryCallback(true /* success */, 0u /* command_index */);
   EXPECT_TRUE(fake_discovery_session());
 
@@ -292,7 +302,7 @@ TEST_F(SecureChannelBleScannerImplTest,
                                    false /* is_new_device */, test_devices()[0],
                                    false /* is_background_advertisement */);
 
-  ble_scanner()->RemoveScanFilter(pair);
+  RemoveScanFilter(pair);
   InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
   EXPECT_FALSE(fake_discovery_session());
 }
@@ -303,8 +313,8 @@ TEST_F(SecureChannelBleScannerImplTest, IdentifyDevice_MultipleScans) {
   DeviceIdPair pair_2(test_devices()[2].GetDeviceId(),
                       test_devices()[1].GetDeviceId());
 
-  ble_scanner()->AddScanFilter(pair_1);
-  ble_scanner()->AddScanFilter(pair_2);
+  AddScanFilter(pair_1);
+  AddScanFilter(pair_2);
   InvokeStartDiscoveryCallback(true /* success */, 0u /* command_index */);
   EXPECT_TRUE(fake_discovery_session());
 
@@ -314,7 +324,7 @@ TEST_F(SecureChannelBleScannerImplTest, IdentifyDevice_MultipleScans) {
                                    false /* is_background_advertisement */);
 
   // Remove the identified device from the list of scan filters.
-  ble_scanner()->RemoveScanFilter(pair_1);
+  RemoveScanFilter(pair_1);
 
   // No additional BLE command should have been posted, since the existing scan
   // should not have been stopped.
@@ -322,13 +332,13 @@ TEST_F(SecureChannelBleScannerImplTest, IdentifyDevice_MultipleScans) {
   EXPECT_TRUE(fake_discovery_session());
 
   // Remove the scan filter, and verify that the scan stopped.
-  ble_scanner()->RemoveScanFilter(pair_2);
+  RemoveScanFilter(pair_2);
   InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
   EXPECT_FALSE(fake_discovery_session());
 
   // Add the scan filter back again; this should start the discovery session
   // back up again.
-  ble_scanner()->AddScanFilter(pair_2);
+  AddScanFilter(pair_2);
   InvokeStartDiscoveryCallback(true /* success */, 2u /* command_index */);
   EXPECT_TRUE(fake_discovery_session());
 
@@ -338,7 +348,7 @@ TEST_F(SecureChannelBleScannerImplTest, IdentifyDevice_MultipleScans) {
                                    false /* is_background_advertisement */);
 
   // Remove the scan filter, and verify that the scan stopped.
-  ble_scanner()->RemoveScanFilter(pair_2);
+  RemoveScanFilter(pair_2);
   InvokeStopDiscoveryCallback(true /* success */, 3u /* command_index */);
   EXPECT_FALSE(fake_discovery_session());
 }
@@ -346,7 +356,7 @@ TEST_F(SecureChannelBleScannerImplTest, IdentifyDevice_MultipleScans) {
 TEST_F(SecureChannelBleScannerImplTest, StartAndStopFailures) {
   DeviceIdPair pair(test_devices()[0].GetDeviceId(),
                     test_devices()[1].GetDeviceId());
-  ble_scanner()->AddScanFilter(pair);
+  AddScanFilter(pair);
 
   // A request was made to start discovery; simulate this request failing.
   InvokeStartDiscoveryCallback(false /* success */, 0u /* command_index */);
@@ -362,7 +372,7 @@ TEST_F(SecureChannelBleScannerImplTest, StartAndStopFailures) {
 
   // Remove scan filters, which should trigger BleScanner to stop the
   // discovery session.
-  ble_scanner()->RemoveScanFilter(pair);
+  RemoveScanFilter(pair);
 
   // Simulate a failure to stop.
   InvokeStopDiscoveryCallback(false /* success */, 3u /* command_index */);
@@ -380,10 +390,10 @@ TEST_F(SecureChannelBleScannerImplTest, StartAndStopFailures) {
 TEST_F(SecureChannelBleScannerImplTest, StartAndStop_EdgeCases) {
   DeviceIdPair pair(test_devices()[0].GetDeviceId(),
                     test_devices()[1].GetDeviceId());
-  ble_scanner()->AddScanFilter(pair);
+  AddScanFilter(pair);
 
   // Remove scan filters before the start discovery callback succeeds.
-  ble_scanner()->RemoveScanFilter(pair);
+  RemoveScanFilter(pair);
 
   // Complete starting the discovery session.
   InvokeStartDiscoveryCallback(true /* success */, 0u /* command_index */);
@@ -398,10 +408,10 @@ TEST_F(SecureChannelBleScannerImplTest, StartAndStop_EdgeCases) {
 TEST_F(SecureChannelBleScannerImplTest, StartAndStopFailures_EdgeCases) {
   DeviceIdPair pair(test_devices()[0].GetDeviceId(),
                     test_devices()[1].GetDeviceId());
-  ble_scanner()->AddScanFilter(pair);
+  AddScanFilter(pair);
 
   // Remove scan filters before the start discovery callback succeeds.
-  ble_scanner()->RemoveScanFilter(pair);
+  RemoveScanFilter(pair);
 
   // Fail the pending call to start a discovery session.
   InvokeStartDiscoveryCallback(false /* success */, 0u /* command_index */);
