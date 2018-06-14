@@ -19,7 +19,22 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
     const base::flat_set<FidoTransportProtocol>& protocols,
     CtapGetAssertionRequest request,
     SignResponseCallback completion_callback)
-    : FidoRequestHandler(connector, protocols, std::move(completion_callback)),
+    : GetAssertionRequestHandler(connector,
+                                 protocols,
+                                 std::move(request),
+                                 std::move(completion_callback),
+                                 AddPlatformAuthenticatorCallback()) {}
+
+GetAssertionRequestHandler::GetAssertionRequestHandler(
+    service_manager::Connector* connector,
+    const base::flat_set<FidoTransportProtocol>& protocols,
+    CtapGetAssertionRequest request,
+    SignResponseCallback completion_callback,
+    AddPlatformAuthenticatorCallback add_platform_authenticator)
+    : FidoRequestHandler(connector,
+                         protocols,
+                         std::move(completion_callback),
+                         std::move(add_platform_authenticator)),
       request_(std::move(request)),
       weak_factory_(this) {
   if (base::ContainsKey(

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEBAUTHN_CHROME_AUTHENTICATOR_REQUEST_DELEGATE_H_
 
 #include "base/memory/weak_ptr.h"
+#include "build/build_config.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 
@@ -39,6 +40,9 @@ class ChromeAuthenticatorRequestDelegate
       const std::string& relying_party_id,
       base::OnceCallback<void(bool)> callback) override;
   bool IsFocused() override;
+#if defined(OS_MACOSX)
+  base::StringPiece TouchIdAuthenticatorKeychainAccessGroup() override;
+#endif
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;

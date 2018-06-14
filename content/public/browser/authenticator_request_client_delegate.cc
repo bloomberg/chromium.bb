@@ -5,6 +5,7 @@
 #include "content/public/browser/authenticator_request_client_delegate.h"
 
 #include "base/callback.h"
+#include "base/strings/string_piece.h"
 
 namespace content {
 
@@ -29,5 +30,13 @@ void AuthenticatorRequestClientDelegate::ShouldReturnAttestation(
 bool AuthenticatorRequestClientDelegate::IsFocused() {
   return true;
 }
+
+#if defined(OS_MACOSX)
+base::StringPiece
+AuthenticatorRequestClientDelegate::TouchIdAuthenticatorKeychainAccessGroup() {
+  static const char* access_group = "not-implemented";
+  return access_group;
+}
+#endif
 
 }  // namespace content

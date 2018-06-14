@@ -6,21 +6,27 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_task.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-#if defined(OS_MACOSX)
-#include "device/fido/mac/authenticator.h"
-#endif
-
 namespace device {
 
 FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
-    const base::flat_set<FidoTransportProtocol>& transports) {
+    const base::flat_set<FidoTransportProtocol>& transports)
+    : FidoRequestHandlerBase(connector,
+                             transports,
+                             AddPlatformAuthenticatorCallback()) {}
+
+FidoRequestHandlerBase::FidoRequestHandlerBase(
+    service_manager::Connector* connector,
+    const base::flat_set<FidoTransportProtocol>& transports,
+    AddPlatformAuthenticatorCallback add_platform_authenticator)
+    : add_platform_authenticator_(std::move(add_platform_authenticator)) {
   for (const auto transport : transports) {
     // Construction of CaBleDiscovery is handled by the implementing class as it
     // requires an extension passed on from the relying party.
@@ -28,7 +34,9 @@ FidoRequestHandlerBase::FidoRequestHandlerBase(
       continue;
 
     if (transport == FidoTransportProtocol::kInternal) {
-      use_platform_authenticator_ = true;
+      // Internal authenticators are injected through
+      // AddPlatformAuthenticatorCallback.
+      NOTREACHED();
       continue;
     }
 
@@ -64,21 +72,18 @@ void FidoRequestHandlerBase::Start() {
   for (const auto& discovery : discoveries_) {
     discovery->Start();
   }
-  if (use_platform_authenticator_) {
-    MaybeAddPlatformAuthenticator();
-  }
+  MaybeAddPlatformAuthenticator();
 }
 
 void FidoRequestHandlerBase::MaybeAddPlatformAuthenticator() {
-#if defined(OS_MACOSX)
-  if (__builtin_available(macOS 10.12.2, *)) {
-    auto authenticator = fido::mac::TouchIdAuthenticator::CreateIfAvailable();
-    if (!authenticator) {
-      return;
-    }
-    AddAuthenticator(std::move(authenticator));
+  if (!add_platform_authenticator_) {
+    return;
   }
-#endif
+  auto authenticator = std::move(add_platform_authenticator_).Run();
+  if (!authenticator) {
+    return;
+  }
+  AddAuthenticator(std::move(authenticator));
 }
 
 void FidoRequestHandlerBase::DiscoveryStarted(FidoDiscovery* discovery,

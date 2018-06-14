@@ -30,6 +30,7 @@ class OneShotTimer;
 
 namespace device {
 
+class FidoAuthenticator;
 class FidoRequestHandlerBase;
 
 enum class FidoReturnCode : uint8_t;
@@ -141,6 +142,8 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
       webauth::mojom::AuthenticatorStatus status,
       webauth::mojom::GetAssertionAuthenticatorResponsePtr response);
   void Cleanup();
+
+  std::unique_ptr<device::FidoAuthenticator> MaybeCreatePlatformAuthenticator();
 
   RenderFrameHost* const render_frame_host_;
   service_manager::Connector* connector_ = nullptr;

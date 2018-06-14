@@ -17,11 +17,28 @@ namespace device {
 MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     service_manager::Connector* connector,
     const base::flat_set<FidoTransportProtocol>& protocols,
-    CtapMakeCredentialRequest request_parameter,
+    CtapMakeCredentialRequest request,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
     RegisterResponseCallback completion_callback)
-    : FidoRequestHandler(connector, protocols, std::move(completion_callback)),
-      request_parameter_(std::move(request_parameter)),
+    : MakeCredentialRequestHandler(connector,
+                                   protocols,
+                                   std::move(request),
+                                   authenticator_selection_criteria,
+                                   std::move(completion_callback),
+                                   AddPlatformAuthenticatorCallback()) {}
+
+MakeCredentialRequestHandler::MakeCredentialRequestHandler(
+    service_manager::Connector* connector,
+    const base::flat_set<FidoTransportProtocol>& protocols,
+    CtapMakeCredentialRequest request,
+    AuthenticatorSelectionCriteria authenticator_selection_criteria,
+    RegisterResponseCallback completion_callback,
+    AddPlatformAuthenticatorCallback add_platform_authenticator)
+    : FidoRequestHandler(connector,
+                         protocols,
+                         std::move(completion_callback),
+                         std::move(add_platform_authenticator)),
+      request_parameter_(std::move(request)),
       authenticator_selection_criteria_(
           std::move(authenticator_selection_criteria)),
       weak_factory_(this) {

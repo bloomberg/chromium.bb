@@ -33,9 +33,11 @@ bool TouchIdAuthenticator::IsAvailable() {
 }
 
 // static
-std::unique_ptr<TouchIdAuthenticator>
-TouchIdAuthenticator::CreateIfAvailable() {
-  return IsAvailable() ? base::WrapUnique(new TouchIdAuthenticator()) : nullptr;
+std::unique_ptr<TouchIdAuthenticator> TouchIdAuthenticator::CreateIfAvailable(
+    base::StringPiece keychain_access_group) {
+  return IsAvailable()
+             ? base::WrapUnique(new TouchIdAuthenticator(keychain_access_group))
+             : nullptr;
 }
 
 TouchIdAuthenticator::~TouchIdAuthenticator() = default;
@@ -47,7 +49,7 @@ void TouchIdAuthenticator::MakeCredential(
   DCHECK(!operation_);
   operation_ = std::make_unique<MakeCredentialOperation>(
       std::move(request), GetOrInitializeProfileId().as_string(),
-      keychain_access_group().as_string(), std::move(callback));
+      keychain_access_group_, std::move(callback));
   operation_->Run();
 }
 
@@ -56,7 +58,7 @@ void TouchIdAuthenticator::GetAssertion(CtapGetAssertionRequest request,
   DCHECK(!operation_);
   operation_ = std::make_unique<GetAssertionOperation>(
       std::move(request), GetOrInitializeProfileId().as_string(),
-      keychain_access_group().as_string(), std::move(callback));
+      keychain_access_group_, std::move(callback));
   operation_->Run();
 }
 
@@ -72,7 +74,9 @@ std::string TouchIdAuthenticator::GetId() const {
   return "TouchIdAuthenticator";
 }
 
-TouchIdAuthenticator::TouchIdAuthenticator() = default;
+TouchIdAuthenticator::TouchIdAuthenticator(
+    base::StringPiece keychain_access_group)
+    : keychain_access_group_(keychain_access_group.as_string()) {}
 
 base::StringPiece TouchIdAuthenticator::GetOrInitializeProfileId() {
   // TODO(martinkr): Implement.
