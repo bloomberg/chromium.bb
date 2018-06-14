@@ -227,10 +227,14 @@ void CheckPasswordFormFields(const PasswordForm& password_form,
   CheckField(form_data.fields, expectations.username_id,
              password_form.username_element, &password_form.username_value,
              "username");
+  EXPECT_EQ(expectations.username_id,
+            password_form.username_element_renderer_id);
 
   CheckField(form_data.fields, expectations.password_id,
              password_form.password_element, &password_form.password_value,
              "password");
+  EXPECT_EQ(expectations.password_id,
+            password_form.password_element_renderer_id);
 
   CheckField(form_data.fields, expectations.new_password_id,
              password_form.new_password_element,
@@ -266,6 +270,7 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         EXPECT_FALSE(parsed_form) << "Expected no parsed results";
       } else {
         ASSERT_TRUE(parsed_form) << "Expected successful parsing";
+        EXPECT_TRUE(parsed_form->has_renderer_ids);
         CheckPasswordFormFields(*parsed_form, form_data, expected_ids);
       }
     }

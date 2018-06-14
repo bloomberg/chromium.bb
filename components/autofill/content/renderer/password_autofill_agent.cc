@@ -56,6 +56,9 @@
 #include "url/gurl.h"
 
 using blink::WebAutofillState;
+using blink::WebDocument;
+using blink::WebInputElement;
+using blink::WebFormControlElement;
 
 namespace autofill {
 namespace {
@@ -620,6 +623,13 @@ PasswordForm::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
     default:
       return PasswordForm::SubmissionIndicatorEvent::NONE;
   }
+}
+
+WebInputElement ConvertToWebInput(const WebFormControlElement& element) {
+  if (element.IsNull())
+    return WebInputElement();
+  const WebInputElement* input = blink::ToWebInputElement(&element);
+  return input ? *input : WebInputElement();
 }
 
 }  // namespace
@@ -1366,10 +1376,38 @@ void PasswordAutofillAgent::OnProbablyFormSubmitted() {
   }
 }
 
+void PasswordAutofillAgent::FillUsingRendererIDs(
+    int key,
+    const PasswordFormFillData& form_data) {
+  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
+  if (logging_state_active_) {
+    logger.reset(new RendererSavePasswordProgressLogger(
+        GetPasswordManagerDriver().get()));
+    logger->LogMessage(Logger::STRING_ON_FILL_PASSWORD_FORM_METHOD);
+  }
+  WebInputElement username_element, password_element;
+  std::tie(username_element, password_element) =
+      FindUsernamePasswordElements(form_data);
+  if (password_element.IsNull()) {
+    MaybeStoreFallbackData(key, form_data);
+    return;
+  }
+
+  StoreDataForFillOnAccountSelect(key, form_data, username_element,
+                                  password_element);
+  FillFormOnPasswordReceived(form_data, username_element, password_element,
+                             &field_value_and_properties_map_, logger.get());
+}
+
 // mojom::PasswordAutofillAgent:
 void PasswordAutofillAgent::FillPasswordForm(
     int key,
     const PasswordFormFillData& form_data) {
+  if (form_data.has_renderer_ids) {
+    FillUsingRendererIDs(key, form_data);
+    return;
+  }
+
   std::vector<blink::WebInputElement> elements;
   std::unique_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
@@ -1461,33 +1499,13 @@ void PasswordAutofillAgent::GetFillableElementFromFormData(
 
     blink::WebInputElement main_element =
         username_element.IsNull() ? password_element : username_element;
-
-    PasswordInfo password_info;
-    password_info.fill_data = form_data;
-    password_info.key = key;
-    password_info.password_field = password_element;
-    web_input_to_password_info_[main_element] = password_info;
-    last_supplied_password_info_iter_ =
-        web_input_to_password_info_.find(main_element);
-    if (!main_element.IsPasswordFieldForAutofill())
-      password_to_username_[password_element] = username_element;
     if (elements)
       elements->push_back(main_element);
+    StoreDataForFillOnAccountSelect(key, form_data, username_element,
+                                    password_element);
   }
 
-  // This is a fallback, if for some reasons elements for filling were not found
-  // (for example because they were renamed by JavaScript) then add fill data
-  // for |web_input_to_password_info_|. When the user clicks on a password
-  // field which is not a key in |web_input_to_password_info_|, the first
-  // element from |web_input_to_password_info_| will be used in
-  // PasswordAutofillAgent::FindPasswordInfoForElement to propose to fill.
-  if (web_input_to_password_info_.empty()) {
-    PasswordInfo password_info;
-    password_info.fill_data = form_data;
-    password_info.key = key;
-    web_input_to_password_info_[blink::WebInputElement()] = password_info;
-    last_supplied_password_info_iter_ = web_input_to_password_info_.begin();
-  }
+  MaybeStoreFallbackData(key, form_data);
 }
 
 void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
@@ -1891,8 +1909,82 @@ PasswordAutofillAgent::GetPasswordManagerDriver() {
     render_frame()->GetRemoteInterfaces()->GetInterface(
         mojo::MakeRequest(&password_manager_driver_));
   }
-
   return password_manager_driver_;
+}
+
+std::pair<WebInputElement, WebInputElement>
+PasswordAutofillAgent::FindUsernamePasswordElements(
+    const PasswordFormFillData& form_data) {
+  const uint32_t username_renderer_id =
+      form_data.username_field.unique_renderer_id;
+  const uint32_t password_renderer_id =
+      form_data.password_field.unique_renderer_id;
+  const bool is_username_present =
+      username_renderer_id != FormFieldData::kNotSetFormControlRendererId;
+  const bool is_password_present =
+      password_renderer_id != FormFieldData::kNotSetFormControlRendererId;
+
+  DCHECK(is_password_present);
+
+  std::vector<uint32_t> element_ids = {password_renderer_id};
+  if (is_username_present)
+    element_ids.push_back(username_renderer_id);
+
+  WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
+  bool is_form_tag =
+      form_data.form_renderer_id != FormData::kNotSetFormRendererId;
+  std::vector<WebFormControlElement> elements =
+      is_form_tag ? form_util::FindFormControlElementsByUniqueRendererId(
+                        doc, form_data.form_renderer_id, element_ids)
+                  : form_util::FindFormControlElementsByUniqueRendererId(
+                        doc, element_ids);
+
+  // Set password element.
+  WebInputElement password_field = ConvertToWebInput(elements[0]);
+
+  // Set username element.
+  WebInputElement username_field;
+  if (is_username_present)
+    username_field = ConvertToWebInput(elements[1]);
+
+  return std::make_pair(username_field, password_field);
+}
+
+void PasswordAutofillAgent::StoreDataForFillOnAccountSelect(
+    int key,
+    const PasswordFormFillData& form_data,
+    WebInputElement username_element,
+    WebInputElement password_element) {
+  WebInputElement main_element =
+      username_element.IsNull() ? password_element : username_element;
+
+  PasswordInfo password_info;
+  password_info.fill_data = form_data;
+  password_info.key = key;
+  password_info.password_field = password_element;
+  web_input_to_password_info_[main_element] = password_info;
+  last_supplied_password_info_iter_ =
+      web_input_to_password_info_.find(main_element);
+  if (!main_element.IsPasswordFieldForAutofill())
+    password_to_username_[password_element] = username_element;
+}
+
+void PasswordAutofillAgent::MaybeStoreFallbackData(
+    int key,
+    const PasswordFormFillData& form_data) {
+  if (!web_input_to_password_info_.empty())
+    return;
+  // If for some reasons elements for filling were not found (for example
+  // because they were renamed by JavaScript) then add fill data for
+  // |web_input_to_password_info_|. When the user clicks on a password field
+  // which is not a key in |web_input_to_password_info_|, the first element from
+  // |web_input_to_password_info_| will be used in
+  // PasswordAutofillAgent::FindPasswordInfoForElement to propose to fill.
+  PasswordInfo password_info;
+  password_info.fill_data = form_data;
+  password_info.key = key;
+  web_input_to_password_info_[WebInputElement()] = password_info;
+  last_supplied_password_info_iter_ = web_input_to_password_info_.begin();
 }
 
 }  // namespace autofill

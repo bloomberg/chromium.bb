@@ -682,9 +682,11 @@ bool StructTraits<autofill::mojom::PasswordFormFillDataDataView,
       !data.ReadAdditionalLogins(&out->additional_logins))
     return false;
 
+  out->form_renderer_id = data.form_renderer_id();
   out->wait_for_username = data.wait_for_username();
   out->is_possible_change_password_form =
       data.is_possible_change_password_form();
+  out->has_renderer_ids = data.has_renderer_ids();
 
   return true;
 }

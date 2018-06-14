@@ -349,6 +349,9 @@ struct StructTraits<autofill::mojom::PasswordAndRealmDataView,
 template <>
 struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
                     autofill::PasswordFormFillData> {
+  static uint32_t form_renderer_id(const autofill::PasswordFormFillData& r) {
+    return r.form_renderer_id;
+  }
 
   static const base::string16& name(const autofill::PasswordFormFillData& r) {
     return r.name;
@@ -389,6 +392,10 @@ struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
   static bool is_possible_change_password_form(
       const autofill::PasswordFormFillData& r) {
     return r.is_possible_change_password_form;
+  }
+
+  static bool has_renderer_ids(const autofill::PasswordFormFillData& r) {
+    return r.has_renderer_ids;
   }
 
   static bool Read(autofill::mojom::PasswordFormFillDataDataView data,

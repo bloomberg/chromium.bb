@@ -416,14 +416,19 @@ std::unique_ptr<ParseResult> ParseUsingBaseHeuristics(
 
 // Set username and password fields from |parse_result| in |password_form|.
 void SetFields(const ParseResult& parse_result, PasswordForm* password_form) {
+  password_form->has_renderer_ids = true;
   if (parse_result.username_field) {
     password_form->username_element = parse_result.username_field->name;
     password_form->username_value = parse_result.username_field->value;
+    password_form->username_element_renderer_id =
+        parse_result.username_field->unique_renderer_id;
   }
 
   if (parse_result.password_field) {
     password_form->password_element = parse_result.password_field->name;
     password_form->password_value = parse_result.password_field->value;
+    password_form->password_element_renderer_id =
+        parse_result.password_field->unique_renderer_id;
   }
 
   if (parse_result.new_password_field) {

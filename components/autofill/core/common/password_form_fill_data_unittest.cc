@@ -241,4 +241,42 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   EXPECT_EQ(iter->second.realm, affiliated_match.signon_realm);
 }
 
+// Tests that renderer ids are passed correctly.
+TEST(PasswordFormFillDataTest, RendererIDs) {
+  // Create the current form on the page.
+  PasswordForm form_on_page;
+  form_on_page.origin = GURL("https://foo.com/");
+  form_on_page.action = GURL("https://foo.com/login");
+  form_on_page.username_element = ASCIIToUTF16("username");
+  form_on_page.password_element = ASCIIToUTF16("password");
+
+  // Create an exact match in the database.
+  PasswordForm preferred_match = form_on_page;
+  preferred_match.username_value = ASCIIToUTF16("test@gmail.com");
+  preferred_match.password_value = ASCIIToUTF16("test");
+  preferred_match.preferred = true;
+
+  // Set renderer id related fields.
+  FormData form_data;
+  form_data.unique_renderer_id = 42;
+  form_data.is_form_tag = true;
+  form_on_page.form_data = form_data;
+  form_on_page.has_renderer_ids = true;
+  form_on_page.username_element_renderer_id = 123;
+  form_on_page.password_element_renderer_id = 456;
+
+  std::map<base::string16, const PasswordForm*> matches;
+
+  PasswordFormFillData result;
+  InitPasswordFormFillData(form_on_page, matches, &preferred_match, true,
+                           &result);
+
+  EXPECT_EQ(form_data.unique_renderer_id, result.form_renderer_id);
+  EXPECT_EQ(form_on_page.has_renderer_ids, result.has_renderer_ids);
+  EXPECT_EQ(form_on_page.username_element_renderer_id,
+            result.username_field.unique_renderer_id);
+  EXPECT_EQ(form_on_page.password_element_renderer_id,
+            result.password_field.unique_renderer_id);
+}
+
 }  // namespace autofill

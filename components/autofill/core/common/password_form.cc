@@ -28,7 +28,10 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetString("origin", form.origin.possibly_invalid_spec());
   target->SetString("action", form.action.possibly_invalid_spec());
   target->SetString("submit_element", form.submit_element);
-  target->SetString("username_elem", form.username_element);
+  target->SetBoolean("has_renderer_ids", form.has_renderer_ids);
+  target->SetString("username_element", form.username_element);
+  target->SetInteger("username_element_renderer_id",
+                     form.username_element_renderer_id);
   target->SetBoolean("username_marked_by_site", form.username_marked_by_site);
   target->SetString("username_value", form.username_value);
   target->SetString("password_elem", form.password_element);
@@ -36,6 +39,8 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetBoolean("password_value_is_default",
                      form.password_value_is_default);
   target->SetString("new_password_element", form.new_password_element);
+  target->SetInteger("password_element_renderer_id",
+                     form.password_element_renderer_id);
   target->SetString("new_password_value", form.new_password_value);
   target->SetBoolean("new_password_value_is_default",
                      form.new_password_value_is_default);
@@ -118,13 +123,16 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
   return scheme == form.scheme && signon_realm == form.signon_realm &&
          origin == form.origin && action == form.action &&
          submit_element == form.submit_element &&
+         has_renderer_ids == form.has_renderer_ids &&
          username_element == form.username_element &&
+         username_element_renderer_id == form.username_element_renderer_id &&
          username_marked_by_site == form.username_marked_by_site &&
          username_value == form.username_value &&
          other_possible_usernames == form.other_possible_usernames &&
          all_possible_passwords == form.all_possible_passwords &&
          form_has_autofilled_value == form.form_has_autofilled_value &&
          password_element == form.password_element &&
+         password_element_renderer_id == form.password_element_renderer_id &&
          password_value == form.password_value &&
          new_password_element == form.new_password_element &&
          new_password_marked_by_site == form.new_password_marked_by_site &&
