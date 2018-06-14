@@ -78,14 +78,6 @@ SIMD_INLINE c_v128 c_v128_load_aligned(const void *p) {
   return c_v128_load_unaligned(p);
 }
 
-SIMD_INLINE c_v128 c_v128_load_two_v64(const void *p0, const void *p1) {
-  return c_v128_from_v64(c_v64_load_unaligned(p0), c_v64_load_unaligned(p1));
-}
-
-SIMD_INLINE c_v128 c_v128_load_low_v64(const void *p) {
-  return c_v128_from_v64(c_v64_zero(), c_v64_load_unaligned(p));
-}
-
 SIMD_INLINE void c_v128_store_unaligned(void *p, c_v128 a) {
   uint8_t *pp = (uint8_t *)p;
   uint8_t *q = (uint8_t *)&a;

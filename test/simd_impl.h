@@ -97,6 +97,7 @@ typedef ARCH_POSTFIX(V128_V128V128) ARCH_POSTFIX(V128_V128V128_Part2);
 typedef ARCH_POSTFIX(V256_V256) ARCH_POSTFIX(V256_V256_Part2);
 typedef ARCH_POSTFIX(V256_V256) ARCH_POSTFIX(V256_V256_Part3);
 typedef ARCH_POSTFIX(V256_V256) ARCH_POSTFIX(V256_V256_Part4);
+typedef ARCH_POSTFIX(V256_V256) ARCH_POSTFIX(V256_V256_Part5);
 typedef ARCH_POSTFIX(V256_V256V256) ARCH_POSTFIX(V256_V256V256_Part2);
 
 // These functions are machine tuned located elsewhere
@@ -318,6 +319,10 @@ MY_TEST_P(ARCH_POSTFIX(V256_V256_Part3), TestIntrinsics) {
 }
 
 MY_TEST_P(ARCH_POSTFIX(V256_V256_Part4), TestIntrinsics) {
+  TestSimd1Arg<c_v256, c_v256>(kIterations, mask, maskwidth, name);
+}
+
+MY_TEST_P(ARCH_POSTFIX(V256_V256_Part5), TestIntrinsics) {
   TestSimd1Arg<c_v256, c_v256>(kIterations, mask, maskwidth, name);
 }
 
@@ -1083,6 +1088,38 @@ INSTANTIATE(ARCH, ARCH_POSTFIX(V256_V256_Part4),
             SIMD_TUPLE(imm_v256_shr_n_s64<56>, 0U, 0U),
             SIMD_TUPLE(imm_v256_shr_n_s64<60>, 0U, 0U),
             SIMD_TUPLE(v256_padd_u8, 0U, 0U));
+
+INSTANTIATE(ARCH, ARCH_POSTFIX(V256_V256_Part5),
+            SIMD_TUPLE(imm_v256_shr_n_word<1>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<2>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<3>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<4>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<5>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<6>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<7>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<8>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<9>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<10>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<11>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<12>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<13>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<14>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shr_n_word<15>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<1>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<2>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<3>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<4>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<5>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<6>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<7>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<8>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<9>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<10>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<11>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<12>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<13>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<14>, 0U, 0U),
+            SIMD_TUPLE(imm_v256_shl_n_word<15>, 0U, 0U));
 
 INSTANTIATE(ARCH, ARCH_POSTFIX(V256_V256V256V256),
             SIMD_TUPLE(v256_blend_8, 0U, 0U),

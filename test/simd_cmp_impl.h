@@ -259,6 +259,14 @@ c_v128 c_imm_v128_align(c_v128 a, c_v128 b) {
 }
 
 template <int shift>
+v256 imm_v256_shl_n_word(v256 a) {
+  return v256_shl_n_word(a, shift);
+}
+template <int shift>
+v256 imm_v256_shr_n_word(v256 a) {
+  return v256_shr_n_word(a, shift);
+}
+template <int shift>
 v256 imm_v256_shl_n_byte(v256 a) {
   return v256_shl_n_byte(a, shift);
 }
@@ -319,6 +327,14 @@ v256 imm_v256_align(v256 a, v256 b) {
   return v256_align(a, b, shift);
 }
 
+template <int shift>
+c_v256 c_imm_v256_shl_n_word(c_v256 a) {
+  return c_v256_shl_n_word(a, shift);
+}
+template <int shift>
+c_v256 c_imm_v256_shr_n_word(c_v256 a) {
+  return c_v256_shr_n_word(a, shift);
+}
 template <int shift>
 c_v256 c_imm_v256_shl_n_byte(c_v256 a) {
   return c_v256_shl_n_byte(a, shift);
@@ -1060,6 +1076,36 @@ const mapping m[] = { MAP(v64_sad_u8),
                       MAP(v256_unpacklo_s16_s32),
                       MAP(v256_unpackhi_u16_s32),
                       MAP(v256_unpackhi_s16_s32),
+                      MAP(imm_v256_shr_n_word<1>),
+                      MAP(imm_v256_shr_n_word<2>),
+                      MAP(imm_v256_shr_n_word<3>),
+                      MAP(imm_v256_shr_n_word<4>),
+                      MAP(imm_v256_shr_n_word<5>),
+                      MAP(imm_v256_shr_n_word<6>),
+                      MAP(imm_v256_shr_n_word<7>),
+                      MAP(imm_v256_shr_n_word<8>),
+                      MAP(imm_v256_shr_n_word<9>),
+                      MAP(imm_v256_shr_n_word<10>),
+                      MAP(imm_v256_shr_n_word<11>),
+                      MAP(imm_v256_shr_n_word<12>),
+                      MAP(imm_v256_shr_n_word<13>),
+                      MAP(imm_v256_shr_n_word<14>),
+                      MAP(imm_v256_shr_n_word<15>),
+                      MAP(imm_v256_shl_n_word<1>),
+                      MAP(imm_v256_shl_n_word<2>),
+                      MAP(imm_v256_shl_n_word<3>),
+                      MAP(imm_v256_shl_n_word<4>),
+                      MAP(imm_v256_shl_n_word<5>),
+                      MAP(imm_v256_shl_n_word<6>),
+                      MAP(imm_v256_shl_n_word<7>),
+                      MAP(imm_v256_shl_n_word<8>),
+                      MAP(imm_v256_shl_n_word<9>),
+                      MAP(imm_v256_shl_n_word<10>),
+                      MAP(imm_v256_shl_n_word<11>),
+                      MAP(imm_v256_shl_n_word<12>),
+                      MAP(imm_v256_shl_n_word<13>),
+                      MAP(imm_v256_shl_n_word<14>),
+                      MAP(imm_v256_shl_n_word<15>),
                       MAP(imm_v256_shr_n_byte<1>),
                       MAP(imm_v256_shr_n_byte<2>),
                       MAP(imm_v256_shr_n_byte<3>),
