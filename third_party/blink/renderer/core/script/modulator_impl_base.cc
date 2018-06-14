@@ -186,34 +186,6 @@ ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
   return ModuleImportMeta(url_string);
 }
 
-ScriptModule ModulatorImplBase::CompileModule(
-    const String& provided_source,
-    const KURL& source_url,
-    const KURL& base_url,
-    const ScriptFetchOptions& options,
-    AccessControlStatus access_control_status,
-    const TextPosition& position,
-    ExceptionState& exception_state) {
-  // Implements Steps 3-5 of
-  // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
-
-  // Step 3. Let realm be the provided environment settings object's Realm.
-  // Note: Realm is v8::Context.
-
-  // Step 4. If scripting is disabled for the given environment settings
-  // object's responsible browsing context, then let script source be the empty
-  // string. Otherwise, let script source be the provided script source.
-  String script_source;
-  if (!IsScriptingDisabled())
-    script_source = provided_source;
-
-  // Step 5. Let result be ParseModule(script source, realm, script).
-  ScriptState::Scope scope(script_state_.get());
-  return ScriptModule::Compile(
-      script_state_->GetIsolate(), script_source, source_url, base_url, options,
-      access_control_status, position, exception_state);
-}
-
 ScriptValue ModulatorImplBase::InstantiateModule(ScriptModule script_module) {
   ScriptState::Scope scope(script_state_.get());
   return script_module.Instantiate(script_state_.get());

@@ -22,7 +22,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class FetchClientSettingsObjectSnapshot;
 class ModuleScript;
 class ModuleScriptFetchRequest;
@@ -143,14 +142,6 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
   virtual ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const = 0;
 
   virtual bool HasValidContext() = 0;
-
-  virtual ScriptModule CompileModule(const String& script,
-                                     const KURL& source_url,
-                                     const KURL& base_url,
-                                     const ScriptFetchOptions&,
-                                     AccessControlStatus,
-                                     const TextPosition&,
-                                     ExceptionState&) = 0;
 
   virtual ScriptValue InstantiateModule(ScriptModule) = 0;
 

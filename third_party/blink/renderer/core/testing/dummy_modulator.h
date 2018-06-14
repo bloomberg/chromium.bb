@@ -58,13 +58,6 @@ class DummyModulator : public Modulator {
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
   ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const override;
-  ScriptModule CompileModule(const String& script,
-                             const KURL& source_url,
-                             const KURL& base_url,
-                             const ScriptFetchOptions&,
-                             AccessControlStatus,
-                             const TextPosition&,
-                             ExceptionState&) override;
   ScriptValue InstantiateModule(ScriptModule) override;
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
   ScriptValue ExecuteModule(const ModuleScript*, CaptureEvalErrorFlag) override;
