@@ -56,11 +56,36 @@ class FeedSchedulerHost {
   // Called when an unsuccessful refresh completes.
   void OnRequestError(int network_response_code);
 
+  // Called when browser is opened, launched, or foregrounded.
+  void OnForegrounded();
+
+  // Called when the scheduled fixed timer wakes up.
+  void OnFixedTimer();
+
   // Registers a callback to trigger a refresh.
   void RegisterTriggerRefreshCallback(base::RepeatingClosure callback);
 
  private:
+  // The TriggerType enum specifies values for the events that can trigger
+  // refreshing articles.
+  enum class TriggerType;
+
+  // Determines whether a refresh should be performed for the given |trigger|.
+  // If this method is called and returns true we presume the refresh will
+  // happen, therefore we report metrics respectively.
+  bool ShouldRefresh(TriggerType trigger);
+
+  // Decides if content whose age is the difference between now and
+  // |content_creation_date_time| is old enough to be considered stale.
+  bool IsContentStale(base::Time content_creation_date_time);
+
+  // Schedules a task to wakeup and try to refresh. Overrides previously
+  // scheduled tasks.
   void ScheduleFixedTimerWakeUp();
+
+  // Returns the time threshold for content or previous refresh attempt to be
+  // considered old enough for a given trigger to warrant a refresh.
+  base::TimeDelta GetTriggerThreshold(TriggerType trigger);
 
   // Callback to request that an async refresh be started.
   base::RepeatingClosure trigger_refresh_;

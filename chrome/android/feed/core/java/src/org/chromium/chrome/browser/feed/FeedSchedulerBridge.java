@@ -93,6 +93,16 @@ public class FeedSchedulerBridge implements SchedulerApi {
         nativeOnRequestError(mNativeBridge, networkResponseCode);
     }
 
+    public void onForegrounded() {
+        assert mNativeBridge != 0;
+        nativeOnForegrounded(mNativeBridge);
+    }
+
+    public void onFixedTimer() {
+        assert mNativeBridge != 0;
+        nativeOnFixedTimer(mNativeBridge);
+    }
+
     @CalledByNative
     private boolean triggerRefresh() {
         if (mRequestManager != null) {
@@ -110,4 +120,6 @@ public class FeedSchedulerBridge implements SchedulerApi {
             long nativeFeedSchedulerBridge, long contentCreationDateTimeMs);
     private native void nativeOnRequestError(
             long nativeFeedSchedulerBridge, int networkResponseCode);
+    private native void nativeOnForegrounded(long nativeFeedSchedulerBridge);
+    private native void nativeOnFixedTimer(long nativeFeedSchedulerBridge);
 }
