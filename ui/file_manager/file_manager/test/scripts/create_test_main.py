@@ -130,7 +130,7 @@ scripts += ['<script src="%s%s"></script>' % (ROOT, s) for s in [
     'background/js/volume_manager_impl.js',
     'background/js/mock_volume_manager.js',
     'foreground/js/constants.js',
-    'test/js/chrome_file_manager.js',
+    'test/js/chrome_file_manager_private_test_impl.js',
     'test/js/test_util.js',
 ] + ['test/' + s for s in os.listdir(os.path.join(ROOT_SRC, 'test'))
      if s.endswith('.js')]]

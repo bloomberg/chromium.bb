@@ -430,10 +430,9 @@ test.addEntries = function(downloads, drive, crostini) {
       test.TestEntryInfo.getMockFileSystemPopulateRows(crostini, '/'), true);
 
   // Send onDirectoryChanged events.
-  chrome.fileManagerPrivate.dispatchEvent_(
-      'onDirectoryChanged', {eventType: 'changed', entry: fsDownloads.root});
-  chrome.fileManagerPrivate.dispatchEvent_(
-      'onDirectoryChanged',
+  chrome.fileManagerPrivate.onDirectoryChanged.dispatchEvent(
+      {eventType: 'changed', entry: fsDownloads.root});
+  chrome.fileManagerPrivate.onDirectoryChanged.dispatchEvent(
       {eventType: 'changed', entry: fsDrive.entries['/root']});
 };
 
@@ -441,7 +440,7 @@ test.addEntries = function(downloads, drive, crostini) {
  * Sends mount event for crostini volume.
  */
 test.mountCrostini = function() {
-  chrome.fileManagerPrivate.dispatchEvent_('onMountCompleted', {
+  chrome.fileManagerPrivate.onMountCompleted.dispatchEvent({
     status: 'success',
     eventType: 'mount',
     volumeMetadata: {
