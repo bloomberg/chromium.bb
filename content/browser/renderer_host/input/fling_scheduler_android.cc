@@ -66,7 +66,9 @@ ui::WindowAndroid* FlingSchedulerAndroid::GetRootWindow() {
 }
 
 void FlingSchedulerAndroid::OnAnimate(base::TimeTicks frame_begin_time) {
-  fling_controller_->ProgressFling(frame_begin_time);
+  DCHECK(observed_window_);
+  if (fling_controller_)
+    fling_controller_->ProgressFling(frame_begin_time);
 }
 
 }  // namespace content

@@ -78,7 +78,9 @@ ui::Compositor* FlingScheduler::GetCompositor() {
 }
 
 void FlingScheduler::OnAnimationStep(base::TimeTicks timestamp) {
-  fling_controller_->ProgressFling(timestamp);
+  DCHECK(observed_compositor_);
+  if (fling_controller_)
+    fling_controller_->ProgressFling(timestamp);
 }
 
 void FlingScheduler::OnCompositingShuttingDown(ui::Compositor* compositor) {
