@@ -279,12 +279,13 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   }
 
   template <typename CharacterType, LineBreakType, BreakSpaceType>
-  int NextBreakablePosition(int pos, const CharacterType* str) const;
+  int NextBreakablePosition(int pos, const CharacterType* str, int len) const;
   template <typename CharacterType, LineBreakType>
-  int NextBreakablePosition(int pos, const CharacterType* str) const;
+  int NextBreakablePosition(int pos, const CharacterType* str, int len) const;
   template <LineBreakType>
-  int NextBreakablePosition(int pos) const;
+  int NextBreakablePosition(int pos, int len) const;
   int NextBreakablePositionBreakCharacter(int pos) const;
+  int NextBreakablePosition(int pos, LineBreakType, int len) const;
   int NextBreakablePosition(int pos, LineBreakType) const;
 
   static const unsigned kPriorContextCapacity = 2;
