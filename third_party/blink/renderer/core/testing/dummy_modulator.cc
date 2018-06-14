@@ -114,17 +114,6 @@ ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
   return ModuleImportMeta(String());
 }
 
-ScriptModule DummyModulator::CompileModule(const String& script,
-                                           const KURL& source_url,
-                                           const KURL& base_url,
-                                           const ScriptFetchOptions&,
-                                           AccessControlStatus,
-                                           const TextPosition&,
-                                           ExceptionState&) {
-  NOTREACHED();
-  return ScriptModule();
-}
-
 ScriptValue DummyModulator::InstantiateModule(ScriptModule) {
   NOTREACHED();
   return ScriptValue();

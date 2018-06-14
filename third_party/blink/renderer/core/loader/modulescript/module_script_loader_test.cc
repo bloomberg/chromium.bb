@@ -84,19 +84,6 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
 
   ScriptState* GetScriptState() override { return script_state_.get(); }
 
-  ScriptModule CompileModule(const String& script,
-                             const KURL& source_url,
-                             const KURL& base_url,
-                             const ScriptFetchOptions& options,
-                             AccessControlStatus access_control_status,
-                             const TextPosition& position,
-                             ExceptionState& exception_state) override {
-    ScriptState::Scope scope(script_state_.get());
-    return ScriptModule::Compile(
-        script_state_->GetIsolate(), script, source_url, base_url, options,
-        access_control_status, position, exception_state);
-  }
-
   void SetModuleRequests(const Vector<String>& requests) {
     requests_.clear();
     for (const String& request : requests) {

@@ -12,7 +12,7 @@
 namespace blink {
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
-ModuleScript* ModuleScript::Create(const String& source_text,
+ModuleScript* ModuleScript::Create(const String& original_source_text,
                                    Modulator* modulator,
                                    const KURL& source_url,
                                    const KURL& base_url,
@@ -21,8 +21,9 @@ ModuleScript* ModuleScript::Create(const String& source_text,
                                    const TextPosition& start_position) {
   // <spec step="1">If scripting is disabled for settings's responsible browsing
   // context, then set source to the empty string.</spec>
-  //
-  // TODO(hiroshige): Implement this.
+  String source_text;
+  if (!modulator->IsScriptingDisabled())
+    source_text = original_source_text;
 
   // <spec step="2">Let script be a new module script that this algorithm will
   // subsequently initialize.</spec>
@@ -39,10 +40,9 @@ ModuleScript* ModuleScript::Create(const String& source_text,
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "ModuleScript", "Create");
 
-  // Delegate to Modulator::CompileModule to process Steps 3-5.
-  ScriptModule result = modulator->CompileModule(
-      source_text, source_url, base_url, options, access_control_status,
-      start_position, exception_state);
+  ScriptModule result = ScriptModule::Compile(
+      isolate, source_text, source_url, base_url, options,
+      access_control_status, start_position, exception_state);
 
   // CreateInternal processes Steps 4 and 8-10.
   //
