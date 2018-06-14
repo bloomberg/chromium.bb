@@ -488,6 +488,8 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 
   if (experimental_flags::IsBookmarksUIRebootEnabled()) {
     deleteButton.tintColor = [UIColor redColor];
+    [self.navigationController.toolbar setShadowImage:[UIImage new]
+                                   forToolbarPosition:UIBarPositionAny];
     [self setToolbarItems:@[ spaceButton, deleteButton, spaceButton ]
                  animated:NO];
   } else {

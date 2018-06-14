@@ -358,23 +358,25 @@ const CGFloat kShadowRadius = 12.0f;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  // Set Navigation Bar and Toolbar appearance.
+  // Set Navigation Bar, Toolbar and TableView appearance.
   if (experimental_flags::IsBookmarksUIRebootEnabled()) {
     self.navigationController.navigationBarHidden = NO;
     self.navigationController.toolbar.translucent = YES;
+    // Add a tableFooterView in order to disable separators at the bottom of the
+    // tableView.
+    self.tableView.tableFooterView = [[UIView alloc] init];
   } else {
     self.navigationController.navigationBarHidden = YES;
     self.navigationController.toolbar.translucent = NO;
     self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
     self.navigationController.toolbar.layer.shadowRadius = kShadowRadius;
     self.navigationController.toolbar.layer.shadowOpacity = kShadowOpacity;
+    // Disable separators while the loading spinner is showing.
+    // |loadBookmarkView| will bring them back if needed.
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   }
   self.navigationController.toolbar.accessibilityIdentifier =
       kBookmarkHomeUIToolbarIdentifier;
-
-  // Disable separators while the loading spinner is showing. |loadBookmarkView|
-  // will bring them back if needed.
-  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
 
   if (self.bookmarks->loaded()) {
     [self loadBookmarkViews];
@@ -451,8 +453,11 @@ const CGFloat kShadowRadius = 12.0f;
       [BookmarkHomeSharedState cellHeightPt];
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 0;
-  self.sharedState.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   self.sharedState.tableView.allowsMultipleSelectionDuringEditing = YES;
+  if (!experimental_flags::IsBookmarksUIRebootEnabled()) {
+    self.sharedState.tableView.separatorStyle =
+        UITableViewCellSeparatorStyleNone;
+  }
 
   UILongPressGestureRecognizer* longPressRecognizer =
       [[UILongPressGestureRecognizer alloc]

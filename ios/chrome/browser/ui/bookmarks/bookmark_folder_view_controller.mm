@@ -158,21 +158,22 @@ using bookmarks::BookmarkNode;
   if ([self respondsToSelector:@selector(setEdgesForExtendedLayout:)]) {
     [self setEdgesForExtendedLayout:UIRectEdgeNone];
   }
-  self.view.backgroundColor = [UIColor whiteColor];
   self.view.accessibilityIdentifier =
       kBookmarkFolderPickerViewContainerIdentifier;
-
   self.title = l10n_util::GetNSString(IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON);
 
-  UIBarButtonItem* doneItem = [[UIBarButtonItem alloc]
-      initWithTitle:l10n_util::GetNSString(
-                        IDS_IOS_BOOKMARK_EDIT_MODE_EXIT_MOBILE)
-              style:UIBarButtonItemStylePlain
-             target:self
-             action:@selector(done:)];
-  doneItem.accessibilityIdentifier =
-      kBookmarkFolderEditNavigationBarDoneButtonIdentifier;
-  self.navigationItem.rightBarButtonItem = doneItem;
+  if (!experimental_flags::IsBookmarksUIRebootEnabled()) {
+    self.view.backgroundColor = [UIColor whiteColor];
+    UIBarButtonItem* doneItem = [[UIBarButtonItem alloc]
+        initWithTitle:l10n_util::GetNSString(
+                          IDS_IOS_BOOKMARK_EDIT_MODE_EXIT_MOBILE)
+                style:UIBarButtonItemStylePlain
+               target:self
+               action:@selector(done:)];
+    doneItem.accessibilityIdentifier =
+        kBookmarkFolderEditNavigationBarDoneButtonIdentifier;
+    self.navigationItem.rightBarButtonItem = doneItem;
+  }
 
   if (self.allowsCancel) {
     UIBarButtonItem* cancelItem =
