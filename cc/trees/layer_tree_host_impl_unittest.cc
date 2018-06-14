@@ -14448,5 +14448,26 @@ TEST_F(HitTestRegionListGeneratingLayerTreeHostImplTest, BuildHitTestData) {
             hit_test_region_list->regions[0].rect.ToString());
 }
 
+TEST_F(LayerTreeHostImplTest, ImplThreadPhaseUponImplSideInvalidation) {
+  LayerTreeSettings settings = DefaultSettings();
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+  // In general invalidation should never be ran outside the impl frame.
+  host_impl_->WillBeginImplFrame(
+      viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1));
+  // Expect no crash because the operation is within an impl frame.
+  host_impl_->InvalidateContentOnImplSide();
+
+  // Once the impl frame is finished the impl thread phase is set to IDLE.
+  host_impl_->DidFinishImplFrame();
+
+  settings.using_synchronous_renderer_compositor = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+  // Expect no crash when using synchronous renderer compositor regardless the
+  // impl thread phase.
+  host_impl_->InvalidateContentOnImplSide();
+
+  // Test passes when there is no crash.
+}
+
 }  // namespace
 }  // namespace cc

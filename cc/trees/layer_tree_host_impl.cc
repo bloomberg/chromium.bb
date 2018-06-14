@@ -1248,8 +1248,12 @@ void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
 
 void LayerTreeHostImpl::InvalidateContentOnImplSide() {
   DCHECK(!pending_tree_);
-  // Invalidation should never be ran outside the impl frame.
-  DCHECK_EQ(impl_thread_phase_, ImplThreadPhase::INSIDE_IMPL_FRAME);
+  // Invalidation should never be ran outside the impl frame for non
+  // synchronous compositor mode. For devices that use synchronous compositor,
+  // e.g. Android Webview, the assertion is not guaranteed because it may ask
+  // for a frame at any time.
+  DCHECK(impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME ||
+         settings_.using_synchronous_renderer_compositor);
 
   if (!CommitToActiveTree())
     CreatePendingTree();
