@@ -100,8 +100,8 @@ const int kSliderColor = 0xF8F9FA;
 const int kBackgroundColor = 0x5F6368;
 // Alpha for the background view.
 const CGFloat kBackgroundAlpha = 1.0;
-// Color for the regular tab count label
-const CGFloat kSelectedLabelColor = 0x3C4043;
+// Color for the regular tab count label and icons.
+const CGFloat kSelectedColor = 0x3C4043;
 
 // Returns the point that's at the center of |rect|.
 CGPoint RectCenter(CGRect rect) {
@@ -115,6 +115,17 @@ NSString* StringForItemCount(long count) {
   if (count > 99)
     return @":-)";
   return [NSString stringWithFormat:@"%ld", count];
+}
+
+// Convenience method that composes an asset name and returns the correct image
+// (in template rendering mode) based on the segment name (one of "regular",
+// "incognito, "remote") and whether the selected state image is needed or not.
+UIImage* ImageForSegment(NSString* segment, BOOL selected) {
+  NSString* asset =
+      [NSString stringWithFormat:@"page_control_%@_tabs%@", segment,
+                                 selected ? @"_selected" : @""];
+  return [[UIImage imageNamed:asset]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }
 }
 
@@ -476,20 +487,15 @@ NSString* StringForItemCount(long count) {
   [self.sliderView addSubview:selectedImageView];
   self.selectedImageView = selectedImageView;
 
-  // Scale the selected images, since the current assets don't have a larger
-  // size for the selected state.
-  // TODO(crbug.com/804500): Remove this once the correct assets are available.
-  CGFloat scale = kSelectedLabelSize / kLabelSize;
-  CGAffineTransform scaleTransform = CGAffineTransformMakeScale(scale, scale);
-
   // Icons and labels for the regular tabs.
-  UIImageView* regularIcon = [[UIImageView alloc]
-      initWithImage:[UIImage imageNamed:@"page_control_regular_tabs"]];
+  UIImageView* regularIcon =
+      [[UIImageView alloc] initWithImage:ImageForSegment(@"regular", NO)];
+  regularIcon.tintColor = UIColorFromRGB(kSliderColor);
   [self insertSubview:regularIcon belowSubview:self.sliderView];
   self.regularIcon = regularIcon;
-  UIImageView* regularSelectedIcon = [[UIImageView alloc]
-      initWithImage:[UIImage imageNamed:@"page_control_regular_tabs_selected"]];
-  regularSelectedIcon.transform = scaleTransform;
+  UIImageView* regularSelectedIcon =
+      [[UIImageView alloc] initWithImage:ImageForSegment(@"regular", YES)];
+  regularSelectedIcon.tintColor = UIColorFromRGB(kSelectedColor);
   [self.selectedImageView addSubview:regularSelectedIcon];
   self.regularSelectedIcon = regularSelectedIcon;
   UILabel* regularLabel = [self labelSelected:NO];
@@ -500,25 +506,26 @@ NSString* StringForItemCount(long count) {
   self.regularSelectedLabel = regularSelectedLabel;
 
   // Icons for the incognito tabs section.
-  UIImageView* incognitoIcon = [[UIImageView alloc]
-      initWithImage:[UIImage imageNamed:@"page_control_incognito_tabs"]];
+  UIImageView* incognitoIcon =
+      [[UIImageView alloc] initWithImage:ImageForSegment(@"incognito", NO)];
+  incognitoIcon.tintColor = UIColorFromRGB(kSliderColor);
   [self insertSubview:incognitoIcon belowSubview:self.sliderView];
   self.incognitoIcon = incognitoIcon;
-  UIImageView* incognitoSelectedIcon = [[UIImageView alloc]
-      initWithImage:[UIImage
-                        imageNamed:@"page_control_incognito_tabs_selected"]];
-  incognitoSelectedIcon.transform = scaleTransform;
+  UIImageView* incognitoSelectedIcon =
+      [[UIImageView alloc] initWithImage:ImageForSegment(@"incognito", YES)];
+  incognitoSelectedIcon.tintColor = UIColorFromRGB(kSelectedColor);
   [self.selectedImageView addSubview:incognitoSelectedIcon];
   self.incognitoSelectedIcon = incognitoSelectedIcon;
 
   // Icons for the remote tabs section.
-  UIImageView* remoteIcon = [[UIImageView alloc]
-      initWithImage:[UIImage imageNamed:@"page_control_remote_tabs"]];
+  UIImageView* remoteIcon =
+      [[UIImageView alloc] initWithImage:ImageForSegment(@"remote", NO)];
+  remoteIcon.tintColor = UIColorFromRGB(kSliderColor);
   [self insertSubview:remoteIcon belowSubview:self.sliderView];
   self.remoteIcon = remoteIcon;
-  UIImageView* remoteSelectedIcon = [[UIImageView alloc]
-      initWithImage:[UIImage imageNamed:@"page_control_remote_tabs_selected"]];
-  remoteSelectedIcon.transform = scaleTransform;
+  UIImageView* remoteSelectedIcon =
+      [[UIImageView alloc] initWithImage:ImageForSegment(@"remote", YES)];
+  remoteSelectedIcon.tintColor = UIColorFromRGB(kSelectedColor);
   [self.selectedImageView addSubview:remoteSelectedIcon];
   self.remoteSelectedIcon = remoteSelectedIcon;
 
@@ -543,8 +550,8 @@ NSString* StringForItemCount(long count) {
 // Selected labels use a different size and are black.
 - (UILabel*)labelSelected:(BOOL)selected {
   CGFloat size = selected ? kSelectedLabelSize : kLabelSize;
-  UIColor* color = selected ? UIColorFromRGB(kSelectedLabelColor)
-                            : UIColorFromRGB(kSliderColor);
+  UIColor* color =
+      selected ? UIColorFromRGB(kSelectedColor) : UIColorFromRGB(kSliderColor);
   UILabel* label = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, size, size)];
   label.backgroundColor = UIColor.clearColor;
   label.textAlignment = NSTextAlignmentCenter;
