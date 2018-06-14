@@ -453,20 +453,18 @@ void PasswordFormManager::PresaveGeneratedPassword(
     form_without_username.username_value.clear();
     form_saver()->PresaveGeneratedPassword(form_without_username);
   }
-  metrics_recorder_->SetHasGeneratedPassword(true);
-  if (has_generated_password_) {
-    votes_uploader_.set_generated_password_changed(true);
-  } else {
+  // If a password had been generated already, a call to
+  // PresaveGeneratedPassword() implies that this password was modified.
+  SetGeneratedPasswordChanged(has_generated_password_);
+  if (!has_generated_password_)
     SetHasGeneratedPassword(true);
-    votes_uploader_.set_generated_password_changed(false);
-  }
 }
 
 void PasswordFormManager::PasswordNoLongerGenerated() {
   DCHECK(has_generated_password_);
   form_saver()->RemovePresavedPassword();
   SetHasGeneratedPassword(false);
-  votes_uploader_.set_generated_password_changed(false);
+  SetGeneratedPasswordChanged(false);
 }
 
 void PasswordFormManager::SaveSubmittedFormTypeForMetrics(
@@ -891,6 +889,12 @@ void PasswordFormManager::SetHasGeneratedPassword(bool generated_password) {
   has_generated_password_ = generated_password;
   votes_uploader_.set_has_generated_password(generated_password);
   metrics_recorder_->SetHasGeneratedPassword(generated_password);
+}
+
+void PasswordFormManager::SetGeneratedPasswordChanged(
+    bool generated_password_changed) {
+  votes_uploader_.set_generated_password_changed(generated_password_changed);
+  metrics_recorder_->SetHasGeneratedPasswordChanged(generated_password_changed);
 }
 
 void PasswordFormManager::LogSubmitPassed() {

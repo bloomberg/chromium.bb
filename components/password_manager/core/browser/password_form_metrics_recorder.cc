@@ -128,6 +128,13 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     }
   }
 
+  ukm_entry_builder_.SetGeneration_GeneratedPassword(
+      has_generated_password_ ? 1 : 0);
+  if (has_generated_password_) {
+    ukm_entry_builder_.SetGeneration_GeneratedPasswordModified(
+        has_generated_password_changed_ ? 1 : 0);
+  }
+
   ukm_entry_builder_.Record(ukm::UkmRecorder::Get());
 }
 
@@ -138,6 +145,11 @@ void PasswordFormMetricsRecorder::MarkGenerationAvailable() {
 void PasswordFormMetricsRecorder::SetHasGeneratedPassword(
     bool has_generated_password) {
   has_generated_password_ = has_generated_password;
+}
+
+void PasswordFormMetricsRecorder::SetHasGeneratedPasswordChanged(
+    bool has_generated_password_changed) {
+  has_generated_password_changed_ = has_generated_password_changed;
 }
 
 void PasswordFormMetricsRecorder::SetManagerAction(

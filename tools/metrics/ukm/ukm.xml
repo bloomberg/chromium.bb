@@ -2291,6 +2291,16 @@ be describing additional metrics about the same event.
       distinguish two forms on the same site.
     </summary>
   </metric>
+  <metric name="Generation.GeneratedPassword">
+    <summary>
+      Records '1' if the user has generated a password on this form.
+    </summary>
+  </metric>
+  <metric name="Generation.GeneratedPasswordModified">
+    <summary>
+      Records '1' if the user has modified a generated a password on this form.
+    </summary>
+  </metric>
   <metric name="ManagerFill.Action">
     <summary>
       Records for each password form (and HTTP auth), whether the password
