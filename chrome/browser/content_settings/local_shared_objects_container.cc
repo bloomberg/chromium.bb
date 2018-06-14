@@ -231,10 +231,10 @@ void LocalSharedObjectsContainer::Reset() {
 
 std::unique_ptr<CookiesTreeModel>
 LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
-  LocalDataContainer* container = new LocalDataContainer(
+  auto container = std::make_unique<LocalDataContainer>(
       cookies_, databases_, local_storages_, session_storages_, appcaches_,
       indexed_dbs_, file_systems_, nullptr, channel_ids_, service_workers_,
       shared_workers_, cache_storages_, nullptr, nullptr);
 
-  return std::make_unique<CookiesTreeModel>(container, nullptr);
+  return std::make_unique<CookiesTreeModel>(std::move(container), nullptr);
 }

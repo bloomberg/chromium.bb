@@ -639,7 +639,7 @@ class SiteDataDeleteHelper : public CookiesTreeModel::Observer {
         nullptr);
 
     cookies_tree_model_ = std::make_unique<CookiesTreeModel>(
-        container.release(), profile_->GetExtensionSpecialStoragePolicy());
+        std::move(container), profile_->GetExtensionSpecialStoragePolicy());
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }
 

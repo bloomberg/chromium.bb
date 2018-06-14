@@ -787,7 +787,7 @@ class CookieTreeMediaLicensesNode : public CookieTreeNode {
 // CookiesTreeModel -----------------------------------------------------------
 class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
  public:
-  CookiesTreeModel(LocalDataContainer* data_container,
+  CookiesTreeModel(std::unique_ptr<LocalDataContainer> data_container,
                    ExtensionSpecialStoragePolicy* special_storage_policy);
   ~CookiesTreeModel() override;
 

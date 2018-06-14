@@ -1071,14 +1071,14 @@ void CookiesTreeModel::ScopedBatchUpdateNotifier::StartBatchUpdate() {
 ///////////////////////////////////////////////////////////////////////////////
 // CookiesTreeModel, public:
 CookiesTreeModel::CookiesTreeModel(
-    LocalDataContainer* data_container,
+    std::unique_ptr<LocalDataContainer> data_container,
     ExtensionSpecialStoragePolicy* special_storage_policy)
     : ui::TreeNodeModel<CookieTreeNode>(
           std::make_unique<CookieTreeRootNode>(this)),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       special_storage_policy_(special_storage_policy),
 #endif
-      data_container_(data_container) {
+      data_container_(std::move(data_container)) {
   data_container_->Init(this);
 }
 
