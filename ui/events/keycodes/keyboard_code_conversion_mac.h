@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_MAC_H_
 #define UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_MAC_H_
 
+#include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
 #include "ui/events/events_base_export.h"
@@ -51,6 +52,15 @@ EVENTS_BASE_EXPORT DomCode DomCodeFromNSEvent(NSEvent* event);
 // mapping and the callee should may wish to convert this to
 // |DomKey::UNIDENTIFIED| before handing the value off.
 EVENTS_BASE_EXPORT DomKey DomKeyFromNSEvent(NSEvent* event);
+
+// Map |key_code| to a unicode char based on the params provided.
+EVENTS_BASE_EXPORT UniChar
+TranslatedUnicodeCharFromKeyCode(TISInputSourceRef input_source,
+                                 UInt16 key_code,
+                                 UInt16 key_action,
+                                 UInt32 modifier_key_state,
+                                 UInt32 keyboard_type,
+                                 UInt32* dead_key_state);
 
 } // namespace ui
 

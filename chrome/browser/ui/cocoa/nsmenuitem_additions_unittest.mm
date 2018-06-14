@@ -11,6 +11,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
 NSEvent* KeyEvent(const NSUInteger modifierFlags,
                   NSString* chars,
@@ -288,28 +289,13 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
 NSString* keyCodeToCharacter(NSUInteger keyCode,
                              EventModifiers modifiers,
                              TISInputSourceRef layout) {
-  CFDataRef uchr = (CFDataRef)TISGetInputSourceProperty(
-      layout, kTISPropertyUnicodeKeyLayoutData);
-  UCKeyboardLayout* keyLayout = (UCKeyboardLayout*)CFDataGetBytePtr(uchr);
+  UInt32 deadKeyStateUnused = 0;
+  UniChar unicodeChar = ui::TranslatedUnicodeCharFromKeyCode(
+      layout, (UInt16)keyCode, kUCKeyActionDown, modifiers, LMGetKbdType(),
+      &deadKeyStateUnused);
 
-  UInt32 deadKeyState = 0;
-  OSStatus err = noErr;
-  UniCharCount maxStringLength = 4, actualStringLength;
-  UniChar unicodeString[4];
-  err = UCKeyTranslate(keyLayout,
-      (UInt16)keyCode,
-      kUCKeyActionDown,
-      modifiers,
-      LMGetKbdType(),
-      kUCKeyTranslateNoDeadKeysBit,
-      &deadKeyState,
-      maxStringLength,
-      &actualStringLength,
-      unicodeString);
-  assert(err == noErr);
-
-  CFStringRef temp = CFStringCreateWithCharacters(
-      kCFAllocatorDefault, unicodeString, 1);
+  CFStringRef temp =
+      CFStringCreateWithCharacters(kCFAllocatorDefault, &unicodeChar, 1);
   return [(NSString*)temp autorelease];
 }
 

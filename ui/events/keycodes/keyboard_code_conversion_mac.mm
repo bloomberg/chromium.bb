@@ -12,11 +12,16 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
+#include "base/memory/scoped_policy.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace ui {
 
 namespace {
+
+// Per Apple docs, the buffer length can be up to 255 but is rarely more than 4.
+// https://developer.apple.com/documentation/coreservices/1390584-uckeytranslate
+constexpr int kUCKeyTranslateBufferLength = 4;
 
 bool IsUnicodeControl(unichar c) {
   // C0 control characters: http://unicode.org/charts/PDF/U0000.pdf
@@ -537,36 +542,21 @@ UniChar MacKeycodeAndModifiersToCharacter(unsigned short mac_keycode,
   //   unicode_modifiers |= cmdKey;
   UInt32 modifier_key_state = (unicode_modifiers >> 8) & 0xFF;
 
-  base::ScopedCFTypeRef<TISInputSourceRef> input_source_copy(
-      TISCopyCurrentKeyboardLayoutInputSource());
-  CFDataRef layout_data = static_cast<CFDataRef>(TISGetInputSourceProperty(
-      input_source_copy, kTISPropertyUnicodeKeyLayoutData));
-  const UCKeyboardLayout* layout =
-      reinterpret_cast<const UCKeyboardLayout*>(CFDataGetBytePtr(layout_data));
-
   UInt32 dead_key_state = 0;
-  UniCharCount char_count = 0;
-  // According Apple's doc UCKeyTranslate::maxStringLength maybe up to 255 but
-  // would actually be rare to get more than 4.
-  UniChar unicode_string[4];
-  OSStatus status =
-      UCKeyTranslate(layout, static_cast<UInt16>(mac_keycode), kUCKeyActionDown,
-                     modifier_key_state, LMGetKbdLast(), 0, &dead_key_state,
-                     arraysize(unicode_string), &char_count, unicode_string);
+  UniChar translated_char = TranslatedUnicodeCharFromKeyCode(
+      TISCopyCurrentKeyboardLayoutInputSource(),
+      static_cast<UInt16>(mac_keycode), kUCKeyActionDown, modifier_key_state,
+      LMGetKbdLast(), &dead_key_state);
 
-  OSSTATUS_DCHECK(status == noErr, status);
   *is_dead_key = dead_key_state != 0;
   if (*is_dead_key) {
-    // A dead key, injecting space to get the diacritic in an isolated form.
-    status = UCKeyTranslate(layout, static_cast<UInt16>(kVK_Space),
-                            kUCKeyActionDown, 0, LMGetKbdLast(), 0,
-                            &dead_key_state, arraysize(unicode_string),
-                            &char_count, unicode_string);
-    OSSTATUS_DCHECK(status == noErr, status);
+    translated_char = TranslatedUnicodeCharFromKeyCode(
+        TISCopyCurrentKeyboardLayoutInputSource(),
+        static_cast<UInt16>(kVK_Space), kUCKeyActionDown, 0, LMGetKbdLast(),
+        &dead_key_state);
   }
 
-  // TODO(chongz): Handle multiple character case. Should be rare.
-  return unicode_string[0];
+  return translated_char;
 }
 
 }  // namespace
@@ -876,6 +866,37 @@ DomKey DomKeyFromNSEvent(NSEvent* event) {
     }
   }
   return DomKeyFromKeyCode([event keyCode]);
+}
+
+UniChar TranslatedUnicodeCharFromKeyCode(TISInputSourceRef input_source,
+                                         UInt16 key_code,
+                                         UInt16 key_action,
+                                         UInt32 modifier_key_state,
+                                         UInt32 keyboard_type,
+                                         UInt32* dead_key_state) {
+  DCHECK(dead_key_state);
+
+  base::ScopedCFTypeRef<TISInputSourceRef> input_source_copy(
+      input_source, base::scoped_policy::RETAIN);
+
+  CFDataRef layout_data = static_cast<CFDataRef>(TISGetInputSourceProperty(
+      input_source_copy, kTISPropertyUnicodeKeyLayoutData));
+
+  const UCKeyboardLayout* keyboard_layout =
+      reinterpret_cast<const UCKeyboardLayout*>(CFDataGetBytePtr(layout_data));
+  DCHECK(keyboard_layout);
+
+  UniChar char_buffer[kUCKeyTranslateBufferLength] = {0};
+  UniCharCount buffer_length = kUCKeyTranslateBufferLength;
+
+  OSStatus ret = UCKeyTranslate(
+      keyboard_layout, key_code, key_action, modifier_key_state, keyboard_type,
+      kUCKeyTranslateNoDeadKeysBit, dead_key_state, kUCKeyTranslateBufferLength,
+      &buffer_length, char_buffer);
+  OSSTATUS_DCHECK(ret == noErr, ret);
+
+  // TODO(chongz): Handle multiple character case. Should be rare.
+  return char_buffer[0];
 }
 
 }  // namespace ui

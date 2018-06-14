@@ -62,6 +62,7 @@ static_library("dom_keyboard_layout") {
 
   deps = [
     ":dom_keycode_converter",
+    ":events_base",
     "//base",
     "//ui/events/ozone:events_ozone_layout",
   ]
