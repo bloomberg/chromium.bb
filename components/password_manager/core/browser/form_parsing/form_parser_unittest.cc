@@ -890,6 +890,77 @@ TEST(FormParserTest, ServerHints) {
   });
 }
 
+TEST(FormParserTest, Interactability) {
+  CheckTestData({
+      {
+          "If all fields are hidden, all are considered",
+          {
+              {.form_control_type = "text", .is_focusable = false},
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .is_focusable = false},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .is_focusable = false},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .is_focusable = false},
+          },
+      },
+      {
+          "If some fields are hidden, only visible are considered",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .is_focusable = true},
+              {.form_control_type = "text", .is_focusable = false},
+              {.form_control_type = "password", .is_focusable = false},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .is_focusable = true},
+          },
+      },
+      {
+          "If user typed somewhere, only typed-into fields are considered, "
+          "even if not currently visible",
+          {
+              {.role = ElementRole::USERNAME,
+               .properties_mask = FieldPropertiesFlags::USER_TYPED,
+               .form_control_type = "text",
+               .is_focusable = false},
+              {.form_control_type = "text", .is_focusable = true},
+              {.form_control_type = "password", .is_focusable = false},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .properties_mask = FieldPropertiesFlags::AUTOFILLED,
+               .is_focusable = true},
+              {.role = ElementRole::NEW_PASSWORD,
+               .form_control_type = "password",
+               .properties_mask = FieldPropertiesFlags::USER_TYPED,
+               .is_focusable = true},
+          },
+      },
+      {
+          "Interactability for usernames is only considered before the first "
+          "relevant password. That way, if, e.g., the username gets filled and "
+          "hidden (to let the user enter password), and there is another text "
+          "field visible below, the maximum Interactability won't end up being "
+          "kPossible, which would exclude the hidden username.",
+          {
+              {.role = ElementRole::USERNAME,
+               .properties_mask = FieldPropertiesFlags::AUTOFILLED,
+               .form_control_type = "text",
+               .is_focusable = false},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .properties_mask = FieldPropertiesFlags::AUTOFILLED,
+               .is_focusable = true},
+              {.form_control_type = "text", .is_focusable = true, .value = ""},
+          },
+      },
+  });
+}
+
 }  // namespace
 
 }  // namespace password_manager
