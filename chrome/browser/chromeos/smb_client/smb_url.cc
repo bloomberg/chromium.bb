@@ -64,6 +64,8 @@ SmbUrl::SmbUrl(const std::string& raw_url) {
 
 SmbUrl::~SmbUrl() = default;
 
+SmbUrl::SmbUrl(SmbUrl&& smb_url) = default;
+
 std::string SmbUrl::GetHost() const {
   DCHECK(IsValid());
 

@@ -22,6 +22,7 @@ class SmbUrl {
  public:
   explicit SmbUrl(const std::string& url);
   ~SmbUrl();
+  SmbUrl(SmbUrl&& smb_url);
 
   // Returns the host of the URL which can be resolved or unresolved.
   std::string GetHost() const;

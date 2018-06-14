@@ -2145,6 +2145,7 @@ source_set("unit_tests") {
     "smb_client/smb_file_system_id_test.cc",
     "smb_client/smb_service_helper_unittest.cc",
     "smb_client/smb_service_unittest.cc",
+    "smb_client/smb_share_finder_unittest.cc",
     "smb_client/smb_task_queue_unittest.cc",
     "smb_client/smb_url_unittest.cc",
     "smb_client/temp_file_manager_unittest.cc",
