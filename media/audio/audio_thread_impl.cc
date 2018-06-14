@@ -10,10 +10,14 @@
 namespace media {
 
 AudioThreadImpl::AudioThreadImpl() : thread_("AudioThread") {
+  base::Thread::Options thread_options;
 #if defined(OS_WIN)
   thread_.init_com_with_mta(true);
+#elif defined(OS_FUCHSIA)
+  // FIDL-based APIs require async_t, which is initialized on IO thread.
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
 #endif
-  CHECK(thread_.Start());
+  CHECK(thread_.StartWithOptions(thread_options));
 
 #if defined(OS_MACOSX)
   // On Mac, the audio task runner must belong to the main thread.

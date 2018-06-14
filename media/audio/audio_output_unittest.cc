@@ -53,7 +53,7 @@ class AudioOutputTest : public ::testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::MessageLoopForIO message_loop_;
   std::unique_ptr<AudioManager> audio_manager_;
   std::unique_ptr<AudioDeviceInfoAccessorForTests> audio_manager_device_info_;
   AudioParameters stream_params_;

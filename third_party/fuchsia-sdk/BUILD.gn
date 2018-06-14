@@ -206,6 +206,7 @@ fuchsia_sdk_fidl_pkg("media") {
   namespace_path = "fuchsia"
 
   sources = [
+    "audio.fidl",
     "audio_capturer.fidl",
     "audio_renderer.fidl",
     "media_renderer.fidl",
