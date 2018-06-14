@@ -34,11 +34,8 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   // latest state coming from |AnimationHost| as input and fills
   // the output state with new updates.
   bool Animate(ScriptState*,
-               const CompositorMutatorInputState::AnimationState&,
+               double current_time,
                CompositorMutatorOutputState::AnimationState*);
-
-  bool did_animate() const { return did_animate_; }
-  void clear_did_animate() { did_animate_ = false; }
 
  private:
   // This object keeps the definition object, and animator instance alive.
@@ -46,7 +43,6 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   TraceWrapperMember<AnimatorDefinition> definition_;
   TraceWrapperV8Reference<v8::Object> instance_;
 
-  bool did_animate_ = false;
   Member<EffectProxy> effect_;
 };
 

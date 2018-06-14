@@ -19,37 +19,17 @@ namespace blink {
 
 namespace {
 
-// Once this goes out of scope it clears any animators that have not been
-// animated.
-class ScopedAnimatorsSweeper {
-  STACK_ALLOCATED();
-
- public:
-  using AnimatorMap = HeapHashMap<int, TraceWrapperMember<Animator>>;
-  explicit ScopedAnimatorsSweeper(AnimatorMap& animators)
-      : animators_(animators) {
-    for (const auto& entry : animators_) {
-      Animator* animator = entry.value;
-      animator->clear_did_animate();
-    }
+void UpdateAnimation(Animator* animator,
+                     ScriptState* script_state,
+                     int id,
+                     double current_time,
+                     CompositorMutatorOutputState* result) {
+  CompositorMutatorOutputState::AnimationState animation_output;
+  if (animator->Animate(script_state, current_time, &animation_output)) {
+    animation_output.animation_id = id;
+    result->animations.push_back(std::move(animation_output));
   }
-  ~ScopedAnimatorsSweeper() {
-    // Clear any animator that has not been animated.
-    // TODO(majidvp): Reconsider this once we add specific entry to mutator
-    // input that explicitly inform us that an animator is deleted.
-    Vector<int> to_be_removed;
-    for (const auto& entry : animators_) {
-      int id = entry.key;
-      Animator* animator = entry.value;
-      if (!animator->did_animate())
-        to_be_removed.push_back(id);
-    }
-    animators_.RemoveAll(to_be_removed);
-  }
-
- private:
-  AnimatorMap& animators_;
-};
+}
 
 }  // namespace
 
@@ -84,19 +64,15 @@ void AnimationWorkletGlobalScope::Dispose() {
   ThreadedWorkletGlobalScope::Dispose();
 }
 
-Animator* AnimationWorkletGlobalScope::GetOrCreateAnimatorFor(
+Animator* AnimationWorkletGlobalScope::CreateAnimatorFor(
     int animation_id,
     const String& name,
     WorkletAnimationOptions* options) {
-  Animator* animator = animators_.at(animation_id);
-  if (!animator) {
-    // This is a new animation so we should create an animator for it.
-    animator = CreateInstance(name, options);
-    if (!animator)
-      return nullptr;
-
-    animators_.Set(animation_id, animator);
-  }
+  DCHECK(!animators_.at(animation_id));
+  Animator* animator = CreateInstance(name, options);
+  if (!animator)
+    return nullptr;
+  animators_.Set(animation_id, animator);
 
   return animator;
 }
@@ -106,37 +82,42 @@ AnimationWorkletGlobalScope::Mutate(
     const CompositorMutatorInputState& mutator_input) {
   DCHECK(IsContextThread());
 
-  // Clean any animator that is not updated
-  ScopedAnimatorsSweeper sweeper(animators_);
-
   ScriptState* script_state = ScriptController()->GetScriptState();
   ScriptState::Scope scope(script_state);
 
   std::unique_ptr<CompositorMutatorOutputState> result =
       std::make_unique<CompositorMutatorOutputState>();
 
-  for (const CompositorMutatorInputState::AnimationState& animation_input :
-       mutator_input.animations) {
-    int id = animation_input.animation_id;
-    const String name = String::FromUTF8(animation_input.name.data(),
-                                         animation_input.name.size());
+  for (const auto& id : mutator_input.removed_animations)
+    animators_.erase(id);
+
+  for (const auto& animation : mutator_input.added_and_updated_animations) {
+    int id = animation.animation_id;
+    DCHECK(!animators_.at(id));
+    const String name =
+        String::FromUTF8(animation.name.data(), animation.name.size());
 
     // Down casting to blink type to access the serialized value.
     WorkletAnimationOptions* options =
-        static_cast<WorkletAnimationOptions*>(animation_input.options.get());
+        static_cast<WorkletAnimationOptions*>(animation.options.get());
 
-    Animator* animator = GetOrCreateAnimatorFor(id, name, options);
-    // TODO(majidvp): This means there is an animatorName for which
-    // definition was not registered. We should handle this case gracefully.
-    // http://crbug.com/776017
+    Animator* animator = CreateAnimatorFor(id, name, options);
     if (!animator)
       continue;
 
-    CompositorMutatorOutputState::AnimationState animation_output;
-    if (animator->Animate(script_state, animation_input, &animation_output)) {
-      animation_output.animation_id = id;
-      result->animations.push_back(std::move(animation_output));
-    }
+    UpdateAnimation(animator, script_state, id, animation.current_time,
+                    result.get());
+  }
+
+  for (const auto& animation : mutator_input.updated_animations) {
+    int id = animation.animation_id;
+    Animator* animator = animators_.at(id);
+    // We don't try to create an animator if there isn't any.
+    if (!animator)
+      continue;
+
+    UpdateAnimation(animator, script_state, id, animation.current_time,
+                    result.get());
   }
 
   return result;

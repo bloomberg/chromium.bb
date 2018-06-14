@@ -61,9 +61,9 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
   void RegisterWithProxyClientIfNeeded();
   Animator* CreateInstance(const String& name,
                            WorkletAnimationOptions* options);
-  Animator* GetOrCreateAnimatorFor(int animation_id,
-                                   const String& name,
-                                   WorkletAnimationOptions* options);
+  Animator* CreateAnimatorFor(int animation_id,
+                              const String& name,
+                              WorkletAnimationOptions* options);
   typedef HeapHashMap<String, TraceWrapperMember<AnimatorDefinition>>
       DefinitionMap;
   DefinitionMap animator_definitions_;

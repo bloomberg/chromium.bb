@@ -14,7 +14,6 @@
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_export.h"
 #include "cc/animation/element_animations.h"
-#include "cc/animation/keyframe_effect.h"
 #include "cc/animation/keyframe_model.h"
 #include "cc/trees/element_id.h"
 
@@ -24,6 +23,7 @@ class AnimationDelegate;
 class AnimationEvents;
 class AnimationHost;
 class AnimationTimeline;
+class KeyframeEffect;
 struct AnimationEvent;
 
 // An Animation is responsible for managing animating properties for a set of

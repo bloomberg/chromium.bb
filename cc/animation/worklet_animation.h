@@ -8,8 +8,9 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
-#include "cc/animation/keyframe_effect.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
+#include "cc/trees/property_tree.h"
 
 namespace cc {
 
@@ -22,6 +23,7 @@ class ScrollTimeline;
 class CC_ANIMATION_EXPORT WorkletAnimation final
     : public SingleKeyframeEffectAnimation {
  public:
+  enum class State { PENDING, RUNNING, REMOVED };
   WorkletAnimation(int id,
                    const std::string& name,
                    std::unique_ptr<ScrollTimeline> scroll_timeline,
@@ -43,10 +45,10 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
   void Tick(base::TimeTicks monotonic_time) override;
 
-  MutatorInputState::AnimationState GetInputState(
-      base::TimeTicks monotonic_time,
-      const ScrollTree& scroll_tree,
-      bool is_active_tree);
+  void UpdateInputState(MutatorInputState* input_state,
+                        base::TimeTicks monotonic_time,
+                        const ScrollTree& scroll_tree,
+                        bool is_active_tree);
   void SetOutputState(const MutatorOutputState::AnimationState& state);
 
   void PushPropertiesTo(Animation* animation_impl) override;
@@ -65,6 +67,8 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   // Should be called when the pending tree is promoted to active, as this may
   // require updating the ElementId for the ScrollTimeline scroll source.
   void PromoteScrollTimelinePendingToActive() override;
+
+  void RemoveKeyframeModel(int keyframe_model_id) override;
 
  private:
   ~WorkletAnimation() override;
@@ -95,6 +99,8 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
   base::Optional<base::TimeTicks> start_time_;
   base::Optional<double> last_current_time_;
+
+  State state_;
 
   bool is_impl_instance_;
 };

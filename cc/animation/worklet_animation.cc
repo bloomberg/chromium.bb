@@ -4,6 +4,7 @@
 
 #include "cc/animation/worklet_animation.h"
 
+#include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_timeline.h"
 #include "cc/trees/animation_options.h"
 
@@ -21,6 +22,7 @@ WorkletAnimation::WorkletAnimation(
       options_(std::move(options)),
       start_time_(base::nullopt),
       last_current_time_(base::nullopt),
+      state_(State::PENDING),
       is_impl_instance_(is_controlling_instance) {}
 
 WorkletAnimation::~WorkletAnimation() = default;
@@ -67,10 +69,10 @@ void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
   keyframe_effect()->Tick(monotonic_time);
 }
 
-MutatorInputState::AnimationState WorkletAnimation::GetInputState(
-    base::TimeTicks monotonic_time,
-    const ScrollTree& scroll_tree,
-    bool is_active_tree) {
+void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
+                                        base::TimeTicks monotonic_time,
+                                        const ScrollTree& scroll_tree,
+                                        bool is_active_tree) {
   // Record the monotonic time to be the start time first time state is
   // generated. This time is used as the origin for computing the current time.
   if (!start_time_.has_value())
@@ -79,7 +81,19 @@ MutatorInputState::AnimationState WorkletAnimation::GetInputState(
   double current_time =
       CurrentTime(monotonic_time, scroll_tree, is_active_tree);
   last_current_time_ = current_time;
-  return {id(), name(), current_time, CloneOptions()};
+  switch (state_) {
+    case State::PENDING:
+      input_state->added_and_updated_animations.push_back(
+          {id(), name(), current_time, CloneOptions()});
+      state_ = State::RUNNING;
+      break;
+    case State::RUNNING:
+      input_state->updated_animations.push_back({id(), current_time});
+      break;
+    case State::REMOVED:
+      input_state->removed_animations.push_back(id());
+      break;
+  }
 }
 
 void WorkletAnimation::SetOutputState(
@@ -124,6 +138,11 @@ void WorkletAnimation::SetScrollSourceId(
 void WorkletAnimation::PromoteScrollTimelinePendingToActive() {
   if (scroll_timeline_)
     scroll_timeline_->PromoteScrollTimelinePendingToActive();
+}
+
+void WorkletAnimation::RemoveKeyframeModel(int keyframe_model_id) {
+  state_ = State::REMOVED;
+  SingleKeyframeEffectAnimation::RemoveKeyframeModel(keyframe_model_id);
 }
 
 bool WorkletAnimation::IsWorkletAnimation() const {
