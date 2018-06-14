@@ -8,11 +8,10 @@
 #include "chrome/browser/profiles/profile.h"
 #if !defined(OS_ANDROID)
 #include "chrome/browser/sync/sessions/browser_list_router_helper.h"
+#include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
 #else
 #include "chrome/browser/android/tab_android.h"
 #endif  // !defined(OS_ANDROID)
-#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
@@ -28,7 +27,7 @@ SyncedTabDelegate* GetSyncedTabDelegateFromWebContents(
   return tab ? tab->GetSyncedTabDelegate() : nullptr;
 #else
   SyncedTabDelegate* delegate =
-      TabContentsSyncedTabDelegate::FromWebContents(web_contents);
+      BrowserSyncedTabDelegate::FromWebContents(web_contents);
   return delegate;
 #endif
 }
