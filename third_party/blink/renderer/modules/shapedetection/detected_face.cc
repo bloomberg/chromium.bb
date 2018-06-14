@@ -10,19 +10,19 @@
 namespace blink {
 
 DetectedFace* DetectedFace::Create() {
-  return new DetectedFace(DOMRect::Create());
+  return new DetectedFace(DOMRectReadOnly::Create(0, 0, 0, 0));
 }
 
-DetectedFace* DetectedFace::Create(DOMRect* bounding_box) {
+DetectedFace* DetectedFace::Create(DOMRectReadOnly* bounding_box) {
   return new DetectedFace(bounding_box);
 }
 
-DetectedFace* DetectedFace::Create(DOMRect* bounding_box,
+DetectedFace* DetectedFace::Create(DOMRectReadOnly* bounding_box,
                                    const HeapVector<Landmark>& landmarks) {
   return new DetectedFace(bounding_box, landmarks);
 }
 
-DOMRect* DetectedFace::boundingBox() const {
+DOMRectReadOnly* DetectedFace::boundingBox() const {
   return bounding_box_.Get();
 }
 
@@ -30,10 +30,10 @@ const HeapVector<Landmark>& DetectedFace::landmarks() const {
   return landmarks_;
 }
 
-DetectedFace::DetectedFace(DOMRect* bounding_box)
+DetectedFace::DetectedFace(DOMRectReadOnly* bounding_box)
     : bounding_box_(bounding_box) {}
 
-DetectedFace::DetectedFace(DOMRect* bounding_box,
+DetectedFace::DetectedFace(DOMRectReadOnly* bounding_box,
                            const HeapVector<Landmark>& landmarks)
     : bounding_box_(bounding_box), landmarks_(landmarks) {}
 
