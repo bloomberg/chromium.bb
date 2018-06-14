@@ -9,7 +9,6 @@ js_type_check("closure_compile") {
     ":actions_controller",
     ":actions_model",
     ":app_state_controller",
-    ":closure_compile_externs",
     ":column_visibility_controller",
     ":constants",
     ":dialog_action_controller",
@@ -63,46 +62,6 @@ js_type_check("closure_compile") {
   ]
 }
 
-js_library("closure_compile_externs") {
-  sources = []
-  externs_list = [
-    "$externs_path/command_line_private.js",
-    "$externs_path/file_manager_private.js",
-    "$externs_path/metrics_private.js",
-    "$externs_path/web_animations.js",
-    "../../../externs/app_window_common.js",
-    "../../../externs/background/drive_sync_handler.js",
-    "../../../externs/background/file_browser_background.js",
-    "../../../externs/background/file_browser_background_full.js",
-    "../../../externs/background/file_operation_manager.js",
-    "../../../externs/background/import_history.js",
-    "../../../externs/background/import_history_enum.js",
-    "../../../externs/background/import_runner.js",
-    "../../../externs/background/media_import_handler.js",
-    "../../../externs/background/media_scanner.js",
-    "../../../externs/background/progress_center.js",
-    "../../../externs/background/volume_manager_factory.js",
-    "../../../externs/background_window.js",
-    "../../../externs/chrome_echo_private.js",
-    "../../../externs/chrome_webstore_widget_private.js",
-    "../../../externs/command_handler_deps.js",
-    "../../../externs/css_rule.js",
-    "../../../externs/directory_change_event.js",
-    "../../../externs/drag_target.js",
-    "../../../externs/entries_changed_event.js",
-    "../../../externs/entry_location.js",
-    "../../../externs/gallery_foreground.js",
-    "../../../externs/menu_item_update_event.js",
-    "../../../externs/paper_elements.js",
-    "../../../externs/platform.js",
-    "../../../externs/search_item.js",
-    "../../../externs/volume_info.js",
-    "../../../externs/volume_info_list.js",
-    "../../../externs/volume_manager.js",
-    "//third_party/analytics/externs.js",
-  ]
-}
-
 js_library("actions_controller") {
   deps = [
     ":actions_model",
@@ -124,6 +83,10 @@ js_library("actions_model") {
     "ui:list_container",
     "ui:share_dialog",
     "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [
+    "../../../externs/background/drive_sync_handler.js",
+    "$externs_path/file_manager_private.js",
   ]
 }
 
@@ -177,6 +140,7 @@ js_library("directory_contents") {
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
+  externs_list = [ "$externs_path/file_manager_private.js" ]
 }
 
 js_library("directory_model") {
@@ -187,6 +151,10 @@ js_library("directory_model") {
     "../../common/js:importer_common",
     "../../common/js:metrics_events",
     "ui:file_list_selection_model",
+  ]
+  externs_list = [
+    "../../../externs/background/file_operation_manager.js",
+    "../../../externs/entries_changed_event.js",
   ]
 }
 
@@ -211,6 +179,7 @@ js_library("drop_effect_and_label") {
 }
 
 js_library("elements_importer") {
+  externs_list = [ "$externs_path/metrics_private.js" ]
 }
 
 js_library("empty_folder_controller") {
@@ -267,6 +236,18 @@ js_library("file_manager") {
     "ui:file_manager_ui",
     "//ui/webui/resources/js/cr/ui:list_selection_model",
   ]
+  externs_list = [
+    "../../../externs/background/drive_sync_handler.js",
+    "../../../externs/background/file_browser_background_full.js",
+    "../../../externs/background/file_operation_manager.js",
+    "../../../externs/background/import_history.js",
+    "../../../externs/background/import_history_enum.js",
+    "../../../externs/background/import_runner.js",
+    "../../../externs/background/media_import_handler.js",
+    "../../../externs/background/media_scanner.js",
+    "../../../externs/background/progress_center.js",
+    "../../../externs/background_window.js",
+  ]
 }
 
 js_library("file_manager_commands") {
@@ -286,6 +267,11 @@ js_library("file_manager_commands") {
     "ui:directory_tree",
     "ui:file_manager_ui",
   ]
+  externs_list = [
+    "../../../externs/background_window.js",
+    "../../../externs/command_handler_deps.js",
+    "../../../externs/background/file_operation_manager.js",
+  ]
 }
 
 js_library("file_selection") {
@@ -301,6 +287,7 @@ js_library("file_selection") {
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
   ]
+  externs_list = [ "../../../externs/background/file_operation_manager.js" ]
 }
 
 js_library("file_tasks") {
@@ -329,6 +316,10 @@ js_library("file_transfer_controller") {
     "ui:multi_profile_share_dialog",
     "ui:progress_center_panel",
   ]
+  externs_list = [
+    "../../../externs/background/file_operation_manager.js",
+    "../../../externs/background/progress_center.js",
+  ]
 }
 
 js_library("file_watcher") {
@@ -338,6 +329,7 @@ js_library("file_watcher") {
     "../../common/js:volume_manager_common",
     "//ui/webui/resources/js:assert",
   ]
+  externs_list = [ "$externs_path/file_manager_private.js" ]
 }
 
 js_library("folder_shortcuts_data_model") {
@@ -348,6 +340,7 @@ js_library("folder_shortcuts_data_model") {
     "../../common/js:util",
     "../../common/js:volume_manager_common",
   ]
+  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("gear_menu_controller") {
@@ -358,6 +351,7 @@ js_library("gear_menu_controller") {
     "ui:gear_menu",
     "//ui/webui/resources/js/cr/ui:context_menu_button",
   ]
+  externs_list = [ "../../../externs/directory_change_event.js" ]
 }
 
 js_library("import_controller") {
@@ -374,6 +368,12 @@ js_library("import_controller") {
     "../../common/js:importer_common",
     "ui:directory_tree",
     "ui:file_manager_ui",
+  ]
+  externs_list = [
+    "../../../externs/background/import_runner.js",
+    "../../../externs/background/media_import_handler.js",
+    "../../../externs/background/media_scanner.js",
+    "../../../externs/command_handler_deps.js",
   ]
 }
 
@@ -422,6 +422,7 @@ js_library("main_window_component") {
     ":volume_manager_wrapper",
     "ui:file_manager_ui",
   ]
+  externs_list = [ "../../../externs/directory_change_event.js" ]
 }
 
 js_library("metadata_box_controller") {
@@ -433,6 +434,7 @@ js_library("metadata_box_controller") {
     "metadata:metadata_model",
     "ui:file_metadata_formatter",
   ]
+  externs_list = [ "$externs_path/file_manager_private.js" ]
 }
 
 js_library("metadata_update_controller") {
@@ -470,6 +472,7 @@ js_library("navigation_list_model") {
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]
+  externs_list = [ "../../../externs/volume_info.js" ]
 }
 
 js_library("progress_center_item_group") {
@@ -484,6 +487,7 @@ js_library("providers_model") {
     ":volume_manager_wrapper",
     "//ui/webui/resources/js:assert",
   ]
+  externs_list = [ "$externs_path/file_manager_private.js" ]
 }
 
 js_library("quick_view_controller") {
@@ -534,6 +538,7 @@ js_library("search_controller") {
     "ui:location_line",
     "ui:search_box",
   ]
+  externs_list = [ "../../../externs/volume_manager.js" ]
 }
 
 js_library("selection_menu_controller") {
@@ -548,6 +553,15 @@ js_library("share_client") {
   deps = [
     "../../common/js:volume_manager_common",
     "//ui/webui/resources/js/cr:event_target",
+  ]
+  externs_list = [
+    "../../../externs/entry_location.js",
+    "../../../externs/gallery_foreground.js",
+    "../../../externs/volume_info.js",
+    "../../../externs/volume_info_list.js",
+    "../../../externs/volume_manager.js",
+    "../../../externs/webview_tag.js",
+    "$externs_path/chrome_extensions.js",
   ]
 }
 
@@ -583,6 +597,7 @@ js_library("task_history") {
   deps = [
     "//ui/webui/resources/js/cr:event_target",
   ]
+  externs_list = [ "$externs_path/chrome_extensions.js" ]
 }
 
 js_library("thumbnail_loader") {
@@ -611,6 +626,14 @@ js_library("volume_manager_wrapper") {
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr:event_target",
     "//ui/webui/resources/js/cr/ui:array_data_model",
+  ]
+  externs_list = [
+    "../../../externs/background/volume_manager_factory.js",
+    "../../../externs/entry_location.js",
+    "../../../externs/volume_info.js",
+    "../../../externs/volume_info_list.js",
+    "../../../externs/volume_manager.js",
+    "$externs_path/chrome_extensions.js",
   ]
 }
 
