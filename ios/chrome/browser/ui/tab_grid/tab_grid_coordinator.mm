@@ -91,7 +91,7 @@
   return self;
 }
 
-#pragma mark - Public properties
+#pragma mark - Public
 
 - (id<TabSwitcher>)tabSwitcher {
   return self.adaptor;
@@ -124,6 +124,15 @@
     self.incognitoTabsMediator.tabModel = incognitoTabModel;
   } else {
     _incognitoTabModel = incognitoTabModel;
+  }
+}
+
+- (void)stopChildCoordinatorsWithCompletion:(ProceduralBlock)completion {
+  // History may be presented on top of the tab grid.
+  if (self.historyCoordinator) {
+    [self.historyCoordinator stopWithCompletion:completion];
+  } else if (completion) {
+    completion();
   }
 }
 

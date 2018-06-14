@@ -108,6 +108,12 @@ typedef Tab* (^mock_gurl_nsuinteger_pagetransition)(const GURL&,
   return nil;
 }
 
+- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
+                           dismissOmnibox:(BOOL)dismissOmnibox {
+  if (completion)
+    completion();
+}
+
 - (void)expectNewForegroundTab {
   // no-op.
 }
@@ -242,6 +248,8 @@ TEST_F(URLOpenerTest, HandleOpenURLWithOpenTabs) {
       static_cast<BrowserViewController*>(bvc_mock);
   controller.browserViewInformation.otrBVC =
       static_cast<BrowserViewController*>(otr_bvc_mock);
+  controller.browserViewInformation.currentBVC =
+      static_cast<BrowserViewController*>(bvc_mock);
 
   NSDictionary<NSString*, id>* options = nil;
   [URLOpener openURL:url
