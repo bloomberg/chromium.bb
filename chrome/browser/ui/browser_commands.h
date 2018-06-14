@@ -147,6 +147,9 @@ bool IsDebuggerAttachedToCurrentTab(Browser* browser);
 void CopyURL(Browser* browser);
 void OpenInChrome(Browser* browser);
 bool CanViewSource(const Browser* browser);
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+void ToggleConfirmToQuitOption(Browser* browser);
+#endif
 
 void CreateBookmarkAppFromCurrentWebContents(Browser* browser);
 bool CanCreateBookmarkApp(const Browser* browser);

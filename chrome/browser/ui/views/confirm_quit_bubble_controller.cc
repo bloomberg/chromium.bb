@@ -9,10 +9,14 @@
 #include "base/feature_list.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/confirm_quit.h"
 #include "chrome/browser/ui/views/confirm_quit_bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_service.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/animation.h"
@@ -22,12 +26,6 @@ namespace {
 
 constexpr ui::KeyboardCode kAcceleratorKeyCode = ui::VKEY_Q;
 constexpr int kAcceleratorModifiers = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN;
-
-constexpr base::TimeDelta kShowDuration =
-    base::TimeDelta::FromMilliseconds(1500);
-
-constexpr base::TimeDelta kWindowFadeOutDuration =
-    base::TimeDelta::FromMilliseconds(200);
 
 }  // namespace
 
@@ -51,8 +49,10 @@ ConfirmQuitBubbleController::ConfirmQuitBubbleController(
       hide_timer_(std::move(hide_timer)),
       browser_hide_animation_(std::move(animation)) {
   browser_hide_animation_->SetSlideDuration(
-      kWindowFadeOutDuration.InMilliseconds());
+      confirm_quit::kWindowFadeOutDuration.InMilliseconds());
   BrowserList::AddObserver(this);
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
+                 content::NotificationService::AllSources());
 }
 
 ConfirmQuitBubbleController::~ConfirmQuitBubbleController() {
@@ -68,24 +68,52 @@ bool ConfirmQuitBubbleController::HandleKeyboardEvent(
       accelerator.key_state() == ui::Accelerator::KeyState::PRESSED &&
       !accelerator.IsRepeat()) {
     if (state_ == State::kWaiting) {
+      Browser* browser = BrowserList::GetInstance()->GetLastActive();
+      PrefService* prefs = browser ? browser->profile()->GetPrefs() : nullptr;
+      if (prefs && !prefs->GetBoolean(prefs::kConfirmToQuitEnabled)) {
+        confirm_quit::RecordHistogram(confirm_quit::kNoConfirm);
+        Quit();
+        return true;
+      }
+      if (browser) {
+        browser_ = browser;
+        pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+        pref_change_registrar_->Init(prefs);
+        pref_change_registrar_->Add(
+            prefs::kConfirmToQuitEnabled,
+            base::BindRepeating(
+                &ConfirmQuitBubbleController::OnConfirmToQuitPrefChanged,
+                base::Unretained(this)));
+      }
       state_ = State::kPressed;
-      browser_ = BrowserList::GetInstance()->GetLastActive();
       view_->Show();
-      hide_timer_->Start(FROM_HERE, kShowDuration, this,
+      hide_timer_->Start(FROM_HERE, confirm_quit::kShowDuration, this,
                          &ConfirmQuitBubbleController::OnTimerElapsed);
-    } else if (state_ == State::kReleased) {
+      return true;
+    }
+    if (state_ == State::kReleased) {
       // The accelerator was pressed while the bubble was showing.  Consider
       // this a confirmation to quit.
+      second_press_start_time_ = accelerator.time_stamp();
       ConfirmQuit();
+      return true;
     }
-    return true;
   }
   if (accelerator.key_code() == kAcceleratorKeyCode &&
       accelerator.key_state() == ui::Accelerator::KeyState::RELEASED) {
-    if (state_ == State::kPressed)
+    if (state_ == State::kPressed) {
       state_ = State::kReleased;
-    else if (state_ == State::kConfirmed)
+    } else if (state_ == State::kConfirmed) {
+      if (!second_press_start_time_.is_null()) {
+        if (accelerator.time_stamp() - second_press_start_time_ <
+            confirm_quit::kDoubleTapTimeDelta) {
+          confirm_quit::RecordHistogram(confirm_quit::kDoubleTap);
+        } else {
+          confirm_quit::RecordHistogram(confirm_quit::kTapHold);
+        }
+      }
       Quit();
+    }
     return true;
   }
   return false;
@@ -105,25 +133,59 @@ void ConfirmQuitBubbleController::AnimationEnded(
   AnimationProgressed(animation);
 }
 
+void ConfirmQuitBubbleController::OnBrowserRemoved(Browser* browser) {
+  // A browser is definitely no longer active if it is removed.
+  OnBrowserNoLongerActive(browser);
+}
+
 void ConfirmQuitBubbleController::OnBrowserNoLongerActive(Browser* browser) {
-  if (browser != browser_ || state_ == State::kWaiting ||
-      state_ == State::kQuitting) {
-    return;
-  }
-  state_ = State::kWaiting;
+  if (browser == browser_)
+    Reset();
+}
+
+void ConfirmQuitBubbleController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
+  // The browser process is about to exit.  Clean up |pref_change_registrar_|
+  // now, otherwise it will outlive PrefService which will result in a crash
+  // when it tries to remove itself as an observer of the PrefService in its
+  // destructor.  Also explicitly set the state to quitting so we don't try to
+  // show any more UI etc.
+  pref_change_registrar_.reset();
   view_->Hide();
-  hide_timer_->Stop();
-  browser_hide_animation_->Hide();
+  state_ = State::kQuitting;
 }
 
 void ConfirmQuitBubbleController::OnTimerElapsed() {
   if (state_ == State::kPressed) {
     // The accelerator was held down the entire time the bubble was showing.
+    confirm_quit::RecordHistogram(confirm_quit::kHoldDuration);
     ConfirmQuit();
   } else if (state_ == State::kReleased) {
-    state_ = State::kWaiting;
-    view_->Hide();
+    Reset();
   }
+}
+
+void ConfirmQuitBubbleController::OnConfirmToQuitPrefChanged() {
+  if (browser_ && !browser_->profile()->GetPrefs()->GetBoolean(
+                      prefs::kConfirmToQuitEnabled)) {
+    Reset();
+  }
+}
+
+void ConfirmQuitBubbleController::Reset() {
+  DCHECK_NE(state_, State::kQuitting);
+  if (state_ == State::kWaiting)
+    return;
+  state_ = State::kWaiting;
+  second_press_start_time_ = base::TimeTicks();
+  browser_ = nullptr;
+  pref_change_registrar_.reset();
+  view_->Hide();
+  hide_timer_->Stop();
+  browser_hide_animation_->Hide();
 }
 
 void ConfirmQuitBubbleController::ConfirmQuit() {
@@ -134,8 +196,9 @@ void ConfirmQuitBubbleController::ConfirmQuit() {
 }
 
 void ConfirmQuitBubbleController::Quit() {
-  DCHECK_EQ(state_, State::kConfirmed);
+  DCHECK(state_ == State::kWaiting || state_ == State::kConfirmed);
   state_ = State::kQuitting;
+  browser_ = nullptr;
   if (quit_action_) {
     std::move(quit_action_).Run();
   } else {

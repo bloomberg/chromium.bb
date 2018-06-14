@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/subtle_notification_view.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/rect.h"
@@ -65,9 +67,11 @@ void ConfirmQuitBubble::AnimationProgressed(const gfx::Animation* animation) {
       popup_->Init(params);
       popup_->SetContentsView(view);
 
-      // TODO(thomasanderson): Localize this string.
-      view->UpdateContent(
-          base::WideToUTF16(L"Hold |Ctrl|+|Shift|+|Q| to quit"));
+      view->UpdateContent(l10n_util::GetStringFUTF16(
+          IDS_CONFIRM_TO_QUIT_DESCRIPTION,
+          l10n_util::GetStringUTF16(IDS_APP_CTRL_KEY),
+          l10n_util::GetStringUTF16(IDS_APP_SHIFT_KEY),
+          ui::Accelerator(ui::VKEY_Q, 0).GetShortcutText()));
 
       popup_->CenterWindow(view->GetPreferredSize());
 

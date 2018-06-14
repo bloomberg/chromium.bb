@@ -45,6 +45,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/profiling.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -632,11 +633,17 @@ bool AppMenuModel::IsCommandIdChecked(int command_id) const {
   if (command_id == IDC_SHOW_BOOKMARK_BAR) {
     return browser_->profile()->GetPrefs()->GetBoolean(
         bookmarks::prefs::kShowBookmarkBar);
-  } else if (command_id == IDC_PROFILING_ENABLED) {
-    return Profiling::BeingProfiled();
-  } else if (command_id == IDC_TOGGLE_REQUEST_TABLET_SITE) {
-    return chrome::IsRequestingTabletSite(browser_);
   }
+  if (command_id == IDC_PROFILING_ENABLED)
+    return Profiling::BeingProfiled();
+  if (command_id == IDC_TOGGLE_REQUEST_TABLET_SITE)
+    return chrome::IsRequestingTabletSite(browser_);
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  if (command_id == IDC_TOGGLE_CONFIRM_TO_QUIT_OPTION) {
+    return browser_->profile()->GetPrefs()->GetBoolean(
+        prefs::kConfirmToQuitEnabled);
+  }
+#endif
 
   return false;
 }
@@ -804,6 +811,16 @@ void AppMenuModel::Build() {
 
   if (browser_defaults::kShowExitMenuItem) {
     AddSeparator(ui::NORMAL_SEPARATOR);
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+    if (base::FeatureList::IsEnabled(features::kWarnBeforeQuitting)) {
+      AddCheckItem(IDC_TOGGLE_CONFIRM_TO_QUIT_OPTION,
+                   l10n_util::GetStringFUTF16(
+                       IDS_CONFIRM_TO_QUIT_OPTION,
+                       ui::Accelerator(ui::VKEY_Q,
+                                       ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN)
+                           .GetShortcutText()));
+    }
+#endif
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   }
   uma_action_recorded_ = false;
