@@ -23,9 +23,7 @@ cr.define('bookmarks', function() {
       },
 
       /** @private {Set<string>} */
-      menuIds_: {
-        type: Object,
-      },
+      menuIds_: Object,
 
       /** @private */
       hasAnySublabel_: {
@@ -40,7 +38,10 @@ cr.define('bookmarks', function() {
        * or elsewhere in the UI.
        * @private {MenuSource}
        */
-      menuSource_: MenuSource.NONE,
+      menuSource_: {
+        type: Number,
+        value: MenuSource.NONE,
+      },
 
       /** @private */
       globalCanEdit_: Boolean,
@@ -702,7 +703,7 @@ cr.define('bookmarks', function() {
      * @private
      */
     computeHasAnySublabel_: function() {
-      if (!this.menuIds_)
+      if (this.menuIds_ == undefined || this.menuCommands_ == undefined)
         return false;
 
       return this.menuCommands_.some(

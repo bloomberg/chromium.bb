@@ -113,6 +113,7 @@ function customClick(element, config, eventName) {
   const props = {
     bubbles: true,
     cancelable: true,
+    composed: true,
     button: 0,
     buttons: 1,
     shiftKey: false,
