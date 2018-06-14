@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SPELLCHECK_BROWSER_SPELLING_SERVICE_CLIENT_H_
 #define COMPONENTS_SPELLCHECK_BROWSER_SPELLING_SERVICE_CLIENT_H_
 
-#include <map>
+#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -14,18 +14,17 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
-class GURL;
 struct SpellCheckResult;
 
 namespace content {
 class BrowserContext;
 }
 
-namespace net {
-class URLFetcher;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 // A class that encapsulates a JSON-RPC call to the Spelling service to check
 // text there. This class creates a JSON-RPC request, sends the request to the
@@ -57,7 +56,7 @@ class URLFetcher;
 //     std::unique_ptr<SpellingServiceClient> client_;
 //   };
 //
-class SpellingServiceClient : public net::URLFetcherDelegate {
+class SpellingServiceClient {
  public:
   // Service types provided by the Spelling service. The Spelling service
   // consists of a couple of backends:
@@ -76,7 +75,7 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
       TextCheckCompleteCallback;
 
   SpellingServiceClient();
-  ~SpellingServiceClient() override;
+  ~SpellingServiceClient();
 
   // Sends a text-check request to the Spelling service. When we send a request
   // to the Spelling service successfully, this function returns true. (This
@@ -90,6 +89,11 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
   // Returns whether the specified service is available for the given context.
   static bool IsAvailable(content::BrowserContext* context, ServiceType type);
 
+  // Set the URL loader factory for tests.
+  void SetURLLoaderFactoryForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory>
+          url_loader_factory_for_testing);
+
  protected:
   // Parses a JSON-RPC response from the Spelling service.
   bool ParseResponse(const std::string& data,
@@ -98,13 +102,14 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
  private:
   struct TextCheckCallbackData {
    public:
-    TextCheckCallbackData(std::unique_ptr<net::URLFetcher> fetcher,
-                          TextCheckCompleteCallback callback,
-                          base::string16 text);
+    TextCheckCallbackData(
+        std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
+        TextCheckCompleteCallback callback,
+        base::string16 text);
     ~TextCheckCallbackData();
 
-    // The fetcher used.
-    std::unique_ptr<net::URLFetcher> fetcher;
+    // The URL loader used.
+    std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
 
     // The callback function to be called when we receive a response from the
     // Spelling service and parse it.
@@ -117,19 +122,18 @@ class SpellingServiceClient : public net::URLFetcherDelegate {
     DISALLOW_COPY_AND_ASSIGN(TextCheckCallbackData);
   };
 
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  using SpellCheckLoaderList =
+      std::list<std::unique_ptr<TextCheckCallbackData>>;
 
-  // Creates a URLFetcher object used for sending a JSON-RPC request. This
-  // function is overridden by unit tests to prevent them from actually sending
-  // requests to the Spelling service.
-  virtual std::unique_ptr<net::URLFetcher> CreateURLFetcher(
-      const GURL& url,
-      net::NetworkTrafficAnnotationTag traffic_annotation);
+  void OnSimpleLoaderComplete(SpellCheckLoaderList::iterator it,
+                              std::unique_ptr<std::string> response_body);
 
-  // The URLFetcher object used for sending a JSON-RPC request.
-  std::map<const net::URLFetcher*, std::unique_ptr<TextCheckCallbackData>>
-      spellcheck_fetchers_;
+  // List of loaders in use.
+  SpellCheckLoaderList spellcheck_loaders_;
+
+  // URL loader factory to use for fake network requests during testing.
+  scoped_refptr<network::SharedURLLoaderFactory>
+      url_loader_factory_for_testing_;
 };
 
 #endif  // COMPONENTS_SPELLCHECK_BROWSER_SPELLING_SERVICE_CLIENT_H_
