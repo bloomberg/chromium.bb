@@ -1,0 +1,69 @@
+syntax = "proto2";
+
+package base.sequence_manager;
+
+// Describes the grammar of the fuzzer's test description. At a high level, it
+// describes a sequence of actions that can be executed.
+message TaskQueueManagerTestDescription {
+  // NEXT ID = 2
+
+  enum QueuePriority {
+    // NEXT ID = 6
+
+    UNDEFINED = 0;
+    BEST_EFFORT = 1;
+    LOW = 2;
+    NORMAL = 3;
+    HIGH = 4;
+    HIGHEST = 5;
+  }
+
+  // Describes interfaces that can be tested by the fuzzer.
+  // TODO(farahcharab) Add more interfaces here.
+  message Action {
+    // NEXT ID = 5
+
+    // The number of milliseconds after which an action should be executed
+    // relative to the start of the program.
+    optional uint64 delay_ms = 1;
+
+    required PostDelayedTaskAction default_action_desc = 2;
+
+    oneof description {
+      CreateTaskQueueAction create_task_queue_desc = 3;
+      PostDelayedTaskAction post_delayed_task_desc = 4;
+    }
+  }
+
+  message Task {
+    // NEXT ID = 3
+
+    // If not set, then this is a no-op task.
+    repeated Action actions = 1;
+
+    optional uint64 duration_ms = 2;
+  }
+
+  // Describes the grammar of TaskQueueManager::CreateTaskQueue.
+  message CreateTaskQueueAction {
+    // NEXT ID = 2
+
+    optional QueuePriority initial_priority = 1;
+  }
+
+  // Describes the grammar of TaskQueue::PostDelayedTask.
+  message PostDelayedTaskAction {
+    // NEXT ID = 4
+
+    // Used to identify the queue to post to.
+    required uint64 task_queue_id = 1;
+
+    required Task task = 2;
+
+    // Delay parameter passed to TaskQueue::PostDelayedTask i.e. the delay is
+    // measured after executing the PostDelayedTaskAction.
+    optional uint64 delay_ms = 3;
+  }
+
+  repeated Action actions = 1;
+}

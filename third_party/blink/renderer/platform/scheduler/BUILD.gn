@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//third_party/blink/renderer/platform/platform.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 blink_platform_sources("scheduler") {
   sources = [
@@ -247,4 +248,10 @@ source_set("perf_tests") {
   ]
 
   configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
+}
+
+proto_library("task_queue_manager_test_description_proto") {
+  sources = [
+    "base/proto/task_queue_manager_test_description.proto",
+  ]
 }
