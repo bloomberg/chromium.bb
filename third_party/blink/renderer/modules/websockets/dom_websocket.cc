@@ -263,25 +263,25 @@ DOMWebSocket* DOMWebSocket::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  DOMWebSocket* web_socket = new DOMWebSocket(context);
-  web_socket->PauseIfNeeded();
+  DOMWebSocket* websocket = new DOMWebSocket(context);
+  websocket->PauseIfNeeded();
 
   if (protocols.IsNull()) {
     Vector<String> protocols_vector;
-    web_socket->Connect(url, protocols_vector, exception_state);
+    websocket->Connect(url, protocols_vector, exception_state);
   } else if (protocols.IsString()) {
     Vector<String> protocols_vector;
     protocols_vector.push_back(protocols.GetAsString());
-    web_socket->Connect(url, protocols_vector, exception_state);
+    websocket->Connect(url, protocols_vector, exception_state);
   } else {
     DCHECK(protocols.IsStringSequence());
-    web_socket->Connect(url, protocols.GetAsStringSequence(), exception_state);
+    websocket->Connect(url, protocols.GetAsStringSequence(), exception_state);
   }
 
   if (exception_state.HadException())
     return nullptr;
 
-  return web_socket;
+  return websocket;
 }
 
 void DOMWebSocket::Connect(const String& url,
