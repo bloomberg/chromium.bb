@@ -7317,7 +7317,6 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                             HandleInterModeArgs *const args) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const int is_comp_pred = has_second_ref(mbmi);
   const PREDICTION_MODE this_mode = mbmi->mode;
   const int refs[2] = { mbmi->ref_frame[0],
@@ -7337,10 +7336,11 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       } else {
         *rate_mv = 0;
         for (i = 0; i < 2; ++i) {
+          const int_mv ref_mv = av1_get_ref_mv(x, i);
           av1_set_mvcost(x, i, mbmi->ref_mv_idx);
-          *rate_mv += av1_mv_bit_cost(
-              &cur_mv[i].as_mv, &mbmi_ext->ref_mvs[refs[i]][0].as_mv,
-              x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
+          *rate_mv +=
+              av1_mv_bit_cost(&cur_mv[i].as_mv, &ref_mv.as_mv, x->nmvjointcost,
+                              x->mvcost, MV_COST_WEIGHT);
         }
       }
     } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
@@ -7351,8 +7351,8 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       } else {
         av1_set_mvcost(x, 1,
                        mbmi->ref_mv_idx + (this_mode == NEAR_NEWMV ? 1 : 0));
-        *rate_mv = av1_mv_bit_cost(&cur_mv[1].as_mv,
-                                   &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
+        const int_mv ref_mv = av1_get_ref_mv(x, 1);
+        *rate_mv = av1_mv_bit_cost(&cur_mv[1].as_mv, &ref_mv.as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
       }
     } else {
@@ -7362,10 +7362,10 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
         compound_single_motion_search_interinter(
             cpi, x, bsize, cur_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 0);
       } else {
+        const int_mv ref_mv = av1_get_ref_mv(x, 0);
         av1_set_mvcost(x, 0,
                        mbmi->ref_mv_idx + (this_mode == NEW_NEARMV ? 1 : 0));
-        *rate_mv = av1_mv_bit_cost(&cur_mv[0].as_mv,
-                                   &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
+        *rate_mv = av1_mv_bit_cost(&cur_mv[0].as_mv, &ref_mv.as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
       }
     }
