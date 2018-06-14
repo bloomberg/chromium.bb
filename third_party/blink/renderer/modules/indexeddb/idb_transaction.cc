@@ -90,8 +90,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
       mode_(kWebIDBTransactionModeReadOnly),
       scope_(scope),
       state_(kActive),
-      event_queue_(EventQueueImpl::Create(execution_context,
-                                          TaskType::kInternalIndexedDB)) {
+      event_queue_(EventQueueImpl::Create(this, TaskType::kInternalIndexedDB)) {
   DCHECK(database_);
   DCHECK(!scope_.IsEmpty()) << "Observer transactions must operate "
                                "on a well-defined set of stores";
@@ -108,8 +107,7 @@ IDBTransaction::IDBTransaction(ScriptState* script_state,
       database_(db),
       mode_(mode),
       scope_(scope),
-      event_queue_(EventQueueImpl::Create(ExecutionContext::From(script_state),
-                                          TaskType::kInternalIndexedDB)) {
+      event_queue_(EventQueueImpl::Create(this, TaskType::kInternalIndexedDB)) {
   DCHECK(database_);
   DCHECK(!scope_.IsEmpty()) << "Non-versionchange transactions must operate "
                                "on a well-defined set of stores";
@@ -137,8 +135,7 @@ IDBTransaction::IDBTransaction(ExecutionContext* execution_context,
       mode_(kWebIDBTransactionModeVersionChange),
       state_(kInactive),
       old_database_metadata_(old_metadata),
-      event_queue_(EventQueueImpl::Create(execution_context,
-                                          TaskType::kInternalIndexedDB)) {
+      event_queue_(EventQueueImpl::Create(this, TaskType::kInternalIndexedDB)) {
   DCHECK(database_);
   DCHECK(open_db_request_);
   DCHECK(scope_.IsEmpty());
@@ -526,7 +523,8 @@ DispatchEventResult IDBTransaction::DispatchEventInternal(Event* event) {
   DCHECK_NE(state_, kFinished);
   DCHECK(has_pending_activity_);
   DCHECK(GetExecutionContext());
-  DCHECK_EQ(event->target(), this);
+  event->SetTarget(this);
+  event->SetCurrentTarget(this);
   state_ = kFinished;
 
   HeapVector<Member<EventTarget>> targets;
@@ -556,7 +554,6 @@ void IDBTransaction::EnqueueEvent(Event* event) {
   if (!GetExecutionContext())
     return;
 
-  event->SetTarget(this);
   event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 

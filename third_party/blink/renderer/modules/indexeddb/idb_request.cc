@@ -138,8 +138,8 @@ IDBRequest::IDBRequest(ScriptState* script_state,
       isolate_(script_state->GetIsolate()),
       metrics_(std::move(metrics)),
       source_(source),
-      event_queue_(EventQueueImpl::Create(ExecutionContext::From(script_state),
-                                          TaskType::kInternalIndexedDB)) {}
+      event_queue_(EventQueueImpl::Create(this, TaskType::kInternalIndexedDB)) {
+}
 
 IDBRequest::~IDBRequest() {
   DCHECK((ready_state_ == DONE && metrics_.IsEmpty()) ||
@@ -638,7 +638,8 @@ DispatchEventResult IDBRequest::DispatchEventInternal(Event* event) {
     return DispatchEventResult::kCanceledBeforeDispatch;
   DCHECK_EQ(ready_state_, PENDING);
   DCHECK(has_pending_activity_);
-  DCHECK_EQ(event->target(), this);
+  event->SetTarget(this);
+  event->SetCurrentTarget(this);
 
   if (event->type() != EventTypeNames::blocked)
     ready_state_ = DONE;
@@ -759,8 +760,6 @@ void IDBRequest::EnqueueEvent(Event* event) {
   DCHECK(ready_state_ == PENDING || did_fire_upgrade_needed_event_)
       << "When queueing event " << event->type() << ", ready_state_ was "
       << ready_state_;
-
-  event->SetTarget(this);
 
   event_queue_->EnqueueEvent(FROM_HERE, event);
 }

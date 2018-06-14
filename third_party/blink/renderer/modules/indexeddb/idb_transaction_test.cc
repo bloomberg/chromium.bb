@@ -186,6 +186,8 @@ TEST_F(IDBTransactionTest, ContextDestroyedAfterDone) {
   // event, so that the transaction can go away.
   EXPECT_EQ(1U, live_transactions.size());
 
+  // Dispatch all the enqueued events.
+  base::RunLoop().RunUntilIdle();
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(0U, live_transactions.size());
 }

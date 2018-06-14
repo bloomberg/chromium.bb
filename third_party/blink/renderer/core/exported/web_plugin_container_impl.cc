@@ -457,7 +457,6 @@ void WebPluginContainerImpl::DispatchProgressEvent(const WebString& type,
 
 void WebPluginContainerImpl::EnqueueMessageEvent(
     const WebDOMMessageEvent& event) {
-  static_cast<Event*>(event)->SetTarget(element_);
   if (!element_->GetExecutionContext())
     return;
   event_queue_->EnqueueEvent(FROM_HERE, event);
@@ -738,8 +737,7 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement& element,
     : ContextClient(element.GetDocument().GetFrame()),
       element_(element),
       event_queue_(
-          EventQueueImpl::Create(element.GetDocument().GetExecutionContext(),
-                                 TaskType::kInternalDefault)),
+          EventQueueImpl::Create(&element, TaskType::kInternalDefault)),
       web_plugin_(web_plugin),
       layer_(nullptr),
       touch_event_request_type_(kTouchEventRequestTypeNone),

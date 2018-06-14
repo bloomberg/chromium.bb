@@ -108,8 +108,7 @@ IDBDatabase::IDBDatabase(ExecutionContext* context,
                          v8::Isolate* isolate)
     : ContextLifecycleObserver(context),
       backend_(std::move(backend)),
-      event_queue_(
-          EventQueueImpl::Create(context, TaskType::kInternalIndexedDB)),
+      event_queue_(EventQueueImpl::Create(this, TaskType::kInternalIndexedDB)),
       database_callbacks_(callbacks),
       isolate_(isolate) {
   database_callbacks_->Connect(this);
@@ -500,7 +499,6 @@ void IDBDatabase::OnVersionChange(int64_t old_version, int64_t new_version) {
 
 void IDBDatabase::EnqueueEvent(Event* event) {
   DCHECK(GetExecutionContext());
-  event->SetTarget(this);
   event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
