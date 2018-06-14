@@ -104,7 +104,7 @@ class ConsentSyncBridgeImplTest : public testing::Test {
   std::map<std::string, sync_pb::EntitySpecifics> GetAllData() {
     base::RunLoop loop;
     std::unique_ptr<DataBatch> batch;
-    bridge_->GetAllData(base::BindOnce(
+    bridge_->GetAllDataForDebugging(base::BindOnce(
         [](base::RunLoop* loop, std::unique_ptr<DataBatch>* out_batch,
            std::unique_ptr<DataBatch> batch) {
           *out_batch = std::move(batch);

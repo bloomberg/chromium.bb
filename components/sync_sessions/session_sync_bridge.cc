@@ -273,7 +273,7 @@ void SessionSyncBridge::GetData(StorageKeyList storage_keys,
   std::move(callback).Run(syncing_->store->GetSessionDataForKeys(storage_keys));
 }
 
-void SessionSyncBridge::GetAllData(DataCallback callback) {
+void SessionSyncBridge::GetAllDataForDebugging(DataCallback callback) {
   DCHECK(syncing_);
   std::move(callback).Run(syncing_->store->GetAllSessionData());
 }

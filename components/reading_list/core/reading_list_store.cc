@@ -362,7 +362,7 @@ void ReadingListStore::GetData(StorageKeyList storage_keys,
   std::move(callback).Run(std::move(batch));
 }
 
-void ReadingListStore::GetAllData(DataCallback callback) {
+void ReadingListStore::GetAllDataForDebugging(DataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto batch = std::make_unique<syncer::MutableDataBatch>();
 
