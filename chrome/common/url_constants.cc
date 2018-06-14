@@ -16,6 +16,11 @@ const char kBluetoothAdapterOffHelpURL[] =
     "https://support.google.com/chrome?p=bluetooth";
 #endif
 
+// TODO(https://crbug.com/852139): Replace this numbered link with a P-link once
+// we have one.
+const char kCastNoDestinationFoundURL[] =
+    "https://support.google.com/chromecast/answer/3249268";
+
 const char kChooserBluetoothOverviewURL[] =
     "https://support.google.com/chrome?p=bluetooth";
 

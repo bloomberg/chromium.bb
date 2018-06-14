@@ -3179,6 +3179,8 @@ split_static_library("ui") {
         "views/location_bar/star_view.h",
         "views/location_bar/zoom_view.cc",
         "views/location_bar/zoom_view.h",
+        "views/media_router/cast_dialog_no_sinks_view.cc",
+        "views/media_router/cast_dialog_no_sinks_view.h",
         "views/media_router/cast_dialog_sink_button.cc",
         "views/media_router/cast_dialog_sink_button.h",
         "views/media_router/cast_dialog_view.cc",
