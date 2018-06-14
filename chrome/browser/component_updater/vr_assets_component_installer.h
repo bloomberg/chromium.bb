@@ -30,7 +30,9 @@ class VrAssetsComponentInstallerPolicy : public ComponentInstallerPolicy {
   ~VrAssetsComponentInstallerPolicy() override {}
 
  private:
+  static void RegisterComponent(ComponentUpdateService* cus);
   static void UpdateComponent(ComponentUpdateService* cus);
+  static void OnRegisteredComponent(ComponentUpdateService* cus);
 
   // ComponentInstallerPolicy:
   bool SupportsGroupPolicyEnabledComponentUpdates() const override;
@@ -50,6 +52,10 @@ class VrAssetsComponentInstallerPolicy : public ComponentInstallerPolicy {
   update_client::InstallerAttributes GetInstallerAttributes() const override;
   std::vector<std::string> GetMimeTypes() const override;
 
+  static bool registration_pending_;
+  static bool ondemand_update_pending_;
+
+  friend void RegisterVrAssetsComponent(ComponentUpdateService* cus);
   friend void UpdateVrAssetsComponent(ComponentUpdateService* cus);
 
   DISALLOW_COPY_AND_ASSIGN(VrAssetsComponentInstallerPolicy);
