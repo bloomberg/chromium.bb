@@ -21,8 +21,11 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.ui.base.WindowAndroid;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Controller tests for the root controller for interactions with the manual filling UI.
@@ -32,6 +35,8 @@ import org.chromium.ui.base.WindowAndroid;
 public class ManualFillingControllerTest {
     @Mock
     private WindowAndroid mMockWindow;
+    @Mock
+    private ChromeActivity mMockActivity;
     @Mock
     private ViewStub mMockViewStub;
     @Mock
@@ -47,6 +52,7 @@ public class ManualFillingControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mMockViewStub.inflate()).thenReturn(mMockView);
+        when(mMockWindow.getActivity()).thenReturn(new WeakReference<>(mMockActivity));
         mController = new ManualFillingCoordinator(mMockWindow, mMockViewStub, mMockViewStub);
     }
 

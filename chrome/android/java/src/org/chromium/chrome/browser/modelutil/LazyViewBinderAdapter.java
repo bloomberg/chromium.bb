@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.modelutil;
 import android.view.View;
 import android.view.ViewStub;
 
+import org.chromium.base.Callback;
+
 import javax.annotation.Nullable;
 
 /**
@@ -41,7 +43,8 @@ public class LazyViewBinderAdapter<M extends PropertyObservable<K>, V extends Vi
         }
 
         @SuppressWarnings("unchecked") // The StubHolder always holds a V!
-        void inflateView() {
+        void inflateView(ViewStub.OnInflateListener inflationCallback) {
+            mViewStub.setOnInflateListener(inflationCallback);
             mView = (V) mViewStub.inflate();
         }
     }
@@ -78,24 +81,41 @@ public class LazyViewBinderAdapter<M extends PropertyObservable<K>, V extends Vi
     }
 
     private final SimpleViewBinder<M, V, K> mBinder;
+    private final Callback<V> mPostInflationCallback;
+
+    /**
+     * Calls {LazyViewBinderAdapter#LazyViewBinderAdapter(SimpleViewBinder, Callback)} without a
+     * post-inflation callback
+     * @param binder The binder to be called with the fully inflated view.
+     * @see LazyViewBinderAdapter#LazyViewBinderAdapter(SimpleViewBinder, Callback)
+     */
+    public LazyViewBinderAdapter(SimpleViewBinder<M, V, K> binder) {
+        this(binder, (view) -> {});
+    }
 
     /**
      * Creates the adapter with a {@link SimpleViewBinder} that will be used to determine when to
      * inflate the {@link StubHolder} that is passed in by the {@link PropertyModelChangeProcessor}.
      * @param binder The binder to be called with the fully inflated view.
+     * @param postInflationCallback Callback called after inflation (before calling the ViewBinder).
      */
-    public LazyViewBinderAdapter(SimpleViewBinder<M, V, K> binder) {
+    public LazyViewBinderAdapter(
+            SimpleViewBinder<M, V, K> binder, Callback<V> postInflationCallback) {
         mBinder = binder;
+        mPostInflationCallback = postInflationCallback;
     }
 
+    @SuppressWarnings("unchecked") // The StubHolder always holds a V!
     @Override
     public void bind(M model, StubHolder<V> stubHolder, K propertyKey) {
         if (stubHolder.getView() == null) {
             if (propertyKey != mBinder.getVisibilityProperty() || !mBinder.isVisible(model)) {
                 return; // Ignore model changes before the view is shown for the first time.
             }
-            stubHolder.inflateView();
-            mBinder.onInitialInflation(model, stubHolder.getView());
+            stubHolder.inflateView((viewStub, view) -> {
+                mPostInflationCallback.onResult((V) view);
+                mBinder.onInitialInflation(model, (V) view);
+            });
         }
         mBinder.bind(model, stubHolder.getView(), propertyKey);
     }

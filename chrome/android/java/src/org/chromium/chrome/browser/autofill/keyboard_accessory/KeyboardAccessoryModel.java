@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
+
 import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
@@ -28,6 +31,8 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
 
         static final PropertyKey VISIBLE = new PropertyKey();
         static final PropertyKey SUGGESTIONS = new PropertyKey();
+        static final PropertyKey ACTIVE_TAB = new PropertyKey();
+        static final PropertyKey TAB_SELECTION_CALLBACKS = new PropertyKey();
 
         private PropertyKey() {
             ALL_PROPERTIES.add(this);
@@ -37,6 +42,8 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
     private SimpleListObservable<KeyboardAccessoryData.Action> mActionListObservable;
     private SimpleListObservable<KeyboardAccessoryData.Tab> mTabListObservable;
     private boolean mVisible;
+    private @Nullable Integer mActiveTab;
+    private TabLayout.OnTabSelectedListener mTabSelectionCallbacks;
 
     // TODO(fhorschig): Ideally, make this a ListObservable populating a RecyclerView.
     private AutofillKeyboardSuggestions mAutofillSuggestions;
@@ -82,6 +89,27 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
 
     boolean isVisible() {
         return mVisible;
+    }
+
+    void setActiveTab(Integer activeTab) {
+        if (null != mActiveTab && mActiveTab.equals(activeTab)) return;
+        mActiveTab = activeTab;
+        notifyPropertyChanged(PropertyKey.ACTIVE_TAB);
+    }
+
+    @Nullable
+    Integer activeTab() {
+        return mActiveTab;
+    }
+
+    TabLayout.OnTabSelectedListener getTabSelectionCallbacks() {
+        return mTabSelectionCallbacks;
+    }
+
+    void setTabSelectionCallbacks(TabLayout.OnTabSelectedListener tabSelectionCallbacks) {
+        if (tabSelectionCallbacks == mTabSelectionCallbacks) return; // Nothing to do: same object.
+        mTabSelectionCallbacks = tabSelectionCallbacks;
+        notifyPropertyChanged(PropertyKey.TAB_SELECTION_CALLBACKS);
     }
 
     AutofillKeyboardSuggestions getAutofillSuggestions() {

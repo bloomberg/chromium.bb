@@ -25,6 +25,8 @@ class PasswordAccessoryBridge {
         PasswordAccessorySheetCoordinator passwordAccessorySheet =
                 new PasswordAccessorySheetCoordinator(activity);
         mTab = passwordAccessorySheet.createTab();
+        // TODO(fhorschig): This is not correct - the passwords need to be mapped to a tab/URL. The
+        // provider can be registered to the ManualFillingCoordinator - not directly to the sheet.
         passwordAccessorySheet.registerItemProvider(mItemProvider);
         mManualFillingCoordinator.addTab(mTab);
     }
@@ -43,7 +45,7 @@ class PasswordAccessoryBridge {
     @CalledByNative
     private void destroy() {
         mNativeView = 0;
-        mManualFillingCoordinator.removeTab(mTab);
+        mManualFillingCoordinator.removeTab(mTab); // TODO(fhorschig): Should be "unregister".
     }
 
     private Item[] convertToItems(
