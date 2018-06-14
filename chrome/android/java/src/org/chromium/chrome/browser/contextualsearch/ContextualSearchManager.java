@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
-import android.annotation.SuppressLint;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -140,7 +139,6 @@ public class ContextualSearchManager
 
     private boolean mDidStartLoadingResolvedSearchRequest;
     private long mLoadedSearchUrlTimeMs;
-    // TODO(donnd): consider changing this member's name to indicate "opened" instead of "seen".
     private boolean mWereSearchResultsSeen;
     private boolean mWereInfoBarsHidden;
     private boolean mDidPromoteSearchNavigation;
@@ -168,9 +166,6 @@ public class ContextualSearchManager
      */
     private boolean mIsPromotingToTab;
 
-    // TODO(pedrosimonetti): also store selected text, surroundings, url, bounding rect of selected
-    // text, and make sure that all states are cleared when starting a new contextual search to
-    // avoid having the values in a funky state.
     private ContextualSearchRequest mSearchRequest;
     private ContextualSearchRequest mLastSearchRequestLoaded;
 
@@ -188,7 +183,7 @@ public class ContextualSearchManager
     private boolean mDoSuppressContextualSearchForSmartSelection;
 
     /**
-     * The delegate that is responsible for promoting a {@link ContentViewCore} to a {@link Tab}
+     * The delegate that is responsible for promoting a {@link WebContents} to a {@link Tab}
      * when necessary.
      */
     public interface ContextualSearchTabPromotionDelegate {
@@ -203,7 +198,7 @@ public class ContextualSearchManager
      * Constructs the manager for the given activity, and will attach views to the given parent.
      * @param activity The {@code ChromeActivity} in use.
      * @param tabPromotionDelegate The {@link ContextualSearchTabPromotionDelegate} that is
-     *        responsible for building tabs from contextual search {@link ContentViewCore}s.
+     *        responsible for building tabs from contextual search {@link WebContents}.
      */
     public ContextualSearchManager(
             ChromeActivity activity, ContextualSearchTabPromotionDelegate tabPromotionDelegate) {
@@ -505,8 +500,6 @@ public class ContextualSearchManager
             mSearchPanel.setDidSearchInvolvePromo();
         }
 
-        // TODO(donnd): If there was a previously ongoing contextual search, we should ensure
-        // it's registered as closed.
         mSearchPanel.requestPanelShow(stateChangeReason);
 
         assert mSelectionController.getSelectionType() != SelectionType.UNDETERMINED;
@@ -678,7 +671,6 @@ public class ContextualSearchManager
                 quickActionCategory);
     }
 
-    @SuppressLint("StringFormatMatches")
     @Override
     public void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, String mid,
@@ -701,7 +693,6 @@ public class ContextualSearchManager
             message = mSelectionController.getSelectedText();
             doLiteralSearch = true;
         } else {
-            // TODO(crbug.com/635567): Fix lint properly.
             message = mActivity.getResources().getString(
                     R.string.contextual_search_error, responseCode);
             doLiteralSearch = true;
@@ -807,8 +798,7 @@ public class ContextualSearchManager
 
         // TODO(donnd): If the user taps on a word and quickly after that taps on the
         // peeking Search Bar, the Search Content View will not be displayed. It seems that
-        // calling WebContents.onShow() while it's being created has no effect. Need
-        // to coordinate with Chrome-Android folks to come up with a proper fix for this.
+        // calling WebContents.onShow() while it's being created has no effect.
         // For now, we force the ContentView to be displayed by calling onShow() again
         // when a URL is being loaded. See: crbug.com/398206
         if (mSearchPanel.isContentShowing() && getSearchPanelWebContents() != null) {
@@ -933,10 +923,6 @@ public class ContextualSearchManager
 
     @Override
     public String getTranslateServiceTargetLanguage() {
-        // TODO(donnd): remove once issue 607127 has been resolved.
-        if (mNativeContextualSearchManagerPtr == 0) {
-            throw new RuntimeException("mNativeContextualSearchManagerPtr is 0!");
-        }
         return nativeGetTargetLanguage(mNativeContextualSearchManagerPtr);
     }
 
@@ -1019,7 +1005,6 @@ public class ContextualSearchManager
 
         @Override
         public void onContentViewCreated() {
-            // TODO(mdjones): Move SearchContentViewDelegate ownership to panel.
             nativeEnableContextualSearchJsApiForWebContents(
                     mNativeContextualSearchManagerPtr, getSearchPanelWebContents());
         }
