@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import org.chromium.chrome.browser.modelutil.PropertyKey;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
-import org.chromium.chrome.browser.toolbar.TabSwitcherButtonModel.PropertyKey;
 
 /**
  * This class is responsible for pushing updates to the Android view of the tab switcher. These
@@ -13,8 +14,8 @@ import org.chromium.chrome.browser.toolbar.TabSwitcherButtonModel.PropertyKey;
  * received.
  */
 public class TabSwitcherButtonViewBinder
-        implements PropertyModelChangeProcessor.ViewBinder<TabSwitcherButtonModel,
-                TabSwitcherButtonView, TabSwitcherButtonModel.PropertyKey> {
+        implements PropertyModelChangeProcessor
+                           .ViewBinder<PropertyModel, TabSwitcherButtonView, PropertyKey> {
     /**
      * Build a binder that handles interaction between the model and the views that make up the
      * tab switcher.
@@ -23,13 +24,14 @@ public class TabSwitcherButtonViewBinder
 
     @Override
     public final void bind(
-            TabSwitcherButtonModel model, TabSwitcherButtonView view, PropertyKey propertyKey) {
-        if (PropertyKey.NUMBER_OF_TABS == propertyKey) {
-            view.updateTabCountVisuals(model.getNumberOfTabs());
-        } else if (PropertyKey.ON_CLICK_LISTENER == propertyKey) {
-            view.setOnClickListener(model.getOnClickListener());
-        } else if (PropertyKey.ON_LONG_CLICK_LISTENER == propertyKey) {
-            view.setOnLongClickListener(model.getOnLongClickListener());
+            PropertyModel model, TabSwitcherButtonView view, PropertyKey propertyKey) {
+        if (TabSwitcherButtonProperties.NUMBER_OF_TABS == propertyKey) {
+            view.updateTabCountVisuals(model.getValue(TabSwitcherButtonProperties.NUMBER_OF_TABS));
+        } else if (TabSwitcherButtonProperties.ON_CLICK_LISTENER == propertyKey) {
+            view.setOnClickListener(model.getValue(TabSwitcherButtonProperties.ON_CLICK_LISTENER));
+        } else if (TabSwitcherButtonProperties.ON_LONG_CLICK_LISTENER == propertyKey) {
+            view.setOnLongClickListener(
+                    model.getValue(TabSwitcherButtonProperties.ON_LONG_CLICK_LISTENER));
         } else {
             assert false : "Unhandled property detected in TabSwitcherViewBinder!";
         }
