@@ -7,9 +7,11 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "android_webview/browser/aw_metrics_service_client.h"
+#include "android_webview/browser/aw_variations_seed_bridge.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -23,6 +25,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/pref_names.h"
+#include "components/variations/seed_response.h"
 #include "components/variations/service/safe_seed_manager.h"
 #include "components/variations/service/variations_service.h"
 
@@ -83,7 +86,6 @@ void AwFieldTrialCreator::DoSetUpFieldTrials() {
     return;
 
   DCHECK(!field_trial_list_);
-  // Set the FieldTrialList singleton.
   field_trial_list_ = std::make_unique<base::FieldTrialList>(
       CreateLowEntropyProvider(client_id));
 
@@ -91,8 +93,8 @@ void AwFieldTrialCreator::DoSetUpFieldTrials() {
   client_ = std::make_unique<AwVariationsServiceClient>();
   variations_field_trial_creator_ =
       std::make_unique<variations::VariationsFieldTrialCreator>(
-          GetLocalState(), client_.get(), ui_string_overrider);
-
+          GetLocalState(), client_.get(), ui_string_overrider,
+          GetAndClearJavaSeed());
   variations_field_trial_creator_->OverrideVariationsPlatform(
       variations::Study::PLATFORM_ANDROID_WEBVIEW);
 

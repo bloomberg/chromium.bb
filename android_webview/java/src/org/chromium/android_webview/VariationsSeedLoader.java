@@ -23,7 +23,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.components.variations.LoadSeedResult;
-import org.chromium.components.variations.firstrun.VariationsSeedBridge;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
 import java.io.File;
@@ -343,8 +342,7 @@ public class VariationsSeedLoader {
             if (!isEnabledByCmd()) {
                 CommandLine.getInstance().appendSwitch(AwSwitches.ENABLE_WEBVIEW_VARIATIONS);
             }
-            VariationsSeedBridge.setVariationsFirstRunSeed(
-                    seed.seedData, seed.signature, seed.country, seed.date, seed.isGzipCompressed);
+            AwVariationsSeedBridge.setSeed(seed);
         }
     }
 }

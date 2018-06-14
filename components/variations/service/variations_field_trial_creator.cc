@@ -157,9 +157,19 @@ VariationsFieldTrialCreator::VariationsFieldTrialCreator(
     PrefService* local_state,
     VariationsServiceClient* client,
     const UIStringOverrider& ui_string_overrider)
+    : VariationsFieldTrialCreator(local_state,
+                                  client,
+                                  ui_string_overrider,
+                                  nullptr) {}
+
+VariationsFieldTrialCreator::VariationsFieldTrialCreator(
+    PrefService* local_state,
+    VariationsServiceClient* client,
+    const UIStringOverrider& ui_string_overrider,
+    std::unique_ptr<SeedResponse> initial_seed)
     : client_(client),
       ui_string_overrider_(ui_string_overrider),
-      seed_store_(local_state),
+      seed_store_(local_state, std::move(initial_seed)),
       create_trials_from_seed_called_(false),
       has_platform_override_(false),
       platform_override_(Study::PLATFORM_WINDOWS) {}
