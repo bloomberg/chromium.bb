@@ -294,8 +294,8 @@ std::unique_ptr<LayerImpl> LayerImpl::CreateLayerImpl(
   return LayerImpl::Create(tree_impl, layer_id_);
 }
 
-bool LayerImpl::IsSnapped() {
-  return scrollable();
+bool LayerImpl::IsSnappedToPixelGridInTarget() {
+  return false;
 }
 
 void LayerImpl::PushPropertiesTo(LayerImpl* layer) {

@@ -374,8 +374,12 @@ class CC_EXPORT LayerImpl {
   virtual void RecreateTileResources();
 
   virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
-  virtual bool IsSnapped();
   virtual void PushPropertiesTo(LayerImpl* layer);
+
+  // Internal to property tree construction (which only happens in tests on a
+  // LayerImpl tree. See Layer::IsSnappedToPixelGridInTarget() for explanation,
+  // as this mirrors that method.
+  virtual bool IsSnappedToPixelGridInTarget();
 
   virtual void GetAllPrioritizedTilesForTracing(
       std::vector<PrioritizedTile>* prioritized_tiles) const;

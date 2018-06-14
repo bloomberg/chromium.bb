@@ -394,7 +394,11 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   const bool is_scrollable = layer->scrollable();
   const bool is_fixed = PositionConstraint(layer).is_fixed_position();
   const bool is_sticky = StickyPositionConstraint(layer).is_sticky;
-  const bool is_snapped = layer->IsSnapped();
+  // Scrolling a layer should not move it from being pixel-aligned to moving off
+  // the pixel grid and becoming fuzzy. So always snap scrollable things to the
+  // pixel grid. Layers may also request to be snapped as such.
+  const bool is_snapped =
+      is_scrollable || layer->IsSnappedToPixelGridInTarget();
 
   const bool has_significant_transform =
       !Transform(layer).IsIdentityOr2DTranslation();

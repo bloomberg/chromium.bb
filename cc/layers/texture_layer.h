@@ -153,7 +153,7 @@ class CC_EXPORT TextureLayer : public Layer, SharedBitmapIdRegistrar {
 
   void SetLayerTreeHost(LayerTreeHost* layer_tree_host) override;
   bool Update() override;
-  bool IsSnapped() override;
+  bool IsSnappedToPixelGridInTarget() override;
   void PushPropertiesTo(LayerImpl* layer) override;
 
   // Request a mapping from SharedBitmapId to SharedMemory be registered via the
