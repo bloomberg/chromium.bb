@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_CRYPTAUTH_FAKE_SECURE_CHANNEL_H_
 #define COMPONENTS_CRYPTAUTH_FAKE_SECURE_CHANNEL_H_
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/cryptauth/secure_channel.h"
 
@@ -15,6 +16,10 @@ class FakeSecureChannel : public SecureChannel {
  public:
   FakeSecureChannel(std::unique_ptr<Connection> connection);
   ~FakeSecureChannel() override;
+
+  void set_destructor_callback(base::OnceClosure destructor_callback) {
+    destructor_callback_ = std::move(destructor_callback);
+  }
 
   struct SentMessage {
     SentMessage(const std::string& feature, const std::string& payload);
@@ -43,6 +48,8 @@ class FakeSecureChannel : public SecureChannel {
   int next_sequence_number_ = 0;
   std::vector<Observer*> observers_;
   std::vector<SentMessage> sent_messages_;
+
+  base::OnceClosure destructor_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSecureChannel);
 };
