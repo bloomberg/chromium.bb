@@ -160,8 +160,11 @@ class HtmlWrapperHandler(WrapperHandler):
             if value == b"long":
                 return '<meta name="timeout" content="long">'
         if key == b"script":
-            attribute = value.decode('utf-8').replace('"', "&quot;").replace(">", "&gt;")
+            attribute = value.decode('utf-8').replace("&", "&amp;").replace('"', "&quot;")
             return '<script src="%s"></script>' % attribute
+        if key == b"title":
+            value = value.decode('utf-8').replace("&", "&amp;").replace("<", "&lt;")
+            return '<title>%s</title>' % value
         return None
 
 
@@ -434,7 +437,7 @@ def check_subdomains(config):
 
         try:
             urllib2.urlopen("http://%s:%d/" % (domain, port))
-        except Exception as e:
+        except Exception:
             logger.critical("Failed probing domain %s. "
                             "You may need to edit /etc/hosts or similar, see README.md." % domain)
             sys.exit(1)
