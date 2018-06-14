@@ -20,13 +20,24 @@ cr.define('safe_browsing', function() {
         addDatabaseManagerInfo(databaseState);
         addFullHashCacheInfo(fullHashCacheState);
     });
-    cr.sendWithPromise('getSentThreatDetails', []).then((threatDetails) =>
-        threatDetails.forEach(function(td) {
-          addThreatDetailsInfo(td);
-        })
-    );
-    cr.addWebUIListener('threat-details-update', function(result) {
-      addThreatDetailsInfo(result);
+
+    cr.sendWithPromise('getSentClientDownloadRequests', [])
+        .then(
+            (sentClientDownloadRequests) => {
+                sentClientDownloadRequests.forEach(function(cdr) {
+                  addSentClientDownloadRequestsInfo(cdr);
+                })});
+    cr.addWebUIListener(
+        'sent-client-download-requests-update', function(result) {
+          addSentClientDownloadRequestsInfo(result);
+        });
+
+    cr.sendWithPromise('getSentCSBRRs', [])
+        .then((sentCSBRRs) => {sentCSBRRs.forEach(function(csbrr) {
+                addSentCSBRRsInfo(csbrr);
+              })});
+    cr.addWebUIListener('sent-csbrr-update', function(result) {
+      addSentCSBRRsInfo(result);
     });
   }
 
@@ -67,17 +78,27 @@ cr.define('safe_browsing', function() {
       $('full-hash-cache-info').innerHTML = result;
   }
 
-  function addThreatDetailsInfo(result) {
-      var logDiv = $('threat-details-list');
-      if (!logDiv)
-        return;
-      var textDiv = document.createElement('div');
-      textDiv.innerText = result;
-      logDiv.appendChild(textDiv);
+  function addSentClientDownloadRequestsInfo(result) {
+      var logDiv = $('sent-client-download-requests-list');
+      appendChildWithInnerText(logDiv, result);
+  }
+
+  function addSentCSBRRsInfo(result) {
+      var logDiv = $('sent-csbrrs-list');
+      appendChildWithInnerText(logDiv, result);
+  }
+
+  function appendChildWithInnerText(logDiv, text) {
+    if (!logDiv)
+      return;
+    var textDiv = document.createElement('div');
+    textDiv.innerText = text;
+    logDiv.appendChild(textDiv);
   }
 
   return {
-    addThreatDetailsInfo: addThreatDetailsInfo,
+    addSentCSBRRsInfo: addSentCSBRRsInfo,
+    addSentClientDownloadRequestsInfo: addSentClientDownloadRequestsInfo,
     initialize: initialize,
   };
 });

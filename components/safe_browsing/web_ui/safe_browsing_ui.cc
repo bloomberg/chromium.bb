@@ -45,20 +45,35 @@ WebUIInfoSingleton* WebUIInfoSingleton::GetInstance() {
   return base::Singleton<WebUIInfoSingleton>::get();
 }
 
-void WebUIInfoSingleton::AddToReportsSent(
-    std::unique_ptr<ClientSafeBrowsingReportRequest> report_request) {
+void WebUIInfoSingleton::AddToClientDownloadRequestsSent(
+    std::unique_ptr<ClientDownloadRequest> client_download_request) {
   if (webui_instances_.empty())
     return;
 
   for (auto* webui_listener : webui_instances_)
-    webui_listener->NotifyThreatDetailsJsListener(report_request.get());
-
-  reports_sent_.push_back(std::move(report_request));
+    webui_listener->NotifyClientDownloadRequestJsListener(
+        client_download_request.get());
+  client_download_requests_sent_.push_back(std::move(client_download_request));
 }
 
-void WebUIInfoSingleton::ClearReportsSent() {
+void WebUIInfoSingleton::ClearClientDownloadRequestsSent() {
+  std::vector<std::unique_ptr<ClientDownloadRequest>>().swap(
+      client_download_requests_sent_);
+}
+
+void WebUIInfoSingleton::AddToCSBRRsSent(
+    std::unique_ptr<ClientSafeBrowsingReportRequest> csbrr) {
+  if (webui_instances_.empty())
+    return;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyCSBRRJsListener(csbrr.get());
+  csbrrs_sent_.push_back(std::move(csbrr));
+}
+
+void WebUIInfoSingleton::ClearCSBRRsSent() {
   std::vector<std::unique_ptr<ClientSafeBrowsingReportRequest>>().swap(
-      reports_sent_);
+      csbrrs_sent_);
 }
 
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
@@ -69,8 +84,10 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   webui_instances_.erase(
       std::remove(webui_instances_.begin(), webui_instances_.end(), webui),
       webui_instances_.end());
-  if (webui_instances_.empty())
-    ClearReportsSent();
+  if (webui_instances_.empty()) {
+    ClearCSBRRsSent();
+    ClearClientDownloadRequestsSent();
+  }
 }
 
 namespace {
@@ -238,9 +255,36 @@ std::string AddFullHashCacheInfo(
 
 #endif
 
-std::string ParseThreatDetailsInfo(
-    const ClientSafeBrowsingReportRequest& report) {
-  std::string report_request_parsed;
+std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
+  base::DictionaryValue dict;
+  if (cdr.has_url())
+    dict.SetString("url", cdr.url());
+  if (cdr.has_download_type())
+    dict.SetInteger("download_type", cdr.download_type());
+  if (cdr.has_length())
+    dict.SetInteger("length", cdr.length());
+  if (cdr.has_file_basename())
+    dict.SetString("file_basename", cdr.file_basename());
+  if (cdr.has_archive_valid())
+    dict.SetBoolean("archive_valid", cdr.archive_valid());
+
+  auto dict_archived_binaries = std::make_unique<base::DictionaryValue>();
+  for (const auto& archived_binary : cdr.archived_binary()) {
+    if (archived_binary.has_file_basename())
+      dict_archived_binaries->SetString("file_basename",
+                                        archived_binary.file_basename());
+  }
+  dict.SetDictionary("archived_binary", std::move(dict_archived_binaries));
+
+  base::Value* request_tree = &dict;
+  std::string request_serialized;
+  JSONStringValueSerializer serializer(&request_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(*request_tree);
+  return request_serialized;
+}
+
+std::string SerializeCSBRR(const ClientSafeBrowsingReportRequest& report) {
   base::DictionaryValue report_request;
   if (report.has_type()) {
     report_request.SetInteger("type", static_cast<int>(report.type()));
@@ -264,10 +308,11 @@ std::string ParseThreatDetailsInfo(
   }
 
   base::Value* report_request_tree = &report_request;
-  JSONStringValueSerializer serializer(&report_request_parsed);
+  std::string report_request_serialized;
+  JSONStringValueSerializer serializer(&report_request_serialized);
   serializer.set_pretty_print(true);
   serializer.Serialize(*report_request_tree);
-  return report_request_parsed;
+  return report_request_serialized;
 }
 
 }  // namespace
@@ -286,10 +331,6 @@ SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
   // Handles messages from JavaScript to C++ via chrome.send().
   web_ui->AddMessageHandler(
       std::make_unique<SafeBrowsingUIHandler>(browser_context));
-
-  // Add localized string resources.
-  html_source->AddLocalizedString("sbUnderConstruction",
-                                  IDS_SB_UNDER_CONSTRUCTION);
 
   // Add required resources.
   html_source->AddResourcePath("safe_browsing.css", IDR_SAFE_BROWSING_CSS);
@@ -362,15 +403,32 @@ void SafeBrowsingUIHandler::GetDatabaseManagerInfo(
   ResolveJavascriptCallback(base::Value(callback_id), database_manager_info);
 }
 
-void SafeBrowsingUIHandler::GetSentThreatDetails(const base::ListValue* args) {
+void SafeBrowsingUIHandler::GetSentClientDownloadRequests(
+    const base::ListValue* args) {
+  const std::vector<std::unique_ptr<ClientDownloadRequest>>& cdrs =
+      WebUIInfoSingleton::GetInstance()->client_download_requests_sent();
+
+  base::ListValue cdrs_sent;
+
+  for (const auto& cdr : cdrs) {
+    cdrs_sent.GetList().push_back(
+        base::Value(SerializeClientDownloadRequest(*cdr)));
+  }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), cdrs_sent);
+}
+
+void SafeBrowsingUIHandler::GetSentCSBRRs(const base::ListValue* args) {
   const std::vector<std::unique_ptr<ClientSafeBrowsingReportRequest>>& reports =
-      WebUIInfoSingleton::GetInstance()->reports_sent();
+      WebUIInfoSingleton::GetInstance()->csbrrs_sent();
 
   base::ListValue sent_reports;
 
   for (const auto& report : reports) {
-    sent_reports.GetList().push_back(
-        base::Value(ParseThreatDetailsInfo(*report)));
+    sent_reports.GetList().push_back(base::Value(SerializeCSBRR(*report)));
   }
 
   AllowJavascript();
@@ -379,11 +437,18 @@ void SafeBrowsingUIHandler::GetSentThreatDetails(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id), sent_reports);
 }
 
-void SafeBrowsingUIHandler::NotifyThreatDetailsJsListener(
-    ClientSafeBrowsingReportRequest* threat_detail) {
+void SafeBrowsingUIHandler::NotifyClientDownloadRequestJsListener(
+    ClientDownloadRequest* client_download_request) {
   AllowJavascript();
-  FireWebUIListener("threat-details-update",
-                    base::Value(ParseThreatDetailsInfo(*threat_detail)));
+  FireWebUIListener(
+      "sent-client-download-requests-update",
+      base::Value(SerializeClientDownloadRequest(*client_download_request)));
+}
+
+void SafeBrowsingUIHandler::NotifyCSBRRJsListener(
+    ClientSafeBrowsingReportRequest* csbrr) {
+  AllowJavascript();
+  FireWebUIListener("sent-csbrr-update", base::Value(SerializeCSBRR(*csbrr)));
 }
 
 void SafeBrowsingUIHandler::RegisterMessages() {
@@ -399,8 +464,12 @@ void SafeBrowsingUIHandler::RegisterMessages() {
       base::BindRepeating(&SafeBrowsingUIHandler::GetDatabaseManagerInfo,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getSentThreatDetails",
-      base::BindRepeating(&SafeBrowsingUIHandler::GetSentThreatDetails,
+      "getSentClientDownloadRequests",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetSentClientDownloadRequests,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getSentCSBRRs",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetSentCSBRRs,
                           base::Unretained(this)));
 }
 
