@@ -571,6 +571,8 @@ void GaiaScreenHandler::RegisterMessages() {
               &GaiaScreenHandler::HandleUpdateGaiaDialogSize);
   AddCallback("updateGaiaDialogVisibility",
               &GaiaScreenHandler::HandleUpdateGaiaDialogVisibility);
+  AddCallback("getIsSamlUserPasswordless",
+              &GaiaScreenHandler::HandleGetIsSamlUserPasswordless);
 
   // Allow UMA metrics collection from JS.
   web_ui()->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -832,6 +834,17 @@ void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   if (!email.empty())
     SendReauthReason(AccountId::FromUserEmail(email));
   OnShowAddUser();
+}
+
+void GaiaScreenHandler::HandleGetIsSamlUserPasswordless(
+    const std::string& callback_id,
+    const std::string& typed_email) {
+  AllowJavascript();
+  // TODO(emaxx,https://crbug.com/826417): Determine the result value based on
+  // known_user properties if the user already existed, or the
+  // DeviceSamlLoginAuthenticationType policy if that's a new user.
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            base::Value(false) /* isSamlUserPasswordless */);
 }
 
 void GaiaScreenHandler::OnShowAddUser() {

@@ -154,8 +154,22 @@ cr.define('cr.login', function() {
     this.insecureContentBlockedCallback = null;
     this.samlApiUsedCallback = null;
     this.missingGaiaInfoCallback = null;
+    /**
+     * Callback allowing to request whether the specified user which
+     * authenticates via SAML is a user without a password (neither a manually
+     * entered one nor one provided via Credentials Passing API).
+     * @type {function(string, function(boolean))}
+     */
+    this.getIsSamlUserPasswordlessCallback = null;
     this.needPassword = true;
     this.services_ = null;
+    /**
+     * Caches the result of |getIsSamlUserPasswordlessCallback| invocation for
+     * the current user. Null if no result is obtained yet.
+     * @type {?boolean}
+     * @private
+     */
+    this.isSamlUserPasswordless_ = null;
 
     this.bindToWebview_(webview);
 
@@ -189,6 +203,7 @@ cr.define('cr.login', function() {
     this.samlHandler_.reset();
     this.videoEnabled = false;
     this.services_ = null;
+    this.isSamlUserPasswordless_ = null;
   };
 
   /**
@@ -532,6 +547,7 @@ cr.define('cr.login', function() {
         this.email_ = signinDetails['email'].slice(1, -1);
         this.gaiaId_ = signinDetails['obfuscatedid'].slice(1, -1);
         this.sessionIndex_ = signinDetails['sessionindex'];
+        this.isSamlUserPasswordless_ = null;
       } else if (headerName == LOCATION_HEADER) {
         // If the "choose what to sync" checkbox was clicked, then the continue
         // URL will contain a source=3 field.
@@ -641,6 +657,7 @@ cr.define('cr.login', function() {
       this.email_ = msg.email;
       if (this.authMode == AuthMode.DESKTOP)
         this.password_ = msg.password;
+      this.isSamlUserPasswordless_ = null;
 
       this.chooseWhatToSync_ = msg.chooseWhatToSync;
       // We need to dispatch only first event, before user enters password.
@@ -716,6 +733,25 @@ cr.define('cr.login', function() {
     if (!this.services_)
       return;
 
+    if (this.isSamlUserPasswordless_ === null &&
+        this.authFlow == AuthFlow.SAML && this.email_ &&
+        this.getIsSamlUserPasswordlessCallback) {
+      // Start a request to obtain the |isSamlUserPasswordless_| value for the
+      // current user. Once the response arrives, maybeCompleteAuth_() will be
+      // called again.
+      this.getIsSamlUserPasswordlessCallback(
+          this.email_,
+          this.onGotIsSamlUserPasswordless_.bind(this, this.email_));
+      return;
+    }
+
+    if (this.isSamlUserPasswordless_ && this.authFlow == AuthFlow.SAML &&
+        this.email_) {
+      // No password needed for this user, so complete immediately.
+      this.onAuthCompleted_();
+      return;
+    }
+
     if (this.samlHandler_.samlApiUsed) {
       if (this.samlApiUsedCallback) {
         this.samlApiUsedCallback();
@@ -767,6 +803,22 @@ cr.define('cr.login', function() {
   };
 
   /**
+   * Invoked when the result of |getIsSamlUserPasswordlessCallback| arrives.
+   * @param {string} email
+   * @param {boolean} isSamlUserPasswordless
+   * @private
+   */
+  Authenticator.prototype.onGotIsSamlUserPasswordless_ = function(
+      email, isSamlUserPasswordless) {
+    // Compare the request's e-mail with the currently set one, in order to
+    // ignore responses to old requests.
+    if (this.email_ && this.email_ == email) {
+      this.isSamlUserPasswordless_ = isSamlUserPasswordless;
+      this.maybeCompleteAuth_();
+    }
+  };
+
+  /**
    * Invoked to process authentication completion.
    * @private
    */
@@ -788,6 +840,13 @@ cr.define('cr.login', function() {
               '] type:' + typeof this.services_[i]);
         }
       }
+    }
+    if (this.isSamlUserPasswordless_ && this.authFlow == AuthFlow.SAML &&
+        this.email_) {
+      // In the passwordless case, the user data will be protected by non
+      // password based mechanisms. Clear anything that got collected into
+      // |password_|, if any.
+      this.password_ = '';
     }
     this.dispatchEvent(new CustomEvent(
         'authCompleted',

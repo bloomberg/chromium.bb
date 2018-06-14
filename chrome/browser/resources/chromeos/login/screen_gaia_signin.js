@@ -247,6 +247,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.gaiaAuthHost_.missingGaiaInfoCallback =
           this.missingGaiaInfo_.bind(this);
       this.gaiaAuthHost_.samlApiUsedCallback = this.samlApiUsed_.bind(this);
+      this.gaiaAuthHost_.getIsSamlUserPasswordlessCallback =
+          this.getIsSamlUserPasswordless_.bind(this);
       this.gaiaAuthHost_.addEventListener(
           'authDomainChange', this.onAuthDomainChange_.bind(this));
       this.gaiaAuthHost_.addEventListener(
@@ -904,6 +906,18 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       } else if (e.detail == 'ee') {
         cr.ui.Oobe.handleAccelerator(ACCELERATOR_ENROLLMENT);
       }
+    },
+
+    /**
+     * Invoked when the the GAIA host requests whether the specified user is a
+     * user without a password (neither a manually entered one nor one provided
+     * via Credentials Passing API).
+     * @param {string} email
+     * @param {function(boolean)} callback
+     * @private
+     */
+    getIsSamlUserPasswordless_: function(email, callback) {
+      cr.sendWithPromise('getIsSamlUserPasswordless', email).then(callback);
     },
 
     /**
