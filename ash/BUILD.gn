@@ -1358,6 +1358,9 @@ component("ash") {
     "//services/data_decoder/public/cpp",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
+
+    # TODO(sky): this should not be necessary once --mash goes away.
+    "//services/ui:lib",
     "//services/ui/public/interfaces/input_devices",
 
     # TODO(msw): Remove this; only ash_with_content should depend on webkit.
@@ -2343,6 +2346,7 @@ service("ash_service") {
 service_manifest("manifest") {
   name = "ash"
   source = "manifest.json"
+  packaged_services = [ "//services/ui:manifest" ]
 }
 
 # TODO: Load locale-specific strings.

@@ -14,14 +14,6 @@
 #include "ui/wm/core/focus_controller.h"
 
 namespace ash {
-namespace {
-
-void BindWindowServiceOnMainThread(
-    service_manager::mojom::ServiceRequest request) {
-  Shell::Get()->window_service_owner()->BindWindowService(std::move(request));
-}
-
-}  // namespace
 
 WindowServiceOwner::WindowServiceOwner(
     std::unique_ptr<ui::ws2::GpuSupport> gpu_support)
@@ -48,14 +40,6 @@ void WindowServiceOwner::BindWindowService(
   RegisterWindowProperties(window_service_->property_converter());
   service_context_ = std::make_unique<service_manager::ServiceContext>(
       std::move(window_service), std::move(request));
-}
-
-void BindWindowServiceOnIoThread(
-    scoped_refptr<base::SingleThreadTaskRunner> main_runner,
-    service_manager::mojom::ServiceRequest request) {
-  main_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BindWindowServiceOnMainThread, std::move(request)));
 }
 
 }  // namespace ash

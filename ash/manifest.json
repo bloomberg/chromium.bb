@@ -54,7 +54,10 @@
         "display": [
           "ash.mojom.AshDisplayController"
         ],
-        "mus:window_manager": [ "ui.mojom.AcceleratorRegistrar" ]
+        "mus:window_manager": [ "ui.mojom.AcceleratorRegistrar" ],
+        "service_manager:service_factory": [
+          "service_manager.mojom.ServiceFactory"
+        ]
       },
       "requires": {
         "*": [ "accessibility", "app" ],

@@ -13,6 +13,8 @@
 #include "ash/system/power/power_status.h"
 #include "ash/window_manager.h"
 #include "base/bind.h"
+#include "base/process/process_handle.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -26,6 +28,9 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/common/accelerator_util.h"
+#include "services/ui/common/image_cursors_set.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/events/event.h"
@@ -34,20 +39,29 @@
 namespace ash {
 
 WindowManagerService::WindowManagerService(bool show_primary_host_on_connect)
-    : show_primary_host_on_connect_(show_primary_host_on_connect) {}
+    : show_primary_host_on_connect_(show_primary_host_on_connect),
+      image_cursors_set_(std::make_unique<ui::ImageCursorsSet>()) {}
 
 WindowManagerService::~WindowManagerService() {
   // Verify that we created a WindowManager before attempting to tear everything
-  // down. In some fast running tests OnStart may never have been called.
-  if (!window_manager_.get())
-    return;
+  // down. In some fast running tests OnStart() may never have been called.
+  if (window_manager_) {
+    // Destroy the WindowManager while still valid. This way we ensure
+    // OnWillDestroyRootWindowController() is called (if it hasn't been
+    // already).
+    window_manager_.reset();
 
-  // Destroy the WindowManager while still valid. This way we ensure
-  // OnWillDestroyRootWindowController() is called (if it hasn't been already).
-  window_manager_.reset();
-
-  statistics_provider_.reset();
-  ShutdownComponents();
+    statistics_provider_.reset();
+    ShutdownComponents();
+  }
+  if (ui_thread_) {
+    ui_thread_->task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &WindowManagerService::DestroyUiServiceOnBackgroundThread,
+            base::Unretained(this)));
+  }
+  ui_thread_.reset();
 }
 
 service_manager::Connector* WindowManagerService::GetConnector() {
@@ -116,9 +130,54 @@ void WindowManagerService::ShutdownComponents() {
     chromeos::DBusThreadManager::Shutdown();
 }
 
+void WindowManagerService::BindServiceFactory(
+    service_manager::mojom::ServiceFactoryRequest request) {
+  service_factory_bindings_.AddBinding(this, std::move(request));
+}
+
+void WindowManagerService::CreateUiServiceOnBackgroundThread(
+    scoped_refptr<base::SingleThreadTaskRunner> resource_runner,
+    service_manager::mojom::ServiceRequest service_request) {
+  ui::Service::InitParams params;
+  params.running_standalone = false;
+  params.resource_runner = resource_runner;
+  params.image_cursors_set_weak_ptr = image_cursors_set_->GetWeakPtr();
+  params.should_host_viz = true;
+  std::unique_ptr<ui::Service> service = std::make_unique<ui::Service>(params);
+  ui_service_context_ = std::make_unique<service_manager::ServiceContext>(
+      std::move(service), std::move(service_request));
+}
+
+void WindowManagerService::DestroyUiServiceOnBackgroundThread() {
+  ui_service_context_.reset();
+}
+
+void WindowManagerService::CreateService(
+    service_manager::mojom::ServiceRequest service_request,
+    const std::string& name,
+    service_manager::mojom::PIDReceiverPtr pid_receiver) {
+  DCHECK_EQ(name, ui::mojom::kServiceName);
+  ui_thread_ = std::make_unique<base::Thread>("UI Service");
+  // The image cursors must be set by the time this is called.
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_UI;
+  options.priority = base::ThreadPriority::DISPLAY;
+  ui_thread_->StartWithOptions(options);
+  ui_thread_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&WindowManagerService::CreateUiServiceOnBackgroundThread,
+                     base::Unretained(this),
+                     base::ThreadTaskRunnerHandle::Get(),
+                     std::move(service_request)));
+  pid_receiver->SetPID(base::GetCurrentProcId());
+}
+
 void WindowManagerService::OnStart() {
   mojo_interface_factory::RegisterInterfaces(
       &registry_, base::ThreadTaskRunnerHandle::Get());
+
+  registry_.AddInterface(base::BindRepeating(
+      &WindowManagerService::BindServiceFactory, base::Unretained(this)));
 
   const bool register_path_provider = running_standalone_;
   aura_init_ = views::AuraInit::Create(

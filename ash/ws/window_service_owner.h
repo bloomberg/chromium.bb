@@ -12,10 +12,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace service_manager {
 class ServiceContext;
 }
@@ -65,13 +61,6 @@ class ASH_EXPORT WindowServiceOwner {
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceOwner);
 };
-
-// This function should be bound to a ServiceManagerConnection. The
-// ServiceManager executes this on a background thread, so this posts a task
-// to |main_runner| that calls BindWindowService().
-ASH_EXPORT void BindWindowServiceOnIoThread(
-    scoped_refptr<base::SingleThreadTaskRunner> main_runner,
-    service_manager::mojom::ServiceRequest request);
 
 }  // namespace ash
 

@@ -30,6 +30,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -126,9 +127,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
         ->GetConnector()
         ->StartService(tap_visualizer::mojom::kServiceName);
   }
+  shortcut_viewer::mojom::ShortcutViewerPtr shortcut_viewer;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->StartService(shortcut_viewer::mojom::kServiceName);
+      ->BindInterface(shortcut_viewer::mojom::kServiceName, &shortcut_viewer);
+  shortcut_viewer->Toggle(base::TimeTicks::Now());
   ash::Shell::Get()->InitWaylandServer(nullptr);
 }
 

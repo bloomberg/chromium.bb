@@ -197,10 +197,6 @@ service_manifest("packaged_services_manifest") {
     "//services/video_capture:manifest",
     "//services/viz:manifest",
   ]
-
-  if (enable_mus) {
-    packaged_services += [ "//services/ui:manifest" ]
-  }
 }
 
 service_manifest("browser_manifest") {
