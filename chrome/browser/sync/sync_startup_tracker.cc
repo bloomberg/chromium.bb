@@ -57,9 +57,8 @@ SyncStartupTracker::SyncServiceState SyncStartupTracker::GetSyncServiceState(
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   // If no service exists or it can't be started, treat as a startup error.
-  if (!service || !service->CanSyncStart()) {
+  if (!service || !service->CanSyncStart())
     return SYNC_STARTUP_ERROR;
-  }
 
   // If the sync engine has started up, notify the callback.
   if (service->IsEngineInitialized())
@@ -69,12 +68,9 @@ SyncStartupTracker::SyncServiceState SyncStartupTracker::GetSyncServiceState(
   if (service->HasUnrecoverableError())
     return SYNC_STARTUP_ERROR;
 
-  // If we have an auth error and sync is not still waiting for new auth tokens
-  // to be fetched, exit.
-  if (!service->waiting_for_auth() &&
-      service->GetAuthError().state() != GoogleServiceAuthError::NONE) {
+  // If we have an auth error, exit.
+  if (service->GetAuthError().state() != GoogleServiceAuthError::NONE)
     return SYNC_STARTUP_ERROR;
-  }
 
   // No error detected yet, but the sync engine hasn't started up yet, so
   // we're in the pending state.

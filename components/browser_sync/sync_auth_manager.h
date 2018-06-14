@@ -62,7 +62,6 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   const GoogleServiceAuthError& GetLastAuthError() const {
     return last_auth_error_;
   }
-  bool IsAuthInProgress() const { return is_auth_in_progress_; }
 
   // Returns the credentials to be passed to the SyncEngine.
   syncer::SyncCredentials GetCredentials() const;
@@ -116,10 +115,6 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // This is a cache of the last authentication response we received either
   // from the sync server or from Chrome's identity/token management system.
   GoogleServiceAuthError last_auth_error_;
-
-  // Set to true if a signin has completed but we're still waiting for the
-  // engine to refresh its credentials.
-  bool is_auth_in_progress_;
 
   // The current access token. This is mutually exclusive with
   // |ongoing_access_token_fetch_| and |request_access_token_retry_timer_|:

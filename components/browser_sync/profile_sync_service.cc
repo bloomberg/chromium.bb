@@ -1307,11 +1307,6 @@ bool ProfileSyncService::ConfigurationDone() const {
          data_type_manager_->state() == DataTypeManager::CONFIGURED;
 }
 
-bool ProfileSyncService::waiting_for_auth() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return auth_manager_->IsAuthInProgress();
-}
-
 bool ProfileSyncService::HasUnrecoverableError() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return unrecoverable_error_reason_ != ERROR_REASON_UNSET;
