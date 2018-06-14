@@ -4,8 +4,8 @@
         <title>Paged Y overflow, left to right block flow, rtl inline flow</title>
     </head>
     <body>
-        <div style="position:relative; width:10em; height:35em; border:1px solid black; -webkit-writing-mode:vertical-lr; direction:rtl; overflow:-webkit-paged-y; overflow:paged-y; -webkit-column-gap:0;">
-            <div style="display:table; direction:ltr;">
+        <div style="position:relative; width:30em; height:35em; border:1px solid black; writing-mode:vertical-lr; direction:rtl; overflow:-webkit-paged-y; overflow:paged-y; -webkit-column-gap:0;">
+            <div style="display:table; writing-mode:horizontal-tb; direction:ltr;">
                 This text should be at the bottom left of the first page<br>
                 There should be two pages<br>
                 The second page should be above this one<br>
