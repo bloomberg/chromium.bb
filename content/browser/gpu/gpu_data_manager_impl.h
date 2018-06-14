@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
 #include "base/process/kill.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -159,9 +159,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // on Android and Chrome OS.
   void FallBackToNextGpuMode();
 
-  void BlockSwiftShader();
-  bool SwiftShaderAllowed() const;
-
   // Returns false if the latest GPUInfo gl_renderer is from SwiftShader or
   // Disabled (in the viz case).
   bool IsGpuProcessUsingHardwareGpu() const;
@@ -173,31 +170,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
  private:
   friend class GpuDataManagerImplPrivate;
   friend class GpuDataManagerImplPrivateTest;
-  friend struct base::DefaultSingletonTraits<GpuDataManagerImpl>;
-
-  // It's similar to AutoUnlock, but we want to make it a no-op
-  // if the owner GpuDataManagerImpl is null.
-  // This should only be used by GpuDataManagerImplPrivate where
-  // callbacks are called, during which re-entering
-  // GpuDataManagerImpl is possible.
-  class UnlockedSession {
-   public:
-    explicit UnlockedSession(GpuDataManagerImpl* owner)
-        : owner_(owner) {
-      DCHECK(owner_);
-      owner_->lock_.AssertAcquired();
-      owner_->lock_.Release();
-    }
-
-    ~UnlockedSession() {
-      DCHECK(owner_);
-      owner_->lock_.Acquire();
-    }
-
-   private:
-    GpuDataManagerImpl* owner_;
-    DISALLOW_COPY_AND_ASSIGN(UnlockedSession);
-  };
+  friend class base::NoDestructor<GpuDataManagerImpl>;
 
   GpuDataManagerImpl();
   ~GpuDataManagerImpl() override;
