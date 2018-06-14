@@ -399,11 +399,13 @@ static CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,
     scoped_refptr<CounterNode> old_previous_sibling = nullptr;
     if (FindPlaceForCounter(object, identifier, false, old_parent,
                             old_previous_sibling)) {
-      CounterNode* first_node_to_move =
-          old_previous_sibling ? old_previous_sibling->NextSibling()
-                               : old_parent->FirstChild();
-      CounterNode::MoveNonResetSiblingsToChildOf(first_node_to_move, *new_node,
-                                                 identifier);
+      if (!object.IsDescendantOf(&old_parent->Owner())) {
+        CounterNode* first_node_to_move =
+            old_previous_sibling ? old_previous_sibling->NextSibling()
+                                 : old_parent->FirstChild();
+        CounterNode::MoveNonResetSiblingsToChildOf(first_node_to_move,
+                                                   *new_node, identifier);
+      }
     }
   }
 
