@@ -34,6 +34,8 @@ namespace {
 
 constexpr size_t kMaxMachineNameLength = 15;
 constexpr char kInvalidMachineNameCharacters[] = "\\/:*?\"<>|";
+constexpr char kDefaultKerberosCreds[] = "credentials";
+constexpr char kDefaultKerberosConf[] = "configuration";
 
 void OnStorePolicy(chromeos::AuthPolicyClient::RefreshPolicyCallback callback,
                    bool success) {
@@ -151,6 +153,8 @@ void FakeAuthPolicyClient::AuthenticateUser(
     }
     error = auth_error_;
   }
+  if (error == authpolicy::ERROR_NONE)
+    SetUserKerberosFiles(kDefaultKerberosCreds, kDefaultKerberosConf);
   PostDelayedClosure(base::BindOnce(std::move(callback), error, account_info),
                      dbus_operation_delay_);
 }
@@ -182,8 +186,8 @@ void FakeAuthPolicyClient::GetUserKerberosFiles(
     const std::string& object_guid,
     GetUserKerberosFilesCallback callback) {
   authpolicy::KerberosFiles files;
-  files.set_krb5cc("credentials");
-  files.set_krb5conf("configuration");
+  files.set_krb5cc(user_kerberos_creds());
+  files.set_krb5conf(user_kerberos_conf());
   PostDelayedClosure(
       base::BindOnce(std::move(callback), authpolicy::ERROR_NONE, files),
       dbus_operation_delay_);
@@ -252,12 +256,11 @@ void FakeAuthPolicyClient::ConnectToSignal(
     const std::string& signal_name,
     dbus::ObjectProxy::SignalCallback signal_callback,
     dbus::ObjectProxy::OnConnectedCallback on_connected_callback) {
+  DCHECK_EQ(authpolicy::kUserKerberosFilesChangedSignal, signal_name);
+  DCHECK(!user_kerberos_files_changed_callback_);
+  user_kerberos_files_changed_callback_ = signal_callback;
   std::move(on_connected_callback)
       .Run(authpolicy::kAuthPolicyInterface, signal_name, true /* success */);
-  PostDelayedClosure(
-      base::BindOnce(RunSignalCallback, authpolicy::kAuthPolicyInterface,
-                     signal_name, signal_callback),
-      dbus_operation_delay_);
 }
 
 void FakeAuthPolicyClient::WaitForServiceToBeAvailable(
@@ -269,6 +272,22 @@ void FakeAuthPolicyClient::WaitForServiceToBeAvailable(
     return;
   }
   wait_for_service_to_be_available_callbacks_.push_back(std::move(callback));
+}
+
+void FakeAuthPolicyClient::SetUserKerberosFiles(const std::string& creds,
+                                                const std::string& conf) {
+  const bool run_signal =
+      user_kerberos_files_changed_callback_ &&
+      (creds != user_kerberos_creds_ || conf != user_kerberos_conf_);
+  user_kerberos_creds_ = creds;
+  user_kerberos_conf_ = conf;
+  if (run_signal) {
+    PostDelayedClosure(
+        base::BindOnce(RunSignalCallback, authpolicy::kAuthPolicyInterface,
+                       authpolicy::kUserKerberosFilesChangedSignal,
+                       user_kerberos_files_changed_callback_),
+        dbus_operation_delay_);
+  }
 }
 
 void FakeAuthPolicyClient::SetStarted(bool started) {
