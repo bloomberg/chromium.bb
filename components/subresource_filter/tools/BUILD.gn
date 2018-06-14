@@ -100,18 +100,14 @@ if (!is_ios) {
     ]
 
     inputs = [
-      # Make sure the inputs are system-absolute, as base::File cannot open files with ".." components.
-      rebase_path(
-          "//components/subresource_filter/core/common/perftests/data/UnindexedRules_7.54",
-          "",
-          "/"),
+      "//components/subresource_filter/core/common/perftests/data/UnindexedRules_7.54",
     ]
     deps = [
       ":subresource_indexing_tool",
     ]
 
     args = [
-      inputs[0],
+      rebase_path(inputs[0], root_build_dir),
       rebase_path("$target_gen_dir/GeneratedRulesetData", root_build_dir),
     ]
   }
