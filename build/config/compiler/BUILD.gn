@@ -672,13 +672,6 @@ config("compiler") {
     ldflags += [ "-Wl,--no-rosegment" ]
   }
 
-  # This flag enforces that member pointer base types are complete. It helps
-  # prevent us from running into problems in the Microsoft C++ ABI (see
-  # https://crbug.com/847724).
-  if (is_clang && !is_nacl && target_os != "chromeos") {
-    cflags += [ "-fcomplete-member-pointers" ]
-  }
-
   # Pass the same C/C++ flags to the objective C/C++ compiler.
   cflags_objc += cflags_c
   cflags_objcc += cflags_cc
