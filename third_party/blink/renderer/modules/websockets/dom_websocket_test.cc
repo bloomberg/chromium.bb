@@ -134,36 +134,35 @@ class DOMWebSocketTestScope {
 
 TEST(DOMWebSocketTest, connectToBadURL) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
-  web_socket_scope.Socket().Connect("xxx", Vector<String>(),
-                                    scope.GetExceptionState());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
+  websocket_scope.Socket().Connect("xxx", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
   EXPECT_EQ("The URL 'xxx' is invalid.", scope.GetExceptionState().Message());
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, connectToNonWsURL) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
-  web_socket_scope.Socket().Connect("http://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
+  websocket_scope.Socket().Connect("http://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
   EXPECT_EQ(
       "The URL's scheme must be either 'ws' or 'wss'. 'http' is not allowed.",
       scope.GetExceptionState().Message());
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, connectToURLHavingFragmentIdentifier) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
-  web_socket_scope.Socket().Connect("ws://example.com/#fragment",
-                                    Vector<String>(),
-                                    scope.GetExceptionState());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
+  websocket_scope.Socket().Connect("ws://example.com/#fragment",
+                                   Vector<String>(), scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
@@ -171,120 +170,119 @@ TEST(DOMWebSocketTest, connectToURLHavingFragmentIdentifier) {
       "The URL contains a fragment identifier ('fragment'). Fragment "
       "identifiers are not allowed in WebSocket URLs.",
       scope.GetExceptionState().Message());
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, invalidPort) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
-  web_socket_scope.Socket().Connect("ws://example.com:7", Vector<String>(),
-                                    scope.GetExceptionState());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
+  websocket_scope.Socket().Connect("ws://example.com:7", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kSecurityError, scope.GetExceptionState().Code());
   EXPECT_EQ("The port 7 is not allowed.", scope.GetExceptionState().Message());
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
 }
 
 // FIXME: Add a test for Content Security Policy.
 
 TEST(DOMWebSocketTest, invalidSubprotocols) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   Vector<String> subprotocols;
   subprotocols.push_back("@subprotocol-|'\"x\x01\x02\x03x");
 
-  web_socket_scope.Socket().Connect("ws://example.com/", subprotocols,
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", subprotocols,
+                                   scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
   EXPECT_EQ(
       "The subprotocol '@subprotocol-|'\"x\\u0001\\u0002\\u0003x' is invalid.",
       scope.GetExceptionState().Message());
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, insecureRequestsUpgrade) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("wss://example.com/endpoint"), String()))
         .WillOnce(Return(true));
   }
 
   scope.GetDocument().SetInsecureRequestPolicy(kUpgradeInsecureRequests);
-  web_socket_scope.Socket().Connect(
-      "ws://example.com/endpoint", Vector<String>(), scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/endpoint",
+                                   Vector<String>(), scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
-  EXPECT_EQ(KURL("wss://example.com/endpoint"),
-            web_socket_scope.Socket().url());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
+  EXPECT_EQ(KURL("wss://example.com/endpoint"), websocket_scope.Socket().url());
 }
 
 TEST(DOMWebSocketTest, insecureRequestsDoNotUpgrade) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/endpoint"), String()))
         .WillOnce(Return(true));
   }
 
   scope.GetDocument().SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
-  web_socket_scope.Socket().Connect(
-      "ws://example.com/endpoint", Vector<String>(), scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/endpoint",
+                                   Vector<String>(), scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
-  EXPECT_EQ(KURL("ws://example.com/endpoint"), web_socket_scope.Socket().url());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
+  EXPECT_EQ(KURL("ws://example.com/endpoint"), websocket_scope.Socket().url());
 }
 
 TEST(DOMWebSocketTest, channelConnectSuccess) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   Vector<String> subprotocols;
   subprotocols.push_back("aa");
   subprotocols.push_back("bb");
 
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/hoge"), String("aa, bb")))
         .WillOnce(Return(true));
   }
 
-  web_socket_scope.Socket().Connect("ws://example.com/hoge",
-                                    Vector<String>(subprotocols),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/hoge",
+                                   Vector<String>(subprotocols),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
-  EXPECT_EQ(KURL("ws://example.com/hoge"), web_socket_scope.Socket().url());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
+  EXPECT_EQ(KURL("ws://example.com/hoge"), websocket_scope.Socket().url());
 }
 
 TEST(DOMWebSocketTest, channelConnectFail) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   Vector<String> subprotocols;
   subprotocols.push_back("aa");
   subprotocols.push_back("bb");
 
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String("aa, bb")))
         .WillOnce(Return(false));
-    EXPECT_CALL(web_socket_scope.Channel(), Disconnect());
+    EXPECT_CALL(websocket_scope.Channel(), Disconnect());
   }
 
-  web_socket_scope.Socket().Connect("ws://example.com/",
-                                    Vector<String>(subprotocols),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/",
+                                   Vector<String>(subprotocols),
+                                   scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kSecurityError, scope.GetExceptionState().Code());
@@ -292,7 +290,7 @@ TEST(DOMWebSocketTest, channelConnectFail) {
       "An insecure WebSocket connection may not be initiated from a page "
       "loaded over HTTPS.",
       scope.GetExceptionState().Message());
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, isValidSubprotocolString) {
@@ -323,482 +321,482 @@ TEST(DOMWebSocketTest, isValidSubprotocolString) {
 
 TEST(DOMWebSocketTest, connectSuccess) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   Vector<String> subprotocols;
   subprotocols.push_back("aa");
   subprotocols.push_back("bb");
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String("aa, bb")))
         .WillOnce(Return(true));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", subprotocols,
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", subprotocols,
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().DidConnect("bb", "cc");
+  websocket_scope.Socket().DidConnect("bb", "cc");
 
-  EXPECT_EQ(DOMWebSocket::kOpen, web_socket_scope.Socket().readyState());
-  EXPECT_EQ("bb", web_socket_scope.Socket().protocol());
-  EXPECT_EQ("cc", web_socket_scope.Socket().extensions());
+  EXPECT_EQ(DOMWebSocket::kOpen, websocket_scope.Socket().readyState());
+  EXPECT_EQ("bb", websocket_scope.Socket().protocol());
+  EXPECT_EQ("cc", websocket_scope.Socket().extensions());
 }
 
 TEST(DOMWebSocketTest, didClose) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), Disconnect());
+    EXPECT_CALL(websocket_scope.Channel(), Disconnect());
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().DidClose(
+  websocket_scope.Socket().DidClose(
       WebSocketChannelClient::kClosingHandshakeIncomplete, 1006, "");
 
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, maximumReasonSize) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), FailMock(_, _, _));
+    EXPECT_CALL(websocket_scope.Channel(), FailMock(_, _, _));
   }
   StringBuilder reason;
   for (size_t i = 0; i < 123; ++i)
     reason.Append('a');
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().close(1000, reason.ToString(),
-                                  scope.GetExceptionState());
+  websocket_scope.Socket().close(1000, reason.ToString(),
+                                 scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, reasonSizeExceeding) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
   }
   StringBuilder reason;
   for (size_t i = 0; i < 124; ++i)
     reason.Append('a');
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().close(1000, reason.ToString(),
-                                  scope.GetExceptionState());
+  websocket_scope.Socket().close(1000, reason.ToString(),
+                                 scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
   EXPECT_EQ("The message must not be greater than 123 bytes.",
             scope.GetExceptionState().Message());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, closeWhenConnecting) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
     EXPECT_CALL(
-        web_socket_scope.Channel(),
+        websocket_scope.Channel(),
         FailMock(
             String("WebSocket is closed before the connection is established."),
             kWarningMessageLevel, _));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().close(1000, "bye", scope.GetExceptionState());
+  websocket_scope.Socket().close(1000, "bye", scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, close) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), Close(3005, String("bye")));
+    EXPECT_CALL(websocket_scope.Channel(), Close(3005, String("bye")));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().DidConnect("", "");
-  EXPECT_EQ(DOMWebSocket::kOpen, web_socket_scope.Socket().readyState());
-  web_socket_scope.Socket().close(3005, "bye", scope.GetExceptionState());
+  websocket_scope.Socket().DidConnect("", "");
+  EXPECT_EQ(DOMWebSocket::kOpen, websocket_scope.Socket().readyState());
+  websocket_scope.Socket().close(3005, "bye", scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, closeWithoutReason) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), Close(3005, String()));
+    EXPECT_CALL(websocket_scope.Channel(), Close(3005, String()));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().DidConnect("", "");
-  EXPECT_EQ(DOMWebSocket::kOpen, web_socket_scope.Socket().readyState());
-  web_socket_scope.Socket().close(3005, scope.GetExceptionState());
+  websocket_scope.Socket().DidConnect("", "");
+  EXPECT_EQ(DOMWebSocket::kOpen, websocket_scope.Socket().readyState());
+  websocket_scope.Socket().close(3005, scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, closeWithoutCodeAndReason) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), Close(-1, String()));
+    EXPECT_CALL(websocket_scope.Channel(), Close(-1, String()));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().DidConnect("", "");
-  EXPECT_EQ(DOMWebSocket::kOpen, web_socket_scope.Socket().readyState());
-  web_socket_scope.Socket().close(scope.GetExceptionState());
+  websocket_scope.Socket().DidConnect("", "");
+  EXPECT_EQ(DOMWebSocket::kOpen, websocket_scope.Socket().readyState());
+  websocket_scope.Socket().close(scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, closeWhenClosing) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), Close(-1, String()));
+    EXPECT_CALL(websocket_scope.Channel(), Close(-1, String()));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().DidConnect("", "");
-  EXPECT_EQ(DOMWebSocket::kOpen, web_socket_scope.Socket().readyState());
-  web_socket_scope.Socket().close(scope.GetExceptionState());
+  websocket_scope.Socket().DidConnect("", "");
+  EXPECT_EQ(DOMWebSocket::kOpen, websocket_scope.Socket().readyState());
+  websocket_scope.Socket().close(scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().close(scope.GetExceptionState());
+  websocket_scope.Socket().close(scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, closeWhenClosed) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), Close(-1, String()));
-    EXPECT_CALL(web_socket_scope.Channel(), Disconnect());
+    EXPECT_CALL(websocket_scope.Channel(), Close(-1, String()));
+    EXPECT_CALL(websocket_scope.Channel(), Disconnect());
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().DidConnect("", "");
-  EXPECT_EQ(DOMWebSocket::kOpen, web_socket_scope.Socket().readyState());
-  web_socket_scope.Socket().close(scope.GetExceptionState());
+  websocket_scope.Socket().DidConnect("", "");
+  EXPECT_EQ(DOMWebSocket::kOpen, websocket_scope.Socket().readyState());
+  websocket_scope.Socket().close(scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().DidClose(
+  websocket_scope.Socket().DidClose(
       WebSocketChannelClient::kClosingHandshakeComplete, 1000, String());
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
-  web_socket_scope.Socket().close(scope.GetExceptionState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
+  websocket_scope.Socket().close(scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, sendStringWhenConnecting) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().send("hello", scope.GetExceptionState());
+  websocket_scope.Socket().send("hello", scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
             scope.GetExceptionState().Code());
   EXPECT_EQ("Still in CONNECTING state.", scope.GetExceptionState().Message());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, sendStringWhenClosing) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   Checkpoint checkpoint;
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), FailMock(_, _, _));
+    EXPECT_CALL(websocket_scope.Channel(), FailMock(_, _, _));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().close(scope.GetExceptionState());
+  websocket_scope.Socket().close(scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().send("hello", scope.GetExceptionState());
+  websocket_scope.Socket().send("hello", scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, sendStringWhenClosed) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   Checkpoint checkpoint;
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), Disconnect());
+    EXPECT_CALL(websocket_scope.Channel(), Disconnect());
     EXPECT_CALL(checkpoint, Call(1));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().DidClose(
+  websocket_scope.Socket().DidClose(
       WebSocketChannelClient::kClosingHandshakeIncomplete, 1006, "");
   checkpoint.Call(1);
 
-  web_socket_scope.Socket().send("hello", scope.GetExceptionState());
+  websocket_scope.Socket().send("hello", scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, sendStringSuccess) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), Send(CString("hello")));
+    EXPECT_CALL(websocket_scope.Channel(), Send(CString("hello")));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().DidConnect("", "");
-  web_socket_scope.Socket().send("hello", scope.GetExceptionState());
+  websocket_scope.Socket().DidConnect("", "");
+  websocket_scope.Socket().send("hello", scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kOpen, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kOpen, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, sendNonLatin1String) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Send(CString("\xe7\x8b\x90\xe0\xa4\x94")));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().DidConnect("", "");
+  websocket_scope.Socket().DidConnect("", "");
   UChar non_latin1_string[] = {0x72d0, 0x0914, 0x0000};
-  web_socket_scope.Socket().send(non_latin1_string, scope.GetExceptionState());
+  websocket_scope.Socket().send(non_latin1_string, scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kOpen, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kOpen, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, sendArrayBufferWhenConnecting) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   DOMArrayBufferView* view = DOMUint8Array::Create(8);
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().send(view->buffer(), scope.GetExceptionState());
+  websocket_scope.Socket().send(view->buffer(), scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kInvalidStateError,
             scope.GetExceptionState().Code());
   EXPECT_EQ("Still in CONNECTING state.", scope.GetExceptionState().Message());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, sendArrayBufferWhenClosing) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   DOMArrayBufferView* view = DOMUint8Array::Create(8);
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), FailMock(_, _, _));
+    EXPECT_CALL(websocket_scope.Channel(), FailMock(_, _, _));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().close(scope.GetExceptionState());
+  websocket_scope.Socket().close(scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().send(view->buffer(), scope.GetExceptionState());
+  websocket_scope.Socket().send(view->buffer(), scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, sendArrayBufferWhenClosed) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   Checkpoint checkpoint;
   DOMArrayBufferView* view = DOMUint8Array::Create(8);
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), Disconnect());
+    EXPECT_CALL(websocket_scope.Channel(), Disconnect());
     EXPECT_CALL(checkpoint, Call(1));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().DidClose(
+  websocket_scope.Socket().DidClose(
       WebSocketChannelClient::kClosingHandshakeIncomplete, 1006, "");
   checkpoint.Call(1);
 
-  web_socket_scope.Socket().send(view->buffer(), scope.GetExceptionState());
+  websocket_scope.Socket().send(view->buffer(), scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosed, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosed, websocket_scope.Socket().readyState());
 }
 
 TEST(DOMWebSocketTest, sendArrayBufferSuccess) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   DOMArrayBufferView* view = DOMUint8Array::Create(8);
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), Send(Ref(*view->buffer()), 0, 8));
+    EXPECT_CALL(websocket_scope.Channel(), Send(Ref(*view->buffer()), 0, 8));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  web_socket_scope.Socket().DidConnect("", "");
-  web_socket_scope.Socket().send(view->buffer(), scope.GetExceptionState());
+  websocket_scope.Socket().DidConnect("", "");
+  websocket_scope.Socket().send(view->buffer(), scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kOpen, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kOpen, websocket_scope.Socket().readyState());
 }
 
 // FIXME: We should have Blob tests here.
@@ -810,16 +808,16 @@ TEST(DOMWebSocketTest, sendArrayBufferSuccess) {
 
 TEST(DOMWebSocketTest, binaryType) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
-  EXPECT_EQ("blob", web_socket_scope.Socket().binaryType());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
+  EXPECT_EQ("blob", websocket_scope.Socket().binaryType());
 
-  web_socket_scope.Socket().setBinaryType("arraybuffer");
+  websocket_scope.Socket().setBinaryType("arraybuffer");
 
-  EXPECT_EQ("arraybuffer", web_socket_scope.Socket().binaryType());
+  EXPECT_EQ("arraybuffer", websocket_scope.Socket().binaryType());
 
-  web_socket_scope.Socket().setBinaryType("blob");
+  websocket_scope.Socket().setBinaryType("blob");
 
-  EXPECT_EQ("blob", web_socket_scope.Socket().binaryType());
+  EXPECT_EQ("blob", websocket_scope.Socket().binaryType());
 }
 
 // FIXME: We should add tests for suspend / resume.
@@ -829,24 +827,24 @@ class DOMWebSocketValidClosingTest
 
 TEST_P(DOMWebSocketValidClosingTest, test) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
-    EXPECT_CALL(web_socket_scope.Channel(), FailMock(_, _, _));
+    EXPECT_CALL(websocket_scope.Channel(), FailMock(_, _, _));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().close(GetParam(), "bye", scope.GetExceptionState());
+  websocket_scope.Socket().close(GetParam(), "bye", scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kClosing, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kClosing, websocket_scope.Socket().readyState());
 }
 
 INSTANTIATE_TEST_CASE_P(DOMWebSocketValidClosing,
@@ -858,20 +856,20 @@ class DOMWebSocketInvalidClosingCodeTest
 
 TEST_P(DOMWebSocketInvalidClosingCodeTest, test) {
   V8TestingScope scope;
-  DOMWebSocketTestScope web_socket_scope(scope.GetExecutionContext());
+  DOMWebSocketTestScope websocket_scope(scope.GetExecutionContext());
   {
     InSequence s;
-    EXPECT_CALL(web_socket_scope.Channel(),
+    EXPECT_CALL(websocket_scope.Channel(),
                 Connect(KURL("ws://example.com/"), String()))
         .WillOnce(Return(true));
   }
-  web_socket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
-                                    scope.GetExceptionState());
+  websocket_scope.Socket().Connect("ws://example.com/", Vector<String>(),
+                                   scope.GetExceptionState());
 
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 
-  web_socket_scope.Socket().close(GetParam(), "bye", scope.GetExceptionState());
+  websocket_scope.Socket().close(GetParam(), "bye", scope.GetExceptionState());
 
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kInvalidAccessError,
@@ -880,7 +878,7 @@ TEST_P(DOMWebSocketInvalidClosingCodeTest, test) {
                            "4999. %d is neither.",
                            GetParam()),
             scope.GetExceptionState().Message());
-  EXPECT_EQ(DOMWebSocket::kConnecting, web_socket_scope.Socket().readyState());
+  EXPECT_EQ(DOMWebSocket::kConnecting, websocket_scope.Socket().readyState());
 }
 
 INSTANTIATE_TEST_CASE_P(
