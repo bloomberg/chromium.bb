@@ -371,16 +371,10 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
 // events in the case where events are coalesced. (crbug.com/771165).
 // Disabled on Android because we don't support synthetic mouse input on Android
 // (crbug.com/723618).
-// http://crbug.com/801629 : Flaky on Linux and Windows
-#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_CoalescedMouseMovesCorrectlyTerminated \
-  DISABLED_CoalescedMouseMovesCorrectlyTerminated
-#else
-#define MAYBE_CoalescedMouseMovesCorrectlyTerminated \
-  CoalescedMouseMovesCorrectlyTerminated
-#endif
+// http://crbug.com/801629 : Flaky on Linux and Windows, and Mac with
+// --enable-features=VizDisplayCompositor
 IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
-                       MAYBE_CoalescedMouseMovesCorrectlyTerminated) {
+                       DISABLED_CoalescedMouseMovesCorrectlyTerminated) {
   LoadURL();
 
   StartTracing();
