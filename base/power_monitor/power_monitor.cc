@@ -20,6 +20,7 @@ PowerMonitor::PowerMonitor(std::unique_ptr<PowerMonitorSource> source)
 }
 
 PowerMonitor::~PowerMonitor() {
+  source_->Shutdown();
   DCHECK_EQ(this, g_power_monitor);
   g_power_monitor = nullptr;
 }

@@ -25,12 +25,6 @@ PowerMonitorBroadcastSource::PowerMonitorBroadcastSource(
     : client_(std::move(client)), task_runner_(task_runner) {}
 
 PowerMonitorBroadcastSource::~PowerMonitorBroadcastSource() {
-  // When power monitor and source are destroyed, the IO thread could still be
-  // receiving mojo messages that access the monitor and source in
-  // |ProcessPowerEvent|, thus causing a data race. Calling Shutdown() on the
-  // client tells it to ignore future mojo messages, and thus prevents the data
-  // race.
-  client_->Shutdown();
   task_runner_->DeleteSoon(FROM_HERE, client_.release());
 }
 
@@ -41,6 +35,16 @@ void PowerMonitorBroadcastSource::Init(service_manager::Connector* connector) {
                                   base::Unretained(client_.get()),
                                   base::Passed(connector->Clone())));
   }
+}
+
+void PowerMonitorBroadcastSource::Shutdown() {
+  // When power monitor and source are destroyed, the IO thread could still be
+  // receiving mojo messages that access the monitor and source in
+  // |ProcessPowerEvent|, thus causing a data race. Calling Shutdown() on the
+  // client tells it to ignore future mojo messages; by making this call
+  // *before* the power monitor and source destruction proceed, we  prevent the
+  // data race.
+  client_->Shutdown();
 }
 
 bool PowerMonitorBroadcastSource::IsOnBatteryPowerImpl() {

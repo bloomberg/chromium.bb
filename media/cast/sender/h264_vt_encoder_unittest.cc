@@ -191,6 +191,8 @@ void CreateFrameAndMemsetPlane(VideoFrameFactory* const video_frame_factory) {
 
 class TestPowerSource : public base::PowerMonitorSource {
  public:
+  void Shutdown() override {}
+
   void GenerateSuspendEvent() {
     ProcessPowerEvent(SUSPEND_EVENT);
     base::RunLoop().RunUntilIdle();
