@@ -84,7 +84,6 @@ class GPU_EXPORT GpuChannelHost
   // that can be used to ensure or verify the flush later.
   uint32_t OrderingBarrier(int32_t route_id,
                            int32_t put_offset,
-                           bool snapshot_requested,
                            std::vector<SyncToken> sync_token_fences);
 
   // Ensure that the all ordering barriers prior upto |flush_id| have been

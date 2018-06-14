@@ -44,8 +44,6 @@ class GPU_IPC_SERVICE_EXPORT ImageTransportSurfaceDelegate {
 
   virtual const GpuPreferences& GetGpuPreferences() const = 0;
 
-  virtual void SetSnapshotRequestedCallback(const base::Closure& callback) = 0;
-
   // Tells the delegate a buffer has been presented.
   virtual void BufferPresented(const gfx::PresentationFeedback& feedback) = 0;
   // Add IPC message filter.

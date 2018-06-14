@@ -136,7 +136,6 @@ class MockClientGpuControl : public GpuControl {
 
   MOCK_METHOD1(WaitSyncTokenHint, void(const SyncToken&));
   MOCK_METHOD1(CanWaitUnverifiedSyncToken, bool(const SyncToken&));
-  MOCK_METHOD0(SetSnapshotRequested, void());
   MOCK_METHOD2(CreateGpuFence,
                void(uint32_t gpu_fence_id, ClientGpuFence source));
   // OnceCallback isn't mockable?

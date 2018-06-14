@@ -236,8 +236,6 @@ bool Context::CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) {
   return false;
 }
 
-void Context::SetSnapshotRequested() {}
-
 void Context::ApplyCurrentContext(gl::GLSurface* current_surface) {
   DCHECK(HasService());
   // The current_surface will be the same as

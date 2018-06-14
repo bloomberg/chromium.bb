@@ -158,7 +158,6 @@ class GLManager : private GpuControl {
                        base::OnceClosure callback) override;
   void WaitSyncTokenHint(const gpu::SyncToken& sync_token) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override;
-  void SetSnapshotRequested() override;
 
   size_t GetSharedMemoryBytesAllocated() const;
   ContextType GetContextType() const;

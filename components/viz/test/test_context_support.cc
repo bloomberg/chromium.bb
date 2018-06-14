@@ -92,8 +92,6 @@ uint64_t TestContextSupport::ShareGroupTracingGUID() const {
 void TestContextSupport::SetErrorMessageCallback(
     base::RepeatingCallback<void(const char*, int32_t)> callback) {}
 
-void TestContextSupport::SetSnapshotRequested() {}
-
 bool TestContextSupport::ThreadSafeShallowLockDiscardableTexture(
     uint32_t texture_id) {
   NOTIMPLEMENTED();

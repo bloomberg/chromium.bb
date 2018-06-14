@@ -43,7 +43,6 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
   void DidSwapBuffersComplete(SwapBuffersCompleteParams params) override;
   const gles2::FeatureInfo* GetFeatureInfo() const override;
   const GpuPreferences& GetGpuPreferences() const override;
-  void SetSnapshotRequestedCallback(const base::Closure& callback) override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
 
   void AddFilter(IPC::MessageFilter* message_filter) override;
@@ -57,8 +56,6 @@ class GPU_IPC_SERVICE_EXPORT GLES2CommandBufferStub
   // Keep a more specifically typed reference to the decoder to avoid
   // unnecessary casts. Owned by parent class.
   gles2::GLES2Decoder* gles2_decoder_;
-
-  base::Closure snapshot_requested_callback_;
 
   // Params pushed each time we call OnSwapBuffers, and popped when a buffer
   // is presented or a swap completed.

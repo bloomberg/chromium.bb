@@ -701,14 +701,10 @@ void InProcessCommandBuffer::UpdateLastStateOnGpuThread() {
     last_state_ = state;
 }
 
-void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset,
-                                              bool snapshot_requested) {
+void InProcessCommandBuffer::FlushOnGpuThread(int32_t put_offset) {
   CheckSequencedThread();
   ScopedEvent handle_flush(&flush_event_);
   base::AutoLock lock(command_buffer_lock_);
-
-  if (snapshot_requested && snapshot_requested_callback_)
-    snapshot_requested_callback_.Run();
 
   if (!MakeCurrent())
     return;
@@ -760,10 +756,9 @@ void InProcessCommandBuffer::Flush(int32_t put_offset) {
     return;
 
   last_put_offset_ = put_offset;
-  base::RepeatingClosure task = base::BindRepeating(
-      &InProcessCommandBuffer::FlushOnGpuThread, gpu_thread_weak_ptr_,
-      put_offset, snapshot_requested_);
-  snapshot_requested_ = false;
+  base::RepeatingClosure task =
+      base::BindRepeating(&InProcessCommandBuffer::FlushOnGpuThread,
+                          gpu_thread_weak_ptr_, put_offset);
   QueueRepeatableTask(std::move(task));
 
   flushed_fence_sync_release_ = next_fence_sync_release_ - 1;
@@ -1225,10 +1220,6 @@ bool InProcessCommandBuffer::CanWaitUnverifiedSyncToken(
   return sync_token.namespace_id() == GetNamespaceID();
 }
 
-void InProcessCommandBuffer::SetSnapshotRequested() {
-  snapshot_requested_ = true;
-}
-
 #if defined(OS_WIN)
 void InProcessCommandBuffer::DidCreateAcceleratedSurfaceChildWindow(
     SurfaceHandle parent_window,
@@ -1269,11 +1260,6 @@ const gles2::FeatureInfo* InProcessCommandBuffer::GetFeatureInfo() const {
 
 const GpuPreferences& InProcessCommandBuffer::GetGpuPreferences() const {
   return context_group_->gpu_preferences();
-}
-
-void InProcessCommandBuffer::SetSnapshotRequestedCallback(
-    const base::Closure& callback) {
-  snapshot_requested_callback_ = callback;
 }
 
 void InProcessCommandBuffer::BufferPresented(

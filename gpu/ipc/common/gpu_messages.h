@@ -158,10 +158,9 @@ IPC_SYNC_MESSAGE_ROUTED3_1(GpuCommandBufferMsg_WaitForGetOffsetInRange,
 // TODO(sunnyps): This is an internal implementation detail of the gpu service
 // and is not sent by the client. Remove this once the non-scheduler code path
 // is removed.
-IPC_MESSAGE_ROUTED3(GpuCommandBufferMsg_AsyncFlush,
+IPC_MESSAGE_ROUTED2(GpuCommandBufferMsg_AsyncFlush,
                     int32_t /* put_offset */,
-                    uint32_t /* flush_id */,
-                    bool /* snapshot_requested */)
+                    uint32_t /* flush_id */)
 
 // Sent by the GPU process to display messages in the console.
 IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_ConsoleMsg,

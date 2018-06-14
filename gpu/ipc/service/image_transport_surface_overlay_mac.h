@@ -75,9 +75,6 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
  private:
   ~ImageTransportSurfaceOverlayMac() override;
 
-  void SetSnapshotRequested();
-  bool GetAndResetSnapshotRequested();
-
   gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect,
                                       const PresentationCallback& callback);
   void ApplyBackpressure(base::TimeTicks* before_flush_time,
