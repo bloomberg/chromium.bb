@@ -68,6 +68,54 @@ static INLINE uint8x8_t lpf_flat_mask4(uint8x8_t p3q3, uint8x8_t p2q2,
   return flat_8x8;
 }
 
+static INLINE uint8x8_t lpf_flat_mask3(uint8x8_t p2q2, uint8x8_t p1q1,
+                                       uint8x8_t p0q0) {
+  const uint8x8_t thresh_8x8 = vdup_n_u8(1);  // for bd==8 threshold is always 1
+  uint8x8_t flat_8x8, temp_8x8;
+
+  flat_8x8 = vabd_u8(p1q1, p0q0);
+  flat_8x8 = vmax_u8(flat_8x8, vabd_u8(p2q2, p0q0));
+  flat_8x8 = vcle_u8(flat_8x8, thresh_8x8);
+
+  temp_8x8 = vreinterpret_u8_u32(vrev64_u32(vreinterpret_u32_u8(flat_8x8)));
+  flat_8x8 = vand_u8(flat_8x8, temp_8x8);
+
+  return flat_8x8;
+}
+
+static INLINE uint8x8_t lpf_mask3_chroma(uint8x8_t p2q2, uint8x8_t p1q1,
+                                         uint8x8_t p0q0, const uint8_t blimit,
+                                         const uint8_t limit) {
+  // Calculate mask3 values for four samples
+  uint32x2x2_t p0q0_p1q1;
+  uint16x8_t temp_16x8;
+  uint16x4_t temp0_16x4, temp1_16x4;
+  uint8x8_t mask_8x8, temp_8x8;
+  const uint8x8_t limit_8x8 = vdup_n_u8(limit);
+  const uint16x4_t blimit_16x4 = vdup_n_u16((uint16_t)blimit);
+
+  mask_8x8 = vabd_u8(p2q2, p1q1);
+  mask_8x8 = vmax_u8(mask_8x8, vabd_u8(p1q1, p0q0));
+  mask_8x8 = vcle_u8(mask_8x8, limit_8x8);
+
+  temp_8x8 = vreinterpret_u8_u32(vrev64_u32(vreinterpret_u32_u8(mask_8x8)));
+  mask_8x8 = vand_u8(mask_8x8, temp_8x8);
+
+  p0q0_p1q1 = vtrn_u32(vreinterpret_u32_u8(p0q0), vreinterpret_u32_u8(p1q1));
+  temp_8x8 = vabd_u8(vreinterpret_u8_u32(p0q0_p1q1.val[0]),
+                     vreinterpret_u8_u32(p0q0_p1q1.val[1]));
+  temp_16x8 = vmovl_u8(temp_8x8);
+  temp0_16x4 = vshl_n_u16(vget_low_u16(temp_16x8), 1);
+  temp1_16x4 = vshr_n_u16(vget_high_u16(temp_16x8), 1);
+  temp0_16x4 = vadd_u16(temp0_16x4, temp1_16x4);
+  temp0_16x4 = vcle_u16(temp0_16x4, blimit_16x4);
+  temp_8x8 = vmovn_u16(vcombine_u16(temp0_16x4, temp0_16x4));
+
+  mask_8x8 = vand_u8(mask_8x8, temp_8x8);
+
+  return mask_8x8;
+}
+
 static void lpf_14_neon(uint8x8_t *p6q6, uint8x8_t *p5q5, uint8x8_t *p4q4,
                         uint8x8_t *p3q3, uint8x8_t *p2q2, uint8x8_t *p1q1,
                         uint8x8_t *p0q0, const uint8_t blimit,
@@ -369,6 +417,112 @@ static void lpf_8_neon(uint8x8_t *p3q3, uint8x8_t *p2q2, uint8x8_t *p1q1,
   }
 }
 
+static void lpf_6_neon(uint8x8_t *p2q2, uint8x8_t *p1q1, uint8x8_t *p0q0,
+                       const uint8_t blimit, const uint8_t limit,
+                       const uint8_t thresh) {
+  uint16x8_t out;
+  uint8x8_t out_f6_pq0, out_f6_pq1;
+  uint8x8_t out_f4_pq0, out_f4_pq1;
+  uint8x8_t mask_8x8, flat_8x8;
+
+  // Calculate filter masks
+  mask_8x8 = lpf_mask3_chroma(*p2q2, *p1q1, *p0q0, blimit, limit);
+  flat_8x8 = lpf_flat_mask3(*p2q2, *p1q1, *p0q0);
+  {
+    // filter 4
+    int32x2x2_t ps0_qs0, ps1_qs1;
+    int16x8_t filter_s16;
+    const uint8x8_t thresh_f4 = vdup_n_u8(thresh);
+    uint8x8_t temp0_8x8, temp1_8x8;
+    int8x8_t ps0_s8, ps1_s8, qs0_s8, qs1_s8, temp_s8;
+    int8x8_t op0, oq0, op1, oq1;
+    int8x8_t pq_s0, pq_s1;
+    int8x8_t filter_s8, filter1_s8, filter2_s8;
+    int8x8_t hev_8x8;
+    const int8x8_t sign_mask = vdup_n_s8(0x80);
+    const int8x8_t val_4 = vdup_n_s8(4);
+    const int8x8_t val_3 = vdup_n_s8(3);
+
+    pq_s0 = veor_s8(vreinterpret_s8_u8(*p0q0), sign_mask);
+    pq_s1 = veor_s8(vreinterpret_s8_u8(*p1q1), sign_mask);
+
+    ps0_qs0 = vtrn_s32(vreinterpret_s32_s8(pq_s0), vreinterpret_s32_s8(pq_s0));
+    ps1_qs1 = vtrn_s32(vreinterpret_s32_s8(pq_s1), vreinterpret_s32_s8(pq_s1));
+    ps0_s8 = vreinterpret_s8_s32(ps0_qs0.val[0]);
+    qs0_s8 = vreinterpret_s8_s32(ps0_qs0.val[1]);
+    ps1_s8 = vreinterpret_s8_s32(ps1_qs1.val[0]);
+    qs1_s8 = vreinterpret_s8_s32(ps1_qs1.val[1]);
+
+    // hev_mask
+    temp0_8x8 = vcgt_u8(vabd_u8(*p0q0, *p1q1), thresh_f4);
+    temp1_8x8 = vreinterpret_u8_u32(vrev64_u32(vreinterpret_u32_u8(temp0_8x8)));
+    hev_8x8 = vreinterpret_s8_u8(vorr_u8(temp0_8x8, temp1_8x8));
+
+    // add outer taps if we have high edge variance
+    filter_s8 = vqsub_s8(ps1_s8, qs1_s8);
+    filter_s8 = vand_s8(filter_s8, hev_8x8);
+
+    // inner taps
+    temp_s8 = vqsub_s8(qs0_s8, ps0_s8);
+    filter_s16 = vmovl_s8(filter_s8);
+    filter_s16 = vmlal_s8(filter_s16, temp_s8, val_3);
+    filter_s8 = vqmovn_s16(filter_s16);
+    filter_s8 = vand_s8(filter_s8, vreinterpret_s8_u8(mask_8x8));
+
+    filter1_s8 = vqadd_s8(filter_s8, val_4);
+    filter2_s8 = vqadd_s8(filter_s8, val_3);
+    filter1_s8 = vshr_n_s8(filter1_s8, 3);
+    filter2_s8 = vshr_n_s8(filter2_s8, 3);
+
+    oq0 = veor_s8(vqsub_s8(qs0_s8, filter1_s8), sign_mask);
+    op0 = veor_s8(vqadd_s8(ps0_s8, filter2_s8), sign_mask);
+
+    filter_s8 = vrshr_n_s8(filter1_s8, 1);
+    filter_s8 = vbic_s8(filter_s8, hev_8x8);
+
+    oq1 = veor_s8(vqsub_s8(qs1_s8, filter_s8), sign_mask);
+    op1 = veor_s8(vqadd_s8(ps1_s8, filter_s8), sign_mask);
+
+    out_f4_pq0 = vreinterpret_u8_s8(vext_s8(op0, oq0, 4));
+    out_f4_pq1 = vreinterpret_u8_s8(vext_s8(op1, oq1, 4));
+  }
+  {
+    // filter 6
+    uint16x8_t out_pq0, out_pq1;
+    uint8x8_t pq_rev;
+
+    out = vaddl_u8(*p0q0, *p1q1);
+    out = vaddq_u16(out, out);
+    out = vaddw_u8(out, *p2q2);
+
+    pq_rev = vreinterpret_u8_u32(vrev64_u32(vreinterpret_u32_u8(*p0q0)));
+    out = vaddw_u8(out, pq_rev);
+
+    out_pq0 = vaddw_u8(out, pq_rev);
+    pq_rev = vreinterpret_u8_u32(vrev64_u32(vreinterpret_u32_u8(*p1q1)));
+    out_pq0 = vaddw_u8(out_pq0, pq_rev);
+
+    out_pq1 = vaddw_u8(out, *p2q2);
+    out_pq1 = vaddw_u8(out_pq1, *p2q2);
+
+    out_f6_pq0 = vrshrn_n_u16(out_pq0, 3);
+    out_f6_pq1 = vrshrn_n_u16(out_pq1, 3);
+  }
+  {
+    uint8x8_t filter4_cond, filter6_cond;
+    filter6_cond = vand_u8(flat_8x8, mask_8x8);
+    filter4_cond = vmvn_u8(filter6_cond);
+
+    // filter4 outputs
+    *p0q0 = vbsl_u8(filter4_cond, out_f4_pq0, *p0q0);
+    *p1q1 = vbsl_u8(filter4_cond, out_f4_pq1, *p1q1);
+
+    // filter6 outputs
+    *p0q0 = vbsl_u8(filter6_cond, out_f6_pq0, *p0q0);
+    *p1q1 = vbsl_u8(filter6_cond, out_f6_pq1, *p1q1);
+  }
+}
+
 void aom_lpf_vertical_14_neon(uint8_t *src, int stride, const uint8_t *blimit,
                               const uint8_t *limit, const uint8_t *thresh) {
   uint8x16_t row0, row1, row2, row3;
@@ -519,4 +673,28 @@ void aom_lpf_horizontal_8_neon(uint8_t *src, int stride, const uint8_t *blimit,
   vst1_lane_u32((uint32_t *)(src + 1 * stride), vreinterpret_u32_u8(p1q1), 1);
   vst1_lane_u32((uint32_t *)(src + 2 * stride), vreinterpret_u32_u8(p2q2), 1);
   vst1_lane_u32((uint32_t *)(src + 3 * stride), vreinterpret_u32_u8(p3q3), 1);
+}
+
+void aom_lpf_horizontal_6_neon(uint8_t *src, int stride, const uint8_t *blimit,
+                               const uint8_t *limit, const uint8_t *thresh) {
+  uint8x8_t p0q0, p1q1, p2q2;
+
+  p2q2 = vreinterpret_u8_u32(vld1_dup_u32((uint32_t *)(src - 3 * stride)));
+  p1q1 = vreinterpret_u8_u32(vld1_dup_u32((uint32_t *)(src - 2 * stride)));
+  p0q0 = vreinterpret_u8_u32(vld1_dup_u32((uint32_t *)(src - 1 * stride)));
+  p0q0 = vreinterpret_u8_u32(vld1_lane_u32((uint32_t *)(src + 0 * stride),
+                                           vreinterpret_u32_u8(p0q0), 1));
+  p1q1 = vreinterpret_u8_u32(vld1_lane_u32((uint32_t *)(src + 1 * stride),
+                                           vreinterpret_u32_u8(p1q1), 1));
+  p2q2 = vreinterpret_u8_u32(vld1_lane_u32((uint32_t *)(src + 2 * stride),
+                                           vreinterpret_u32_u8(p2q2), 1));
+
+  lpf_6_neon(&p2q2, &p1q1, &p0q0, *blimit, *limit, *thresh);
+
+  vst1_lane_u32((uint32_t *)(src - 3 * stride), vreinterpret_u32_u8(p2q2), 0);
+  vst1_lane_u32((uint32_t *)(src - 2 * stride), vreinterpret_u32_u8(p1q1), 0);
+  vst1_lane_u32((uint32_t *)(src - 1 * stride), vreinterpret_u32_u8(p0q0), 0);
+  vst1_lane_u32((uint32_t *)(src + 0 * stride), vreinterpret_u32_u8(p0q0), 1);
+  vst1_lane_u32((uint32_t *)(src + 1 * stride), vreinterpret_u32_u8(p1q1), 1);
+  vst1_lane_u32((uint32_t *)(src + 2 * stride), vreinterpret_u32_u8(p2q2), 1);
 }
