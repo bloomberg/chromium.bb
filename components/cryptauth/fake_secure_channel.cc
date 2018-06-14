@@ -4,6 +4,8 @@
 
 #include "components/cryptauth/fake_secure_channel.h"
 
+#include <utility>
+
 #include "base/logging.h"
 
 namespace cryptauth {
@@ -15,7 +17,10 @@ FakeSecureChannel::SentMessage::SentMessage(const std::string& feature,
 FakeSecureChannel::FakeSecureChannel(std::unique_ptr<Connection> connection)
     : SecureChannel(std::move(connection)) {}
 
-FakeSecureChannel::~FakeSecureChannel() {}
+FakeSecureChannel::~FakeSecureChannel() {
+  if (destructor_callback_)
+    std::move(destructor_callback_).Run();
+}
 
 void FakeSecureChannel::ChangeStatus(const Status& new_status) {
   Status old_status = status_;
