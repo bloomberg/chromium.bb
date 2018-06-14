@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_agent_host.h"
+#include "headless/public/headless_devtools_target.h"
 
 namespace headless {
 
@@ -29,14 +29,6 @@ HeadlessDevToolsClient::CreateWithExternalHost(ExternalHost* external_host) {
   auto result = std::make_unique<HeadlessDevToolsClientImpl>();
   result->AttachToExternalHost(external_host);
   return result;
-}
-
-// static
-HeadlessDevToolsClientImpl* HeadlessDevToolsClientImpl::From(
-    HeadlessDevToolsClient* client) {
-  // This downcast is safe because there is only one implementation of
-  // HeadlessDevToolsClient.
-  return static_cast<HeadlessDevToolsClientImpl*>(client);
 }
 
 HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
@@ -77,16 +69,9 @@ HeadlessDevToolsClientImpl::HeadlessDevToolsClientImpl()
 
 HeadlessDevToolsClientImpl::~HeadlessDevToolsClientImpl() = default;
 
-void HeadlessDevToolsClientImpl::AttachToHost(
-    content::DevToolsAgentHost* agent_host) {
-  DCHECK(!agent_host_ && !external_host_);
-  agent_host->AttachClient(this);
-  agent_host_ = agent_host;
-}
-
 void HeadlessDevToolsClientImpl::AttachToExternalHost(
     ExternalHost* external_host) {
-  DCHECK(!agent_host_ && !external_host_);
+  DCHECK(!channel_ && !external_host_);
   external_host_ = external_host;
 }
 
@@ -95,13 +80,21 @@ void HeadlessDevToolsClientImpl::InitBrowserMainThread() {
       content::BrowserThread::UI);
 }
 
-void HeadlessDevToolsClientImpl::DetachFromHost(
-    content::DevToolsAgentHost* agent_host) {
-  DCHECK_EQ(agent_host_, agent_host);
-  if (!renderer_crashed_)
-    agent_host_->DetachClient(this);
-  agent_host_ = nullptr;
+void HeadlessDevToolsClientImpl::ChannelClosed() {
   pending_messages_.clear();
+  channel_ = nullptr;
+}
+
+void HeadlessDevToolsClientImpl::AttachToChannel(
+    std::unique_ptr<HeadlessDevToolsChannel> channel) {
+  DCHECK(!channel_ && !external_host_);
+  channel_ = std::move(channel);
+  channel_->SetClient(this);
+}
+
+void HeadlessDevToolsClientImpl::DetachFromChannel() {
+  pending_messages_.clear();
+  channel_ = nullptr;
 }
 
 void HeadlessDevToolsClientImpl::SetRawProtocolListener(
@@ -126,9 +119,9 @@ void HeadlessDevToolsClientImpl::SendRawDevToolsMessage(
     return;
   }
 #endif
-  DCHECK(agent_host_ || external_host_);
-  if (agent_host_)
-    agent_host_->DispatchProtocolMessage(this, json_message);
+  DCHECK(channel_ || external_host_);
+  if (channel_)
+    channel_->SendProtocolMessage(json_message);
   else
     external_host_->SendProtocolMessage(json_message);
 }
@@ -140,21 +133,13 @@ void HeadlessDevToolsClientImpl::SendRawDevToolsMessage(
   SendRawDevToolsMessage(json_message);
 }
 
-void HeadlessDevToolsClientImpl::DispatchProtocolMessage(
-    content::DevToolsAgentHost* agent_host,
-    const std::string& json_message) {
-  DCHECK_EQ(agent_host_, agent_host);
-  DispatchProtocolMessage(agent_host->GetId(), json_message);
-}
-
 void HeadlessDevToolsClientImpl::DispatchMessageFromExternalHost(
     const std::string& json_message) {
   DCHECK(external_host_);
-  DispatchProtocolMessage(std::string(), json_message);
+  ReceiveProtocolMessage(json_message);
 }
 
-void HeadlessDevToolsClientImpl::DispatchProtocolMessage(
-    const std::string& host_id,
+void HeadlessDevToolsClientImpl::ReceiveProtocolMessage(
     const std::string& json_message) {
   std::unique_ptr<base::Value> message =
       base::JSONReader::Read(json_message, base::JSON_PARSE_RFC);
@@ -164,8 +149,8 @@ void HeadlessDevToolsClientImpl::DispatchProtocolMessage(
     return;
   }
 
-  if (raw_protocol_listener_ && raw_protocol_listener_->OnProtocolMessage(
-                                    host_id, json_message, *message_dict)) {
+  if (raw_protocol_listener_ &&
+      raw_protocol_listener_->OnProtocolMessage(json_message, *message_dict)) {
     return;
   }
 
@@ -289,13 +274,6 @@ void HeadlessDevToolsClientImpl::DispatchEventTask(
     const EventHandler* event_handler,
     const base::DictionaryValue* result_dict) {
   event_handler->Run(*result_dict);
-}
-
-void HeadlessDevToolsClientImpl::AgentHostClosed(
-    content::DevToolsAgentHost* agent_host) {
-  DCHECK_EQ(agent_host_, agent_host);
-  agent_host = nullptr;
-  pending_messages_.clear();
 }
 
 accessibility::Domain* HeadlessDevToolsClientImpl::GetAccessibility() {
@@ -437,15 +415,15 @@ void HeadlessDevToolsClientImpl::FinalizeAndSendMessage(
     CallbackType callback) {
   if (renderer_crashed_)
     return;
-  DCHECK(agent_host_ || external_host_);
+  DCHECK(channel_ || external_host_);
   int id = next_message_id_;
   next_message_id_ += 2;  // We only send even numbered messages.
   message->SetInteger("id", id);
   std::string json_message;
   base::JSONWriter::Write(*message, &json_message);
   pending_messages_[id] = Callback(std::move(callback));
-  if (agent_host_)
-    agent_host_->DispatchProtocolMessage(this, json_message);
+  if (channel_)
+    channel_->SendProtocolMessage(json_message);
   else
     external_host_->SendProtocolMessage(json_message);
 }

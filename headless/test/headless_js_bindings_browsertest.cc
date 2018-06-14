@@ -201,8 +201,7 @@ class HeadlessJsBindingsTest
     devtools_client_->SendRawDevToolsMessage(json_message);
   }
 
-  bool OnProtocolMessage(const std::string& devtools_agent_host_id,
-                         const std::string& json_message,
+  bool OnProtocolMessage(const std::string& json_message,
                          const base::DictionaryValue& parsed_message) override {
     if (!connection_established_)
       return false;

@@ -61,6 +61,7 @@ class HEADLESS_EXPORT HeadlessBrowserImpl : public HeadlessBrowser,
       HeadlessBrowserContext* browser_context) override;
   HeadlessBrowserContext* GetDefaultBrowserContext() override;
   HeadlessDevToolsTarget* GetDevToolsTarget() override;
+  std::unique_ptr<HeadlessDevToolsChannel> CreateDevToolsChannel() override;
 
   // HeadlessDevToolsTarget implementation:
   void AttachClient(HeadlessDevToolsClient* client) override;

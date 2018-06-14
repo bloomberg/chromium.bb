@@ -53,8 +53,7 @@ class BeginFrameCounter : HeadlessDevToolsClient::RawProtocolListener {
 
   ~BeginFrameCounter() override { client_->SetRawProtocolListener(nullptr); }
 
-  bool OnProtocolMessage(const std::string& devtools_agent_host_id,
-                         const std::string& json_message,
+  bool OnProtocolMessage(const std::string& json_message,
                          const base::DictionaryValue& parsed_message) override {
     const base::Value* id_value = parsed_message.FindKey("id");
     if (!id_value)

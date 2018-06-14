@@ -21,6 +21,7 @@
 #include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
+#include "headless/lib/browser/headless_devtools_agent_host_client.h"
 #include "headless/lib/browser/headless_net_log.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/headless_content_main_delegate.h"
@@ -260,14 +261,18 @@ HeadlessDevToolsTarget* HeadlessBrowserImpl::GetDevToolsTarget() {
   return agent_host_ ? this : nullptr;
 }
 
-void HeadlessBrowserImpl::AttachClient(HeadlessDevToolsClient* client) {
+std::unique_ptr<HeadlessDevToolsChannel>
+HeadlessBrowserImpl::CreateDevToolsChannel() {
   DCHECK(agent_host_);
-  HeadlessDevToolsClientImpl::From(client)->AttachToHost(agent_host_.get());
+  return std::make_unique<HeadlessDevToolsAgentHostClient>(agent_host_);
+}
+
+void HeadlessBrowserImpl::AttachClient(HeadlessDevToolsClient* client) {
+  client->AttachToChannel(CreateDevToolsChannel());
 }
 
 void HeadlessBrowserImpl::DetachClient(HeadlessDevToolsClient* client) {
-  DCHECK(agent_host_);
-  HeadlessDevToolsClientImpl::From(client)->DetachFromHost(agent_host_.get());
+  client->DetachFromChannel();
 }
 
 bool HeadlessBrowserImpl::IsAttached() {

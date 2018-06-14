@@ -297,6 +297,8 @@ component("headless") {
     "lib/browser/headless_browser_main_parts_mac.mm",
     "lib/browser/headless_devtools.cc",
     "lib/browser/headless_devtools.h",
+    "lib/browser/headless_devtools_agent_host_client.cc",
+    "lib/browser/headless_devtools_agent_host_client.h",
     "lib/browser/headless_devtools_client_impl.cc",
     "lib/browser/headless_devtools_manager_delegate.cc",
     "lib/browser/headless_devtools_manager_delegate.h",
@@ -342,6 +344,7 @@ component("headless") {
     "public/headless_browser.cc",
     "public/headless_browser.h",
     "public/headless_browser_context.h",
+    "public/headless_devtools_channel.h",
     "public/headless_devtools_client.h",
     "public/headless_devtools_target.h",
     "public/headless_export.h",
@@ -588,26 +591,6 @@ static_library("headless_url_mocks") {
   ]
 }
 
-static_library("headless_test_support") {
-  testonly = true
-
-  sources = [
-    "public/util/testing/mock_devtools_agent_host.cc",
-    "public/util/testing/mock_devtools_agent_host.h",
-  ]
-
-  public_deps = [
-    ":headless_renderer",
-    "//base",
-    "//net",
-  ]
-
-  deps = [
-    ":headless_url_mocks",
-    "//testing/gmock",
-  ]
-}
-
 group("headless_tests") {
   testonly = true
 
@@ -642,7 +625,8 @@ test("headless_unittests") {
   }
 
   deps = [
-    ":headless_test_support",
+    ":headless_renderer",
+    ":headless_url_mocks",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//components/security_state/content",
@@ -803,7 +787,7 @@ test("headless_browsertests") {
 
   deps = [
     ":headless_renderer",
-    ":headless_test_support",
+    ":headless_url_mocks",
     "//base",
     "//components/security_state/content",
     "//content/test:test_support",
