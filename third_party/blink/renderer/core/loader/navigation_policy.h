@@ -36,6 +36,7 @@
 namespace blink {
 
 class Event;
+class WebInputEvent;
 
 enum NavigationPolicy {
   kNavigationPolicyIgnore,
@@ -49,14 +50,16 @@ enum NavigationPolicy {
   kNavigationPolicyHandledByClientForInitialHistory,
 };
 
+// Returns a NavigationPolicy to use for starting a navigation
+// based on the Event. This function takes care of some security checks,
+// ensuring that synthesized events cannot trigger arbitrary downloads
+// or new tabs without user intention coming from a real input event.
 CORE_EXPORT NavigationPolicy NavigationPolicyFromEvent(Event*);
 
-CORE_EXPORT NavigationPolicy
-NavigationPolicyFromMouseEvent(unsigned short button,
-                               bool ctrl,
-                               bool shift,
-                               bool alt,
-                               bool meta);
+// This is a helper method which returns policy for a real input event
+// from the user.
+// TODO(dgozman): this function should be gone soon.
+CORE_EXPORT NavigationPolicy NavigationPolicyFromEvent(const WebInputEvent*);
 
 }  // namespace blink
 

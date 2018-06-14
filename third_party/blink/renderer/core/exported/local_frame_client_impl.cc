@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 #include "third_party/blink/renderer/core/exported/shared_worker_repository_client_impl.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
@@ -469,45 +468,6 @@ void LocalFrameClientImpl::DispatchDidChangeThemeColor() {
     web_frame_->Client()->DidChangeThemeColor();
 }
 
-static bool AllowCreatingBackgroundTabs() {
-  const WebInputEvent* input_event = CurrentInputEvent::Get();
-  if (!input_event || (input_event->GetType() != WebInputEvent::kMouseUp &&
-                       (input_event->GetType() != WebInputEvent::kRawKeyDown &&
-                        input_event->GetType() != WebInputEvent::kKeyDown) &&
-                       input_event->GetType() != WebInputEvent::kGestureTap))
-    return false;
-
-  unsigned short button_number;
-  if (WebInputEvent::IsMouseEventType(input_event->GetType())) {
-    const WebMouseEvent* mouse_event =
-        static_cast<const WebMouseEvent*>(input_event);
-
-    switch (mouse_event->button) {
-      case WebMouseEvent::Button::kLeft:
-        button_number = 0;
-        break;
-      case WebMouseEvent::Button::kMiddle:
-        button_number = 1;
-        break;
-      case WebMouseEvent::Button::kRight:
-        button_number = 2;
-        break;
-      default:
-        return false;
-    }
-  } else {
-    // The click is simulated when triggering the keypress event.
-    button_number = 0;
-  }
-  bool ctrl = input_event->GetModifiers() & WebMouseEvent::kControlKey;
-  bool shift = input_event->GetModifiers() & WebMouseEvent::kShiftKey;
-  bool alt = input_event->GetModifiers() & WebMouseEvent::kAltKey;
-  bool meta = input_event->GetModifiers() & WebMouseEvent::kMetaKey;
-  return NavigationPolicyFromMouseEvent(button_number, ctrl, shift, alt,
-                                        meta) ==
-         kNavigationPolicyNewBackgroundTab;
-}
-
 NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     const ResourceRequest& request,
     Document* origin_document,
@@ -523,11 +483,6 @@ NavigationPolicy LocalFrameClientImpl::DecidePolicyForNavigation(
     mojom::blink::BlobURLTokenPtr blob_url_token) {
   if (!web_frame_->Client())
     return kNavigationPolicyIgnore;
-
-  if (policy == kNavigationPolicyNewBackgroundTab &&
-      !AllowCreatingBackgroundTabs() &&
-      !UIEventWithKeyState::NewTabModifierSetFromIsolatedWorld())
-    policy = kNavigationPolicyNewForegroundTab;
 
   WebDocumentLoaderImpl* web_document_loader =
       WebDocumentLoaderImpl::FromDocumentLoader(document_loader);
