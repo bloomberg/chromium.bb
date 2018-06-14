@@ -109,10 +109,8 @@ void UsageReportsBufferBackend::Remove(
   // TODO(haaawk): investigate if it's worth sorting the keys here to improve
   // performance.
   leveldb::WriteBatch updates;
-  for (std::vector<std::string>::const_iterator it = reports.begin();
-       it != reports.end();
-       ++it) {
-    updates.Delete(leveldb::Slice(*it));
+  for (const auto& report : reports) {
+    updates.Delete(leveldb::Slice(report));
   }
 
   leveldb::WriteOptions write_options;
