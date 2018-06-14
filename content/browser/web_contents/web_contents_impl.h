@@ -539,8 +539,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void EnterFullscreenMode(const GURL& origin,
                            const blink::WebFullscreenOptions& options) override;
   void ExitFullscreenMode(bool will_cause_resize) override;
-  void FullscreenStateChanged(RenderFrameHost* rfh,
-                              bool is_fullscreen) override;
   bool ShouldRouteMessageEvent(
       RenderFrameHost* target_rfh,
       SiteInstance* source_site_instance) const override;
@@ -963,8 +961,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
 
-  friend class WebContentsImplBrowserTest;
-
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, NoJSMessageOnInterstitials);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, UpdateTitle);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, FindOpenerRVHWhenPending);
@@ -981,12 +977,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest,
                            ResetJavaScriptDialogOnUserNavigate);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, ParseDownloadHeaders);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           NotifyFullscreenAcquired);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           NotifyFullscreenAcquired_Navigate);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
-                           NotifyFullscreenAcquired_SameOrigin);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, PageDoesBackAndReload);
@@ -1740,15 +1730,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Gets notified about changes in viewport fit events.
   class DisplayCutoutHostImpl;
   std::unique_ptr<DisplayCutoutHostImpl> display_cutout_host_impl_;
-
-  // Stores a set of FrameTreeNode ids that are fullscreen.
-  using FullscreenFrameNodes = std::set<int>;
-  FullscreenFrameNodes fullscreen_frame_tree_nodes_;
-
-  // Stores the ID of the current fullscreen |FrameTreeNode| or
-  // |kNoFrameTreeNodeId| if the tab is not currently fullscreen.
-  int current_fullscreen_frame_tree_node_id_ =
-      RenderFrameHost::kNoFrameTreeNodeId;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

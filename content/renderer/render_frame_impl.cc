@@ -5121,10 +5121,6 @@ void RenderFrameImpl::ExitFullscreen() {
   Send(new FrameHostMsg_ExitFullscreen(routing_id_));
 }
 
-void RenderFrameImpl::FullscreenStateChanged(bool is_fullscreen) {
-  GetFrameHost()->FullscreenStateChanged(is_fullscreen);
-}
-
 void RenderFrameImpl::SuddenTerminationDisablerChanged(
     bool present,
     blink::WebSuddenTerminationDisablerType disabler_type) {
