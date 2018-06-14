@@ -1917,7 +1917,8 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   return metadata;
 }
 
-RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
+RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
+    FrameData* frame) {
   RenderFrameMetadata metadata;
   metadata.root_scroll_offset =
       gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
@@ -1934,6 +1935,8 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
     metadata.root_overflow_y_hidden |=
         !inner_viewport_scroll_node->user_scrollable_vertical;
   }
+  metadata.has_transparent_background =
+      frame->render_passes.back()->has_transparent_background;
 
   metadata.root_background_color = active_tree_->background_color();
   metadata.is_scroll_offset_at_top = active_tree_->TotalScrollOffset().y() == 0;
@@ -2052,7 +2055,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   DCHECK_EQ(metadata.frame_token + 1, next_frame_token_);
 
   if (render_frame_metadata_observer_) {
-    last_draw_render_frame_metadata_ = MakeRenderFrameMetadata();
+    last_draw_render_frame_metadata_ = MakeRenderFrameMetadata(frame);
     render_frame_metadata_observer_->OnRenderFrameSubmission(
         *last_draw_render_frame_metadata_, &metadata);
   }

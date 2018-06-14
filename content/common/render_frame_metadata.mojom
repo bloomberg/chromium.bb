@@ -36,6 +36,9 @@ struct RenderFrameMetadata {
   gfx.mojom.SizeF scrollable_viewport_size;
   gfx.mojom.SizeF root_layer_size;
 
+  [EnableIf=is_android]
+  bool has_transparent_background;
+
   // Determines whether the page is mobile optimized or not, which means at
   // least one of the following has to be true:
   // - page has a width=device-width or narrower viewport.

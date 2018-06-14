@@ -60,6 +60,11 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.root_layer_size;
   }
 
+  static bool has_transparent_background(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.has_transparent_background;
+  }
+
   static bool is_mobile_optimized(const cc::RenderFrameMetadata& metadata) {
     return metadata.is_mobile_optimized;
   }

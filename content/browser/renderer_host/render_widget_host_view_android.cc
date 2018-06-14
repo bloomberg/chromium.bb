@@ -1233,7 +1233,6 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       root_layer_size_dip, scrollable_viewport_size_dip, top_content_offset_dip,
       top_shown_pix, controls_changed);
 
-  // TODO(fsamuel): Plumb the |is_transparent| flag through RenderFrameMetadata.
   SetContentBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
                                            : metadata.root_background_color);
 
@@ -1385,6 +1384,10 @@ void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
       view_.GetDipScale(), metadata.top_controls_height,
       metadata.top_controls_shown_ratio, metadata.bottom_controls_height,
       metadata.bottom_controls_shown_ratio);
+
+  SetContentBackgroundColor(metadata.has_transparent_background
+                                ? SK_ColorTRANSPARENT
+                                : metadata.root_background_color);
 
   // All offsets and sizes except |top_shown_pix| are in CSS pixels.
   gesture_listener_manager_->UpdateScrollInfo(
