@@ -216,18 +216,20 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
     request->responses[client].process_id = client_info.pid;
     request->responses[client].process_type = client_info.process_type;
 
-    // Don't request a chrome memory dump at all if the client wants only the
-    // processes' vm regions, which are retrieved via RequestOSMemoryDump().
+    // Don't request a chrome memory dump at all if the client only wants the
+    // a memory footprint.
     //
     // This must occur before the call to RequestOSMemoryDump, as
     // ClientProcessImpl will [for macOS], delay the calculations for the
     // OSMemoryDump until the Chrome memory dump is finished. See
     // https://bugs.chromium.org/p/chromium/issues/detail?id=812346#c16 for more
     // details.
-    request->pending_responses.insert({client, ResponseType::kChromeDump});
-    client->RequestChromeMemoryDump(
-        request->GetRequestArgs(),
-        base::BindOnce(std::move(chrome_callback), client));
+    if (!request->args.memory_footprint_only) {
+      request->pending_responses.insert({client, ResponseType::kChromeDump});
+      client->RequestChromeMemoryDump(
+          request->GetRequestArgs(),
+          base::BindOnce(std::move(chrome_callback), client));
+    }
 
 // On most platforms each process can dump data about their own process
 // so ask each process to do so Linux is special see below.
@@ -496,11 +498,16 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
       }
     }
 
-    // Ignore incomplete results (can happen if the client crashes/disconnects).
-    const bool valid =
-        raw_os_dump && raw_chrome_dump &&
-        (request->memory_map_option() == mojom::MemoryMapOption::NONE ||
-         (raw_os_dump && !raw_os_dump->memory_maps.empty()));
+    bool valid = false;
+    if (request->args.memory_footprint_only) {
+      valid = raw_os_dump;
+    } else {
+      // Ignore incomplete results (can happen if the client
+      // crashes/disconnects).
+      valid = raw_os_dump && raw_chrome_dump &&
+              (request->memory_map_option() == mojom::MemoryMapOption::NONE ||
+               (raw_os_dump && !raw_os_dump->memory_maps.empty()));
+    }
 
     if (!valid)
       continue;

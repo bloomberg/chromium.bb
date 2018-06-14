@@ -33,7 +33,8 @@ struct QueuedRequest {
          MemoryDumpLevelOfDetail level_of_detail,
          const std::vector<std::string>& allocator_dump_names,
          bool add_to_trace,
-         base::ProcessId pid);
+         base::ProcessId pid,
+         bool memory_footprint_only);
     Args(const Args&);
     ~Args();
 
@@ -42,6 +43,10 @@ struct QueuedRequest {
     const std::vector<std::string> allocator_dump_names;
     const bool add_to_trace;
     const base::ProcessId pid;
+
+    // If this member is |true|, then no MemoryDumpProviders are queried. The
+    // only other relevant member is |pid|.
+    const bool memory_footprint_only;
   };
 
   struct PendingResponse {

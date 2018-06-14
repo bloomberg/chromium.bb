@@ -40,16 +40,6 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT MemoryInstrumentation {
                              const std::string& service_name);
   static MemoryInstrumentation* GetInstance();
 
-  // Requests a global memory dump.
-  // Returns asynchronously, via the callback argument:
-  //  (true, global_dump) if succeeded;
-  //  (false, nullptr) if failed.
-  // The callback (if not null), will be posted on the same thread of the
-  // RequestGlobalDump() call.
-  // TODO(lalitm): this is temporary until we migrate task manager, metrics
-  // etc to use the new method.
-  void RequestGlobalDump(RequestGlobalDumpCallback);
-
   // Requests a global memory dump with |allocator_dump_names| indicating
   // the name of allocator dumps in which the consumer is interested. If
   // |allocator_dump_names| is empty, no dumps will be returned.
@@ -59,16 +49,21 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT MemoryInstrumentation {
   //  but missing data.
   // The callback (if not null), will be posted on the same thread of the
   // RequestGlobalDump() call.
+  // Note: Even if |allocator_dump_names| is empty, all MemoryDumpProviders will
+  // still be queried.
   void RequestGlobalDump(const std::vector<std::string>& allocator_dump_names,
                          RequestGlobalDumpCallback);
 
-  // Requests a global memory dump.
-  // Returns asynchronously, via the callback argument, the global memory
-  // dump with the process memory dump for the given pid or null if the dump
-  // failed.
+  // Returns asynchronously, via the callback argument:
+  //  (true, global_dump) if succeeded;
+  //  (false, global_dump) if failed, with global_dump being non-null
+  //  but missing data.
   // The callback (if not null), will be posted on the same thread of the
-  // RequestGlobalDumpForPid() call.
-  void RequestGlobalDumpForPid(base::ProcessId pid, RequestGlobalDumpCallback);
+  // RequestPrivateMemoryFootprint() call.
+  // Passing a null |pid| is the same as requesting the PrivateMemoryFootprint
+  // for all processes.
+  void RequestPrivateMemoryFootprint(base::ProcessId pid,
+                                     RequestGlobalDumpCallback);
 
   // Requests a global memory dump with |allocator_dump_names| indicating
   // the name of allocator dumps in which the consumer is interested. If
