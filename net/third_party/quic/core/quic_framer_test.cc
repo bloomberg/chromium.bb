@@ -2803,7 +2803,7 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
   PacketFragments packet44 = {
       // type (short packet, 4 byte packet number)
       {"",
-       {0x12}},
+       {0x32}},
       // connection_id
       {"",
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
@@ -2831,7 +2831,7 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
   PacketFragments packet99 = {
       // type (short packet, 4 byte packet number)
       {"",
-       {0x12}},
+       {0x32}},
       // connection_id
       {"",
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
@@ -3382,7 +3382,7 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlockMaxLength) {
   PacketFragments packet99 = {
       // type (short header, 4 byte packet number)
       {"",
-       {0x12}},
+       {0x32}},
       // connection_id
       {"",
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
@@ -3917,7 +3917,7 @@ TEST_P(QuicFramerTest, InvalidNewStopWaitingFrame) {
 
   unsigned char packet44[] = {
     // type (short header, 4 byte packet number)
-    0x12,
+    0x32,
     // connection_id
     0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
     // packet number
@@ -4048,7 +4048,7 @@ TEST_P(QuicFramerTest, RstStreamFrame) {
   PacketFragments packet99 = {
       // type (short header, 4 byte packet number)
       {"",
-       {0x12}},
+       {0x32}},
       // connection_id
       {"",
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
@@ -4519,7 +4519,7 @@ TEST_P(QuicFramerTest, WindowUpdateFrame) {
   PacketFragments packet99 = {
       // type (short header, 4 byte packet number)
       {"",
-       {0x12}},
+       {0x32}},
       // connection_id
       {"",
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
@@ -4708,7 +4708,7 @@ TEST_P(QuicFramerTest, BlockedFrame) {
   PacketFragments packet99 = {
       // type (short header, 4 byte packet number)
       {"",
-       {0x12}},
+       {0x32}},
       // connection_id
       {"",
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
@@ -4786,7 +4786,7 @@ TEST_P(QuicFramerTest, PingFrame) {
 
   unsigned char packet44[] = {
      // type (short header, 4 byte packet number)
-     0x12,
+     0x32,
      // connection_id
      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
      // packet number
@@ -8646,7 +8646,7 @@ TEST_P(QuicFramerTest, EncryptPacket) {
 
   unsigned char packet44[] = {
     // type (short header, 4 byte packet number)
-    0x12,
+    0x32,
     // connection_id
     0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
     // packet number
@@ -8777,6 +8777,7 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   QuicFrames frames = {QuicFrame(&ack_frame)};
 
   // Build an ack packet with truncation due to limit in number of nack ranges.
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
   std::unique_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames));
   ASSERT_TRUE(raw_ack_packet != nullptr);
   char buffer[kMaxPacketSize];
@@ -8785,6 +8786,7 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
                              *raw_ack_packet, buffer, kMaxPacketSize);
   ASSERT_NE(0u, encrypted_length);
   // Now make sure we can turn our ack packet back into an ack frame.
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_SERVER);
   ASSERT_TRUE(framer_.ProcessPacket(
       QuicEncryptedPacket(buffer, encrypted_length, false)));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
@@ -8814,6 +8816,7 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   QuicFrames frames = {QuicFrame(&ack_frame)};
 
   // Build an ack packet with truncation due to limit in number of nack ranges.
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
   std::unique_ptr<QuicPacket> raw_ack_packet(
       BuildDataPacket(header, frames, 500));
   ASSERT_TRUE(raw_ack_packet != nullptr);
@@ -8823,6 +8826,7 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
                              *raw_ack_packet, buffer, kMaxPacketSize);
   ASSERT_NE(0u, encrypted_length);
   // Now make sure we can turn our ack packet back into an ack frame.
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_SERVER);
   ASSERT_TRUE(framer_.ProcessPacket(
       QuicEncryptedPacket(buffer, encrypted_length, false)));
   ASSERT_EQ(1u, visitor_.ack_frames_.size());
@@ -8850,7 +8854,7 @@ TEST_P(QuicFramerTest, CleanTruncation) {
 
   // Create a packet with just the ack.
   QuicFrames frames = {QuicFrame(&ack_frame)};
-
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
   std::unique_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames));
   ASSERT_TRUE(raw_ack_packet != nullptr);
 
@@ -8861,6 +8865,7 @@ TEST_P(QuicFramerTest, CleanTruncation) {
   ASSERT_NE(0u, encrypted_length);
 
   // Now make sure we can turn our ack packet back into an ack frame.
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_SERVER);
   ASSERT_TRUE(framer_.ProcessPacket(
       QuicEncryptedPacket(buffer, encrypted_length, false)));
 
@@ -8870,6 +8875,7 @@ TEST_P(QuicFramerTest, CleanTruncation) {
   frames.push_back(QuicFrame(visitor_.ack_frames_[0].get()));
 
   size_t original_raw_length = raw_ack_packet->length();
+  QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
   raw_ack_packet.reset(BuildDataPacket(header, frames));
   ASSERT_TRUE(raw_ack_packet != nullptr);
   EXPECT_EQ(original_raw_length, raw_ack_packet->length());
