@@ -311,6 +311,7 @@ Bug(none) compositing/overflow/scroll-parent-absolute-with-backdrop-filter.html 
 Bug(none) compositing/overflow/scroll-parent-absolute.html [ Failure ]
 Bug(none) compositing/overflow/scroll-parent-with-non-stacking-context-composited-ancestor.html [ Failure ]
 Bug(none) compositing/overflow/scrollbar-layer-placement.html [ Failure ]
+Bug(none) compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 Bug(none) compositing/overflow/scrolling-content-clip-to-viewport.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-nested.html [ Failure Crash ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-transform.html [ Failure Crash ]

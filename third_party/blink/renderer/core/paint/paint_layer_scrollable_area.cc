@@ -121,8 +121,6 @@ const int kResizerControlExpandRatioForTouch = 2;
 
 PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
     : layer_(&layer),
-      next_topmost_scroll_child_(nullptr),
-      topmost_scroll_child_(nullptr),
       in_resize_mode_(false),
       scrolls_overflow_(false),
       in_overflow_relayout_(false),
@@ -134,6 +132,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       needs_relayout_(false),
       had_horizontal_scrollbar_before_relayout_(false),
       had_vertical_scrollbar_before_relayout_(false),
+      has_paint_layer_scroll_child_(false),
       scrollbar_manager_(*this),
       scroll_corner_(nullptr),
       resizer_(nullptr),
@@ -1232,13 +1231,8 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
   UpdateResizerStyle(old_style);
 }
 
-bool PaintLayerScrollableArea::UpdateAfterCompositingChange() {
+void PaintLayerScrollableArea::UpdateAfterCompositingChange() {
   Layer()->UpdateScrollingStateAfterCompositingChange();
-  const bool layers_changed =
-      topmost_scroll_child_ != next_topmost_scroll_child_;
-  topmost_scroll_child_ = next_topmost_scroll_child_;
-  next_topmost_scroll_child_ = nullptr;
-  return layers_changed;
 }
 
 void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
@@ -2277,14 +2271,6 @@ void PaintLayerScrollableArea::UpdateNeedsCompositedScrolling(
       needs_composited_scrolling) {
     needs_composited_scrolling_ = needs_composited_scrolling;
   }
-}
-
-void PaintLayerScrollableArea::SetTopmostScrollChild(PaintLayer* scroll_child) {
-  // We only want to track the topmost scroll child for scrollable areas with
-  // overlay scrollbars.
-  if (!HasOverlayScrollbars())
-    return;
-  next_topmost_scroll_child_ = scroll_child;
 }
 
 bool PaintLayerScrollableArea::VisualViewportSuppliesScrollbars() const {

@@ -4099,11 +4099,8 @@ IntPoint LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
   return FrameToContents(point_in_this_frame);
 }
 
-bool LocalFrameView::UpdateAfterCompositingChange() {
-  if (ScrollOriginChanged())
-    ResetScrollOriginChanged();
-
-  return false;
+void LocalFrameView::UpdateAfterCompositingChange() {
+  ResetScrollOriginChanged();
 }
 
 LayoutRect LocalFrameView::ScrollIntoView(

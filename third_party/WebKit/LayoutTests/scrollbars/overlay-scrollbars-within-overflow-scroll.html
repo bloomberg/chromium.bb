@@ -36,4 +36,9 @@ if (window.internals) {
 }
 const outer = document.getElementById('outer');
 outer.scrollTop = outer.scrollHeight - outer.clientHeight;
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
+    testRunner.setCustomTextOutput(internals.layerTreeAsText(document));
+}
+
 </script>

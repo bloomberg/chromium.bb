@@ -341,7 +341,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void UpdateAfterStyleChange(const ComputedStyle*);
   void UpdateAfterOverflowRecalc();
 
-  bool UpdateAfterCompositingChange() override;
+  void UpdateAfterCompositingChange() override;
 
   bool HasScrollbar() const {
     return HasHorizontalScrollbar() || HasVerticalScrollbar();
@@ -405,12 +405,13 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void UpdateNeedsCompositedScrolling(bool layer_has_been_composited = false);
   bool NeedsCompositedScrolling() const { return needs_composited_scrolling_; }
 
-  // These are used during compositing updates to determine if the overflow
-  // controls need to be repositioned in the GraphicsLayer tree.
-  void SetTopmostScrollChild(PaintLayer*);
-  PaintLayer* TopmostScrollChild() const {
-    DCHECK(!next_topmost_scroll_child_);
-    return topmost_scroll_child_;
+  // Sets whether there is a PaintLayer whose ScrollParent() is the
+  // owner of this PaintLayerScrollableArea.
+  void SetHasPaintLayerScrollChild(bool val) {
+    has_paint_layer_scroll_child_ = val;
+  }
+  bool HasPaintLayerScrollChild() const {
+    return has_paint_layer_scroll_child_;
   }
 
   IntRect ResizerCornerRect(const IntRect&, ResizerHitTestType) const;
@@ -574,9 +575,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // be set to nullptr by the Dispose method.
   PaintLayer* layer_;
 
-  PaintLayer* next_topmost_scroll_child_;
-  PaintLayer* topmost_scroll_child_;
-
   // Keeps track of whether the layer is currently resizing, so events can cause
   // resizing to start and stop.
   unsigned in_resize_mode_ : 1;
@@ -602,6 +600,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   unsigned needs_relayout_ : 1;
   unsigned had_horizontal_scrollbar_before_relayout_ : 1;
   unsigned had_vertical_scrollbar_before_relayout_ : 1;
+  unsigned has_paint_layer_scroll_child_ : 1;
 
   // The width/height of our scrolled area.
   // This is OverflowModel's layout overflow translated to physical

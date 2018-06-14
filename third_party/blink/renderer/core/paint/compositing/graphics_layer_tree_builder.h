@@ -42,6 +42,16 @@ class GraphicsLayerTreeBuilder {
   ~GraphicsLayerTreeBuilder();
 
   void Rebuild(PaintLayer&, GraphicsLayerVector&);
+
+ private:
+  // Maps from PaintLayer::ScrollParent to index into |child_layers| (see below
+  // for child_layers parameter) at which to insert the overflow controls
+  // graphics layers for ScrollParent when reparenting them.
+  using PendingOverflowControlReparents = HashMap<const PaintLayer*, size_t>;
+
+  void RebuildRecursive(PaintLayer&,
+                        GraphicsLayerVector& child_layers,
+                        PendingOverflowControlReparents& pending_reparents);
 };
 
 }  // namespace blink

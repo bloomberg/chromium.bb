@@ -2892,7 +2892,8 @@ LayoutRect CompositedLayerMapping::ContentsBox() const {
 bool CompositedLayerMapping::NeedsToReparentOverflowControls() const {
   return owning_layer_.GetScrollableArea() &&
          owning_layer_.GetScrollableArea()->HasOverlayScrollbars() &&
-         owning_layer_.GetScrollableArea()->TopmostScrollChild();
+         !owning_layer_.StackingNode()->IsStackingContext() &&
+         owning_layer_.GetScrollableArea()->HasPaintLayerScrollChild();
 }
 
 GraphicsLayer* CompositedLayerMapping::DetachLayerForOverflowControls() {

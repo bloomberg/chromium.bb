@@ -344,12 +344,6 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
         layers_needing_paint_invalidation);
   }
 
-  if (layer->ScrollParent())
-    layer->ScrollParent()->GetScrollableArea()->SetTopmostScrollChild(layer);
-
-  if (layer->NeedsCompositedScrolling())
-    layer->GetScrollableArea()->SetTopmostScrollChild(nullptr);
-
   PaintLayerStackingNodeIterator iterator(
       *layer->StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
   while (PaintLayerStackingNode* cur_node = iterator.Next()) {
