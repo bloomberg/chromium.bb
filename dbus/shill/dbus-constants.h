@@ -583,7 +583,10 @@ const char kErrorEapRemoteTlsFailed[] = "eap-remote-tls-failed";
 // Manager property names.
 const char kAlwaysOnVpnPackageProperty[] = "AlwaysOnVpnPackage";
 const char kDefaultServiceProperty[] = "DefaultService";
+const char kDhcpPropertyHostnameProperty[] = "DHCPProperty.Hostname";
+const char kDhcpPropertyVendorClassProperty[] = "DHCPProperty.VendorClass";
 const char kDisableWiFiVHTProperty[] = "DisableWiFiVHT";
+// TODO(benchan): remove deprecated "HostName" property
 const char kHostNameProperty[] = "HostName";
 const char kIgnoredDNSSearchPathsProperty[] = "IgnoredDNSSearchPaths";
 const char kLinkMonitorTechnologiesProperty[] =
