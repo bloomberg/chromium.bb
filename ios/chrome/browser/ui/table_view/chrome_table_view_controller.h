@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/material_components/app_bar_presenting.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_consumer.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
@@ -48,6 +49,14 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
 // Initializes the collection view model. Must be called by subclasses if they
 // override this method in order to get a clean tableViewModel.
 - (void)loadModel NS_REQUIRES_SUPER;
+
+// Adds and starts a loading indicator in the center of the
+// ChromeTableViewController, if one is not already present. This will remove
+// any existing table view background views.
+- (void)startLoadingIndicatorWithLoadingMessage:(NSString*)loadingMessage;
+
+// Removes and stops the loading indicator, if one is present.
+- (void)stopLoadingIndicatorWithCompletion:(ProceduralBlock)completion;
 
 // Methods for reconfiguring and reloading the table view are provided by
 // ChromeTableViewConsumer.

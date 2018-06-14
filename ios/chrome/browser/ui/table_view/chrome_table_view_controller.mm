@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/table_view/table_view_loading_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 
@@ -16,8 +17,15 @@
 #error "This file requires ARC support."
 #endif
 
+@interface ChromeTableViewController ()
+// The loading view that will be displayed for [self
+// startLoadingIndicatorWithLoadingMessage].
+@property(nonatomic, strong) TableViewLoadingView* loadingView;
+@end
+
 @implementation ChromeTableViewController
 @synthesize appBar = _appBar;
+@synthesize loadingView = _loadingView;
 @synthesize styler = _styler;
 @synthesize tableViewModel = _tableViewModel;
 
@@ -63,8 +71,6 @@
   }
 }
 
-#pragma mark - ViewLifeCycle
-
 - (void)viewDidLoad {
   [super viewDidLoad];
 
@@ -79,6 +85,29 @@
         self.tableView;
     // Add the AppBar's views after all other views have been registered.
     [self.appBar addSubviewsToParent];
+  }
+}
+
+- (void)startLoadingIndicatorWithLoadingMessage:(NSString*)loadingMessage {
+  if (!self.loadingView) {
+    TableViewLoadingView* waitingView =
+        [[TableViewLoadingView alloc] initWithFrame:self.view.bounds
+                                     loadingMessage:loadingMessage];
+    self.loadingView = waitingView;
+    self.tableView.backgroundView = self.loadingView;
+    [self.loadingView startLoadingIndicator];
+  }
+}
+
+- (void)stopLoadingIndicatorWithCompletion:(ProceduralBlock)completion {
+  if (self.loadingView) {
+    [self.loadingView stopLoadingIndicatorWithCompletion:^{
+      if (completion)
+        completion();
+      [self.loadingView removeFromSuperview];
+      self.tableView.backgroundView = nil;
+      self.loadingView = nil;
+    }];
   }
 }
 
