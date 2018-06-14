@@ -12,18 +12,10 @@ void ModuleScriptLoaderRegistry::Trace(blink::Visitor* visitor) {
   visitor->Trace(active_loaders_);
 }
 
-ModuleScriptLoader* ModuleScriptLoaderRegistry::Fetch(
-    const ModuleScriptFetchRequest& request,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-    ModuleGraphLevel level,
-    Modulator* modulator,
-    ModuleScriptLoaderClient* client) {
-  ModuleScriptLoader* loader =
-      ModuleScriptLoader::Create(modulator, request.Options(), this, client);
+void ModuleScriptLoaderRegistry::AddLoader(ModuleScriptLoader* loader) {
   DCHECK(loader->IsInitialState());
+  DCHECK(!active_loaders_.Contains(loader));
   active_loaders_.insert(loader);
-  loader->Fetch(request, fetch_client_settings_object, level);
-  return loader;
 }
 
 void ModuleScriptLoaderRegistry::ReleaseFinishedLoader(

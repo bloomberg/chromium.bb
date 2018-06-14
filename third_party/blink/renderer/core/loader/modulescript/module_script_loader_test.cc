@@ -208,10 +208,10 @@ void ModuleScriptLoaderTest::TestFetchDataURL(
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,export default 'grapes';");
   FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
-  registry->Fetch(ModuleScriptFetchRequest::CreateForTest(url),
-                  fetch_client_settings_object,
-                  ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
-                  client);
+  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                            fetch_client_settings_object,
+                            ModuleGraphLevel::kTopLevelModuleFetch,
+                            GetModulator(), registry, client);
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchDataURL) {
@@ -261,10 +261,10 @@ void ModuleScriptLoaderTest::TestInvalidSpecifier(
   KURL url("data:text/javascript,import 'invalid';export default 'grapes';");
   FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
   GetModulator()->SetModuleRequests({"invalid"});
-  registry->Fetch(ModuleScriptFetchRequest::CreateForTest(url),
-                  fetch_client_settings_object,
-                  ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
-                  client);
+  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                            fetch_client_settings_object,
+                            ModuleGraphLevel::kTopLevelModuleFetch,
+                            GetModulator(), registry, client);
 }
 
 TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
@@ -300,10 +300,10 @@ void ModuleScriptLoaderTest::TestFetchInvalidURL(
   KURL url;
   EXPECT_FALSE(url.IsValid());
   FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
-  registry->Fetch(ModuleScriptFetchRequest::CreateForTest(url),
-                  fetch_client_settings_object,
-                  ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
-                  client);
+  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                            fetch_client_settings_object,
+                            ModuleGraphLevel::kTopLevelModuleFetch,
+                            GetModulator(), registry, client);
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchInvalidURL) {
@@ -337,10 +337,10 @@ void ModuleScriptLoaderTest::TestFetchURL(
   FetchClientSettingsObjectSnapshot fetch_client_settings_object(GetDocument());
 
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
-  registry->Fetch(ModuleScriptFetchRequest::CreateForTest(url),
-                  fetch_client_settings_object,
-                  ModuleGraphLevel::kTopLevelModuleFetch, GetModulator(),
-                  client);
+  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                            fetch_client_settings_object,
+                            ModuleGraphLevel::kTopLevelModuleFetch,
+                            GetModulator(), registry, client);
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchURL) {
