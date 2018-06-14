@@ -76,7 +76,7 @@ void U2fSignOperation::OnSignResponseReceived(
             application_parameter_type == ApplicationParameterType::kPrimary
                 ? fido_parsing_utils::CreateSHA256Hash(request().rp_id())
                 : request().alternative_application_parameter().value_or(
-                      std::vector<uint8_t>());
+                      std::array<uint8_t, kRpIdHashLength>());
         auto sign_response =
             AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
                 std::move(application_parameter), apdu_response->data(),

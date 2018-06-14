@@ -4,6 +4,7 @@
 
 #include "content/browser/webauth/authenticator_impl.h"
 
+#include <array>
 #include <string>
 #include <utility>
 #include <vector>
@@ -33,6 +34,7 @@
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_authenticator.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/get_assertion_request_handler.h"
 #include "device/fido/make_credential_request_handler.h"
@@ -169,7 +171,7 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
 }
 
 device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
-    std::vector<uint8_t> client_data_hash,
+    base::span<const uint8_t, device::kClientDataHashLength> client_data_hash,
     const webauth::mojom::PublicKeyCredentialCreationOptionsPtr& options,
     bool is_individual_attestation) {
   auto credential_params = mojo::ConvertTo<
@@ -177,7 +179,7 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
       options->public_key_parameters);
 
   device::CtapMakeCredentialRequest make_credential_param(
-      std::move(client_data_hash),
+      client_data_hash,
       mojo::ConvertTo<device::PublicKeyCredentialRpEntity>(
           options->relying_party),
       mojo::ConvertTo<device::PublicKeyCredentialUserEntity>(options->user),
@@ -193,11 +195,12 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
 }
 
 device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
-    std::vector<uint8_t> client_data_hash,
+    base::span<const uint8_t, device::kClientDataHashLength> client_data_hash,
     const webauth::mojom::PublicKeyCredentialRequestOptionsPtr& options,
-    base::Optional<std::vector<uint8_t>> alternative_application_parameter) {
-  device::CtapGetAssertionRequest request_parameter(
-      options->relying_party_id, std::move(client_data_hash));
+    base::Optional<base::span<const uint8_t, device::kRpIdHashLength>>
+        alternative_application_parameter) {
+  device::CtapGetAssertionRequest request_parameter(options->relying_party_id,
+                                                    client_data_hash);
 
   auto allowed_list =
       mojo::ConvertTo<std::vector<device::PublicKeyCredentialDescriptor>>(
@@ -222,9 +225,10 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
   return request_parameter;
 }
 
-std::vector<uint8_t> ConstructClientDataHash(const std::string& client_data) {
+std::array<uint8_t, crypto::kSHA256Length> ConstructClientDataHash(
+    const std::string& client_data) {
   // SHA-256 hash of the JSON data structure.
-  std::vector<uint8_t> client_data_hash(crypto::kSHA256Length);
+  std::array<uint8_t, crypto::kSHA256Length> client_data_hash;
   crypto::SHA256HashString(client_data, client_data_hash.data(),
                            client_data_hash.size());
   return client_data_hash;
@@ -233,17 +237,16 @@ std::vector<uint8_t> ConstructClientDataHash(const std::string& client_data) {
 // The application parameter is the SHA-256 hash of the UTF-8 encoding of
 // the application identity (i.e. relying_party_id) of the application
 // requesting the registration.
-std::vector<uint8_t> CreateApplicationParameter(
+std::array<uint8_t, crypto::kSHA256Length> CreateApplicationParameter(
     const std::string& relying_party_id) {
-  std::vector<uint8_t> application_parameter(crypto::kSHA256Length);
+  std::array<uint8_t, crypto::kSHA256Length> application_parameter;
   crypto::SHA256HashString(relying_party_id, application_parameter.data(),
                            application_parameter.size());
   return application_parameter;
 }
 
-base::Optional<std::vector<uint8_t>> ProcessAppIdExtension(
-    std::string appid,
-    const url::Origin& caller_origin) {
+base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
+ProcessAppIdExtension(std::string appid, const url::Origin& caller_origin) {
   if (appid.empty()) {
     // See step two in the comments in |IsAppIdAllowedForOrigin|.
     appid = caller_origin.Serialize() + "/";
@@ -546,10 +549,8 @@ void AuthenticatorImpl::GetAssertion(
     return;
   }
 
-  std::vector<uint8_t> application_parameter =
-      CreateApplicationParameter(options->relying_party_id);
-
-  base::Optional<std::vector<uint8_t>> alternative_application_parameter;
+  base::Optional<std::array<uint8_t, crypto::kSHA256Length>>
+      alternative_application_parameter;
   if (options->appid) {
     auto appid_hash = ProcessAppIdExtension(*options->appid, caller_origin);
     if (!appid_hash) {

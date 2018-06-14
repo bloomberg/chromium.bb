@@ -108,8 +108,7 @@ TEST(CTAPRequestTest, TestConstructMakeCredentialRequestParam) {
       .SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
 
   CtapMakeCredentialRequest make_credential_param(
-      fido_parsing_utils::Materialize(test_data::kClientDataHash),
-      std::move(rp), std::move(user),
+      test_data::kClientDataHash, std::move(rp), std::move(user),
       PublicKeyCredentialParams({{CredentialType::kPublicKey, 7},
                                  {CredentialType::kPublicKey, 257}}));
   auto serialized_data = make_credential_param.SetResidentKeySupported(true)
@@ -182,8 +181,8 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
       // clang-format on
   };
 
-  CtapGetAssertionRequest get_assertion_req(
-      "acme.com", fido_parsing_utils::Materialize(test_data::kClientDataHash));
+  CtapGetAssertionRequest get_assertion_req("acme.com",
+                                            test_data::kClientDataHash);
 
   std::vector<PublicKeyCredentialDescriptor> allowed_list;
   allowed_list.push_back(PublicKeyCredentialDescriptor(

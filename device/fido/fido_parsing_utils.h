@@ -17,6 +17,7 @@
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "crypto/sha2.h"
 
 namespace device {
 namespace fido_parsing_utils {
@@ -49,6 +50,15 @@ std::vector<uint8_t> Materialize(base::span<const uint8_t> span);
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<std::vector<uint8_t>> MaterializeOrNull(
     base::Optional<base::span<const uint8_t>> span);
+
+// Returns a materialized copy of the static |span|, that is, an array with the
+// same elements.
+template <size_t N>
+std::array<uint8_t, N> Materialize(base::span<const uint8_t, N> span) {
+  std::array<uint8_t, N> array;
+  std::copy(span.begin(), span.end(), array.begin());
+  return array;
+}
 
 // Appends |in_values| to the end of |target|. The underlying container for
 // |in_values| should *not* be |target|.
@@ -98,7 +108,8 @@ std::vector<base::span<const uint8_t>> SplitSpan(base::span<const uint8_t> span,
                                                  size_t max_chunk_size);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
-std::vector<uint8_t> CreateSHA256Hash(base::StringPiece data);
+std::array<uint8_t, crypto::kSHA256Length> CreateSHA256Hash(
+    base::StringPiece data);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::StringPiece ConvertToStringPiece(base::span<const uint8_t> data);

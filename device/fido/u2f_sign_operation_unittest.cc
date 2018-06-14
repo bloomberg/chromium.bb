@@ -37,9 +37,8 @@ class U2fSignOperationTest : public ::testing::Test {
  public:
   CtapGetAssertionRequest CreateSignRequest(
       std::vector<std::vector<uint8_t>> key_handles) {
-    CtapGetAssertionRequest request(
-        test_data::kRelyingPartyId,
-        fido_parsing_utils::Materialize(test_data::kClientDataHash));
+    CtapGetAssertionRequest request(test_data::kRelyingPartyId,
+                                    test_data::kClientDataHash);
 
     std::vector<PublicKeyCredentialDescriptor> allowed_list;
     for (auto& key_handle : key_handles) {
@@ -89,16 +88,15 @@ TEST_F(U2fSignOperationTest, SignSuccessWithFakeDevice) {
   auto private_key = crypto::ECPrivateKey::Create();
   std::string public_key;
   private_key->ExportRawPublicKey(&public_key);
-  auto key_handle = fido_parsing_utils::CreateSHA256Hash(public_key);
+  auto hash = fido_parsing_utils::CreateSHA256Hash(public_key);
+  std::vector<uint8_t> key_handle(hash.begin(), hash.end());
   auto request = CreateSignRequest({key_handle});
 
   auto device = std::make_unique<VirtualU2fDevice>();
   device->mutable_state()->registrations.emplace(
-      key_handle,
-      VirtualFidoDevice::RegistrationData(
-          std::move(private_key),
-          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-          42 /* counter */));
+      key_handle, VirtualFidoDevice::RegistrationData(
+                      std::move(private_key), test_data::kApplicationParameter,
+                      42 /* counter */));
 
   auto u2f_sign = std::make_unique<U2fSignOperation>(
       device.get(), std::move(request), sign_callback_receiver().callback());
@@ -314,8 +312,8 @@ TEST_F(U2fSignOperationTest, SignWithCorruptedResponse) {
 TEST_F(U2fSignOperationTest, AlternativeApplicationParameter) {
   auto request = CreateSignRequest(
       {fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)});
-  request.SetAlternativeApplicationParameter(fido_parsing_utils::Materialize(
-      test_data::kAlternativeApplicationParameter));
+  request.SetAlternativeApplicationParameter(
+      test_data::kAlternativeApplicationParameter);
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
@@ -354,8 +352,8 @@ TEST_F(U2fSignOperationTest, AlternativeApplicationParameter) {
 TEST_F(U2fSignOperationTest, AlternativeApplicationParameterRejection) {
   auto request = CreateSignRequest(
       {fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)});
-  request.SetAlternativeApplicationParameter(fido_parsing_utils::Materialize(
-      test_data::kAlternativeApplicationParameter));
+  request.SetAlternativeApplicationParameter(
+      test_data::kAlternativeApplicationParameter);
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));

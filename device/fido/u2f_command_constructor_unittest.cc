@@ -29,78 +29,34 @@ CtapMakeCredentialRequest ConstructMakeCredentialRequest() {
       .SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
 
   return CtapMakeCredentialRequest(
-      fido_parsing_utils::Materialize(test_data::kClientDataHash),
-      std::move(rp), std::move(user),
+      test_data::kClientDataHash, std::move(rp), std::move(user),
       PublicKeyCredentialParams(PublicKeyCredentialParams(
           std::vector<PublicKeyCredentialParams::CredentialInfo>(1))));
 }
 
 CtapGetAssertionRequest ConstructGetAssertionRequest() {
-  return CtapGetAssertionRequest(
-      "acme.com", fido_parsing_utils::Materialize(test_data::kClientDataHash));
+  return CtapGetAssertionRequest("acme.com", test_data::kClientDataHash);
 }
 
 }  // namespace
 
 TEST(U2fCommandConstructorTest, TestCreateU2fRegisterCommand) {
-  const auto& register_command_without_individual_attestation =
+  const auto register_command_without_individual_attestation =
       ConstructU2fRegisterCommand(test_data::kApplicationParameter,
                                   test_data::kChallengeParameter,
                                   false /* is_individual_attestation */);
 
-  ASSERT_TRUE(register_command_without_individual_attestation);
-  EXPECT_THAT(*register_command_without_individual_attestation,
+  EXPECT_THAT(register_command_without_individual_attestation,
               ::testing::ElementsAreArray(test_data::kU2fRegisterCommandApdu));
 
-  const auto& register_command_with_individual_attestation =
+  const auto register_command_with_individual_attestation =
       ConstructU2fRegisterCommand(test_data::kApplicationParameter,
                                   test_data::kChallengeParameter,
                                   true /* is_individual_attestation */);
 
-  ASSERT_TRUE(register_command_with_individual_attestation);
-  EXPECT_THAT(*register_command_with_individual_attestation,
+  EXPECT_THAT(register_command_with_individual_attestation,
               ::testing::ElementsAreArray(
                   test_data::kU2fRegisterCommandApduWithIndividualAttestation));
-}
-
-TEST(U2fCommandConstructorTest, TestCreateRegisterWithIncorrectParameters) {
-  std::vector<uint8_t> application_parameter(kU2fParameterLength, 0x01);
-  std::vector<uint8_t> challenge_parameter(kU2fParameterLength, 0xff);
-
-  const auto& register_command_without_individual_attestation =
-      ConstructU2fRegisterCommand(application_parameter, challenge_parameter,
-                                  false /* is_individual_attestation */);
-
-  ASSERT_TRUE(register_command_without_individual_attestation);
-  ASSERT_LE(3u, register_command_without_individual_attestation->size());
-  // Individual attestation bit should be cleared.
-  EXPECT_EQ(0, (*register_command_without_individual_attestation)[2] & 0x80);
-
-  const auto register_request_with_individual_attestation =
-      ConstructU2fRegisterCommand(application_parameter, challenge_parameter,
-                                  true /* is_individual_attestation */);
-
-  ASSERT_TRUE(register_request_with_individual_attestation);
-  ASSERT_LE(3u, register_request_with_individual_attestation->size());
-  // Individual attestation bit should be set.
-  EXPECT_EQ(0x80, (*register_request_with_individual_attestation)[2] & 0x80);
-
-  // Expect null result with incorrectly sized application_parameter.
-  application_parameter.push_back(0xff);
-  auto incorrect_register_cmd =
-      ConstructU2fRegisterCommand(application_parameter, challenge_parameter,
-                                  false /* is_individual_attestation */);
-
-  EXPECT_FALSE(incorrect_register_cmd);
-  application_parameter.pop_back();
-
-  // Expect null result with incorrectly sized challenge.
-  challenge_parameter.push_back(0xff);
-  incorrect_register_cmd =
-      ConstructU2fRegisterCommand(application_parameter, challenge_parameter,
-                                  false /* is_individual_attestation */);
-
-  EXPECT_FALSE(incorrect_register_cmd);
 }
 
 TEST(U2fCommandConstructorTest, TestConvertCtapMakeCredentialToU2fRegister) {
@@ -164,8 +120,7 @@ TEST(U2fCommandConstructorTest, TestU2fRegisterCredentialAlgorithmRequirement) {
       .SetIconUrl(GURL("https://pics.acme.com/00/p/aBjjjpqPb.png"));
 
   CtapMakeCredentialRequest make_credential_param(
-      fido_parsing_utils::Materialize(test_data::kClientDataHash),
-      std::move(rp), std::move(user),
+      test_data::kClientDataHash, std::move(rp), std::move(user),
       PublicKeyCredentialParams({{CredentialType::kPublicKey, -257}}));
 
   EXPECT_FALSE(IsConvertibleToU2fRegisterCommand(make_credential_param));
@@ -235,6 +190,22 @@ TEST(U2fCommandConstructorTest, TestU2fSignUserVerificationRequirement) {
   get_assertion_req.SetUserVerification(UserVerificationRequirement::kRequired);
 
   EXPECT_FALSE(IsConvertibleToU2fSignCommand(get_assertion_req));
+}
+
+TEST(U2fCommandConstructorTest, TestCreateSignWithIncorrectKeyHandle) {
+  std::array<uint8_t, kU2fApplicationParamLength> application_parameter = {
+      0x01};
+  std::array<uint8_t, kU2fChallengeParamLength> challenge_parameter = {0x02};
+  std::vector<uint8_t> key_handle(kMaxKeyHandleLength, 0xff);
+
+  const auto valid_sign_command = ConstructU2fSignCommand(
+      application_parameter, challenge_parameter, key_handle);
+  ASSERT_TRUE(valid_sign_command);
+
+  key_handle.push_back(0xff);
+  const auto invalid_sign_command = ConstructU2fSignCommand(
+      application_parameter, challenge_parameter, key_handle);
+  ASSERT_FALSE(invalid_sign_command);
 }
 
 }  // namespace device

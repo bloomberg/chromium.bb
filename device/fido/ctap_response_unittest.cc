@@ -115,10 +115,6 @@ std::vector<uint8_t> GetTestSignResponse() {
   return fido_parsing_utils::Materialize(test_data::kTestU2fSignResponse);
 }
 
-std::vector<uint8_t> GetTestSignatureCounter() {
-  return fido_parsing_utils::Materialize(test_data::kTestSignatureCounter);
-}
-
 // Get a subset of the response for testing error handling.
 std::vector<uint8_t> GetTestCorruptedSignResponse(size_t length) {
   DCHECK_LE(length, arraysize(test_data::kTestU2fSignResponse));
@@ -220,7 +216,7 @@ TEST(CTAPResponseTest, TestReadGetAssertionResponse) {
 TEST(CTAPResponseTest, TestParseRegisterResponseData) {
   auto response =
       AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
-          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
+          test_data::kApplicationParameter,
           test_data::kTestU2fRegisterResponse);
   ASSERT_TRUE(response);
   EXPECT_THAT(response->raw_credential_id(),
@@ -274,9 +270,9 @@ TEST(CTAPResponseTest, TestSerializeAuthenticatorData) {
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
 
-  AuthenticatorData authenticator_data(
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter), flags,
-      std::vector<uint8_t>(4) /* counter */, std::move(attested_data));
+  AuthenticatorData authenticator_data(test_data::kApplicationParameter, flags,
+                                       std::array<uint8_t, 4>{} /* counter */,
+                                       std::move(attested_data));
 
   EXPECT_EQ(GetTestAuthenticatorDataBytes(),
             authenticator_data.SerializeToByteArray());
@@ -292,9 +288,9 @@ TEST(CTAPResponseTest, TestSerializeU2fAttestationObject) {
   constexpr uint8_t flags =
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
-  AuthenticatorData authenticator_data(
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter), flags,
-      std::vector<uint8_t>(4) /* counter */, std::move(attested_data));
+  AuthenticatorData authenticator_data(test_data::kApplicationParameter, flags,
+                                       std::array<uint8_t, 4>{} /* counter */,
+                                       std::move(attested_data));
 
   // Construct the attestation statement.
   auto fido_attestation_statement =
@@ -316,17 +312,16 @@ TEST(CTAPResponseTest, TestSerializeAuthenticatorDataForSign) {
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence);
 
   EXPECT_THAT(
-      AuthenticatorData(
-          fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-          flags, GetTestSignatureCounter(), base::nullopt)
+      AuthenticatorData(test_data::kApplicationParameter, flags,
+                        test_data::kTestSignatureCounter, base::nullopt)
           .SerializeToByteArray(),
       ::testing::ElementsAreArray(test_data::kTestSignAuthenticatorData));
 }
 
 TEST(CTAPResponseTest, TestParseSignResponseData) {
   auto response = AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-      GetTestSignResponse(), GetTestCredentialRawIdBytes());
+      test_data::kApplicationParameter, GetTestSignResponse(),
+      GetTestCredentialRawIdBytes());
   ASSERT_TRUE(response);
   EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_credential_id());
   EXPECT_THAT(
@@ -338,31 +333,31 @@ TEST(CTAPResponseTest, TestParseSignResponseData) {
 
 TEST(CTAPResponseTest, TestParseU2fSignWithNullNullKeyHandle) {
   auto response = AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-      GetTestSignResponse(), std::vector<uint8_t>());
+      test_data::kApplicationParameter, GetTestSignResponse(),
+      std::vector<uint8_t>());
   EXPECT_FALSE(response);
 }
 
 TEST(CTAPResponseTest, TestParseU2fSignWithNullResponse) {
   auto response = AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-      std::vector<uint8_t>(), GetTestCredentialRawIdBytes());
+      test_data::kApplicationParameter, std::vector<uint8_t>(),
+      GetTestCredentialRawIdBytes());
   EXPECT_FALSE(response);
 }
 
 TEST(CTAPResponseTest, TestParseU2fSignWithNullCorruptedCounter) {
   // A sign response of less than 5 bytes.
   auto response = AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-      GetTestCorruptedSignResponse(3), GetTestCredentialRawIdBytes());
+      test_data::kApplicationParameter, GetTestCorruptedSignResponse(3),
+      GetTestCredentialRawIdBytes());
   EXPECT_FALSE(response);
 }
 
 TEST(CTAPResponseTest, TestParseU2fSignWithNullCorruptedSignature) {
   // A sign response no more than 5 bytes.
   auto response = AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
-      fido_parsing_utils::Materialize(test_data::kApplicationParameter),
-      GetTestCorruptedSignResponse(5), GetTestCredentialRawIdBytes());
+      test_data::kApplicationParameter, GetTestCorruptedSignResponse(5),
+      GetTestCredentialRawIdBytes());
   EXPECT_FALSE(response);
 }
 

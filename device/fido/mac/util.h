@@ -11,9 +11,11 @@
 #import <Security/Security.h>
 
 #include "base/callback.h"
+#include "base/containers/span.h"
 #include "base/mac/availability.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 namespace fido {
@@ -33,7 +35,7 @@ base::Optional<AuthenticatorData> MakeAuthenticatorData(
 // fails.
 base::Optional<std::vector<uint8_t>> GenerateSignature(
     const AuthenticatorData& authenticator_data,
-    const std::vector<uint8_t>& client_data_hash,
+    base::span<const uint8_t, kClientDataHashLength> client_data_hash,
     SecKeyRef private_key) API_AVAILABLE(macosx(10.12.2));
 
 std::vector<uint8_t> TouchIdAaguid();

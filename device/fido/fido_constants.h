@@ -35,6 +35,49 @@ enum class ProtocolVersion {
   kUnknown,
 };
 
+// Length of the U2F challenge parameter:
+// https://goo.gl/y75WrX#registration-request-message---u2f_register
+constexpr size_t kU2fChallengeParamLength = 32;
+
+// Length of the U2F application parameter:
+// https://goo.gl/y75WrX#registration-request-message---u2f_register
+constexpr size_t kU2fApplicationParamLength = 32;
+
+// Offset of the length of the U2F registration key handle:
+// https://goo.gl/y75WrX#registration-response-message-success
+constexpr size_t kU2fKeyHandleLengthOffset = 66;
+
+// Offset of the U2F registration key handle:
+// https://goo.gl/y75WrX#registration-response-message-success
+constexpr size_t kU2fKeyHandleOffset = 67;
+
+// Length of the SHA-256 hash of the JSON-serialized client data:
+// https://www.w3.org/TR/webauthn/#collectedclientdata-hash-of-the-serialized-client-data
+constexpr size_t kClientDataHashLength = 32;
+
+// Length of the SHA-256 hash of the RP ID asssociated with the credential:
+// https://www.w3.org/TR/webauthn/#sec-authenticator-data
+constexpr size_t kRpIdHashLength = 32;
+
+static_assert(kU2fApplicationParamLength == kRpIdHashLength,
+              "kU2fApplicationParamLength must be equal to kRpIdHashLength.");
+
+// Length of the flags:
+// https://www.w3.org/TR/webauthn/#sec-authenticator-data
+constexpr size_t kFlagsLength = 1;
+
+// Length of the signature counter, 32-bit unsigned big-endian integer:
+// https://www.w3.org/TR/webauthn/#sec-authenticator-data
+constexpr size_t kSignCounterLength = 4;
+
+// Length of the AAGUID of the authenticator:
+// https://www.w3.org/TR/webauthn/#sec-attested-credential-data
+constexpr size_t kAaguidLength = 16;
+
+// Length of the byte length L of Credential ID, 16-bit unsigned big-endian
+// integer: https://www.w3.org/TR/webauthn/#sec-attested-credential-data
+constexpr size_t kCredentialIdLengthLength = 2;
+
 // CTAP protocol device response code, as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticator-api
 enum class CtapDeviceResponseCode : uint8_t {
@@ -272,7 +315,6 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1CheckOnly;
 // return with this registration.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1IndividualAttestation;
 COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kMaxKeyHandleLength;
-COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kU2fParameterLength;
 
 // Maximum wait time before client error outs on device.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kDeviceTimeout;

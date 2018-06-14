@@ -9,15 +9,16 @@
 #include "base/numerics/safe_conversions.h"
 #include "components/cbor/cbor_writer.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
 CtapMakeCredentialRequest::CtapMakeCredentialRequest(
-    std::vector<uint8_t> client_data_hash,
+    base::span<const uint8_t, kClientDataHashLength> client_data_hash,
     PublicKeyCredentialRpEntity rp,
     PublicKeyCredentialUserEntity user,
     PublicKeyCredentialParams public_key_credential_params)
-    : client_data_hash_(std::move(client_data_hash)),
+    : client_data_hash_(fido_parsing_utils::Materialize(client_data_hash)),
       rp_(std::move(rp)),
       user_(std::move(user)),
       public_key_credential_params_(std::move(public_key_credential_params)) {}

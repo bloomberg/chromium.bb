@@ -6,14 +6,18 @@
 #define DEVICE_FIDO_AUTHENTICATOR_DATA_H_
 
 #include <stdint.h>
+
+#include <array>
 #include <string>
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "device/fido/attested_credential_data.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -30,10 +34,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
   static base::Optional<AuthenticatorData> DecodeAuthenticatorData(
       base::span<const uint8_t> auth_data);
 
-  AuthenticatorData(std::vector<uint8_t> application_parameter,
-                    uint8_t flags,
-                    std::vector<uint8_t> counter,
-                    base::Optional<AttestedCredentialData> data);
+  AuthenticatorData(
+      base::span<const uint8_t, kRpIdHashLength> application_parameter,
+      uint8_t flags,
+      base::span<const uint8_t, kSignCounterLength> counter,
+      base::Optional<AttestedCredentialData> data);
 
   // Moveable.
   AuthenticatorData(AuthenticatorData&& other);
@@ -60,7 +65,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
     return attested_data_;
   }
 
-  const std::vector<uint8_t>& application_parameter() const {
+  const std::array<uint8_t, kRpIdHashLength>& application_parameter() const {
     return application_parameter_;
   }
 
@@ -83,8 +88,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
  private:
   // The application parameter: a SHA-256 hash of either the RP ID or the AppID
   // associated with the credential.
-  // TODO(hongjunchoi): Replace fixed size vector components with std::array.
-  std::vector<uint8_t> application_parameter_;
+  std::array<uint8_t, kRpIdHashLength> application_parameter_;
 
   // Flags (bit 0 is the least significant bit):
   // [ED | AT | RFU | RFU | RFU | RFU | RFU | UP ]
@@ -95,7 +99,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
   uint8_t flags_;
 
   // Signature counter, 32-bit unsigned big-endian integer.
-  std::vector<uint8_t> counter_;
+  std::array<uint8_t, kSignCounterLength> counter_;
   base::Optional<AttestedCredentialData> attested_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorData);
