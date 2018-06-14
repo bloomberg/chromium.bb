@@ -12,28 +12,12 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "net/url_request/url_request_test_util.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::testing::_;
-
 namespace chromeos {
-
-class AccountManagerSpy : public AccountManager {
- public:
-  AccountManagerSpy() = default;
-  ~AccountManagerSpy() override = default;
-
-  MOCK_METHOD1(RevokeGaiaTokenOnServer, void(const std::string& refresh_token));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AccountManagerSpy);
-};
 
 class AccountManagerTest : public testing::Test {
  public:
@@ -43,9 +27,9 @@ class AccountManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
-    request_context_ = new net::TestURLRequestContextGetter(
-        scoped_task_environment_.GetMainThreadTaskRunner());
-    ResetAndInitializeAccountManager();
+    account_manager_ = std::make_unique<AccountManager>();
+    account_manager_->Initialize(tmp_dir_.GetPath(),
+                                 base::SequencedTaskRunnerHandle::Get());
   }
 
   // Gets the list of accounts stored in |account_manager_|.
@@ -66,26 +50,13 @@ class AccountManagerTest : public testing::Test {
     return accounts;
   }
 
-  // Helper method to reset and initialize |account_manager_| with default
-  // parameters.
-  void ResetAndInitializeAccountManager() {
-    account_manager_ = std::make_unique<AccountManagerSpy>();
-    account_manager_->Initialize(tmp_dir_.GetPath(), request_context_.get(),
-                                 immediate_callback_runner_,
-                                 base::SequencedTaskRunnerHandle::Get());
-  }
-
   // Check base/test/scoped_task_environment.h. This must be the first member /
   // declared before any member that cares about tasks.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::ScopedTempDir tmp_dir_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-  std::unique_ptr<AccountManagerSpy> account_manager_;
+  std::unique_ptr<AccountManager> account_manager_;
   const AccountManager::AccountKey kAccountKey_{
       "111", account_manager::AccountType::ACCOUNT_TYPE_GAIA};
-  AccountManager::DelayNetworkCallRunner immediate_callback_runner_ =
-      base::BindRepeating(
-          [](const base::RepeatingClosure& closure) -> void { closure.Run(); });
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountManagerTest);
@@ -134,8 +105,7 @@ TEST_F(AccountManagerTest, TestInitialization) {
 
   EXPECT_EQ(account_manager.init_state_,
             AccountManager::InitializationState::kNotStarted);
-  account_manager.Initialize(tmp_dir_.GetPath(), request_context_.get(),
-                             immediate_callback_runner_,
+  account_manager.Initialize(tmp_dir_.GetPath(),
                              base::SequencedTaskRunnerHandle::Get());
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(account_manager.init_state_,
@@ -155,7 +125,10 @@ TEST_F(AccountManagerTest, TestPersistence) {
   account_manager_->UpsertToken(kAccountKey_, "123");
   scoped_task_environment_.RunUntilIdle();
 
-  ResetAndInitializeAccountManager();
+  account_manager_ = std::make_unique<AccountManager>();
+  account_manager_->Initialize(tmp_dir_.GetPath(),
+                               base::SequencedTaskRunnerHandle::Get());
+
   std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
 
   EXPECT_EQ(1UL, accounts.size());
@@ -228,7 +201,9 @@ TEST_F(AccountManagerTest, AccountRemovalIsPersistedToDisk) {
   account_manager_->RemoveAccount(kAccountKey_);
   scoped_task_environment_.RunUntilIdle();
 
-  ResetAndInitializeAccountManager();
+  account_manager_ = std::make_unique<AccountManager>();
+  account_manager_->Initialize(tmp_dir_.GetPath(),
+                               base::SequencedTaskRunnerHandle::Get());
 
   std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
 
@@ -247,39 +222,6 @@ TEST_F(AccountManagerTest, ObserversAreNotifiedOnAccountRemoval) {
   EXPECT_TRUE(observer->accounts_.empty());
 
   account_manager_->RemoveObserver(observer.get());
-}
-
-TEST_F(AccountManagerTest, TokenRevocationIsAttemptedForGaiaAccounts) {
-  const std::string kToken = "123";
-  ResetAndInitializeAccountManager();
-  EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(kToken));
-
-  account_manager_->UpsertToken(kAccountKey_, kToken);
-  scoped_task_environment_.RunUntilIdle();
-
-  account_manager_->RemoveAccount(kAccountKey_);
-}
-
-TEST_F(AccountManagerTest, TokenRevocationIsNotAttemptedForNonGaiaAccounts) {
-  ResetAndInitializeAccountManager();
-  EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(_)).Times(0);
-
-  const AccountManager::AccountKey adAccountKey{
-      "999", account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY};
-  account_manager_->UpsertToken(adAccountKey, "123");
-  scoped_task_environment_.RunUntilIdle();
-
-  account_manager_->RemoveAccount(adAccountKey);
-}
-
-TEST_F(AccountManagerTest, TokenRevocationIsNotAttemptedForEmptyTokens) {
-  ResetAndInitializeAccountManager();
-  EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(_)).Times(0);
-
-  account_manager_->UpsertToken(kAccountKey_, std::string());
-  scoped_task_environment_.RunUntilIdle();
-
-  account_manager_->RemoveAccount(kAccountKey_);
 }
 
 }  // namespace chromeos
