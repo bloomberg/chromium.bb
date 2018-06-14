@@ -91,8 +91,6 @@ class PreviewsOptOutStoreSQLTest : public testing::Test {
     base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
   }
 
-  base::HistogramTester histogram_tester_;
-
   base::MessageLoop message_loop_;
 
   // The backing SQL store.
@@ -144,7 +142,6 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestPersistance) {
   std::unique_ptr<PreviewsTypeList> enabled_previews(new PreviewsTypeList);
   enabled_previews->push_back({PreviewsType::OFFLINE, 0});
   CreateAndLoad(std::move(enabled_previews));
-  histogram_tester_.ExpectUniqueSample("Previews.OptOut.DBRowCount", 0, 1);
   base::Time now = base::Time::Now();
   store_->AddPreviewNavigation(true, test_host, PreviewsType::OFFLINE, now);
   base::RunLoop().RunUntilIdle();
@@ -165,8 +162,6 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestPersistance) {
   EXPECT_EQ(now, iter->second->most_recent_opt_out_time().value());
   EXPECT_EQ(1U, host_indifferent_item_->OptOutRecordsSizeForTesting());
   EXPECT_EQ(now, host_indifferent_item_->most_recent_opt_out_time().value());
-  histogram_tester_.ExpectBucketCount("Previews.OptOut.DBRowCount", 1, 1);
-  histogram_tester_.ExpectTotalCount("Previews.OptOut.DBRowCount", 2);
 }
 
 TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRows) {
@@ -183,7 +178,6 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRows) {
   std::unique_ptr<PreviewsTypeList> enabled_previews(new PreviewsTypeList);
   enabled_previews->push_back({PreviewsType::OFFLINE, 0});
   CreateAndLoad(std::move(enabled_previews));
-  histogram_tester_.ExpectUniqueSample("Previews.OptOut.DBRowCount", 0, 1);
   base::SimpleTestClock clock;
 
   // Create three different entries with different hosts.
@@ -207,8 +201,6 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRows) {
   enabled_previews.reset(new PreviewsTypeList);
   enabled_previews->push_back({PreviewsType::OFFLINE, 0});
   CreateAndLoad(std::move(enabled_previews));
-  histogram_tester_.ExpectBucketCount("Previews.OptOut.DBRowCount",
-                                      static_cast<int>(row_limit) + 1, 1);
   // The delete happens after the load, so it is possible to load more than
   // |row_limit| into the in memory map.
   EXPECT_EQ(row_limit + 1, black_list_map_->size());
@@ -219,8 +211,6 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRows) {
   enabled_previews.reset(new PreviewsTypeList);
   enabled_previews->push_back({PreviewsType::OFFLINE, 0});
   CreateAndLoad(std::move(enabled_previews));
-  histogram_tester_.ExpectBucketCount("Previews.OptOut.DBRowCount",
-                                      static_cast<int>(row_limit), 1);
 
   EXPECT_EQ(row_limit, black_list_map_->size());
   auto iter_host_b = black_list_map_->find(test_host_b);
@@ -235,7 +225,6 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRows) {
   EXPECT_EQ(host_b_time,
             host_indifferent_item_->most_recent_opt_out_time().value());
   EXPECT_EQ(row_limit, host_indifferent_item_->OptOutRecordsSizeForTesting());
-  histogram_tester_.ExpectTotalCount("Previews.OptOut.DBRowCount", 3);
 }
 
 TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRowsPerHost) {
@@ -249,7 +238,6 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRowsPerHost) {
   std::unique_ptr<PreviewsTypeList> enabled_previews(new PreviewsTypeList);
   enabled_previews->push_back({PreviewsType::OFFLINE, 0});
   CreateAndLoad(std::move(enabled_previews));
-  histogram_tester_.ExpectUniqueSample("Previews.OptOut.DBRowCount", 0, 1);
   base::SimpleTestClock clock;
 
   base::Time last_opt_out_time;
@@ -273,8 +261,6 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRowsPerHost) {
   enabled_previews.reset(new PreviewsTypeList);
   enabled_previews->push_back({PreviewsType::OFFLINE, 0});
   CreateAndLoad(std::move(enabled_previews));
-  histogram_tester_.ExpectBucketCount("Previews.OptOut.DBRowCount",
-                                      static_cast<int>(row_limit), 1);
 
   EXPECT_EQ(1U, black_list_map_->size());
   auto iter = black_list_map_->find(test_host);
@@ -288,7 +274,6 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestMaxRowsPerHost) {
   // If both entries' opt out states are stored correctly, then this should not
   // be black listed.
   EXPECT_FALSE(iter->second->IsBlackListed(clock.Now()));
-  histogram_tester_.ExpectTotalCount("Previews.OptOut.DBRowCount", 2);
 }
 
 TEST_F(PreviewsOptOutStoreSQLTest, TestPreviewsDisabledClearsBlacklistEntry) {
@@ -299,7 +284,6 @@ TEST_F(PreviewsOptOutStoreSQLTest, TestPreviewsDisabledClearsBlacklistEntry) {
   std::unique_ptr<PreviewsTypeList> enabled_previews(new PreviewsTypeList);
   enabled_previews->push_back({PreviewsType::OFFLINE, 0});
   CreateAndLoad(std::move(enabled_previews));
-  histogram_tester_.ExpectUniqueSample("Previews.OptOut.DBRowCount", 0, 1);
   base::Time now = base::Time::Now();
   store_->AddPreviewNavigation(true, test_host, PreviewsType::OFFLINE, now);
   base::RunLoop().RunUntilIdle();
@@ -330,7 +314,6 @@ TEST_F(PreviewsOptOutStoreSQLTest,
   std::unique_ptr<PreviewsTypeList> enabled_previews(new PreviewsTypeList);
   enabled_previews->push_back({PreviewsType::OFFLINE, 1});
   CreateAndLoad(std::move(enabled_previews));
-  histogram_tester_.ExpectUniqueSample("Previews.OptOut.DBRowCount", 0, 1);
   base::Time now = base::Time::Now();
   store_->AddPreviewNavigation(true, test_host, PreviewsType::OFFLINE, now);
   base::RunLoop().RunUntilIdle();
