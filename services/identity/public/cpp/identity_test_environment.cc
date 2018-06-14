@@ -60,8 +60,6 @@ IdentityTestEnvironmentInternal::IdentityTestEnvironmentInternal()
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
   signin::RegisterAccountConsistencyProfilePrefs(pref_service_.registry());
-  signin::SetGaiaOriginIsolatedCallback(
-      base::BindRepeating([] { return true; }));
 
   account_tracker_.Initialize(&signin_client_);
 

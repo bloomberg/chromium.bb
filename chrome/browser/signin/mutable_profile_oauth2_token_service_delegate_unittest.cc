@@ -91,7 +91,6 @@ class MutableProfileOAuth2TokenServiceDelegateTest
 
   void SetUp() override {
     OSCryptMocker::SetUp();
-    signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
 
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(), "",
                              net::HTTP_OK, net::URLRequestStatus::SUCCESS);

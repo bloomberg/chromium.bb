@@ -147,7 +147,6 @@ class DiceResponseHandlerTest : public testing::Test,
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     SigninManager::RegisterProfilePrefs(pref_service_.registry());
     signin::RegisterAccountConsistencyProfilePrefs(pref_service_.registry());
-    signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
     auto account_reconcilor_delegate =
         std::make_unique<signin::DiceAccountReconcilorDelegate>(
             &signin_client_, signin::AccountConsistencyMethod::kDisabled);

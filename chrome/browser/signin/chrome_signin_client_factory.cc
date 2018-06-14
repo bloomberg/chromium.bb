@@ -16,7 +16,6 @@ ChromeSigninClientFactory::ChromeSigninClientFactory()
           "ChromeSigninClient",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(SigninErrorControllerFactory::GetInstance());
-  signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
 }
 
 ChromeSigninClientFactory::~ChromeSigninClientFactory() {}
