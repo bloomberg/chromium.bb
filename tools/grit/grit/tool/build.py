@@ -148,6 +148,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
     return 'A tool that builds RC files for compilation.'
 
   def Run(self, opts, args):
+    os.environ['cwd'] = os.getcwd()
     self.output_directory = '.'
     first_ids_file = None
     predetermined_ids_file = None

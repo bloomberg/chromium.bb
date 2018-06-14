@@ -471,7 +471,6 @@ fuzzer_test("javascript_parser_proto_fuzzer") {
     "//v8:v8",
     "//v8:v8_libplatform",
   ]
-  include_dirs = [ "$root_build_dir/$target_gen_dir" ]
 }
 
 fuzzer_test("v8_fully_instrumented_fuzzer") {

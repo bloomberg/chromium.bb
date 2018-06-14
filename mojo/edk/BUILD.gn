@@ -268,8 +268,9 @@ if (is_chromeos || is_linux || is_android) {
   }
 
   config("export_only_thunks_api") {
-    ldflags = [ "-Wl,--version-script=" +
-                rebase_path("//mojo/edk/export_only_thunks_api.lst") ]
+    ldflags =
+        [ "-Wl,--version-script=" +
+          rebase_path("//mojo/edk/export_only_thunks_api.lst", root_build_dir) ]
   }
 
   if (is_chromeos || is_linux) {
