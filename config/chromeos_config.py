@@ -2442,10 +2442,12 @@ def FullBuilders(site_config, boards_dict, ge_build_config):
   master_config = site_config.Add(
       'master-full',
       site_config.templates.full,
+      site_config.templates.internal,
       site_config.templates.build_external_chrome,
       boards=[],
       master=True,
       manifest_version=True,
+      overlays=constants.PUBLIC_OVERLAYS,
       slave_configs=[],
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='0 */3 * * *',
