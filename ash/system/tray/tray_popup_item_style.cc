@@ -95,8 +95,11 @@ void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
     case FontStyle::SUB_HEADER:
       label->SetFontList(base_font_list.Derive(1, gfx::Font::NORMAL,
                                                gfx::Font::Weight::MEDIUM));
-      label->SetEnabledColor(label->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_ProminentButtonColor));
+      label->SetEnabledColor(
+          use_unified_theme_
+              ? kUnifiedMenuTextColor
+              : label->GetNativeTheme()->GetSystemColor(
+                    ui::NativeTheme::kColorId_ProminentButtonColor));
       label->SetAutoColorReadabilityEnabled(false);
       break;
     case FontStyle::DETAILED_VIEW_LABEL:

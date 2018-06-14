@@ -5,6 +5,7 @@
 #include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
@@ -12,6 +13,8 @@
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
@@ -81,6 +84,19 @@ views::View* SystemTrayItemDetailedViewDelegate::CreateTitleSeparator() {
   separator->SetBorder(views::CreateEmptyBorder(
       kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
   return separator;
+}
+
+HoverHighlightView* SystemTrayItemDetailedViewDelegate::CreateScrollListItem(
+    ViewClickListener* listener,
+    const gfx::VectorIcon& icon,
+    const base::string16& text) {
+  HoverHighlightView* item =
+      new HoverHighlightView(listener, false /* use_unified_theme */);
+  if (icon.is_empty())
+    item->AddLabelRow(text);
+  else
+    item->AddIconAndLabel(gfx::CreateVectorIcon(icon, kMenuIconColor), text);
+  return item;
 }
 
 views::Button* SystemTrayItemDetailedViewDelegate::CreateBackButton(
