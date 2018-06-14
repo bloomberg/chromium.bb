@@ -25,6 +25,7 @@ class DownloadLocationDialogBridge {
   // Show a download location picker dialog to determine the download path.
   // The path selected by the user will be returned in |location_callback|.
   virtual void ShowDialog(gfx::NativeWindow native_window,
+                          int64_t total_bytes,
                           DownloadLocationDialogType dialog_type,
                           const base::FilePath& suggested_path,
                           LocationCallback location_callback) = 0;

@@ -325,11 +325,12 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
 #if defined(OS_ANDROID)
 void ChromeDownloadManagerDelegate::ChooseDownloadLocation(
     gfx::NativeWindow native_window,
+    int64_t total_bytes,
     DownloadLocationDialogType dialog_type,
     const base::FilePath& suggested_path,
     DownloadLocationDialogBridge::LocationCallback callback) {
   DCHECK(location_dialog_bridge_);
-  location_dialog_bridge_->ShowDialog(native_window, dialog_type,
+  location_dialog_bridge_->ShowDialog(native_window, total_bytes, dialog_type,
                                       suggested_path, std::move(callback));
 }
 
@@ -895,7 +896,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
 
       gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
       ChooseDownloadLocation(
-          native_window, dialog_type, suggested_path,
+          native_window, download->GetTotalBytes(), dialog_type, suggested_path,
           base::BindOnce(&OnDownloadLocationDetermined, callback));
     }
   } else {
@@ -967,7 +968,8 @@ void ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone(
   if (result == PathValidationResult::SUCCESS) {
     if (download_prefs_->PromptForDownload()) {
       ChooseDownloadLocation(
-          native_window, DownloadLocationDialogType::NAME_CONFLICT, target_path,
+          native_window, 0 /* total_bytes */,
+          DownloadLocationDialogType::NAME_CONFLICT, target_path,
           base::BindOnce(&OnDownloadLocationDetermined, callback));
       return;
     }
