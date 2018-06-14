@@ -66,6 +66,7 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   int GetMainFrameRenderProcessId() const override;
   int GetMainFrameTreeNodeId() const override;
   std::string GetMainFrameDevToolsId() const override;
+  std::unique_ptr<HeadlessDevToolsChannel> CreateDevToolsChannel() override;
 
   // HeadlessDevToolsTarget implementation:
   void AttachClient(HeadlessDevToolsClient* client) override;

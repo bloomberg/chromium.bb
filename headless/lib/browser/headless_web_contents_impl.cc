@@ -34,6 +34,7 @@
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
+#include "headless/lib/browser/headless_devtools_agent_host_client.h"
 #include "headless/lib/browser/protocol/headless_handler.h"
 #include "headless/public/internal/headless_devtools_client_impl.h"
 #include "printing/buildflags/buildflags.h"
@@ -444,13 +445,18 @@ HeadlessDevToolsTarget* HeadlessWebContentsImpl::GetDevToolsTarget() {
   return web_contents()->GetMainFrame()->IsRenderFrameLive() ? this : nullptr;
 }
 
+std::unique_ptr<HeadlessDevToolsChannel>
+HeadlessWebContentsImpl::CreateDevToolsChannel() {
+  DCHECK(agent_host_);
+  return std::make_unique<HeadlessDevToolsAgentHostClient>(agent_host_);
+}
+
 void HeadlessWebContentsImpl::AttachClient(HeadlessDevToolsClient* client) {
-  HeadlessDevToolsClientImpl::From(client)->AttachToHost(agent_host_.get());
+  client->AttachToChannel(CreateDevToolsChannel());
 }
 
 void HeadlessWebContentsImpl::DetachClient(HeadlessDevToolsClient* client) {
-  DCHECK(agent_host_);
-  HeadlessDevToolsClientImpl::From(client)->DetachFromHost(agent_host_.get());
+  client->DetachFromChannel();
 }
 
 bool HeadlessWebContentsImpl::IsAttached() {

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/process/kill.h"
+#include "headless/public/headless_devtools_channel.h"
 #include "headless/public/headless_export.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/gfx/geometry/size.h"
@@ -75,6 +76,11 @@ class HEADLESS_EXPORT HeadlessWebContents {
   // won't return a valid value until Observer::DevToolsTargetReady has been
   // signaled.
   virtual HeadlessDevToolsTarget* GetDevToolsTarget() = 0;
+
+  // Creates a DevTools channel corresponding to this tab. Note that this method
+  // won't return a valid value until Observer::DevToolsTargetReady has been
+  // signaled.
+  virtual std::unique_ptr<HeadlessDevToolsChannel> CreateDevToolsChannel() = 0;
 
   // Close this page. |HeadlessWebContents| object will be destroyed.
   virtual void Close() = 0;

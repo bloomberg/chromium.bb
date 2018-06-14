@@ -6,15 +6,16 @@
 #define HEADLESS_PUBLIC_HEADLESS_DEVTOOLS_TARGET_H_
 
 #include "base/macros.h"
+#include "headless/public/headless_devtools_channel.h"
+#include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_export.h"
 
 namespace headless {
-class HeadlessDevToolsClient;
 
 // A target which can be controlled and inspected using DevTools.
+// TODO(dgozman): remove this class once all clients switch.
 class HEADLESS_EXPORT HeadlessDevToolsTarget {
  public:
-  HeadlessDevToolsTarget() {}
   virtual ~HeadlessDevToolsTarget() {}
 
   // Attach or detach a client to this target. A client must be attached in
@@ -27,9 +28,6 @@ class HEADLESS_EXPORT HeadlessDevToolsTarget {
 
   // Returns true if a devtools client is attached.
   virtual bool IsAttached() = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HeadlessDevToolsTarget);
 };
 
 }  // namespace headless

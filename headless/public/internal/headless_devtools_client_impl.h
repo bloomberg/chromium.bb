@@ -9,7 +9,6 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "content/public/browser/devtools_agent_host_client.h"
 #include "headless/public/devtools/domains/accessibility.h"
 #include "headless/public/devtools/domains/animation.h"
 #include "headless/public/devtools/domains/application_cache.h"
@@ -51,21 +50,15 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace content {
-class DevToolsAgentHost;
-}
-
 namespace headless {
 
 class HEADLESS_EXPORT HeadlessDevToolsClientImpl
     : public HeadlessDevToolsClient,
-      public content::DevToolsAgentHostClient,
+      public HeadlessDevToolsChannel::Client,
       public internal::MessageDispatcher {
  public:
   HeadlessDevToolsClientImpl();
   ~HeadlessDevToolsClientImpl() override;
-
-  static HeadlessDevToolsClientImpl* From(HeadlessDevToolsClient* client);
 
   // HeadlessDevToolsClient implementation:
   accessibility::Domain* GetAccessibility() override;
@@ -108,11 +101,13 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
   void SendRawDevToolsMessage(const base::DictionaryValue& message) override;
   void DispatchMessageFromExternalHost(
       const std::string& json_message) override;
+  void AttachToChannel(
+      std::unique_ptr<HeadlessDevToolsChannel> channel) override;
+  void DetachFromChannel() override;
 
-  // content::DevToolsAgentHostClient implementation:
-  void DispatchProtocolMessage(content::DevToolsAgentHost* agent_host,
-                               const std::string& json_message) override;
-  void AgentHostClosed(content::DevToolsAgentHost* agent_host) override;
+  // HeadlessDevToolsChannel::Client implementation.
+  void ReceiveProtocolMessage(const std::string& message) override;
+  void ChannelClosed() override;
 
   // internal::MessageDispatcher implementation:
   void SendMessage(
@@ -126,9 +121,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
       const char* method,
       base::RepeatingCallback<void(const base::Value&)> callback) override;
 
-  void AttachToHost(content::DevToolsAgentHost* agent_host);
-  void DetachFromHost(content::DevToolsAgentHost* agent_host);
-
+  // TODO(dgozman): remove with ExternalHost.
   void AttachToExternalHost(ExternalHost* external_host);
   void InitBrowserMainThread();
 
@@ -152,9 +145,6 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
     base::OnceClosure callback;
     base::OnceCallback<void(const base::Value&)> callback_with_result;
   };
-
-  void DispatchProtocolMessage(const std::string& host_id,
-                               const std::string& json_message);
 
   template <typename CallbackType>
   void FinalizeAndSendMessage(base::DictionaryValue* message,
@@ -180,7 +170,7 @@ class HEADLESS_EXPORT HeadlessDevToolsClientImpl
                          const EventHandler* event_handler,
                          const base::DictionaryValue* result_dict);
 
-  content::DevToolsAgentHost* agent_host_ = nullptr;
+  std::unique_ptr<HeadlessDevToolsChannel> channel_;
   ExternalHost* external_host_ = nullptr;
   RawProtocolListener* raw_protocol_listener_ = nullptr;
 
