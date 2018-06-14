@@ -587,10 +587,9 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest,
 
 IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockHeaders) {
   embedded_test_server()->StartAcceptingConnections();
-  GURL foo_url("http://foo.com/title1.html");
-  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
 
   // Prepare to intercept the network request at the IPC layer.
+  // This has to be done before the RenderFrameHostImpl is created.
   //
   // Note: we want to verify that the blocking prevents the data from being sent
   // over IPC.  Testing later (e.g. via Response/Headers Web APIs) might give a
@@ -598,6 +597,10 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, BlockHeaders) {
   // renderer (e.g. via FetchResponseData::CreateCORSFilteredResponse).
   GURL bar_url("http://bar.com/cross_site_document_blocking/headers-test.json");
   RequestInterceptor interceptor(bar_url);
+
+  // Navigate to the test page.
+  GURL foo_url("http://foo.com/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
 
   // Issue the request that will be intercepted
   EXPECT_TRUE(ExecuteScript(shell(),
