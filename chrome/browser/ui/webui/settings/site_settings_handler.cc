@@ -24,6 +24,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -113,6 +114,38 @@ void AddExceptionsGrantedByHostedApps(content::BrowserContext* context,
       continue;
     site_settings::AddExceptionForHostedApp(
         launch_url.spec(), *extension->get(), exceptions);
+  }
+}
+
+// Whether |pattern| applies to a single origin.
+bool PatternAppliesToSingleOrigin(const ContentSettingPatternSource& pattern) {
+  const GURL url(pattern.primary_pattern.ToString());
+  // Default settings and other patterns apply to multiple origins.
+  if (url::Origin::Create(url).unique())
+    return false;
+  // Embedded content settings only when |url| is embedded in another origin, so
+  // ignore non-wildcard secondary patterns that are different to the primary.
+  if (pattern.primary_pattern != pattern.secondary_pattern &&
+      pattern.secondary_pattern != ContentSettingsPattern::Wildcard()) {
+    return false;
+  }
+  return true;
+}
+
+// Groups |url| into sets of eTLD+1s in |site_group_map|, assuming |url| is an
+// origin.
+void CreateOrAppendSiteGroupEntry(
+    std::map<std::string, std::set<std::string>>* site_group_map,
+    const GURL& url) {
+  std::string etld_plus1_string =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  auto entry = site_group_map->find(etld_plus1_string);
+  if (entry == site_group_map->end()) {
+    site_group_map->emplace(etld_plus1_string,
+                            std::set<std::string>({url.spec()}));
+  } else {
+    entry->second.insert(url.spec());
   }
 }
 
@@ -503,6 +536,15 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   const base::ListValue* types;
   CHECK(args->GetList(1, &types));
 
+  // Convert |types| to a list of ContentSettingsTypes.
+  std::vector<ContentSettingsType> content_types;
+  for (size_t i = 0; i < types->GetSize(); ++i) {
+    std::string type;
+    types->GetString(i, &type);
+    content_types.push_back(
+        site_settings::ContentSettingsTypeFromGroupName(type));
+  }
+
   // Incognito contains incognito content settings plus non-incognito content
   // settings. Thus if it exists, just get exceptions for the incognito profile.
   Profile* profile = profile_;
@@ -513,50 +555,44 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   DCHECK(profile);
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
-
   std::map<std::string, std::set<std::string>> all_sites_map;
-  // Convert |types| to a list of ContentSettingsTypes.
-  for (size_t i = 0; i < types->GetSize(); ++i) {
-    std::string type;
-    types->GetString(i, &type);
-    ContentSettingsType content_type =
-        site_settings::ContentSettingsTypeFromGroupName(type);
 
+  // TODO(https://crbug.com/835712): Assess performance of this method for
+  // unusually large numbers of stored content settings.
+
+  // Retrieve a list of embargoed settings to check separately. This ensures
+  // that only settings included in |content_types| will be listed in all sites.
+  ContentSettingsForOneType embargo_settings;
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
+                             std::string(), &embargo_settings);
+  PermissionManager* permission_manager = PermissionManager::Get(profile);
+  for (const ContentSettingPatternSource& e : embargo_settings) {
+    for (ContentSettingsType content_type : content_types) {
+      if (PermissionUtil::IsPermission(content_type)) {
+        const GURL url(e.primary_pattern.ToString());
+        // Add |url| to the set if there are any embargo settings.
+        PermissionResult result =
+            permission_manager->GetPermissionStatus(content_type, url, url);
+        if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS ||
+            result.source == PermissionStatusSource::MULTIPLE_IGNORES) {
+          CreateOrAppendSiteGroupEntry(&all_sites_map, url);
+          break;
+        }
+      }
+    }
+  }
+
+  // Convert |types| to a list of ContentSettingsTypes.
+  for (ContentSettingsType content_type : content_types) {
     // TODO(https://crbug.com/835712): Add extension content settings, plus
     // sites that use any non-zero amount of storage.
 
     ContentSettingsForOneType entries;
     map->GetSettingsForOneType(content_type, std::string(), &entries);
     for (const ContentSettingPatternSource& e : entries) {
-      // Ignore default settings.
-      if (e.primary_pattern == ContentSettingsPattern::Wildcard() &&
-          e.source != SiteSettingSourceToString(
-                          site_settings::SiteSettingSource::kPreference)) {
-        continue;
-      }
-      // Ignore embedded content settings.
-      if (e.primary_pattern != e.secondary_pattern &&
-          e.secondary_pattern != ContentSettingsPattern::Wildcard()) {
-        continue;
-      }
-      // TODO(https://crbug.com/835712): Add in embargoed exceptions.
-      const GURL url(e.primary_pattern.ToString());
-      // Ignore patterns.
-      if (url::Origin::Create(url).unique())
-        continue;
-
-      // Group origins via eTLD+1.
-      std::string etld_plus1_string =
-          net::registry_controlled_domains::GetDomainAndRegistry(
-              url,
-              net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-      auto entry = all_sites_map.find(etld_plus1_string);
-      if (entry == all_sites_map.end()) {
-        all_sites_map.emplace(etld_plus1_string,
-                              std::set<std::string>({url.spec()}));
-      } else {
-        entry->second.insert(url.spec());
-      }
+      if (PatternAppliesToSingleOrigin(e))
+        CreateOrAppendSiteGroupEntry(&all_sites_map,
+                                     GURL(e.primary_pattern.ToString()));
     }
   }
 

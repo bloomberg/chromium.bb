@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_DECISION_AUTO_BLOCKER_H_
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
@@ -19,6 +20,10 @@
 
 class GURL;
 class Profile;
+
+namespace settings {
+FORWARD_DECLARE_TEST(SiteSettingsHandlerTest, GetAllSites);
+}  // namespace settings
 
 // The PermissionDecisionAutoBlocker decides whether or not a given origin
 // should be automatically blocked from requesting a permission. When an origin
@@ -101,6 +106,7 @@ class PermissionDecisionAutoBlocker : public KeyedService {
  private:
   friend class PermissionContextBaseTests;
   friend class PermissionDecisionAutoBlockerUnitTest;
+  FRIEND_TEST_ALL_PREFIXES(settings::SiteSettingsHandlerTest, GetAllSites);
 
   explicit PermissionDecisionAutoBlocker(Profile* profile);
   ~PermissionDecisionAutoBlocker() override;
