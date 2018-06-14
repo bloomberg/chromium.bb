@@ -176,5 +176,24 @@ TEST_F(NetworkScannerTest, ResolveHostWithUppercaseHost) {
   ExpectResolvedHostEquals("1.2.3.4", "SHARE1");
 }
 
+TEST_F(NetworkScannerTest, HostsAreStoredAsLowercase) {
+  HostMap hosts;
+  hosts["SHARE1"] = "1.2.3.4";
+  hosts["sHaRe2"] = "11.12.13.14";
+  hosts["Share3"] = "21.22.23.24";
+  RegisterHostLocatorWithHosts(hosts);
+
+  // expected_hosts should have all lowercase hosts.
+  HostMap expected_hosts;
+  expected_hosts["share1"] = "1.2.3.4";
+  expected_hosts["share2"] = "11.12.13.14";
+  expected_hosts["share3"] = "21.22.23.24";
+  ExpectHostMapEqual(expected_hosts);
+
+  ExpectResolvedHostEquals("1.2.3.4", "share1");
+  ExpectResolvedHostEquals("11.12.13.14", "share2");
+  ExpectResolvedHostEquals("21.22.23.24", "share3");
+}
+
 }  // namespace smb_client
 }  // namespace chromeos
