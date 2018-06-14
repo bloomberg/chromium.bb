@@ -22,7 +22,7 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
-import org.chromium.device.geolocation.LocationProviderFactory;
+import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
 
 import java.util.concurrent.Callable;
@@ -98,7 +98,7 @@ public class ContentViewLocationTest {
     @Before
     public void setUp() throws Exception {
         mMockLocationProvider = new MockLocationProvider();
-        LocationProviderFactory.setLocationProviderImpl(mMockLocationProvider);
+        LocationProviderOverrider.setLocationProviderImpl(mMockLocationProvider);
 
         try {
             mActivityTestRule.launchContentShellWithUrlSync(

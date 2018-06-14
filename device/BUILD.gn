@@ -196,8 +196,6 @@ test("device_unittests") {
     deps += [
       ":bluetooth_test_java",
       ":bluetooth_test_jni_headers",
-      "//device/geolocation:geolocation_java",
-      "//device/geolocation:geolocation_java_test_support",
       "//device/usb:java",
     ]
   }
@@ -377,7 +375,7 @@ if (is_android) {
       "//base:base_junit_test_support",
       "//device/gamepad:java",
       "//device/geolocation:geolocation_java",
-      "//device/geolocation:geolocation_java_test_support",
+      "//device/geolocation/public/java:geolocation_java_test_support",
       "//mojo/public/java:bindings_java",
       "//third_party/android_tools:android_support_annotations_java",
     ]
