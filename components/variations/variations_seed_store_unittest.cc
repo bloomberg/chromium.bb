@@ -1194,27 +1194,20 @@ TEST(VariationsSeedStoreTest, ImportFirstRunJavaSeed) {
                                           test_seed_country, test_response_date,
                                           test_is_gzip_compressed);
 
-  std::string seed_data;
-  std::string seed_signature;
-  std::string seed_country;
-  std::string response_date;
-  bool is_gzip_compressed;
-  android::GetVariationsFirstRunSeed(&seed_data, &seed_signature, &seed_country,
-                                     &response_date, &is_gzip_compressed);
-  EXPECT_EQ(test_seed_data, seed_data);
-  EXPECT_EQ(test_seed_signature, seed_signature);
-  EXPECT_EQ(test_seed_country, seed_country);
-  EXPECT_EQ(test_response_date, response_date);
-  EXPECT_EQ(test_is_gzip_compressed, is_gzip_compressed);
+  auto seed = android::GetVariationsFirstRunSeed();
+  EXPECT_EQ(test_seed_data,          seed->data);
+  EXPECT_EQ(test_seed_signature,     seed->signature);
+  EXPECT_EQ(test_seed_country,       seed->country);
+  EXPECT_EQ(test_response_date,      seed->date);
+  EXPECT_EQ(test_is_gzip_compressed, seed->is_gzip_compressed);
 
   android::ClearJavaFirstRunPrefs();
-  android::GetVariationsFirstRunSeed(&seed_data, &seed_signature, &seed_country,
-                                     &response_date, &is_gzip_compressed);
-  EXPECT_EQ("", seed_data);
-  EXPECT_EQ("", seed_signature);
-  EXPECT_EQ("", seed_country);
-  EXPECT_EQ("", response_date);
-  EXPECT_FALSE(is_gzip_compressed);
+  seed = android::GetVariationsFirstRunSeed();
+  EXPECT_EQ("", seed->data);
+  EXPECT_EQ("", seed->signature);
+  EXPECT_EQ("", seed->country);
+  EXPECT_EQ("", seed->date);
+  EXPECT_FALSE(seed->is_gzip_compressed);
 }
 #endif  // OS_ANDROID
 

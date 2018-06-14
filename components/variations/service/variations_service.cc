@@ -37,6 +37,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/variations_seed.pb.h"
+#include "components/variations/seed_response.h"
 #include "components/variations/variations_seed_processor.h"
 #include "components/variations/variations_seed_simulator.h"
 #include "components/variations/variations_switches.h"
@@ -54,6 +55,10 @@
 #include "net/url_request/url_request_status.h"
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "components/variations/android/variations_seed_bridge.h"
+#endif  // OS_ANDROID
 
 namespace variations {
 namespace {
@@ -232,6 +237,17 @@ bool IsFetchingEnabled() {
   return true;
 }
 
+std::unique_ptr<SeedResponse> MaybeImportFirstRunSeed(
+    PrefService* local_state) {
+#if defined(OS_ANDROID)
+  if (!local_state->HasPrefPath(prefs::kVariationsSeedSignature)) {
+    DVLOG(1) << "Importing first run seed from Java preferences.";
+    return android::GetVariationsFirstRunSeed();
+  }
+#endif
+  return nullptr;
+}
+
 }  // namespace
 
 VariationsService::VariationsService(
@@ -250,7 +266,10 @@ VariationsService::VariationsService(
       request_count_(0),
       safe_seed_manager_(state_manager->clean_exit_beacon()->exited_cleanly(),
                          local_state),
-      field_trial_creator_(local_state, client_.get(), ui_string_overrider),
+      field_trial_creator_(local_state,
+                           client_.get(),
+                           ui_string_overrider,
+                           MaybeImportFirstRunSeed(local_state)),
       weak_ptr_factory_(this) {
   DCHECK(client_);
   DCHECK(resource_request_allowed_notifier_);
