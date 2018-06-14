@@ -102,8 +102,6 @@ source_set("unit_tests") {
     "//components/sync_preferences:test_support",
     "//net:test_support",
     "//services/network:test_support",
-    "//services/network/public/cpp",
-    "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx",
