@@ -142,7 +142,7 @@ const char kWebstoreInvalidIdError[] = "Invalid id";
 const char kWebstoreInvalidManifestError[] = "Invalid manifest";
 const char kNoPreviousBeginInstallWithManifestError[] =
     "* does not match a previous call to beginInstallWithManifest3";
-const char kUserCancelledError[] = "User cancelled install";
+const char kWebstoreUserCancelledError[] = "User cancelled install";
 const char kIncognitoError[] =
     "Apps cannot be installed in guest/incognito mode";
 const char kEphemeralAppLaunchingNotSupported[] =
@@ -314,7 +314,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
   if (!web_contents) {
     // The browser window has gone away.
     Respond(BuildResponse(api::webstore_private::RESULT_USER_CANCELLED,
-                          kUserCancelledError));
+                          kWebstoreUserCancelledError));
     // Matches the AddRef in Run().
     Release();
     return;
@@ -399,7 +399,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::HandleInstallAbort(
                                                       histogram_name.c_str());
 
   Respond(BuildResponse(api::webstore_private::RESULT_USER_CANCELLED,
-                        kUserCancelledError));
+                        kWebstoreUserCancelledError));
 }
 
 ExtensionFunction::ResponseValue
@@ -689,7 +689,7 @@ WebstorePrivateGetReferrerChainFunction::Run() {
   content::WebContents* web_contents = GetSenderWebContents();
   if (!web_contents) {
     return RespondNow(ErrorWithArguments(GetReferrerChain::Results::Create(""),
-                                         kUserCancelledError));
+                                         kWebstoreUserCancelledError));
   }
 
   scoped_refptr<SafeBrowsingNavigationObserverManager>

@@ -28,9 +28,9 @@ namespace {
 const char kDashboardInvalidIconUrlError[] = "Invalid icon url";
 const char kDashboardInvalidIdError[] = "Invalid id";
 const char kDashboardInvalidManifestError[] = "Invalid manifest";
-const char kUserCancelledError[] = "User cancelled install";
+const char kDashboardUserCancelledError[] = "User cancelled install";
 
-api::dashboard_private::Result WebstoreInstallHelperResultToApiResult(
+api::dashboard_private::Result WebstoreInstallHelperResultToDashboardApiResult(
     WebstoreInstallHelper::Delegate::InstallHelperResultCode result) {
   switch (result) {
     case WebstoreInstallHelper::Delegate::UNKNOWN_ERROR:
@@ -128,7 +128,7 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
   if (!web_contents) {
     // The browser window has gone away.
     Respond(BuildResponse(api::dashboard_private::RESULT_USER_CANCELLED,
-                          kUserCancelledError));
+                          kDashboardUserCancelledError));
     // Matches the AddRef in Run().
     Release();
     return;
@@ -156,7 +156,7 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
     const std::string& error_message) {
   CHECK_EQ(params_->details.id, id);
 
-  Respond(BuildResponse(WebstoreInstallHelperResultToApiResult(result),
+  Respond(BuildResponse(WebstoreInstallHelperResultToDashboardApiResult(result),
                         error_message));
 
   // Matches the AddRef in Run().
@@ -166,10 +166,10 @@ void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
 void DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::
     OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
   bool accepted = (result == ExtensionInstallPrompt::Result::ACCEPTED);
-  Respond(BuildResponse(accepted
-                            ? api::dashboard_private::RESULT_EMPTY_STRING
-                            : api::dashboard_private::RESULT_USER_CANCELLED,
-                        accepted ? std::string() : kUserCancelledError));
+  Respond(
+      BuildResponse(accepted ? api::dashboard_private::RESULT_EMPTY_STRING
+                             : api::dashboard_private::RESULT_USER_CANCELLED,
+                    accepted ? std::string() : kDashboardUserCancelledError));
 
   Release();  // Matches the AddRef in Run().
 }
