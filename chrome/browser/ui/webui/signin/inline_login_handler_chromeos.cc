@@ -121,6 +121,10 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const base::ListValue* args) {
   const std::string& email = auth_data->FindKey("email")->GetString();
   CHECK(!email.empty());
 
+  // TODO(sinhak): Get URL Context from Account Manager when that is available.
+  net::URLRequestContextGetter* request_context =
+      g_browser_process->system_request_context();
+
   // TODO(sinhak): Do not depend on Profile unnecessarily.
   Profile* profile = Profile::FromWebUI(web_ui());
 
@@ -133,8 +137,7 @@ void InlineLoginHandlerChromeOS::CompleteLogin(const base::ListValue* args) {
           ->GetAccountManager(profile->GetPath().value());
 
   // SigninHelper deletes itself after its work is done.
-  new SigninHelper(profile, account_manager,
-                   account_manager->GetUrlRequestContext(), gaia_id, email,
+  new SigninHelper(profile, account_manager, request_context, gaia_id, email,
                    auth_code);
 }
 

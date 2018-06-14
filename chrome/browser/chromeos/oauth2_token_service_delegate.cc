@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/browser_process.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 
@@ -139,7 +140,13 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
 
 net::URLRequestContextGetter*
 ChromeOSOAuth2TokenServiceDelegate::GetRequestContext() const {
-  return account_manager_->GetUrlRequestContext();
+  // LSTs on Chrome are not channel/token bound for now and hence we can use
+  // the system request context.
+  // Note that we cannot use the Profile's request context since
+  // |AccountManager| acts outside the scope of Profiles.
+  // TODO(sinhak): Create a new |URLRequestContext| for |AccountManager| which
+  // conforms to token binding when those details are finalized.
+  return g_browser_process->system_request_context();
 }
 
 OAuth2TokenServiceDelegate::LoadCredentialsState
