@@ -34,10 +34,6 @@
 # Cross-origin request to file:// URL should be blocked. crbug.com/759230
 -BrowserSideNavigationBrowserDisableWebSecurityTest.ValidateBaseUrlForDataUrl
 
-# https://crbug.com/846341: CORB: Preserve test coverage for blocking response
-# headers in the NetworkService world.
--CrossSiteDocumentBlockingTest.BlockHeaders
-
 # https://crbug.com/846334: CORB: Need to make sure that prefetch/caching works
 -CrossSiteDocumentBlockingTest.PrefetchIsNotImpacted
 
