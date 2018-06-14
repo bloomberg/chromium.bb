@@ -96,11 +96,15 @@ class FakeFidoAuthenticator : public FidoDeviceAuthenticator {
 
 class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
  public:
-  FakeFidoRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
-                         FakeHandlerCallback callback)
+  FakeFidoRequestHandler(
+      const base::flat_set<FidoTransportProtocol>& protocols,
+      FakeHandlerCallback callback,
+      AddPlatformAuthenticatorCallback add_platform_authenticator =
+          AddPlatformAuthenticatorCallback())
       : FidoRequestHandler(nullptr /* connector */,
                            protocols,
-                           std::move(callback)),
+                           std::move(callback),
+                           std::move(add_platform_authenticator)),
         weak_factory_(this) {
     Start();
   }
@@ -149,6 +153,15 @@ class FidoRequestHandlerTest : public ::testing::Test {
         base::flat_set<FidoTransportProtocol>(
             {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         cb_.callback());
+  }
+
+  std::unique_ptr<FakeFidoRequestHandler>
+  CreateFakeHandlerWithPlatformAuthenticatorCallback(
+      FidoRequestHandlerBase::AddPlatformAuthenticatorCallback
+          add_platform_authenticator) {
+    return std::make_unique<FakeFidoRequestHandler>(
+        base::flat_set<FidoTransportProtocol>(), cb_.callback(),
+        std::move(add_platform_authenticator));
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
@@ -312,6 +325,33 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
             callback().status());
+}
+
+// Requests should be dispatched to the authenticator returned from the
+// AddPlatformAuthenticatorCallback if one is passed.
+TEST_F(FidoRequestHandlerTest, TestPlatformAuthenticatorCallback) {
+  // A platform authenticator usually wouldn't usually use a FidoDevice, but
+  // that's not the point of the test here. The test is only trying to ensure
+  // the authenticator gets injected and used.
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  // Device returns success response.
+  device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                      CreateFakeSuccessDeviceResponse());
+
+  FidoRequestHandlerBase::AddPlatformAuthenticatorCallback
+      make_platform_authenticator = base::BindOnce(
+          [](FidoDevice* device) -> std::unique_ptr<FidoAuthenticator> {
+            return std::make_unique<FakeFidoAuthenticator>(device);
+          },
+          device.get());
+  auto request_handler = CreateFakeHandlerWithPlatformAuthenticatorCallback(
+      std::move(make_platform_authenticator));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  callback().WaitForCallback();
+  EXPECT_TRUE(request_handler->is_complete());
+  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
 }
 
 }  // namespace device

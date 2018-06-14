@@ -32,6 +32,7 @@
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
+#include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/get_assertion_request_handler.h"
 #include "device/fido/make_credential_request_handler.h"
@@ -43,6 +44,10 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/url_constants.h"
 #include "url/url_util.h"
+
+#if defined(OS_MACOSX)
+#include "device/fido/mac/authenticator.h"
+#endif
 
 namespace content {
 
@@ -327,11 +332,6 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
     protocols_.insert(
         device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
-#if defined(OS_MACOSX)
-  if (base::FeatureList::IsEnabled(features::kWebAuthTouchId)) {
-    protocols_.insert(device::FidoTransportProtocol::kInternal);
-  }
-#endif
 }
 
 AuthenticatorImpl::~AuthenticatorImpl() {
@@ -487,20 +487,22 @@ void AuthenticatorImpl::MakeCredential(
   protocols_.erase(
       device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
 
-    auto authenticator_selection_criteria =
-        options->authenticator_selection
-            ? mojo::ConvertTo<device::AuthenticatorSelectionCriteria>(
-                  options->authenticator_selection)
-            : device::AuthenticatorSelectionCriteria();
+  auto authenticator_selection_criteria =
+      options->authenticator_selection
+          ? mojo::ConvertTo<device::AuthenticatorSelectionCriteria>(
+                options->authenticator_selection)
+          : device::AuthenticatorSelectionCriteria();
 
-    request_ = std::make_unique<device::MakeCredentialRequestHandler>(
-        connector_, protocols_,
-        CreateCtapMakeCredentialRequest(
-            ConstructClientDataHash(client_data_json_), options,
-            individual_attestation),
-        std::move(authenticator_selection_criteria),
-        base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
-                       weak_factory_.GetWeakPtr()));
+  request_ = std::make_unique<device::MakeCredentialRequestHandler>(
+      connector_, protocols_,
+      CreateCtapMakeCredentialRequest(
+          ConstructClientDataHash(client_data_json_), options,
+          individual_attestation),
+      std::move(authenticator_selection_criteria),
+      base::BindOnce(&AuthenticatorImpl::OnRegisterResponse,
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&AuthenticatorImpl::MaybeCreatePlatformAuthenticator,
+                     base::Unretained(this)));
 }
 
 // mojom:Authenticator
@@ -585,7 +587,9 @@ void AuthenticatorImpl::GetAssertion(
           ConstructClientDataHash(client_data_json_), std::move(options),
           std::move(alternative_application_parameter)),
       base::BindOnce(&AuthenticatorImpl::OnSignResponse,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr()),
+      base::BindOnce(&AuthenticatorImpl::MaybeCreatePlatformAuthenticator,
+                     base::Unretained(this)));
 }
 
 void AuthenticatorImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
@@ -802,6 +806,19 @@ void AuthenticatorImpl::Cleanup() {
   get_assertion_response_callback_.Reset();
   client_data_json_.clear();
   echo_appid_extension_ = false;
+}
+
+std::unique_ptr<device::FidoAuthenticator>
+AuthenticatorImpl::MaybeCreatePlatformAuthenticator() {
+#if defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(features::kWebAuthTouchId)) {
+    if (__builtin_available(macOS 10.12.2, *)) {
+      return device::fido::mac::TouchIdAuthenticator::CreateIfAvailable(
+          request_delegate_->TouchIdAuthenticatorKeychainAccessGroup());
+    }
+  }
+#endif
+  return nullptr;
 }
 
 }  // namespace content

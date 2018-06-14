@@ -9,6 +9,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/strings/string_piece_forward.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -52,6 +54,15 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate {
   // implementation in ChromeContentBrowserClient for Android, return |true| so
   // that testing is possible.
   virtual bool IsFocused();
+
+#if defined(OS_MACOSX)
+  // Returns the kechain-access-group value used for WebAuthn credentials
+  // stored in the macOS keychain by the built-in Touch ID authenticator. For
+  // more information on this, refer to |device::fido::TouchIdAuthenticator|.
+  // This method may to return empty string or some other placeholder value on
+  // platforms where |TouchIdAuthenticator| is not used.
+  virtual base::StringPiece TouchIdAuthenticatorKeychainAccessGroup();
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestClientDelegate);

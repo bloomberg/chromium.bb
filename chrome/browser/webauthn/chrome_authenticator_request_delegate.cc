@@ -156,6 +156,18 @@ bool ChromeAuthenticatorRequestDelegate::IsFocused() {
 #endif
 }
 
+#if defined(OS_MACOSX)
+base::StringPiece
+ChromeAuthenticatorRequestDelegate::TouchIdAuthenticatorKeychainAccessGroup() {
+  // This exact value must be whitelisted in the keychain-access-group section
+  // of the entitlements plist file with which Chrome is signed. Note that
+  // even though the bundle identifier for the Canary channel differs from that
+  // of the other channels, Canary still uses the same keychain access group.
+  static const char* access_group = "EQHXZ8M8AV.com.google.Chrome.webauthn";
+  return access_group;
+}
+#endif
+
 void ChromeAuthenticatorRequestDelegate::OnModelDestroyed() {
   DCHECK(weak_dialog_model_);
   weak_dialog_model_ = nullptr;

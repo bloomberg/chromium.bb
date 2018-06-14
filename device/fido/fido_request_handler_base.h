@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
@@ -39,12 +40,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
  public:
   using AuthenticatorMap =
       std::map<std::string, std::unique_ptr<FidoAuthenticator>, std::less<>>;
+  using AddPlatformAuthenticatorCallback =
+      base::OnceCallback<std::unique_ptr<FidoAuthenticator>()>;
 
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once
   // device/fido is servicified.
   FidoRequestHandlerBase(
       service_manager::Connector* connector,
       const base::flat_set<FidoTransportProtocol>& transports);
+  FidoRequestHandlerBase(
+      service_manager::Connector* connector,
+      const base::flat_set<FidoTransportProtocol>& transports,
+      AddPlatformAuthenticatorCallback add_platform_authenticator);
   ~FidoRequestHandlerBase() override;
 
   // Triggers cancellation of all per-device FidoTasks, except for the device
@@ -89,11 +96,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   AuthenticatorMap active_authenticators_;
   std::vector<std::unique_ptr<FidoDiscovery>> discoveries_;
 
-  // If set to true at any point before calling Start(), the request handler
-  // will try to create a platform authenticator to handle the request
-  // (currently only TouchIdAuthenticator on macOS).
-  bool use_platform_authenticator_ = false;
-
+  AddPlatformAuthenticatorCallback add_platform_authenticator_;
   DISALLOW_COPY_AND_ASSIGN(FidoRequestHandlerBase);
 };
 
