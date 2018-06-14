@@ -132,16 +132,7 @@ if (is_android) {
       "$google_play_services_package:google_play_services_basement_java",
       "$google_play_services_package:google_play_services_location_java",
       "//base:base_java",
-    ]
-  }
-
-  android_library("geolocation_java_test_support") {
-    testonly = true
-
-    java_files = [ "android/javatests/src/org/chromium/device/geolocation/MockLocationProvider.java" ]
-    deps = [
-      ":geolocation_java",
-      "//base:base_java",
+      "//device/geolocation/public/java",
     ]
   }
 }
@@ -208,6 +199,6 @@ source_set("unittests") {
       "network_location_provider_unittest.cc",
       "wifi_data_provider_common_unittest.cc",
     ]
-    deps += [ ":geolocation_java_test_support" ]
+    deps += [ "//device/geolocation/public/java:geolocation_java_test_support" ]
   }
 }

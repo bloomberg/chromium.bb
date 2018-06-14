@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.permissions.PermissionTestRule.PermissionUpda
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
-import org.chromium.device.geolocation.LocationProviderFactory;
+import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
 
 /**
@@ -45,7 +45,7 @@ public class GeolocationTest {
     @Before
     public void setUp() throws Exception {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
-        LocationProviderFactory.setLocationProviderImpl(new MockLocationProvider());
+        LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
     }
 
     private void runTest(String javascript, int nUpdates, boolean withGesture, boolean isDialog)

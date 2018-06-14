@@ -14,7 +14,7 @@ import android.os.Message;
  * posts location updates. This does not involve any system Location APIs and thus
  * does not require any special permissions in the test app or on the device.
  */
-public class MockLocationProvider implements LocationProviderFactory.LocationProvider {
+public class MockLocationProvider implements LocationProvider {
     private boolean mIsRunning;
     private Handler mHandler;
     private HandlerThread mHandlerThread;

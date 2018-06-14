@@ -23,7 +23,7 @@ import org.chromium.android_webview.test.AwActivityTestRule.TestDependencyFactor
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.common.ContentUrlConstants;
-import org.chromium.device.geolocation.LocationProviderFactory;
+import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
 
 import java.util.concurrent.Callable;
@@ -104,7 +104,7 @@ public class GeolocationTest {
     @Before
     public void setUp() throws Exception {
         mMockLocationProvider = new MockLocationProvider();
-        LocationProviderFactory.setLocationProviderImpl(mMockLocationProvider);
+        LocationProviderOverrider.setLocationProviderImpl(mMockLocationProvider);
     }
 
     @After

@@ -466,7 +466,6 @@ jumbo_static_library("test_support") {
     ]
 
     deps += [
-      "//device/geolocation:geolocation_java",
       "//media/capture/video/android:android",
       "//ui/android",
       "//ui/android:test_support",
@@ -2001,7 +2000,6 @@ test("content_unittests") {
     deps += [
       "//base:base_java_unittest_support",
       "//content/public/android:content_java",
-      "//device/geolocation:geolocation_java",
       "//media/capture/content/android",
       "//media/capture/content/android:screen_capture_java",
       "//ui/android:android",

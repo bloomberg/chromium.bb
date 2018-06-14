@@ -14,8 +14,7 @@ include_rules = [
   "-content/public/android/javatests",
   "+content/public/test/android/javatests",
 
-  "+device/geolocation/android/java",
-  "+device/geolocation/android/javatests",
+  "+device/geolocation/public/java",
 
   "+media/base/android",
 ]
