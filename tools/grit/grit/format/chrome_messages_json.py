@@ -17,7 +17,7 @@ def Format(root, lang='en', output_dir='.'):
   """Format the messages as JSON."""
   yield '{\n'
 
-  encoder = JSONEncoder();
+  encoder = JSONEncoder(ensure_ascii=False)
   format = ('  "%s": {\n'
             '    "message": %s%s\n'
             '  }')
