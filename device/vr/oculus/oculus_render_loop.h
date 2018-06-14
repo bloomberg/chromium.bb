@@ -9,6 +9,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/libovr/src/Include/OVR_CAPI.h"
@@ -24,14 +25,17 @@ const int kMaxOculusRenderLoopInputId = (ovrControllerType_Remote + 1);
 
 class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
  public:
+  using RequestSessionCallback =
+      base::OnceCallback<void(bool result,
+                              mojom::VRSubmitFrameClientRequest,
+                              mojom::VRPresentationProviderPtrInfo,
+                              mojom::VRDisplayFrameTransportOptionsPtr)>;
+
   OculusRenderLoop(ovrSession session, ovrGraphicsLuid luid);
   ~OculusRenderLoop() override;
 
-  void RequestPresent(
-      mojom::VRSubmitFrameClientPtrInfo submit_client_info,
-      mojom::VRPresentationProviderRequest request,
-      device::mojom::VRRequestPresentOptionsPtr present_options,
-      device::mojom::VRDisplayHost::RequestPresentCallback callback);
+  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
+                      RequestSessionCallback callback);
   void ExitPresent();
   base::WeakPtr<OculusRenderLoop> GetWeakPtr();
 
@@ -85,7 +89,6 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
   ovrTextureSwapChain texture_swap_chain_ = 0;
   double sensor_time_;
   mojo::Binding<mojom::VRPresentationProvider> binding_;
-  bool report_webxr_input_ = false;
   bool primary_input_pressed[kMaxOculusRenderLoopInputId];
 
   base::WeakPtrFactory<OculusRenderLoop> weak_ptr_factory_;

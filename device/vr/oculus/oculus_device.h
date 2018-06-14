@@ -24,16 +24,15 @@ class OculusDevice : public VRDeviceBase, public XrSessionController {
   ~OculusDevice() override;
 
   // VRDeviceBase
-  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
-                      mojom::VRPresentationProviderRequest request,
-                      mojom::VRRequestPresentOptionsPtr present_options,
-                      RequestExclusiveSessionCallback callback) override;
+  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
+                      VRDeviceRequestSessionCallback callback) override;
   void OnMagicWindowPoseRequest(
       mojom::VRMagicWindowProvider::GetPoseCallback callback) override;
-
-  void OnRequestPresentResult(
-      RequestExclusiveSessionCallback callback,
+  void OnRequestSessionResult(
+      VRDeviceRequestSessionCallback callback,
       bool result,
+      mojom::VRSubmitFrameClientRequest request,
+      mojom::VRPresentationProviderPtrInfo provider_info,
       mojom::VRDisplayFrameTransportOptionsPtr transport_options);
 
  private:
@@ -42,7 +41,6 @@ class OculusDevice : public VRDeviceBase, public XrSessionController {
   void StopSession() override;
 
   std::unique_ptr<OculusRenderLoop> render_loop_;
-  mojom::VRSubmitFrameClientPtr submit_client_;
   mojom::VRDisplayInfoPtr display_info_;
   ovrSession session_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

@@ -34,6 +34,16 @@ struct XRSessionOptions {
   // A flag to indicate if there has been a user activation when the request
   // session is made.
   bool has_user_activation;
+
+  // This flag ensures that render paths that are only supported in WebXR are
+  // not used for WebVR 1.1.
+  bool use_legacy_webvr_render_path;
+};
+
+struct XRPresentationConnection {
+  VRSubmitFrameClient& client_request;
+  VRPresentationProvider provider;
+  VRDisplayFrameTransportOptions transport_options;
 };
 
 struct XRInputSourceDescription {
@@ -152,22 +162,6 @@ struct VRDisplayInfo {
   float webxr_default_framebuffer_scale = 1.0;
 };
 
-// Options supplied by the Renderer when requesting presentation.
-struct VRRequestPresentOptions {
-  // If true, must use a render path that can preserve drawing buffer
-  // contents across frames. If false, each frame is drawn independently.
-  bool preserve_drawing_buffer;
-
-  // If true, indicates that WebXR input poses should be reported on VSync.
-  bool webxr_input;
-
-  // If true, Renderer has support for using shared buffer draw. Currently true
-  // for WebXR. Device-side prerequisite support is checked separately, this
-  // flag is an opt-in to ensure it's not used for WebVR 1.1 which lacks
-  // the required drawing buffer rebinding support.
-  bool shared_buffer_draw_supported;
-};
-
 // Frame transport method from the Renderer's point of view.
 enum VRDisplayFrameTransportMethod {
   NONE = 0,
@@ -275,25 +269,13 @@ interface VRSubmitFrameClient {
 // of a (device/) VrDisplayImpl.
 interface VRDisplayHost {
   // Request to initialize a session in the browser process. The return value
-  // indicates if the session was successfully initialized or not. This method
-  // must be called before RequestPresent and the magic window provider
-  // methods.
-  // TODO(https://crbug.com/842042): Call VRDisplayHost::RequestSession() from
-  // WebVR.
+  // indicates if the session was successfully initialized or not.
   // TODO(https://crbug.com/842025): Refactor VR device interfaces to better
   // reflect WebXR.
-  RequestSession(XRSessionOptions options) => (bool success);
-
+  RequestSession(
+    XRSessionOptions options,
+    bool triggered_by_displayactive) => (XRPresentationConnection? connection);
   SupportsSession(XRSessionOptions options) => (bool supports_session);
-
-  // The returned transport_options is marked optional: it's null for
-  // a failure result but must be non-null for a success result.
-  RequestPresent(VRSubmitFrameClient client,
-                 VRPresentationProvider& request,
-                 VRRequestPresentOptions options,
-                 bool triggered_by_displayactive) => (
-                     bool success,
-                     VRDisplayFrameTransportOptions? transport_options);
 
   ExitPresent();
 };

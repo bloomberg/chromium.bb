@@ -35,7 +35,8 @@ class PLATFORM_EXPORT XRFrameTransport final
   explicit XRFrameTransport();
   ~XRFrameTransport() override;
 
-  device::mojom::blink::VRSubmitFrameClientPtr GetSubmitFrameClient();
+  void BindSubmitFrameClient(
+      device::mojom::blink::VRSubmitFrameClientRequest request);
 
   void PresentChange();
 

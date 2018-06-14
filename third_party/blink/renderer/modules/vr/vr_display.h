@@ -124,9 +124,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   VRController* Controller();
 
  private:
-  void OnPresentComplete(
-      bool success,
-      device::mojom::blink::VRDisplayFrameTransportOptionsPtr);
+  void OnRequestSessionReturned(
+      device::mojom::blink::XRPresentationConnectionPtr connection);
 
   void OnConnected();
   void OnDisconnected();
@@ -182,7 +181,7 @@ class VRDisplay final : public EventTargetWithInlineData,
   device::mojom::blink::VRPosePtr frame_pose_;
   device::mojom::blink::VRPosePtr pending_pose_;
 
-  // Set to true between OnActivate and RequestPresent to indicate that we're in
+  // Set to true between OnActivate and requestPresent to indicate that we're in
   // a display activation state.
   bool in_display_activate_ = false;
 

@@ -19,6 +19,7 @@
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/vr_device.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace device {
@@ -68,6 +69,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   void SendRequestPresentReply(
       bool success,
+      device::mojom::VRSubmitFrameClientRequest request,
+      device::mojom::VRPresentationProviderPtr provider,
       device::mojom::VRDisplayFrameTransportOptionsPtr);
 
   // device::GvrDelegateProvider implementation.
@@ -77,22 +80,18 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   // device::GvrDelegateProvider implementation.
   bool ShouldDisableGvrDevice() override;
   void SetDeviceId(unsigned int device_id) override;
-  void RequestWebVRPresent(
-      device::mojom::VRSubmitFrameClientPtr submit_client,
-      device::mojom::VRPresentationProviderRequest request,
+  void StartWebXRPresentation(
       device::mojom::VRDisplayInfoPtr display_info,
-      device::mojom::VRRequestPresentOptionsPtr present_options,
-      device::mojom::VRDisplayHost::RequestPresentCallback callback) override;
+      const device::XRDeviceRuntimeSessionOptions& options,
+      device::mojom::VRDisplayHost::RequestSessionCallback callback) override;
   void OnListeningForActivateChanged(bool listening) override;
 
   void OnActivateDisplayHandled(bool will_not_present);
   void SetListeningForActivate(bool listening);
   void OnPresentResult(
-      device::mojom::VRSubmitFrameClientPtr submit_client,
-      device::mojom::VRPresentationProviderRequest request,
       device::mojom::VRDisplayInfoPtr display_info,
-      device::mojom::VRRequestPresentOptionsPtr present_options,
-      device::mojom::VRDisplayHost::RequestPresentCallback callback,
+      const device::XRDeviceRuntimeSessionOptions& options,
+      device::mojom::VRDisplayHost::RequestSessionCallback callback,
       bool success);
 
   std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
@@ -108,7 +107,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   // Mojo callback waiting for request present response. This is temporarily
   // stored here from OnPresentResult's outgoing ConnectPresentingService call
   // until the reply arguments are received by SendRequestPresentReply.
-  device::mojom::VRDisplayHost::RequestPresentCallback
+  device::mojom::VRDisplayHost::RequestSessionCallback
       request_present_response_callback_;
 
   bool pending_successful_present_request_ = false;

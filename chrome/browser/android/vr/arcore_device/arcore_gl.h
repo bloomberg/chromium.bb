@@ -46,7 +46,7 @@ class ARCoreGl {
   explicit ARCoreGl(std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge);
   ~ARCoreGl();
 
-  void Initialize(mojom::VRDisplayHost::RequestSessionCallback callback);
+  void Initialize(base::OnceCallback<void(bool)> callback);
 
   void ProduceFrame(const gfx::Size& frame_size,
                     display::Display::Rotation display_rotation,
