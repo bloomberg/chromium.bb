@@ -42,9 +42,9 @@ class OmniboxMatchCellView : public views::View {
   void Layout() override;
   const char* GetClassName() const override;
 
-  void LayoutOldStyleAnswer();
+  void LayoutOldStyleAnswer(int icon_view_width, int text_indent);
   void LayoutNewStyleTwoLineSuggestion();
-  void LayoutSplit(int text_indent);
+  void LayoutSplit(int icon_view_width, int text_indent);
 
   bool is_old_style_answer_;
   bool is_rich_suggestion_;
