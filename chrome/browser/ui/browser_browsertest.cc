@@ -1253,7 +1253,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 }
 
 // Regression test for crbug.com/702505.
-IN_PROC_BROWSER_TEST_F(BrowserTest, ReattachDevToolsWindow) {
+// Fails occasionally on Mac. http://crbug.com/852697
+#if defined(OS_MACOSX)
+#define MAYBE_ReattachDevToolsWindow DISABLED_ReattachDevToolsWindow
+#else
+#define MAYBE_ReattachDevToolsWindow ReattachDevToolsWindow
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ReattachDevToolsWindow) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
