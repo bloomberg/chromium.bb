@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_helper.h"
+#include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
@@ -124,13 +125,16 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
     }
   }
 
-  // TODO(allenvic): Add URL parsing here once SmbUrl can be used without adding
-  // a standard scheme.
+  SmbUrl parsed_url(share_path.value());
+  if (!parsed_url.IsValid()) {
+    std::move(callback).Run(
+        TranslateErrorToMountResult(base::File::Error::FILE_ERROR_INVALID_URL));
+    return;
+  }
 
-  // TODO(allenvic): Resolve parsed_url here using NetworkScanner once name
-  // resolution is wired up.
+  const base::FilePath mount_path(share_finder_->GetResolvedUrl(parsed_url));
   GetSmbProviderClient()->Mount(
-      share_path, workgroup, username,
+      mount_path, workgroup, username,
       temp_file_manager_->WritePasswordToFile(password),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path));
