@@ -99,18 +99,6 @@ void ShowSigninErrorLearnMorePage(Profile* profile) {
   Navigate(&params);
 }
 
-std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(profile);
-  std::string email = account_tracker->GetAccountInfo(account_id).email;
-  if (email.empty()) {
-    DCHECK_EQ(AccountTrackerService::MIGRATION_NOT_STARTED,
-              account_tracker->GetMigrationState());
-    return account_id;
-  }
-  return email;
-}
-
 void EnableSyncFromPromo(Browser* browser,
                          const AccountInfo& account,
                          signin_metrics::AccessPoint access_point,
@@ -206,6 +194,19 @@ void EnableSyncFromPromo(
 }  // namespace internal
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
+
+std::string GetDisplayEmail(Profile* profile, const std::string& account_id) {
+  AccountTrackerService* account_tracker =
+      AccountTrackerServiceFactory::GetForProfile(profile);
+  std::string email = account_tracker->GetAccountInfo(account_id).email;
+  if (email.empty()) {
+    DCHECK_EQ(AccountTrackerService::MIGRATION_NOT_STARTED,
+              account_tracker->GetMigrationState());
+    return account_id;
+  }
+  return email;
+}
+
 // TODO(tangltom): Add a unit test for this function.
 std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
   // Fetch account ids for accounts that have a token.
