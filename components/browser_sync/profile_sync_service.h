@@ -476,13 +476,6 @@ class ProfileSyncService : public syncer::SyncService,
   // TODO(sync): This is only used in tests.  Can we remove it?
   const syncer::DataTypeStatusTable& data_type_status_table() const;
 
-  // If true, the ProfileSyncService has detected that a new GAIA signin has
-  // succeeded, and is waiting for initialization to complete. This is used by
-  // the UI to differentiate between a new auth error (encountered as part of
-  // the initialization process) and a pre-existing auth error that just hasn't
-  // been cleared yet. Virtual for testing purposes.
-  virtual bool waiting_for_auth() const;
-
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   void Shutdown() override;

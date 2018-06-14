@@ -60,7 +60,6 @@ SyncAuthManager::SyncAuthManager(
       account_state_changed_callback_(account_state_changed),
       credentials_changed_callback_(credentials_changed),
       registered_for_auth_notifications_(false),
-      is_auth_in_progress_(false),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       weak_ptr_factory_(this) {
   DCHECK(sync_prefs_);
@@ -169,7 +168,6 @@ void SyncAuthManager::ConnectionStatusChanged(syncer::ConnectionStatus status) {
 
 void SyncAuthManager::UpdateAuthErrorState(
     const GoogleServiceAuthError& error) {
-  is_auth_in_progress_ = false;
   last_auth_error_ = error;
 }
 
@@ -192,10 +190,6 @@ void SyncAuthManager::Clear() {
 
 void SyncAuthManager::OnPrimaryAccountSet(
     const AccountInfo& primary_account_info) {
-  // Track the fact that we're still waiting for auth to complete.
-  DCHECK(!is_auth_in_progress_);
-  is_auth_in_progress_ = true;
-
   account_state_changed_callback_.Run();
 }
 
@@ -203,7 +197,6 @@ void SyncAuthManager::OnPrimaryAccountCleared(
     const AccountInfo& previous_primary_account_info) {
   UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::SIGN_OUT,
                             syncer::STOP_SOURCE_LIMIT);
-  is_auth_in_progress_ = false;
   account_state_changed_callback_.Run();
 }
 

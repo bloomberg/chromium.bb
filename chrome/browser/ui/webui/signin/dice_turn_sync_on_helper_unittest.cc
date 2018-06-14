@@ -37,11 +37,13 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AtLeast;
 using ::testing::Return;
+using ::testing::ReturnRef;
 
 class DiceTurnSyncOnHelperTest;
 
@@ -245,27 +247,20 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
     browser_sync::ProfileSyncServiceMock* sync_service_mock =
         GetProfileSyncServiceMock();
     EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
-    EXPECT_CALL(*sync_service_mock, CanSyncStart())
-        .Times(AtLeast(0))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*sync_service_mock, IsEngineInitialized())
-        .Times(AtLeast(0))
-        .WillRepeatedly(Return(true));
+    ON_CALL(*sync_service_mock, CanSyncStart()).WillByDefault(Return(true));
+    ON_CALL(*sync_service_mock, IsEngineInitialized())
+        .WillByDefault(Return(true));
   }
 
   void SetExpectationsForSyncStartupPending() {
     browser_sync::ProfileSyncServiceMock* sync_service_mock =
         GetProfileSyncServiceMock();
     EXPECT_CALL(*sync_service_mock, GetSetupInProgressHandle()).Times(1);
-    EXPECT_CALL(*sync_service_mock, CanSyncStart())
-        .Times(AtLeast(0))
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*sync_service_mock, IsEngineInitialized())
-        .Times(AtLeast(0))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*sync_service_mock, waiting_for_auth())
-        .Times(AtLeast(0))
-        .WillRepeatedly(Return(true));
+    ON_CALL(*sync_service_mock, CanSyncStart()).WillByDefault(Return(true));
+    ON_CALL(*sync_service_mock, IsEngineInitialized())
+        .WillByDefault(Return(false));
+    ON_CALL(*sync_service_mock, GetAuthError())
+        .WillByDefault(ReturnRef(kNoAuthError));
   }
 
   void CheckDelegateCalls() {
@@ -388,6 +383,10 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
   std::string new_profile_username_;
   bool sync_confirmation_shown_ = false;
   bool sync_settings_shown_ = false;
+
+  // Note: This needs to be a member variable for testing::ReturnRef.
+  const GoogleServiceAuthError kNoAuthError =
+      GoogleServiceAuthError::AuthErrorNone();
 };
 
 // TestDiceTurnSyncOnHelperDelegate implementation.
