@@ -1474,6 +1474,8 @@ split_static_library("ui") {
       "startup/startup_tab_provider.cc",
       "startup/startup_tab_provider.h",
       "startup/startup_types.h",
+      "sync/browser_synced_tab_delegate.cc",
+      "sync/browser_synced_tab_delegate.h",
       "sync/browser_synced_window_delegate.cc",
       "sync/browser_synced_window_delegate.h",
       "sync/browser_synced_window_delegates_getter.cc",

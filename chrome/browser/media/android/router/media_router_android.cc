@@ -15,6 +15,7 @@
 #include "chrome/browser/media/router/route_message_observer.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/presentation_connection_message.h"
 #include "url/gurl.h"
 

@@ -7,6 +7,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/common/chrome_content_client.h"
 #include "content/common/media/media_player_messages_android.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_availability.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
