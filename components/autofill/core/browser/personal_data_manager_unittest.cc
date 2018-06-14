@@ -3020,6 +3020,25 @@ TEST_F(PersonalDataManagerTest, ClearAllServerData) {
   EXPECT_TRUE(personal_data_->GetCreditCards().empty());
 }
 
+TEST_F(PersonalDataManagerTest, ClearAllLocalData) {
+  // Add some local data.
+  personal_data_->AddProfile(test::GetFullProfile());
+  personal_data_->AddCreditCard(test::GetCreditCard());
+  personal_data_->Refresh();
+
+  // The card and profile should be there.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+  EXPECT_FALSE(personal_data_->GetCreditCards().empty());
+  EXPECT_FALSE(personal_data_->GetProfiles().empty());
+
+  personal_data_->ClearAllLocalData();
+
+  // Reload the database, everything should be gone.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+  EXPECT_TRUE(personal_data_->GetCreditCards().empty());
+  EXPECT_TRUE(personal_data_->GetProfiles().empty());
+}
+
 // Tests the SaveImportedProfile method with different profiles to make sure the
 // merge logic works correctly.
 typedef struct {

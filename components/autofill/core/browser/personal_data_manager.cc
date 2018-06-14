@@ -842,6 +842,12 @@ void PersonalDataManager::ClearAllServerData() {
   server_profiles_.clear();
 }
 
+void PersonalDataManager::ClearAllLocalData() {
+  database_->ClearAllLocalData();
+  local_credit_cards_.clear();
+  web_profiles_.clear();
+}
+
 void PersonalDataManager::AddServerCreditCardForTest(
     std::unique_ptr<CreditCard> credit_card) {
   server_credit_cards_.push_back(std::move(credit_card));

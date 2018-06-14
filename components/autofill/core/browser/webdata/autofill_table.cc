@@ -1159,6 +1159,11 @@ bool AutofillTable::ClearAutofillProfiles() {
   return s4.Run();
 }
 
+bool AutofillTable::ClearCreditCards() {
+  sql::Statement s1(db_->GetUniqueStatement("DELETE FROM credit_cards"));
+  return s1.Run();
+}
+
 bool AutofillTable::AddCreditCard(const CreditCard& credit_card) {
   sql::Statement s(db_->GetUniqueStatement(
       "INSERT INTO credit_cards"
@@ -1514,6 +1519,20 @@ bool AutofillTable::ClearAllServerData() {
   sql::Statement address_metadata(
       db_->GetUniqueStatement("DELETE FROM server_address_metadata"));
   address_metadata.Run();
+  changed |= db_->GetLastChangeCount() > 0;
+
+  transaction.Commit();
+  return changed;
+}
+
+bool AutofillTable::ClearAllLocalData() {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;  // Some error, nothing was changed.
+
+  ClearAutofillProfiles();
+  bool changed = db_->GetLastChangeCount() > 0;
+  ClearCreditCards();
   changed |= db_->GetLastChangeCount() > 0;
 
   transaction.Commit();

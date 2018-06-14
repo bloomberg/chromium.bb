@@ -429,6 +429,16 @@ WebDatabase::State AutofillWebDataBackendImpl::ClearAllServerData(
   return WebDatabase::COMMIT_NOT_NEEDED;
 }
 
+WebDatabase::State AutofillWebDataBackendImpl::ClearAllLocalData(
+    WebDatabase* db) {
+  DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
+  if (AutofillTable::FromWebDatabase(db)->ClearAllLocalData()) {
+    NotifyOfMultipleAutofillChanges();
+    return WebDatabase::COMMIT_NEEDED;
+  }
+  return WebDatabase::COMMIT_NOT_NEEDED;
+}
+
 WebDatabase::State
     AutofillWebDataBackendImpl::RemoveAutofillDataModifiedBetween(
         const base::Time& delete_begin,

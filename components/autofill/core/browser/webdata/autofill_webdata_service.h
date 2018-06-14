@@ -99,6 +99,7 @@ class AutofillWebDataService : public AutofillWebData,
   void MaskServerCreditCard(const std::string& id) override;
 
   void ClearAllServerData();
+  void ClearAllLocalData();
 
   void UpdateServerCardMetadata(const CreditCard& credit_card) override;
   void UpdateServerAddressMetadata(const AutofillProfile& profile) override;
