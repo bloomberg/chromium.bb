@@ -7,6 +7,7 @@ CHROME=google-chrome
 # Include all resources of the Camera App to be copied to the target package,
 # but without the manifest files.
 SRC_RESOURCES= \
+        src/_locales/am/messages.json \
 	src/_locales/ar/messages.json \
 	src/_locales/bg/messages.json \
 	src/_locales/bn/messages.json \
@@ -50,6 +51,7 @@ SRC_RESOURCES= \
 	src/_locales/sl/messages.json \
 	src/_locales/sr/messages.json \
 	src/_locales/sv/messages.json \
+        src/_locales/sw/messages.json \
 	src/_locales/ta/messages.json \
 	src/_locales/te/messages.json \
 	src/_locales/th/messages.json \
