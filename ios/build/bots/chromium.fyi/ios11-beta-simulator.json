@@ -22,20 +22,6 @@
       "xcode build version": "9q1019a"
     },
     {
-      "include": "common_tests.json",
-      "device type": "iPad Air",
-      "os": "11.4",
-      "host os": "Mac-10.13",
-      "xcode build version": "9q1019a"
-    },
-    {
-      "include": "common_tests.json",
-      "device type": "iPhone 5s",
-      "os": "11.4",
-      "host os": "Mac-10.13",
-      "xcode build version": "9q1019a"
-    },
-    {
       "include": "eg_tests.json",
       "device type": "iPhone X",
       "os": "11.4",
