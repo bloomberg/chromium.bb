@@ -578,10 +578,10 @@ bool InitializeGLThreadSafe(base::CommandLine* command_line,
 }
 #endif  // OS_ANDROID
 
-bool ShouldEnableSwiftShader(base::CommandLine* command_line,
-                             const GpuFeatureInfo& gpu_feature_info,
-                             bool disable_software_rasterizer,
-                             bool blacklist_needs_more_info) {
+bool EnableSwiftShaderIfNeeded(base::CommandLine* command_line,
+                               const GpuFeatureInfo& gpu_feature_info,
+                               bool disable_software_rasterizer,
+                               bool blacklist_needs_more_info) {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
   if (disable_software_rasterizer)
     return false;
