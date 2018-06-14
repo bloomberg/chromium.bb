@@ -162,9 +162,11 @@ bool IsWidevineAvailable(
       *supports_persistent_license = false;
 #endif  // defined(OS_CHROMEOS)
 
-      // TODO(crbug.com/835009): Update once Widevine on Linux supports more
-      // encryption schemes.
+      // Add the supported encryption schemes as if they came from the
+      // component manifest. This list must match the CDM that is being
+      // bundled with Chrome.
       modes_supported->insert(media::EncryptionMode::kCenc);
+      modes_supported->insert(media::EncryptionMode::kCbcs);
 
       return true;
     }

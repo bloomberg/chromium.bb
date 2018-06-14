@@ -1062,6 +1062,24 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest, Robustness) {
 #endif
 }
 
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest,
+                       EncryptionScheme) {
+  EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, nullptr));
+  EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cenc"));
+  EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cbcs"));
+  EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, nullptr));
+  EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cenc"));
+  EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cbcs"));
+
+  // Invalid encryption schemes will be rejected. However, invalid values
+  // generate a TypeError (The provided value '...' is not a valid enum value
+  // of type EncryptionScheme), which is not handled by the test page.
+  EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kWidevine, "Invalid"));
+  EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kWidevine, "Invalid"));
+  EXPECT_TYPEERROR(IsAudioEncryptionSchemeSupported(kWidevine, ""));
+  EXPECT_TYPEERROR(IsVideoEncryptionSchemeSupported(kWidevine, ""));
+}
+
 //
 // Misc failure test cases.
 //
