@@ -193,16 +193,6 @@ fuchsia_sdk_fidl_pkg("input") {
   ]
 }
 
-# TODO(https://crbug.com/848028): Remove this once no dependencies need it.
-fuchsia_sdk_pkg("launchpad") {
-  sources = [
-    "include/launchpad/launchpad.h",
-    "include/launchpad/vmo.h",
-  ]
-
-  libs = [ "launchpad" ]
-}
-
 fuchsia_sdk_fidl_pkg("math") {
   namespace = "fuchsia"
   namespace_path = "fuchsia"

@@ -4,7 +4,7 @@
 
 #include "content/common/sandbox_policy_fuchsia.h"
 
-#include <launchpad/launchpad.h>
+#include <lib/fdio/spawn.h>
 #include <zircon/processargs.h>
 
 #include "base/base_paths_fuchsia.h"
