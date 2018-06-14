@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "components/sync/base/model_type.h"
 
 class PersistentPrefStore;
 class PrefService;
@@ -59,7 +60,8 @@ class UnknownUserPrefAccessor {
 
   // Computes the state of a preference with name |pref_name| which gives
   // information about whether it's registered and the locally persisted value.
-  PreferenceState GetPreferenceState(const std::string& pref_name) const;
+  PreferenceState GetPreferenceState(syncer::ModelType type,
+                                     const std::string& pref_name) const;
 
   // Removes the value of the preference |pref_name| from the user prefstore.
   // Must not be called for preferences having RegistrationState::kUnknown.
@@ -86,7 +88,8 @@ class UnknownUserPrefAccessor {
   int GetNumberOfSyncingUnknownPrefs() const;
 
  private:
-  RegistrationState GetRegistrationState(const std::string& pref_name) const;
+  RegistrationState GetRegistrationState(syncer::ModelType type,
+                                         const std::string& pref_name) const;
 
   std::set<std::string> synced_unknown_prefs_;
   PrefService* const pref_service_;

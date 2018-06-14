@@ -576,6 +576,22 @@ TEST_F(PrefServiceSyncableMergeTest, ReceiveUnknownPrefsValue) {
   EXPECT_THAT(GetPreferenceValue(pref_name).GetString(), Eq("remote_value"));
 }
 
+TEST_F(PrefServiceSyncableMergeTest, KeepPriorityPreferencesSeparately) {
+  base::HistogramTester histogram_tester;
+  const std::string pref_name = "testing.priority_pref";
+  pref_registry_->RegisterStringPref(
+      pref_name, "priority-default",
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+
+  syncer::SyncDataList in;
+  // AddToRemoteDataList() produces sync data for non-priority prefs.
+  AddToRemoteDataList(pref_name, base::Value("non-priority-value"), &in);
+  syncer::SyncChangeList out;
+  InitWithSyncDataTakeOutput(in, &out);
+  EXPECT_THAT(GetPreferenceValue(pref_name).GetString(),
+              Eq("priority-default"));
+}
+
 class ShouldNotBeNotifedObserver : public SyncedPrefObserver {
  public:
   ShouldNotBeNotifedObserver() {}

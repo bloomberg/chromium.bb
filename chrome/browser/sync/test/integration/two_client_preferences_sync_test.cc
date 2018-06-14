@@ -245,3 +245,30 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   EXPECT_THAT(GetPrefs(1)->GetBoolean(pref_name), Eq(false));
 }
+
+// Verifies that priority synced preferences and regular sycned preferences are
+// kept separate.
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTestWithSelfNotifications,
+                       E2E_ENABLED(ShouldIsolatePriorityPreferences)) {
+  // Register a pref as priority with client0 and regular synced with client1.
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  constexpr char pref_name[] = "testing.my-test-preference";
+  GetRegistry(GetProfile(0))
+      ->RegisterStringPref(
+          pref_name, "",
+          user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  GetRegistry(GetProfile(1))
+      ->RegisterStringPref(pref_name, "",
+                           user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+
+  ChangeStringPref(0, pref_name, "priority value");
+  GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1));
+  EXPECT_THAT(GetPrefs(0)->GetString(pref_name), Eq("priority value"));
+  EXPECT_THAT(GetPrefs(1)->GetString(pref_name), Eq(""));
+
+  ChangeStringPref(1, pref_name, "non-priority value");
+  GetClient(1)->AwaitMutualSyncCycleCompletion(GetClient(0));
+  EXPECT_THAT(GetPrefs(0)->GetString(pref_name), Eq("priority value"));
+  EXPECT_THAT(GetPrefs(1)->GetString(pref_name), Eq("non-priority value"));
+}
