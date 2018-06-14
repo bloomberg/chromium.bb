@@ -1479,8 +1479,10 @@ config("chromium_code") {
   if (is_win) {
     cflags = [ "/W4" ]  # Warning level 4.
 
-    # Opt in to additional [[nodiscard]] on standard library methods.
-    defines = [ "_HAS_NODISCARD" ]
+    if (is_clang) {
+      # Opt in to additional [[nodiscard]] on standard library methods.
+      defines = [ "_HAS_NODISCARD" ]
+    }
   } else {
     cflags = [ "-Wall" ]
     if (treat_warnings_as_errors) {
