@@ -31,6 +31,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kDragTabsInTabletMode;
 // https://crbug.com/755448.
 ASH_PUBLIC_EXPORT extern const base::Feature kKeyboardShortcutViewer;
 
+// Enables the keyboard shortcut viewer mojo app.
+// TODO(msw): Remove this after the feature is fully launched.
+// https://crbug.com/841020.
+ASH_PUBLIC_EXPORT extern const base::Feature kKeyboardShortcutViewerApp;
+
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
@@ -69,6 +74,8 @@ ASH_PUBLIC_EXPORT bool IsDisplayMoveWindowAccelsEnabled();
 ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
+
+ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
 

@@ -1703,6 +1703,9 @@ extern const char kAshEnableTrilinearFilteringDescription[];
 extern const char kAshEnableUnifiedDesktopName[];
 extern const char kAshEnableUnifiedDesktopDescription[];
 
+extern const char kAshKeyboardShortcutViewerAppName[];
+extern const char kAshKeyboardShortcutViewerAppDescription[];
+
 extern const char kAshShelfColorName[];
 extern const char kAshShelfColorDescription[];
 

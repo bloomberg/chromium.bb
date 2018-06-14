@@ -26784,6 +26784,7 @@ from previous Chrome versions.
   <int value="-2097515669" label="disable-cast"/>
   <int value="-2091404586" label="TabStripKeyboardFocus:enabled"/>
   <int value="-2090484194" label="ContextualSearchUrlActions:disabled"/>
+  <int value="-2088472280" label="KeyboardShortcutViewerApp:disabled"/>
   <int value="-2083998415" label="VrLaunchIntent:enabled"/>
   <int value="-2083195884" label="enable-firewall-hole-punching"/>
   <int value="-2082462043" label="ViewPasswords:disabled"/>
@@ -27593,6 +27594,7 @@ from previous Chrome versions.
   <int value="-374657496" label="OmniboxEnableClipboardProvider:enabled"/>
   <int value="-374423260" label="OmniboxTabSwitchSuggestions:disabled"/>
   <int value="-367474066" label="DialogTouchBar:enabled"/>
+  <int value="-366949535" label="KeyboardShortcutViewerApp:enabled"/>
   <int value="-365920680" label="ImageCaptureAPI:disabled"/>
   <int value="-364587218" label="ResourceLoadScheduler:enabled"/>
   <int value="-364325011" label="enable-files-quick-view"/>
