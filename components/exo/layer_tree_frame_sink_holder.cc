@@ -114,12 +114,6 @@ base::WeakPtr<LayerTreeFrameSinkHolder> LayerTreeFrameSinkHolder::GetWeakPtr() {
 ////////////////////////////////////////////////////////////////////////////////
 // cc::LayerTreeFrameSinkClient overrides:
 
-void LayerTreeFrameSinkHolder::SetBeginFrameSource(
-    viz::BeginFrameSource* source) {
-  if (surface_tree_host_)
-    surface_tree_host_->SetBeginFrameSource(source);
-}
-
 base::Optional<viz::HitTestRegionList>
 LayerTreeFrameSinkHolder::BuildHitTestData() {
   return {};
