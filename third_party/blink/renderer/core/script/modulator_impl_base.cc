@@ -40,6 +40,10 @@ ModulatorImplBase::ModulatorImplBase(scoped_refptr<ScriptState> script_state)
 
 ModulatorImplBase::~ModulatorImplBase() {}
 
+bool ModulatorImplBase::IsScriptingDisabled() const {
+  return !GetExecutionContext()->CanExecuteScripts(kAboutToExecuteScript);
+}
+
 // [fetch-a-module-script-tree]
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
 // [fetch-a-module-worker-script-tree]
@@ -200,7 +204,7 @@ ScriptModule ModulatorImplBase::CompileModule(
   // object's responsible browsing context, then let script source be the empty
   // string. Otherwise, let script source be the provided script source.
   String script_source;
-  if (GetExecutionContext()->CanExecuteScripts(kAboutToExecuteScript))
+  if (!IsScriptingDisabled())
     script_source = provided_source;
 
   // Step 5. Let result be ParseModule(script source, realm, script).
@@ -242,7 +246,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
 
   // Step 3. "Check if we can run script with settings.
   //          If this returns "do not run" then return." [spec text]
-  if (!GetExecutionContext()->CanExecuteScripts(kAboutToExecuteScript))
+  if (IsScriptingDisabled())
     return ScriptValue();
 
   // Step 4. "Prepare to run script given settings." [spec text]

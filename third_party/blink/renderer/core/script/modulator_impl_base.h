@@ -40,6 +40,8 @@ class ModulatorImplBase : public Modulator {
  private:
   // Implements Modulator
 
+  bool IsScriptingDisabled() const override;
+
   ScriptModuleResolver* GetScriptModuleResolver() override {
     return script_module_resolver_.Get();
   }

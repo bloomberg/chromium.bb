@@ -32,6 +32,7 @@ class DummyModulator : public Modulator {
   ScriptModuleResolver* GetScriptModuleResolver() override;
   base::SingleThreadTaskRunner* TaskRunner() override;
   ScriptState* GetScriptState() override;
+  bool IsScriptingDisabled() const override;
 
   void FetchTree(
       const KURL&,

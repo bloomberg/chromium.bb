@@ -49,6 +49,10 @@ ScriptState* DummyModulator::GetScriptState() {
   return nullptr;
 }
 
+bool DummyModulator::IsScriptingDisabled() const {
+  return false;
+}
+
 ScriptModuleResolver* DummyModulator::GetScriptModuleResolver() {
   return resolver_.Get();
 }
