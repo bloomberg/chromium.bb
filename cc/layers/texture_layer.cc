@@ -192,7 +192,12 @@ bool TextureLayer::Update() {
   return updated || !update_rect().IsEmpty();
 }
 
-bool TextureLayer::IsSnapped() {
+bool TextureLayer::IsSnappedToPixelGridInTarget() {
+  // Often layers are positioned with CSS to "50%", which can often leave them
+  // with a fractional (N + 0.5) pixel position. This would leave them looking
+  // fuzzy, so we request that TextureLayers are snapped to the pixel grid,
+  // since their content is generated externally and we can not adjust for it
+  // inside the content (unlike for PictureLayers).
   return true;
 }
 

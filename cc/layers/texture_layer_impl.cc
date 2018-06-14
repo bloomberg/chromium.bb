@@ -42,7 +42,8 @@ std::unique_ptr<LayerImpl> TextureLayerImpl::CreateLayerImpl(
   return TextureLayerImpl::Create(tree_impl, id());
 }
 
-bool TextureLayerImpl::IsSnapped() {
+bool TextureLayerImpl::IsSnappedToPixelGridInTarget() {
+  // See TextureLayer::IsSnappedToPixelGridInTarget() for explanation of |true|.
   return true;
 }
 

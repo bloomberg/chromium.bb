@@ -509,8 +509,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetLayerClient(base::WeakPtr<LayerClient> client);
   LayerClient* GetLayerClientForTesting() const { return inputs_.client.get(); }
 
-  virtual bool IsSnapped();
-
   virtual sk_sp<SkPicture> GetPicture() const;
 
   // Mark the layer as needing to push its properties to the LayerImpl during
@@ -612,6 +610,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // TileManager need to override this, other layers that have content generated
   // in other ways may leave it as the default.
   virtual bool HasNonAAPaint() const;
+
+  // Internal to property tree construction. This allows a layer to request that
+  // its transform should be snapped such that the layer aligns with the pixel
+  // grid in its rendering target. This ensures that the layer is not fuzzy
+  // (unless it is being scaled). Layers may override this to return true, by
+  // default layers are not snapped.
+  virtual bool IsSnappedToPixelGridInTarget();
 
   // Internal to property tree construction. A generation number for the
   // property trees, to verify the layer's indices are pointers into the trees

@@ -1162,8 +1162,8 @@ void Layer::SetLayerClient(base::WeakPtr<LayerClient> client) {
   inputs_.debug_info = nullptr;
 }
 
-bool Layer::IsSnapped() {
-  return scrollable();
+bool Layer::IsSnappedToPixelGridInTarget() {
+  return false;
 }
 
 void Layer::PushPropertiesTo(LayerImpl* layer) {
