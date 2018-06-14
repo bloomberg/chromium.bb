@@ -27,14 +27,11 @@ const char kIdRequiredError[] = "Extensions using event pages must pass an "
 
 namespace extensions {
 
-namespace Create = api::context_menus::Create;
-namespace Remove = api::context_menus::Remove;
-namespace Update = api::context_menus::Update;
-
 ExtensionFunction::ResponseAction ContextMenusCreateFunction::Run() {
   MenuItem::Id id(browser_context()->IsOffTheRecord(),
                   MenuItem::ExtensionKey(extension_id()));
-  std::unique_ptr<Create::Params> params(Create::Params::Create(*args_));
+  std::unique_ptr<api::context_menus::Create::Params> params(
+      api::context_menus::Create::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   if (params->create_properties.id.get()) {
@@ -62,7 +59,8 @@ ExtensionFunction::ResponseAction ContextMenusCreateFunction::Run() {
 ExtensionFunction::ResponseAction ContextMenusUpdateFunction::Run() {
   MenuItem::Id item_id(browser_context()->IsOffTheRecord(),
                        MenuItem::ExtensionKey(extension_id()));
-  std::unique_ptr<Update::Params> params(Update::Params::Create(*args_));
+  std::unique_ptr<api::context_menus::Update::Params> params(
+      api::context_menus::Update::Params::Create(*args_));
 
   EXTENSION_FUNCTION_VALIDATE(params.get());
   if (params->id.as_string)
@@ -82,7 +80,8 @@ ExtensionFunction::ResponseAction ContextMenusUpdateFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction ContextMenusRemoveFunction::Run() {
-  std::unique_ptr<Remove::Params> params(Remove::Params::Create(*args_));
+  std::unique_ptr<api::context_menus::Remove::Params> params(
+      api::context_menus::Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   MenuManager* manager = MenuManager::Get(browser_context());
