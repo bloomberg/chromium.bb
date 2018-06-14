@@ -40,6 +40,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/media_stream_utils.h"
+#include "content/public/renderer/platform_event_observer.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/blob_storage/webblobregistry_impl.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
@@ -833,11 +834,8 @@ WebBlobRegistry* RendererBlinkPlatformImpl::GetBlobRegistry() {
 //------------------------------------------------------------------------------
 
 void RendererBlinkPlatformImpl::SampleGamepads(device::Gamepads& gamepads) {
-  PlatformEventObserverBase* observer =
-      platform_event_observers_.Lookup(blink::kWebPlatformEventTypeGamepad);
-  if (!observer)
-    return;
-  static_cast<RendererGamepadProvider*>(observer)->SampleGamepads(gamepads);
+  if (gamepad_shared_memory_reader_)
+    gamepad_shared_memory_reader_->SampleGamepads(gamepads);
 }
 
 //------------------------------------------------------------------------------
@@ -1111,25 +1109,6 @@ void RendererBlinkPlatformImpl::RecordRapporURL(const char* metric,
   GetContentClient()->renderer()->RecordRapporURL(metric, url);
 }
 
-//------------------------------------------------------------------------------
-
-// static
-std::unique_ptr<PlatformEventObserverBase>
-RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
-    blink::WebPlatformEventType type) {
-  switch (type) {
-    case blink::kWebPlatformEventTypeGamepad:
-      return std::make_unique<GamepadSharedMemoryReader>();
-    default:
-      // A default statement is required to prevent compilation errors when
-      // Blink adds a new type.
-      DVLOG(1) << "RendererBlinkPlatformImpl::startListening() with "
-                  "unknown type.";
-  }
-
-  return nullptr;
-}
-
 void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
     blink::WebPlatformEventType type,
     std::unique_ptr<PlatformEventObserverBase> observer) {
@@ -1207,19 +1186,16 @@ void RendererBlinkPlatformImpl::StartListening(
     // this method creates DeviceSensorEventPump instances if necessary and
     // calls Start() on them
     InitDeviceSensorEventPump(type, listener);
-  } else {
-    PlatformEventObserverBase* observer =
-        platform_event_observers_.Lookup(type);
-    if (!observer) {
-      std::unique_ptr<PlatformEventObserverBase> new_observer =
-          CreatePlatformEventObserverFromType(type);
-      if (!new_observer)
-        return;
-      observer = new_observer.get();
-      platform_event_observers_.AddWithID(std::move(new_observer),
-                                          static_cast<int32_t>(type));
+  } else if (type == blink::kWebPlatformEventTypeGamepad) {
+    if (!gamepad_shared_memory_reader_) {
+      gamepad_shared_memory_reader_ =
+          std::make_unique<GamepadSharedMemoryReader>();
     }
-    observer->Start(listener);
+    gamepad_shared_memory_reader_->Start(
+        static_cast<blink::WebGamepadListener*>(listener));
+  } else {
+    DVLOG(1) << "RendererBlinkPlatformImpl::startListening() with "
+                "unknown type.";
   }
 }
 
@@ -1229,12 +1205,9 @@ void RendererBlinkPlatformImpl::StopListening(
       type == blink::kWebPlatformEventTypeDeviceOrientation ||
       type == blink::kWebPlatformEventTypeDeviceOrientationAbsolute) {
     StopDeviceSensorEventPump(type);
-  } else {
-    PlatformEventObserverBase* observer =
-        platform_event_observers_.Lookup(type);
-    if (!observer)
-      return;
-    observer->Stop();
+  } else if (type == blink::kWebPlatformEventTypeGamepad) {
+    if (gamepad_shared_memory_reader_)
+      gamepad_shared_memory_reader_->Stop();
   }
 }
 

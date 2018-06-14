@@ -8,30 +8,28 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/public/renderer/renderer_gamepad_provider.h"
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "third_party/blink/public/platform/web_gamepad_listener.h"
 
 namespace content {
 
-class GamepadSharedMemoryReader : public RendererGamepadProvider,
-                                  public device::mojom::GamepadObserver {
+class GamepadSharedMemoryReader : public device::mojom::GamepadObserver {
  public:
   GamepadSharedMemoryReader();
   ~GamepadSharedMemoryReader() override;
 
-  // RendererGamepadProvider implementation.
-  void SampleGamepads(device::Gamepads& gamepads) override;
-  void Start(blink::WebPlatformEventListener* listener) override;
+  void SampleGamepads(device::Gamepads& gamepads);
+  void Start(blink::WebGamepadListener* listener);
+  void Stop();
 
  protected:
-  // PlatformEventObserver protected methods.
-  void SendStartMessage() override;
-  void SendStopMessage() override;
+  void SendStartMessage();
+  void SendStopMessage();
 
  private:
   // device::mojom::GamepadObserver methods.
@@ -40,12 +38,13 @@ class GamepadSharedMemoryReader : public RendererGamepadProvider,
 
   mojo::ScopedSharedBufferHandle renderer_shared_buffer_handle_;
   mojo::ScopedSharedBufferMapping renderer_shared_buffer_mapping_;
-  device::GamepadHardwareBuffer* gamepad_hardware_buffer_;
+  device::GamepadHardwareBuffer* gamepad_hardware_buffer_ = nullptr;
 
-  bool ever_interacted_with_;
+  bool ever_interacted_with_ = false;
 
   mojo::Binding<device::mojom::GamepadObserver> binding_;
   device::mojom::GamepadMonitorPtr gamepad_monitor_;
+  blink::WebGamepadListener* listener_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadSharedMemoryReader);
 };

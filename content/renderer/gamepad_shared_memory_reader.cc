@@ -6,21 +6,13 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
-#include "ipc/ipc_sync_message_filter.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_gamepad_listener.h"
-#include "third_party/blink/public/platform/web_platform_event_listener.h"
 
 namespace content {
 
-GamepadSharedMemoryReader::GamepadSharedMemoryReader()
-    : gamepad_hardware_buffer_(nullptr),
-      ever_interacted_with_(false),
-      binding_(this) {
+GamepadSharedMemoryReader::GamepadSharedMemoryReader() : binding_(this) {
   blink::Platform::Current()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&gamepad_monitor_));
   device::mojom::GamepadObserverPtr observer;
@@ -40,9 +32,11 @@ void GamepadSharedMemoryReader::SendStopMessage() {
   }
 }
 
-void GamepadSharedMemoryReader::Start(
-    blink::WebPlatformEventListener* listener) {
-  PlatformEventObserver::Start(listener);
+void GamepadSharedMemoryReader::Start(blink::WebGamepadListener* listener) {
+  DCHECK(!listener_);
+  listener_ = listener;
+
+  SendStartMessage();
 
   // If we don't get a valid handle from the browser, don't try to Map (we're
   // probably out of memory or file handles).
@@ -60,9 +54,16 @@ void GamepadSharedMemoryReader::Start(
       static_cast<device::GamepadHardwareBuffer*>(memory);
 }
 
+void GamepadSharedMemoryReader::Stop() {
+  DCHECK(listener_);
+  listener_ = nullptr;
+
+  SendStopMessage();
+}
+
 void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads& gamepads) {
-  // Blink should have started observing at that point.
-  CHECK(is_observing());
+  // Blink should have started observing at this point.
+  CHECK(listener_);
 
   // ==========
   //   DANGER
@@ -113,7 +114,8 @@ void GamepadSharedMemoryReader::SampleGamepads(device::Gamepads& gamepads) {
 }
 
 GamepadSharedMemoryReader::~GamepadSharedMemoryReader() {
-  StopIfObserving();
+  if (listener_)
+    Stop();
 }
 
 void GamepadSharedMemoryReader::GamepadConnected(
@@ -122,15 +124,15 @@ void GamepadSharedMemoryReader::GamepadConnected(
   // The browser already checks if the user actually interacted with a device.
   ever_interacted_with_ = true;
 
-  if (listener())
-    listener()->DidConnectGamepad(index, gamepad);
+  if (listener_)
+    listener_->DidConnectGamepad(index, gamepad);
 }
 
 void GamepadSharedMemoryReader::GamepadDisconnected(
     int index,
     const device::Gamepad& gamepad) {
-  if (listener())
-    listener()->DidDisconnectGamepad(index, gamepad);
+  if (listener_)
+    listener_->DidDisconnectGamepad(index, gamepad);
 }
 
 } // namespace content
