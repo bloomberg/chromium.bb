@@ -31,5 +31,6 @@ build-native:
     when: always
     paths:
     - build-*/wayland-*.tar.xz
+    - build-*/wayland*/_build/sub/*.log
     - build-*/*.log
     - prefix-*
