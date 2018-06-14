@@ -78,7 +78,6 @@ class UnifiedSliderView : public views::View {
                     bool readonly = false);
   ~UnifiedSliderView() override;
 
- protected:
   UnifiedSliderButton* button() { return button_; }
   views::Slider* slider() { return slider_; }
 
