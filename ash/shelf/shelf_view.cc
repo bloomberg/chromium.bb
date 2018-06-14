@@ -2012,7 +2012,7 @@ void ShelfView::OnMenuClosed(views::View* source) {
   closing_event_time_ = shelf_menu_model_adapter_->GetClosingEventTime();
 
   const ShelfItem* item = ShelfItemForView(source);
-  if (item)
+  if (item && (item->type != TYPE_APP_LIST))
     static_cast<ShelfButton*>(source)->OnMenuClosed();
 
   shelf_menu_model_adapter_.reset();

@@ -399,8 +399,9 @@ void ShelfButton::OnDragStarted(const ui::LocatedEvent* event) {
 }
 
 void ShelfButton::OnMenuClosed() {
-  if (GetInkDrop()->GetTargetInkDropState() != views::InkDropState::DEACTIVATED)
-    GetInkDrop()->AnimateToState(views::InkDropState::DEACTIVATED);
+  DCHECK_EQ(views::InkDropState::ACTIVATED,
+            GetInkDrop()->GetTargetInkDropState());
+  GetInkDrop()->AnimateToState(views::InkDropState::DEACTIVATED);
 }
 
 void ShelfButton::ShowContextMenu(const gfx::Point& p,
@@ -413,6 +414,10 @@ void ShelfButton::ShowContextMenu(const gfx::Point& p,
 
   Button::ShowContextMenu(p, source_type);
 
+  if (source_type == ui::MenuSourceType::MENU_SOURCE_MOUSE ||
+      source_type == ui::MenuSourceType::MENU_SOURCE_KEYBOARD) {
+    GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
+  }
   if (!destroyed) {
     destroyed_flag_ = nullptr;
     // The menu will not propagate mouse events while its shown. To address,
@@ -574,8 +579,11 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
       // If the button is being dragged, or there is an active context menu,
       // for this ShelfButton, don't deactivate the ink drop.
       if (!(state_ & STATE_DRAGGING) &&
-          !shelf_view_->IsShowingMenuForView(this))
+          !shelf_view_->IsShowingMenuForView(this) &&
+          (GetInkDrop()->GetTargetInkDropState() ==
+           views::InkDropState::ACTIVATED)) {
         GetInkDrop()->AnimateToState(views::InkDropState::DEACTIVATED);
+      }
       ClearState(STATE_HOVERED);
       ClearState(STATE_DRAGGING);
       break;
