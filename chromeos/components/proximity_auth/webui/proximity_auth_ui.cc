@@ -9,6 +9,7 @@
 #include "chromeos/components/proximity_auth/webui/proximity_auth_webui_handler.h"
 #include "chromeos/components/proximity_auth/webui/url_constants.h"
 #include "chromeos/grit/chromeos_resources.h"
+#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
 #include "components/grit/components_resources.h"
 #include "content/public/browser/browser_context.h"
@@ -19,8 +20,10 @@
 
 namespace proximity_auth {
 
-ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui,
-                                 ProximityAuthClient* delegate)
+ProximityAuthUI::ProximityAuthUI(
+    content::WebUI* web_ui,
+    ProximityAuthClient* proximity_auth_client,
+    chromeos::device_sync::DeviceSyncClient* device_sync_client)
     : ui::MojoWebUIController(web_ui, true /* enable_chrome_send */) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIProximityAuthHost);
@@ -49,8 +52,8 @@ ProximityAuthUI::ProximityAuthUI(content::WebUI* web_ui,
   content::BrowserContext* browser_context =
       web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, source);
-  web_ui->AddMessageHandler(
-      std::make_unique<ProximityAuthWebUIHandler>(delegate));
+  web_ui->AddMessageHandler(std::make_unique<ProximityAuthWebUIHandler>(
+      proximity_auth_client, device_sync_client));
   AddHandlerToRegistry(base::BindRepeating(
       &ProximityAuthUI::BindMultiDeviceSetup, base::Unretained(this)));
 }
