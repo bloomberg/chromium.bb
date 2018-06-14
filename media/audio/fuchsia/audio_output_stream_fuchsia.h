@@ -5,8 +5,9 @@
 #ifndef MEDIA_AUDIO_FUCHSIA_AUDIO_OUTPUT_STREAM_FUCHSIA_H_
 #define MEDIA_AUDIO_FUCHSIA_AUDIO_OUTPUT_STREAM_FUCHSIA_H_
 
-#include <media/audio.h>
+#include <fuchsia/media/cpp/fidl.h>
 
+#include "base/memory/shared_memory.h"
 #include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
@@ -19,7 +20,6 @@ class AudioOutputStreamFuchsia : public AudioOutputStream {
  public:
   // Caller must ensure that manager outlives the stream.
   AudioOutputStreamFuchsia(AudioManagerFuchsia* manager,
-                           const std::string& device_id,
                            const AudioParameters& parameters);
 
   // AudioOutputStream interface.
@@ -33,35 +33,53 @@ class AudioOutputStreamFuchsia : public AudioOutputStream {
  private:
   ~AudioOutputStreamFuchsia() override;
 
+  // Returns minimum |payload_buffer_| size for the current |min_lead_time_|.
+  size_t GetMinBufferSize();
+
+  // Allocates and maps |payload_buffer_|.
+  bool InitializePayloadBuffer();
+
   base::TimeTicks GetCurrentStreamTime();
 
-  // Updates |presentation_delay_ns_|.
-  bool UpdatePresentationDelay();
+  // Event handler for |audio_renderer_|.
+  void OnMinLeadTimeChanged(int64_t min_lead_time);
+
+  // Error handler for |audio_renderer_|.
+  void OnRendererError();
 
   // Requests data from AudioSourceCallback, passes it to the mixer and
   // schedules |timer_| for the next call.
   void PumpSamples();
 
+  // Schedules |timer_| to call PumpSamples() when appropriate for the next
+  // packet.
+  void SchedulePumpSamples(base::TimeTicks now);
+
   AudioManagerFuchsia* manager_;
-  std::string device_id_;
   AudioParameters parameters_;
 
-  // These are used only in PumpSamples(). They are kept here to avoid
+  // Audio renderer connection.
+  fuchsia::media::AudioRenderer2Ptr audio_renderer_;
+
+  // |audio_bus_| is used only in PumpSamples(). It is kept here to avoid
   // reallocating the memory every time.
   std::unique_ptr<AudioBus> audio_bus_;
-  std::vector<float> buffer_;
 
-  fuchsia_audio_output_stream* stream_ = nullptr;
+  base::SharedMemory payload_buffer_;
+  size_t payload_buffer_pos_ = 0;
+
   AudioSourceCallback* callback_ = nullptr;
 
   double volume_ = 1.0;
 
-  base::TimeTicks started_time_;
-  int64_t stream_position_samples_ = 0;
+  base::TimeTicks reference_time_;
 
-  // Total presentation delay for the stream. This value is returned by
-  // fuchsia_audio_output_stream_get_min_delay()
-  zx_duration_t presentation_delay_ns_ = 0;
+  int64_t stream_position_samples_;
+
+  // Current min lead time for the stream. This value is updated by
+  // AudioRenderer::OnMinLeadTimeChanged event. Assume 50ms until we get the
+  // first OnMinLeadTimeChanged event.
+  base::TimeDelta min_lead_time_ = base::TimeDelta::FromMilliseconds(50);
 
   // Timer that's scheduled to call PumpSamples().
   base::OneShotTimer timer_;
