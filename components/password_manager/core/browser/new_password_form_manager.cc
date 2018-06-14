@@ -17,12 +17,16 @@
 using autofill::FormData;
 using autofill::FormSignature;
 using autofill::FormStructure;
+using base::TimeDelta;
 
 using Logger = autofill::SavePasswordProgressLogger;
 
 namespace password_manager {
 
 namespace {
+
+constexpr TimeDelta kMaxFillingDelayForServerPerdictions =
+    TimeDelta::FromMilliseconds(500);
 
 // Helper function for calling form parsing and logging results if logging is
 // active.
@@ -61,7 +65,8 @@ NewPasswordFormManager::NewPasswordFormManager(
                              client_,
                              true /* should_migrate_http_passwords */,
                              true /* should_query_suppressed_https_forms */)),
-      form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()) {
+      form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
+      weak_ptr_factory_(this) {
   metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
       client_->IsMainFrameSecure(), client_->GetUkmSourceId());
   metrics_recorder_->RecordFormSignature(CalculateFormSignature(observed_form));
@@ -168,10 +173,17 @@ void NewPasswordFormManager::ProcessMatches(
   std::vector<const autofill::PasswordForm*> not_best_matches;
   password_manager_util::FindBestMatches(non_federated, &best_matches_,
                                          &not_best_matches, &preferred_match_);
+  filled_ = false;
 
-  // TODO(https://crbug.com/831123). Implement waiting for server-side
-  // predictions.
-  Fill();
+  if (predictions_)
+    Fill();
+  else {
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&NewPasswordFormManager::Fill,
+                       weak_ptr_factory_.GetWeakPtr()),
+        kMaxFillingDelayForServerPerdictions);
+  }
 }
 
 bool NewPasswordFormManager::SetSubmittedFormIfIsManaged(
@@ -192,8 +204,6 @@ void NewPasswordFormManager::ProcessServerPredictions(
     if (form_predictions->form_signature() != observed_form_signature)
       continue;
     predictions_ = ConvertToFormPredictions(observed_form_, *form_predictions);
-    // TODO(https://crbug.com/831123). Implement checking whether it was already
-    // filled.
     Fill();
     break;
   }
@@ -212,16 +222,17 @@ void NewPasswordFormManager::Fill() {
 
   // TODO(https://crbug.com/831123). Move this lines to the beginning of the
   // function when the old parsing is removed.
-  if (!driver_ || best_matches_.empty())
+  if (!driver_ || best_matches_.empty() || filled_)
     return;
 
   // TODO(https://crbug.com/831123). Implement correct treating of federated
   // matches.
   std::vector<const autofill::PasswordForm*> federated_matches;
   SendFillInformationToRenderer(
-      *client_, driver_.get(), false /* is_blaclisted */,
+      *client_, driver_.get(), false /* is_blacklisted */,
       *observed_password_form.get(), best_matches_, federated_matches,
       preferred_match_, metrics_recorder_.get());
+  filled_ = true;
 }
 
 void NewPasswordFormManager::RecordMetricOnCompareParsingResult(
