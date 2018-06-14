@@ -263,8 +263,8 @@ std::unique_ptr<DragImage> DragImage::Create(const KURL& url,
           scaled_image_size, CanvasResourceProvider::kSoftwareResourceUsage,
           nullptr,  // context_provider_wrapper
           0,        // msaa_sample_count
-          CanvasColorParams(),
-          CanvasResourceProvider::kDefaultPresentationMode));
+          CanvasColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
+          nullptr));  // canvas_resource_dispatcher
   if (!resource_provider)
     return nullptr;
 

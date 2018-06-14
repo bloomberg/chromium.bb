@@ -774,7 +774,8 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
       CanvasResourceProvider::Create(
           size, CanvasResourceProvider::kAcceleratedResourceUsage,
           SharedGpuContext::ContextProviderWrapper(), 0, ColorParams(),
-          CanvasResourceProvider::kDefaultPresentationMode);
+          CanvasResourceProvider::kDefaultPresentationMode,
+          nullptr);  // canvas_resource_dispatcher
   if (!resource_provider || !resource_provider->IsValid())
     return nullptr;
   if (!CopyRenderingResultsFromDrawingBuffer(resource_provider.get(),
@@ -5397,7 +5398,8 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
             SharedGpuContext::ContextProviderWrapper(),
             0,  // msaa_sample_count
             CanvasColorParams(),
-            CanvasResourceProvider::kDefaultPresentationMode);
+            CanvasResourceProvider::kDefaultPresentationMode,
+            nullptr);  // canvas_resource_dispatcher
     if (resource_provider && resource_provider->IsValid()) {
       // The video element paints an RGBA frame into our surface here. By
       // using an AcceleratedImageBufferSurface, we enable the WebMediaPlayer
@@ -7707,10 +7709,11 @@ CanvasResourceProvider* WebGLRenderingContextBase::
 
   std::unique_ptr<CanvasResourceProvider> temp(CanvasResourceProvider::Create(
       size, CanvasResourceProvider::kSoftwareResourceUsage,
-      nullptr,              // resource_provider_wrapper
+      nullptr,              // context_provider_wrapper
       0,                    // msaa_sample_count,
       CanvasColorParams(),  // TODO: should this use the canvas's colorspace?
-      CanvasResourceProvider::kDefaultPresentationMode));
+      CanvasResourceProvider::kDefaultPresentationMode,
+      nullptr));  // canvas_resource_dispatcher
   if (!temp)
     return nullptr;
   i = std::min(resource_providers_.size() - 1, i);

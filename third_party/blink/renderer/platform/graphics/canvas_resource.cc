@@ -4,17 +4,34 @@
 
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 
+#include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/color_space.h"
+
+namespace {
+
+// TODO(danakj): One day the gpu::mojom::Mailbox type should be shared with
+// blink directly and we won't need to use gpu::mojom::blink::Mailbox, nor the
+// conversion through WTF::Vector.
+gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
+    const viz::SharedBitmapId& id) {
+  WTF::Vector<int8_t> name(GL_MAILBOX_SIZE_CHROMIUM);
+  for (int i = 0; i < GL_MAILBOX_SIZE_CHROMIUM; ++i)
+    name[i] = id.name[i];
+  return {base::in_place, name};
+}
+
+}  // unnamed namespace
 
 namespace blink {
 
@@ -255,7 +272,7 @@ bool CanvasResourceBitmap::HasGpuMailbox() const {
   return image_ && image_->HasMailbox();
 }
 
-const gpu::SyncToken& CanvasResourceBitmap::GetSyncToken() {
+const gpu::SyncToken CanvasResourceBitmap::GetSyncToken() {
   DCHECK(image_);  // Calling code should check IsValid() before calling this.
   return image_->GetSyncToken();
 }
@@ -293,7 +310,7 @@ CanvasResourceGpuMemoryBuffer::CanvasResourceGpuMemoryBuffer(
     base::WeakPtr<CanvasResourceProvider> provider,
     SkFilterQuality filter_quality,
     bool is_accelerated)
-    : CanvasResource(provider, filter_quality, color_params),
+    : CanvasResource(std::move(provider), filter_quality, color_params),
       context_provider_wrapper_(std::move(context_provider_wrapper)),
       is_accelerated_(is_accelerated) {
   if (!context_provider_wrapper_)
@@ -364,8 +381,8 @@ CanvasResourceGpuMemoryBuffer::Create(
 
   scoped_refptr<CanvasResourceGpuMemoryBuffer> resource =
       AdoptRef(new CanvasResourceGpuMemoryBuffer(
-          size, color_params, std::move(context_provider_wrapper), provider,
-          filter_quality, is_accelerated));
+          size, color_params, std::move(context_provider_wrapper),
+          std::move(provider), filter_quality, is_accelerated));
   if (resource->IsValid())
     return resource;
   return nullptr;
@@ -408,11 +425,10 @@ const gpu::Mailbox& CanvasResourceGpuMemoryBuffer::GetOrCreateGpuMailbox(
 }
 
 bool CanvasResourceGpuMemoryBuffer::HasGpuMailbox() const {
-  DCHECK(is_accelerated_);
   return !gpu_mailbox_.IsZero();
 }
 
-const gpu::SyncToken& CanvasResourceGpuMemoryBuffer::GetSyncToken() {
+const gpu::SyncToken CanvasResourceGpuMemoryBuffer::GetSyncToken() {
   if (mailbox_needs_new_sync_token_) {
     auto* gl = ContextGL();
     DCHECK(gl);  // caller should already have early exited if !gl.
@@ -510,6 +526,96 @@ void CanvasResourceGpuMemoryBuffer::DidPaint() {
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
 CanvasResourceGpuMemoryBuffer::ContextProviderWrapper() const {
   return context_provider_wrapper_;
+}
+
+// CanvasResourceSharedBitmap
+//==============================================================================
+
+CanvasResourceSharedBitmap::CanvasResourceSharedBitmap(
+    const IntSize& size,
+    const CanvasColorParams& color_params,
+    base::WeakPtr<CanvasResourceProvider> provider,
+    SkFilterQuality filter_quality)
+    : CanvasResource(std::move(provider), filter_quality, color_params),
+      size_(size) {
+  if (!Provider())
+    return;
+
+  shared_memory_ = viz::bitmap_allocation::AllocateMappedBitmap(
+      gfx::Size(Size()), ColorParams().TransferableResourceFormat());
+
+  if (!IsValid())
+    return;
+
+  shared_bitmap_id_ = viz::SharedBitmap::GenerateId();
+
+  CanvasResourceDispatcher* resource_dispatcher =
+      Provider()->ResourceDispatcher();
+  if (resource_dispatcher) {
+    resource_dispatcher->DidAllocateSharedBitmap(
+        viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
+            shared_memory_.get(), gfx::Size(Size()),
+            ColorParams().TransferableResourceFormat()),
+        SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id_));
+  }
+}
+
+CanvasResourceSharedBitmap::~CanvasResourceSharedBitmap() {
+  OnDestroy();
+}
+
+bool CanvasResourceSharedBitmap::IsValid() const {
+  return !!shared_memory_;
+}
+
+IntSize CanvasResourceSharedBitmap::Size() const {
+  return size_;
+}
+
+scoped_refptr<CanvasResourceSharedBitmap> CanvasResourceSharedBitmap::Create(
+    const IntSize& size,
+    const CanvasColorParams& color_params,
+    base::WeakPtr<CanvasResourceProvider> provider,
+    SkFilterQuality filter_quality) {
+  scoped_refptr<CanvasResourceSharedBitmap> resource =
+      AdoptRef(new CanvasResourceSharedBitmap(
+          size, color_params, std::move(provider), filter_quality));
+  if (resource->IsValid())
+    return resource;
+  return nullptr;
+}
+
+void CanvasResourceSharedBitmap::TearDown() {
+  CanvasResourceDispatcher* resource_dispatcher =
+      Provider() ? Provider()->ResourceDispatcher() : nullptr;
+  if (resource_dispatcher && !shared_bitmap_id_.IsZero()) {
+    resource_dispatcher->DidDeleteSharedBitmap(
+        SharedBitmapIdToGpuMailboxPtr(shared_bitmap_id_));
+  }
+  shared_memory_ = nullptr;
+}
+
+void CanvasResourceSharedBitmap::Abandon() {
+  shared_memory_ = nullptr;
+}
+
+const gpu::Mailbox& CanvasResourceSharedBitmap::GetOrCreateGpuMailbox(
+    MailboxSyncMode sync_mode) {
+  return shared_bitmap_id_;
+}
+
+bool CanvasResourceSharedBitmap::HasGpuMailbox() const {
+  return !shared_bitmap_id_.IsZero();
+}
+
+void CanvasResourceSharedBitmap::TakeSkImage(sk_sp<SkImage> image) {
+  SkImageInfo image_info = SkImageInfo::Make(
+      Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
+      ColorParams().GetSkAlphaType(), ColorParams().GetSkColorSpace());
+
+  bool read_pixels_successful = image->readPixels(
+      image_info, shared_memory_->memory(), image_info.minRowBytes(), 0, 0);
+  DCHECK(read_pixels_successful);
 }
 
 }  // namespace blink

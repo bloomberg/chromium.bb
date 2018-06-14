@@ -65,7 +65,8 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider() {
                 : CanvasResourceProvider::kAcceleratedResourceUsage,
             SharedGpuContext::ContextProviderWrapper(),
             0,  // msaa_sample_count
-            ColorParams(), CanvasResourceProvider::kDefaultPresentationMode));
+            ColorParams(), CanvasResourceProvider::kDefaultPresentationMode,
+            nullptr));  // canvas_resource_dispatcher
       } else {
         // 2d context
         // TODO: move resource provider ownership from canvas 2d layer bridge

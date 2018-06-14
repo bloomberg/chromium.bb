@@ -202,15 +202,8 @@ TEST_F(Canvas2DLayerBridgeTest, NoDrawOnContextLost) {
   bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
   EXPECT_EQ(gen_id, bridge->GetOrCreateResourceProvider()->ContentUniqueID());
   gl_.SetIsContextLost(true);
-  EXPECT_EQ(gen_id, bridge->GetOrCreateResourceProvider()->ContentUniqueID());
-  bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-  EXPECT_EQ(gen_id, bridge->GetOrCreateResourceProvider()->ContentUniqueID());
-  // This results in the internal surface being torn down in response to the
-  // context loss.
-  EXPECT_FALSE(bridge->IsValid());
   EXPECT_EQ(nullptr, bridge->GetOrCreateResourceProvider());
   // The following passes by not crashing
-  bridge->Canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
   bridge->NewImageSnapshot(kPreferAcceleration);
 }
 

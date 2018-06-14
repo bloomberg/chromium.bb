@@ -282,7 +282,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     return nullptr;
   }
 
-  if (resource_provider)
+  if (resource_provider && resource_provider->IsValid())
     return resource_provider;
 
   if (layer_ && !IsHibernating() && hint == kPreferAcceleration &&
@@ -311,7 +311,9 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
 
   resource_host_->ReplaceResourceProvider(CanvasResourceProvider::Create(
       size_, usage, SharedGpuContext::ContextProviderWrapper(),
-      msaa_sample_count_, color_params_, presentation_mode));
+      msaa_sample_count_, color_params_, presentation_mode,
+      nullptr  // canvas_resource_dispatcher
+      ));
   resource_provider = resource_host_->ResourceProvider();
 
   if (resource_provider) {
@@ -577,7 +579,9 @@ bool Canvas2DLayerBridge::Restore() {
         CanvasResourceProvider::Create(
             size_, CanvasResourceProvider::kAcceleratedCompositedResourceUsage,
             std::move(context_provider_wrapper), msaa_sample_count_,
-            color_params_, presentation_mode);
+            color_params_, presentation_mode,
+            nullptr  // canvas_resource_dispatcher
+            );
 
     if (!resource_provider)
       ReportResourceProviderCreationFailure();
