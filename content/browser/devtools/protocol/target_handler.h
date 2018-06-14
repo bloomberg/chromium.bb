@@ -62,6 +62,8 @@ class TargetHandler : public DevToolsDomainHandler,
   Response ActivateTarget(const std::string& target_id) override;
   Response CloseTarget(const std::string& target_id,
                        bool* out_success) override;
+  Response ExposeDevToolsProtocol(const std::string& target_id,
+                                  Maybe<std::string> binding_name) override;
   Response CreateBrowserContext(std::string* out_context_id) override;
   Response DisposeBrowserContext(const std::string& context_id) override;
   Response GetBrowserContexts(
