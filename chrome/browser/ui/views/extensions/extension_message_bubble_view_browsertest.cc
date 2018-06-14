@@ -4,6 +4,7 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -282,7 +283,15 @@ IN_PROC_BROWSER_TEST_F(NtpExtensionBubbleViewBrowserTest,
   TestControlledNewTabPageBubbleShown(true);
 }
 
+// Flaky on Mac https://crbug.com/851655
+#if defined(OS_MACOSX)
+#define MAYBE_TestBubbleClosedAfterExtensionUninstall \
+  DISABLED_TestBubbleClosedAfterExtensionUninstall
+#else
+#define MAYBE_TestBubbleClosedAfterExtensionUninstall \
+  TestBubbleClosedAfterExtensionUninstall
+#endif
 IN_PROC_BROWSER_TEST_F(NtpExtensionBubbleViewBrowserTest,
-                       TestBubbleClosedAfterExtensionUninstall) {
+                       MAYBE_TestBubbleClosedAfterExtensionUninstall) {
   TestBubbleClosedAfterExtensionUninstall();
 }
