@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
@@ -43,6 +44,19 @@ constexpr int kDownloadSizeInBytes = 300 * 1024 * 1024;
 
 constexpr char kCrostiniSetupResultHistogram[] = "Crostini.SetupResult";
 constexpr char kCrostiniSetupSourceHistogram[] = "Crostini.SetupSource";
+constexpr char kCrostiniTimeFromDeviceSetupToInstall[] =
+    "Crostini.TimeFromDeviceSetupToInstall";
+
+void RecordTimeFromDeviceSetupToInstallMetric() {
+  base::TimeDelta time_from_device_setup(
+      chromeos::StartupUtils::GetTimeSinceOobeFlagFileCreation());
+  if (time_from_device_setup.is_zero())
+    return;
+
+  base::UmaHistogramCustomTimes(
+      kCrostiniTimeFromDeviceSetupToInstall, time_from_device_setup,
+      base::TimeDelta::FromMinutes(1), base::TimeDelta::FromDays(365), 50);
+}
 
 }  // namespace
 
@@ -280,6 +294,7 @@ void CrostiniInstallerView::ShowLoginShell() {
 
   StepProgress();
   RecordSetupResultHistogram(SetupResult::kSuccess);
+  RecordTimeFromDeviceSetupToInstallMetric();
   GetWidget()->Close();
 }
 
