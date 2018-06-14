@@ -75,10 +75,6 @@
 #include "chrome/browser/ui/webui/theme_source.h"
 #endif
 
-#if defined(OS_WIN)
-#include "chrome/browser/win/enumerate_modules_model.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"

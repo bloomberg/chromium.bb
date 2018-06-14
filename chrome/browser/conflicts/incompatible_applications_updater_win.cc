@@ -228,7 +228,6 @@ void IncompatibleApplicationsUpdater::RegisterLocalStatePrefs(
 // static
 bool IncompatibleApplicationsUpdater::IsWarningEnabled() {
   return base::win::GetVersion() >= base::win::VERSION_WIN10 &&
-         base::FeatureList::IsEnabled(features::kModuleDatabase) &&
          ModuleDatabase::IsThirdPartyBlockingPolicyEnabled() &&
          base::FeatureList::IsEnabled(
              features::kIncompatibleApplicationsWarning);

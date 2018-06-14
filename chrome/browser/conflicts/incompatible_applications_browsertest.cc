@@ -94,12 +94,8 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
       ASSERT_NO_FATAL_FAILURE(
           registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
-      scoped_feature_list_.InitWithFeatures(
-          // Enabled features.
-          {features::kModuleDatabase,
-           features::kIncompatibleApplicationsWarning},
-          // Disabled features.
-          {});
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kIncompatibleApplicationsWarning);
 
       ASSERT_NO_FATAL_FAILURE(CreateModuleList());
       ASSERT_NO_FATAL_FAILURE(InstallThirdPartyApplication());
@@ -180,8 +176,7 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
   // pick up real applications on the test machine.
   registry_util::RegistryOverrideManager registry_override_manager_;
 
-  // The third party conflicts code is gated behind the kModuleDatabase and
-  // kIncompatibleApplicationsWarning features.
+  // Enables the IncompatibleApplicationsWarning feature.
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(IncompatibleApplicationsBrowserTest);

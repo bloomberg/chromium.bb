@@ -209,10 +209,6 @@ extern const base::Feature kMaterialDesignIncognitoNTP;
 
 extern const base::Feature kModalPermissionPrompts;
 
-#if defined(OS_WIN)
-extern const base::Feature kModuleDatabase;
-#endif
-
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 extern const base::Feature kNativeNotifications;
 #endif

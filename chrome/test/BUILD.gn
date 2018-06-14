@@ -2645,7 +2645,6 @@ test("unit_tests") {
     "../browser/webauthn/authenticator_request_scheduler_unittest.cc",
     "../browser/webshare/share_target_pref_helper_unittest.cc",
     "../browser/win/chrome_elf_init_unittest.cc",
-    "../browser/win/enumerate_modules_model_unittest.cc",
     "../browser/win/jumplist_file_util_unittest.cc",
     "../browser/win/jumplist_update_util_unittest.cc",
     "../browser/win/taskbar_icon_finder_unittest.cc",

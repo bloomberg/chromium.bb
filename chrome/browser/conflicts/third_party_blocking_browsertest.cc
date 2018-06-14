@@ -87,12 +87,8 @@ class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        // Enabled features.
-        {features::kModuleDatabase, features::kIncompatibleApplicationsWarning,
-         features::kThirdPartyModulesBlocking},
-        // Disabled features.
-        {});
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kThirdPartyModulesBlocking);
 
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
 
@@ -138,7 +134,7 @@ class ThirdPartyBlockingBrowserTest : public InProcessBrowserTest {
                               static_cast<int>(contents.size())));
   }
 
-  // Enables the features to activate the ModuleBlacklistCacheUpdater.
+  // Enables the ThirdPartyModulesBlocking feature.
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // Temp directory where the third-party module is located.
