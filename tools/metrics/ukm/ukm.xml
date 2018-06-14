@@ -3187,6 +3187,13 @@ be describing additional metrics about the same event.
       closed.
     </summary>
   </metric>
+  <metric name="SequenceId">
+    <summary>
+      The sequence of this event and TabManager.TabMetrics event in the current
+      session. Incremented by 1 each time one of the two events is logged to
+      provide an ordering of events.
+    </summary>
+  </metric>
   <metric name="TimeFromBackgrounded">
     <summary>
       Duration in MS from when the tab is backgrounded to when it is brought to
@@ -3957,8 +3964,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="SequenceId">
     <summary>
-      The sequence of this event in the current session. Incremented by 1 each
-      time this event is logged to provide an ordering of events.
+      The sequence of this event and TabManager.ForegroundedOrClosed event in
+      the current session. Incremented by 1 each time one of the two events is
+      logged to provide an ordering of events.
     </summary>
   </metric>
   <metric name="SiteEngagementScore">
