@@ -81,6 +81,10 @@ class ChunkStream {
     return filled_chunks_.Contains(chunks_range);
   }
 
+  bool IsChunkAvailable(uint32_t chunk_index) const {
+    return filled_chunks_.Contains(chunk_index);
+  }
+
   void set_eof_pos(uint32_t eof_pos) { eof_pos_ = eof_pos; }
   uint32_t eof_pos() const { return eof_pos_; }
 
@@ -88,6 +92,10 @@ class ChunkStream {
 
   bool IsComplete() const {
     return eof_pos_ > 0 && IsRangeAvailable(gfx::Range(0, eof_pos_));
+  }
+
+  bool IsValidChunkIndex(uint32_t chunk_index) const {
+    return !eof_pos_ || (chunk_index <= GetChunkIndex(eof_pos_ - 1));
   }
 
   void Clear() {
