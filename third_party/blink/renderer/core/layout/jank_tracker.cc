@@ -133,7 +133,7 @@ void JankTracker::NotifyPrePaintFinished() {
   DVLOG(1) << "viewport " << (jank_fraction * 100)
            << "% janked, raising score to " << score_;
 
-  TRACE_EVENT_INSTANT1("blink", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD,
+  TRACE_EVENT_INSTANT1("loading", "FrameLayoutJank", TRACE_EVENT_SCOPE_THREAD,
                        "viewportFraction", jank_fraction);
 
   region_ = Region();
@@ -153,6 +153,13 @@ bool JankTracker::IsActive() {
   return true;
 }
 
+std::unique_ptr<TracedValue> JankTracker::TraceData() const {
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  value->SetDouble("score", score_);
+  value->SetDouble("maxDistance", max_distance_);
+  return value;
+}
+
 void JankTracker::TimerFired(TimerBase* timer) {
   has_fired_ = true;
 
@@ -165,8 +172,9 @@ void JankTracker::TimerFired(TimerBase* timer) {
            << " is " << score_ << " with max move distance of "
            << max_distance_;
 
-  TRACE_EVENT_INSTANT2("blink", "TotalLayoutJank", TRACE_EVENT_SCOPE_THREAD,
-                       "score", score_, "maxDistance", max_distance_);
+  TRACE_EVENT_INSTANT2("loading", "TotalLayoutJank", TRACE_EVENT_SCOPE_THREAD,
+                       "data", TraceData(), "frame",
+                       ToTraceValue(&frame_view_->GetFrame()));
 }
 
 }  // namespace blink

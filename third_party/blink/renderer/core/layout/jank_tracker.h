@@ -16,6 +16,7 @@ class LayoutObject;
 class LayoutRect;
 class LocalFrameView;
 class PaintLayer;
+class TracedValue;
 
 // Tracks "jank" from layout objects changing their visual location between
 // animation frames.
@@ -32,9 +33,11 @@ class CORE_EXPORT JankTracker {
   bool IsActive();
   double Score() const { return score_; }
   float MaxDistance() const { return max_distance_; }
+  void Dispose() { timer_.Stop(); }
 
  private:
   void TimerFired(TimerBase*);
+  std::unique_ptr<TracedValue> TraceData() const;
 
   // This owns us.
   UntracedMember<LocalFrameView> frame_view_;
