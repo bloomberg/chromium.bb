@@ -4,6 +4,7 @@
 
 #include "content/common/render_frame_metadata_struct_traits.h"
 
+#include "build/build_config.h"
 #include "services/viz/public/cpp/compositing/selection_struct_traits.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
 #include "ui/gfx/mojo/selection_bound_struct_traits.h"
@@ -27,6 +28,9 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
   out->top_controls_shown_ratio = data.top_controls_shown_ratio();
   out->bottom_controls_height = data.bottom_controls_height();
   out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
+#if defined(OS_ANDROID)
+  out->has_transparent_background = data.has_transparent_background();
+#endif
   return data.ReadRootScrollOffset(&out->root_scroll_offset) &&
          data.ReadSelection(&out->selection) &&
          data.ReadScrollableViewportSize(&out->scrollable_viewport_size) &&

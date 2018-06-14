@@ -623,7 +623,7 @@ class CC_EXPORT LayerTreeHostImpl
   void ScheduleMicroBenchmark(std::unique_ptr<MicroBenchmarkImpl> benchmark);
 
   viz::CompositorFrameMetadata MakeCompositorFrameMetadata();
-  RenderFrameMetadata MakeRenderFrameMetadata();
+  RenderFrameMetadata MakeRenderFrameMetadata(FrameData* frame);
 
   // Viewport rectangle and clip in device space.  These rects are used to
   // prioritize raster and determine what is submitted in a CompositorFrame.

@@ -32,6 +32,7 @@ bool RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
          rfm1.root_overflow_y_hidden != rfm2.root_overflow_y_hidden ||
          rfm1.scrollable_viewport_size != rfm2.scrollable_viewport_size ||
          rfm1.root_layer_size != rfm2.root_layer_size ||
+         rfm1.has_transparent_background != rfm2.has_transparent_background ||
 #endif
          rfm1.is_mobile_optimized != rfm2.is_mobile_optimized ||
          rfm1.device_scale_factor != rfm2.device_scale_factor ||
@@ -60,6 +61,7 @@ bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) const {
          root_overflow_y_hidden == other.root_overflow_y_hidden &&
          scrollable_viewport_size == other.scrollable_viewport_size &&
          root_layer_size == other.root_layer_size &&
+         has_transparent_background == other.has_transparent_background &&
          is_mobile_optimized == other.is_mobile_optimized &&
          device_scale_factor == other.device_scale_factor &&
          viewport_size_in_pixels == other.viewport_size_in_pixels &&

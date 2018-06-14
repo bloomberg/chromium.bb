@@ -39,6 +39,10 @@ class CC_EXPORT RenderFrameMetadata {
   // whether scroll_offset.y() == 0.
   bool is_scroll_offset_at_top = true;
 
+  // Returns whether the root RenderPass of the CompositorFrame has a
+  // transparent background color.
+  bool has_transparent_background = false;
+
   // The background color of a CompositorFrame. It can be used for filling the
   // content area if the primary surface is unavailable and fallback is not
   // specified.
