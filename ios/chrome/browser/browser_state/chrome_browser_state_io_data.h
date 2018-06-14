@@ -279,8 +279,6 @@ class ChromeBrowserStateIOData {
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;
   mutable BooleanPrefMember enable_do_not_track_;
-  mutable BooleanPrefMember sync_disabled_;
-  mutable BooleanPrefMember signin_allowed_;
 
   BooleanPrefMember enable_metrics_;
 
