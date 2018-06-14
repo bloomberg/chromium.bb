@@ -415,8 +415,9 @@ interface WindowTreeClient {
   // change.
   OnCaptureChanged(uint64 new_capture, uint64 old_capture);
 
-  // This is called after the client calls Embed() with |window|.
-  // |frame_sink_id| gives the new FrameSinkId of |window|.
+  // This is called on the client that initiated a call to Embed(), and informs
+  // the owner (embedder) of the new FrameSinkId of the window (embedding
+  // results in changing the FrameSinkId).
   OnFrameSinkIdAllocated(uint64 window, viz.mojom.FrameSinkId frame_sink_id);
 
   // Called in response to NewTopLevelWindow() successfully completing.
