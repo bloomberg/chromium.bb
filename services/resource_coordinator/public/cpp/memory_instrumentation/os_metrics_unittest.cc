@@ -284,7 +284,8 @@ void CheckMachORegions(const std::vector<mojom::VmRegionPtr>& maps) {
 
 }  // namespace
 
-TEST(OSMetricsTest, TestMachOReading) {
+// Test failing on Mac ASan 64: https://crbug.com/852690
+TEST(OSMetricsTest, DISABLED_TestMachOReading) {
   auto maps = OSMetrics::GetProcessMemoryMaps(base::kNullProcessId);
   CheckMachORegions(maps);
   maps = OSMetrics::GetProcessModules(base::kNullProcessId);
