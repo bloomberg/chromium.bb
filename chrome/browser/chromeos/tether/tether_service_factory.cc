@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
 #include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
+#include "chrome/browser/chromeos/secure_channel/secure_channel_client_provider.h"
 #include "chrome/browser/chromeos/tether/fake_tether_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -56,6 +57,8 @@ KeyedService* TetherServiceFactory::BuildServiceInstanceFor(
             Profile::FromBrowserContext(context)),
         chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
             Profile::FromBrowserContext(context)),
+        chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
+            ->GetClient(),
         chromeos::NetworkHandler::Get()->network_state_handler(),
         session_manager::SessionManager::Get());
 
@@ -75,6 +78,8 @@ KeyedService* TetherServiceFactory::BuildServiceInstanceFor(
           Profile::FromBrowserContext(context)),
       chromeos::device_sync::DeviceSyncClientFactory::GetForProfile(
           Profile::FromBrowserContext(context)),
+      chromeos::secure_channel::SecureChannelClientProvider::GetInstance()
+          ->GetClient(),
       chromeos::NetworkHandler::Get()->network_state_handler(),
       session_manager::SessionManager::Get());
 }
