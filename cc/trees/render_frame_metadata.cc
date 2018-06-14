@@ -24,9 +24,13 @@ bool RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
   return rfm1.root_background_color != rfm2.root_background_color ||
          rfm1.is_scroll_offset_at_top != rfm2.is_scroll_offset_at_top ||
          rfm1.selection != rfm2.selection ||
-#if defined(OS_ANDROID)
-         rfm1.root_scroll_offset != rfm2.root_scroll_offset ||
          rfm1.page_scale_factor != rfm2.page_scale_factor ||
+#if defined(OS_ANDROID)
+         rfm1.top_controls_height != rfm2.top_controls_height ||
+         rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
+         rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
+         rfm1.bottom_controls_shown_ratio != rfm2.bottom_controls_shown_ratio ||
+         rfm1.root_scroll_offset != rfm2.root_scroll_offset ||
          rfm1.min_page_scale_factor != rfm2.min_page_scale_factor ||
          rfm1.max_page_scale_factor != rfm2.max_page_scale_factor ||
          rfm1.root_overflow_y_hidden != rfm2.root_overflow_y_hidden ||
@@ -37,11 +41,7 @@ bool RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
          rfm1.is_mobile_optimized != rfm2.is_mobile_optimized ||
          rfm1.device_scale_factor != rfm2.device_scale_factor ||
          rfm1.viewport_size_in_pixels != rfm2.viewport_size_in_pixels ||
-         rfm1.local_surface_id != rfm2.local_surface_id ||
-         rfm1.top_controls_height != rfm2.top_controls_height ||
-         rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
-         rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
-         rfm1.bottom_controls_shown_ratio != rfm2.bottom_controls_shown_ratio;
+         rfm1.local_surface_id != rfm2.local_surface_id;
 }
 
 RenderFrameMetadata& RenderFrameMetadata::operator=(
@@ -55,21 +55,23 @@ bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) const {
          root_background_color == other.root_background_color &&
          is_scroll_offset_at_top == other.is_scroll_offset_at_top &&
          selection == other.selection &&
+         is_mobile_optimized == other.is_mobile_optimized &&
+         device_scale_factor == other.device_scale_factor &&
+         viewport_size_in_pixels == other.viewport_size_in_pixels &&
          page_scale_factor == other.page_scale_factor &&
+#if defined(OS_ANDROID)
+         top_controls_height == other.top_controls_height &&
+         top_controls_shown_ratio == other.top_controls_shown_ratio &&
+         bottom_controls_height == other.bottom_controls_height &&
+         bottom_controls_shown_ratio == other.bottom_controls_shown_ratio &&
          min_page_scale_factor == other.min_page_scale_factor &&
          max_page_scale_factor == other.max_page_scale_factor &&
          root_overflow_y_hidden == other.root_overflow_y_hidden &&
          scrollable_viewport_size == other.scrollable_viewport_size &&
          root_layer_size == other.root_layer_size &&
          has_transparent_background == other.has_transparent_background &&
-         is_mobile_optimized == other.is_mobile_optimized &&
-         device_scale_factor == other.device_scale_factor &&
-         viewport_size_in_pixels == other.viewport_size_in_pixels &&
-         local_surface_id == other.local_surface_id &&
-         top_controls_height == other.top_controls_height &&
-         top_controls_shown_ratio == other.top_controls_shown_ratio &&
-         bottom_controls_height == other.bottom_controls_height &&
-         bottom_controls_shown_ratio == other.bottom_controls_shown_ratio;
+#endif
+         local_surface_id == other.local_surface_id;
 }
 
 bool RenderFrameMetadata::operator!=(const RenderFrameMetadata& other) const {
