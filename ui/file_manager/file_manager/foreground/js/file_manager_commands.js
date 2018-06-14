@@ -795,7 +795,12 @@ CommandHandler.COMMANDS_['toggle-hidden-android-folders'] =
        * @param {!Event} event Command event.
        * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
        */
-      canExecute: CommandUtil.canExecuteAlways
+      canExecute: function(event, fileManager) {
+        event.canExecute =
+            !!fileManager.volumeManager.getCurrentProfileVolumeInfo(
+                VolumeManagerCommon.VolumeType.ANDROID_FILES);
+        event.command.setHidden(!event.canExecute);
+      }
     });
 
 /**
