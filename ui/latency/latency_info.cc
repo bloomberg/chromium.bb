@@ -187,8 +187,6 @@ void LatencyInfo::CopyLatencyFrom(const LatencyInfo& other,
   // isn't very intuitive, and we can actually begin multiple times across
   // copied events.
   terminated_ = other.terminated();
-
-  snapshots_ = other.Snapshots();
 }
 
 void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
@@ -212,8 +210,6 @@ void LatencyInfo::AddNewLatencyFrom(const LatencyInfo& other) {
   // very intuitive, and we can actually begin multiple times across copied
   // events.
   terminated_ = other.terminated();
-
-  snapshots_ = other.Snapshots();
 }
 
 void LatencyInfo::AddLatencyNumber(LatencyComponentType component) {
@@ -326,13 +322,6 @@ LatencyInfo::AsTraceableData() {
     record_data->Set(GetComponentName(lc.first), std::move(component_info));
   }
   record_data->SetDouble("trace_id", static_cast<double>(trace_id_));
-  for (const auto& snapshot : snapshots_) {
-    std::unique_ptr<base::DictionaryValue> snapshot_info(
-        new base::DictionaryValue());
-    snapshot_info->SetInteger("frame_id", snapshot.first);
-    snapshot_info->SetInteger("snapshot_id", snapshot.second);
-    record_data->Set("snapshot_info", std::move(snapshot_info));
-  }
   return LatencyInfoTracedValue::FromValue(std::move(record_data));
 }
 

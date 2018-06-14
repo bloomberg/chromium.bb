@@ -155,11 +155,6 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications);
 
-  // Returns true if any of the LatencyInfos provided contains a snapshot
-  // request.
-  static bool LatencyInfoHasSnapshotRequest(
-      const std::vector<ui::LatencyInfo>& latency_info);
-
   // Updates timing info on the provided LatencyInfo when swap completes.
   static void UpdateLatencyInfoOnSwap(
       const gfx::SwapResponse& response,

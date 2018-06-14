@@ -24,7 +24,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -185,12 +184,6 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostIteratorImpl);
 };
-
-RenderWidgetHostImpl::LatencyInfoProcessor& GetLatencyInfoProcessor() {
-  static base::NoDestructor<RenderWidgetHostImpl::LatencyInfoProcessor>
-      processor;
-  return *processor;
-}
 
 inline blink::WebGestureEvent CreateScrollBeginForWrapping(
     const blink::WebGestureEvent& gesture_event) {
@@ -654,6 +647,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ForceRedrawComplete, OnForceRedrawComplete)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FrameSwapMessages,
                         OnFrameSwapMessagesReceived)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1540,11 +1534,6 @@ void RenderWidgetHostImpl::SendCursorVisibilityState(bool is_visible) {
   GetWidgetInputHandler()->CursorVisibilityChanged(is_visible);
 }
 
-int64_t RenderWidgetHostImpl::GetFrameSinkIdForSnapshot() const {
-  int process_id = GetProcess()->GetID();
-  return static_cast<int64_t>(process_id) << 32 | routing_id_;
-}
-
 // static
 void RenderWidgetHostImpl::DisableResizeAckCheckForTesting() {
   g_check_for_pending_visual_properties_ack = false;
@@ -1741,12 +1730,11 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(
     const GetSnapshotFromBrowserCallback& callback,
     bool from_surface) {
-  int id = next_browser_snapshot_id_++;
+  int snapshot_id = next_browser_snapshot_id_++;
   if (from_surface) {
-    pending_surface_browser_snapshots_.insert(std::make_pair(id, callback));
-    ui::LatencyInfo latency_info;
-    latency_info.AddSnapshot(GetFrameSinkIdForSnapshot(), id);
-    Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
+    pending_surface_browser_snapshots_.insert(
+        std::make_pair(snapshot_id, callback));
+    Send(new ViewMsg_ForceRedraw(GetRoutingID(), snapshot_id));
     return;
   }
 
@@ -1758,10 +1746,8 @@ void RenderWidgetHostImpl::GetSnapshotFromBrowser(
     GetWakeLock()->RequestWakeLock();
 #endif
   // TODO(nzolghadr): Remove the duplication here and the if block just above.
-  pending_browser_snapshots_.insert(std::make_pair(id, callback));
-  ui::LatencyInfo latency_info;
-  latency_info.AddSnapshot(GetFrameSinkIdForSnapshot(), id);
-  Send(new ViewMsg_ForceRedraw(GetRoutingID(), latency_info));
+  pending_browser_snapshots_.insert(std::make_pair(snapshot_id, callback));
+  Send(new ViewMsg_ForceRedraw(GetRoutingID(), snapshot_id));
 }
 
 void RenderWidgetHostImpl::SelectionChanged(const base::string16& text,
@@ -1848,6 +1834,23 @@ void RenderWidgetHostImpl::OnFrameSwapMessagesReceived(
     std::vector<IPC::Message> messages) {
   frame_token_message_queue_->OnFrameSwapMessagesReceived(frame_token,
                                                           std::move(messages));
+}
+
+void RenderWidgetHostImpl::OnForceRedrawComplete(int snapshot_id) {
+#if defined(OS_MACOSX) || defined(OS_WIN)
+  // On Mac, when using CoreAnimation, or Win32 when using GDI, there is a
+  // delay between when content is drawn to the screen, and when the
+  // snapshot will actually pick up that content. Insert a manual delay of
+  // 1/6th of a second (to simulate 10 frames at 60 fps) before actually
+  // taking the snapshot.
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
+                     weak_factory_.GetWeakPtr(), snapshot_id),
+      TimeDelta::FromSecondsD(1. / 6));
+#else
+  WindowSnapshotReachedScreen(snapshot_id);
+#endif
 }
 
 void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
@@ -1981,11 +1984,6 @@ bool RenderWidgetHostImpl::IsMouseLocked() const {
   return view_ ? view_->IsMouseLocked() : false;
 }
 
-void RenderWidgetHostImpl::SetLatencyInfoProcessorForTesting(
-    const LatencyInfoProcessor& processor) {
-  GetLatencyInfoProcessor() = processor;
-}
-
 void RenderWidgetHostImpl::SetAutoResize(bool enable,
                                          const gfx::Size& min_size,
                                          const gfx::Size& max_size) {
@@ -2066,31 +2064,6 @@ void RenderWidgetHostImpl::ClearDisplayedGraphics() {
   NotifyNewContentRenderingTimeoutForTesting();
   if (view_)
     view_->ClearCompositorFrame();
-}
-
-void RenderWidgetHostImpl::ProcessSnapshotResponses(
-    const ui::LatencyInfo& latency_info) {
-  // Note that a compromised renderer can send LatencyInfo to a
-  // RenderWidgetHostImpl other than its own. Be mindful of security
-  // implications of the code you add here.
-  if (latency_info.Snapshots().find(GetFrameSinkIdForSnapshot()) !=
-      latency_info.Snapshots().end()) {
-    int snapshot_id = latency_info.Snapshots().at(GetFrameSinkIdForSnapshot());
-#if defined(OS_MACOSX) || defined(OS_WIN)
-    // On Mac, when using CoreAnimation, or Win32 when using GDI, there is a
-    // delay between when content is drawn to the screen, and when the
-    // snapshot will actually pick up that content. Insert a manual delay of
-    // 1/6th of a second (to simulate 10 frames at 60 fps) before actually
-    // taking the snapshot.
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&RenderWidgetHostImpl::WindowSnapshotReachedScreen,
-                   weak_factory_.GetWeakPtr(), snapshot_id),
-        TimeDelta::FromSecondsD(1. / 6));
-#else
-    WindowSnapshotReachedScreen(snapshot_id);
-#endif
-  }
 }
 
 void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
@@ -2753,37 +2726,6 @@ void RenderWidgetHostImpl::OnSnapshotReceived(int snapshot_id,
   if (pending_browser_snapshots_.empty())
     GetWakeLock()->CancelWakeLock();
 #endif
-}
-
-// static
-void RenderWidgetHostImpl::NotifyCorrespondingRenderWidgetHost(
-    int64_t frame_id,
-    std::set<RenderWidgetHostImpl*>& notified_hosts,
-    const ui::LatencyInfo& latency_info) {
-  // Matches with GetFrameSinkIdForSnapshot.
-  int routing_id = frame_id & 0xffffffff;
-  int process_id = (frame_id >> 32) & 0xffffffff;
-  RenderWidgetHost* rwh = RenderWidgetHost::FromID(process_id, routing_id);
-  if (!rwh)
-    return;
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
-  if (notified_hosts.insert(rwhi).second)
-    rwhi->ProcessSnapshotResponses(latency_info);
-}
-
-// static
-void RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-  auto& callback = GetLatencyInfoProcessor();
-  if (!callback.is_null())
-    callback.Run(latency_info);
-  for (size_t i = 0; i < latency_info.size(); i++) {
-    std::set<RenderWidgetHostImpl*> rwhi_set;
-    for (const auto& snapshot : latency_info[i].Snapshots()) {
-      NotifyCorrespondingRenderWidgetHost(snapshot.first, rwhi_set,
-                                          latency_info[i]);
-    }
-  }
 }
 
 BrowserAccessibilityManager*

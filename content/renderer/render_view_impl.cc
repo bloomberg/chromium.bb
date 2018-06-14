@@ -410,38 +410,6 @@ void ApplyBlinkSettings(const base::CommandLine& command_line,
   }
 }
 
-// This class represents promise which is robust to (will not be broken by)
-// |DidNotSwapReason::SWAP_FAILS| events.
-class AlwaysDrawSwapPromise : public cc::SwapPromise {
- public:
-  explicit AlwaysDrawSwapPromise(const ui::LatencyInfo& latency_info)
-      : latency_info_(latency_info) {}
-
-  ~AlwaysDrawSwapPromise() override = default;
-
-  void DidActivate() override {}
-
-  void WillSwap(viz::CompositorFrameMetadata* metadata) override {
-    DCHECK(!latency_info_.terminated());
-    metadata->latency_info.push_back(latency_info_);
-  }
-
-  void DidSwap() override {}
-
-  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
-    return reason == DidNotSwapReason::SWAP_FAILS
-               ? DidNotSwapAction::KEEP_ACTIVE
-               : DidNotSwapAction::BREAK_PROMISE;
-  }
-
-  void OnCommit() override {}
-
-  int64_t TraceId() const override { return latency_info_.trace_id(); }
-
- private:
-  ui::LatencyInfo latency_info_;
-};
-
 content::mojom::WindowContainerType WindowFeaturesToContainerType(
     const blink::WebWindowFeatures& window_features) {
   if (window_features.background) {
@@ -1229,10 +1197,11 @@ void RenderViewImpl::ApplyWebPreferencesInternal(
   ApplyWebPreferences(prefs, web_view);
 }
 
-void RenderViewImpl::OnForceRedraw(const ui::LatencyInfo& latency_info) {
+void RenderViewImpl::OnForceRedraw(int snapshot_id) {
   if (RenderWidgetCompositor* rwc = compositor()) {
-    rwc->QueueSwapPromise(
-        std::make_unique<AlwaysDrawSwapPromise>(latency_info));
+    rwc->layer_tree_host()->RequestPresentationTimeForNextFrame(
+        base::BindOnce(&RenderViewImpl::OnForceDrawFramePresented,
+                       weak_ptr_factory_.GetWeakPtr(), snapshot_id));
     rwc->SetNeedsForcedRedraw();
   }
 }
@@ -1772,6 +1741,12 @@ void RenderViewImpl::CheckPreferredSize() {
   preferred_size_ = size;
   Send(new ViewHostMsg_DidContentsPreferredSizeChange(GetRoutingID(),
                                                       preferred_size_));
+}
+
+void RenderViewImpl::OnForceDrawFramePresented(
+    int snapshot_id,
+    const gfx::PresentationFeedback& feedback) {
+  Send(new ViewHostMsg_ForceRedrawComplete(GetRoutingID(), snapshot_id));
 }
 
 blink::WebString RenderViewImpl::AcceptLanguages() {

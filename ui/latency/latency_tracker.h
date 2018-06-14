@@ -26,6 +26,11 @@ class LatencyTracker {
   // Disables sampling of high volume metrics in unit tests.
   void DisableMetricSamplingForTesting();
 
+  using LatencyInfoProcessor =
+      base::RepeatingCallback<void(const std::vector<ui::LatencyInfo>&)>;
+  static void SetLatencyInfoProcessorForTesting(
+      const LatencyInfoProcessor& processor);
+
  private:
   enum class InputMetricEvent {
     SCROLL_BEGIN_TOUCH = 0,

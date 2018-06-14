@@ -794,8 +794,7 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
   if (has_compositor_frame_metadata_) {
     InnerSwapCompositorFrame();
   } else {
-    widget_host->Send(new ViewMsg_ForceRedraw(widget_host->GetRoutingID(),
-                                              ui::LatencyInfo()));
+    widget_host->Send(new ViewMsg_ForceRedraw(widget_host->GetRoutingID(), 0));
   }
   return Response::FallThrough();
 }

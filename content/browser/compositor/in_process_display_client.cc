@@ -52,7 +52,6 @@ void InProcessDisplayClient::OnDisplayReceivedCALayerParams(
 
 void InProcessDisplayClient::DidSwapAfterSnapshotRequestReceived(
     const std::vector<ui::LatencyInfo>& latency_info) {
-  RenderWidgetHostImpl::OnGpuSwapBuffersCompleted(latency_info);
 }
 
 void InProcessDisplayClient::CreateLayeredWindowUpdater(

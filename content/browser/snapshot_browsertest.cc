@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_SyncMultiWindowTest) {
   auto browser_list = Shell::windows();
   EXPECT_EQ(4u, browser_list.size());
 
-  for (int i = 0; i < 40; ++i) {
+  for (int i = 0; i < 20; ++i) {
     for (int j = 0; j < 4; j++) {
       // Start each iteration by taking a snapshot with a different
       // browser instance.
@@ -341,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_AsyncMultiWindowTest) {
   // component type.
   int divisor = 3;
 
-  for (int i = 0; i < 20 * divisor; ++i) {
+  for (int i = 0; i < 10 * divisor; ++i) {
     for (int j = 0; j < 4; j++) {
       // Start each iteration by taking a snapshot with a different
       // browser instance.
