@@ -214,8 +214,6 @@ specific_include_rules = {
     # Once Ash runs out of process no longer needed.
     "+ash/shell.h",
     "+ash/strings/grit/ash_strings.h",
-    "+ash/ws/window_service_owner.h",
-    "+services/ui/ws2/window_service.h",
 
     # Needed for classic mode.
     "+ash/ash_service.h",

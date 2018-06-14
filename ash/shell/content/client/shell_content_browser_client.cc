@@ -15,7 +15,6 @@
 #include "ash/shell.h"
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 #include "ash/shell/grit/ash_shell_resources.h"
-#include "ash/ws/window_service_owner.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -59,14 +58,23 @@ void ShellContentBrowserClient::GetQuotaSettings(
 
 std::unique_ptr<base::Value>
 ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (name != content::mojom::kPackagedServicesServiceName)
-    return nullptr;
-
-  base::StringPiece manifest_contents = rb.GetRawDataResourceForScale(
-      IDR_ASH_SHELL_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY,
-      ui::ScaleFactor::SCALE_FACTOR_NONE);
-  return base::JSONReader::Read(manifest_contents);
+  if (name == content::mojom::kBrowserServiceName) {
+    // This is necessary for outgoing interface requests (such as the keyboard
+    // shortcut viewer).
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    base::StringPiece manifest_contents = rb.GetRawDataResourceForScale(
+        IDR_ASH_SHELL_CONTENT_BROWSER_MANIFEST_OVERLAY,
+        ui::ScaleFactor::SCALE_FACTOR_NONE);
+    return base::JSONReader::Read(manifest_contents);
+  }
+  if (name == content::mojom::kPackagedServicesServiceName) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    base::StringPiece manifest_contents = rb.GetRawDataResourceForScale(
+        IDR_ASH_SHELL_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY,
+        ui::ScaleFactor::SCALE_FACTOR_NONE);
+    return base::JSONReader::Read(manifest_contents);
+  }
+  return nullptr;
 }
 
 std::vector<content::ContentBrowserClient::ServiceManifestInfo>
@@ -102,11 +110,6 @@ void ShellContentBrowserClient::RegisterInProcessServices(
     content::ServiceManagerConnection* connection) {
   services->insert(std::make_pair(mojom::kServiceName,
                                   AshService::CreateEmbeddedServiceInfo()));
-
-  connection->AddServiceRequestHandler(
-      ui::mojom::kServiceName,
-      base::BindRepeating(&BindWindowServiceOnIoThread,
-                          base::ThreadTaskRunnerHandle::Get()));
 }
 
 }  // namespace shell

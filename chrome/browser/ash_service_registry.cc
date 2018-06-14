@@ -13,7 +13,6 @@
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/ws/window_service_owner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -32,8 +31,7 @@ namespace {
 
 struct Service {
   const char* name;
-  int display_name_id;                  // Resource ID for the display name.
-  const char* process_group = nullptr;  // If null, uses a separate process.
+  int display_name_id;  // Resource ID for the display name.
 };
 
 // Services shared between mash and non-mash configs.
@@ -48,8 +46,8 @@ constexpr Service kCommonServices[] = {
 // Services unique to mash. Note that the non-mash case also has an Ash service,
 // it's just registered differently (see RegisterInProcessServices()).
 constexpr Service kMashServices[] = {
-    {ash::mojom::kServiceName, IDS_ASH_ASH_SERVICE_NAME, kAshAndUiProcessGroup},
-    {ui::mojom::kServiceName, IDS_ASH_UI_SERVICE_NAME, kAshAndUiProcessGroup},
+    {ash::mojom::kServiceName, IDS_ASH_ASH_SERVICE_NAME},
+    {ui::mojom::kServiceName, IDS_ASH_UI_SERVICE_NAME},
 };
 
 void RegisterOutOfProcessServicesImpl(
@@ -60,14 +58,8 @@ void RegisterOutOfProcessServicesImpl(
     const Service& service = services[i];
     base::string16 display_name =
         l10n_util::GetStringUTF16(service.display_name_id);
-    if (service.process_group) {
-      (*services_map)[service.name] =
-          ContentBrowserClient::OutOfProcessServiceInfo(display_name,
-                                                        service.process_group);
-    } else {
-      (*services_map)[service.name] =
-          ContentBrowserClient::OutOfProcessServiceInfo(display_name);
-    }
+    (*services_map)[service.name] =
+        ContentBrowserClient::OutOfProcessServiceInfo(display_name);
   }
 }
 
@@ -104,11 +96,6 @@ void RegisterInProcessServices(
 
   (*services)[ash::mojom::kServiceName] =
       ash::AshService::CreateEmbeddedServiceInfo();
-
-  connection->AddServiceRequestHandler(
-      ui::mojom::kServiceName,
-      base::BindRepeating(&ash::BindWindowServiceOnIoThread,
-                          base::ThreadTaskRunnerHandle::Get()));
 }
 
 bool IsAshRelatedServiceName(const std::string& name) {
@@ -121,24 +108,6 @@ bool IsAshRelatedServiceName(const std::string& name) {
       return true;
   }
   return false;
-}
-
-std::string GetAshRelatedServiceLabel(const std::string& service_name) {
-  for (const Service& service : kMashServices) {
-    if (service_name == service.name) {
-      // Use the process group name when available because that makes it more
-      // obvious that multiple services are running in the same process.
-      return service.process_group ? service.process_group : service.name;
-    }
-  }
-  for (const Service& service : kCommonServices) {
-    if (service_name == service.name) {
-      // Use the process group name when available because that makes it more
-      // obvious that multiple services are running in the same process.
-      return service.process_group ? service.process_group : service.name;
-    }
-  }
-  return std::string();
 }
 
 bool ShouldTerminateOnServiceQuit(const std::string& name) {

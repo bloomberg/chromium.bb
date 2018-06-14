@@ -292,9 +292,11 @@ catalog("views_mus_tests_catalog") {
     ":interactive_ui_tests_manifest",
   ]
 
-  standalone_services = [ "//services/ui/test_wm:manifest" ]
-
-  catalog_deps = [ "//mash:catalog" ]
+  standalone_services = [
+    "//services/ui:manifest",
+    "//services/ui/test_wm:manifest",
+    "//services/ui/ime/test_ime_driver:manifest",
+  ]
 }
 
 copy("views_mus_tests_catalog_copy") {

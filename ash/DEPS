@@ -140,6 +140,7 @@ specific_include_rules = {
     "+ash/host/ash_window_tree_host.h"
   ],
   "window_manager_service.cc": [
-    "+chromeos/cryptohome"
+    "+chromeos/cryptohome",
+    "+services/ui/service.h"
   ],
 }

@@ -11,9 +11,6 @@
 
 namespace ash_service_registry {
 
-// Process group used for the ash service and the ui service. Visible for test.
-constexpr char kAshAndUiProcessGroup[] = "ash_and_ui";
-
 // Registers the set of Ash related services that run out of process.
 void RegisterOutOfProcessServices(
     content::ContentBrowserClient::OutOfProcessServiceMap* services);
@@ -25,11 +22,6 @@ void RegisterInProcessServices(
 
 // Returns true if |name| identifies an Ash related service.
 bool IsAshRelatedServiceName(const std::string& name);
-
-// If |service_name| identifies an Ash related service, returns an arbitrary
-// label that identifies the service or group of related services. Otherwise
-// returns the empty string.
-std::string GetAshRelatedServiceLabel(const std::string& service_name);
 
 // Returns true if the browser should exit when service |name| quits.
 bool ShouldTerminateOnServiceQuit(const std::string& name);
