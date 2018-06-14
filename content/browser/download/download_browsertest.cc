@@ -3499,7 +3499,15 @@ IN_PROC_BROWSER_TEST_F(MhtmlDownloadTest, ForceDownloadMultipartRelatedPage) {
       download::DownloadItem::COMPLETE);
 }
 
-IN_PROC_BROWSER_TEST_F(MhtmlDownloadTest, ForceDownloadMessageRfc822Page) {
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(ADDRESS_SANITIZER)
+// Flaky https://crbug.com/852073
+#define MAYBE_ForceDownloadMessageRfc822Page \
+  DISABLED_ForceDownloadMessageRfc822Page
+#else
+#define MAYBE_ForceDownloadMessageRfc822Page ForceDownloadMessageRfc822Page
+#endif
+IN_PROC_BROWSER_TEST_F(MhtmlDownloadTest,
+                       MAYBE_ForceDownloadMessageRfc822Page) {
   NavigateToURLAndWaitForDownload(
       shell(),
       // .mht file is mapped to "message/rfc822" by the test server.
