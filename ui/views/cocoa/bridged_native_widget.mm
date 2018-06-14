@@ -1347,9 +1347,13 @@ void BridgedNativeWidget::ShowAsModalSheet() {
   NSWindow* parent_window = parent_->GetNSWindow();
   DCHECK(parent_window);
 
+  // -beginSheet: does not retain |modalDelegate| (and we would not want it to).
+  // Since |this| may destroy [window_ delegate], use |window_| itself as the
+  // delegate, which will forward to ViewsNSWindowDelegate if |this| is still
+  // alive (i.e. it has not set the window delegate to nil).
   [NSApp beginSheet:window_
       modalForWindow:parent_window
-       modalDelegate:[window_ delegate]
+       modalDelegate:window_
       didEndSelector:@selector(sheetDidEnd:returnCode:contextInfo:)
          contextInfo:nullptr];
 }
