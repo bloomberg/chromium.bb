@@ -394,7 +394,7 @@ void EventHandler::UpdateCursor() {
                          HitTestRequest::kAllowChildFrameContent);
   HitTestResult result(
       request,
-      view->ViewportToContents(mouse_event_manager_->LastKnownMousePosition()));
+      view->ViewportToFrame(mouse_event_manager_->LastKnownMousePosition()));
   layout_view->HitTest(result);
 
   if (LocalFrame* frame = result.InnerNodeFrame()) {
@@ -1748,15 +1748,12 @@ GestureEventWithHitTestResults EventHandler::HitTestResultForGestureEvent(
   HitTestResult hit_test_result;
   if (hit_rect_size.IsEmpty()) {
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtPoint(
-        root_frame.View()->FrameToContents(
-            LayoutPoint(adjusted_event.PositionInRootFrame())),
-        hit_type);
+        LayoutPoint(adjusted_event.PositionInRootFrame()), hit_type);
   } else {
     LayoutPoint top_left(adjusted_event.PositionInRootFrame());
     top_left.Move(-hit_rect_size * 0.5f);
     hit_test_result = root_frame.GetEventHandler().HitTestResultAtRect(
-        LayoutRect(root_frame.View()->FrameToContents(top_left), hit_rect_size),
-        hit_type);
+        LayoutRect(top_left, hit_rect_size), hit_type);
   }
 
   if (hit_test_result.IsRectBasedTest()) {
@@ -2017,7 +2014,7 @@ void EventHandler::HoverTimerFired(TimerBase*) {
     if (LocalFrameView* view = frame_->View()) {
       HitTestRequest request(HitTestRequest::kMove);
       HitTestResult result(request,
-                           view->ViewportToContents(
+                           view->ViewportToFrame(
                                mouse_event_manager_->LastKnownMousePosition()));
       layout_object->HitTest(result);
       frame_->GetDocument()->UpdateHoverActiveState(request,

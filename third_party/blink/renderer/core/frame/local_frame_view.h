@@ -580,15 +580,12 @@ class CORE_EXPORT LocalFrameView final
   // Methods for converting between this frame and other coordinate spaces.
   // For definitions and an explanation of the varous spaces, please see:
   // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
-  // WARNING: With --root-layer-scrolling, these become ambiguous since content
-  // coordinates mean something different. These will eventually be replaced,
-  // see comments below about writing RLS agnostic conversions.
-  IntRect ViewportToContents(const IntRect&) const;
-  IntRect ContentsToViewport(const IntRect&) const;
-  IntPoint ContentsToViewport(const IntPoint&) const;
-  IntPoint ViewportToContents(const IntPoint&) const;
-  FloatPoint ViewportToContents(const FloatPoint&) const;
-  LayoutPoint ViewportToContents(const LayoutPoint&) const;
+  IntRect ViewportToFrame(const IntRect&) const;
+  IntRect FrameToViewport(const IntRect&) const;
+  IntPoint FrameToViewport(const IntPoint&) const;
+  IntPoint ViewportToFrame(const IntPoint&) const;
+  FloatPoint ViewportToFrame(const FloatPoint&) const;
+  LayoutPoint ViewportToFrame(const LayoutPoint&) const;
 
   // FIXME: Some external callers expect to get back a rect that's positioned
   // in viewport space, but sized in CSS pixels. This is an artifact of the
@@ -596,37 +593,14 @@ class CORE_EXPORT LocalFrameView final
   // fully in viewport space. crbug.com/459591.
   IntPoint SoonToBeRemovedUnscaledViewportToContents(const IntPoint&) const;
 
-  // Methods for converting between Frame and Content (i.e. Document)
-  // coordinates.  Frame coordinates are relative to the top left corner of the
-  // frame and so they are affected by scroll offset. Content coordinates are
-  // relative to the document's top left corner and thus are not affected by
-  // scroll offset.
-  // WARNING: With --root-layer-scrolling, these become ambiguous since content
-  // coordinates mean something different. These will eventually be replaced,
-  // see comments below about writing RLS agnostic conversions.
-  IntPoint ContentsToFrame(const IntPoint&) const;
-  LayoutPoint ContentsToFrame(const LayoutPoint&) const;
-  FloatPoint ContentsToFrame(const FloatPoint&) const;
-  IntRect ContentsToFrame(const IntRect&) const;
-  IntPoint FrameToContents(const IntPoint&) const;
-  FloatPoint FrameToContents(const FloatPoint&) const;
-  LayoutPoint FrameToContents(const LayoutPoint&) const;
-  IntRect FrameToContents(const IntRect&) const;
-
   // Functions for converting to screen coordinates.
   IntRect ContentsToScreen(const IntRect&) const;
 
-  // Converts from/to local "frame" coordinates to the root "frame"
-  // coordinates. Note: with root-layer-scrolls, "frame" coordinates become
-  // equivalent to "absoltue" coordinates since the LayoutView (same size and
-  // origin as the frame) clips and scrolls content below it. Without RLS, the
-  // LayoutView is the size of the entire document and doesn't scroll itself so
-  // "absolute" means "document". To write RLS agnostic-code, use (or add) the
-  // methods below these ones. For details, see:
-  // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
+  // Converts from/to local frame coordinates to the root frame coordinates.
   IntRect ConvertToRootFrame(const IntRect&) const;
   IntPoint ConvertToRootFrame(const IntPoint&) const;
   LayoutPoint ConvertToRootFrame(const LayoutPoint&) const;
+  FloatPoint ConvertToRootFrame(const FloatPoint&) const;
   IntRect ConvertFromRootFrame(const IntRect&) const;
   IntPoint ConvertFromRootFrame(const IntPoint&) const override;
   FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
@@ -899,6 +873,7 @@ class CORE_EXPORT LocalFrameView final
   IntRect ConvertToContainingEmbeddedContentView(const IntRect&) const;
   IntPoint ConvertToContainingEmbeddedContentView(const IntPoint&) const;
   LayoutPoint ConvertToContainingEmbeddedContentView(const LayoutPoint&) const;
+  FloatPoint ConvertToContainingEmbeddedContentView(const FloatPoint&) const;
   IntRect ConvertFromContainingEmbeddedContentView(const IntRect&) const;
   IntPoint ConvertFromContainingEmbeddedContentView(const IntPoint&) const;
   LayoutPoint ConvertFromContainingEmbeddedContentView(

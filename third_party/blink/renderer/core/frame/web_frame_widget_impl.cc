@@ -1125,8 +1125,7 @@ HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   LocalFrameView* view = LocalRootImpl()->GetFrameView();
-  IntPoint point_in_root_frame =
-      view->ContentsToFrame(view->ViewportToContents(point_in_viewport));
+  IntPoint point_in_root_frame = view->ViewportToFrame(point_in_viewport);
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 

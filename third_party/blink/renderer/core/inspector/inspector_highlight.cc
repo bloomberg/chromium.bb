@@ -117,7 +117,7 @@ class ShapePathBuilder : public PathBuilder {
   FloatPoint TranslatePoint(const FloatPoint& point) override {
     FloatPoint layout_object_point =
         shape_outside_info_.ShapeToLayoutObjectPoint(point);
-    return view_->ContentsToViewport(
+    return view_->FrameToViewport(
         RoundedIntPoint(layout_object_.LocalToAbsolute(layout_object_point)));
   }
 
@@ -152,21 +152,18 @@ Path QuadToPath(const FloatQuad& quad) {
   return quad_path;
 }
 
-FloatPoint ContentsPointToViewport(const LocalFrameView* view,
-                                   FloatPoint point_in_contents) {
-  LayoutPoint point_in_frame =
-      view->ContentsToFrame(LayoutPoint(point_in_contents));
-  FloatPoint point_in_root_frame =
-      FloatPoint(view->ConvertToRootFrame(point_in_frame));
-  return FloatPoint(view->GetPage()->GetVisualViewport().RootFrameToViewport(
-      point_in_root_frame));
+FloatPoint FramePointToViewport(const LocalFrameView* view,
+                                FloatPoint point_in_frame) {
+  FloatPoint point_in_root_frame = view->ConvertToRootFrame(point_in_frame);
+  return view->GetPage()->GetVisualViewport().RootFrameToViewport(
+      point_in_root_frame);
 }
 
-void ContentsQuadToViewport(const LocalFrameView* view, FloatQuad& quad) {
-  quad.SetP1(ContentsPointToViewport(view, quad.P1()));
-  quad.SetP2(ContentsPointToViewport(view, quad.P2()));
-  quad.SetP3(ContentsPointToViewport(view, quad.P3()));
-  quad.SetP4(ContentsPointToViewport(view, quad.P4()));
+void FrameQuadToViewport(const LocalFrameView* view, FloatQuad& quad) {
+  quad.SetP1(FramePointToViewport(view, quad.P1()));
+  quad.SetP2(FramePointToViewport(view, quad.P2()));
+  quad.SetP3(FramePointToViewport(view, quad.P3()));
+  quad.SetP4(FramePointToViewport(view, quad.P4()));
 }
 
 const ShapeOutsideInfo* ShapeOutsideInfoForNode(Node* node,
@@ -187,7 +184,7 @@ const ShapeOutsideInfo* ShapeOutsideInfoForNode(Node* node,
   LayoutRect shape_bounds =
       shape_outside_info->ComputedShapePhysicalBoundingBox();
   *bounds = layout_box->LocalToAbsoluteQuad(FloatRect(shape_bounds));
-  ContentsQuadToViewport(containing_view, *bounds);
+  FrameQuadToViewport(containing_view, *bounds);
 
   return shape_outside_info;
 }
@@ -400,7 +397,7 @@ void InspectorHighlight::AppendNodeHighlight(
     LocalFrameView* containing_view = layout_object->GetFrameView();
     for (size_t i = 0; i < quads.size(); ++i) {
       if (containing_view)
-        ContentsQuadToViewport(containing_view, quads[i]);
+        FrameQuadToViewport(containing_view, quads[i]);
       AppendQuad(quads[i], highlight_config.content,
                  highlight_config.content_outline);
     }
@@ -597,10 +594,10 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
   *border = layout_object->LocalToAbsoluteQuad(FloatRect(border_box));
   *margin = layout_object->LocalToAbsoluteQuad(FloatRect(margin_box));
 
-  ContentsQuadToViewport(containing_view, *content);
-  ContentsQuadToViewport(containing_view, *padding);
-  ContentsQuadToViewport(containing_view, *border);
-  ContentsQuadToViewport(containing_view, *margin);
+  FrameQuadToViewport(containing_view, *content);
+  FrameQuadToViewport(containing_view, *padding);
+  FrameQuadToViewport(containing_view, *border);
+  FrameQuadToViewport(containing_view, *margin);
 
   return true;
 }

@@ -234,7 +234,7 @@ Element& ColorInputType::OwnerElement() const {
 }
 
 IntRect ColorInputType::ElementRectRelativeToViewport() const {
-  return GetElement().GetDocument().View()->ContentsToViewport(
+  return GetElement().GetDocument().View()->FrameToViewport(
       GetElement().PixelSnappedBoundingBox());
 }
 

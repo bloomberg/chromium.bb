@@ -314,9 +314,8 @@ void TouchActionTest::RunTestOnTree(
       // element we intended. This is the easiest way for a test to be broken,
       // but has nothing really to do with touch action.  Note that we can't use
       // WebView's hit test API because it doesn't look into shadow DOM.
-      IntPoint doc_point(main_frame_view->FrameToContents(window_point));
       HitTestResult result = main_frame->GetEventHandler().HitTestResultAtPoint(
-          doc_point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
+          window_point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
       ASSERT_EQ(element, result.InnerElement())
           << "Unexpected hit test result " << failure_context_pos
           << "  Got element: \""

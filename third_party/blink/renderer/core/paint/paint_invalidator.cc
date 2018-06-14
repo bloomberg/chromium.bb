@@ -538,8 +538,7 @@ static void InvalidateChromeClient(
   auto* frame_view = paint_invalidation_container.GetFrameView();
   DCHECK(!frame_view->GetFrame().OwnerLayoutObject());
   if (auto* client = frame_view->GetChromeClient()) {
-    client->InvalidateRect(
-        frame_view->ContentsToFrame(frame_view->VisibleContentRect()));
+    client->InvalidateRect(frame_view->VisibleContentRect());
   }
 }
 

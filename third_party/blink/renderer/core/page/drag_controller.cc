@@ -1293,8 +1293,8 @@ void DragController::DoSystemDrag(DragImage* image,
   // FloatPoints and we should calculate these adjusted values in floating
   // point to avoid unnecessary rounding.
   IntPoint adjusted_drag_location =
-      frame->View()->ContentsToViewport(drag_location);
-  IntPoint adjusted_event_pos = frame->View()->ContentsToViewport(event_pos);
+      frame->View()->FrameToViewport(drag_location);
+  IntPoint adjusted_event_pos = frame->View()->FrameToViewport(event_pos);
   IntSize offset_size(adjusted_event_pos - adjusted_drag_location);
   WebPoint offset_point(offset_size.Width(), offset_size.Height());
   WebDragData drag_data = data_transfer->GetDataObject()->ToWebDragData();

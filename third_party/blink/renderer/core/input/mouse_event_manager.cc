@@ -653,7 +653,7 @@ void MouseEventManager::DispatchFakeMouseMoveEventSoonInQuad(
   if (!view)
     return;
 
-  if (!quad.ContainsPoint(view->ViewportToContents(last_known_mouse_position_)))
+  if (!quad.ContainsPoint(view->ViewportToFrame(last_known_mouse_position_)))
     return;
 
   DispatchFakeMouseMoveEventSoon(
@@ -1133,7 +1133,7 @@ bool MouseEventManager::HandleSvgPanIfNeeded(bool is_release_event) {
     return false;
   svg_pan_ = !is_release_event;
   frame_->GetDocument()->AccessSVGExtensions().UpdatePan(
-      frame_->View()->ViewportToContents(last_known_mouse_position_));
+      frame_->View()->ViewportToFrame(last_known_mouse_position_));
   return true;
 }
 
