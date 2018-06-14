@@ -69,8 +69,13 @@ class TabLoaderTest : public testing::Test {
   }
 
   void SimulateLoaded(size_t tab_index) {
-    TabLoadTracker::Get()->TransitionStateForTesting(
-        restored_tabs_[tab_index].contents(), TabLoadTracker::LOADED);
+    // Transition to a LOADED state. This has to pass through the LOADING state
+    // in order to satisfy the internal logic of SessionRestoreStatsCollector.
+    auto* contents = restored_tabs_[tab_index].contents();
+    auto* tracker = TabLoadTracker::Get();
+    if (tracker->GetLoadingState(contents) != TabLoadTracker::LOADING)
+      tracker->TransitionStateForTesting(contents, TabLoadTracker::LOADING);
+    tracker->TransitionStateForTesting(contents, TabLoadTracker::LOADED);
   }
 
   void SimulateLoadedAll() {

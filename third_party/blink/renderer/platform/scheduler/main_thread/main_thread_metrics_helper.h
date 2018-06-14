@@ -55,6 +55,11 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
 
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
 
+  // Set to true when OnRendererShutdown is called. Used to ensure that metrics
+  // that need to cross IPC boundaries aren't sent, as they cause additional
+  // useless tasks to be posted.
+  bool renderer_shutting_down_;
+
   const bool is_page_almost_idle_signal_enabled_;
 
   base::Optional<base::TimeTicks> last_reported_task_;
