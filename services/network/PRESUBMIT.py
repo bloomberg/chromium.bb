@@ -16,7 +16,7 @@ def PostUploadHook(cl, change, output_api):
   return output_api.EnsureCQIncludeTrybotsAreAdded(
     cl,
     [
-      'master.tryserver.chromium.linux:linux_mojo'
+      'luci.chromium.try:linux_mojo'
     ],
     'Automatically added network service trybots to run tests on CQ.')
 
