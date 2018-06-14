@@ -81,9 +81,6 @@ TEST_F(ErrorRetryStateMachineTest, OfflineThenReload) {
     ASSERT_EQ(ErrorRetryState::kReadyToDisplayErrorForFailedNavigation,
               clone.state());
   }
-
-  machine.ResetState();
-  ASSERT_EQ(ErrorRetryState::kNewRequest, machine.state());
 }
 
 // Tests state transitions for displaying error in web view.

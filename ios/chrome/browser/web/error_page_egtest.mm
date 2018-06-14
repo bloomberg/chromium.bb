@@ -129,7 +129,7 @@ NSString* GetNSErrorMessage() {
 // Sucessfully loads the page, then loads the URL which fails to load, then
 // sucessfully goes back to the first page.
 // TODO(crbug.com/840489): Remove this test.
-- (void)testGoBackFromErrorPage {
+- (void)testGoBackFromErrorPageAndForwardToErrorPage {
   // First page loads sucessfully.
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
   [ChromeEarlGrey waitForWebViewContainingText:"Echo"];
@@ -145,6 +145,14 @@ NSString* GetNSErrorMessage() {
   // Going back should sucessfully load the first page.
   [ChromeEarlGrey goBack];
   [ChromeEarlGrey waitForWebViewContainingText:"Echo"];
+
+  // Going forward fails the load.
+  [ChromeEarlGrey goForward];
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
+  } else {
+    [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetNSErrorMessage()];
+  }
 }
 
 // Loads the URL which redirects to unresponsive server.

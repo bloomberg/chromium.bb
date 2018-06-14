@@ -1749,7 +1749,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
         error, context->IsPost(),
         _webStateImpl->GetBrowserState()->IsOffTheRecord(), &errorHTML);
 
-    [_webView loadHTMLString:errorHTML baseURL:net::NSURLWithGURL(currentURL)];
+    WKNavigation* navigation =
+        [_webView loadHTMLString:errorHTML
+                         baseURL:net::NSURLWithGURL(currentURL)];
+
+    auto loadHTMLContext = web::NavigationContextImpl::CreateNavigationContext(
+        _webStateImpl, GURL::EmptyGURL(),
+        /*has_user_gesture=*/false, ui::PAGE_TRANSITION_FIRST,
+        /*is_renderer_initiated=*/false);
+    loadHTMLContext->SetLoadingErrorPage(true);
+
+    [_navigationStates setContext:std::move(loadHTMLContext)
+                    forNavigation:navigation];
   }
 
   // If |context| has placeholder URL, this is the second part of a native error
@@ -4423,6 +4434,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (context) {
     // This is already seen and registered navigation.
 
+    if (context->IsLoadingErrorPage()) {
+      // This is loadHTMLString: navigation to display error page in web view.
+      _loadPhase = web::LOAD_REQUESTED;
+      return;
+    }
+
     if (context->GetUrl() != webViewURL) {
       // Update last seen URL because it may be changed by WKWebView (f.e. by
       // performing characters escaping).
@@ -4783,6 +4800,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
+  if (context && context->IsLoadingErrorPage()) {
+    return;
+  }
+
   if (context && context->GetUrl() == currentWKItemURL) {
     // If webView.backForwardList.currentItem.URL matches |context|, then this
     // is a known edge case where |webView.URL| is wrong.
@@ -5452,9 +5473,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [_navigationStates setContext:std::move(navigationContext)
                     forNavigation:navigation];
     [self reportBackForwardNavigationTypeForFastNavigation:NO];
-    if (self.currentNavItem) {
-      self.currentNavItem->error_retry_state_machine().ResetState();
-    }
   };
 
   // When navigating via WKBackForwardListItem to pages created or updated by
@@ -5509,9 +5527,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
                   forNavigation:navigation];
     [_navigationStates setContext:std::move(navigationContext)
                     forNavigation:navigation];
-    if (self.currentNavItem) {
-      self.currentNavItem->error_retry_state_machine().ResetState();
-    }
   };
 
   // If the request is not a form submission or resubmission, or the user

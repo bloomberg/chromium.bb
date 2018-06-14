@@ -148,6 +148,14 @@ WKNavigationType NavigationContextImpl::GetWKNavigationType() const {
   return wk_navigation_type_;
 }
 
+bool NavigationContextImpl::IsLoadingErrorPage() const {
+  return is_loading_error_page_;
+}
+
+void NavigationContextImpl::SetLoadingErrorPage(bool is_loading_error_page) {
+  is_loading_error_page_ = is_loading_error_page;
+}
+
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,
                                              const GURL& url,
                                              bool has_user_gesture,
