@@ -167,11 +167,11 @@ IN_PROC_BROWSER_TEST_F(WebAuthFocusTest, Focus) {
   Browser* new_window = browser_added_observer.WaitForSingleNewBrowser();
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(new_window));
 
-  // Operations in the (now unfocused) window should fail, even though it's
-  // still the active tab in that window.
+  // Operations in the (now unfocused) window should still succeed, as the
+  // calling tab is still the active tab in that window.
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(initial_web_contents,
                                                      register_script, &result));
-  EXPECT_THAT(result, ::testing::HasSubstr(kFocusErrorSubstring));
+  EXPECT_THAT(result, "OK");
 
   // Check that closing the window brings things back to a focused state.
   chrome::CloseWindow(new_window);
