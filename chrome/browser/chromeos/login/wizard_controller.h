@@ -187,6 +187,7 @@ class WizardController : public BaseScreenDelegate,
   void OnArcTermsOfServiceSkipped();
   void OnArcTermsOfServiceAccepted();
   void OnRecommendAppsSkipped();
+  void OnRecommendAppsSelected();
   void OnVoiceInteractionValuePropSkipped();
   void OnVoiceInteractionValuePropAccepted();
   void OnControllerPairingFinished();

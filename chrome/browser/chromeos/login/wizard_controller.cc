@@ -921,7 +921,11 @@ void WizardController::OnArcTermsOfServiceAccepted() {
 }
 
 void WizardController::OnRecommendAppsSkipped() {
-  OnOobeFlowFinished(); // TODO(rsgingerrs): there may be a next step?
+  OnOobeFlowFinished();
+}
+
+void WizardController::OnRecommendAppsSelected() {
+  OnOobeFlowFinished();
 }
 
 void WizardController::OnVoiceInteractionValuePropSkipped() {
@@ -1356,7 +1360,7 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       OnRecommendAppsSkipped();
       break;
     case ScreenExitCode::RECOMMEND_APPS_SELECTED:
-      // TODO(rsgingerrs): Actions if user selects some apps to install
+      OnRecommendAppsSelected();
       break;
     case ScreenExitCode::DEMO_MODE_SETUP_FINISHED:
       OnDemoSetupFinished();
