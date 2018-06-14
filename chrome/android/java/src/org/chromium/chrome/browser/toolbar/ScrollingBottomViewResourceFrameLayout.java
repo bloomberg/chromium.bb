@@ -58,4 +58,11 @@ public class ScrollingBottomViewResourceFrameLayout extends ViewResourceFrameLay
     public void setTopShadowHeight(int height) {
         mTopShadowHeightPx = height;
     }
+
+    /**
+     * @return The height of the view's top shadow in px.
+     */
+    public int getTopShadowHeight() {
+        return mTopShadowHeightPx;
+    }
 }

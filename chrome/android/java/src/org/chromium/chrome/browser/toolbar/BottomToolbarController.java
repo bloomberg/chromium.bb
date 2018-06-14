@@ -12,7 +12,6 @@ import android.view.ViewStub;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
-import org.chromium.chrome.browser.compositor.scene_layer.ScrollingBottomViewSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
@@ -62,13 +61,9 @@ public class BottomToolbarController {
         mResourceId = toolbarRoot.getId();
         mViewResourceAdapter = toolbarRoot.getResourceAdapter();
 
-        // This is the compositor component of the bottom toolbar views.
-        final ScrollingBottomViewSceneLayer sceneLayer =
-                new ScrollingBottomViewSceneLayer(toolbarRoot, shadowHeight);
-
         PropertyModelChangeProcessor<BottomToolbarModel, ViewHolder, PropertyKey> processor =
-                new PropertyModelChangeProcessor<>(model, new ViewHolder(sceneLayer, toolbarRoot),
-                        new BottomToolbarViewBinder());
+                new PropertyModelChangeProcessor<>(
+                        model, new ViewHolder(toolbarRoot), new BottomToolbarViewBinder());
         model.addObserver(processor);
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(toolbarRoot);
     }

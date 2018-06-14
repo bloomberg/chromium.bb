@@ -24,19 +24,16 @@ public class BottomToolbarViewBinder
      * be used with the {@link BottomToolbarViewBinder}.
      */
     public static class ViewHolder {
-        /** A handle to the composited bottom toolbar layer. */
-        public final ScrollingBottomViewSceneLayer sceneLayer;
+        /** A handle to the Android View based version of the toolbar. */
+        public final ScrollingBottomViewResourceFrameLayout toolbarRoot;
 
-        /** A handle to the Android {@link ViewGroup} version of the toolbar. */
-        public final ViewGroup toolbarRoot;
+        /** A handle to the composited bottom toolbar layer. */
+        public ScrollingBottomViewSceneLayer sceneLayer;
 
         /**
-         * @param compositedSceneLayer The composited bottom toolbar view.
-         * @param toolbarRootView The Android {@link ViewGroup} toolbar.
+         * @param toolbarRootView The Android View based toolbar.
          */
-        public ViewHolder(
-                ScrollingBottomViewSceneLayer compositedSceneLayer, ViewGroup toolbarRootView) {
-            sceneLayer = compositedSceneLayer;
+        public ViewHolder(ScrollingBottomViewResourceFrameLayout toolbarRootView) {
             toolbarRoot = toolbarRootView;
         }
     }
@@ -50,6 +47,7 @@ public class BottomToolbarViewBinder
     @Override
     public final void bind(BottomToolbarModel model, ViewHolder view, PropertyKey propertyKey) {
         if (BottomToolbarModel.Y_OFFSET == propertyKey) {
+            assert view.sceneLayer != null;
             view.sceneLayer.setYOffset(model.getValue(BottomToolbarModel.Y_OFFSET));
         } else if (BottomToolbarModel.ANDROID_VIEW_VISIBILITY == propertyKey) {
             view.toolbarRoot.setVisibility(
@@ -62,6 +60,9 @@ public class BottomToolbarViewBinder
             view.toolbarRoot.findViewById(R.id.menu_button)
                     .setOnTouchListener(model.getValue(BottomToolbarModel.MENU_BUTTON_LISTENER));
         } else if (BottomToolbarModel.LAYOUT_MANAGER == propertyKey) {
+            assert view.sceneLayer == null;
+            view.sceneLayer = new ScrollingBottomViewSceneLayer(
+                    view.toolbarRoot, view.toolbarRoot.getTopShadowHeight());
             model.getValue(BottomToolbarModel.LAYOUT_MANAGER)
                     .addSceneOverlayToBack(view.sceneLayer);
         } else if (BottomToolbarModel.HOME_BUTTON_LISTENER == propertyKey) {
