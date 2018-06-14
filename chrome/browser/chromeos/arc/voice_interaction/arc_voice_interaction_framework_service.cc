@@ -526,8 +526,7 @@ void ArcVoiceInteractionFrameworkService::StartVoiceInteractionOobe() {
   if (chromeos::LoginDisplayHost::default_host())
     return;
   // The display host will be destructed at the end of OOBE flow.
-  chromeos::LoginDisplayHostWebUI* display_host =
-      new chromeos::LoginDisplayHostWebUI();
+  auto* display_host = new chromeos::LoginDisplayHostWebUI();
   display_host->StartVoiceInteractionOobe();
 }
 

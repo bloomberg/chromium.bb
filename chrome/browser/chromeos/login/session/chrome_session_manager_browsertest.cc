@@ -10,10 +10,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -103,10 +104,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
 
-  LoginDisplayWebUI* login_display = static_cast<LoginDisplayWebUI*>(
-      ExistingUserController::current_controller()->login_display());
-  login_display->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password",
-                                         "[]");
+  LoginDisplayHost::default_host()
+      ->GetOobeUI()
+      ->GetGaiaScreenView()
+      ->ShowSigninScreenForTest(kTestUsers[0].email, "fake_password", "[]");
 
   session_start_waiter.Wait();
 

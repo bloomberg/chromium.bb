@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

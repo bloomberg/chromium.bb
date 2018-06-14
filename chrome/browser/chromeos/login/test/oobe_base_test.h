@@ -12,8 +12,6 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
-#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
@@ -87,9 +85,6 @@ class OobeBaseTest : public extensions::ExtensionApiTest {
 
   // Returns chrome://oobe WebUI.
   content::WebUI* GetLoginUI();
-
-  // Returns login display.
-  LoginDisplayWebUI* GetLoginDisplay();
 
   void WaitForGaiaPageLoad();
   void WaitForGaiaPageLoadAndPropertyUpdate();

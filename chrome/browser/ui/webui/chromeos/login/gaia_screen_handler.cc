@@ -950,27 +950,6 @@ void GaiaScreenHandler::OnCookiesCleared(
   on_clear_callback.Run();
 }
 
-void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
-                                                const std::string& password,
-                                                const std::string& services) {
-  VLOG(2) << "ShowSigninScreenForTest for user " << username
-          << ", frame_state=" << frame_state();
-
-  test_user_ = username;
-  test_pass_ = password;
-  test_services_ = services;
-  test_expects_complete_login_ = true;
-
-  // Submit login form for test if gaia is ready. If gaia is loading, login
-  // will be attempted in HandleLoginWebuiReady after gaia is ready. Otherwise,
-  // reload gaia then follow the loading case.
-  if (frame_state() == GaiaScreenHandler::FRAME_STATE_LOADED) {
-    SubmitLoginFormForTest();
-  } else if (frame_state() != GaiaScreenHandler::FRAME_STATE_LOADING) {
-    OnShowAddUser();
-  }
-}
-
 void GaiaScreenHandler::SubmitLoginFormForTest() {
   VLOG(2) << "Submit login form for test, user=" << test_user_;
 
@@ -1021,6 +1000,27 @@ void GaiaScreenHandler::ShowGaiaAsync(
     StartClearingDnsCache();
     StartClearingCookies(base::Bind(&GaiaScreenHandler::ShowGaiaScreenIfReady,
                                     weak_factory_.GetWeakPtr()));
+  }
+}
+
+void GaiaScreenHandler::ShowSigninScreenForTest(const std::string& username,
+                                                const std::string& password,
+                                                const std::string& services) {
+  VLOG(2) << "ShowSigninScreenForTest for user " << username
+          << ", frame_state=" << frame_state();
+
+  test_user_ = username;
+  test_pass_ = password;
+  test_services_ = services;
+  test_expects_complete_login_ = true;
+
+  // Submit login form for test if gaia is ready. If gaia is loading, login
+  // will be attempted in HandleLoginWebuiReady after gaia is ready. Otherwise,
+  // reload gaia then follow the loading case.
+  if (frame_state() == GaiaScreenHandler::FRAME_STATE_LOADED) {
+    SubmitLoginFormForTest();
+  } else if (frame_state() != GaiaScreenHandler::FRAME_STATE_LOADING) {
+    OnShowAddUser();
   }
 }
 

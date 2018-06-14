@@ -9,6 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
@@ -75,9 +76,12 @@ IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
       chrome::NOTIFICATION_SESSION_STARTED,
       content::NotificationService::AllSources());
 
-  GetLoginDisplay()->ShowSigninScreenForTest(OobeBaseTest::kFakeUserEmail,
-                                             OobeBaseTest::kFakeUserPassword,
-                                             OobeBaseTest::kEmptyUserServices);
+  LoginDisplayHost::default_host()
+      ->GetOobeUI()
+      ->GetGaiaScreenView()
+      ->ShowSigninScreenForTest(OobeBaseTest::kFakeUserEmail,
+                                OobeBaseTest::kFakeUserPassword,
+                                OobeBaseTest::kEmptyUserServices);
 
   session_start_waiter.Wait();
 }

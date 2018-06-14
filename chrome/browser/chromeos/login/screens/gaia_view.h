@@ -36,6 +36,13 @@ class GaiaView {
   // prefilling information.
   virtual void ShowGaiaAsync(const base::Optional<AccountId>& account_id) = 0;
 
+  // Show sign-in screen for the given credentials. |services| is a list of
+  // services returned by userInfo call as JSON array. Should be an empty array
+  // for a regular user: "[]".
+  virtual void ShowSigninScreenForTest(const std::string& username,
+                                       const std::string& password,
+                                       const std::string& services) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GaiaView);
 };

@@ -14,11 +14,14 @@
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -383,8 +386,11 @@ class OAuth2Test : public OobeBaseTest {
 
     // Use capitalized and dotted user name on purpose to make sure
     // our email normalization kicks in.
-    GetLoginDisplay()->ShowSigninScreenForTest(
-        kTestRawEmail, kTestAccountPassword, kTestAccountServices);
+    LoginDisplayHost::default_host()
+        ->GetOobeUI()
+        ->GetGaiaScreenView()
+        ->ShowSigninScreenForTest(kTestRawEmail, kTestAccountPassword,
+                                  kTestAccountServices);
     session_start_waiter.Wait();
 
     if (wait_for_merge) {
@@ -622,8 +628,11 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, TerminateOnBadMergeSessionAfterOnlineAuth) {
   fake_gaia_->SetMergeSessionParams(params);
 
   // Simulate an online sign-in.
-  GetLoginDisplay()->ShowSigninScreenForTest(kTestEmail, kTestAccountPassword,
-                                             kTestAccountServices);
+  LoginDisplayHost::default_host()
+      ->GetOobeUI()
+      ->GetGaiaScreenView()
+      ->ShowSigninScreenForTest(kTestRawEmail, kTestAccountPassword,
+                                kTestAccountServices);
 
   // User session should be terminated.
   termination_waiter.Wait();

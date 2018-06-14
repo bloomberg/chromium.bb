@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/pairing/bluetooth_host_pairing_controller.h"
 #include "components/pairing/bluetooth_pairing_constants.h"
 #include "components/pairing/shark_connection_listener.h"

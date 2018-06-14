@@ -9,8 +9,10 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -21,6 +23,7 @@
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_service.h"
 
 namespace {
 
@@ -111,7 +114,11 @@ class DeviceIDTest : public OobeBaseTest,
     fake_gaia_->UpdateMergeSessionParams(params);
     fake_gaia_->MapEmailToGaiaId(user_id, gaia_id);
 
-    GetLoginDisplay()->ShowSigninScreenForTest(user_id, password, "[]");
+    LoginDisplayHost::default_host()
+        ->GetOobeUI()
+        ->GetGaiaScreenView()
+        ->ShowSigninScreenForTest(user_id, password, "[]");
+
     WaitForSessionStart();
   }
 

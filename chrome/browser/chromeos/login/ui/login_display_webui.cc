@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
+#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/signin_screen_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/strings/grit/components_strings.h"
@@ -247,13 +249,6 @@ void LoginDisplayWebUI::SetWebUIHandler(
     LoginDisplayWebUIHandler* webui_handler) {
   webui_handler_ = webui_handler;
   SignInScreenController::Get()->SetWebUIHandler(webui_handler_);
-}
-
-void LoginDisplayWebUI::ShowSigninScreenForTest(const std::string& username,
-                                                const std::string& password,
-                                                const std::string& services) {
-  if (webui_handler_)
-    webui_handler_->ShowSigninScreenForTest(username, password, services);
 }
 
 bool LoginDisplayWebUI::IsShowGuest() const {
