@@ -572,13 +572,6 @@ class ChromeSDKCommand(command.CliCommand):
         help='Sets up SDK for building official (internal) Chrome '
              'Chrome, rather than Chromium.')
     parser.add_argument(
-        '--component', action='store_true', default=False,
-        help='Deprecated and ignored. Set is_component_build=true in args.gn '
-             'instead.')
-    parser.add_argument(
-        '--fastbuild', action='store_true', default=False,
-        help='Deprecated and ignored. Set symbol_level=1 in args.gn instead.')
-    parser.add_argument(
         '--use-external-config', action='store_true', default=False,
         help='Use the external configuration for the specified board, even if '
              'an internal configuration is avalable.')
@@ -875,13 +868,6 @@ class ChromeSDKCommand(command.CliCommand):
 
     # SYSROOT is necessary for Goma and the sysroot wrapper.
     env['SYSROOT'] = sysroot
-
-    # Deprecated options warnings. TODO(stevenjb): Eliminate these entirely
-    # once removed from any builders.
-    if options.component:
-      logging.warning('--component is deprecated, ignoring')
-    if options.fastbuild:
-      logging.warning('--fastbuild is deprecated, ignoring')
 
     gn_args['target_sysroot'] = sysroot
     gn_args.pop('pkg_config', None)
