@@ -1,4 +1,6 @@
-# Copyright 2018 Google Inc. All Rights Reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import("//third_party/protobuf/proto_library.gni")
 
@@ -7,6 +9,7 @@ proto_library("proto") {
     "about_me_settings_ui.proto",
     "activity_control_settings_common.proto",
     "activity_control_settings_ui.proto",
+    "assistant_device_settings_ui.proto",
     "consent_flow_ui.proto",
     "email_opt_in_ui.proto",
     "get_settings_ui.proto",

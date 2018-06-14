@@ -102,6 +102,9 @@ class AssistantManagerServiceImpl
       assistant_client::AssistantManager* assistant_manager);
   std::string BuildUserAgent(const std::string& arc_version) const;
 
+  // Update device id and type when assistant service starts.
+  void UpdateDeviceIdAndType();
+
   void HandleGetSettingsResponse(
       base::RepeatingCallback<void(const std::string&)> callback,
       const std::string& settings);
