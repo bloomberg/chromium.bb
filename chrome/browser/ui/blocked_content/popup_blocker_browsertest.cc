@@ -499,7 +499,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MAYBE_WindowFeatures) {
   if (!views_mode_controller::IsViewsBrowserCocoa())
     return;
 #endif
-  EXPECT_TRUE(249 <= window_size.height() && window_size.height() <= 251);
+  EXPECT_GE(window_size.height(), 249);
+  EXPECT_LE(window_size.height(), 253);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CorrectReferrer) {
