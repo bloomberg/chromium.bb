@@ -17,15 +17,6 @@
 
 @implementation ChromeCommandDispatcherDelegate
 
-- (BOOL)handleExtraKeyboardShortcut:(NSEvent*)event window:(NSWindow*)window {
-  int cmd = CommandForKeyEvent(event);
-  if (cmd == -1)
-    return false;
-
-  chrome::ExecuteCommand(chrome::FindBrowserWithWindow(window), cmd);
-  return true;
-}
-
 - (BOOL)eventHandledByExtensionCommand:(NSEvent*)event
                               priority:(ui::AcceleratorManager::HandlerPriority)
                                            priority {
@@ -100,7 +91,9 @@
   return NO;
 }
 
-- (BOOL)postPerformKeyEquivalent:(NSEvent*)event window:(NSWindow*)window {
+- (BOOL)postPerformKeyEquivalent:(NSEvent*)event
+                          window:(NSWindow*)window
+                    isRedispatch:(BOOL)isRedispatch {
   if ([self eventHandledByExtensionCommand:event
                                   priority:ui::AcceleratorManager::
                                                kNormalPriority]) {
@@ -108,6 +101,10 @@
   }
 
   int cmd = CommandForKeyEvent(event);
+
+  if (cmd == -1 && isRedispatch)
+    cmd = DelayedWebContentsCommandForKeyEvent(event);
+
   if (cmd != -1) {
     Browser* browser = chrome::FindBrowserWithWindow(window);
     if (browser) {

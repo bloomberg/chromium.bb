@@ -19,11 +19,6 @@
 @interface ChromeEventProcessingWindow
     : UnderlayOpenGLHostingWindow<CommandDispatchingWindow>
 
-// Checks if |event| is a window, delayed window, or browser keyboard shortcut.
-// (See global_keyboard_shortcuts_mac.h for details). If so, execute the
-// associated command. Returns YES if the event was handled.
-- (BOOL)handleExtraKeyboardShortcut:(NSEvent*)event;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_CHROME_EVENT_PROCESSING_WINDOW_H_

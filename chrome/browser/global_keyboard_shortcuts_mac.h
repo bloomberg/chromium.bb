@@ -47,6 +47,11 @@ struct KeyboardShortcutData {
 // conflicting symbolic hotkey.
 int CommandForKeyEvent(NSEvent* event);
 
+// For legacy reasons and compatibility with Safari, some commands [e.g. cmd +
+// left arrow] are only allowed to fire if the firstResponder is a WebContents,
+// and the WebContents has chosen not to handle the event.
+int DelayedWebContentsCommandForKeyEvent(NSEvent* event);
+
 // Whether the event goes through the performKeyEquivalent: path and is handled
 // by CommandDispatcher.
 bool EventUsesPerformKeyEquivalent(NSEvent* event);

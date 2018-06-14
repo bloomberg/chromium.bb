@@ -92,8 +92,11 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   // We skip all steps before postPerformKeyEquivalent, since those were already
   // triggered on the first pass of the event.
   if (redispatchingEvent_) {
-    if ([delegate_ postPerformKeyEquivalent:event window:owner_])
+    if ([delegate_ postPerformKeyEquivalent:event
+                                     window:owner_
+                               isRedispatch:YES]) {
       return YES;
+    }
     return [[self bubbleParent] performKeyEquivalent:event];
   }
 
@@ -112,7 +115,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 
   // If the firstResponder [e.g. omnibox] chose not to handle the keyEquivalent,
   // then give the delegate another chance to consume it.
-  if ([delegate_ postPerformKeyEquivalent:event window:owner_])
+  if ([delegate_ postPerformKeyEquivalent:event window:owner_ isRedispatch:NO])
     return YES;
 
   // Allow commands to "bubble up" to CommandDispatchers in parent windows, if

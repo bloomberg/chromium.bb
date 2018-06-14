@@ -584,6 +584,8 @@ BrowserWindowCocoa::PreHandleKeyboardEvent(
     return Result::NOT_HANDLED;
 
   int command = CommandForKeyEvent(event.os_event);
+  if (command == -1)
+    command = DelayedWebContentsCommandForKeyEvent(event.os_event);
   return command == -1 ? Result::NOT_HANDLED : Result::NOT_HANDLED_IS_SHORTCUT;
 }
 

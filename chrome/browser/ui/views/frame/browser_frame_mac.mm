@@ -148,6 +148,8 @@ content::KeyboardEventProcessingResult BrowserFrameMac::PreHandleKeyboardEvent(
   // NOT_HANDLED or NOT_HANDLED_IS_SHORTCUT.
   if (EventUsesPerformKeyEquivalent(event.os_event)) {
     int command_id = CommandForKeyEvent(event.os_event);
+    if (command_id == -1)
+      command_id = DelayedWebContentsCommandForKeyEvent(event.os_event);
     if (command_id != -1)
       return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
   }

@@ -90,6 +90,17 @@ bool MatchesEventForKeyboardShortcut(const KeyboardShortcutData& shortcut,
          shortcut.opt_key == opt_key && shortcut.vkey_code == vkey_code;
 }
 
+const std::vector<KeyboardShortcutData>&
+GetDelayedShortcutsNotPresentInMainMenu() {
+  static base::NoDestructor<std::vector<KeyboardShortcutData>> keys({
+      // cmd   shift  cntrl  option vkeycode               command
+      //---   -----  -----  ------ --------               -------
+      {true, false, false, false, kVK_LeftArrow, IDC_BACK},
+      {true, false, false, false, kVK_RightArrow, IDC_FORWARD},
+  });
+  return *keys;
+}
+
 }  // namespace
 
 const std::vector<KeyboardShortcutData>& GetShortcutsNotPresentInMainMenu() {
@@ -125,9 +136,6 @@ const std::vector<KeyboardShortcutData>& GetShortcutsNotPresentInMainMenu() {
     {true, false, false, false, kVK_ANSI_Keypad9,       IDC_SELECT_LAST_TAB},
     {true, true,  false, false, kVK_ANSI_M,             IDC_SHOW_AVATAR_MENU},
     {true, false, false, true,  kVK_ANSI_L,             IDC_SHOW_DOWNLOADS},
-
-    {true,  false, false, false, kVK_LeftArrow,         IDC_BACK},
-    {true,  false, false, false, kVK_RightArrow,        IDC_FORWARD},
     {true,  true,  false, false, kVK_ANSI_C,            IDC_DEV_TOOLS_INSPECT},
   });
   // clang-format on
@@ -154,6 +162,31 @@ int CommandForKeyEvent(NSEvent* event) {
   // Scan through keycodes and see if it corresponds to one of the non-menu
   // shortcuts.
   for (const auto& shortcut : GetShortcutsNotPresentInMainMenu()) {
+    if (MatchesEventForKeyboardShortcut(shortcut, cmdKey, shiftKey, cntrlKey,
+                                        optKey, keyCode)) {
+      return shortcut.chrome_command;
+    }
+  }
+
+  return -1;
+}
+
+int DelayedWebContentsCommandForKeyEvent(NSEvent* event) {
+  DCHECK(event);
+  if ([event type] != NSKeyDown)
+    return -1;
+
+  // Look in secondary keyboard shortcuts.
+  NSUInteger modifiers = [event modifierFlags];
+  const bool cmdKey = (modifiers & NSCommandKeyMask) != 0;
+  const bool shiftKey = (modifiers & NSShiftKeyMask) != 0;
+  const bool cntrlKey = (modifiers & NSControlKeyMask) != 0;
+  const bool optKey = (modifiers & NSAlternateKeyMask) != 0;
+  const int keyCode = [event keyCode];
+
+  // Scan through keycodes and see if it corresponds to one of the non-menu
+  // shortcuts.
+  for (const auto& shortcut : GetDelayedShortcutsNotPresentInMainMenu()) {
     if (MatchesEventForKeyboardShortcut(shortcut, cmdKey, shiftKey, cntrlKey,
                                         optKey, keyCode)) {
       return shortcut.chrome_command;

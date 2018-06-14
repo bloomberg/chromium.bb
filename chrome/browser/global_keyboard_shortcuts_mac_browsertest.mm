@@ -86,6 +86,36 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, SwitchTabsMac) {
   EXPECT_TRUE(tab_strip->IsTabSelected(0));
 }
 
+// Test that cmd + left arrow can be used for history navigation.
+IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, HistoryNavigation) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  NSWindow* ns_window = browser()->window()->GetNativeWindow();
+
+  GURL test_url = ui_test_utils::GetTestUrl(
+      base::FilePath(), base::FilePath(FILE_PATH_LITERAL("title1.html")));
+  ASSERT_NE(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
+
+  // Navigate the active tab to a dummy URL.
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), test_url,
+      /*number_of_navigations=*/1);
+  ASSERT_EQ(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
+
+  // Focus the WebContents.
+  tab_strip->GetActiveWebContents()->Focus();
+
+  // Cmd + left arrow performs history navigation, but only after the
+  // WebContents chooses not to handle the event.
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_LEFT,
+                               NSCommandKeyMask));
+  while (true) {
+    if (tab_strip->GetActiveWebContents()->GetLastCommittedURL() != test_url)
+      break;
+    base::RunLoop().RunUntilIdle();
+  }
+  ASSERT_NE(tab_strip->GetActiveWebContents()->GetLastCommittedURL(), test_url);
+}
+
 // Test that common hotkeys for editing the omnibox work.
 IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, CopyPasteOmnibox) {
   BrowserWindow* window = browser()->window();
@@ -117,14 +147,22 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, CopyPasteOmnibox) {
   SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_C,
                                NSCommandKeyMask));
 
-  // Right arrow moves to the end.
-  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_RIGHT,
+  // The first typed letter overrides the existing contents.
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_C,
                                /*flags=*/0));
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_D,
+                               /*flags=*/0));
+  ASSERT_EQ(omnibox_view->GetText(), base::ASCIIToUTF16("cd"));
+
+  // Cmd + left arrow moves to the beginning. It should not perform history
+  // navigation because the firstResponder is not a WebContents..
+  SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_LEFT,
+                               NSCommandKeyMask));
 
   // Cmd+V pastes the contents.
   SendEvent(SynthesizeKeyEvent(ns_window, /*keydown=*/true, ui::VKEY_V,
                                NSCommandKeyMask));
-  EXPECT_EQ(omnibox_view->GetText(), base::ASCIIToUTF16("abab"));
+  EXPECT_EQ(omnibox_view->GetText(), base::ASCIIToUTF16("abcd"));
 }
 
 // Tests that the shortcut to reopen a previous tab works.
