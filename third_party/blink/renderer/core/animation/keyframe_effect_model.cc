@@ -319,16 +319,6 @@ bool KeyframeEffectModelBase::IsReplaceOnly() const {
   return true;
 }
 
-Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(
-    double offset,
-    scoped_refptr<TimingFunction> easing,
-    EffectModel::CompositeOperation composite)
-    : offset_(offset), easing_(std::move(easing)), composite_(composite) {
-  DCHECK(!IsNull(offset));
-  if (!easing_)
-    easing_ = LinearTimingFunction::Shared();
-}
-
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::AppendKeyframe(
     scoped_refptr<Keyframe::PropertySpecificKeyframe> keyframe) {
   DCHECK(keyframes_.IsEmpty() ||
