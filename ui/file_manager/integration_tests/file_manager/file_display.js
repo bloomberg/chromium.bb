@@ -21,6 +21,7 @@ function fileDisplay(path) {
       expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]).sort();
 
   StepsRunner.run([
+    // Open Files app on local downloads.
     function() {
       setupAndWaitUntilReady(null, path, this.next);
     },
@@ -36,9 +37,7 @@ function fileDisplay(path) {
       addEntries(['local', 'drive'], [ENTRIES.newlyAdded], this.next);
     },
     // Wait for the new file entries.
-    function(result) {
-      if (!result)
-        chrome.test.assertTrue(false, 'Failed: adding new files');
+    function() {
       remoteCall.waitForFileListChange(appId, expectedFilesBefore.length).
           then(this.next);
     },
@@ -69,10 +68,11 @@ testcase.fileDisplayDrive = function() {
  */
 testcase.fileDisplayMtp = function() {
   var appId;
-  var MTP_VOLUME_QUERY = '#directory-tree > .tree-item > .tree-row > ' +
-    '.item-icon[volume-type-icon="mtp"]';
+
+  const MTP_VOLUME_QUERY = '#directory-tree [volume-type-icon="mtp"]';
 
   StepsRunner.run([
+    // Open Files app on local downloads.
     function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
@@ -83,7 +83,7 @@ testcase.fileDisplayMtp = function() {
                               this.next);
     },
     // Wait for the MTP mount.
-    function(result) {
+    function() {
       remoteCall.waitForElement(appId, MTP_VOLUME_QUERY).then(this.next);
     },
     // Click to open the MTP volume.
@@ -92,11 +92,9 @@ testcase.fileDisplayMtp = function() {
           'fakeMouseClick', appId, [MTP_VOLUME_QUERY], this.next);
     },
     // Verify the MTP file list.
-    function(appIds) {
-      remoteCall
-          .waitForFiles(
-              appId, TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET),
-              {ignoreLastModifiedTime: true})
+    function() {
+      const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
+      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
           .then(this.next);
     },
     function() {
@@ -110,10 +108,11 @@ testcase.fileDisplayMtp = function() {
  */
 testcase.fileDisplayUsb = function() {
   var appId;
-  var USB_VOLUME_QUERY = '#directory-tree > .tree-item > .tree-row > ' +
-      '.item-icon[volume-type-icon="removable"]';
+
+  const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   StepsRunner.run([
+    // Open Files app on local downloads.
     function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
@@ -124,7 +123,7 @@ testcase.fileDisplayUsb = function() {
           JSON.stringify({name: 'mountFakeUsb'}), this.next);
     },
     // Wait for the USB mount.
-    function(result) {
+    function() {
       remoteCall.waitForElement(appId, USB_VOLUME_QUERY).then(this.next);
     },
     // Click to open the USB volume.
@@ -133,11 +132,10 @@ testcase.fileDisplayUsb = function() {
           'fakeMouseClick', appId, [USB_VOLUME_QUERY], this.next);
     },
     // Verify the USB file list.
-    function(appIds) {
-      remoteCall.waitForFiles(
-          appId,
-          TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET),
-          {ignoreLastModifiedTime: true}).then(this.next);
+    function() {
+      const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
+      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
+          .then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
@@ -157,6 +155,7 @@ function searchDownloads(searchTerm, expectedResults) {
   var appId;
 
   StepsRunner.run([
+    // Open Files app on local downloads.
     function() {
       setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
     },
