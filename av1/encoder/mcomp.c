@@ -26,6 +26,7 @@
 #include "av1/common/reconinter.h"
 
 #include "av1/encoder/encoder.h"
+#include "av1/encoder/encodemv.h"
 #include "av1/encoder/mcomp.h"
 #include "av1/encoder/rdopt.h"
 
@@ -897,20 +898,19 @@ unsigned int av1_compute_motion_cost(const AV1_COMP *cpi, MACROBLOCK *const x,
                                      const MV *this_mv) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = xd->mi[0];
   const uint8_t *const src = x->plane[0].src.buf;
   const int src_stride = x->plane[0].src.stride;
   uint8_t *const dst = xd->plane[0].dst.buf;
   const int dst_stride = xd->plane[0].dst.stride;
   const aom_variance_fn_ptr_t *vfp = &cpi->fn_ptr[bsize];
-  const MV ref_mv = x->mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv;
+  const int_mv ref_mv = av1_get_ref_mv(x, 0);
   unsigned int mse;
   unsigned int sse;
 
   av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, NULL, bsize);
   mse = vfp->vf(dst, dst_stride, src, src_stride, &sse);
-  mse +=
-      mv_err_cost(this_mv, &ref_mv, x->nmvjointcost, x->mvcost, x->errorperbit);
+  mse += mv_err_cost(this_mv, &ref_mv.as_mv, x->nmvjointcost, x->mvcost,
+                     x->errorperbit);
   return mse;
 }
 
@@ -924,7 +924,7 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
   MB_MODE_INFO *mbmi = xd->mi[0];
   const MV neighbors[8] = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 },
                             { 0, -2 }, { 2, 0 }, { 0, 2 }, { -2, 0 } };
-  const MV ref_mv = x->mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv;
+  const int_mv ref_mv = av1_get_ref_mv(x, 0);
   int16_t br = mbmi->mv[0].as_mv.row;
   int16_t bc = mbmi->mv[0].as_mv.col;
   int16_t *tr = &mbmi->mv[0].as_mv.row;
@@ -937,7 +937,7 @@ unsigned int av1_refine_warped_mv(const AV1_COMP *cpi, MACROBLOCK *const x,
   int ite;
 
   set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr,
-                             &ref_mv);
+                             &ref_mv.as_mv);
 
   // Calculate the center position's error
   assert(bc >= minc && bc <= maxc && br >= minr && br <= maxr);
