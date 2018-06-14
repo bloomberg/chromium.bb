@@ -5,6 +5,7 @@
 #include "base/fuchsia/services_directory.h"
 
 #include <lib/fdio/util.h>
+#include <lib/zx/channel.h>
 
 #include "base/bind.h"
 #include "base/fuchsia/component_context.h"
@@ -28,30 +29,30 @@ class TestInterfaceImpl : public test_fidl::TestInterface {
 TEST(ServicesDirectoryTest, Connect) {
   MessageLoopForIO message_loop_;
 
-  ScopedZxHandle dir_service_handle;
-  ScopedZxHandle dir_client_handle;
-  ASSERT_EQ(zx_channel_create(0, dir_service_handle.receive(),
-                              dir_client_handle.receive()),
+  zx::channel dir_service_channel;
+  zx::channel dir_client_channel;
+  ASSERT_EQ(zx::channel::create(0, &dir_service_channel, &dir_client_channel),
             ZX_OK);
 
   // Mount service dir and publish the service.
-  ServicesDirectory service_dir(std::move(dir_service_handle));
+  ServicesDirectory service_dir(std::move(dir_service_channel));
   TestInterfaceImpl test_service;
   ScopedServiceBinding<test_fidl::TestInterface> service_binding(&service_dir,
                                                                  &test_service);
 
   // Open public directory from the service directory.
-  ScopedZxHandle public_dir_service_handle;
-  ScopedZxHandle public_dir_client_handle;
-  ASSERT_EQ(zx_channel_create(0, public_dir_service_handle.receive(),
-                              public_dir_client_handle.receive()),
+  zx::channel public_dir_service_channel;
+  zx::channel public_dir_client_channel;
+  ASSERT_EQ(zx::channel::create(0, &public_dir_service_channel,
+                                &public_dir_client_channel),
             ZX_OK);
-  ASSERT_EQ(fdio_open_at(dir_client_handle.get(), "public", 0,
-                         public_dir_service_handle.release()),
+  ASSERT_EQ(fdio_open_at(dir_client_channel.get(), "public", 0,
+                         public_dir_service_channel.release()),
             ZX_OK);
 
   // Create ComponentContext and connect to the test service.
-  ComponentContext client_context(std::move(public_dir_client_handle));
+  ComponentContext client_context(
+      base::ScopedZxHandle(public_dir_client_channel.release()));
   auto stub = client_context.ConnectToService<test_fidl::TestInterface>();
 
   // Call the service and wait for response.

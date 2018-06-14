@@ -5,10 +5,11 @@
 #ifndef BASE_FUCHSIA_SERVICES_DIRECTORY_H_
 #define BASE_FUCHSIA_SERVICES_DIRECTORY_H_
 
+#include <lib/zx/channel.h>
+
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/fuchsia/scoped_zx_handle.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
@@ -32,11 +33,11 @@ class BASE_EXPORT ServicesDirectory {
  public:
   // Callback called to connect incoming requests.
   using ConnectServiceCallback =
-      base::RepeatingCallback<void(ScopedZxHandle channel)>;
+      base::RepeatingCallback<void(zx::channel channel)>;
 
   // Creates services directory that will be served over the
   // |directory_channel|.
-  explicit ServicesDirectory(ScopedZxHandle directory_channel);
+  explicit ServicesDirectory(zx::channel directory_channel);
 
   ~ServicesDirectory();
 

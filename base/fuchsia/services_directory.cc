@@ -6,6 +6,7 @@
 
 #include <lib/async/default.h>
 #include <lib/svc/dir.h>
+#include <lib/zx/channel.h>
 #include <zircon/process.h>
 #include <zircon/processargs.h>
 
@@ -16,7 +17,7 @@
 namespace base {
 namespace fuchsia {
 
-ServicesDirectory::ServicesDirectory(ScopedZxHandle directory_request) {
+ServicesDirectory::ServicesDirectory(zx::channel directory_request) {
   zx_status_t status = svc_dir_create(async_get_default(),
                                       directory_request.release(), &svc_dir_);
   ZX_CHECK(status == ZX_OK, status);
@@ -33,7 +34,7 @@ ServicesDirectory::~ServicesDirectory() {
 // static
 ServicesDirectory* ServicesDirectory::GetDefault() {
   static base::NoDestructor<ServicesDirectory> directory(
-      ScopedZxHandle(zx_get_startup_handle(PA_DIRECTORY_REQUEST)));
+      zx::channel(zx_get_startup_handle(PA_DIRECTORY_REQUEST)));
   return directory.get();
 }
 
@@ -77,7 +78,7 @@ void ServicesDirectory::HandleConnectRequest(void* context,
   // services.
   DCHECK(it != directory->services_.end());
 
-  it->second.Run(ScopedZxHandle(service_request));
+  it->second.Run(zx::channel(service_request));
 }
 
 }  // namespace fuchsia
