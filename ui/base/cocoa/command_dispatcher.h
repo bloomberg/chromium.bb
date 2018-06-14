@@ -88,7 +88,9 @@ UI_BASE_EXPORT
 // for more details on keyEquivalent consumer ordering.
 // |window| is the CommandDispatchingWindow that owns CommandDispatcher, not the
 // window of the event.
-- (BOOL)postPerformKeyEquivalent:(NSEvent*)event window:(NSWindow*)window;
+- (BOOL)postPerformKeyEquivalent:(NSEvent*)event
+                          window:(NSWindow*)window
+                    isRedispatch:(BOOL)isRedispatch;
 
 @end
 

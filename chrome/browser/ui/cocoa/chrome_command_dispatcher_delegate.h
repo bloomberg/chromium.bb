@@ -13,11 +13,6 @@
 // shortcuts and executing them with chrome::ExecuteCommand.
 @interface ChromeCommandDispatcherDelegate : NSObject<CommandDispatcherDelegate>
 
-// Checks if |event| is a keyboard shortcut listed in
-// global_keyboard_shortcuts_mac.h. If so, execute the associated command.
-// Returns YES if the event was handled.
-- (BOOL)handleExtraKeyboardShortcut:(NSEvent*)event window:(NSWindow*)window;
-
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_CHROME_COMMAND_DISPATCHER_DELEGATE_H_
