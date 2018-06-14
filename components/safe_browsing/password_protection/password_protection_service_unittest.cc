@@ -30,6 +30,8 @@
 using testing::_;
 using testing::ElementsAre;
 using testing::Return;
+using PasswordReuseEvent =
+    safe_browsing::LoginReputationClientRequest::PasswordReuseEvent;
 
 namespace {
 
@@ -136,8 +138,7 @@ class PasswordProtectionServiceTest
     EXPECT_CALL(*password_protection_service_, IsIncognito())
         .WillRepeatedly(Return(GetParam()[1]));
     EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-        .WillRepeatedly(Return(
-            LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN));
+        .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
     EXPECT_CALL(*password_protection_service_,
                 IsURLWhitelistedForPasswordEntry(_, _))
         .WillRepeatedly(Return(false));
@@ -161,14 +162,14 @@ class PasswordProtectionServiceTest
 
     request_ = new PasswordProtectionRequest(
         web_contents, target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
-        false /* matches_sync_password */, {},
+        PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN, {},
         LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true,
         password_protection_service_.get(), timeout_in_ms);
     request_->Start();
   }
 
   void InitializeAndStartPasswordEntryRequest(
-      bool matches_sync_password,
+      PasswordReuseEvent::ReusedPasswordType type,
       const std::vector<std::string>& matching_domains,
       bool match_whitelist,
       int timeout_in_ms,
@@ -179,9 +180,9 @@ class PasswordProtectionServiceTest
             Return(match_whitelist ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH));
 
     request_ = new PasswordProtectionRequest(
-        web_contents, target_url, GURL(), GURL(), matches_sync_password,
-        matching_domains, LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-        true, password_protection_service_.get(), timeout_in_ms);
+        web_contents, target_url, GURL(), GURL(), type, matching_domains,
+        LoginReputationClientRequest::PASSWORD_REUSE_EVENT, true,
+        password_protection_service_.get(), timeout_in_ms);
     request_->Start();
   }
 
@@ -701,7 +702,7 @@ TEST_P(PasswordProtectionServiceTest,
 
   // Initiate a saved password entry request (w/ no sync password).
   InitializeAndStartPasswordEntryRequest(
-      false /* matches_sync_password */, {"example.com"},
+      PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
       false /* match whitelist */, 10000 /* timeout in ms*/, GetWebContents());
   password_protection_service_->WaitForResponse();
 
@@ -741,7 +742,7 @@ TEST_P(PasswordProtectionServiceTest,
 
   // Initiate a sync password entry request (w/ no saved password).
   InitializeAndStartPasswordEntryRequest(
-      true /* matches_sync_password */, {}, false /* match whitelist */,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, {}, false /* match whitelist */,
       10000 /* timeout in ms*/, GetWebContents());
   password_protection_service_->WaitForResponse();
 
@@ -770,7 +771,7 @@ TEST_P(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
       .WillRepeatedly(Return(AsyncMatch::NO_MATCH));
   password_protection_service_->StartRequest(
       nullptr, target_url, GURL("http://foo.com/submit"),
-      GURL("http://foo.com/frame"), false, {},
+      GURL("http://foo.com/frame"), PasswordReuseEvent::SAVED_PASSWORD, {},
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
 
   // Destroy password_protection_service_ while there is one request pending.
@@ -920,7 +921,7 @@ TEST_P(PasswordProtectionServiceTest,
 
   // Initialize request triggered by chrome sync password reuse.
   InitializeAndStartPasswordEntryRequest(
-      true /* matches_sync_password */, {}, false /* match whitelist */,
+      PasswordReuseEvent::SIGN_IN_PASSWORD, {}, false /* match whitelist */,
       100000 /* timeout in ms*/, GetWebContents());
   password_protection_service_->WaitForResponse();
 
@@ -949,7 +950,7 @@ TEST_P(PasswordProtectionServiceTest,
 
   // Initialize request triggered by saved password reuse.
   InitializeAndStartPasswordEntryRequest(
-      false /* matches_sync_password */, {kSavedDomain, kSavedDomain2},
+      PasswordReuseEvent::SAVED_PASSWORD, {kSavedDomain, kSavedDomain2},
       false /* match whitelist */, 100000 /* timeout in ms*/, GetWebContents());
   password_protection_service_->WaitForResponse();
 
@@ -971,8 +972,7 @@ TEST_P(PasswordProtectionServiceTest,
 
 TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
   EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(
-          Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
+      .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
   EXPECT_CALL(*password_protection_service_,
               GetPasswordProtectionWarningTriggerPref())
       .WillRepeatedly(Return(PHISHING_REUSE));
@@ -980,23 +980,49 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
   // Don't show modal warning if it is not a password reuse ping.
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-      /*matches_sync_password=*/true, LoginReputationClientResponse::PHISHING));
-
-  // Don't show modal warning if it is not a sync password reuse.
-  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
-      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      /*matches_sync_password=*/false,
+      PasswordReuseEvent::SIGN_IN_PASSWORD,
       LoginReputationClientResponse::PHISHING));
 
-  // Show modal warning otherwise
+  // Don't show modal warning if it is a saved password reuse.
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SAVED_PASSWORD,
+      LoginReputationClientResponse::PHISHING));
+
+  // Don't show modal warning if it is a non-sync gaia password reuse.
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::OTHER_GAIA_PASSWORD,
+      LoginReputationClientResponse::PHISHING));
+
+  // Don't show modal warning if reused password type unknown.
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
+      LoginReputationClientResponse::PHISHING));
+
+  // Don't show modal warning if it is a sync password reuse but user is not
+  // signed in.
+  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
+      .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::SIGN_IN_PASSWORD,
+      LoginReputationClientResponse::PHISHING));
+
+  // Show warning if it is a sync password reuse and user is signed in and
+  // is not manged by enterprise.
+  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
+      .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      /*matches_sync_password=*/true, LoginReputationClientResponse::PHISHING));
+      PasswordReuseEvent::SIGN_IN_PASSWORD,
+      LoginReputationClientResponse::PHISHING));
 
-  // For a GSUITE account, don't show warning if password protection is off.
+  // For a GSUITE account, don't show warning if password protection is set to
+  // off by enterprise policy.
   EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(
-          Return(LoginReputationClientRequest::PasswordReuseEvent::GSUITE));
+      .WillRepeatedly(Return(PasswordReuseEvent::GSUITE));
   EXPECT_CALL(*password_protection_service_,
               GetPasswordProtectionWarningTriggerPref())
       .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
@@ -1005,7 +1031,8 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
       password_protection_service_->GetPasswordProtectionWarningTriggerPref());
   EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      /*matches_sync_password=*/true, LoginReputationClientResponse::PHISHING));
+      PasswordReuseEvent::SIGN_IN_PASSWORD,
+      LoginReputationClientResponse::PHISHING));
 
   // For a GSUITE account, show warning if password protection is set to
   // PHISHING_REUSE.
@@ -1017,36 +1044,56 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
       password_protection_service_->GetPasswordProtectionWarningTriggerPref());
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      /*matches_sync_password=*/true, LoginReputationClientResponse::PHISHING));
+      PasswordReuseEvent::SIGN_IN_PASSWORD,
+      LoginReputationClientResponse::PHISHING));
 
   // Modal dialog warning is also shown on LOW_REPUTATION verdict.
   EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(
-          Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
+      .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      /*matches_sync_password=*/true,
+      PasswordReuseEvent::SIGN_IN_PASSWORD,
       LoginReputationClientResponse::LOW_REPUTATION));
+
+  // Modal dialog warning should not be shown for enterprise password reuse
+  // if it is turned off by policy.
+  EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
+      .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
+  EXPECT_CALL(*password_protection_service_,
+              GetPasswordProtectionWarningTriggerPref())
+      .WillRepeatedly(Return(PASSWORD_PROTECTION_OFF));
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::ENTERPRISE_PASSWORD,
+      LoginReputationClientResponse::PHISHING));
+
+  // Show modal warning for enterprise password reuse if the trigger is
+  // configured to PHISHING_REUSE.
+  EXPECT_CALL(*password_protection_service_,
+              GetPasswordProtectionWarningTriggerPref())
+      .WillRepeatedly(Return(PHISHING_REUSE));
+  EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+      LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+      PasswordReuseEvent::ENTERPRISE_PASSWORD,
+      LoginReputationClientResponse::PHISHING));
 }
 
 TEST_P(PasswordProtectionServiceTest, VerifyIsEventLoggingEnabled) {
   // For user who is not signed-in, event logging should be disabled.
-  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN,
+  EXPECT_EQ(PasswordReuseEvent::NOT_SIGNED_IN,
             password_protection_service_->GetSyncAccountType());
   EXPECT_FALSE(password_protection_service_->IsEventLoggingEnabled());
 
   // Event logging should be enable for all signed-in users..
   EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(
-          Return(LoginReputationClientRequest::PasswordReuseEvent::GMAIL));
-  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GMAIL,
+      .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
+  EXPECT_EQ(PasswordReuseEvent::GMAIL,
             password_protection_service_->GetSyncAccountType());
   EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
 
   EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
-      .WillRepeatedly(
-          Return(LoginReputationClientRequest::PasswordReuseEvent::GSUITE));
-  EXPECT_EQ(LoginReputationClientRequest::PasswordReuseEvent::GSUITE,
+      .WillRepeatedly(Return(PasswordReuseEvent::GSUITE));
+  EXPECT_EQ(PasswordReuseEvent::GSUITE,
             password_protection_service_->GetSyncAccountType());
   EXPECT_TRUE(password_protection_service_->IsEventLoggingEnabled());
 }
@@ -1065,6 +1112,68 @@ TEST_P(PasswordProtectionServiceTest, VerifyContentTypeIsPopulated) {
   EXPECT_EQ(
       "application/pdf",
       password_protection_service_->GetLatestRequestProto()->content_type());
+}
+
+TEST_P(PasswordProtectionServiceTest, VerifyIsSupportedPasswordTypeForPinging) {
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitAndDisableFeature(kEnterprisePasswordProtectionV1);
+    EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
+        .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
+    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+        PasswordReuseEvent::SAVED_PASSWORD));
+    EXPECT_FALSE(
+        password_protection_service_->IsSupportedPasswordTypeForPinging(
+            PasswordReuseEvent::SIGN_IN_PASSWORD));
+    EXPECT_FALSE(
+        password_protection_service_->IsSupportedPasswordTypeForPinging(
+            PasswordReuseEvent::OTHER_GAIA_PASSWORD));
+    EXPECT_FALSE(
+        password_protection_service_->IsSupportedPasswordTypeForPinging(
+            PasswordReuseEvent::ENTERPRISE_PASSWORD));
+
+    EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
+        .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
+    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+        PasswordReuseEvent::SAVED_PASSWORD));
+    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+        PasswordReuseEvent::SIGN_IN_PASSWORD));
+    EXPECT_FALSE(
+        password_protection_service_->IsSupportedPasswordTypeForPinging(
+            PasswordReuseEvent::OTHER_GAIA_PASSWORD));
+    EXPECT_FALSE(
+        password_protection_service_->IsSupportedPasswordTypeForPinging(
+            PasswordReuseEvent::ENTERPRISE_PASSWORD));
+  }
+
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitAndEnableFeature(kEnterprisePasswordProtectionV1);
+    EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
+        .WillRepeatedly(Return(PasswordReuseEvent::NOT_SIGNED_IN));
+    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+        PasswordReuseEvent::SAVED_PASSWORD));
+    EXPECT_FALSE(
+        password_protection_service_->IsSupportedPasswordTypeForPinging(
+            PasswordReuseEvent::SIGN_IN_PASSWORD));
+    EXPECT_FALSE(
+        password_protection_service_->IsSupportedPasswordTypeForPinging(
+            PasswordReuseEvent::OTHER_GAIA_PASSWORD));
+    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+        PasswordReuseEvent::ENTERPRISE_PASSWORD));
+
+    EXPECT_CALL(*password_protection_service_, GetSyncAccountType())
+        .WillRepeatedly(Return(PasswordReuseEvent::GMAIL));
+    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+        PasswordReuseEvent::SAVED_PASSWORD));
+    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+        PasswordReuseEvent::SIGN_IN_PASSWORD));
+    EXPECT_FALSE(
+        password_protection_service_->IsSupportedPasswordTypeForPinging(
+            PasswordReuseEvent::OTHER_GAIA_PASSWORD));
+    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+        PasswordReuseEvent::ENTERPRISE_PASSWORD));
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(

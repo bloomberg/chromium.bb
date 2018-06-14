@@ -274,8 +274,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
       case safe_browsing::SB_THREAT_TYPE_PASSWORD_REUSE:
 #if defined(SAFE_BROWSING_DB_LOCAL)
         if (safe_browsing::ChromePasswordProtectionService::
-                ShouldShowChangePasswordSettingUI(Profile::FromBrowserContext(
-                    web_contents()->GetBrowserContext()))) {
+                ShouldShowPasswordReusePageInfoBubble(web_contents())) {
           return security_state::MALICIOUS_CONTENT_STATUS_PASSWORD_REUSE;
         }
         // If user has already changed Gaia password, returns the regular

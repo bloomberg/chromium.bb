@@ -498,16 +498,13 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
     bool password_field_exists) {
   safe_browsing::PasswordProtectionService* pps =
       GetPasswordProtectionService();
-  if (pps && (reused_password_type == PasswordType::SYNC_PASSWORD ||
-              reused_password_type == PasswordType::SAVED_PASSWORD)) {
-    // TODO(jialiul): Pass in the |reuqed_password_type| directly to
-    // |MaybeStartProtectedPasswordEntryRequest(..)| and move the above checking
-    // code to PasswordProtectionService too.
-    pps->MaybeStartProtectedPasswordEntryRequest(
-        web_contents(), GetMainFrameURL(),
-        reused_password_type == PasswordType::SYNC_PASSWORD, matching_domains,
-        password_field_exists);
-  }
+  if (!pps)
+    return;
+  pps->MaybeStartProtectedPasswordEntryRequest(
+      web_contents(), GetMainFrameURL(),
+      safe_browsing::PasswordProtectionService::
+          GetPasswordProtectionReusedPasswordType(reused_password_type),
+      matching_domains, password_field_exists);
 }
 
 void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {

@@ -49,7 +49,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
     const GURL& main_frame_url,
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
-    bool matches_sync_password,
+    ReusedPasswordType reused_password_type,
     const std::vector<std::string>& matching_domains,
     LoginReputationClientRequest::TriggerType type,
     bool password_field_exists,
@@ -59,7 +59,7 @@ PasswordProtectionRequest::PasswordProtectionRequest(
       main_frame_url_(main_frame_url),
       password_form_action_(password_form_action),
       password_form_frame_url_(password_form_frame_url),
-      matches_sync_password_(matches_sync_password),
+      reused_password_type_(reused_password_type),
       matching_domains_(matching_domains),
       trigger_type_(type),
       password_field_exists_(password_field_exists),
@@ -73,7 +73,9 @@ PasswordProtectionRequest::PasswordProtectionRequest(
   DCHECK(trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE ||
          trigger_type_ == LoginReputationClientRequest::PASSWORD_REUSE_EVENT);
   DCHECK(trigger_type_ != LoginReputationClientRequest::PASSWORD_REUSE_EVENT ||
-         matches_sync_password_ || matching_domains_.size() > 0);
+         reused_password_type_ !=
+             LoginReputationClientRequest::PasswordReuseEvent::SAVED_PASSWORD ||
+         matching_domains_.size() > 0);
 
   request_proto_->set_trigger_type(trigger_type_);
 }
@@ -189,14 +191,18 @@ void PasswordProtectionRequest::FillRequestProto() {
       main_frame->set_has_password_field(password_field_exists_);
       LoginReputationClientRequest::PasswordReuseEvent* reuse_event =
           request_proto_->mutable_password_reuse_event();
-      reuse_event->set_is_chrome_signin_password(matches_sync_password_);
-      if (matches_sync_password_) {
+      bool matches_sync_password =
+          reused_password_type_ ==
+          LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD;
+      reuse_event->set_is_chrome_signin_password(matches_sync_password);
+      if (matches_sync_password) {
         UMA_HISTOGRAM_BOOLEAN(
             "PasswordProtection.UserClickedThroughSBInterstitial."
             "SyncPasswordEntry",
             clicked_through_interstitial);
         reuse_event->set_sync_account_type(
             password_protection_service_->GetSyncAccountType());
+        reuse_event->set_resued_password_type(reused_password_type_);
         UMA_HISTOGRAM_ENUMERATION(
             "PasswordProtection.PasswordReuseSyncAccountType",
             reuse_event->sync_account_type(),
@@ -333,13 +339,16 @@ void PasswordProtectionRequest::Finish(
     std::unique_ptr<LoginReputationClientResponse> response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_.TryCancelAll();
+  bool matches_sync_password =
+      reused_password_type_ ==
+      LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD;
   if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE) {
     UMA_HISTOGRAM_ENUMERATION(kPasswordOnFocusRequestOutcomeHistogram, outcome,
                               PasswordProtectionService::MAX_OUTCOME);
   } else {
     PasswordProtectionService::LogPasswordEntryRequestOutcome(
-        outcome, matches_sync_password_);
-    if (matches_sync_password_) {
+        outcome, matches_sync_password);
+    if (matches_sync_password) {
       password_protection_service_->MaybeLogPasswordReuseLookupEvent(
           web_contents_, outcome, response.get());
     }
@@ -356,7 +365,7 @@ void PasswordProtectionRequest::Finish(
         UMA_HISTOGRAM_ENUMERATION(
             kAnyPasswordEntryVerdictHistogram, response->verdict_type(),
             LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);
-        if (matches_sync_password_) {
+        if (matches_sync_password) {
           UMA_HISTOGRAM_ENUMERATION(
               kSyncPasswordEntryVerdictHistogram, response->verdict_type(),
               LoginReputationClientResponse_VerdictType_VerdictType_MAX + 1);

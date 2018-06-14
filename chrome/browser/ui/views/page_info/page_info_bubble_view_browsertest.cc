@@ -364,7 +364,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
           GetPasswordProtectionService(browser()->profile());
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowModalWarning(contents, "token");
+  service->ShowModalWarning(contents, "token",
+                            safe_browsing::LoginReputationClientRequest::
+                                PasswordReuseEvent::SIGN_IN_PASSWORD);
   base::RunLoop().RunUntilIdle();
 
   OpenPageInfoBubble(browser());

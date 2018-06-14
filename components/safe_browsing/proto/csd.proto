@@ -260,6 +260,26 @@ message LoginReputationClientRequest {
       GSUITE = 2;
     }
     optional SyncAccountType sync_account_type = 4;
+
+    // Type of password being reused.
+    enum ReusedPasswordType {
+      REUSED_PASSWORD_TYPE_UNKNOWN = 0;
+
+      // Password saved in Chrome's password manager.
+      SAVED_PASSWORD = 1;
+
+      // Password used in Chrome sign-in.
+      SIGN_IN_PASSWORD = 2;
+
+      // Other Gaia password used in Chrome's content area other than Chrome's
+      // sign-in password.
+      OTHER_GAIA_PASSWORD = 3;
+
+      // Non-Gaia enterprise password captured from enterprise login page.
+      ENTERPRISE_PASSWORD = 4;
+    }
+    optional ReusedPasswordType resued_password_type = 5
+        [default = REUSED_PASSWORD_TYPE_UNKNOWN];
   }
 
   optional PasswordReuseEvent password_reuse_event = 4;

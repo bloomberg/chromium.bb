@@ -1077,7 +1077,9 @@ IN_PROC_BROWSER_TEST_P(SecurityStateTabHelperTest,
   safe_browsing::ChromePasswordProtectionService* service =
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(browser()->profile());
-  service->ShowModalWarning(contents, "unused-token");
+  service->ShowModalWarning(contents, "unused-token",
+                            safe_browsing::LoginReputationClientRequest::
+                                PasswordReuseEvent::SIGN_IN_PASSWORD);
   observer.WaitForDidChangeVisibleSecurityState();
 
   security_state::SecurityInfo security_info;
