@@ -500,53 +500,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, FrenchGoogleNTPLoadsWithoutError) {
   EXPECT_TRUE(console_observer.message().empty()) << console_observer.message();
 }
 
-// Tests that blink::UseCounter do not track feature usage for NTP activities.
-// TODO(lunalu): remove this test when blink side use counter is removed
-// (crbug.com/811948).
-IN_PROC_BROWSER_TEST_F(LocalNTPTest, ShouldNotTrackBlinkUseCounterForNTP) {
-  base::HistogramTester histogram_tester;
-  const char kFeaturesHistogramName[] = "Blink.UseCounter.Features_Legacy";
-
-  // Set up a test server, so we have some arbitrary non-NTP URL to navigate to.
-  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  test_server.ServeFilesFromSourceDirectory("chrome/test/data");
-  ASSERT_TRUE(test_server.Start());
-  const GURL other_url = test_server.GetURL("/simple.html");
-
-  // Open an NTP.
-  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  // Expect no PageVisits count.
-  EXPECT_EQ(nullptr,
-            base::StatisticsRecorder::FindHistogram(kFeaturesHistogramName));
-  // Navigate somewhere else in the same tab.
-  ui_test_utils::NavigateToURL(browser(), other_url);
-  ASSERT_FALSE(search::IsInstantNTP(active_tab));
-  // Navigate back to NTP.
-  content::TestNavigationObserver back_observer(active_tab);
-  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
-  back_observer.Wait();
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  // There should be exactly 1 count of PageVisits.
-  histogram_tester.ExpectBucketCount(
-      kFeaturesHistogramName,
-      static_cast<int32_t>(blink::mojom::WebFeature::kPageVisits), 1);
-
-  // Navigate forward to the non-NTP page.
-  content::TestNavigationObserver fwd_observer(active_tab);
-  chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
-  fwd_observer.Wait();
-  ASSERT_FALSE(search::IsInstantNTP(active_tab));
-  // Navigate to a new NTP instance.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(active_tab));
-  // There should be 2 counts of PageVisits.
-  histogram_tester.ExpectBucketCount(
-      kFeaturesHistogramName,
-      static_cast<int32_t>(blink::mojom::WebFeature::kPageVisits), 2);
-}
-
 class LocalNTPRTLTest : public LocalNTPTest {
  public:
   LocalNTPRTLTest() {}

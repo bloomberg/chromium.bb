@@ -1190,10 +1190,6 @@ void UseCounter::RecordMeasurement(WebFeature feature,
   if (mute_count_)
     return;
 
-  if (context_ == kDefaultContext &&
-      !Page::OrdinaryPages().Contains(source_frame.GetPage()))
-    return;
-
   // PageDestruction is reserved as a scaling factor.
   DCHECK_NE(WebFeature::kOBSOLETE_PageDestruction, feature);
   DCHECK_NE(WebFeature::kPageVisits, feature);
@@ -1206,7 +1202,8 @@ void UseCounter::RecordMeasurement(WebFeature feature,
       // https://github.com/HTTPArchive/httparchive/issues/59
       TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
                    "FeatureFirstUsed", "feature", feature_id);
-      FeaturesHistogram().Count(feature_id);
+      if (context_ != kDefaultContext)
+        FeaturesHistogram().Count(feature_id);
       if (LocalFrameClient* client = source_frame.Client())
         client->DidObserveNewFeatureUsage(feature);
       NotifyFeatureCounted(feature);
@@ -1269,6 +1266,9 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
   // policy of page_load_metrics.
   // Note that SVGImage cases always have an about:blank URL
   if (context_ != kSVGImageContext) {
+    // TODO(loonybear): remove all the filters when all histograms have been
+    // moved to the browser side.
+    // https://crbug.com/845986.
     if (!frame->GetDocument() ||
         !Page::OrdinaryPages().Contains(frame->GetPage())) {
       context_ = kDisabledContext;
@@ -1299,11 +1299,10 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
   animated_css_recorded_.ClearAll();
 
   if (context_ != kDisabledContext && !mute_count_) {
-    FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
-    // The CSS properties are being recorded on the browser side.
-    // TODO(loonybear): Once confirmed that CSS properties for SVG documents
-    // are being recorded correctly on the browser side, remove these
-    // histograms.
+    // Only needs to count page visits on SVG histogram and extension histogram
+    // since the features histogram is being recorded on the browser side.
+    if (context_ != kDefaultContext)
+      FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
     if (context_ == kSVGImageContext) {
       CssHistogram().Count(mojom::blink::kTotalPagesMeasuredCSSSampleId);
       AnimatedCSSHistogram().Count(
@@ -1479,6 +1478,8 @@ void UseCounter::NotifyFeatureCounted(WebFeature feature) {
 
 EnumerationHistogram& UseCounter::FeaturesHistogram() const {
   DCHECK_NE(kDisabledContext, context_);
+  // The default features histogram is being recorded on the browser side.
+  DCHECK_NE(kDefaultContext, context_);
   // Every SVGImage has it's own Page instance, and multiple web pages can
   // share the usage of a single SVGImage.  Ideally perhaps we'd delegate
   // metrics from an SVGImage to one of the Page's it's displayed in, but
@@ -1493,19 +1494,7 @@ EnumerationHistogram& UseCounter::FeaturesHistogram() const {
                        static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
   // Track what features/properties have been reported to the browser side
   // histogram.
-  DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram,
-                      ("Blink.UseCounter.Features_Legacy",
-                       static_cast<int32_t>(WebFeature::kNumberOfFeatures)));
-  switch (context_) {
-    case kSVGImageContext:
-      return svg_histogram;
-    case kExtensionContext:
-      return extension_histogram;
-    case kDefaultContext:
-    case kDisabledContext:
-      break;
-  }
-  return histogram;
+  return context_ == kSVGImageContext ? svg_histogram : extension_histogram;
 }
 
 EnumerationHistogram& UseCounter::CssHistogram() const {
