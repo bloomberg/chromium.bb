@@ -34606,6 +34606,16 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Accepted"/>
 </enum>
 
+<enum name="OopRasterGlyphCacheMissType">
+  <int value="0"
+      label="Missing font metrics, indicating an incorrect SkDescriptor"/>
+  <int value="1" label="Missing glyph metrics"/>
+  <int value="2" label="Missing glyph image"/>
+  <int value="3" label="Missing glyph path"/>
+  <int value="4" label="Missing glyph image, but a fallback was found"/>
+  <int value="5" label="Missing glyph path, but a fallback was found"/>
+</enum>
+
 <enum name="OpenFileSystemResult">
   <int value="0" label="OK."/>
   <int value="1" label="In incognito mode."/>

@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/service_font_manager.h"
 
+#include "base/debug/dump_without_crashing.h"
+#include "base/metrics/histogram_macros.h"
 #include "gpu/command_buffer/common/buffer.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 
@@ -80,7 +82,22 @@ class ServiceFontManager::SkiaDiscardableManager
     return font_manager_->DeleteHandle(handle_id);
   }
 
+  void notifyCacheMiss(SkStrikeClient::CacheMissType type) override {
+    UMA_HISTOGRAM_ENUMERATION("GPU.OopRaster.GlyphCacheMiss", type,
+                              SkStrikeClient::CacheMissType::kLast + 1);
+
+    const bool no_fallback = SkStrikeClient::kGlyphMetrics ||
+                             SkStrikeClient::kGlyphPath ||
+                             SkStrikeClient::kGlyphImage;
+    constexpr int kMaxDumps = 10;
+    if (no_fallback && dump_count_ < kMaxDumps) {
+      ++dump_count_;
+      base::debug::DumpWithoutCrashing();
+    }
+  }
+
  private:
+  int dump_count_ = 0;
   base::WeakPtr<ServiceFontManager> font_manager_;
 };
 
