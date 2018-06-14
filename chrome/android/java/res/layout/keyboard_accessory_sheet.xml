@@ -5,9 +5,11 @@
 
 <android.support.v4.view.ViewPager
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@drawable/keyboard_accessory_background"
+    android:id="@+id/keyboard_accessory_sheet"
+    android:background="@android:color/white"
     android:fillViewport="true"
-    android:layout_gravity="start|bottom"
+    android:paddingTop="@dimen/keyboard_accessory_height"
+    android:layout_gravity="start|top"
     android:layout_height="@dimen/keyboard_accessory_sheet_height"
     android:layout_width="match_parent"
     android:visibility="gone"/>

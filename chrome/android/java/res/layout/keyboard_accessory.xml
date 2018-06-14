@@ -5,9 +5,10 @@
 
 <org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/keyboard_accessory"
     android:layout_gravity="start|bottom"
-    android:background="@drawable/keyboard_accessory_background"
+    android:background="@color/modern_light_grey"
     android:contentDescription="@string/autofill_keyboard_accessory_content_description"
     android:fillViewport="true"
     android:scrollbars="none"
@@ -20,6 +21,7 @@
 
     <android.support.design.widget.TabLayout
         android:id="@+id/tabs"
+        app:tabIndicatorHeight="0dp"
         android:layout_width="wrap_content"
         android:layout_height="match_parent" />
 
