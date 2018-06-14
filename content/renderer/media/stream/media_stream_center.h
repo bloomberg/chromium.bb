@@ -5,9 +5,6 @@
 #ifndef CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CENTER_H_
 #define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CENTER_H_
 
-#include <map>
-
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -16,18 +13,13 @@
 
 namespace blink {
 class WebAudioSourceProvider;
-class WebMediaStreamCenterClient;
 }
 
 namespace content {
-class PeerConnectionDependencyFactory;
 
 class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
  public:
-  // TODO(miu): Remove these constructor args. They are no longer used.
-  // http://crbug.com/577874
-  MediaStreamCenter(blink::WebMediaStreamCenterClient* client,
-                    PeerConnectionDependencyFactory* factory);
+  MediaStreamCenter();
   ~MediaStreamCenter() override;
 
  private:

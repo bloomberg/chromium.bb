@@ -107,7 +107,6 @@
 #include "third_party/blink/public/platform/web_file_info.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_media_stream_center.h"
-#include "third_party/blink/public/platform/web_media_stream_center_client.h"
 #include "third_party/blink/public/platform/web_plugin_list_builder.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
@@ -168,7 +167,6 @@ using blink::WebMediaPlayer;
 using blink::WebMediaRecorderHandler;
 using blink::WebMediaStream;
 using blink::WebMediaStreamCenter;
-using blink::WebMediaStreamCenterClient;
 using blink::WebMediaStreamTrack;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
@@ -874,13 +872,12 @@ RendererBlinkPlatformImpl::CreateRTCCertificateGenerator() {
 //------------------------------------------------------------------------------
 
 std::unique_ptr<WebMediaStreamCenter>
-RendererBlinkPlatformImpl::CreateMediaStreamCenter(
-    WebMediaStreamCenterClient* client) {
+RendererBlinkPlatformImpl::CreateMediaStreamCenter() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
   if (!render_thread)
     return nullptr;
-  return render_thread->CreateMediaStreamCenter(client);
+  return render_thread->CreateMediaStreamCenter();
 }
 
 // static

@@ -53,7 +53,6 @@ using blink::WebLocalFrame;
 using blink::WebMIDIAccessor;
 using blink::WebMIDIAccessorClient;
 using blink::WebMediaStreamCenter;
-using blink::WebMediaStreamCenterClient;
 using blink::WebPlugin;
 using blink::WebPluginParams;
 using blink::WebRTCPeerConnectionHandler;
