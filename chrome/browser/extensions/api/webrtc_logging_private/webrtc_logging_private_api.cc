@@ -51,7 +51,6 @@ bool CanEnableAudioDebugRecordingsFromExtension(
 namespace extensions {
 
 using api::webrtc_logging_private::MetaDataEntry;
-using api::webrtc_logging_private::RequestInfo;
 using content::BrowserThread;
 
 namespace Discard = api::webrtc_logging_private::Discard;
@@ -82,7 +81,8 @@ std::string HashIdWithOrigin(const std::string& security_origin,
 // TODO(hlundin): Consolidate with WebrtcAudioPrivateFunction and improve.
 // http://crbug.com/710371
 content::RenderProcessHost* WebrtcLoggingPrivateFunction::RphFromRequest(
-    const RequestInfo& request, const std::string& security_origin) {
+    const api::webrtc_logging_private::RequestInfo& request,
+    const std::string& security_origin) {
   // There are 2 ways these API functions can get called.
   //
   //  1. From a whitelisted component extension on behalf of a page with the
@@ -188,7 +188,8 @@ WebrtcLoggingPrivateFunction::LoggingHandlerFromRequest(
 
 scoped_refptr<WebRtcLoggingHandlerHost>
 WebrtcLoggingPrivateFunctionWithGenericCallback::PrepareTask(
-    const RequestInfo& request, const std::string& security_origin,
+    const api::webrtc_logging_private::RequestInfo& request,
+    const std::string& security_origin,
     WebRtcLoggingHandlerHost::GenericDoneCallback* callback) {
   *callback = base::Bind(
       &WebrtcLoggingPrivateFunctionWithGenericCallback::FireCallback, this);
