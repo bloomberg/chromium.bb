@@ -89,7 +89,7 @@ struct CORE_EXPORT NGInlineItemResult {
                      unsigned end);
 
 #if DCHECK_IS_ON()
-  void CheckConsistency() const;
+  void CheckConsistency(bool during_line_break = false) const;
 #endif
 };
 
