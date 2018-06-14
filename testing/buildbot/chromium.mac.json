@@ -1549,6 +1549,10 @@
         "test": "boringssl_ssl_tests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter"
+        ],
+        "experiment_percentage": 100,
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10

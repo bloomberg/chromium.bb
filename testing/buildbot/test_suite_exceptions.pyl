@@ -243,6 +243,7 @@
           'shards': 5,
         },
       },
+      # chromium.mac
       'Mac10.11 Tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
@@ -252,6 +253,12 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
         ],
+      },
+      'Mac10.13 Tests': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+        ],
+        'experiment_percentage': 100,
       },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
