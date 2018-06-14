@@ -2430,6 +2430,12 @@ void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {
   frame_size_ = frame_size;
 }
 
+void RenderFrameHostImpl::FullscreenStateChanged(bool is_fullscreen) {
+  if (!is_active())
+    return;
+  delegate_->FullscreenStateChanged(this, is_fullscreen);
+}
+
 void RenderFrameHostImpl::OnDidBlockFramebust(const GURL& url) {
   delegate_->OnDidBlockFramebust(url);
 }
@@ -2718,6 +2724,7 @@ void RenderFrameHostImpl::OnEnterFullscreen(
 
   // TODO(alexmos): See if this can use the last committed origin instead.
   delegate_->EnterFullscreenMode(GetLastCommittedURL().GetOrigin(), options);
+  delegate_->FullscreenStateChanged(this, true /* is_fullscreen */);
 
   // The previous call might change the fullscreen state. We need to make sure
   // the renderer is aware of that, which is done via the resize message.
