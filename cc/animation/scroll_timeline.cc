@@ -11,31 +11,48 @@
 
 namespace cc {
 
-ScrollTimeline::ScrollTimeline(ElementId scroller_id,
+ScrollTimeline::ScrollTimeline(base::Optional<ElementId> scroller_id,
                                ScrollDirection orientation,
                                double time_range)
-    : scroller_id_(scroller_id),
+    : active_id_(scroller_id),
+      pending_id_(scroller_id),
       orientation_(orientation),
       time_range_(time_range) {}
 
+ScrollTimeline::ScrollTimeline(base::Optional<ElementId> active_id,
+                               base::Optional<ElementId> pending_id,
+                               ScrollDirection orientation,
+                               double time_range)
+    : active_id_(active_id),
+      pending_id_(pending_id),
+      orientation_(orientation),
+      time_range_(time_range) {}
+
+ScrollTimeline::~ScrollTimeline() {}
+
 std::unique_ptr<ScrollTimeline> ScrollTimeline::CreateImplInstance() const {
-  return std::make_unique<ScrollTimeline>(scroller_id_, orientation_,
+  return std::make_unique<ScrollTimeline>(active_id_, pending_id_, orientation_,
                                           time_range_);
 }
 
-double ScrollTimeline::CurrentTime(const ScrollTree& scroll_tree) const {
+double ScrollTimeline::CurrentTime(const ScrollTree& scroll_tree,
+                                   bool is_active_tree) const {
   // If the scroller isn't in the ScrollTree, the element either no longer
   // exists or is not currently scrollable. By the spec, return an unresolved
   // time value.
-  if (!scroll_tree.FindNodeFromElementId(scroller_id_))
+  if ((is_active_tree && !active_id_) || (!is_active_tree && !pending_id_))
     return std::numeric_limits<double>::quiet_NaN();
 
-  gfx::ScrollOffset offset = scroll_tree.current_scroll_offset(scroller_id_);
+  ElementId scroller_id =
+      is_active_tree ? active_id_.value() : pending_id_.value();
+  DCHECK(scroll_tree.FindNodeFromElementId(scroller_id));
+
+  gfx::ScrollOffset offset = scroll_tree.current_scroll_offset(scroller_id);
   DCHECK_GE(offset.x(), 0);
   DCHECK_GE(offset.y(), 0);
 
   gfx::ScrollOffset scroll_dimensions = scroll_tree.MaxScrollOffset(
-      scroll_tree.FindNodeFromElementId(scroller_id_)->id);
+      scroll_tree.FindNodeFromElementId(scroller_id)->id);
 
   double current_offset = (orientation_ == Vertical) ? offset.y() : offset.x();
   double max_offset = (orientation_ == Vertical) ? scroll_dimensions.y()
@@ -55,6 +72,24 @@ double ScrollTimeline::CurrentTime(const ScrollTree& scroll_tree) const {
   //      (endScrollOffset - startScrollOffset)) * effective time range
 
   return (std::abs(current_offset) / max_offset) * time_range_;
+}
+
+void ScrollTimeline::PushPropertiesTo(ScrollTimeline* impl_timeline) {
+  DCHECK(impl_timeline);
+  impl_timeline->active_id_ = active_id_;
+  impl_timeline->pending_id_ = pending_id_;
+}
+
+void ScrollTimeline::PromoteScrollTimelinePendingToActive() {
+  active_id_ = pending_id_;
+}
+
+void ScrollTimeline::SetScrollerId(base::Optional<ElementId> pending_id) {
+  // When the scroller id changes it will first be modified in the pending tree.
+  // Then later (when the pending tree is promoted to active)
+  // |PromoteScrollTimelinePendingToActive| will be called and will set the
+  // |active_id_|.
+  pending_id_ = pending_id;
 }
 
 }  // namespace cc

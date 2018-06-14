@@ -433,13 +433,13 @@ void AnimationTimelinesTest::TickAnimationsTransferEvents(
 
   // TODO(smcgruer): Construct a proper ScrollTree for the tests.
   ScrollTree scroll_tree;
-  host_impl_->TickAnimations(time, scroll_tree);
+  host_impl_->TickAnimations(time, scroll_tree, true);
   host_impl_->UpdateAnimationState(true, events.get());
 
   auto* animation_events = static_cast<const AnimationEvents*>(events.get());
   EXPECT_EQ(expect_events, animation_events->events_.size());
 
-  host_->TickAnimations(time, scroll_tree);
+  host_->TickAnimations(time, scroll_tree, true);
   host_->UpdateAnimationState(true, nullptr);
   host_->SetAnimationEvents(std::move(events));
 }

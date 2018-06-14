@@ -39,6 +39,12 @@ class CORE_EXPORT WorkletAnimationController
   void UpdateAnimationCompositingStates();
   void UpdateAnimationTimings(TimingUpdateReason);
 
+  // Should be called whenever the compositing state changes for a Node which is
+  // the scroll source of an active ScrollTimeline. When the compositing state
+  // changes we have to schedule an update to make sure the compositor has the
+  // correct ElementId for the scroll source.
+  void ScrollSourceCompositingStateChanged(Node*);
+
   void Trace(blink::Visitor*);
 
  private:

@@ -48,6 +48,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/pseudo_style_request.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -2201,8 +2202,13 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   if (CompositingReasonFinder::RequiresCompositingForRootScroller(*layer))
     return true;
 
-  if (!layer->ScrollsOverflow())
+  // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
+  // main-thread AnimationWorklet and don't need to promote the scroll-source.
+  Node* node = layer->GetLayoutObject().GetNode();
+  if (!layer->ScrollsOverflow() &&
+      !ScrollTimeline::HasActiveScrollTimeline(node)) {
     return false;
+  }
 
   if (layer->Size().IsEmpty())
     return false;
@@ -2226,7 +2232,10 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
           ToLayoutBox(layer->GetLayoutObject()).PaddingBoxRect()) &&
       !layer->CompositesWithTransform() && !layer->CompositesWithOpacity();
 
-  if (!layer_has_been_composited &&
+  // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
+  // main-thread AnimationWorklet and don't need to promote the scroll-source.
+  if (!ScrollTimeline::HasActiveScrollTimeline(node) &&
+      !layer_has_been_composited &&
       !layer->Compositor()->PreferCompositingToLCDTextEnabled() &&
       !background_supports_lcd_text) {
     if (layer->CompositesWithOpacity()) {

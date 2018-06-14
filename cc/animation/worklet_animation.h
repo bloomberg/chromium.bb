@@ -45,23 +45,40 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
   MutatorInputState::AnimationState GetInputState(
       base::TimeTicks monotonic_time,
-      const ScrollTree& scroll_tree);
+      const ScrollTree& scroll_tree,
+      bool is_active_tree);
   void SetOutputState(const MutatorOutputState::AnimationState& state);
+
+  void PushPropertiesTo(Animation* animation_impl) override;
 
   // Returns true if the worklet animation needs to be updated which happens iff
   // its current time is going to be different from last time given these input.
   bool NeedsUpdate(base::TimeTicks monotonic_time,
-                   const ScrollTree& scroll_tree);
+                   const ScrollTree& scroll_tree,
+                   bool is_active_tree);
+
+  // Should be called when the scroll source of the ScrollTimeline attached to
+  // this animation has a change in ElementId. Such a change happens when the
+  // scroll source changes compositing state.
+  void SetScrollSourceId(base::Optional<ElementId> scroller_id);
+
+  // Should be called when the pending tree is promoted to active, as this may
+  // require updating the ElementId for the ScrollTimeline scroll source.
+  void PromoteScrollTimelinePendingToActive() override;
 
  private:
   ~WorkletAnimation() override;
+
   // Returns the current time to be passed into the underlying AnimationWorklet.
   // The current time is based on the timeline associated with the animation.
   double CurrentTime(base::TimeTicks monotonic_time,
-                     const ScrollTree& scroll_tree);
+                     const ScrollTree& scroll_tree,
+                     bool is_active_tree);
+
   std::unique_ptr<AnimationOptions> CloneOptions() const {
     return options_ ? options_->Clone() : nullptr;
   }
+
   std::string name_;
 
   // The ScrollTimeline associated with the underlying animation. If null, the
@@ -81,6 +98,11 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
   bool is_impl_instance_;
 };
+
+inline WorkletAnimation* ToWorkletAnimation(Animation* animation) {
+  DCHECK(animation->IsWorkletAnimation());
+  return static_cast<WorkletAnimation*>(animation);
+}
 
 }  // namespace cc
 

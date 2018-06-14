@@ -62,6 +62,10 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   }
   virtual void SetAnimationTimeline(AnimationTimeline* timeline);
 
+  // TODO(smcgruer): If/once ScrollTimeline is supported on normal Animations,
+  // we will need to move the promotion logic from WorkletAnimation to here.
+  virtual void PromoteScrollTimelinePendingToActive() {}
+
   bool has_element_animations() const;
   scoped_refptr<ElementAnimations> element_animations(
       KeyframeEffectId keyframe_effect_id) const;
@@ -90,7 +94,7 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   void AbortKeyframeModels(TargetProperty::Type target_property,
                            bool needs_completion);
 
-  void PushPropertiesTo(Animation* animation_impl);
+  virtual void PushPropertiesTo(Animation* animation_impl);
 
   void UpdateState(bool start_ready_keyframe_models, AnimationEvents* events);
   virtual void Tick(base::TimeTicks monotonic_time);

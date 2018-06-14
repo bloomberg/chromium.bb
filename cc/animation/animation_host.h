@@ -102,11 +102,13 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   bool ActivateAnimations() override;
   bool TickAnimations(base::TimeTicks monotonic_time,
-                      const ScrollTree& scroll_tree) override;
+                      const ScrollTree& scroll_tree,
+                      bool is_active_tree) override;
   void TickScrollAnimations(base::TimeTicks monotonic_time,
                             const ScrollTree& scroll_tree) override;
   bool UpdateAnimationState(bool start_ready_animations,
                             MutatorEvents* events) override;
+  void PromoteScrollTimelinesPendingToActive() override;
 
   std::unique_ptr<MutatorEvents> CreateEvents() override;
   void SetAnimationEvents(std::unique_ptr<MutatorEvents> events) override;
@@ -199,12 +201,14 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void EraseTimeline(scoped_refptr<AnimationTimeline> timeline);
 
   bool NeedsTickMutator(base::TimeTicks monotonic_time,
-                        const ScrollTree& scroll_tree) const;
+                        const ScrollTree& scroll_tree,
+                        bool is_active_tree) const;
 
   // Return the state representing all ticking worklet animations.
   std::unique_ptr<MutatorInputState> CollectWorkletAnimationsState(
       base::TimeTicks timeline_time,
-      const ScrollTree& scroll_tree);
+      const ScrollTree& scroll_tree,
+      bool is_active_tree);
 
   ElementToAnimationsMap element_to_animations_map_;
   AnimationsList ticking_animations_;

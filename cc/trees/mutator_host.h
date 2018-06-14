@@ -61,12 +61,14 @@ class MutatorHost {
   // TODO(smcgruer): Once we only tick scroll-based animations on scroll, we
   // don't need to pass the scroll tree in here.
   virtual bool TickAnimations(base::TimeTicks monotonic_time,
-                              const ScrollTree& scroll_tree) = 0;
+                              const ScrollTree& scroll_tree,
+                              bool is_active_tree) = 0;
   // Tick animations that depends on scroll offset.
   virtual void TickScrollAnimations(base::TimeTicks monotonic_time,
                                     const ScrollTree& scroll_tree) = 0;
   virtual bool UpdateAnimationState(bool start_ready_animations,
                                     MutatorEvents* events) = 0;
+  virtual void PromoteScrollTimelinesPendingToActive() = 0;
 
   virtual std::unique_ptr<MutatorEvents> CreateEvents() = 0;
   virtual void SetAnimationEvents(std::unique_ptr<MutatorEvents> events) = 0;

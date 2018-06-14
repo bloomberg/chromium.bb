@@ -157,8 +157,11 @@ Node* ScrollTimeline::ResolvedScrollSource() const {
 }
 
 void ScrollTimeline::AttachAnimation() {
-  GetActiveScrollTimelineSet().insert(ResolvedScrollSource());
-  scroll_source_->GetDocument()
+  Node* resolved_scroll_source = ResolvedScrollSource();
+  GetActiveScrollTimelineSet().insert(resolved_scroll_source);
+  if (resolved_scroll_source->IsElementNode())
+    ToElement(resolved_scroll_source)->SetNeedsCompositingUpdate();
+  resolved_scroll_source->GetDocument()
       .GetLayoutView()
       ->Compositor()
       ->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
@@ -168,8 +171,11 @@ void ScrollTimeline::AttachAnimation() {
 }
 
 void ScrollTimeline::DetachAnimation() {
-  GetActiveScrollTimelineSet().erase(ResolvedScrollSource());
-  auto* layout_view = scroll_source_->GetDocument().GetLayoutView();
+  Node* resolved_scroll_source = ResolvedScrollSource();
+  GetActiveScrollTimelineSet().erase(resolved_scroll_source);
+  if (resolved_scroll_source->IsElementNode())
+    ToElement(resolved_scroll_source)->SetNeedsCompositingUpdate();
+  auto* layout_view = resolved_scroll_source->GetDocument().GetLayoutView();
   if (layout_view && layout_view->Compositor()) {
     layout_view->Compositor()->SetNeedsCompositingUpdate(
         kCompositingUpdateRebuildTree);

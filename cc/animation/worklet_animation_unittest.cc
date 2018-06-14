@@ -40,7 +40,7 @@ class WorkletAnimationTest : public AnimationTimelinesTest {
 
     host_->PushPropertiesTo(host_impl_);
     timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
-    worklet_animation_impl_ = static_cast<WorkletAnimation*>(
+    worklet_animation_impl_ = ToWorkletAnimation(
         timeline_impl_->GetAnimationById(worklet_animation_id_));
   }
 
@@ -53,7 +53,7 @@ class MockScrollTimeline : public ScrollTimeline {
  public:
   MockScrollTimeline()
       : ScrollTimeline(ElementId(), ScrollTimeline::Vertical, 0) {}
-  MOCK_CONST_METHOD1(CurrentTime, double(const ScrollTree&));
+  MOCK_CONST_METHOD2(CurrentTime, double(const ScrollTree&, bool));
 };
 
 TEST_F(WorkletAnimationTest, LocalTimeIsUsedWithAnimations) {
@@ -148,13 +148,13 @@ TEST_F(WorkletAnimationTest, LayerTreeMutatorsIsMutatedOnlyWhenInputChanges) {
 
 TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
   auto scroll_timeline = std::make_unique<MockScrollTimeline>();
-  EXPECT_CALL(*scroll_timeline, CurrentTime(_)).WillOnce(Return(1234));
+  EXPECT_CALL(*scroll_timeline, CurrentTime(_, _)).WillOnce(Return(1234));
   scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
       worklet_animation_id_, "test_name", std::move(scroll_timeline), nullptr);
 
   ScrollTree scroll_tree;
-  MutatorInputState::AnimationState state =
-      worklet_animation->GetInputState(base::TimeTicks::Now(), scroll_tree);
+  MutatorInputState::AnimationState state = worklet_animation->GetInputState(
+      base::TimeTicks::Now(), scroll_tree, true);
   EXPECT_EQ(1234, state.current_time);
 }
 
@@ -172,15 +172,15 @@ TEST_F(WorkletAnimationTest,
 
   ScrollTree scroll_tree;
   MutatorInputState::AnimationState first_state =
-      worklet_animation->GetInputState(first_ticks, scroll_tree);
+      worklet_animation->GetInputState(first_ticks, scroll_tree, true);
   // First state request sets the start time and thus current time should be 0.
   EXPECT_EQ(0, first_state.current_time);
   MutatorInputState::AnimationState second_state =
-      worklet_animation->GetInputState(second_ticks, scroll_tree);
+      worklet_animation->GetInputState(second_ticks, scroll_tree, true);
   EXPECT_EQ(123.4, second_state.current_time);
   // Should always offset from start time.
   MutatorInputState::AnimationState third_state =
-      worklet_animation->GetInputState(third_ticks, scroll_tree);
+      worklet_animation->GetInputState(third_ticks, scroll_tree, true);
   EXPECT_EQ(246.8, third_state.current_time);
 }
 
@@ -195,14 +195,14 @@ TEST_F(WorkletAnimationTest, NeedsUpdateCorrectlyReflectsInputTimeChange) {
 
   ScrollTree scroll_tree;
   // First time should always be true.
-  EXPECT_TRUE(worklet_animation->NeedsUpdate(first_ticks, scroll_tree));
-  worklet_animation->GetInputState(first_ticks, scroll_tree);
+  EXPECT_TRUE(worklet_animation->NeedsUpdate(first_ticks, scroll_tree, true));
+  worklet_animation->GetInputState(first_ticks, scroll_tree, true);
   // Should be false if time is not different from last GetState.
-  EXPECT_FALSE(worklet_animation->NeedsUpdate(first_ticks, scroll_tree));
+  EXPECT_FALSE(worklet_animation->NeedsUpdate(first_ticks, scroll_tree, true));
   // Should be true when input time is different.
-  EXPECT_TRUE(worklet_animation->NeedsUpdate(second_ticks, scroll_tree));
+  EXPECT_TRUE(worklet_animation->NeedsUpdate(second_ticks, scroll_tree, true));
   // Should be side-effect free.
-  EXPECT_TRUE(worklet_animation->NeedsUpdate(second_ticks, scroll_tree));
+  EXPECT_TRUE(worklet_animation->NeedsUpdate(second_ticks, scroll_tree, true));
 }
 
 }  // namespace

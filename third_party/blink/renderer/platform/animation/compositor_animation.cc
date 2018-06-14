@@ -81,6 +81,11 @@ void CompositorAnimation::AbortKeyframeModel(int keyframe_model_id) {
   animation_->AbortKeyframeModel(keyframe_model_id);
 }
 
+void CompositorAnimation::UpdateScrollTimelineId(
+    base::Optional<cc::ElementId> element_id) {
+  cc::ToWorkletAnimation(animation_.get())->SetScrollSourceId(element_id);
+}
+
 void CompositorAnimation::NotifyAnimationStarted(base::TimeTicks monotonic_time,
                                                  int target_property,
                                                  int group) {
