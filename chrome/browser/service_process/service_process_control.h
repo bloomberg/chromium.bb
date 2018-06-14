@@ -33,9 +33,7 @@ class CommandLine;
 }
 
 namespace mojo {
-namespace edk {
-class PeerConnection;
-}
+class IsolatedConnection;
 }
 
 // A ServiceProcessControl works as a portal between the service process and
@@ -176,14 +174,14 @@ class ServiceProcessControl : public UpgradeObserver {
 
   // Called when ConnectInternal's async work is done.
   void OnPeerConnectionComplete(
-      std::unique_ptr<mojo::edk::PeerConnection> connection);
+      std::unique_ptr<mojo::IsolatedConnection> connection);
 
   // Split out for testing.
   void SetMojoHandle(service_manager::mojom::InterfaceProviderPtr handle);
 
   static void RunAllTasksHelper(TaskList* task_list);
 
-  std::unique_ptr<mojo::edk::PeerConnection> peer_connection_;
+  std::unique_ptr<mojo::IsolatedConnection> mojo_connection_;
 
   service_manager::InterfaceProvider remote_interfaces_;
   chrome::mojom::ServiceProcessPtr service_process_;

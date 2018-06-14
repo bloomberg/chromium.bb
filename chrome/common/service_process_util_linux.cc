@@ -51,15 +51,12 @@ bool ForceServiceProcessShutdown(const std::string& version,
 
 // Gets the name of the service process IPC channel.
 // Returns an absolute path as required.
-mojo::edk::NamedPlatformHandle GetServiceProcessChannel() {
+mojo::NamedPlatformChannel::ServerName GetServiceProcessServerName() {
   base::FilePath temp_dir;
   base::PathService::Get(base::DIR_TEMP, &temp_dir);
   std::string pipe_name = GetServiceProcessScopedVersionedName("_service_ipc");
-  std::string pipe_path = temp_dir.Append(pipe_name).value();
-  return mojo::edk::NamedPlatformHandle(pipe_path);
+  return temp_dir.Append(pipe_name).value();
 }
-
-
 
 bool CheckServiceProcessReady() {
   std::unique_ptr<MultiProcessLock> running_lock(TakeServiceRunningLock(false));

@@ -29,10 +29,8 @@
 #include "chrome/common/service_process_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_launcher_utils.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/peer_connection.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
+#include "mojo/public/cpp/system/isolated_connection.h"
 
 using content::BrowserThread;
 
@@ -48,15 +46,15 @@ constexpr base::TimeDelta kInitialConnectionRetryDelay =
 
 void ConnectAsyncWithBackoff(
     service_manager::mojom::InterfaceProviderRequest interface_provider_request,
-    mojo::edk::NamedPlatformHandle os_pipe,
+    mojo::NamedPlatformChannel::ServerName server_name,
     size_t num_retries_left,
     base::TimeDelta retry_delay,
     scoped_refptr<base::TaskRunner> response_task_runner,
-    base::OnceCallback<void(std::unique_ptr<mojo::edk::PeerConnection>)>
+    base::OnceCallback<void(std::unique_ptr<mojo::IsolatedConnection>)>
         response_callback) {
-  mojo::edk::ScopedInternalPlatformHandle os_pipe_handle =
-      mojo::edk::CreateClientHandle(os_pipe);
-  if (!os_pipe_handle.is_valid()) {
+  mojo::PlatformChannelEndpoint endpoint =
+      mojo::NamedPlatformChannel::ConnectToServer(server_name);
+  if (!endpoint.is_valid()) {
     if (num_retries_left == 0) {
       response_task_runner->PostTask(
           FROM_HERE, base::BindOnce(std::move(response_callback), nullptr));
@@ -65,19 +63,17 @@ void ConnectAsyncWithBackoff(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
           base::BindOnce(
               &ConnectAsyncWithBackoff, std::move(interface_provider_request),
-              std::move(os_pipe), num_retries_left - 1, retry_delay * 2,
+              server_name, num_retries_left - 1, retry_delay * 2,
               std::move(response_task_runner), std::move(response_callback)),
           retry_delay);
     }
   } else {
-    auto peer_connection = std::make_unique<mojo::edk::PeerConnection>();
-    mojo::FuseMessagePipes(
-        peer_connection->Connect(mojo::edk::ConnectionParams(
-            mojo::edk::TransportProtocol::kLegacy, std::move(os_pipe_handle))),
-        interface_provider_request.PassMessagePipe());
+    auto mojo_connection = std::make_unique<mojo::IsolatedConnection>();
+    mojo::FuseMessagePipes(mojo_connection->Connect(std::move(endpoint)),
+                           interface_provider_request.PassMessagePipe());
     response_task_runner->PostTask(FROM_HERE,
                                    base::BindOnce(std::move(response_callback),
-                                                  std::move(peer_connection)));
+                                                  std::move(mojo_connection)));
   }
 }
 
@@ -111,16 +107,16 @@ void ServiceProcessControl::ConnectInternal() {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(
           &ConnectAsyncWithBackoff, std::move(interface_provider_request),
-          GetServiceProcessChannel(), kMaxConnectionAttempts,
+          GetServiceProcessServerName(), kMaxConnectionAttempts,
           kInitialConnectionRetryDelay, base::ThreadTaskRunnerHandle::Get(),
           base::BindOnce(&ServiceProcessControl::OnPeerConnectionComplete,
                          weak_factory_.GetWeakPtr())));
 }
 
 void ServiceProcessControl::OnPeerConnectionComplete(
-    std::unique_ptr<mojo::edk::PeerConnection> peer_connection) {
+    std::unique_ptr<mojo::IsolatedConnection> connection) {
   // Hold onto the connection object so the connection is kept alive.
-  peer_connection_ = std::move(peer_connection);
+  mojo_connection_ = std::move(connection);
 }
 
 void ServiceProcessControl::SetMojoHandle(
@@ -201,7 +197,7 @@ void ServiceProcessControl::Launch(base::OnceClosure success_task,
 
 void ServiceProcessControl::Disconnect() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  peer_connection_.reset();
+  mojo_connection_.reset();
   remote_interfaces_.Close();
   service_process_.reset();
 }

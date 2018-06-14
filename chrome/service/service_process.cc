@@ -46,10 +46,6 @@
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/json_pref_store.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/peer_connection.h"
-#include "mojo/edk/embedder/platform_handle_utils.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
@@ -328,34 +324,41 @@ bool ServiceProcess::OnIPCClientDisconnect() {
 }
 
 mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
-  if (!server_handle_.is_valid()) {
 #if defined(OS_MACOSX)
-    mojo::edk::InternalPlatformHandle platform_handle(
-        service_process_state_->GetServiceProcessChannel().release());
-    platform_handle.needs_connection = true;
-    server_handle_.reset(platform_handle);
-#elif defined(OS_POSIX)
-    server_handle_ = mojo::edk::CreateServerHandle(
-        service_process_state_->GetServiceProcessChannel());
-#elif defined(OS_WIN)
-    server_handle_ = service_process_state_->GetServiceProcessChannel();
-#endif
-    DCHECK(server_handle_.is_valid());
+  if (!server_endpoint_.is_valid()) {
+    server_endpoint_ =
+        service_process_state_->GetServiceProcessServerEndpoint();
+    DCHECK(server_endpoint_.is_valid());
   }
-
-  mojo::edk::ScopedInternalPlatformHandle channel_handle;
-#if defined(OS_POSIX)
-  channel_handle = mojo::edk::DuplicatePlatformHandle(server_handle_.get());
+#elif defined(OS_POSIX)
+  if (!server_endpoint_.is_valid()) {
+    mojo::NamedPlatformChannel::Options options;
+    options.server_name = service_process_state_->GetServiceProcessServerName();
+    mojo::NamedPlatformChannel server_channel(options);
+    server_endpoint_ = server_channel.TakeServerEndpoint();
+    DCHECK(server_endpoint_.is_valid());
+  }
 #elif defined(OS_WIN)
-  mojo::edk::CreateServerHandleOptions options;
-  options.enforce_uniqueness = false;
-  channel_handle = mojo::edk::CreateServerHandle(server_handle_, options);
+  if (server_name_.empty()) {
+    server_name_ = service_process_state_->GetServiceProcessServerName();
+    DCHECK(!server_name_.empty());
+  }
 #endif
-  CHECK(channel_handle.is_valid());
 
-  peer_connection_ = std::make_unique<mojo::edk::PeerConnection>();
-  return peer_connection_->Connect(mojo::edk::ConnectionParams(
-      mojo::edk::TransportProtocol::kLegacy, std::move(channel_handle)));
+  mojo::PlatformChannelServerEndpoint server_endpoint;
+#if defined(OS_POSIX)
+  server_endpoint = server_endpoint_.Clone();
+#elif defined(OS_WIN)
+  mojo::NamedPlatformChannel::Options options;
+  options.server_name = server_name_;
+  options.enforce_uniqueness = false;
+  mojo::NamedPlatformChannel server_channel(options);
+  server_endpoint = server_channel.TakeServerEndpoint();
+#endif
+  CHECK(server_endpoint.is_valid());
+
+  mojo_connection_ = std::make_unique<mojo::IsolatedConnection>();
+  return mojo_connection_->Connect(std::move(server_endpoint));
 }
 
 cloud_print::CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {

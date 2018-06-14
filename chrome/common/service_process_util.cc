@@ -279,8 +279,9 @@ bool ServiceProcessState::CreateSharedData() {
   return true;
 }
 
-mojo::edk::NamedPlatformHandle ServiceProcessState::GetServiceProcessChannel() {
-  return ::GetServiceProcessChannel();
+mojo::NamedPlatformChannel::ServerName
+ServiceProcessState::GetServiceProcessServerName() {
+  return ::GetServiceProcessServerName();
 }
 
 #endif  // !OS_MACOSX
