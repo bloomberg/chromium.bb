@@ -99,6 +99,7 @@ AuthPolicyCredentialsManager::AuthPolicyCredentialsManager(Profile* profile)
   StartObserveNetwork();
   account_id_ = user->GetAccountId();
   GetUserStatus();
+  GetUserKerberosFiles();
 
   // Setting environment variables for GSSAPI library.
   std::unique_ptr<base::Environment> env(base::Environment::Create());

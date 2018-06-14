@@ -68,6 +68,13 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) override;
 
+  // Runs |user_kerberos_files_changed_callback_| if callback is set and files
+  // changed.
+  void SetUserKerberosFiles(const std::string& kerberos_creds,
+                            const std::string& kerberos_conf);
+  const std::string& user_kerberos_conf() { return user_kerberos_conf_; }
+  const std::string& user_kerberos_creds() { return user_kerberos_creds_; }
+
   // Mark service as started. It's getting started by the
   // UpstartClient::StartAuthPolicyService on the Active Directory managed
   // devices. If |started| is true, it triggers calling
@@ -127,6 +134,9 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   std::string given_name_;
   std::string machine_name_;
   std::string dm_token_;
+  std::string user_kerberos_creds_;
+  std::string user_kerberos_conf_;
+  dbus::ObjectProxy::SignalCallback user_kerberos_files_changed_callback_;
   authpolicy::ActiveDirectoryUserStatus::PasswordStatus password_status_ =
       authpolicy::ActiveDirectoryUserStatus::PASSWORD_VALID;
   authpolicy::ActiveDirectoryUserStatus::TgtStatus tgt_status_ =

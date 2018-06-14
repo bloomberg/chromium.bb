@@ -860,6 +860,26 @@ class ExistingUserControllerActiveDirectoryTest
         chromeos::DBusThreadManager::Get()->GetAuthPolicyClient());
   }
 
+  void LoginAdOnline() {
+    ExpectLoginSuccess();
+    UserContext user_context(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+                             ad_account_id_);
+    user_context.SetKey(Key(kPassword));
+    user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
+    user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
+    ASSERT_EQ(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+              user_context.GetUserType());
+    content::WindowedNotificationObserver profile_prepared_observer(
+        chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+        content::NotificationService::AllSources());
+    existing_user_controller()->CompleteLogin(user_context);
+
+    profile_prepared_observer.Wait();
+    KerberosFilesChangeWaiter files_change_waiter(false /* files_must_exist */);
+    files_change_waiter.Wait();
+    CheckKerberosFiles(true /* enable_dns_cname_lookup */);
+  }
+
   void UpdateProviderPolicy(const policy::PolicyMap& policy) {
     policy_provider_.UpdateChromePolicy(policy);
   }
@@ -887,7 +907,7 @@ class ExistingUserControllerActiveDirectoryTest
   std::string GetExpectedKerberosConfig(bool enable_dns_cname_lookup) {
     std::string config(base::StringPrintf(
         kKrb5CnameSettings, enable_dns_cname_lookup ? "true" : "false"));
-    config += "configuration";
+    config += fake_authpolicy_client()->user_kerberos_conf();
     return config;
   }
 
@@ -900,7 +920,7 @@ class ExistingUserControllerActiveDirectoryTest
 
     EXPECT_TRUE(base::ReadFileToString(
         base::FilePath(GetKerberosCredentialsCacheFileName()), &file_contents));
-    EXPECT_EQ(file_contents, "credentials");
+    EXPECT_EQ(file_contents, fake_authpolicy_client()->user_kerberos_creds());
   }
 
   // Applies policy and waits until both config and credentials files changed.
@@ -951,51 +971,31 @@ class ExistingUserControllerActiveDirectoryUserWhitelistTest
 // managed device.
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
                        ActiveDirectoryOnlineLogin_Success) {
-  ExpectLoginSuccess();
-  UserContext user_context(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
-                           ad_account_id_);
-  user_context.SetKey(Key(kPassword));
-  user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
-  user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
-  ASSERT_EQ(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
-            user_context.GetUserType());
-  content::WindowedNotificationObserver profile_prepared_observer(
-      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-      content::NotificationService::AllSources());
-  existing_user_controller()->CompleteLogin(user_context);
-
-  profile_prepared_observer.Wait();
-  KerberosFilesChangeWaiter files_change_waiter(false /* files_must_exist */);
-  files_change_waiter.Wait();
-  CheckKerberosFiles(true /* enable_dns_cname_lookup */);
+  LoginAdOnline();
 }
 
 // Tests if DisabledAuthNegotiateCnameLookup changes trigger updating user
 // Kerberos files.
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
                        PolicyChangeTriggersFileUpdate) {
-  ExpectLoginSuccess();
-  UserContext user_context(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
-                           ad_account_id_);
-  user_context.SetKey(Key(kPassword));
-  user_context.SetUserIDHash(ad_account_id_.GetUserEmail());
-  user_context.SetAuthFlow(UserContext::AUTH_FLOW_ACTIVE_DIRECTORY);
-  ASSERT_EQ(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
-            user_context.GetUserType());
-  content::WindowedNotificationObserver profile_prepared_observer(
-      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-      content::NotificationService::AllSources());
-  existing_user_controller()->CompleteLogin(user_context);
-
-  profile_prepared_observer.Wait();
-  KerberosFilesChangeWaiter files_change_waiter(false /* files_must_exist */);
-  files_change_waiter.Wait();
-  CheckKerberosFiles(true /* enable_dns_cname_lookup */);
+  LoginAdOnline();
 
   ApplyPolicyAndWaitFilesChanged(false /* enable_dns_cname_lookup */);
   CheckKerberosFiles(false /* enable_dns_cname_lookup */);
 
   ApplyPolicyAndWaitFilesChanged(true /* enable_dns_cname_lookup */);
+  CheckKerberosFiles(true /* enable_dns_cname_lookup */);
+}
+
+// Tests if user Kerberos files changed D-Bus signal triggers updating user
+// Kerberos files.
+IN_PROC_BROWSER_TEST_F(ExistingUserControllerActiveDirectoryTest,
+                       UserKerberosFilesChangedSignalTriggersFileUpdate) {
+  LoginAdOnline();
+  KerberosFilesChangeWaiter files_change_waiter(true /* files_must_exist */);
+  fake_authpolicy_client()->SetUserKerberosFiles("new_kerberos_creds",
+                                                 "new_kerberos_config");
+  files_change_waiter.Wait();
   CheckKerberosFiles(true /* enable_dns_cname_lookup */);
 }
 
