@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/base64.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
@@ -214,8 +215,6 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
         .WillRepeatedly(ReturnRef(volumes_));
     EXPECT_CALL(*disk_mount_manager_mock_, mount_points())
         .WillRepeatedly(ReturnRef(mount_points_));
-    ON_CALL(*disk_mount_manager_mock_, MountPath(_, _, _, _, _, _))
-        .WillByDefault(Invoke(this, &FileManagerPrivateApiTest::SshfsMount));
   }
 
   // ExtensionApiTest override
@@ -314,6 +313,7 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
     return (volume_it == volumes_.end()) ? nullptr : volume_it->second.get();
   }
 
+ protected:
   void SshfsMount(const std::string& source_path,
                   const std::string& source_format,
                   const std::string& mount_label,
@@ -329,7 +329,6 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
             chromeos::disks::MountCondition::MOUNT_CONDITION_NONE));
   }
 
- protected:
   chromeos::disks::MockDiskMountManager* disk_mount_manager_mock_;
   DiskMountManager::DiskMap volumes_;
   DiskMountManager::MountPointMap mount_points_;
@@ -510,6 +509,19 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
   // Profile must be signed in with email for crostini.
   SigninManagerFactory::GetForProfileIfExists(browser()->profile())
       ->SetAuthenticatedAccountInfo("12345", "testuser@gmail.com");
+
+  // DiskMountManager mock.
+  std::string known_hosts;
+  base::Base64Encode("[linuxhost]:2222 ", &known_hosts);
+  std::vector<std::string> mount_options = {
+      "UserKnownHostsBase64=" + known_hosts, "IdentityBase64=", "Port=2222"};
+  EXPECT_CALL(*disk_mount_manager_mock_,
+              MountPath("sshfs://testuser@linuxhost:", "",
+                        "crostini_user_termina_penguin", mount_options,
+                        chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                        chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
+      .WillOnce(
+          Invoke(this, &FileManagerPrivateApiTest_Crostini_Test::SshfsMount));
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/crostini_test"));
 }
