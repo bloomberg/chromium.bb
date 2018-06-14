@@ -23,10 +23,8 @@ size_t OmniboxTabSwitchButton::short_text_width_;
 size_t OmniboxTabSwitchButton::full_text_width_;
 
 OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
-                                               OmniboxResultView* result_view,
-                                               int text_height)
+                                               OmniboxResultView* result_view)
     : MdTextButton(result_view, views::style::CONTEXT_BUTTON_MD),
-      text_height_(text_height),
       model_(model),
       result_view_(result_view),
       initialized_(false),
@@ -62,8 +60,7 @@ OmniboxTabSwitchButton::~OmniboxTabSwitchButton() = default;
 
 gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
   gfx::Size size = MdTextButton::CalculatePreferredSize();
-  // Bump height if odd.
-  size.set_height(text_height_ + (text_height_ & 1) + 2 * kVerticalPadding);
+  size.set_height(kButtonHeight);
   int current_width = animation_->CurrentValueBetween(
       static_cast<int>(start_width_), static_cast<int>(goal_width_));
   size.set_width(current_width);

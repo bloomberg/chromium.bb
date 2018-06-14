@@ -17,8 +17,7 @@ class SlideAnimation;
 class OmniboxTabSwitchButton : public views::MdTextButton {
  public:
   OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
-                         OmniboxResultView* result_view,
-                         int text_height);
+                         OmniboxResultView* result_view);
 
   ~OmniboxTabSwitchButton() override;
 
@@ -57,8 +56,7 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   // pass back the text at that width.
   size_t CalculateGoalWidth(size_t parent_width, base::string16* goal_text);
 
-  static constexpr int kVerticalPadding = 3;
-  const int text_height_;
+  static constexpr int kButtonHeight = 32;
   OmniboxPopupContentsView* model_;
   OmniboxResultView* result_view_;
 
