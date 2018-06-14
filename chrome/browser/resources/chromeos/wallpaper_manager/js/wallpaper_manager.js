@@ -1067,7 +1067,7 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
   // the end may not be the one that the user selected the last, because the
   // time needed to set each wallpaper may vary (e.g. some wallpapers already
   // exist in the local file system but others need to be fetched from server).
-  if (this.useNewWallpaperPicker_ && this.wallpaperRequest_) {
+  if (this.wallpaperRequest_) {
     this.wallpaperRequest_.abort();
     this.wallpaperRequest_ = null;
   }
