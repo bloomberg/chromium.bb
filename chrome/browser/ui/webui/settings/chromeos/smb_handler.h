@@ -37,6 +37,10 @@ class SmbHandler : public ::settings::SettingsPageUIHandler {
   // Callback handler for SmbMount.
   void HandleSmbMountResponse(SmbMountResult result);
 
+  // Callback handler for StartDiscovery.
+  void HandleGatherSharesResponse(
+      const std::vector<smb_client::SmbUrl>& shares_gathered);
+
   Profile* const profile_;
   base::WeakPtrFactory<SmbHandler> weak_ptr_factory_;
 

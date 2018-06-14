@@ -16,6 +16,17 @@
 namespace chromeos {
 namespace settings {
 
+namespace {
+
+smb_client::SmbService* GetSmbService(Profile* profile) {
+  smb_client::SmbService* const service = smb_client::SmbService::Get(profile);
+  DCHECK(service);
+
+  return service;
+}
+
+}  // namespace
+
 SmbHandler::SmbHandler(Profile* profile)
     : profile_(profile), weak_ptr_factory_(this) {}
 
@@ -42,8 +53,7 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
   CHECK(args->GetString(2, &username));
   CHECK(args->GetString(3, &password));
 
-  chromeos::smb_client::SmbService* const service =
-      chromeos::smb_client::SmbService::Get(profile_);
+  smb_client::SmbService* const service = GetSmbService(profile_);
 
   chromeos::file_system_provider::MountOptions mo;
   mo.display_name = mount_name.empty() ? mount_url : mount_name;
@@ -60,7 +70,16 @@ void SmbHandler::HandleSmbMountResponse(SmbMountResult result) {
 }
 
 void SmbHandler::HandleStartDiscovery(const base::ListValue* args) {
-  // TODO(allenvic): Handle start discovery. Expected completion: 6/15/2018.
+  smb_client::SmbService* const service = GetSmbService(profile_);
+
+  service->GatherSharesInNetwork(base::BindRepeating(
+      &SmbHandler::HandleGatherSharesResponse, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SmbHandler::HandleGatherSharesResponse(
+    const std::vector<smb_client::SmbUrl>& shares_gathered) {
+  // TODO(zentaro): Pass the shares discovered back to the UI.
+  // https://crbug.com/852199.
 }
 
 }  // namespace settings
