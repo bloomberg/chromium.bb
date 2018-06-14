@@ -676,6 +676,10 @@ class RunIsolatedTest(RunIsolatedTestBase):
       run_isolated.main(cmd)
 
   def test_main_naked_with_caches(self):
+    # An empty named cache is not kept!
+    # Interestingly, because we would need to put something in the named cache
+    # for it to be kept, we need the tool to write to it. This is tested in the
+    # smoke test.
     nc = os.path.join(self.tempdir, 'named_cache')
     cmd = [
       '--no-log',
@@ -695,8 +699,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     for cache_name in ('cache_foo', 'cache_bar'):
       named_path = os.path.join(nc, 'named', cache_name)
-      self.assertTrue(os.path.exists(named_path))
-      self.assertEqual(nc, os.path.dirname(os.readlink(named_path)))
+      self.assertFalse(os.path.exists(named_path))
 
   def test_modified_cwd(self):
     isolated = json_dumps({
@@ -779,27 +782,42 @@ class RunIsolatedTest(RunIsolatedTestBase):
     put_to_named_cache(named_cache, u'second', u'small', small)
     named_cache.trim()
 
-    # Ensures the cache contain the expected data.
+    # Named cache verification. Ensures the cache contain the expected data.
     actual = read_tree(np)
     # Figure out the cache path names.
     cache_small = [
         os.path.dirname(n) for n in actual if os.path.basename(n) == 'small'][0]
     cache_big = [
         os.path.dirname(n) for n in actual if os.path.basename(n) == 'big'][0]
+    # There's assumption about json encoding format but here it's good enough.
+    state_named = {
+      'items': [
+        ['first', [[cache_big, 10140], now+1]],
+        ['second', [[cache_small, 10], now+3]],
+      ],
+      'version': 2,
+    }
     expected = {
       os.path.join(cache_small, u'small'): small,
       os.path.join(cache_big, u'big'): big,
-      u'state.json':
-          '{"items":[["first",["%s",%s]],["second",["%s",%s]]],"version":2}' % (
-          cache_big, now+1, cache_small, now+3),
+      named_cache.STATE_FILE: json.dumps(
+          state_named, sort_keys=True, separators=(',', ':')),
     }
     self.assertEqual(expected, actual)
+
+    # Isolated cache verification.
+    state_isolated = {
+      'items': [
+        [big_digest, [10140, now+1]],
+        [small_digest, [10, now+2]],
+      ],
+      'version': 2,
+    }
     expected = {
       big_digest: big,
       small_digest: small,
-      u'state.json':
-          '{"items":[["%s",[10140,%s]],["%s",[10,%s]]],"version":2}' % (
-          big_digest, now+1, small_digest, now+2),
+      isolate_cache.STATE_FILE: json.dumps(
+          state_isolated, sort_keys=True, separators=(',', ':')),
     }
     self.assertEqual(expected, read_tree(ip))
 
@@ -816,25 +834,38 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # This function uses real time, hence the time.time() calls above.
     actual = run_isolated.clean_caches(isolate_cache, named_cache)
     self.assertEqual(2, actual)
+
+    # Named cache verification.
     # One of each entry should have been cleaned up. This only happen to work
     # because:
     # - file_path.get_free_space() is mocked
     # - DiskContentAddressedCache.trim() keeps its own internal counter while
     #   deleting files so it ignores get_free_space() output while deleting
     #   files.
-    actual = read_tree(np)
+    state_named = {
+      'items': [
+        ['second', [[cache_small, 10], now+3]],
+      ],
+      'version': 2,
+    }
     expected = {
       os.path.join(cache_small, u'small'): small,
-      named_cache.STATE_FILE:
-          '{"items":[["second",["%s",%s]]],"version":2}' %
-          (cache_small, now+3),
+      named_cache.STATE_FILE: json.dumps(
+          state_named, sort_keys=True, separators=(',', ':')),
     }
-    self.assertEqual(expected, actual)
+    self.assertEqual(expected, read_tree(np))
+
+    # Isolated cache verification.
+    state_isolated = {
+      'items': [
+        [small_digest, [10, now+2]],
+      ],
+      'version': 2,
+    }
     expected = {
       small_digest: small,
-      u'state.json':
-          '{"items":[["%s",[10,%s]]],"version":2}' %
-          (small_digest, now+2),
+      isolate_cache.STATE_FILE: json.dumps(
+          state_isolated, sort_keys=True, separators=(',', ':')),
     }
     self.assertEqual(expected, read_tree(ip))
 
