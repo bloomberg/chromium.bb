@@ -233,7 +233,7 @@ OmniboxMatchCellView::~OmniboxMatchCellView() = default;
 
 gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
   int height = 0;
-  if (is_rich_suggestion_) {
+  if (is_rich_suggestion_ || has_tab_match_) {
     height = content_view_->GetLineHeight() +
              description_view_->GetHeightForWidth(width() - kTextIndent);
   } else if (is_old_style_answer_) {
@@ -272,6 +272,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
       (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) &&
        !match.image_url.empty());
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
+  has_tab_match_ = match.has_tab_match;
 
   // Set up the small icon.
   if (is_rich_suggestion_) {
@@ -281,7 +282,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
   }
 
   // Set up the separator.
-  if (is_old_style_answer_ || is_rich_suggestion_) {
+  if (is_old_style_answer_ || is_rich_suggestion_ || has_tab_match_) {
     separator_view_->SetSize(gfx::Size());
   } else {
     separator_view_->SetSize(separator_view_->CalculatePreferredSize());
@@ -352,8 +353,8 @@ void OmniboxMatchCellView::Layout() {
                                      insets.bottom(), insets.right()));
   // Layout children *after* updating the margins.
   views::View::Layout();
-  if (is_rich_suggestion_) {
-    LayoutRichSuggestion();
+  if (is_rich_suggestion_ || has_tab_match_) {
+    LayoutNewStyleTwoLineSuggestion();
   } else if (is_old_style_answer_) {
     LayoutOldStyleAnswer();
   } else if (ui::MaterialDesignController::IsRefreshUi()) {
@@ -390,11 +391,17 @@ void OmniboxMatchCellView::LayoutOldStyleAnswer() {
       description_view_->GetHeightForWidth(description_width));
 }
 
-void OmniboxMatchCellView::LayoutRichSuggestion() {
+void OmniboxMatchCellView::LayoutNewStyleTwoLineSuggestion() {
   gfx::Rect child_area = GetContentsBounds();
   int x = child_area.x();
   int y = child_area.y();
-  image_view_->SetBounds(x, y, kRefreshImageBoxSize, child_area.height());
+  views::ImageView* image_view;
+  if (has_tab_match_) {
+    image_view = icon_view_;
+  } else {
+    image_view = image_view_;
+  }
+  image_view->SetBounds(x, y, kRefreshImageBoxSize, child_area.height());
   const int text_width = child_area.width() - kTextIndent;
   const int text_height = content_view_->GetLineHeight();
   content_view_->SetBounds(x + kTextIndent, y, text_width, text_height);

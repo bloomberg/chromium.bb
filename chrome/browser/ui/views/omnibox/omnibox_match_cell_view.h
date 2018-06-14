@@ -43,12 +43,13 @@ class OmniboxMatchCellView : public views::View {
   const char* GetClassName() const override;
 
   void LayoutOldStyleAnswer();
-  void LayoutRichSuggestion();
+  void LayoutNewStyleTwoLineSuggestion();
   void LayoutSplit(int text_indent);
 
   bool is_old_style_answer_;
   bool is_rich_suggestion_;
   bool is_search_type_;
+  bool has_tab_match_ = false;
 
   // Weak pointers for easy reference.
   views::ImageView* icon_view_;   // An icon representing the type or content.
