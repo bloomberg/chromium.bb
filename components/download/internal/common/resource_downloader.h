@@ -31,7 +31,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
-      uint32_t download_id,
+      bool is_new_download,
       bool is_parallel_request,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
@@ -62,7 +62,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_referrer_url,
-      uint32_t download_id,
+      bool is_new_download,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       scoped_refptr<download::DownloadURLLoaderFactoryGetter>
           url_loader_factory_getter);
@@ -102,9 +102,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // URLLoader for sending out the request.
   network::mojom::URLLoaderPtr url_loader_;
 
-  // ID of the download, or download::DownloadItem::kInvalidId if this is a new
-  // download.
-  uint32_t download_id_;
+  // Whether this is a new download.
+  bool is_new_download_;
 
   // GUID of the download, or empty if this is a new download.
   std::string guid_;

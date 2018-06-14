@@ -196,24 +196,33 @@ class CONTENT_EXPORT DownloadManagerImpl
   // InProgressDownloadManager::Delegate implementations.
   bool InterceptDownload(const download::DownloadCreateInfo& info) override;
   base::FilePath GetDefaultDownloadDirectory() override;
-  download::DownloadItemImpl* GetDownloadItem(
-      uint32_t id,
-      bool new_download,
-      const download::DownloadCreateInfo& info) override;
+  void StartDownloadItem(
+      std::unique_ptr<download::DownloadCreateInfo> info,
+      const download::DownloadUrlParameters::OnStartedCallback& on_started,
+      download::InProgressDownloadManager::StartDownloadItemCallback callback)
+      override;
   net::URLRequestContextGetter* GetURLRequestContextGetter(
       const download::DownloadCreateInfo& info) override;
-  void OnNewDownloadStarted(download::DownloadItem* download) override;
   void OnInProgressDownloadsLoaded(
       std::vector<std::unique_ptr<download::DownloadItemImpl>>
           in_progress_downloads) override;
-  void GetNextId(const DownloadIdCallback& callback) override;
+
+  // Creates a new download item and call |callback|.
+  void CreateNewDownloadItemToStart(
+      std::unique_ptr<download::DownloadCreateInfo> info,
+      const download::DownloadUrlParameters::OnStartedCallback& on_started,
+      download::InProgressDownloadManager::StartDownloadItemCallback callback,
+      uint32_t id);
+
+  // Called to get an ID for a new download. |callback| may be called
+  // synchronously.
+  void GetNextId(const DownloadIdCallback& callback);
 
   // Create a new active item based on the info.  Separate from
   // StartDownload() for testing.
   download::DownloadItemImpl* CreateActiveItem(
       uint32_t id,
       const download::DownloadCreateInfo& info);
-
 
   // Called with the result of DownloadManagerDelegate::CheckForFileExistence.
   // Updates the state of the file and then notifies this update to the file's
@@ -232,7 +241,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   std::string GetApplicationClientIdForFileScanning() const override;
   void ResumeInterruptedDownload(
       std::unique_ptr<download::DownloadUrlParameters> params,
-      uint32_t id,
       const GURL& site_url) override;
   void OpenDownload(download::DownloadItemImpl* download) override;
   bool IsMostRecentDownloadItemAtFilePath(
@@ -253,7 +261,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       std::unique_ptr<download::DownloadUrlParameters> params,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      uint32_t id,
+      bool is_new_download,
       const GURL& site_url);
 
   void InterceptNavigationOnChecksComplete(
@@ -268,7 +276,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       std::unique_ptr<download::DownloadUrlParameters> params,
       std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-      uint32_t id,
+      bool is_new_download,
       const GURL& site_url,
       bool is_download_allowed);
 

@@ -109,7 +109,7 @@ class CONTENT_EXPORT DownloadRequestCore
   std::string DebugString() const;
 
   static std::unique_ptr<net::URLRequest> CreateRequestOnIOThread(
-      uint32_t download_id,
+      bool is_new_download,
       download::DownloadUrlParameters* params);
 
   // Size of the buffer used between the DownloadRequestCore and the
@@ -129,7 +129,7 @@ class CONTENT_EXPORT DownloadRequestCore
   // "Passthrough" fields. These are only kept here so that they can be used to
   // populate the download::DownloadCreateInfo when the time comes.
   std::unique_ptr<download::DownloadSaveInfo> save_info_;
-  uint32_t download_id_;
+  bool is_new_download_;
   std::string guid_;
   bool fetch_error_body_;
   download::DownloadUrlParameters::RequestHeadersType request_headers_;

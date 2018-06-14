@@ -23,8 +23,7 @@ UrlDownloaderFactory::CreateUrlDownloadHandler(
         url_loader_factory_getter,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   std::unique_ptr<net::URLRequest> url_request =
-      DownloadRequestCore::CreateRequestOnIOThread(
-          download::DownloadItem::kInvalidId, params.get());
+      DownloadRequestCore::CreateRequestOnIOThread(true, params.get());
 
   return download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr(
       UrlDownloader::BeginDownload(delegate, std::move(url_request),
