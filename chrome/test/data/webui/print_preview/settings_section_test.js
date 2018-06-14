@@ -44,12 +44,14 @@ cr.define('settings_sections_tests', function() {
           print_preview_test_utils.getCddTemplate(initialSettings.printerName));
       nativeLayer.setPageCount(3);
       print_preview.NativeLayer.setInstance(nativeLayer);
+      const pluginProxy = new print_preview.PDFPluginStub();
+      print_preview_new.PluginProxy.setInstance(pluginProxy);
+
       PolymerTest.clearBody();
       page = document.createElement('print-preview-app');
-      const previewArea = page.$$('print-preview-preview-area');
-      previewArea.plugin_ = new print_preview.PDFPluginStub(
-          previewArea.onPluginLoad_.bind(previewArea));
       document.body.appendChild(page);
+      const previewArea = page.$.previewArea;
+      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
 
       // Wait for initialization to complete.
       return Promise

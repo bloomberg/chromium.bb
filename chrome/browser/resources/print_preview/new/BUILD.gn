@@ -235,6 +235,7 @@ js_library("preview_area") {
   deps = [
     ":margin_control_container",
     ":model",
+    ":plugin_proxy",
     ":settings_behavior",
     ":state",
     "..:native_layer",
@@ -272,6 +273,12 @@ js_library("margin_control") {
     "../data:coordinate2d",
     "../data:margins",
     "../data:size",
+  ]
+}
+
+js_library("plugin_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
   ]
 }
 
