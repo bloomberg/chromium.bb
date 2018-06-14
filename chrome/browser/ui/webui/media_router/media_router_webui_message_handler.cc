@@ -19,7 +19,7 @@
 #include "base/values.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/common/chrome_features.h"
@@ -28,9 +28,9 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/common/constants.h"
+#include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace media_router {
@@ -1075,9 +1075,9 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
   // the user opting into Google services, including cloud services, if the
   // browser is a Chrome branded build.
   if (!pref_service->GetBoolean(prefs::kMediaRouterCloudServicesPrefSet)) {
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(profile);
-    if (signin_manager && signin_manager->IsAuthenticated()) {
+    identity::IdentityManager* identity_manager =
+        IdentityManagerFactory::GetForProfile(profile);
+    if (identity_manager && identity_manager->HasPrimaryAccount()) {
       // If the user had previously acknowledged the first run flow without
       // being shown the cloud services option, and is now logged in with sync
       // enabled, turn on cloud services.
@@ -1112,10 +1112,10 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
 }
 
 AccountInfo MediaRouterWebUIMessageHandler::GetAccountInfo() {
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
-  return signin_manager ? signin_manager->GetAuthenticatedAccountInfo()
-                        : AccountInfo();
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  return identity_manager ? identity_manager->GetPrimaryAccountInfo()
+                          : AccountInfo();
 }
 
 int MediaRouterWebUIMessageHandler::CurrentCastModeForRouteId(
