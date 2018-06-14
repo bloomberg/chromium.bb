@@ -17,6 +17,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -37,6 +38,7 @@
 
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
+using base::TestMockTimeTaskRunner;
 using testing::_;
 using testing::AnyNumber;
 using testing::Return;
@@ -147,7 +149,9 @@ ACTION_P(SaveToScopedPtr, scoped) { scoped->reset(arg0); }
 
 class PasswordManagerTest : public testing::Test {
  public:
-  PasswordManagerTest() : test_url_("https://www.example.com") {}
+  PasswordManagerTest()
+      : test_url_("https://www.example.com"),
+        task_runner_(new TestMockTimeTaskRunner) {}
   ~PasswordManagerTest() override = default;
 
  protected:
@@ -283,6 +287,7 @@ class PasswordManagerTest : public testing::Test {
   std::unique_ptr<PasswordAutofillManager> password_autofill_manager_;
   std::unique_ptr<PasswordManager> manager_;
   PasswordForm submitted_form_;
+  scoped_refptr<TestMockTimeTaskRunner> task_runner_;
 };
 
 MATCHER_P(FormMatches, form, "") {
@@ -1184,6 +1189,10 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyPasswordField) {
 // ID. The test checks that nevertheless each of them gets assigned its own
 // NewPasswordFormManager and filled as expected.
 TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
+  // Setting task runner is required since NewPasswordFormManager uses
+  // PostDelayTask for making filling.
+  TestMockTimeTaskRunner::ScopedContext scoped_context_(task_runner_.get());
+
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kNewPasswordFormParsing);
 
@@ -1233,6 +1242,7 @@ TEST_F(PasswordManagerTest, FillPasswordOnManyFrames_SameId) {
       .WillOnce(WithArg<1>(InvokeConsumer(second_form)));
   EXPECT_CALL(driver_b, FillPasswordForm(_));
   manager()->OnPasswordFormsParsed(&driver_b, {second_form});
+  task_runner_->FastForwardUntilNoTasksRemain();
 }
 
 // If kNewPasswordFormParsing is disabled, "similar" is governed by

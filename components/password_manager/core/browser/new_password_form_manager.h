@@ -145,10 +145,15 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
 
   base::Optional<FormPredictions> predictions_;
 
+  // True when the managed form was already filled.
+  bool filled_ = false;
+
   // Used for comparison metrics.
   // TODO(https://crbug.com/831123): Remove it when the old form parsing is
   // removed.
   autofill::PasswordForm old_parsing_result_;
+
+  base::WeakPtrFactory<NewPasswordFormManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NewPasswordFormManager);
 };
