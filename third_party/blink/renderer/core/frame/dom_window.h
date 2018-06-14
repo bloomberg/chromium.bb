@@ -33,14 +33,14 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
   ~DOMWindow() override;
 
   Frame* GetFrame() const {
-    // A Frame is typically reused for navigations. If |m_frame| is not null,
+    // A Frame is typically reused for navigations. If |frame_| is not null,
     // two conditions must always be true:
-    // - |m_frame->domWindow()| must point back to this DOMWindow. If it does
+    // - |frame_->domWindow()| must point back to this DOMWindow. If it does
     //   not, it is easy to introduce a bug where script execution uses the
     //   wrong DOMWindow (which may be cross-origin).
-    // - |m_frame| must be attached, i.e. |m_frame->page()| must not be null.
-    //   If |m_frame->page()| is null, this indicates a bug where the frame was
-    //   detached but |m_frame| was not set to null. This bug can lead to
+    // - |frame_| must be attached, i.e. |frame_->page()| must not be null.
+    //   If |frame_->page()| is null, this indicates a bug where the frame was
+    //   detached but |frame_| was not set to null. This bug can lead to
     //   issues where executing script incorrectly schedules work on a detached
     //   frame.
     SECURITY_DCHECK(!frame_ ||
@@ -101,8 +101,8 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData,
 
   // FIXME: When this DOMWindow is no longer the active DOMWindow (i.e.,
   // when its document is no longer the document that is displayed in its
-  // frame), we would like to zero out m_frame to avoid being confused
-  // by the document that is currently active in m_frame.
+  // frame), we would like to zero out |frame_| to avoid being confused
+  // by the document that is currently active in |frame_|.
   // See https://bugs.webkit.org/show_bug.cgi?id=62054
   bool IsCurrentlyDisplayedInFrame() const;
 
