@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -1955,13 +1956,18 @@ LayoutBlock* LayoutBlock::CreateAnonymousWithParentAndDisplay(
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      new_display);
   parent->UpdateAnonymousChildStyle(nullptr, *new_style);
+  LayoutBlock* layout_block;
   if (new_display == EDisplay::kFlex) {
-    return LayoutFlexibleBox::CreateAnonymous(&parent->GetDocument(),
-                                              std::move(new_style));
+    layout_block = LayoutObjectFactory::CreateFlexibleBox(parent->GetDocument(),
+                                                          *new_style);
+  } else {
+    DCHECK_EQ(new_display, EDisplay::kBlock);
+    layout_block =
+        LayoutObjectFactory::CreateBlockFlow(parent->GetDocument(), *new_style);
   }
-  DCHECK_EQ(new_display, EDisplay::kBlock);
-  return LayoutBlockFlow::CreateAnonymous(&parent->GetDocument(),
-                                          std::move(new_style));
+  layout_block->SetDocumentForAnonymous(&parent->GetDocument());
+  layout_block->SetStyle(std::move(new_style));
+  return layout_block;
 }
 
 bool LayoutBlock::RecalcNormalFlowChildOverflowIfNeeded(

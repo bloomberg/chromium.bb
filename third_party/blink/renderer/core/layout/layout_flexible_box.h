@@ -46,9 +46,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutFlexibleBox(Element*);
   ~LayoutFlexibleBox() override;
 
-  static LayoutFlexibleBox* CreateAnonymous(Document*,
-                                            scoped_refptr<ComputedStyle>);
-
   const char* GetName() const override { return "LayoutFlexibleBox"; }
 
   bool IsFlexibleBox() const final { return true; }
