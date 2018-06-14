@@ -1061,7 +1061,9 @@ def PanProjectChecks(input_api, output_api,
 
 
 def CheckPatchFormatted(
-    input_api, output_api, check_js=False, check_python=False):
+    input_api, output_api, check_js=False, check_python=False,
+    result_factory=None):
+  result_factory = result_factory or output_api.PresubmitPromptWarning
   import git_cl
 
   display_args = []
@@ -1089,7 +1091,7 @@ def CheckPatchFormatted(
     else:
       short_path = input_api.basename(input_api.change.RepositoryRoot())
     display_args.append(presubmit_subdir)
-    return [output_api.PresubmitPromptWarning(
+    return [result_factory(
       'The %s directory requires source formatting. '
       'Please run: git cl format %s' %
       (short_path, ' '.join(display_args)))]
