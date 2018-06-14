@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import collections
 import functools
-import multiprocessing
 import optparse
 import os
 import platform
@@ -449,7 +448,8 @@ def main(argv):
     target_arch = args[1]
   configure_args = args[2:]
 
-  if target_os not in ('android', 'linux', 'linux-noasm', 'mac', 'win'):
+
+  if target_os not in ('android', 'linux', 'linux-noasm', 'mac', 'win', 'all'):
     parser.print_help()
     return 1
 
@@ -459,64 +459,33 @@ def main(argv):
     return 1
 
   host_os, host_arch = host_tuple
-  parallel_jobs = multiprocessing.cpu_count()
+  parallel_jobs = 8
 
-  if target_os == 'android' and host_os != 'linux' and host_arch != 'x64':
-    print('Android cross compilation can only be done from a linux x64 host.')
+  if target_os.split('-', 1)[0] != host_os and (host_os != 'linux' or
+                                                host_arch != 'x64'):
+    print('Cross compilation can only be done from a linux x64 host.')
     return 1
 
-  if target_arch:
-    print('System information:\n'
-          'Host OS       : %s\n'
-          'Target OS     : %s\n'
-          'Host arch     : %s\n'
-          'Target arch   : %s\n'
-          'Parallel jobs : %d\n' % (host_os, target_os, host_arch, target_arch,
-                                    parallel_jobs))
-    ConfigureAndBuild(
-        target_arch,
-        target_os,
-        host_os,
-        host_arch,
-        parallel_jobs,
-        configure_args,
-        options=options)
-    return
+  for os in ARCH_MAP.keys():
+    if os != target_os and target_os != 'all':
+      continue
+    for arch in ARCH_MAP[os]:
+      if target_arch and arch != target_arch:
+        continue
 
-  pool_size = len(ARCH_MAP[target_os])
-  parallel_jobs = parallel_jobs / pool_size
-  print('System information:\n'
-        'Host OS       : %s\n'
-        'Target OS     : %s\n'
-        'Host arch     : %s\n'
-        'Target arch   : %s\n'
-        'Parallel jobs : %d\n' % (host_os, target_os, host_arch,
-                                  ARCH_MAP[target_os], parallel_jobs))
-
-  # Setup signal handles such that Ctrl+C works to terminate; will still result
-  # in triggering a bunch of Python2 bugs and log spam, but will exit versus
-  # hanging indefinitely.
-  original_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
-  p = multiprocessing.Pool(pool_size)
-  signal.signal(signal.SIGINT, original_sigint_handler)
-  try:
-    result = p.map_async(
-        functools.partial(
-            ConfigureAndBuild,
-            target_os=target_os,
-            host_os=host_os,
-            host_arch=host_arch,
-            parallel_jobs=parallel_jobs,
-            configure_args=configure_args,
-            options=options), ARCH_MAP[target_os])
-    # Timeout required or Ctrl+C is ignored; choose a ridiculous value so that
-    # it doesn't trigger accidentally.
-    result.get(1000)
-  except Exception as e:
-    p.terminate()
-    # Re-throw the exception so that we fail if any subprocess fails.
-    raise e
-
+      print('System information:\n'
+            'Host OS       : %s\n'
+            'Target OS     : %s\n'
+            'Host arch     : %s\n'
+            'Target arch   : %s\n' % (host_os, os, host_arch, arch))
+      ConfigureAndBuild(
+          arch,
+          os,
+          host_os,
+          host_arch,
+          parallel_jobs,
+          configure_args,
+          options=options)
 
 def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
                       configure_args, options):
