@@ -12,9 +12,6 @@
 
 namespace blink {
 
-class FetchClientSettingsObjectSnapshot;
-class ModuleScriptFetchRequest;
-class ModuleScriptLoaderClient;
 class ScriptModuleResolver;
 
 // DummyModulator provides empty Modulator interface implementation w/
@@ -54,11 +51,6 @@ class DummyModulator : public Modulator {
       ModuleTreeClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   KURL ResolveModuleSpecifier(const String&, const KURL&, String*) override;
-  void FetchNewSingleModule(
-      const ModuleScriptFetchRequest&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-      ModuleGraphLevel,
-      ModuleScriptLoaderClient*) override;
   bool HasValidContext() override;
   void ResolveDynamically(const String& specifier,
                           const KURL&,

@@ -6,8 +6,10 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
+#include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
@@ -82,7 +84,7 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
 
 class ModuleMapTestModulator final : public DummyModulator {
  public:
-  ModuleMapTestModulator();
+  explicit ModuleMapTestModulator(ScriptState*);
   ~ModuleMapTestModulator() override {}
 
   void Trace(blink::Visitor*) override;
@@ -94,39 +96,87 @@ class ModuleMapTestModulator final : public DummyModulator {
 
  private:
   // Implements Modulator:
-
   ScriptModuleResolver* GetScriptModuleResolver() override {
     return resolver_.Get();
+  }
+  ScriptState* GetScriptState() override { return script_state_.get(); }
+
+  class TestModuleScriptFetcher final
+      : public GarbageCollectedFinalized<TestModuleScriptFetcher>,
+        public ModuleScriptFetcher {
+    USING_GARBAGE_COLLECTED_MIXIN(TestModuleScriptFetcher);
+
+   public:
+    TestModuleScriptFetcher(ModuleMapTestModulator* modulator)
+        : modulator_(modulator) {}
+    void Fetch(FetchParameters& request,
+               ModuleGraphLevel,
+               ModuleScriptFetcher::Client* client) override {
+      TestRequest* test_request = new TestRequest(
+          ModuleScriptCreationParams(
+              request.Url(), "",
+              request.GetResourceRequest().GetFetchCredentialsMode(),
+              kSharableCrossOrigin),
+          client);
+      modulator_->test_requests_.push_back(test_request);
+    }
+    String DebugName() const override { return "TestModuleScriptFetcher"; }
+    void Trace(blink::Visitor* visitor) override {
+      ModuleScriptFetcher::Trace(visitor);
+      visitor->Trace(modulator_);
+    }
+
+   private:
+    Member<ModuleMapTestModulator> modulator_;
+  };
+
+  ModuleScriptFetcher* CreateModuleScriptFetcher() override {
+    return new TestModuleScriptFetcher(this);
+  }
+
+  ScriptModule CompileModule(const String& script,
+                             const KURL& source_url,
+                             const KURL& base_url,
+                             const ScriptFetchOptions& options,
+                             AccessControlStatus access_control_status,
+                             const TextPosition& position,
+                             ExceptionState& exception_state) override {
+    ScriptState::Scope scope(script_state_.get());
+    return ScriptModule::Compile(
+        script_state_->GetIsolate(), script, source_url, base_url, options,
+        access_control_status, position, exception_state);
+  }
+
+  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override {
+    return Vector<ModuleRequest>();
   }
 
   base::SingleThreadTaskRunner* TaskRunner() override {
     return Platform::Current()->CurrentThread()->GetTaskRunner().get();
   };
 
-  void FetchNewSingleModule(
-      const ModuleScriptFetchRequest&,
-      const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-      ModuleGraphLevel,
-      ModuleScriptLoaderClient*) override;
-
   struct TestRequest final : public GarbageCollectedFinalized<TestRequest> {
-    TestRequest(const KURL& in_url,
-                const ScriptFetchOptions& in_options,
-                ModuleScriptLoaderClient* in_client)
-        : url(in_url), options(in_options), client(in_client) {}
-    KURL url;
-    ScriptFetchOptions options;
-    Member<ModuleScriptLoaderClient> client;
+    TestRequest(const ModuleScriptCreationParams& params,
+                ModuleScriptFetcher::Client* client)
+        : params_(params), client_(client) {}
+    void NotifyFetchFinished() {
+      client_->NotifyFetchFinished(params_,
+                                   HeapVector<Member<ConsoleMessage>>());
+    }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(client_); }
 
-    void Trace(blink::Visitor* visitor) { visitor->Trace(client); }
+   private:
+    ModuleScriptCreationParams params_;
+    Member<ModuleScriptFetcher::Client> client_;
   };
   HeapVector<Member<TestRequest>> test_requests_;
 
+  scoped_refptr<ScriptState> script_state_;
   Member<TestScriptModuleResolver> resolver_;
 };
 
-ModuleMapTestModulator::ModuleMapTestModulator()
-    : resolver_(new TestScriptModuleResolver) {}
+ModuleMapTestModulator::ModuleMapTestModulator(ScriptState* script_state)
+    : script_state_(script_state), resolver_(new TestScriptModuleResolver) {}
 
 void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_requests_);
@@ -134,25 +184,11 @@ void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
   DummyModulator::Trace(visitor);
 }
 
-void ModuleMapTestModulator::FetchNewSingleModule(
-    const ModuleScriptFetchRequest& request,
-    const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-    ModuleGraphLevel,
-    ModuleScriptLoaderClient* client) {
-  TestRequest* test_request =
-      new TestRequest(request.Url(), request.Options(), client);
-  test_requests_.push_back(test_request);
-}
-
 void ModuleMapTestModulator::ResolveFetches() {
   for (const auto& test_request : test_requests_) {
-    auto* module_script = ModuleScript::CreateForTest(
-        this, ScriptModule(), test_request->url, test_request->options);
-    TaskRunner()->PostTask(
-        FROM_HERE,
-        WTF::Bind(&ModuleScriptLoaderClient::NotifyNewSingleModuleFinished,
-                  WrapPersistent(test_request->client.Get()),
-                  WrapPersistent(module_script)));
+    TaskRunner()->PostTask(FROM_HERE,
+                           WTF::Bind(&TestRequest::NotifyFetchFinished,
+                                     WrapPersistent(test_request.Get())));
   }
   test_requests_.clear();
 }
@@ -173,8 +209,9 @@ void ModuleMapTest::SetUp() {
   PageTestBase::SetUp(IntSize(500, 500));
   GetDocument().SetURL(KURL("https://example.com"));
   GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
-  modulator_ = new ModuleMapTestModulator();
-  map_ = ModuleMap::Create(modulator_.Get());
+  modulator_ =
+      new ModuleMapTestModulator(ToScriptStateForMainWorld(&GetFrame()));
+  map_ = ModuleMap::Create(modulator_);
 }
 
 TEST_F(ModuleMapTest, sequentialRequests) {

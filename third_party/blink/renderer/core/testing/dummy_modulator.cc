@@ -93,14 +93,6 @@ KURL DummyModulator::ResolveModuleSpecifier(const String&,
   return KURL();
 }
 
-void DummyModulator::FetchNewSingleModule(
-    const ModuleScriptFetchRequest&,
-    const FetchClientSettingsObjectSnapshot&,
-    ModuleGraphLevel,
-    ModuleScriptLoaderClient*) {
-  NOTREACHED();
-}
-
 bool DummyModulator::HasValidContext() {
   return true;
 }
