@@ -65,11 +65,23 @@ IN_PROC_BROWSER_TEST_F(FileManagerUITest, Crostini) {
   RunTest("crostini");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, QuickView) {
+// Fails on Linux Chromium OS ASan LSan https://crbug.com/852788
+#if defined(LEAK_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_QuickView DISABLED_QuickView
+#else
+#define MAYBE_QuickView QuickView
+#endif
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, MAYBE_QuickView) {
   RunTest("quickview");
 }
 
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, UMA) {
+// Fails on Linux Chromium OS ASan LSan https://crbug.com/852788
+#if defined(LEAK_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_UMA DISABLED_UMA
+#else
+#define MAYBE_UMA UMA
+#endif
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, MAYBE_UMA) {
   RunTest("uma");
 }
 
