@@ -1,7 +1,6 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
-// Use of this source code is govered by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 syntax = "proto2";
 
@@ -10,6 +9,7 @@ option optimize_for = LITE_RUNTIME;
 package chromeos.assistant;
 
 import "about_me_settings_ui.proto";
+import "assistant_device_settings_ui.proto";
 import "consent_flow_ui.proto";
 import "email_opt_in_ui.proto";
 
@@ -21,6 +21,7 @@ message SettingsUi {
 
 message SettingsUiUpdate {
   optional AboutMeSettingsUiUpdate about_me_settings_update = 4;
+  optional AssistantDeviceSettingsUiUpdate assistant_device_settings_update = 6;
   optional ConsentFlowUiUpdate consent_flow_ui_update = 21;
   optional EmailOptInUpdate email_opt_in_update = 26;
 }

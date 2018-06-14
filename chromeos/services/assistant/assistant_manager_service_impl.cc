@@ -14,6 +14,8 @@
 #include "build/util/webkit_version.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
+#include "chromeos/services/assistant/public/proto/assistant_device_settings_ui.pb.h"
+#include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "chromeos/services/assistant/service.h"
 #include "chromeos/services/assistant/utils.h"
 #include "chromeos/system/version_loader.h"
@@ -266,9 +268,14 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
 
   SetAccessToken(access_token);
 
-  assistant_client::Callback0 assistant_callback([callback = std::move(
-                                                      callback)]() mutable {
+  assistant_client::Callback0 assistant_callback([
+    callback = std::move(callback),
+    update_settings_callback =
+        base::BindOnce(&AssistantManagerServiceImpl::UpdateDeviceIdAndType,
+                       weak_factory_.GetWeakPtr())
+  ]() mutable {
     std::move(callback).Run();
+    std::move(update_settings_callback).Run();
   });
 
   assistant_manager_->Start(std::move(assistant_callback));
@@ -297,6 +304,26 @@ std::string AssistantManagerServiceImpl::BuildUserAgent(
     base::StringAppendF(&user_agent, " ARC/%s", arc_version.c_str());
   }
   return user_agent;
+}
+
+void AssistantManagerServiceImpl::UpdateDeviceIdAndType() {
+  const std::string device_id = assistant_manager_->GetDeviceId();
+  if (device_id.empty())
+    return;
+
+  // Update device id and device type.
+  assistant::SettingsUiUpdate update;
+  assistant::AssistantDeviceSettingsUpdate* device_settings_update =
+      update.mutable_assistant_device_settings_update()
+          ->add_assistant_device_settings_update();
+  device_settings_update->set_device_id(device_id);
+  device_settings_update->set_assistant_device_type(
+      assistant::AssistantDevice::CROS);
+
+  // Device settings update result is not handled because it is not included in
+  // the SettingsUiUpdateResult.
+  SendUpdateSettingsUiRequest(update.SerializeAsString(),
+                              UpdateSettingsUiResponseCallback());
 }
 
 void AssistantManagerServiceImpl::HandleGetSettingsResponse(
