@@ -21,70 +21,69 @@
   <settings-animated-pages id="pages" section="downloads"
       focus-config="[[focusConfig_]]">
     <neon-animatable route-path="default">
-    <div class="settings-box first two-line">
-      <div class="start">
-        <div>$i18n{downloadLocation}</div>
-        <div class="secondary">
-<if expr="not chromeos">
-          [[prefs.download.default_directory.value]]
-</if>
-<if expr="chromeos">
-          [[getDownloadLocation_(prefs.download.default_directory.value)]]
-</if>
-        </div>
-      </div>
-      <div class="separator"></div>
-      <controlled-button class="secondary-button" id="changeDownloadsPath"
-          label="$i18n{changeDownloadLocation}"
-          on-click="selectDownloadLocation_"
-          pref="[[prefs.download.default_directory]]"
-          end-justified>
-      </controlled-button>
-    </div>
-    <settings-toggle-button
-        pref="{{prefs.download.prompt_for_download}}"
-        label="$i18n{promptForDownload}">
-    </settings-toggle-button>
-<if expr="chromeos">
-    <settings-toggle-button class="continuation"
-        pref="{{prefs.gdata.disabled}}"
-        label="$i18n{disconnectGoogleDriveAccount}"
-        hidden="[[!pageVisibility.googleDrive]]">
-    </settings-toggle-button>
-</if>
-<if expr="chromeos">
-  <template is="dom-if" if="[[enableSmbSettings_]]">
-    <div id="smbShares" class="settings-box"
-        on-click="onTapSmbShares_" actionable>
-      <div class="start"> $i18n{smbSharesTitle} </div>
-      <paper-icon-button-light class="subpage-arrow">
-        <button aria-label="$i18n{smbSharesTitle}"></button>
-      </paper-icon-button-light>
-    </div>
-  </template>
-</if>
-</neon-animatable>
-    <template is="dom-if" if="[[autoOpenDownloads_]]" restamp>
-      <div class="settings-box">
+      <div class="settings-box first two-line">
         <div class="start">
-          $i18n{openFileTypesAutomatically}
+          <div>$i18n{downloadLocation}</div>
+          <div class="secondary">
+<if expr="not chromeos">
+            [[prefs.download.default_directory.value]]
+</if>
+<if expr="chromeos">
+            [[getDownloadLocation_(prefs.download.default_directory.value)]]
+</if>
+          </div>
         </div>
         <div class="separator"></div>
-        <paper-button id="resetAutoOpenFileTypes" class="secondary-button"
-            on-click="onClearAutoOpenFileTypesTap_">
-          $i18n{clear}
-        </paper-button>
+        <controlled-button class="secondary-button" id="changeDownloadsPath"
+            label="$i18n{changeDownloadLocation}"
+            on-click="selectDownloadLocation_"
+            pref="[[prefs.download.default_directory]]"
+            end-justified>
+        </controlled-button>
       </div>
-    </template>
+      <settings-toggle-button
+          pref="{{prefs.download.prompt_for_download}}"
+          label="$i18n{promptForDownload}">
+      </settings-toggle-button>
 <if expr="chromeos">
-      <template is="dom-if" route-path="/smbShares">
-        <settings-subpage
-            associated-control="[[$$('#smbShares')]]"
-            page-title="$i18n{smbSharesTitle}">
-          <settings-smb-shares-page>
-          </settings-smb-shares-page>
-        </settings-subpage>
+      <settings-toggle-button class="continuation"
+          pref="{{prefs.gdata.disabled}}"
+          label="$i18n{disconnectGoogleDriveAccount}"
+          hidden="[[!pageVisibility.googleDrive]]">
+      </settings-toggle-button>
+      <template is="dom-if" if="[[enableSmbSettings_]]">
+        <div id="smbShares" class="settings-box"
+            on-click="onTapSmbShares_" actionable>
+          <div class="start"> $i18n{smbSharesTitle} </div>
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label="$i18n{smbSharesTitle}"></button>
+          </paper-icon-button-light>
+        </div>
       </template>
+</if>
+      <template is="dom-if" if="[[autoOpenDownloads_]]" restamp>
+        <div class="settings-box">
+          <div class="start">
+            $i18n{openFileTypesAutomatically}
+          </div>
+          <div class="separator"></div>
+          <paper-button id="resetAutoOpenFileTypes" class="secondary-button"
+              on-click="onClearAutoOpenFileTypesTap_">
+            $i18n{clear}
+          </paper-button>
+        </div>
+      </template>
+    </neon-animatable>
+
+<if expr="chromeos">
+    <template is="dom-if" route-path="/smbShares">
+      <settings-subpage
+          associated-control="[[$$('#smbShares')]]"
+          page-title="$i18n{smbSharesTitle}">
+        <settings-smb-shares-page>
+        </settings-smb-shares-page>
+      </settings-subpage>
+    </template>
 </if>
   </settings-animated-pages>
   </template>
