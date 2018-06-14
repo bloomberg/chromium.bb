@@ -777,7 +777,7 @@ void ThreatDetails::OnCacheCollectionReady() {
 
   BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&WebUIInfoSingleton::AddToReportsSent,
+      base::BindOnce(&WebUIInfoSingleton::AddToCSBRRsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
                      std::move(report_)));
 
