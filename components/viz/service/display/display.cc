@@ -211,7 +211,9 @@ void Display::InitializeRenderer() {
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       mode, output_surface_->context_provider(), bitmap_manager_);
 
-  if (settings_.use_skia_renderer) {
+  if (settings_.use_skia_renderer && mode == DisplayResourceProvider::kGpu) {
+    // Check the compositing mode, because SkiaRenderer only works with GPU
+    // compositing.
     DCHECK(output_surface_);
     renderer_ = std::make_unique<SkiaRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get(),
