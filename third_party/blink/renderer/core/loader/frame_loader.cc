@@ -257,9 +257,7 @@ void FrameLoader::SetDefersLoading(bool defers) {
 }
 
 bool FrameLoader::ShouldSerializeScrollAnchor() {
-  return frame_ && frame_->View() &&
-         RuntimeEnabledFeatures::ScrollAnchorSerializationEnabled() &&
-         frame_->View()->ShouldPerformScrollAnchoring();
+  return RuntimeEnabledFeatures::ScrollAnchorSerializationEnabled();
 }
 
 void FrameLoader::SaveScrollAnchor() {
