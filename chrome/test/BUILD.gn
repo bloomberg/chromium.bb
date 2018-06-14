@@ -1411,7 +1411,6 @@ test("browser_tests") {
         "../browser/ui/views/autofill/save_card_bubble_views_browsertest_base.h",
         "../browser/ui/views/bookmarks/bookmark_bubble_view_browsertest.cc",
         "../browser/ui/views/bookmarks/bookmark_editor_view_browsertest.cc",
-        "../browser/ui/views/desktop_capture/desktop_media_picker_views_browsertest.cc",
         "../browser/ui/views/extensions/extension_message_bubble_view_browsertest.cc",
         "../browser/ui/views/extensions/pwa_confirmation_view_browsertest.cc",
         "../browser/ui/views/external_protocol_dialog_browsertest.cc",
@@ -2098,12 +2097,15 @@ test("browser_tests") {
       data_deps += [ "//remoting/webapp" ]
     }
 
-    if (use_aura && enable_wifi_display) {
-      sources += [
-        "../../extensions/browser/api/display_source/display_source_apitestbase.cc",
-        "../../extensions/browser/api/display_source/display_source_apitestbase.h",
-        "../browser/extensions/api/display_source/display_source_wifi_display_apitest.cc",
-      ]
+    if (use_aura) {
+      sources += [ "../browser/ui/views/desktop_capture/desktop_media_picker_views_browsertest.cc" ]
+      if (enable_wifi_display) {
+        sources += [
+          "../../extensions/browser/api/display_source/display_source_apitestbase.cc",
+          "../../extensions/browser/api/display_source/display_source_apitestbase.h",
+          "../browser/extensions/api/display_source/display_source_wifi_display_apitest.cc",
+        ]
+      }
     }
 
     if (is_chromeos || (is_linux && use_dbus)) {
@@ -4343,7 +4345,6 @@ test("unit_tests") {
         "../browser/ui/views/bookmarks/bookmark_context_menu_unittest.cc",
         "../browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc",
         "../browser/ui/views/bookmarks/bookmark_menu_delegate_unittest.cc",
-        "../browser/ui/views/desktop_capture/desktop_media_picker_views_unittest.cc",
         "../browser/ui/views/device_chooser_content_view_unittest.cc",
         "../browser/ui/views/download/download_item_view_unittest.cc",
         "../browser/ui/views/extensions/chooser_dialog_view_unittest.cc",
@@ -4385,6 +4386,7 @@ test("unit_tests") {
 
         # Get these compiling on Mac - see http://crbug.com/657883.
         "../browser/ui/views/crypto_module_password_dialog_view_unittest.cc",
+        "../browser/ui/views/desktop_capture/desktop_media_picker_views_unittest.cc",
       ]
     }
   }
