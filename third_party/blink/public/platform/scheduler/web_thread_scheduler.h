@@ -52,9 +52,6 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   //
   // Functions below work on a scheduler instance on any thread.
 
-  // Returns the default task runner.
-  virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() = 0;
-
   // Returns the idle task runner. Tasks posted to this runner may be reordered
   // relative to other task types and may be starved for an arbitrarily long
   // time if no idle time is available.
@@ -76,6 +73,9 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // start at |initial_virtual_time|.
   static std::unique_ptr<WebThreadScheduler> CreateMainThreadScheduler(
       base::Optional<base::Time> initial_virtual_time = base::nullopt);
+
+  // Returns the default task runner.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner();
 
   // Returns the compositor task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner();

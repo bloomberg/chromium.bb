@@ -48,12 +48,6 @@ void CompositorThreadScheduler::OnTaskCompleted(
                                                end, thread_time);
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-CompositorThreadScheduler::DefaultTaskRunner() {
-  NOTREACHED();
-  return nullptr;
-}
-
 scoped_refptr<scheduler::SingleThreadIdleTaskRunner>
 CompositorThreadScheduler::IdleTaskRunner() {
   // TODO(flackr): This posts idle tasks as regular tasks. We need to create

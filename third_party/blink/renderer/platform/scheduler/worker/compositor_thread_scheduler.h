@@ -42,7 +42,6 @@ class PLATFORM_EXPORT CompositorThreadScheduler
                        base::Optional<base::TimeDelta> thread_time) override;
 
   // WebThreadScheduler:
-  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<scheduler::SingleThreadIdleTaskRunner> IdleTaskRunner()
       override;
   scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
