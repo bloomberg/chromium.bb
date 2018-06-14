@@ -22,6 +22,9 @@ const base::Feature kDragTabsInTabletMode{"DragTabsInTabletMode",
 const base::Feature kKeyboardShortcutViewer{"KeyboardShortcutViewer",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kKeyboardShortcutViewerApp{
+    "KeyboardShortcutViewerApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -57,6 +60,10 @@ bool IsDockedMagnifierEnabled() {
 
 bool IsKeyboardShortcutViewerEnabled() {
   return base::FeatureList::IsEnabled(kKeyboardShortcutViewer);
+}
+
+bool IsKeyboardShortcutViewerAppEnabled() {
+  return base::FeatureList::IsEnabled(kKeyboardShortcutViewerApp);
 }
 
 bool IsLockScreenNotificationsEnabled() {
