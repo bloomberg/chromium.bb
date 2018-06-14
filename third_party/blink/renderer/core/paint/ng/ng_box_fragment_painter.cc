@@ -540,19 +540,22 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
 
   PaintInfo info(paint_info);
 
-  NGBoxClipper box_clipper(box_fragment_, info);
 
   info.phase = PaintPhase::kBlockBackground;
   PaintObject(info, paint_offset);
 
   info.phase = PaintPhase::kFloat;
   PaintObject(info, paint_offset);
-
-  info.phase = PaintPhase::kForeground;
-  PaintObject(info, paint_offset);
-
+  {
+    NGBoxClipper box_clipper(box_fragment_, info);
+    info.phase = PaintPhase::kForeground;
+    PaintObject(info, paint_offset);
+  }
   info.phase = PaintPhase::kOutline;
   PaintObject(info, paint_offset);
+
+  info.phase = PaintPhase::kBlockBackground;
+  PaintOverflowControlsIfNeeded(info, paint_offset);
 }
 
 void NGBoxFragmentPainter::PaintLineBoxChildren(
