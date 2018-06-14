@@ -38,7 +38,9 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     : public UrlDownloadHandler::Delegate,
       public DownloadItemImplDelegate {
  public:
-  using DownloadIdCallback = base::RepeatingCallback<void(uint32_t)>;
+  using StartDownloadItemCallback =
+      base::OnceCallback<void(std::unique_ptr<DownloadCreateInfo> info,
+                              DownloadItemImpl*)>;
 
   // Class to be notified when download starts/stops.
   class COMPONENTS_DOWNLOAD_EXPORT Delegate {
@@ -48,28 +50,21 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     virtual bool InterceptDownload(
         const DownloadCreateInfo& download_create_info) = 0;
 
-    // Called to get an ID for a new download. |callback| may be called
-    // synchronously.
-    virtual void GetNextId(const DownloadIdCallback& callback) = 0;
-
     // Gets the default download directory.
     virtual base::FilePath GetDefaultDownloadDirectory() = 0;
 
-    // Gets the download item for the given id.
+    // Gets the download item for the given |download_create_info|.
     // TODO(qinmin): remove this method and let InProgressDownloadManager
     // create the DownloadItem from in-progress cache.
-    virtual DownloadItemImpl* GetDownloadItem(
-        uint32_t id,
-        bool new_download,
-        const DownloadCreateInfo& download_create_info) = 0;
+    virtual void StartDownloadItem(
+        std::unique_ptr<DownloadCreateInfo> info,
+        const DownloadUrlParameters::OnStartedCallback& on_started,
+        StartDownloadItemCallback callback) = 0;
 
     // Gets the URLRequestContextGetter for sending requests.
     // TODO(qinmin): remove this once network service is fully enabled.
     virtual net::URLRequestContextGetter* GetURLRequestContextGetter(
         const DownloadCreateInfo& download_create_info) = 0;
-
-    // Called when a new download is started.
-    virtual void OnNewDownloadStarted(DownloadItem* download) = 0;
 
     // Called when all in-progress downloads are loaded from the database.
     virtual void OnInProgressDownloadsLoaded(
@@ -85,7 +80,7 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void BeginDownload(
       std::unique_ptr<DownloadUrlParameters> params,
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
-      uint32_t download_id,
+      bool is_new_download,
       const GURL& site_url,
       const GURL& tab_url,
       const GURL& tab_referrer_url);
@@ -120,7 +115,6 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
   void DetermineDownloadTarget(DownloadItemImpl* download,
                                const DownloadTargetCallback& callback) override;
   void ResumeInterruptedDownload(std::unique_ptr<DownloadUrlParameters> params,
-                                 uint32_t id,
                                  const GURL& site_url) override;
   base::Optional<DownloadEntry> GetInProgressEntry(
       DownloadItemImpl* download) override;
@@ -150,14 +144,14 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
       base::OnceClosure callback,
       std::unique_ptr<std::vector<DownloadDBEntry>> entries);
 
-  // Start a download with given ID.
-  void StartDownloadWithId(
-      std::unique_ptr<DownloadCreateInfo> info,
+  // Start a DownloadItemImpl.
+  void StartDownloadWithItem(
       std::unique_ptr<InputStream> stream,
       scoped_refptr<DownloadURLLoaderFactoryGetter> url_loader_factory_getter,
-      const DownloadUrlParameters::OnStartedCallback& on_started,
-      bool new_download,
-      uint32_t id);
+      std::unique_ptr<DownloadCreateInfo> info,
+      DownloadItemImpl* download);
+
+  DownloadItemImpl* GetInProgressDownload(const std::string& guid);
 
   // Active download handlers.
   std::vector<UrlDownloadHandler::UniqueUrlDownloadHandlerPtr>

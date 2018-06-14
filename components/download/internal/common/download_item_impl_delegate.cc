@@ -65,7 +65,6 @@ std::string DownloadItemImplDelegate::GetApplicationClientIdForFileScanning()
 
 void DownloadItemImplDelegate::ResumeInterruptedDownload(
     std::unique_ptr<DownloadUrlParameters> params,
-    uint32_t id,
     const GURL& site_url) {}
 
 void DownloadItemImplDelegate::UpdatePersistence(DownloadItemImpl* download) {}

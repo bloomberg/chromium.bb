@@ -34,8 +34,8 @@ class DefaultUrlDownloadHandlerFactory : public UrlDownloadHandlerFactory {
     return UrlDownloadHandler::UniqueUrlDownloadHandlerPtr(
         download::ResourceDownloader::BeginDownload(
             delegate, std::move(params), std::move(request),
-            std::move(url_loader_factory_getter), GURL(), GURL(), GURL(),
-            download::DownloadItem::kInvalidId, true, task_runner)
+            std::move(url_loader_factory_getter), GURL(), GURL(), GURL(), true,
+            true, task_runner)
             .release(),
         base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
   }

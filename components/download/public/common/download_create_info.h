@@ -41,12 +41,11 @@ struct COMPONENTS_DOWNLOAD_EXPORT DownloadCreateInfo {
   DownloadCreateInfo();
   ~DownloadCreateInfo();
 
+  bool is_new_download;
+
   // The URL from which we are downloading. This is the final URL after any
   // redirection by the server for |url_chain|.
   const GURL& url() const;
-
-  // The ID of the download. (Deprecated)
-  uint32_t download_id;
 
   // The unique identifier for the download.
   std::string guid;

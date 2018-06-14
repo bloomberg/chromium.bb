@@ -2351,6 +2351,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
   download_params->set_etag(GetETag());
   download_params->set_hash_of_partial_file(GetHash());
   download_params->set_hash_state(std::move(hash_state_));
+  download_params->set_guid(guid_);
 
   // TODO(xingliu): Read |fetch_error_body| and |request_headers_| from the
   // cache, and don't copy them into DownloadItemImpl.
@@ -2385,7 +2386,7 @@ void DownloadItemImpl::ResumeInterruptedDownload(
                                              GetResumeMode(), time_since_start);
   }
 
-  delegate_->ResumeInterruptedDownload(std::move(download_params), GetId(),
+  delegate_->ResumeInterruptedDownload(std::move(download_params),
                                        request_info_.site_url);
 
   if (job_)

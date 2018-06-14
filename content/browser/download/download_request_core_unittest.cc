@@ -46,8 +46,7 @@ class DownloadRequestCoreTest : public testing::Test {
   }
 
   void CreateRequestOnIOThread(download::DownloadUrlParameters* params) {
-    url_request_ = DownloadRequestCore::CreateRequestOnIOThread(
-        download::DownloadItem::kInvalidId, params);
+    url_request_ = DownloadRequestCore::CreateRequestOnIOThread(true, params);
     DCHECK(url_request_.get());
   }
 
