@@ -30,7 +30,8 @@ namespace {
 const char kSettingsBubbleAcknowledged[] = "ack_settings_bubble";
 
 using ProfileSetMap = std::map<std::string, std::set<Profile*>>;
-base::LazyInstance<ProfileSetMap>::Leaky g_shown = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<ProfileSetMap>::Leaky g_settings_api_shown =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -210,13 +211,13 @@ bool SettingsApiBubbleDelegate::ShouldAcknowledgeOnDeactivate() const {
 bool SettingsApiBubbleDelegate::ShouldShow(
     const ExtensionIdList& extensions) const {
   DCHECK_EQ(1u, extensions.size());
-  return !g_shown.Get()[GetKey()].count(profile_);
+  return !g_settings_api_shown.Get()[GetKey()].count(profile_);
 }
 
 void SettingsApiBubbleDelegate::OnShown(const ExtensionIdList& extensions) {
   DCHECK_EQ(1u, extensions.size());
-  DCHECK(!g_shown.Get()[GetKey()].count(profile_));
-  g_shown.Get()[GetKey()].insert(profile_);
+  DCHECK(!g_settings_api_shown.Get()[GetKey()].count(profile_));
+  g_settings_api_shown.Get()[GetKey()].insert(profile_);
 }
 
 void SettingsApiBubbleDelegate::OnAction() {
@@ -224,11 +225,11 @@ void SettingsApiBubbleDelegate::OnAction() {
   // extension. Thus if that extension or another takes effect, it is worth
   // mentioning to the user (ShouldShow() would return true) because it is
   // contrary to the user's choice.
-  g_shown.Get()[GetKey()].clear();
+  g_settings_api_shown.Get()[GetKey()].clear();
 }
 
 void SettingsApiBubbleDelegate::ClearProfileSetForTesting() {
-  g_shown.Get()[GetKey()].clear();
+  g_settings_api_shown.Get()[GetKey()].clear();
 }
 
 bool SettingsApiBubbleDelegate::ShouldShowExtensionList() const {
