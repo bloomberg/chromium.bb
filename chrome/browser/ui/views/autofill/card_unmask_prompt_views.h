@@ -21,6 +21,7 @@ class WebContents;
 
 namespace views {
 class Checkbox;
+class GridLayout;
 class Label;
 class Link;
 class Textfield;
@@ -84,6 +85,7 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   void SetInputsEnabled(bool enabled);
   void ShowNewCardLink();
   void ClosePrompt();
+  views::GridLayout* ResetOverlayLayout();
 
   CardUnmaskPromptController* controller_;
   content::WebContents* web_contents_;
@@ -106,17 +108,15 @@ class CardUnmaskPromptViews : public CardUnmaskPromptView,
   // inputs.
   views::View* temporary_error_ = nullptr;
   views::Label* error_label_ = nullptr;
-  // The error label for permanent errors (where the user can't retry).
-  views::Label* permanent_error_label_ = nullptr;
 
   views::View* controls_container_ = nullptr;
   views::View* storage_row_ = nullptr;
   views::Checkbox* storage_checkbox_ = nullptr;
 
-  // Elements related to progress when the request is being made.
-  views::View* progress_overlay_ = nullptr;
+  // Elements related to progress or error when the request is being made.
+  views::View* overlay_ = nullptr;
+  views::Label* overlay_label_ = nullptr;
   views::Throbber* progress_throbber_ = nullptr;
-  views::Label* progress_label_ = nullptr;
 
   base::WeakPtrFactory<CardUnmaskPromptViews> weak_ptr_factory_;
 
