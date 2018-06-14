@@ -5,6 +5,9 @@
 #ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
 #define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_UTILS_H_
 
+#include <sstream>
+#include <string>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
@@ -13,7 +16,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_type.h"
 #include "net/http/http_request_headers.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -56,11 +58,12 @@ class ServiceWorkerUtils {
     return provider_id < kInvalidServiceWorkerProviderId;
   }
 
-  static std::string ErrorTypeToString(
-      blink::mojom::ServiceWorkerErrorType error);
-
-  static std::string ClientTypeToString(
-      blink::mojom::ServiceWorkerClientType type);
+  template <typename T>
+  static std::string MojoEnumToString(T mojo_enum) {
+    std::ostringstream oss;
+    oss << mojo_enum;
+    return oss.str();
+  }
 
   // Sets |has_range| to true if |headers| specify a single range request, and
   // |offset| and |size| to the range. Returns true on valid input (regardless

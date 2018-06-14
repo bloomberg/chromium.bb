@@ -4,9 +4,6 @@
 
 #include "content/common/service_worker/service_worker_utils.h"
 
-#include <sstream>
-#include <string>
-
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -145,22 +142,6 @@ bool ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(
 bool ServiceWorkerUtils::IsServicificationEnabled() {
   return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          base::FeatureList::IsEnabled(features::kServiceWorkerServicification);
-}
-
-// static
-std::string ServiceWorkerUtils::ErrorTypeToString(
-    blink::mojom::ServiceWorkerErrorType error) {
-  std::ostringstream oss;
-  oss << error;
-  return oss.str();
-}
-
-// static
-std::string ServiceWorkerUtils::ClientTypeToString(
-    blink::mojom::ServiceWorkerClientType type) {
-  std::ostringstream oss;
-  oss << type;
-  return oss.str();
 }
 
 bool ServiceWorkerUtils::ExtractSinglePartHttpRange(
