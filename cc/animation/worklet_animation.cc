@@ -43,6 +43,15 @@ scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
       id(), name(), std::move(impl_timeline), CloneOptions(), true));
 }
 
+void WorkletAnimation::PushPropertiesTo(Animation* animation_impl) {
+  Animation::PushPropertiesTo(animation_impl);
+  WorkletAnimation* worklet_animation_impl = ToWorkletAnimation(animation_impl);
+  if (scroll_timeline_) {
+    scroll_timeline_->PushPropertiesTo(
+        worklet_animation_impl->scroll_timeline_.get());
+  }
+}
+
 void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
   // Do not tick worklet animations on main thread. This should be removed if we
   // skip ticking all animations on main thread in http://crbug.com/762717.
@@ -60,13 +69,15 @@ void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
 
 MutatorInputState::AnimationState WorkletAnimation::GetInputState(
     base::TimeTicks monotonic_time,
-    const ScrollTree& scroll_tree) {
+    const ScrollTree& scroll_tree,
+    bool is_active_tree) {
   // Record the monotonic time to be the start time first time state is
   // generated. This time is used as the origin for computing the current time.
   if (!start_time_.has_value())
     start_time_ = monotonic_time;
 
-  double current_time = CurrentTime(monotonic_time, scroll_tree);
+  double current_time =
+      CurrentTime(monotonic_time, scroll_tree, is_active_tree);
   last_current_time_ = current_time;
   return {id(), name(), current_time, CloneOptions()};
 }
@@ -79,24 +90,40 @@ void WorkletAnimation::SetOutputState(
 
 // TODO(crbug.com/780151): Multiply the result by the play back rate.
 double WorkletAnimation::CurrentTime(base::TimeTicks monotonic_time,
-                                     const ScrollTree& scroll_tree) {
+                                     const ScrollTree& scroll_tree,
+                                     bool is_active_tree) {
   // Note that we have intentionally decided not to offset the scroll timeline
   // by the start time. See: https://github.com/w3c/csswg-drafts/issues/2075
   if (scroll_timeline_)
-    return scroll_timeline_->CurrentTime(scroll_tree);
+    return scroll_timeline_->CurrentTime(scroll_tree, is_active_tree);
   return (monotonic_time - start_time_.value()).InMillisecondsF();
 }
 
 bool WorkletAnimation::NeedsUpdate(base::TimeTicks monotonic_time,
-                                   const ScrollTree& scroll_tree) {
+                                   const ScrollTree& scroll_tree,
+                                   bool is_active_tree) {
   // If we don't have a start time it means that an update was never sent to
   // the worklet therefore we need one.
   if (!scroll_timeline_ && !start_time_.has_value())
     return true;
 
-  double current_time = CurrentTime(monotonic_time, scroll_tree);
+  double current_time =
+      CurrentTime(monotonic_time, scroll_tree, is_active_tree);
   bool needs_update = last_current_time_ != current_time;
   return needs_update;
+}
+
+void WorkletAnimation::SetScrollSourceId(
+    base::Optional<ElementId> scroller_id) {
+  // Calling this method implies that we are a ScrollTimeline based animation,
+  // so the below call is done unchecked.
+  scroll_timeline_->SetScrollerId(scroller_id);
+  SetNeedsPushProperties();
+}
+
+void WorkletAnimation::PromoteScrollTimelinePendingToActive() {
+  if (scroll_timeline_)
+    scroll_timeline_->PromoteScrollTimelinePendingToActive();
 }
 
 bool WorkletAnimation::IsWorkletAnimation() const {

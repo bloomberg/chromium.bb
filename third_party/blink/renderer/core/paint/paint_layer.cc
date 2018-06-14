@@ -47,6 +47,7 @@
 #include <limits>
 
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/pseudo_style_request.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -2883,9 +2884,12 @@ bool PaintLayer::ShouldBeSelfPaintingLayer() const {
           .RequiresAcceleratedCompositing())
     return true;
 
+  // TODO(crbug.com/839341): Remove ScrollTimeline check once we support
+  // main-thread AnimationWorklet and don't need to promote the scroll-source.
   return GetLayoutObject().LayerTypeRequired() == kNormalPaintLayer ||
          (scrollable_area_ && scrollable_area_->HasOverlayScrollbars()) ||
-         ScrollsOverflow();
+         ScrollsOverflow() ||
+         ScrollTimeline::HasActiveScrollTimeline(GetLayoutObject().GetNode());
 }
 
 void PaintLayer::UpdateSelfPaintingLayer() {

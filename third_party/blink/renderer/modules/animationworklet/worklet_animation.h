@@ -98,6 +98,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   void Dispose();
 
   Document* GetDocument() const override { return document_.Get(); }
+  AnimationTimeline* GetTimeline() const override { return timeline_; }
   const String& Name() { return animator_name_; }
 
   KeyframeEffect* GetEffect() const override;
@@ -134,6 +135,12 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   std::unique_ptr<WorkletAnimationOptions> options_;
 
   std::unique_ptr<CompositorAnimation> compositor_animation_;
+
+  // Tracks whether any KeyframeEffect associated with this WorkletAnimation has
+  // been invalidated and needs to be restarted. Used to avoid unnecessarily
+  // restarting the effect on the compositor. When true, a call to
+  // |UpdateOnCompositor| will update the effect on the compositor.
+  bool effect_needs_restart_;
 };
 
 }  // namespace blink

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/worklet_animation_base.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -65,6 +66,17 @@ void WorkletAnimationController::UpdateAnimationTimings(
 
   for (const auto& animation : compositor_animations_) {
     animation->Update(reason);
+  }
+}
+
+void WorkletAnimationController::ScrollSourceCompositingStateChanged(
+    Node* node) {
+  DCHECK(ScrollTimeline::HasActiveScrollTimeline(node));
+  for (const auto& animation : compositor_animations_) {
+    if (animation->GetTimeline()->IsScrollTimeline() &&
+        ToScrollTimeline(animation->GetTimeline())->scrollSource() == node) {
+      InvalidateAnimation(*animation);
+    }
   }
 }
 

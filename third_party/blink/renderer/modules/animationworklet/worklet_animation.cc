@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/animationworklet/worklet_animation.h"
 
+#include "base/optional.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
@@ -108,9 +109,10 @@ bool CheckElementComposited(const Node& target) {
              kPaintsIntoOwnBacking;
 }
 
-CompositorElementId GetCompositorScrollElementId(const Node& node) {
-  DCHECK(node.GetLayoutObject());
-  DCHECK(node.GetLayoutObject()->HasLayer());
+base::Optional<CompositorElementId> GetCompositorScrollElementId(
+    const Node& node) {
+  if (!node.GetLayoutObject() || !node.GetLayoutObject()->UniqueId())
+    return base::nullopt;
   return CompositorElementIdFromUniqueObjectId(
       node.GetLayoutObject()->UniqueId(),
       CompositorElementIdNamespace::kScroll);
@@ -150,17 +152,21 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
 
   ScrollTimeline* scroll_timeline = ToScrollTimeline(timeline);
   Node* scroll_source = scroll_timeline->ResolvedScrollSource();
-  CompositorElementId element_id = GetCompositorScrollElementId(*scroll_source);
+  base::Optional<CompositorElementId> element_id =
+      GetCompositorScrollElementId(*scroll_source);
 
   DoubleOrScrollTimelineAutoKeyword time_range;
   scroll_timeline->timeRange(time_range);
   // TODO(smcgruer): Handle 'auto' time range value.
   DCHECK(time_range.IsDouble());
 
+  // TODO(smcgruer): If the scroll source later gets a LayoutBox (e.g. was
+  // display:none and now isn't), we need to update the compositor with the
+  // writing mode to get the correct ScrollDirection conversion.
   LayoutBox* box = scroll_source->GetLayoutBox();
-  DCHECK(box);
-  CompositorScrollTimeline::ScrollDirection orientation = ConvertOrientation(
-      scroll_timeline->GetOrientation(), box->IsHorizontalWritingMode());
+  CompositorScrollTimeline::ScrollDirection orientation =
+      ConvertOrientation(scroll_timeline->GetOrientation(),
+                         box ? box->IsHorizontalWritingMode() : true);
 
   return std::make_unique<CompositorScrollTimeline>(element_id, orientation,
                                                     time_range.GetAsDouble());
@@ -257,7 +263,8 @@ WorkletAnimation::WorkletAnimation(
       document_(document),
       effects_(effects),
       timeline_(timeline),
-      options_(std::make_unique<WorkletAnimationOptions>(options)) {
+      options_(std::make_unique<WorkletAnimationOptions>(options)),
+      effect_needs_restart_(false) {
   DCHECK(IsMainThread());
   DCHECK(Platform::Current()->IsThreadedAnimationEnabled());
 
@@ -322,6 +329,7 @@ void WorkletAnimation::UpdateIfNecessary() {
 }
 
 void WorkletAnimation::EffectInvalidated() {
+  effect_needs_restart_ = true;
   document_->GetWorkletAnimationController().InvalidateAnimation(*this);
 }
 
@@ -381,14 +389,6 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
     return false;
   }
 
-  if (timeline_->IsScrollTimeline() &&
-      !CheckElementComposited(
-          *ToScrollTimeline(timeline_)->ResolvedScrollSource())) {
-    if (failure_message)
-      *failure_message = "The ScrollTimeline scrollSource is not composited.";
-    return false;
-  }
-
   double playback_rate = 1;
   CompositorAnimations::FailureCode failure_code =
       GetEffect()->CheckCanStartAnimationOnCompositor(playback_rate);
@@ -429,11 +429,20 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
 }
 
 void WorkletAnimation::UpdateOnCompositor() {
-  // We want to update the keyframe effect on compositor animation without
-  // destroying the compositor animation instance. This is achieved by
-  // canceling, and start the blink keyframe effect on compositor.
-  GetEffect()->CancelAnimationOnCompositor(compositor_animation_.get());
-  StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
+  if (effect_needs_restart_) {
+    // We want to update the keyframe effect on compositor animation without
+    // destroying the compositor animation instance. This is achieved by
+    // canceling, and start the blink keyframe effect on compositor.
+    effect_needs_restart_ = false;
+    GetEffect()->CancelAnimationOnCompositor(compositor_animation_.get());
+    StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
+  }
+
+  if (timeline_->IsScrollTimeline()) {
+    Element* scroll_source = ToScrollTimeline(timeline_)->scrollSource();
+    compositor_animation_->UpdateScrollTimelineId(
+        GetCompositorScrollElementId(*scroll_source));
+  }
 }
 
 void WorkletAnimation::DestroyCompositorAnimation() {

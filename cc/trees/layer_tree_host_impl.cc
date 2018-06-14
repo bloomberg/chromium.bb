@@ -2687,6 +2687,12 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     DCHECK(!recycle_tree_);
     pending_tree_.swap(recycle_tree_);
 
+    // ScrollTimelines track a scroll source (i.e. a scroll node in the scroll
+    // tree), whose ElementId may change between the active and pending trees.
+    // Therefore we must inform all ScrollTimelines when the pending tree is
+    // promoted to active.
+    mutator_host_->PromoteScrollTimelinesPendingToActive();
+
     // If we commit to the active tree directly, this is already done during
     // commit.
     ActivateAnimations();
@@ -4618,8 +4624,8 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
   const ScrollTree& scroll_tree =
       is_active_tree ? active_tree_->property_trees()->scroll_tree
                      : pending_tree_->property_trees()->scroll_tree;
-  const bool animated =
-      mutator_host_->TickAnimations(monotonic_time, scroll_tree);
+  const bool animated = mutator_host_->TickAnimations(
+      monotonic_time, scroll_tree, is_active_tree);
 
   // TODO(crbug.com/551134): Only do this if the animations are on the active
   // tree, or if they are on the pending tree waiting for some future time to

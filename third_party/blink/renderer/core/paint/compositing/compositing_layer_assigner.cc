@@ -26,6 +26,8 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/compositing_layer_assigner.h"
 
+#include "third_party/blink/renderer/core/animation/scroll_timeline.h"
+#include "third_party/blink/renderer/core/animation/worklet_animation_controller.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -308,6 +310,19 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
         scrolling_coordinator->FrameViewFixedObjectsDidChange(
             layer->GetLayoutObject().View()->GetFrameView());
       }
+    }
+  }
+
+  if (composited_layer_update != kNoCompositingStateChange) {
+    // A change in the compositing state of a ScrollTimeline's scroll source can
+    // cause the compositor's view of the scroll source to become out of date.
+    // We inform the WorkletAnimationController about any such changes so that
+    // it can schedule a compositing animations update.
+    Node* node = layer->GetLayoutObject().GetNode();
+    if (node && ScrollTimeline::HasActiveScrollTimeline(node)) {
+      node->GetDocument()
+          .GetWorkletAnimationController()
+          .ScrollSourceCompositingStateChanged(node);
     }
   }
 

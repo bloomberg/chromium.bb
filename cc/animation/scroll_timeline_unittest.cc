@@ -55,16 +55,16 @@ TEST_F(ScrollTimelineTest, BasicCurrentTimeCalculations) {
 
   // Unscrolled, both timelines should read a current time of 0.
   scroll_tree().SetScrollOffset(scroller_id(), gfx::ScrollOffset());
-  EXPECT_FLOAT_EQ(0, vertical_timeline.CurrentTime(scroll_tree()));
-  EXPECT_FLOAT_EQ(0, horizontal_timeline.CurrentTime(scroll_tree()));
+  EXPECT_FLOAT_EQ(0, vertical_timeline.CurrentTime(scroll_tree(), true));
+  EXPECT_FLOAT_EQ(0, horizontal_timeline.CurrentTime(scroll_tree(), true));
 
   // Now do some scrolling and make sure that the ScrollTimelines update.
   scroll_tree().SetScrollOffset(scroller_id(), gfx::ScrollOffset(75, 50));
 
   // As noted above, we have mapped the time range such that current time should
   // just be the scroll offset.
-  EXPECT_FLOAT_EQ(50, vertical_timeline.CurrentTime(scroll_tree()));
-  EXPECT_FLOAT_EQ(75, horizontal_timeline.CurrentTime(scroll_tree()));
+  EXPECT_FLOAT_EQ(50, vertical_timeline.CurrentTime(scroll_tree(), true));
+  EXPECT_FLOAT_EQ(75, horizontal_timeline.CurrentTime(scroll_tree(), true));
 }
 
 TEST_F(ScrollTimelineTest, CurrentTimeIsAdjustedForTimeRange) {
@@ -75,7 +75,7 @@ TEST_F(ScrollTimelineTest, CurrentTimeIsAdjustedForTimeRange) {
   double halfwayY = (content_size().height() - container_size().height()) / 2.;
   scroll_tree().SetScrollOffset(scroller_id(), gfx::ScrollOffset(0, halfwayY));
 
-  EXPECT_FLOAT_EQ(50, timeline.CurrentTime(scroll_tree()));
+  EXPECT_FLOAT_EQ(50, timeline.CurrentTime(scroll_tree(), true));
 }
 
 }  // namespace cc

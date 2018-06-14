@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/scroll_timeline.h"
 #include "cc/animation/single_keyframe_effect_animation.h"
@@ -57,6 +58,8 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
   void RemoveKeyframeModel(int keyframe_model_id);
   void PauseKeyframeModel(int keyframe_model_id, double time_offset);
   void AbortKeyframeModel(int keyframe_model_id);
+
+  void UpdateScrollTimelineId(base::Optional<cc::ElementId>);
 
  private:
   // cc::AnimationDelegate implementation.

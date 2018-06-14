@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class AnimationTimeline;
 class Document;
 class KeyframeEffect;
 
@@ -30,6 +31,7 @@ class CORE_EXPORT WorkletAnimationBase : public ScriptWrappable {
 
   virtual Document* GetDocument() const = 0;
   virtual KeyframeEffect* GetEffect() const = 0;
+  virtual AnimationTimeline* GetTimeline() const = 0;
 };
 
 }  // namespace blink
