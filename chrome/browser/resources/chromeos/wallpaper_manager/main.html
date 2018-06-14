@@ -105,6 +105,34 @@ found in the LICENSE file.
       <div class="dialog-main">
         <div id="category-container">
           <div id="wallpaper-set-by-message"></div>
+          <div id="current-wallpaper-info-bar">
+            <img id="current-wallpaper-image"></img>
+            <div id="current-wallpaper-more-info">
+              <div id="currently-set-message"
+                  i18n-content="currentlySetLabel"></div>
+              <div id="current-wallpaper-title"></div>
+              <div id="current-wallpaper-description"></div>
+            </div>
+            <div id="current-wallpaper-more-options">
+              <div id="refresh">
+                <div class="icon"></div>
+                <div class="text" i18n-content="refreshLabel"></div>
+              </div>
+              <div id="explore">
+                <div class="icon"></div>
+                <a class="text" id="current-wallpaper-explore-link"
+                    i18n-content="exploreLabel" target="_blank"></a>
+              </div>
+              <div id="center">
+                <div class="icon"></div>
+                <div class="text" i18n-content="centerLayout"></div>
+              </div>
+              <div id="center-cropped">
+                <div class="icon"></div>
+                <div class="text" i18n-content="centerCroppedLayout"></div>
+              </div>
+            </div>
+          </div>
           <grid id="wallpaper-grid" class="image-picker"></grid>
           <div id="spinner-container" hidden></div>
           <div class="progress-bar" hidden>
@@ -158,38 +186,13 @@ found in the LICENSE file.
       </div>
     </div>
   </div>
-  <div id="current-wallpaper-info-bar">
-    <img id="current-wallpaper-image"></img>
-    <div>
-      <div id="currently-set-message" i18n-content="currentlySetLabel"></div>
-      <div id="current-wallpaper-title"></div>
-      <div id="current-wallpaper-description"></div>
-    </div>
-    <div id="current-wallpaper-more-options">
-      <div id="refresh">
-        <div class="icon"></div>
-        <div class="text" i18n-content="refreshLabel"></div>
-      </div>
-      <div id="explore">
-        <div class="icon"></div>
-        <a class="text" id="current-wallpaper-explore-link"
-            i18n-content="exploreLabel" target="_blank"></a>
-      </div>
-      <div id="center">
-        <div class="icon"></div>
-        <div class="text" i18n-content="centerLayout"></div>
-      </div>
-      <div id="center-cropped">
-        <div class="icon"></div>
-        <div class="text" i18n-content="centerCroppedLayout"></div>
-      </div>
-    </div>
-  </div>
   <div id="set-successfully-message"
       i18n-content="setSuccessfullyMessage"></div>
-  <div class="daily-refresh-banner" hidden>
-    <div id="daily-refresh-label" i18n-content="surpriseMeLabel"></div>
-    <span class="daily-refresh-slider"></span>
+  <div id="daily-refresh-banner-template" hidden>
+    <div class="daily-refresh-banner">
+      <div class="daily-refresh-label" i18n-content="surpriseMeLabel"></div>
+      <span class="daily-refresh-slider"></span>
+    </div>
   </div>
 </body>
 </html>

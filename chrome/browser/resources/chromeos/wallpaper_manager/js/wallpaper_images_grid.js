@@ -354,7 +354,11 @@ cr.define('wallpapers', function() {
      * @type {boolean}
      */
     get isShowingDailyRefresh() {
-      return this.dataModel.item(0).isDailyRefreshItem;
+      for (var i = 0; i < this.dataModel.length; ++i) {
+        if (this.dataModel.item(i).isDailyRefreshItem)
+          return true;
+      }
+      return false;
     },
 
     /**
@@ -362,9 +366,11 @@ cr.define('wallpapers', function() {
      * @type {Object}
      */
     get dailyRefreshItem() {
-      return this.isShowingDailyRefresh ?
-          this.getListItem(this.dataModel.item(0)) :
-          null;
+      for (var i = 0; i < this.dataModel.length; ++i) {
+        if (this.dataModel.item(i).isDailyRefreshItem)
+          return this.getListItemByIndex(i);
+      }
+      return null;
     },
 
     /**
@@ -497,6 +503,7 @@ cr.define('wallpapers', function() {
       if (opt_thumbnail && this.useNewWallpaperPicker_)
         this.cropImageToFitGrid_(opt_thumbnail);
 
+      // Daily refresh item only exists in new wallpaper picker.
       if (this.isShowingDailyRefresh) {
         var dailyRefreshItemReady = this.dailyRefreshItem &&
             this.dailyRefreshImages.length >= DAILY_REFRESH_IMAGES_NUM;
@@ -680,7 +687,6 @@ cr.define('wallpapers', function() {
       if (!this.dailyRefreshItem.querySelector('.daily-refresh-banner')) {
         var dailyRefreshBanner = document.querySelector('.daily-refresh-banner')
                                      .cloneNode(true /*deep=*/);
-        dailyRefreshBanner.hidden = false;
         dailyRefreshBanner.querySelector('.daily-refresh-slider')
             .addEventListener(
                 'click',

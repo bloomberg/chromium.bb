@@ -423,6 +423,10 @@ body.v2 {
   height: 100%;
 }
 
+.v2 #category-container {
+  overflow-y: hidden;
+}
+
 .v2 #categories-list {
   display: block;
   height: 100%;
@@ -462,6 +466,10 @@ body.v2 {
   -webkit-padding-start: unset;
   padding-bottom: unset;
   padding-top: unset;
+}
+
+.v2 .image-picker.top-padding {
+  padding-top: 116px;
 }
 
 .v2 .image-picker [role=listitem] {
@@ -728,7 +736,7 @@ body.v2 {
   transform: translateX(16px);
 }
 
-.v2 #daily-refresh-label {
+.v2 .daily-refresh-label {
   color: rgb(66, 133, 244);
   font-family: 'Roboto';
   font-size: 13px;
@@ -740,24 +748,19 @@ body.v2 {
 
 .v2 #current-wallpaper-info-bar {
   background-color: #fff;
-  border-radius: 4px;
-  bottom: 8px;
-  box-shadow: 0 0 60px;
+  border-bottom: 1px solid;
   display: flex;
   flex-direction: row;
   font-family: 'Roboto';
   font-weight: 500;
-  height: 128px;
-  opacity: 0;
+  height: 100px;
+  padding-bottom: 8px;
   position: absolute;
-  transition: opacity 250ms;
-  width: 704px;
-  z-index: -1;
+  visibility: hidden;  /* Need this for correct positioning. */
 }
 
-.v2:not(.preview-animation):not(.preview-mode) #current-wallpaper-info-bar.show-info-bar {
-  opacity: 1;
-  z-index: 4;
+.v2:not(.preview-mode) #current-wallpaper-info-bar.show-info-bar {
+  visibility: visible;
 }
 
 .v2.preview-animation {
@@ -766,30 +769,28 @@ body.v2 {
 }
 
 .v2 #current-wallpaper-image {
-  -webkit-margin-end: 16px;
-  -webkit-margin-start: 8px;
-  margin-bottom: 8px;
-  margin-top: 8px;
-  width: 160px;
+  -webkit-margin-end: 32px;
+  border-radius: 4px;
+  height: 100px;
+  width: 100px;
 }
 
 .v2 #currently-set-message {
-  color: rgb(66, 133, 244);
+  color: rgb(128, 134, 139);
   font-size: 13px;
-  padding-top: 18px;
 }
 
 .v2 #current-wallpaper-title {
   color: rgb(32, 33, 36);
   font-size: 14px;
-  padding-top: 16px;
+  padding-top: 14px;
 }
 
 .v2 #current-wallpaper-description {
   color: rgb(32, 33, 36);
   font-size: 12px;
   font-weight: 400;
-  padding-top: 14px;
+  padding-top: 16px;
   width: 320px;
 }
 
@@ -798,19 +799,18 @@ body.v2 {
 }
 
 .v2 #current-wallpaper-more-options {
-  -webkit-margin-end: 32px;
   color: rgb(66, 133, 244);
   display: flex;
   flex-direction: column;
   font-size: 12px;
-}
-
-.v2 #current-wallpaper-more-options.online-wallpaper {
-  -webkit-margin-start: 54px;
+  position: absolute;
+  /* TODO(wzang): Change this to be RTL-friendly. */
+  right: 0;
 }
 
 .v2 #current-wallpaper-more-options > div {
-  border: 1px solid;
+  border: 0.5px solid;
+  border-color: rgba(128, 134, 139, 0.6);
   border-radius: 32px;
   display: flex;
   padding: 8px 4px;
