@@ -8,7 +8,7 @@
 
 login.createScreen('SyncConsentScreen', 'sync-consent', function() {
   return {
-    EXTERNAL_API: ['onUserSyncPrefsKnown'],
+    EXTERNAL_API: ['onUserSyncPrefsKnown', 'setThrobberVisible'],
 
     /**
      * Returns the control which should receive initial focus.
@@ -26,6 +26,13 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
     },
 
     /**
+     * Event handler that is invoked just before the screen is hidden.
+     */
+    onBeforeHide: function() {
+      this.setThrobberVisible(false /*visible*/);
+    },
+
+    /**
      * This is called after resources are updated.
      */
     updateLocalizedContent: function() {
@@ -39,6 +46,15 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
      */
     onUserSyncPrefsKnown: function(sync_everything, is_managed) {
       $('sync-consent-impl').onUserSyncPrefsKnown(sync_everything, is_managed);
+    },
+
+    /**
+     * This is called to show/hide the loading UI.
+     * @param {boolean} visible whether to show loading UI.
+     */
+    setThrobberVisible: function(visible) {
+      $('sync-loading').hidden = !visible;
+      $('sync-consent-impl').hidden = visible;
     },
   };
 });

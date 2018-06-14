@@ -28,6 +28,7 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
   void Bind(SyncConsentScreen* screen) override;
   void Show() override;
   void Hide() override;
+  void SetThrobberVisible(bool visible) override;
 
  private:
   // BaseScreenHandler:
