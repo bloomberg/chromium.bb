@@ -280,6 +280,11 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
     return;
   }
 
+  // Even if we have something in-flow, it may just be empty items that
+  // shouldn't trigger creation of a line. Exit now if that's the case.
+  if (line_info->IsEmptyLine())
+    return;
+
   DCHECK(!line_box_metrics.IsEmpty());
 
   NGBfcOffset line_bfc_offset(line_info->LineBfcOffset());

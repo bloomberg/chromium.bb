@@ -198,6 +198,8 @@ bool NGLineBreaker::NextLine(const NGLineLayoutOpportunity& line_opportunity,
   // line boxes. These cases need to be reviewed.
   if (line_.should_create_line_box)
     ComputeLineLocation(line_info);
+  else
+    line_info->SetIsEmptyLine();
 
   return true;
 }
