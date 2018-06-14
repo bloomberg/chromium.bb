@@ -338,7 +338,10 @@ fuzzer_test("media_vpx_video_decoder_fuzzer") {
     ":media",
     "//base",
   ]
-  libfuzzer_options = [ "max_len = 400000" ]
+  libfuzzer_options = [
+    "max_len=400000",
+    "rss_limit_mb=4096",
+  ]
   seed_corpus = "//media/test/data"
 }
 
