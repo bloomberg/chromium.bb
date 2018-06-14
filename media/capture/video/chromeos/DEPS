@@ -1,5 +1,4 @@
 include_rules = [
   "+chromeos/dbus",
-  "+mojo/edk/embedder",
   "+third_party/libsync",
 ]

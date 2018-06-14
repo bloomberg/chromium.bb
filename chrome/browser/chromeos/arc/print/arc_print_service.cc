@@ -31,8 +31,9 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/child_process_host.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/pdf_metafile_skia.h"
@@ -600,16 +601,14 @@ void ArcPrintServiceImpl::Print(mojom::PrintJobInstancePtr instance,
   settings->set_color(FromArcColorMode(attr->color_mode));
   settings->set_copies(print_job->copies);
   settings->set_duplex_mode(FromArcDuplexMode(attr->duplex_mode));
-  mojo::edk::ScopedInternalPlatformHandle scoped_handle;
-  PassWrappedInternalPlatformHandle(print_job->data.release().value(),
-                                    &scoped_handle);
 
+  base::ScopedFD fd =
+      mojo::UnwrapPlatformHandle(std::move(print_job->data)).TakeFD();
   mojom::PrintJobHostPtr host_proxy;
   auto job = std::make_unique<PrintJobHostImpl>(
       mojo::MakeRequest(&host_proxy), std::move(instance), this,
       chromeos::CupsPrintJobManagerFactory::GetForBrowserContext(profile_),
-      std::move(settings), base::File(scoped_handle.release().handle),
-      print_job->data_size);
+      std::move(settings), base::File(fd.release()), print_job->data_size);
   PrintJobHostImpl* job_raw = job.get();
   jobs_.emplace(job_raw, std::move(job));
   std::move(callback).Run(std::move(host_proxy));

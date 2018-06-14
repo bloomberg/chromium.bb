@@ -44,8 +44,8 @@
 #include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
 #include "device/bluetooth/bluez/bluetooth_device_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_remote_gatt_characteristic_bluez.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
@@ -1854,19 +1854,16 @@ void ArcBluetoothBridge::OpenBluetoothSocket(
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  mojo::edk::ScopedInternalPlatformHandle platform_handle{
-      mojo::edk::InternalPlatformHandle(sock.release())};
-  MojoHandle wrapped_handle;
-  MojoResult wrap_result = mojo::edk::CreateInternalPlatformHandleWrapper(
-      std::move(platform_handle), &wrapped_handle);
-  if (wrap_result != MOJO_RESULT_OK) {
-    LOG(ERROR) << "Failed to wrap handles. Closing: " << wrap_result;
+
+  mojo::ScopedHandle handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(sock)));
+  if (handle.is_valid() != MOJO_RESULT_OK) {
+    LOG(ERROR) << "Failed to wrap socket handle. Closing";
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  mojo::ScopedHandle scoped_handle{mojo::Handle(wrapped_handle)};
 
-  std::move(callback).Run(std::move(scoped_handle));
+  std::move(callback).Run(std::move(handle));
 }
 
 bool ArcBluetoothBridge::IsGattServerAttributeHandleAvailable(int need) {

@@ -8,12 +8,12 @@
 #include <memory>
 #include <set>
 
+#include "base/files/scoped_file.h"
 #include "base/memory/singleton.h"
 #include "base/threading/thread.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/video/chromeos/mojo/cros_camera_service.mojom.h"
 #include "media/capture/video/video_capture_device_factory.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
@@ -95,7 +95,7 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
 
   void StopOnProxyThread();
 
-  mojo::edk::ScopedInternalPlatformHandle proxy_fd_;
+  base::ScopedFD proxy_fd_;
   base::ScopedFD cancel_pipe_;
 
   base::Thread proxy_thread_;

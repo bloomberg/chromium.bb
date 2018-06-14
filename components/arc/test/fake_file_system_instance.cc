@@ -19,7 +19,7 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace arc {
 
@@ -207,16 +207,12 @@ void FakeFileSystemInstance::OpenFileToRead(const std::string& url,
       file.seekable == File::Seekable::YES
           ? CreateRegularFileDescriptor(file.content, temp_dir_.GetPath())
           : CreateStreamFileDescriptor(file.content);
-  mojo::edk::ScopedInternalPlatformHandle platform_handle(
-      mojo::edk::InternalPlatformHandle(fd.release()));
-  MojoHandle wrapped_handle;
-  MojoResult result = mojo::edk::CreateInternalPlatformHandleWrapper(
-      std::move(platform_handle), &wrapped_handle);
-  DCHECK_EQ(MOJO_RESULT_OK, result);
+  mojo::ScopedHandle wrapped_handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
+  DCHECK(wrapped_handle.is_valid());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback),
-                     mojo::ScopedHandle(mojo::Handle(wrapped_handle))));
+      base::BindOnce(std::move(callback), std::move(wrapped_handle)));
 }
 
 void FakeFileSystemInstance::GetDocument(const std::string& authority,

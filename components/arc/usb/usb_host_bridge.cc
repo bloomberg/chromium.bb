@@ -19,8 +19,7 @@
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_device_handle.h"
 #include "device/usb/usb_device_linux.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace arc {
 namespace {
@@ -51,18 +50,14 @@ void OnDeviceOpened(mojom::UsbHostHost::OpenDeviceCallback callback,
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  mojo::edk::ScopedInternalPlatformHandle platform_handle{
-      mojo::edk::InternalPlatformHandle(fd.release())};
-  MojoHandle wrapped_handle;
-  MojoResult wrap_result = mojo::edk::CreateInternalPlatformHandleWrapper(
-      std::move(platform_handle), &wrapped_handle);
-  if (wrap_result != MOJO_RESULT_OK) {
-    LOG(ERROR) << "Failed to wrap device FD. Closing: " << wrap_result;
+  mojo::ScopedHandle wrapped_handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
+  if (!wrapped_handle.is_valid()) {
+    LOG(ERROR) << "Failed to wrap device FD. Closing.";
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  mojo::ScopedHandle scoped_handle{mojo::Handle(wrapped_handle)};
-  std::move(callback).Run(std::move(scoped_handle));
+  std::move(callback).Run(std::move(wrapped_handle));
 }
 
 void OnDeviceOpenError(mojom::UsbHostHost::OpenDeviceCallback callback,
