@@ -118,4 +118,7 @@ public class Features {
 
     // WebMessageCallbackCompat.onMessage
     public static final String WEB_MESSAGE_CALLBACK_ON_MESSAGE = "WEB_MESSAGE_CALLBACK_ON_MESSAGE";
+
+    // WebViewCompat.getWebViewClient
+    public static final String GET_WEB_VIEW_CLIENT = "GET_WEB_VIEW_CLIENT";
 }

@@ -4,6 +4,8 @@
 
 package com.android.webview.chromium;
 
+import android.webkit.WebViewClient;
+
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
 import org.chromium.base.ThreadUtils;
@@ -21,9 +23,20 @@ public class SharedWebViewChromium {
     // The WebView wrapper for ContentViewCore and required browser compontents.
     private AwContents mAwContents;
 
+    // The WebViewClient instance that was passed to WebView.setWebViewClient().
+    private WebViewClient mWebViewClient;
+
     public SharedWebViewChromium(WebViewChromiumRunQueue runQueue, WebViewChromiumAwInit awInit) {
         mRunQueue = runQueue;
         mAwInit = awInit;
+    }
+
+    void setWebViewClient(WebViewClient client) {
+        mWebViewClient = client;
+    }
+
+    public WebViewClient getWebViewClient() {
+        return mWebViewClient;
     }
 
     public void setAwContentsOnUiThread(AwContents awContents) {
