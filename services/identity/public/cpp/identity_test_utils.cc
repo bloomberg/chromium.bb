@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -96,15 +97,12 @@ void OneShotIdentityManagerObserver::OnRefreshTokenRemovedForAccount(
   std::move(done_closure_).Run();
 }
 
-// Helper function that updates the refresh token for the primary account to
+// Helper function that updates the refresh token for |account_id| to
 // |new_token|. Blocks until the update is processed by |identity_manager|.
-void UpdateRefreshTokenForPrimaryAccount(
-    ProfileOAuth2TokenService* token_service,
-    IdentityManager* identity_manager,
-    const std::string& new_token) {
-  DCHECK(identity_manager->HasPrimaryAccount());
-  std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
-
+void UpdateRefreshTokenForAccount(ProfileOAuth2TokenService* token_service,
+                                  IdentityManager* identity_manager,
+                                  const std::string& account_id,
+                                  const std::string& new_token) {
   base::RunLoop run_loop;
   OneShotIdentityManagerObserver token_updated_observer(
       identity_manager, run_loop.QuitClosure(),
@@ -164,15 +162,18 @@ void SetRefreshTokenForPrimaryAccount(ProfileOAuth2TokenService* token_service,
   std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
 
   std::string refresh_token = "refresh_token_for_" + account_id;
-  UpdateRefreshTokenForPrimaryAccount(token_service, identity_manager,
-                                      refresh_token);
+  UpdateRefreshTokenForAccount(token_service, identity_manager, account_id,
+                               refresh_token);
 }
 
 void SetInvalidRefreshTokenForPrimaryAccount(
     ProfileOAuth2TokenService* token_service,
     IdentityManager* identity_manager) {
-  UpdateRefreshTokenForPrimaryAccount(
-      token_service, identity_manager,
+  DCHECK(identity_manager->HasPrimaryAccount());
+  std::string account_id = identity_manager->GetPrimaryAccountInfo().account_id;
+
+  UpdateRefreshTokenForAccount(
+      token_service, identity_manager, account_id,
       OAuth2TokenServiceDelegate::kInvalidRefreshToken);
 }
 
@@ -220,6 +221,26 @@ void ClearPrimaryAccount(SigninManagerForTest* signin_manager,
 
   run_loop.Run();
 #endif
+}
+
+std::string MakeAccountAvailable(AccountTrackerService* account_tracker_service,
+                                 ProfileOAuth2TokenService* token_service,
+                                 IdentityManager* identity_manager,
+                                 const std::string& email) {
+  DCHECK(account_tracker_service->FindAccountInfoByEmail(email).IsEmpty());
+
+  std::string gaia_id = "gaia_id_for_" + email;
+  account_tracker_service->SeedAccountInfo(gaia_id, email);
+
+  std::string account_id =
+      account_tracker_service->FindAccountInfoByEmail(email).account_id;
+  DCHECK(!account_id.empty());
+
+  std::string refresh_token = "refresh_token_for_" + account_id;
+  UpdateRefreshTokenForAccount(token_service, identity_manager, account_id,
+                               refresh_token);
+
+  return account_id;
 }
 
 }  // namespace identity
