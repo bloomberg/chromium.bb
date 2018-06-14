@@ -3,36 +3,6 @@
 // found in the LICENSE file.
 
 cr.exportPath('print_preview_new');
-/**
- * @typedef {{accessibility: Function,
- *            documentLoadComplete: Function,
- *            getHeight: Function,
- *            getHorizontalScrollbarThickness: Function,
- *            getPageLocationNormalized: Function,
- *            getVerticalScrollbarThickness: Function,
- *            getWidth: Function,
- *            getZoomLevel: Function,
- *            goToPage: Function,
- *            grayscale: Function,
- *            loadPreviewPage: Function,
- *            onload: Function,
- *            onPluginSizeChanged: Function,
- *            onScroll: Function,
- *            pageXOffset: Function,
- *            pageYOffset: Function,
- *            reload: Function,
- *            resetPrintPreviewMode: Function,
- *            sendKeyEvent: Function,
- *            setPageNumbers: Function,
- *            setPageXOffset: Function,
- *            setPageYOffset: Function,
- *            setZoomLevel: Function,
- *            fitToHeight: Function,
- *            fitToWidth: Function,
- *            zoomIn: Function,
- *            zoomOut: Function}}
- */
-print_preview_new.PDFPlugin;
 
 /**
  * @typedef {{
@@ -138,8 +108,8 @@ Polymer({
   /** @private {boolean} */
   requestPreviewWhenReady_: false,
 
-  /** @private {HTMLEmbedElement|print_preview_new.PDFPlugin} */
-  plugin_: null,
+  /** @private {?print_preview_new.PluginProxy} */
+  pluginProxy_: null,
 
   /** @private {?function(!KeyboardEvent)} */
   keyEventCallback_: null,
@@ -154,22 +124,13 @@ Polymer({
     this.addWebUIListener(
         'page-preview-ready', this.onPagePreviewReady_.bind(this));
 
-    if (!this.checkPluginCompatibility())
+    this.pluginProxy_ = print_preview_new.PluginProxy.getInstance();
+    if (!this.pluginProxy_.checkPluginCompatibility(assert(
+            this.$$('.preview-area-compatibility-object-out-of-process')))) {
       this.previewState = print_preview_new.PreviewAreaState.NO_PLUGIN;
+    }
   },
 
-  /**
-   * @return {boolean} Whether the plugin exists and is compatible. Overridden
-   *     in tests.
-   */
-  checkPluginCompatibility: function() {
-    const oopCompatObj =
-        this.$$('.preview-area-compatibility-object-out-of-process');
-    const isOOPCompatible = oopCompatObj.postMessage;
-    oopCompatObj.parentElement.removeChild(oopCompatObj);
-
-    return isOOPCompatible;
-  },
 
   /**
    * @return {boolean} Whether the preview is loaded.
@@ -379,12 +340,21 @@ Polymer({
    * @private
    */
   onPreviewStart_: function(previewUid, index) {
-    if (!this.plugin_)
-      this.createPlugin_(previewUid, index);
+    if (!this.pluginProxy_.pluginReady()) {
+      const plugin = this.pluginProxy_.createPlugin(previewUid, index);
+      plugin.setKeyEventCallback(this.keyEventCallback_);
+      this.$$('.preview-area-plugin-wrapper')
+          .appendChild(
+              /** @type {Node} */ (plugin));
+      plugin.setLoadCallback(this.onPluginLoad_.bind(this));
+      plugin.setViewportChangedCallback(
+          this.onPreviewVisualStateChange_.bind(this));
+    }
     this.pluginLoaded_ = false;
-    this.plugin_.resetPrintPreviewMode(
-        this.getPreviewUrl_(previewUid, index), !this.getSettingValue('color'),
-        this.getSetting('pages').value, this.documentInfo.isModifiable);
+    this.pluginProxy_.resetPrintPreviewMode(
+        previewUid, index, !this.getSettingValue('color'),
+        /** @type {!Array<number>} */ (this.getSetting('pages').value),
+        this.documentInfo.isModifiable);
   },
 
   /**
@@ -479,17 +449,6 @@ Polymer({
   },
 
   /**
-   * Get the URL for the plugin.
-   * @param {number} previewUid Unique identifier of preview.
-   * @param {number} index Page index for plugin.
-   * @return {string} The URL
-   * @private
-   */
-  getPreviewUrl_: function(previewUid, index) {
-    return `chrome://print/${previewUid}/${index}/print.pdf`;
-  },
-
-  /**
    * Called when a page's preview has been generated.
    * @param {number} pageIndex The index of the page whose preview is ready.
    * @param {number} previewUid The unique ID of the print preview UI.
@@ -504,10 +463,8 @@ Polymer({
     const index = this.getSettingValue('pages').indexOf(pageNumber);
     if (index == 0)
       this.onPreviewStart_(previewUid, pageIndex);
-    if (index != -1) {
-      this.plugin_.loadPreviewPage(
-          this.getPreviewUrl_(previewUid, pageIndex), index);
-    }
+    if (index != -1)
+      this.pluginProxy_.loadPreviewPage(previewUid, pageIndex, index);
   },
 
   /**
@@ -519,7 +476,7 @@ Polymer({
     // Make sure the PDF plugin is there.
     // We only care about: PageUp, PageDown, Left, Up, Right, Down.
     // If the user is holding a modifier key, ignore.
-    if (!this.plugin_ ||
+    if (!this.pluginProxy_.pluginReady() ||
         !arrayContains(
             [
               'PageUp', 'PageDown', 'ArrowLeft', 'ArrowRight', 'ArrowUp',
@@ -551,7 +508,7 @@ Polymer({
 
     // No scroll bar anywhere, or the active element is something else, like a
     // button. Note: buttons have a bigger scrollHeight than clientHeight.
-    this.plugin_.sendKeyEvent(e);
+    this.pluginProxy_.sendKeyEvent(e);
     e.preventDefault();
   },
 
@@ -566,46 +523,17 @@ Polymer({
   },
 
   /**
-   * Creates a preview plugin and adds it to the DOM.
-   * @param {number} previewUid The unique ID of the preview. Used to determine
-   *     the URL for the plugin.
-   * @param {number} index The index of the page to load. Used to determine the
-   *     URL for the plugin.
-   * @private
-   */
-  createPlugin_: function(previewUid, index) {
-    assert(!this.plugin_);
-    const srcUrl = this.getPreviewUrl_(previewUid, index);
-    this.plugin_ = /** @type {print_preview_new.PDFPlugin} */ (
-        PDFCreateOutOfProcessPlugin(srcUrl, 'chrome://print/pdf'));
-    this.plugin_.setKeyEventCallback(this.keyEventCallback_);
-    this.plugin_.classList.add('preview-area-plugin');
-    this.plugin_.setAttribute('aria-live', 'polite');
-    this.plugin_.setAttribute('aria-atomic', 'true');
-    // NOTE: The plugin's 'id' field must be set to 'pdf-viewer' since
-    // chrome/renderer/printing/print_render_frame_helper.cc actually
-    // references it.
-    this.plugin_.setAttribute('id', 'pdf-viewer');
-    this.$$('.preview-area-plugin-wrapper')
-        .appendChild(/** @type {Node} */ (this.plugin_));
-
-    this.plugin_.setLoadCallback(this.onPluginLoad_.bind(this));
-    this.plugin_.setViewportChangedCallback(
-        this.onPreviewVisualStateChange_.bind(this));
-  },
-
-  /**
    * Called when dragging margins starts or stops.
    */
   onMarginDragChanged_: function(e) {
-    if (!this.plugin_)
+    if (!this.pluginProxy_.pluginReady())
       return;
 
     // When hovering over the plugin (which may be in a separate iframe)
     // pointer events will be sent to the frame. When dragging the margins,
     // we don't want this to happen as it can cause the margin to stop
     // being draggable.
-    this.plugin_.style.pointerEvents = e.detail ? 'none' : 'auto';
+    this.pluginProxy_.setPointerEvents(!e.detail);
   },
 
   /**

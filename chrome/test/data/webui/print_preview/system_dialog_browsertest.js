@@ -37,13 +37,14 @@ cr.define('system_dialog_browsertest', function() {
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinationCapabilities(
           print_preview_test_utils.getCddTemplate(initialSettings.printerName));
+      const pluginProxy = new print_preview.PDFPluginStub();
+      print_preview_new.PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
-      linkContainer = page.$$('print-preview-link-container');
-      const previewArea = page.$$('print-preview-preview-area');
-      previewArea.plugin_ = new print_preview.PDFPluginStub(
-          previewArea.onPluginLoad_.bind(previewArea));
       document.body.appendChild(page);
+      const previewArea = page.$.previewArea;
+      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
+      linkContainer = page.$$('print-preview-link-container');
       return Promise
           .all([
             nativeLayer.whenCalled('getInitialSettings'),

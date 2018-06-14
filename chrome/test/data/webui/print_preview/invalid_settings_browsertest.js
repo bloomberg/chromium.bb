@@ -54,8 +54,10 @@ cr.define('invalid_settings_browsertest', function() {
      * given by |initialSettings| and |localDestinationInfos|. Also creates
      * the fake plugin. Moved out of setup so tests can set those parameters
      * differently.
+     * @param {boolean} pluginCompatible Whether the plugin should be set to
+     *     appear compatible.
      */
-    function createPage() {
+    function createPage(pluginCompatible) {
       nativeLayer.setInitialSettings(initialSettings);
       nativeLayer.setLocalDestinations(localDestinationInfos);
       if (initialSettings.printerName) {
@@ -63,11 +65,14 @@ cr.define('invalid_settings_browsertest', function() {
             print_preview_test_utils.getCddTemplate(
                 initialSettings.printerName));
       }
+      const pluginProxy = new print_preview.PDFPluginStub();
+      pluginProxy.setPluginCompatible(pluginCompatible);
+      print_preview_new.PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
-      const previewArea = page.$$('print-preview-preview-area');
-      previewArea.plugin_ = new print_preview.PDFPluginStub(
-          previewArea.onPluginLoad_.bind(previewArea));
+      document.body.appendChild(page);
+      const previewArea = page.$.previewArea;
+      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
     }
 
     /**
@@ -88,9 +93,8 @@ cr.define('invalid_settings_browsertest', function() {
       });
       localDestinationInfos = [];
 
-      createPage();
+      createPage(true);
 
-      document.body.appendChild(page);
       page.userInfo_.setUsers('foo@chromium.org', ['foo@chromium.org']);
       cr.webUIListenerCallback('use-cloud-print', 'cloudprint url', false);
       printers.forEach(printer => {
@@ -99,13 +103,11 @@ cr.define('invalid_settings_browsertest', function() {
     }
 
     // Test that error message is displayed when plugin doesn't exist.
+    // TODO (rbpotter): Fix this test so that it works again with calling
+    // appendChild() before setting checkPluginCompatibility.
     test(assert(TestNames.NoPDFPluginError), function() {
-      createPage();
+      createPage(false);
       const previewArea = page.$.previewArea;
-      previewArea.checkPluginCompatibility = function() {
-        return false;
-      };
-      document.body.appendChild(page);
 
       return nativeLayer.whenCalled('getInitialSettings').then(function() {
         const overlayEl = previewArea.$$('.preview-area-overlay-layer');
@@ -130,7 +132,7 @@ cr.define('invalid_settings_browsertest', function() {
     // is disabled. Verifies that the user can recover from this error by
     // selecting a different, valid printer.
     test(assert(TestNames.InvalidSettingsError), function() {
-      createPage();
+      createPage(true);
       const barDevice = print_preview_test_utils.getCddTemplate('BarDevice');
       nativeLayer.setLocalDestinationCapabilities(barDevice);
 
@@ -150,7 +152,6 @@ cr.define('invalid_settings_browsertest', function() {
       const header = page.$$('print-preview-header');
       const printButton = header.$$('.print');
 
-      document.body.appendChild(page);
       return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {
             page.destinationStore_.startLoadDestinations(

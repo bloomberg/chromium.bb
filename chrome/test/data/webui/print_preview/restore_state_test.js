@@ -73,12 +73,14 @@ cr.define('restore_state_test', function() {
       nativeLayer.setLocalDestinationCapabilities(
           print_preview_test_utils.getCddTemplateWithAdvancedSettings(
               2, initialSettings.printerName));
+      const pluginProxy = new print_preview.PDFPluginStub();
+      print_preview_new.PluginProxy.setInstance(pluginProxy);
 
       page = document.createElement('print-preview-app');
-      const previewArea = page.$$('print-preview-preview-area');
-      previewArea.plugin_ = new print_preview.PDFPluginStub(
-          previewArea.onPluginLoad_.bind(previewArea));
       document.body.appendChild(page);
+      const previewArea = page.$.previewArea;
+      pluginProxy.setLoadCallback(previewArea.onPluginLoad_.bind(previewArea));
+
       return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {
             return nativeLayer.whenCalled('getPrinterCapabilities');
@@ -246,10 +248,10 @@ cr.define('restore_state_test', function() {
           print_preview_test_utils.getCddTemplate(initialSettings.printerName));
 
       page = document.createElement('print-preview-app');
+      document.body.appendChild(page);
       const previewArea = page.$$('print-preview-preview-area');
       previewArea.plugin_ = new print_preview.PDFPluginStub(
           previewArea.onPluginLoad_.bind(previewArea));
-      document.body.appendChild(page);
 
       return nativeLayer.whenCalled('getInitialSettings')
           .then(function() {

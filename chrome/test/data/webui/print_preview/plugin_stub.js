@@ -4,36 +4,79 @@
 
 cr.define('print_preview', function() {
   /**
-   * Test version of the print preview PDF plugin
+   * Test version of the PluginProxy.
    */
   class PDFPluginStub {
+    constructor() {
+      /** @type {?Function} The callback to call on load. */
+      this.loadCallback_ = null;
+
+      /** @type {boolean} Whether the plugin is compatible. */
+      this.compatible_ = true;
+    }
+
+    /** @param {boolean} Whether the PDF plugin should be compatible. */
+    setPluginCompatible(compatible) {
+      this.compatible_ = compatible;
+    }
+
     /**
-     * @param {!Function} loadCallback The function to call when the plugin has
-     *     loaded.
+     * @param {!Function} loadCallback Callback to call when the preview
+     *     loads.
      */
-    constructor(loadCallback) {
-      /**
-       * @private {!Function} The callback to run when the plugin has loaded.
-       */
+    setLoadCallback(loadCallback) {
       this.loadCallback_ = loadCallback;
     }
 
     /**
-     * Stubbed out since some tests result in a call.
-     * @param {string} url The url to initialize the plugin to.
-     * @param {boolean} color Whether the preview should be in color.
-     * @param {!Array<number>} pages The pages to preview.
-     * @param {boolean} modifiable Whether the source document is modifiable.
+     * @param {!Element} oopCompatObj The out of process compatibility element.
+     * @return {boolean} Whether the plugin exists and is compatible.
      */
-    resetPrintPreviewMode(url, color, pages, modifiable) {}
+    checkPluginCompatibility(oopCompatObj) {
+      return this.compatible_;
+    }
+
+    /** @return {boolean} Whether the plugin is ready. */
+    pluginReady() {
+      return true;
+    }
+
+    /**
+     * Sets the load callback to imitate the plugin.
+     * @param {number} previewUid The unique ID of the preview UI.
+     * @param {number} index The preview index to load.
+     * @return {?print_preview_new.PDFPlugin}
+     */
+    createPlugin(previewUid, index) {
+      return null;
+    }
+
+    /**
+     * @param {number} previewUid Unique identifier of preview.
+     * @param {number} index Page index for plugin.
+     * @param {boolean} color Whether the preview should be color.
+     * @param {!Array<number>} pages Page indices to preview.
+     * @param {boolean} modifiable Whether the document is modifiable.
+     */
+    resetPrintPreviewMode(previewUid, index, color, pages, modifiable) {}
+
+    /** @param {!KeyEvent} e Keyboard event to forward to the plugin. */
+    sendKeyEvent(e) {}
+
+    /**
+     * @param {boolean} eventsOn Whether pointer events should be captured by
+     *     the plugin.
+     */
+    setPointerEvents(eventsOn) {}
 
     /**
      * Called when the preview area wants the plugin to load a preview page.
      * Immediately calls loadCallback_().
-     * @param {string} url The preview URL
-     * @param {number} index The index of the page number to load.
+     * @param {number} previewUid The unique ID of the preview UI.
+     * @param {number} pageIndex The page index to load.
+     * @param {number} index The preview index.
      */
-    loadPreviewPage(url, index) {
+    loadPreviewPage(previewUid, pageIndex, index) {
       if (this.loadCallback_)
         this.loadCallback_();
     }

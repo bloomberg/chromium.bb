@@ -329,7 +329,8 @@ cr.define('print_preview_test', function() {
       print_preview.NativeLayer.setInstance(nativeLayer);
       printPreview = new print_preview.PrintPreview();
       previewArea = printPreview.getPreviewArea();
-      previewArea.plugin_ = new print_preview.PDFPluginStub(
+      previewArea.plugin_ = new print_preview.PDFPluginStub();
+      previewArea.plugin_.setLoadCallback(
           previewArea.onPluginLoad_.bind(previewArea));
     });
 
