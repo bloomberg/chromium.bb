@@ -50,11 +50,6 @@ class TrafficAnnotationTestsChecker():
       ["--test-only", "--no-filtering"]      # Not using heuristic filtering.
     ]
 
-    # TODO(https://crbug.com/844014): Remove after debugging on
-    # win-annotator-rel.
-    if sys.platform == 'cygwin' or sys.platform.startswith('win'):
-      configs = configs[:2]
-
     last_result = None
     for config in configs:
       result = self._RunTest(config)
