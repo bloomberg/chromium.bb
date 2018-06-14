@@ -20,4 +20,7 @@ void CheckUserDataDirPolicy(base::FilePath* user_data_dir);
 // process.
 void SetUpBundleOverrides();
 
+// Initialize NSApplication.
+void RegisterBrowserCrApp();
+
 #endif  // CHROME_APP_CHROME_MAIN_MAC_H_

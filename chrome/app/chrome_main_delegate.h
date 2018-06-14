@@ -56,6 +56,7 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
 #endif
   bool ShouldEnableProfilerRecording() override;
   service_manager::ProcessType OverrideProcessType() override;
+  void PreContentInitialization() override;
 
   content::ContentBrowserClient* CreateContentBrowserClient() override;
   content::ContentGpuClient* CreateContentGpuClient() override;

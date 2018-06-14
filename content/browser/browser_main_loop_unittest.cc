@@ -21,7 +21,7 @@ namespace content {
 // the number of cores in its foreground pool.
 TEST(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
   {
-    base::MessageLoop message_loop;
+    base::TaskScheduler::Create("Browser");
     base::test::ScopedCommandLine scoped_command_line;
     scoped_command_line.GetProcessCommandLine()->AppendSwitch(
         switches::kSingleProcess);

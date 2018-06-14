@@ -13,6 +13,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/app/paths_mac.h"
+#include "content/shell/browser/shell_application_mac.h"
 #include "content/shell/common/shell_switches.h"
 
 namespace content {
@@ -48,6 +49,11 @@ void EnsureCorrectResolutionSettings() {
   argv[original_argv.size()] = NULL;
 
   CHECK(execvp(argv[0], argv));
+}
+
+void RegisterShellCrApp() {
+  // Force the NSApplication subclass to be used.
+  [ShellCrApplication sharedApplication];
 }
 
 }  // namespace content

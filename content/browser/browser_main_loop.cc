@@ -509,9 +509,7 @@ BrowserMainLoop::BrowserMainLoop(const MainFunctionParams& parameters)
   g_current_browser_main_loop = this;
 
   if (GetContentClient()->browser()->ShouldCreateTaskScheduler()) {
-    // Use an empty string as TaskScheduler name to match the suffix of browser
-    // process TaskScheduler histograms.
-    base::TaskScheduler::Create("Browser");
+    DCHECK(base::TaskScheduler::GetInstance());
   }
 }
 
@@ -649,9 +647,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
   TRACE_EVENT0("startup", "BrowserMainLoop::MainMessageLoopStart");
 
-  // Create a MessageLoop if one does not already exist for the current thread.
-  if (!base::MessageLoopCurrent::Get())
-    main_message_loop_.reset(new base::MessageLoopForUI);
+  if (!base::MessageLoopCurrentForUI::IsSet())
+    main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
 
   InitializeMainThread();
 }

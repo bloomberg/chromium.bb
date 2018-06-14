@@ -763,133 +763,6 @@ const char kMissingLocaleDataMessage[] =
 
 }  // namespace chrome_browser
 
-#if !defined(OS_ANDROID)
-// A TaskRunner that defers tasks until the real task runner is up and running.
-// This is used during early initialization, before the real task runner has
-// been created. DeferringTaskRunner has the following states.
-//
-// . kInstalled: the initial state. Tasks are added to |deferred_runner_|. In
-//   this state this is installed as the active ThreadTaskRunnerHandle.
-// . kWaitingForMainToStart: this is no longer the active
-//   ThreadTaskRunnerHandle, tasks are still deferred though.
-// . kMessageLoopRunning: last state, all deferred tasks are flushed to the
-//   active ThreadTaskRunnerHandle.
-//
-// The state changes by calling AdvanceToNextState(), and state changes in
-// order.
-class ChromeBrowserMainParts::DeferringTaskRunner
-    : public base::SingleThreadTaskRunner {
- public:
-  DeferringTaskRunner() {
-    deferred_runner_ =
-        base::MakeRefCounted<base::DeferredSequencedTaskRunner>();
-    thread_task_runner_handle_ =
-        std::make_unique<base::ThreadTaskRunnerHandle>(this);
-  }
-
-  bool is_at_end_state() const {
-    base::AutoLock lock(lock_);
-    return state_ == State::kMessageLoopRunning;
-  }
-
-  // See description above class for details.
-  void AdvanceToNextState() {
-    std::unique_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle;
-    {
-      base::AutoLock lock(lock_);
-      switch (state_) {
-        case State::kInstalled:
-          state_ = State::kWaitingForMainToStart;
-          // ~ThreadTaskRunnerHandle calls back to
-          // RunsTasksInCurrentSequence(), so destruction has to happen when
-          // the lock isn't held.
-          thread_task_runner_handle = std::move(thread_task_runner_handle_);
-          break;
-
-        case State::kWaitingForMainToStart:
-          state_ = State::kMessageLoopRunning;
-          deferred_runner_->StartWithTaskRunner(
-              base::ThreadTaskRunnerHandle::Get());
-          deferred_runner_ = nullptr;
-          main_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-          break;
-
-        case State::kMessageLoopRunning:
-          NOTREACHED();
-      }
-    }
-  }
-
-  // base::SequencedTaskRunner:
-  bool PostDelayedTask(const base::Location& from_here,
-                       base::OnceClosure task,
-                       base::TimeDelta delay) override {
-    base::AutoLock lock(lock_);
-    switch (state_) {
-      case State::kInstalled:
-      case State::kWaitingForMainToStart:
-        return deferred_runner_->PostDelayedTask(from_here, std::move(task),
-                                                 delay);
-
-      case State::kMessageLoopRunning:
-        return main_thread_task_runner_->PostDelayedTask(
-            from_here, std::move(task), delay);
-    }
-    NOTREACHED();
-    return false;
-  }
-  bool RunsTasksInCurrentSequence() const override {
-    base::AutoLock lock(lock_);
-    switch (state_) {
-      case State::kInstalled:
-      case State::kWaitingForMainToStart:
-        return deferred_runner_->RunsTasksInCurrentSequence();
-
-      case State::kMessageLoopRunning:
-        return main_thread_task_runner_->RunsTasksInCurrentSequence();
-    }
-    NOTREACHED();
-    return false;
-  }
-  bool PostNonNestableDelayedTask(const base::Location& from_here,
-                                  base::OnceClosure task,
-                                  base::TimeDelta delay) override {
-    base::AutoLock lock(lock_);
-    switch (state_) {
-      case State::kInstalled:
-      case State::kWaitingForMainToStart:
-        return deferred_runner_->PostNonNestableDelayedTask(
-            from_here, std::move(task), delay);
-
-      case State::kMessageLoopRunning:
-        return main_thread_task_runner_->PostNonNestableDelayedTask(
-            from_here, std::move(task), delay);
-    }
-    NOTREACHED();
-    return false;
-  }
-
- private:
-  // See class description for details on states.
-  enum class State {
-    kInstalled,
-    kWaitingForMainToStart,
-    kMessageLoopRunning,
-  };
-
-  ~DeferringTaskRunner() override = default;
-
-  // |lock_| protects *all* members.
-  mutable base::Lock lock_;
-  scoped_refptr<base::DeferredSequencedTaskRunner> deferred_runner_;
-  scoped_refptr<SingleThreadTaskRunner> main_thread_task_runner_;
-  std::unique_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
-  State state_ = State::kInstalled;
-
-  DISALLOW_COPY_AND_ASSIGN(DeferringTaskRunner);
-};
-#endif
-
 // BrowserMainParts ------------------------------------------------------------
 
 ChromeBrowserMainParts::ChromeBrowserMainParts(
@@ -916,11 +789,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
 #if !defined(OS_ANDROID)
   startup_watcher_ = std::make_unique<StartupTimeBomb>();
   shutdown_watcher_ = std::make_unique<ShutdownWatcherHelper>();
-
-  // This needs to be created in the constructor as Chrome OS now creates some
-  // classes that depend upon a ThreadTaskRunnerHandle in
-  // PreEarlyInitialization().
-  initial_task_runner_ = base::MakeRefCounted<DeferringTaskRunner>();
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -1142,10 +1010,6 @@ void ChromeBrowserMainParts::ToolkitInitialized() {
 }
 
 void ChromeBrowserMainParts::PreMainMessageLoopStart() {
-#if !defined(OS_ANDROID)
-  initial_task_runner_->AdvanceToNextState();
-#endif
-
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopStart");
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
@@ -1322,11 +1186,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // Cache first run state early.
   first_run::IsChromeFirstRun();
 
-  // The real ThreadTaskRunnerHandle has been installed. Flush all the tasks
-  // and release the ref to |initial_task_runner_| so that it may be destroyed.
-  initial_task_runner_->AdvanceToNextState();
-  DCHECK(initial_task_runner_->is_at_end_state());
-  initial_task_runner_ = nullptr;
 #endif  // !defined(OS_ANDROID)
 
   PrefService* local_state = browser_process_->local_state();

@@ -59,10 +59,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 #endif
 
  protected:
-#if !defined(OS_ANDROID)
-  class DeferringTaskRunner;
-#endif
-
   explicit ChromeBrowserMainParts(const content::MainFunctionParams& parameters,
                                   std::unique_ptr<ui::DataPack> data_pack);
 
@@ -210,13 +206,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
 
   base::FilePath user_data_dir_;
-
-#if !defined(OS_ANDROID)
-  // This TaskRunner is created and the constructor and destroyed in
-  // PreCreateThreadsImpl(). It's used to queue any tasks scheduled before the
-  // real task scheduler has been created.
-  scoped_refptr<DeferringTaskRunner> initial_task_runner_;
-#endif
 
   // This is used to store the ui data pack. The data pack is moved when
   // resource bundle gets created.

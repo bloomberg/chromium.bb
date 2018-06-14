@@ -458,6 +458,7 @@ component("headless") {
       "lib/browser/headless_web_contents_impl.h",
       "lib/headless_content_main_delegate.cc",
       "lib/headless_content_main_delegate.h",
+      "lib/headless_content_main_delegate_mac.mm",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
       "lib/utility/headless_content_utility_client.cc",
@@ -542,6 +543,7 @@ if (!is_component_build) {
       "lib/browser/headless_web_contents_impl.h",
       "lib/headless_content_main_delegate.cc",
       "lib/headless_content_main_delegate.h",
+      "lib/headless_content_main_delegate_mac.mm",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
     ]

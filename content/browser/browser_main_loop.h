@@ -121,6 +121,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   // that return objects which are owned by this class.
   static BrowserMainLoop* GetInstance();
 
+  // The TaskScheduler instance must exist but not to be started when building
+  // BrowserMainLoop.
   explicit BrowserMainLoop(const MainFunctionParams& parameters);
   virtual ~BrowserMainLoop();
 
