@@ -137,6 +137,12 @@ class CORE_EXPORT NGLineInfo {
   bool IsLastLine() const { return is_last_line_; }
   void SetIsLastLine(bool is_last_line) { is_last_line_ = is_last_line; }
 
+  // If the line is marked as empty, it means that there's no content that
+  // requires it to be present at all, e.g. when there are only close tags with
+  // no margin/border/padding.
+  bool IsEmptyLine() const { return is_empty_line_; }
+  void SetIsEmptyLine() { is_empty_line_ = true; }
+
   // NGInlineItemResults for this line.
   NGInlineItemResults& Results() { return results_; }
   const NGInlineItemResults& Results() const { return results_; }
@@ -183,6 +189,7 @@ class CORE_EXPORT NGLineInfo {
 
   bool use_first_line_style_ = false;
   bool is_last_line_ = false;
+  bool is_empty_line_ = false;
 };
 
 }  // namespace blink
