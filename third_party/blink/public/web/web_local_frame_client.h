@@ -768,6 +768,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void EnterFullscreen(const blink::WebFullscreenOptions& options) {}
   virtual void ExitFullscreen() {}
 
+  // Called when this frame changes fullscreen state.
+  virtual void FullscreenStateChanged(bool is_fullscreen) {}
+
   // Sudden termination --------------------------------------------------
 
   // Called when elements preventing the sudden termination of the frame

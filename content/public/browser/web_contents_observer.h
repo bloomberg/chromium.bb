@@ -413,6 +413,13 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                              bool will_cause_resize) {}
 
+  // Signals that |rfh| has the current fullscreen element. This is invoked
+  // when:
+  //  1) an element in this frame enters fullscreen or in nested fullscreen, or
+  //  2) after an element in a descendant frame exits fullscreen and makes
+  //     this frame own the current fullscreen element again.
+  virtual void DidAcquireFullscreen(RenderFrameHost* rfh) {}
+
   // Invoked when an interstitial page is attached or detached.
   virtual void DidAttachInterstitialPage() {}
   virtual void DidDetachInterstitialPage() {}
