@@ -126,8 +126,7 @@ testcase.closeQuickView = function() {
 testcase.openQuickViewUsb = function() {
   let appId;
 
-  const USB_VOLUME_QUERY = '#directory-tree > .tree-item > .tree-row > ' +
-      '.item-icon[volume-type-icon="removable"]';
+  const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   StepsRunner.run([
     // Open Files app on local Downloads.
