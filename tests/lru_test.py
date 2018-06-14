@@ -17,180 +17,175 @@ sys.path.insert(0, ROOT_DIR)
 from utils import lru
 
 
+def _load_from_raw(state_text):
+  """Makes a LRUDict by loading the given JSON from a file."""
+  handle, tmp_name = tempfile.mkstemp(prefix=u'lru_test')
+  os.close(handle)
+  try:
+    with open(tmp_name, 'w') as f:
+      f.write(state_text)
+    return lru.LRUDict.load(tmp_name)
+  finally:
+    try:
+      os.unlink(tmp_name)
+    except OSError:
+      pass
+
+
+def _save_and_load(lru_dict):
+  """Saves then reloads a LRUDict instance."""
+  handle, tmp_name = tempfile.mkstemp(prefix=u'lru_test')
+  os.close(handle)
+  try:
+    lru_dict.save(tmp_name)
+    return lru.LRUDict.load(tmp_name)
+  finally:
+    try:
+      os.unlink(tmp_name)
+    except OSError:
+      pass
+
+
+def _prepare_lru_dict(data):
+  """Returns new LRUDict with given |keys| added one by one."""
+  lru_dict = lru.LRUDict()
+  for key, val in data:
+    lru_dict.add(key, val)
+  return lru_dict
+
+
 class LRUDictTest(unittest.TestCase):
-  @staticmethod
-  def prepare_lru_dict(keys):
-    """Returns new LRUDict with given |keys| added one by one."""
-    lru_dict = lru.LRUDict()
-    for key in keys:
-      lru_dict.add(key, None)
-    return lru_dict
+  def assert_same_data(self, expected, lru_dict):
+    """Asserts that given |lru_dict| contains same data as |expected|.
 
-  def assert_order(self, lru_dict, expected_keys):
-    """Asserts order of keys in |lru_dict| is |expected_keys|.
-
-    expected_keys[0] is supposedly oldest key, expected_keys[-1] is newest.
-
-    Destroys |lru_dict| state in the process.
+    Tests iteritems(), itervalues(), get(), __iter__.
     """
-    # Check keys iteration works.
-    self.assertEqual(lru_dict.keys_set(), set(expected_keys))
-
-    # Check pop_oldest returns keys in expected order.
-    actual_keys = []
-    while lru_dict:
-      oldest_key, _ = lru_dict.pop_oldest()
-      actual_keys.append(oldest_key)
-    self.assertEqual(actual_keys, expected_keys)
-
-  def assert_same_data(self, lru_dict, regular_dict):
-    """Asserts that given |lru_dict| contains same data as |regular_dict|."""
-    self.assertEqual(lru_dict.keys_set(), set(regular_dict.keys()))
-    self.assertEqual(set(lru_dict.itervalues()), set(regular_dict.values()))
-
-    for k, v in regular_dict.items():
+    self.assertEqual(list(lru_dict.iteritems()), expected)
+    self.assertEqual(set(lru_dict), set(k for k, v in expected))
+    self.assertEqual(list(lru_dict.itervalues()), [v for k, v in expected])
+    for k, v in expected:
       self.assertEqual(lru_dict.get(k), v)
 
-  def test_basic_dict_funcs(self):
-    lru_dict = lru.LRUDict()
+  def test_empty(self):
+    self.assert_same_data([], lru.LRUDict())
 
-    # Add a bunch.
-    data = {1: 'one', 2: 'two', 3: 'three'}
-    for k, v in data.items():
-      lru_dict.add(k, v)
-    # Check its there.
-    self.assert_same_data(lru_dict, data)
-
-    # Replace value.
-    lru_dict.add(1, 'one!!!')
-    data[1] = 'one!!!'
-    self.assert_same_data(lru_dict, data)
-
-    # Check pop works.
-    self.assertEqual(lru_dict.pop(2), 'two')
-    data.pop(2)
-    self.assert_same_data(lru_dict, data)
-
-    # Pop missing key.
-    with self.assertRaises(KeyError):
-      lru_dict.pop(2)
-
-    # Touch has no effect on set of keys and values.
-    lru_dict.touch(1)
-    self.assert_same_data(lru_dict, data)
-
-    # Touch fails on missing key.
-    with self.assertRaises(KeyError):
-      lru_dict.touch(22)
-
-  def test_magic_methods(self):
-    # Check __nonzero__, __len__ and __contains__ for empty dict.
+  def test_magic_methods_empty(self):
+    """Tests __nonzero__, __iter, __len__, __getitem__ and __contains__."""
+    # Check for empty dict.
     lru_dict = lru.LRUDict()
     self.assertFalse(lru_dict)
     self.assertEqual(len(lru_dict), 0)
     self.assertFalse(1 in lru_dict)
+    self.assertFalse([i for i in lru_dict])
+    with self.assertRaises(KeyError):
+      _ = lru_dict[1]
 
+  def test_magic_methods_nonempty(self):
+    """Tests __nonzero__, __iter, __len__, __getitem__ and __contains__."""
     # Dict with one item.
+    lru_dict = lru.LRUDict()
     lru_dict.add(1, 'one')
     self.assertTrue(lru_dict)
     self.assertEqual(len(lru_dict), 1)
     self.assertTrue(1 in lru_dict)
     self.assertFalse(2 in lru_dict)
+    self.assertTrue([i for i in lru_dict])
+    self.assertEqual('one', lru_dict[1])
 
-  def test_order(self):
-    data = [1, 2, 3]
+  def test_add(self):
+    lru_dict = _prepare_lru_dict([(1, 'one'), (2, 'two'), (3, 'three')])
+    lru_dict.add(1, 'one!!!')
+    expected = [(2, 'two'), (3, 'three'), (1, 'one!!!')]
+    self.assert_same_data(expected, lru_dict)
+    lru_dict.add(0, 'zero')
+    expected = [(2, 'two'), (3, 'three'), (1, 'one!!!'), (0, 'zero')]
+    self.assert_same_data(expected, lru_dict)
 
-    # Edge cases.
-    self.assert_order(self.prepare_lru_dict([]), [])
-    self.assert_order(self.prepare_lru_dict([1]), [1])
-
-    # No touches.
-    self.assert_order(self.prepare_lru_dict(data), data)
-
-    # Touching newest item is noop.
-    lru_dict = self.prepare_lru_dict(data)
-    lru_dict.touch(3)
-    self.assert_order(lru_dict, data)
-
-    # Touch to move to newest.
-    lru_dict = self.prepare_lru_dict(data)
-    lru_dict.touch(2)
-    self.assert_order(lru_dict, [1, 3, 2])
-
-    # Pop newest.
-    lru_dict = self.prepare_lru_dict(data)
+  def test_pop_first(self):
+    lru_dict = _prepare_lru_dict([(1, 'one'), (2, 'two'), (3, 'three')])
     lru_dict.pop(1)
-    self.assert_order(lru_dict, [2, 3])
+    self.assert_same_data([(2, 'two'), (3, 'three')], lru_dict)
 
-    # Pop in the middle.
-    lru_dict = self.prepare_lru_dict(data)
+  def test_pop_middle(self):
+    lru_dict = _prepare_lru_dict([(1, 'one'), (2, 'two'), (3, 'three')])
     lru_dict.pop(2)
-    self.assert_order(lru_dict, [1, 3])
+    self.assert_same_data([(1, 'one'), (3, 'three')], lru_dict)
 
-    # Pop oldest.
-    lru_dict = self.prepare_lru_dict(data)
+  def test_pop_last(self):
+    lru_dict = _prepare_lru_dict([(1, 'one'), (2, 'two'), (3, 'three')])
     lru_dict.pop(3)
-    self.assert_order(lru_dict, [1, 2])
+    self.assert_same_data([(1, 'one'), (2, 'two')], lru_dict)
 
-    # Add newest.
-    lru_dict = self.prepare_lru_dict(data)
-    lru_dict.add(4, 4)
-    self.assert_order(lru_dict, data + [4])
+  def test_pop_missing(self):
+    lru_dict = _prepare_lru_dict([(1, 'one'), (2, 'two'), (3, 'three')])
+    with self.assertRaises(KeyError):
+      lru_dict.pop(4)
+
+  def test_touch(self):
+    lru_dict = _prepare_lru_dict([(1, 'one'), (2, 'two'), (3, 'three')])
+    lru_dict.touch(2)
+    self.assert_same_data([(1, 'one'), (3, 'three'), (2, 'two')], lru_dict)
+    with self.assertRaises(KeyError):
+      lru_dict.touch(4)
+
+  def test_timestamp(self):
+    """Tests get_oldest, pop_oldest."""
+    lru_dict = lru.LRUDict()
+
+    now = 0
+    lru_dict.time_fn = lambda: now
+
+    lru_dict.add('ka', 'va')
+    now += 1
+
+    lru_dict.add('kb', 'vb')
+    now += 1
+
+    self.assertEqual(lru_dict.get_timestamp('ka'), 0)
+    self.assertEqual(lru_dict.get_timestamp('kb'), 1)
+    self.assertEqual(lru_dict.get_oldest(), ('ka', ('va', 0)))
+    self.assertEqual(lru_dict.pop_oldest(), ('ka', ('va', 0)))
+    self.assertEqual(lru_dict.get_oldest(), ('kb', ('vb', 1)))
+    self.assertEqual(lru_dict.pop_oldest(), ('kb', ('vb', 1)))
+
+  def test_transform(self):
+    lru_dict = lru.LRUDict()
+    lru_dict.add('ka', 'va')
+    lru_dict.add('kb', 'vb')
+    lru_dict.transform(lambda k, v: v + '*')
+    self.assert_same_data([('ka', 'va*'), ('kb', 'vb*')], lru_dict)
+
+  def test_load_save_empty(self):
+    self.assertFalse(_save_and_load(lru.LRUDict()))
 
   def test_load_save(self):
-    def save_and_load(lru_dict):
-      handle, tmp_name = tempfile.mkstemp(prefix=u'lru_test')
-      os.close(handle)
-      try:
-        lru_dict.save(tmp_name)
-        return lru_dict.load(tmp_name)
-      finally:
-        try:
-          os.unlink(tmp_name)
-        except OSError:
-          pass
-
-    data = [1, 2, 3]
-
-    # Edge case.
-    empty = save_and_load(lru.LRUDict())
-    self.assertFalse(empty)
-
+    data = [(1, None), (2, None), (3, None)]
     # Normal flow.
-    lru_dict = save_and_load(self.prepare_lru_dict(data))
-    self.assert_order(lru_dict, data)
+    lru_dict = _prepare_lru_dict(data)
+    expected = [(1, None), (2, None), (3, None)]
+    self.assert_same_data(expected, _save_and_load(lru_dict))
 
     # After touches.
-    lru_dict = self.prepare_lru_dict(data)
+    lru_dict = _prepare_lru_dict(data)
     lru_dict.touch(2)
-    lru_dict = save_and_load(lru_dict)
-    self.assert_order(lru_dict, [1, 3, 2])
+    expected = [(1, None), (3, None), (2, None)]
+    self.assert_same_data(expected, _save_and_load(lru_dict))
 
     # After pop.
-    lru_dict = self.prepare_lru_dict(data)
+    lru_dict = _prepare_lru_dict(data)
     lru_dict.pop(2)
-    lru_dict = save_and_load(lru_dict)
-    self.assert_order(lru_dict, [1, 3])
+    expected = [(1, None), (3, None)]
+    self.assert_same_data(expected, _save_and_load(lru_dict))
 
     # After add.
-    lru_dict = self.prepare_lru_dict(data)
+    lru_dict = _prepare_lru_dict(data)
     lru_dict.add(4, 4)
-    lru_dict = save_and_load(lru_dict)
-    self.assert_order(lru_dict, data + [4])
+    expected = [(1, None), (2, None), (3, None), (4, 4)]
+    self.assert_same_data(expected, _save_and_load(lru_dict))
 
   def test_corrupted_state_file(self):
-    def load_from_state(state_text):
-      handle, tmp_name = tempfile.mkstemp(prefix=u'lru_test')
-      os.close(handle)
-      try:
-        with open(tmp_name, 'w') as f:
-          f.write(state_text)
-        return lru.LRUDict.load(tmp_name)
-      finally:
-        os.unlink(tmp_name)
-
     # Loads correct state just fine.
-    s = load_from_state(json.dumps(
+    s = _load_from_raw(json.dumps(
       {
         'version': 2,
         'items': [
@@ -203,41 +198,25 @@ class LRUDictTest(unittest.TestCase):
 
     # Not a json.
     with self.assertRaises(ValueError):
-      load_from_state('garbage, not a state')
+      _load_from_raw('garbage, not a state')
 
     # Not a list.
     with self.assertRaises(ValueError):
-      load_from_state('{}')
+      _load_from_raw('{}')
 
     # Not a list of pairs.
     with self.assertRaises(ValueError):
-      load_from_state(json.dumps([
+      _load_from_raw(json.dumps([
           ['key', 'value', 'and whats this?'],
       ]))
 
     # Duplicate keys.
     with self.assertRaises(ValueError):
-      load_from_state(json.dumps([
+      _load_from_raw(json.dumps([
           ['key', 'value'],
           ['key', 'another_value'],
       ]))
 
-  def test_timestamp(self):
-    lru_dict = lru.LRUDict()
-
-    now = 0
-    lru_dict.time_fn = lambda: now
-
-    lru_dict.add('ka', 'va')
-    now += 1
-
-    lru_dict.add('kb', 'vb')
-    now += 1
-
-    self.assertEqual(lru_dict.get_oldest(), ('ka', ('va', 0)))
-    self.assertEqual(lru_dict.pop_oldest(), ('ka', ('va', 0)))
-    self.assertEqual(lru_dict.get_oldest(), ('kb', ('vb', 1)))
-    self.assertEqual(lru_dict.pop_oldest(), ('kb', ('vb', 1)))
 
 if __name__ == '__main__':
   VERBOSE = '-v' in sys.argv

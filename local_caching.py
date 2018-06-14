@@ -341,7 +341,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
 
   def cached_set(self):
     with self._lock:
-      return self._lru.keys_set()
+      return set(self._lru)
 
   def cleanup(self):
     """Cleans up the cache directory.
@@ -355,7 +355,7 @@ class DiskContentAddressedCache(ContentAddressedCache):
     with self._lock:
       fs.chmod(self.cache_dir, 0700)
       # Ensure that all files listed in the state still exist and add new ones.
-      previous = self._lru.keys_set()
+      previous = set(self._lru)
       # It'd be faster if there were a readdir() function.
       for filename in fs.listdir(self.cache_dir):
         if filename == self.STATE_FILE:
@@ -716,7 +716,7 @@ class NamedCache(Cache):
     NamedCache must be open.
     """
     with self._lock:
-      return self._lru.keys_set()
+      return set(self._lru)
 
   def install(self, path, name):
     """Moves the directory for the specified named cache to |path|.
