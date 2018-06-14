@@ -174,6 +174,19 @@ bool ChromeVirtualKeyboardDelegate::SetVirtualKeyboardMode(
   return true;
 }
 
+bool ChromeVirtualKeyboardDelegate::SetOccludedBounds(
+    const std::vector<gfx::Rect>& bounds) {
+  keyboard::KeyboardController* controller =
+      keyboard::KeyboardController::Get();
+  if (!controller->enabled())
+    return false;
+
+  // TODO(https://crbug.com/826617): Support occluded bounds with multiple
+  // rectangles.
+  controller->SetOccludedBounds(bounds.empty() ? gfx::Rect() : bounds[0]);
+  return true;
+}
+
 keyboard::ContainerType
 ChromeVirtualKeyboardDelegate::ConvertKeyboardModeToContainerType(
     int mode) const {

@@ -26,13 +26,16 @@ void ContainerFullscreenBehavior::SetCanonicalBounds(
 
 gfx::Rect ContainerFullscreenBehavior::GetOccludedBounds(
     const gfx::Rect& visual_bounds_in_screen) const {
-  // TODO(https://crbug.com/826617): Get occluded bounds from IME.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return {};
+  return occluded_bounds_;
 }
 
 ContainerType ContainerFullscreenBehavior::GetType() const {
   return ContainerType::FULLSCREEN;
+}
+
+void ContainerFullscreenBehavior::SetOccludedBounds(
+    const gfx::Rect& occluded_bounds) {
+  occluded_bounds_ = occluded_bounds;
 }
 
 }  //  namespace keyboard

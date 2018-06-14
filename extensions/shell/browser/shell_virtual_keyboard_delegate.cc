@@ -77,6 +77,11 @@ bool ShellVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
   return false;
 }
 
+bool ShellVirtualKeyboardDelegate::SetOccludedBounds(
+    const std::vector<gfx::Rect>& bounds) {
+  return false;
+}
+
 api::virtual_keyboard::FeatureRestrictions
 ShellVirtualKeyboardDelegate::RestrictFeatures(
     const api::virtual_keyboard::RestrictFeatures::Params& params) {

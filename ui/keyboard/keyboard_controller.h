@@ -170,6 +170,9 @@ class KEYBOARD_EXPORT KeyboardController
   // lock screens.
   gfx::Rect GetKeyboardLockScreenOffsetBounds() const;
 
+  // Set the area on the screen that are occluded by the keyboard.
+  void SetOccludedBounds(const gfx::Rect& bounds);
+
   KeyboardControllerState GetStateForTest() const { return state_; }
 
   ContainerType GetActiveContainerType() const {

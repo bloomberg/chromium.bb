@@ -51,6 +51,7 @@ class ChromeVirtualKeyboardDelegate : public VirtualKeyboardDelegate {
   bool SetDraggableArea(
       const api::virtual_keyboard_private::Bounds& rect) override;
   bool SetRequestedKeyboardState(int state_enum) override;
+  bool SetOccludedBounds(const std::vector<gfx::Rect>& bounds) override;
 
   api::virtual_keyboard::FeatureRestrictions RestrictFeatures(
       const api::virtual_keyboard::RestrictFeatures::Params& params) override;

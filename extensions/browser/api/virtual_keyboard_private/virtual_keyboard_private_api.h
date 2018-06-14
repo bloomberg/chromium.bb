@@ -182,6 +182,19 @@ class VirtualKeyboardPrivateSetKeyboardStateFunction
   ResponseAction Run() override;
 };
 
+class VirtualKeyboardPrivateSetOccludedBoundsFunction
+    : public VirtualKeyboardPrivateFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setOccludedBounds",
+                             VIRTUALKEYBOARDPRIVATE_SETOCCLUDEDBOUNDS);
+
+ protected:
+  ~VirtualKeyboardPrivateSetOccludedBoundsFunction() override {}
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class VirtualKeyboardDelegate;
 
 class VirtualKeyboardAPI : public BrowserContextKeyedAPI {

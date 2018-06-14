@@ -71,7 +71,7 @@ function mockExtensionApis(mockController) {
   var virtualKeyboardPrivateMethods = [
     'getKeyboardConfig', 'hideKeyboard', 'insertText', 'lockKeyboard',
     'moveCursor', 'sendKeyEvent', 'setMode', 'setKeyboardState',
-    'setHotrodKeyboard'
+    'setOccludedBounds', 'setHotrodKeyboard'
   ];
 
   var inputMethodPrivateMethods =

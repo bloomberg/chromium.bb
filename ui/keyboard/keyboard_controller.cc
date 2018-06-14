@@ -296,13 +296,14 @@ void KeyboardController::NotifyContentsBoundsChanging(
     const gfx::Rect& new_bounds) {
   visual_bounds_in_screen_ = new_bounds;
   if (ui_->HasContentsWindow() && ui_->GetContentsWindow()->IsVisible()) {
+    const gfx::Rect occluded_bounds =
+        container_behavior_->GetOccludedBounds(new_bounds);
     notification_manager_.SendNotifications(
-        container_behavior_->GetOccludedBounds(new_bounds),
         container_behavior_->OccludedBoundsAffectWorkspaceLayout(),
-        keyboard_locked(), new_bounds, observer_list_);
+        keyboard_locked(), new_bounds, occluded_bounds, observer_list_);
 
     if (keyboard::IsKeyboardOverscrollEnabled())
-      ui_->InitInsets(new_bounds);
+      ui_->InitInsets(occluded_bounds);
     else
       ui_->ResetInsets();
   } else {
@@ -830,6 +831,18 @@ gfx::Rect KeyboardController::GetKeyboardLockScreenOffsetBounds() const {
   return gfx::Rect();
 }
 
+void KeyboardController::SetOccludedBounds(const gfx::Rect& bounds) {
+  if (container_behavior_->GetType() != ContainerType::FULLSCREEN)
+    return;
+
+  static_cast<ContainerFullscreenBehavior&>(*container_behavior_)
+      .SetOccludedBounds(bounds);
+
+  // Notify that only the occluded bounds have changed.
+  if (keyboard_visible())
+    NotifyContentsBoundsChanging(visual_bounds_in_screen_);
+}
+
 gfx::Rect KeyboardController::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
     const gfx::Rect& requested_bounds) const {
@@ -888,7 +901,6 @@ bool KeyboardController::DisplayVirtualKeyboard() {
   }
   return false;
 }
-
 void KeyboardController::AddObserver(
     ui::InputMethodKeyboardControllerObserver* observer) {
   // TODO: Implement me

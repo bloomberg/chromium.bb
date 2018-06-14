@@ -38,10 +38,10 @@ class KEYBOARD_EXPORT NotificationManager {
   // - layout displacement bounds change
   // - general availability change
   void SendNotifications(
-      const gfx::Rect& occluded_bounds,
       bool bounds_affect_layout,
       bool is_locked,
-      const gfx::Rect& bounds,
+      const gfx::Rect& visual_bounds,
+      const gfx::Rect& occluded_bounds,
       const base::ObserverList<KeyboardControllerObserver>& observers);
 
   bool ShouldSendAvailabilityNotification(bool current_availability);
