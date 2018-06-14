@@ -28,36 +28,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_WEB_SOCKET_HANDSHAKE_RESPONSE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_WEB_SOCKET_HANDSHAKE_RESPONSE_H_
+#include "third_party/blink/renderer/platform/network/websocket_handshake_response.h"
 
-#include "third_party/blink/renderer/platform/network/http_header_map.h"
-#include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/network/websocket_handshake_request.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT WebSocketHandshakeResponse final {
- public:
-  WebSocketHandshakeResponse();
-  ~WebSocketHandshakeResponse();
+WebSocketHandshakeResponse::WebSocketHandshakeResponse() = default;
 
-  int StatusCode() const;
-  void SetStatusCode(int);
-  const String& StatusText() const;
-  void SetStatusText(const String&);
-  const HTTPHeaderMap& HeaderFields() const;
-  void AddHeaderField(const AtomicString& name, const AtomicString& value);
-  const String& HeadersText() const { return headers_text_; }
-  void SetHeadersText(const String& text) { headers_text_ = text; }
+WebSocketHandshakeResponse::~WebSocketHandshakeResponse() = default;
 
- private:
-  int status_code_;
-  String status_text_;
-  HTTPHeaderMap header_fields_;
-  String headers_text_;
-};
+int WebSocketHandshakeResponse::StatusCode() const {
+  return status_code_;
+}
+
+void WebSocketHandshakeResponse::SetStatusCode(int status_code) {
+  DCHECK_GE(status_code, 100);
+  DCHECK_LT(status_code, 600);
+  status_code_ = status_code;
+}
+
+const String& WebSocketHandshakeResponse::StatusText() const {
+  return status_text_;
+}
+
+void WebSocketHandshakeResponse::SetStatusText(const String& status_text) {
+  status_text_ = status_text;
+}
+
+const HTTPHeaderMap& WebSocketHandshakeResponse::HeaderFields() const {
+  return header_fields_;
+}
+
+void WebSocketHandshakeResponse::AddHeaderField(const AtomicString& name,
+                                                const AtomicString& value) {
+  WebSocketHandshakeRequest::AddAndMergeHeader(&header_fields_, name, value);
+}
 
 }  // namespace blink
-
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_NETWORK_WEB_SOCKET_HANDSHAKE_RESPONSE_H_

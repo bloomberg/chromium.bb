@@ -28,43 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/network/web_socket_handshake_response.h"
-
-#include "third_party/blink/renderer/platform/network/web_socket_handshake_request.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/network/websocket_handshake_request.h"
 
 namespace blink {
 
-WebSocketHandshakeResponse::WebSocketHandshakeResponse() = default;
+WebSocketHandshakeRequest::WebSocketHandshakeRequest(const KURL& url)
+    : url_(url) {}
 
-WebSocketHandshakeResponse::~WebSocketHandshakeResponse() = default;
+WebSocketHandshakeRequest::WebSocketHandshakeRequest() = default;
 
-int WebSocketHandshakeResponse::StatusCode() const {
-  return status_code_;
-}
+WebSocketHandshakeRequest::WebSocketHandshakeRequest(
+    const WebSocketHandshakeRequest& request)
+    : url_(request.url_),
+      header_fields_(request.header_fields_),
+      headers_text_(request.headers_text_) {}
 
-void WebSocketHandshakeResponse::SetStatusCode(int status_code) {
-  DCHECK_GE(status_code, 100);
-  DCHECK_LT(status_code, 600);
-  status_code_ = status_code;
-}
+WebSocketHandshakeRequest::~WebSocketHandshakeRequest() = default;
 
-const String& WebSocketHandshakeResponse::StatusText() const {
-  return status_text_;
-}
-
-void WebSocketHandshakeResponse::SetStatusText(const String& status_text) {
-  status_text_ = status_text;
-}
-
-const HTTPHeaderMap& WebSocketHandshakeResponse::HeaderFields() const {
-  return header_fields_;
-}
-
-void WebSocketHandshakeResponse::AddHeaderField(const AtomicString& name,
-                                                const AtomicString& value) {
-  WebSocketHandshakeRequest::AddAndMergeHeader(&header_fields_, name, value);
+void WebSocketHandshakeRequest::AddAndMergeHeader(HTTPHeaderMap* map,
+                                                  const AtomicString& name,
+                                                  const AtomicString& value) {
+  HTTPHeaderMap::AddResult result = map->Add(name, value);
+  if (!result.is_new_entry) {
+    // Inspector expects the "\n" separated format.
+    result.stored_value->value =
+        result.stored_value->value + "\n" + String(value);
+  }
 }
 
 }  // namespace blink
