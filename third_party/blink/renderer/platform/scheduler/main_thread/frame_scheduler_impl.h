@@ -51,11 +51,10 @@ class PageSchedulerImplTest;
 
 class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
  public:
-  FrameSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,
-                     PageSchedulerImpl* parent_page_scheduler,
-                     base::trace_event::BlameContext* blame_context,
-                     FrameScheduler::FrameType frame_type);
-
+  static std::unique_ptr<FrameSchedulerImpl> Create(
+      PageSchedulerImpl* page_scheduler,
+      base::trace_event::BlameContext* blame_context,
+      FrameScheduler::FrameType frame_type);
   ~FrameSchedulerImpl() override;
 
   // FrameScheduler implementation:
@@ -106,6 +105,11 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
       MainThreadTaskQueue* task_queue) const;
 
  protected:
+  FrameSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,
+                     PageSchedulerImpl* parent_page_scheduler,
+                     base::trace_event::BlameContext* blame_context,
+                     FrameScheduler::FrameType frame_type);
+
   // This will construct a subframe that is not linked to any main thread or
   // page scheduler. Should be used only for testing purposes.
   FrameSchedulerImpl();

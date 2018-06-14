@@ -48,8 +48,8 @@ class FrameSchedulerImplTest : public testing::Test {
             task_environment_.GetMockTickClock()),
         base::nullopt));
     page_scheduler_.reset(new PageSchedulerImpl(nullptr, scheduler_.get()));
-    frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
-        nullptr, FrameScheduler::FrameType::kSubframe);
+    frame_scheduler_ = FrameSchedulerImpl::Create(
+        page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kSubframe);
   }
 
   void TearDown() override {
@@ -954,8 +954,8 @@ TEST_F(FrameSchedulerImplTest, kLowPriorityForThrottleableTaskFeatureEnabled) {
   EXPECT_EQ(UnpausableTaskQueue()->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
 
-  frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
-      nullptr, FrameScheduler::FrameType::kMainFrame);
+  frame_scheduler_ = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kMainFrame);
 
   // Main Frame Task Queues.
   EXPECT_EQ(LoadingTaskQueue()->GetQueuePriority(),
@@ -1019,8 +1019,8 @@ TEST_F(FrameSchedulerImplTest,
   feature_list_.InitWithFeatures(
       {kLowPriorityForThrottleableTask, kExperimentOnlyWhenLoading}, {});
 
-  frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
-      nullptr, FrameScheduler::FrameType::kMainFrame);
+  frame_scheduler_ = FrameSchedulerImpl::Create(
+      page_scheduler_.get(), nullptr, FrameScheduler::FrameType::kMainFrame);
 
   // Main thread is in the loading use case.
   scheduler_->DidStartProvisionalLoad(true);
