@@ -53,6 +53,7 @@
 #include "services/network/cookie_manager.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
+#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/blob/blob_registry_impl.h"
@@ -296,9 +297,9 @@ class StoragePartitionImpl::URLLoaderFactoryForBrowserProcess
 
   // SharedURLLoaderFactory implementation:
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
-    NOTREACHED() << "This isn't supported. If you need a SharedURLLoaderFactory"
-                    " on the IO thread, get it from URLLoaderFactoryGetter.";
-    return nullptr;
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    return std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
+        this);
   }
 
   void Shutdown() { storage_partition_ = nullptr; }
