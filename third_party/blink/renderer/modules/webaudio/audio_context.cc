@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webaudio/audio_context.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -109,12 +110,39 @@ AudioContext* AudioContext::Create(Document& document,
 AudioContext::AudioContext(Document& document,
                            const WebAudioLatencyHint& latency_hint)
     : BaseAudioContext(&document, kRealtimeContext),
-      context_id_(g_context_id++) {
+      context_id_(g_context_id++),
+      user_gesture_required_(false) {
   destination_node_ = DefaultAudioDestinationNode::Create(this, latency_hint);
+
+  switch (GetAutoplayPolicy()) {
+    case AutoplayPolicy::Type::kNoUserGestureRequired:
+      break;
+    case AutoplayPolicy::Type::kUserGestureRequired:
+    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
+      if (document.GetFrame() &&
+          document.GetFrame()->IsCrossOriginSubframe()) {
+        autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
+        user_gesture_required_ = true;
+      }
+      break;
+    case AutoplayPolicy::Type::kDocumentUserActivationRequired:
+      autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
+      user_gesture_required_ = true;
+      break;
+  }
+
   Initialize();
 }
 
+void AudioContext::Uninitialize() {
+  DCHECK(IsMainThread());
+
+  RecordAutoplayStatus();
+  BaseAudioContext::Uninitialize();
+}
+
 AudioContext::~AudioContext() {
+  DCHECK(!autoplay_status_.has_value());
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: AudioContext::~AudioContext(): %u\n", this,
           context_id_);
@@ -272,6 +300,110 @@ void AudioContext::StopRendering() {
 
 double AudioContext::baseLatency() const {
   return FramesPerBuffer() / static_cast<double>(sampleRate());
+}
+
+void AudioContext::MaybeRecordStartAttempt() {
+  if (!user_gesture_required_ || !AreAutoplayRequirementsFulfilled())
+    return;
+
+  DCHECK(!autoplay_status_.has_value() ||
+         autoplay_status_ != AutoplayStatus::kAutoplayStatusSucceeded);
+  autoplay_status_ = AutoplayStatus::kAutoplayStatusFailedWithStart;
+}
+
+AutoplayPolicy::Type AudioContext::GetAutoplayPolicy() const {
+  if (RuntimeEnabledFeatures::AutoplayIgnoresWebAudioEnabled()) {
+// When ignored, the policy is different on Android compared to Desktop.
+#if defined(OS_ANDROID)
+    return AutoplayPolicy::Type::kUserGestureRequired;
+#else
+    // Force no user gesture required on desktop.
+    return AutoplayPolicy::Type::kNoUserGestureRequired;
+#endif
+  }
+
+  Document* document = GetDocument();
+  DCHECK(document);
+  return AutoplayPolicy::GetAutoplayPolicyForDocument(*document);
+}
+
+bool AudioContext::AreAutoplayRequirementsFulfilled() const {
+  switch (GetAutoplayPolicy()) {
+    case AutoplayPolicy::Type::kNoUserGestureRequired:
+      return true;
+    case AutoplayPolicy::Type::kUserGestureRequired:
+    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
+      return Frame::HasTransientUserActivation(
+          GetDocument() ? GetDocument()->GetFrame() : nullptr);
+    case AutoplayPolicy::Type::kDocumentUserActivationRequired:
+      return AutoplayPolicy::IsDocumentAllowedToPlay(*GetDocument());
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+void AudioContext::MaybeUnlockUserGesture() {
+  if (!user_gesture_required_ || !AreAutoplayRequirementsFulfilled())
+    return;
+
+  DCHECK(!autoplay_status_.has_value() ||
+         autoplay_status_ != AutoplayStatus::kAutoplayStatusSucceeded);
+
+  user_gesture_required_ = false;
+  autoplay_status_ = AutoplayStatus::kAutoplayStatusSucceeded;
+}
+
+bool AudioContext::IsAllowedToStart() const {
+  if (!user_gesture_required_)
+    return true;
+
+  Document* document = ToDocument(GetExecutionContext());
+  DCHECK(document);
+
+  switch (GetAutoplayPolicy()) {
+    case AutoplayPolicy::Type::kNoUserGestureRequired:
+      NOTREACHED();
+      break;
+    case AutoplayPolicy::Type::kUserGestureRequired:
+    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
+      DCHECK(document->GetFrame() &&
+             document->GetFrame()->IsCrossOriginSubframe());
+      document->AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, kWarningMessageLevel,
+          "The AudioContext was not allowed to start. It must be resumed (or "
+          "created) from a user gesture event handler. https://goo.gl/7K7WLu"));
+      break;
+    case AutoplayPolicy::Type::kDocumentUserActivationRequired:
+      document->AddConsoleMessage(ConsoleMessage::Create(
+          kOtherMessageSource, kWarningMessageLevel,
+          "The AudioContext was not allowed to start. It must be resumed (or "
+          "created) after a user gesture on the page. https://goo.gl/7K7WLu"));
+      break;
+  }
+
+  return false;
+}
+
+void AudioContext::RecordAutoplayStatus() {
+  if (!autoplay_status_.has_value())
+    return;
+
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, autoplay_histogram,
+      ("WebAudio.Autoplay", AutoplayStatus::kAutoplayStatusCount));
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, cross_origin_autoplay_histogram,
+      ("WebAudio.Autoplay.CrossOrigin", AutoplayStatus::kAutoplayStatusCount));
+
+  autoplay_histogram.Count(autoplay_status_.value());
+
+  if (GetDocument()->GetFrame() &&
+      GetDocument()->GetFrame()->IsCrossOriginSubframe()) {
+    cross_origin_autoplay_histogram.Count(autoplay_status_.value());
+  }
+
+  autoplay_status_.reset();
 }
 
 }  // namespace blink

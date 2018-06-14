@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_decode_success_callback.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/pausable_object.h"
-#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -309,9 +308,6 @@ class MODULES_EXPORT BaseAudioContext
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
-  // Start the AudioContext. `isAllowedToStart()` MUST be called
-  // before.  This does NOT set the context state to running.  The
-  // caller must set the state AFTER calling startRendering.
   void StartRendering();
 
   void NotifyStateChange();
@@ -328,10 +324,8 @@ class MODULES_EXPORT BaseAudioContext
   // initialized internally if necessary.
   PeriodicWave* GetPeriodicWave(int type);
 
-  // For metrics purpose, records when start() is called on a
-  // AudioScheduledSourceHandler or a AudioBufferSourceHandler without a user
-  // gesture while the AudioContext requires a user gesture.
-  void MaybeRecordStartAttempt();
+  // Called by AudioScheduledSourceNode.start() for the Autoplay metric.
+  virtual void MaybeRecordStartAttempt() = 0;
 
   // AudioWorklet IDL
   AudioWorklet* audioWorklet() const;
@@ -359,7 +353,7 @@ class MODULES_EXPORT BaseAudioContext
   explicit BaseAudioContext(Document*, enum ContextType);
 
   void Initialize();
-  void Uninitialize();
+  virtual void Uninitialize();
 
   void SetContextState(AudioContextState);
 
@@ -386,33 +380,13 @@ class MODULES_EXPORT BaseAudioContext
 
   void RejectPendingDecodeAudioDataResolvers();
 
-  // If any, unlock user gesture requirements if a user gesture is being
-  // processed.
-  void MaybeUnlockUserGesture();
-
-  // Returns whether the AudioContext is allowed to start rendering.
-  bool IsAllowedToStart() const;
-
   AudioIOPosition OutputPosition();
 
+  // Returns the Document wich wich the instance is associated.
+  Document* GetDocument() const;
+
  private:
-  friend class BaseAudioContextAutoplayTest;
-  friend class DISABLED_BaseAudioContextAutoplayTest;
-
-  // Do not change the order of this enum, it is used for metrics.
-  enum AutoplayStatus {
-    // The AudioContext failed to activate because of user gesture requirements.
-    kAutoplayStatusFailed = 0,
-    // Same as AutoplayStatusFailed but start() on a node was called with a user
-    // gesture.
-    kAutoplayStatusFailedWithStart = 1,
-    // The AudioContext had user gesture requirements and was able to activate
-    // with a user gesture.
-    kAutoplayStatusSucceeded = 2,
-
-    // Keep at the end.
-    kAutoplayStatusCount
-  };
+  friend class AudioContextAutoplayTest;
 
   bool is_cleared_;
   void Clear();
@@ -420,15 +394,6 @@ class MODULES_EXPORT BaseAudioContext
   // When the context goes away, there might still be some sources which
   // haven't finished playing.  Make sure to release them here.
   void ReleaseActiveSourceNodes();
-
-  // Returns the Document wich wich the instance is associated.
-  Document* GetDocument() const;
-
-  // Returns the AutoplayPolicy currently applying to this instance.
-  AutoplayPolicy::Type GetAutoplayPolicy() const;
-
-  // Returns whether the autoplay requirements are fulfilled.
-  bool AreAutoplayRequirementsFulfilled() const;
 
   // Listener for the PannerNodes
   Member<AudioListener> listener_;
@@ -472,9 +437,6 @@ class MODULES_EXPORT BaseAudioContext
   // resolvers.
   virtual void RejectPendingResolvers();
 
-  // Record the current autoplay status and clear it.
-  void RecordAutoplayStatus();
-
   // True if we're in the process of resolving promises for resume().  Resolving
   // can take some time and the audio context process loop is very fast, so we
   // don't want to call resolve an excessive number of times.
@@ -484,9 +446,6 @@ class MODULES_EXPORT BaseAudioContext
   // perform delayed state sync'ing updates that needs to be done on the main
   // thread. Cleared by the main thread task once it has run.
   bool has_posted_cleanup_task_;
-
-  // Whether a user gesture is required to start this AudioContext.
-  bool user_gesture_required_;
 
   unsigned connection_count_;
 
@@ -520,7 +479,6 @@ class MODULES_EXPORT BaseAudioContext
   // It is somewhat arbitrary and could be increased if necessary.
   enum { kMaxNumberOfChannels = 32 };
 
-  base::Optional<AutoplayStatus> autoplay_status_;
   AudioIOPosition output_position_;
 
   Member<AudioWorklet> audio_worklet_;

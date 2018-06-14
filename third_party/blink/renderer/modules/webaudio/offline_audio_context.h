@@ -85,6 +85,9 @@ class MODULES_EXPORT OfflineAudioContext final : public BaseAudioContext {
   // from the map (m_scheduledSuspends) and resolved.
   void ResolveSuspendOnMainThread(size_t);
 
+  // OfflineAudioContext is not affected by Autoplay, so this MUST do nothing.
+  void MaybeRecordStartAttempt() final {}
+
   // The HashMap with 'zero' key is needed because |currentSampleFrame| can be
   // zero.
   using SuspendMap = HeapHashMap<size_t,

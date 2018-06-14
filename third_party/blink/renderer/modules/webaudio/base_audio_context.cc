@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
-#include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
@@ -94,7 +93,6 @@ BaseAudioContext::BaseAudioContext(Document* document,
       is_cleared_(false),
       is_resolving_resume_promises_(false),
       has_posted_cleanup_task_(false),
-      user_gesture_required_(false),
       connection_count_(0),
       deferred_task_handler_(DeferredTaskHandler::Create()),
       context_state_(kSuspended),
@@ -103,41 +101,13 @@ BaseAudioContext::BaseAudioContext(Document* document,
       periodic_wave_square_(nullptr),
       periodic_wave_sawtooth_(nullptr),
       periodic_wave_triangle_(nullptr),
-      output_position_() {
-  switch (context_type) {
-    case kRealtimeContext:
-      switch (GetAutoplayPolicy()) {
-        case AutoplayPolicy::Type::kNoUserGestureRequired:
-          break;
-        case AutoplayPolicy::Type::kUserGestureRequired:
-        case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
-          if (document->GetFrame() &&
-              document->GetFrame()->IsCrossOriginSubframe()) {
-            autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
-            user_gesture_required_ = true;
-          }
-          break;
-        case AutoplayPolicy::Type::kDocumentUserActivationRequired:
-          autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
-          user_gesture_required_ = true;
-          break;
-      }
-      break;
-    case kOfflineContext:
-      // Nothing needed for offline context
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
+      output_position_() {}
 
 BaseAudioContext::~BaseAudioContext() {
   GetDeferredTaskHandler().ContextWillBeDestroyed();
   DCHECK(!active_source_nodes_.size());
   DCHECK(!is_resolving_resume_promises_);
   DCHECK(!resume_resolvers_.size());
-  DCHECK(!autoplay_status_.has_value());
 }
 
 void BaseAudioContext::Initialize() {
@@ -186,8 +156,6 @@ void BaseAudioContext::Uninitialize() {
 
   DCHECK(listener_);
   listener_->WaitForHRTFDatabaseLoaderThreadCompletion();
-
-  RecordAutoplayStatus();
 
   Clear();
 }
@@ -607,15 +575,6 @@ PeriodicWave* BaseAudioContext::GetPeriodicWave(int type) {
   }
 }
 
-void BaseAudioContext::MaybeRecordStartAttempt() {
-  if (!user_gesture_required_ || !AreAutoplayRequirementsFulfilled())
-    return;
-
-  DCHECK(!autoplay_status_.has_value() ||
-         autoplay_status_ != AutoplayStatus::kAutoplayStatusSucceeded);
-  autoplay_status_ = AutoplayStatus::kAutoplayStatusFailedWithStart;
-}
-
 String BaseAudioContext::state() const {
   // These strings had better match the strings for AudioContextState in
   // AudioContext.idl.
@@ -680,38 +639,6 @@ void BaseAudioContext::NotifySourceNodeFinishedProcessing(
 
 Document* BaseAudioContext::GetDocument() const {
   return ToDocument(GetExecutionContext());
-}
-
-AutoplayPolicy::Type BaseAudioContext::GetAutoplayPolicy() const {
-  if (RuntimeEnabledFeatures::AutoplayIgnoresWebAudioEnabled()) {
-// When ignored, the policy is different on Android compared to Desktop.
-#if defined(OS_ANDROID)
-    return AutoplayPolicy::Type::kUserGestureRequired;
-#else
-    // Force no user gesture required on desktop.
-    return AutoplayPolicy::Type::kNoUserGestureRequired;
-#endif
-  }
-
-  Document* document = GetDocument();
-  DCHECK(document);
-  return AutoplayPolicy::GetAutoplayPolicyForDocument(*document);
-}
-
-bool BaseAudioContext::AreAutoplayRequirementsFulfilled() const {
-  switch (GetAutoplayPolicy()) {
-    case AutoplayPolicy::Type::kNoUserGestureRequired:
-      return true;
-    case AutoplayPolicy::Type::kUserGestureRequired:
-    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
-      return Frame::HasTransientUserActivation(
-          GetDocument() ? GetDocument()->GetFrame() : nullptr);
-    case AutoplayPolicy::Type::kDocumentUserActivationRequired:
-      return AutoplayPolicy::IsDocumentAllowedToPlay(*GetDocument());
-  }
-
-  NOTREACHED();
-  return false;
 }
 
 void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {
@@ -886,48 +813,6 @@ void BaseAudioContext::RejectPendingDecodeAudioDataResolvers() {
   decode_audio_resolvers_.clear();
 }
 
-void BaseAudioContext::MaybeUnlockUserGesture() {
-  if (!user_gesture_required_ || !AreAutoplayRequirementsFulfilled())
-    return;
-
-  DCHECK(!autoplay_status_.has_value() ||
-         autoplay_status_ != AutoplayStatus::kAutoplayStatusSucceeded);
-
-  user_gesture_required_ = false;
-  autoplay_status_ = AutoplayStatus::kAutoplayStatusSucceeded;
-}
-
-bool BaseAudioContext::IsAllowedToStart() const {
-  if (!user_gesture_required_)
-    return true;
-
-  Document* document = ToDocument(GetExecutionContext());
-  DCHECK(document);
-
-  switch (GetAutoplayPolicy()) {
-    case AutoplayPolicy::Type::kNoUserGestureRequired:
-      NOTREACHED();
-      break;
-    case AutoplayPolicy::Type::kUserGestureRequired:
-    case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
-      DCHECK(document->GetFrame() &&
-             document->GetFrame()->IsCrossOriginSubframe());
-      document->AddConsoleMessage(ConsoleMessage::Create(
-          kOtherMessageSource, kWarningMessageLevel,
-          "The AudioContext was not allowed to start. It must be resumed (or "
-          "created) from a user gesture event handler."));
-      break;
-    case AutoplayPolicy::Type::kDocumentUserActivationRequired:
-      document->AddConsoleMessage(ConsoleMessage::Create(
-          kOtherMessageSource, kWarningMessageLevel,
-          "The AudioContext was not allowed to start. It must be resume (or "
-          "created) after a user gesture on the page. https://goo.gl/7K7WLu"));
-      break;
-  }
-
-  return false;
-}
-
 AudioIOPosition BaseAudioContext::OutputPosition() {
   DCHECK(IsMainThread());
   GraphAutoLocker locker(this);
@@ -950,27 +835,6 @@ void BaseAudioContext::RejectPendingResolvers() {
   RejectPendingDecodeAudioDataResolvers();
 }
 
-void BaseAudioContext::RecordAutoplayStatus() {
-  if (!autoplay_status_.has_value())
-    return;
-
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, autoplay_histogram,
-      ("WebAudio.Autoplay", AutoplayStatus::kAutoplayStatusCount));
-  DEFINE_STATIC_LOCAL(
-      EnumerationHistogram, cross_origin_autoplay_histogram,
-      ("WebAudio.Autoplay.CrossOrigin", AutoplayStatus::kAutoplayStatusCount));
-
-  autoplay_histogram.Count(autoplay_status_.value());
-
-  if (GetDocument()->GetFrame() &&
-      GetDocument()->GetFrame()->IsCrossOriginSubframe()) {
-    cross_origin_autoplay_histogram.Count(autoplay_status_.value());
-  }
-
-  autoplay_status_.reset();
-}
-
 const AtomicString& BaseAudioContext::InterfaceName() const {
   return EventTargetNames::AudioContext;
 }
@@ -986,7 +850,6 @@ void BaseAudioContext::StartRendering() {
   // set the state.
   DCHECK(IsMainThread());
   DCHECK(destination_node_);
-  DCHECK(IsAllowedToStart());
 
   if (context_state_ == kSuspended) {
     destination()->GetAudioDestinationHandler().StartRendering();
