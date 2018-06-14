@@ -61,8 +61,23 @@ Polymer({
                                this.i18n('showPassword');
   },
 
-  /** @private */
-  onShowPasswordTap_: function() {
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onShowPasswordTap_: function(event) {
     this.showPassword = !this.showPassword;
+    event.stopPropagation();
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onInputKeypress_: function(event) {
+    if (event.target.id != 'input' || event.key != 'Enter')
+      return;
+    event.stopPropagation();
+    this.fire('enter');
   },
 });

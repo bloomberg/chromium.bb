@@ -9,7 +9,6 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -133,13 +132,11 @@
                 editable, useSharedProxies)]]">
         </network-proxy-exclusions>
         <div id="addException" class="layout horizontal center">
-          <cr-input id="proxyExclusion" class="flex">
+          <cr-input id="proxyExclusion" class="flex"
+              on-keypress="onAddProxyExclusionKeypress_">
             <paper-button on-tap="onAddProxyExclusionTap_" slot="suffix">
               [[i18n('networkProxyAddException')]]
             </paper-button>
-            <iron-a11y-keys keys="enter"
-                on-keys-pressed="onAddProxyExclusionTap_">
-            </iron-a11y-keys>
           </cr-input>
         </div>
       </div>
