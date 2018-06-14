@@ -23,9 +23,6 @@ skia_support_pdf = !is_ios && enable_basic_printing
 
 declare_args() {
   skia_whitelist_serialized_typefaces = false
-  if (enable_vulkan) {
-    vulkan_sdk_path = getenv("VULKAN_SDK")
-  }
 }
 
 # External-facing config for dependent code.
@@ -49,7 +46,7 @@ config("skia_config") {
   ]
   if (enable_vulkan) {
     include_dirs += [
-      "$vulkan_sdk_path/include",
+      "//third_party/vulkan/include",
       "//third_party/skia/third_party/vulkanmemoryallocator",
     ]
     configs = [ "//third_party/vulkan:vulkan_config" ]

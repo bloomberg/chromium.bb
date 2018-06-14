@@ -5,15 +5,4 @@
 config("vulkan_config") {
   defines = [ "VK_NO_PROTOTYPES" ]
   include_dirs = [ "include" ]
-  vulkan_lib_dir = getenv("VULKAN_SDK") + "/lib"
-  libs = [ "vulkan" ]
-
-  if (current_cpu == "x64") {
-    lib_dirs = [
-      "/usr/lib/x86_64-linux-gnu",
-      vulkan_lib_dir,
-    ]
-  } else {
-    assert(false, "Unsupported vulkan target: " + current_cpu)
-  }
 }
