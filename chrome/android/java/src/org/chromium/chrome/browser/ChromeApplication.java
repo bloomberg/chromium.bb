@@ -63,13 +63,13 @@ public class ChromeApplication extends Application {
             UmaUtils.recordMainEntryPointTime();
         }
         super.attachBaseContext(context);
-        checkAppBeingReplaced();
         ContextUtils.initApplicationContext(this);
 
         if (browserProcess) {
             if (BuildConfig.IS_MULTIDEX_ENABLED) {
                 ChromiumMultiDexInstaller.install(this);
             }
+            checkAppBeingReplaced();
 
             // Renderers and GPU process have command line passed to them via IPC
             // (see ChildProcessService.java).
@@ -125,7 +125,7 @@ public class ChromeApplication extends Application {
         // During app update the old apk can still be triggered by broadcasts and spin up an
         // out-of-date application. Kill old applications in this bad state. See
         // http://crbug.com/658130 for more context and http://b.android.com/56296 for the bug.
-        if (getResources() == null) {
+        if (ContextUtils.getApplicationAssets() == null) {
             Log.e(TAG, "getResources() null, closing app.");
             System.exit(0);
         }
