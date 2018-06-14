@@ -3318,6 +3318,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "sync_integration_tests"
+      },
+      {
+        "args": [
+          "--test-launcher-batch-limit=1",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "traffic_annotation_auditor_unittests"
       },
       {
@@ -3785,7 +3795,8 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
@@ -3950,6 +3961,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "storage_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "sync_integration_tests"
       },
       {
         "swarming": {
@@ -4452,6 +4469,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "sync_integration_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "ui_base_unittests"
       },
       {
@@ -4936,6 +4959,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "storage_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "sync_integration_tests"
       },
       {
         "swarming": {
@@ -5457,6 +5486,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "storage_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "sync_integration_tests"
       },
       {
         "swarming": {

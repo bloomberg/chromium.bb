@@ -292,6 +292,18 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "boringssl_crypto_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "boringssl_ssl_tests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 20
         },
@@ -410,6 +422,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gin_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "google_apis_unittests"
       },
       {
@@ -421,7 +439,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 3
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
@@ -548,6 +566,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "sandbox_linux_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "service_manager_unittests"
       },
       {
         "swarming": {
@@ -732,6 +756,18 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "boringssl_crypto_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "boringssl_ssl_tests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
         },
@@ -911,6 +947,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gin_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "gl_unittests_ozone"
       },
       {
@@ -928,7 +970,7 @@
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 3
+          "shards": 2
         },
         "test": "interactive_ui_tests"
       },
@@ -1093,6 +1135,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "select_to_speak_extension_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "service_manager_unittests"
       },
       {
         "swarming": {

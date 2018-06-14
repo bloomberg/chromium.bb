@@ -170,24 +170,6 @@
       },
     },
   },
-  'boringssl_crypto_tests': {
-    'remove_from': [
-      # chromium.chromiumos
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
-      # On chromium.mac, unclear why these aren't run on "Mac10.12 Tests".
-      'Mac10.12 Tests',
-    ],
-  },
-  'boringssl_ssl_tests': {
-    'remove_from': [
-      # chromium.chromiumos
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
-      # On chromium.mac, unclear why these aren't run on "Mac10.12 Tests".
-      'Mac10.12 Tests',
-    ],
-  },
   'breakpad_unittests': {
     'modifications': {
       'KitKat Tablet Tester': {
@@ -1125,14 +1107,6 @@
       'Linux - Future (dbg)',
     ],
   },
-  'display_unittests': {
-    'remove_from': [
-      # chromium.fyi, unclear why these aren't run.
-      'mac-views-rel',
-      # chromium.win
-      'Win7 Tests (dbg)(1)',
-    ],
-  },
   'events_unittests': {
     'modifications': {
       'KitKat Tablet Tester': {
@@ -1180,33 +1154,11 @@
   },
   'gin_unittests': {
     'remove_from': [
-      # chromium.chromiumos
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
       # chromium.clang
       'ToTLinuxASan',  # https://crbug.com/831667
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
-      'Out of Process Profiling Linux',
-      'Out of Process Profiling Mac',
-      # On chromium.linux, unclear why these aren't run on Cast.
-      'Cast Audio Linux',
-      'Cast Linux',
-      'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these aren't run.
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.13 Tests',
-      'Mac10.13 Tests (dbg)',
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
-      # On chromium.win, unclear why these only run on "Win7 Tests (1)".
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 Tests (dbg)(1)',
       # client.v8.chromium
       'Linux - Future (dbg)',
     ],
@@ -1457,65 +1409,6 @@
       'Linux TSan Tests',
     ],
     'modifications': {
-      # chromium.clang
-      'CFI Linux (icall)': {
-        'swarming': {
-          'shards': 1,
-        },
-      },
-      # chromium.linux
-      # Unclear why this isn't sharded.
-      'Linux Tests': {
-        'swarming': {
-          'shards': 1,
-        },
-      },
-      'Linux Tests (dbg)(1)': {
-        'swarming': {
-          'shards': 3,
-        },
-      },
-      'Linux Tests (dbg)(1)(32)': {
-        'swarming': {
-          'shards': 3,
-        },
-      },
-      # chromium.chromiumos
-      'linux-chromeos-dbg': {
-        'swarming': {
-          'shards': 3,
-        },
-      },
-      'linux-chromeos-rel': {
-        'swarming': {
-          'shards': 3,
-        },
-      },
-      # chromium.fyi
-      'Out of Process Profiling Mac': {
-        'swarming': {
-          'shards': 1,
-        },
-      },
-      # chromium.mac
-      # Unclear why this isn't swarmed.
-      'Mac10.10 Tests': {
-        'swarming': {
-          'can_use_on_swarming_builders': False,
-        },
-      },
-      # Unclear why this isn't sharded.
-      'Mac10.11 Tests': {
-        'swarming': {
-          'shards': 1,
-        },
-      },
-      # Unclear why this isn't sharded.
-      'Mac10.12 Tests': {
-        'swarming': {
-          'shards': 1,
-        },
-      },
       # chromium.win
       'Win7 Tests (dbg)(1)': {
         'swarming': {
@@ -1528,11 +1421,6 @@
         # crbug.com/794372
         'swarming': {
           'shards': 6,
-        },
-      },
-      'Linux CFI': {
-        'swarming': {
-          'shards': 1,
         },
       },
       # client.v8.chromium
@@ -1584,24 +1472,7 @@
       },
     },
   },
-  'keyboard_unittests': {
-    'remove_from': [
-      'Win7 Tests (dbg)(1)',
-      # On chromium.linux, unclear why these aren't run.
-      'Linux Tests',
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-    ],
-  },
   'latency_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'Out of Process Profiling Android',
-      'Out of Process Profiling Linux',
-      # On chromium.linux, unclear why these aren't run.
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-    ],
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
@@ -1656,29 +1527,6 @@
       'Fuchsia ARM64',
     ],
   },
-  'message_center_unittests': {
-    'remove_from': [
-      'Win7 Tests (dbg)(1)',
-      # On chromium.mac, unclear why these aren't run.
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.13 Tests',
-      'Mac10.13 Tests (dbg)',
-
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
-      'Out of Process Profiling Mac',
-
-      # On chromium.linux, unclear why these aren't run.
-      'Linux Tests',
-
-      # On chromium.linux, unclear why these aren't run.
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-    ],
-  },
   'metrics_python_tests': {
     'remove_from': [
       # chromium.fyi
@@ -1719,10 +1567,6 @@
   },
   'nacl_loader_unittests': {
     'remove_from': [
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
-      'Out of Process Profiling Mac',
       # chromium.clang
       'ToTMacASan',  # The mac asan tot bot sets enable_nacl=false
       'linux-win_cross-rel',  # Sets enable_nacl=false, https://crbug.com/774186
@@ -1851,12 +1695,6 @@
       'linux-chromeos-dbg',
     ],
   },
-  'remoting_unittests': {
-    'remove_from': [
-      # On chromium.linux, unclear why these aren't run on 32-bit.
-      'Linux Tests (dbg)(1)(32)',
-    ],
-  },
   'sandbox_linux_unittests': {
     'modifications': {
       'KitKat Tablet Tester': {
@@ -1895,21 +1733,6 @@
         },
       },
     },
-  },
-  'service_manager_unittests': {
-    'remove_from': [
-      # chromium.chromiumos
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these aren't run.
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.13 Tests',
-      'Mac10.13 Tests (dbg)',
-    ],
   },
   'services_unittests': {
     'remove_from': [
@@ -2143,12 +1966,7 @@
     },
     'remove_from': [
       # chromium.memory
-      'Linux ASan LSan Tests (1)',
-      'Linux CFI',
-      'Linux Chromium OS ASan LSan Tests (1)',
-      'Linux ChromiumOS MSan Tests',
-      'Linux MSan Tests',
-      'Linux TSan Tests',
+      'Linux TSan Tests',  # https://crbug.com/852002
     ],
   },
   'performance_test_suite': {
@@ -2464,12 +2282,6 @@
       'Optional Win10 Release (Intel HD 630)',
       'Win10 FYI Release (Intel HD 630)',
       'Win10 FYI Exp Release (Intel HD 630)',
-    ],
-  },
-  'views_unittests': {
-    'remove_from': [
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
     ],
   },
   'viz_content_browsertests': {
