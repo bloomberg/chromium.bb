@@ -119,13 +119,14 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             path = filesystem.join(LAYOUT_TEST_DIR, test)
             filesystem.write_binary_file(path, '')
 
-    def _create_expectations_remover(self, type_flag='all'):
+    def _create_expectations_remover(self, type_flag='all', remove_missing=False):
         return ExpectationsRemover(
             self._host,
             self._port,
             self._expectation_factory,
             self._mock_web_browser,
-            type_flag)
+            type_flag,
+            remove_missing)
 
     def _assert_expectations_match(self, expectations, expected_string):
         self.assertIsNotNone(expectations)
@@ -452,7 +453,12 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         }
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
-        self._assert_expectations_match(updated_expectations, '')
+        # The line with test/d.html is not removed since
+        # --remove-missing is false by default; lines for
+        # tests with no actual results are kept.
+        self._assert_expectations_match(
+            updated_expectations,
+            'Bug(test) test/d.html [ Failure ]')
 
     def test_basic_one_builder(self):
         """Tests basic functionality with a single builder.
@@ -917,24 +923,28 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             # Comment F - Keep since only b is removed
             Bug(test) test/c.html [ Failure Pass ]"""))
 
-    def test_no_results_on_builders(self):
-        """Tests that we remove a line that has no results on the builders.
+    def test_lines_with_no_results_on_builders_kept_by_default(self):
+        """Tests the case where there are lines with no results on the builders.
 
         A test that has no results returned from the builders means that all
-        runs passed or were skipped. A Skip expectation in TestExpectations
-        shouldn't be removed but otherwise the test is passing.
+        runs passed or were skipped. This might be because the test is skipped
+        because it's not in the SmokeTests file (e.g. on Android); or it might
+        potentially be that the test is legitimately no longer run anywhere.
+
+        In the former case, we may want to keep the line; but it may also be
+        useful to be able to remove it.
         """
         test_expectations_before = """
             # A Skip expectation probably won't have any results but we
             # shouldn't consider those passing so this line should remain.
             Bug(test) test/a.html [ Skip ]
-            # The lines below should be removed since all runs are passing.
+            # The lines below should be kept since the flag for removing
+            # such results (--remove-missing) is not passed.
             Bug(test) test/b.html [ Failure Timeout ]
             Bug(test) test/c.html [ Failure Pass ]
             Bug(test) test/d.html [ Pass Timeout ]
             Bug(test) test/e.html [ Crash Pass ]"""
 
-        self._expectations_remover = self._create_expectations_remover()
         self._define_builders({
             'WebKit Linux Trusty': {
                 'port_name': 'linux-trusty',
@@ -946,9 +956,45 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory.all_results_by_builder = {
-            'WebKit Linux Trusty': {
-            }
+            'WebKit Linux Trusty': {}
         }
+        self._expectations_remover = self._create_expectations_remover()
+        updated_expectations = (
+            self._expectations_remover.get_updated_test_expectations())
+        self._assert_expectations_match(updated_expectations, test_expectations_before)
+
+    def test_lines_with_no_results_on_builders_can_be_removed(self):
+        """Tests that we remove a line that has no results on the builders.
+
+        In this test, we simulate what would happen when --remove-missing
+        is passed.
+        """
+        test_expectations_before = """
+            # A Skip expectation probably won't have any results but we
+            # shouldn't consider those passing so this line should remain.
+            Bug(test) test/a.html [ Skip ]
+            # The lines below should be removed since the flag for removing
+            # such results (--remove-missing) is passed.
+            Bug(test) test/b.html [ Failure Timeout ]
+            Bug(test) test/c.html [ Failure Pass ]
+            Bug(test) test/d.html [ Pass Timeout ]
+            Bug(test) test/e.html [ Crash Pass ]"""
+
+        self._define_builders({
+            'WebKit Linux Trusty': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Release']
+            },
+        })
+        self._port.all_build_types = ('release',)
+        self._port.all_systems = (('trusty', 'x86_64'),)
+
+        self._parse_expectations(test_expectations_before)
+        self._expectation_factory.all_results_by_builder = {
+            'WebKit Linux Trusty': {}
+        }
+        self._expectations_remover = self._create_expectations_remover(
+            remove_missing=True)
         updated_expectations = (
             self._expectations_remover.get_updated_test_expectations())
         self._assert_expectations_match(updated_expectations, """

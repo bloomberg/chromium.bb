@@ -42,12 +42,22 @@ _log = logging.getLogger(__name__)
 
 
 def main(host, bot_test_expectations_factory, argv):
-    parser = argparse.ArgumentParser(epilog=__doc__, formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        epilog=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--type',
                         choices=['flake', 'fail', 'all'],
                         default='all',
                         help='type of expectations to update (default: %(default)s)')
-    parser.add_argument('--verbose', '-v', action='store_true', default=False, help='enable more verbose logging')
+    parser.add_argument('--verbose', '-v',
+                        action='store_true',
+                        default=False,
+                        help='enable more verbose logging')
+    parser.add_argument('--remove-missing',
+                        action='store_true',
+                        default=False,
+                        help='also remove lines if there were no results, '
+                             'e.g. Android-only expectations for tests '
+                             'that are not in SmokeTests')
     parser.add_argument('--show-results', '-s',
                         action='store_true',
                         default=False,
@@ -63,7 +73,8 @@ def main(host, bot_test_expectations_factory, argv):
         return 1
 
     remover = ExpectationsRemover(
-        host, port, bot_test_expectations_factory, webbrowser, args.type)
+        host, port, bot_test_expectations_factory, webbrowser,
+        args.type, args.remove_missing)
 
     test_expectations = remover.get_updated_test_expectations()
 
@@ -77,7 +88,8 @@ def main(host, bot_test_expectations_factory, argv):
 
 class ExpectationsRemover(object):
 
-    def __init__(self, host, port, bot_test_expectations_factory, browser, type_flag='all'):
+    def __init__(self, host, port, bot_test_expectations_factory, browser,
+                 type_flag='all', remove_missing=False):
         self._host = host
         self._port = port
         self._expectations_factory = bot_test_expectations_factory
@@ -85,6 +97,7 @@ class ExpectationsRemover(object):
         self._browser = browser
         self._expectations_to_remove_list = None
         self._type = type_flag
+        self._remove_missing = remove_missing
 
     def _can_delete_line(self, test_expectation_line):
         """Returns whether a given line in the expectations can be removed.
@@ -152,7 +165,9 @@ class ExpectationsRemover(object):
 
             # No results means the tests were all skipped, or all results are passing.
             if test_expectation_line.path not in results_by_path.keys():
-                continue
+                if self._remove_missing:
+                    continue
+                return False
 
             results_for_single_test = results_by_path[test_expectation_line.path]
 
