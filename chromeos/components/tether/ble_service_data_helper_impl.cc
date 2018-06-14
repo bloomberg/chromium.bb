@@ -18,7 +18,6 @@
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/foreground_eid_generator.h"
 #include "components/cryptauth/local_device_data_provider.h"
-#include "device/bluetooth/bluetooth_device.h"
 
 namespace chromeos {
 
@@ -145,6 +144,13 @@ base::Optional<secure_channel::BleServiceDataHelper::DeviceWithBackgroundBool>
 BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
     const std::string& service_data,
     const secure_channel::DeviceIdPairSet& device_id_pair_set) {
+  std::vector<std::string> remote_device_ids;
+  for (const auto& device_id_pair : device_id_pair_set) {
+    // It's fine to ignore device_id_pair.local_device_id(); it's the same for
+    // each entry.
+    remote_device_ids.push_back(device_id_pair.remote_device_id());
+  }
+
   std::string device_id;
   bool is_background_advertisement = false;
 
@@ -161,7 +167,7 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
     }
 
     device_id = foreground_eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-        service_data, registered_remote_device_ids_, beacon_seeds);
+        service_data, remote_device_ids, beacon_seeds);
   }
 
   // If the device has not yet been identified, try identifying |service_data|
@@ -169,8 +175,14 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
   if (chromeos::switches::IsInstantTetheringBackgroundAdvertisingSupported() &&
       device_id.empty() && service_data.size() >= kMinNumBytesInServiceData &&
       service_data.size() <= kMaxNumBytesInBackgroundServiceData) {
+    cryptauth::RemoteDeviceRefList remote_devices;
+    for (auto remote_device : tether_hosts_from_last_fetch_) {
+      if (base::ContainsValue(remote_device_ids, remote_device.GetDeviceId()))
+        remote_devices.push_back(remote_device);
+    }
+
     device_id = background_eid_generator_->IdentifyRemoteDeviceByAdvertisement(
-        service_data, tether_hosts_from_last_fetch_);
+        service_data, remote_devices);
     is_background_advertisement = true;
   }
 
@@ -202,12 +214,6 @@ void BleServiceDataHelperImpl::OnTetherHostsUpdated() {
 void BleServiceDataHelperImpl::OnTetherHostsFetched(
     const cryptauth::RemoteDeviceRefList& tether_hosts) {
   tether_hosts_from_last_fetch_ = tether_hosts;
-
-  registered_remote_device_ids_.clear();
-  std::transform(tether_hosts_from_last_fetch_.begin(),
-                 tether_hosts_from_last_fetch_.end(),
-                 std::back_inserter(registered_remote_device_ids_),
-                 [](const auto& host) { return host.GetDeviceId(); });
 }
 
 base::Optional<std::string>

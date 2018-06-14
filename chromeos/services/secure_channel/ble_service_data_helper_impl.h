@@ -15,6 +15,8 @@
 #include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
+class BackgroundEidGenerator;
+class ForegroundEidGenerator;
 class RemoteDeviceCache;
 }  // namespace cryptauth
 
@@ -40,6 +42,8 @@ class BleServiceDataHelperImpl : public BleServiceDataHelper {
   ~BleServiceDataHelperImpl() override;
 
  private:
+  friend class SecureChannelBleServiceDataHelperImplTest;
+
   BleServiceDataHelperImpl(cryptauth::RemoteDeviceCache* remote_device_cache);
 
   // BleServiceDataHelper:
@@ -49,7 +53,20 @@ class BleServiceDataHelperImpl : public BleServiceDataHelper {
       const std::string& service_data,
       const DeviceIdPairSet& device_id_pair_set) override;
 
+  base::Optional<BleServiceDataHelper::DeviceWithBackgroundBool>
+  PerformIdentifyRemoteDevice(
+      const std::string& service_data,
+      const std::string& local_device_id,
+      const std::vector<std::string>& remote_device_ids);
+
+  void SetTestDoubles(std::unique_ptr<cryptauth::BackgroundEidGenerator>
+                          background_eid_generator,
+                      std::unique_ptr<cryptauth::ForegroundEidGenerator>
+                          foreground_eid_generator);
+
   cryptauth::RemoteDeviceCache* remote_device_cache_;
+  std::unique_ptr<cryptauth::BackgroundEidGenerator> background_eid_generator_;
+  std::unique_ptr<cryptauth::ForegroundEidGenerator> foreground_eid_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(BleServiceDataHelperImpl);
 };
