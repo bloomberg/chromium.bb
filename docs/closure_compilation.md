@@ -84,31 +84,31 @@ dangerous ways.
 
 To do this, we can create:
 
-  + ui/compiled_resources2.gyp
+  + ui/BUILD.gn
 
 With these contents:
 
 ```
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-{
-  'targets': [
-    {
-      # Target names is typically just without ".js"
-      'target_name': 'makes_things_pretty',
 
-      'dependencies': [
-        '../lib/compiled_resources2.gyp:does_the_hard_stuff',
+import("//third_party/closure_compiler/compile_js.gni")
 
-        # Teaches closure about non-standard environments/APIs, e.g.
-        # chrome.send(), chrome.app.window, etc.
-        '<(EXTERNS_GYP):extern_name_goes_here'
-      ],
+js_type_check("closure_compile") {
+  deps = [
+    ":make_things_pretty",
+  ]
+}
 
-      'includes': ['../path/to/third_party/closure_compiler/compile_js2.gypi'],
-    },
-  ],
+js_library("make_things_pretty") {
+  deps = [
+    "../lib:does_the_hard_stuff",
+  ]
+
+  externs_list = [
+    "$externs_path/extern_name_goes_here.js"
+  ]
 }
 ```
 
@@ -120,10 +120,10 @@ You can locally test that your code compiles on Linux or Mac.  This requires
 python, depot_tools). Note: on Ubuntu, you can probably just run `sudo apt-get
 install openjdk-7-jre`.
 
-Now you should be able to run:
+After you set closure_compile = true in your gn args, you should be able to run:
 
 ```shell
-third_party/closure_compiler/run_compiler
+ninja -C out/Default webui_closure_compile
 ```
 
 and should see output like this:
@@ -133,10 +133,10 @@ ninja: Entering directory `out/Default/'
 [0/1] ACTION Compiling ui/makes_things_pretty.js
 ```
 
-To compile only a specific target, add an argument after the script name:
+To compile only a specific folder, add an argument after the script name:
 
 ```shell
-third_party/closure_compiler/run_compiler makes_things_pretty
+ninja -C out/Default ui:closure_compile
 ```
 
 In our example code, this error should appear:
@@ -152,50 +152,40 @@ In our example code, this error should appear:
 
 Hooray! We can catch type errors in JavaScript!
 
+## Preferred BUILD.gn structure
+* Make all individual JS file targets a js\_library.
+* The top level target should be called “closure\_compile”.
+* If you have subfolders that need compiling, make “closure\_compile” a group(),
+  and any files in the current directory a js\_type\_check() called “<directory>\_resources”.
+* Otherwise, just make “closure\_compile” a js\_type\_check with all your js\_library targets as deps
+* Leave all closure targets below other kinds of targets becaure they’re less ‘important’
+
+See also:
+[Closure Compilation with GN](https://docs.google.com/a/chromium.org/document/d/1Ee9ggmp6U-lM-w9WmxN5cSLkK9B5YAq14939Woo-JY0/edit).
+
 ## Trying your change
 
-Closure compilation also has [try
-bots](https://build.chromium.org/p/tryserver.chromium.linux/builders/closure_compilation)
-which can check whether you could *would* break the build if it was committed.
+Closure compilation runs in the compile step of Linux, Android and ChromeOS builds.
 
 From the command line, you try your change with:
 
 ```shell
-git cl try -b closure_compilation
+git cl try -b linux_chromium_rel_ng
 ```
-
-To automatically check that your code typechecks cleanly before submitting, you
-can add this line to your CL description:
-
-```
-CQ_INCLUDE_TRYBOTS=tryserver.chromium.linux:closure_compilation
-```
-
-Working in common resource directories in Chrome automatically adds this line
-for you.
 
 ## Integrating with the continuous build
 
-To compile your code on every commit, add your file to the `'dependencies'` list
-in `src/third_party/closure_compiler/compiled_resources2.gyp`:
+To compile your code on every commit, add your file to the
+`'webui_closure_compile'` target in `src/BUILD.gn`:
 
 ```
-{
-  'targets': [
-    {
-      'target_name': 'compile_all_resources',
-      'dependencies': [
-         # ... other projects ...
-++       '../my_project/compiled_resources2.gyp:*',
-      ],
-    }
-  ]
-}
+  group("webui_closure_compile") {
+    data_deps = [
+      # Other projects
+      "my/project:closure_compile",
+    ]
+  }
 ```
-
-This file is used by the
-[Closure compiler bot](https://build.chromium.org/p/chromium.fyi/builders/Closure%20Compilation%20Linux)
-to automatically compile your code on every commit.
 
 ## Externs
 
