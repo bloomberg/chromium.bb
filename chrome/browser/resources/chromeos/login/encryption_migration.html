@@ -56,7 +56,8 @@
         <template is="dom-if" if="[[!isResuming]]">
           <div class="bottom-buttons flex layout horizontal">
             <div class="flex"></div>
-            <oobe-text-button border on-tap="onSkip_">
+            <oobe-text-button border on-tap="onSkip_"
+                hidden="[[isSkipHidden_()]]">
               <div>$i18n{migrationButtonSkip}</div>
             </oobe-text-button>
             <oobe-text-button inverse on-tap="onUpgrade_"
