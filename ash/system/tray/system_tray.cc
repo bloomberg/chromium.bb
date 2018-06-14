@@ -94,7 +94,8 @@ namespace {
 // A tray item that just reserves space in the tray.
 class PaddingTrayItem : public SystemTrayItem {
  public:
-  PaddingTrayItem() : SystemTrayItem(nullptr, UMA_NOT_RECORDED) {}
+  PaddingTrayItem()
+      : SystemTrayItem(nullptr, SystemTrayItemUmaType::UMA_NOT_RECORDED) {}
   ~PaddingTrayItem() override = default;
 
   // SystemTrayItem:

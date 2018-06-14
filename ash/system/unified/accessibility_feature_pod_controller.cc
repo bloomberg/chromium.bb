@@ -39,4 +39,8 @@ void AccessibilityFeaturePodController::OnIconPressed() {
   tray_controller_->ShowAccessibilityDetailedView();
 }
 
+SystemTrayItemUmaType AccessibilityFeaturePodController::GetUmaType() const {
+  return SystemTrayItemUmaType::UMA_ACCESSIBILITY;
+}
+
 }  // namespace ash

@@ -16,7 +16,7 @@ namespace ash {
 class TestSystemTrayItem : public SystemTrayItem {
  public:
   TestSystemTrayItem();
-  explicit TestSystemTrayItem(SystemTrayItem::UmaType uma_type);
+  explicit TestSystemTrayItem(SystemTrayItemUmaType uma_type);
   ~TestSystemTrayItem() override;
 
   void set_has_views(bool has_views) { has_views_ = has_views; }

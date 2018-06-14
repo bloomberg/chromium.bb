@@ -40,7 +40,7 @@ class SystemTrayView : public views::View {
 
  private:
   // Tracks the views created in the last call to CreateItemViews().
-  std::map<SystemTrayItem::UmaType, views::View*> tray_item_view_map_;
+  std::map<SystemTrayItemUmaType, views::View*> tray_item_view_map_;
 
   std::unique_ptr<ui::EventHandler> time_to_click_recorder_;
   std::unique_ptr<ui::EventHandler> interacted_by_tap_recorder_;

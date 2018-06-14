@@ -47,7 +47,8 @@ views::ImageView* CreateIcon() {
 namespace ash {
 
 TrayUser::TrayUser(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_USER), scoped_session_observer_(this) {}
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_USER),
+      scoped_session_observer_(this) {}
 
 TrayUser::~TrayUser() = default;
 

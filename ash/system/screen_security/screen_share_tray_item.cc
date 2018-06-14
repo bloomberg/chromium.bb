@@ -15,7 +15,7 @@
 namespace ash {
 
 ScreenShareTrayItem::ScreenShareTrayItem(SystemTray* system_tray)
-    : ScreenTrayItem(system_tray, UMA_SCREEN_SHARE) {
+    : ScreenTrayItem(system_tray, SystemTrayItemUmaType::UMA_SCREEN_SHARE) {
   Shell::Get()->system_tray_notifier()->AddScreenShareObserver(this);
 }
 

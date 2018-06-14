@@ -101,7 +101,7 @@ class NetworkDefaultView : public TrayItemMore,
 }  // namespace tray
 
 TrayNetwork::TrayNetwork(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_NETWORK),
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_NETWORK),
       tray_(nullptr),
       default_(nullptr),
       detailed_(nullptr),

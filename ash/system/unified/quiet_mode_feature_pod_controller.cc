@@ -37,6 +37,10 @@ void QuietModeFeaturePodController::OnIconPressed() {
   message_center->SetQuietMode(!is_quiet_mode);
 }
 
+SystemTrayItemUmaType QuietModeFeaturePodController::GetUmaType() const {
+  return SystemTrayItemUmaType::UMA_NOT_RECORDED;
+}
+
 void QuietModeFeaturePodController::OnQuietModeChanged(bool in_quiet_mode) {
   button_->SetVectorIcon(in_quiet_mode
                              ? kNotificationCenterDoNotDisturbOnIcon

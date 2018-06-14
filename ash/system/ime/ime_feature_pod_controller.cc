@@ -57,6 +57,10 @@ void IMEFeaturePodController::OnIconPressed() {
   tray_controller_->ShowIMEDetailedView();
 }
 
+SystemTrayItemUmaType IMEFeaturePodController::GetUmaType() const {
+  return SystemTrayItemUmaType::UMA_IME;
+}
+
 void IMEFeaturePodController::Update() {
   button_->SetSubLabel(GetLabelString());
   button_->SetVisible(IsButtonVisible());

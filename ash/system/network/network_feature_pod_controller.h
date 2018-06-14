@@ -23,6 +23,7 @@ class NetworkFeaturePodController : public FeaturePodControllerBase {
   FeaturePodButton* CreateButton() override;
   void OnIconPressed() override;
   void OnLabelPressed() override;
+  SystemTrayItemUmaType GetUmaType() const override;
 
  private:
   // Unowned.

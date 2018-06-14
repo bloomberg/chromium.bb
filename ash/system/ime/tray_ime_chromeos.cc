@@ -127,7 +127,7 @@ void IMEDetailedView::ShowSettings() {
 }  // namespace tray
 
 TrayIME::TrayIME(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_IME),
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_IME),
       ime_controller_(Shell::Get()->ime_controller()),
       tray_label_(nullptr),
       default_(nullptr),

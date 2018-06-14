@@ -31,6 +31,9 @@ class FeaturePodsContainerViewTest : public AshTestBase,
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override { return nullptr; }
   void OnIconPressed() override {}
+  SystemTrayItemUmaType GetUmaType() const override {
+    return SystemTrayItemUmaType::UMA_TEST;
+  }
 
   // views::ViewObserver:
   void OnViewPreferredSizeChanged(views::View* observed_view) override {

@@ -45,6 +45,10 @@ void VPNFeaturePodController::OnIconPressed() {
   tray_controller_->ShowVPNDetailedView();
 }
 
+SystemTrayItemUmaType VPNFeaturePodController::GetUmaType() const {
+  return SystemTrayItemUmaType::UMA_VPN;
+}
+
 void VPNFeaturePodController::Update() {
   // NetworkHandler can be uninitialized in unit tests.
   if (!chromeos::NetworkHandler::IsInitialized())

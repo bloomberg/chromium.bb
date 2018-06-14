@@ -72,7 +72,9 @@ class DefaultTracingView : public ActionableView {
 // ash::TrayTracing
 
 TrayTracing::TrayTracing(SystemTray* system_tray)
-    : TrayImageItem(system_tray, kSystemTrayTracingIcon, UMA_TRACING) {
+    : TrayImageItem(system_tray,
+                    kSystemTrayTracingIcon,
+                    SystemTrayItemUmaType::UMA_TRACING) {
   DCHECK(system_tray);
   Shell::Get()->system_tray_model()->tracing()->AddObserver(this);
 }

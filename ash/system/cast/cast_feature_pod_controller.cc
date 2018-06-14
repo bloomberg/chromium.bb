@@ -37,6 +37,10 @@ void CastFeaturePodController::OnIconPressed() {
   tray_controller_->ShowCastDetailedView();
 }
 
+SystemTrayItemUmaType CastFeaturePodController::GetUmaType() const {
+  return SystemTrayItemUmaType::UMA_CAST;
+}
+
 void CastFeaturePodController::OnDevicesUpdated(
     std::vector<mojom::SinkAndRoutePtr> devices) {
   Update();

@@ -108,7 +108,7 @@ class BluetoothDefaultView : public TrayItemMore {
 }  // namespace tray
 
 TrayBluetooth::TrayBluetooth(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_BLUETOOTH),
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_BLUETOOTH),
       default_(nullptr),
       detailed_(nullptr),
       detailed_view_delegate_(

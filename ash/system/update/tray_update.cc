@@ -131,7 +131,9 @@ class TrayUpdate::UpdateView : public ActionableView {
 };
 
 TrayUpdate::TrayUpdate(SystemTray* system_tray)
-    : TrayImageItem(system_tray, kSystemTrayUpdateIcon, UMA_UPDATE),
+    : TrayImageItem(system_tray,
+                    kSystemTrayUpdateIcon,
+                    SystemTrayItemUmaType::UMA_UPDATE),
       model_(Shell::Get()->system_tray_model()->update_model()) {
   model_->AddObserver(this);
 }

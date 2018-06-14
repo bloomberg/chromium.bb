@@ -26,7 +26,7 @@ bool IsDisplayScaleTrayEnabled() {
 }  // namespace
 
 TrayScale::TrayScale(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_NOT_RECORDED),
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_NOT_RECORDED),
       detailed_view_delegate_(
           std::make_unique<SystemTrayItemDetailedViewDelegate>(this)) {}
 

@@ -10,7 +10,8 @@
 namespace ash {
 
 TrayTiles::TrayTiles(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_NOT_RECORDED), default_view_(nullptr) {}
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_NOT_RECORDED),
+      default_view_(nullptr) {}
 
 TrayTiles::~TrayTiles() = default;
 

@@ -18,7 +18,7 @@
 namespace ash {
 
 TraySupervisedUser::TraySupervisedUser(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_SUPERVISED_USER) {}
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_SUPERVISED_USER) {}
 
 TraySupervisedUser::~TraySupervisedUser() = default;
 

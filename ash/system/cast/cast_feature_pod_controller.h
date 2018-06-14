@@ -25,6 +25,7 @@ class ASH_EXPORT CastFeaturePodController
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
   void OnIconPressed() override;
+  SystemTrayItemUmaType GetUmaType() const override;
 
   // CastConfigControllerObserver:
   void OnDevicesUpdated(std::vector<mojom::SinkAndRoutePtr> devices) override;

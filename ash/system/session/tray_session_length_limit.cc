@@ -27,7 +27,8 @@
 namespace ash {
 
 TraySessionLengthLimit::TraySessionLengthLimit(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_SESSION_LENGTH_LIMIT),
+    : SystemTrayItem(system_tray,
+                     SystemTrayItemUmaType::UMA_SESSION_LENGTH_LIMIT),
       model_(Shell::Get()->system_tray_model()->session_length_limit()) {
   model_->AddObserver(this);
   OnSessionLengthLimitUpdated();

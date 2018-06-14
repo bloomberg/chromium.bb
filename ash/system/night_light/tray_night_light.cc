@@ -11,7 +11,9 @@
 namespace ash {
 
 TrayNightLight::TrayNightLight(SystemTray* system_tray)
-    : TrayImageItem(system_tray, kSystemTrayNightLightIcon, UMA_NIGHT_LIGHT) {
+    : TrayImageItem(system_tray,
+                    kSystemTrayNightLightIcon,
+                    SystemTrayItemUmaType::UMA_NIGHT_LIGHT) {
   Shell::Get()->night_light_controller()->AddObserver(this);
 }
 

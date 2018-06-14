@@ -142,7 +142,7 @@ class VpnDefaultView : public TrayItemMore,
 }  // namespace tray
 
 TrayVPN::TrayVPN(SystemTray* system_tray)
-    : SystemTrayItem(system_tray, UMA_VPN),
+    : SystemTrayItem(system_tray, SystemTrayItemUmaType::UMA_VPN),
       default_(nullptr),
       detailed_(nullptr),
       detailed_view_delegate_(

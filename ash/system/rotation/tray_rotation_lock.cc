@@ -173,7 +173,7 @@ void RotationLockDefaultView::OnUserRotationLockChanged() {
 TrayRotationLock::TrayRotationLock(SystemTray* system_tray)
     : TrayImageItem(system_tray,
                     kSystemTrayRotationLockLockedIcon,
-                    UMA_ROTATION_LOCK) {
+                    SystemTrayItemUmaType::UMA_ROTATION_LOCK) {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
