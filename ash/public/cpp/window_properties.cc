@@ -11,6 +11,7 @@
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
+#include "base/unguessable_token.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
@@ -35,7 +36,7 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kFrameActiveColorKey,
       ui::mojom::WindowManager::kFrameActiveColor_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
-  property_converter->RegisterImageSkiaProperty(
+  property_converter->RegisterUnguessableTokenProperty(
       kFrameImageActiveKey, mojom::kFrameImageActive_Property);
   property_converter->RegisterPrimitiveProperty(
       kFrameInactiveColorKey,
@@ -90,7 +91,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
                              kBackdropWindowMode,
                              BackdropWindowMode::kAuto);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false);
-DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::ImageSkia,
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
                                    kFrameImageActiveKey,
                                    nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideInOverviewKey, false);

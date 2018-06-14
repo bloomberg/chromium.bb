@@ -93,6 +93,11 @@ class GFX_EXPORT ImageSkia {
   // |other|. Will also return true if both images are isNull().
   bool BackedBySameObjectAs(const gfx::ImageSkia& other) const;
 
+  // Returns a pointer that identifies the backing ImageSkiaStorage. Comparing
+  // the results of this method from two ImageSkia objects is equivalent to
+  // using BackedBySameObjectAs().
+  const void* GetBackingObject() const;
+
   // Adds |image_rep| to the image reps contained by this object.
   void AddRepresentation(const gfx::ImageSkiaRep& image_rep);
 

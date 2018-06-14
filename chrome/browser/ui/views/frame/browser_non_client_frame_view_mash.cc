@@ -9,6 +9,7 @@
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/window_properties.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/ash/browser_image_registrar.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -311,11 +312,20 @@ gfx::Size BrowserNonClientFrameViewMash::GetMinimumSize() const {
 
 void BrowserNonClientFrameViewMash::OnThemeChanged() {
   gfx::ImageSkia active_frame_image = GetFrameImage(true);
+
   if (active_frame_image.isNull()) {
     frame()->GetNativeWindow()->ClearProperty(ash::kFrameImageActiveKey);
+    active_frame_image_registration_ = nullptr;
   } else {
-    frame()->GetNativeWindow()->SetProperty(
-        ash::kFrameImageActiveKey, new gfx::ImageSkia(active_frame_image));
+    // Hold onto a temporary reference so the old image isn't de-registered till
+    // after the new one is registered and in use.
+    scoped_refptr<ImageRegistration> temporary_registration =
+        active_frame_image_registration_;
+    active_frame_image_registration_ =
+        BrowserImageRegistrar::RegisterImage(active_frame_image);
+    auto* token = new base::UnguessableToken();
+    *token = active_frame_image_registration_->token();
+    frame()->GetNativeWindow()->SetProperty(ash::kFrameImageActiveKey, token);
   }
 }
 

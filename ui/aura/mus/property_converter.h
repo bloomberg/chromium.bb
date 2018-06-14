@@ -17,6 +17,10 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace gfx {
 class Rect;
 class Size;
@@ -107,6 +111,9 @@ class AURA_EXPORT PropertyConverter {
                               const char* transport_name);
   void RegisterString16Property(const WindowProperty<base::string16*>* property,
                                 const char* transport_name);
+  void RegisterUnguessableTokenProperty(
+      const WindowProperty<base::UnguessableToken*>* property,
+      const char* transport_name);
 
   // Get a flat map of the window's registered properties, to use for transport.
   base::flat_map<std::string, std::vector<uint8_t>> GetTransportProperties(
@@ -142,6 +149,8 @@ class AURA_EXPORT PropertyConverter {
   std::map<const WindowProperty<std::string*>*, const char*> string_properties_;
   std::map<const WindowProperty<base::string16*>*, const char*>
       string16_properties_;
+  std::map<const WindowProperty<base::UnguessableToken*>*, const char*>
+      unguessable_token_properties_;
 
   // Set of transport names supplied to RegisterProperty().
   std::set<std::string> transport_names_;

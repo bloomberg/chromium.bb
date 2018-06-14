@@ -12,6 +12,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/cast_config_controller.h"
+#include "ash/client_image_registry.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/display/cros_display_config.h"
 #include "ash/events/event_rewriter_controller.h"
@@ -97,6 +98,11 @@ void BindAshMessageCenterControllerRequestOnMainThread(
 
 void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
   Shell::Get()->cast_config()->BindRequest(std::move(request));
+}
+
+void BindClientImageRegistryRequestOnMainThread(
+    mojom::ClientImageRegistryRequest request) {
+  Shell::Get()->client_image_registry()->BindRequest(std::move(request));
 }
 
 void BindDockedMagnifierControllerRequestOnMainThread(
@@ -240,6 +246,9 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindCastConfigOnMainThread),
                          main_thread_task_runner);
+  registry->AddInterface(
+      base::BindRepeating(&BindClientImageRegistryRequestOnMainThread),
+      main_thread_task_runner);
   if (features::IsDockedMagnifierEnabled()) {
     registry->AddInterface(
         base::BindRepeating(&BindDockedMagnifierControllerRequestOnMainThread),

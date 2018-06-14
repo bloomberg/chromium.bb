@@ -22,6 +22,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
+#include "ash/client_image_registry.h"
 #include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
@@ -1167,6 +1168,9 @@ void Shell::Init(ui::ContextFactory* context_factory,
     user_activity_forwarder_ = std::make_unique<aura::UserActivityForwarder>(
         std::move(user_activity_monitor), user_activity_detector_.get());
   }
+
+  if (config == Config::MASH)
+    client_image_registry_ = std::make_unique<ClientImageRegistry>();
 
   // In mash drag and drop is handled by mus.
   if (config != Config::MASH)

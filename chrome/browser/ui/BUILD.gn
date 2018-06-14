@@ -1769,6 +1769,8 @@ split_static_library("ui") {
       "ash/ash_shell_init.h",
       "ash/ash_util.cc",
       "ash/ash_util.h",
+      "ash/browser_image_registrar.cc",
+      "ash/browser_image_registrar.h",
       "ash/cast_config_client_media_router.cc",
       "ash/cast_config_client_media_router.h",
       "ash/chrome_browser_main_extra_parts_ash.cc",

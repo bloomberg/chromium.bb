@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/ash/browser_image_registrar.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 
@@ -91,6 +92,10 @@ class BrowserNonClientFrameViewMash : public BrowserNonClientFrameView,
   TabIconView* window_icon_;
 
   TabStrip* tab_strip_;
+
+  // A reference to the entry in BrowserImageRegistrar for the active frame
+  // image. Multiple windows that share a browser theme will hold onto a ref.
+  scoped_refptr<ImageRegistration> active_frame_image_registration_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewMash);
 };

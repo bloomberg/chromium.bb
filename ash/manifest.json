@@ -16,6 +16,7 @@
           "ash.mojom.AshMessageCenterController",
           "ash.mojom.AssistantController",
           "ash.mojom.CastConfig",
+          "ash.mojom.ClientImageRegistry",
           "ash.mojom.CrosDisplayConfigController",
           "ash.mojom.DockedMagnifierController",
           "ash.mojom.EventRewriterController",
