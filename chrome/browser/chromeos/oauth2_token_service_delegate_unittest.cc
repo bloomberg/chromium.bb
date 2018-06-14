@@ -11,7 +11,6 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/account_manager/account_manager.h"
@@ -89,10 +88,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
 
-    request_context_ = new net::TestURLRequestContextGetter(
-        scoped_task_environment_.GetMainThreadTaskRunner());
-    account_manager_.Initialize(tmp_dir_.GetPath(), request_context_.get(),
-                                immediate_callback_runner_);
+    account_manager_.Initialize(tmp_dir_.GetPath());
     scoped_task_environment_.RunUntilIdle();
 
     pref_service_.registry()->RegisterListPref(
@@ -143,14 +139,10 @@ class CrOSOAuthDelegateTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   base::ScopedTempDir tmp_dir_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
   AccountInfo account_info_;
   AccountTrackerService account_tracker_service_;
   AccountManager account_manager_;
   std::unique_ptr<ChromeOSOAuth2TokenServiceDelegate> delegate_;
-  AccountManager::DelayNetworkCallRunner immediate_callback_runner_ =
-      base::BindRepeating(
-          [](const base::RepeatingClosure& closure) -> void { closure.Run(); });
 
  private:
   sync_preferences::TestingPrefServiceSyncable pref_service_;
@@ -264,8 +256,7 @@ TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   AccountManager account_manager;
   // AccountManager will not be fully initialized until
   // |scoped_task_environment_.RunUntilIdle()| is called.
-  account_manager.Initialize(tmp_dir_.GetPath(), request_context_.get(),
-                             immediate_callback_runner_);
+  account_manager.Initialize(tmp_dir_.GetPath());
 
   // Register callbacks before AccountManager has been fully initialized.
   auto delegate = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(

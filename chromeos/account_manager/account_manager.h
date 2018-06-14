@@ -58,9 +58,6 @@ class CHROMEOS_EXPORT AccountManager {
   // A callback for list of |AccountKey|s.
   using AccountListCallback = base::OnceCallback<void(std::vector<AccountKey>)>;
 
-  using DelayNetworkCallRunner =
-      base::RepeatingCallback<void(const base::RepeatingClosure&)>;
-
   class Observer {
    public:
     Observer();
@@ -88,18 +85,11 @@ class CHROMEOS_EXPORT AccountManager {
 
   // Note: |Initialize| MUST be called at least once on this object.
   AccountManager();
-  virtual ~AccountManager();
+  ~AccountManager();
 
   // |home_dir| is the path of the Device Account's home directory (root of the
-  // user's cryptohome).
-  // |request_context| is a non-owning pointer.
-  // |delay_network_call_runner| is basically a wrapper for
-  // |chromeos::DelayNetworkCall|. Cannot use |chromeos::DelayNetworkCall| due
-  // to linking/dependency constraints.
-  // This method MUST be called at least once in the lifetime of AccountManager.
-  void Initialize(const base::FilePath& home_dir,
-                  net::URLRequestContextGetter* request_context,
-                  DelayNetworkCallRunner delay_network_call_runner);
+  // user's cryptohome). This method MUST be called at least once.
+  void Initialize(const base::FilePath& home_dir);
 
   // Gets (async) a list of account keys known to |AccountManager|.
   void GetAccounts(AccountListCallback callback);
@@ -108,9 +98,6 @@ class CHROMEOS_EXPORT AccountManager {
   // |AccountManager|.
   // Observers are notified about an account removal through
   // |Observer::OnAccountRemoved|.
-  // If the account being removed is a GAIA account, a token revocation with
-  // GAIA is also attempted, on a best effort basis. Even if token revocation
-  // with GAIA fails, AccountManager will forget the account.
   void RemoveAccount(const AccountKey& account_key);
 
   // Updates or inserts a token, for the account corresponding to the given
@@ -123,9 +110,6 @@ class CHROMEOS_EXPORT AccountManager {
   // Removes an |AccountManager::Observer|. Does nothing if the |observer| is
   // not in the list of known observers.
   void RemoveObserver(Observer* observer);
-
-  // Gets AccountManager's URL Request Context.
-  net::URLRequestContextGetter* GetUrlRequestContext();
 
   // Creates and returns an |OAuth2AccessTokenFetcher| using the refresh token
   // stored for |account_key|. |IsTokenAvailable| should be |true| for
@@ -151,11 +135,12 @@ class CHROMEOS_EXPORT AccountManager {
 
   friend class AccountManagerTest;
   FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestInitialization);
+  FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestPersistence);
+  FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, AccountRemovalIsPersistedToDisk);
 
-  // Same as the public |Initialize| except for a |task_runner|.
+  // Initializes |AccountManager| with the provided |task_runner| and location
+  // of the user's home directory.
   void Initialize(const base::FilePath& home_dir,
-                  net::URLRequestContextGetter* request_context,
-                  DelayNetworkCallRunner delay_network_call_runner,
                   scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // Reads tokens from |tokens| and inserts them in |tokens_| and runs all
@@ -190,20 +175,8 @@ class CHROMEOS_EXPORT AccountManager {
   // Notify |Observer|s about an account removal.
   void NotifyAccountRemovalObservers(const AccountKey& account_key);
 
-  // Revokes |refresh_token| with GAIA. Virtual for testing.
-  virtual void RevokeGaiaTokenOnServer(const std::string& refresh_token);
-
   // Status of this object's initialization.
   InitializationState init_state_ = InitializationState::kNotStarted;
-
-  // All tokens, if channel bound, are bound to |request_context_|. This is a
-  // non-owning pointer.
-  net::URLRequestContextGetter* request_context_ = nullptr;
-
-  // An indirect way to access |chromeos::DelayNetworkCall|. We cannot use
-  // |chromeos::DelayNetworkCall| directly here due to linking/dependency
-  // issues.
-  DelayNetworkCallRunner delay_network_call_runner_;
 
   // A task runner for disk I/O.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
