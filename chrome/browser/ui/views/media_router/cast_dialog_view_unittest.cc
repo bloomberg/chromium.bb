@@ -4,6 +4,11 @@
 
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -13,10 +18,12 @@
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/widget/widget.h"
 
 using testing::_;
@@ -93,7 +100,8 @@ class CastDialogViewTest : public ChromeViewsTestBase {
             WithArg<0>(Invoke([this](CastDialogController::Observer* observer) {
               dialog_ = static_cast<CastDialogView*>(observer);
             })));
-    CastDialogView::ShowDialog(anchor_widget_->GetContentsView(), &controller_);
+    CastDialogView::ShowDialog(anchor_widget_->GetContentsView(), &controller_,
+                               nullptr);
 
     dialog_->OnModelUpdated(model);
   }
@@ -103,6 +111,10 @@ class CastDialogViewTest : public ChromeViewsTestBase {
                                gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
     dialog_->ButtonPressed(dialog_->sink_buttons_for_test()[1], mouse_event);
   }
+
+  views::ScrollView* scroll_view() { return dialog_->scroll_view_for_test(); }
+
+  views::View* no_sinks_view() { return dialog_->no_sinks_view_for_test(); }
 
   views::Button* sources_button() {
     return dialog_->alternative_sources_button_for_test();
@@ -116,6 +128,7 @@ class CastDialogViewTest : public ChromeViewsTestBase {
     return dialog_->alternative_sources_menu_runner_for_test();
   }
 
+  content::TestBrowserThreadBundle test_thread_bundle_;
   std::unique_ptr<views::Widget> anchor_widget_;
   MockCastDialogController controller_;
   CastDialogView* dialog_ = nullptr;
@@ -132,7 +145,8 @@ TEST_F(CastDialogViewTest, MAYBE_ShowAndHideDialog) {
   EXPECT_EQ(nullptr, CastDialogView::GetCurrentDialogWidget());
 
   EXPECT_CALL(controller_, AddObserver(_));
-  CastDialogView::ShowDialog(anchor_widget_->GetContentsView(), &controller_);
+  CastDialogView::ShowDialog(anchor_widget_->GetContentsView(), &controller_,
+                             nullptr);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(CastDialogView::IsShowing());
   EXPECT_NE(nullptr, CastDialogView::GetCurrentDialogWidget());
@@ -234,6 +248,20 @@ TEST_F(CastDialogViewTest, DisableAlternativeSourcesPicker) {
   // The picker should be disabled if the selected sink doesn't support non-tab
   // sources.
   EXPECT_FALSE(sources_button()->enabled());
+}
+
+TEST_F(CastDialogViewTest, ShowNoDeviceView) {
+  CastDialogModel model;
+  InitializeDialogWithModel(model);
+  // The no-device view should be shown when there are no sinks.
+  EXPECT_TRUE(no_sinks_view()->visible());
+  EXPECT_FALSE(scroll_view());
+
+  model.media_sinks.push_back(CreateConnectedSink());
+  dialog_->OnModelUpdated(model);
+  // The scroll view should be shown when there are sinks.
+  EXPECT_FALSE(no_sinks_view());
+  EXPECT_TRUE(scroll_view()->visible());
 }
 
 }  // namespace media_router

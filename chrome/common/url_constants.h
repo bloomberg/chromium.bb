@@ -32,6 +32,10 @@ extern const char kAutomaticSettingsResetLearnMoreURL[];
 // The URL for providing help when the Bluetooth adapter is off.
 extern const char kBluetoothAdapterOffHelpURL[];
 
+// The URL for the help center article to show when no Cast destination has been
+// found.
+extern const char kCastNoDestinationFoundURL[];
+
 // The URL for the Bluetooth Overview help center article in the Web Bluetooth
 // Chooser.
 extern const char kChooserBluetoothOverviewURL[];

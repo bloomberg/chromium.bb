@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/media_router/cast_dialog_no_sinks_view.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,9 +37,10 @@ constexpr int kAlternativeSourceButtonId = -1;
 
 // static
 void CastDialogView::ShowDialog(views::View* anchor_view,
-                                CastDialogController* controller) {
+                                CastDialogController* controller,
+                                Browser* browser) {
   DCHECK(!instance_);
-  instance_ = new CastDialogView(anchor_view, controller);
+  instance_ = new CastDialogView(anchor_view, controller, browser);
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(instance_);
   widget->Show();
@@ -117,21 +119,30 @@ bool CastDialogView::Close() {
 }
 
 void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
-  PopulateScrollView(model);
-  RestoreSinkListState();
+  if (model.media_sinks.empty()) {
+    ShowNoSinksView();
+  } else {
+    ShowScrollView();
+    PopulateScrollView(model.media_sinks);
+    RestoreSinkListState();
+  }
+  dialog_title_ = model.dialog_header;
+  MaybeSizeToContents();
 }
 
 void CastDialogView::OnControllerInvalidated() {
   controller_ = nullptr;
-  // The widget may be null if this is called while the dialog is opening.
-  if (GetWidget())
-    GetWidget()->Close();
+  MaybeSizeToContents();
 }
 
 CastDialogView::CastDialogView(views::View* anchor_view,
-                               CastDialogController* controller)
+                               CastDialogController* controller,
+                               Browser* browser)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      controller_(controller) {}
+      controller_(controller),
+      browser_(browser) {
+  ShowNoSinksView();
+}
 
 CastDialogView::~CastDialogView() {
   if (controller_)
@@ -183,6 +194,34 @@ void CastDialogView::WindowClosing() {
     instance_ = nullptr;
 }
 
+void CastDialogView::ShowNoSinksView() {
+  if (no_sinks_view_)
+    return;
+  if (scroll_view_) {
+    // The dtor of |scroll_view_| removes it from the dialog.
+    delete scroll_view_;
+    scroll_view_ = nullptr;
+    sink_buttons_.clear();
+    selected_sink_index_ = 0;
+  }
+  no_sinks_view_ = new CastDialogNoSinksView(browser_);
+  AddChildView(no_sinks_view_);
+}
+
+void CastDialogView::ShowScrollView() {
+  if (scroll_view_)
+    return;
+  if (no_sinks_view_) {
+    // The dtor of |no_sinks_view_| removes it from the dialog.
+    delete no_sinks_view_;
+    no_sinks_view_ = nullptr;
+  }
+  scroll_view_ = new views::ScrollView();
+  AddChildView(scroll_view_);
+  constexpr int kSinkButtonHeight = 50;
+  scroll_view_->ClipHeightTo(0, kSinkButtonHeight * 10);
+}
+
 void CastDialogView::RestoreSinkListState() {
   if (selected_sink_index_ < sink_buttons_.size()) {
     sink_buttons_.at(selected_sink_index_)->SnapInkDropToActivated();
@@ -198,36 +237,22 @@ void CastDialogView::RestoreSinkListState() {
     scroll_view_->ScrollToPosition(scroll_bar, scroll_position_);
 }
 
-void CastDialogView::PopulateScrollView(const CastDialogModel& model) {
-  dialog_title_ = model.dialog_header;
-  if (!scroll_view_) {
-    scroll_view_ = new views::ScrollView();
-    AddChildView(scroll_view_);
-    constexpr int kSinkButtonHeight = 50;
-    scroll_view_->ClipHeightTo(0, kSinkButtonHeight * 10);
-  }
-  scroll_view_->SetContents(CreateSinkListView(model.media_sinks));
-
-  // The widget may be null if this is called while the dialog is opening.
-  if (GetWidget())
-    SizeToContents();
-  Layout();
-}
-
-views::View* CastDialogView::CreateSinkListView(
-    const std::vector<UIMediaSink>& sinks) {
+void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
   sink_buttons_.clear();
-  views::View* view = new views::View();
-  view->SetLayoutManager(
+  views::View* sink_list_view = new views::View();
+  sink_list_view->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   for (size_t i = 0; i < sinks.size(); i++) {
     const UIMediaSink& sink = sinks.at(i);
     CastDialogSinkButton* sink_button = new CastDialogSinkButton(this, sink);
     sink_button->set_tag(i);
     sink_buttons_.push_back(sink_button);
-    view->AddChildView(sink_button);
+    sink_list_view->AddChildView(sink_button);
   }
-  return view;
+  scroll_view_->SetContents(sink_list_view);
+
+  MaybeSizeToContents();
+  Layout();
 }
 
 void CastDialogView::ShowAlternativeSources() {
@@ -271,6 +296,12 @@ void CastDialogView::SelectSinkAtIndex(size_t index) {
 
   // Update the text on the main action button.
   DialogModelChanged();
+}
+
+void CastDialogView::MaybeSizeToContents() {
+  // The widget may be null if this is called while the dialog is opening.
+  if (GetWidget())
+    SizeToContents();
 }
 
 // static

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/media_router/media_router_dialog_controller_views.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -90,7 +92,8 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
     return;
   views::View* action_view = browser_actions->GetViewForId(
       ComponentToolbarActionsFactory::kMediaRouterActionId);
-  CastDialogView::ShowDialog(action_view, ui_.get());
+  CastDialogView::ShowDialog(action_view, ui_.get(),
+                             chrome::FindBrowserWithWebContents(initiator()));
   CastDialogView::GetCurrentDialogWidget()->AddObserver(this);
 }
 

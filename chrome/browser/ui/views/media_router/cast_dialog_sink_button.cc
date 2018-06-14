@@ -56,8 +56,8 @@ gfx::ImageSkia CreateSinkIcon(SinkIconType icon_type) {
       vector_icon = &kTvIcon;
       break;
   }
-  constexpr int kPrimaryIconSize = 24;
-  return gfx::CreateVectorIcon(*vector_icon, kPrimaryIconSize,
+  return gfx::CreateVectorIcon(*vector_icon,
+                               CastDialogSinkButton::kPrimaryIconSize,
                                gfx::kChromeIconGrey);
 }
 
@@ -69,18 +69,18 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(const UIMediaSink& sink) {
 
 std::unique_ptr<views::View> CreateSecondaryIconForSink(
     const UIMediaSink& sink) {
-  constexpr int kSecondaryIconSize = 16;
   if (sink.issue) {
     auto icon_view = std::make_unique<views::ImageView>();
-    icon_view->SetImage(CreateVectorIcon(::vector_icons::kInfoOutlineIcon,
-                                         kSecondaryIconSize,
-                                         gfx::kChromeIconGrey));
+    icon_view->SetImage(CreateVectorIcon(
+        ::vector_icons::kInfoOutlineIcon,
+        CastDialogSinkButton::kSecondaryIconSize, gfx::kChromeIconGrey));
     icon_view->SetTooltipText(base::UTF8ToUTF16(sink.issue->info().title));
     return icon_view;
   } else if (sink.state == UIMediaSinkState::CONNECTED) {
     auto icon_view = std::make_unique<views::ImageView>();
     icon_view->SetImage(CreateVectorIcon(
-        views::kMenuCheckIcon, kSecondaryIconSize, gfx::kChromeIconGrey));
+        views::kMenuCheckIcon, CastDialogSinkButton::kSecondaryIconSize,
+        gfx::kChromeIconGrey));
     return icon_view;
   } else if (sink.state == UIMediaSinkState::CONNECTING) {
     auto throbber_view = std::make_unique<views::Throbber>();
@@ -104,6 +104,10 @@ base::string16 GetStatusTextForSink(const UIMediaSink& sink) {
 }
 
 }  // namespace
+
+// static
+int CastDialogSinkButton::kPrimaryIconSize = 24;
+int CastDialogSinkButton::kSecondaryIconSize = 16;
 
 CastDialogSinkButton::CastDialogSinkButton(
     views::ButtonListener* button_listener,

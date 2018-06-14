@@ -5,11 +5,16 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_MEDIA_ROUTER_CAST_DIALOG_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_MEDIA_ROUTER_CAST_DIALOG_VIEW_H_
 
+#include <memory>
+#include <vector>
+
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/menu/menu_runner.h"
+
+class Browser;
 
 namespace media_router {
 
@@ -27,7 +32,8 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // Instantiates and shows the singleton dialog. The dialog must not be
   // currently shown.
   static void ShowDialog(views::View* anchor_view,
-                         CastDialogController* controller);
+                         CastDialogController* controller,
+                         Browser* browser);
 
   // No-op if the dialog is currently not shown.
   static void HideDialog();
@@ -72,6 +78,8 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   const std::vector<CastDialogSinkButton*>& sink_buttons_for_test() const {
     return sink_buttons_;
   }
+  views::ScrollView* scroll_view_for_test() { return scroll_view_; }
+  views::View* no_sinks_view_for_test() { return no_sinks_view_; }
   views::Button* alternative_sources_button_for_test() {
     return alternative_sources_button_;
   }
@@ -83,25 +91,30 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   }
 
  private:
-  CastDialogView(views::View* anchor_view, CastDialogController* controller);
+  CastDialogView(views::View* anchor_view,
+                 CastDialogController* controller,
+                 Browser* browser);
   ~CastDialogView() override;
 
   // views::BubbleDialogDelegateView:
   void Init() override;
   void WindowClosing() override;
 
+  void ShowNoSinksView();
+  void ShowScrollView();
+
   // Apply the stored sink selection and scroll state.
   void RestoreSinkListState();
 
   // Populate the scroll view containing sinks using the data in |model|.
-  void PopulateScrollView(const CastDialogModel& model);
-
-  views::View* CreateSinkListView(const std::vector<UIMediaSink>& sinks);
+  void PopulateScrollView(const std::vector<UIMediaSink>& sinks);
 
   // Show the pull-down options to cast sources other than tabs.
   void ShowAlternativeSources();
 
   void SelectSinkAtIndex(size_t index);
+
+  void MaybeSizeToContents();
 
   // The singleton dialog instance. This is a nullptr when a dialog is not
   // shown.
@@ -120,6 +133,11 @@ class CastDialogView : public views::BubbleDialogDelegateView,
 
   // ScrollView containing the list of sink buttons.
   views::ScrollView* scroll_view_ = nullptr;
+
+  // View shown while there are no sinks.
+  views::View* no_sinks_view_ = nullptr;
+
+  Browser* const browser_;
 
   // How much |scroll_view_| is scrolled downwards in pixels. Whenever the sink
   // list is updated the scroll position gets reset, so we must manually restore
