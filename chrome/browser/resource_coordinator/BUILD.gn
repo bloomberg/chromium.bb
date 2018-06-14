@@ -23,3 +23,9 @@ mojom("mojo_bindings") {
     "lifecycle_unit_state.mojom",
   ]
 }
+
+proto_library("intervention_policy_database_proto") {
+  sources = [
+    "intervention_policy_database.proto",
+  ]
+}
