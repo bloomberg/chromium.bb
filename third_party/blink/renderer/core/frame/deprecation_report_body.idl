@@ -7,11 +7,11 @@
 [
     NoInterfaceObject,
     RuntimeEnabled=ReportingObserver
-] interface DeprecationReport : ReportBody {
+] interface DeprecationReportBody : ReportBody {
   readonly attribute DOMString id;
   readonly attribute Date? anticipatedRemoval;
   readonly attribute DOMString message;
-  readonly attribute DOMString sourceFile;
-  readonly attribute long lineNumber;
-  readonly attribute long columnNumber;
+  readonly attribute DOMString? sourceFile;
+  readonly attribute long? lineNumber;
+  readonly attribute long? columnNumber;
 };

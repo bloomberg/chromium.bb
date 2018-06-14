@@ -10,7 +10,7 @@
 #include "third_party/blink/public/platform/reporting.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/deprecation_report.h"
+#include "third_party/blink/renderer/core/frame/deprecation_report_body.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -747,7 +747,7 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
 
   // Construct the deprecation report.
   double removal_date = MilestoneDate(info.anticipated_removal);
-  DeprecationReport* body = new DeprecationReport(
+  DeprecationReportBody* body = new DeprecationReportBody(
       info.id, removal_date, info.message, SourceLocation::Capture());
   Report* report = new Report("deprecation", document->Url().GetString(), body);
 
@@ -761,10 +761,14 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   Platform* platform = Platform::Current();
   platform->GetConnector()->BindInterface(platform->GetBrowserServiceName(),
                                           &service);
-  service->QueueDeprecationReport(document->Url(), info.id,
-                                  WTF::Time::FromDoubleT(removal_date),
-                                  info.message, body->sourceFile(),
-                                  body->lineNumber(), body->columnNumber());
+  bool is_null;
+  int line_number = body->lineNumber(is_null);
+  line_number = is_null ? 0 : line_number;
+  int column_number = body->columnNumber(is_null);
+  column_number = is_null ? 0 : column_number;
+  service->QueueDeprecationReport(
+      document->Url(), info.id, WTF::Time::FromDoubleT(removal_date),
+      info.message, body->sourceFile(), line_number, column_number);
 }
 
 // static

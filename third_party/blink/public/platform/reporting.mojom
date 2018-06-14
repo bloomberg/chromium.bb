@@ -10,21 +10,21 @@ import "url/mojom/url.mojom";
 interface ReportingServiceProxy {
   // Attempts to queue an Intervention report using the Reporting API.
   //
-  // (See //third_party/blink/renderer/core/frame/intervention_report.h.)
+  // (See //third_party/blink/renderer/core/frame/intervention_report_body.h.)
   QueueInterventionReport(url.mojom.Url url,
                           string message,
-                          string source_file,
+                          string? source_file,
                           int32 line_number,
                           int32 column_number);
 
   // Attempts to queue a Deprecation report using the Reporting API.
   //
-  // (See //third_party/blink/renderer/core/frame/deprecation_report.h.)
+  // (See //third_party/blink/renderer/core/frame/deprecation_report_body.h.)
   QueueDeprecationReport(url.mojom.Url url,
                          string id,
-                         mojo_base.mojom.Time anticipatedRemoval,
+                         mojo_base.mojom.Time? anticipatedRemoval,
                          string message,
-                         string source_file,
+                         string? source_file,
                          int32 line_number,
                          int32 column_number);
 
@@ -42,7 +42,7 @@ interface ReportingServiceProxy {
                           string blocked_uri,
                           int32 line_number,
                           int32 column_number,
-                          string source_file,
+                          string? source_file,
                           int32 status_code,
                           string script_sample);
 };

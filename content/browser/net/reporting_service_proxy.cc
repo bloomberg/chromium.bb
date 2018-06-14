@@ -35,32 +35,38 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
 
   void QueueInterventionReport(const GURL& url,
                                const std::string& message,
-                               const std::string& source_file,
+                               const base::Optional<std::string>& source_file,
                                int line_number,
                                int column_number) override {
     auto body = std::make_unique<base::DictionaryValue>();
     body->SetString("message", message);
-    body->SetString("sourceFile", source_file);
-    body->SetInteger("lineNumber", line_number);
-    body->SetInteger("columnNumber", column_number);
+    if (source_file)
+      body->SetString("sourceFile", *source_file);
+    if (line_number)
+      body->SetInteger("lineNumber", line_number);
+    if (column_number)
+      body->SetInteger("columnNumber", column_number);
     QueueReport(url, "default", "intervention", std::move(body));
   }
 
   void QueueDeprecationReport(const GURL& url,
                               const std::string& id,
-                              base::Time anticipatedRemoval,
+                              base::Optional<base::Time> anticipatedRemoval,
                               const std::string& message,
-                              const std::string& source_file,
+                              const base::Optional<std::string>& source_file,
                               int line_number,
                               int column_number) override {
     auto body = std::make_unique<base::DictionaryValue>();
     body->SetString("id", id);
-    if (anticipatedRemoval.is_null())
-      body->SetDouble("anticipatedRemoval", anticipatedRemoval.ToDoubleT());
+    if (anticipatedRemoval)
+      body->SetDouble("anticipatedRemoval", anticipatedRemoval->ToDoubleT());
     body->SetString("message", message);
-    body->SetString("sourceFile", source_file);
-    body->SetInteger("lineNumber", line_number);
-    body->SetInteger("columnNumber", column_number);
+    if (source_file)
+      body->SetString("sourceFile", *source_file);
+    if (line_number)
+      body->SetInteger("lineNumber", line_number);
+    if (column_number)
+      body->SetInteger("columnNumber", column_number);
     QueueReport(url, "default", "deprecation", std::move(body));
   }
 
@@ -75,7 +81,7 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
                                const std::string& blocked_uri,
                                int line_number,
                                int column_number,
-                               const std::string& source_file,
+                               const base::Optional<std::string>& source_file,
                                int status_code,
                                const std::string& script_sample) override {
     auto body = std::make_unique<base::DictionaryValue>();
@@ -90,7 +96,8 @@ class ReportingServiceProxyImpl : public blink::mojom::ReportingServiceProxy {
       body->SetInteger("line-number", line_number);
     if (column_number)
       body->SetInteger("column-number", column_number);
-    body->SetString("source-file", source_file);
+    if (source_file)
+      body->SetString("sourceFile", *source_file);
     if (status_code)
       body->SetInteger("status-code", status_code);
     body->SetString("script-sample", script_sample);

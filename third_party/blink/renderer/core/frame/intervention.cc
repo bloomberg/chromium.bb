@@ -8,7 +8,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/reporting.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
-#include "third_party/blink/renderer/core/frame/intervention_report.h"
+#include "third_party/blink/renderer/core/frame/intervention_report_body.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/report.h"
@@ -33,8 +33,8 @@ void Intervention::GenerateReport(const LocalFrame* frame,
   Document* document = frame->GetDocument();
 
   // Construct the intervention report.
-  InterventionReport* body =
-      new InterventionReport(message, SourceLocation::Capture());
+  InterventionReportBody* body =
+      new InterventionReportBody(message, SourceLocation::Capture());
   Report* report =
       new Report("intervention", document->Url().GetString(), body);
 
@@ -48,8 +48,13 @@ void Intervention::GenerateReport(const LocalFrame* frame,
   Platform* platform = Platform::Current();
   platform->GetConnector()->BindInterface(platform->GetBrowserServiceName(),
                                           &service);
+  bool is_null;
+  int line_number = body->lineNumber(is_null);
+  line_number = is_null ? 0 : line_number;
+  int column_number = body->columnNumber(is_null);
+  column_number = is_null ? 0 : column_number;
   service->QueueInterventionReport(document->Url(), message, body->sourceFile(),
-                                   body->lineNumber(), body->columnNumber());
+                                   line_number, column_number);
 }
 
 }  // namespace blink

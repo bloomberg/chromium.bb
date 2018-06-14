@@ -7,10 +7,10 @@
 [
     NoInterfaceObject,
     RuntimeEnabled=ReportingObserver
-] interface InterventionReport : ReportBody {
+] interface InterventionReportBody : ReportBody {
   // TODO(paulmeyer): Add additional data, such as id.
   readonly attribute DOMString message;
-  readonly attribute DOMString sourceFile;
-  readonly attribute long lineNumber;
-  readonly attribute long columnNumber;
+  readonly attribute DOMString? sourceFile;
+  readonly attribute long? lineNumber;
+  readonly attribute long? columnNumber;
 };
