@@ -237,9 +237,11 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
 
   // Add the card type icon, last four digits and expiration date.
   auto* description_view = new views::View();
-  description_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kHorizontal, gfx::Insets(),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+  views::BoxLayout* box_layout =
+      description_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kHorizontal, gfx::Insets(),
+          provider->GetDistanceMetric(
+              views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
   view->AddChildView(description_view);
 
   const CreditCard& card = controller_->GetCard();
@@ -253,6 +255,13 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
 
   description_view->AddChildView(
       new views::Label(card.NetworkAndLastFourDigits()));
+
+  // The spacer will stretch to use the available horizontal space in the
+  // dialog, which will end-align the expiration date label.
+  auto* spacer = new views::View();
+  description_view->AddChildView(spacer);
+  box_layout->SetFlexForView(spacer, /*flex=*/1);
+
   description_view->AddChildView(
       new views::Label(card.AbbreviatedExpirationDateForDisplay()));
 
