@@ -35,12 +35,6 @@ namespace {
 const char kDiceMigrationCompletePref[] = "signin.DiceMigrationComplete";
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-// Returns a callback telling if site isolation is enabled for Gaia origins.
-base::RepeatingCallback<bool()>* GetIsGaiaIsolatedCallback() {
-  static base::RepeatingCallback<bool()> g_is_gaia_isolated_callback;
-  return &g_is_gaia_isolated_callback;
-}
-
 bool AccountConsistencyMethodGreaterOrEqual(AccountConsistencyMethod a,
                                             AccountConsistencyMethod b) {
   return static_cast<int>(a) >= static_cast<int>(b);
@@ -89,10 +83,6 @@ AccountConsistencyMethod GetAccountConsistencyMethod() {
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  DCHECK(!GetIsGaiaIsolatedCallback()->is_null());
-  if (!GetIsGaiaIsolatedCallback()->Run())
-    return AccountConsistencyMethod::kDiceFixAuthErrors;
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   if (base::FeatureList::IsEnabled(features::kExperimentalUi))
     return AccountConsistencyMethod::kDiceMigration;
@@ -186,11 +176,6 @@ bool IsExtensionsMultiAccount() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kExtensionsMultiAccount) ||
          GetAccountConsistencyMethod() == AccountConsistencyMethod::kMirror;
-}
-
-void SetGaiaOriginIsolatedCallback(
-    const base::RepeatingCallback<bool()>& is_gaia_isolated) {
-  *GetIsGaiaIsolatedCallback() = is_gaia_isolated;
 }
 
 UnifiedConsentFeatureState GetUnifiedConsentFeatureState() {

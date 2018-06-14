@@ -29,8 +29,6 @@ ScopedAccountConsistency::ScopedAccountConsistency(
   return;
 #endif
 
-  signin::SetGaiaOriginIsolatedCallback(base::Bind([] { return true; }));
-
   // Set up the account consistency method.
   std::string feature_value;
   switch (method) {
