@@ -63,7 +63,7 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
     "message": "Simple message."
   },
   "QUOTES": {
-    "message": "element\\u2019s \\u201c%s\\u201d attribute"
+    "message": "element\u2019s \u201c%s\u201d attribute"
   },
   "PLACEHOLDERS": {
     "message": "%1$d error, %2$d warning"
@@ -114,10 +114,10 @@ class ChromeMessagesJsonFormatUnittest(unittest.TestCase):
     test = u"""
 {
   "ID_HELLO": {
-    "message": "H\\u00e9P\\u00e9ll\\u00f4P\\u00f4!"
+    "message": "H\u00e9P\u00e9ll\u00f4P\u00f4!"
   },
   "ID_HELLO_USER": {
-    "message": "H\\u00e9P\\u00e9ll\\u00f4P\\u00f4 %s"
+    "message": "H\u00e9P\u00e9ll\u00f4P\u00f4 %s"
   }
 }
 """
