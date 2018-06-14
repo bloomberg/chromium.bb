@@ -101,10 +101,9 @@ int AutofillSaveCardInfoBarDelegateMobile::GetIconId() const {
 
 base::string16 AutofillSaveCardInfoBarDelegateMobile::GetMessageText() const {
   return l10n_util::GetStringUTF16(
-      IsGooglePayBrandingEnabled()
+      IsGooglePayBrandingEnabled() || !upload_
           ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3
-          : upload_ ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD
-                    : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
+          : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
