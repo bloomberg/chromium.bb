@@ -3,7 +3,7 @@ PASS WebUSB IDL test
 PASS Partial interface Navigator: original interface defined
 PASS Partial interface Navigator: valid exposure set
 PASS Partial interface WorkerNavigator: original interface defined
-FAIL Partial interface WorkerNavigator: valid exposure set Partial WorkerNavigator interface is exposed to 'DedicatedWorker', the original interface is not.
+PASS Partial interface WorkerNavigator: valid exposure set
 PASS USB interface: existence and properties of interface object
 PASS USB interface object length
 PASS USB interface object name
@@ -312,9 +312,17 @@ PASS USBEndpoint interface: usbEndpoint must inherit property "endpointNumber" w
 PASS USBEndpoint interface: usbEndpoint must inherit property "direction" with the proper type
 PASS USBEndpoint interface: usbEndpoint must inherit property "type" with the proper type
 PASS USBEndpoint interface: usbEndpoint must inherit property "packetSize" with the proper type
+FAIL USBPermissionResult interface: existence and properties of interface object assert_own_property: self does not have own property "USBPermissionResult" expected property "USBPermissionResult" missing
+FAIL USBPermissionResult interface object length assert_own_property: self does not have own property "USBPermissionResult" expected property "USBPermissionResult" missing
+FAIL USBPermissionResult interface object name assert_own_property: self does not have own property "USBPermissionResult" expected property "USBPermissionResult" missing
+FAIL USBPermissionResult interface: existence and properties of interface prototype object assert_own_property: self does not have own property "USBPermissionResult" expected property "USBPermissionResult" missing
+FAIL USBPermissionResult interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "USBPermissionResult" expected property "USBPermissionResult" missing
+FAIL USBPermissionResult interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "USBPermissionResult" expected property "USBPermissionResult" missing
+FAIL USBPermissionResult interface: attribute devices assert_own_property: self does not have own property "USBPermissionResult" expected property "USBPermissionResult" missing
+PASS Unscopable handled correctly for devices property on USBPermissionResult
 PASS Navigator interface: attribute usb
 PASS Unscopable handled correctly for usb property on Navigator
 PASS Navigator interface: navigator must inherit property "usb" with the proper type
-FAIL WorkerNavigator interface: member usb Cannot use 'in' operator to search for 'usb' in undefined
+PASS WorkerNavigator interface: existence and properties of interface object
 Harness: the test ran to completion.
 
