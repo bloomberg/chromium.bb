@@ -292,11 +292,6 @@ const char kDriveSearchInChromeLauncherName[] =
 const char kDriveSearchInChromeLauncherDescription[] =
     "Files from Drive will show up when searching the Chrome App Launcher.";
 
-const char kEasyUnlockPromotionsName[] = "Smart Lock Promotions";
-const char kEasyUnlockPromotionsDescription[] =
-    "Enables Smart Lock promotions. Promotions will be periodically display "
-    "if the user is eligible.";
-
 const char kEmbeddedExtensionOptionsName[] = "Embedded extension options";
 const char kEmbeddedExtensionOptionsDescription[] =
     "Display extension options as an embedded element in chrome://extensions "
