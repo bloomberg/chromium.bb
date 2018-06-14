@@ -301,7 +301,7 @@ void FakeModelTypeSyncBridge::GetData(StorageKeyList keys,
   std::move(callback).Run(std::move(batch));
 }
 
-void FakeModelTypeSyncBridge::GetAllData(DataCallback callback) {
+void FakeModelTypeSyncBridge::GetAllDataForDebugging(DataCallback callback) {
   if (error_next_) {
     error_next_ = false;
     change_processor()->ReportError({FROM_HERE, "boom"});

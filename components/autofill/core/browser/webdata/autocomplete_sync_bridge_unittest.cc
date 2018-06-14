@@ -299,7 +299,8 @@ class AutocompleteSyncBridgeTest : public testing::Test {
   }
 
   void VerifyAllData(const std::vector<AutofillSpecifics>& expected) {
-    bridge()->GetAllData(base::Bind(&VerifyDataBatch, ExpectedMap(expected)));
+    bridge()->GetAllDataForDebugging(
+        base::Bind(&VerifyDataBatch, ExpectedMap(expected)));
   }
 
   AutocompleteSyncBridge* bridge() { return bridge_.get(); }

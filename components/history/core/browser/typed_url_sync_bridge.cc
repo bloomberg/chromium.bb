@@ -292,7 +292,7 @@ void TypedURLSyncBridge::GetData(StorageKeyList storage_keys,
   std::move(callback).Run(std::move(batch));
 }
 
-void TypedURLSyncBridge::GetAllData(DataCallback callback) {
+void TypedURLSyncBridge::GetAllDataForDebugging(DataCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   URLRows typed_urls;

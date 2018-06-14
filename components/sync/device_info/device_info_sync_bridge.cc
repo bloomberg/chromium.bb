@@ -218,7 +218,7 @@ void DeviceInfoSyncBridge::GetData(StorageKeyList storage_keys,
   std::move(callback).Run(std::move(batch));
 }
 
-void DeviceInfoSyncBridge::GetAllData(DataCallback callback) {
+void DeviceInfoSyncBridge::GetAllDataForDebugging(DataCallback callback) {
   auto batch = std::make_unique<MutableDataBatch>();
   for (const auto& kv : all_data_) {
     batch->Put(kv.first, CopyToEntityData(*kv.second));

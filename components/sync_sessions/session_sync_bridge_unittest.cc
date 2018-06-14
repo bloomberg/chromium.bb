@@ -241,7 +241,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
   std::map<std::string, std::unique_ptr<EntityData>> GetAllData() {
     base::RunLoop loop;
     std::unique_ptr<DataBatch> batch;
-    bridge_->GetAllData(base::BindLambdaForTesting(
+    bridge_->GetAllDataForDebugging(base::BindLambdaForTesting(
         [&loop, &batch](std::unique_ptr<DataBatch> input_batch) {
           batch = std::move(input_batch);
           loop.Quit();

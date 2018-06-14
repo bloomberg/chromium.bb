@@ -41,7 +41,7 @@ base::Optional<ModelError> StubModelTypeSyncBridge::ApplySyncChanges(
 void StubModelTypeSyncBridge::GetData(StorageKeyList storage_keys,
                                       DataCallback callback) {}
 
-void StubModelTypeSyncBridge::GetAllData(DataCallback callback) {}
+void StubModelTypeSyncBridge::GetAllDataForDebugging(DataCallback callback) {}
 
 std::string StubModelTypeSyncBridge::GetClientTag(
     const EntityData& entity_data) {

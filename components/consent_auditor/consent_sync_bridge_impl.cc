@@ -116,7 +116,7 @@ void ConsentSyncBridgeImpl::GetData(StorageKeyList storage_keys,
                                   base::AsWeakPtr(this), std::move(callback)));
 }
 
-void ConsentSyncBridgeImpl::GetAllData(DataCallback callback) {
+void ConsentSyncBridgeImpl::GetAllDataForDebugging(DataCallback callback) {
   store_->ReadAllData(base::BindOnce(&ConsentSyncBridgeImpl::OnReadAllData,
                                      base::AsWeakPtr(this),
                                      std::move(callback)));

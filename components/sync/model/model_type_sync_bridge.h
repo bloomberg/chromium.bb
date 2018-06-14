@@ -92,7 +92,8 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   // Asynchronously retrieve all of the local sync data. |callback| should be
   // invoked if the operation is successful, otherwise the processor's
   // ReportError method should be called.
-  virtual void GetAllData(DataCallback callback) = 0;
+  // Used for getting all data in Sync Node Browser of chrome://sync-internals.
+  virtual void GetAllDataForDebugging(DataCallback callback) = 0;
 
   // Get or generate a client tag for |entity_data|. This must be the same tag
   // that was/would have been generated in the SyncableService/Directory world

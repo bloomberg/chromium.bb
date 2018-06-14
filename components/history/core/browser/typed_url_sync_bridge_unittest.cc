@@ -388,7 +388,8 @@ class TypedURLSyncBridgeTest : public testing::Test {
 
   void VerifyAllLocalHistoryData(
       const std::vector<TypedUrlSpecifics>& expected) {
-    bridge()->GetAllData(base::Bind(&VerifyDataBatch, ExpectedMap(expected)));
+    bridge()->GetAllDataForDebugging(
+        base::Bind(&VerifyDataBatch, ExpectedMap(expected)));
   }
 
   void VerifyGetData(TypedURLSyncBridge::StorageKeyList storage_keys,

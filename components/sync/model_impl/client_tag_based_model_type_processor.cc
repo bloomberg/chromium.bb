@@ -1045,7 +1045,7 @@ void ClientTagBasedModelTypeProcessor::GetAllNodesForDebugging(
     AllNodesCallback callback) {
   if (!bridge_)
     return;
-  bridge_->GetAllData(base::BindOnce(
+  bridge_->GetAllDataForDebugging(base::BindOnce(
       &ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging,
       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

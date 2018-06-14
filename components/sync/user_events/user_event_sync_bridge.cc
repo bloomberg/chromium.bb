@@ -140,7 +140,7 @@ void UserEventSyncBridge::GetData(StorageKeyList storage_keys,
                                   base::AsWeakPtr(this), std::move(callback)));
 }
 
-void UserEventSyncBridge::GetAllData(DataCallback callback) {
+void UserEventSyncBridge::GetAllDataForDebugging(DataCallback callback) {
   store_->ReadAllData(base::BindOnce(&UserEventSyncBridge::OnReadAllData,
                                      base::AsWeakPtr(this),
                                      std::move(callback)));

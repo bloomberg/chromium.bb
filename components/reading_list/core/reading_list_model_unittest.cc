@@ -133,7 +133,7 @@ class TestReadingListStorage : public ReadingListModelStorage {
     return;
   }
 
-  void GetAllData(DataCallback callback) override {
+  void GetAllDataForDebugging(DataCallback callback) override {
     NOTREACHED();
     return;
   }
