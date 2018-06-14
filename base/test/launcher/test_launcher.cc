@@ -70,7 +70,6 @@
 #include <zircon/syscalls.h>
 #include <zircon/syscalls/object.h>
 #include "base/fuchsia/default_job.h"
-#include "base/fuchsia/fuchsia_logging.h"
 #endif
 
 namespace base {
@@ -323,7 +322,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
 
   ScopedZxHandle job_handle;
   zx_status_t result = zx_job_create(GetDefaultJob(), 0, job_handle.receive());
-  ZX_CHECK(ZX_OK == result, result) << "zx_job_create";
+  CHECK_EQ(ZX_OK, result) << "zx_job_create: " << zx_status_get_string(result);
   new_options.job_handle = job_handle.get();
 #endif  // defined(OS_FUCHSIA)
 
