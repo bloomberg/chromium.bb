@@ -26,9 +26,9 @@ xr_session_promise_test( (session, t) => new Promise((resolve) => {
 
     addInputSource(input_source);
 
-    // Must have a frameOfReference to get input poses. eyeLevel doesn't apply
+    // Must have a frameOfReference to get input poses. eye-level doesn't apply
     // any transforms to the given matrix.
-    session.requestFrameOfReference("eyeLevel").then( (frameOfRef) => {
+    session.requestFrameOfReference("eye-level").then( (frameOfRef) => {
 
       function CheckInvalidGrip(time, xrFrame) {
         let source = session.getInputSources()[0];

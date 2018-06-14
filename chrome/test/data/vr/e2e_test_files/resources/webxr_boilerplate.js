@@ -54,7 +54,7 @@ function onSessionStarted(session) {
   }
 
   session.baseLayer = new XRWebGLLayer(session, gl);
-  session.requestFrameOfReference('eyeLevel').then( (frameOfRef) => {
+  session.requestFrameOfReference('eye-level').then( (frameOfRef) => {
     if (session.exclusive) {
       exclusiveFrameOfRef = frameOfRef;
     } else {

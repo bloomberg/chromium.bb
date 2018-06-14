@@ -16,7 +16,7 @@ xr_session_promise_test( (session) => {
   let webglLayer = new XRWebGLLayer(session, gl);
   session.baseLayer = webglLayer;
 
-  return session.requestFrameOfReference("eyeLevel").then((frameOfRef) => new Promise((resolve) =>{
+  return session.requestFrameOfReference("eye-level").then((frameOfRef) => new Promise((resolve) =>{
     function onFrame(time, xrFrame) {
       // Ensure that two views are provided.
       assert_not_equals(xrFrame.views, null);

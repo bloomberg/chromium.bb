@@ -16,7 +16,7 @@ xr_session_promise_test( (session, t) => {
   let webglLayer = new XRWebGLLayer(session, gl);
   session.baseLayer = webglLayer;
 
-  return session.requestFrameOfReference("eyeLevel")
+  return session.requestFrameOfReference("eye-level")
     .then((frameOfRef) => new Promise((resolve) =>{
       function onFrame(time, xrFrame) {
         let leftView = xrFrame.views[0];

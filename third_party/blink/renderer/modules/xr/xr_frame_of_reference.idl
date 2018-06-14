@@ -5,8 +5,8 @@
 // https://immersive-web.github.io/webxr/#xrframeofreference-interface
 
 enum XRFrameOfReferenceType {
-  "headModel",
-  "eyeLevel",
+  "head-model",
+  "eye-level",
   "stage",
 };
 
