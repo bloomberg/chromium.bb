@@ -381,8 +381,7 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       is_resuming_ ? LayoutUnit() : border_scrollbar_padding_.block_start;
 
   NGPreviousInflowPosition previous_inflow_position = {
-      ConstraintSpace().BfcOffset().block_offset, LayoutUnit(),
-      ConstraintSpace().MarginStrut(),
+      LayoutUnit(), ConstraintSpace().MarginStrut(),
       /* empty_block_affected_by_clearance */ false};
 
   // Margins collapsing: Do not collapse margins between parent and its child if
@@ -402,7 +401,6 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
     }
     // Move to the content edge. This is where the first child should be placed.
-    previous_inflow_position.bfc_block_offset += content_edge;
     previous_inflow_position.logical_block_offset = content_edge;
   }
 
@@ -676,8 +674,7 @@ void NGBlockLayoutAlgorithm::HandleFloat(
     //          <div style="margin-bottom: 30px"></div>
     LayoutUnit origin_block_offset =
         container_builder_.BfcOffset()
-            ? previous_inflow_position.bfc_block_offset +
-                  previous_inflow_position.margin_strut.Sum()
+            ? NextBorderEdge(previous_inflow_position)
             : ConstraintSpace().FloatsBfcOffset().value().block_offset;
     PositionPendingFloats(origin_block_offset);
   }
@@ -743,7 +740,7 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       child_margin_got_separated =
           bfc_offset.block_offset != adjoining_bfc_offset_estimate;
     } else if (has_clearance_past_adjoining_floats) {
-      child_bfc_offset_estimate = previous_inflow_position->NextBorderEdge();
+      child_bfc_offset_estimate = NextBorderEdge(*previous_inflow_position);
       child_margin_got_separated = true;
     }
 
@@ -1045,8 +1042,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       // is past the relevant floats. If it's not, we need to apply clearance
       // before it.
       LayoutUnit child_block_offset_estimate =
-          previous_inflow_position->bfc_block_offset +
-          layout_result->EndMarginStrut().Sum();
+          BfcBlockOffset() + layout_result->EndMarginStrut().Sum();
       if (child_block_offset_estimate < child_space->ClearanceOffset() ||
           child_space->ShouldForceClearance())
         has_clearance = empty_block_affected_by_clearance = true;
@@ -1247,7 +1243,7 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
       ConstraintSpace().BfcOffset().line_offset +
           border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction()) +
           margins.LineLeft(ConstraintSpace().Direction()),
-      previous_inflow_position.bfc_block_offset};
+      BfcBlockOffset() + previous_inflow_position.logical_block_offset};
 
   return {child_bfc_offset, margin_strut, margins, force_clearance};
 }
@@ -1261,18 +1257,20 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
     const NGLayoutResult& layout_result,
     const NGFragment& fragment,
     bool empty_block_affected_by_clearance) {
-  // Determine the child's end BFC block offset and logical offset, for the
-  // next child to use.
-  LayoutUnit child_end_bfc_block_offset;
+  // Determine the child's end logical offset, for the next child to use.
   LayoutUnit logical_block_offset;
 
   bool is_empty_block = IsEmptyBlock(child, layout_result);
   if (is_empty_block) {
     // The default behaviour for empty blocks is they just pass through the
     // previous inflow position.
-    child_end_bfc_block_offset = previous_inflow_position.bfc_block_offset;
+    logical_block_offset = previous_inflow_position.logical_block_offset;
 
     if (empty_block_affected_by_clearance) {
+      // If there's clearance, we must have applied that by now and thus
+      // resolved our BFC offset.
+      DCHECK(container_builder_.BfcOffset());
+
       // If an empty block was affected by clearance (that is it got pushed
       // down past a float), we need to do something slightly bizarre.
       //
@@ -1308,29 +1306,17 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
       // not participate in any subsequent margin collapsing.
       LayoutUnit margin_before_clearance =
           previous_inflow_position.margin_strut.Sum();
-      child_end_bfc_block_offset += margin_before_clearance;
+      logical_block_offset += margin_before_clearance;
 
       // Calculate and apply actual clearance.
       LayoutUnit clearance = child_bfc_offset.value().block_offset -
                              layout_result.EndMarginStrut().Sum() -
-                             previous_inflow_position.NextBorderEdge();
-      child_end_bfc_block_offset += clearance;
+                             NextBorderEdge(previous_inflow_position);
+      logical_block_offset += clearance;
     }
-
-    // The logical block offset needs to go through exactly the same change as
-    // the BFC block offset here.
-    logical_block_offset = previous_inflow_position.logical_block_offset +
-                           child_end_bfc_block_offset -
-                           previous_inflow_position.bfc_block_offset;
-
-    if (!container_builder_.BfcOffset()) {
-      DCHECK_EQ(child_end_bfc_block_offset,
-                ConstraintSpace().BfcOffset().block_offset);
+    if (!container_builder_.BfcOffset())
       DCHECK_EQ(logical_block_offset, LayoutUnit());
-    }
   } else {
-    child_end_bfc_block_offset =
-        child_bfc_offset.value().block_offset + fragment.BlockSize();
     logical_block_offset = logical_offset.block_offset + fragment.BlockSize();
   }
 
@@ -1353,7 +1339,7 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
       (previous_inflow_position.empty_block_affected_by_clearance &&
        is_empty_block);
 
-  return {child_end_bfc_block_offset, logical_block_offset, margin_strut,
+  return {logical_block_offset, margin_strut,
           empty_or_sibling_empty_affected_by_clearance};
 }
 
@@ -1933,7 +1919,6 @@ bool NGBlockLayoutAlgorithm::ResolveBfcOffset(
   // caller, for subsequent layout to continue at the right position. Whether we
   // need to add border+padding or not isn't something we should determine here,
   // so it must be dealt with as part of initializing the layout algorithm.
-  previous_inflow_position->bfc_block_offset = bfc_block_offset;
   previous_inflow_position->logical_block_offset = LayoutUnit();
   previous_inflow_position->margin_strut = NGMarginStrut();
 
