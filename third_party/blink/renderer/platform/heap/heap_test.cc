@@ -2344,7 +2344,8 @@ TEST(HeapTest, LargeHeapObjects) {
       object->Set(object->length() - 1, 'b');
       EXPECT_EQ('b', object->Get(object->length() - 1));
       size_t expected_large_heap_object_payload_size =
-          ThreadHeap::AllocationSizeFromSize(sizeof(LargeHeapObject));
+          ThreadHeap::AllocationSizeFromSize(sizeof(LargeHeapObject)) -
+          sizeof(HeapObjectHeader);
       size_t expected_object_payload_size =
           expected_large_heap_object_payload_size + sizeof(IntWrapper);
       size_t actual_object_payload_size =

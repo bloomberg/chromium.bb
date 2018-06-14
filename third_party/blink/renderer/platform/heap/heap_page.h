@@ -154,7 +154,7 @@ inline uint32_t GetRandomMagic();
 //   object is guaranteed to be aligned on a kAllocationGranularity-byte
 //   boundary.
 // - For large objects, |size| is 0. The actual size of a large object is
-//   stored in |LargeObjectPage::payload_size_|.
+//   stored in |LargeObjectPage::PayloadSize()|.
 // - 1 bit used to mark DOM trees for V8.
 // - 14 bits are enough for |gc_info_index| because there are fewer than 2^14
 //   types in Blink.
@@ -579,43 +579,6 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
 // object.
 class LargeObjectPage final : public BasePage {
  public:
-  LargeObjectPage(PageMemory*, BaseArena*, size_t);
-
-  // LargeObjectPage has the following memory layout:
-  //
-  //     | metadata | HeapObjectHeader | payload |
-  //
-  // LargeObjectPage::PayloadSize returns the size of HeapObjectHeader and the
-  // object payload. HeapObjectHeader::PayloadSize returns just the size of the
-  // payload.
-  Address Payload() { return GetHeapObjectHeader()->Payload(); }
-  size_t PayloadSize() { return payload_size_; }
-  Address PayloadEnd() { return Payload() + PayloadSize(); }
-  bool ContainedInObjectPayload(Address address) {
-    return Payload() <= address && address < PayloadEnd();
-  }
-
-  size_t ObjectPayloadSizeForTesting() override;
-  bool IsEmpty() override;
-  void RemoveFromHeap() override;
-  void Sweep() override;
-  void MakeConsistentForMutator() override;
-#if defined(ADDRESS_SANITIZER)
-  void PoisonUnmarkedObjects() override;
-#endif
-
-  void TakeSnapshot(base::trace_event::MemoryAllocatorDump*,
-                    ThreadState::GCSnapshotInfo&,
-                    HeapSnapshotInfo&) override;
-#if DCHECK_IS_ON()
-  // Returns true for any address that is on one of the pages that this large
-  // object uses. That ensures that we can use a negative result to populate the
-  // negative page cache.
-  bool Contains(Address) override;
-#endif
-  size_t size() override {
-    return PageHeaderSize() + sizeof(HeapObjectHeader) + payload_size_;
-  }
   static size_t PageHeaderSize() {
     // Compute the amount of padding we have to add to a header to make the size
     // of the header plus the padding a multiple of 8 bytes.
@@ -625,22 +588,80 @@ class LargeObjectPage final : public BasePage {
         kAllocationGranularity;
     return sizeof(LargeObjectPage) + padding_size;
   }
-  bool IsLargeObjectPage() override { return true; }
 
-  HeapObjectHeader* GetHeapObjectHeader() {
+  LargeObjectPage(PageMemory*, BaseArena*, size_t);
+
+  // LargeObjectPage has the following memory layout:
+  //   this          -> +------------------+
+  //                    | Header           | PageHeaderSize()
+  //   ObjectHeader() -> +------------------+
+  //                    | HeapObjectHeader | sizeof(HeapObjectHeader)
+  //   Payload()     -> +------------------+
+  //                    | Object payload   | PayloadSize()
+  //                    |                  |
+  //   PayloadEnd()  -> +------------------+
+  //
+  //   ObjectSize(): PayloadSize() + sizeof(HeapObjectHeader)
+  //   size():       ObjectSize() + PageHeaderSize()
+
+  HeapObjectHeader* ObjectHeader() {
     Address header_address = GetAddress() + PageHeaderSize();
     return reinterpret_cast<HeapObjectHeader*>(header_address);
   }
+
+  // Returns the size of the page that is allocatable for objects. This differs
+  // from PayloadSize() as it also includes the HeapObjectHeader.
+  size_t ObjectSize() const { return object_size_; }
+
+  // Returns the size of the page including the header.
+  size_t size() override { return PageHeaderSize() + object_size_; }
+
+  // Returns the payload start of the underlying object.
+  Address Payload() { return ObjectHeader()->Payload(); }
+
+  // Returns the payload size of the underlying object.
+  size_t PayloadSize() { return object_size_ - sizeof(HeapObjectHeader); }
+
+  // Points to the payload end of the underlying object.
+  Address PayloadEnd() { return Payload() + PayloadSize(); }
+
+  bool ContainedInObjectPayload(Address address) {
+    return Payload() <= address && address < PayloadEnd();
+  }
+
+  size_t ObjectPayloadSizeForTesting() override;
+  bool IsEmpty() override;
+  void RemoveFromHeap() override;
+  void Sweep() override;
+  void MakeConsistentForMutator() override;
+
+  void TakeSnapshot(base::trace_event::MemoryAllocatorDump*,
+                    ThreadState::GCSnapshotInfo&,
+                    HeapSnapshotInfo&) override;
+
+  bool IsLargeObjectPage() override { return true; }
+
+  void VerifyMarking() override {}
+
+#if defined(ADDRESS_SANITIZER)
+  void PoisonUnmarkedObjects() override;
+#endif
+
+#if DCHECK_IS_ON()
+  // Returns true for any address that is on one of the pages that this large
+  // object uses. That ensures that we can use a negative result to populate the
+  // negative page cache.
+  bool Contains(Address) override;
+#endif
 
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
   void SetIsVectorBackingPage() { is_vector_backing_page_ = true; }
   bool IsVectorBackingPage() const { return is_vector_backing_page_; }
 #endif
 
-  void VerifyMarking() override {}
-
  private:
-  size_t payload_size_;
+  // The size of the underlying object including HeapObjectHeader.
+  size_t object_size_;
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
   bool is_vector_backing_page_;
 #endif
@@ -869,8 +890,8 @@ PLATFORM_EXPORT ALWAYS_INLINE BasePage* PageFromObject(const void* object) {
 
 NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::size() const {
   size_t result = encoded_ & kHeaderSizeMask;
-  // Large objects should not refer to header->size(). The actual size of a
-  // large object is stored in |LargeObjectPage::payload_size_|.
+  // Large objects should not refer to header->size() but use
+  // LargeObjectPage::PayloadSize().
   DCHECK(result != kLargeObjectSizeInHeader);
   DCHECK(!PageFromObject(this)->IsLargeObjectPage());
   return result;
