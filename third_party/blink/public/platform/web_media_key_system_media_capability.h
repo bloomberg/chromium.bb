@@ -10,12 +10,19 @@
 namespace blink {
 
 struct WebMediaKeySystemMediaCapability {
+  enum class EncryptionScheme {
+    kNotSpecified,
+    kCenc,
+    kCbcs,
+  };
+
   WebMediaKeySystemMediaCapability() = default;
 
   WebString content_type;
   WebString mime_type;
   WebString codecs;
   WebString robustness;
+  EncryptionScheme encryption_scheme = EncryptionScheme::kNotSpecified;
 };
 
 }  // namespace blink

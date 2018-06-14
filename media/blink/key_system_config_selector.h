@@ -15,12 +15,12 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/eme_constants.h"
 #include "media/blink/media_blink_export.h"
+#include "third_party/blink/public/platform/web_media_key_system_media_capability.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
 struct WebMediaKeySystemConfiguration;
-struct WebMediaKeySystemMediaCapability;
 class WebString;
 
 }  // namespace blink
@@ -90,6 +90,11 @@ class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
                               const std::string& container_mime_type,
                               const std::string& codecs,
                               ConfigState* config_state);
+
+  bool IsSupportedEncryptionScheme(
+      const std::string& key_system,
+      const blink::WebMediaKeySystemMediaCapability::EncryptionScheme
+          encryption_scheme);
 
   const KeySystems* key_systems_;
   MediaPermission* media_permission_;

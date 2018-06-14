@@ -73,6 +73,28 @@ static Vector<String> ConvertInitDataTypes(
   return result;
 }
 
+static String ConvertEncryptionScheme(
+    WebMediaKeySystemMediaCapability::EncryptionScheme encryption_scheme) {
+  switch (encryption_scheme) {
+    // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md.
+    // "A missing or null value indicates that any encryption scheme is
+    //  acceptable."
+    // "Even if the application does not specify an encryption scheme,
+    //  MediaKeySystemAccess.getConfiguration() must fill in a supported
+    //  value."
+    // As Chrome has always supported 'cenc', assume this if encryption
+    // scheme is not specified.
+    case WebMediaKeySystemMediaCapability::EncryptionScheme::kNotSpecified:
+    case WebMediaKeySystemMediaCapability::EncryptionScheme::kCenc:
+      return "cenc";
+    case WebMediaKeySystemMediaCapability::EncryptionScheme::kCbcs:
+      return "cbcs";
+  }
+
+  NOTREACHED();
+  return "";
+}
+
 static HeapVector<MediaKeySystemMediaCapability> ConvertCapabilities(
     const WebVector<WebMediaKeySystemMediaCapability>& capabilities) {
   HeapVector<MediaKeySystemMediaCapability> result(capabilities.size());
@@ -80,6 +102,8 @@ static HeapVector<MediaKeySystemMediaCapability> ConvertCapabilities(
     MediaKeySystemMediaCapability capability;
     capability.setContentType(capabilities[i].content_type);
     capability.setRobustness(capabilities[i].robustness);
+    capability.setEncryptionScheme(
+        ConvertEncryptionScheme(capabilities[i].encryption_scheme));
     result[i] = capability;
   }
   return result;
