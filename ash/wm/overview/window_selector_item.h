@@ -242,6 +242,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     should_restack_on_animation_end_ = val;
   }
 
+  bool animating_to_close() const { return animating_to_close_; }
+  void set_animating_to_close(bool val) { animating_to_close_ = val; }
+
   float GetCloseButtonOpacityForTesting();
   float GetTitlebarOpacityForTesting();
   gfx::Rect GetShadowBoundsForTesting();
@@ -387,6 +390,11 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // True if after an animation, we need to reorder the stacking order of the
   // widgets.
   bool should_restack_on_animation_end_ = false;
+
+  // True if the windows are still alive so they can have a closing animation.
+  // These windows should not be used in calculations for
+  // WindowGrid::PositionWindows.
+  bool animating_to_close_ = false;
 
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the

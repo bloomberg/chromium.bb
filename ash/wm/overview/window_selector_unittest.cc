@@ -3075,6 +3075,18 @@ TEST_F(WindowSelectorTest, PositionWindows) {
   EXPECT_EQ(bounds1, item1->target_bounds());
   EXPECT_NE(bounds2, item2->target_bounds());
   EXPECT_NE(bounds3, item3->target_bounds());
+
+  // Return the windows to their original bounds.
+  window_selector()->PositionWindows(/*animate=*/false);
+
+  // Verify that items that are animating before closing are ignored by
+  // PositionWindows.
+  item1->set_animating_to_close(true);
+  item2->set_animating_to_close(true);
+  window_selector()->PositionWindows(/*animate=*/false);
+  EXPECT_EQ(bounds1, item1->target_bounds());
+  EXPECT_EQ(bounds2, item2->target_bounds());
+  EXPECT_NE(bounds3, item3->target_bounds());
 }
 
 class SplitViewWindowSelectorTest : public WindowSelectorTest {
@@ -3552,6 +3564,65 @@ TEST_F(SplitViewWindowSelectorTest, NoNudgingWhenNumRowsChange) {
   EXPECT_EQ(item2_bounds, item2->target_bounds());
   EXPECT_EQ(item3_bounds, item3->target_bounds());
   EXPECT_EQ(item4_bounds, item4->target_bounds());
+}
+
+// Tests that no nudging occurs when the item to be deleted results in an item
+// from the previous row to drop down to the current row, thus causing the items
+// to the right of the item to be shifted right, which is visually unacceptable.
+TEST_F(SplitViewWindowSelectorTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kOverviewSwipeToClose);
+
+  // Set up five equal windows, which would split into two rows in overview
+  // mode. Removing one window would cause the rows to rearrange, with the third
+  // item dropping down from the first row to the second row. Create the windows
+  // backward so the the window indexs match the order seen in overview, as
+  // overview windows are ordered by MRU.
+  const int kWindows = 5;
+  std::unique_ptr<aura::Window> windows[kWindows];
+  for (int i = kWindows - 1; i >= 0; --i)
+    windows[i] = CreateTestWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+
+  WindowSelectorItem* items[kWindows];
+  gfx::Rect item_bounds[kWindows];
+  for (int i = 0; i < kWindows; ++i) {
+    items[i] = GetWindowItemForWindow(0, windows[i].get());
+    item_bounds[i] = items[i]->target_bounds();
+  }
+
+  // Drag the forth item past the drag to swipe threshold. None of the other
+  // window bounds should change, as none of them should be nudged, because
+  // deleting the fourth item will cause the third item to drop down from the
+  // first row to the second.
+  window_selector()->InitiateDrag(items[3], item_bounds[3].CenterPoint());
+  window_selector()->Drag(items[3],
+                          gfx::Point(item_bounds[3].CenterPoint().x(),
+                                     item_bounds[3].CenterPoint().y() + 160));
+  EXPECT_EQ(item_bounds[0], items[0]->target_bounds());
+  EXPECT_EQ(item_bounds[1], items[1]->target_bounds());
+  EXPECT_EQ(item_bounds[2], items[2]->target_bounds());
+  EXPECT_EQ(item_bounds[4], items[4]->target_bounds());
+
+  // Drag the fourth item back to its start drag location and release, so that
+  // it does not get deleted.
+  window_selector()->Drag(items[3], item_bounds[3].CenterPoint());
+  window_selector()->CompleteDrag(items[3], item_bounds[3].CenterPoint());
+
+  // Drag the first item past the drag to swipe threshold. The second and third
+  // items should nudge as expected as there is no item dropping down to their
+  // row. The fourth and fifth items should not nudge as they are in a different
+  // row than the first item.
+  window_selector()->InitiateDrag(items[0], item_bounds[0].CenterPoint());
+  window_selector()->Drag(items[0],
+                          gfx::Point(item_bounds[0].CenterPoint().x(),
+                                     item_bounds[0].CenterPoint().y() + 160));
+  EXPECT_NE(item_bounds[1], items[1]->target_bounds());
+  EXPECT_NE(item_bounds[2], items[2]->target_bounds());
+  EXPECT_EQ(item_bounds[3], items[3]->target_bounds());
+  EXPECT_EQ(item_bounds[4], items[4]->target_bounds());
 }
 
 // Verify the window grid size changes as expected when dragging items around in
