@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_LISTENER_FAILURE_TYPE_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_LISTENER_FAILURE_TYPE_H_
 
+#include <ostream>
+
 namespace chromeos {
 
 namespace secure_channel {
@@ -14,6 +16,9 @@ enum class BleListenerFailureType {
   // authenticating the connection.
   kAuthenticationError,
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const BleListenerFailureType& failure_type);
 
 }  // namespace secure_channel
 
