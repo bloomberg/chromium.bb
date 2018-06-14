@@ -11,7 +11,6 @@ import copy
 import itertools
 import json
 
-from chromite.lib.const import waterfall
 from chromite.lib import constants
 from chromite.lib import osutils
 
@@ -165,18 +164,10 @@ def IsMasterBuild(config):
 
 def UseBuildbucketScheduler(config):
   """Returns True if this build uses Buildbucket to schedule builds."""
-  return (config.active_waterfall in (waterfall.WATERFALL_INTERNAL,
-                                      waterfall.WATERFALL_EXTERNAL,
-                                      waterfall.WATERFALL_SWARMING,
-                                      waterfall.WATERFALL_RELEASE) and
-          config.name in (constants.CQ_MASTER,
-                          constants.CANARY_MASTER,
-                          constants.PFQ_MASTER,
-                          constants.MST_ANDROID_PFQ_MASTER,
-                          constants.NYC_ANDROID_PFQ_MASTER,
-                          constants.PI_ANDROID_PFQ_MASTER,
-                          constants.TOOLCHAIN_MASTTER,
-                          constants.PRE_CQ_LAUNCHER_NAME))
+  # If a builder schedules slaves, it uses buildbucket. Alternative logic exists
+  # in many places, but should be cleaned up.
+  return bool(config.name == constants.PRE_CQ_LAUNCHER_NAME or
+              config.slave_configs)
 
 def RetryAlreadyStartedSlaves(config):
   """Returns True if wants to retry slaves which already start but fail.
@@ -201,11 +192,6 @@ def GetCriticalStageForRetry(config):
     return {'CommitQueueSync', 'MasterSlaveLKGMSync'}
   else:
     return set()
-
-def ScheduledByBuildbucket(config):
-  """Returns True if this build is scheduled by Buildbucket."""
-  return (config.build_type == constants.PALADIN_TYPE and
-          config.name != constants.CQ_MASTER)
 
 
 class AttrDict(dict):
