@@ -158,10 +158,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool is_manual_generation() const {
     return votes_uploader_.is_manual_generation();
   }
-  void set_is_manual_generation(bool is_manual_generation) {
-    votes_uploader_.set_is_manual_generation(is_manual_generation);
-  }
-
   const base::string16& generation_element() const {
     return votes_uploader_.get_generation_element();
   }
@@ -172,9 +168,8 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool get_generation_popup_was_shown() const {
     return votes_uploader_.get_generation_popup_was_shown();
   }
-  void set_generation_popup_was_shown(bool generation_popup_was_shown) {
-    votes_uploader_.set_generation_popup_was_shown(generation_popup_was_shown);
-  }
+  void SetGenerationPopupWasShown(bool generation_popup_was_shown,
+                                  bool is_manual_generation);
 
   bool retry_password_form_password_update() const {
     return retry_password_form_password_update_;

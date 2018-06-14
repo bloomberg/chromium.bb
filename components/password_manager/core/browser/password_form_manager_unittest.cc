@@ -435,7 +435,8 @@ class PasswordFormManagerTest : public testing::Test {
       // Show the password generation popup to check that the generation vote
       // would be ignored.
       form_manager.set_generation_element(saved_match()->password_element);
-      form_manager.set_generation_popup_was_shown(true);
+      form_manager.SetGenerationPopupWasShown(/*shown=*/true,
+                                              /*manually_triggered*/ true);
       expect_generation_vote =
           *field_type != autofill::ACCOUNT_CREATION_PASSWORD;
 
@@ -668,12 +669,11 @@ class PasswordFormManagerTest : public testing::Test {
     if (interaction == SAVE)
       expected_available_field_types.insert(autofill::PASSWORD);
 
-    form_manager.set_is_manual_generation(is_manual_generation);
     base::string16 generation_element = is_change_password_form
                                             ? form.new_password_element
                                             : form.password_element;
     form_manager.set_generation_element(generation_element);
-    form_manager.set_generation_popup_was_shown(true);
+    form_manager.SetGenerationPopupWasShown(true, is_manual_generation);
     form_manager.SetHasGeneratedPassword(has_generated_password);
     if (has_generated_password)
       form_manager.SetGeneratedPasswordChanged(generated_password_changed);
@@ -778,12 +778,11 @@ class PasswordFormManagerTest : public testing::Test {
     if (interaction == SAVE)
       expected_available_field_types.insert(autofill::PASSWORD);
 
-    form_manager->set_is_manual_generation(is_manual_generation);
     base::string16 generation_element = is_change_password_form
                                             ? form.new_password_element
                                             : form.password_element;
     form_manager->set_generation_element(generation_element);
-    form_manager->set_generation_popup_was_shown(true);
+    form_manager->SetGenerationPopupWasShown(true, is_manual_generation);
     form_manager->SetHasGeneratedPassword(has_generated_password);
     if (has_generated_password)
       form_manager->SetGeneratedPasswordChanged(generated_password_changed);
@@ -823,6 +822,17 @@ class PasswordFormManagerTest : public testing::Test {
     auto entries = test_ukm_recorder.GetEntriesByName(
         ukm::builders::PasswordForm::kEntryName);
     ASSERT_EQ(1u, entries.size());
+
+    ukm::TestUkmRecorder::ExpectEntryMetric(
+        entries[0], ukm::builders::PasswordForm::kGeneration_PopupShownName,
+        is_manual_generation
+            ? static_cast<int64_t>(
+                  password_manager::PasswordFormMetricsRecorder::
+                      PasswordGenerationPopupShown::kShownManually)
+            : static_cast<int64_t>(
+                  password_manager::PasswordFormMetricsRecorder::
+                      PasswordGenerationPopupShown::kShownAutomatically));
+
     ukm::TestUkmRecorder::ExpectEntryMetric(
         entries[0],
         ukm::builders::PasswordForm::kGeneration_GeneratedPasswordName,

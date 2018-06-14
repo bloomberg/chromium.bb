@@ -2301,6 +2301,12 @@ be describing additional metrics about the same event.
       Records '1' if the user has modified a generated a password on this form.
     </summary>
   </metric>
+  <metric name="Generation.PopupShown">
+    <summary>
+      Records a PasswordFormMetricsRecorder::PasswordGenerationPopupShown entry
+      if (and only if) a popup was shown.
+    </summary>
+  </metric>
   <metric name="ManagerFill.Action">
     <summary>
       Records for each password form (and HTTP auth), whether the password
