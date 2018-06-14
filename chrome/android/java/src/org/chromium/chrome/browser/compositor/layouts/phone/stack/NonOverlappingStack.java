@@ -12,6 +12,7 @@ import android.support.annotation.IntDef;
 
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayoutBase;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimation.OverviewAnimationType;
@@ -342,7 +343,7 @@ public class NonOverlappingStack extends Stack {
 
         // Make sure we don't leave any tabs stuck in a partially-discarded
         // state.
-        startAnimation(0, OverviewAnimationType.UNDISCARD);
+        startAnimation(LayoutManager.time(), OverviewAnimationType.UNDISCARD);
         mDiscardingTab = null;
 
         mSwitchedAway = true;
