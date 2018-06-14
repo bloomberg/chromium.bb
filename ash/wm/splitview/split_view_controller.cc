@@ -584,8 +584,8 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
   // smoother resizing visual result.
   UpdateSnappedWindowsAndDividerBounds();
 
-  FinishWindowDrag(left_window_);
-  FinishWindowDrag(right_window_);
+  FinishWindowResizing(left_window_);
+  FinishWindowResizing(right_window_);
 
   // Need to update snapped windows bounds even if the split view mode may have
   // to exit. Otherwise it's possible for a snapped window stuck in the edge of
@@ -627,8 +627,8 @@ void SplitViewController::EndSplitView() {
   // the resize. This can happen, for example, on the transition back to
   // clamshell mode or when a task is minimized during a resize.
   if (is_resizing_) {
-    FinishWindowDrag(left_window_);
-    FinishWindowDrag(right_window_);
+    FinishWindowResizing(left_window_);
+    FinishWindowResizing(right_window_);
   }
 
   // Remove observers when the split view mode ends.
@@ -1175,7 +1175,7 @@ void SplitViewController::OnSnappedWindowDetached(aura::Window* window) {
     // If the window is minimized or destroyed before the resize ends, if/when
     // EndResize() is eventually called, it will have no way of knowing that
     // it should finish the drag for the destroyed window. So, do it here.
-    FinishWindowDrag(window);
+    FinishWindowResizing(window);
   }
 
   if (!left_window_ && !right_window_) {
@@ -1490,7 +1490,7 @@ void SplitViewController::EndOverview() {
     Shell::Get()->window_selector_controller()->ToggleOverview();
 }
 
-void SplitViewController::FinishWindowDrag(aura::Window* window) {
+void SplitViewController::FinishWindowResizing(aura::Window* window) {
   if (window != nullptr) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     window_state->OnCompleteDrag(
