@@ -27,6 +27,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "build/build_config.h"
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
 #include "cc/base/math_util.h"
@@ -1922,6 +1923,25 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   RenderFrameMetadata metadata;
   metadata.root_scroll_offset =
       gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
+
+  metadata.root_background_color = active_tree_->background_color();
+  metadata.is_scroll_offset_at_top = active_tree_->TotalScrollOffset().y() == 0;
+  metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
+                                 active_tree_->device_scale_factor();
+  active_tree_->GetViewportSelection(&metadata.selection);
+  metadata.is_mobile_optimized = IsMobileOptimized(active_tree_.get());
+  metadata.viewport_size_in_pixels = device_viewport_size();
+
+#if defined(OS_ANDROID)
+  metadata.top_controls_height =
+      browser_controls_offset_manager_->TopControlsHeight();
+  metadata.top_controls_shown_ratio =
+      browser_controls_offset_manager_->TopControlsShownRatio();
+  metadata.bottom_controls_height =
+      browser_controls_offset_manager_->BottomControlsHeight();
+  metadata.bottom_controls_shown_ratio =
+      browser_controls_offset_manager_->BottomControlsShownRatio();
+  metadata.scrollable_viewport_size = active_tree_->ScrollableViewportSize();
   metadata.page_scale_factor = active_tree_->current_page_scale_factor();
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
@@ -1937,24 +1957,12 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   }
   metadata.has_transparent_background =
       frame->render_passes.back()->has_transparent_background;
-
-  metadata.root_background_color = active_tree_->background_color();
-  metadata.is_scroll_offset_at_top = active_tree_->TotalScrollOffset().y() == 0;
-  metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
-                                 active_tree_->device_scale_factor();
-  metadata.viewport_size_in_pixels = device_viewport_size();
-  metadata.top_controls_height =
-      browser_controls_offset_manager_->TopControlsHeight();
-  metadata.top_controls_shown_ratio =
-      browser_controls_offset_manager_->TopControlsShownRatio();
-  metadata.bottom_controls_height =
-      browser_controls_offset_manager_->BottomControlsHeight();
-  metadata.bottom_controls_shown_ratio =
-      browser_controls_offset_manager_->BottomControlsShownRatio();
-  metadata.scrollable_viewport_size = active_tree_->ScrollableViewportSize();
-  active_tree_->GetViewportSelection(&metadata.selection);
+#endif
 
   bool allocate_new_local_surface_id =
+#if !defined(OS_ANDROID)
+      false;
+#else
       last_draw_render_frame_metadata_ &&
       (last_draw_render_frame_metadata_->top_controls_height !=
            metadata.top_controls_height ||
@@ -1965,6 +1973,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
        last_draw_render_frame_metadata_->bottom_controls_shown_ratio !=
            metadata.bottom_controls_shown_ratio ||
        last_draw_render_frame_metadata_->selection != metadata.selection);
+#endif
 
   viz::LocalSurfaceId local_surface_id =
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
@@ -1973,8 +1982,6 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
       local_surface_id = child_local_surface_id_allocator_.GenerateId();
     metadata.local_surface_id = local_surface_id;
   }
-
-  metadata.is_mobile_optimized = IsMobileOptimized(active_tree_.get());
 
   return metadata;
 }

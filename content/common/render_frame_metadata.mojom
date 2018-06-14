@@ -27,18 +27,6 @@ struct RenderFrameMetadata {
   // empty or otherwise unused, the bound types will indicate such.
   viz.mojom.Selection selection;
 
-  // The page scale factor used on the content.
-  float page_scale_factor;
-  float min_page_scale_factor;
-  float max_page_scale_factor;
-  bool root_overflow_y_hidden;
-
-  gfx.mojom.SizeF scrollable_viewport_size;
-  gfx.mojom.SizeF root_layer_size;
-
-  [EnableIf=is_android]
-  bool has_transparent_background;
-
   // Determines whether the page is mobile optimized or not, which means at
   // least one of the following has to be true:
   // - page has a width=device-width or narrower viewport.
@@ -55,15 +43,42 @@ struct RenderFrameMetadata {
   // The last viz::LocalSurfaceId used to submit a CompositorFrame.
   viz.mojom.LocalSurfaceId? local_surface_id;
 
+  // The page scale factor used on the content.
+  float page_scale_factor;
+
   // Used to position the Android location top bar and page content, whose
   // precise position is computed by the renderer compositor.
+  [EnableIf=is_android]
   float top_controls_height;
+
+  [EnableIf=is_android]
   float top_controls_shown_ratio;
 
   // Used to position Android bottom bar, whose position is computed by the
   // renderer compositor.
+  [EnableIf=is_android]
   float bottom_controls_height;
+
+  [EnableIf=is_android]
   float bottom_controls_shown_ratio;
+
+  [EnableIf=is_android]
+  float min_page_scale_factor;
+
+  [EnableIf=is_android]
+  float max_page_scale_factor;
+
+  [EnableIf=is_android]
+  bool root_overflow_y_hidden;
+
+  [EnableIf=is_android]
+  gfx.mojom.SizeF scrollable_viewport_size;
+
+  [EnableIf=is_android]
+  gfx.mojom.SizeF root_layer_size;
+
+  [EnableIf=is_android]
+  bool has_transparent_background;
 };
 
 // This interface is provided by the renderer. It can optionally enable

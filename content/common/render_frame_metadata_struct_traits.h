@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_RENDER_FRAME_METADATA_STRUCT_TRAITS_H_
 
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "content/common/render_frame_metadata.mojom-shared.h"
 #include "services/viz/public/cpp/compositing/local_surface_id_struct_traits.h"
@@ -25,22 +26,6 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.root_scroll_offset;
   }
 
-  static float page_scale_factor(const cc::RenderFrameMetadata& metadata) {
-    return metadata.page_scale_factor;
-  }
-
-  static float min_page_scale_factor(const cc::RenderFrameMetadata& metadata) {
-    return metadata.min_page_scale_factor;
-  }
-
-  static float max_page_scale_factor(const cc::RenderFrameMetadata& metadata) {
-    return metadata.max_page_scale_factor;
-  }
-
-  static bool root_overflow_y_hidden(const cc::RenderFrameMetadata& metadata) {
-    return metadata.root_overflow_y_hidden;
-  }
-
   static bool is_scroll_offset_at_top(const cc::RenderFrameMetadata& metadata) {
     return metadata.is_scroll_offset_at_top;
   }
@@ -48,21 +33,6 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
   static const viz::Selection<gfx::SelectionBound>& selection(
       const cc::RenderFrameMetadata& metadata) {
     return metadata.selection;
-  }
-
-  static const gfx::SizeF& scrollable_viewport_size(
-      const cc::RenderFrameMetadata& metadata) {
-    return metadata.scrollable_viewport_size;
-  }
-
-  static const gfx::SizeF& root_layer_size(
-      const cc::RenderFrameMetadata& metadata) {
-    return metadata.root_layer_size;
-  }
-
-  static bool has_transparent_background(
-      const cc::RenderFrameMetadata& metadata) {
-    return metadata.has_transparent_background;
   }
 
   static bool is_mobile_optimized(const cc::RenderFrameMetadata& metadata) {
@@ -83,6 +53,11 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.local_surface_id;
   }
 
+  static float page_scale_factor(const cc::RenderFrameMetadata& metadata) {
+    return metadata.page_scale_factor;
+  }
+
+#if defined(OS_ANDROID)
   static float top_controls_height(const cc::RenderFrameMetadata& metadata) {
     return metadata.top_controls_height;
   }
@@ -100,6 +75,34 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
       const cc::RenderFrameMetadata& metadata) {
     return metadata.bottom_controls_shown_ratio;
   }
+
+  static float min_page_scale_factor(const cc::RenderFrameMetadata& metadata) {
+    return metadata.min_page_scale_factor;
+  }
+
+  static float max_page_scale_factor(const cc::RenderFrameMetadata& metadata) {
+    return metadata.max_page_scale_factor;
+  }
+
+  static bool root_overflow_y_hidden(const cc::RenderFrameMetadata& metadata) {
+    return metadata.root_overflow_y_hidden;
+  }
+
+  static const gfx::SizeF& scrollable_viewport_size(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.scrollable_viewport_size;
+  }
+
+  static const gfx::SizeF& root_layer_size(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.root_layer_size;
+  }
+
+  static bool has_transparent_background(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.has_transparent_background;
+  }
+#endif
 
   static bool Read(content::mojom::RenderFrameMetadataDataView data,
                    cc::RenderFrameMetadata* out);

@@ -6,6 +6,7 @@
 #define CC_TREES_RENDER_FRAME_METADATA_H_
 
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "cc/cc_export.h"
 #include "components/viz/common/quads/selection.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
@@ -39,10 +40,6 @@ class CC_EXPORT RenderFrameMetadata {
   // whether scroll_offset.y() == 0.
   bool is_scroll_offset_at_top = true;
 
-  // Returns whether the root RenderPass of the CompositorFrame has a
-  // transparent background color.
-  bool has_transparent_background = false;
-
   // The background color of a CompositorFrame. It can be used for filling the
   // content area if the primary surface is unavailable and fallback is not
   // specified.
@@ -55,16 +52,6 @@ class CC_EXPORT RenderFrameMetadata {
   // Selection region relative to the current viewport. If the selection is
   // empty or otherwise unused, the bound types will indicate such.
   viz::Selection<gfx::SelectionBound> selection;
-
-  // These limits can be used together with the scroll/scale fields above to
-  // determine if scrolling/scaling in a particular direction is possible.
-  float page_scale_factor = 1.f;
-  float min_page_scale_factor = 0.f;
-  float max_page_scale_factor = 0.f;
-  bool root_overflow_y_hidden = false;
-
-  gfx::SizeF scrollable_viewport_size;
-  gfx::SizeF root_layer_size;
 
   // Determines whether the page is mobile optimized or not, which means at
   // least one of the following has to be true:
@@ -82,6 +69,9 @@ class CC_EXPORT RenderFrameMetadata {
   // The last viz::LocalSurfaceId used to submit a CompositorFrame.
   base::Optional<viz::LocalSurfaceId> local_surface_id;
 
+  float page_scale_factor = 1.f;
+
+#if defined(OS_ANDROID)
   // Used to position the Android location top bar and page content, whose
   // precise position is computed by the renderer compositor.
   float top_controls_height = 0.f;
@@ -91,6 +81,20 @@ class CC_EXPORT RenderFrameMetadata {
   // renderer compositor.
   float bottom_controls_height = 0.f;
   float bottom_controls_shown_ratio = 0.f;
+
+  // These limits can be used together with the scroll/scale fields above to
+  // determine if scrolling/scaling in a particular direction is possible.
+  float min_page_scale_factor = 0.f;
+  float max_page_scale_factor = 0.f;
+  bool root_overflow_y_hidden = false;
+
+  gfx::SizeF scrollable_viewport_size;
+  gfx::SizeF root_layer_size;
+
+  // Returns whether the root RenderPass of the CompositorFrame has a
+  // transparent background color.
+  bool has_transparent_background = false;
+#endif
 };
 
 }  // namespace cc
