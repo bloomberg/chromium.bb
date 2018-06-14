@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -82,7 +83,8 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
   auto image_manager = std::make_unique<FeedImageManager>(
       std::move(image_fetcher), std::move(image_database));
 
-  auto scheduler_host = std::make_unique<FeedSchedulerHost>();
+  auto scheduler_host = std::make_unique<FeedSchedulerHost>(
+      profile->GetPrefs(), base::DefaultClock::GetInstance());
 
   return new FeedHostService(std::move(image_manager),
                              std::move(networking_host),

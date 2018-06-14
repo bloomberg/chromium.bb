@@ -37,6 +37,7 @@ source_set("feed_core") {
 
   deps = [
     "//components/data_use_measurement/core",
+    "//components/prefs",
     "//components/variations",
     "//components/variations/net",
     "//components/variations/service",
@@ -62,6 +63,7 @@ source_set("core_unit_tests") {
     "feed_image_database_unittest.cc",
     "feed_image_manager_unittest.cc",
     "feed_networking_host_unittest.cc",
+    "feed_scheduler_host_unittest.cc",
     "feed_storage_database_unittest.cc",
   ]
 
@@ -70,6 +72,7 @@ source_set("core_unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/leveldb_proto:test_support",
+    "//components/prefs:test_support",
     "//net:test_support",
     "//services/identity/public/cpp",
     "//services/identity/public/cpp:test_support",

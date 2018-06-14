@@ -6,25 +6,41 @@
 
 #include <utility>
 
+#include "base/time/clock.h"
 #include "base/time/time.h"
+#include "components/feed/core/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 namespace feed {
 
-FeedSchedulerHost::FeedSchedulerHost() {}
+FeedSchedulerHost::FeedSchedulerHost(PrefService* pref_service,
+                                     base::Clock* clock)
+    : pref_service_(pref_service), clock_(clock) {}
 
 FeedSchedulerHost::~FeedSchedulerHost() {}
+
+// static
+void FeedSchedulerHost::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterTimePref(prefs::kLastFetchAttemptTime, base::Time());
+}
 
 NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
     bool has_content,
     base::Time content_creation_date_time,
     bool has_outstanding_request) {
-  return REQUEST_WITH_CONTENT;
+  return REQUEST_WITH_WAIT;
 }
 
 void FeedSchedulerHost::OnReceiveNewContent(
-    base::Time content_creation_date_time) {}
+    base::Time content_creation_date_time) {
+  pref_service_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
+  ScheduleFixedTimerWakeUp();
+}
 
-void FeedSchedulerHost::OnRequestError(int network_response_code) {}
+void FeedSchedulerHost::OnRequestError(int network_response_code) {
+  pref_service_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
+}
 
 void FeedSchedulerHost::RegisterTriggerRefreshCallback(
     base::RepeatingClosure callback) {
@@ -33,6 +49,10 @@ void FeedSchedulerHost::RegisterTriggerRefreshCallback(
   DCHECK(trigger_refresh_.is_null());
 
   trigger_refresh_ = std::move(callback);
+}
+
+void FeedSchedulerHost::ScheduleFixedTimerWakeUp() {
+  // TODO(skym): Implementation, call out to injected scheduling dependency.
 }
 
 }  // namespace feed

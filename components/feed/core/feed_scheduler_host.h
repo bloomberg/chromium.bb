@@ -8,7 +8,11 @@
 #include "base/callback.h"
 #include "base/macros.h"
 
+class PrefRegistrySimple;
+class PrefService;
+
 namespace base {
+class Clock;
 class Time;
 }  // namespace base
 
@@ -34,8 +38,10 @@ enum NativeRequestBehavior {
 // content.
 class FeedSchedulerHost {
  public:
-  FeedSchedulerHost();
+  FeedSchedulerHost(PrefService* pref_service, base::Clock* clock);
   ~FeedSchedulerHost();
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Called when the NTP is opened to decide how to handle displaying and
   // refreshing content.
@@ -54,7 +60,16 @@ class FeedSchedulerHost {
   void RegisterTriggerRefreshCallback(base::RepeatingClosure callback);
 
  private:
+  void ScheduleFixedTimerWakeUp();
+
+  // Callback to request that an async refresh be started.
   base::RepeatingClosure trigger_refresh_;
+
+  // Non-owning reference to pref service providing durable storage.
+  PrefService* pref_service_;
+
+  // Non-owning reference to clock to get current time.
+  base::Clock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedSchedulerHost);
 };

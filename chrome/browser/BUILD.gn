@@ -2396,6 +2396,7 @@ jumbo_split_static_library("browser") {
       "//chrome/services/media_gallery_util/public/cpp",
       "//components/cdm/browser",
       "//components/data_usage/android",
+      "//components/feed:buildflags",
       "//components/feed:feature_list",
       "//components/payments/content/android",
       "//components/resources:components_resources",
