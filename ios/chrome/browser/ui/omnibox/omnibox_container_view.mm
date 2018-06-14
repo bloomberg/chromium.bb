@@ -58,13 +58,14 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 - (instancetype)initWithFrame:(CGRect)frame
                          font:(UIFont*)font
                     textColor:(UIColor*)textColor
-                    tintColor:(UIColor*)tintColor {
+                textFieldTint:(UIColor*)textFieldTint
+                     iconTint:(UIColor*)iconTint {
   self = [super initWithFrame:frame];
   if (self) {
     _textField = [[OmniboxTextFieldIOS alloc] initWithFrame:frame
                                                        font:font
                                                   textColor:textColor
-                                                  tintColor:tintColor];
+                                                  tintColor:textFieldTint];
     [self addSubview:_textField];
 
     _leadingTextfieldConstraint = [_textField.leadingAnchor
@@ -88,7 +89,7 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
                                             UILayoutConstraintAxisHorizontal];
 
     [self createLeadingImageView];
-    _leadingImageView.tintColor = tintColor ?: [UIColor blackColor];
+    _leadingImageView.tintColor = iconTint;
   }
   return self;
 }
@@ -122,6 +123,13 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 - (void)setLeadingImage:(UIImage*)image {
   [self.leadingImageView setImage:image];
 }
+
+- (void)setIncognito:(BOOL)incognito {
+  _incognito = incognito;
+  self.textField.incognito = incognito;
+}
+
+#pragma mark - private
 
 - (void)createLeadingImageView {
   _leadingImageView = [[UIImageView alloc] init];

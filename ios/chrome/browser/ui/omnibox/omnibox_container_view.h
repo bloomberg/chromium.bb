@@ -19,7 +19,8 @@
 - (instancetype)initWithFrame:(CGRect)frame
                          font:(UIFont*)font
                     textColor:(UIColor*)textColor
-                    tintColor:(UIColor*)tintColor NS_DESIGNATED_INITIALIZER;
+                textFieldTint:(UIColor*)textFieldTint
+                     iconTint:(UIColor*)iconTint NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;

@@ -17,10 +17,7 @@
 @property(nonatomic, readonly, strong) OmniboxTextFieldIOS* textField;
 
 // Designated initializer.
-- (instancetype)initWithFont:(UIFont*)font
-                   textColor:(UIColor*)textColor
-                   tintColor:(UIColor*)tintColor
-                   incognito:(BOOL)isIncognito;
+- (instancetype)initWithIncognito:(BOOL)isIncognito;
 
 @end
 

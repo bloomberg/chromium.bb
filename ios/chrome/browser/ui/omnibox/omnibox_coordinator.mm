@@ -17,19 +17,10 @@
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_ios.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-// Font size used in the omnibox.
-const CGFloat kFontSize = 19.0f;
-
-}  // namespace
 
 @interface OmniboxCoordinator ()
 // Object taking care of adding the accessory views to the keyboard.
@@ -59,16 +50,8 @@ const CGFloat kFontSize = 19.0f;
 - (void)start {
   BOOL isIncognito = self.browserState->IsOffTheRecord();
 
-  UIColor* textColor =
-      isIncognito ? [UIColor whiteColor] : [UIColor colorWithWhite:0 alpha:0.7];
-  UIColor* tintColor =
-      isIncognito ? [UIColor whiteColor] : [UIColor blackColor];
-
-  self.viewController = [[OmniboxViewController alloc]
-      initWithFont:[UIFont systemFontOfSize:kFontSize]
-         textColor:textColor
-         tintColor:tintColor
-         incognito:isIncognito];
+  self.viewController =
+      [[OmniboxViewController alloc] initWithIncognito:isIncognito];
 
   self.mediator = [[OmniboxMediator alloc] init];
   self.mediator.consumer = self.viewController;
@@ -78,9 +61,6 @@ const CGFloat kFontSize = 19.0f;
       self.textField, self.editController, self.mediator, self.browserState);
 
   // Configure the textfield.
-  SetA11yLabelAndUiAutomationName(self.textField, IDS_ACCNAME_LOCATION,
-                                  @"Address");
-  self.textField.incognito = isIncognito;
   self.textField.suggestionCommandsEndpoint =
       static_cast<id<OmniboxSuggestionCommands>>(self.dispatcher);
 
