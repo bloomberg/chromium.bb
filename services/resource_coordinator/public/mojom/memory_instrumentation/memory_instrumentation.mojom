@@ -279,6 +279,12 @@ interface Coordinator {
                                 array<string> allocator_dump_names) =>
       (bool success, GlobalMemoryDump? global_memory_dump);
 
+  // Requesting a null pid is the same as requesting all pids.
+  // The returned dump only contains OS metrics. |chrome_allocator_dumps| will
+  // be empty.
+  RequestPrivateMemoryFootprint(mojo_base.mojom.ProcessId pid) =>
+      (bool success, GlobalMemoryDump? global_memory_dump);
+
   // Broadcasts a dump request to all registered client processes and injects the
   // dump in the trace buffer (if tracing is enabled).
   RequestGlobalMemoryDumpAndAppendToTrace(DumpType dump_type,

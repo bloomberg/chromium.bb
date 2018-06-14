@@ -53,15 +53,16 @@ std::unique_ptr<GlobalMemoryDump> DoGlobalDump() {
   std::unique_ptr<GlobalMemoryDump> result = nullptr;
   base::RunLoop run_loop;
   memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestGlobalDump(base::Bind(
-          [](base::Closure quit_closure,
-             std::unique_ptr<GlobalMemoryDump>* out_result, bool success,
-             std::unique_ptr<GlobalMemoryDump> result) {
-            EXPECT_TRUE(success);
-            *out_result = std::move(result);
-            std::move(quit_closure).Run();
-          },
-          run_loop.QuitClosure(), &result));
+      ->RequestGlobalDump(
+          {}, base::Bind(
+                  [](base::Closure quit_closure,
+                     std::unique_ptr<GlobalMemoryDump>* out_result,
+                     bool success, std::unique_ptr<GlobalMemoryDump> result) {
+                    EXPECT_TRUE(success);
+                    *out_result = std::move(result);
+                    std::move(quit_closure).Run();
+                  },
+                  run_loop.QuitClosure(), &result));
   run_loop.Run();
   return result;
 }
