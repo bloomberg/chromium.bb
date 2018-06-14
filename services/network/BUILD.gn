@@ -249,13 +249,17 @@ source_set("test_support") {
     "udp_socket_test_util.h",
   ]
 
+  public_deps = [
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
+  ]
+
   deps = [
     "//base",
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",
     "//services/network:network_service",
-    "//services/network/public/mojom",
     "//testing/gtest",
   ]
 }
