@@ -245,6 +245,17 @@ user_manager::UserType CalculateUserType(const AccountId& account_id) {
 
   return user_manager::USER_TYPE_REGULAR;
 }
+
+std::string GetAdErrorMessage(authpolicy::ErrorType error) {
+  switch (error) {
+    case authpolicy::ERROR_NETWORK_PROBLEM:
+      return l10n_util::GetStringUTF8(IDS_AD_AUTH_NETWORK_ERROR);
+    default:
+      DLOG(WARNING) << "Unhandled error code: " << error;
+      return l10n_util::GetStringUTF8(IDS_AD_AUTH_UNKNOWN_ERROR);
+  }
+}
+
 }  // namespace
 
 // A class that's used to specify the way how Gaia should be loaded.
@@ -688,11 +699,10 @@ void GaiaScreenHandler::DoAdAuth(
              static_cast<int>(ActiveDirectoryErrorState::BAD_PASSWORD));
       break;
     default:
-      DLOG(WARNING) << "Unhandled error code: " << error;
       CallJS("invalidateAd", username,
              static_cast<int>(ActiveDirectoryErrorState::NONE));
       core_oobe_view_->ShowSignInError(
-          0, l10n_util::GetStringUTF8(IDS_AD_AUTH_UNKNOWN_ERROR), std::string(),
+          0, GetAdErrorMessage(error), std::string(),
           HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
   }
 }
