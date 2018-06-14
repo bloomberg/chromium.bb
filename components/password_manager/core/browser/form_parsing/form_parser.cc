@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -69,6 +68,18 @@ AutocompleteFlag ExtractAutocompleteFlag(const std::string& attribute) {
   return AutocompleteFlag::kNone;
 }
 
+// How likely is user interaction for a given field?
+// Note: higher numeric values should match higher likeliness to allow using the
+// standard operator< for comparison of likeliness.
+enum class Interactability {
+  // When the field is invisible.
+  kUnlikely = 0,
+  // When the field is visible/focusable.
+  kPossible = 1,
+  // When the user actually typed into the field before.
+  kCertain = 2,
+};
+
 // A wrapper around FormFieldData, carrying some additional data used during
 // parsing.
 struct ProcessedField {
@@ -80,7 +91,34 @@ struct ProcessedField {
 
   // True iff field->form_control_type == "password".
   bool is_password = false;
+
+  Interactability interactability = Interactability::kUnlikely;
 };
+
+// Returns true iff |processed_field| matches the |interactability_bar|. That is
+// when either:
+// (1) |processed_field.interactability| is not less than |interactability_bar|,
+//     or
+// (2) |interactability_bar| is |kCertain|, and |processed_field| was
+// autofilled. The second clause helps to handle the case when both Chrome and
+// the user contribute to filling a form:
+//
+// <form>
+//   <input type="password" autocomplete="current-password" id="Chrome">
+//   <input type="password" autocomplete="new-password" id="user">
+// </form>
+//
+// In the example above, imagine that Chrome filled the field with id=Chrome,
+// and the user typed the new password in field with id=user. Then the parser
+// should identify that id=Chrome is the current password and id=user is the new
+// password. Without clause (2), Chrome would ignore id=Chrome.
+bool MatchesInteractability(const ProcessedField& processed_field,
+                            Interactability interactability_bar) {
+  return (processed_field.interactability >= interactability_bar) ||
+         (interactability_bar == Interactability::kCertain &&
+          (processed_field.field->properties_mask &
+           FieldPropertiesFlags::AUTOFILLED));
+}
 
 // Helper struct that is used to return results from the parsing function.
 struct ParseResult {
@@ -187,22 +225,28 @@ std::unique_ptr<ParseResult> ParseUsingAutocomplete(
   return result->IsEmpty() ? nullptr : std::move(result);
 }
 
-// Returns only relevant password fields from |processed_fields|. Namely
-// 1. If there is a focusable password field, return only focusable.
-// 2. If mode == SAVING return only non-empty fields (for saving empty fields
-// are useless).
-// Note that focusability is the proxy for visibility.
+// Returns only relevant password fields from |processed_fields|. Namely, if
+// |mode| == SAVING return only non-empty fields (for saving empty fields are
+// useless). This ignores all passwords with Interactability below
+// |best_interactability|. Stores the iterator to the first relevant password in
+// |first_relevant_password|.
 std::vector<const FormFieldData*> GetRelevantPasswords(
     const std::vector<ProcessedField>& processed_fields,
-    FormParsingMode mode) {
+    FormParsingMode mode,
+    Interactability best_interactability,
+    std::vector<ProcessedField>::const_iterator* first_relevant_password) {
+  DCHECK(first_relevant_password);
+  *first_relevant_password = processed_fields.end();
   std::vector<const FormFieldData*> result;
   result.reserve(processed_fields.size());
 
   const bool consider_only_non_empty = mode == FormParsingMode::SAVING;
-  bool found_focusable = false;
 
-  for (const ProcessedField& processed_field : processed_fields) {
+  for (auto it = processed_fields.begin(); it != processed_fields.end(); ++it) {
+    const ProcessedField& processed_field = *it;
     if (!processed_field.is_password)
+      continue;
+    if (!MatchesInteractability(processed_field, best_interactability))
       continue;
     if (consider_only_non_empty && processed_field.field->value.empty())
       continue;
@@ -217,14 +261,9 @@ std::vector<const FormFieldData*> GetRelevantPasswords(
            FieldPropertiesFlags::AUTOFILLED))) {
       continue;
     }
+    if (*first_relevant_password == processed_fields.end())
+      *first_relevant_password = it;
     result.push_back(processed_field.field);
-    found_focusable |= processed_field.field->is_focusable;
-  }
-
-  if (found_focusable) {
-    base::EraseIf(result, [](const FormFieldData* field) {
-      return !field->is_focusable;
-    });
   }
 
   return result;
@@ -298,21 +337,14 @@ void LocateSpecificPasswords(const std::vector<const FormFieldData*>& passwords,
 
 // Tries to find username field among text fields from |processed_fields|
 // occurring before |first_relevant_password|. Returns nullptr if the username
-// is not found.
+// is not found. If |mode| is SAVING, ignores all fields with empty values.
+// Ignores all fields with interactability less than |best_interactability|.
 const FormFieldData* FindUsernameFieldBaseHeuristics(
     const std::vector<ProcessedField>& processed_fields,
-    const FormFieldData* first_relevant_password,
-    FormParsingMode mode) {
-  DCHECK(first_relevant_password);
-
-  // Let username_candidates be all non-password fields before
-  // |first_relevant_password|.
-  auto first_relevant_password_it = std::find_if(
-      processed_fields.begin(), processed_fields.end(),
-      [first_relevant_password](const ProcessedField& processed_field) {
-        return processed_field.field == first_relevant_password;
-      });
-  DCHECK(first_relevant_password_it != processed_fields.end());
+    const std::vector<ProcessedField>::const_iterator& first_relevant_password,
+    FormParsingMode mode,
+    Interactability best_interactability) {
+  DCHECK(first_relevant_password != processed_fields.end());
 
   // For saving filter out empty fields.
   const bool consider_only_non_empty = mode == FormParsingMode::SAVING;
@@ -323,9 +355,11 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
   const FormFieldData* focusable_username = nullptr;
   const FormFieldData* username = nullptr;
   // Do reverse search to find the closest candidates preceding the password.
-  for (auto it = std::make_reverse_iterator(first_relevant_password_it);
+  for (auto it = std::make_reverse_iterator(first_relevant_password);
        it != processed_fields.rend(); ++it) {
     if (it->is_password)
+      continue;
+    if (!MatchesInteractability(*it, best_interactability))
       continue;
     if (consider_only_non_empty && it->field->value.empty())
       continue;
@@ -343,12 +377,22 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
 std::unique_ptr<ParseResult> ParseUsingBaseHeuristics(
     const std::vector<ProcessedField>& processed_fields,
     FormParsingMode mode) {
-  // Try to find password elements (current, new, confirmation).
-  std::vector<const FormFieldData*> passwords =
-      GetRelevantPasswords(processed_fields, mode);
+  // What is the best interactability among passwords?
+  Interactability password_max = Interactability::kUnlikely;
+  for (const ProcessedField& processed_field : processed_fields) {
+    if (processed_field.is_password)
+      password_max = std::max(password_max, processed_field.interactability);
+  }
+
+  // Try to find password elements (current, new, confirmation) among those with
+  // best interactability.
+  std::vector<ProcessedField>::const_iterator first_relevant_password =
+      processed_fields.end();
+  std::vector<const FormFieldData*> passwords = GetRelevantPasswords(
+      processed_fields, mode, password_max, &first_relevant_password);
   if (passwords.empty())
     return nullptr;
-
+  DCHECK(first_relevant_password != processed_fields.end());
   auto result = std::make_unique<ParseResult>();
   LocateSpecificPasswords(passwords, &result->password_field,
                           &result->new_password_field,
@@ -356,9 +400,17 @@ std::unique_ptr<ParseResult> ParseUsingBaseHeuristics(
   if (result->IsEmpty())
     return nullptr;
 
+  // What is the best interactability among text fields preceding the passwords?
+  Interactability username_max = Interactability::kUnlikely;
+  for (auto it = processed_fields.begin(); it != first_relevant_password;
+       ++it) {
+    if (!it->is_password)
+      username_max = std::max(username_max, it->interactability);
+  }
+
   // If password elements are found then try to find a username.
-  result->username_field =
-      FindUsernameFieldBaseHeuristics(processed_fields, passwords[0], mode);
+  result->username_field = FindUsernameFieldBaseHeuristics(
+      processed_fields, first_relevant_password, mode, username_max);
   return result;
 }
 
@@ -412,6 +464,11 @@ std::vector<ProcessedField> ProcessFields(
       processed_field.is_password = true;
       password_field_found = true;
     }
+
+    if (field.properties_mask & FieldPropertiesFlags::USER_TYPED)
+      processed_field.interactability = Interactability::kCertain;
+    else if (field.is_focusable)
+      processed_field.interactability = Interactability::kPossible;
 
     result.push_back(processed_field);
   }
