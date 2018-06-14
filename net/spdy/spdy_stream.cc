@@ -211,10 +211,11 @@ void SpdyStream::SetPriority(RequestPriority priority) {
   if (priority_ == priority) {
     return;
   }
-  priority_ = priority;
 
-  // TODO(bnc): Fix https://crbug.com/841511 and call
-  // session_->UpdateStreamPriority().
+  session_->UpdateStreamPriority(this, /* old_priority = */ priority_,
+                                 /* new_priority = */ priority);
+
+  priority_ = priority;
 }
 
 bool SpdyStream::AdjustSendWindowSize(int32_t delta_window_size) {
