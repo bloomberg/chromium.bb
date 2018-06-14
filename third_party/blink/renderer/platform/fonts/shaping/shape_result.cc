@@ -821,6 +821,7 @@ ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
   // RTL runs have glyphs in the descending order of character_index.
   if (Rtl())
     run->glyph_data_.Reverse();
+  num_glyphs_ += run->NumGlyphs();
   RunInfo* run_ptr = run.get();
   InsertRun(std::move(run));
   return run_ptr;
@@ -1013,24 +1014,28 @@ void ShapeResult::CheckConsistency() const {
     return;
   }
 
-  unsigned index = StartIndexForResult();
+  const unsigned start_index = StartIndexForResult();
+  unsigned index = start_index;
   unsigned num_glyphs = 0;
   if (!Rtl()) {
     for (const auto& run : runs_) {
-      DCHECK_EQ(index, run->start_index_);
-      index += run->num_characters_;
+      // Characters maybe missing, but must be in increasing order.
+      DCHECK_GE(run->start_index_, index);
+      index = run->start_index_ + run->num_characters_;
       num_glyphs += run->glyph_data_.size();
     }
   } else {
     // RTL on Mac may not have runs for the all characters. crbug.com/774034
     index = runs_.back()->start_index_;
     for (const auto& run : base::Reversed(runs_)) {
-      DCHECK_EQ(index, run->start_index_);
-      index += run->num_characters_;
+      DCHECK_GE(run->start_index_, index);
+      index = run->start_index_ + run->num_characters_;
       num_glyphs += run->glyph_data_.size();
     }
   }
-  DCHECK_EQ(index, EndIndexForResult());
+  const unsigned end_index = EndIndexForResult();
+  DCHECK_LE(index, end_index);
+  DCHECK_EQ(end_index - start_index, num_characters_);
   DCHECK_EQ(num_glyphs, num_glyphs_);
 }
 #endif
