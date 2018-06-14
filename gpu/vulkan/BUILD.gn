@@ -65,7 +65,6 @@ if (enable_vulkan) {
 
       deps = [
         "//base",
-        "//third_party/shaderc:libshaderc",
         "//ui/gfx",
       ]
     }
@@ -76,7 +75,6 @@ if (enable_vulkan) {
       "tests/basic_vulkan_test.cc",
       "tests/basic_vulkan_test.h",
       "tests/native_window.h",
-      "tests/shader_module_unittest.cc",
       "tests/vulkan_test.cc",
       "tests/vulkan_tests_main.cc",
     ]
