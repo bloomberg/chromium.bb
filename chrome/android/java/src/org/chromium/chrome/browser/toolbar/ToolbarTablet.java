@@ -10,6 +10,7 @@ import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
@@ -119,7 +120,7 @@ public class ToolbarTablet
 
         if (mAccessibilitySwitcherButton.getVisibility() == View.GONE
                 && mMenuButtonWrapper.getVisibility() == View.GONE) {
-            ApiCompatibilityUtils.setPaddingRelative((View) mMenuButtonWrapper.getParent(), 0, 0,
+            ViewCompat.setPaddingRelative((View) mMenuButtonWrapper.getParent(), 0, 0,
                     getResources().getDimensionPixelSize(R.dimen.tablet_toolbar_end_padding), 0);
         }
 
@@ -616,11 +617,9 @@ public class ToolbarTablet
     private void setStartPaddingBasedOnButtonVisibility(boolean buttonsVisible) {
         buttonsVisible = buttonsVisible || mHomeButton.getVisibility() == View.VISIBLE;
 
-        ApiCompatibilityUtils.setPaddingRelative(this,
+        ViewCompat.setPaddingRelative(this,
                 buttonsVisible ? mStartPaddingWithButtons : mStartPaddingWithoutButtons,
-                getPaddingTop(),
-                ApiCompatibilityUtils.getPaddingEnd(this),
-                getPaddingBottom());
+                getPaddingTop(), ViewCompat.getPaddingEnd(this), getPaddingBottom());
     }
 
     /**

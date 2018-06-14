@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.content.Context;
+import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -61,9 +62,8 @@ public class HintedDropDownAdapter<T> extends DropdownFieldAdapter<T> {
                                         : (TextView) convertView.findViewById(mTextViewResourceId);
         if (mTextView != null) {
             // Clear the possible changes for the first and last view.
-            ApiCompatibilityUtils.setPaddingRelative(convertView,
-                    ApiCompatibilityUtils.getPaddingStart(convertView), 0,
-                    ApiCompatibilityUtils.getPaddingEnd(convertView), 0);
+            ViewCompat.setPaddingRelative(convertView, ViewCompat.getPaddingStart(convertView), 0,
+                    ViewCompat.getPaddingEnd(convertView), 0);
             mTextView.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
             ApiCompatibilityUtils.setTextAppearance(
                     mTextView, android.R.style.TextAppearance_Widget_DropDownItem);
@@ -72,12 +72,10 @@ public class HintedDropDownAdapter<T> extends DropdownFieldAdapter<T> {
 
         if (position == 0) {
             // Padding at the top of the dropdown.
-            ApiCompatibilityUtils.setPaddingRelative(convertView,
-                    ApiCompatibilityUtils.getPaddingStart(convertView),
+            ViewCompat.setPaddingRelative(convertView, ViewCompat.getPaddingStart(convertView),
                     getContext().getResources().getDimensionPixelSize(
                             R.dimen.editor_dialog_section_small_spacing),
-                    ApiCompatibilityUtils.getPaddingEnd(convertView),
-                    convertView.getPaddingBottom());
+                    ViewCompat.getPaddingEnd(convertView), convertView.getPaddingBottom());
         }
         return convertView;
     }

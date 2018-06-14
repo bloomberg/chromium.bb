@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.preferences;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Paint.FontMetrics;
+import android.support.v4.view.ViewCompat;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
@@ -15,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -73,12 +73,8 @@ public class TextMessageWithLinkAndIconPreference extends TextMessagePreference 
         View view = super.onCreateView(parent);
 
         if (mNoBottomSpacing) {
-            ApiCompatibilityUtils.setPaddingRelative(
-                    view,
-                    ApiCompatibilityUtils.getPaddingStart(view),
-                    view.getPaddingTop(),
-                    ApiCompatibilityUtils.getPaddingEnd(view),
-                    0);
+            ViewCompat.setPaddingRelative(view, ViewCompat.getPaddingStart(view),
+                    view.getPaddingTop(), ViewCompat.getPaddingEnd(view), 0);
         }
 
         ((TextView) view.findViewById(android.R.id.summary)).setMovementMethod(
@@ -90,8 +86,7 @@ public class TextMessageWithLinkAndIconPreference extends TextMessagePreference 
                 getTitle() != null ? android.R.id.title : android.R.id.summary);
         FontMetrics metrics = textView.getPaint().getFontMetrics();
         ImageView icon = (ImageView) view.findViewById(android.R.id.icon);
-        ApiCompatibilityUtils.setPaddingRelative(
-                icon, 0, (int) java.lang.Math.ceil(metrics.ascent - metrics.top), 0, 0);
+        ViewCompat.setPaddingRelative(icon, 0, (int) Math.ceil(metrics.ascent - metrics.top), 0, 0);
 
         return view;
     }

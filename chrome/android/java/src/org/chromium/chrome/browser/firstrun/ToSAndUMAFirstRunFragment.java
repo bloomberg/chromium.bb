@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewCompat;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +16,6 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.components.signin.ChildAccountStatus;
@@ -77,10 +77,10 @@ public class ToSAndUMAFirstRunFragment extends Fragment implements FirstRunFragm
         if (ChromeVersionInfo.isOfficialBuild()) {
             int paddingStart = getResources().getDimensionPixelSize(
                     R.dimen.fre_tos_checkbox_padding);
-            ApiCompatibilityUtils.setPaddingRelative(mSendReportCheckBox,
-                    ApiCompatibilityUtils.getPaddingStart(mSendReportCheckBox) + paddingStart,
+            ViewCompat.setPaddingRelative(mSendReportCheckBox,
+                    ViewCompat.getPaddingStart(mSendReportCheckBox) + paddingStart,
                     mSendReportCheckBox.getPaddingTop(),
-                    ApiCompatibilityUtils.getPaddingEnd(mSendReportCheckBox),
+                    ViewCompat.getPaddingEnd(mSendReportCheckBox),
                     mSendReportCheckBox.getPaddingBottom());
 
             mSendReportCheckBox.setChecked(FirstRunActivity.DEFAULT_METRICS_AND_CRASH_REPORTING);

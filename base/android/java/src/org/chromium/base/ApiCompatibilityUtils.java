@@ -210,42 +210,6 @@ public class ApiCompatibilityUtils {
     }
 
     /**
-     * @see android.view.View#setPaddingRelative(int, int, int, int)
-     */
-    public static void setPaddingRelative(View view, int start, int top, int end, int bottom) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            view.setPaddingRelative(start, top, end, bottom);
-        } else {
-            // Before JB MR1, all layouts are left-to-right, so start == left, etc.
-            view.setPadding(start, top, end, bottom);
-        }
-    }
-
-    /**
-     * @see android.view.View#getPaddingStart()
-     */
-    public static int getPaddingStart(View view) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return view.getPaddingStart();
-        } else {
-            // Before JB MR1, all layouts are left-to-right, so start == left.
-            return view.getPaddingLeft();
-        }
-    }
-
-    /**
-     * @see android.view.View#getPaddingEnd()
-     */
-    public static int getPaddingEnd(View view) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return view.getPaddingEnd();
-        } else {
-            // Before JB MR1, all layouts are left-to-right, so end == right.
-            return view.getPaddingRight();
-        }
-    }
-
-    /**
      * @see android.widget.TextView#getCompoundDrawablesRelative()
      */
     public static Drawable[] getCompoundDrawablesRelative(TextView textView) {

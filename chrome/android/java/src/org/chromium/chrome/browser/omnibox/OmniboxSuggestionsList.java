@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -99,7 +100,7 @@ public class OmniboxSuggestionsList extends ListView {
                           R.dimen.omnibox_suggestion_list_padding_top);
         int paddingBottom = context.getResources().getDimensionPixelOffset(
                 R.dimen.omnibox_suggestion_list_padding_bottom);
-        ApiCompatibilityUtils.setPaddingRelative(this, 0, paddingTop, 0, paddingBottom);
+        ViewCompat.setPaddingRelative(this, 0, paddingTop, 0, paddingBottom);
 
         refreshPopupBackground();
         getBackground().getPadding(mTempRect);

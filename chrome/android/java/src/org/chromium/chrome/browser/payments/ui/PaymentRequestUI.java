@@ -21,6 +21,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
 import android.support.annotation.IntDef;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.text.SpannableString;
@@ -1063,8 +1064,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         // resize animation.
         int paddingSize = mContext.getResources().getDimensionPixelSize(
                 R.dimen.editor_dialog_section_large_spacing);
-        ApiCompatibilityUtils.setPaddingRelative(
-                view, paddingSize, paddingSize, paddingSize, paddingSize);
+        ViewCompat.setPaddingRelative(view, paddingSize, paddingSize, paddingSize, paddingSize);
         parent.addView(view);
     }
 

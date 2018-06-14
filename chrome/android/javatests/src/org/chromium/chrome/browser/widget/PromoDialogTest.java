@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
+import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
@@ -19,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -323,11 +323,11 @@ public class PromoDialogTest {
 
     private static void assertHasStartAndEndPadding(View view, boolean shouldHavePadding) {
         if (shouldHavePadding) {
-            Assert.assertNotEquals(0, ApiCompatibilityUtils.getPaddingStart(view));
-            Assert.assertNotEquals(0, ApiCompatibilityUtils.getPaddingEnd(view));
+            Assert.assertNotEquals(0, ViewCompat.getPaddingStart(view));
+            Assert.assertNotEquals(0, ViewCompat.getPaddingEnd(view));
         } else {
-            Assert.assertEquals(0, ApiCompatibilityUtils.getPaddingStart(view));
-            Assert.assertEquals(0, ApiCompatibilityUtils.getPaddingEnd(view));
+            Assert.assertEquals(0, ViewCompat.getPaddingStart(view));
+            Assert.assertEquals(0, ViewCompat.getPaddingEnd(view));
         }
     }
 }

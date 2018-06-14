@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.VisibleForTesting;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -259,8 +260,7 @@ public class SelectableListLayout<E>
     public void onDisplayStyleChanged(DisplayStyle newDisplayStyle) {
         int padding = getPaddingForDisplayStyle(newDisplayStyle, getResources());
 
-        ApiCompatibilityUtils.setPaddingRelative(mRecyclerView,
-                padding, mRecyclerView.getPaddingTop(),
+        ViewCompat.setPaddingRelative(mRecyclerView, padding, mRecyclerView.getPaddingTop(),
                 padding, mRecyclerView.getPaddingBottom());
     }
 

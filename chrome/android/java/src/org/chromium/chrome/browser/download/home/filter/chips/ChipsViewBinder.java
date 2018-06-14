@@ -5,13 +5,13 @@
 package org.chromium.chrome.browser.download.home.filter.chips;
 
 import android.content.res.ColorStateList;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter.ViewBinder;
 import org.chromium.chrome.browser.modelutil.SimpleListObservable;
@@ -68,8 +68,8 @@ class ChipsViewBinder
                 mImage.setImageResource(chip.icon);
             }
 
-            ApiCompatibilityUtils.setPaddingRelative(mText, textStartPadding, mText.getPaddingTop(),
-                    ApiCompatibilityUtils.getPaddingEnd(mText), mText.getPaddingBottom());
+            ViewCompat.setPaddingRelative(mText, textStartPadding, mText.getPaddingTop(),
+                    ViewCompat.getPaddingEnd(mText), mText.getPaddingBottom());
         }
     }
 

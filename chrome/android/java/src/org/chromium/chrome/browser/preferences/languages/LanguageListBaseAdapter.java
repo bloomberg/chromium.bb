@@ -104,9 +104,8 @@ public class LanguageListBaseAdapter
             mMoreButton.setVisibility(View.VISIBLE);
             mMoreButton.setDelegate(delegate);
             // Set item row end padding 0 when MenuButton is visible.
-            ApiCompatibilityUtils.setPaddingRelative(itemView,
-                    ApiCompatibilityUtils.getPaddingStart(itemView), itemView.getPaddingTop(), 0,
-                    itemView.getPaddingBottom());
+            ViewCompat.setPaddingRelative(itemView, ViewCompat.getPaddingStart(itemView),
+                    itemView.getPaddingTop(), 0, itemView.getPaddingBottom());
         }
 
         /**

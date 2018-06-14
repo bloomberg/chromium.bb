@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
@@ -253,10 +254,9 @@ public class LocationBarPhone extends LocationBarLayout {
         if (mIncognitoBadge == null) return;
 
         if (findViewById(R.id.location_bar_icon).getVisibility() == GONE) {
-            ApiCompatibilityUtils.setPaddingRelative(
-                    mIncognitoBadge, 0, 0, mIncognitoBadgePadding, 0);
+            ViewCompat.setPaddingRelative(mIncognitoBadge, 0, 0, mIncognitoBadgePadding, 0);
         } else {
-            ApiCompatibilityUtils.setPaddingRelative(mIncognitoBadge, 0, 0, 0, 0);
+            ViewCompat.setPaddingRelative(mIncognitoBadge, 0, 0, 0, 0);
         }
     }
 

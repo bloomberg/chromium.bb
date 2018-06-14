@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -79,9 +80,8 @@ public class HintedDropDownAdapterWithPlusIcon<T> extends HintedDropDownAdapter<
             mTextView.setTypeface(UiUtils.createRobotoMediumTypeface());
 
             // Padding at the bottom of the dropdown.
-            ApiCompatibilityUtils.setPaddingRelative(convertView,
-                    ApiCompatibilityUtils.getPaddingStart(convertView), convertView.getPaddingTop(),
-                    ApiCompatibilityUtils.getPaddingEnd(convertView),
+            ViewCompat.setPaddingRelative(convertView, ViewCompat.getPaddingStart(convertView),
+                    convertView.getPaddingTop(), ViewCompat.getPaddingEnd(convertView),
                     getContext().getResources().getDimensionPixelSize(
                             R.dimen.editor_dialog_section_small_spacing));
         }

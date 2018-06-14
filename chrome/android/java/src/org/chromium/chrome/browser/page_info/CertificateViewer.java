@@ -8,6 +8,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.net.http.SslCertificate;
+import android.support.v4.view.ViewCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,8 +83,7 @@ class CertificateViewer implements OnItemSelectedListener {
             public View getView(int position, View convertView, ViewGroup parent) {
                 TextView view = (TextView) super.getView(position, convertView, parent);
                 // Add extra padding on the end side to avoid overlapping the dropdown arrow.
-                ApiCompatibilityUtils.setPaddingRelative(view, mPadding, mPadding, mPadding * 2,
-                        mPadding);
+                ViewCompat.setPaddingRelative(view, mPadding, mPadding, mPadding * 2, mPadding);
                 return view;
             }
         };
