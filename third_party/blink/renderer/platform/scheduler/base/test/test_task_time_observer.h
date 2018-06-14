@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_TASK_TIME_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_TASK_TIME_OBSERVER_H_
 
+#include "base/task/sequence_manager/task_time_observer.h"
 #include "base/time/time.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
 
 namespace base {
 namespace sequence_manager {
