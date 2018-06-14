@@ -5,12 +5,18 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 
 namespace {
 
 const char kJsScreenPath[] = "login.RecommendAppsScreen";
+
+constexpr const char kUserActionSkip[] = "recommendAppsSkip";
+constexpr const char kUserActionRetry[] = "recommendAppsRetry";
+constexpr const char kUserActionInstall[] = "recommendAppsInstall";
 
 }  // namespace
 
@@ -21,7 +27,10 @@ RecommendAppsScreenHandler::RecommendAppsScreenHandler()
   set_call_js_prefix(kJsScreenPath);
 }
 
-RecommendAppsScreenHandler::~RecommendAppsScreenHandler() {}
+RecommendAppsScreenHandler::~RecommendAppsScreenHandler() {
+  for (auto& observer : observer_list_)
+    observer.OnViewDestroyed(this);
+}
 
 void RecommendAppsScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
@@ -31,10 +40,27 @@ void RecommendAppsScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_RECOMMEND_APPS_SCREEN_DESCRIPTION);
   builder->Add("recommendAppsSkip", IDS_LOGIN_RECOMMEND_APPS_SKIP);
   builder->Add("recommendAppsInstall", IDS_LOGIN_RECOMMEND_APPS_INSTALL);
+  builder->Add("recommendAppsRetry", IDS_LOGIN_RECOMMEND_APPS_RETRY);
+  builder->Add("recommendAppsLoading", IDS_LOGIN_RECOMMEND_APPS_SCREEN_LOADING);
+  builder->Add("recommendAppsError", IDS_LOGIN_RECOMMEND_APPS_SCREEN_ERROR);
 }
 
 void RecommendAppsScreenHandler::RegisterMessages() {
   BaseScreenHandler::RegisterMessages();
+  AddCallback(kUserActionSkip, &RecommendAppsScreenHandler::HandleSkip);
+  AddCallback(kUserActionRetry, &RecommendAppsScreenHandler::HandleRetry);
+  AddRawCallback(kUserActionInstall,
+                 &RecommendAppsScreenHandler::HandleInstall);
+}
+
+void RecommendAppsScreenHandler::AddObserver(
+    RecommendAppsScreenViewObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void RecommendAppsScreenHandler::RemoveObserver(
+    RecommendAppsScreenViewObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void RecommendAppsScreenHandler::Bind(RecommendAppsScreen* screen) {
@@ -44,10 +70,46 @@ void RecommendAppsScreenHandler::Bind(RecommendAppsScreen* screen) {
 
 void RecommendAppsScreenHandler::Show() {
   ShowScreen(kScreenId);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  pref_service_ = profile->GetPrefs();
 }
 
 void RecommendAppsScreenHandler::Hide() {}
 
 void RecommendAppsScreenHandler::Initialize() {}
+
+void RecommendAppsScreenHandler::LoadAppListInUI() {
+  if (!page_is_ready())
+    return;
+
+  CallJS("loadAppList");
+}
+
+void RecommendAppsScreenHandler::OnLoadError() {
+  CallJS("showError");
+}
+
+void RecommendAppsScreenHandler::OnLoadSuccess(const std::string& app_list) {
+  // TODO(rsgingerrs): Parse the app_list and pass it to the UI.
+  LoadAppListInUI();
+}
+
+void RecommendAppsScreenHandler::HandleSkip() {
+  for (auto& observer : observer_list_)
+    observer.OnSkip();
+}
+
+void RecommendAppsScreenHandler::HandleRetry() {
+  for (auto& observer : observer_list_)
+    observer.OnRetry();
+}
+
+void RecommendAppsScreenHandler::HandleInstall(const base::ListValue* args) {
+  pref_service_->Set("userSelectedAppList", *args);
+
+  for (auto& observer : observer_list_)
+    observer.OnInstall();
+}
 
 }  // namespace chromeos

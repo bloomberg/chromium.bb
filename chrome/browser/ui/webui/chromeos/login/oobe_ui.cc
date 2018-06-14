@@ -123,6 +123,9 @@ const char kArcPlaystoreJSPath[] = "playstore.js";
 const char kArcPlaystoreLogoPath[] = "playstore.svg";
 const char kProductLogoPath[] = "product-logo.png";
 
+const char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
+const char kRecommendAppListViewHTMLPath[] = "recommend_app_list_view.html";
+
 #if defined(GOOGLE_CHROME_BUILD)
 const char kLogo24PX1XSvgPath[] = "logo_24px-1x.svg";
 const char kLogo24PX2XSvgPath[] = "logo_24px-2x.svg";
@@ -181,6 +184,11 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddResourcePath(kArcPlaystoreJSPath, IDR_ARC_SUPPORT_PLAYSTORE_JS);
   source->AddResourcePath(kArcPlaystoreLogoPath,
       IDR_ARC_SUPPORT_PLAYSTORE_LOGO);
+
+  source->AddResourcePath(kRecommendAppListViewJSPath,
+                          IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS);
+  source->AddResourcePath(kRecommendAppListViewHTMLPath,
+                          IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
 
   // Required for Assistant OOBE.
   source->AddResourcePath(kArcAssistantLogoPath, IDR_ASSISTANT_LOGO_PNG);

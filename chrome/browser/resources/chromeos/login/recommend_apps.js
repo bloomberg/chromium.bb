@@ -16,18 +16,41 @@ Polymer({
     apps: {
       type: Array,
       value: []  // TODO(rsgingerrs): add the function to fetch the list of apps
-    }
+    },
+
+    /**
+     * Reference to OOBE screen object.
+     * @type {!OobeTypes.Screen}
+     */
+    screen: {
+      type: Object,
+    },
   },
 
   focus: function() {
-    this.$.recommendAppsOverviewDialog.focus();
+    this.getElement('recommend-apps-dialog').focus();
   },
 
+  /** @private */
   onSkip_: function() {
-    chrome.send('login.RecommendAppsScreen.userActed', ['recommendAppsSkip']);
+    this.screen.onSkip();
   },
 
+  /** @private */
   onInstall_: function() {
-    // TODO(rsgingerrs): Actions if the user selects some apps to install
+    this.screen.onInstall();
+  },
+
+  /** @private */
+  onRetry_: function() {
+    this.screen.onRetry();
+  },
+
+  /**
+   * Returns element by its id.
+   * @param id String The ID of the element.
+   */
+  getElement: function(id) {
+    return this.$[id];
   },
 });
