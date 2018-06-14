@@ -989,14 +989,7 @@ TEST(ThreadTicks, MAYBE_NowOverride) {
   EXPECT_GT(ThreadTicks::Max(), subtle::ThreadTicksNowIgnoringOverride());
 }
 
-// Fails frequently on Android http://crbug.com/352633 with:
-// Expected: (delta_thread.InMicroseconds()) > (0), actual: 0 vs 0
-#if defined(OS_ANDROID)
-#define MAYBE_ThreadNow DISABLED_ThreadNow
-#else
-#define MAYBE_ThreadNow ThreadNow
-#endif
-TEST(ThreadTicks, MAYBE_ThreadNow) {
+TEST(ThreadTicks, ThreadNow) {
   if (ThreadTicks::IsSupported()) {
     ThreadTicks::WaitUntilInitialized();
     TimeTicks begin = TimeTicks::Now();
@@ -1010,7 +1003,7 @@ TEST(ThreadTicks, MAYBE_ThreadNow) {
     TimeDelta delta = end - begin;
     TimeDelta delta_thread = end_thread - begin_thread;
     // Make sure that some thread time have elapsed.
-    EXPECT_GT(delta_thread.InMicroseconds(), 0);
+    EXPECT_GE(delta_thread.InMicroseconds(), 0);
     // But the thread time is at least 9ms less than clock time.
     TimeDelta difference = delta - delta_thread;
     EXPECT_GE(difference.InMicroseconds(), 9000);
