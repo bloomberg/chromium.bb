@@ -33,6 +33,7 @@
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_state.h"
 #include "base/i18n/string_search.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/client/aura_constants.h"
@@ -366,8 +367,10 @@ void WindowGrid::PositionWindows(bool animate,
   // position |ignored_item| if it is not nullptr and matches a item in
   // |window_list_|.
   for (size_t i = 0; i < window_list_.size(); ++i) {
-    if (ignored_item != nullptr && window_list_[i].get() == ignored_item)
+    if (window_list_[i]->animating_to_close() ||
+        (ignored_item != nullptr && window_list_[i].get() == ignored_item)) {
       continue;
+    }
 
     const bool should_animate = window_list_[i]->ShouldAnimateWhenEntering();
     window_list_[i]->SetBounds(
@@ -652,6 +655,10 @@ void WindowGrid::OnWindowDestroying(aura::Window* window) {
   auto iter = GetWindowSelectorItemIterContainingWindow(window);
   DCHECK(iter != window_list_.end());
 
+  // Windows that are animating to a close state already call PositionWindows,
+  // no need to call it twice.
+  const bool needs_repositioning = !((*iter)->animating_to_close());
+
   size_t removed_index = iter - window_list_.begin();
   window_list_.erase(iter);
 
@@ -673,7 +680,8 @@ void WindowGrid::OnWindowDestroying(aura::Window* window) {
       SelectedWindow()->SendAccessibleSelectionEvent();
   }
 
-  PositionWindows(true);
+  if (needs_repositioning)
+    PositionWindows(true);
 }
 
 void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
@@ -866,9 +874,20 @@ void WindowGrid::StartNudge(WindowSelectorItem* item) {
     return;
   }
 
-  // TODO(sammiequon): We also want to do nothing if the an item from the
-  // previous row will drop onto the current row, this will cause the items to
-  // shift to the right, which looks weird.
+  // Do nothing if the last item from the previous row will drop onto the
+  // current row, this will cause the items in the current row to shift to the
+  // right while the previous item stays in the previous row, which looks weird.
+  if (src_rows[index] > 1) {
+    // Find the last item from the previous row.
+    size_t previous_row_last_index = index;
+    while (src_rows[previous_row_last_index] == src_rows[index]) {
+      --previous_row_last_index;
+    }
+
+    // Early return if the last item in the previous row changes rows.
+    if (src_rows[previous_row_last_index] != dst_rows[previous_row_last_index])
+      return;
+  }
 
   // Helper to check whether the item at |item_index| will be nudged.
   auto should_nudge = [&src_rows, &dst_rows, &index](size_t item_index) {
@@ -918,20 +937,14 @@ void WindowGrid::StartNudge(WindowSelectorItem* item) {
 }
 
 void WindowGrid::UpdateNudge(WindowSelectorItem* item, double value) {
-  DCHECK_GE(value, 0.0);
-  DCHECK_LE(value, 1.0);
-
   for (const auto& data : nudge_data_) {
-    // TODO(sammiequon): This can happen if a new drag has started while
-    // a previous window is still animating out. Find a more graceful way to
-    // handle this.
-    if (data.index > window_list_.size())
-      continue;
+    DCHECK_LT(data.index, window_list_.size());
 
     WindowSelectorItem* nudged_item = window_list_[data.index].get();
-    // TODO(sammiequon): Use a better looking formula than linear
-    // interpolation.
-    gfx::Rect bounds = gfx::Tween::RectValueBetween(value, data.src, data.dst);
+    double nudge_param = value * value / 30.0;
+    nudge_param = base::ClampToRange(nudge_param, 0.0, 1.0);
+    gfx::Rect bounds =
+        gfx::Tween::RectValueBetween(nudge_param, data.src, data.dst);
     nudged_item->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
   }
 }
@@ -1233,7 +1246,8 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   const gfx::Size item_size(0, height);
   size_t i = 0;
   for (const auto& window : window_list_) {
-    if (ignored_item && ignored_item == window.get()) {
+    if (window->animating_to_close() ||
+        (ignored_item && ignored_item == window.get())) {
       // Increment the index anyways. PositionWindows will handle skipping this
       // entry.
       ++i;
@@ -1273,8 +1287,10 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
         // If the |ignored_item| is the last item, update |out_max_bottom|
         // before breaking the loop, but no need to add the height, as the last
         // item does not contribute to the grid bounds.
-        if (ignored_item && ignored_item == window_list_.back().get())
+        if (window_list_.back()->animating_to_close() ||
+            (ignored_item && ignored_item == window_list_.back().get())) {
           *out_max_bottom = top;
+        }
         break;
       }
       left = bounds.x();

@@ -819,7 +819,8 @@ void WindowSelectorItem::SendAccessibleSelectionEvent() {
 void WindowSelectorItem::AnimateAndCloseWindow(bool up) {
   base::RecordAction(base::UserMetricsAction("WindowSelector_SwipeToClose"));
 
-  window_selector_->PositionWindows(/*animate=*/true, /*ignored_item=*/this);
+  animating_to_close_ = true;
+  window_selector_->PositionWindows(/*animate=*/true);
   caption_container_view_->listener_button()->ResetListener();
   close_button_->ResetListener();
 

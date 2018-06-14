@@ -98,9 +98,9 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
     float val = std::abs(static_cast<float>(location_in_screen.y()) -
                          initial_event_location_.y()) /
                 kDragToCloseDistanceThresholdDp;
-    val = base::ClampToRange(val, 0.f, 1.f);
     window_selector_->GetGridWithRootWindow(item_->root_window())
         ->UpdateNudge(item_, val);
+    val = base::ClampToRange(val, 0.f, 1.f);
     float opacity = original_opacity_;
     if (opacity > kItemMinOpacity) {
       opacity = original_opacity_ - val * (original_opacity_ - kItemMinOpacity);
@@ -135,13 +135,13 @@ void OverviewWindowDragController::CompleteDrag(
     // If we are in drag to close mode close the window if it has been dragged
     // enough, otherwise reposition it and set its opacity back to its original
     // value.
+    window_selector_->GetGridWithRootWindow(item_->root_window())->EndNudge();
     if (std::abs((location_in_screen - initial_event_location_).y()) >
         kDragToCloseDistanceThresholdDp) {
       item_->AnimateAndCloseWindow(
           (location_in_screen - initial_event_location_).y() < 0);
     } else {
       item_->SetOpacity(original_opacity_);
-      window_selector_->GetGridWithRootWindow(item_->root_window())->EndNudge();
       window_selector_->PositionWindows(/*animate=*/true);
     }
   } else {
