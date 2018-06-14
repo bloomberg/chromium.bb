@@ -1040,20 +1040,19 @@ Address LargeObjectArena::DoAllocateLargeObjectPage(size_t allocation_size,
   large_object->Link(&first_page_);
 
   GetThreadState()->Heap().IncreaseAllocatedSpace(large_object->size());
-  GetThreadState()->Heap().IncreaseAllocatedObjectSize(large_object->size());
+  GetThreadState()->Heap().IncreaseAllocatedObjectSize(
+      large_object->PayloadSize());
   return result;
 }
 
 void LargeObjectArena::FreeLargeObjectPage(LargeObjectPage* object) {
   ASAN_UNPOISON_MEMORY_REGION(object->Payload(), object->PayloadSize());
-  object->GetHeapObjectHeader()->Finalize(object->Payload(),
-                                          object->PayloadSize());
+  object->ObjectHeader()->Finalize(object->Payload(), object->PayloadSize());
   GetThreadState()->Heap().DecreaseAllocatedSpace(object->size());
 
   // Unpoison the object header and allocationGranularity bytes after the
   // object before freeing.
-  ASAN_UNPOISON_MEMORY_REGION(object->GetHeapObjectHeader(),
-                              sizeof(HeapObjectHeader));
+  ASAN_UNPOISON_MEMORY_REGION(object->ObjectHeader(), sizeof(HeapObjectHeader));
   ASAN_UNPOISON_MEMORY_REGION(object->GetAddress() + object->size(),
                               kAllocationGranularity);
 
@@ -1069,7 +1068,7 @@ Address LargeObjectArena::LazySweepPages(size_t allocation_size,
   while (!SweepingCompleted()) {
     BasePage* page = first_unswept_page_;
     if (page->IsEmpty()) {
-      swept_size += static_cast<LargeObjectPage*>(page)->PayloadSize();
+      swept_size += static_cast<LargeObjectPage*>(page)->ObjectSize();
       page->Unlink(&first_unswept_page_);
       page->RemoveFromHeap();
       // For LargeObjectPage, stop lazy sweeping once we have swept
@@ -1694,9 +1693,9 @@ bool NormalPage::Contains(Address addr) {
 
 LargeObjectPage::LargeObjectPage(PageMemory* storage,
                                  BaseArena* arena,
-                                 size_t payload_size)
+                                 size_t object_size)
     : BasePage(storage, arena),
-      payload_size_(payload_size)
+      object_size_(object_size)
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
       ,
       is_vector_backing_page_(false)
@@ -1709,7 +1708,7 @@ size_t LargeObjectPage::ObjectPayloadSizeForTesting() {
 }
 
 bool LargeObjectPage::IsEmpty() {
-  return !GetHeapObjectHeader()->IsMarked();
+  return !ObjectHeader()->IsMarked();
 }
 
 void LargeObjectPage::RemoveFromHeap() {
@@ -1717,19 +1716,19 @@ void LargeObjectPage::RemoveFromHeap() {
 }
 
 void LargeObjectPage::Sweep() {
-  GetHeapObjectHeader()->Unmark();
+  ObjectHeader()->Unmark();
   Arena()->GetThreadState()->Heap().IncreaseMarkedObjectSize(size());
 }
 
 void LargeObjectPage::MakeConsistentForMutator() {
-  HeapObjectHeader* header = GetHeapObjectHeader();
+  HeapObjectHeader* header = ObjectHeader();
   if (header->IsMarked())
     header->Unmark();
 }
 
 #if defined(ADDRESS_SANITIZER)
 void LargeObjectPage::PoisonUnmarkedObjects() {
-  HeapObjectHeader* header = GetHeapObjectHeader();
+  HeapObjectHeader* header = ObjectHeader();
   if (!header->IsMarked())
     ASAN_POISON_MEMORY_REGION(header->Payload(), header->PayloadSize());
 }
@@ -1743,7 +1742,7 @@ void LargeObjectPage::TakeSnapshot(
   size_t dead_size = 0;
   size_t live_count = 0;
   size_t dead_count = 0;
-  HeapObjectHeader* header = GetHeapObjectHeader();
+  HeapObjectHeader* header = ObjectHeader();
   size_t gc_info_index = header->GcInfoIndex();
   size_t payload_size = header->PayloadSize();
   if (header->IsMarked()) {

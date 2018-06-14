@@ -599,7 +599,7 @@ void ThreadHeap::WriteBarrier(void* value) {
   BasePage* const page = PageFromObject(value);
   HeapObjectHeader* const header =
       page->IsLargeObjectPage()
-          ? static_cast<LargeObjectPage*>(page)->GetHeapObjectHeader()
+          ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
           : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
                 reinterpret_cast<Address>(const_cast<void*>(value)));
   if (header->IsMarked())

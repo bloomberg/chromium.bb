@@ -46,7 +46,7 @@ void MarkingVisitor::ConservativelyMarkAddress(BasePage* page,
 #endif
   HeapObjectHeader* const header =
       page->IsLargeObjectPage()
-          ? static_cast<LargeObjectPage*>(page)->GetHeapObjectHeader()
+          ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
           : static_cast<NormalPage*>(page)->FindHeaderFromAddress(address);
   if (!header)
     return;
@@ -61,7 +61,7 @@ void MarkingVisitor::ConservativelyMarkAddress(
   DCHECK(page->Contains(address));
   HeapObjectHeader* const header =
       page->IsLargeObjectPage()
-          ? static_cast<LargeObjectPage*>(page)->GetHeapObjectHeader()
+          ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
           : static_cast<NormalPage*>(page)->FindHeaderFromAddress(address);
   if (!header)
     return;
