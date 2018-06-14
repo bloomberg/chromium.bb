@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 
+class AccountTrackerService;
 class FakeSigninManagerBase;
 class FakeSigninManager;
 class ProfileOAuth2TokenService;
@@ -83,6 +84,16 @@ std::string MakePrimaryAccountAvailable(
 // NOTE: See disclaimer at top of file re: direct usage.
 void ClearPrimaryAccount(SigninManagerForTest* signin_manager,
                          IdentityManager* identity_manager);
+
+// Makes an account available for the given email address, generating a GAIA ID
+// and refresh token that correspond uniquely to that email address. Blocks
+// until the account is available. Returns the account ID of the
+// newly-available account.
+// NOTE: See disclaimer at top of file re: direct usage.
+std::string MakeAccountAvailable(AccountTrackerService* account_tracker_service,
+                                 ProfileOAuth2TokenService* token_service,
+                                 IdentityManager* identity_manager,
+                                 const std::string& email);
 
 }  // namespace identity
 

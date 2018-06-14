@@ -30,6 +30,8 @@ class IdentityTestEnvironmentInternal {
   // The IdentityManager instance created and owned by this instance.
   IdentityManager* identity_manager();
 
+  AccountTrackerService* account_tracker_service();
+
   SigninManagerForTest* signin_manager();
 
   FakeProfileOAuth2TokenService* token_service();
@@ -71,6 +73,11 @@ IdentityTestEnvironmentInternal::~IdentityTestEnvironmentInternal() {}
 
 IdentityManager* IdentityTestEnvironmentInternal::identity_manager() {
   return identity_manager_.get();
+}
+
+AccountTrackerService*
+IdentityTestEnvironmentInternal::account_tracker_service() {
+  return &account_tracker_;
 }
 
 SigninManagerForTest* IdentityTestEnvironmentInternal::signin_manager() {
@@ -126,6 +133,13 @@ std::string IdentityTestEnvironment::MakePrimaryAccountAvailable(
 void IdentityTestEnvironment::ClearPrimaryAccount() {
   identity::ClearPrimaryAccount(internals_->signin_manager(),
                                 internals_->identity_manager());
+}
+
+std::string IdentityTestEnvironment::MakeAccountAvailable(
+    const std::string& email) {
+  return identity::MakeAccountAvailable(internals_->account_tracker_service(),
+                                        internals_->token_service(),
+                                        internals_->identity_manager(), email);
 }
 
 void IdentityTestEnvironment::SetAutomaticIssueOfAccessTokens(bool grant) {

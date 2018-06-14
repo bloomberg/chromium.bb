@@ -54,6 +54,12 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // primary account is cleared.
   void ClearPrimaryAccount();
 
+  // Makes an account available for the given email address, generating a GAIA
+  // ID and refresh token that correspond uniquely to that email address. Blocks
+  // until the account is available. Returns the account ID of the
+  // newly-available account.
+  std::string MakeAccountAvailable(const std::string& email);
+
   // When this is set, access token requests will be automatically granted with
   // an access token value of "access_token".
   void SetAutomaticIssueOfAccessTokens(bool grant);
