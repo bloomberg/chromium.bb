@@ -372,6 +372,13 @@ def infradata_master_manager(c):
   c.got_revision_mapping['infra-data-master-manager'] = 'got_revision'
 
 @config_ctx()
+def infradata_config(c):
+  soln = c.solutions.add()
+  soln.name = 'infra-data-config'
+  soln.url = 'https://chrome-internal.googlesource.com/infradata/config.git'
+  c.got_revision_mapping['infra-data-config'] = 'got_revision'
+
+@config_ctx()
 def with_branch_heads(c):
   c.with_branch_heads = True
 
