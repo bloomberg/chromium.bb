@@ -4303,7 +4303,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
       safe_browsing::kEnterprisePasswordProtectionV1);
 
   // If user is not signed-in, |GetPasswordProtectionWarningTriggerPref(...)|
-  // should always return |PASSWORD_PROTECTION_OFF|.
+  // should return |PASSWORD_PROTECTION_OFF| unless specified by policy.
   EXPECT_CALL(mock_service, GetSyncAccountType())
       .WillRepeatedly(Return(safe_browsing::LoginReputationClientRequest::
                                  PasswordReuseEvent::NOT_SIGNED_IN));
@@ -4320,14 +4320,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionWarningTrigger)
                   ->IsManaged());
-  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+  EXPECT_EQ(safe_browsing::PASSWORD_REUSE,
             mock_service.GetPasswordProtectionWarningTriggerPref());
   // Sets the enterprise policy to 2 (a.k.a PHISHING_REUSE).
   policies.Set(key::kPasswordProtectionWarningTrigger, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(2), nullptr);
   UpdateProviderPolicy(policies);
-  EXPECT_EQ(safe_browsing::PASSWORD_PROTECTION_OFF,
+  EXPECT_EQ(safe_browsing::PHISHING_REUSE,
             mock_service.GetPasswordProtectionWarningTriggerPref());
 }
 
@@ -4509,7 +4509,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionChangePasswordURL) {
   scoped_feature_list.InitAndEnableFeature(
       safe_browsing::kEnterprisePasswordProtectionV1);
   // Without setting up the enterprise policy,
-  // |GetChangePasswordURL(..) should return default GAIA change password URL.
+  // |GetEnterpriseChangePasswordURL(..) should return default GAIA change
+  // password URL.
   const PrefService* const prefs = browser()->profile()->GetPrefs();
   const safe_browsing::ChromePasswordProtectionService* const service =
       safe_browsing::ChromePasswordProtectionService::
@@ -4518,7 +4519,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionChangePasswordURL) {
       prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
           ->IsManaged());
   EXPECT_FALSE(prefs->HasPrefPath(prefs::kPasswordProtectionChangePasswordURL));
-  EXPECT_TRUE(service->GetChangePasswordURL().DomainIs("accounts.google.com"));
+  EXPECT_TRUE(service->GetEnterpriseChangePasswordURL().DomainIs(
+      "accounts.google.com"));
 
   // Add change password URL to this enterprise policy .
   PolicyMap policies;
@@ -4531,7 +4533,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionChangePasswordURL) {
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
                   ->IsManaged());
   EXPECT_EQ(GURL("https://changepassword.mydomain.com"),
-            service->GetChangePasswordURL());
+            service->GetEnterpriseChangePasswordURL());
 
   // Verify non-http/https change password URL will be skipped.
   policies.Set(key::kPasswordProtectionChangePasswordURL,
@@ -4541,7 +4543,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, PasswordProtectionChangePasswordURL) {
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(prefs->FindPreference(prefs::kPasswordProtectionChangePasswordURL)
                   ->IsManaged());
-  EXPECT_TRUE(service->GetChangePasswordURL().DomainIs("accounts.google.com"));
+  EXPECT_TRUE(service->GetEnterpriseChangePasswordURL().DomainIs(
+      "accounts.google.com"));
 }
 
 // Sets the proper policy before the browser is started.

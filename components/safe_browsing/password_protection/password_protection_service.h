@@ -18,6 +18,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
 #include "components/history/core/browser/history_service_observer.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -55,6 +56,9 @@ extern const char kProtectedPasswordEntryRequestOutcomeHistogram[];
 extern const char kSyncPasswordWarningDialogHistogram[];
 extern const char kSyncPasswordPageInfoHistogram[];
 extern const char kSyncPasswordChromeSettingsHistogram[];
+
+using ReusedPasswordType =
+    LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType;
 
 // Manage password protection pings and verdicts. There is one instance of this
 // class per profile. Therefore, every PasswordProtectionService instance is
@@ -160,7 +164,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                     const GURL& main_frame_url,
                     const GURL& password_form_action,
                     const GURL& password_form_frame_url,
-                    bool matches_sync_password,
+                    ReusedPasswordType reused_password_type,
                     const std::vector<std::string>& matching_domains,
                     LoginReputationClientRequest::TriggerType trigger_type,
                     bool password_field_exists);
@@ -174,7 +178,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void MaybeStartProtectedPasswordEntryRequest(
       content::WebContents* web_contents,
       const GURL& main_frame_url,
-      bool matches_sync_password,
+      ReusedPasswordType reused_password_type,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists);
 
@@ -199,13 +203,14 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // If we want to show password reuse modal warning.
   bool ShouldShowModalWarning(
       LoginReputationClientRequest::TriggerType trigger_type,
-      bool matches_sync_password,
+      ReusedPasswordType reused_password_type,
       LoginReputationClientResponse::VerdictType verdict_type);
 
   // Shows modal warning dialog on the current |web_contents| and pass the
   // |verdict_token| to callback of this dialog.
   virtual void ShowModalWarning(content::WebContents* web_contents,
-                                const std::string& verdict_token) = 0;
+                                const std::string& verdict_token,
+                                ReusedPasswordType reused_password_type) = 0;
 
   // Shows chrome://reset-password interstitial.
   virtual void ShowInterstitial(content::WebContents* web_contens) = 0;
@@ -259,6 +264,19 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // Called when a protected password change is detected. Must be called on
   // UI thread.
   virtual void OnPolicySpecifiedPasswordChanged() = 0;
+
+  // Converts from password::metrics_util::PasswordType to
+  // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.
+  static ReusedPasswordType GetPasswordProtectionReusedPasswordType(
+      password_manager::metrics_util::PasswordType password_type);
+
+  // If we can send ping for this type of reused password.
+  bool IsSupportedPasswordTypeForPinging(
+      ReusedPasswordType reused_password_type) const;
+
+  // If we can show modal warning for this type of reused password.
+  bool IsSupportedPasswordTypeForModalWarning(
+      ReusedPasswordType reused_password_type) const;
 
  protected:
   friend class PasswordProtectionRequest;
@@ -349,6 +367,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   friend class PasswordProtectionServiceTest;
   friend class TestPasswordProtectionService;
   friend class ChromePasswordProtectionServiceTest;
+  friend class ChromePasswordProtectionServiceBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,
                            TestParseInvalidVerdictEntry);
   FRIEND_TEST_ALL_PREFIXES(PasswordProtectionServiceTest,

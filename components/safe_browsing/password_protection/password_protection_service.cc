@@ -37,8 +37,11 @@
 using content::BrowserThread;
 using content::WebContents;
 using history::HistoryService;
+using password_manager::metrics_util::PasswordType;
 
 namespace safe_browsing {
+
+using PasswordReuseEvent = LoginReputationClientRequest::PasswordReuseEvent;
 
 namespace {
 
@@ -159,12 +162,17 @@ void PasswordProtectionService::RecordWarningAction(WarningUIType ui_type,
 
 bool PasswordProtectionService::ShouldShowModalWarning(
     LoginReputationClientRequest::TriggerType trigger_type,
-    bool matches_sync_password,
+    PasswordReuseEvent::ReusedPasswordType password_type,
     LoginReputationClientResponse::VerdictType verdict_type) {
   if (trigger_type != LoginReputationClientRequest::PASSWORD_REUSE_EVENT ||
-      !matches_sync_password ||
-      GetSyncAccountType() ==
-          LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN) {
+      !IsSupportedPasswordTypeForModalWarning(password_type)) {
+    return false;
+  }
+
+  // Shows modal warning for sync password reuse only if user's currently logged
+  // in.
+  if (password_type == PasswordReuseEvent::SIGN_IN_PASSWORD &&
+      GetSyncAccountType() == PasswordReuseEvent::NOT_SIGNED_IN) {
     return false;
   }
 
@@ -366,7 +374,7 @@ void PasswordProtectionService::StartRequest(
     const GURL& main_frame_url,
     const GURL& password_form_action,
     const GURL& password_form_frame_url,
-    bool matches_sync_password,
+    ReusedPasswordType reused_password_type,
     const std::vector<std::string>& matching_domains,
     LoginReputationClientRequest::TriggerType trigger_type,
     bool password_field_exists) {
@@ -374,7 +382,7 @@ void PasswordProtectionService::StartRequest(
   scoped_refptr<PasswordProtectionRequest> request(
       new PasswordProtectionRequest(
           web_contents, main_frame_url, password_form_action,
-          password_form_frame_url, matches_sync_password, matching_domains,
+          password_form_frame_url, reused_password_type, matching_domains,
           trigger_type, password_field_exists, this, GetRequestTimeoutInMS()));
 
   request->Start();
@@ -389,11 +397,12 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RequestOutcome reason;
   if (CanSendPing(LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE,
-                  main_frame_url, false, &reason)) {
+                  main_frame_url,
+                  /*matches_sync_password=*/false, &reason)) {
     StartRequest(web_contents, main_frame_url, password_form_action,
                  password_form_frame_url,
-                 false, /* matches_sync_password: not used for this type */
-                 {},    /* matching_domains: not used for this type */
+                 PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN,
+                 {}, /* matching_domains: not used for this type */
                  LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
   }
 }
@@ -401,20 +410,25 @@ void PasswordProtectionService::MaybeStartPasswordFieldOnFocusRequest(
 void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
     WebContents* web_contents,
     const GURL& main_frame_url,
-    bool matches_sync_password,
+    ReusedPasswordType reused_password_type,
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!IsSupportedPasswordTypeForPinging(reused_password_type))
+    return;
+
   RequestOutcome reason;
   if (CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-                  main_frame_url, matches_sync_password, &reason)) {
+                  main_frame_url,
+                  reused_password_type == PasswordReuseEvent::SIGN_IN_PASSWORD,
+                  &reason)) {
     StartRequest(web_contents, main_frame_url, GURL(), GURL(),
-                 matches_sync_password, matching_domains,
+                 reused_password_type, matching_domains,
                  LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                  password_field_exists);
   } else {
     MaybeLogPasswordReuseLookupEvent(web_contents, reason, nullptr);
-    if (reason == PASSWORD_ALERT_MODE && matches_sync_password) {
+    if (reason == PASSWORD_ALERT_MODE) {
       ShowInterstitial(web_contents);
     }
   }
@@ -448,9 +462,10 @@ void PasswordProtectionService::RequestFinished(
                    response.get(), base::Time::Now());
     }
     if (ShouldShowModalWarning(request->trigger_type(),
-                               request->matches_sync_password(),
+                               request->reused_password_type(),
                                response->verdict_type())) {
-      ShowModalWarning(request->web_contents(), response->verdict_token());
+      ShowModalWarning(request->web_contents(), response->verdict_token(),
+                       request->reused_password_type());
       request->set_is_modal_warning_showing(true);
     }
   }
@@ -813,7 +828,8 @@ PasswordProtectionService::MaybeCreateNavigationThrottle(
     if (request->web_contents() == web_contents &&
         request->trigger_type() ==
             safe_browsing::LoginReputationClientRequest::PASSWORD_REUSE_EVENT &&
-        request->matches_sync_password()) {
+        IsSupportedPasswordTypeForModalWarning(
+            request->reused_password_type())) {
       return std::make_unique<PasswordProtectionNavigationThrottle>(
           navigation_handle, request, /*is_warning_showing=*/false);
     }
@@ -852,8 +868,51 @@ bool PasswordProtectionService::IsWarningEnabled() {
 }
 
 bool PasswordProtectionService::IsEventLoggingEnabled() {
-  return GetSyncAccountType() !=
-         LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN;
+  return GetSyncAccountType() != PasswordReuseEvent::NOT_SIGNED_IN;
+}
+
+// static
+ReusedPasswordType
+PasswordProtectionService::GetPasswordProtectionReusedPasswordType(
+    password_manager::metrics_util::PasswordType password_type) {
+  switch (password_type) {
+    case PasswordType::SAVED_PASSWORD:
+      return PasswordReuseEvent::SAVED_PASSWORD;
+    case PasswordType::SYNC_PASSWORD:
+      return PasswordReuseEvent::SIGN_IN_PASSWORD;
+    case PasswordType::OTHER_GAIA_PASSWORD:
+      return PasswordReuseEvent::OTHER_GAIA_PASSWORD;
+    case PasswordType::ENTERPRISE_PASSWORD:
+      return PasswordReuseEvent::ENTERPRISE_PASSWORD;
+    case PasswordType::PASSWORD_TYPE_COUNT:
+      break;
+  }
+  NOTREACHED();
+  return PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN;
+}
+
+bool PasswordProtectionService::IsSupportedPasswordTypeForPinging(
+    ReusedPasswordType reused_password_type) const {
+  switch (reused_password_type) {
+    case PasswordReuseEvent::SAVED_PASSWORD:
+      return true;
+    case PasswordReuseEvent::SIGN_IN_PASSWORD:
+      return GetSyncAccountType() != PasswordReuseEvent::NOT_SIGNED_IN;
+    case PasswordReuseEvent::OTHER_GAIA_PASSWORD:
+      return false;
+    case PasswordReuseEvent::ENTERPRISE_PASSWORD:
+      return base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1);
+    case PasswordReuseEvent::REUSED_PASSWORD_TYPE_UNKNOWN:
+      break;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
+    ReusedPasswordType reused_password_type) const {
+  return reused_password_type == PasswordReuseEvent::SIGN_IN_PASSWORD ||
+         reused_password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD;
 }
 
 }  // namespace safe_browsing
