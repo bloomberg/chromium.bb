@@ -21,6 +21,8 @@ Polymer({
       notify: true,
     },
 
+    showCrostini: Boolean,
+
     /**
      * |hasMouse_| and |hasTouchpad_| start undefined so observers don't trigger
      * until they have been populated.
