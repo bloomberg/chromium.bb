@@ -3130,6 +3130,39 @@ TEST(PaintOpBufferTest, SecurityConstrainedImageSerialization) {
   EXPECT_TRUE(*filter == *out_filter);
 }
 
+TEST(PaintOpBufferTest, DrawImageRectSerializeScaledImages) {
+  auto buffer = sk_make_sp<PaintOpBuffer>();
+  buffer->push<ScaleOp>(0.5f, 2.0f);
+
+  // scales: x dimension = x0.25, y dimension = x5
+  // translations here are arbitrary
+  SkRect src = SkRect::MakeXYWH(3, 4, 20, 6);
+  SkRect dst = SkRect::MakeXYWH(20, 38, 5, 30);
+  buffer->push<DrawImageRectOp>(
+      CreateDiscardablePaintImage(gfx::Size(32, 16)), src, dst, nullptr,
+      PaintCanvas::SrcRectConstraint::kStrict_SrcRectConstraint);
+
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  TestOptionsProvider options_provider;
+  SimpleBufferSerializer serializer(
+      memory.get(), PaintOpBuffer::kInitialBufferSize,
+      options_provider.image_provider(),
+      options_provider.transfer_cache_helper(),
+      options_provider.strike_server(), options_provider.color_space(),
+      options_provider.can_use_lcd_text(),
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size(),
+      options_provider.max_texture_bytes());
+  serializer.Serialize(buffer.get());
+
+  ASSERT_EQ(options_provider.decoded_images().size(), 1u);
+  auto scale = options_provider.decoded_images().at(0).scale();
+  EXPECT_EQ(scale.width(), 0.5f * 0.25f);
+  EXPECT_EQ(scale.height(), 2.0f * 5.0f);
+}
+
 TEST(PaintOpBufferTest, RecordShadersSerializeScaledImages) {
   auto record_buffer = sk_make_sp<PaintOpBuffer>();
   record_buffer->push<DrawImageOp>(
