@@ -275,6 +275,23 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToError) {
   EXPECT_FALSE(CouldPlayIfEnoughData());
 }
 
+TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataInfiniteStreamNeverEnds) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  Media()->Play();
+
+  test::RunPendingTasks();
+
+  EXPECT_CALL(*MockMediaPlayer(), Duration())
+      .WillRepeatedly(testing::Return(std::numeric_limits<double>::infinity()));
+  EXPECT_CALL(*MockMediaPlayer(), CurrentTime())
+      .WillRepeatedly(testing::Return(std::numeric_limits<double>::infinity()));
+
+  SetReadyState(HTMLMediaElement::kHaveMetadata);
+  EXPECT_FALSE(Media()->paused());
+  EXPECT_FALSE(Media()->ended());
+  EXPECT_TRUE(CouldPlayIfEnoughData());
+}
+
 TEST_P(HTMLMediaElementTest, AutoplayInitiated_DocumentActivation_Low_Gesture) {
   // Setup is the following:
   // - Policy: DocumentUserActivation (aka. unified autoplay)
