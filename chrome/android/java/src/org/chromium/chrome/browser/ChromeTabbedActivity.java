@@ -815,7 +815,16 @@ public class ChromeTabbedActivity
             };
             OnClickListener bookmarkClickHandler = v -> addOrEditBookmark(getActivityTab());
             OnClickListener incognitoClickHandler = v -> {
-                if (!mLayoutManager.getActiveLayout().shouldAllowIncognitoSwitching()) return;
+                Layout activeLayout = mLayoutManager.getActiveLayout();
+                if (!activeLayout.shouldAllowIncognitoSwitching()) return;
+
+                if (activeLayout instanceof StackLayout) {
+                    // Without this call, tapping the incognito toggle immediately after closing a
+                    // non-incognito tab will not work properly, because the tab closure will bring
+                    // us back to normal mode. We need to handle the tab closure here before running
+                    // the animation.
+                    ((StackLayout) activeLayout).commitOutstandingModelState(LayoutManager.time());
+                }
 
                 if (mTabModelSelectorImpl != null) {
                     mTabModelSelectorImpl.selectModel(!mTabModelSelectorImpl.isIncognitoSelected());
