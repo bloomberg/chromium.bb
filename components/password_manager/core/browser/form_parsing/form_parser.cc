@@ -6,9 +6,11 @@
 
 #include <algorithm>
 #include <iterator>
+#include <set>
 #include <utility>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -445,30 +447,48 @@ void SetFields(const ParseResult& parse_result, PasswordForm* password_form) {
 // For each relevant field of |fields| computes additional data useful for
 // parsing and wraps that in a ProcessedField. Returns the vector of all those
 // ProcessedField instances, or an empty vector if there was not a single
-// password field.
+// password field. Also, computes the vector of all password values and
+// associated element names in |all_possible_passwords|.
 std::vector<ProcessedField> ProcessFields(
-    const std::vector<FormFieldData>& fields) {
+    const std::vector<FormFieldData>& fields,
+    autofill::ValueElementVector* all_possible_passwords) {
+  DCHECK(all_possible_passwords);
+  DCHECK(all_possible_passwords->empty());
+
   std::vector<ProcessedField> result;
   bool password_field_found = false;
 
   result.reserve(fields.size());
 
+  // |all_possible_passwords| should only contain each value once. |seen_values|
+  // ensures that duplicates are ignored.
+  std::set<base::StringPiece16> seen_values;
+  // Pretend that an empty value has been already seen, so that empty-valued
+  // password elements won't get added to |all_possible_passwords|.
+  seen_values.insert(base::StringPiece16());
+
   for (const FormFieldData& field : fields) {
     if (!field.IsTextInputElement())
       continue;
+
+    const bool is_password = field.form_control_type == "password";
+    if (is_password) {
+      // Only the field name of the first occurrence is added to
+      // |all_possible_passwords|.
+      auto insertion = seen_values.insert(base::StringPiece16(field.value));
+      if (insertion.second)  // There was no such element in |seen_values|.
+        all_possible_passwords->push_back({field.value, field.name});
+    }
 
     const AutocompleteFlag flag =
         ExtractAutocompleteFlag(field.autocomplete_attribute);
     if (flag == AutocompleteFlag::kCreditCard)
       continue;
 
-    ProcessedField processed_field = {.field = &field,
-                                      .autocomplete_flag = flag};
+    ProcessedField processed_field = {
+        .field = &field, .autocomplete_flag = flag, .is_password = is_password};
 
-    if (field.form_control_type == "password") {
-      processed_field.is_password = true;
-      password_field_found = true;
-    }
+    password_field_found |= is_password;
 
     if (field.properties_mask & FieldPropertiesFlags::USER_TYPED)
       processed_field.interactability = Interactability::kCertain;
@@ -490,8 +510,9 @@ std::unique_ptr<PasswordForm> ParseFormData(
     const autofill::FormData& form_data,
     const FormPredictions* form_predictions,
     FormParsingMode mode) {
+  autofill::ValueElementVector all_possible_passwords;
   std::vector<ProcessedField> processed_fields =
-      ProcessFields(form_data.fields);
+      ProcessFields(form_data.fields, &all_possible_passwords);
 
   if (processed_fields.empty())
     return nullptr;
@@ -502,6 +523,7 @@ std::unique_ptr<PasswordForm> ParseFormData(
   result->signon_realm = form_data.origin.GetOrigin().spec();
   result->action = form_data.action;
   result->form_data = form_data;
+  result->all_possible_passwords = std::move(all_possible_passwords);
 
   if (form_predictions) {
     // Try to parse with server predictions.
