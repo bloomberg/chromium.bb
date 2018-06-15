@@ -20,6 +20,7 @@ namespace keyboard {
 struct KeyboardConfig {
   bool auto_complete = true;
   bool auto_correct = true;
+  bool auto_capitalize = true;
   bool handwriting = true;
   bool spell_check = true;
   // It denotes the preferred value, and can be true even if there is no actual
@@ -28,8 +29,10 @@ struct KeyboardConfig {
 
   bool operator==(const keyboard::KeyboardConfig& rhs) const {
     return auto_complete == rhs.auto_complete &&
-           auto_correct == rhs.auto_correct && handwriting == rhs.handwriting &&
-           spell_check == rhs.spell_check && voice_input == rhs.voice_input;
+           auto_correct == rhs.auto_correct &&
+           auto_capitalize == rhs.auto_capitalize &&
+           handwriting == rhs.handwriting && spell_check == rhs.spell_check &&
+           voice_input == rhs.voice_input;
   }
 };
 

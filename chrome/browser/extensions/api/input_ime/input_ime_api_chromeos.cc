@@ -316,6 +316,13 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     return ImeObserver::ConvertInputContextAutoComplete(input_context);
   }
 
+  input_ime::AutoCapitalizeType ConvertInputContextAutoCapitalize(
+      ui::IMEEngineHandlerInterface::InputContext input_context) override {
+    if (!keyboard::GetKeyboardConfig().auto_capitalize)
+      return input_ime::AUTO_CAPITALIZE_TYPE_NONE;
+    return ImeObserver::ConvertInputContextAutoCapitalize(input_context);
+  }
+
   bool ConvertInputContextSpellCheck(
       ui::IMEEngineHandlerInterface::InputContext input_context) override {
     if (!keyboard::GetKeyboardConfig().spell_check)
