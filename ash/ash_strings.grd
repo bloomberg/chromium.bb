@@ -320,6 +320,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED" desc="The label used in the tray popup to notify that bluetooth is disabled.">
         Bluetooth disabled
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_ENABLED_SHORT" desc="The short label used in the tray popup to notify that bluetooth is enabled.">
+        On
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISABLED_SHORT" desc="The short label used in the tray popup to notify that bluetooth is disabled.">
+        Off
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING" desc="The label used in the tray popup to show bluetooth is discovering devices.">
         Scanning for devices...
       </message>
@@ -331,6 +337,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS" desc="The label used in the tray pop up to open Bluetooth setting page.">
         Bluetooth settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DEVICE_CONNECTED_LABEL" desc="The sub-header label to notify that one bluetooth device is connected.">
+        Connected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_MULTIPLE_DEVICES_CONNECTED_LABEL" desc="The header label to notify that multiple bluetooth devices are connected.">
+        Devices
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
