@@ -1616,6 +1616,8 @@
         '--xvfb',
         '--extra-browser-args=--enable-features=VizDisplayCompositor',
 	'--skip=contrib.cluster_telemetry.screenshot_unittest.ScreenshotUnitTest.testScreenshot',
+	'--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgs',
+	'--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgsReference',
       ],
       'swarming': {
         'hard_timeout': 960,
