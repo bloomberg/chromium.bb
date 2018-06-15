@@ -119,7 +119,8 @@ enum AccessibilityStringProperty {
   CONTENT_DESCRIPTION,
   VIEW_ID_RESOURCE_NAME,
   CHROME_ROLE,  // Chrome only
-  ROLE_DESCRIPTION  // Chrome only
+  ROLE_DESCRIPTION,  // Chrome only
+  TOOLTIP
 };
 
 // These fields are taken from int instance members of
