@@ -33,12 +33,6 @@ static inline bool IsValidRange(const FloatType x) {
   return x >= -kMax && x <= kMax;
 }
 
-template <typename FloatType>
-static inline bool IsValidExponent(const FloatType x) {
-  return x >= std::numeric_limits<FloatType>::min_exponent10 &&
-         x <= std::numeric_limits<FloatType>::max_exponent10;
-}
-
 // We use this generic parseNumber function to allow the Path parsing code to
 // work at a higher precision internally, without any unnecessary runtime cost
 // or code complexity.
@@ -129,13 +123,19 @@ static bool GenericParseNumber(const CharType*& cursor,
       exponent += *ptr - '0';
       ptr++;
     }
+    // TODO(fs): This is unnecessarily strict - the position of the decimal
+    // point is not taken into account when limiting |exponent|.
     if (exponent_is_negative)
       exponent = -exponent;
-    // Make sure exponent is valid.
-    if (!IsValidExponent(exponent))
+    // Fail if the exponent is greater than the largest positive power
+    // of ten (that would yield a representable float.)
+    if (exponent > std::numeric_limits<FloatType>::max_exponent10)
       return false;
+    // If the exponent is smaller than smallest negative power of 10 (that
+    // would yield a representable float), then rely on the pow()+rounding to
+    // produce a reasonable result (likely zero.)
     if (exponent)
-      number *= static_cast<FloatType>(pow(10.0, static_cast<int>(exponent)));
+      number *= static_cast<FloatType>(std::pow(10.0, exponent));
   }
 
   // Don't return Infinity() or NaN().
