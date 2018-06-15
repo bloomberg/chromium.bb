@@ -175,13 +175,10 @@ public class PopupTest {
 
         // Document mode popups appear slowly and sequentially to prevent Android from throwing them
         // away, so use a long timeout.  http://crbug.com/498920.
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                if (getNumInfobarsShowing() != 0) return false;
-                return TextUtils.equals("Two", selector.getCurrentTab().getTitle());
-            }
-        }, 7500, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        CriteriaHelper.pollUiThread(
+                Criteria.equals("Two", () -> selector.getCurrentTab().getTitle()), 7500,
+                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+        waitForNoInfoBarOfType(InfoBarIdentifier.POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE);
 
         Assert.assertEquals(3, selector.getTotalTabCount());
         int currentTabId = selector.getCurrentTab().getId();
