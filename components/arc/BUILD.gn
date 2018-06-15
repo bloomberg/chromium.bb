@@ -6,6 +6,8 @@ import("//testing/test.gni")
 
 static_library("arc") {
   sources = [
+    "appfuse/arc_appfuse_bridge.cc",
+    "appfuse/arc_appfuse_bridge.h",
     "audio/arc_audio_bridge.cc",
     "audio/arc_audio_bridge.h",
     "bluetooth/bluetooth_type_converters.cc",

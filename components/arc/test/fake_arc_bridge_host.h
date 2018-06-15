@@ -19,6 +19,7 @@ class FakeArcBridgeHost : public mojom::ArcBridgeHost {
   void OnAccessibilityHelperInstanceReady(
       mojom::AccessibilityHelperInstancePtr accessibility_helper_ptr) override;
   void OnAppInstanceReady(mojom::AppInstancePtr app_ptr) override;
+  void OnAppfuseInstanceReady(mojom::AppfuseInstancePtr appfuse_ptr) override;
   void OnAudioInstanceReady(mojom::AudioInstancePtr audio_ptr) override;
   void OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) override;
   void OnBackupSettingsInstanceReady(
