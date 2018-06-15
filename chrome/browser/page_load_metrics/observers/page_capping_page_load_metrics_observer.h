@@ -36,6 +36,11 @@ class PageCappingPageLoadMetricsObserver
   // Returns whether the page's subresource loading is currently paused.
   bool IsPausedForTesting() const { return paused_; }
 
+ protected:
+  // Virtual for testing.
+  // Gets the random offset for the capping threshold.
+  virtual int64_t GetFuzzingOffset() const;
+
  private:
   // page_load_metrics::PageLoadMetricsObserver:
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
@@ -94,8 +99,11 @@ class PageCappingPageLoadMetricsObserver
   // Whether the page's subresource loading is paused.
   bool paused_ = false;
 
+  // The randomly generated offset from the capping threshold.
+  int64_t fuzzing_offset_ = 0;
+
   // If non-empty, a group of handles that are pausing subresource loads in the
-  // renderframes of this page.
+  // render frames of this page.
   std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr> handles_;
 
   base::WeakPtrFactory<PageCappingPageLoadMetricsObserver> weak_factory_;

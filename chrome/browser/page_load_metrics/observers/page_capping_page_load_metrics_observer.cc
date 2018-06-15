@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
@@ -31,9 +32,11 @@ const char kPageCap[] = "PageCapMiB";
 const char kMediaPageTypical[] = "MediaPageTypicalLargePageMiB";
 const char kPageTypical[] = "PageTypicalLargePageMiB";
 
+const char kPageFuzzing[] = "PageFuzzingKiB";
+
 // The page load capping bytes threshold for the page. There are seperate
-// thresholds for media and non-media pages. Returns empty optional if the page
-// should not be capped.
+// thresholds for media and non-media pages. Returns empty optional if the
+// page should not be capped.
 base::Optional<int64_t> GetPageLoadCappingBytesThreshold(bool media_page_load) {
   if (!base::FeatureList::IsEnabled(data_use_measurement::page_load_capping::
                                         features::kDetectingHeavyPages)) {
@@ -82,6 +85,8 @@ PageCappingPageLoadMetricsObserver::OnCommit(
   web_contents_ = navigation_handle->GetWebContents();
   page_cap_ = GetPageLoadCappingBytesThreshold(false /* media_page_load */);
   url_host_ = navigation_handle->GetURL().host();
+  fuzzing_offset_ = GetFuzzingOffset();
+
   MaybeCreate();
   // TODO(ryansturm) Check a blacklist of eligible pages.
   // https://crbug.com/797981
@@ -107,8 +112,9 @@ void PageCappingPageLoadMetricsObserver::MaybeCreate() {
     return;
 
   // If there is no capping threshold, the threshold or the threshold is not
-  // met, do not show an infobar.
-  if (!page_cap_ || network_bytes_ < page_cap_.value())
+  // met, do not show an infobar. Use the fuzzing offset to increase the number
+  // of bytes needed.
+  if (!page_cap_ || (network_bytes_ - fuzzing_offset_) < page_cap_.value())
     return;
 
   displayed_infobar_ = PageLoadCappingInfoBarDelegate::Create(
@@ -207,4 +213,21 @@ void PageCappingPageLoadMetricsObserver::WriteToSavings(int64_t bytes_saved) {
   data_reduction_proxy_settings->data_reduction_proxy_service()
       ->UpdateContentLengths(0, bytes_saved, data_saver_enabled,
                              data_reduction_proxy::HTTPS, "text/html");
+}
+
+int64_t PageCappingPageLoadMetricsObserver::GetFuzzingOffset() const {
+  if (!base::FeatureList::IsEnabled(data_use_measurement::page_load_capping::
+                                        features::kDetectingHeavyPages)) {
+    return 0;
+  }
+  // Default is is 75 KiB.
+  int cap_kib = 75;
+
+  cap_kib = base::GetFieldTrialParamByFeatureAsInt(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      kPageFuzzing, cap_kib);
+
+  int cap_bytes = cap_kib * 1024;
+
+  return base::RandInt(0, cap_bytes);
 }

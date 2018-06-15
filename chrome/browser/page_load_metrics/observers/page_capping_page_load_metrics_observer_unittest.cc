@@ -30,16 +30,19 @@ class TestPageCappingPageLoadMetricsObserver
     : public PageCappingPageLoadMetricsObserver {
  public:
   using SizeUpdateCallback = base::RepeatingCallback<void(int64_t)>;
-  explicit TestPageCappingPageLoadMetricsObserver(
-      const SizeUpdateCallback& callback)
-      : size_callback_(callback) {}
+  TestPageCappingPageLoadMetricsObserver(int64_t fuzzing_offset,
+                                         const SizeUpdateCallback& callback)
+      : fuzzing_offset_(fuzzing_offset), size_callback_(callback) {}
   ~TestPageCappingPageLoadMetricsObserver() override {}
 
   void WriteToSavings(int64_t bytes_saved) override {
     size_callback_.Run(bytes_saved);
   }
 
+  int64_t GetFuzzingOffset() const override { return fuzzing_offset_; }
+
  private:
+  int64_t fuzzing_offset_;
   SizeUpdateCallback size_callback_;
 };
 
@@ -68,12 +71,14 @@ class PageCappingObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     auto observer = std::make_unique<TestPageCappingPageLoadMetricsObserver>(
+        fuzzing_offset_,
         base::BindRepeating(&PageCappingObserverTest::UpdateSavings,
                             base::Unretained(this)));
     observer_ = observer.get();
     tracker->AddObserver(std::move(observer));
   }
   int64_t savings_ = 0;
+  int64_t fuzzing_offset_ = 0;
   TestPageCappingPageLoadMetricsObserver* observer_;
 };
 
@@ -612,4 +617,54 @@ TEST_F(PageCappingObserverTest, DataSavingsHistogramWhenResumed) {
 
   NavigateToUntrackedUrl();
   histogram_tester.ExpectTotalCount("HeavyPageCapping.RecordedDataSavings", 0);
+}
+
+TEST_F(PageCappingObserverTest, FuzzingOffset) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  fuzzing_offset_ = 1;
+  SetUpTest();
+  base::HistogramTester histogram_tester;
+
+  // A resource of 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should not trigger an infobar as the non-media cap is not met.
+  SimulateLoadedResource(resource);
+
+  EXPECT_EQ(0u, InfoBarCount());
+
+  // A resource of 1 KB.
+  page_load_metrics::ExtraRequestCompleteInfo resource2 = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateLoadedResource(resource2);
+
+  EXPECT_EQ(1u, InfoBarCount());
 }

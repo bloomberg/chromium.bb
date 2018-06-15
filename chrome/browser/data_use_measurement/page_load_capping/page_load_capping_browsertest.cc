@@ -50,7 +50,7 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
       scoped_refptr<base::FieldTrial> trial =
           base::FieldTrialList::CreateFieldTrial("TrialName1", "GroupName1");
       std::map<std::string, std::string> feature_parameters = {
-          {"PageCapMiB", "0"}};
+          {"PageCapMiB", "0"}, {"PageFuzzingKiB", "0"}};
       base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
           "TrialName1", "GroupName1", feature_parameters);
 
