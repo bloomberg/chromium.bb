@@ -403,6 +403,16 @@ void AXTreeSourceArc::SerializeNode(AXNodeInfoData* node,
     }
   }
 
+  // If it exists, set tooltip value as descritiption on node.
+  std::string tooltip;
+  if (GetProperty(node, AXStringProperty::TOOLTIP, &tooltip)) {
+    out_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
+                                 tooltip);
+    if (GetProperty(node, AXStringProperty::TEXT, &name)) {
+      out_data->SetName(name);
+    }
+  }
+
   if (has_name) {
     if (out_data->role == ax::mojom::Role::kTextField)
       out_data->AddStringAttribute(ax::mojom::StringAttribute::kValue, name);
