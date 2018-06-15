@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "device/fido/fido_ble_connection.h"
 #include "device/fido/fido_ble_frames.h"
 #include "device/fido/fido_constants.h"
@@ -61,7 +62,8 @@ bool EncryptOutgoingMessage(
   bool encryption_success = encryption_data.aes_key.Seal(
       fido_parsing_utils::ConvertToStringPiece(*message_to_encrypt),
       fido_parsing_utils::ConvertToStringPiece(*nonce),
-      nullptr /* additional_data */, &ciphertext);
+      std::string(1, base::strict_cast<uint8_t>(FidoBleDeviceCommand::kMsg)),
+      &ciphertext);
   if (!encryption_success)
     return false;
 
@@ -70,25 +72,29 @@ bool EncryptOutgoingMessage(
 }
 
 bool DecryptIncomingMessage(
-    const FidoCableDevice::EncryptionData& encryption_data,
+    const base::Optional<FidoCableDevice::EncryptionData>& encryption_data,
     FidoBleFrame* incoming_frame) {
+  if (!encryption_data)
+    return false;
+
   const auto nonce = ConstructEncryptionNonce(
-      encryption_data.nonce, false /* is_sender_client */,
-      encryption_data.read_sequence_num);
+      encryption_data->nonce, false /* is_sender_client */,
+      encryption_data->read_sequence_num);
   if (!nonce)
     return false;
 
-  DCHECK_EQ(nonce->size(), encryption_data.aes_key.NonceLength());
-  std::string ciphertext;
+  DCHECK_EQ(nonce->size(), encryption_data->aes_key.NonceLength());
+  std::string plaintext;
 
-  bool decryption_success = encryption_data.aes_key.Open(
+  bool decryption_success = encryption_data->aes_key.Open(
       fido_parsing_utils::ConvertToStringPiece(incoming_frame->data()),
       fido_parsing_utils::ConvertToStringPiece(*nonce),
-      nullptr /* additional_data */, &ciphertext);
+      std::string(1, base::strict_cast<uint8_t>(incoming_frame->command())),
+      &plaintext);
   if (!decryption_success)
     return false;
 
-  incoming_frame->data().assign(ciphertext.begin(), ciphertext.end());
+  incoming_frame->data().assign(plaintext.begin(), plaintext.end());
   return true;
 }
 
@@ -97,11 +103,12 @@ bool DecryptIncomingMessage(
 // FidoCableDevice::EncryptionData ----------------------------------------
 
 FidoCableDevice::EncryptionData::EncryptionData(
-    std::string session_key,
-    const std::array<uint8_t, 8>& nonce)
-    : encryption_key(std::move(session_key)), nonce(nonce) {
-  DCHECK_EQ(encryption_key.size(), aes_key.KeyLength());
-  aes_key.Init(&encryption_key);
+    std::string encryption_key,
+    base::span<const uint8_t, 8> nonce)
+    : session_key(std::move(encryption_key)),
+      nonce(fido_parsing_utils::Materialize(nonce)) {
+  DCHECK_EQ(session_key.size(), aes_key.KeyLength());
+  aes_key.Init(&session_key);
 }
 
 FidoCableDevice::EncryptionData::EncryptionData(EncryptionData&& data) =
@@ -114,31 +121,32 @@ FidoCableDevice::EncryptionData::~EncryptionData() = default;
 
 // FidoCableDevice::EncryptionData ----------------------------------------
 
-FidoCableDevice::FidoCableDevice(std::string address,
-                                 std::string session_key,
-                                 const std::array<uint8_t, 8>& nonce)
-    : FidoBleDevice(std::move(address)),
-      encryption_data_(std::move(session_key), nonce),
-      weak_factory_(this) {}
+FidoCableDevice::FidoCableDevice(std::string address)
+    : FidoBleDevice(std::move(address)), weak_factory_(this) {}
 
-FidoCableDevice::FidoCableDevice(std::unique_ptr<FidoBleConnection> connection,
-                                 std::string session_key,
-                                 const std::array<uint8_t, 8>& nonce)
-    : FidoBleDevice(std::move(connection)),
-      encryption_data_(std::move(session_key), nonce),
-      weak_factory_(this) {}
+FidoCableDevice::FidoCableDevice(std::unique_ptr<FidoBleConnection> connection)
+    : FidoBleDevice(std::move(connection)), weak_factory_(this) {}
 
 FidoCableDevice::~FidoCableDevice() = default;
 
 void FidoCableDevice::DeviceTransact(std::vector<uint8_t> command,
                                      DeviceCallback callback) {
+  if (!encryption_data_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+    state_ = State::kDeviceError;
+    return;
+  }
+
   if (IsEncryptionEnabled()) {
-    if (!EncryptOutgoingMessage(encryption_data_, &command)) {
+    if (!EncryptOutgoingMessage(*encryption_data_, &command)) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       state_ = State::kDeviceError;
       return;
     }
 
-    ++encryption_data_.write_sequence_num;
+    ++encryption_data_->write_sequence_num;
   }
 
   AddToPendingFrames(FidoBleDeviceCommand::kMsg, std::move(command),
@@ -151,13 +159,14 @@ void FidoCableDevice::OnResponseFrame(FrameCallback callback,
   ResetTransaction();
   state_ = frame ? State::kReady : State::kDeviceError;
 
-  if (frame && IsEncryptionEnabled()) {
+  if (IsEncryptionEnabled() && frame &&
+      frame->command() != FidoBleDeviceCommand::kControl) {
     if (!DecryptIncomingMessage(encryption_data_, &frame.value())) {
       state_ = State::kDeviceError;
       frame = base::nullopt;
     }
 
-    ++encryption_data_.read_sequence_num;
+    ++encryption_data_->read_sequence_num;
   }
 
   auto self = GetWeakPtr();
@@ -170,6 +179,20 @@ void FidoCableDevice::OnResponseFrame(FrameCallback callback,
 
 base::WeakPtr<FidoDevice> FidoCableDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+void FidoCableDevice::SendHandshakeMessage(
+    std::vector<uint8_t> handshake_message,
+    DeviceCallback callback) {
+  AddToPendingFrames(FidoBleDeviceCommand::kControl,
+                     std::move(handshake_message), std::move(callback));
+}
+
+void FidoCableDevice::SetEncryptionData(std::string session_key,
+                                        base::span<const uint8_t, 8> nonce) {
+  // Encryption data must be set at most once during Cable handshake protocol.
+  DCHECK(!encryption_data_);
+  encryption_data_.emplace(std::move(session_key), nonce);
 }
 
 }  // namespace device

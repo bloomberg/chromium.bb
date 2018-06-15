@@ -86,11 +86,10 @@ class FakeCableAuthenticator {
     DCHECK(encryption_nonce.size() == aead.NonceLength());
 
     std::string ciphertext;
-    aead.Seal(message,
-              base::StringPiece(
-                  reinterpret_cast<const char*>(encryption_nonce.data()),
-                  encryption_nonce.size()),
-              nullptr /* additional_data */, &ciphertext);
+    aead.Seal(
+        message, fido_parsing_utils::ConvertToStringPiece(encryption_nonce),
+        std::string(1, base::strict_cast<uint8_t>(FidoBleDeviceCommand::kMsg)),
+        &ciphertext);
     authenticator_counter_++;
     return ciphertext;
   }
@@ -108,12 +107,11 @@ class FakeCableAuthenticator {
     DCHECK(encryption_nonce.size() == aead.NonceLength());
 
     std::string ciphertext;
-    aead.Open(base::StringPiece(reinterpret_cast<const char*>(message.data()),
-                                message.size()),
-              base::StringPiece(
-                  reinterpret_cast<const char*>(encryption_nonce.data()),
-                  encryption_nonce.size()),
-              nullptr /* additional_data */, &ciphertext);
+    aead.Open(
+        fido_parsing_utils::ConvertToStringPiece(message),
+        fido_parsing_utils::ConvertToStringPiece(encryption_nonce),
+        std::string(1, base::strict_cast<uint8_t>(FidoBleDeviceCommand::kMsg)),
+        &ciphertext);
     expected_client_counter_++;
     return ciphertext;
   }
@@ -132,8 +130,8 @@ class FidoCableDeviceTest : public Test {
     auto connection = std::make_unique<MockFidoBleConnection>(
         BluetoothTestBase::kTestDeviceAddress1);
     connection_ = connection.get();
-    device_ = std::make_unique<FidoCableDevice>(
-        std::move(connection), kTestSessionKey, kTestEncryptionNonce);
+    device_ = std::make_unique<FidoCableDevice>(std::move(connection));
+    device_->SetEncryptionData(kTestSessionKey, kTestEncryptionNonce);
 
     connection_->connection_status_callback() =
         device_->GetConnectionStatusCallbackForTesting();
@@ -215,8 +213,9 @@ TEST_F(FidoCableDeviceTest, TestCableDeviceSendMultipleRequests) {
                                           authenticator_reply)));
       }));
 
-  EXPECT_EQ(0u, device()->encryption_data_.write_sequence_num);
-  EXPECT_EQ(0u, device()->encryption_data_.read_sequence_num);
+  ASSERT_TRUE(device()->encryption_data_);
+  EXPECT_EQ(0u, device()->encryption_data_->write_sequence_num);
+  EXPECT_EQ(0u, device()->encryption_data_->read_sequence_num);
 
   TestDeviceCallbackReceiver callback_receiver1;
   device()->DeviceTransact(fido_parsing_utils::Materialize(kTestData),
@@ -225,8 +224,8 @@ TEST_F(FidoCableDeviceTest, TestCableDeviceSendMultipleRequests) {
   const auto& value1 = callback_receiver1.value();
   ASSERT_TRUE(value1);
   EXPECT_THAT(*value1, ::testing::ElementsAreArray(kTestData));
-  EXPECT_EQ(1u, device()->encryption_data_.write_sequence_num);
-  EXPECT_EQ(1u, device()->encryption_data_.read_sequence_num);
+  EXPECT_EQ(1u, device()->encryption_data_->write_sequence_num);
+  EXPECT_EQ(1u, device()->encryption_data_->read_sequence_num);
 
   constexpr uint8_t kTestData2[] = {'T', 'E', 'S', 'T', '2'};
   TestDeviceCallbackReceiver callback_receiver2;
@@ -236,8 +235,8 @@ TEST_F(FidoCableDeviceTest, TestCableDeviceSendMultipleRequests) {
   const auto& value2 = callback_receiver2.value();
   ASSERT_TRUE(value2);
   EXPECT_THAT(*value2, ::testing::ElementsAreArray(kTestData2));
-  EXPECT_EQ(2u, device()->encryption_data_.write_sequence_num);
-  EXPECT_EQ(2u, device()->encryption_data_.read_sequence_num);
+  EXPECT_EQ(2u, device()->encryption_data_->write_sequence_num);
+  EXPECT_EQ(2u, device()->encryption_data_->read_sequence_num);
 }
 
 TEST_F(FidoCableDeviceTest, TestCableDeviceFailOnIncorrectSessionKey) {
@@ -326,7 +325,8 @@ TEST_F(FidoCableDeviceTest, TestCableDeviceErrorOnMaxCounter) {
       }));
 
   TestDeviceCallbackReceiver callback_receiver;
-  device()->encryption_data_.read_sequence_num = kInvalidCounter;
+  ASSERT_TRUE(device()->encryption_data_);
+  device()->encryption_data_->read_sequence_num = kInvalidCounter;
   device()->DeviceTransact(fido_parsing_utils::Materialize(kTestData),
                            callback_receiver.callback());
 

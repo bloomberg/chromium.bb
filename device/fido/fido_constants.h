@@ -217,6 +217,7 @@ enum class FidoBleDeviceCommand : uint8_t {
   kPing = 0x81,
   kKeepAlive = 0x82,
   kMsg = 0x83,
+  kControl = 0x84,
   kCancel = 0xBE,
   kError = 0xBF,
 };
@@ -341,6 +342,14 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 extern const char kPublicKey[];
 
 const char* CredentialTypeToString(CredentialType type);
+
+// Values used to construct/validate handshake messages for Cable handshake
+// protocol.
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCableHandshakeKeyInfo[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCableDeviceEncryptionKeyInfo[];
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const char kCableAuthenticatorHelloMessage[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCableClientHelloMessage[];
 
 }  // namespace device
 

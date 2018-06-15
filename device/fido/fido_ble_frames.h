@@ -52,7 +52,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleFrame {
     NA_1 = 0x06,         // Value reserved (HID).
     NA_2 = 0x0A,         // Value reserved (HID).
     NA_3 = 0x0B,         // Value reserved (HID).
-    OTHER = 0x7F,        // Other, unspecified error.
+    ENCRYPTION_FAILED = 0x0C,  // Encryption failed for the request.
+    OTHER = 0x7F,              // Other, unspecified error.
   };
 
   FidoBleFrame();
