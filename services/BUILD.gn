@@ -149,6 +149,7 @@ if (is_android) {
     java_files = [
       "device/generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
       "device/nfc/android/junit/src/org/chromium/device/nfc/NFCTest.java",
+      "device/geolocation/android/junit/src/org/chromium/device/geolocation/LocationProviderTest.java",
       "shape_detection/android/junit/src/org/chromium/shape_detection/BitmapUtilsTest.java",
     ]
     deps = [
@@ -159,6 +160,8 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//base:base_junit_test_support",
+      "//device/geolocation:geolocation_java",
+      "//device/geolocation/public/java:geolocation_java_test_support",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
       "//services/device/generic_sensor:java",
