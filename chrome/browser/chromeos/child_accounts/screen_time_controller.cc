@@ -103,35 +103,42 @@ void ScreenTimeController::CheckTimeLimit() {
         time_limit->CreateDeepCopy(), now);
     LockScreen(true /*force_lock_by_policy*/, reset_time);
   } else {
-    usage_time_limit::ActivePolicies active_policy = state.active_policy;
-    if (active_policy == usage_time_limit::ActivePolicies::kNoActivePolicy)
+    if (state.active_policy ==
+        usage_time_limit::ActivePolicies::kNoActivePolicy)
       RefreshScreenLimit();
     LockScreen(false /*force_lock_by_policy*/, base::Time() /*come_back_time*/);
 
-    if (!state.next_state_change_time.is_null() &&
-        (active_policy == usage_time_limit::ActivePolicies::kFixedLimit ||
-         active_policy == usage_time_limit::ActivePolicies::kUsageLimit)) {
+    base::Optional<TimeLimitNotificationType> notification_type;
+    switch (state.next_state_active_policy) {
+      case usage_time_limit::ActivePolicies::kFixedLimit:
+        notification_type = kBedTime;
+        break;
+      case usage_time_limit::ActivePolicies::kUsageLimit:
+        notification_type = kScreenTime;
+        break;
+      case usage_time_limit::ActivePolicies::kNoActivePolicy:
+      case usage_time_limit::ActivePolicies::kOverride:
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    if (notification_type.has_value()) {
       // Schedule notification based on the remaining screen time.
       const base::TimeDelta remaining_usage = state.remaining_usage;
-      const TimeLimitNotificationType notification_type =
-          active_policy == usage_time_limit::ActivePolicies::kFixedLimit
-              ? kBedTime
-              : kScreenTime;
-
       if (remaining_usage >= kWarningNotificationTimeout) {
         warning_notification_timer_.Start(
             FROM_HERE, remaining_usage - kWarningNotificationTimeout,
-            base::BindRepeating(&ScreenTimeController::ShowNotification,
-                                base::Unretained(this), notification_type,
-                                kWarningNotificationTimeout));
+            base::BindRepeating(
+                &ScreenTimeController::ShowNotification, base::Unretained(this),
+                notification_type.value(), kWarningNotificationTimeout));
       }
-
       if (remaining_usage >= kExitNotificationTimeout) {
         exit_notification_timer_.Start(
             FROM_HERE, remaining_usage - kExitNotificationTimeout,
-            base::BindRepeating(&ScreenTimeController::ShowNotification,
-                                base::Unretained(this), notification_type,
-                                kExitNotificationTimeout));
+            base::BindRepeating(
+                &ScreenTimeController::ShowNotification, base::Unretained(this),
+                notification_type.value(), kExitNotificationTimeout));
       }
     }
   }
