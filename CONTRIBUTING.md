@@ -246,5 +246,38 @@ clarity suffers.
 - The code adheres to the style guidelines.
 
 
+Commit rights
+=============
+
+Commit rights will be granted to anyone who requests them and fulfills the
+below criteria:
+
+- Submitted some (10 as a rule of thumb) non-trivial (not just simple
+  spelling fixes and whitespace adjustment) patches that have been merged
+  already.
+
+- Are actively participating in public discussions about their work (on the
+  mailing list or IRC). This should not be interpreted as a requirement to
+  review other peoples patches but just make sure that patch submission isn't
+  one-way communication. Cross-review is still highly encouraged.
+
+- Will be regularly contributing further patches. This includes regular
+  contributors to other parts of the open source graphics stack who only
+  do the occasional development in this project.
+
+- Agrees to use their commit rights in accordance with the documented merge
+  criteria, tools, and processes.
+
+To apply for commit rights, create a new issue in gitlab for the respective
+project and give it the "accounts" label.
+
+Committers are encouraged to request their commit rights get removed when they
+no longer contribute to the project. Commit rights will be reinstated when they
+come back to the project.
+
+Maintainers and committers should encourage contributors to request commit
+rights, especially junior contributors tend to underestimate their skills.
+
+
 [git documentation]: http://git-scm.com/documentation
 [notes on commit messages]: http://who-t.blogspot.de/2009/12/on-commit-messages.html
