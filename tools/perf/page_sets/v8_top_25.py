@@ -88,9 +88,25 @@ class V8Top25Story(page_cycler_story.PageCyclerStory):
 
   def __init__(self, url, page_set, name='',
                cache_temperature=cache_temperature_module.ANY, scroll=False):
+    tags = []
+    temp_suffix = ''
+    if cache_temperature == cache_temperature_module.COLD:
+      temp_suffix = '_cold'
+      tags = ['cold']
+    elif cache_temperature == cache_temperature_module.WARM_BROWSER:
+      temp_suffix = '_warm'
+      tags = ['warm']
+    elif cache_temperature == cache_temperature_module.HOT_BROWSER:
+      temp_suffix = '_hot'
+      tags = ['hot']
+    elif cache_temperature == cache_temperature_module.ANY:
+      pass
+    else:
+      raise NotImplementedError
+
     super(V8Top25Story, self).__init__(
-        url=url, page_set=page_set, name=name,
-        cache_temperature=cache_temperature)
+        url=url, page_set=page_set, name=name + temp_suffix,
+        cache_temperature=cache_temperature, tags=tags)
     self.remaining_warmups = temperature_warmup_run_count[cache_temperature]
     self.should_scroll=scroll
 
@@ -106,6 +122,7 @@ class V8Top25Story(page_cycler_story.PageCyclerStory):
     else:
         action_runner.Wait(2)
         self.remaining_warmups -= 1
+
 
 class V8Top25StorySet(story.StorySet):
   """~25 of top pages, used for v8 testing. They represent popular websites as
@@ -124,5 +141,6 @@ class V8Top25StorySet(story.StorySet):
 
     for (url, name, needs_scroll) in ads_urls_list:
       for temp in cache_temperatures:
-        self.AddStory(V8Top25Story(url, self, 'Ads'+name,
+
+        self.AddStory(V8Top25Story(url, self, 'Ads' + name,
           cache_temperature=temp, scroll=needs_scroll))

@@ -98,6 +98,14 @@ class LoadingDesktopStorySet(story.StorySet):
   def AddStories(self, tags, urls, cache_temperatures):
     for url, name in urls:
       for temp in cache_temperatures:
-          self.AddStory(page_cycler_story.PageCyclerStory(url, self,
-              shared_page_state_class=shared_page_state.SharedDesktopPageState,
-              cache_temperature=temp, tags=tags, name=name))
+        if temp == cache_temperature_module.COLD:
+          page_name = name + '_cold'
+          tags.append('cache_temperature_cold')
+        elif temp == cache_temperature_module.WARM:
+          page_name = name + '_warm'
+          tags.append('cache_temperature_warm')
+        else:
+          raise NotImplementedError
+        self.AddStory(page_cycler_story.PageCyclerStory(url, self,
+            shared_page_state_class=shared_page_state.SharedDesktopPageState,
+            cache_temperature=temp, tags=tags, name=page_name))

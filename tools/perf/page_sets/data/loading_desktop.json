@@ -1,183 +1,360 @@
 {
     "archives": {
-        "24h": {
+        "24h_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "2ch": {
+        }, 
+        "24h_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "2ch_cold": {
             "DEFAULT": "loading_desktop_001.wprgo"
-        },
-        "AirBnB": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Aljayyash": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "AllRecipes": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "ArsTechnica": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Baidu": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Bhaskar": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Chosun": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Colorado.edu": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Danawa": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Daum": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Donga": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Economist": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Elmundo": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "FC2Blog": {
-            "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "FDA": {
+        }, 
+        "2ch_warm": {
             "DEFAULT": "loading_desktop_001.wprgo"
-        },
-        "FIFA": {
+        }, 
+        "AirBnB_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "FarsNews": {
+        }, 
+        "AirBnB_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Flickr": {
+        }, 
+        "Aljayyash_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "FlipKart": {
+        }, 
+        "Aljayyash_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Free.fr": {
+        }, 
+        "AllRecipes_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "HTML5Rocks": {
+        }, 
+        "AllRecipes_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Haraj": {
+        }, 
+        "ArsTechnica_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "HatenaBookmark": {
+        }, 
+        "ArsTechnica_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "IGN": {
+        }, 
+        "Baidu_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "IMDB": {
+        }, 
+        "Baidu_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "IndiaTimes": {
+        }, 
+        "Bhaskar_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Kakaku": {
+        }, 
+        "Bhaskar_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Kenh14": {
+        }, 
+        "Chosun_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Leboncoin": {
+        }, 
+        "Chosun_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Colorado.edu_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Colorado.edu_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Danawa_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Danawa_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Daum_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Daum_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Donga_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Donga_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Economist_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Economist_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Elmundo_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Elmundo_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "FC2Blog_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "FC2Blog_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "FDA_cold": {
             "DEFAULT": "loading_desktop_001.wprgo"
-        },
-        "MLB": {
+        }, 
+        "FDA_warm": {
             "DEFAULT": "loading_desktop_001.wprgo"
-        },
-        "Mercadolivre": {
+        }, 
+        "FIFA_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "NatGeo": {
+        }, 
+        "FIFA_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Naver": {
+        }, 
+        "FarsNews_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Orange": {
+        }, 
+        "FarsNews_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Pantip": {
+        }, 
+        "Flickr_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "PremierLeague": {
+        }, 
+        "Flickr_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "QQ": {
+        }, 
+        "FlipKart_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "REI": {
+        }, 
+        "FlipKart_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Rambler": {
+        }, 
+        "Free.fr_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Ruten": {
+        }, 
+        "Free.fr_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Sina": {
+        }, 
+        "HTML5Rocks_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Taobao": {
+        }, 
+        "HTML5Rocks_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "TheOnion": {
+        }, 
+        "Haraj_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "TheVerge": {
+        }, 
+        "Haraj_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "TicketMaster": {
+        }, 
+        "HatenaBookmark_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Vietnamnet": {
+        }, 
+        "HatenaBookmark_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Vnexpress": {
+        }, 
+        "IGN_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Walgreens": {
+        }, 
+        "IGN_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Yandex": {
+        }, 
+        "IMDB_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "Ynet": {
+        }, 
+        "IMDB_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "IndiaTimes_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "IndiaTimes_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Kakaku_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Kakaku_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Kenh14_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Kenh14_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Leboncoin_cold": {
+            "DEFAULT": "loading_desktop_001.wprgo"
+        }, 
+        "Leboncoin_warm": {
+            "DEFAULT": "loading_desktop_001.wprgo"
+        }, 
+        "MLB_cold": {
+            "DEFAULT": "loading_desktop_001.wprgo"
+        }, 
+        "MLB_warm": {
+            "DEFAULT": "loading_desktop_001.wprgo"
+        }, 
+        "Mercadolivre_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Mercadolivre_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "NatGeo_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "NatGeo_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Naver_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Naver_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Orange_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Orange_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Pantip_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Pantip_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "PremierLeague_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "PremierLeague_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "QQ_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "QQ_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "REI_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "REI_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Rambler_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Rambler_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Ruten_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Ruten_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Sina_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Sina_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Taobao_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Taobao_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "TheOnion_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "TheOnion_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "TheVerge_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "TheVerge_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "TicketMaster_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "TicketMaster_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Vietnamnet_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Vietnamnet_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Vnexpress_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Vnexpress_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Walgreens_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Walgreens_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Yandex_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Yandex_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "Ynet_cold": {
             "DEFAULT": "loading_desktop_000.wprgo"
-        },
-        "amazon.co.jp": {
+        }, 
+        "Ynet_warm": {
+            "DEFAULT": "loading_desktop_000.wprgo"
+        }, 
+        "amazon.co.jp_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "goo.ne.jp": {
+        }, 
+        "amazon.co.jp_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "goo.ne.jp_cold": {
             "DEFAULT": "loading_desktop_001.wprgo"
-        },
-        "ja.wikipedia": {
+        }, 
+        "goo.ne.jp_warm": {
+            "DEFAULT": "loading_desktop_001.wprgo"
+        }, 
+        "ja.wikipedia_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "money.cnn": {
+        }, 
+        "ja.wikipedia_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "ru.wikipedia": {
+        }, 
+        "money.cnn_cold": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "uol.com.br": {
+        }, 
+        "money.cnn_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
-        },
-        "yahoo.co.jp": {
+        }, 
+        "ru.wikipedia_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "ru.wikipedia_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "uol.com.br_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "uol.com.br_warm": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "yahoo.co.jp_cold": {
+            "DEFAULT": "loading_desktop_006.wprgo"
+        }, 
+        "yahoo.co.jp_warm": {
             "DEFAULT": "loading_desktop_006.wprgo"
         }
-    },
-    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
+    }, 
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
     "platform_specific": true
 }

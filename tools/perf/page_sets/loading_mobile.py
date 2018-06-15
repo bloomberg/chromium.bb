@@ -129,6 +129,25 @@ class LoadingMobileStorySet(story.StorySet):
     for url, name in urls:
       for temp in cache_temperatures:
         for traffic in traffic_settings:
-          self.AddStory(page_cycler_story.PageCyclerStory(url, self, name=name,
+          page_name = name
+          if temp == cache_temperature_module.COLD:
+            page_name += '_cold'
+            tags.append('cache_temperature_cold')
+          elif temp == cache_temperature_module.WARM:
+            page_name += '_warm'
+            tags.append('cache_temperature_warm')
+          elif temp == cache_temperature_module.HOT:
+            page_name += '_hot'
+            tags.append('cache_temperature_hot')
+          elif temp == cache_temperature_module.ANY:
+            pass
+          else:
+            raise NotImplementedError
+
+          if traffic == traffic_setting_module.REGULAR_3G:
+            page_name += '_3g'
+
+          self.AddStory(page_cycler_story.PageCyclerStory(
+              url, self, name=page_name,
               shared_page_state_class=shared_page_state.SharedMobilePageState,
               cache_temperature=temp, traffic_setting=traffic, tags=tags))
