@@ -1298,17 +1298,11 @@ void UseCounter::DidCommitLoad(const LocalFrame* frame) {
   css_recorded_.ClearAll();
   animated_css_recorded_.ClearAll();
 
-  if (context_ != kDisabledContext && !mute_count_) {
-    // Only needs to count page visits on SVG histogram and extension histogram
-    // since the features histogram is being recorded on the browser side.
-    if (context_ != kDefaultContext)
-      FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
-    if (context_ == kSVGImageContext) {
-      CssHistogram().Count(mojom::blink::kTotalPagesMeasuredCSSSampleId);
-      AnimatedCSSHistogram().Count(
-          mojom::blink::kTotalPagesMeasuredCSSSampleId);
-    }
-  }
+  // TODO(loonybear): Remove or move SVG features histogram and extension
+  // features histogram to the browser side.
+  if (!mute_count_ &&
+      (context_ == kSVGImageContext || context_ == kExtensionContext))
+    FeaturesHistogram().Count(static_cast<int>(WebFeature::kPageVisits));
 }
 
 void UseCounter::Count(const LocalFrame* frame, WebFeature feature) {
@@ -1379,13 +1373,6 @@ void UseCounter::Count(CSSParserMode css_parser_mode,
   if (!IsUseCounterEnabledForMode(css_parser_mode) || mute_count_)
     return;
 
-  // TODO(loonybear): Remove this check once UseCounter is moved from Page to
-  // DocumentLoader. No features would be counted before
-  // UseCounter::DidCommitLoad (crbug.com/828416).
-  if (context_ == kDefaultContext &&
-      !Page::OrdinaryPages().Contains(source_frame->GetPage()))
-    return;
-
   if (!css_recorded_.QuickGet(property)) {
     // Note that HTTPArchive tooling looks specifically for this event - see
     // https://github.com/HTTPArchive/httparchive/issues/59
@@ -1393,11 +1380,6 @@ void UseCounter::Count(CSSParserMode css_parser_mode,
     if (context_ != kDisabledContext && context_ != kExtensionContext) {
       TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
                    "CSSFirstUsed", "feature", sample_id);
-      // The CSS properties are being recorded on the browser side.
-      // TODO(loonybear): Record CSS properties for SVG documents on the browser
-      // side.
-      if (context_ == kSVGImageContext)
-        CssHistogram().Count(sample_id);
       if (source_frame && source_frame->Client())
         source_frame->Client()->DidObserveNewCssPropertyUsage(sample_id, false);
     }
@@ -1441,23 +1423,11 @@ void UseCounter::CountAnimatedCSS(CSSPropertyID property,
   if (mute_count_)
     return;
 
-  // TODO(loonybear): Remove this check once UseCounter is moved from Page to
-  // DocumentLoader. No features would be counted before
-  // UseCounter::DidCommitLoad (crbug.com/828416).
-  if (context_ == kDefaultContext &&
-      !Page::OrdinaryPages().Contains(source_frame->GetPage()))
-    return;
-
   if (!animated_css_recorded_.QuickGet(property)) {
     int sample_id = MapCSSPropertyIdToCSSSampleIdForHistogram(property);
     if (context_ != kDisabledContext && context_ != kExtensionContext) {
       TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"),
                    "AnimatedCSSFirstUsed", "feature", sample_id);
-      // The CSS properties are being recorded on the browser side.
-      // TODO(loonybear): Record CSS properties for SVG documents on the browser
-      // side.
-      if (context_ == kSVGImageContext)
-        AnimatedCSSHistogram().Count(sample_id);
       if (source_frame && source_frame->Client())
         source_frame->Client()->DidObserveNewCssPropertyUsage(sample_id, true);
     }
