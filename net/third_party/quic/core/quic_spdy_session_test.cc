@@ -1386,16 +1386,6 @@ TEST_P(QuicSpdySessionTestClient, TestMaxIncomingAndOutgoingStreamsAllowed) {
             kDefaultMaxStreamsPerConnection);
 }
 
-TEST_P(QuicSpdySessionTestClient, EnableDHDTThroughConnectionOption) {
-  QuicTagVector copt;
-  copt.push_back(kDHDT);
-  QuicConfigPeer::SetConnectionOptionsToSend(session_.config(), copt);
-  session_.OnConfigNegotiated();
-  EXPECT_EQ(
-      QuicSpdySessionPeer::GetSpdyFramer(&session_).header_encoder_table_size(),
-      0UL);
-}
-
 TEST_P(QuicSpdySessionTestClient, WritePriority) {
   QuicSpdySessionPeer::SetHeadersStream(&session_, nullptr);
   TestHeadersStream* headers_stream = new TestHeadersStream(&session_);

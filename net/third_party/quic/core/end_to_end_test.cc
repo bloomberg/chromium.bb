@@ -89,7 +89,6 @@ struct TestParams {
              bool client_supports_stateless_rejects,
              bool server_uses_stateless_rejects_if_peer_supported,
              QuicTag congestion_control_tag,
-             bool disable_hpack_dynamic_table,
              bool use_cheap_stateless_reject)
       : client_supported_versions(client_supported_versions),
         server_supported_versions(server_supported_versions),
@@ -98,7 +97,6 @@ struct TestParams {
         server_uses_stateless_rejects_if_peer_supported(
             server_uses_stateless_rejects_if_peer_supported),
         congestion_control_tag(congestion_control_tag),
-        disable_hpack_dynamic_table(disable_hpack_dynamic_table),
         use_cheap_stateless_reject(use_cheap_stateless_reject) {}
 
   friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
@@ -114,7 +112,6 @@ struct TestParams {
        << p.server_uses_stateless_rejects_if_peer_supported;
     os << " congestion_control_tag: "
        << QuicTagToString(p.congestion_control_tag);
-    os << " disable_hpack_dynamic_table: " << p.disable_hpack_dynamic_table;
     os << " use_cheap_stateless_reject: " << p.use_cheap_stateless_reject
        << " }";
     return os;
@@ -126,12 +123,12 @@ struct TestParams {
   bool client_supports_stateless_rejects;
   bool server_uses_stateless_rejects_if_peer_supported;
   QuicTag congestion_control_tag;
-  bool disable_hpack_dynamic_table;
   bool use_cheap_stateless_reject;
 };
 
 // Constructs various test permutations.
-std::vector<TestParams> GetTestParams(bool use_tls_handshake) {
+std::vector<TestParams> GetTestParams(bool use_tls_handshake,
+                                      bool test_stateless_rejects) {
   // Divide the versions into buckets in which the intra-frame format
   // is compatible. When clients encounter QUIC version negotiation
   // they simply retransmit all packets using the new version's
@@ -162,87 +159,87 @@ std::vector<TestParams> GetTestParams(bool use_tls_handshake) {
   const int kMaxEnabledOptions = 4;
   int max_enabled_options = 0;
   std::vector<TestParams> params;
-  for (bool server_uses_stateless_rejects_if_peer_supported : {true, false}) {
-    for (bool client_supports_stateless_rejects : {true, false}) {
-      for (const QuicTag congestion_control_tag :
-           {kRENO, kTBBR, kQBIC, kTPCC}) {
-        for (bool disable_hpack_dynamic_table : {false}) {
-          for (bool use_cheap_stateless_reject : {true, false}) {
-            int enabled_options = 0;
-            if (congestion_control_tag != kQBIC) {
-              ++enabled_options;
-            }
-            if (disable_hpack_dynamic_table) {
-              ++enabled_options;
-            }
-            if (client_supports_stateless_rejects) {
-              ++enabled_options;
-            }
-            if (server_uses_stateless_rejects_if_peer_supported) {
-              ++enabled_options;
-            }
-            if (use_cheap_stateless_reject) {
-              ++enabled_options;
-            }
-            CHECK_GE(kMaxEnabledOptions, enabled_options);
-            if (enabled_options > max_enabled_options) {
-              max_enabled_options = enabled_options;
-            }
+  for (const QuicTag congestion_control_tag : {kRENO, kTBBR, kQBIC, kTPCC}) {
+    for (bool server_uses_stateless_rejects_if_peer_supported : {true, false}) {
+      for (bool client_supports_stateless_rejects : {true, false}) {
+        for (bool use_cheap_stateless_reject : {true, false}) {
+          int enabled_options = 0;
+          if (congestion_control_tag != kQBIC) {
+            ++enabled_options;
+          }
+          if (client_supports_stateless_rejects) {
+            ++enabled_options;
+          }
+          if (server_uses_stateless_rejects_if_peer_supported) {
+            ++enabled_options;
+          }
+          if (use_cheap_stateless_reject) {
+            ++enabled_options;
+          }
+          CHECK_GE(kMaxEnabledOptions, enabled_options);
+          if (enabled_options > max_enabled_options) {
+            max_enabled_options = enabled_options;
+          }
 
-            // Run tests with no options, a single option, or all the
-            // options enabled to avoid a combinatorial explosion.
+          // Run tests with no options, a single option, or all the
+          // options enabled to avoid a combinatorial explosion.
+          if (enabled_options > 1 && enabled_options < kMaxEnabledOptions) {
+            continue;
+          }
+
+          // There are many stateless reject combinations, so don't test them
+          // unless requested.
+          if ((server_uses_stateless_rejects_if_peer_supported ||
+               client_supports_stateless_rejects ||
+               use_cheap_stateless_reject) &&
+              !test_stateless_rejects) {
+            continue;
+          }
+
+          for (const ParsedQuicVersionVector& client_versions :
+               version_buckets) {
+            if (FilterSupportedVersions(client_versions).empty()) {
+              continue;
+            }
+            // Add an entry for server and client supporting all
+            // versions.
+            params.push_back(TestParams(
+                client_versions, all_supported_versions,
+                client_versions.front(), client_supports_stateless_rejects,
+                server_uses_stateless_rejects_if_peer_supported,
+                congestion_control_tag, use_cheap_stateless_reject));
+
+            // Run version negotiation tests tests with no options, or
+            // all the options enabled to avoid a combinatorial
+            // explosion.
             if (enabled_options > 1 && enabled_options < kMaxEnabledOptions) {
               continue;
             }
 
-            for (const ParsedQuicVersionVector& client_versions :
-                 version_buckets) {
-              if (FilterSupportedVersions(client_versions).empty()) {
+            // Test client supporting all versions and server supporting
+            // 1 version. Simulate an old server and exercise version
+            // downgrade in the client. Protocol negotiation should
+            // occur.  Skip the i = 0 case because it is essentially the
+            // same as the default case.
+            for (size_t i = 1; i < client_versions.size(); ++i) {
+              ParsedQuicVersionVector server_supported_versions;
+              server_supported_versions.push_back(client_versions[i]);
+              if (FilterSupportedVersions(server_supported_versions).empty()) {
                 continue;
               }
-              // Add an entry for server and client supporting all
-              // versions.
               params.push_back(TestParams(
-                  client_versions, all_supported_versions,
-                  client_versions.front(), client_supports_stateless_rejects,
+                  client_versions, server_supported_versions,
+                  server_supported_versions.front(),
+                  client_supports_stateless_rejects,
                   server_uses_stateless_rejects_if_peer_supported,
-                  congestion_control_tag, disable_hpack_dynamic_table,
-                  use_cheap_stateless_reject));
-
-              // Run version negotiation tests tests with no options, or
-              // all the options enabled to avoid a combinatorial
-              // explosion.
-              if (enabled_options > 1 && enabled_options < kMaxEnabledOptions) {
-                continue;
-              }
-
-              // Test client supporting all versions and server supporting
-              // 1 version. Simulate an old server and exercise version
-              // downgrade in the client. Protocol negotiation should
-              // occur.  Skip the i = 0 case because it is essentially the
-              // same as the default case.
-              for (size_t i = 1; i < client_versions.size(); ++i) {
-                ParsedQuicVersionVector server_supported_versions;
-                server_supported_versions.push_back(client_versions[i]);
-                if (FilterSupportedVersions(server_supported_versions)
-                        .empty()) {
-                  continue;
-                }
-                params.push_back(TestParams(
-                    client_versions, server_supported_versions,
-                    server_supported_versions.front(),
-                    client_supports_stateless_rejects,
-                    server_uses_stateless_rejects_if_peer_supported,
-                    congestion_control_tag, disable_hpack_dynamic_table,
-                    use_cheap_stateless_reject));
-              }  // End of version for loop.
-            }    // End of 2nd version for loop.
-          }      // End of use_cheap_stateless_reject for loop.
-        }        // End of disable_hpack_dynamic_table for loop.
-      }          // End of congestion_control_tag for loop.
-    }            // End of client_supports_stateless_rejects for loop.
-    CHECK_EQ(kMaxEnabledOptions, max_enabled_options);
-  }  // End of server_uses_stateless_rejects_if_peer_supported for loop.
+                  congestion_control_tag, use_cheap_stateless_reject));
+            }  // End of inner version loop.
+          }    // End of outer version loop.
+        }      // End of use_cheap_stateless_reject loop.
+      }        // End of client_supports_stateless_rejects loop.
+    }          // End of server_uses_stateless_rejects_if_peer_supported loop.
+  }            // End of congestion_control_tag loop.
+  CHECK_EQ(kMaxEnabledOptions, max_enabled_options);
   return params;
 }
 
@@ -406,9 +403,6 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
     }
     if (GetParam().client_supports_stateless_rejects) {
       copt.push_back(kSREJ);
-    }
-    if (GetParam().disable_hpack_dynamic_table) {
-      copt.push_back(kDHDT);
     }
     client_config_.SetConnectionOptionsToSend(copt);
 
@@ -626,16 +620,22 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
   QuicString pre_shared_key_server_;
 };
 
-class EndToEndTestWithTls : public EndToEndTest {};
-
 // Run all end to end tests with all supported versions.
 INSTANTIATE_TEST_CASE_P(EndToEndTests,
                         EndToEndTest,
-                        ::testing::ValuesIn(GetTestParams(false)));
+                        ::testing::ValuesIn(GetTestParams(false, false)));
+
+class EndToEndTestWithTls : public EndToEndTest {};
 
 INSTANTIATE_TEST_CASE_P(EndToEndTestsWithTls,
                         EndToEndTestWithTls,
-                        ::testing::ValuesIn(GetTestParams(true)));
+                        ::testing::ValuesIn(GetTestParams(true, false)));
+
+class EndToEndTestWithStatelessReject : public EndToEndTest {};
+
+INSTANTIATE_TEST_CASE_P(WithStatelessReject,
+                        EndToEndTestWithStatelessReject,
+                        ::testing::ValuesIn(GetTestParams(false, true)));
 
 TEST_P(EndToEndTestWithTls, HandshakeSuccessful) {
   ASSERT_TRUE(Initialize());
@@ -649,6 +649,14 @@ TEST_P(EndToEndTestWithTls, HandshakeSuccessful) {
   crypto_stream = QuicSessionPeer::GetMutableCryptoStream(GetServerSession());
   sequencer = QuicStreamPeer::sequencer(crypto_stream);
   EXPECT_FALSE(QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
+}
+
+TEST_P(EndToEndTestWithStatelessReject, SimpleRequestResponseStatless) {
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
+  EXPECT_EQ(2, client_->client()->GetNumSentClientHellos());
 }
 
 TEST_P(EndToEndTest, SimpleRequestResponse) {
@@ -2627,7 +2635,7 @@ class EndToEndTestServerPush : public EndToEndTest {
 // Run all server push end to end tests with all supported versions.
 INSTANTIATE_TEST_CASE_P(EndToEndTestsServerPush,
                         EndToEndTestServerPush,
-                        ::testing::ValuesIn(GetTestParams(false)));
+                        ::testing::ValuesIn(GetTestParams(false, false)));
 
 TEST_P(EndToEndTestServerPush, ServerPush) {
   ASSERT_TRUE(Initialize());
@@ -3154,7 +3162,7 @@ class EndToEndPacketReorderingTest : public EndToEndTest {
 
 INSTANTIATE_TEST_CASE_P(EndToEndPacketReorderingTests,
                         EndToEndPacketReorderingTest,
-                        testing::ValuesIn(GetTestParams(false)));
+                        testing::ValuesIn(GetTestParams(false, false)));
 
 TEST_P(EndToEndPacketReorderingTest, ReorderedConnectivityProbing) {
   ASSERT_TRUE(Initialize());
