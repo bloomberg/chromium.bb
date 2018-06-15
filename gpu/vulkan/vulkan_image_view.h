@@ -35,7 +35,7 @@ class VulkanImageView {
                   uint32_t width,
                   uint32_t height,
                   uint32_t base_mip_level,
-                  uint32_t num_mips,
+                  uint32_t mip_levels,
                   uint32_t base_layer_level,
                   uint32_t num_layers);
   void Destroy();
@@ -45,7 +45,7 @@ class VulkanImageView {
   VkFormat format() const { return format_; }
   uint32_t width() const { return width_; }
   uint32_t height() const { return height_; }
-  uint32_t mips() const { return mips_; }
+  uint32_t mip_levels() const { return mip_levels_; }
   uint32_t layers() const { return layers_; }
 
  private:
@@ -55,7 +55,7 @@ class VulkanImageView {
   VkFormat format_ = VK_FORMAT_UNDEFINED;
   uint32_t width_ = 0;
   uint32_t height_ = 0;
-  uint32_t mips_ = 0;
+  uint32_t mip_levels_ = 0;
   uint32_t layers_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanImageView);

@@ -43,7 +43,7 @@ bool VulkanImageView::Initialize(VkImage image,
                                  uint32_t width,
                                  uint32_t height,
                                  uint32_t base_mip_level,
-                                 uint32_t num_mips,
+                                 uint32_t mip_levels,
                                  uint32_t base_layer_level,
                                  uint32_t num_layers) {
   format_ = format;
@@ -55,7 +55,7 @@ bool VulkanImageView::Initialize(VkImage image,
   VkImageSubresourceRange image_subresource_range = {};
   image_subresource_range.aspectMask = kAspectFlags[image_type];
   image_subresource_range.baseMipLevel = base_mip_level;
-  image_subresource_range.levelCount = num_mips;
+  image_subresource_range.levelCount = mip_levels;
   image_subresource_range.baseArrayLayer = base_layer_level;
   image_subresource_range.layerCount = num_layers;
 
@@ -80,7 +80,7 @@ bool VulkanImageView::Initialize(VkImage image,
   image_type_ = image_type;
   width_ = width;
   height_ = height;
-  mips_ = num_mips;
+  mip_levels_ = mip_levels;
   layers_ = num_layers;
   return true;
 }
