@@ -4,16 +4,13 @@
 
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
 
-#include <memory>
-#include <string>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
-#include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
@@ -39,6 +36,7 @@
 #include "printing/units.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
+#include "url/gurl.h"
 
 namespace {
 
