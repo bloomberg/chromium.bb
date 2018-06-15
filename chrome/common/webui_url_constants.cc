@@ -292,6 +292,7 @@ const char kStylusSubPage[] = "stylus";
 #else
 const char kCreateProfileSubPage[] = "createProfile";
 const char kManageProfileSubPage[] = "manageProfile";
+const char kPeopleSubPage[] = "people";
 #endif  // defined(OS_CHROMEOS)
 #if defined(OS_WIN)
 const char kCleanupSubPage[] = "cleanup";
