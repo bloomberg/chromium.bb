@@ -606,6 +606,12 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
       EndOverview();
       wm::ActivateWindow(active_window);
     } else if (insert_overview_window) {
+      // The dimensions of |window| will be very slim because of dragging the
+      // divider to the edge. Change the window dimensions to its tablet mode
+      // dimensions. Note: if split view is no longer constrained to tablet mode
+      // this will be need to updated.
+      TabletModeWindowState::UpdateWindowPosition(
+          wm::GetWindowState(insert_overview_window));
       InsertWindowToOverview(insert_overview_window);
     }
   }
