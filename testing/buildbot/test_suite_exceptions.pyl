@@ -2354,7 +2354,6 @@
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
       'Win7 Tests (1)',
-      'Win7 Tests (dbg)(1)',
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
