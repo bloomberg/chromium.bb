@@ -7,7 +7,7 @@
 
 #include "ui/gl/gl_image_io_surface.h"
 
-#include <egl/EGL.h>
+#include <EGL/egl.h>
 
 namespace gl {
 
