@@ -9,13 +9,12 @@
 
 namespace ash {
 
-// Sign out button shown in TopShortcutView with TopShortcutButtons.
-// Shows the label like "Sign out", "Exit guest", etc. depending on the session
-// status. Not visible when not signed in.
-class SignOutButton : public views::LabelButton {
+// LabelButton that has rounded shape with Material Design ink drop.
+class RoundedLabelButton : public views::LabelButton {
  public:
-  SignOutButton(views::ButtonListener* listener);
-  ~SignOutButton() override;
+  RoundedLabelButton(views::ButtonListener* listener,
+                     const base::string16& text);
+  ~RoundedLabelButton() override;
 
   // views::LabelButton:
   gfx::Size CalculatePreferredSize() const override;
@@ -26,6 +25,18 @@ class SignOutButton : public views::LabelButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RoundedLabelButton);
+};
+
+// Sign out button shown in TopShortcutView with TopShortcutButtons.
+// Shows the label like "Sign out", "Exit guest", etc. depending on the session
+// status. Not visible when not signed in.
+class SignOutButton : public RoundedLabelButton {
+ public:
+  explicit SignOutButton(views::ButtonListener* listener);
+  ~SignOutButton() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignOutButton);

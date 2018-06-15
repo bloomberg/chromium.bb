@@ -122,7 +122,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
     bool initially_expanded)
     : controller_(controller),
       message_center_view_(
-          new UnifiedMessageCenterView(message_center::MessageCenter::Get())),
+          new UnifiedMessageCenterView(controller,
+                                       message_center::MessageCenter::Get())),
       top_shortcuts_view_(new TopShortcutsView(controller_)),
       feature_pods_container_(new FeaturePodsContainerView(initially_expanded)),
       sliders_container_(new UnifiedSlidersContainerView(initially_expanded)),
@@ -212,6 +213,10 @@ void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
   // It is possible that the ratio between |message_center_view_| and others
   // can change while the bubble size remain unchanged.
   Layout();
+}
+
+void UnifiedSystemTrayView::ShowClearAllAnimation() {
+  message_center_view_->ShowClearAllAnimation();
 }
 
 void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {

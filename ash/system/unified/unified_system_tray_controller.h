@@ -49,6 +49,12 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   void HandlePowerAction();
   // Toggle expanded state of UnifiedSystemTrayView. Called from the view.
   void ToggleExpanded();
+  // Clear all notifications. It triggers animation, and does not remove
+  // notifications immediately. Called from the view.
+  void HandleClearAllAction();
+  // Called when notification removing animation is finished. Called from the
+  // view.
+  void OnClearAllAnimationEnded();
 
   // Handle finger dragging and expand/collapse the view. Called from view.
   void BeginDrag(const gfx::Point& location);
