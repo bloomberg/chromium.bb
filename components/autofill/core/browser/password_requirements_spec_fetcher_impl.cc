@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -145,6 +146,7 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(
   // Start another lookup otherwise.
   auto lookup = std::make_unique<LookupInFlight>();
   lookup->callbacks.push_back(std::make_pair(origin, std::move(callback)));
+  lookup->start_of_request = base::TimeTicks::Now();
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("password_requirements_spec_fetch",
@@ -194,6 +196,17 @@ void PasswordRequirementsSpecFetcherImpl::OnFetchComplete(
   std::unique_ptr<LookupInFlight> lookup = RemoveLookupInFlight(hash_prefix);
 
   lookup->download_timer.Stop();
+  UMA_HISTOGRAM_TIMES("PasswordManager.RequirementsSpecFetcher.NetworkDuration",
+                      base::TimeTicks::Now() - lookup->start_of_request);
+  base::UmaHistogramSparse(
+      "PasswordManager.RequirementsSpecFetcher.NetErrorCode",
+      lookup->url_loader->NetError());
+  if (lookup->url_loader->ResponseInfo() &&
+      lookup->url_loader->ResponseInfo()->headers) {
+    base::UmaHistogramSparse(
+        "PasswordManager.RequirementsSpecFetcher.HttpResponseCode",
+        lookup->url_loader->ResponseInfo()->headers->response_code());
+  }
 
   if (!response_body || lookup->url_loader->NetError() != net::Error::OK) {
     VLOG(1) << "Fetch for " << hash_prefix << ": failed to fetch "
@@ -264,6 +277,8 @@ void PasswordRequirementsSpecFetcherImpl::OnFetchComplete(
 void PasswordRequirementsSpecFetcherImpl::OnFetchTimeout(
     const std::string& hash_prefix) {
   std::unique_ptr<LookupInFlight> lookup = RemoveLookupInFlight(hash_prefix);
+  UMA_HISTOGRAM_TIMES("PasswordManager.RequirementsSpecFetcher.NetworkDuration",
+                      base::TimeTicks::Now() - lookup->start_of_request);
   TriggerCallbackToAll(&lookup->callbacks, ResultCode::kErrorTimeout,
                        PasswordRequirementsSpec());
 }
@@ -281,7 +296,6 @@ void PasswordRequirementsSpecFetcherImpl::TriggerCallback(
     FetchCallback callback,
     ResultCode result,
     const PasswordRequirementsSpec& spec) {
-  // TODO(crbug.com/846694) Record latencies.
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.RequirementsSpecFetcher.Result",
                             result);
   std::move(callback).Run(spec);
