@@ -9,7 +9,6 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/extensions/api/input_ime.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
@@ -57,6 +56,7 @@ void ImeObserver::OnFocus(
       input_ime::ParseInputContextType(ConvertInputContextType(context));
   context_value.auto_correct = ConvertInputContextAutoCorrect(context);
   context_value.auto_complete = ConvertInputContextAutoComplete(context);
+  context_value.auto_capitalize = ConvertInputContextAutoCapitalize(context);
   context_value.spell_check = ConvertInputContextSpellCheck(context);
   context_value.should_do_learning = context.should_do_learning;
 
@@ -234,6 +234,18 @@ bool ImeObserver::ConvertInputContextAutoCorrect(
 bool ImeObserver::ConvertInputContextAutoComplete(
     ui::IMEEngineHandlerInterface::InputContext input_context) {
   return !(input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCOMPLETE_OFF);
+}
+
+input_ime::AutoCapitalizeType ImeObserver::ConvertInputContextAutoCapitalize(
+    ui::IMEEngineHandlerInterface::InputContext input_context) {
+  if (input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_NONE)
+    return input_ime::AUTO_CAPITALIZE_TYPE_NONE;
+  if (input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_CHARACTERS)
+    return input_ime::AUTO_CAPITALIZE_TYPE_CHARACTERS;
+  if (input_context.flags & ui::TEXT_INPUT_FLAG_AUTOCAPITALIZE_WORDS)
+    return input_ime::AUTO_CAPITALIZE_TYPE_WORDS;
+  // The default value is "sentences".
+  return input_ime::AUTO_CAPITALIZE_TYPE_SENTENCES;
 }
 
 bool ImeObserver::ConvertInputContextSpellCheck(
