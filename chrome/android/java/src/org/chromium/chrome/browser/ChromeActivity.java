@@ -301,6 +301,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     private ActivityTabStartupMetricsTracker mActivityTabStartupMetricsTracker;
 
+    /** Used to detect in {@link #postInflationStartup} if onStart was called in the mean time
+     * (while the inflation was being done on a background thread) and thus some onStart work that
+     * requires the UI to be inflated has to be done belatedly after inflation. */
     private boolean mOnStartCalled;
 
     /**
@@ -427,7 +430,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mPageViewTimer = new PageViewTimer(mTabModelSelector);
 
             // If onStart was called before postLayoutInflation (because inflation was done in a
-            // background thread) then make sure to call the relevant methods.
+            // background thread) then make sure to call the relevant methods belatedly.
             if (mOnStartCalled) {
                 mCompositorViewHolder.onStart();
                 mSnackbarManager.onStart();
@@ -1209,7 +1212,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         // We want to refresh partner browser provider every onStart().
         mPartnerBrowserRefreshNeeded = true;
         if (mCompositorViewHolder != null) mCompositorViewHolder.onStop();
-        mSnackbarManager.onStop();
+        if (mSnackbarManager != null) mSnackbarManager.onStop();
+
+        // If postInflationStartup hasn't been called yet (because inflation was done asynchronously
+        // and has not yet completed), it no longer needs to do the belated onStart code since we
+        // were stopped in the mean time.
+        mOnStartCalled = false;
     }
 
     @Override
