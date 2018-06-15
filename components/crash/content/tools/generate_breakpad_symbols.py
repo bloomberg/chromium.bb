@@ -105,7 +105,7 @@ def GetDeveloperDirMac():
   print 'WARNING: no value found for DEVELOPER_DIR. Some commands may fail.'
 
 
-def GetSharedLibraryDependenciesMac(binary, exe_path, loader_rpaths):
+def GetSharedLibraryDependenciesMac(binary, exe_path):
   """Return absolute paths to all shared library dependecies of the binary.
 
   This implementation assumes that we're running on a Mac system."""
@@ -127,6 +127,11 @@ def GetSharedLibraryDependenciesMac(binary, exe_path, loader_rpaths):
     elif line.find('cmd LC_ID_DYLIB') != -1:
       m = re.match(' *name (.*) \(offset .*\)$', otool[idx+2])
       dylib_id = m.group(1)
+  # `man dyld` says that @rpath is resolved against a stack of LC_RPATHs from
+  # all executable images leading to the load of the current module. This is
+  # intentionally not implemented here, since we require that every .dylib
+  # contains all the rpaths it needs on its own, without relying on rpaths of
+  # the loading executables.
 
   otool = subprocess.check_output(['otool', '-L', binary], env=env).splitlines()
   lib_re = re.compile('\t(.*) \(compatibility .*\)$')
@@ -138,26 +143,25 @@ def GetSharedLibraryDependenciesMac(binary, exe_path, loader_rpaths):
       # as the first line. Filter that out.
       if m.group(1) == dylib_id:
         continue
-      dep = Resolve(m.group(1), exe_path, loader_path, loader_rpaths + rpaths)
+      dep = Resolve(m.group(1), exe_path, loader_path, rpaths)
       if dep:
         deps.append(os.path.normpath(dep))
       else:
         print >>sys.stderr, (
             'ERROR: failed to resolve %s, exe_path %s, loader_path %s, '
             'rpaths %s' % (m.group(1), exe_path, loader_path,
-                           ', '.join(loader_rpaths + rpaths)))
+                           ', '.join(rpaths)))
         sys.exit(1)
-  return deps, rpaths
+  return deps
 
 
-def GetSharedLibraryDependencies(options, binary, exe_path, loader_rpaths):
+def GetSharedLibraryDependencies(options, binary, exe_path):
   """Return absolute paths to all shared library dependecies of the binary."""
   deps = []
   if sys.platform.startswith('linux'):
-    deps, rpaths = GetSharedLibraryDependenciesLinux(binary), []
+    deps = GetSharedLibraryDependenciesLinux(binary)
   elif sys.platform == 'darwin':
-    deps, rpaths = GetSharedLibraryDependenciesMac(
-        binary, exe_path, loader_rpaths)
+    deps = GetSharedLibraryDependenciesMac(binary, exe_path)
   else:
     print "Platform not supported."
     sys.exit(1)
@@ -168,7 +172,7 @@ def GetSharedLibraryDependencies(options, binary, exe_path, loader_rpaths):
     if (os.access(dep, os.X_OK) and
         os.path.abspath(os.path.dirname(dep)).startswith(build_dir)):
       result.append(dep)
-  return result, rpaths
+  return result
 
 
 def mkdir_p(path):
@@ -317,15 +321,13 @@ def main():
 
   # Build the transitive closure of all dependencies.
   binaries = set([options.binary])
-  queue = [(options.binary, [])]
+  queue = [options.binary]
   exe_path = os.path.dirname(options.binary)
   while queue:
-    current_binary, current_rpaths = queue.pop(0)
-    deps, new_rpaths = GetSharedLibraryDependencies(
-        options, current_binary, exe_path, current_rpaths)
+    deps = GetSharedLibraryDependencies(options, queue.pop(0), exe_path)
     new_deps = set(deps) - binaries
     binaries |= new_deps
-    queue.extend([(dep, current_rpaths + new_rpaths) for dep in new_deps])
+    queue.extend(list(new_deps))
 
   GenerateSymbols(options, binaries)
 
