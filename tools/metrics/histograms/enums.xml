@@ -13488,6 +13488,7 @@ Called by update_net_error_codes.py.-->
   <int value="449" label="ArcBackupRestoreServiceEnabled"/>
   <int value="450" label="ArcGoogleLocationServicesEnabled"/>
   <int value="451" label="EnableSyncConsent"/>
+  <int value="452" label="ContextualSuggestionsEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

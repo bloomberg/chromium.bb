@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/contextual_suggestions/contextual_suggestions_bridge.h"
 
+#include <string>
+#include <utility>
+
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
@@ -19,6 +22,9 @@
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_features.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_service.h"
+#include "components/policy/policy_constants.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ContextualSuggestionsBridge_jni.h"
@@ -50,20 +56,9 @@ static jlong JNI_ContextualSuggestionsBridge_Init(
   return reinterpret_cast<intptr_t>(contextual_suggestions_bridge);
 }
 
-static jboolean JNI_ContextualSuggestionsBridge_IsEnterprisePolicyManaged(
+static jboolean JNI_ContextualSuggestionsBridge_IsDisabledByEnterprisePolicy(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
-  // Bypass policy check, if corresponding feature is enabled.
-  if (base::FeatureList::IsEnabled(
-          contextual_suggestions::
-              kContextualSuggestionsEnterprisePolicyBypass)) {
-    return false;
-  }
-
-  // TODO(fgorski): This is simply checking whether the profile is managed by
-  // an enterprise policy.
-  // http://crbug.com/829460 covers implementation of policy controller for
-  // contextual content suggestions.
   Profile* profile = ProfileManager::GetLastUsedProfile()->GetOriginalProfile();
   if (!profile)
     return false;
@@ -71,7 +66,16 @@ static jboolean JNI_ContextualSuggestionsBridge_IsEnterprisePolicyManaged(
   policy::ProfilePolicyConnector* policy_connector =
       policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
 
-  return (policy_connector != nullptr) && policy_connector->IsManaged();
+  const policy::PolicyMap& policies =
+      policy_connector->policy_service()->GetPolicies(
+          policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
+  const policy::PolicyMap::Entry* entry =
+      policies.Get(policy::key::kContextualSuggestionsEnabled);
+  bool is_enabled;
+  if (entry && entry->value && entry->value->GetAsBoolean(&is_enabled))
+    return !is_enabled;
+
+  return false;
 }
 
 ContextualSuggestionsBridge::ContextualSuggestionsBridge(

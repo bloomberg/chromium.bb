@@ -10,7 +10,6 @@
 namespace contextual_suggestions {
 
 extern const base::Feature kContextualSuggestionsBottomSheet;
-extern const base::Feature kContextualSuggestionsEnterprisePolicyBypass;
 extern const base::Feature kContextualSuggestionsSlimPeekUI;
 
 }  // namespace contextual_suggestions

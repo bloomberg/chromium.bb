@@ -12221,7 +12221,27 @@
       'desc': '''This policy controls if Sync Consent can be shown to the user during first sign-in. It should be set to false if Sync Consent is never needed for the user.
       If set to false, Sync Consent will not be displayed.
       If set to true or unset, Sync Consent can be displayed.''',
-    }
+    },
+    {
+      'name': 'ContextualSuggestionsEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['android:69-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 452,
+      'caption': '''Enable contextual suggestions of related web pages''',
+      'tags': ['google-sharing'],
+      'desc':
+      '''If this is set to true or unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will suggest pages related to the current page.
+      These suggestions are fetched remotely from Google servers.
+
+      If this setting is set to false, suggestions will not be fetched or displayed.''',
+    },
+
   ],
 
   'messages': {
@@ -12363,5 +12383,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 451
+  'highest_id_currently_used': 452
 }
