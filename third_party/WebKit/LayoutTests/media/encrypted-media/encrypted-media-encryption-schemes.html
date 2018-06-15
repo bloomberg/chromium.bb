@@ -114,17 +114,17 @@
             expectTypeError([buildConfiguration({audio: 'invalid'}, {video: 'cbcs'})],
                 'Audio invalid scheme, Video valid');
 
-            // Test without encryptionScheme, which should default to "cenc".
+            // Test without encryptionScheme.
             expectSupport([buildConfiguration({audio: null})],
-                'cenc', undefined, 'Audio handles missing encryptionScheme');
+                null, undefined, 'Audio handles missing encryptionScheme');
             expectSupport([buildConfiguration({video: null})],
-                undefined, 'cenc', 'Video handles missing encryptionScheme');
+                undefined, null, 'Video handles missing encryptionScheme');
             expectSupport([buildConfiguration({audio: null}, {video: null})],
-                'cenc', 'cenc', 'Audio and Video handles missing encryptionScheme');
+                null, null, 'Audio and Video handles missing encryptionScheme');
             expectSupport([buildConfiguration({audio: 'cbcs'}, {video: null})],
-                'cbcs', 'cenc', 'Audio valid and Video missing');
+                'cbcs', null, 'Audio valid and Video missing');
             expectSupport([buildConfiguration({audio: null}, {video: 'cbcs'})],
-                'cenc', 'cbcs', 'Audio missing and Video valid');
+                null, 'cbcs', 'Audio missing and Video valid');
 
             // Test with "", which is invalid.
             expectTypeError([buildConfiguration({audio: ''})],
