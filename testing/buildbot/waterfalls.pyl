@@ -2927,9 +2927,10 @@
         },
       },
       'WebKit Linux Trusty (dbg)': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
+        # TODO(dpranke): Remove this builder, it is now redundant
+        'additional_compile_targets': [
+          'base_unittests',
+        ],
       },
       'WebKit Linux Trusty ASAN': {
         'test_suites': {
@@ -2973,17 +2974,7 @@
         },
       },
       'WebKit Mac10.11 (dbg)': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': 'none',
-              'os': 'Mac-10.11.6',
-            }
-          ],
-        },
+        # TODO(dpranke): Remove this builder, it is now redundant
       },
       'WebKit Mac10.12 (retina)': {
         'test_suites': {

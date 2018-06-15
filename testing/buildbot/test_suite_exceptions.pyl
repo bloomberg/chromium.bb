@@ -2528,13 +2528,10 @@
       # chromium.fyi
       'Out of Process Profiling Mac',
       # chromium.linux
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-      # chromium.mac
-      'Mac10.13 Tests (dbg)',
+      'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported
       # chromium.win
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64 (dbg)',
+      'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
+      'Win10 Tests x64 (dbg)',  
     ],
     'modifications': {
       # chromium.fyi
@@ -2590,6 +2587,17 @@
             },
           ],
           'shards': 6,
+        },
+      },
+      'Linux Tests (dbg)(1)': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              # TODO(kbr): this is essentially redundant.
+              'os': 'Ubuntu-14.04',
+            },
+          ],
+          'shards': 20,
         },
       },
       # chromium.mac
