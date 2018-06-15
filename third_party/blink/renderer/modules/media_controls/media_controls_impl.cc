@@ -924,7 +924,13 @@ void MediaControlsImpl::Hide() {
   timeline_->OnControlsHidden();
 
   UpdateCSSClassFromState();
-  UpdateActingAsAudioControls();
+
+  // Hide is called when the HTMLMediaElement is removed from a document. If we
+  // stop acting as audio controls during this removal, we end up inserting
+  // nodes during the removal, firing a DCHECK. To avoid this, only update here
+  // when the media element is connected.
+  if (MediaElement().isConnected())
+    UpdateActingAsAudioControls();
 }
 
 bool MediaControlsImpl::IsVisible() const {
