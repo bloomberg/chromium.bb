@@ -3569,7 +3569,10 @@ void Document::DispatchUnloadEvents() {
   bool keep_event_listeners =
       frame_->Loader().GetProvisionalDocumentLoader() &&
       frame_->ShouldReuseDefaultView(
-          frame_->Loader().GetProvisionalDocumentLoader()->Url());
+          frame_->Loader().GetProvisionalDocumentLoader()->Url(),
+          frame_->Loader()
+              .GetProvisionalDocumentLoader()
+              ->GetContentSecurityPolicy());
   if (!keep_event_listeners)
     RemoveAllEventListenersRecursively();
 }

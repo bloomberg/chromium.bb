@@ -365,8 +365,12 @@ void FrameLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
 
   // Compute this before clearing the frame, because it may need to inherit an
   // aliased security context.
+  // The document CSP is the correct one as it is used for CSP checks
+  // done previously before getting here:
+  // HTMLFormElement::ScheduleFormSubmission
+  // HTMLFrameElementBase::OpenURL
   WebGlobalObjectReusePolicy global_object_reuse_policy =
-      frame_->ShouldReuseDefaultView(url)
+      frame_->ShouldReuseDefaultView(url, document->GetContentSecurityPolicy())
           ? WebGlobalObjectReusePolicy::kUseExisting
           : WebGlobalObjectReusePolicy::kCreateNew;
 
