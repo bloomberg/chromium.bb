@@ -3427,24 +3427,23 @@ TEST_F(SplitViewWindowSelectorTest, DragToClose) {
   ToggleOverview();
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
 
-  WindowSelectorItem* window_item1 =
+  WindowSelectorItem* item =
       GetWindowItemForWindow(0, widget1->GetNativeWindow());
-  ASSERT_TRUE(window_item1);
+  const gfx::Point start = item->target_bounds().CenterPoint();
+  ASSERT_TRUE(item);
 
   // This drag has not covered enough distance, so the widget is not closed and
-  // we remain in overview mode. Use scroll sequences with large time and steps
-  // to avoid triggering a fling event.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  const gfx::Point start = window_item1->target_bounds().CenterPoint();
-  generator.GestureScrollSequence(start, start + gfx::Vector2d(0, 100),
-                                  base::TimeDelta::FromMilliseconds(100), 100);
-  RunAllPendingInMessageLoop();
+  // we remain in overview mode.
+  window_selector()->InitiateDrag(item, start);
+  window_selector()->Drag(item, start + gfx::Vector2d(0, 80));
+  window_selector()->CompleteDrag(item, start + gfx::Vector2d(0, 80));
   ASSERT_TRUE(window_selector());
 
   // Verify that the second drag has enough vertical distance, so the widget
   // will be closed and overview mode will be exited.
-  generator.GestureScrollSequence(start, start + gfx::Vector2d(0, 300),
-                                  base::TimeDelta::FromMilliseconds(100), 100);
+  window_selector()->InitiateDrag(item, start);
+  window_selector()->Drag(item, start + gfx::Vector2d(0, 180));
+  window_selector()->CompleteDrag(item, start + gfx::Vector2d(0, 180));
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(window_selector());
 }
@@ -3463,16 +3462,29 @@ TEST_F(SplitViewWindowSelectorTest, FlingToClose) {
   ASSERT_TRUE(window_selector_controller()->IsSelecting());
   EXPECT_EQ(1u, window_selector()->grid_list_for_testing()[0]->size());
 
-  WindowSelectorItem* window_item1 =
+  WindowSelectorItem* item =
       GetWindowItemForWindow(0, widget1->GetNativeWindow());
-  ASSERT_TRUE(window_item1);
+  const gfx::Point start = item->target_bounds().CenterPoint();
+  ASSERT_TRUE(item);
+
+  // Verify that items flung horizontally do not close the item.
+  window_selector()->InitiateDrag(item, start);
+  window_selector()->Drag(item, start + gfx::Vector2d(0, 50));
+  window_selector()->Fling(item, start, 2500, 0);
+  ASSERT_TRUE(window_selector());
+
+  // Verify that items flung vertically, but without enough velocity do not
+  // close the item.
+  window_selector()->InitiateDrag(item, start);
+  window_selector()->Drag(item, start + gfx::Vector2d(0, 50));
+  window_selector()->Fling(item, start, 0, 1500);
+  ASSERT_TRUE(window_selector());
 
   // Verify that flinging the item closes it, and since it is the last item in
   // overview mode, overview mode is exited.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  const gfx::Point start = window_item1->target_bounds().CenterPoint();
-  generator.GestureScrollSequence(start, start + gfx::Vector2d(0, 200),
-                                  base::TimeDelta::FromMilliseconds(10), 5);
+  window_selector()->InitiateDrag(item, start);
+  window_selector()->Drag(item, start + gfx::Vector2d(0, 50));
+  window_selector()->Fling(item, start, 0, 2500);
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(window_selector());
 }
@@ -3507,8 +3519,7 @@ TEST_F(SplitViewWindowSelectorTest, BasicNudging) {
   // should be nudging towards their final bounds.
   window_selector()->InitiateDrag(item1, item1_bounds.CenterPoint());
   window_selector()->Drag(item1,
-                          gfx::Point(item1_bounds.CenterPoint().x(),
-                                     item1_bounds.CenterPoint().y() + 160));
+                          item1_bounds.CenterPoint() + gfx::Vector2d(0, 160));
   EXPECT_NE(item2_bounds, item2->target_bounds());
   EXPECT_NE(item3_bounds, item3->target_bounds());
 
@@ -3521,8 +3532,7 @@ TEST_F(SplitViewWindowSelectorTest, BasicNudging) {
   // should be nudging towards their final bounds.
   window_selector()->InitiateDrag(item3, item3_bounds.CenterPoint());
   window_selector()->Drag(item3,
-                          gfx::Point(item3_bounds.CenterPoint().x(),
-                                     item3_bounds.CenterPoint().y() + 160));
+                          item3_bounds.CenterPoint() + gfx::Vector2d(0, 160));
   EXPECT_NE(item1_bounds, item1->target_bounds());
   EXPECT_NE(item2_bounds, item2->target_bounds());
 }
@@ -3559,8 +3569,7 @@ TEST_F(SplitViewWindowSelectorTest, NoNudgingWhenNumRowsChange) {
   // bounds should change, as none of them should be nudged.
   window_selector()->InitiateDrag(item1, item1_bounds.CenterPoint());
   window_selector()->Drag(item1,
-                          gfx::Point(item1_bounds.CenterPoint().x(),
-                                     item1_bounds.CenterPoint().y() + 160));
+                          item1_bounds.CenterPoint() + gfx::Vector2d(0, 160));
   EXPECT_EQ(item2_bounds, item2->target_bounds());
   EXPECT_EQ(item3_bounds, item3->target_bounds());
   EXPECT_EQ(item4_bounds, item4->target_bounds());
@@ -3599,8 +3608,7 @@ TEST_F(SplitViewWindowSelectorTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
   // first row to the second.
   window_selector()->InitiateDrag(items[3], item_bounds[3].CenterPoint());
   window_selector()->Drag(items[3],
-                          gfx::Point(item_bounds[3].CenterPoint().x(),
-                                     item_bounds[3].CenterPoint().y() + 160));
+                          item_bounds[3].CenterPoint() + gfx::Vector2d(0, 160));
   EXPECT_EQ(item_bounds[0], items[0]->target_bounds());
   EXPECT_EQ(item_bounds[1], items[1]->target_bounds());
   EXPECT_EQ(item_bounds[2], items[2]->target_bounds());
@@ -3617,8 +3625,7 @@ TEST_F(SplitViewWindowSelectorTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
   // row than the first item.
   window_selector()->InitiateDrag(items[0], item_bounds[0].CenterPoint());
   window_selector()->Drag(items[0],
-                          gfx::Point(item_bounds[0].CenterPoint().x(),
-                                     item_bounds[0].CenterPoint().y() + 160));
+                          item_bounds[0].CenterPoint() + gfx::Vector2d(0, 160));
   EXPECT_NE(item_bounds[1], items[1]->target_bounds());
   EXPECT_NE(item_bounds[2], items[2]->target_bounds());
   EXPECT_EQ(item_bounds[3], items[3]->target_bounds());

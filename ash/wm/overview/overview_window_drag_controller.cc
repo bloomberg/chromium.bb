@@ -45,7 +45,7 @@ constexpr int kMinimumDragToSnapDistanceDp = 96;
 constexpr int kMinimumDragDistanceAlreadyInSnapRegionDp = 48;
 
 // Flings with less velocity than this will not close the dragged item.
-constexpr float kFlingToCloseVelocityThreshold = 3000.f;
+constexpr float kFlingToCloseVelocityThreshold = 2000.f;
 constexpr float kItemMinOpacity = 0.4f;
 
 }  // namespace
