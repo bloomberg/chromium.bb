@@ -313,10 +313,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual bool ShouldBlockWebGL() { return false; }
 
-  // If an HTML document is being loaded, informs the embedder that the document
-  // will have its <body> attached soon.
-  virtual void DispatchWillInsertBody() {}
-
   virtual std::unique_ptr<WebServiceWorkerProvider>
   CreateServiceWorkerProvider() = 0;
 

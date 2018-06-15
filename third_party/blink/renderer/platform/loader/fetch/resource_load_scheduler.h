@@ -253,10 +253,6 @@ class PLATFORM_EXPORT ResourceLoadScheduler final
   // TODO(toyoshim): We may want to use enum once we start to have more states.
   bool is_shutdown_ = false;
 
-  // A mutable flag to indicate if the throttling and scheduling are enabled.
-  // Can be modified by field trial flags or for testing.
-  bool is_enabled_ = false;
-
   ThrottlingPolicy policy_ = ThrottlingPolicy::kNormal;
 
   // ResourceLoadScheduler threshold values for various circumstances. Some

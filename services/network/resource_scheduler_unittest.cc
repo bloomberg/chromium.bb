@@ -310,12 +310,6 @@ class ResourceSchedulerTest : public testing::Test {
     // Initialize the scheduler.
     InitializeScheduler();
 
-    // For 2G, the typical values of RTT and bandwidth should result in the
-    // override taking effect with the experiment enabled. For this case, the
-    // new limit is 2. The limit will matter only once the page has a body,
-    // since delayable requests are not loaded before that.
-    scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-
     // Throw in one high priority request to ensure that it does not matter once
     // a body exists.
     std::unique_ptr<TestRequest> high2(
@@ -423,8 +417,6 @@ class ResourceSchedulerTest : public testing::Test {
         net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
     InitializeScheduler();
-    // Limit will only trigger after the page has a body.
-    scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
     // Start one non-delayable request.
     std::unique_ptr<TestRequest> non_delayable_request(
         NewRequest("http://host/medium", net::MEDIUM));
@@ -693,9 +685,6 @@ TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenDelayable) {
   http_server_properties_.SetSupportsSpdy(
       url::SchemeHostPort("https", "spdyhost", 443), true);
 
-  // Body has been reached.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-
   // Add more than max-per-host low-priority requests.
   std::vector<std::unique_ptr<TestRequest>> requests;
   for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
@@ -719,9 +708,6 @@ TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenHeadDelayable) {
   InitializeScheduler();
   http_server_properties_.SetSupportsSpdy(
       url::SchemeHostPort("https", "spdyhost", 443), true);
-
-  // Body has been reached.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
 
   // Add more than max-per-host low-priority requests.
   std::vector<std::unique_ptr<TestRequest>> requests;
@@ -762,9 +748,6 @@ TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyProxyWhenNotDelayable) {
 
   InitializeScheduler();
 
-  // Body has been reached.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-
   // Add more than max-per-host low-priority requests.
   std::vector<std::unique_ptr<TestRequest>> requests;
   for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
@@ -786,9 +769,6 @@ TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyProxyWhenDelayable) {
       kHeadPrioritySupportedRequestsDelayable);
 
   InitializeScheduler();
-
-  // Body has been reached.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
 
   // Add more than max-per-host low-priority requests.
   std::vector<std::unique_ptr<TestRequest>> requests;
@@ -815,9 +795,6 @@ TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyProxyWhenHeadDelayable) {
       kPrioritySupportedRequestsDelayable);
 
   InitializeScheduler();
-
-  // Body has been reached.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
 
   // Add more than max-per-host low-priority requests.
   std::vector<std::unique_ptr<TestRequest>> requests;
@@ -900,9 +877,6 @@ TEST_F(ResourceSchedulerTest, LimitedNumberOfDelayableRequestsInFlight) {
   // chance to start, which conflicts this test. So disable the feature.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine("", kNetworkSchedulerYielding);
-
-  // We only load low priority resources if there's a body.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
 
   // Throw in one high priority request to make sure that's not a factor.
   std::unique_ptr<TestRequest> high(
@@ -1069,7 +1043,6 @@ TEST_F(ResourceSchedulerTest, ReprioritizedRequestGoesToBackOfQueue) {
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
 
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(request->started());
   EXPECT_FALSE(idle->started());
@@ -1097,7 +1070,6 @@ TEST_F(ResourceSchedulerTest, HigherIntraPriorityGoesToFrontOfQueue) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(request->started());
 
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
   high.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request->started());
@@ -1173,7 +1145,6 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
                                           kPrioritySupportedRequestsDelayable);
   InitializeScheduler();
 
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
   const int kDefaultMaxNumDelayableRequestsPerClient =
       10;  // Should match the .cc.
 
@@ -1216,7 +1187,6 @@ TEST_F(ResourceSchedulerTest,
       net::EFFECTIVE_CONNECTION_TYPE_2G);
   InitializeScheduler();
 
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
   // Maximum number of delayable requests allowed when effective connection type
   // is 2G.
   const int max_delayable_requests_per_client_ect_2g = 8;
@@ -1264,7 +1234,6 @@ TEST_F(ResourceSchedulerTest, NewDelayableSpdyHostInDelayableRequests) {
                                           "");
   InitializeScheduler();
 
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
   const int kDefaultMaxNumDelayableRequestsPerClient =
       10;  // Should match the .cc.
 
@@ -1375,7 +1344,6 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
     // The limit will matter only once the page has a body, since delayable
     // requests are not loaded before that.
     scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
-    scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
 
     // Throw in one high priority request to ensure that it does not matter once
     // a body exists.
@@ -1485,7 +1453,6 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   // The limit will matter only once the page has a body, since delayable
   // requests are not loaded before that.
   scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
 
   // Throw in one high priority request to ensure that it does not matter once
   // a body exists.
@@ -1514,7 +1481,6 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   // Trigger a navigation event which will recompute limits. Also insert a body,
   // because the limit matters only after the body exists.
   scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
 
   // Ensure that high priority requests still start.
   std::unique_ptr<TestRequest> high2(
@@ -1585,7 +1551,6 @@ TEST_F(ResourceSchedulerTest, ThrottleDelayableDisabled) {
   network_quality_estimator_.set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
   scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
   // Insert one non-delayable request. This should not affect the number of
   // delayable requests started.
   std::unique_ptr<TestRequest> medium(
@@ -1628,7 +1593,6 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableOutsideECT) {
 
   InitializeScheduler();
   scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
   // Insert one non-delayable request. This should not affect the number of
   // delayable requests started.
   std::unique_ptr<TestRequest> medium(
@@ -1660,7 +1624,6 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableVaryNonDelayable) {
   InitializeScheduler();
   // Limit will only trigger after the page has a body.
   scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
   for (int num_non_delayable = 0; num_non_delayable < 10; ++num_non_delayable) {
     base::RunLoop().RunUntilIdle();
     // Start the non-delayable requests.
@@ -1706,7 +1669,6 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableWeight3) {
 TEST_F(ResourceSchedulerTest, NumDelayableAtStartOfNonDelayableUMA) {
   std::unique_ptr<base::HistogramTester> histogram_tester(
       new base::HistogramTester);
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
   // Check that 0 is recorded when a non-delayable request starts and there are
   // no delayable requests in-flight.
   std::unique_ptr<TestRequest> high(
@@ -1898,10 +1860,6 @@ TEST_F(ResourceSchedulerTest,
   ASSERT_LT(kMaxNumDelayableRequestsPerHostPerClient,
             kDefaultMaxNumDelayableRequestsPerClient);
 
-  // Body has been reached. Up to kDefaultMaxNumDelayableRequestsPerClient
-  // delayable requests would be allowed in-flight.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-
   // Add more than kMaxNumDelayableRequestsPerHostPerClient low-priority
   // requests. They should all be allowed.
   std::vector<std::unique_ptr<TestRequest>> requests;
@@ -1942,10 +1900,6 @@ TEST_F(ResourceSchedulerTest,
   ASSERT_LT(kMaxNumDelayableRequestsPerHostPerClient,
             kDefaultMaxNumDelayableRequestsPerClient);
 
-  // Body has been reached. Up to kDefaultMaxNumDelayableRequestsPerClient
-  // delayable requests would be allowed in-flight.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
-
   // Add more than kDefaultMaxNumDelayableRequestsPerClient low-priority
   // requests. They should all be allowed.
   std::vector<std::unique_ptr<TestRequest>> requests;
@@ -1965,9 +1919,6 @@ TEST_F(ResourceSchedulerTest,
       net::EFFECTIVE_CONNECTION_TYPE_2G);
 
   InitializeScheduler();
-
-  // Body has been reached.
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
 
   // Add more than kMaxNumDelayableRequestsPerHostPerClient delayable requests.
   // They should not all be allowed.
@@ -1995,7 +1946,6 @@ TEST_F(ResourceSchedulerTest,
   // The limit will matter only once the page has a body, since delayable
   // requests are not loaded before that.
   scheduler()->DeprecatedOnNavigate(kChildId, kRouteId);
-  scheduler()->DeprecatedOnWillInsertBody(kChildId, kRouteId);
 
   // Throw in one high priority request to ensure that it does not matter once
   // a body exists.

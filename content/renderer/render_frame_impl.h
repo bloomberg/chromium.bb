@@ -705,7 +705,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillReleaseScriptContext(v8::Local<v8::Context> context,
                                 int world_id) override;
   void DidChangeScrollOffset() override;
-  void WillInsertBody() override;
   void ReportFindInPageMatchCount(int request_id,
                                   int count,
                                   bool final_update) override;

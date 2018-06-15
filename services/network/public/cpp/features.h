@@ -18,8 +18,6 @@ extern const base::Feature kNetworkService;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kOutOfBlinkCORS;
 COMPONENT_EXPORT(NETWORK_CPP)
-extern const base::Feature kRendererSideResourceScheduler;
-COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kReporting;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kThrottleDelayable;

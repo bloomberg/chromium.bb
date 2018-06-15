@@ -681,10 +681,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // The main frame scrolled.
   virtual void DidChangeScrollOffset() {}
 
-  // If the frame is loading an HTML document, this will be called to
-  // notify that the <body> will be attached soon.
-  virtual void WillInsertBody() {}
-
   // Informs the browser that the draggable regions have been updated.
   virtual void DraggableRegionsChanged() {}
 

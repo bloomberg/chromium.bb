@@ -398,8 +398,6 @@ class BLINK_PLATFORM_EXPORT Platform {
     return WebString();
   }
 
-  virtual bool IsRendererSideResourceSchedulerEnabled() const { return false; }
-
   // Threads -------------------------------------------------------
 
   // Creates an embedder-defined thread.

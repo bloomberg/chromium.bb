@@ -3033,11 +3033,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableChromeVoxArcSupport)},
 #endif  // defined(OS_CHROMEOS)
 
-    {"enable-renderer-side-resource-scheduler",
-     flag_descriptions::kRendererSideResourceSchedulerName,
-     flag_descriptions::kRendererSideResourceSchedulerDescription, kOsAll,
-     FEATURE_VALUE_TYPE(network::features::kRendererSideResourceScheduler)},
-
 #if defined(OS_CHROMEOS)
     {"force-tablet-mode", flag_descriptions::kUiModeName,
      flag_descriptions::kUiModeDescription, kOsCrOS,
