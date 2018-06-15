@@ -16,7 +16,6 @@
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/net_errors.h"
-#include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/proxy_fallback.h"
 #include "net/log/net_log_source_type.h"
@@ -25,6 +24,7 @@
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/ssl/ssl_config_service.h"
 #include "services/network/proxy_resolving_client_socket.h"
+#include "services/network/proxy_resolving_client_socket_factory.h"
 
 namespace gcm {
 
@@ -52,16 +52,15 @@ bool ShouldRestorePreviousBackoff(const base::TimeTicks& login_time,
 ConnectionFactoryImpl::ConnectionFactoryImpl(
     const std::vector<GURL>& mcs_endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
-    net::HttpNetworkSession* gcm_network_session,
-    net::HttpNetworkSession* http_network_session,
-    net::NetLog* net_log,
+    net::URLRequestContext* url_request_context,
     GCMStatsRecorder* recorder)
     : mcs_endpoints_(mcs_endpoints),
       next_endpoint_(0),
       last_successful_endpoint_(0),
       backoff_policy_(backoff_policy),
-      gcm_network_session_(gcm_network_session),
-      http_network_session_(http_network_session),
+      socket_factory_(
+          std::make_unique<network::ProxyResolvingClientSocketFactory>(
+              url_request_context)),
       connecting_(false),
       waiting_for_backoff_(false),
       waiting_for_network_online_(false),
@@ -70,8 +69,6 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
       listener_(NULL),
       weak_ptr_factory_(this) {
   DCHECK_GE(mcs_endpoints_.size(), 1U);
-  DCHECK(!http_network_session_ ||
-         (gcm_network_session_ != http_network_session_));
 }
 
 ConnectionFactoryImpl::~ConnectionFactoryImpl() {
@@ -319,11 +316,7 @@ void ConnectionFactoryImpl::StartConnection() {
   connecting_ = true;
   GURL current_endpoint = GetCurrentEndpoint();
   recorder_->RecordConnectionInitiated(current_endpoint.host());
-  UpdateFromHttpNetworkSession();
-  net::SSLConfig ssl_config;
-  gcm_network_session_->ssl_config_service()->GetSSLConfig(&ssl_config);
-  socket_ = std::make_unique<network::ProxyResolvingClientSocket>(
-      gcm_network_session_, ssl_config, current_endpoint, true /*use_tls*/);
+  socket_ = socket_factory_->CreateSocket(current_endpoint, true /*use_tls*/);
   int status = socket_->Connect(base::BindRepeating(
       &ConnectionFactoryImpl::OnConnectDone, weak_ptr_factory_.GetWeakPtr()));
   if (status != net::ERR_IO_PENDING)
@@ -470,17 +463,6 @@ void ConnectionFactoryImpl::CloseSocket() {
   if (socket_)
     socket_->Disconnect();
   socket_ = nullptr;
-}
-
-void ConnectionFactoryImpl::UpdateFromHttpNetworkSession() {
-  if (!http_network_session_ || !http_network_session_->http_auth_cache())
-    return;
-
-  gcm_network_session_->http_auth_cache()->UpdateAllFrom(
-      *http_network_session_->http_auth_cache());
-
-  if (!http_network_session_->IsQuicEnabled())
-    gcm_network_session_->DisableQuic();
 }
 
 }  // namespace gcm

@@ -41,8 +41,6 @@
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
-#include "net/http/http_network_session.h"
-#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "url/gurl.h"
 
@@ -280,12 +278,10 @@ std::unique_ptr<MCSClient> GCMInternalsBuilder::BuildMCSClient(
 std::unique_ptr<ConnectionFactory> GCMInternalsBuilder::BuildConnectionFactory(
     const std::vector<GURL>& endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
-    net::HttpNetworkSession* gcm_network_session,
-    net::HttpNetworkSession* http_network_session,
+    net::URLRequestContext* url_request_context,
     GCMStatsRecorder* recorder) {
-  return base::WrapUnique<ConnectionFactory>(
-      new ConnectionFactoryImpl(endpoints, backoff_policy, gcm_network_session,
-                                http_network_session, nullptr, recorder));
+  return base::WrapUnique<ConnectionFactory>(new ConnectionFactoryImpl(
+      endpoints, backoff_policy, url_request_context, recorder));
 }
 
 GCMClientImpl::CheckinInfo::CheckinInfo()
@@ -342,16 +338,6 @@ void GCMClientImpl::Initialize(
   DCHECK(delegate);
 
   url_request_context_getter_ = url_request_context_getter;
-  const net::HttpNetworkSession::Params* network_session_params =
-      url_request_context_getter_->GetURLRequestContext()->
-          GetNetworkSessionParams();
-  DCHECK(network_session_params);
-  const net::HttpNetworkSession::Context* network_session_context =
-      url_request_context_getter_->GetURLRequestContext()
-          ->GetNetworkSessionContext();
-  network_session_.reset(new net::HttpNetworkSession(*network_session_params,
-                                                     *network_session_context));
-
   chrome_build_info_ = chrome_build_info;
 
   gcm_store_.reset(
@@ -508,13 +494,8 @@ void GCMClientImpl::InitializeMCSClient() {
   if (fallback_endpoint.is_valid())
     endpoints.push_back(fallback_endpoint);
   connection_factory_ = internals_builder_->BuildConnectionFactory(
-      endpoints,
-      GetGCMBackoffPolicy(),
-      network_session_.get(),
-      url_request_context_getter_->GetURLRequestContext()
-          ->http_transaction_factory()
-          ->GetSession(),
-      &recorder_);
+      endpoints, GetGCMBackoffPolicy(),
+      url_request_context_getter_->GetURLRequestContext(), &recorder_);
   connection_factory_->SetConnectionListener(this);
   mcs_client_ = internals_builder_->BuildMCSClient(
       chrome_build_info_.version, clock_, connection_factory_.get(),

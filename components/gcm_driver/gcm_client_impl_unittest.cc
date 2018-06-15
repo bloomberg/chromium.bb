@@ -226,8 +226,7 @@ class FakeGCMInternalsBuilder : public GCMInternalsBuilder {
   std::unique_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
-      net::HttpNetworkSession* gcm_network_session,
-      net::HttpNetworkSession* http_network_session,
+      net::URLRequestContext* url_request_context,
       GCMStatsRecorder* recorder) override;
 
  private:
@@ -257,8 +256,7 @@ std::unique_ptr<ConnectionFactory>
 FakeGCMInternalsBuilder::BuildConnectionFactory(
     const std::vector<GURL>& endpoints,
     const net::BackoffEntry::Policy& backoff_policy,
-    net::HttpNetworkSession* gcm_network_session,
-    net::HttpNetworkSession* http_network_session,
+    net::URLRequestContext* url_request_context,
     GCMStatsRecorder* recorder) {
   return base::WrapUnique<ConnectionFactory>(new FakeConnectionFactory());
 }

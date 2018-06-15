@@ -59,6 +59,11 @@ ProxyResolvingClientSocketFactory::ProxyResolvingClientSocketFactory(
     session_params.enable_http2 = reference_params->enable_http2;
     session_params.enable_http2_alternative_service =
         reference_params->enable_http2_alternative_service;
+    // Note that ProxyResolvingClientSocket uses either
+    // net::InitSocketHandleForTlsConnect() or
+    // net::InitSocketHandleForRawConnect() to establish connections through
+    // socket pools. QUIC's connection establishment is in another path, so
+    // enabling QUIC won't do anything here.
   }
 
   network_session_ = std::make_unique<net::HttpNetworkSession>(session_params,
