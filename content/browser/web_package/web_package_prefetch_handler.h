@@ -22,7 +22,7 @@ namespace content {
 
 class ResourceContext;
 class URLLoaderThrottle;
-class WebPackageLoader;
+class SignedExchangeLoader;
 
 // Attached to each PrefetchURLLoader if the prefetch is for a signed exchange.
 class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
@@ -31,7 +31,7 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
 
   // This takes |network_loader| and |network_client| to set up the
-  // WebPackageLoader (so that the loader can load data from the network).
+  // SignedExchangeLoader (so that the loader can load data from the network).
   // |forwarding_client| is a pointer to the downstream client (typically who
   // creates this handler).
   WebPackagePrefetchHandler(
@@ -51,10 +51,10 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
 
   ~WebPackagePrefetchHandler() override;
 
-  // This connects |loader_request| to the WebPackageLoader, and returns the
+  // This connects |loader_request| to the SignedExchangeLoader, and returns the
   // pending client request to the loader.
   // The returned client request can be bound to the downstream client so that
-  // they can start directly receiving upcalls from the WebPackageLoader.
+  // they can start directly receiving upcalls from the SignedExchangeLoader.
   // After this point |this| can be destructed.
   network::mojom::URLLoaderClientRequest FollowRedirect(
       network::mojom::URLLoaderRequest loader_request);
@@ -75,7 +75,7 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
 
   mojo::Binding<network::mojom::URLLoaderClient> loader_client_binding_;
 
-  std::unique_ptr<WebPackageLoader> web_package_loader_;
+  std::unique_ptr<SignedExchangeLoader> signed_exchange_loader_;
 
   network::mojom::URLLoaderClient* forwarding_client_;
 

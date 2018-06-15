@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_
-#define CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_
+#ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_LOADER_H_
+#define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_LOADER_H_
 
 #include "base/callback.h"
 #include "base/optional.h"
@@ -34,18 +34,18 @@ class SignedExchangeHandlerFactory;
 class URLLoaderThrottle;
 class SourceStreamToDataPipe;
 
-// WebPackageLoader handles an origin-signed HTTP exchange response. It is
+// SignedExchangeLoader handles an origin-signed HTTP exchange response. It is
 // created when a WebPackageRequestHandler recieves an origin-signed HTTP
 // exchange response, and is owned by the handler until the StartLoaderCallback
 // of WebPackageRequestHandler::StartResponse is called. After that, it is
 // owned by the URLLoader mojo endpoint.
-class WebPackageLoader final : public network::mojom::URLLoaderClient,
-                               public network::mojom::URLLoader {
+class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
+                                   public network::mojom::URLLoader {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
 
-  WebPackageLoader(
+  SignedExchangeLoader(
       const GURL& outer_request_url,
       const network::ResourceResponseHead& outer_response,
       network::mojom::URLLoaderClientPtr forwarding_client,
@@ -57,7 +57,7 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
-  ~WebPackageLoader() override;
+  ~SignedExchangeLoader() override;
 
   // network::mojom::URLLoaderClient implementation
   // Only OnStartLoadingResponseBody() and OnComplete() are called.
@@ -145,11 +145,11 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
 
   std::string content_type_;
 
-  base::WeakPtrFactory<WebPackageLoader> weak_factory_;
+  base::WeakPtrFactory<SignedExchangeLoader> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebPackageLoader);
+  DISALLOW_COPY_AND_ASSIGN(SignedExchangeLoader);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_LOADER_H_
+#endif  // CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_LOADER_H_
