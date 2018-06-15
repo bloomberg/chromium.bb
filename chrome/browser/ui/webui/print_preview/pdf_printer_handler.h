@@ -8,8 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -17,6 +15,7 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {
+class FilePath;
 class RefCountedMemory;
 }
 
