@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_navigation.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace blink {
 
@@ -68,11 +69,14 @@ class CORE_EXPORT WindowPerformance final : public Performance,
   bool ObservingEventTimingEntries();
   bool ShouldBufferEventTiming();
 
-  void AddEventTiming(String event_type,
-                      TimeTicks start_time,
-                      TimeTicks processing_start,
-                      TimeDelta duration,
-                      bool cancelable);
+  // This method creates a PerformanceEventTiming and if needed creates a swap
+  // promise to calculate the |duration| attribute when such promise is
+  // resolved.
+  void RegisterEventTiming(String event_type,
+                           TimeTicks start_time,
+                           TimeTicks processing_start,
+                           TimeTicks processing_end,
+                           bool cancelable);
 
   void Trace(blink::Visitor*) override;
 
@@ -96,6 +100,15 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
+  // Method called once swap promise is resolved. It will add all event timings
+  // that have not been added since the last swap promise.
+  void ReportEventTimings(WebLayerTreeView::SwapResult result,
+                          TimeTicks timestamp);
+
+  // PerformanceEventTiming entries that have not been added yet: the event
+  // dispatch has been completed but the swap promise used to determine
+  // |duration| has not been resolved.
+  HeapVector<Member<PerformanceEventTiming>> event_timings_;
   mutable Member<PerformanceNavigation> navigation_;
   mutable Member<PerformanceTiming> timing_;
 };

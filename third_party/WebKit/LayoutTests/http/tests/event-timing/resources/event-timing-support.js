@@ -27,6 +27,12 @@ function verifyClickEvent(entry) {
   assert_equals(entry.entryType, 'event');
   assert_greater_than(entry.duration, 50,
       "The entry's duration should be greater than 50ms.");
+  assert_greater_than(entry.processingStart, entry.startTime,
+      "The entry's processingStart should be greater than startTime.");
+  assert_greater_than_equal(entry.processingEnd, entry.processingStart,
+      "The entry's processingEnd must be at least as large as processingStart.");
+  assert_greater_than_equal(entry.duration, entry.processingEnd - entry.startTime,
+      "The entry's duration must be at least as large as processingEnd - startTime.");
 }
 
 function wait() {
@@ -40,7 +46,7 @@ function wait() {
 function clickAndBlockMain(id) {
   return new Promise((resolve, reject) => {
     clickOnElement(id);
-    mainThreadBusy(500);
+    mainThreadBusy(300);
     resolve();
   });
 }

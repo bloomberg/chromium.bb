@@ -4,12 +4,13 @@
 <title>Event Timing: Performance observers can observe long-latency events
 </title>
 <button id='button' onclick='1'>Generate a 'click' event</button>
-<script src=../../resources/testharness.js></script>
-<script src=../../resources/testharnessreport.js></script>
+<script src=../../../resources/testharness.js></script>
+<script src=../../../resources/testharnessreport.js></script>
 <script src=./resources/event-timing-support.js></script>
+<img src=./resources/slow-image.php>
+
 <script>
-  let observerStart;
-  let processingStartMin;
+  let timeAfterFirstClick;
   let observedEntries = [];
 
   function verifyBuffer(bufferedEntries) {
@@ -20,45 +21,41 @@
     const entry = bufferedEntries[0];
     assert_greater_than(loadStart, entry.startTime,
         "onload should be later than entry's start time.");
-    assert_greater_than(entry.processingStart, processingStartMin,
-        "The entry's processing start should be later than processingStartMin.");
+    assert_greater_than(entry.processingStart, timeAfterFirstClick,
+        "The entry's processing start should be later than timeAfterFirstClick.");
     verifyClickEvent(entry);
   }
 
   function verifyObserverEntries(observedEntries) {
-    const observedEntriesHappenAfterObserver = observedEntries.filter(
-        e => e.startTime > observerStart);
-    assert_equals(observedEntriesHappenAfterObserver.length, 1,
-        'Events DISPATCHED after observer start should be observed.');
-    const entry1 = observedEntriesHappenAfterObserver[0];
+    const entriesAfterFirstClick = observedEntries.filter(
+        e => e.startTime > timeAfterFirstClick);
+    assert_equals(entriesAfterFirstClick.length, 1,
+        'There should be one event after timeAfterFirstClick.');
+    const entry1 = entriesAfterFirstClick[0];
     verifyClickEvent(entry1);
-    assert_greater_than(entry1.processingStart, processingStartMin,
-        "entry1's processing start should be later than processingStartMin.");
-    assert_greater_than(entry1.startTime, observerStart,
-        "entry1's start time should be later than observer start.");
+    assert_greater_than(entry1.processingStart, timeAfterFirstClick,
+        "entry1's processing start should be later than timeAfterFirstClick.");
+    assert_greater_than(entry1.startTime, timeAfterFirstClick,
+        "entry1's start time should be later than timeAfterFirstClick.");
 
-    // This case is tricky in that the click happened before observer,
-    // but the dispatching of it is delayed until after observer start
-    // due to busy mainthread. The observer is thus able to observe the click.
-    const observedEntriesHappenBeforeObserver =
-        observedEntries.filter(e => e.startTime < observerStart);
-    assert_equals(observedEntriesHappenBeforeObserver.length, 1,
-        'Events HAPPENING before observer but DISPATCHED after observer start \
-        should be observed.'
+    const entriesBeforeFirstClick =
+        observedEntries.filter(e => e.startTime < timeAfterFirstClick);
+    assert_equals(entriesBeforeFirstClick.length, 1,
+        'There should be one event before timeAfterFirstClick.'
     );
-    const entry2 = observedEntriesHappenBeforeObserver[0];
+    const entry2 = entriesBeforeFirstClick[0];
     verifyClickEvent(entry2);
-    assert_greater_than(entry2.processingStart, processingStartMin,
-        "entry2's processing start should be later than processingStartMin.");
-    assert_greater_than(observerStart, entry2.startTime,
-        "observer start should be later than entry2's start time.");
+    assert_greater_than(entry2.processingStart, timeAfterFirstClick,
+        "entry2's processing start should be later than timeAfterFirstClick.");
+    assert_greater_than(timeAfterFirstClick, entry2.startTime,
+        "timeAfterFirstClick should be later than entry2's start time.");
   }
 
   /* Timeline:
+     Observer starts
      Begin Busy Loop
      Click 1 arrives
      End Busy Loop
-     Observer starts
      (Dispatch and Process Click 1 (buffered, observed))
      Onload Event Fires
      Begin Busy Loop
@@ -68,7 +65,6 @@
      observer callback start
   */
   async_test(function(t) {
-    clickAndBlockMain('button');
     const observerPromise = new Promise((resolve, reject) => {
       new PerformanceObserver(function(entryList) {
         observedEntries = observedEntries.concat(entryList.getEntries());
@@ -76,7 +72,8 @@
         resolve(observedEntries);
       }).observe({ entryTypes: ['event'] });
     });
-    observerStart = performance.now();
+    clickAndBlockMain('button');
+    timeAfterFirstClick = performance.now();
     on_event(window, 'load', function(e) {
       // After onload start and before registering observer.
       const bufferPromise = clickAndBlockMain('button').then(wait);
@@ -86,7 +83,6 @@
         t.done();
       });
     });
-    processingStartMin = performance.now();
   }, "Event Timing: click, observer, onload, click.");
 
 </script>

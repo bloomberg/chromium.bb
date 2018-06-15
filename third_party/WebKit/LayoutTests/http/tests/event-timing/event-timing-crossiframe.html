@@ -12,9 +12,10 @@
 <div>
   <iframe src=./resources/event-timing-crossiframe-childframe.html></iframe>
 </div>
-<script src=../../resources/testharness.js></script>
-<script src=../../resources/testharnessreport.js></script>
+<script src=../../../resources/testharness.js></script>
+<script src=../../../resources/testharnessreport.js></script>
 <script src=./resources/event-timing-support.js></script>
+<img src=./resources/slow-image.php>
 <script>
   let clickTimeMin;
   let processingStartMin;
@@ -39,8 +40,7 @@
         "onload should occur later than the entry's start time.");
   }
 
-  function validateChildFrameEntries(msg) {
-    const childFrameData = msg.data;
+  function validateChildFrameEntries(childFrameData) {
     assert_equals(childFrameData.bufferedEntries.length, 1,
       "Event Timing of child frames should only capture child-frame event-timing entries."
     );

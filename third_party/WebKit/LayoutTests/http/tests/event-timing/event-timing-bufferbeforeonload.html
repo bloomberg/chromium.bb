@@ -2,14 +2,25 @@
 <html>
 <meta charset=utf-8 />
 <title>Event Timing: buffer long-latency events before onload</title>
-<button id='button' onclick='1'>Generate a 'click' event</button>
+<button id='button' onclick='clickDelay()'>Generate a 'click' event</button>
 <script src=../../resources/testharness.js></script>
 <script src=../../resources/testharnessreport.js></script>
 <script src=./resources/event-timing-support.js></script>
+<img src=./resources/slow-image.php>
 
 <script>
   let clickTimeMin;
   let processingStartMin;
+  let firstClickStart = 0;
+  let firstClickEnd = 0;
+  function clickDelay() {
+    const onclickStart = performance.now();
+    if (firstClickStart == 0)
+      firstClickStart = onclickStart;
+    while(performance.now() < onclickStart + 10) {}
+    if (firstClickEnd == 0)
+      firstClickEnd = performance.now();
+  }
 
   function validateEntries() {
     const entries = performance.getEntriesByName('click');
@@ -26,6 +37,10 @@
         "The entry should be processed later than processingStartMin.");
     assert_greater_than(entry.startTime, clickTimeMin,
         "The entry's start time should be later than clickTimeMin.");
+    assert_greater_than_equal(firstClickStart, entry.processingStart,
+        "The processingStart must be before the onclick starts.")
+    assert_greater_than_equal(entry.processingEnd, firstClickEnd,
+        "The processingEnd must be after onclick finishes.");
 
     const entriesAfterOnload = entries.filter(
         e => e.startTime > onloadTime);

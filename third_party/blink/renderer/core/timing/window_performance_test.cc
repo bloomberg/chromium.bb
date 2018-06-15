@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -80,6 +81,11 @@ class WindowPerformanceTest : public testing::Test {
     monitor->DidExecuteScript();
     monitor->DidProcessTask(
         base::TimeTicks(), base::TimeTicks() + base::TimeDelta::FromSeconds(1));
+  }
+
+  void SimulateSwapPromise(TimeTicks timestamp) {
+    performance_->ReportEventTimings(WebLayerTreeView::SwapResult::kDidSwap,
+                                     timestamp);
   }
 
   LocalFrame* GetFrame() const { return &page_holder_->GetFrame(); }
@@ -224,12 +230,17 @@ TEST_F(WindowPerformanceTest, EnsureEntryListOrder) {
 }
 
 TEST_F(WindowPerformanceTest, EventTimingBeforeOnLoad) {
-  RuntimeEnabledFeatures::SetEventTimingEnabled(true);
+  ScopedEventTimingForTest event_timing(true);
   EXPECT_TRUE(page_holder_->GetFrame().Loader().GetDocumentLoader());
-  performance_->AddEventTiming("click", TimeTicksFromSeconds(1.1),
-                               TimeTicksFromSeconds(3.3),
-                               TimeDelta::FromSeconds(6), false);
-  EXPECT_EQ(1, (int)performance_->getEntriesByName("click", "event").size());
+
+  TimeTicks start_time = TimeTicksFromSeconds(kTimeOrigin + 1.1);
+  TimeTicks processing_start = TimeTicksFromSeconds(kTimeOrigin + 3.3);
+  TimeTicks processing_end = TimeTicksFromSeconds(kTimeOrigin + 3.8);
+  performance_->RegisterEventTiming("click", start_time, processing_start,
+                                    processing_end, false);
+  TimeTicks swap_time = TimeTicksFromSeconds(kTimeOrigin + 6.0);
+  SimulateSwapPromise(swap_time);
+  EXPECT_EQ(1u, performance_->getEntriesByName("click", "event").size());
   performance_->clearEventTimings();
 
   page_holder_->GetFrame()
@@ -237,21 +248,65 @@ TEST_F(WindowPerformanceTest, EventTimingBeforeOnLoad) {
       .GetDocumentLoader()
       ->GetTiming()
       .MarkLoadEventStart();
-  performance_->AddEventTiming("click", TimeTicksFromSeconds(1.1),
-                               TimeTicksFromSeconds(3.3),
-                               TimeDelta::FromSeconds(6), false);
-  EXPECT_EQ(0, (int)performance_->getEntriesByName("click", "event").size());
+  performance_->RegisterEventTiming("click", start_time, processing_start,
+                                    processing_end, true);
+  SimulateSwapPromise(swap_time);
+  EXPECT_EQ(0u, performance_->getEntriesByName("click", "event").size());
   performance_->clearEventTimings();
 
   EXPECT_TRUE(page_holder_->GetFrame().Loader().GetDocumentLoader());
   GetFrame()->PrepareForCommit();
   EXPECT_FALSE(page_holder_->GetFrame().Loader().GetDocumentLoader());
-  performance_->AddEventTiming("click", TimeTicksFromSeconds(1.1),
-                               TimeTicksFromSeconds(3.3),
-                               TimeDelta::FromSeconds(6), false);
-  EXPECT_EQ(1, (int)performance_->getEntriesByName("click", "event").size());
+  performance_->RegisterEventTiming("click", start_time, processing_start,
+                                    processing_end, false);
+  SimulateSwapPromise(swap_time);
+  EXPECT_EQ(1u, performance_->getEntriesByName("click", "event").size());
   performance_->clearEventTimings();
-
-  RuntimeEnabledFeatures::SetEventTimingEnabled(false);
 }
+
+TEST_F(WindowPerformanceTest, EventTimingDuration) {
+  ScopedEventTimingForTest event_timing(true);
+
+  TimeTicks start_time = TimeTicksFromSeconds(kTimeOrigin + 1.0);
+  TimeTicks processing_start = TimeTicksFromSeconds(kTimeOrigin + 1.001);
+  TimeTicks processing_end = TimeTicksFromSeconds(kTimeOrigin + 1.002);
+  performance_->RegisterEventTiming("click", start_time, processing_start,
+                                    processing_end, false);
+  TimeTicks short_swap_time = TimeTicksFromSeconds(kTimeOrigin + 1.003);
+  SimulateSwapPromise(short_swap_time);
+  EXPECT_EQ(0u, performance_->getEntriesByName("click", "event").size());
+
+  performance_->RegisterEventTiming("click", start_time, processing_start,
+                                    processing_end, true);
+  TimeTicks long_swap_time = TimeTicksFromSeconds(kTimeOrigin + 1.1);
+  SimulateSwapPromise(long_swap_time);
+  EXPECT_EQ(1u, performance_->getEntriesByName("click", "event").size());
+
+  performance_->RegisterEventTiming("click", start_time, processing_start,
+                                    processing_end, true);
+  SimulateSwapPromise(short_swap_time);
+  performance_->RegisterEventTiming("click", start_time, processing_start,
+                                    processing_end, false);
+  SimulateSwapPromise(long_swap_time);
+  EXPECT_EQ(2u, performance_->getEntriesByName("click", "event").size());
+}
+
+TEST_F(WindowPerformanceTest, MultipleEventsSameSwap) {
+  ScopedEventTimingForTest event_timing(true);
+
+  size_t num_events = 10;
+  for (size_t i = 0; i < num_events; ++i) {
+    TimeTicks start_time = TimeTicksFromSeconds(kTimeOrigin + i);
+    TimeTicks processing_start = TimeTicksFromSeconds(kTimeOrigin + i + 0.1);
+    TimeTicks processing_end = TimeTicksFromSeconds(kTimeOrigin + i + 0.2);
+    performance_->RegisterEventTiming("click", start_time, processing_start,
+                                      processing_end, false);
+    EXPECT_EQ(0u, performance_->getEntriesByName("click", "event").size());
+  }
+  TimeTicks swap_time = TimeTicksFromSeconds(kTimeOrigin + num_events);
+  SimulateSwapPromise(swap_time);
+  EXPECT_EQ(num_events,
+            performance_->getEntriesByName("click", "event").size());
+}
+
 }  // namespace blink

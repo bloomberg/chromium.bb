@@ -10,46 +10,48 @@ namespace blink {
 
 // static
 PerformanceEventTiming* PerformanceEventTiming::Create(
-    String type,
-    TimeDelta start_time,
-    TimeDelta processing_start,
-    TimeDelta end_time,
+    const String& type,
+    DOMHighResTimeStamp start_time,
+    DOMHighResTimeStamp processing_start,
+    DOMHighResTimeStamp processing_end,
     bool cancelable) {
+  // TODO(npm): enable this DCHECK once https://crbug.com/852846 is fixed.
+  // DCHECK_LE(start_time, processing_start);
+  DCHECK_LE(processing_start, processing_end);
   return new PerformanceEventTiming(type, start_time, processing_start,
-                                    end_time, cancelable);
+                                    processing_end, cancelable);
 }
 
-// static
-DOMHighResTimeStamp PerformanceEventTiming::timeDeltaToDOMHighResTimeStamp(
-    TimeDelta time_delta) {
-  double time = time_delta.InSecondsF();
-  if (time < 0)
-    time = 0.0;
-  return ConvertSecondsToDOMHighResTimeStamp(
-      Performance::ClampTimeResolution(time));
-}
-
-PerformanceEventTiming::PerformanceEventTiming(String type,
-                                               TimeDelta start_time,
-                                               TimeDelta processing_start,
-                                               TimeDelta end_time,
-                                               bool cancelable)
-    : PerformanceEntry(type,
-                       "event",
-                       timeDeltaToDOMHighResTimeStamp(start_time),
-                       timeDeltaToDOMHighResTimeStamp(end_time)),
+PerformanceEventTiming::PerformanceEventTiming(
+    const String& type,
+    DOMHighResTimeStamp start_time,
+    DOMHighResTimeStamp processing_start,
+    DOMHighResTimeStamp processing_end,
+    bool cancelable)
+    : PerformanceEntry(type, "event", start_time, 0.0),
       processing_start_(processing_start),
+      processing_end_(processing_end),
       cancelable_(cancelable) {}
 
 PerformanceEventTiming::~PerformanceEventTiming() = default;
 
 DOMHighResTimeStamp PerformanceEventTiming::processingStart() const {
-  return timeDeltaToDOMHighResTimeStamp(processing_start_);
+  return processing_start_;
+}
+
+DOMHighResTimeStamp PerformanceEventTiming::processingEnd() const {
+  return processing_end_;
+}
+
+void PerformanceEventTiming::SetDuration(double duration) {
+  DCHECK_LE(0, duration);
+  duration_ = duration;
 }
 
 void PerformanceEventTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   PerformanceEntry::BuildJSONValue(builder);
   builder.AddNumber("processingStart", processingStart());
+  builder.AddNumber("processingEnd", processingEnd());
   builder.AddBoolean("cancelable", cancelable_);
 }
 

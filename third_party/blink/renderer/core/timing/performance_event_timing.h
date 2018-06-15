@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_EVENT_TIMING_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 
@@ -15,30 +16,33 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceEventTiming* Create(String type,
-                                        TimeDelta start_time,
-                                        TimeDelta processing_start,
-                                        TimeDelta end_time,
+  static PerformanceEventTiming* Create(const String& type,
+                                        DOMHighResTimeStamp start_time,
+                                        DOMHighResTimeStamp processing_start,
+                                        DOMHighResTimeStamp processing_end,
                                         bool cancelable);
-  static DOMHighResTimeStamp timeDeltaToDOMHighResTimeStamp(TimeDelta);
 
   ~PerformanceEventTiming() override;
 
   bool cancelable() const { return cancelable_; }
 
   DOMHighResTimeStamp processingStart() const;
+  DOMHighResTimeStamp processingEnd() const;
+
+  void SetDuration(double duration);
 
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
   void Trace(blink::Visitor*) override;
 
  private:
-  PerformanceEventTiming(String type,
-                         TimeDelta start_time,
-                         TimeDelta processing_start,
-                         TimeDelta end_time,
+  PerformanceEventTiming(const String& type,
+                         DOMHighResTimeStamp start_time,
+                         DOMHighResTimeStamp processing_start,
+                         DOMHighResTimeStamp processing_end,
                          bool cancelable);
-  TimeDelta processing_start_;
+  DOMHighResTimeStamp processing_start_;
+  DOMHighResTimeStamp processing_end_;
   bool cancelable_;
 };
 }  // namespace blink
