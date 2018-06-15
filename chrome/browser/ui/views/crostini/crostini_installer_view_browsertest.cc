@@ -103,6 +103,8 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InvokeUi_default) {
 }
 
 IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
+  base::HistogramTester histogram_tester;
+
   ShowUi("default");
   EXPECT_NE(nullptr, ActiveView());
   EXPECT_EQ(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL,
@@ -115,6 +117,19 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
   EXPECT_FALSE(HasAcceptButton());
   EXPECT_TRUE(HasCancelButton());
+
+  waiting_fake_concierge_client_->WaitForStartTerminaVmCalled();
+
+  // RunUntilIdle in this case will run the rest of the install steps including
+  // launching the terminal, on the UI thread.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(nullptr, ActiveView());
+
+  histogram_tester.ExpectBucketCount(
+      "Crostini.SetupResult",
+      static_cast<base::HistogramBase::Sample>(
+          CrostiniInstallerView::SetupResult::kSuccess),
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, Cancel) {
