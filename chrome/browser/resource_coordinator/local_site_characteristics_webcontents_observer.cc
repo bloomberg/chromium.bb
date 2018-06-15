@@ -67,12 +67,20 @@ void LocalSiteCharacteristicsWebContentsObserver::WebContentsDestroyed() {
     PageSignalReceiver::GetInstance()->RemoveObserver(this);
   }
   writer_.reset();
+  writer_origin_ = url::Origin();
 }
 
 void LocalSiteCharacteristicsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(navigation_handle);
+
+  // Ignore the navigation events happening in a subframe of in the same
+  // document.
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
 
   first_time_title_set_ = false;
   first_time_favicon_set_ = false;
@@ -102,6 +110,12 @@ void LocalSiteCharacteristicsWebContentsObserver::DidFinishNavigation(
   writer_ = data_store->GetWriterForOrigin(
       new_origin,
       ContentVisibilityToRCVisibility(web_contents()->GetVisibility()));
+
+  // The writer is initially in an unloaded state, load it if necessary.
+  if (TabLoadTracker::Get()->GetLoadingState(web_contents()) ==
+      LoadingState::LOADED) {
+    writer_->NotifySiteLoaded();
+  }
 
   writer_origin_ = new_origin;
 }
@@ -156,11 +170,11 @@ void LocalSiteCharacteristicsWebContentsObserver::OnLoadingStateChange(
   if (!writer_)
     return;
 
-  if (new_loading_state == TabLoadTracker::LoadingState::LOADED) {
+  // Ignore the transitions from/to an UNLOADED state.
+  if (new_loading_state == LoadingState::LOADED) {
     writer_->NotifySiteLoaded();
-  } else {
-    if (old_loading_state == TabLoadTracker::LoadingState::LOADED)
-      writer_->NotifySiteUnloaded();
+  } else if (old_loading_state == LoadingState::LOADED) {
+    writer_->NotifySiteUnloaded();
   }
 }
 
@@ -176,9 +190,13 @@ void LocalSiteCharacteristicsWebContentsObserver::
 
 bool LocalSiteCharacteristicsWebContentsObserver::
     ShouldIgnoreFeatureUsageEvent() {
+  // The feature usage should be ignored if there's no writer for this tab.
   if (!writer_)
     return true;
 
+  // Features happening before the site gets loaded are also ignored.
+  // TODO(sebmarchand): Consider recording audio/notification usage before the
+  // site gets fully loaded.
   if (TabLoadTracker::Get()->GetLoadingState(web_contents()) !=
       LoadingState::LOADED) {
     return true;
