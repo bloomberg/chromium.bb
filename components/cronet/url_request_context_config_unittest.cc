@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log.h"
@@ -189,7 +190,78 @@ TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {
   EXPECT_TRUE(params->quic_allow_server_migration);
 }
 
-TEST(URLRequestContextConfigTest, SetQuicGoAwaySessionsOnIPChange) {
+// Test that goaway_sessions_on_ip_change is set on by default for iOS.
+#if defined(OS_IOS)
+#define MAYBE_SetQuicGoAwaySessionsOnIPChangeByDefault \
+  SetQuicGoAwaySessionsOnIPChangeByDefault
+#else
+#define MAYBE_SetQuicGoAwaySessionsOnIPChangeByDefault \
+  DISABLED_SetQuicGoAwaySessionsOnIPChangeByDefault
+#endif
+TEST(URLRequestContextConfigTest,
+     MAYBE_SetQuicGoAwaySessionsOnIPChangeByDefault) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
+  URLRequestContextConfig config(
+      // Enable QUIC.
+      true,
+      // QUIC User Agent ID.
+      "Default QUIC User Agent ID",
+      // Enable SPDY.
+      true,
+      // Enable Brotli.
+      false,
+      // Type of http cache.
+      URLRequestContextConfig::HttpCacheType::DISK,
+      // Max size of http cache in bytes.
+      1024000,
+      // Disable caching for HTTP responses. Other information may be stored in
+      // the cache.
+      false,
+      // Storage path for http cache and cookie storage.
+      "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // Accept-Language request header field.
+      "foreign-language",
+      // User-Agent request header field.
+      "fake agent",
+      // JSON encoded experimental options.
+      "{\"QUIC\":{}}",
+      // MockCertVerifier to use for testing purposes.
+      std::unique_ptr<net::CertVerifier>(),
+      // Enable network quality estimator.
+      false,
+      // Enable Public Key Pinning bypass for local trust anchors.
+      true,
+      // Certificate verifier cache data.
+      "");
+
+  net::URLRequestContextBuilder builder;
+  net::NetLog net_log;
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  // Set a ProxyConfigService to avoid DCHECK failure when building.
+  builder.set_proxy_config_service(
+      std::make_unique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfigWithAnnotation::CreateDirect()));
+  std::unique_ptr<net::URLRequestContext> context(builder.Build());
+  const net::HttpNetworkSession::Params* params =
+      context->GetNetworkSessionParams();
+
+  EXPECT_FALSE(params->quic_close_sessions_on_ip_change);
+  EXPECT_TRUE(params->quic_goaway_sessions_on_ip_change);
+}
+
+// Tests that goaway_sessions_on_ip_changes can be set on via
+// experimental options on non-iOS.
+#if !defined(OS_IOS)
+#define MAYBE_SetQuicGoAwaySessionsOnIPChangeViaExperimentOptions \
+  SetQuicGoAwaySessionsOnIPChangeViaExperimentOptions
+#else
+#define MAYBE_SetQuicGoAwaySessionsOnIPChangeViaExperimentOptions \
+  DISABLED_SetQuicGoAwaySessionsOnIPChangeViaExperimentOptions
+#endif
+TEST(URLRequestContextConfigTest,
+     MAYBE_SetQuicGoAwaySessionsOnIPChangeViaExperimentOptions) {
   base::test::ScopedTaskEnvironment scoped_task_environment_(
       base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
@@ -239,6 +311,68 @@ TEST(URLRequestContextConfigTest, SetQuicGoAwaySessionsOnIPChange) {
 
   EXPECT_FALSE(params->quic_close_sessions_on_ip_change);
   EXPECT_TRUE(params->quic_goaway_sessions_on_ip_change);
+}
+
+// Test that goaway_sessions_on_ip_change can be set to false via
+// exprimental options on iOS.
+#if defined(OS_IOS)
+#define MAYBE_DisableQuicGoAwaySessionsOnIPChangeViaExperimentOptions \
+  DisableQuicGoAwaySessionsOnIPChangeViaExperimentOptions
+#else
+#define MAYBE_DisableQuicGoAwaySessionsOnIPChangeViaExperimentOptions \
+  DISABLED_DisableQuicGoAwaySessionsOnIPChangeViaExperimentOptions
+#endif
+TEST(URLRequestContextConfigTest,
+     MAYBE_DisableQuicGoAwaySessionsOnIPChangeViaExperimentOptions) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
+  URLRequestContextConfig config(
+      // Enable QUIC.
+      true,
+      // QUIC User Agent ID.
+      "Default QUIC User Agent ID",
+      // Enable SPDY.
+      true,
+      // Enable Brotli.
+      false,
+      // Type of http cache.
+      URLRequestContextConfig::HttpCacheType::DISK,
+      // Max size of http cache in bytes.
+      1024000,
+      // Disable caching for HTTP responses. Other information may be stored in
+      // the cache.
+      false,
+      // Storage path for http cache and cookie storage.
+      "/data/data/org.chromium.net/app_cronet_test/test_storage",
+      // Accept-Language request header field.
+      "foreign-language",
+      // User-Agent request header field.
+      "fake agent",
+      // JSON encoded experimental options.
+      "{\"QUIC\":{\"goaway_sessions_on_ip_change\":false}}",
+      // MockCertVerifier to use for testing purposes.
+      std::unique_ptr<net::CertVerifier>(),
+      // Enable network quality estimator.
+      false,
+      // Enable Public Key Pinning bypass for local trust anchors.
+      true,
+      // Certificate verifier cache data.
+      "");
+
+  net::URLRequestContextBuilder builder;
+  net::NetLog net_log;
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  // Set a ProxyConfigService to avoid DCHECK failure when building.
+  builder.set_proxy_config_service(
+      std::make_unique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfigWithAnnotation::CreateDirect()));
+  std::unique_ptr<net::URLRequestContext> context(builder.Build());
+  const net::HttpNetworkSession::Params* params =
+      context->GetNetworkSessionParams();
+
+  EXPECT_FALSE(params->quic_close_sessions_on_ip_change);
+  EXPECT_FALSE(params->quic_goaway_sessions_on_ip_change);
 }
 
 TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {

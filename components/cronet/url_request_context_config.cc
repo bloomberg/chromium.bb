@@ -13,6 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/cronet/stale_host_resolver.h"
 #include "net/base/address_family.h"
 #include "net/cert/caching_cert_verifier.h"
@@ -123,6 +124,14 @@ const char kNetworkErrorLoggingEnable[] = "enable";
 const char kDisableIPv6OnWifi[] = "disable_ipv6_on_wifi";
 
 const char kSSLKeyLogFile[] = "ssl_key_log_file";
+
+// "goaway_sessions_on_ip_change" is default on for iOS unless overrided via
+// experimental options explicitly.
+#if defined(OS_IOS)
+const bool kDefaultQuicGoAwaySessionsOnIpChange = true;
+#else
+const bool kDefaultQuicGoAwaySessionsOnIpChange = false;
+#endif
 
 }  // namespace
 
@@ -283,13 +292,21 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                 &quic_close_sessions_on_ip_change)) {
         session_params->quic_close_sessions_on_ip_change =
             quic_close_sessions_on_ip_change;
+        if (quic_close_sessions_on_ip_change &&
+            kDefaultQuicGoAwaySessionsOnIpChange) {
+          // "close_sessions_on_ip_change" and "goaway_sessions_on_ip_change"
+          // are mutually exclusive. Turn off the goaway option which is
+          // default on for iOS if "close_sessions_on_ip_change" is set via
+          // experimental options.
+          session_params->quic_goaway_sessions_on_ip_change = false;
+        }
       }
 
-      bool quic_goaway_sessions_on_ip_change = false;
+      bool goaway_sessions_on_ip_change;
       if (quic_args->GetBoolean(kQuicGoAwaySessionsOnIpChange,
-                                &quic_goaway_sessions_on_ip_change)) {
+                                &goaway_sessions_on_ip_change)) {
         session_params->quic_goaway_sessions_on_ip_change =
-            quic_goaway_sessions_on_ip_change;
+            goaway_sessions_on_ip_change;
       }
 
       bool quic_allow_server_migration = false;
@@ -545,8 +562,13 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   net::HttpNetworkSession::Params session_params;
   session_params.enable_http2 = enable_spdy;
   session_params.enable_quic = enable_quic;
-  if (enable_quic)
+  if (enable_quic) {
     session_params.quic_user_agent_id = quic_user_agent_id;
+    // Note goaway sessions on ip change will be turned on by default
+    // for iOS unless overrided via experiemental options.
+    session_params.quic_goaway_sessions_on_ip_change =
+        kDefaultQuicGoAwaySessionsOnIpChange;
+  }
 
   ParseAndSetExperimentalOptions(context_builder, &session_params, net_log);
   context_builder->set_http_network_session_params(session_params);
