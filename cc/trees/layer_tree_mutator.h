@@ -41,9 +41,14 @@ struct CC_EXPORT MutatorInputState {
   MutatorInputState();
   ~MutatorInputState();
 
-  std::vector<int> removed_animations;
+  bool IsEmpty() {
+    return added_and_updated_animations.empty() && updated_animations.empty() &&
+           removed_animations.empty();
+  }
+
   std::vector<AddAndUpdateState> added_and_updated_animations;
   std::vector<UpdateState> updated_animations;
+  std::vector<int> removed_animations;
 
   DISALLOW_COPY_AND_ASSIGN(MutatorInputState);
 };

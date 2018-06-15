@@ -53,12 +53,6 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
 
   void PushPropertiesTo(Animation* animation_impl) override;
 
-  // Returns true if the worklet animation needs to be updated which happens iff
-  // its current time is going to be different from last time given these input.
-  bool NeedsUpdate(base::TimeTicks monotonic_time,
-                   const ScrollTree& scroll_tree,
-                   bool is_active_tree);
-
   // Should be called when the scroll source of the ScrollTimeline attached to
   // this animation has a change in ElementId. Such a change happens when the
   // scroll source changes compositing state.
@@ -78,6 +72,12 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   double CurrentTime(base::TimeTicks monotonic_time,
                      const ScrollTree& scroll_tree,
                      bool is_active_tree);
+
+  // Returns true if the worklet animation needs to be updated which happens iff
+  // its current time is going to be different from last time given these input.
+  bool NeedsUpdate(base::TimeTicks monotonic_time,
+                   const ScrollTree& scroll_tree,
+                   bool is_active_tree);
 
   std::unique_ptr<AnimationOptions> CloneOptions() const {
     return options_ ? options_->Clone() : nullptr;

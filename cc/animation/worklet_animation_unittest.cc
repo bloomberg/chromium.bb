@@ -192,30 +192,6 @@ TEST_F(WorkletAnimationTest,
   EXPECT_EQ(246.8, third_state->updated_animations[0].current_time);
 }
 
-TEST_F(WorkletAnimationTest, NeedsUpdateCorrectlyReflectsInputTimeChange) {
-  scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
-      worklet_animation_id_, "test_name", nullptr, nullptr);
-
-  base::TimeTicks first_ticks =
-      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111);
-  base::TimeTicks second_ticks =
-      base::TimeTicks() + base::TimeDelta::FromMillisecondsD(111 + 123.4);
-
-  ScrollTree scroll_tree;
-  std::unique_ptr<MutatorInputState> state =
-      std::make_unique<MutatorInputState>();
-  // First time should always be true.
-  EXPECT_TRUE(worklet_animation->NeedsUpdate(first_ticks, scroll_tree, true));
-  worklet_animation->UpdateInputState(state.get(), first_ticks, scroll_tree,
-                                      true);
-  // Should be false if time is not different from last GetState.
-  EXPECT_FALSE(worklet_animation->NeedsUpdate(first_ticks, scroll_tree, true));
-  // Should be true when input time is different.
-  EXPECT_TRUE(worklet_animation->NeedsUpdate(second_ticks, scroll_tree, true));
-  // Should be side-effect free.
-  EXPECT_TRUE(worklet_animation->NeedsUpdate(second_ticks, scroll_tree, true));
-}
-
 // This test verifies that worklet animation state is properly updated.
 TEST_F(WorkletAnimationTest, WorkletAnimationStateTestWithSingleKeyframeModel) {
   AttachWorkletAnimation();
