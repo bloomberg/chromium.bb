@@ -9,13 +9,6 @@ config("config") {
   include_dirs = [ "src/EarlGrey" ]
 }
 
-config("disable_deprecated_errors") {
-  cflags = [
-    "-Wno-deprecated",
-    "-Wno-deprecated-declarations",
-  ]
-}
-
 ios_framework_bundle("earl_grey") {
   output_name = "EarlGrey"
   info_plist = "Info.plist"
@@ -319,9 +312,5 @@ ios_framework_bundle("earl_grey") {
     "//build/config/compiler:no_chromium_code",
     "//build/config/compiler:enable_arc",
     "//build/config/gcc:symbol_visibility_default",
-
-    # earl_grey internally uses deprecated methods.
-    # Disable the warning about deprecation usage.
-    ":disable_deprecated_errors",
   ]
 }
