@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_PREFETCH_HANDLER_H_
-#define CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_PREFETCH_HANDLER_H_
+#ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_PREFETCH_HANDLER_H_
+#define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_PREFETCH_HANDLER_H_
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -25,7 +25,8 @@ class URLLoaderThrottle;
 class SignedExchangeLoader;
 
 // Attached to each PrefetchURLLoader if the prefetch is for a signed exchange.
-class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
+class SignedExchangePrefetchHandler final
+    : public network::mojom::URLLoaderClient {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
@@ -34,7 +35,7 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
   // SignedExchangeLoader (so that the loader can load data from the network).
   // |forwarding_client| is a pointer to the downstream client (typically who
   // creates this handler).
-  WebPackagePrefetchHandler(
+  SignedExchangePrefetchHandler(
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
       bool report_raw_headers,
       int load_flags,
@@ -49,7 +50,7 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
       scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       network::mojom::URLLoaderClient* forwarding_client);
 
-  ~WebPackagePrefetchHandler() override;
+  ~SignedExchangePrefetchHandler() override;
 
   // This connects |loader_request| to the SignedExchangeLoader, and returns the
   // pending client request to the loader.
@@ -79,9 +80,9 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
 
   network::mojom::URLLoaderClient* forwarding_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebPackagePrefetchHandler);
+  DISALLOW_COPY_AND_ASSIGN(SignedExchangePrefetchHandler);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_PREFETCH_HANDLER_H_
+#endif  // CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_PREFETCH_HANDLER_H_

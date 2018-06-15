@@ -28,7 +28,7 @@ namespace content {
 
 class ResourceContext;
 class URLLoaderThrottle;
-class WebPackagePrefetchHandler;
+class SignedExchangePrefetchHandler;
 
 // PrefetchURLLoader which basically just keeps draining the data.
 class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
@@ -114,7 +114,8 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
 
   std::unique_ptr<mojo::DataPipeDrainer> pipe_drainer_;
 
-  std::unique_ptr<WebPackagePrefetchHandler> web_package_prefetch_handler_;
+  std::unique_ptr<SignedExchangePrefetchHandler>
+      signed_exchange_prefetch_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchURLLoader);
 };
