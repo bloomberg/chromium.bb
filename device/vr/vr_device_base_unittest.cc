@@ -34,9 +34,6 @@ class VRDeviceBaseForTesting : public VRDeviceBase {
 
   bool ListeningForActivate() { return listening_for_activate; }
 
-  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                      VRDeviceRequestSessionCallback callback) override {}
-
  private:
   void OnListeningForActivate(bool listening) override {
     listening_for_activate = listening;
@@ -83,7 +80,7 @@ class VRDeviceTest : public testing::Test {
     mojom::VRDisplayClientPtr display_client;
     return std::make_unique<testing::NiceMock<MockVRDisplayImpl>>(
         device, client(), nullptr, nullptr, mojo::MakeRequest(&display_client),
-        false);
+        0, 0, false);
   }
 
   std::unique_ptr<VRDeviceBaseForTesting> MakeVRDevice() {

@@ -66,29 +66,14 @@ class XrSessionController {
   virtual void StopSession() = 0;
 };
 
-struct XRDeviceRuntimeSessionOptions {
-  bool exclusive;
-
-  // The following options are used for permission requests.
-  int render_process_id;
-  int render_frame_id;
-
-  // A flag to indicate if there has been a user activation when the request
-  // session is made.
-  bool has_user_activation;
-
-  // This flag ensures that render path's that are only supported in WebXR are
-  // not used for WebVR 1.1.
-  bool use_legacy_webvr_render_path;
-};
-
 // Represents one of the platform's VR devices. Owned by the respective
 // VRDeviceProvider.
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT VRDevice {
  public:
-  using VRDeviceRequestSessionCallback =
-      base::OnceCallback<void(mojom::XRPresentationConnectionPtr,
+  using RequestExclusiveSessionCallback =
+      base::OnceCallback<void(bool,
+                              mojom::VRDisplayFrameTransportOptionsPtr,
                               XrSessionController*)>;
 
   virtual ~VRDevice() {}
@@ -97,8 +82,15 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual void ResumeTracking() = 0;
   virtual mojom::VRDisplayInfoPtr GetVRDisplayInfo() = 0;
   virtual void SetMagicWindowEnabled(bool enabled) = 0;
-  virtual void RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                              VRDeviceRequestSessionCallback callback) = 0;
+  virtual void RequestSession(
+      int render_process_id,
+      int render_frame_id,
+      bool has_user_activation,
+      mojom::VRDisplayHost::RequestSessionCallback callback) = 0;
+  virtual void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                              mojom::VRPresentationProviderRequest request,
+                              mojom::VRRequestPresentOptionsPtr present_options,
+                              RequestExclusiveSessionCallback callback) = 0;
   virtual void SetListeningForActivate(bool is_listening) = 0;
 
   // TODO(mthiesse): The browser should handle browser-side exiting of

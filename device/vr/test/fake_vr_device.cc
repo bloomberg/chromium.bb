@@ -50,10 +50,14 @@ mojom::VREyeParametersPtr FakeVRDevice::InitEye(float fov,
   return eye;
 }
 
-void FakeVRDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                                  VRDeviceRequestSessionCallback callback) {
+void FakeVRDevice::RequestPresent(
+    mojom::VRSubmitFrameClientPtr submit_client,
+    mojom::VRPresentationProviderRequest request,
+    mojom::VRRequestPresentOptionsPtr present_options,
+    RequestExclusiveSessionCallback callback) {
   OnStartPresenting();
-  std::move(callback).Run(mojom::XRPresentationConnection::New(), this);
+  std::move(callback).Run(true, mojom::VRDisplayFrameTransportOptions::New(),
+                          this);
 }
 
 void FakeVRDevice::StopSession() {

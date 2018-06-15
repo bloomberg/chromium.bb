@@ -26,7 +26,6 @@
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
-#include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -300,8 +299,10 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   base::WeakPtr<VrShellGl> GetWeakPtr();
 
   void ConnectPresentingService(
+      device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,
+      device::mojom::VRPresentationProviderRequest request,
       device::mojom::VRDisplayInfoPtr display_info,
-      const device::XRDeviceRuntimeSessionOptions& options);
+      device::mojom::VRRequestPresentOptionsPtr present_options);
 
   void set_is_exiting(bool exiting) { is_exiting_ = exiting; }
 
@@ -327,7 +328,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
  private:
   void GvrInit(gvr_context* gvr_api);
   device::mojom::VRDisplayFrameTransportOptionsPtr
-  GetWebVrFrameTransportOptions(const device::XRDeviceRuntimeSessionOptions&);
+      GetWebVrFrameTransportOptions(device::mojom::VRRequestPresentOptionsPtr);
   void InitializeRenderer();
   void UpdateViewports();
   void OnGpuProcessConnectionReady();
@@ -492,13 +493,13 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   gfx::Size render_size_webvr_ui_;
   const bool low_density_;
 
-  // WebXR currently supports multiple render path choices, with runtime
+  // WebVR currently supports multiple render path choices, with runtime
   // selection based on underlying support being available and feature flags.
-  // The webxr_use_* booleans choose among the implementations. Please don't
+  // The webvr_use_* booleans choose among the implementations. Please don't
   // check WebXrRenderPath or other feature flags in individual code paths
   // directly to avoid inconsistent logic.
-  bool webxr_use_gpu_fence_ = false;
-  bool webxr_use_shared_buffer_draw_ = false;
+  bool webvr_use_gpu_fence_ = false;
+  bool webvr_use_shared_buffer_draw_ = false;
 
   void WebVrWaitForServerFence();
   void OnWebVRTokenSignaled(int16_t frame_index,
@@ -523,6 +524,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool daydream_support_;
   bool is_exiting_ = false;
   bool content_paused_;
+  bool report_webxr_input_ = false;
   bool cardboard_trigger_pressed_ = false;
   bool cardboard_trigger_clicked_ = false;
 

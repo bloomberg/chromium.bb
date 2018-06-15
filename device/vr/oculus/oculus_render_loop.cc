@@ -192,22 +192,23 @@ void OculusRenderLoop::UpdateLayerBounds(int16_t frame_id,
   // TODO(billorr): Recreate texture_swap_chain_ when source_size_ has changed.
 };
 
-void OculusRenderLoop::RequestSession(
-    const XRDeviceRuntimeSessionOptions& options,
-    RequestSessionCallback callback) {
-  DCHECK(options.exclusive);
+void OculusRenderLoop::RequestPresent(
+    mojom::VRSubmitFrameClientPtrInfo submit_client_info,
+    mojom::VRPresentationProviderRequest request,
+    device::mojom::VRRequestPresentOptionsPtr present_options,
+    device::mojom::VRDisplayHost::RequestPresentCallback callback) {
 #if defined(OS_WIN)
   if (!texture_helper_.SetAdapterLUID(*reinterpret_cast<LUID*>(&luid_)) ||
       !texture_helper_.EnsureInitialized()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), false, nullptr, nullptr, nullptr));
+        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
     return;
   }
 #endif
+  submit_client_.Bind(std::move(submit_client_info));
+
   binding_.Close();
-  device::mojom::VRPresentationProviderPtr provider;
-  binding_.Bind(mojo::MakeRequest(&provider));
+  binding_.Bind(std::move(request));
 
   device::mojom::VRDisplayFrameTransportOptionsPtr transport_options =
       device::mojom::VRDisplayFrameTransportOptions::New();
@@ -217,11 +218,11 @@ void OculusRenderLoop::RequestSession(
   // able to safely ignore ones that our implementation doesn't care about.
   transport_options->wait_for_transfer_notification = true;
 
+  report_webxr_input_ = present_options->webxr_input;
+
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), true,
-                     mojo::MakeRequest(&submit_client_),
-                     provider.PassInterface(), std::move(transport_options)));
+      base::BindOnce(std::move(callback), true, std::move(transport_options)));
   is_presenting_ = true;
 }
 
@@ -254,8 +255,9 @@ void OculusRenderLoop::GetVSync(
       mojo::ConvertTo<mojom::VRPosePtr>(state.HeadPose.ThePose);
   last_render_pose_ = state.HeadPose.ThePose;
 
-  DCHECK(pose);
-  pose->input_state = GetInputState(state);
+  if (pose && report_webxr_input_) {
+    pose->input_state = GetInputState(state);
+  }
 
   base::TimeDelta time = base::TimeDelta::FromSecondsD(predicted_time);
 

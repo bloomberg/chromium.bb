@@ -30,7 +30,6 @@
 #include "device/vr/android/gvr/cardboard_gamepad_data_provider.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
-#include "device/vr/vr_device.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
@@ -186,8 +185,6 @@ class VrShell : device::GvrGamepadDataProvider,
   void GvrDelegateReady(gvr::ViewerType viewer_type);
   void SendRequestPresentReply(
       bool success,
-      device::mojom::VRSubmitFrameClientRequest,
-      device::mojom::VRPresentationProviderPtrInfo,
       device::mojom::VRDisplayFrameTransportOptionsPtr);
 
   void DialogSurfaceCreated(jobject surface, gl::SurfaceTexture* texture);
@@ -250,8 +247,10 @@ class VrShell : device::GvrGamepadDataProvider,
                    const base::android::JavaParamRef<jobject>& obj);
 
   void ConnectPresentingService(
+      device::mojom::VRSubmitFrameClientPtr submit_client,
+      device::mojom::VRPresentationProviderRequest request,
       device::mojom::VRDisplayInfoPtr display_info,
-      const device::XRDeviceRuntimeSessionOptions& options);
+      device::mojom::VRRequestPresentOptionsPtr present_options);
 
   // device::GvrGamepadDataProvider implementation.
   void UpdateGamepadData(device::GvrGamepadData) override;

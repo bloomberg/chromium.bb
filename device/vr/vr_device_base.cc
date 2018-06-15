@@ -41,6 +41,23 @@ bool VRDeviceBase::HasExclusiveSession() {
   return presenting_;
 }
 
+void VRDeviceBase::RequestSession(
+    int render_process_id,
+    int render_frame_id,
+    bool has_user_activation,
+    mojom::VRDisplayHost::RequestSessionCallback callback) {
+  // TODO(https://crbug.com/842025): Implement this for all devices.
+  std::move(callback).Run(true);
+}
+
+void VRDeviceBase::RequestPresent(
+    mojom::VRSubmitFrameClientPtr submit_client,
+    mojom::VRPresentationProviderRequest request,
+    mojom::VRRequestPresentOptionsPtr present_options,
+    RequestExclusiveSessionCallback callback) {
+  std::move(callback).Run(false, nullptr, nullptr);
+}
+
 void VRDeviceBase::SetMagicWindowEnabled(bool enabled) {
   magic_window_enabled_ = enabled;
 }

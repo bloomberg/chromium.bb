@@ -33,8 +33,6 @@ const char kRequestRequiresUserActivation[] =
 const char kSessionNotSupported[] =
     "The specified session configuration is not supported.";
 
-const char kRequestDenied[] = "Request for exclusive XRSession was denied.";
-
 }  // namespace
 
 XRDevice::XRDevice(
@@ -202,23 +200,20 @@ ScriptPromise XRDevice::requestSession(
   session_options->exclusive = options.exclusive();
   session_options->has_user_activation = has_user_activation;
 
-  // TODO(offenwanger): Once device activation is sorted out for WebXR, either
-  // pass in the value for metrics, or remove the value as soon as legacy API
-  // has been removed.
   display_->RequestSession(
-      std::move(session_options), false,
+      std::move(session_options),
       WTF::Bind(&XRDevice::OnRequestSessionReturned, WrapWeakPersistent(this),
                 WrapPersistent(resolver), options));
+
   return promise;
 }
 
-void XRDevice::OnRequestSessionReturned(
-    ScriptPromiseResolver* resolver,
-    const XRSessionCreationOptions& options,
-    device::mojom::blink::XRPresentationConnectionPtr connection) {
-  if (!connection) {
+void XRDevice::OnRequestSessionReturned(ScriptPromiseResolver* resolver,
+                                        const XRSessionCreationOptions& options,
+                                        bool success) {
+  if (!success) {
     DOMException* exception = DOMException::Create(
-        DOMExceptionCode::kNotAllowedError, kRequestDenied);
+        DOMExceptionCode::kNotSupportedError, kSessionNotSupported);
     resolver->Reject(exception);
     return;
   }
@@ -232,10 +227,10 @@ void XRDevice::OnRequestSessionReturned(
   sessions_.insert(session);
 
   if (options.exclusive()) {
-    frameProvider()->BeginExclusiveSession(session, std::move(connection));
+    frameProvider()->BeginExclusiveSession(session, resolver);
+  } else {
+    resolver->Resolve(session);
   }
-
-  resolver->Resolve(session);
 }
 
 void XRDevice::OnFrameFocusChanged() {
