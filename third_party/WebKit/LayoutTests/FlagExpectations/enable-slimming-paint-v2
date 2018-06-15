@@ -1404,3 +1404,11 @@ crbug.com/837467 paint/invalidation/compositing/end-of-opacity-transition.html [
 Bug(none) compositing/squashing/frame-clip-squashed-scrolled.html [ Failure ]
 Bug(none) fast/block/positioning/vertical-rl/002.html [ Failure ]
 Bug(none) rootscroller/gesture-scroll-document-not-root-scroller.html [ Failure ]
+
+Bug(none) fast/forms/color/color-suggestion-picker-appearance-value-attribute.html [ Crash ]
+Bug(none) fast/scroll-snap/snap-scrolls-visual-viewport.html [ Crash ]
+Bug(none) paint/invalidation/vertical-align1.html [ Failure ]
+Bug(none) paint/invalidation/vertical-align2.html [ Failure ]
+Bug(none) paint/invalidation/selection/japanese-rl-selection-repaint.html [ Failure ]
+Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Failure ]
+Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Failure ]
