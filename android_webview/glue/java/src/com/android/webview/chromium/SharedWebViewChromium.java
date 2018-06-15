@@ -23,8 +23,10 @@ public class SharedWebViewChromium {
     // The WebView wrapper for ContentViewCore and required browser compontents.
     private AwContents mAwContents;
 
+    // Default WebViewClient used to avoid null checks.
+    final static WebViewClient sNullWebViewClient = new WebViewClient();
     // The WebViewClient instance that was passed to WebView.setWebViewClient().
-    private WebViewClient mWebViewClient;
+    private WebViewClient mWebViewClient = sNullWebViewClient;
 
     public SharedWebViewChromium(WebViewChromiumRunQueue runQueue, WebViewChromiumAwInit awInit) {
         mRunQueue = runQueue;
@@ -32,7 +34,7 @@ public class SharedWebViewChromium {
     }
 
     void setWebViewClient(WebViewClient client) {
-        mWebViewClient = client;
+        mWebViewClient = client != null ? client : sNullWebViewClient;
     }
 
     public WebViewClient getWebViewClient() {
