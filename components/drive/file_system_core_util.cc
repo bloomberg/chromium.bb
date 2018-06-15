@@ -86,6 +86,10 @@ const base::FilePath& GetDriveTeamDrivesRootPath() {
   return team_drives_root_path;
 }
 
+bool IsTeamDrivesPath(const base::FilePath& file_path) {
+  return GetDriveTeamDrivesRootPath().IsParent(file_path);
+}
+
 std::string EscapeCacheFileName(const std::string& filename) {
   // This is based on net/base/escape.cc: net::(anonymous namespace)::Escape
   std::string escaped;

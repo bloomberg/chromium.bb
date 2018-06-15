@@ -97,8 +97,12 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
       return;
     }
 
-    UMA_HISTOGRAM_LONG_TIMES("Drive.FullFeedLoadTime",
-                             base::TimeTicks::Now() - start_time_);
+    base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
+    if (team_drive_id_.empty()) {
+      UMA_HISTOGRAM_LONG_TIMES("Drive.FullFeedLoadTime", duration);
+    } else {
+      UMA_HISTOGRAM_LONG_TIMES("Drive.FullFeedLoadTime.TeamDrives", duration);
+    }
 
     // Note: The fetcher is managed by ChangeListLoader, and the instance
     // will be deleted in the callback. Do not touch the fields after this
@@ -132,6 +136,9 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(callback);
 
+    // Remember the time stamp for usage stats.
+    start_time_ = base::TimeTicks::Now();
+
     scheduler_->GetChangeList(
         team_drive_id_, start_page_token_,
         base::Bind(&DeltaFeedFetcher::OnChangeListFetched,
@@ -164,6 +171,13 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
       return;
     }
 
+    base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
+    if (team_drive_id_.empty()) {
+      UMA_HISTOGRAM_LONG_TIMES("Drive.DeltaFeedLoadTime", duration);
+    } else {
+      UMA_HISTOGRAM_LONG_TIMES("Drive.DeltaFeedLoadTime.TeamDrives", duration);
+    }
+
     // Note: The fetcher is managed by ChangeListLoader, and the instance
     // will be deleted in the callback. Do not touch the fields after this
     // invocation.
@@ -174,6 +188,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
   const std::string team_drive_id_;
   const std::string start_page_token_;
   std::vector<std::unique_ptr<ChangeList>> change_lists_;
+  base::TimeTicks start_time_;
   THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<DeltaFeedFetcher> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DeltaFeedFetcher);

@@ -180,8 +180,12 @@ class DirectoryLoader::FeedFetcher {
       return;
     }
 
-    UMA_HISTOGRAM_TIMES("Drive.DirectoryFeedLoadTime",
-                        base::TimeTicks::Now() - start_time_);
+    base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
+    if (util::IsTeamDrivesPath(directory_fetch_info_.root_entry_path())) {
+      UMA_HISTOGRAM_TIMES("Drive.DirectoryFeedLoadTime.TeamDrives", duration);
+    } else {
+      UMA_HISTOGRAM_TIMES("Drive.DirectoryFeedLoadTime", duration);
+    }
 
     // Note: The fetcher is managed by DirectoryLoader, and the instance
     // will be deleted in the callback. Do not touch the fields after this
@@ -288,7 +292,7 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
 
   DirectoryFetchInfo directory_fetch_info(
       entry->local_id(), entry->resource_id(),
-      entry->directory_specific_info().start_page_token());
+      entry->directory_specific_info().start_page_token(), root_entry_path_);
 
   // Register the callback function to be called when it is loaded.
   const std::string& local_id = directory_fetch_info.local_id();
@@ -408,7 +412,8 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
       entry->directory_specific_info().start_page_token();
 
   DirectoryFetchInfo directory_fetch_info(local_id, entry->resource_id(),
-                                          remote_start_page_token);
+                                          remote_start_page_token,
+                                          root_entry_path_);
 
   int64_t directory_changestamp = 0;
   // The directory_specific_info may be enpty, so default changestamp to 0.
