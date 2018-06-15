@@ -20,8 +20,10 @@ class DEVICE_VR_EXPORT FakeVRDevice : public VRDeviceBase,
   FakeVRDevice(unsigned int id);
   ~FakeVRDevice() override;
 
-  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                      VRDeviceRequestSessionCallback callback) override;
+  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                      mojom::VRPresentationProviderRequest request,
+                      mojom::VRRequestPresentOptionsPtr present_options,
+                      RequestExclusiveSessionCallback callback) override;
   void SetPose(mojom::VRPosePtr pose) { pose_ = std::move(pose); }
 
   void StopSession() override;

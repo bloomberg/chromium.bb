@@ -29,16 +29,16 @@ class OpenVRDevice : public VRDeviceBase, public XrSessionController {
   void Shutdown();
 
   // VRDeviceBase
-  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                      VRDeviceRequestSessionCallback callback) override;
+  void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                      mojom::VRPresentationProviderRequest request,
+                      mojom::VRRequestPresentOptionsPtr present_options,
+                      RequestExclusiveSessionCallback callback) override;
 
   void OnPollingEvents();
 
-  void OnRequestSessionResult(
-      VRDeviceRequestSessionCallback callback,
+  void OnRequestPresentResult(
+      RequestExclusiveSessionCallback callback,
       bool result,
-      mojom::VRSubmitFrameClientRequest request,
-      mojom::VRPresentationProviderPtrInfo provider_info,
       mojom::VRDisplayFrameTransportOptionsPtr transport_options);
 
  private:
@@ -54,6 +54,7 @@ class OpenVRDevice : public VRDeviceBase, public XrSessionController {
   // binds to VRVSyncProvider requests, so its lifetime should be tied to the
   // lifetime of that binding.
   std::unique_ptr<OpenVRRenderLoop> render_loop_;
+  mojom::VRSubmitFrameClientPtr submit_client_;
   mojom::VRDisplayInfoPtr display_info_;
   vr::IVRSystem* vr_system_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

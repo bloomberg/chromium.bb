@@ -95,43 +95,36 @@ OculusDevice::OculusDevice(ovrSession session, ovrGraphicsLuid luid)
 
 OculusDevice::~OculusDevice() {}
 
-void OculusDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                                  VRDeviceRequestSessionCallback callback) {
+void OculusDevice::RequestPresent(
+    mojom::VRSubmitFrameClientPtr submit_client,
+    mojom::VRPresentationProviderRequest request,
+    mojom::VRRequestPresentOptionsPtr present_options,
+    RequestExclusiveSessionCallback callback) {
   if (!render_loop_->IsRunning())
     render_loop_->Start();
 
   if (!render_loop_->IsRunning()) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(false, nullptr, nullptr);
     return;
   }
 
   auto on_request_present_result =
-      base::BindOnce(&OculusDevice::OnRequestSessionResult,
+      base::BindOnce(&OculusDevice::OnRequestPresentResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
   render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&OculusRenderLoop::RequestSession,
-                                render_loop_->GetWeakPtr(), options,
-                                std::move(on_request_present_result)));
+      FROM_HERE,
+      base::BindOnce(&OculusRenderLoop::RequestPresent,
+                     render_loop_->GetWeakPtr(), submit_client.PassInterface(),
+                     std::move(request), std::move(present_options),
+                     std::move(on_request_present_result)));
 }
 
-void OculusDevice::OnRequestSessionResult(
-    VRDeviceRequestSessionCallback callback,
+void OculusDevice::OnRequestPresentResult(
+    RequestExclusiveSessionCallback callback,
     bool result,
-    mojom::VRSubmitFrameClientRequest request,
-    mojom::VRPresentationProviderPtrInfo provider_info,
     mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
-  if (!result) {
-    std::move(callback).Run(nullptr, nullptr);
-    return;
-  }
-
   OnStartPresenting();
-
-  auto connection = mojom::XRPresentationConnection::New();
-  connection->client_request = std::move(request);
-  connection->provider = std::move(provider_info);
-  connection->transport_options = std::move(transport_options);
-  std::move(callback).Run(std::move(connection), this);
+  std::move(callback).Run(result, std::move(transport_options), this);
 }
 
 // XrSessionController

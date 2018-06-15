@@ -18,6 +18,8 @@ class MockVRDisplayImpl : public VRDisplayImpl {
                     mojom::VRDisplayInfoPtr display_info,
                     mojom::VRDisplayHostPtr display_host,
                     mojom::VRDisplayClientRequest request,
+                    int render_process_id,
+                    int render_frame_id,
                     bool in_frame_focused);
   ~MockVRDisplayImpl() override;
 

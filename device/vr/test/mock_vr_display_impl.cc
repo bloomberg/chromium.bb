@@ -11,12 +11,16 @@ MockVRDisplayImpl::MockVRDisplayImpl(device::VRDevice* device,
                                      mojom::VRDisplayInfoPtr display_info,
                                      mojom::VRDisplayHostPtr display_host,
                                      mojom::VRDisplayClientRequest request,
+                                     int render_process_id,
+                                     int render_frame_id,
                                      bool in_frame_focused)
     : VRDisplayImpl(device,
                     std::move(service_client),
                     std::move(display_info),
                     std::move(display_host),
-                    std::move(request)) {
+                    std::move(request),
+                    render_process_id,
+                    render_frame_id) {
   SetFrameDataRestricted(!in_frame_focused);
 }
 

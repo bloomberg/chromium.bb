@@ -21,9 +21,11 @@ class VRDisplayImplTest : public testing::Test {
   VRDisplayImplTest() {}
   ~VRDisplayImplTest() override {}
   void onDisplaySynced() {}
-  void onPresentComplete(device::mojom::XRPresentationConnectionPtr connection,
-                         XrSessionController* exclusive_session_controller) {
-    is_request_presenting_success_ = connection ? true : false;
+  void onPresentComplete(
+      bool success,
+      device::mojom::VRDisplayFrameTransportOptionsPtr transport_options,
+      XrSessionController* exclusive_session_controller) {
+    is_request_presenting_success_ = success;
   }
 
  protected:
@@ -38,14 +40,19 @@ class VRDisplayImplTest : public testing::Test {
     mojom::VRDisplayClientPtr display_client;
     auto display = std::make_unique<VRDisplayImpl>(
         device(), client(), device()->GetVRDisplayInfo(), nullptr,
-        mojo::MakeRequest(&display_client));
+        mojo::MakeRequest(&display_client), 0, 0);
     display->SetFrameDataRestricted(true);
     return display;
   }
 
-  void RequestSession(VRDisplayImpl* display_impl) {
-    device_->RequestSession(
-        XRDeviceRuntimeSessionOptions(),
+  void RequestPresent(VRDisplayImpl* display_impl) {
+    // TODO(klausw,mthiesse): set up a VRSubmitFrameClient here? Currently,
+    // the FakeVRDisplay doesn't access the submit client, so a nullptr
+    // is ok.
+    device::mojom::VRSubmitFrameClientPtr submit_client = nullptr;
+    device::mojom::VRPresentationProviderRequest request = nullptr;
+    device_->RequestPresent(
+        std::move(submit_client), std::move(request), nullptr,
         base::BindOnce(&VRDisplayImplTest::onPresentComplete,
                        base::Unretained(this)));
   }
@@ -92,7 +99,7 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   was_called = false;
 
   // Attempt to present.
-  RequestSession(display_1.get());
+  RequestPresent(display_1.get());
   EXPECT_TRUE(is_request_presenting_success_);
   EXPECT_TRUE(presenting());
   EXPECT_TRUE(device()->HasExclusiveSession());

@@ -832,13 +832,13 @@ void VrShellGl::SubmitFrameWithTextureHandle(
 }
 
 void VrShellGl::ConnectPresentingService(
+    device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,
+    device::mojom::VRPresentationProviderRequest request,
     device::mojom::VRDisplayInfoPtr display_info,
-    const device::XRDeviceRuntimeSessionOptions& options) {
+    device::mojom::VRRequestPresentOptionsPtr present_options) {
   ClosePresentationBindings();
-
-  device::mojom::VRPresentationProviderPtr provider;
-  binding_.Bind(mojo::MakeRequest(&provider));
-
+  submit_client_.Bind(std::move(submit_client_info));
+  binding_.Bind(std::move(request));
   gfx::Size webvr_size(
       display_info->leftEye->renderWidth + display_info->rightEye->renderWidth,
       display_info->leftEye->renderHeight);
@@ -848,9 +848,17 @@ void VrShellGl::ConnectPresentingService(
   CreateOrResizeWebVRSurface(webvr_size);
   ScheduleOrCancelWebVrFrameTimeout();
 
-  browser_->SendRequestPresentReply(true, mojo::MakeRequest(&submit_client_),
-                                    std::move(provider),
-                                    GetWebVrFrameTransportOptions(options));
+  // TODO(https://crbug.com/795049): Add a metric to track how much the
+  // permitted-but-not-recommended preserveDrawingBuffer=true mode is used by
+  // WebVR 1.1 sites. Having this option set will disable the planned
+  // direct-draw-to-shared-buffer optimization.
+  DVLOG(1) << "preserveDrawingBuffer="
+           << present_options->preserve_drawing_buffer;
+
+  report_webxr_input_ = present_options->webxr_input;
+
+  browser_->SendRequestPresentReply(
+      true, GetWebVrFrameTransportOptions(std::move(present_options)));
 }
 
 void VrShellGl::OnSwapContents(int new_content_id) {
@@ -1036,13 +1044,13 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
 
 device::mojom::VRDisplayFrameTransportOptionsPtr
 VrShellGl::GetWebVrFrameTransportOptions(
-    const device::XRDeviceRuntimeSessionOptions& options) {
+    device::mojom::VRRequestPresentOptionsPtr present_options) {
   DVLOG(1) << __FUNCTION__;
 
   MetricsUtilAndroid::XRRenderPath render_path =
       MetricsUtilAndroid::XRRenderPath::kClientWait;
-  webxr_use_shared_buffer_draw_ = false;
-  webxr_use_gpu_fence_ = false;
+  webvr_use_shared_buffer_draw_ = false;
+  webvr_use_gpu_fence_ = false;
 
   std::string render_path_string = base::GetFieldTrialParamValueByFeature(
       features::kWebXrRenderPath, features::kWebXrRenderPathParamName);
@@ -1053,7 +1061,7 @@ VrShellGl::GetWebVrFrameTransportOptions(
              features::kWebXrRenderPathParamValueGpuFence) {
     // Use GpuFence if available. If not, fall back to kClientWait.
     if (gl::GLFence::IsGpuFenceSupported()) {
-      webxr_use_gpu_fence_ = true;
+      webvr_use_gpu_fence_ = true;
 
       render_path = MetricsUtilAndroid::XRRenderPath::kGpuFence;
     }
@@ -1062,12 +1070,13 @@ VrShellGl::GetWebVrFrameTransportOptions(
     // Use that if supported, otherwise fall back to GpuFence or
     // ClientWait.
     if (gl::GLFence::IsGpuFenceSupported()) {
-      webxr_use_gpu_fence_ = true;
+      webvr_use_gpu_fence_ = true;
       if (base::AndroidHardwareBufferCompat::IsSupportAvailable() &&
-          !options.use_legacy_webvr_render_path) {
+          !present_options->preserve_drawing_buffer &&
+          present_options->shared_buffer_draw_supported) {
         // Currently, SharedBuffer mode is only supported for WebXR via
         // XRWebGlDrawingBuffer, WebVR 1.1 doesn't use that.
-        webxr_use_shared_buffer_draw_ = true;
+        webvr_use_shared_buffer_draw_ = true;
         render_path = MetricsUtilAndroid::XRRenderPath::kSharedBuffer;
       } else {
         render_path = MetricsUtilAndroid::XRRenderPath::kGpuFence;
@@ -1082,16 +1091,16 @@ VrShellGl::GetWebVrFrameTransportOptions(
   // Only set boolean options that we need. Default is false, and we should be
   // able to safely ignore ones that our implementation doesn't care about.
   transport_options->wait_for_transfer_notification = true;
-  if (webxr_use_shared_buffer_draw_) {
+  if (webvr_use_shared_buffer_draw_) {
     transport_options->transport_method =
         device::mojom::VRDisplayFrameTransportMethod::DRAW_INTO_TEXTURE_MAILBOX;
-    DCHECK(webxr_use_gpu_fence_);
+    DCHECK(webvr_use_gpu_fence_);
     transport_options->wait_for_gpu_fence = true;
   } else {
     transport_options->transport_method =
         device::mojom::VRDisplayFrameTransportMethod::SUBMIT_AS_MAILBOX_HOLDER;
     transport_options->wait_for_transfer_notification = true;
-    if (webxr_use_gpu_fence_) {
+    if (webvr_use_gpu_fence_) {
       transport_options->wait_for_gpu_fence = true;
     } else {
       transport_options->wait_for_render_notification = true;
@@ -1735,7 +1744,7 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
   std::unique_ptr<gl::GLFenceEGL> fence = nullptr;
   if (is_webvr_frame && surfaceless_rendering_) {
     webxr_->GetProcessingFrame()->time_copied = base::TimeTicks::Now();
-    if (webxr_use_gpu_fence_) {
+    if (webvr_use_gpu_fence_) {
       // Continue with submit once the previous frame's GL fence signals that
       // it is done rendering. This avoids blocking in GVR's Submit. Fence is
       // null for the first frame, in that case the fence wait is skipped.
@@ -1826,7 +1835,7 @@ void VrShellGl::DrawFrameSubmitWhenReady(
     }
   }
 
-  if (fence && webxr_use_gpu_fence_) {
+  if (fence && webvr_use_gpu_fence_) {
     // We were waiting for the fence, so the time now is the actual
     // finish time for the previous frame's rendering.
     AddWebVrRenderTimeEstimate(frame_index, base::TimeTicks::Now());
@@ -1844,7 +1853,7 @@ void VrShellGl::AddWebVrRenderTimeEstimate(
 
   WebXrFrame* rendering_frame = webxr_->GetRenderingFrame();
   base::TimeTicks prev_js_submit = rendering_frame->time_js_submit;
-  if (webxr_use_gpu_fence_ && !prev_js_submit.is_null() &&
+  if (webvr_use_gpu_fence_ && !prev_js_submit.is_null() &&
       !fence_complete_time.is_null()) {
     webvr_render_time_.AddSample(fence_complete_time - prev_js_submit);
   }
@@ -1855,7 +1864,7 @@ void VrShellGl::WebVrSendRenderNotification(bool was_rendered) {
     return;
 
   TRACE_EVENT0("gpu", __FUNCTION__);
-  if (webxr_use_gpu_fence_) {
+  if (webvr_use_gpu_fence_) {
     // Renderer is waiting for a frame-separating GpuFence.
 
     if (was_rendered) {
@@ -1922,7 +1931,7 @@ void VrShellGl::DrawFrameSubmitNow(int16_t frame_index,
     base::TimeTicks js_submit_time =
         webxr_->GetProcessingFrame()->time_js_submit;
     webvr_js_time_.AddSample(js_submit_time - pose_time);
-    if (!webxr_use_gpu_fence_) {
+    if (!webvr_use_gpu_fence_) {
       // Estimate render time from wallclock time, we waited for the pre-submit
       // render fence to signal.
       base::TimeTicks now = base::TimeTicks::Now();
@@ -1977,7 +1986,7 @@ void VrShellGl::DrawWebVr() {
 
   glViewport(0, 0, webvr_surface_size_.width(), webvr_surface_size_.height());
 
-  if (webxr_use_shared_buffer_draw_) {
+  if (webvr_use_shared_buffer_draw_) {
     WebVrWaitForServerFence();
     CHECK(webxr_->HaveProcessingFrame());
     WebXrSharedBuffer* buffer =
@@ -2155,7 +2164,7 @@ bool VrShellGl::WebVrCanAnimateFrame(bool is_from_onvsync) {
     return false;
   }
 
-  if (webxr_use_shared_buffer_draw_ && !mailbox_bridge_ready_) {
+  if (webvr_use_shared_buffer_draw_ && !mailbox_bridge_ready_) {
     // For exclusive scheduling, we need the mailbox bridge before the first
     // frame so that we can place a sync token. For shared buffer draw, we
     // need it to set up buffers before starting client rendering.
@@ -2163,7 +2172,7 @@ bool VrShellGl::WebVrCanAnimateFrame(bool is_from_onvsync) {
     return false;
   }
 
-  if (webxr_use_shared_buffer_draw_ &&
+  if (webvr_use_shared_buffer_draw_ &&
       !(webvr_surface_size_.width() && webvr_surface_size_.height())) {
     // For shared buffer draw, wait for a nonzero size before creating
     // the shared buffer for use as a drawing destination.
@@ -2251,9 +2260,9 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(),
                                                  &render_info_.head_pose);
     UpdateController(render_info_, frame_time);
-
-    input_states_.push_back(controller_->GetInputSourceState());
-
+    if (report_webxr_input_) {
+      input_states_.push_back(controller_->GetInputSourceState());
+    }
     ui_controller_update_time_.AddSample(base::TimeTicks::Now() -
                                          controller_start);
   } else {
@@ -2346,7 +2355,7 @@ base::TimeDelta VrShellGl::GetPredictedFrameTime() {
 bool VrShellGl::WebVrHasSlowRenderingFrame() {
   // Disable heuristic for traditional render path where we submit completed
   // frames.
-  if (!webxr_use_gpu_fence_)
+  if (!webvr_use_gpu_fence_)
     return false;
 
   base::TimeDelta frame_interval = vsync_helper_.DisplayVSyncInterval();
@@ -2416,13 +2425,13 @@ void VrShellGl::SendVSync() {
   int16_t frame_index = webxr_->StartFrameAnimating();
   DVLOG(2) << __FUNCTION__ << " frame=" << frame_index;
 
-  if (webxr_use_shared_buffer_draw_) {
+  if (webvr_use_shared_buffer_draw_) {
     WebVrPrepareSharedBuffer(webvr_surface_size_);
   }
 
   base::Optional<gpu::MailboxHolder> opt_holder = base::nullopt;
 
-  if (webxr_use_shared_buffer_draw_) {
+  if (webvr_use_shared_buffer_draw_) {
     CHECK(mailbox_bridge_ready_);
     CHECK(webxr_->HaveAnimatingFrame());
     WebXrSharedBuffer* buffer =
@@ -2446,13 +2455,15 @@ void VrShellGl::SendVSync() {
     pose->pose_reset |= last_event.type == GVR_EVENT_RECENTER;
   }
 
-  TRACE_EVENT0("gpu", "VrShellGl::XRInput");
-  if (cardboard_) {
-    std::vector<device::mojom::XRInputSourceStatePtr> input_states;
-    input_states.push_back(GetGazeInputSourceState());
-    pose->input_state = std::move(input_states);
-  } else {
-    pose->input_state = std::move(input_states_);
+  if (report_webxr_input_) {
+    TRACE_EVENT0("gpu", "VrShellGl::XRInput");
+    if (cardboard_) {
+      std::vector<device::mojom::XRInputSourceStatePtr> input_states;
+      input_states.push_back(GetGazeInputSourceState());
+      pose->input_state = std::move(input_states);
+    } else {
+      pose->input_state = std::move(input_states_);
+    }
   }
 
   WebXrFrame* frame = webxr_->GetAnimatingFrame();

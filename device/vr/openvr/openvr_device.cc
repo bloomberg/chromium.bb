@@ -169,58 +169,55 @@ void OpenVRDevice::Shutdown() {
     render_loop_->Stop();
 }
 
-void OpenVRDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                                  VRDeviceRequestSessionCallback callback) {
+void OpenVRDevice::RequestPresent(
+    mojom::VRSubmitFrameClientPtr submit_client,
+    mojom::VRPresentationProviderRequest request,
+    mojom::VRRequestPresentOptionsPtr present_options,
+    RequestExclusiveSessionCallback callback) {
   if (!render_loop_->IsRunning())
     render_loop_->Start();
 
   if (!render_loop_->IsRunning()) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(false, nullptr, nullptr);
     return;
   }
 
   auto my_callback =
-      base::BindOnce(&OpenVRDevice::OnRequestSessionResult,
+      base::BindOnce(&OpenVRDevice::OnRequestPresentResult,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
   render_loop_->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&OpenVRRenderLoop::RequestSession,
-                                render_loop_->GetWeakPtr(), options,
-                                std::move(my_callback)));
+      FROM_HERE,
+      base::BindOnce(&OpenVRRenderLoop::RequestPresent,
+                     render_loop_->GetWeakPtr(), submit_client.PassInterface(),
+                     std::move(request), std::move(present_options),
+                     std::move(my_callback)));
 }
 
-void OpenVRDevice::OnRequestSessionResult(
-    VRDeviceRequestSessionCallback callback,
+void OpenVRDevice::OnRequestPresentResult(
+    RequestExclusiveSessionCallback callback,
     bool result,
-    mojom::VRSubmitFrameClientRequest request,
-    mojom::VRPresentationProviderPtrInfo provider_info,
     mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
-  if (!result) {
-    std::move(callback).Run(nullptr, nullptr);
-    return;
-  }
-
   OnStartPresenting();
+  std::move(callback).Run(result, std::move(transport_options), this);
 
-  auto connection = mojom::XRPresentationConnection::New();
-  connection->client_request = std::move(request);
-  connection->provider = std::move(provider_info);
-  connection->transport_options = std::move(transport_options);
-  std::move(callback).Run(std::move(connection), this);
+  if (result) {
+    using ViewerMap = std::map<std::string, VrViewerType>;
+    CR_DEFINE_STATIC_LOCAL(
+        ViewerMap, viewer_types,
+        ({
+            {"Oculus Rift CV1", VrViewerType::OPENVR_RIFT_CV1},
+            {"Vive MV", VrViewerType::OPENVR_VIVE},
+        }));
 
-  using ViewerMap = std::map<std::string, VrViewerType>;
-  CR_DEFINE_STATIC_LOCAL(ViewerMap, viewer_types,
-                         ({
-                             {"Oculus Rift CV1", VrViewerType::OPENVR_RIFT_CV1},
-                             {"Vive MV", VrViewerType::OPENVR_VIVE},
-                         }));
+    VrViewerType type = VrViewerType::OPENVR_UNKNOWN;
+    std::string model =
+        GetOpenVRString(vr_system_, vr::Prop_ModelNumber_String);
+    auto it = viewer_types.find(model);
+    if (it != viewer_types.end())
+      type = it->second;
 
-  VrViewerType type = VrViewerType::OPENVR_UNKNOWN;
-  std::string model = GetOpenVRString(vr_system_, vr::Prop_ModelNumber_String);
-  auto it = viewer_types.find(model);
-  if (it != viewer_types.end())
-    type = it->second;
-
-  base::UmaHistogramSparse("VRViewerType", static_cast<int>(type));
+    base::UmaHistogramSparse("VRViewerType", static_cast<int>(type));
+  }
 }
 
 // XrSessionController

@@ -131,8 +131,11 @@ void ARCoreDevice::OnARCoreGlThreadInitialized() {
   is_arcore_gl_thread_initialized_ = true;
 }
 
-void ARCoreDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                                  VRDeviceRequestSessionCallback callback) {
+void ARCoreDevice::RequestSession(
+    int render_process_id,
+    int render_frame_id,
+    bool has_user_activation,
+    mojom::VRDisplayHost::RequestSessionCallback callback) {
   DCHECK(IsOnMainThread());
 
   // TODO(https://crbug.com/849568): Instead of splitting the initialization
@@ -143,7 +146,7 @@ void ARCoreDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
   // the arcore gl thread is initialized, the resolution of the request should
   // be delayed.
   if (!is_arcore_gl_thread_initialized_) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -158,20 +161,17 @@ void ARCoreDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
   // appropriate permissions.
   // ARCore sessions require camera permission.
   RequestCameraPermission(
-      options.render_process_id, options.render_frame_id,
-      options.has_user_activation,
+      render_process_id, render_frame_id, has_user_activation,
       base::BindOnce(&ARCoreDevice::OnRequestCameraPermissionComplete,
                      GetWeakPtr(), std::move(preconditions_complete_callback)));
 }
 
 void ARCoreDevice::OnRequestCameraPermissionComplete(
-    base::OnceCallback<void(bool)> callback,
+    mojom::VRDisplayHost::RequestSessionCallback callback,
     bool success) {
   DCHECK(IsOnMainThread());
   DCHECK(is_arcore_gl_thread_initialized_);
 
-  // By this point ARCore has already been set up, so just return whether the
-  // permission request was a success.
   std::move(callback).Run(success);
 }
 
@@ -225,7 +225,7 @@ void ARCoreDevice::RequestCameraPermission(
     int render_process_id,
     int render_frame_id,
     bool has_user_activation,
-    base::OnceCallback<void(bool)> callback) {
+    mojom::VRDisplayHost::RequestSessionCallback callback) {
   DCHECK(IsOnMainThread());
   DCHECK(is_arcore_gl_thread_initialized_);
 
@@ -253,7 +253,7 @@ void ARCoreDevice::RequestCameraPermission(
 
 void ARCoreDevice::OnRequestCameraPermissionResult(
     content::WebContents* web_contents,
-    base::OnceCallback<void(bool)> callback,
+    mojom::VRDisplayHost::RequestSessionCallback callback,
     ContentSetting content_setting) {
   DCHECK(IsOnMainThread());
   DCHECK(is_arcore_gl_thread_initialized_);
@@ -293,13 +293,13 @@ void ARCoreDevice::OnRequestCameraPermissionResult(
 }
 
 void ARCoreDevice::OnRequestSessionPreconditionsComplete(
-    VRDeviceRequestSessionCallback callback,
+    mojom::VRDisplayHost::RequestSessionCallback callback,
     bool success) {
   DCHECK(IsOnMainThread());
   DCHECK(is_arcore_gl_thread_initialized_);
 
   if (!success) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -316,13 +316,13 @@ void ARCoreDevice::OnRequestSessionPreconditionsComplete(
 }
 
 void ARCoreDevice::OnARCoreGlInitializationComplete(
-    VRDeviceRequestSessionCallback callback,
+    mojom::VRDisplayHost::RequestSessionCallback callback,
     bool success) {
   DCHECK(IsOnMainThread());
   DCHECK(is_arcore_gl_thread_initialized_);
 
   if (!success) {
-    std::move(callback).Run(nullptr, nullptr);
+    std::move(callback).Run(false);
     return;
   }
 
@@ -333,20 +333,11 @@ void ARCoreDevice::OnARCoreGlInitializationComplete(
         &ARCoreGl::Resume, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr()));
   }
 
-  // TODO(offenwanger) When the XRMagicWindowProvider or equivalent is returned
-  // here, clean out this dummy code.
-  auto connection = mojom::XRPresentationConnection::New();
-  mojom::VRSubmitFrameClientPtr submit_client;
-  connection->client_request = mojo::MakeRequest(&submit_client);
-  mojom::VRPresentationProviderPtr provider;
-  mojo::MakeRequest(&provider);
-  connection->provider = provider.PassInterface();
-  connection->transport_options = mojom::VRDisplayFrameTransportOptions::New();
-  std::move(callback).Run(std::move(connection), nullptr);
+  std::move(callback).Run(true);
 }
 
 void ARCoreDevice::OnRequestAndroidCameraPermissionResult(
-    base::OnceCallback<void(bool)> callback,
+    mojom::VRDisplayHost::RequestSessionCallback callback,
     bool was_android_camera_permission_granted) {
   DCHECK(IsOnMainThread());
   DCHECK(is_arcore_gl_thread_initialized_);

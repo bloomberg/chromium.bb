@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ScriptPromiseResolver;
 class XRDevice;
 class XRSession;
 class XRFrameTransport;
@@ -27,11 +28,8 @@ class XRFrameProvider final
   explicit XRFrameProvider(XRDevice*);
 
   XRSession* exclusive_session() const { return exclusive_session_; }
-  device::mojom::blink::VRSubmitFrameClientPtr GetSubmitFrameClient();
 
-  void BeginExclusiveSession(
-      XRSession* session,
-      device::mojom::blink::XRPresentationConnectionPtr connection);
+  void BeginExclusiveSession(XRSession*, ScriptPromiseResolver*);
   void OnExclusiveSessionEnded();
 
   void RequestFrame(XRSession*);
@@ -59,6 +57,9 @@ class XRFrameProvider final
   void ScheduleExclusiveFrame();
   void ScheduleNonExclusiveFrame();
 
+  void OnPresentComplete(
+      bool success,
+      device::mojom::blink::VRDisplayFrameTransportOptionsPtr);
   void OnPresentationProviderConnectionError();
   void ProcessScheduledFrame(
       device::mojom::blink::VRMagicWindowFrameDataPtr frame_data,
@@ -66,7 +67,15 @@ class XRFrameProvider final
 
   const Member<XRDevice> device_;
   Member<XRSession> exclusive_session_;
+  Member<ScriptPromiseResolver> pending_exclusive_session_resolver_;
   Member<XRFrameTransport> frame_transport_;
+
+  // Careful, exclusive_session_ being true does not mean it's OK to send
+  // frames. The initialization handshake may not be complete yet. This boolean
+  // starts out false at the start of a session, becomes true after a
+  // successful OnPresentComplete(), and remains true for the lifetime of the
+  // exclusive session.
+  bool exclusive_session_can_send_frames_ = false;
 
   // Non-exclusive Sessions which have requested a frame update.
   HeapVector<Member<XRSession>> requesting_sessions_;

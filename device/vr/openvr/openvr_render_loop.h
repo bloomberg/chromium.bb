@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
-#include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/openvr/src/headers/openvr.h"
@@ -24,17 +23,14 @@ namespace device {
 
 class OpenVRRenderLoop : public base::Thread, mojom::VRPresentationProvider {
  public:
-  using RequestSessionCallback =
-      base::OnceCallback<void(bool result,
-                              mojom::VRSubmitFrameClientRequest,
-                              mojom::VRPresentationProviderPtrInfo,
-                              mojom::VRDisplayFrameTransportOptionsPtr)>;
-
   OpenVRRenderLoop(vr::IVRSystem* vr);
   ~OpenVRRenderLoop() override;
 
-  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                      RequestSessionCallback callback);
+  void RequestPresent(
+      mojom::VRSubmitFrameClientPtrInfo submit_client_info,
+      mojom::VRPresentationProviderRequest request,
+      device::mojom::VRRequestPresentOptionsPtr present_options,
+      device::mojom::VRDisplayHost::RequestPresentCallback callback);
   void ExitPresent();
   base::WeakPtr<OpenVRRenderLoop> GetWeakPtr();
 
@@ -77,6 +73,7 @@ class OpenVRRenderLoop : public base::Thread, mojom::VRPresentationProvider {
 
   int16_t next_frame_id_ = 0;
   bool is_presenting_ = false;
+  bool report_webxr_input_ = false;
   InputActiveState input_active_states_[vr::k_unMaxTrackedDeviceCount];
   gfx::RectF left_bounds_;
   gfx::RectF right_bounds_;
