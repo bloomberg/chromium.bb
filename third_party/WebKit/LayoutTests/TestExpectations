@@ -1756,7 +1756,6 @@ crbug.com/691944 virtual/outofblink-cors/external/wpt/service-workers/service-wo
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-cors-xhr.https.html [ Failure Crash ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event.https.html [ Failure Crash ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-network-error.https.html [ Crash ]
-crbug.com/807954 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-respond-with-readable-stream-chunk.https.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-request-fallback.https.html [ Crash Failure ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/performance-timeline.https.html [ Crash ]
 crbug.com/736308 virtual/outofblink-cors/external/wpt/service-workers/service-worker/redirected-response.https.html [ Crash ]
@@ -3635,8 +3634,6 @@ crbug.com/626703 external/wpt/workers/opaque-origin.html [ Failure Crash Timeout
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html [ Pass Crash ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-standards-mode.html [ Pass Crash Failure ]
 crbug.com/762017 external/wpt/html/semantics/embedded-content/media-elements/video_loop_base.html [ Pass Crash ]
-crbug.com/807954 external/wpt/service-workers/service-worker/fetch-event-respond-with-readable-stream-chunk.https.html [ Crash ]
-crbug.com/807954 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-respond-with-readable-stream-chunk.https.html [ Crash ]
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/666703 external/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout ]

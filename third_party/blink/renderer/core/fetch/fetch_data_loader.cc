@@ -519,21 +519,24 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
       if (result == BytesConsumer::Result::kShouldWait)
         return;
       if (result == BytesConsumer::Result::kOk) {
-        DCHECK_GT(available, 0UL);
-        uint32_t num_bytes = available;
-        MojoResult mojo_result = out_data_pipe_->WriteData(
-            buffer, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
-        if (mojo_result == MOJO_RESULT_OK) {
-          result = consumer_->EndRead(num_bytes);
-        } else if (mojo_result == MOJO_RESULT_SHOULD_WAIT) {
+        if (available == 0) {
           result = consumer_->EndRead(0);
-          should_wait = true;
-          data_pipe_watcher_.ArmOrNotify();
         } else {
-          result = consumer_->EndRead(0);
-          StopInternal();
-          client_->DidFetchDataLoadFailed();
-          return;
+          uint32_t num_bytes = available;
+          MojoResult mojo_result = out_data_pipe_->WriteData(
+              buffer, &num_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+          if (mojo_result == MOJO_RESULT_OK) {
+            result = consumer_->EndRead(num_bytes);
+          } else if (mojo_result == MOJO_RESULT_SHOULD_WAIT) {
+            result = consumer_->EndRead(0);
+            should_wait = true;
+            data_pipe_watcher_.ArmOrNotify();
+          } else {
+            result = consumer_->EndRead(0);
+            StopInternal();
+            client_->DidFetchDataLoadFailed();
+            return;
+          }
         }
       }
       switch (result) {
