@@ -432,8 +432,20 @@ TEST_F(TranslateManagerTest,
       1);
 }
 
+#if defined(OS_IOS)
+#if TARGET_OS_SIMULATOR
+#define MAYBE_OverrideTriggerWithIndiaEnglishExperimentAcceptPrompt \
+  OverrideTriggerWithIndiaEnglishExperimentAcceptPrompt
+#else  // !TARGET_OS_SIMULATOR
+#define MAYBE_OverrideTriggerWithIndiaEnglishExperimentAcceptPrompt \
+  DISABLED_OverrideTriggerWithIndiaEnglishExperimentAcceptPrompt
+#endif  // TARGET_OS_SIMULATOR
+#else   // !defined(OS_IOS)
+#define MAYBE_OverrideTriggerWithIndiaEnglishExperimentAcceptPrompt \
+  OverrideTriggerWithIndiaEnglishExperimentAcceptPrompt
+#endif  // defined(OS_IOS)
 TEST_F(TranslateManagerTest,
-       OverrideTriggerWithIndiaEnglishExperimentAcceptPrompt) {
+       MAYBE_OverrideTriggerWithIndiaEnglishExperimentAcceptPrompt) {
   manager_->set_application_locale("en");
   scoped_feature_list_.InitAndEnableFeatureWithParameters(
       language::kOverrideTranslateTriggerInIndia,
