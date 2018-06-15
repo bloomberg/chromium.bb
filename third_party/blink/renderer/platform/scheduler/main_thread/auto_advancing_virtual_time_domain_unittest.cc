@@ -7,7 +7,6 @@
 #include <memory>
 #include "base/run_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
@@ -34,8 +33,7 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
         base::TimeDelta::FromMilliseconds(5));
     scheduler_helper_.reset(new NonMainThreadSchedulerHelper(
         base::sequence_manager::TaskQueueManagerForTest::Create(
-            nullptr, base::ThreadTaskRunnerHandle::Get(),
-            test_task_runner_->GetMockTickClock()),
+            nullptr, test_task_runner_, test_task_runner_->GetMockTickClock()),
         nullptr, TaskType::kInternalTest));
 
     scheduler_helper_->AddTaskTimeObserver(&test_task_time_observer_);

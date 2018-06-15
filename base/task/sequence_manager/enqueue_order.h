@@ -42,7 +42,6 @@ class EnqueueOrder {
     ~Generator();
 
     // Can be called from any thread.
-    // TODO(scheduler-dev): Is it the right atomic? https://crbug.com/852344.
     EnqueueOrder GenerateNext() {
       return EnqueueOrder(std::atomic_fetch_add_explicit(
           &counter_, uint64_t(1), std::memory_order_relaxed));

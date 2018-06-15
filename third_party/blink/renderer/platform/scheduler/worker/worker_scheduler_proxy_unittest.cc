@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_proxy.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
@@ -116,7 +115,7 @@ class WorkerSchedulerProxyTest : public testing::Test {
         main_thread_scheduler_(std::make_unique<MainThreadSchedulerImpl>(
             base::sequence_manager::TaskQueueManagerForTest::Create(
                 nullptr,
-                base::ThreadTaskRunnerHandle::Get(),
+                task_environment_.GetMainThreadTaskRunner(),
                 task_environment_.GetMockTickClock()),
             base::nullopt)),
         page_scheduler_(
