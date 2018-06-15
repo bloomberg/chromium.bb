@@ -226,7 +226,7 @@ std::unique_ptr<views::InkDrop> NewTabButton::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       std::make_unique<views::InkDropImpl>(this, GetVisibleBounds().size());
   ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
-  ink_drop->SetShowHighlightOnHover(false);
+  ink_drop->SetShowHighlightOnHover(true);
   UpdateInkDropBaseColor();
   return ink_drop;
 }
@@ -512,7 +512,9 @@ SkColor NewTabButton::GetButtonFillColor() const {
 void NewTabButton::InitButtonIcons() {
   DCHECK(MD::IsNewerMaterialUi());
   const SkColor icon_color = tab_strip_->GetTabForegroundColor(TAB_INACTIVE);
-  plus_icon_ = gfx::CreateVectorIcon(kNewTabButtonPlusIcon, icon_color);
+  // TODO(b/851041): is there a better source for these icon sizes?
+  const int size = MD::IsTouchOptimizedUiEnabled() ? 14 : 12;
+  plus_icon_ = gfx::CreateVectorIcon(kNewTabButtonPlusIcon, size, icon_color);
   if (ShouldDrawIncognitoIcon()) {
     incognito_icon_ =
         gfx::CreateVectorIcon(kNewTabButtonIncognitoIcon, icon_color);
