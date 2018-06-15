@@ -385,7 +385,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         side_effect=logging.PrintBuildbotStepText)
 
     no_stat = set(['not_scheduled_build_1'])
-    stage._AnnotateBuildStatusFromBuildbucket(no_stat)
+    stage._AnnotateNoStatBuilders(no_stat)
     mock_logging_text.assert_called_once_with(
         '%s wasn\'t scheduled by master.' % 'not_scheduled_build_1')
 
@@ -401,7 +401,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
                      'GetBuildRequest',
                      return_value=build_content)
     no_stat = set(['build_1'])
-    stage._AnnotateBuildStatusFromBuildbucket(no_stat)
+    stage._AnnotateNoStatBuilders(no_stat)
     mock_logging_link.assert_called_once_with(
         '%s: [status] %s [result] %s [failure_reason] %s' %
         ('build_1', 'COMPLETED', 'FAILURE', 'BUILD_FAILURE'),
@@ -420,7 +420,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
                      'GetBuildRequest',
                      return_value=build_content)
     no_stat = set(['build_1'])
-    stage._AnnotateBuildStatusFromBuildbucket(no_stat)
+    stage._AnnotateNoStatBuilders(no_stat)
     mock_logging_link.assert_called_once_with(
         '%s: [status] %s [result] %s [cancelation_reason] %s' %
         ('build_1', 'COMPLETED', 'CANCELED', 'CANCELED_EXPLICITLY'),
@@ -432,7 +432,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
                      'GetBuildRequest',
                      side_effect=buildbucket_lib.BuildbucketResponseException)
     no_stat = set(['build_1'])
-    stage._AnnotateBuildStatusFromBuildbucket(no_stat)
+    stage._AnnotateNoStatBuilders(no_stat)
     mock_logging_text.assert_called_once_with(
         'No status found for build %s buildbucket_id %s' %
         ('build_1', 'buildbucket_id_1'))
@@ -443,7 +443,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
 
     annotate_mock = self.PatchObject(
         completion_stages.MasterSlaveSyncCompletionStage,
-        '_AnnotateBuildStatusFromBuildbucket')
+        '_AnnotateNoStatBuilders')
 
     no_stat = {'no_stat_1', 'no_stat_2'}
     stage._AnnotateNoStatBuilders(no_stat)

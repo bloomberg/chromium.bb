@@ -662,7 +662,7 @@ class MasterConfigBuilderStageTest(AbstractStageTestCase):
   def testGetScheduledSlaveBuildbucketIdsReturnsNone(self):
     """Returns None for non master build."""
     stage = self.ConstructStage()
-    stage._run.config.master = False
+    stage._run.config.slave_configs = False
     self.assertIsNone(stage.GetScheduledSlaveBuildbucketIds())
 
   def testGetSlaveConfigs(self):

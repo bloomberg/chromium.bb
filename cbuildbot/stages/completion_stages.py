@@ -343,7 +343,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     else:
       logging.PrintBuildbotStepText(text)
 
-  def _AnnotateBuildStatusFromBuildbucket(self, no_stat):
+  def _AnnotateNoStatBuilders(self, no_stat):
     """Annotate the build statuses fetched from the Buildbucket.
 
     Some builds may fail to upload statuses to GS. If the builds were
@@ -390,18 +390,6 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       else:
         logging.PrintBuildbotStepText('%s wasn\'t scheduled by master.'
                                       % config_name)
-
-  def _AnnotateNoStatBuilders(self, no_stat):
-    """Annotate the no stat builds.
-
-    Args:
-      no_stat: Set of build config names of slaves that had status None.
-    """
-    if config_lib.UseBuildbucketScheduler(self._run.config):
-      self._AnnotateBuildStatusFromBuildbucket(no_stat)
-    else:
-      for build in no_stat:
-        self._PrintBuildMessage('%s: did not start' % build)
 
   def _AnnotateFailingBuilders(self, failing, inflight, no_stat, statuses,
                                experimental_statuses,
