@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace android_webview {
 namespace {
@@ -35,8 +36,8 @@ AwVariationsServiceClient::GetVersionForSimulationCallback() {
   return base::BindRepeating(&GetVersionForSimulation);
 }
 
-net::URLRequestContextGetter*
-AwVariationsServiceClient::GetURLRequestContext() {
+scoped_refptr<network::SharedURLLoaderFactory>
+AwVariationsServiceClient::GetURLLoaderFactory() {
   return nullptr;
 }
 

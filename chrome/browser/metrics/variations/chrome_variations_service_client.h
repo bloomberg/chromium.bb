@@ -8,7 +8,12 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "components/variations/service/variations_service_client.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 // ChromeVariationsServiceClient provides an implementation of
 // VariationsServiceClient that depends on chrome/.
@@ -22,7 +27,7 @@ class ChromeVariationsServiceClient
   std::string GetApplicationLocale() override;
   base::Callback<base::Version(void)> GetVersionForSimulationCallback()
       override;
-  net::URLRequestContextGetter* GetURLRequestContext() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   version_info::Channel GetChannel() override;
   bool OverridesRestrictParameter(std::string* parameter) override;

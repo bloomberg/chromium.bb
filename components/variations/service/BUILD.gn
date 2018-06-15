@@ -29,6 +29,7 @@ static_library("service") {
     "//components/version_info",
     "//components/web_resource",
     "//net",
+    "//services/network/public/cpp",
     "//ui/base",
   ]
 }
@@ -54,6 +55,8 @@ source_set("unit_tests") {
     "//components/web_resource:test_support",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
     "//testing/gtest",
   ]
 }
