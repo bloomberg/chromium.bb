@@ -128,7 +128,7 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   Node* NodeForHitTest() const;
 
   // A range of fragments for |FragmentsFor()|.
-  class FragmentRange {
+  class CORE_EXPORT FragmentRange {
    public:
     explicit FragmentRange(
         NGPaintFragment* first,
@@ -167,6 +167,16 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
 
     iterator begin() const { return iterator(first_); }
     iterator end() const { return iterator(nullptr); }
+
+    // Returns the first |NGPaintFragment| in |FragmentRange| as STL container.
+    // It is error to call |front()| for empty range.
+    NGPaintFragment& front() const;
+
+    // Returns the last |NGPaintFragment| in |FragmentRange| as STL container.
+    // It is error to call |back()| for empty range.
+    // Note: The complicity of |back()| is O(n) where n is number of elements
+    // in this |FragmentRange|.
+    NGPaintFragment& back() const;
 
    private:
     NGPaintFragment* first_;

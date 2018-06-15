@@ -607,4 +607,19 @@ Node* NGPaintFragment::NodeForHitTest() const {
   return nullptr;
 }
 
+// ----
+
+NGPaintFragment& NGPaintFragment::FragmentRange::front() const {
+  DCHECK(first_);
+  return *first_;
+}
+
+NGPaintFragment& NGPaintFragment::FragmentRange::back() const {
+  DCHECK(first_);
+  NGPaintFragment* last = first_;
+  for (NGPaintFragment* fragment : *this)
+    last = fragment;
+  return *last;
+}
+
 }  // namespace blink

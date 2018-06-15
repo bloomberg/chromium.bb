@@ -85,6 +85,8 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
@@ -1230,6 +1232,40 @@ void AXLayoutObject::LoadInlineTextBoxes() {
   }
 }
 
+static bool ShouldUseLayoutNG(const LayoutObject& layout_object) {
+  return (layout_object.IsLayoutInline() || layout_object.IsText()) &&
+         layout_object.EnclosingNGBlockFlow();
+}
+
+// Note: |NextOnLineInternalNG()| returns null when fragment for |layout_object|
+// is culled as legacy layout version since |LayoutInline::LastLineBox()|
+// returns null when it is culled.
+// See also |PreviousOnLineInternalNG()| which is identical except for using
+// "next" and |back()| instead of "previous" and |front()|.
+static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
+  DCHECK(ax_object.GetLayoutObject());
+  const LayoutObject& layout_object = *ax_object.GetLayoutObject();
+  DCHECK(!layout_object.IsListMarker()) << layout_object;
+  DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
+  const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
+  if (fragments.IsEmpty() || fragments.IsInLayoutNGInlineFormattingContext())
+    return nullptr;
+  for (NGPaintFragmentTraversalContext runner =
+           NGPaintFragmentTraversal::NextInlineLeafOf(
+               NGPaintFragmentTraversalContext::Create(&fragments.back()));
+       !runner.IsNull();
+       runner = NGPaintFragmentTraversal::NextInlineLeafOf(runner)) {
+    LayoutObject* layout_object = runner.GetFragment()->GetLayoutObject();
+    if (AXObject* result = ax_object.AXObjectCache().GetOrCreate(layout_object))
+      return result;
+  }
+  if (!ax_object.ParentObject())
+    return nullptr;
+  // Returns next object of parent, since next of |ax_object| isn't appeared on
+  // line.
+  return ax_object.ParentObject()->NextOnLine();
+}
+
 AXObject* AXLayoutObject::NextOnLine() const {
   if (!GetLayoutObject())
     return nullptr;
@@ -1240,6 +1276,8 @@ AXObject* AXLayoutObject::NextOnLine() const {
     if (!next_sibling || !next_sibling->Children().size())
       return nullptr;
     result = next_sibling->Children()[0].Get();
+  } else if (ShouldUseLayoutNG(*GetLayoutObject())) {
+    result = NextOnLineInternalNG(*this);
   } else {
     InlineBox* inline_box = nullptr;
     if (GetLayoutObject()->IsLayoutInline()) {
@@ -1272,32 +1310,65 @@ AXObject* AXLayoutObject::NextOnLine() const {
   return result;
 }
 
+// Note: |PreviousOnLineInlineNG()| returns null when fragment for
+// |layout_object| is culled as legacy layout version since
+// |LayoutInline::FirstLineBox()| returns null when it is culled. See also
+// |NextOnLineNG()| which is identical except for using "previous" and |front()|
+// instead of "next" and |back()|.
+static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
+  DCHECK(ax_object.GetLayoutObject());
+  const LayoutObject& layout_object = *ax_object.GetLayoutObject();
+  DCHECK(!layout_object.IsListMarker()) << layout_object;
+  DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
+  const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
+  if (fragments.IsEmpty() || fragments.IsInLayoutNGInlineFormattingContext())
+    return nullptr;
+  for (NGPaintFragmentTraversalContext runner =
+           NGPaintFragmentTraversal::PreviousInlineLeafOf(
+               NGPaintFragmentTraversalContext::Create(&fragments.front()));
+       !runner.IsNull();
+       runner = NGPaintFragmentTraversal::PreviousInlineLeafOf(runner)) {
+    LayoutObject* layout_object = runner.GetFragment()->GetLayoutObject();
+    if (AXObject* result = ax_object.AXObjectCache().GetOrCreate(layout_object))
+      return result;
+  }
+  if (!ax_object.ParentObject())
+    return nullptr;
+  // Returns previous object of parent, since next of |ax_object| isn't appeared
+  // on line.
+  return ax_object.ParentObject()->PreviousOnLine();
+}
+
 AXObject* AXLayoutObject::PreviousOnLine() const {
   if (!GetLayoutObject())
     return nullptr;
 
-  InlineBox* inline_box = nullptr;
-  if (GetLayoutObject()->IsLayoutInline()) {
-    inline_box = ToLayoutInline(GetLayoutObject())->FirstLineBox();
-  } else if (GetLayoutObject()->IsText()) {
-    inline_box = ToLayoutText(GetLayoutObject())->FirstTextBox();
-  }
-
-  if (!inline_box)
-    return nullptr;
-
   AXObject* result = nullptr;
-  for (InlineBox* prev = inline_box->PrevOnLine(); prev;
-       prev = prev->PrevOnLine()) {
-    LayoutObject* layout_object =
-        LineLayoutAPIShim::LayoutObjectFrom(prev->GetLineLayoutItem());
-    result = AXObjectCache().GetOrCreate(layout_object);
-    if (result)
-      break;
-  }
+  if (ShouldUseLayoutNG(*GetLayoutObject())) {
+    result = PreviousOnLineInlineNG(*this);
+  } else {
+    InlineBox* inline_box = nullptr;
+    if (GetLayoutObject()->IsLayoutInline()) {
+      inline_box = ToLayoutInline(GetLayoutObject())->FirstLineBox();
+    } else if (GetLayoutObject()->IsText()) {
+      inline_box = ToLayoutText(GetLayoutObject())->FirstTextBox();
+    }
 
-  if (!result && ParentObject())
-    result = ParentObject()->PreviousOnLine();
+    if (!inline_box)
+      return nullptr;
+
+    for (InlineBox* prev = inline_box->PrevOnLine(); prev;
+         prev = prev->PrevOnLine()) {
+      LayoutObject* layout_object =
+          LineLayoutAPIShim::LayoutObjectFrom(prev->GetLineLayoutItem());
+      result = AXObjectCache().GetOrCreate(layout_object);
+      if (result)
+        break;
+    }
+
+    if (!result && ParentObject())
+      result = ParentObject()->PreviousOnLine();
+  }
 
   // For consistency between the forward and backward directions, try to always
   // return leaf nodes.
