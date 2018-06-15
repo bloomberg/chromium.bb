@@ -15,13 +15,13 @@
 namespace network {
 
 ProxyResolvingClientSocketFactory::ProxyResolvingClientSocketFactory(
-    net::ClientSocketFactory* socket_factory,
     net::URLRequestContext* request_context)
     : request_context_(request_context) {
   DCHECK(request_context);
 
   net::HttpNetworkSession::Context session_context;
-  session_context.client_socket_factory = socket_factory;
+  session_context.client_socket_factory =
+      request_context->GetNetworkSessionContext()->client_socket_factory;
   session_context.host_resolver = request_context->host_resolver();
   session_context.cert_verifier = request_context->cert_verifier();
   session_context.transport_security_state =
@@ -69,7 +69,6 @@ ProxyResolvingClientSocketFactory::~ProxyResolvingClientSocketFactory() {}
 
 std::unique_ptr<ProxyResolvingClientSocket>
 ProxyResolvingClientSocketFactory::CreateSocket(
-    const net::SSLConfig& ssl_config,
     const GURL& url,
     bool use_tls) {
   // |request_context|'s HttpAuthCache might have updates. For example, a user
@@ -82,6 +81,10 @@ ProxyResolvingClientSocketFactory::CreateSocket(
           ->GetSession()
           ->http_auth_cache();
   network_session_->http_auth_cache()->UpdateAllFrom(*other_auth_cache);
+  net::SSLConfig ssl_config;
+  // Unconditionally get the |ssl_config| regardless of |use_tls|, because
+  // SSLConfig is used for the proxy even !|use_tls|.
+  request_context_->ssl_config_service()->GetSSLConfig(&ssl_config);
   return std::make_unique<ProxyResolvingClientSocket>(network_session_.get(),
                                                       ssl_config, url, use_tls);
 }

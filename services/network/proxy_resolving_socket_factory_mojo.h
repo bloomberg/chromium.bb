@@ -15,7 +15,6 @@
 #include "services/network/public/mojom/proxy_resolving_socket.mojom.h"
 
 namespace net {
-class SSLConfigService;
 class URLRequestContext;
 }  // namespace net
 
@@ -39,7 +38,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingSocketFactoryMojo
 
  private:
   std::unique_ptr<ProxyResolvingClientSocketFactory> factory_impl_;
-  scoped_refptr<net::SSLConfigService> ssl_config_service_;
   mojo::StrongBindingSet<mojom::ProxyResolvingSocket>
       proxy_resolving_socket_bindings_;
 
