@@ -27,28 +27,17 @@ namespace blink {
 //   trial.
 // kReplaceCurrentItem:
 //   Same as Standard, but replaces the current navigation entry in the history.
-// kInitialInChildFrame:
-//   Used in the first load for a subframe.
-// kInitialHistoryLoad:
-//   Used in history navigation in a newly created frame.
+//   In terms of cache policy, it should work in the same manner as kStandard.
 // kReloadBypassingCache:
 //   Bypasses any caches, memory and disk cache in the browser, and caches in
 //   proxy servers, to fetch fresh contents directly from the end server.
 //   Used in Shift-Reload.
 //
-// Note: kInitialInChildFrame and kInitialHistoryLoad are used to determine
-// the WebHistoryCommitType, but in terms of cache policy, it should work in the
-// same manner as Standard and kBackForward respectively.
-// kReplaceCurrentItem is used to determine if the current navigation should
-// replace the current history item, but in terms of cache policy, it should
-// work in the same manner as Standard.
 enum class WebFrameLoadType {
   kStandard,
   kBackForward,
   kReload,
   kReplaceCurrentItem,
-  kInitialInChildFrame,
-  kInitialHistoryLoad,
   kReloadBypassingCache,
 };
 

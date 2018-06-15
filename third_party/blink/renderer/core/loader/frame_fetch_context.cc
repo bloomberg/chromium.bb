@@ -149,13 +149,11 @@ mojom::FetchCacheMode DetermineCacheMode(RequestMethod method,
   switch (load_type) {
     case WebFrameLoadType::kStandard:
     case WebFrameLoadType::kReplaceCurrentItem:
-    case WebFrameLoadType::kInitialInChildFrame:
       return (request_type == RequestType::kIsConditional ||
               method == RequestMethod::kIsPost)
                  ? mojom::FetchCacheMode::kValidateCache
                  : mojom::FetchCacheMode::kDefault;
     case WebFrameLoadType::kBackForward:
-    case WebFrameLoadType::kInitialHistoryLoad:
       // Mutates the policy for POST requests to avoid form resubmission.
       return method == RequestMethod::kIsPost
                  ? mojom::FetchCacheMode::kOnlyIfCached
@@ -857,8 +855,7 @@ bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation(
     return false;
   // Do not report iframe navigation that restored from history, since its
   // location may have been changed after initial navigation.
-  if (MasterDocumentLoader()->LoadType() ==
-      WebFrameLoadType::kInitialHistoryLoad)
+  if (MasterDocumentLoader()->LoadType() == WebFrameLoadType::kBackForward)
     return false;
   return true;
 }

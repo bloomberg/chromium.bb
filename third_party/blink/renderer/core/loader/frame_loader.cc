@@ -109,8 +109,7 @@ namespace blink {
 using namespace HTMLNames;
 
 bool IsBackForwardLoadType(WebFrameLoadType type) {
-  return type == WebFrameLoadType::kBackForward ||
-         type == WebFrameLoadType::kInitialHistoryLoad;
+  return type == WebFrameLoadType::kBackForward;
 }
 
 bool IsReloadLoadType(WebFrameLoadType type) {
@@ -119,7 +118,6 @@ bool IsReloadLoadType(WebFrameLoadType type) {
 }
 
 static bool NeedsHistoryItemRestore(WebFrameLoadType type) {
-  // kInitialHistoryLoad is intentionally excluded.
   return type == WebFrameLoadType::kBackForward || IsReloadLoadType(type);
 }
 
@@ -620,7 +618,7 @@ WebFrameLoadType FrameLoader::DetermineFrameLoadType(
     const FrameLoadRequest& request) {
   if (frame_->Tree().Parent() &&
       !state_machine_.CommittedFirstRealDocumentLoad())
-    return WebFrameLoadType::kInitialInChildFrame;
+    return WebFrameLoadType::kReplaceCurrentItem;
   if (!frame_->Tree().Parent() && !Client()->BackForwardLength()) {
     if (Opener() && request.GetResourceRequest().Url().IsEmpty())
       return WebFrameLoadType::kReplaceCurrentItem;

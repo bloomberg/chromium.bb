@@ -365,7 +365,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
         policy, url, GetDocument().OutgoingReferrer()));
   }
 
-  WebFrameLoadType child_load_type = WebFrameLoadType::kInitialInChildFrame;
+  WebFrameLoadType child_load_type = WebFrameLoadType::kReplaceCurrentItem;
   if (!GetDocument().LoadEventFinished() &&
       GetDocument().Loader()->LoadType() ==
           WebFrameLoadType::kReloadBypassingCache) {

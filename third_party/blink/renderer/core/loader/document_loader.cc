@@ -292,8 +292,6 @@ static WebHistoryCommitType LoadTypeToCommitType(WebFrameLoadType type) {
       return kWebBackForwardCommit;
     case WebFrameLoadType::kReload:
     case WebFrameLoadType::kReplaceCurrentItem:
-    case WebFrameLoadType::kInitialInChildFrame:
-    case WebFrameLoadType::kInitialHistoryLoad:
     case WebFrameLoadType::kReloadBypassingCache:
       return kWebHistoryInertCommit;
   }

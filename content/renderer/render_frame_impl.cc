@@ -5627,9 +5627,7 @@ blink::mojom::CommitResult RenderFrameImpl::PrepareForHistoryNavigationCommit(
   // store the relevant frame's WebHistoryItem in the root of the
   // PageState.
   *item_for_history_navigation = entry->root();
-  *load_type = request_params.is_history_navigation_in_new_child
-                   ? blink::WebFrameLoadType::kInitialHistoryLoad
-                   : blink::WebFrameLoadType::kBackForward;
+  *load_type = blink::WebFrameLoadType::kBackForward;
 
   // Keep track of which subframes the browser process has history items
   // for during a history navigation.

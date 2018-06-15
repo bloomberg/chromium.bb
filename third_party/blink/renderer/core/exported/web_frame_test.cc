@@ -12771,7 +12771,7 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
   tester.ExpectTotalCount(histogramName, 0);
   main_frame_loader.UpdateForSameDocumentNavigation(
       ToKURL("about:blank"), kSameDocumentNavigationHistoryApi, message,
-      kScrollRestorationAuto, WebFrameLoadType::kInitialHistoryLoad,
+      kScrollRestorationAuto, WebFrameLoadType::kReplaceCurrentItem,
       frame->GetDocument());
   // The bucket index corresponds to the definition of
   // |SinglePageAppNavigationType|.
@@ -12785,7 +12785,7 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
                            kSPANavTypeSameDocumentBackwardOrForward, 1);
   main_frame_loader.UpdateForSameDocumentNavigation(
       ToKURL("about:blank"), kSameDocumentNavigationDefault, message,
-      kScrollRestorationManual, WebFrameLoadType::kInitialHistoryLoad,
+      kScrollRestorationManual, WebFrameLoadType::kReplaceCurrentItem,
       frame->GetDocument());
   tester.ExpectBucketCount(histogramName, kSPANavTypeOtherFragmentNavigation,
                            1);
