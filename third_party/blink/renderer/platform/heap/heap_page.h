@@ -933,8 +933,7 @@ NO_SANITIZE_ADDRESS inline size_t HeapObjectHeader::PayloadSize() {
   size_t size = encoded_ & kHeaderSizeMask;
   if (UNLIKELY(size == kLargeObjectSizeInHeader)) {
     DCHECK(PageFromObject(this)->IsLargeObjectPage());
-    return static_cast<LargeObjectPage*>(PageFromObject(this))->PayloadSize() -
-           sizeof(HeapObjectHeader);
+    return static_cast<LargeObjectPage*>(PageFromObject(this))->PayloadSize();
   }
   DCHECK(!PageFromObject(this)->IsLargeObjectPage());
   return size - sizeof(HeapObjectHeader);
