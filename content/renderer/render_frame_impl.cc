@@ -4977,11 +4977,6 @@ void RenderFrameImpl::DidChangeScrollOffset() {
     observer.DidChangeScrollOffset();
 }
 
-void RenderFrameImpl::WillInsertBody() {
-  Send(new FrameHostMsg_WillInsertBody(routing_id_,
-                                       render_view_->GetRoutingID()));
-}
-
 void RenderFrameImpl::ReportFindInPageMatchCount(int request_id,
                                                  int count,
                                                  bool final_update) {

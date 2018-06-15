@@ -3154,9 +3154,6 @@ void Document::setBody(HTMLElement* prp_new_body,
 }
 
 void Document::WillInsertBody() {
-  if (GetFrame())
-    GetFrame()->Client()->DispatchWillInsertBody();
-
   if (auto* loader = Loader())
     loader->Fetcher()->LoosenLoadThrottlingPolicy();
 

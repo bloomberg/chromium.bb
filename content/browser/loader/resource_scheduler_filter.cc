@@ -5,8 +5,6 @@
 #include "content/browser/loader/resource_scheduler_filter.h"
 
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/common/frame_messages.h"
-#include "ipc/ipc_message_macros.h"
 #include "services/network/resource_scheduler.h"
 
 namespace content {
@@ -18,18 +16,6 @@ network::ResourceScheduler* GetResourceSchedulerOrNullptr() {
   return ResourceDispatcherHostImpl::Get()->scheduler();
 }
 
-ResourceSchedulerFilter::ResourceSchedulerFilter(int child_id)
-    : BrowserMessageFilter(FrameMsgStart), child_id_(child_id) {}
-
-ResourceSchedulerFilter::~ResourceSchedulerFilter() {}
-
-bool ResourceSchedulerFilter::OnMessageReceived(const IPC::Message& message) {
-  IPC_BEGIN_MESSAGE_MAP(ResourceSchedulerFilter, message)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_WillInsertBody, OnWillInsertBody)
-  IPC_END_MESSAGE_MAP()
-  return false;
-}
-
 // static
 void ResourceSchedulerFilter::OnDidCommitMainframeNavigation(
     int render_process_id,
@@ -37,12 +23,6 @@ void ResourceSchedulerFilter::OnDidCommitMainframeNavigation(
   auto* scheduler = GetResourceSchedulerOrNullptr();
   if (scheduler)
     scheduler->DeprecatedOnNavigate(render_process_id, render_view_routing_id);
-}
-
-void ResourceSchedulerFilter::OnWillInsertBody(int render_view_routing_id) {
-  auto* scheduler = GetResourceSchedulerOrNullptr();
-  if (scheduler)
-    scheduler->DeprecatedOnWillInsertBody(child_id_, render_view_routing_id);
 }
 
 }  // namespace content

@@ -204,8 +204,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   bool ShouldBlockWebGL() override;
 
-  void DispatchWillInsertBody() override;
-
   std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
   ContentSettingsClient& GetContentSettingsClient() override;

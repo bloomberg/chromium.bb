@@ -61,38 +61,6 @@ class ResourceLoadSchedulerTest : public testing::Test {
   Persistent<ResourceLoadScheduler> scheduler_;
 };
 
-class RendererSideResourceSchedulerTest : public testing::Test {
- public:
-  using ThrottleOption = ResourceLoadScheduler::ThrottleOption;
-  class TestingPlatformSupport : public ::blink::TestingPlatformSupport {
-   public:
-    bool IsRendererSideResourceSchedulerEnabled() const override {
-      return true;
-    }
-  };
-
-  void SetUp() override {
-    DCHECK(RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled());
-    scheduler_ = ResourceLoadScheduler::Create(
-        MockFetchContext::Create(MockFetchContext::kShouldNotLoadNewResource));
-    Scheduler()->SetOutstandingLimitForTesting(1);
-  }
-  void TearDown() override { Scheduler()->Shutdown(); }
-
-  ResourceLoadScheduler* Scheduler() { return scheduler_; }
-
-  bool Release(ResourceLoadScheduler::ClientId client) {
-    return Scheduler()->Release(
-        client, ResourceLoadScheduler::ReleaseOption::kReleaseOnly,
-        ResourceLoadScheduler::TrafficReportHints::InvalidInstance());
-  }
-
- private:
-  ScopedTestingPlatformSupport<TestingPlatformSupport>
-      testing_platform_support_;
-  Persistent<ResourceLoadScheduler> scheduler_;
-};
-
 TEST_F(ResourceLoadSchedulerTest, Bypass) {
   // A request that disallows throttling should be ran synchronously.
   MockClient* client1 = new MockClient;
@@ -257,55 +225,7 @@ TEST_F(ResourceLoadSchedulerTest, Stopped) {
   EXPECT_TRUE(Release(id2));
 }
 
-TEST_F(ResourceLoadSchedulerTest, PriotrityIsNotConsidered) {
-  // Push three requests.
-  MockClient* client1 = new MockClient;
-
-  Scheduler()->SetOutstandingLimitForTesting(0);
-
-  ResourceLoadScheduler::ClientId id1 = ResourceLoadScheduler::kInvalidClientId;
-  Scheduler()->Request(client1, ThrottleOption::kCanBeThrottled,
-                       ResourceLoadPriority::kLowest, 10 /* intra_priority */,
-                       &id1);
-  EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id1);
-
-  MockClient* client2 = new MockClient;
-  ResourceLoadScheduler::ClientId id2 = ResourceLoadScheduler::kInvalidClientId;
-  Scheduler()->Request(client2, ThrottleOption::kCanBeThrottled,
-                       ResourceLoadPriority::kLow, 1 /* intra_priority */,
-                       &id2);
-  EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id2);
-
-  MockClient* client3 = new MockClient;
-  ResourceLoadScheduler::ClientId id3 = ResourceLoadScheduler::kInvalidClientId;
-  Scheduler()->Request(client3, ThrottleOption::kCanBeThrottled,
-                       ResourceLoadPriority::kLow, 3 /* intra_priority */,
-                       &id3);
-  EXPECT_NE(ResourceLoadScheduler::kInvalidClientId, id3);
-
-  EXPECT_FALSE(client1->WasRun());
-  EXPECT_FALSE(client2->WasRun());
-  EXPECT_FALSE(client3->WasRun());
-
-  Scheduler()->SetOutstandingLimitForTesting(1);
-
-  EXPECT_TRUE(client1->WasRun());
-  EXPECT_FALSE(client2->WasRun());
-  EXPECT_FALSE(client3->WasRun());
-
-  Scheduler()->SetOutstandingLimitForTesting(2);
-
-  EXPECT_TRUE(client1->WasRun());
-  EXPECT_TRUE(client2->WasRun());
-  EXPECT_FALSE(client3->WasRun());
-
-  // Release all.
-  EXPECT_TRUE(Release(id3));
-  EXPECT_TRUE(Release(id2));
-  EXPECT_TRUE(Release(id1));
-}
-
-TEST_F(RendererSideResourceSchedulerTest, PriorityIsConsidered) {
+TEST_F(ResourceLoadSchedulerTest, PriorityIsConsidered) {
   // Push three requests.
   MockClient* client1 = new MockClient;
 
@@ -364,7 +284,7 @@ TEST_F(RendererSideResourceSchedulerTest, PriorityIsConsidered) {
   EXPECT_TRUE(Release(id1));
 }
 
-TEST_F(RendererSideResourceSchedulerTest, IsThrottablePriority) {
+TEST_F(ResourceLoadSchedulerTest, IsThrottablePriority) {
   EXPECT_TRUE(
       Scheduler()->IsThrottablePriority(ResourceLoadPriority::kVeryLow));
   EXPECT_TRUE(Scheduler()->IsThrottablePriority(ResourceLoadPriority::kLow));
@@ -384,7 +304,7 @@ TEST_F(RendererSideResourceSchedulerTest, IsThrottablePriority) {
       Scheduler()->IsThrottablePriority(ResourceLoadPriority::kVeryHigh));
 }
 
-TEST_F(RendererSideResourceSchedulerTest, SetPriority) {
+TEST_F(ResourceLoadSchedulerTest, SetPriority) {
   // Start with the normal scheduling policy.
   Scheduler()->LoosenThrottlingPolicy();
   // Push three requests.
@@ -440,7 +360,7 @@ TEST_F(RendererSideResourceSchedulerTest, SetPriority) {
   EXPECT_TRUE(Release(id1));
 }
 
-TEST_F(RendererSideResourceSchedulerTest, LoosenThrottlingPolicy) {
+TEST_F(ResourceLoadSchedulerTest, LoosenThrottlingPolicy) {
   MockClient* client1 = new MockClient;
 
   Scheduler()->SetOutstandingLimitForTesting(0, 0);

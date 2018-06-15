@@ -117,11 +117,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   // Do not call this function when the network service is enabled.
   void DeprecatedOnNavigate(int child_id, int route_id);
 
-  // Called when the client has parsed the <body> element. This is a signal that
-  // resource loads won't interfere with first paint.
-  // Do not call this function when the network service is enabled.
-  void DeprecatedOnWillInsertBody(int child_id, int route_id);
-
   // Signals from the IO thread:
 
   // Called when we received a response to a http request that was served
@@ -174,8 +169,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   }
 
   bool enabled() const { return enabled_; }
-
-  static bool IsRendererSideResourceSchedulerEnabled();
 
   void SetResourceSchedulerParamsManagerForTests(
       const ResourceSchedulerParamsManager& resource_scheduler_params_manager);

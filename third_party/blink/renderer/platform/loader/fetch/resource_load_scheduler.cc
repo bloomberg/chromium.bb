@@ -391,32 +391,20 @@ ResourceLoadScheduler::ResourceLoadScheduler(FetchContext* context)
   traffic_monitor_ =
       std::make_unique<ResourceLoadScheduler::TrafficMonitor>(context_);
 
-  if (!RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled() &&
-      !Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
-    // Initialize TrafficMonitor's state to be |kNotThrottled| so that it
-    // reports metrics in a reasonable state group.
-    traffic_monitor_->OnLifecycleStateChanged(
-        scheduler::SchedulingLifecycleState::kNotThrottled);
-    return;
-  }
-
   auto* scheduler = context->GetFrameScheduler();
   if (!scheduler)
     return;
 
-  if (Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
-    policy_ = context->InitialLoadThrottlingPolicy();
-    normal_outstanding_limit_ =
-        GetFieldTrialUint32Param(kRendererSideResourceScheduler,
-                                 kLimitForRendererSideResourceSchedulerName,
-                                 kLimitForRendererSideResourceScheduler);
-    tight_outstanding_limit_ = GetFieldTrialUint32Param(
-        kRendererSideResourceScheduler,
-        kTightLimitForRendererSideResourceSchedulerName,
-        kTightLimitForRendererSideResourceScheduler);
-  }
+  policy_ = context->InitialLoadThrottlingPolicy();
+  normal_outstanding_limit_ =
+      GetFieldTrialUint32Param(kRendererSideResourceScheduler,
+                               kLimitForRendererSideResourceSchedulerName,
+                               kLimitForRendererSideResourceScheduler);
+  tight_outstanding_limit_ =
+      GetFieldTrialUint32Param(kRendererSideResourceScheduler,
+                               kTightLimitForRendererSideResourceSchedulerName,
+                               kTightLimitForRendererSideResourceScheduler);
 
-  is_enabled_ = true;
   scheduler_observer_handle_ = scheduler->AddLifecycleObserver(
       FrameScheduler::ObserverType::kLoader, this);
 }
@@ -465,13 +453,7 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
   if (is_shutdown_)
     return;
 
-  if (!Platform::Current()->IsRendererSideResourceSchedulerEnabled()) {
-    // Prioritization is effectively disabled as we use the constant priority.
-    priority = ResourceLoadPriority::kMedium;
-    intra_priority = 0;
-  }
-
-  if (!is_enabled_ || option == ThrottleOption::kCanNotBeThrottled ||
+  if (option == ThrottleOption::kCanNotBeThrottled ||
       !IsThrottablePriority(priority)) {
     Run(*id, client, false);
     return;
@@ -486,9 +468,6 @@ void ResourceLoadScheduler::Request(ResourceLoadSchedulerClient* client,
 void ResourceLoadScheduler::SetPriority(ClientId client_id,
                                         ResourceLoadPriority priority,
                                         int intra_priority) {
-  if (!Platform::Current()->IsRendererSideResourceSchedulerEnabled())
-    return;
-
   auto client_it = pending_request_map_.find(client_id);
   if (client_it == pending_request_map_.end())
     return;
@@ -595,9 +574,6 @@ void ResourceLoadScheduler::OnNetworkQuiet() {
 
 bool ResourceLoadScheduler::IsThrottablePriority(
     ResourceLoadPriority priority) const {
-  if (!Platform::Current()->IsRendererSideResourceSchedulerEnabled())
-    return true;
-
   if (RuntimeEnabledFeatures::ResourceLoadSchedulerEnabled()) {
     // If this scheduler is throttled by the associated FrameScheduler,
     // consider every prioritiy as throttlable.

@@ -1669,8 +1669,6 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
   constexpr int kRepeat = 6;
   constexpr char kPath[] = "/hello.html";
 
-  resource_scheduler()->DeprecatedOnWillInsertBody(kProcessId, kRouteId);
-
   net::EmbeddedTestServer server;
   // This is needed to stall all requests to the server.
   net::test_server::ControllableHttpResponse response_controllers[kRepeat] = {

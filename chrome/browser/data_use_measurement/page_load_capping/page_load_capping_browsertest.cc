@@ -62,14 +62,6 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
 
     {
       scoped_refptr<base::FieldTrial> trial =
-          base::FieldTrialList::CreateFieldTrial("TrialName2", "GroupName2");
-      feature_list->RegisterFieldTrialOverride(
-          network::features::kRendererSideResourceScheduler.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    }
-
-    {
-      scoped_refptr<base::FieldTrial> trial =
           base::FieldTrialList::CreateFieldTrial("TrialName3", "GroupName3");
       feature_list->RegisterFieldTrialOverride(
           features::kResourceLoadScheduler.name,

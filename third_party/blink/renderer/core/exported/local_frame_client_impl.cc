@@ -893,11 +893,6 @@ bool LocalFrameClientImpl::ShouldBlockWebGL() {
   return web_frame_->Client()->ShouldBlockWebGL();
 }
 
-void LocalFrameClientImpl::DispatchWillInsertBody() {
-  if (web_frame_->Client())
-    web_frame_->Client()->WillInsertBody();
-}
-
 std::unique_ptr<WebServiceWorkerProvider>
 LocalFrameClientImpl::CreateServiceWorkerProvider() {
   if (!web_frame_->Client())

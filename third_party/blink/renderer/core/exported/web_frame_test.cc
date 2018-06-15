@@ -6921,20 +6921,16 @@ TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation) {
 class TestWillInsertBodyWebFrameClient
     : public FrameTestHelpers::TestWebFrameClient {
  public:
-  TestWillInsertBodyWebFrameClient() : num_bodies_(0), did_load_(false) {}
+  TestWillInsertBodyWebFrameClient() : did_load_(false) {}
   ~TestWillInsertBodyWebFrameClient() override = default;
 
   // FrameTestHelpers::TestWebFrameClient:
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType,
                                 WebGlobalObjectReusePolicy) override {
-    num_bodies_ = 0;
     did_load_ = true;
   }
-  void DidCreateDocumentElement() override { EXPECT_EQ(0, num_bodies_); }
-  void WillInsertBody() override { num_bodies_++; }
 
-  int num_bodies_;
   bool did_load_;
 };
 
@@ -6947,7 +6943,6 @@ TEST_F(WebFrameTest, HTMLDocument) {
                                     &web_frame_client);
 
   EXPECT_TRUE(web_frame_client.did_load_);
-  EXPECT_EQ(1, web_frame_client.num_bodies_);
 }
 
 TEST_F(WebFrameTest, EmptyDocument) {
@@ -6958,8 +6953,6 @@ TEST_F(WebFrameTest, EmptyDocument) {
   web_view_helper.Initialize(&web_frame_client);
 
   EXPECT_FALSE(web_frame_client.did_load_);
-  // The empty document that a new frame starts with triggers this.
-  EXPECT_EQ(1, web_frame_client.num_bodies_);
 }
 
 TEST_F(WebFrameTest, MoveCaretSelectionTowardsWindowPointWithNoSelection) {

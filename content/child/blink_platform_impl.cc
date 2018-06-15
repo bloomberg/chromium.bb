@@ -664,18 +664,6 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
       GetContentClient()->GetLocalizedString(message_id), values, nullptr));
 }
 
-bool BlinkPlatformImpl::IsRendererSideResourceSchedulerEnabled() const {
-  // We are assuming that kRendererSideResourceScheduler will be shipped when
-  // launching Network Service, so let's act as if
-  // kRendererSideResourceScheduler is enabled when kNetworkService is enabled.
-  // Note: This is identical to
-  // ResourceScheduler::IsRendererSideResourceSchedulerEnabled but we duplicate
-  // the logic in order to avoid a DEPS issue.
-  return base::FeatureList::IsEnabled(
-             network::features::kRendererSideResourceScheduler) ||
-         base::FeatureList::IsEnabled(network::features::kNetworkService);
-}
-
 std::unique_ptr<blink::WebGestureCurve>
 BlinkPlatformImpl::CreateFlingAnimationCurve(
     blink::WebGestureDevice device_source,
