@@ -602,8 +602,6 @@ TEST_F(KeyboardControllerTest, CloseKeyboard) {
 }
 
 TEST_F(KeyboardControllerTest, SetOccludedBoundsChangesFullscreenBounds) {
-  aura::Window* keyboard_container(controller().GetContainerWindow());
-  root_window()->AddChild(keyboard_container);
   controller().LoadKeyboardUiInBackground();
 
   // Keyboard is hidden, so SetContainerType should be synchronous.
