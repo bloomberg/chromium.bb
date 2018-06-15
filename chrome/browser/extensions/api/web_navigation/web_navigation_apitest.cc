@@ -233,8 +233,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
       << message_;
 }
 
-// https://crbug.com/660288
-IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, DISABLED_Download) {
+IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   content::DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(browser()->profile());
