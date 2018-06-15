@@ -93,9 +93,12 @@ class BrowserNonClientFrameViewMash : public BrowserNonClientFrameView,
 
   TabStrip* tab_strip_;
 
-  // A reference to the entry in BrowserImageRegistrar for the active frame
-  // image. Multiple windows that share a browser theme will hold onto a ref.
+  // A reference to the entry in BrowserImageRegistrar for each frame
+  // image. Multiple windows that share a browser theme will hold onto each ref.
   scoped_refptr<ImageRegistration> active_frame_image_registration_;
+  scoped_refptr<ImageRegistration> inactive_frame_image_registration_;
+  scoped_refptr<ImageRegistration> active_frame_overlay_image_registration_;
+  scoped_refptr<ImageRegistration> inactive_frame_overlay_image_registration_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameViewMash);
 };

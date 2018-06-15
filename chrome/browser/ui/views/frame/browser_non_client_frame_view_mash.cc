@@ -311,22 +311,35 @@ gfx::Size BrowserNonClientFrameViewMash::GetMinimumSize() const {
 }
 
 void BrowserNonClientFrameViewMash::OnThemeChanged() {
-  gfx::ImageSkia active_frame_image = GetFrameImage(true);
+  aura::Window* window = frame()->GetNativeWindow();
+  auto update_window_image = [&window](auto property_key,
+                                       const gfx::ImageSkia& image) {
+    scoped_refptr<ImageRegistration> image_registration;
+    if (image.isNull()) {
+      window->ClearProperty(property_key);
+      return image_registration;
+    }
 
-  if (active_frame_image.isNull()) {
-    frame()->GetNativeWindow()->ClearProperty(ash::kFrameImageActiveKey);
-    active_frame_image_registration_ = nullptr;
-  } else {
-    // Hold onto a temporary reference so the old image isn't de-registered till
-    // after the new one is registered and in use.
-    scoped_refptr<ImageRegistration> temporary_registration =
-        active_frame_image_registration_;
-    active_frame_image_registration_ =
-        BrowserImageRegistrar::RegisterImage(active_frame_image);
+    image_registration = BrowserImageRegistrar::RegisterImage(image);
     auto* token = new base::UnguessableToken();
-    *token = active_frame_image_registration_->token();
-    frame()->GetNativeWindow()->SetProperty(ash::kFrameImageActiveKey, token);
-  }
+    *token = image_registration->token();
+    window->SetProperty(property_key, token);
+    return image_registration;
+  };
+
+  active_frame_image_registration_ =
+      update_window_image(ash::kFrameImageActiveKey, GetFrameImage(true));
+  inactive_frame_image_registration_ =
+      update_window_image(ash::kFrameImageInactiveKey, GetFrameImage(false));
+  active_frame_overlay_image_registration_ = update_window_image(
+      ash::kFrameImageOverlayActiveKey, GetFrameOverlayImage(true));
+  inactive_frame_overlay_image_registration_ = update_window_image(
+      ash::kFrameImageOverlayInactiveKey, GetFrameOverlayImage(false));
+
+  window->SetProperty(ash::kFrameActiveColorKey, GetFrameColor(true));
+  window->SetProperty(ash::kFrameInactiveColorKey, GetFrameColor(false));
+
+  BrowserNonClientFrameView::OnThemeChanged();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

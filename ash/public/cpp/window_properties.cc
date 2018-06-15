@@ -38,6 +38,12 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterUnguessableTokenProperty(
       kFrameImageActiveKey, mojom::kFrameImageActive_Property);
+  property_converter->RegisterUnguessableTokenProperty(
+      kFrameImageInactiveKey, mojom::kFrameImageInactive_Property);
+  property_converter->RegisterUnguessableTokenProperty(
+      kFrameImageActiveKey, mojom::kFrameImageOverlayActive_Property);
+  property_converter->RegisterUnguessableTokenProperty(
+      kFrameImageActiveKey, mojom::kFrameImageOverlayInactive_Property);
   property_converter->RegisterPrimitiveProperty(
       kFrameInactiveColorKey,
       ui::mojom::WindowManager::kFrameInactiveColor_Property,
@@ -93,6 +99,15 @@ DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
                                    kFrameImageActiveKey,
+                                   nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
+                                   kFrameImageInactiveKey,
+                                   nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
+                                   kFrameImageOverlayActiveKey,
+                                   nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(base::UnguessableToken,
+                                   kFrameImageOverlayInactiveKey,
                                    nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideInOverviewKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true);

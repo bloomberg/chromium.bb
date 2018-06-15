@@ -41,19 +41,13 @@ class WindowPropertyAppearanceProvider
   }
 
   gfx::ImageSkia GetFrameHeaderImage(bool active) override {
-    // TODO(estade): handle !active.
-    const base::UnguessableToken* token =
-        window_->GetProperty(kFrameImageActiveKey);
-    const gfx::ImageSkia* image =
-        token ? Shell::Get()->client_image_registry()->GetImage(*token)
-              : nullptr;
-
-    return image ? *image : gfx::ImageSkia();
+    return LookUpImageForProperty(active ? kFrameImageActiveKey
+                                         : kFrameImageInactiveKey);
   }
 
   gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override {
-    // TODO(estade): implement.
-    return gfx::ImageSkia();
+    return LookUpImageForProperty(active ? kFrameImageOverlayActiveKey
+                                         : kFrameImageOverlayInactiveKey);
   }
 
   bool IsTabletMode() override {
@@ -63,6 +57,16 @@ class WindowPropertyAppearanceProvider
   }
 
  private:
+  gfx::ImageSkia LookUpImageForProperty(
+      const aura::WindowProperty<base::UnguessableToken*>* property_key) {
+    const base::UnguessableToken* token = window_->GetProperty(property_key);
+    const gfx::ImageSkia* image =
+        token ? Shell::Get()->client_image_registry()->GetImage(*token)
+              : nullptr;
+
+    return image ? *image : gfx::ImageSkia();
+  }
+
   aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowPropertyAppearanceProvider);
@@ -260,7 +264,9 @@ void HeaderView::OnWindowPropertyChanged(aura::Window* window,
                                          const void* key,
                                          intptr_t old) {
   DCHECK_EQ(target_widget_->GetNativeWindow(), window);
-  if (key == kFrameImageActiveKey) {
+  if (key == kFrameImageActiveKey || key == kFrameImageInactiveKey ||
+      key == kFrameImageOverlayActiveKey ||
+      key == kFrameImageOverlayInactiveKey) {
     SchedulePaint();
   } else if (key == aura::client::kAvatarIconKey) {
     gfx::ImageSkia* const avatar_icon =
