@@ -99,7 +99,6 @@ def main():
   _AddCommonArgs(subp)
   subp.add_argument('--output',
                     help='Output file.',
-                    type=argparse.FileType('w'),
                     default='-')
 
   subp = command_parsers.add_parser('extract', help='Extracts the .aar')
@@ -128,8 +127,27 @@ def main():
     build_utils.ExtractAll(args.aar_file, path=args.output_dir)
 
   elif args.command == 'list':
-    args.output.write(_CreateInfo(args.aar_file))
+    aar_info = _CreateInfo(args.aar_file)
+    aar_output_present = args.output != '-' and os.path.isfile(args.output)
+    if aar_output_present:
+      # Some .info files are read-only, for examples the cipd-controlled ones
+      # under third_party/android_deps/repositoty. To deal with these, first
+      # that its content is correct, and if it is, exit without touching
+      # the file system.
+      file_info = open(args.output, 'r').read()
+      if file_info == aar_info:
+        return
 
+    # Try to write the file. This may fail for read-only ones that were
+    # not updated.
+    try:
+      with open(args.output, 'w') as f:
+        f.write(aar_info)
+    except IOError as e:
+      if not aar_output_present:
+        raise e
+      raise Exception('Could not update output file: %s\n%s\n' %
+                      (args.output, e))
 
 if __name__ == '__main__':
   sys.exit(main())
