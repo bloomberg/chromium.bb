@@ -388,9 +388,8 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     aborted_slaves = manager._GetSlavesAbortedBySelfDestruction(cidb_info_dict)
     self.assertEqual(aborted_slaves, {'completed_failure'})
 
-  def testInitSlaveInfoWithBuildbucket(self):
+  def testInitSlaveInfo(self):
     """Test _InitSlaveInfo with Buildbucket info."""
-    self.PatchObject(config_lib, 'UseBuildbucketScheduler', return_value=True)
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
                      '_GetSlaveFailures')
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
@@ -400,19 +399,6 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
     self.assertItemsEqual(manager.builders_array, [self.slave_1])
     self.assertIsNotNone(manager.buildbucket_info_dict)
-
-  def testInitSlaveInfoOnBuildWithoutBuildbucket(self):
-    """Test _InitSlaveInfo without Buildbucket info."""
-    self.PatchObject(config_lib, 'UseBuildbucketScheduler', return_value=False)
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                     '_GetSlaveFailures')
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus,
-                     'GetAllSlaveBuildbucketInfo',
-                     return_value={self.slave_1: bb_infos.GetSuccessBuild()})
-    manager = self.ConstructBuilderStatusManager()
-
-    self.assertItemsEqual(manager.builders_array, [self.slave_1, self.slave_2])
-    self.assertIsNone(manager.buildbucket_info_dict)
 
   def testGetStatusWithBuildbucket(self):
     """Test _GetStatus with Buildbucket info."""
@@ -436,17 +422,6 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
     status_5 = manager._GetStatus(
         'completed_canceled', cidb_info_dict, buildbucket_info_dict)
     self.assertEqual(status_5, constants.BUILDER_STATUS_FAILED)
-
-  def testGetStatusWithoutBuildbucket(self):
-    """Test _GetStatus without Buildbucket info."""
-    self.PatchObject(builder_status_lib.SlaveBuilderStatus, '_InitSlaveInfo')
-    cidb_info_dict = cidb_infos.GetFullCIDBStatusInfo()
-    manager = self.ConstructBuilderStatusManager()
-
-    status_1 = manager._GetStatus('started', cidb_info_dict, None)
-    self.assertEqual(status_1, constants.BUILDER_STATUS_INFLIGHT)
-    status_2 = manager._GetStatus('completed_canceled', cidb_info_dict, None)
-    self.assertEqual(status_2, constants.BUILDER_STATUS_INFLIGHT)
 
   def test_GetDashboardUrlWithBuildbucket(self):
     """Test _GetDashboardUrl with Buildbucket info."""

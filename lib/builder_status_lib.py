@@ -349,13 +349,12 @@ class SlaveBuilderStatus(object):
 
   def _InitSlaveInfo(self):
     """Init slave info including buildbucket info, cidb info and failures."""
-    if config_lib.UseBuildbucketScheduler(self.config):
-      scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
-          self.metadata, exclude_experimental=self.exclude_experimental)
-      self.buildbucket_info_dict = self.GetAllSlaveBuildbucketInfo(
-          self.buildbucket_client, scheduled_buildbucket_info_dict,
-          dry_run=self.dry_run)
-      self.builders_array = self.buildbucket_info_dict.keys()
+    scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
+        self.metadata, exclude_experimental=self.exclude_experimental)
+    self.buildbucket_info_dict = self.GetAllSlaveBuildbucketInfo(
+        self.buildbucket_client, scheduled_buildbucket_info_dict,
+        dry_run=self.dry_run)
+    self.builders_array = self.buildbucket_info_dict.keys()
 
     self.cidb_info_dict = self.GetAllSlaveCIDBStatusInfo(
         self.db, self.master_build_id, self.buildbucket_info_dict)
