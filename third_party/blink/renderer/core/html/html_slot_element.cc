@@ -412,6 +412,17 @@ Node::InsertionNotificationRequest HTMLSlotElement::InsertedInto(
     if (root == insertion_point->ContainingShadowRoot()) {
       // This slot is inserted into the same tree of |insertion_point|
       root->DidAddSlot(*this);
+    } else if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled() &&
+               insertion_point->isConnected() &&
+               root->NeedsSlotAssignmentRecalc()) {
+      // Even when a slot and its containing shadow root is removed together
+      // and inserted together again, the slot's cached assigned nodes can be
+      // stale if the NeedsSlotAssignmentRecalc flag is set, and it may cause
+      // infinite recursion in DetachLayoutTree() when one of the stale node
+      // is a shadow-including ancestor of this slot by making a circular
+      // reference. Clear the cache here to avoid the situation.
+      // See http://crbug.com/849599 for details.
+      ClearAssignedNodesAndFlatTreeChildren();
     }
   }
   return kInsertionDone;
@@ -440,32 +451,30 @@ void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
   // - For slot s2, s2.removedFrom(d) is called.
 
   // ContainingShadowRoot() is okay to use here because 1) It doesn't use
-  // kIsInShadowTreeFlag flag, and 2) TreeScope has been alreay updated for the
+  // kIsInShadowTreeFlag flag, and 2) TreeScope has been already updated for the
   // slot.
   if (ShadowRoot* shadow_root = ContainingShadowRoot()) {
-    // In this case, the shadow host (or it's shadow-inclusive ancestor) was
-    // removed orginally. In the above example, (this slot == s2) and
+    // In this case, the shadow host (or its shadow-inclusive ancestor) was
+    // removed originally. In the above example, (this slot == s2) and
     // (shadow_root == sr2). The shadow tree (sr2)'s structure didn't change at
     // all.
     if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {
       if (shadow_root->NeedsSlotAssignmentRecalc()) {
-        // Need to clear assigned_nodes here.
-        // Without that, a cyclic detach would happen, if one of the
-        // assinged_nodes_ becomes a shadow-including ancestor of this slot by a
-        // series of DOM mutations. See http://crbug.com/849599 for details.
+        // Clear |assigned_nodes_| here, so that the referenced node can get
+        // garbage collected if they no longer needed. See also InsertedInto()'s
+        // comment for cases that stale |assigned_nodes| can be problematic.
         ClearAssignedNodesAndFlatTreeChildren();
       } else {
-        // We don't need to clear assigned_nodes here. That's an important
+        // We don't need to clear |assigned_nodes_| here. That's an important
         // optimization.
       }
     } else {
       ClearDistribution();
     }
   } else if (insertion_point->IsInV1ShadowTree()) {
-    // This slot was in a shadow tree and got disconnected from the shadow
-    // tree.
-    // In the above examle, (this slot == s1), (insertion point == d)
-    // and (insertion_point->ContainingShadowRoot() == sr1)
+    // This slot was in a shadow tree and got disconnected from the shadow tree.
+    // In the above example, (this slot == s1), (insertion point == d)
+    // and (insertion_point->ContainingShadowRoot == sr1).
     insertion_point->ContainingShadowRoot()->GetSlotAssignment().DidRemoveSlot(
         *this);
     if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()) {

@@ -79,7 +79,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   AtomicString GetName() const;
 
   // This method can be slow because this has to traverse the children of a
-  // shadow host.  This method should be used only when m_assignedNodes is
+  // shadow host.  This method should be used only when |assigned_nodes_| is
   // dirty.  e.g. To detect a slotchange event in DOM mutations.
   bool HasAssignedNodesSlow() const;
   bool FindHostChildWithSameSlotName() const;
