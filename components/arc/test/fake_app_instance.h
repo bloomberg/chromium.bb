@@ -134,8 +134,6 @@ class FakeAppInstance : public mojom::AppInstance {
   void GetAppShortcutItems(const std::string& package_name,
                            GetAppShortcutItemsCallback callback) override;
   void StartPaiFlow() override;
-  void StartFastAppReinstallFlow(
-      const std::vector<std::string>& package_names) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);
@@ -175,10 +173,6 @@ class FakeAppInstance : public mojom::AppInstance {
 
   int start_pai_request_count() const { return start_pai_request_count_; }
 
-  int start_fast_app_reinstall_request_count() const {
-    return start_fast_app_reinstall_request_count_;
-  }
-
   int launch_app_shortcut_item_count() const {
     return launch_app_shortcut_item_count_;
   }
@@ -208,8 +202,6 @@ class FakeAppInstance : public mojom::AppInstance {
   int refresh_app_list_count_ = 0;
   // Number of requests to start PAI flows.
   int start_pai_request_count_ = 0;
-  // Number of requests to start Fast App Reinstall flows.
-  int start_fast_app_reinstall_request_count_ = 0;
   // Keeps information about launch app shortcut requests.
   int launch_app_shortcut_item_count_ = 0;
   // Keeps information about launch requests.

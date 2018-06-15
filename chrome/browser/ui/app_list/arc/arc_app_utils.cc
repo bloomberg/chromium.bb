@@ -28,7 +28,6 @@
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/common/intent_helper.mojom.h"
@@ -371,34 +370,6 @@ void StartPaiFlow() {
   if (!app_instance)
     return;
   app_instance->StartPaiFlow();
-}
-
-std::vector<std::string> GetSelectedPackagesFromPrefs(
-    content::BrowserContext* context) {
-  std::vector<std::string> packages;
-  const Profile* const profile = Profile::FromBrowserContext(context);
-  const PrefService* prefs = profile->GetPrefs();
-
-  const base::ListValue* selected_package_prefs =
-      prefs->GetList(arc::prefs::kArcFastAppReinstallPackages);
-  for (const base::Value& item : selected_package_prefs->GetList()) {
-    std::string item_str;
-    item.GetAsString(&item_str);
-    packages.push_back(std::move(item_str));
-  }
-
-  return packages;
-}
-
-void StartFastAppReinstallFlow(const std::vector<std::string>& package_names) {
-  arc::mojom::AppInstance* app_instance =
-      GET_APP_INSTANCE(StartFastAppReinstallFlow);
-  if (!app_instance) {
-    LOG(ERROR) << "Failed to start Fast App Reinstall flow because app "
-                  "instance is not connected.";
-    return;
-  }
-  app_instance->StartFastAppReinstallFlow(package_names);
 }
 
 void UninstallPackage(const std::string& package_name) {
