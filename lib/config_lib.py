@@ -158,17 +158,6 @@ def IsMasterCQ(config):
   """Returns True if this build is master CQ."""
   return config.build_type == constants.PALADIN_TYPE and config.master
 
-def IsMasterBuild(config):
-  """Returns True if this build is master."""
-  return config.master
-
-def UseBuildbucketScheduler(config):
-  """Returns True if this build uses Buildbucket to schedule builds."""
-  # If a builder schedules slaves, it uses buildbucket. Alternative logic exists
-  # in many places, but should be cleaned up.
-  return bool(config.name == constants.PRE_CQ_LAUNCHER_NAME or
-              config.slave_configs)
-
 def RetryAlreadyStartedSlaves(config):
   """Returns True if wants to retry slaves which already start but fail.
 

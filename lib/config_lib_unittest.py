@@ -12,7 +12,6 @@ import cPickle
 import json
 
 from chromite.lib import config_lib
-from chromite.lib import constants
 from chromite.lib import cros_test_lib
 
 # pylint: disable=protected-access
@@ -814,31 +813,6 @@ class GetConfigTests(cros_test_lib.TestCase):
     # But also that it's cached going forward.
     self.assertIsInstance(config_c, config_lib.SiteConfig)
     self.assertIs(config_c, config_d)
-
-
-class ConfigLibHelperTests(cros_test_lib.TestCase):
-  """Tests related to helper methods in config_lib."""
-
-  def testUseBuildbucketSchedulerHasSlaves(self):
-    """Test UseBuildbucketScheduler."""
-    config = config_lib.BuildConfig(
-        name='FooMaster',
-        slave_configs=['a', 'b', 'c'])
-    self.assertTrue(config_lib.UseBuildbucketScheduler(config))
-
-  def testUseBuildbucketSchedulerPreCQLauncher(self):
-    """Test UseBuildbucketScheduler."""
-    config = config_lib.BuildConfig(
-        name=constants.PRE_CQ_LAUNCHER_NAME,
-        slave_configs=None)
-    self.assertTrue(config_lib.UseBuildbucketScheduler(config))
-
-  def testUseBuildbucketSchedulerNoSlaves(self):
-    """Test UseBuildbucketScheduler."""
-    config = config_lib.BuildConfig(
-        name='FooMaster',
-        slave_configs=None)
-    self.assertFalse(config_lib.UseBuildbucketScheduler(config))
 
 
 class GEBuildConfigTests(cros_test_lib.TestCase):
