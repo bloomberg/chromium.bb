@@ -705,37 +705,6 @@ bool FrameLoader::PrepareRequestForThisFrame(FrameLoadRequest& request) {
   return true;
 }
 
-static bool ShouldNavigateTargetFrame(NavigationPolicy policy) {
-  switch (policy) {
-    case kNavigationPolicyCurrentTab:
-      return true;
-
-    // Navigation will target a *new* frame (e.g. because of a ctrl-click),
-    // so the target frame can be ignored.
-    case kNavigationPolicyNewBackgroundTab:
-    case kNavigationPolicyNewForegroundTab:
-    case kNavigationPolicyNewWindow:
-    case kNavigationPolicyNewPopup:
-      return false;
-
-    // Navigation won't really target any specific frame,
-    // so the target frame can be ignored.
-    case kNavigationPolicyIgnore:
-    case kNavigationPolicyDownload:
-      return false;
-
-    case kNavigationPolicyHandledByClient:
-      // Impossible, because at this point we shouldn't yet have called
-      // client()->decidePolicyForNavigation(...).
-      NOTREACHED();
-      return true;
-
-    default:
-      NOTREACHED() << policy;
-      return true;
-  }
-}
-
 static WebNavigationType DetermineNavigationType(
     WebFrameLoadType frame_load_type,
     bool is_form_submission,
@@ -783,6 +752,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   CHECK(!IsBackForwardLoadType(frame_load_type));
   DCHECK(passed_request.TriggeringEventInfo() !=
          WebTriggeringEventInfo::kUnknown);
+  DCHECK(policy != kNavigationPolicyHandledByClient &&
+         policy != kNavigationPolicyHandledByClientForInitialHistory);
 
   DCHECK(frame_->GetDocument());
   if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
@@ -806,8 +777,11 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   AtomicString(request.FrameName()), *frame_,
                                   request.GetResourceRequest().Url());
 
-  if (target_frame && target_frame != frame_ &&
-      ShouldNavigateTargetFrame(policy)) {
+  // Downloads and navigations which specifically target a *new* frame
+  // (e.g. because of a ctrl-click) should ignore the target.
+  bool should_navigate_target_frame = policy == kNavigationPolicyCurrentTab;
+
+  if (target_frame && target_frame != frame_ && should_navigate_target_frame) {
     if (target_frame->IsLocalFrame() &&
         !ToLocalFrame(target_frame)->IsNavigationAllowed()) {
       return;
@@ -829,10 +803,10 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     if (policy == kNavigationPolicyDownload) {
       Client()->DownloadURL(request.GetResourceRequest());
       return;  // Navigation/download will be handled by the client.
-    } else if (ShouldNavigateTargetFrame(policy)) {
+    } else if (should_navigate_target_frame) {
       request.GetResourceRequest().SetFrameType(
           network::mojom::RequestContextFrameType::kAuxiliary);
-      CreateWindowForRequest(request, *frame_, policy);
+      CreateWindowForRequest(request, *frame_);
       return;  // Navigation will be handled by the new frame/window.
     }
   }

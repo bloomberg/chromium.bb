@@ -48,7 +48,7 @@ class EffectiveNavigationPolicyTest : public testing::Test {
     event.button = button;
     if (as_popup)
       features.tool_bar_visible = false;
-    return EffectiveNavigationPolicy(kNavigationPolicyIgnore, &event, features);
+    return EffectiveNavigationPolicy(&event, features);
   }
 
   WebWindowFeatures features;
@@ -154,46 +154,38 @@ TEST_F(EffectiveNavigationPolicyTest, MiddleClickPopup) {
 
 TEST_F(EffectiveNavigationPolicyTest, NoToolbarsForcesPopup) {
   features.tool_bar_visible = false;
-  EXPECT_EQ(
-      kNavigationPolicyNewPopup,
-      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  EXPECT_EQ(kNavigationPolicyNewPopup,
+            EffectiveNavigationPolicy(nullptr, features));
   features.tool_bar_visible = true;
-  EXPECT_EQ(
-      kNavigationPolicyNewForegroundTab,
-      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  EXPECT_EQ(kNavigationPolicyNewForegroundTab,
+            EffectiveNavigationPolicy(nullptr, features));
 }
 
 TEST_F(EffectiveNavigationPolicyTest, NoStatusBarForcesPopup) {
   features.status_bar_visible = false;
-  EXPECT_EQ(
-      kNavigationPolicyNewPopup,
-      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  EXPECT_EQ(kNavigationPolicyNewPopup,
+            EffectiveNavigationPolicy(nullptr, features));
   features.status_bar_visible = true;
-  EXPECT_EQ(
-      kNavigationPolicyNewForegroundTab,
-      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  EXPECT_EQ(kNavigationPolicyNewForegroundTab,
+            EffectiveNavigationPolicy(nullptr, features));
 }
 
 TEST_F(EffectiveNavigationPolicyTest, NoMenuBarForcesPopup) {
   features.menu_bar_visible = false;
-  EXPECT_EQ(
-      kNavigationPolicyNewPopup,
-      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  EXPECT_EQ(kNavigationPolicyNewPopup,
+            EffectiveNavigationPolicy(nullptr, features));
   features.menu_bar_visible = true;
-  EXPECT_EQ(
-      kNavigationPolicyNewForegroundTab,
-      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  EXPECT_EQ(kNavigationPolicyNewForegroundTab,
+            EffectiveNavigationPolicy(nullptr, features));
 }
 
 TEST_F(EffectiveNavigationPolicyTest, NotResizableForcesPopup) {
   features.resizable = false;
-  EXPECT_EQ(
-      kNavigationPolicyNewPopup,
-      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  EXPECT_EQ(kNavigationPolicyNewPopup,
+            EffectiveNavigationPolicy(nullptr, features));
   features.resizable = true;
-  EXPECT_EQ(
-      kNavigationPolicyNewForegroundTab,
-      EffectiveNavigationPolicy(kNavigationPolicyIgnore, nullptr, features));
+  EXPECT_EQ(kNavigationPolicyNewForegroundTab,
+            EffectiveNavigationPolicy(nullptr, features));
 }
 
 }  // namespace blink
