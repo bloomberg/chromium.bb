@@ -189,11 +189,12 @@ bool OpenFileWithBrowser(Profile* profile,
     } else {
       drive::DriveIntegrationService* integration_service =
           drive::DriveIntegrationServiceFactory::FindForProfile(profile);
+      base::FilePath path;
       if (integration_service && integration_service->IsMounted() &&
           integration_service->GetDriveFsInterface() &&
-          integration_service->GetMountPointPath().IsParent(file_path)) {
+          integration_service->GetRelativeDrivePath(file_path, &path)) {
         integration_service->GetDriveFsInterface()->GetMetadata(
-            file_path, false,
+            path, false,
             base::BindOnce(&OpenHostedDriveFsFile, file_path, profile));
         return true;
       }

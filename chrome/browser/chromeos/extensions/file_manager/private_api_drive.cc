@@ -632,7 +632,8 @@ class SingleEntryPropertiesGetterForDriveFs {
       CompleteGetEntryProperties(drive::FILE_ERROR_SERVICE_UNAVAILABLE);
       return;
     }
-    if (!integration_service->GetMountPointPath().IsParent(local_path_)) {
+    base::FilePath path;
+    if (!integration_service->GetRelativeDrivePath(local_path_, &path)) {
       CompleteGetEntryProperties(drive::FILE_ERROR_INVALID_OPERATION);
       return;
     }
@@ -644,7 +645,7 @@ class SingleEntryPropertiesGetterForDriveFs {
     }
 
     drivefs_interface->GetMetadata(
-        local_path_, want_thumbnail_,
+        path, want_thumbnail_,
         mojo::WrapCallbackWithDefaultInvokeIfNotRun(
             base::BindOnce(
                 &SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo,
@@ -913,9 +914,9 @@ bool FileManagerPrivateInternalPinDriveFileFunction::RunAsyncForDriveFs(
     bool pin) {
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(GetProfile());
-  if (!integration_service || !integration_service->IsMounted() ||
-      !integration_service->GetMountPointPath().IsParent(
-          file_system_url.path())) {
+  base::FilePath path;
+  if (!integration_service || !integration_service->GetRelativeDrivePath(
+                                  file_system_url.path(), &path)) {
     return false;
   }
 
@@ -924,7 +925,7 @@ bool FileManagerPrivateInternalPinDriveFileFunction::RunAsyncForDriveFs(
     return false;
 
   drivefs_interface->SetPinned(
-      file_system_url.path(), pin,
+      path, pin,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(
               &FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet,
@@ -1522,9 +1523,9 @@ bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsyncForDriveFs(
     const storage::FileSystemURL& file_system_url) {
   drive::DriveIntegrationService* integration_service =
       drive::DriveIntegrationServiceFactory::FindForProfile(GetProfile());
-  if (!integration_service || !integration_service->IsMounted() ||
-      !integration_service->GetMountPointPath().IsParent(
-          file_system_url.path())) {
+  base::FilePath path;
+  if (!integration_service || !integration_service->GetRelativeDrivePath(
+                                  file_system_url.path(), &path)) {
     return false;
   }
 
@@ -1533,7 +1534,7 @@ bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsyncForDriveFs(
     return false;
 
   drivefs_interface->GetMetadata(
-      file_system_url.path(), false,
+      path, false,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(
               &FileManagerPrivateInternalGetDownloadUrlFunction::OnGotMetadata,
