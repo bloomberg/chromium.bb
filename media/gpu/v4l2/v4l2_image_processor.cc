@@ -17,6 +17,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "media/base/scopedfd_helper.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
 
 #define DVLOGF(level) DVLOG(level) << __func__ << "(): "
@@ -189,15 +190,6 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
   return true;
 }
 
-std::vector<base::ScopedFD> V4L2ImageProcessor::GetDmabufsForOutputBuffer(
-    int output_buffer_index) {
-  DCHECK_GE(output_buffer_index, 0);
-  DCHECK_LT(output_buffer_index, num_buffers_);
-  return device_->GetDmabufsForV4L2Buffer(output_buffer_index,
-                                          output_planes_count_,
-                                          V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-}
-
 // static
 bool V4L2ImageProcessor::IsSupported() {
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
@@ -257,21 +249,46 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
 bool V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
                                  int output_buffer_index,
                                  std::vector<base::ScopedFD> output_dmabuf_fds,
-                                 const FrameReadyCB& cb) {
+                                 FrameReadyCB cb) {
   DVLOGF(4) << "ts=" << frame->timestamp().InMilliseconds();
-  size_t expected_num_fds =
-      (output_memory_type_ == V4L2_MEMORY_DMABUF ? output_planes_count_ : 0);
-  if (expected_num_fds != output_dmabuf_fds.size()) {
-    VLOGF(1) << "wrong number of output fds. Expected " << expected_num_fds
+
+  switch (output_memory_type_) {
+    case V4L2_MEMORY_MMAP:
+      if (!output_dmabuf_fds.empty()) {
+        VLOGF(1) << "output_dmabuf_fds must be empty for MMAP output mode";
+        return false;
+      }
+      output_dmabuf_fds =
+          DuplicateFDs(output_buffer_map_[output_buffer_index].dmabuf_fds);
+      break;
+
+    case V4L2_MEMORY_DMABUF:
+      break;
+
+    default:
+      NOTREACHED();
+      return false;
+  }
+
+  if (output_dmabuf_fds.size() != output_planes_count_) {
+    VLOGF(1) << "wrong number of output fds. Expected " << output_planes_count_
              << ", actual " << output_dmabuf_fds.size();
     return false;
   }
 
   std::unique_ptr<JobRecord> job_record(new JobRecord());
-  job_record->frame = frame;
+  job_record->input_frame = frame;
   job_record->output_buffer_index = output_buffer_index;
-  job_record->output_dmabuf_fds = std::move(output_dmabuf_fds);
-  job_record->ready_cb = cb;
+  job_record->ready_cb = std::move(cb);
+
+  // Create the output frame
+  job_record->output_frame = VideoFrame::WrapExternalDmabufs(
+      output_format_, output_allocated_size_, gfx::Rect(output_visible_size_),
+      output_visible_size_, std::move(output_dmabuf_fds),
+      job_record->input_frame->timestamp());
+
+  if (!job_record->output_frame)
+    return false;
 
   device_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2ImageProcessor::ProcessTask,
@@ -280,14 +297,11 @@ bool V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
 }
 
 void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
-  int index = job_record->output_buffer_index;
-  DVLOGF(4) << "Reusing output buffer, index=" << index;
+  DVLOGF(4) << "Reusing output buffer, index="
+            << job_record->output_buffer_index;
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(output_buffer_map_[index].dmabuf_fds.empty());
-  output_buffer_map_[index].dmabuf_fds =
-      std::move(job_record->output_dmabuf_fds);
 
-  EnqueueOutput(index);
+  EnqueueOutput(job_record.get());
   input_queue_.emplace(std::move(job_record));
   EnqueueInput();
 }
@@ -473,6 +487,19 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
   DCHECK(output_buffer_map_.empty());
   output_buffer_map_.resize(reqbufs.count);
 
+  // Get the DMA-BUF FDs for MMAP buffers
+  if (output_memory_type_ == V4L2_MEMORY_MMAP) {
+    for (unsigned int i = 0; i < output_buffer_map_.size(); i++) {
+      OutputRecord& output_record = output_buffer_map_[i];
+      output_record.dmabuf_fds = device_->GetDmabufsForV4L2Buffer(
+          i, output_planes_count_, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
+      if (output_record.dmabuf_fds.empty()) {
+        VLOGF(1) << "failed to get fds of output buffer";
+        return false;
+      }
+    }
+  }
+
   return true;
 }
 
@@ -497,14 +524,14 @@ void V4L2ImageProcessor::DestroyOutputBuffers() {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!output_streamon_);
 
+  output_buffer_map_.clear();
+
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
   reqbufs.count = 0;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   reqbufs.memory = output_memory_type_;
   IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
-
-  output_buffer_map_.clear();
 }
 
 void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
@@ -583,12 +610,12 @@ void V4L2ImageProcessor::EnqueueInput() {
   }
 }
 
-void V4L2ImageProcessor::EnqueueOutput(int index) {
+void V4L2ImageProcessor::EnqueueOutput(const JobRecord* job_record) {
   DVLOGF(4);
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
 
   const int old_outputs_queued = output_buffer_queued_count_;
-  if (!EnqueueOutputRecord(index))
+  if (!EnqueueOutputRecord(job_record))
     return;
 
   if (old_outputs_queued == 0 && output_buffer_queued_count_ != 0) {
@@ -662,7 +689,6 @@ void V4L2ImageProcessor::Dequeue() {
     OutputRecord& output_record = output_buffer_map_[dqbuf.index];
     DCHECK(output_record.at_device);
     output_record.at_device = false;
-    output_record.dmabuf_fds.clear();
     output_buffer_queued_count_--;
 
     // Jobs are always processed in FIFO order.
@@ -673,8 +699,9 @@ void V4L2ImageProcessor::Dequeue() {
     DVLOGF(4) << "Processing finished, returning frame, index=" << dqbuf.index;
 
     child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&V4L2ImageProcessor::FrameReady, weak_this_,
-                              job_record->ready_cb, dqbuf.index));
+        FROM_HERE, base::BindOnce(&V4L2ImageProcessor::FrameReady, weak_this_,
+                                  std::move(job_record->ready_cb),
+                                  job_record->output_frame));
   }
 }
 
@@ -689,7 +716,7 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   const int index = free_input_buffers_.back();
   InputRecord& input_record = input_buffer_map_[index];
   DCHECK(!input_record.at_device);
-  input_record.frame = job_record->frame;
+  input_record.frame = job_record->input_frame;
   struct v4l2_buffer qbuf;
   struct v4l2_plane qbuf_planes[VIDEO_MAX_PLANES];
   memset(&qbuf, 0, sizeof(qbuf));
@@ -731,7 +758,8 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   input_record.at_device = true;
 
   DVLOGF(4) << "enqueued frame ts="
-            << job_record->frame->timestamp().InMilliseconds() << " to device.";
+            << job_record->input_frame->timestamp().InMilliseconds()
+            << " to device.";
 
   running_jobs_.emplace(std::move(job_record));
   free_input_buffers_.pop_back();
@@ -740,8 +768,9 @@ bool V4L2ImageProcessor::EnqueueInputRecord() {
   return true;
 }
 
-bool V4L2ImageProcessor::EnqueueOutputRecord(int index) {
+bool V4L2ImageProcessor::EnqueueOutputRecord(const JobRecord* job_record) {
   DVLOGF(4);
+  int index = job_record->output_buffer_index;
   DCHECK_GE(index, 0);
   DCHECK_LT(static_cast<size_t>(index), output_buffer_map_.size());
   // Enqueue an output (VIDEO_CAPTURE) buffer.
@@ -755,8 +784,13 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(int index) {
   qbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
   qbuf.memory = output_memory_type_;
   if (output_memory_type_ == V4L2_MEMORY_DMABUF) {
-    for (size_t i = 0; i < output_record.dmabuf_fds.size(); ++i)
-      qbuf_planes[i].m.fd = output_record.dmabuf_fds[i].get();
+    std::vector<int> fds = job_record->output_frame->DmabufFds();
+    if (fds.size() != output_planes_count_) {
+      VLOGF(1) << "Invalid number of FDs in output record";
+      return false;
+    }
+    for (size_t i = 0; i < fds.size(); ++i)
+      qbuf_planes[i].m.fd = fds[i];
   }
   qbuf.m.planes = qbuf_planes;
   qbuf.length = output_planes_count_;
@@ -830,15 +864,15 @@ void V4L2ImageProcessor::StopDevicePoll() {
   }
   input_buffer_queued_count_ = 0;
 
-  output_buffer_map_.clear();
-  output_buffer_map_.resize(num_buffers_);
+  for (auto& output_buffer : output_buffer_map_)
+    output_buffer.at_device = false;
   output_buffer_queued_count_ = 0;
 }
 
-void V4L2ImageProcessor::FrameReady(const FrameReadyCB& cb,
-                                    int output_buffer_index) {
+void V4L2ImageProcessor::FrameReady(FrameReadyCB cb,
+                                    scoped_refptr<VideoFrame> frame) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
-  cb.Run(output_buffer_index);
+  std::move(cb).Run(frame);
 }
 
 }  // namespace media

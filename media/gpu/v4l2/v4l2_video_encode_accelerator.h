@@ -116,10 +116,12 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Callbacks for the image processor, if one is used.
   //
 
-  // Callback run by the image processor when a frame is ready for us to encode.
+  // Callback run by the image processor when a |frame| is ready for us to
+  // encode.
   void FrameProcessed(bool force_keyframe,
                       base::TimeDelta timestamp,
-                      int output_buffer_index);
+                      int output_buffer_index,
+                      scoped_refptr<VideoFrame> frame);
 
   // Error callback for handling image processor errors.
   void ImageProcessorError();
@@ -300,8 +302,6 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   std::vector<int> free_image_processor_output_buffers_;
   // Video frames ready to be processed. Only accessed on child thread.
   base::queue<InputFrameInfo> image_processor_input_queue_;
-  // Mapping of int index to fds of image processor output buffer.
-  std::vector<std::vector<base::ScopedFD>> image_processor_output_buffer_map_;
 
   // This thread services tasks posted from the VEA API entry points by the
   // child thread and device service callbacks posted from the device thread.

@@ -2455,8 +2455,9 @@ bool V4L2VideoDecodeAccelerator::ProcessFrame(int32_t bitstream_buffer_id,
   // be no callbacks after processor destroys.
   image_processor_->Process(
       input_frame, output_buffer_index, std::move(output_fds),
-      base::Bind(&V4L2VideoDecodeAccelerator::FrameProcessed,
-                 base::Unretained(this), bitstream_buffer_id));
+      base::BindOnce(&V4L2VideoDecodeAccelerator::FrameProcessed,
+                     base::Unretained(this), bitstream_buffer_id,
+                     output_buffer_index));
   return true;
 }
 
@@ -2645,8 +2646,10 @@ void V4L2VideoDecodeAccelerator::PictureCleared() {
   SendPictureReady();
 }
 
-void V4L2VideoDecodeAccelerator::FrameProcessed(int32_t bitstream_buffer_id,
-                                                int output_buffer_index) {
+void V4L2VideoDecodeAccelerator::FrameProcessed(
+    int32_t bitstream_buffer_id,
+    int output_buffer_index,
+    scoped_refptr<VideoFrame> frame) {
   DVLOGF(4) << "output_buffer_index=" << output_buffer_index
             << ", bitstream_buffer_id=" << bitstream_buffer_id;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
