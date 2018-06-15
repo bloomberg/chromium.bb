@@ -1848,7 +1848,7 @@ void QuicChromiumClientSession::OnNetworkConnected(
   // TODO(jri): Ensure that OnSessionGoingAway is called consistently,
   // and that it's always called at the same time in the whole
   // migration process. Allows tests to be more uniform.
-  stream_factory_->OnSessionGoingAway(this);
+  NotifyFactoryOfSessionGoingAway();
   Migrate(network, connection()->peer_address().impl().socket_address(),
           /*close_session_on_error=*/true, net_log);
 }
@@ -1877,6 +1877,10 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
 
   // Stop probing the disconnected network if there is one.
   probing_manager_.CancelProbing(disconnected_network);
+  if (disconnected_network == default_network_) {
+    DVLOG(1) << "Default network: " << default_network_ << " is disconnected.";
+    default_network_ = NetworkChangeNotifier::kInvalidNetworkHandle;
+  }
 
   // Ignore the signal if the current active network is not affected.
   if (GetDefaultSocket()->GetBoundNetwork() != disconnected_network) {
@@ -1915,6 +1919,8 @@ void QuicChromiumClientSession::OnNetworkMadeDefault(
     return;
 
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, new_network);
+  DVLOG(1) << "Network: " << new_network
+           << " becomes default, old default: " << default_network_;
   default_network_ = new_network;
   current_connection_migration_cause_ = ON_NETWORK_MADE_DEFAULT;
 
@@ -2283,6 +2289,11 @@ void QuicChromiumClientSession::CancelMigrateBackToDefaultNetworkTimer() {
 
 void QuicChromiumClientSession::TryMigrateBackToDefaultNetwork(
     base::TimeDelta timeout) {
+  if (default_network_ == NetworkChangeNotifier::kInvalidNetworkHandle) {
+    DVLOG(1) << "Default network is not connected";
+    return;
+  }
+
   net_log_.AddEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_MIGRATE_BACK,
                     base::Bind(NetLog::Int64Callback(
                         "retry_count", retry_migrate_back_count_)));
@@ -2302,8 +2313,7 @@ void QuicChromiumClientSession::TryMigrateBackToDefaultNetwork(
   if (result != ProbingResult::PENDING) {
     // Session is not allowed to migrate, mark session as going away, cancel
     // migrate back to default timer.
-    if (stream_factory_)
-      stream_factory_->OnSessionGoingAway(this);
+    NotifyFactoryOfSessionGoingAway();
     CancelMigrateBackToDefaultNetworkTimer();
     return;
   }
@@ -2321,7 +2331,7 @@ void QuicChromiumClientSession::MaybeRetryMigrateBackToDefaultNetwork() {
       base::TimeDelta::FromSeconds(UINT64_C(1) << retry_migrate_back_count_);
   if (retry_migrate_back_timeout > max_time_on_non_default_network_) {
     // Mark session as going away to accept no more streams.
-    stream_factory_->OnSessionGoingAway(this);
+    NotifyFactoryOfSessionGoingAway();
     return;
   }
   TryMigrateBackToDefaultNetwork(retry_migrate_back_timeout);
@@ -2346,7 +2356,7 @@ bool QuicChromiumClientSession::ShouldMigrateSession(
     // Always mark session going away for connection migrate v1 if session
     // has any active streams.
     DCHECK(stream_factory_);
-    stream_factory_->OnSessionGoingAway(this);
+    NotifyFactoryOfSessionGoingAway();
   }
 
   // Do not migrate sessions where connection migration is disabled.
@@ -2360,7 +2370,7 @@ bool QuicChromiumClientSession::ShouldMigrateSession(
           quic::QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG);
     } else if (migrate_session_on_network_change_v2_) {
       // Session cannot migrate, mark it as going away for v2.
-      stream_factory_->OnSessionGoingAway(this);
+      NotifyFactoryOfSessionGoingAway();
     }
     return false;
   }
@@ -2376,7 +2386,7 @@ bool QuicChromiumClientSession::ShouldMigrateSession(
           quic::QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM);
     } else if (migrate_session_on_network_change_v2_) {
       // Session cannot migrate, mark it as going away for v2.
-      stream_factory_->OnSessionGoingAway(this);
+      NotifyFactoryOfSessionGoingAway();
     }
     return false;
   }
@@ -2658,7 +2668,7 @@ MigrationResult QuicChromiumClientSession::MigrateToAlternateNetwork(
         connection_id(), "No alternate network found");
     return MigrationResult::NO_NEW_NETWORK;
   }
-  stream_factory_->OnSessionGoingAway(this);
+  NotifyFactoryOfSessionGoingAway();
   return Migrate(new_network,
                  connection()->peer_address().impl().socket_address(),
                  close_session_on_error, migration_net_log);
