@@ -38,6 +38,8 @@ extern const char kGTestListTestsFlag[];
 extern const char kGTestRepeatFlag[];
 extern const char kGTestRunDisabledTestsFlag[];
 extern const char kGTestOutputFlag[];
+extern const char kGTestShuffleFlag[];
+extern const char kGTestRandomSeedFlag[];
 
 // Interface for use with LaunchTests that abstracts away exact details
 // which tests and how are run.
@@ -197,7 +199,7 @@ class TestLauncher {
   int32_t total_shards_;  // Total number of outer shards, at least one.
   int32_t shard_index_;   // Index of shard the launcher is to run.
 
-  int cycles_;  // Number of remaining test itreations, or -1 for infinite.
+  int cycles_;  // Number of remaining test iterations, or -1 for infinite.
 
   // Test filters (empty means no filter).
   bool has_at_least_one_positive_filter_;
@@ -238,6 +240,10 @@ class TestLauncher {
 
   // Result to be returned from Run.
   bool run_result_;
+
+  // Support for test shuffling, just like gtest does.
+  bool shuffle_;
+  uint32_t shuffle_seed_;
 
   TestResultsTracker results_tracker_;
 
