@@ -669,9 +669,10 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
   if (codecs == "" && (type == "audio/mpeg" || type == "audio/mp3"))
     expected_sbs_codecs = "mp3";
 
-  source_state->Init(
-      base::Bind(&ChunkDemuxer::OnSourceInitDone, base::Unretained(this), id),
-      expected_sbs_codecs, encrypted_media_init_data_cb_, new_text_track_cb);
+  source_state->Init(base::BindOnce(&ChunkDemuxer::OnSourceInitDone,
+                                    base::Unretained(this), id),
+                     expected_sbs_codecs, encrypted_media_init_data_cb_,
+                     new_text_track_cb);
 
   // TODO(wolenetz): Change to DCHECKs once less verification in release build
   // is needed. See https://crbug.com/786975.

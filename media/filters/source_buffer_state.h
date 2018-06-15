@@ -44,7 +44,7 @@ class MEDIA_EXPORT SourceBufferState {
 
   ~SourceBufferState();
 
-  void Init(const StreamParser::InitCB& init_cb,
+  void Init(StreamParser::InitCB init_cb,
             const std::string& expected_codecs,
             const StreamParser::EncryptedMediaInitDataCB&
                 encrypted_media_init_data_cb,

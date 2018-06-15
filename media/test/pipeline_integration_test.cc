@@ -1123,8 +1123,8 @@ TEST_F(PipelineIntegrationTest, F32PlaybackHashed) {
 TEST_F(PipelineIntegrationTest, MAYBE_EME(BasicPlaybackEncrypted)) {
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   set_encrypted_media_init_data_cb(
-      base::Bind(&FakeEncryptedMedia::OnEncryptedMediaInitData,
-                 base::Unretained(&encrypted_media)));
+      base::BindRepeating(&FakeEncryptedMedia::OnEncryptedMediaInitData,
+                          base::Unretained(&encrypted_media)));
 
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-av_enc-av.webm",
                                encrypted_media.GetCdmContext()));

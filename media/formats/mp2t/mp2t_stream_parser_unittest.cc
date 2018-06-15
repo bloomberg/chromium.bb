@@ -355,14 +355,18 @@ class Mp2tStreamParserTest : public testing::Test {
 
   void InitializeParser() {
     parser_->Init(
-        base::Bind(&Mp2tStreamParserTest::OnInit, base::Unretained(this)),
-        base::Bind(&Mp2tStreamParserTest::OnNewConfig, base::Unretained(this)),
-        base::Bind(&Mp2tStreamParserTest::OnNewBuffers, base::Unretained(this)),
+        base::BindOnce(&Mp2tStreamParserTest::OnInit, base::Unretained(this)),
+        base::BindRepeating(&Mp2tStreamParserTest::OnNewConfig,
+                            base::Unretained(this)),
+        base::BindRepeating(&Mp2tStreamParserTest::OnNewBuffers,
+                            base::Unretained(this)),
         true,
-        base::Bind(&Mp2tStreamParserTest::OnKeyNeeded, base::Unretained(this)),
-        base::Bind(&Mp2tStreamParserTest::OnNewSegment, base::Unretained(this)),
-        base::Bind(&Mp2tStreamParserTest::OnEndOfSegment,
-                   base::Unretained(this)),
+        base::BindRepeating(&Mp2tStreamParserTest::OnKeyNeeded,
+                            base::Unretained(this)),
+        base::BindRepeating(&Mp2tStreamParserTest::OnNewSegment,
+                            base::Unretained(this)),
+        base::BindRepeating(&Mp2tStreamParserTest::OnEndOfSegment,
+                            base::Unretained(this)),
         &media_log_);
   }
 

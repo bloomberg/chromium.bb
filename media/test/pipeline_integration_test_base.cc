@@ -440,8 +440,9 @@ void PipelineIntegrationTestBase::CreateDemuxer(
 #if BUILDFLAG(ENABLE_FFMPEG)
   demuxer_ = std::unique_ptr<Demuxer>(new FFmpegDemuxer(
       scoped_task_environment_.GetMainThreadTaskRunner(), data_source_.get(),
-      base::Bind(&PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB,
-                 base::Unretained(this)),
+      base::BindRepeating(
+          &PipelineIntegrationTestBase::DemuxerEncryptedMediaInitDataCB,
+          base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::DemuxerMediaTracksUpdatedCB,
                  base::Unretained(this)),
       &media_log_));

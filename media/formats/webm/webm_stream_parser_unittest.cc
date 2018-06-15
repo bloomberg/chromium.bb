@@ -41,18 +41,19 @@ class WebMStreamParserTest : public testing::Test {
     EXPECT_CALL(*this, NewBuffersCB(_))
         .Times(testing::AnyNumber())
         .WillRepeatedly(testing::Return(true));
-    parser_->Init(
-        base::Bind(&WebMStreamParserTest::InitF, base::Unretained(this),
-                   expected_params),
-        base::Bind(&WebMStreamParserTest::NewConfigCB, base::Unretained(this)),
-        base::Bind(&WebMStreamParserTest::NewBuffersCB, base::Unretained(this)),
-        false,  // don't ignore_text_track
-        encrypted_media_init_data_cb,
-        base::Bind(&WebMStreamParserTest::NewMediaSegmentCB,
-                   base::Unretained(this)),
-        base::Bind(&WebMStreamParserTest::EndMediaSegmentCB,
-                   base::Unretained(this)),
-        &media_log_);
+    parser_->Init(base::BindOnce(&WebMStreamParserTest::InitF,
+                                 base::Unretained(this), expected_params),
+                  base::BindRepeating(&WebMStreamParserTest::NewConfigCB,
+                                      base::Unretained(this)),
+                  base::BindRepeating(&WebMStreamParserTest::NewBuffersCB,
+                                      base::Unretained(this)),
+                  false,  // don't ignore_text_track
+                  encrypted_media_init_data_cb,
+                  base::BindRepeating(&WebMStreamParserTest::NewMediaSegmentCB,
+                                      base::Unretained(this)),
+                  base::BindRepeating(&WebMStreamParserTest::EndMediaSegmentCB,
+                                      base::Unretained(this)),
+                  &media_log_);
     bool result = parser_->Parse(buffer->data(), buffer->data_size());
     EXPECT_TRUE(result);
   }

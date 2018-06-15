@@ -23,8 +23,8 @@ MockMediaSource::MockMediaSource(const std::string& filename,
       chunk_demuxer_(new ChunkDemuxer(
           base::Bind(&MockMediaSource::DemuxerOpened, base::Unretained(this)),
           base::DoNothing(),
-          base::Bind(&MockMediaSource::OnEncryptedMediaInitData,
-                     base::Unretained(this)),
+          base::BindRepeating(&MockMediaSource::OnEncryptedMediaInitData,
+                              base::Unretained(this)),
           &media_log_)),
       owned_chunk_demuxer_(chunk_demuxer_) {
   file_data_ = ReadTestDataFile(filename);
@@ -46,8 +46,8 @@ MockMediaSource::MockMediaSource(scoped_refptr<DecoderBuffer> data,
       chunk_demuxer_(new ChunkDemuxer(
           base::Bind(&MockMediaSource::DemuxerOpened, base::Unretained(this)),
           base::DoNothing(),
-          base::Bind(&MockMediaSource::OnEncryptedMediaInitData,
-                     base::Unretained(this)),
+          base::BindRepeating(&MockMediaSource::OnEncryptedMediaInitData,
+                              base::Unretained(this)),
           &media_log_)),
       owned_chunk_demuxer_(chunk_demuxer_) {
   if (initial_append_size_ == kAppendWholeFile)

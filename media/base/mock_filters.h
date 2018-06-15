@@ -578,7 +578,7 @@ class MockStreamParser : public StreamParser {
   // StreamParser interface
   MOCK_METHOD8(
       Init,
-      void(const InitCB& init_cb,
+      void(InitCB init_cb,
            const NewConfigCB& config_cb,
            const NewBuffersCB& new_buffers_cb,
            bool ignore_text_track,

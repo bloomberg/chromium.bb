@@ -147,12 +147,12 @@ SourceBufferState::~SourceBufferState() {
 }
 
 void SourceBufferState::Init(
-    const StreamParser::InitCB& init_cb,
+    StreamParser::InitCB init_cb,
     const std::string& expected_codecs,
     const StreamParser::EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewTextTrackCB& new_text_track_cb) {
   DCHECK_EQ(state_, UNINITIALIZED);
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   new_text_track_cb_ = new_text_track_cb;
 
@@ -177,16 +177,19 @@ void SourceBufferState::Init(
 
   state_ = PENDING_PARSER_CONFIG;
   stream_parser_->Init(
-      base::Bind(&SourceBufferState::OnSourceInitDone, base::Unretained(this)),
-      base::Bind(&SourceBufferState::OnNewConfigs, base::Unretained(this),
-                 expected_codecs),
-      base::Bind(&SourceBufferState::OnNewBuffers, base::Unretained(this)),
+      base::BindOnce(&SourceBufferState::OnSourceInitDone,
+                     base::Unretained(this)),
+      base::BindRepeating(&SourceBufferState::OnNewConfigs,
+                          base::Unretained(this), expected_codecs),
+      base::BindRepeating(&SourceBufferState::OnNewBuffers,
+                          base::Unretained(this)),
       new_text_track_cb_.is_null(),
-      base::Bind(&SourceBufferState::OnEncryptedMediaInitData,
-                 base::Unretained(this)),
-      base::Bind(&SourceBufferState::OnNewMediaSegment, base::Unretained(this)),
-      base::Bind(&SourceBufferState::OnEndOfMediaSegment,
-                 base::Unretained(this)),
+      base::BindRepeating(&SourceBufferState::OnEncryptedMediaInitData,
+                          base::Unretained(this)),
+      base::BindRepeating(&SourceBufferState::OnNewMediaSegment,
+                          base::Unretained(this)),
+      base::BindRepeating(&SourceBufferState::OnEndOfMediaSegment,
+                          base::Unretained(this)),
       media_log_);
 }
 
@@ -934,7 +937,7 @@ void SourceBufferState::OnSourceInitDone(
     const StreamParser::InitParameters& params) {
   DCHECK_EQ(state_, PENDING_PARSER_INIT);
   state_ = PARSER_INITIALIZED;
-  base::ResetAndReturn(&init_cb_).Run(params);
+  std::move(init_cb_).Run(params);
 }
 
 }  // namespace media

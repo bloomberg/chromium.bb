@@ -208,8 +208,9 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
         base::Bind(&ChunkDemuxerTest::DemuxerOpened, base::Unretained(this));
     base::Closure progress_cb =
         base::Bind(&ChunkDemuxerTest::OnProgress, base::Unretained(this));
-    Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
-        &ChunkDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
+    Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
+        base::BindRepeating(&ChunkDemuxerTest::OnEncryptedMediaInitData,
+                            base::Unretained(this));
     EXPECT_MEDIA_LOG(
         BufferingByPtsDts(buffering_api_ == BufferingApi::kNewByPts));
     demuxer_.reset(new ChunkDemuxer(open_cb, progress_cb,

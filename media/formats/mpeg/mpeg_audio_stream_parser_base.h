@@ -34,7 +34,7 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
   ~MPEGAudioStreamParserBase() override;
 
   // StreamParser implementation.
-  void Init(const InitCB& init_cb,
+  void Init(InitCB init_cb,
             const NewConfigCB& config_cb,
             const NewBuffersCB& new_buffers_cb,
             bool ignore_text_tracks,
