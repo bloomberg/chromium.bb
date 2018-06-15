@@ -443,7 +443,7 @@ bool AccessibilityTextStyleItalicPredicate(
     BrowserAccessibility* start, BrowserAccessibility* node) {
   int32_t style = node->GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
   return 0 !=
-         (style & static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleBold));
+         (style & static_cast<int32_t>(ax::mojom::TextStyle::kTextStyleItalic));
 }
 
 bool AccessibilityTextStyleUnderlinePredicate(
