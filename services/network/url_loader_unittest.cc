@@ -1829,6 +1829,13 @@ class TestAuthNetworkServiceClient
     NOTREACHED();
   }
 
+  void OnFileUploadRequested(uint32_t process_id,
+                             bool async,
+                             const std::vector<base::FilePath>& file_paths,
+                             OnFileUploadRequestedCallback callback) override {
+    NOTREACHED();
+  }
+
   void set_credentials_response(CredentialsResponse credentials_response) {
     credentials_response_ = credentials_response;
   }
