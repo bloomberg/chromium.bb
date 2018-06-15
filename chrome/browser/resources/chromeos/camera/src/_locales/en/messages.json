@@ -105,33 +105,9 @@
    "message": "Switch to take picture",
    "description": "Label for the button to switch to take picture mode."
   },
-  "recordVideoActiveMessage": {
-    "message": "Record video active",
-    "description": "Message shown when activating the video recording feature."
-  },
-  "takePictureActiveMessage": {
-    "message": "Take picture active",
-    "description": "Message shown when activating the photo taking feature."
-  },
   "toggleMirrorButton": {
     "message": "Toggle mirroring",
     "description": "Label for the button to toggle the preview mirroring."
-  },
-  "toggleTimerActiveMessage": {
-    "message": "Timer active",
-    "description": "Message shown when activating the timer."
-  },
-  "toggleTimerInactiveMessage": {
-    "message": "Timer inactive",
-    "description": "Message shown when inactivating the timer."
-  },
-  "toggleMirrorActiveMessage": {
-    "message": "Mirroring active",
-    "description": "Message shown when activating the preview mirroring."
-  },
-  "toggleMirrorInactiveMessage": {
-    "message": "Mirroring inactive",
-    "description": "Message shown when inactivating the preview mirroring."
   },
   "dialogYesButton": {
     "message": "Yes",
