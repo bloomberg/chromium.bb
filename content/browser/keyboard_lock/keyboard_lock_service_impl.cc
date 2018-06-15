@@ -80,21 +80,24 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
   // Per base::flat_set usage notes, the proper way to init a flat_set is
   // inserting into a vector and using that to init the flat_set.
   std::vector<ui::DomCode> dom_codes;
+  bool invalid_key_code_found = false;
   for (const std::string& code : key_codes) {
     ui::DomCode dom_code = ui::KeycodeConverter::CodeStringToDomCode(code);
     if (dom_code != ui::DomCode::NONE) {
       dom_codes.push_back(dom_code);
     } else {
+      invalid_key_code_found = true;
       render_frame_host_->AddMessageToConsole(
           ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING,
           "Invalid DOMString passed into keyboard.lock(): '" + code + "'");
     }
   }
 
-  // If we are provided with a vector containing only invalid keycodes, then
-  // exit without enabling keyboard lock.  An empty vector is treated as
-  // 'capture all keys' which is not what the caller intended.
-  if (!key_codes.empty() && dom_codes.empty()) {
+  // If we are provided with a vector containing one or more invalid key codes,
+  // then exit without enabling keyboard lock.  Also cancel any previous
+  // keyboard lock request since the most recent request failed.
+  if (invalid_key_code_found) {
+    render_frame_host_->GetRenderWidgetHost()->CancelKeyboardLock();
     std::move(callback).Run(KeyboardLockRequestResult::kNoValidKeyCodesError);
     return;
   }
