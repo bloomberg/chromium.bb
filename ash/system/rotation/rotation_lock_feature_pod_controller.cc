@@ -29,8 +29,6 @@ RotationLockFeaturePodController::~RotationLockFeaturePodController() {
 FeaturePodButton* RotationLockFeaturePodController::CreateButton() {
   DCHECK(!button_);
   button_ = new FeaturePodButton(this);
-  button_->SetLabel(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ROTATION_LOCK));
   UpdateButton();
   return button_;
 }
@@ -75,16 +73,22 @@ void RotationLockFeaturePodController::UpdateButton() {
 
   if (rotation_locked && is_portrait) {
     button_->SetVectorIcon(kSystemMenuRotationLockPortraitIcon);
-    button_->SetSubLabel(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ROTATION_LOCK_PORTRAIT));
+    button_->SetLabel(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_LABEL));
+    button_->SetSubLabel(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_VERTICAL_SUBLABEL));
   } else if (rotation_locked && !is_portrait) {
     button_->SetVectorIcon(kSystemMenuRotationLockLandscapeIcon);
-    button_->SetSubLabel(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LANDSCAPE));
+    button_->SetLabel(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_LABEL));
+    button_->SetSubLabel(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED_HORIZONTAL_SUBLABEL));
   } else {
     button_->SetVectorIcon(kSystemMenuRotationLockAutoIcon);
-    button_->SetSubLabel(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO));
+    button_->SetLabel(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO_LABEL));
+    button_->SetSubLabel(l10n_util::GetStringUTF16(
+        IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO_SUBLABEL));
   }
 }
 

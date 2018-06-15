@@ -46,6 +46,9 @@ void NightLightFeaturePodController::UpdateButton() {
   button_->SetToggled(is_enabled);
   button_->SetVectorIcon(is_enabled ? kSystemMenuNightLightOnIcon
                                     : kSystemMenuNightLightOffIcon);
+  button_->SetSubLabel(l10n_util::GetStringUTF16(
+      is_enabled ? IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_ON_STATE
+                 : IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_OFF_STATE));
 }
 
 }  // namespace ash
