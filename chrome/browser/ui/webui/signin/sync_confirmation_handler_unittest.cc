@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/bind_helpers.h"
+#include "base/scoped_observer.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/values.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -21,6 +23,8 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/dialog_test_browser_window.h"
@@ -61,43 +65,8 @@ class TestingSyncConfirmationHandler : public SyncConfirmationHandler {
   DISALLOW_COPY_AND_ASSIGN(TestingSyncConfirmationHandler);
 };
 
-class TestingOneClickSigninSyncStarter : public OneClickSigninSyncStarter {
- public:
-  TestingOneClickSigninSyncStarter(Profile* profile,
-                                   Browser* browser,
-                                   const std::string& gaia_id,
-                                   const std::string& email,
-                                   const std::string& password,
-                                   const std::string& refresh_token,
-                                   signin_metrics::AccessPoint access_point,
-                                   signin_metrics::Reason signin_reason,
-                                   ProfileMode profile_mode,
-                                   StartSyncMode start_mode,
-                                   ConfirmationRequired display_confirmation,
-                                   Callback callback)
-      : OneClickSigninSyncStarter(profile,
-                                  browser,
-                                  gaia_id,
-                                  email,
-                                  password,
-                                  refresh_token,
-                                  access_point,
-                                  signin_reason,
-                                  profile_mode,
-                                  start_mode,
-                                  display_confirmation,
-                                  callback) {}
-
- protected:
-  void ShowSyncSetupSettingsSubpage() override {
-    // Intentionally don't open a tab to settings.
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestingOneClickSigninSyncStarter);
-};
-
-class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
+class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
+                                    public LoginUIService::Observer {
  public:
   static const char kConsentText1[];
   static const char kConsentText2[];
@@ -106,7 +75,12 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
   static const char kConsentText5[];
 
   SyncConfirmationHandlerTest()
-      : did_user_explicitly_interact(false), web_ui_(new content::TestWebUI) {}
+      : did_user_explicitly_interact(false),
+        on_sync_confirmation_ui_closed_called_(false),
+        sync_confirmation_ui_closed_result_(LoginUIService::ABORT_SIGNIN),
+        web_ui_(new content::TestWebUI),
+        login_ui_service_observer_(this) {}
+
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     chrome::NewTab(browser());
@@ -119,19 +93,16 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     sync_confirmation_ui_.reset(new SyncConfirmationUI(web_ui()));
     web_ui()->AddMessageHandler(std::move(handler));
 
-    // This dialog assumes the signin flow was completed, which kicks off the
-    // SigninManager.
-    new TestingOneClickSigninSyncStarter(
-        profile(), browser(), "gaia", "foo@example.com", "password",
-        "refresh_token", signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
-        signin_metrics::Reason::REASON_UNKNOWN_REASON,
-        OneClickSigninSyncStarter::CURRENT_PROFILE,
-        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
-        OneClickSigninSyncStarter::NO_CONFIRMATION,
-        OneClickSigninSyncStarter::Callback());
+    signin_manager()->StartSignInWithRefreshToken("refresh_token", "gaia",
+                                                  "foo@example.com", "password",
+                                                  base::DoNothing());
+    signin_manager()->CompletePendingSignin();
+    login_ui_service_observer_.Add(
+        LoginUIServiceFactory::GetForProfile(profile()));
   }
 
   void TearDown() override {
+    login_ui_service_observer_.RemoveAll();
     sync_confirmation_ui_.reset();
     web_ui_.reset();
     BrowserWithTestWindowTest::TearDown();
@@ -174,7 +145,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
         ConsentAuditorFactory::GetForProfile(profile()));
   }
 
-  // BrowserWithTestWindowTest
+  // BrowserWithTestWindowTest:
   BrowserWindow* CreateBrowserWindow() override {
     return new DialogTestBrowserWindow;
   }
@@ -197,8 +168,18 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     return string_to_grd_id_map_;
   }
 
+  // LoginUIService::Observer:
+  void OnSyncConfirmationUIClosed(
+      LoginUIService::SyncConfirmationUIClosedResult result) override {
+    on_sync_confirmation_ui_closed_called_ = true;
+    sync_confirmation_ui_closed_result_ = result;
+  }
+
  protected:
   bool did_user_explicitly_interact;
+  bool on_sync_confirmation_ui_closed_called_;
+  LoginUIService::SyncConfirmationUIClosedResult
+      sync_confirmation_ui_closed_result_;
 
  private:
   std::unique_ptr<content::TestWebUI> web_ui_;
@@ -206,6 +187,8 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
   TestingSyncConfirmationHandler* handler_;  // Not owned.
   base::UserActionTester user_action_tester_;
   std::unordered_map<std::string, int> string_to_grd_id_map_;
+  ScopedObserver<LoginUIService, LoginUIService::Observer>
+      login_ui_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandlerTest);
 };
@@ -331,16 +314,11 @@ TEST_F(SyncConfirmationHandlerTest,
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {
-  EXPECT_FALSE(sync()->IsFirstSetupComplete());
-  EXPECT_TRUE(sync()->IsFirstSetupInProgress());
-
   handler()->HandleUndo(nullptr);
   did_user_explicitly_interact = true;
 
-  EXPECT_FALSE(sync()->IsFirstSetupInProgress());
-  EXPECT_FALSE(sync()->IsFirstSetupComplete());
-  EXPECT_FALSE(
-      SigninManagerFactory::GetForProfile(profile())->IsAuthenticated());
+  EXPECT_TRUE(on_sync_confirmation_ui_closed_called_);
+  EXPECT_EQ(LoginUIService::ABORT_SIGNIN, sync_confirmation_ui_closed_result_);
   EXPECT_EQ(1, user_action_tester()->GetActionCount("Signin_Undo_Signin"));
   EXPECT_EQ(0, user_action_tester()->GetActionCount(
       "Signin_Signin_WithDefaultSyncSettings"));
@@ -366,16 +344,12 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
   args.GetList().push_back(std::move(consent_description));
   args.GetList().push_back(std::move(consent_confirmation));
 
-  EXPECT_FALSE(sync()->IsFirstSetupComplete());
-  EXPECT_TRUE(sync()->IsFirstSetupInProgress());
-
   handler()->HandleConfirm(&args);
   did_user_explicitly_interact = true;
 
-  EXPECT_FALSE(sync()->IsFirstSetupInProgress());
-  EXPECT_TRUE(sync()->IsFirstSetupComplete());
-  EXPECT_TRUE(
-      SigninManagerFactory::GetForProfile(profile())->IsAuthenticated());
+  EXPECT_TRUE(on_sync_confirmation_ui_closed_called_);
+  EXPECT_EQ(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS,
+            sync_confirmation_ui_closed_result_);
   EXPECT_EQ(0, user_action_tester()->GetActionCount("Signin_Undo_Signin"));
   EXPECT_EQ(1, user_action_tester()->GetActionCount(
       "Signin_Signin_WithDefaultSyncSettings"));
@@ -408,16 +382,12 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
   args.GetList().push_back(std::move(consent_description));
   args.GetList().push_back(std::move(consent_confirmation));
 
-  EXPECT_FALSE(sync()->IsFirstSetupComplete());
-  EXPECT_TRUE(sync()->IsFirstSetupInProgress());
-
   handler()->HandleGoToSettings(&args);
   did_user_explicitly_interact = true;
 
-  EXPECT_FALSE(sync()->IsFirstSetupInProgress());
-  EXPECT_FALSE(sync()->IsFirstSetupComplete());
-  EXPECT_TRUE(
-      SigninManagerFactory::GetForProfile(profile())->IsAuthenticated());
+  EXPECT_TRUE(on_sync_confirmation_ui_closed_called_);
+  EXPECT_EQ(LoginUIService::CONFIGURE_SYNC_FIRST,
+            sync_confirmation_ui_closed_result_);
   EXPECT_EQ(0, user_action_tester()->GetActionCount("Signin_Undo_Signin"));
   EXPECT_EQ(0, user_action_tester()->GetActionCount(
                    "Signin_Signin_WithDefaultSyncSettings"));

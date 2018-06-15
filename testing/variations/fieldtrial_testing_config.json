@@ -1,24 +1,4 @@
 {
-    "AccountConsistencyVariations": [
-        {
-            "platforms": [
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "DicePrepareMigration",
-                    "params": {
-                        "method": "dice_prepare_migration_new_endpoint"
-                    },
-                    "enable_features": [
-                        "AccountConsistency"
-                    ]
-                }
-            ]
-        }
-    ],
     "AllowClientHintsToThirdParty": [
         {
             "platforms": [

@@ -39,7 +39,6 @@
 #include "components/account_id/account_id.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -100,8 +99,6 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
   DCHECK(profile);
   BrowserList::AddObserver(this);
   Initialize(profile, browser);
-
-  DCHECK(!signin::IsDicePrepareMigrationEnabled());
   DCHECK(!refresh_token.empty());
   SigninManagerFactory::GetForProfile(profile_)->StartSignInWithRefreshToken(
       refresh_token, gaia_id, email, password,
