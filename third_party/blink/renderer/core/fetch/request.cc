@@ -7,18 +7,32 @@
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_form_data.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_url_search_params.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_manager.h"
+#include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/request_init.h"
+#include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
+#include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/core/url/url_search_params.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -61,12 +75,81 @@ FetchRequestData* CreateCopyOfFetchRequestDataForFetch(
   return request;
 }
 
+static BodyStreamBuffer* ExtractBody(ScriptState* script_state,
+                                     ExceptionState& exception_state,
+                                     v8::Local<v8::Value> body,
+                                     String& content_type) {
+  DCHECK(!body->IsNull());
+  BodyStreamBuffer* return_buffer = nullptr;
+
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  v8::Isolate* isolate = script_state->GetIsolate();
+
+  if (V8Blob::hasInstance(body, isolate)) {
+    Blob* blob = V8Blob::ToImpl(body.As<v8::Object>());
+    return_buffer = new BodyStreamBuffer(
+        script_state,
+        new BlobBytesConsumer(execution_context, blob->GetBlobDataHandle()),
+        nullptr /* AbortSignal */);
+    content_type = blob->type();
+  } else if (body->IsArrayBuffer()) {
+    // Avoid calling into V8 from the following constructor parameters, which
+    // is potentially unsafe.
+    DOMArrayBuffer* array_buffer = V8ArrayBuffer::ToImpl(body.As<v8::Object>());
+    return_buffer = new BodyStreamBuffer(
+        script_state, new FormDataBytesConsumer(array_buffer),
+        nullptr /* AbortSignal */);
+  } else if (body->IsArrayBufferView()) {
+    // Avoid calling into V8 from the following constructor parameters, which
+    // is potentially unsafe.
+    DOMArrayBufferView* array_buffer_view =
+        V8ArrayBufferView::ToImpl(body.As<v8::Object>());
+    return_buffer = new BodyStreamBuffer(
+        script_state, new FormDataBytesConsumer(array_buffer_view),
+        nullptr /* AbortSignal */);
+  } else if (V8FormData::hasInstance(body, isolate)) {
+    scoped_refptr<EncodedFormData> form_data =
+        V8FormData::ToImpl(body.As<v8::Object>())->EncodeMultiPartFormData();
+    // Here we handle formData->boundary() as a C-style string. See
+    // FormDataEncoder::generateUniqueBoundaryString.
+    content_type = AtomicString("multipart/form-data; boundary=") +
+                   form_data->Boundary().data();
+    return_buffer = new BodyStreamBuffer(
+        script_state,
+        new FormDataBytesConsumer(execution_context, std::move(form_data)),
+        nullptr /* AbortSignal */);
+  } else if (V8URLSearchParams::hasInstance(body, isolate)) {
+    scoped_refptr<EncodedFormData> form_data =
+        V8URLSearchParams::ToImpl(body.As<v8::Object>())->ToEncodedFormData();
+    return_buffer = new BodyStreamBuffer(
+        script_state,
+        new FormDataBytesConsumer(execution_context, std::move(form_data)),
+        nullptr /* AbortSignal */);
+    content_type = "application/x-www-form-urlencoded;charset=UTF-8";
+  } else {
+    String string = NativeValueTraits<IDLUSVString>::NativeValue(
+        isolate, body, exception_state);
+    if (exception_state.HadException())
+      return nullptr;
+
+    return_buffer =
+        new BodyStreamBuffer(script_state, new FormDataBytesConsumer(string),
+                             nullptr /* AbortSignal */);
+    content_type = "text/plain;charset=UTF-8";
+  }
+
+  return return_buffer;
+}
+
 Request* Request::CreateRequestWithRequestOrString(
     ScriptState* script_state,
     Request* input_request,
     const String& input_string,
     RequestInit& init,
     ExceptionState& exception_state) {
+  v8::Local<v8::Value> init_body = init.GetBody().V8Value();
+
+  // Setup RequestInit's body first
   // - "If |input| is a Request object and it is disturbed, throw a
   //   TypeError."
   if (input_request && input_request->bodyUsed()) {
@@ -83,7 +166,7 @@ Request* Request::CreateRequestWithRequestOrString(
   // "Let |request| be |input|'s request, if |input| is a Request object,
   // and a new request otherwise."
 
-  auto* execution_context = ExecutionContext::From(script_state);
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
   scoped_refptr<const SecurityOrigin> origin =
       execution_context->GetSecurityOrigin();
 
@@ -402,7 +485,7 @@ Request* Request::CreateRequestWithRequestOrString(
 
   // "If either |init|'s body member is present or |temporaryBody| is
   // non-null, and |request|'s method is `GET` or `HEAD`, throw a TypeError.
-  if (init.GetBody() || temporary_body) {
+  if ((!init_body.IsEmpty() && !init_body->IsNull()) || temporary_body) {
     if (request->Method() == HTTPNames::GET ||
         request->Method() == HTTPNames::HEAD) {
       exception_state.ThrowTypeError(
@@ -411,8 +494,8 @@ Request* Request::CreateRequestWithRequestOrString(
     }
   }
 
-  // "If |init|'s body member is present, run these substeps:"
-  if (init.GetBody()) {
+  // "If |init|’s body member is present and is non-null, then:"
+  if (!init_body.IsEmpty() && !init_body->IsNull()) {
     // TODO(yhirano): Throw if keepalive flag is set and body is a
     // ReadableStream. We don't support body stream setting for Request yet.
 
@@ -424,11 +507,12 @@ Request* Request::CreateRequestWithRequestOrString(
     //   contains no header named `Content-Type`, append
     //   `Content-Type`/|Content-Type| to |r|'s Headers object. Rethrow any
     //   exception."
+    String content_type;
     temporary_body =
-        new BodyStreamBuffer(script_state, std::move(init.GetBody()), nullptr);
-    if (!init.ContentType().IsEmpty() &&
+        ExtractBody(script_state, exception_state, init_body, content_type);
+    if (!content_type.IsEmpty() &&
         !r->getHeaders()->has(HTTPNames::Content_Type, exception_state)) {
-      r->getHeaders()->append(HTTPNames::Content_Type, init.ContentType(),
+      r->getHeaders()->append(HTTPNames::Content_Type, content_type,
                               exception_state);
     }
     if (exception_state.HadException())
@@ -484,8 +568,7 @@ Request* Request::Create(ScriptState* script_state,
                          const String& input,
                          const Dictionary& init,
                          ExceptionState& exception_state) {
-  RequestInit request_init(ExecutionContext::From(script_state), init,
-                           exception_state);
+  RequestInit request_init(script_state, init, exception_state);
   return CreateRequestWithRequestOrString(script_state, nullptr, input,
                                           request_init, exception_state);
 }
@@ -500,8 +583,7 @@ Request* Request::Create(ScriptState* script_state,
                          Request* input,
                          const Dictionary& init,
                          ExceptionState& exception_state) {
-  RequestInit request_init(ExecutionContext::From(script_state), init,
-                           exception_state);
+  RequestInit request_init(script_state, init, exception_state);
   return CreateRequestWithRequestOrString(script_state, input, String(),
                                           request_init, exception_state);
 }

@@ -9,21 +9,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_abort_signal.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_blob.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_form_data.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_url_search_params.h"
-#include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
-#include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/headers.h"
-#include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/html/forms/form_data.h"
-#include "third_party/blink/renderer/core/url/url_search_params.h"
-#include "third_party/blink/renderer/platform/blob/blob_data.h"
-#include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 
 namespace blink {
@@ -66,10 +54,11 @@ class RequestInit::GetterHelper {
   DISALLOW_COPY_AND_ASSIGN(GetterHelper);
 };
 
-RequestInit::RequestInit(ExecutionContext* context,
+RequestInit::RequestInit(ScriptState* script_state,
                          const Dictionary& options,
                          ExceptionState& exception_state) {
   GetterHelper h(options, exception_state);
+  ExecutionContext* context = ExecutionContext::From(script_state);
 
   method_ = h.Get<IDLByteString>("method").value_or(String());
   if (exception_state.HadException())
@@ -157,11 +146,8 @@ RequestInit::RequestInit(ExecutionContext* context,
       return;
   }
 
-  if (v8_body.has_value()) {
-    SetUpBody(context, isolate, *v8_body, exception_state);
-    if (exception_state.HadException())
-      return;
-  }
+  if (v8_body.has_value())
+    body_ = ScriptValue(script_state, *v8_body);
 }
 
 base::Optional<AbortSignal*> RequestInit::Signal() const {
@@ -246,49 +232,6 @@ void RequestInit::CheckEnumValues(
       exception_state.ThrowTypeError("Invalid referrer policy");
       return;
     }
-  }
-}
-
-void RequestInit::SetUpBody(ExecutionContext* context,
-                            v8::Isolate* isolate,
-                            v8::Local<v8::Value> v8_body,
-                            ExceptionState& exception_state) {
-  if (v8_body->IsNull())
-    return;
-
-  if (v8_body->IsArrayBuffer()) {
-    body_ = new FormDataBytesConsumer(
-        V8ArrayBuffer::ToImpl(v8_body.As<v8::Object>()));
-  } else if (v8_body->IsArrayBufferView()) {
-    body_ = new FormDataBytesConsumer(
-        V8ArrayBufferView::ToImpl(v8_body.As<v8::Object>()));
-  } else if (V8Blob::hasInstance(v8_body, isolate)) {
-    scoped_refptr<BlobDataHandle> blob_data_handle =
-        V8Blob::ToImpl(v8_body.As<v8::Object>())->GetBlobDataHandle();
-    content_type_ = blob_data_handle->GetType();
-    body_ = new BlobBytesConsumer(context, std::move(blob_data_handle));
-  } else if (V8FormData::hasInstance(v8_body, isolate)) {
-    scoped_refptr<EncodedFormData> form_data =
-        V8FormData::ToImpl(v8_body.As<v8::Object>())->EncodeMultiPartFormData();
-    // Here we handle formData->boundary() as a C-style string. See
-    // FormDataEncoder::generateUniqueBoundaryString.
-    content_type_ = AtomicString("multipart/form-data; boundary=") +
-                    form_data->Boundary().data();
-    body_ = new FormDataBytesConsumer(context, std::move(form_data));
-  } else if (V8URLSearchParams::hasInstance(v8_body, isolate)) {
-    scoped_refptr<EncodedFormData> form_data =
-        V8URLSearchParams::ToImpl(v8_body.As<v8::Object>())
-            ->ToEncodedFormData();
-    content_type_ =
-        AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
-    body_ = new FormDataBytesConsumer(context, std::move(form_data));
-  } else {
-    String string = NativeValueTraits<IDLUSVString>::NativeValue(
-        isolate, v8_body, exception_state);
-    if (exception_state.HadException())
-      return;
-    content_type_ = "text/plain;charset=UTF-8";
-    body_ = new FormDataBytesConsumer(string);
   }
 }
 
