@@ -314,7 +314,6 @@ void FirstMeaningfulPaintDetector::SetFirstMeaningfulPaint(
     TimeTicks stamp,
     TimeTicks swap_stamp) {
   DCHECK(paint_timing_->FirstMeaningfulPaint().is_null());
-  DCHECK_GE(swap_stamp, stamp);
   DCHECK(!swap_stamp.is_null());
   DCHECK(network2_quiet_reached_);
 
