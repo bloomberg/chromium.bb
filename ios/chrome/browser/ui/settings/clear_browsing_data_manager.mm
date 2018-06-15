@@ -125,7 +125,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
 - (void)addClearBrowsingDataItemsToModel:(ListModel*)model {
   // Data types section.
   [model addSectionWithIdentifier:SectionIdentifierDataTypes];
-  CollectionViewItem* browsingHistoryItem =
+  ListItem* browsingHistoryItem =
       [self clearDataItemWithType:ItemTypeDataTypeBrowsingHistory
                           titleID:IDS_IOS_CLEAR_BROWSING_HISTORY
                              mask:BrowsingDataRemoveMask::REMOVE_HISTORY
@@ -135,7 +135,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
   // This data type doesn't currently have an associated counter, but displays
   // an explanatory text instead, when the new UI is enabled.
-  ClearBrowsingDataItem* cookiesSiteDataItem =
+  ListItem* cookiesSiteDataItem =
       [self clearDataItemWithType:ItemTypeDataTypeCookiesSiteData
                           titleID:IDS_IOS_CLEAR_COOKIES
                              mask:BrowsingDataRemoveMask::REMOVE_SITE_DATA
@@ -143,14 +143,14 @@ const int kMaxTimesHistoryNoticeShown = 1;
   [model addItem:cookiesSiteDataItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
 
-  ClearBrowsingDataItem* cacheItem =
+  ListItem* cacheItem =
       [self clearDataItemWithType:ItemTypeDataTypeCache
                           titleID:IDS_IOS_CLEAR_CACHE
                              mask:BrowsingDataRemoveMask::REMOVE_CACHE
                          prefName:browsing_data::prefs::kDeleteCache];
   [model addItem:cacheItem toSectionWithIdentifier:SectionIdentifierDataTypes];
 
-  ClearBrowsingDataItem* savedPasswordsItem =
+  ListItem* savedPasswordsItem =
       [self clearDataItemWithType:ItemTypeDataTypeSavedPasswords
                           titleID:IDS_IOS_CLEAR_SAVED_PASSWORDS
                              mask:BrowsingDataRemoveMask::REMOVE_PASSWORDS
@@ -158,7 +158,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
   [model addItem:savedPasswordsItem
       toSectionWithIdentifier:SectionIdentifierDataTypes];
 
-  ClearBrowsingDataItem* autofillItem =
+  ListItem* autofillItem =
       [self clearDataItemWithType:ItemTypeDataTypeAutofill
                           titleID:IDS_IOS_CLEAR_AUTOFILL
                              mask:BrowsingDataRemoveMask::REMOVE_FORM_DATA
@@ -168,11 +168,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
   // Clear Browsing Data button.
   [model addSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
-  CollectionViewTextItem* clearButtonItem = [[CollectionViewTextItem alloc]
-      initWithType:ItemTypeClearBrowsingDataButton];
-  clearButtonItem.text = l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
-  clearButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  clearButtonItem.textColor = [[MDCPalette cr_redPalette] tint500];
+  ListItem* clearButtonItem = [self clearButtonItem];
   [model addItem:clearButtonItem
       toSectionWithIdentifier:SectionIdentifierClearBrowsingDataButton];
 }
@@ -305,13 +301,27 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 #pragma mark Items
 
+- (ListItem*)clearButtonItem {
+  ListItem* clearButtonItem;
+  if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+    CollectionViewTextItem* collectionClearButtonItem =
+        [[CollectionViewTextItem alloc]
+            initWithType:ItemTypeClearBrowsingDataButton];
+    collectionClearButtonItem.text =
+        l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
+    collectionClearButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
+    collectionClearButtonItem.textColor = [[MDCPalette cr_redPalette] tint500];
+    clearButtonItem = collectionClearButtonItem;
+  }
+  return clearButtonItem;
+}
+
 // Creates item of type |itemType| with |mask| of data to be cleared if
 // selected, |prefName|, and |titleId| of item.
-- (ClearBrowsingDataItem*)clearDataItemWithType:
-                              (ClearBrowsingDataItemType)itemType
-                                        titleID:(int)titleMessageID
-                                           mask:(BrowsingDataRemoveMask)mask
-                                       prefName:(const char*)prefName {
+- (ListItem*)clearDataItemWithType:(ClearBrowsingDataItemType)itemType
+                           titleID:(int)titleMessageID
+                              mask:(BrowsingDataRemoveMask)mask
+                          prefName:(const char*)prefName {
   PrefService* prefs = self.browserState->GetPrefs();
   std::unique_ptr<BrowsingDataCounterWrapper> counter;
   if (experimental_flags::IsNewClearBrowsingDataUIEnabled()) {
@@ -325,48 +335,58 @@ const int kMaxTimesHistoryNoticeShown = 1;
                      detailText:[weakSelf counterTextFromResult:result]];
             }));
   }
+  ListItem* clearDataItem;
+  if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+    ClearBrowsingDataItem* collectionClearDataItem =
+        [[ClearBrowsingDataItem alloc] initWithType:itemType
+                                            counter:std::move(counter)];
+    collectionClearDataItem.text = l10n_util::GetNSString(titleMessageID);
+    if (prefs->GetBoolean(prefName)) {
+      collectionClearDataItem.accessoryType =
+          MDCCollectionViewCellAccessoryCheckmark;
+    }
+    collectionClearDataItem.dataTypeMask = mask;
+    collectionClearDataItem.prefName = prefName;
+    collectionClearDataItem.accessibilityIdentifier =
+        [self accessibilityIdentifierFromItemType:itemType];
 
-  ClearBrowsingDataItem* clearDataItem =
-      [[ClearBrowsingDataItem alloc] initWithType:itemType
-                                          counter:std::move(counter)];
-  clearDataItem.text = l10n_util::GetNSString(titleMessageID);
-  if (prefs->GetBoolean(prefName)) {
-    clearDataItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
+    // Because there is no counter for cookies, an explanatory text is
+    // displayed.
+    if (itemType == ItemTypeDataTypeCookiesSiteData &&
+        experimental_flags::IsNewClearBrowsingDataUIEnabled() &&
+        prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
+      collectionClearDataItem.detailText =
+          l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
+    }
+    clearDataItem = collectionClearDataItem;
   }
-  clearDataItem.dataTypeMask = mask;
-  clearDataItem.prefName = prefName;
-  clearDataItem.accessibilityIdentifier =
-      [self accessibilityIdentifierFromItemType:itemType];
-
-  // Because there is no counter for cookies, an explanatory text is displayed.
-  if (itemType == ItemTypeDataTypeCookiesSiteData &&
-      experimental_flags::IsNewClearBrowsingDataUIEnabled() &&
-      prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
-    clearDataItem.detailText = l10n_util::GetNSString(IDS_DEL_COOKIES_COUNTER);
-  }
-
   return clearDataItem;
 }
 
-- (CollectionViewItem*)footerForGoogleAccountSectionItem {
+- (ListItem*)footerForGoogleAccountSectionItem {
   return _shouldShowNoticeAboutOtherFormsOfBrowsingHistory
              ? [self footerGoogleAccountAndMyActivityItem]
              : [self footerGoogleAccountItem];
 }
 
-- (CollectionViewItem*)footerGoogleAccountItem {
-  CollectionViewFooterItem* footerItem = [[CollectionViewFooterItem alloc]
-      initWithType:ItemTypeFooterGoogleAccount];
-  footerItem.text =
-      l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT);
-  UIImage* image = ios::GetChromeBrowserProvider()
-                       ->GetBrandedImageProvider()
-                       ->GetClearBrowsingDataAccountActivityImage();
-  footerItem.image = image;
+- (ListItem*)footerGoogleAccountItem {
+  ListItem* footerItem;
+  if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+    CollectionViewFooterItem* collectionFooterItem =
+        [[CollectionViewFooterItem alloc]
+            initWithType:ItemTypeFooterGoogleAccount];
+    collectionFooterItem.text =
+        l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_ACCOUNT);
+    UIImage* image = ios::GetChromeBrowserProvider()
+                         ->GetBrandedImageProvider()
+                         ->GetClearBrowsingDataAccountActivityImage();
+    collectionFooterItem.image = image;
+    footerItem = collectionFooterItem;
+  }
   return footerItem;
 }
 
-- (CollectionViewItem*)footerGoogleAccountAndMyActivityItem {
+- (ListItem*)footerGoogleAccountAndMyActivityItem {
   UIImage* image = ios::GetChromeBrowserProvider()
                        ->GetBrandedImageProvider()
                        ->GetClearBrowsingDataAccountActivityImage();
@@ -377,7 +397,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
                    image:image];
 }
 
-- (CollectionViewItem*)footerSavedSiteDataItem {
+- (ListItem*)footerSavedSiteDataItem {
   UIImage* image = ios::GetChromeBrowserProvider()
                        ->GetBrandedImageProvider()
                        ->GetClearBrowsingDataSiteDataImage();
@@ -388,7 +408,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
                    image:image];
 }
 
-- (CollectionViewItem*)footerClearSyncAndSavedSiteDataItem {
+- (ListItem*)footerClearSyncAndSavedSiteDataItem {
   UIImage* infoIcon = [ChromeIcon infoIcon];
   UIImage* image = TintImage(infoIcon, [[MDCPalette greyPalette] tint500]);
   return [self
@@ -399,32 +419,42 @@ const int kMaxTimesHistoryNoticeShown = 1;
                    image:image];
 }
 
-- (CollectionViewItem*)footerItemWithType:(ClearBrowsingDataItemType)itemType
-                                  titleID:(int)titleMessageID
-                                      URL:(const char[])URL
-                                    image:(UIImage*)image {
-  CollectionViewFooterItem* footerItem =
-      [[CollectionViewFooterItem alloc] initWithType:itemType];
-  footerItem.text = l10n_util::GetNSString(titleMessageID);
-  footerItem.linkURL = google_util::AppendGoogleLocaleParam(
-      GURL(URL), GetApplicationContext()->GetApplicationLocale());
-  footerItem.linkDelegate = self.linkDelegate;
-  footerItem.image = image;
+- (ListItem*)footerItemWithType:(ClearBrowsingDataItemType)itemType
+                        titleID:(int)titleMessageID
+                            URL:(const char[])URL
+                          image:(UIImage*)image {
+  ListItem* footerItem;
+  if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+    CollectionViewFooterItem* collectionFooterItem =
+        [[CollectionViewFooterItem alloc] initWithType:itemType];
+    collectionFooterItem.text = l10n_util::GetNSString(titleMessageID);
+    collectionFooterItem.linkURL = google_util::AppendGoogleLocaleParam(
+        GURL(URL), GetApplicationContext()->GetApplicationLocale());
+    collectionFooterItem.linkDelegate = self.linkDelegate;
+    collectionFooterItem.image = image;
+    footerItem = collectionFooterItem;
+  }
+
   return footerItem;
 }
 
-- (CollectionViewItem*)timeRangeItem {
-  CollectionViewDetailItem* timeRangeItem =
-      [[CollectionViewDetailItem alloc] initWithType:ItemTypeTimeRange];
-  timeRangeItem.text = l10n_util::GetNSString(
-      IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
-  NSString* detailText = [TimeRangeSelectorCollectionViewController
-      timePeriodLabelForPrefs:self.browserState->GetPrefs()];
-  DCHECK(detailText);
-  timeRangeItem.detailText = detailText;
-  timeRangeItem.accessoryType =
-      MDCCollectionViewCellAccessoryDisclosureIndicator;
-  timeRangeItem.accessibilityTraits |= UIAccessibilityTraitButton;
+- (ListItem*)timeRangeItem {
+  ListItem* timeRangeItem;
+  if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
+    CollectionViewDetailItem* collectionTimeRangeItem =
+        [[CollectionViewDetailItem alloc] initWithType:ItemTypeTimeRange];
+    collectionTimeRangeItem.text = l10n_util::GetNSString(
+        IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
+    NSString* detailText = [TimeRangeSelectorCollectionViewController
+        timePeriodLabelForPrefs:self.browserState->GetPrefs()];
+    DCHECK(detailText);
+    collectionTimeRangeItem.detailText = detailText;
+    collectionTimeRangeItem.accessoryType =
+        MDCCollectionViewCellAccessoryDisclosureIndicator;
+    collectionTimeRangeItem.accessibilityTraits |= UIAccessibilityTraitButton;
+    timeRangeItem = collectionTimeRangeItem;
+  }
+
   return timeRangeItem;
 }
 
@@ -509,7 +539,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
     return;
   }
 
-  CollectionViewItem* footerItem = [self footerForGoogleAccountSectionItem];
+  ListItem* footerItem = [self footerForGoogleAccountSectionItem];
   // TODO(crbug.com/650424): Simplify with setFooter:inSection: when the bug in
   // MDC is fixed.
   // Remove the footer if there is one in that section.
