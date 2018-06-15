@@ -586,7 +586,7 @@ void DataReductionProxyMetricsObserver::RequestProcessDump(
     memory_instrumentation::MemoryInstrumentation::RequestGlobalDumpCallback
         callback) {
   memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestPrivateMemoryFootprint(pid, callback);
+      ->RequestGlobalDumpForPid(pid, callback);
 }
 
 }  // namespace data_reduction_proxy
