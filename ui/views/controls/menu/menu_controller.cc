@@ -2245,7 +2245,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
             border_and_shadow_insets.right();
       }
       // Align the top of the menu with the bottom of the anchor.
-      if (y < 0) {
+      if (y < state_.monitor_bounds.y()) {
         y = owner_bounds.bottom() - border_and_shadow_insets.top() +
             menu_config.touchable_anchor_offset;
       }
@@ -2257,7 +2257,7 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(MenuItemView* item,
           menu_config.touchable_anchor_offset;
       y = owner_bounds.origin().y() - border_and_shadow_insets.top();
       // Align the left of the menu with the right of the anchor.
-      if (x < 0) {
+      if (x < state_.monitor_bounds.x()) {
         x = owner_bounds.right() - border_and_shadow_insets.left() +
             menu_config.touchable_anchor_offset;
       }
