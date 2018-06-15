@@ -703,10 +703,12 @@ NetworkListView::UpdateNetworkListEntries() {
     return new_guids;
   }
 
+  bool should_clear_info_label = true;
   if (!handler->FirstNetworkByType(NetworkTypePattern::WiFi())) {
     UpdateInfoLabel(IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED, index,
                     &no_wifi_networks_view_);
     ++index;
+    should_clear_info_label = false;
   }
 
   // Add Wi-Fi networks.
@@ -719,6 +721,9 @@ NetworkListView::UpdateNetworkListEntries() {
   if (index == 0) {
     UpdateInfoLabel(IDS_ASH_STATUS_TRAY_NO_NETWORKS, index,
                     &no_wifi_networks_view_);
+  } else if (should_clear_info_label) {
+    // Update the label to show nothing.
+    UpdateInfoLabel(0, index, &no_wifi_networks_view_);
   }
 
   return new_guids;
