@@ -78,9 +78,15 @@ void WorkletAnimation::UpdateInputState(MutatorInputState* input_state,
   if (!start_time_.has_value())
     start_time_ = monotonic_time;
 
+  // Skip running worklet animations with unchanged input time and reuse
+  // their value from the previous animation call.
+  if (!NeedsUpdate(monotonic_time, scroll_tree, is_active_tree))
+    return;
+
   double current_time =
       CurrentTime(monotonic_time, scroll_tree, is_active_tree);
   last_current_time_ = current_time;
+
   switch (state_) {
     case State::PENDING:
       input_state->added_and_updated_animations.push_back(
@@ -119,6 +125,10 @@ bool WorkletAnimation::NeedsUpdate(base::TimeTicks monotonic_time,
   // If we don't have a start time it means that an update was never sent to
   // the worklet therefore we need one.
   if (!scroll_timeline_ && !start_time_.has_value())
+    return true;
+
+  DCHECK(state_ == State::PENDING || last_current_time_.has_value());
+  if (state_ == State::REMOVED)
     return true;
 
   double current_time =
