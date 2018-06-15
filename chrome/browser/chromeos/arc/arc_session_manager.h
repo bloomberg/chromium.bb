@@ -27,6 +27,7 @@ namespace arc {
 class ArcAndroidManagementChecker;
 class ArcAuthContext;
 class ArcDataRemover;
+class ArcFastAppReinstallStarter;
 class ArcPaiStarter;
 class ArcTermsOfServiceNegotiator;
 enum class ProvisioningResult : int;
@@ -242,6 +243,12 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // available only on initial start.
   ArcPaiStarter* pai_starter() { return pai_starter_.get(); }
 
+  // Returns Fast App Reinstall starter that is used to start Play Fast App
+  // Reinstall flow. It is available only on initial start.
+  ArcFastAppReinstallStarter* fast_app_resintall_starter() {
+    return fast_app_reinstall_starter_.get();
+  }
+
   // Returns true if the current ARC run has started with skipping user ToS
   // negotiation, because the user had accepted already or policy does not
   // require ToS acceptance. Returns false in other cases, including one when
@@ -384,6 +391,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   std::unique_ptr<ScopedOptInFlowTracker> scoped_opt_in_tracker_;
   std::unique_ptr<ArcPaiStarter> pai_starter_;
+  std::unique_ptr<ArcFastAppReinstallStarter> fast_app_reinstall_starter_;
 
   // The time when the sign in process started.
   base::Time sign_in_start_time_;

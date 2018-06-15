@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
+#include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
@@ -1406,6 +1407,100 @@ TEST_P(ArcVoiceInteractionTest, PaiStarterVoiceInteractionWizardNotComplete) {
   SendAssistantAppStopped();
 
   WaitForPaiStarted();
+}
+
+TEST_P(ArcPlayStoreAppTest,
+       FastAppReinstallStarterUserFinishesSelectionBeforePlayStore) {
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  arc::ArcFastAppReinstallStarter starter1(profile_.get(),
+                                           profile_->GetPrefs());
+  EXPECT_FALSE(starter1.started());
+  EXPECT_EQ(0, app_instance()->start_fast_app_reinstall_request_count());
+
+  arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
+  ASSERT_TRUE(session_manager);
+
+  // Fast App Reinstall starter is not expected for ARC without the Play Store.
+  if (GetParam() == ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
+    EXPECT_FALSE(session_manager->fast_app_resintall_starter());
+    return;
+  }
+
+  ASSERT_TRUE(session_manager->fast_app_resintall_starter());
+  EXPECT_FALSE(session_manager->fast_app_resintall_starter()->started());
+
+  // Fast App Reinstall is not expected to start when the user finishes
+  // selection without the Play Store.
+  base::ListValue package_list;
+  package_list.Set(0, std::make_unique<base::Value>("fake_package_name"));
+  const base::ListValue* selected_packages(&package_list);
+  profile_.get()->GetTestingPrefService()->Set(
+      arc::prefs::kArcFastAppReinstallPackages, *selected_packages);
+  starter1.OnAppsSelectionFinished();
+  EXPECT_FALSE(starter1.started());
+  EXPECT_EQ(0, app_instance()->start_fast_app_reinstall_request_count());
+
+  SendPlayStoreApp();
+
+  EXPECT_TRUE(starter1.started());
+  EXPECT_EQ(2, app_instance()->start_fast_app_reinstall_request_count());
+
+  arc::ArcFastAppReinstallStarter starter2(profile_.get(),
+                                           profile_->GetPrefs());
+  EXPECT_TRUE(starter2.started());
+  EXPECT_EQ(3, app_instance()->start_fast_app_reinstall_request_count());
+}
+
+TEST_P(ArcPlayStoreAppTest,
+       FastAppReinstallStarterUserFinishesSelectionAfterPlayStore) {
+  ASSERT_TRUE(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_TRUE(prefs);
+
+  arc::ArcFastAppReinstallStarter starter1(profile_.get(),
+                                           profile_->GetPrefs());
+  EXPECT_FALSE(starter1.started());
+  EXPECT_EQ(0, app_instance()->start_fast_app_reinstall_request_count());
+
+  arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
+  ASSERT_TRUE(session_manager);
+
+  // Fast App Reinstall starter is not expected for ARC without the Play Store.
+  if (GetParam() == ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
+    EXPECT_FALSE(session_manager->fast_app_resintall_starter());
+    return;
+  }
+
+  ASSERT_TRUE(session_manager->fast_app_resintall_starter());
+  EXPECT_FALSE(session_manager->fast_app_resintall_starter()->started());
+
+  SendPlayStoreApp();
+
+  // Fast App Reinstall is not expected to start when the user has not finished
+  // selection.
+  EXPECT_FALSE(starter1.started());
+  EXPECT_EQ(0, app_instance()->start_fast_app_reinstall_request_count());
+
+  base::ListValue package_list;
+  package_list.Set(0, std::make_unique<base::Value>("fake_package_name"));
+  const base::ListValue* selected_packages(&package_list);
+  profile_.get()->GetTestingPrefService()->Set(
+      arc::prefs::kArcFastAppReinstallPackages, *selected_packages);
+  starter1.OnAppsSelectionFinished();
+  // Fast App Reinstall is expected to start right after user finishes selection
+  // after Play Store is ready.
+  EXPECT_TRUE(starter1.started());
+  EXPECT_EQ(1, app_instance()->start_fast_app_reinstall_request_count());
+
+  arc::ArcFastAppReinstallStarter starter2(profile_.get(),
+                                           profile_->GetPrefs());
+  EXPECT_TRUE(starter2.started());
+  EXPECT_EQ(2, app_instance()->start_fast_app_reinstall_request_count());
 }
 
 // Test that icon is correctly extracted for shelf group.
