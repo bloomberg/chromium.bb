@@ -9,10 +9,6 @@ namespace contextual_suggestions {
 const base::Feature kContextualSuggestionsBottomSheet{
     "ContextualSuggestionsBottomSheet", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kContextualSuggestionsEnterprisePolicyBypass{
-    "ContextualSuggestionsEnterprisePolicyBypass",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kContextualSuggestionsSlimPeekUI{
     "ContextualSuggestionsSlimPeekUI", base::FEATURE_DISABLED_BY_DEFAULT};
 

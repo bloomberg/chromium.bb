@@ -85,8 +85,7 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
 
     /** @return Whether the user settings for contextual suggestions should be shown. */
     public static boolean shouldShowSettings() {
-        return isDSEConditionMet() && !AccessibilityUtil.isAccessibilityEnabled()
-                && !ContextualSuggestionsBridge.isEnterprisePolicyManaged();
+        return isDSEConditionMet() && !AccessibilityUtil.isAccessibilityEnabled();
     }
 
     /** @return Whether the settings state is currently enabled. */
@@ -100,7 +99,7 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
                 == UploadState.ACTIVE;
         boolean isAccessibilityEnabled = AccessibilityUtil.isAccessibilityEnabled();
         return isUploadToGoogleActive && isDSEConditionMet() && !isAccessibilityEnabled
-                && !ContextualSuggestionsBridge.isEnterprisePolicyManaged();
+                && !ContextualSuggestionsBridge.isDisabledByEnterprisePolicy();
     }
 
     /** @return Whether the state is currently enabled. */

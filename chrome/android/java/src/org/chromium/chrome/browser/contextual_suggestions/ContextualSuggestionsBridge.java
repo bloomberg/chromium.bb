@@ -65,10 +65,10 @@ public class ContextualSuggestionsBridge {
     }
 
     /**
-     * @return Whether the current profile is enterprise policy managed.
+     * @return Whether contextual suggestions are disabled via Enterprise Policy.
      */
-    public static boolean isEnterprisePolicyManaged() {
-        return nativeIsEnterprisePolicyManaged();
+    public static boolean isDisabledByEnterprisePolicy() {
+        return nativeIsDisabledByEnterprisePolicy();
     }
 
     /** Destroys the bridge. */
@@ -151,7 +151,7 @@ public class ContextualSuggestionsBridge {
                         /*isVideoSuggestion=*/false, /*thumbnailDominantColor=*/null, hasImage));
     }
 
-    static private native boolean nativeIsEnterprisePolicyManaged();
+    static private native boolean nativeIsDisabledByEnterprisePolicy();
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeContextualSuggestionsBridge);
     private native void nativeFetchSuggestions(long nativeContextualSuggestionsBridge, String url,

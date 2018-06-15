@@ -106,7 +106,7 @@ public class ContextualSuggestionsPreference
             return true;
         });
         mSwitch.setManagedPreferenceDelegate(
-                preference -> ContextualSuggestionsBridge.isEnterprisePolicyManaged());
+                preference -> ContextualSuggestionsBridge.isDisabledByEnterprisePolicy());
     }
 
     /** Helper method to update the enabled state of the switch. */

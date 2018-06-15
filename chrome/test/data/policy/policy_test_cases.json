@@ -3740,6 +3740,12 @@
     "pref_mappings": [{ "pref": "sync_consent.enabled" }]
   },
 
+  "ContextualSuggestionsEnabled": {
+    "os": ["android"],
+    "test_policy": { "ContextualSuggestionsEnabled": false },
+    "pref_mappings": [{ "pref": "contextual_suggestions.enabled" }]
+  },
+
 
   "----- Chrome Frame policies -------------------------------------------": {},
 

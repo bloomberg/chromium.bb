@@ -48,7 +48,6 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &autofill::kAutofillScanCardholderName,
     &contextual_suggestions::kContextualSuggestionsBottomSheet,
-    &contextual_suggestions::kContextualSuggestionsEnterprisePolicyBypass,
     &contextual_suggestions::kContextualSuggestionsSlimPeekUI,
     &features::kClearOldBrowsingData,
     &features::kClipboardContentSetting,
