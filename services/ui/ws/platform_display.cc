@@ -21,6 +21,7 @@
 #elif defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #endif
 
 namespace ui {
@@ -60,8 +61,10 @@ std::unique_ptr<PlatformWindow> PlatformDisplay::CreatePlatformWindow(
   platform_window = std::make_unique<ui::PlatformWindowAndroid>(delegate);
   platform_window->SetBounds(bounds);
 #elif defined(USE_OZONE)
+  ui::PlatformWindowInitProperties properties;
+  properties.bounds = bounds;
   platform_window =
-      OzonePlatform::GetInstance()->CreatePlatformWindow(delegate, bounds);
+      OzonePlatform::GetInstance()->CreatePlatformWindow(delegate, properties);
 #else
   NOTREACHED() << "Unsupported platform";
 #endif

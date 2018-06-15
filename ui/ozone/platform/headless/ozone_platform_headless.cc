@@ -22,6 +22,7 @@
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
@@ -67,9 +68,9 @@ class OzonePlatformHeadless : public OzonePlatform {
   }
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) override {
+      const PlatformWindowInitProperties& properties) override {
     return std::make_unique<HeadlessWindow>(delegate, window_manager_.get(),
-                                            bounds);
+                                            properties.bounds);
   }
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {

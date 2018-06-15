@@ -12,6 +12,7 @@
 #include "ui/ozone/demo/window_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
@@ -21,8 +22,10 @@ DemoWindow::DemoWindow(WindowManager* window_manager,
     : window_manager_(window_manager),
       renderer_factory_(renderer_factory),
       weak_ptr_factory_(this) {
+  PlatformWindowInitProperties properties;
+  properties.bounds = bounds;
   platform_window_ =
-      OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
+      OzonePlatform::GetInstance()->CreatePlatformWindow(this, properties);
   platform_window_->Show();
 }
 

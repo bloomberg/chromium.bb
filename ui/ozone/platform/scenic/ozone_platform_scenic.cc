@@ -73,7 +73,7 @@ class OzonePlatformScenic : public OzonePlatform {
 
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) override {
+      const PlatformWindowInitProperties& properties) override {
     NOTREACHED();
     return nullptr;
   }

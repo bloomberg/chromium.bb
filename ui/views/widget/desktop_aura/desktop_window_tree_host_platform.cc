@@ -10,13 +10,46 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/widget_aura_utils.h"
 #include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/window_util.h"
 
 namespace views {
 
+namespace {
+
+void ConvertWidgetInitParamsToInitProperties(
+    const Widget::InitParams& params,
+    ui::PlatformWindowInitProperties* properties) {
+  DCHECK(properties);
+
+  ui::PlatformWindowType type;
+  switch (params.type) {
+    case Widget::InitParams::TYPE_POPUP:
+      type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_POPUP;
+      break;
+    case Widget::InitParams::TYPE_MENU:
+      type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU;
+      break;
+    case Widget::InitParams::TYPE_WINDOW:
+    default:
+      type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW;
+      break;
+  }
+  properties->type = type;
+
+  properties->bounds = params.bounds;
+
+  if (params.parent && params.parent->GetHost()) {
+    properties->parent_widget =
+        params.parent->GetHost()->GetAcceleratedWidget();
+  }
+}
+
+}  // namespace
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostPlatform:
 
@@ -41,7 +74,10 @@ void DesktopWindowTreeHostPlatform::SetBoundsInDIP(
 }
 
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
-  CreateAndSetDefaultPlatformWindow();
+  ui::PlatformWindowInitProperties properties;
+  ConvertWidgetInitParamsToInitProperties(params, &properties);
+
+  CreateAndSetPlatformWindow(properties);
   CreateCompositor(viz::FrameSinkId(), params.force_software_compositing);
   aura::WindowTreeHost::OnAcceleratedWidgetAvailable();
   InitHost();
