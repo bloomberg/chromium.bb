@@ -8,6 +8,7 @@
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/cryptauth/chrome_cryptauth_service_factory.h"
+#include "chrome/browser/chromeos/device_sync/device_sync_client_factory.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_app_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service_regular.h"
@@ -68,6 +69,7 @@ EasyUnlockServiceFactory::EasyUnlockServiceFactory()
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(EasyUnlockTpmKeyManagerFactory::GetInstance());
+  DependsOn(device_sync::DeviceSyncClientFactory::GetInstance());
 }
 
 EasyUnlockServiceFactory::~EasyUnlockServiceFactory() {}
@@ -90,8 +92,10 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
   }
 
   if (!service) {
-    service =
-        new EasyUnlockServiceRegular(Profile::FromBrowserContext(context));
+    service = new EasyUnlockServiceRegular(
+        Profile::FromBrowserContext(context),
+        device_sync::DeviceSyncClientFactory::GetForProfile(
+            Profile::FromBrowserContext(context)));
     manifest_id = IDR_EASY_UNLOCK_MANIFEST;
   }
 
