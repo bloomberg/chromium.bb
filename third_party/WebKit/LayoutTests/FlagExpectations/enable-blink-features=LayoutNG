@@ -24,6 +24,9 @@ crbug.com/591099 fast/block/child-not-removed-from-parent-lineboxes-crash.html [
 # https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_block.cc?l=1372&rcl=0e081149ecd6a83f6289e3aee5797936008a1e10
 crbug.com/591099 fast/block/marquee-width-shrinks-to-fit-in-fixed-size-container.html [ Failure ]
 
+# Hit test failure due to vertical-rl writing mode
+crbug.com/851075 fast/writing-mode/vertical-inline-block-hittest.html [ Failure ]
+
 # New passes
 crbug.com/774229 editing/pasteboard/copy-paste-white-space.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]
@@ -485,7 +488,6 @@ crbug.com/714962 fast/dom/elementsFromPoint/elementsFromPoint-inline.html [ Fail
 crbug.com/591099 fast/dom/elementsFromPoint/elementsFromPoint-svg.html [ Failure ]
 crbug.com/714962 fast/dom/inert/inert-inlines.html [ Failure ]
 crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-basic.html [ Failure ]
-crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-child-frame-scrolled-content.html [ Failure ]
 crbug.com/714962 fast/dom/nodesFromRect/nodesFromRect-culled-inline-with-linebreak.html [ Failure ]
 crbug.com/714962 fast/dom/nodesFromRect/nodesFromRect-culled-inlines.html [ Failure ]
 crbug.com/591099 fast/dom/nodesFromRect/nodesFromRect-inline-image.html [ Failure ]
@@ -507,7 +509,6 @@ crbug.com/591099 fast/events/wheel/mainthread-touchpad-fling-latching.html [ Pas
 crbug.com/591099 fast/events/wheel/wheel-scroll-latching-on-scrollbar.html [ Pass ]
 crbug.com/591099 fast/forms/fieldset/fieldset-with-float.html [ Failure ]
 crbug.com/591099 fast/forms/form-hides-table.html [ Failure ]
-crbug.com/714962 fast/forms/label/continous-click-on-label.html [ Failure ]
 crbug.com/591099 fast/forms/select/select-initial-position.html [ Failure ]
 crbug.com/591099 fast/forms/select/select-style.html [ Failure ]
 crbug.com/591099 fast/forms/text-control-intrinsic-widths.html [ Timeout ]

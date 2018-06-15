@@ -593,6 +593,9 @@ Node* NGPaintFragment::NodeForHitTest() const {
   if (GetNode())
     return GetNode();
 
+  if (PhysicalFragment().IsLineBox())
+    return Parent()->NodeForHitTest();
+
   // When the fragment is inside a ::first-letter, ::before or ::after pseudo
   // node, return the pseudo node.
   for (const NGPaintFragment* runner = Parent(); runner;

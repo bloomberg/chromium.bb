@@ -122,6 +122,11 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                            const NGPaintFragment&,
                            const HitTestLocation& location_in_container,
                            const LayoutPoint& accumulated_offset);
+  bool HitTestLineBoxFragment(HitTestResult&,
+                              const NGPaintFragment&,
+                              const HitTestLocation& location_in_container,
+                              const LayoutPoint& accumulated_offset,
+                              HitTestAction);
   bool HitTestClippedOutByBorder(const HitTestLocation&,
                                  const LayoutPoint& border_box_location) const;
   LayoutPoint FlipForWritingModeForChild(
