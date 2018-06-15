@@ -26,6 +26,7 @@ extern const base::Feature kChromeDuplexFeature;
 extern const base::Feature kChromeHomeSwipeLogic;
 extern const base::Feature kChromeHomeSwipeLogicVelocity;
 extern const base::Feature kChromeMemexFeature;
+extern const base::Feature kChromeModernAlternateCardLayout;
 extern const base::Feature kChromeModernDesign;
 extern const base::Feature kChromeSmartSelection;
 extern const base::Feature kCommandLineOnNonRooted;
