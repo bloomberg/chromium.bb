@@ -27,6 +27,7 @@
 #include "components/drive/chromeos/start_page_token_loader.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/event_logger.h"
+#include "components/drive/file_change.h"
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
 #include "google_apis/drive/drive_api_parser.h"
@@ -488,6 +489,13 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
   if (should_notify_changed_directories) {
     for (auto& observer : observers_)
       observer.OnFileChanged(change_list_processor->changed_files());
+  }
+
+  if (!change_list_processor->changed_team_drives().empty()) {
+    for (auto& observer : observers_) {
+      observer.OnTeamDrivesChanged(
+          change_list_processor->changed_team_drives());
+    }
   }
 
   OnChangeListLoadComplete(error);

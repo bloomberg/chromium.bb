@@ -35,6 +35,7 @@ bool ConvertChangeResourceToResourceEntry(
       // latter doesn't exist for deleted items.
       converted.set_resource_id(input.team_drive_id());
       converted.mutable_file_info()->set_is_directory(true);
+      converted.mutable_file_info()->set_is_team_drive_root(true);
       converted.set_parent_local_id(util::kDriveTeamDrivesDirLocalId);
     }
   } else {
@@ -158,6 +159,7 @@ void ConvertTeamDriveResourceToResourceEntry(
     ResourceEntry* out_entry) {
   DCHECK(out_entry);
   out_entry->mutable_file_info()->set_is_directory(true);
+  out_entry->mutable_file_info()->set_is_team_drive_root(true);
   out_entry->set_title(input.name());
   out_entry->set_base_name(input.name());
   out_entry->set_resource_id(input.id());

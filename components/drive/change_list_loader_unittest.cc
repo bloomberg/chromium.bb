@@ -53,6 +53,8 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
   const FileChange& changed_files() const { return changed_files_; }
   void clear_changed_files() { changed_files_.ClearForTest(); }
 
+  const FileChange& changed_team_drives() const { return changed_team_drives_; }
+
   int load_from_server_complete_count() const {
     return load_from_server_complete_count_;
   }
@@ -64,6 +66,9 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
   void OnFileChanged(const FileChange& changed_files) override {
     changed_files_.Apply(changed_files);
   }
+  void OnTeamDrivesChanged(const FileChange& changed_team_drives) override {
+    changed_team_drives_.Apply(changed_team_drives);
+  }
   void OnLoadFromServerComplete() override {
     ++load_from_server_complete_count_;
   }
@@ -72,6 +77,7 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
  private:
   ChangeListLoader* loader_;
   FileChange changed_files_;
+  FileChange changed_team_drives_;
   int load_from_server_complete_count_;
   int initial_load_complete_count_;
 
@@ -81,6 +87,8 @@ class TestChangeListLoaderObserver : public ChangeListLoaderObserver {
 class ChangeListLoaderTest : public testing::Test {
  protected:
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        google_apis::kEnableTeamDrives);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     BuildTestObjects();
   }
@@ -123,12 +131,6 @@ class ChangeListLoaderTest : public testing::Test {
         metadata_.get(), scheduler_.get(), root_folder_id_loader_.get(),
         start_page_token_loader_.get(), loader_controller_.get(),
         util::kTeamDriveIdDefaultCorpus, util::GetDriveMyDriveRootPath());
-  }
-
-  void SetUpForTeamDrives() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        google_apis::kEnableTeamDrives);
-    BuildTestObjects();
   }
 
   // Adds a new file to the root directory of the service.
@@ -362,5 +364,33 @@ TEST_F(ChangeListLoaderTest, Lock) {
       observer.changed_files().CountDirectory(util::GetDriveMyDriveRootPath()));
 }
 
+TEST_F(ChangeListLoaderTest, AddTeamDrive) {
+  FileError error = FILE_ERROR_FAILED;
+  change_list_loader_->LoadIfNeeded(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  // Add a new team drive
+  {
+    drive_service_->AddTeamDrive("team_drive_id", "team_drive_name");
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Start update.
+  TestChangeListLoaderObserver observer(change_list_loader_.get());
+  FileError check_for_updates_error = FILE_ERROR_FAILED;
+  change_list_loader_->CheckForUpdates(
+      google_apis::test_util::CreateCopyResultCallback(
+          &check_for_updates_error));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(observer.changed_files().empty());
+  EXPECT_FALSE(observer.changed_team_drives().empty());
+  EXPECT_EQ(1UL, observer.changed_files().CountDirectory(
+                     util::GetDriveTeamDrivesRootPath()));
+  EXPECT_EQ(1UL, observer.changed_team_drives().CountDirectory(
+                     util::GetDriveTeamDrivesRootPath()));
+}
 }  // namespace internal
 }  // namespace drive

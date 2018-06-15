@@ -19,6 +19,7 @@ message PlatformFileInfoProto {
   optional int64 last_modified = 4;
   optional int64 last_accessed = 5;
   optional int64 creation_time = 6;
+  optional bool is_team_drive_root = 7;
 }
 
 // Represents a property for a file.

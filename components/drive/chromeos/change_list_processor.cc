@@ -143,6 +143,7 @@ ChangeListProcessor::ChangeListProcessor(const std::string& team_drive_id,
     : resource_metadata_(resource_metadata),
       in_shutdown_(in_shutdown),
       changed_files_(new FileChange),
+      changed_team_drives_(new FileChange),
       team_drive_id_(team_drive_id),
       root_entry_path_(root_entry_path) {}
 
@@ -536,6 +537,10 @@ void ChangeListProcessor::UpdateChangedDirs(const ResourceEntry& entry) {
                                       ? FileChange::CHANGE_TYPE_DELETE
                                       : FileChange::CHANGE_TYPE_ADD_OR_UPDATE;
     changed_files_->Update(file_path, entry, type);
+
+    if (entry.file_info().is_team_drive_root()) {
+      changed_team_drives_->Update(file_path, entry, type);
+    }
   }
 }
 

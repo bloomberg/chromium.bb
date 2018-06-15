@@ -144,6 +144,13 @@ class ChangeListProcessor {
   // The set of changed files as a result of change list processing.
   const FileChange& changed_files() const { return *changed_files_; }
 
+  // The set of team drives changes as a result of change list processing.
+  // Note that a team drive change will appear in both changed_files() and
+  // changed_team_drives()
+  const FileChange& changed_team_drives() const {
+    return *changed_team_drives_;
+  }
+
   // Adds or refreshes the child entries from |change_list| to the directory.
   static FileError RefreshDirectory(
       ResourceMetadata* resource_metadata,
@@ -196,6 +203,7 @@ class ChangeListProcessor {
   ResourceEntryMap entry_map_;
   ParentResourceIdMap parent_resource_id_map_;
   std::unique_ptr<FileChange> changed_files_;
+  std::unique_ptr<FileChange> changed_team_drives_;
   const std::string team_drive_id_;
   const base::FilePath& root_entry_path_;
 
