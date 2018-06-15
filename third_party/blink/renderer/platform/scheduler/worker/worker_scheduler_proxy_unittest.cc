@@ -24,7 +24,7 @@ namespace {
 class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
   WorkerThreadSchedulerForTest(
-      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
+      std::unique_ptr<base::sequence_manager::SequenceManager> manager,
       WorkerSchedulerProxy* proxy,
       WaitableEvent* throtting_state_changed)
       : WorkerThreadScheduler(WebThreadType::kTestThread,
@@ -78,7 +78,7 @@ class WebThreadImplForWorkerSchedulerForTest
   std::unique_ptr<NonMainThreadSchedulerImpl> CreateNonMainThreadScheduler()
       override {
     auto scheduler = std::make_unique<WorkerThreadSchedulerForTest>(
-        base::sequence_manager::TaskQueueManager::TakeOverCurrentThread(),
+        base::sequence_manager::SequenceManager::CreateOnCurrentThread(),
         worker_scheduler_proxy(), throtting_state_changed_);
     scheduler_ = scheduler.get();
     worker_scheduler_ = std::make_unique<scheduler::WorkerScheduler>(

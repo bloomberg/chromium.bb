@@ -16,8 +16,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
@@ -33,7 +33,7 @@ namespace blink {
 namespace scheduler {
 
 using base::sequence_manager::TaskQueue;
-using base::sequence_manager::TaskQueueManager;
+using base::sequence_manager::SequenceManager;
 
 // To avoid symbol collisions in jumbo builds.
 namespace idle_helper_unittest {
@@ -200,7 +200,7 @@ class BaseIdleHelperTest : public testing::Test {
             message_loop ? nullptr
                          : new cc::OrderedSimpleTaskRunner(&clock_, false)),
         message_loop_(message_loop) {
-    std::unique_ptr<TaskQueueManager> task_queue_manager =
+    std::unique_ptr<SequenceManager> task_queue_manager =
         base::sequence_manager::TaskQueueManagerForTest::Create(
             message_loop,
             message_loop ? message_loop->task_runner() : mock_task_runner_,
@@ -242,7 +242,7 @@ class BaseIdleHelperTest : public testing::Test {
     }
   }
 
-  TaskQueueManager* task_queue_manager() const { return task_queue_manager_; }
+  SequenceManager* task_queue_manager() const { return task_queue_manager_; }
 
   void RunUntilIdle() {
     // Only one of mock_task_runner_ or message_loop_ should be set.
@@ -311,7 +311,7 @@ class BaseIdleHelperTest : public testing::Test {
   std::unique_ptr<base::MessageLoop> message_loop_;
 
   std::unique_ptr<NonMainThreadSchedulerHelper> scheduler_helper_;
-  TaskQueueManager* task_queue_manager_;  // Owned by scheduler_helper_.
+  SequenceManager* task_queue_manager_;  // Owned by scheduler_helper_.
   std::unique_ptr<IdleHelperForTest> idle_helper_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;

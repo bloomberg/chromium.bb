@@ -50,7 +50,7 @@
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/mime/mock_mime_registry.h"
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"

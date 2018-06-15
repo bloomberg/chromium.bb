@@ -51,8 +51,8 @@ void SweepCanceledDelayedTasksInQueue(
 }  // namespace
 
 // static
-std::unique_ptr<TaskQueueManager> TaskQueueManager::TakeOverCurrentThread() {
-  return TaskQueueManagerImpl::TakeOverCurrentThread();
+std::unique_ptr<SequenceManager> SequenceManager::CreateOnCurrentThread() {
+  return TaskQueueManagerImpl::CreateOnCurrentThread();
 }
 
 TaskQueueManagerImpl::TaskQueueManagerImpl(
@@ -114,8 +114,9 @@ TaskQueueManagerImpl::MainThreadOnly::MainThreadOnly()
 
 TaskQueueManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
+// static
 std::unique_ptr<TaskQueueManagerImpl>
-TaskQueueManagerImpl::TakeOverCurrentThread() {
+TaskQueueManagerImpl::CreateOnCurrentThread() {
   return std::unique_ptr<TaskQueueManagerImpl>(
       new TaskQueueManagerImpl(internal::ThreadControllerImpl::Create(
           MessageLoop::current(), DefaultTickClock::GetInstance())));
@@ -669,7 +670,7 @@ void TaskQueueManagerImpl::SetDefaultTaskRunner(
   controller_->SetDefaultTaskRunner(task_runner);
 }
 
-const TickClock* TaskQueueManagerImpl::GetClock() const {
+const TickClock* TaskQueueManagerImpl::GetTickClock() const {
   return controller_->GetClock();
 }
 

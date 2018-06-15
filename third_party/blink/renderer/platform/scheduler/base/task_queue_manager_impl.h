@@ -30,8 +30,8 @@
 #include "base/task/sequence_manager/thread_controller.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/platform/scheduler/base/graceful_queue_shutdown_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 
 namespace base {
@@ -69,26 +69,22 @@ class TimeDomain;
 //    registered with the selector as input to the scheduling decision.
 //
 class PLATFORM_EXPORT TaskQueueManagerImpl
-    : public TaskQueueManager,
+    : public SequenceManager,
       public internal::SequencedTaskSource,
       public internal::TaskQueueSelector::Observer,
       public RunLoop::NestingObserver {
  public:
-  // Keep public methods in sync with TaskQueueManager interface.
-  // The general rule is to keep methods only used in scheduler/base just here
-  // and not to define them in the interface.
-
-  using Observer = TaskQueueManager::Observer;
+  using Observer = SequenceManager::Observer;
 
   ~TaskQueueManagerImpl() override;
 
-  // Assume direct control over current thread and create a TaskQueueManager.
+  // Assume direct control over current thread and create a SequenceManager.
   // This function should be called only once per thread.
-  // This function assumes that a MessageLoop is initialized for current
-  // thread.
-  static std::unique_ptr<TaskQueueManagerImpl> TakeOverCurrentThread();
+  // This function assumes that a MessageLoop is initialized for
+  // the current thread.
+  static std::unique_ptr<TaskQueueManagerImpl> CreateOnCurrentThread();
 
-  // TaskQueueManager implementation:
+  // SequenceManager implementation:
   void SetObserver(Observer* observer) override;
   void AddTaskObserver(MessageLoop::TaskObserver* task_observer) override;
   void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) override;
@@ -97,7 +93,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   void RegisterTimeDomain(TimeDomain* time_domain) override;
   void UnregisterTimeDomain(TimeDomain* time_domain) override;
   RealTimeDomain* GetRealTimeDomain() const override;
-  const TickClock* GetClock() const override;
+  const TickClock* GetTickClock() const override;
   TimeTicks NowTicks() const override;
   void SetDefaultTaskRunner(
       scoped_refptr<SingleThreadTaskRunner> task_runner) override;

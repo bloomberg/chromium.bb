@@ -21,8 +21,7 @@ namespace scheduler {
 
 CompositorThreadScheduler::CompositorThreadScheduler(
     base::Thread* thread,
-    std::unique_ptr<base::sequence_manager::TaskQueueManager>
-        task_queue_manager)
+    std::unique_ptr<base::sequence_manager::SequenceManager> task_queue_manager)
     : NonMainThreadSchedulerImpl(std::make_unique<NonMainThreadSchedulerHelper>(
           std::move(task_queue_manager),
           this,

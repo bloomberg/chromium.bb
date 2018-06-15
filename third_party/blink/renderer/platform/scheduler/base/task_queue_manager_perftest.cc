@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager.h"
 
 #include <stddef.h>
 #include <memory>
@@ -204,7 +204,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
   unsigned int num_tasks_to_post_;
   unsigned int num_tasks_to_run_;
   std::unique_ptr<MessageLoop> message_loop_;
-  std::unique_ptr<TaskQueueManager> manager_;
+  std::unique_ptr<SequenceManager> manager_;
   std::unique_ptr<RunLoop> run_loop_;
   std::unique_ptr<VirtualTimeDomain> virtual_time_domain_;
   std::vector<scoped_refptr<SingleThreadTaskRunner>> queues_;

@@ -17,12 +17,12 @@ namespace scheduler {
 
 using base::sequence_manager::RealTimeDomain;
 using base::sequence_manager::TaskQueue;
-using base::sequence_manager::TaskQueueManager;
+using base::sequence_manager::SequenceManager;
 using base::sequence_manager::TaskTimeObserver;
 using base::sequence_manager::TimeDomain;
 
 SchedulerHelper::SchedulerHelper(
-    std::unique_ptr<TaskQueueManager> task_queue_manager)
+    std::unique_ptr<SequenceManager> task_queue_manager)
     : task_queue_manager_(std::move(task_queue_manager)), observer_(nullptr) {
   task_queue_manager_->SetWorkBatchSize(4);
 }
@@ -130,7 +130,7 @@ void SchedulerHelper::OnExitNestedRunLoop() {
 }
 
 const base::TickClock* SchedulerHelper::GetClock() const {
-  return task_queue_manager_->GetClock();
+  return task_queue_manager_->GetTickClock();
 }
 
 base::TimeTicks SchedulerHelper::NowTicks() const {

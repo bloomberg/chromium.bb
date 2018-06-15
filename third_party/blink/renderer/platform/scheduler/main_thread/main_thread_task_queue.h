@@ -12,7 +12,7 @@
 
 namespace base {
 namespace sequence_manager {
-class TaskQueueManager;
+class SequenceManager;
 }
 }  // namespace base
 
@@ -203,7 +203,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue
       MainThreadSchedulerImpl* main_thread_scheduler);
 
  private:
-  friend class base::sequence_manager::TaskQueueManager;
+  friend class base::sequence_manager::SequenceManager;
 
   // Clear references to main thread scheduler and frame scheduler and dispatch
   // appropriate notifications. This is the common part of ShutdownTaskQueue and

@@ -241,8 +241,7 @@ bool IsUnconditionalHighPriorityInputEnabled() {
 }  // namespace
 
 MainThreadSchedulerImpl::MainThreadSchedulerImpl(
-    std::unique_ptr<base::sequence_manager::TaskQueueManager>
-        task_queue_manager,
+    std::unique_ptr<base::sequence_manager::SequenceManager> task_queue_manager,
     base::Optional<base::Time> initial_virtual_time)
     : helper_(std::move(task_queue_manager), this),
       idle_helper_(&helper_,
