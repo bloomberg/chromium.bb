@@ -29,6 +29,7 @@ Events:
 <dom-module id="saml-interstitial">
 
 <template>
+  <link rel="stylesheet" href="gaia_card_parameters.css">
   <style>
     :host {
       display: block;
@@ -38,7 +39,7 @@ Events:
 
   <gaia-card id="samlInterstitialCard" class="fit">
     <div id="samlInterstitialHeader"
-        class="header flex vertical layout end-justified start">
+        slot="header" class="flex vertical layout end-justified start">
       <h1 class="welcome-message" i18n-content="loginWelcomeMessage">
       </h1>
       <p id="managedBy" class="enterprise-info"
@@ -46,7 +47,7 @@ Events:
       </p>
     </div>
 
-    <div class="footer flex vertical layout justified">
+    <div slot="footer" class="flex vertical layout justified">
       <!-- This message contains a <strong> tag inside. -->
       <html-echo id="message" hidden$="[[!showDomainMessages_]]"></html-echo>
 

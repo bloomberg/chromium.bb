@@ -66,7 +66,7 @@ Special case is a help button (<paper-button> with 'help' class set) which
 is aligned left.
 There are several classes that can be used to change the page appearance:
   * split - if this class is set, top and bottom parts will have different
-    colors.
+    colors (see stylesheet of controller-pairing-screen).
   * big-font - if this class is set, slightly bigger font is used on page.
   * progress - if this class is set and 'split' is not, progress bar is shown
     instead of top and bottom parts separator.
@@ -84,7 +84,7 @@ controller-pairing-page::shadow #top {
     <div class="vertical layout fit">
       <div id="top" class="relative vertical end-justified layout">
         <div id="title">
-          <content select=".title"></content>
+          <slot name="title"></slot>
         </div>
         <div id="separator">
           <paper-progress indeterminate></paper-progress>
@@ -92,13 +92,13 @@ controller-pairing-page::shadow #top {
       </div>
       <div id="bottom" class="flex vertical layout">
         <div class="flex vertical layout">
-          <content select=":not(paper-button)"></content>
+          <slot></slot>
         </div>
         <div id="controls" class="horizontal layout center">
           <div class="flex">
-            <content select="paper-button.help-button"></content>
+            <slot name="help"></slot>
           </div>
-          <content select="paper-button"></content>
+          <slot name="buttons"></slot>
         </div>
       </div>
     </div>
@@ -118,93 +118,95 @@ controller-pairing-page::shadow #top {
       <neon-animated-pages id="pages" selected="{{C.page}}"
           attr-for-selected="name" class="fit">
         <controller-pairing-page name="devices-discovery" class="big-font">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenWelcomeTitle">
           </div>
           <div i18n-content="loginControllerPairingScreenSearching"></div>
-          <paper-button class="help-button" on-tap="helpButtonClicked_"
+          <paper-button slot="help" on-tap="helpButtonClicked_"
               i18n-content="loginControllerPairingScreenHelpBtn">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="device-select" class="split">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenSelectTitle">
           </div>
           <pairing-device-list devices="[[C.devices]]"
               selected="{{selectedDevice}}">
           </pairing-device-list>
-          <paper-button class="help-button" on-tap="helpButtonClicked_"
+          <paper-button slot="help" on-tap="helpButtonClicked_"
               i18n-content="loginControllerPairingScreenHelpBtn">
           </paper-button>
-          <paper-button on-tap="userActed" action="chooseDevice"
+          <paper-button slot="buttons" on-tap="userActed" action="chooseDevice"
               disabled$="[[C.controlsDisabled]]"
               i18n-content="loginControllerPairingScreenConnectBtn">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="device-not-found">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenTroubleConnectingTitle">
           </div>
           <div i18n-content="loginControllerPairingScreenConnectingAdvice">
           </div>
-          <paper-button on-tap="userActed" action="repeatDiscovery"
+          <paper-button slot="buttons" on-tap="userActed"
+              action="repeatDiscovery"
               i18n-content="loginControllerPairingScreenAdviceGotItBtn">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="establishing-connection" class="split">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenSelectTitle">
           </div>
           <pairing-device-list devices="[[C.devices]]"
               selected="{{selectedDevice}}" connecting>
           </pairing-device-list>
-          <paper-button class="help-button" on-tap="helpButtonClicked_"
+          <paper-button slot="help" on-tap="helpButtonClicked_"
               i18n-content="loginControllerPairingScreenHelpBtn">
           </paper-button>
-          <paper-button disabled
+          <paper-button slot="buttons" disabled
               i18n-content="loginControllerPairingScreenConnecting">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="establishing-connection-error">
           <!-- TODO(dzhioev): Strings TBD. http://crbug.com/423740 -->
-          <div class="title">
+          <div slot="title">
             Unable to connect to <span>[[selectedDevice]]<span>
           </div>
-          <paper-button on-tap="userActed" action="repeatDiscovery">
+          <paper-button slot="buttons" on-tap="userActed"
+              action="repeatDiscovery">
             Repeat discovery
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="code-confirmation" class="split">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenConfirmationTitle">
           </div>
           <div
               i18n-content="loginControllerPairingScreenConfirmationQuestion">
           </div>
           <div id="code"><span>[[C.code]]</span></div>
-          <paper-button on-tap="userActed" action="rejectCode"
+          <paper-button slot="buttons" on-tap="userActed" action="rejectCode"
               disabled$="[[C.controlsDisabled]"
               i18n-content="loginControllerPairingScreenRejectCodeBtn">
           </paper-button>
-          <paper-button on-tap="userActed" action="acceptCode"
+          <paper-button slot="buttons" on-tap="userActed" action="acceptCode"
               disabled$="[[C.controlsDisabled]]"
               i18n-content="loginControllerPairingScreenAcceptCodeBtn">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="host-network-error" class="split">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenHostNetworkErrorTitle">
           </div>
         </controller-pairing-page>
 
         <controller-pairing-page name="host-update" class="split">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenUpdateTitle">
           </div>
           <div i18n-content="loginControllerPairingScreenUpdateText"></div>
@@ -212,7 +214,7 @@ controller-pairing-page::shadow #top {
         </controller-pairing-page>
 
         <controller-pairing-page name="host-connection-lost" class="split">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenConnectionLostTitle">
           </div>
           <div i18n-content="loginControllerPairingScreenConnectionLostText">
@@ -221,7 +223,7 @@ controller-pairing-page::shadow #top {
         </controller-pairing-page>
 
         <controller-pairing-page name="enrollment-introduction" class="split">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenEnrollTitle">
           </div>
           <p i18n-content="loginControllerPairingScreenEnrollText1"></p>
@@ -229,14 +231,15 @@ controller-pairing-page::shadow #top {
             <strong i18n-content="loginControllerPairingScreenEnrollText2">
             </strong>
           </p>
-          <paper-button on-tap="userActed" action="proceedToAuthentication"
+          <paper-button slot="buttons" on-tap="userActed"
+              action="proceedToAuthentication"
               disabled$="[[C.controlsDisabled]]"
               i18n-content="loginControllerPairingScreenContinueBtn">
           </paper-button>
         </controller-pairing-page>
 
         <controller-pairing-page name="authentication" class="split">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenEnrollTitle">
           </div>
           <div>Not implemented.</div>
@@ -244,13 +247,13 @@ controller-pairing-page::shadow #top {
 
         <controller-pairing-page name="host-enrollment" class="progress">
           <!-- This title contains <strong> tag inside. -->
-          <html-echo class="title"
+          <html-echo slot="title"
               content="[[getHostEnrollmentStepTitle_(C.enrollmentDomain)]]">
           </html-echo>
         </controller-pairing-page>
 
         <controller-pairing-page name="host-enrollment-error" class="progress">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenEnrollmentErrorTitle">
           </div>
           <div
@@ -259,11 +262,11 @@ controller-pairing-page::shadow #top {
         </controller-pairing-page>
 
         <controller-pairing-page name="pairing-done" class="big-font">
-          <div class="title"
+          <div slot="title"
               i18n-content="loginControllerPairingScreenSuccessTitle">
           </div>
           <div><span>[[getSuccessMessage_(selectedDevice)]]</div>
-          <paper-button on-tap="userActed" action="startSession"
+          <paper-button slot="buttons" on-tap="userActed" action="startSession"
               disabled$="{{C.controlsDisabled}}"
               i18n-content="loginControllerPairingScreenContinueToHangoutsBtn">
           </paper-button>

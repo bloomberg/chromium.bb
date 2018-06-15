@@ -10,7 +10,7 @@
   width: 768px;
 }
 
-.footer {
+[slot='footer'] {
   padding: 18px 64px 0;
 }
 
@@ -41,7 +41,7 @@ cr-checkbox {
   padding-top: 28px; /* 40 to label base line => 40 - 16/2 - 13/3 = 28 */
 }
 
-#syncConsentOverviewDialog .bottom-buttons {
+#syncConsentOverviewDialog [slot='bottom-buttons'] {
   padding: 0 6px; /* = 8px - 2px button border */
 }
 
@@ -51,7 +51,7 @@ cr-checkbox {
 
 /* --------------- Sync Make Chrome ... --------------- */
 
-#syncConsentNewDialog .oobe-icon {
+#syncConsentNewDialog [slot='oobe-icon'] {
   height: 32px;
   width: 32px;
 }
@@ -68,13 +68,13 @@ cr-checkbox {
   -webkit-padding-end: 16px;
 }
 
-#syncConsentNewDialog .bottom-buttons {
+#syncConsentNewDialog [slot='bottom-buttons'] {
   padding: 0 24px;
 }
 
 /* ------------------ Sync options ------------- */
 
-#syncConsentMakeChromeSyncOptionsDialog .oobe-icon {
+#syncConsentMakeChromeSyncOptionsDialog [slot='oobe-icon'] {
   height: 32px;
   width: 32px;
 }

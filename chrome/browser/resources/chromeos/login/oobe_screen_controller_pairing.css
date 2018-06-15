@@ -48,3 +48,22 @@ paper-progress {
 pairing-device-list {
   height: 252px;
 }
+
+strong {
+  font-weight: 500;
+}
+
+controller-pairing-page [slot='buttons'] :last-child,
+controller-pairing-page [slot='help'] :last-child {
+  margin-right: -0.5em;
+}
+
+controller-pairing-page [slot='buttons'] :not(:last-child),
+controller-pairing-page [slot='help'] :not(:last-child) {
+  margin-right: 1em;
+}
+
+controller-pairing-page.split [slot='buttons'] :last-child,
+controller-pairing-page.split [slot='help'] :last-child {
+  color: var(--google-green-500);
+}

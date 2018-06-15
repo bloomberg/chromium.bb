@@ -7,10 +7,6 @@
   color: white;
 }
 
-content::content strong {
-  font-weight: 500;
-}
-
 /* Top part of a page. */
 
 #top {
@@ -87,16 +83,4 @@ content::content strong {
 
 #controls :first-child {
   margin-left: -0.5em;
-}
-
-#controls content[select='paper-button']::content :last-child {
-  margin-right: -0.5em;
-}
-
-#controls content[select='paper-button']::content :not(:last-child) {
-  margin-right: 1em;
-}
-
-:host(.split) #controls content[select='paper-button']::content :last-child {
-  color: var(--google-green-500);
 }

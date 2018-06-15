@@ -26,7 +26,7 @@
   Material design square button for text-labelled buttons.
   By default, text is blue, background is white.
   |inverse| makes text white on a blue background.
-  Note, that content must have separate DOM node (i.e. a separate div).
+  Note, that slotted element must have separate DOM node (i.e. a separate div).
 
   Example:
     <oobe-icon-button inverse>
@@ -58,7 +58,7 @@
         border$="[[border]]" android$="[[android]]">
       <div id="container"
           class="flex layout horizontal center center-justified self-stretch">
-        <content></content>
+        <slot></slot>
       </div>
     </paper-button>
   </template>
@@ -128,7 +128,7 @@
           <hd-iron-icon id="icon" icon1x="[[icon1x]]" icon2x="[[icon2x]]"
               class="oobe-icon" hidden>
           </hd-iron-icon>
-          <content></content>
+          <slot></slot>
         </div>
       </div>
     </paper-button>

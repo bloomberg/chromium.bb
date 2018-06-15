@@ -29,14 +29,14 @@
     <link rel="stylesheet" href="oobe_update.css">
     <oobe-dialog hidden="[[!checkingForUpdate]]" tabindex="0"
         aria-live="polite">
-      <iron-icon icon="oobe-update:googleg" class="oobe-icon"></iron-icon>
-      <div class="header">
+      <iron-icon icon="oobe-update:googleg" slot="oobe-icon"></iron-icon>
+      <div slot="header">
         <h1 class="title" i18n-content="checkingForUpdates"></h1>
         <div class="subtitle update-subtitle" id="checkingForUpdateCancelHint"
             i18n-content="cancelUpdateHint" hidden="[[!cancelAllowed]]">
         </div>
       </div>
-      <div class="footer flex layout vertical">
+      <div slot="footer" class="flex layout vertical">
         <paper-progress id="checking-progress" indeterminate></paper-progress>
         <div class="flex"></div>
         <img class="update-illustration"
@@ -46,8 +46,8 @@
     </oobe-dialog>
     <oobe-dialog hidden="[[checkingForUpdate]]" tabindex="0"
         aria-live="polite">
-      <iron-icon icon="oobe-update:googleg" class="oobe-icon"></iron-icon>
-      <div class="header">
+      <iron-icon icon="oobe-update:googleg" slot="oobe-icon"></iron-icon>
+      <div slot="header">
         <h1 class="title" i18n-content="updatingScreenTitle"></h1>
         <div class="subtitle update-subtitle"
             i18n-content="installingUpdateDesc"
@@ -60,7 +60,7 @@
         <div class="subtitle update-subtitle" i18n-content="updateCompeletedMsg"
             hidden="[[!updateCompleted]]"></div>
       </div>
-      <div class="footer flex layout vertical">
+      <div slot="footer" class="flex layout vertical">
         <paper-progress min="0" max="100" value="[[progressValue]]"
           hidden="[[updateCompleted]]">
         </paper-progress>

@@ -22,7 +22,7 @@
   font: 13px Roboto, sans-serif;
 }
 
-#languageScreen .bottom-buttons {
+#languageScreen [slot='bottom-buttons'] {
   padding: 0 24px;
 }
 
@@ -36,16 +36,16 @@
   border-bottom: var(--oobe-dialog-list-item-border);
 }
 
-#accessibilityScreen .bottom-buttons {
+#accessibilityScreen [slot='bottom-buttons'] {
   padding: 0 24px;
 }
 
 /************* Network Selection Screen **************/
-#networkSelectionScreen .footer {
+#networkSelectionScreen [slot='footer'] {
   max-height: 313px;
 }
 
-#networkSelectionScreen .bottom-buttons {
+#networkSelectionScreen [slot='bottom-buttons'] {
   padding: 0 6px; /* = 8px - 2px back button border */
 }
 
@@ -65,7 +65,7 @@
   font: 13px Roboto, sans-serif;
 }
 
-#timezoneScreen .bottom-buttons {
+#timezoneScreen [slot='bottom-buttons'] {
   padding: 0 24px;
 }
 
@@ -98,6 +98,6 @@
   font: 13px Roboto, sans-serif;
 }
 
-#oobeAdvancedOptionsScreen .bottom-buttons {
+#oobeAdvancedOptionsScreen [slot='bottom-buttons'] {
   padding: 0 24px;
 }

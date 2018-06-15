@@ -13,10 +13,10 @@
 
   Example:
     <gaia-card>
-      <div class="header" flex vertical layout end-justified start>
+      <div slot="header" flex vertical layout end-justified start>
         ...
       </div>
-      <gaia-input-form class="footer" ...>
+      <gaia-input-form slot="footer" ...>
       </gaia-input-form>
     </gaia-card>
 
@@ -30,13 +30,13 @@
   <template>
     <div class="gaia-header vertical layout relative">
       <div class="header-container flex vertical layout relative">
-        <content select=".header"></content>
+        <slot name="header"></slot>
       </div>
       <paper-progress id="progress-bar" indeterminate></paper-progress>
     </div>
     <div class="gaia-footer flex vertical layout">
       <div class="footer-container flex vertical layout">
-        <content select=".footer"></content>
+        <slot name="footer"></slot>
       </div>
       <div id="bottom-overlay" class="overlay"></div>
     </div>

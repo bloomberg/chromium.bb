@@ -10,7 +10,7 @@
   width: 768px;
 }
 
-.footer {
+[slot='footer'] {
   padding: 18px 64px 0;
 }
 

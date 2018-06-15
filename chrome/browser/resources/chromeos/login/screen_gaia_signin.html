@@ -5,10 +5,11 @@
   <link rel="stylesheet" href="oobe_dialog_parameters.css">
   <oobe-dialog id="signin-frame-dialog" class="gaia-dialog" role="dialog"
       has-buttons no-header no-footer-padding hidden>
-    <div id="signin-frame-container-v2" class="footer flex layout vertical">
+    <div id="signin-frame-container-v2" slot="footer"
+        class="flex layout vertical">
     </div>
     <div id="navigation-buttons"
-        class="bottom-buttons flex layout horizontal center">
+        slot="bottom-buttons" class="flex layout horizontal center">
       <oobe-back-button id="signin-back-button">
       </oobe-back-button>
       <div class="flex">

@@ -28,7 +28,7 @@
   -webkit-padding-end: 18px;
 }
 
-.bottom-buttons {
+[slot='bottom-buttons'] {
   padding: 0 6px; /* = 8px - 2px back button border */
 }
 

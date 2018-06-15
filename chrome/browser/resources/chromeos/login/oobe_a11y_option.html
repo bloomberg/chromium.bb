@@ -9,13 +9,13 @@
     <div id="elementBox" class="layout horizontal">
       <div class="flex layout vertical center-justified">
         <div id="titleContainer">
-          <content select=".title"></content>
+          <slot name="title"></slot>
         </div>
         <div class="display-value" hidden="[[!checked]]">
-          <content select=".checked-value"></content>
+          <slot name="checked-value"></slot>
         </div>
         <div class="display-value" hidden="[[checked]]">
-          <content select=".unchecked-value"></content>
+          <slot name="unchecked-value"></slot>
         </div>
       </div>
       <cr-toggle id="button" checked="{{checked}}"

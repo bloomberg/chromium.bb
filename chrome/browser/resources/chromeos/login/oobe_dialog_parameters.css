@@ -2,19 +2,19 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-hd-iron-icon.oobe-icon {
+hd-iron-icon[slot='oobe-icon'] {
   --iron-icon-height: 32px;
   --iron-icon-width: 32px;
   --iron-icon-fill-color: var(--google-blue-500);
 }
 
-iron-icon.oobe-icon {
+iron-icon[slot='oobe-icon'] {
   --iron-icon-height: 32px;
   --iron-icon-width: 32px;
   color: var(--google-blue-500);
 }
 
-oobe-dialog .header {
+oobe-dialog [slot='header'] {
   color: rgba(0, 0, 0, 0.87);
   font-family: Roboto, sans-serif;
 }
@@ -33,6 +33,6 @@ oobe-dialog .subtitle {
   margin: 23px 0 0 0; /* = 40 - 4 (adjustment) - line-height */
 }
 
-oobe-dialog .bottom-buttons {
+oobe-dialog [slot='bottom-buttons'] {
   width: 100%
 }
