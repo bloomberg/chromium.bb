@@ -195,3 +195,127 @@ message LaunchVshdResponse {
 
   string failure_reason = 2;
 }
+
+// Request to get information about a Linux package file in the container.
+message LinuxPackageInfoRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Path to the package file (e.g. .deb) in the container's filesystem.
+  string file_path = 4;
+}
+
+// Response sent back from a GetLinuxPackageInfo call.
+message LinuxPackageInfoResponse {
+  // True if the file was successfully parsed and the other fields are valid.
+  bool success = 1;
+
+  // Contains a textual reason for the failure in case success is false.
+  string failure_reason = 2;
+
+  // The package identifier is in the form of a semicolon delimited string of
+  // the format: name;version;arch;data
+  // name, version and arch are as expected. data is somewhat variant and refers
+  // to the state of the package as well as potentially remote repository
+  // information.
+  string package_id = 3;
+
+  // The license associated with the package. So far only the value of
+  // 'unknown' has been observed for this field.
+  string license = 4;
+
+  // The description of the package, can be a multi-line text string.
+  string description = 5;
+
+  // The URL for the homepage of the project.
+  string project_url = 6;
+
+  // Size of the package file in bytes.
+  uint64 size = 7;
+
+  // Usually more of a title for a package, but sometimes less descriptive
+  // than that.
+  string summary = 8;
+}
+
+// Request to install a Linux package file in the container.
+message InstallLinuxPackageRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  // Path to the package file (e.g. .deb) in the container's filesystem.
+  string file_path = 4;
+}
+
+// Response sent back from a InstallLinuxPackage call.
+message InstallLinuxPackageResponse {
+  enum Status {
+    // Install process was successfully started, all further updates will be
+    // sent via the InstallLinuxPackageProgress signal.
+    STARTED = 0;
+
+    // Failed to start up for a general reason, specific details are given in
+    // failure_reason.
+    FAILED = 1;
+
+    // Indicates another install is already in process, this one will not be
+    // started.
+    INSTALL_ALREADY_ACTIVE = 2;
+  }
+  Status status = 1;
+
+  // Contains a textual reason for the failure in case of a FAILED status.
+  string failure_reason = 2;
+}
+
+// Message used in a signal for updates on Linux package installations.
+message InstallLinuxPackageProgressSignal {
+  // Name of the VM the container is in.
+  string vm_name = 1;
+
+  // Name of the container within the VM.
+  string container_name = 2;
+
+  // The owner of the VM and container.
+  string owner_id = 3;
+
+  enum Status {
+    // Install has completed and was successful. No further signals will be
+    // sent after this one.
+    SUCCEEDED = 0;
+
+    // Install failed to complete, the specific reason will be in
+    // failure_details. No further signals will be sent after this one.
+    FAILED = 1;
+
+    // This is sent periodically while packages are being downloaded.
+    DOWNLOADING = 2;
+
+    // This is sent periodically during the general installation phase for
+    // package and dependency installation.
+    INSTALLING = 3;
+  }
+
+  // Current status of the installation progress.
+  Status status = 4;
+
+  // Overall percentage progress.
+  uint32 progress_percent = 5;
+
+  // Details relating to the failure state. This can be a multi-line string in
+  // some cases (that's how it comes out of PackageKit, for example in the case
+  // of an unsatisfiable dependency).
+  string failure_details = 6;
+}

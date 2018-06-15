@@ -22,10 +22,14 @@ const char kIsContainerRunningMethod[] = "IsContainerRunning";
 const char kLaunchContainerApplicationMethod[] = "LaunchContainerApplication";
 const char kGetContainerAppIconMethod[] = "GetContainerAppIcon";
 const char kLaunchVshdMethod[] = "LaunchVshd";
+const char kGetLinuxPackageInfoMethod[] = "GetLinuxPackageInfo";
+const char kInstallLinuxPackageMethod[] = "InstallLinuxPackage";
 
 // Signals.
 const char kContainerStartedSignal[] = "ContainerStarted";
 const char kContainerShutdownSignal[] = "ContainerShutdown";
+const char kInstallLinuxPackageProgressSignal[] =
+    "InstallLinuxPackageProgress";
 
 }  // namespace cicerone
 }  // namespace vm_tools
