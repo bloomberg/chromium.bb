@@ -96,17 +96,14 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
   void OnConfigurationCreated(
       const std::string& service_path,
       const std::string& profile_path,
-      const base::DictionaryValue& properties,
-      NetworkConfigurationObserver::Source source) override {
+      const base::DictionaryValue& properties) override {
     ASSERT_EQ(0u, configurations_.count(service_path));
     configurations_[service_path] = properties.CreateDeepCopy();
     profiles_[profile_path].insert(service_path);
   }
 
-  void OnConfigurationRemoved(
-      const std::string& service_path,
-      const std::string& guid,
-      NetworkConfigurationObserver::Source source) override {
+  void OnConfigurationRemoved(const std::string& service_path,
+                              const std::string& guid) override {
     ASSERT_EQ(1u, configurations_.count(service_path));
     configurations_.erase(service_path);
     for (auto& p : profiles_) {
@@ -114,10 +111,8 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
     }
   }
 
-  void OnConfigurationProfileChanged(
-      const std::string& service_path,
-      const std::string& profile_path,
-      NetworkConfigurationObserver::Source source) override {
+  void OnConfigurationProfileChanged(const std::string& service_path,
+                                     const std::string& profile_path) override {
     for (auto& p : profiles_) {
       p.second.erase(service_path);
     }
@@ -126,8 +121,7 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
 
   void OnPropertiesSet(const std::string& service_path,
                        const std::string& guid,
-                       const base::DictionaryValue& set_properties,
-                       NetworkConfigurationObserver::Source source) override {
+                       const base::DictionaryValue& set_properties) override {
     configurations_[service_path]->MergeDictionary(&set_properties);
   }
 
@@ -248,7 +242,7 @@ class NetworkConfigurationHandlerTest : public testing::Test {
         base::Value(NetworkProfileHandler::GetSharedProfilePath()));
 
     network_configuration_handler_->CreateShillConfiguration(
-        properties, NetworkConfigurationObserver::SOURCE_USER_ACTION,
+        properties,
         base::Bind(
             &NetworkConfigurationHandlerTest::CreateConfigurationCallback,
             base::Unretained(this)),
@@ -431,8 +425,7 @@ TEST_F(NetworkConfigurationHandlerTest, SetProperties) {
   base::DictionaryValue value;
   value.SetString(shill::kSSIDProperty, kNetworkName);
   network_configuration_handler_->SetShillProperties(
-      kServicePath, value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::DoNothing(), base::Bind(&ErrorCallback));
+      kServicePath, value, base::DoNothing(), base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
 
   const base::DictionaryValue* properties =
@@ -497,8 +490,7 @@ TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
   std::string service_path;
   std::string guid;
   network_configuration_handler_->CreateShillConfiguration(
-      value, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::Bind(&CopyServiceResult, &success, &service_path, &guid),
+      value, base::Bind(&CopyServiceResult, &success, &service_path, &guid),
       base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
 
@@ -514,7 +506,7 @@ TEST_F(NetworkConfigurationHandlerTest, RemoveConfiguration) {
 
   TestCallback test_callback;
   network_configuration_handler_->RemoveConfiguration(
-      "/service/2", NetworkConfigurationObserver::SOURCE_USER_ACTION,
+      "/service/2",
       base::Bind(&TestCallback::Run, base::Unretained(&test_callback)),
       base::Bind(&ErrorCallback));
 
@@ -538,7 +530,7 @@ TEST_F(NetworkConfigurationHandlerTest, RemoveConfigurationFromCurrentProfile) {
 
   TestCallback test_callback;
   network_configuration_handler_->RemoveConfigurationFromCurrentProfile(
-      "/service/2", NetworkConfigurationObserver::SOURCE_USER_ACTION,
+      "/service/2",
       base::Bind(&TestCallback::Run, base::Unretained(&test_callback)),
       base::Bind(&ErrorCallback));
 
@@ -564,7 +556,7 @@ TEST_F(NetworkConfigurationHandlerTest,
   TestCallback test_callback;
   std::string error;
   network_configuration_handler_->RemoveConfigurationFromCurrentProfile(
-      "/service/3", NetworkConfigurationObserver::SOURCE_USER_ACTION,
+      "/service/3",
       base::Bind(&TestCallback::Run, base::Unretained(&test_callback)),
       base::Bind(&RecordError, base::Unretained(&error)));
 
@@ -588,7 +580,7 @@ TEST_F(NetworkConfigurationHandlerTest, StubSetAndClearProperties) {
                            base::Value(test_passphrase));
   network_configuration_handler_->SetShillProperties(
       service_path, properties_to_set,
-      NetworkConfigurationObserver::SOURCE_USER_ACTION,
+
       base::Bind(&NetworkConfigurationHandlerTest::SuccessCallback,
                  base::Unretained(this), "SetProperties"),
       base::Bind(&ErrorCallback));
@@ -635,8 +627,7 @@ TEST_F(NetworkConfigurationHandlerTest, StubGetNameFromWifiHex) {
   base::DictionaryValue properties_to_set;
   properties_to_set.SetKey(shill::kWifiHexSsid, base::Value(wifi_hex));
   network_configuration_handler_->SetShillProperties(
-      service_path, properties_to_set,
-      NetworkConfigurationObserver::SOURCE_USER_ACTION, base::DoNothing(),
+      service_path, properties_to_set, base::DoNothing(),
       base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
   std::string wifi_hex_result;
@@ -696,8 +687,7 @@ TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver) {
   properties_to_set.SetKey(shill::kPassphraseProperty,
                            base::Value(test_passphrase));
   network_configuration_handler_->SetShillProperties(
-      service_path, properties_to_set,
-      NetworkConfigurationObserver::SOURCE_USER_ACTION, base::DoNothing(),
+      service_path, properties_to_set, base::DoNothing(),
       base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(test_passphrase, network_configuration_observer->GetStringProperty(
@@ -710,10 +700,9 @@ TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver) {
       ->GetTestInterface()
       ->AddProfile(user_profile, userhash);
 
-  network_configuration_handler_->SetNetworkProfile(
-      service_path, user_profile,
-      NetworkConfigurationObserver::SOURCE_USER_ACTION, base::DoNothing(),
-      base::Bind(&ErrorCallback));
+  network_configuration_handler_->SetNetworkProfile(service_path, user_profile,
+                                                    base::DoNothing(),
+                                                    base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(network_configuration_observer->HasConfiguration(service_path));
   EXPECT_FALSE(network_configuration_observer->HasConfigurationInProfile(
@@ -722,8 +711,7 @@ TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver) {
       service_path, user_profile));
 
   network_configuration_handler_->RemoveConfiguration(
-      service_path, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      base::DoNothing(), base::Bind(&ErrorCallback));
+      service_path, base::DoNothing(), base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(network_configuration_observer->HasConfiguration(service_path));

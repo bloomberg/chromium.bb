@@ -1256,18 +1256,16 @@ void ImportNetworksForUser(const user_manager::User* user,
           NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
               NetworkTypePattern::Ethernet());
       if (ethernet) {
-        config_handler->SetShillProperties(
-            ethernet->path(), *shill_dict,
-            NetworkConfigurationObserver::SOURCE_USER_ACTION, base::Closure(),
-            network_handler::ErrorCallback());
+        config_handler->SetShillProperties(ethernet->path(), *shill_dict,
+                                           base::Closure(),
+                                           network_handler::ErrorCallback());
       } else {
         ethernet_not_found = true;
       }
 
     } else {
       config_handler->CreateShillConfiguration(
-          *shill_dict, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-          network_handler::ServiceResultCallback(),
+          *shill_dict, network_handler::ServiceResultCallback(),
           network_handler::ErrorCallback());
     }
   }

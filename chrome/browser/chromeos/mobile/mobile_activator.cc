@@ -317,9 +317,7 @@ void MobileActivator::GetPropertiesAndContinueActivation(
   base::DictionaryValue auto_connect_property;
   auto_connect_property.SetBoolean(shill::kAutoConnectProperty, true);
   NetworkHandler::Get()->network_configuration_handler()->SetShillProperties(
-      service_path_, auto_connect_property,
-      // Activation is triggered by the UI.
-      NetworkConfigurationObserver::SOURCE_USER_ACTION, base::DoNothing(),
+      service_path_, auto_connect_property, base::DoNothing(),
       network_handler::ErrorCallback());
   StartActivation();
 }
