@@ -168,6 +168,11 @@ interface DeviceSync {
   // On success, this function returns a null error_code to the callback; on
   // error, it returns a valid error_code string indicating the reason for
   // failure.
+  //
+  // Note: In the special case of passing |software_feature| =
+  // SoftwareFeature::EASY_UNLOCK_HOST and |enabled| = false, |public_key| is
+  // ignored, because that combination of arguments disables EASY_UNLOCK_HOST on
+  // all of the user's devices.
   SetSoftwareFeatureState(string device_public_key,
                           SoftwareFeature software_feature,
                           bool enabled,
