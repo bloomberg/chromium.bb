@@ -928,7 +928,6 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
 
   delegated_frame_host_->SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list));
-  AcknowledgeBeginFrame();
 
   // As the metadata update may trigger view invalidation, always call it after
   // any potential compositor scheduling.
@@ -945,13 +944,6 @@ void RenderWidgetHostViewAndroid::OnDidNotProduceFrame(
   }
 
   delegated_frame_host_->DidNotProduceFrame(ack);
-  AcknowledgeBeginFrame();
-}
-
-void RenderWidgetHostViewAndroid::AcknowledgeBeginFrame() {
-  // AcknowledgeBeginFrame is not called for the synchronous compositor path.
-  if (begin_frame_source_)
-    begin_frame_source_->DidFinishFrame(this);
 }
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
