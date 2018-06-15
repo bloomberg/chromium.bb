@@ -655,10 +655,10 @@ void PrerenderContents::DestroyWhenUsingTooManyResources() {
   // Using AdaptCallbackForRepeating allows for an easier transition to
   // OnceCallbacks for https://crbug.com/714018.
   memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestGlobalDumpForPid(process_pid_,
-                                base::AdaptCallbackForRepeating(base::BindOnce(
-                                    &PrerenderContents::DidGetMemoryUsage,
-                                    weak_factory_.GetWeakPtr())));
+      ->RequestPrivateMemoryFootprint(
+          process_pid_, base::AdaptCallbackForRepeating(base::BindOnce(
+                            &PrerenderContents::DidGetMemoryUsage,
+                            weak_factory_.GetWeakPtr())));
 }
 
 void PrerenderContents::DidGetMemoryUsage(

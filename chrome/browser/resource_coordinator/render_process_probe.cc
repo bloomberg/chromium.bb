@@ -140,9 +140,11 @@ void RenderProcessProbeImpl::
 
   // Dispatch the memory collection request.
   memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestGlobalDump(base::BindRepeating(
-          &RenderProcessProbeImpl::ProcessGlobalMemoryDumpAndDispatchOnIOThread,
-          base::Unretained(this), collection_start_time));
+      ->RequestPrivateMemoryFootprint(
+          base::kNullProcessId,
+          base::BindRepeating(&RenderProcessProbeImpl::
+                                  ProcessGlobalMemoryDumpAndDispatchOnIOThread,
+                              base::Unretained(this), collection_start_time));
 
   RenderProcessInfoMap::iterator iter = render_process_info_map_.begin();
   while (iter != render_process_info_map_.end()) {
