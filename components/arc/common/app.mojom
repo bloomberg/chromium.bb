@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 33
+// Next MinVersion: 34
 
 module arc.mojom;
 
@@ -272,7 +272,7 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 25
+// Next method ID: 26
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
   InitDeprecated@0(AppHost host_ptr);
@@ -356,6 +356,9 @@ interface AppInstance {
 
   // Sends a request to ARC to start PAI flow.
   [MinVersion=21] StartPaiFlow@17();
+
+  // Sends a request to ARC to start FastAppReinstall flow.
+  [MinVersion=33] StartFastAppReinstallFlow@25(array<string> arc_package_names);
 
   // Sends a request to ARC to uninstall the given package.  Error (if ever
   // happens) is ignored, and uninstall option should appear in the UI.

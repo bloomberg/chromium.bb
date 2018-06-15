@@ -18,6 +18,8 @@ ARC_EXPORT extern const char kArcApps[];
 ARC_EXPORT extern const char kArcBackupRestoreEnabled[];
 ARC_EXPORT extern const char kArcDataRemoveRequested[];
 ARC_EXPORT extern const char kArcEnabled[];
+ARC_EXPORT extern const char kArcFastAppReinstallPackages[];
+ARC_EXPORT extern const char kArcFastAppReinstallStarted[];
 ARC_EXPORT extern const char kArcInitialSettingsPending[];
 ARC_EXPORT extern const char kArcPolicyComplianceReported[];
 ARC_EXPORT extern const char kArcTermsAccepted[];

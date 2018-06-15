@@ -129,6 +129,13 @@ void ShowTalkBackSettings();
 // Starts Play Auto Install flow.
 void StartPaiFlow();
 
+// Gets user selected package names.
+std::vector<std::string> GetSelectedPackagesFromPrefs(
+    content::BrowserContext* context);
+
+// Starts Play Fast App Reinstall flow.
+void StartFastAppReinstallFlow(const std::vector<std::string>& package_names);
+
 // Uninstalls the package in ARC.
 void UninstallPackage(const std::string& package_name);
 
