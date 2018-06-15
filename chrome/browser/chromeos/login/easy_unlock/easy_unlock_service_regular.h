@@ -10,13 +10,16 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/easy_unlock/short_lived_user_context.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
@@ -47,14 +50,18 @@ class EasyUnlockNotificationController;
 class EasyUnlockServiceRegular
     : public EasyUnlockService,
       public proximity_auth::ScreenlockBridge::Observer,
-      public cryptauth::CryptAuthDeviceManager::Observer {
+      public cryptauth::CryptAuthDeviceManager::Observer,
+      public device_sync::DeviceSyncClient::Observer {
  public:
-  explicit EasyUnlockServiceRegular(Profile* profile);
+  explicit EasyUnlockServiceRegular(
+      Profile* profile,
+      device_sync::DeviceSyncClient* device_sync_client);
 
   // Constructor for tests.
-  EasyUnlockServiceRegular(Profile* profile,
-                           std::unique_ptr<EasyUnlockNotificationController>
-                               notification_controller);
+  EasyUnlockServiceRegular(
+      Profile* profile,
+      std::unique_ptr<EasyUnlockNotificationController> notification_controller,
+      device_sync::DeviceSyncClient* device_sync_client);
 
   ~EasyUnlockServiceRegular() override;
 
@@ -65,6 +72,9 @@ class EasyUnlockServiceRegular
 
   // Called when |remote_device_loader_| completes.
   void OnRemoteDevicesLoaded(const cryptauth::RemoteDeviceList& remote_devices);
+
+  void UseLoadedRemoteDevices(
+      const cryptauth::RemoteDeviceRefList& remote_devices);
 
   // EasyUnlockService implementation:
   proximity_auth::ProximityAuthPrefManager* GetProximityAuthPrefManager()
@@ -98,6 +108,15 @@ class EasyUnlockServiceRegular
                       cryptauth::CryptAuthDeviceManager::DeviceChangeResult
                           device_change_result) override;
 
+  // device_sync::DeviceSyncClient::Observer:
+  void OnNewDevicesSynced() override;
+
+  void ShowNotificationIfNewDevicePresent(
+      const std::set<std::string>& public_keys_before_sync,
+      const std::set<std::string>& public_keys_after_sync);
+
+  void OnForceSyncCompleted(bool success);
+
   // proximity_auth::ScreenlockBridge::Observer implementation:
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType
                            screen_type) override;
@@ -113,6 +132,12 @@ class EasyUnlockServiceRegular
   void OnToggleEasyUnlockApiComplete(
       const cryptauth::ToggleEasyUnlockResponse& response);
   void OnToggleEasyUnlockApiFailed(const std::string& error_message);
+
+  void OnTurnOffEasyUnlockCompleted(
+      const base::Optional<std::string>& error_code);
+
+  void OnTurnOffEasyUnlockSuccess();
+  void OnTurnOffEasyUnlockFailure(const std::string& error_message);
 
   // Called with the user's credentials (e.g. username and password) after the
   // user reauthenticates to begin setup.
@@ -137,6 +162,8 @@ class EasyUnlockServiceRegular
   // Refreshes the ChromeOS cryptohome keys if the user has reauthed recently.
   // Otherwise, hardlock the device.
   void RefreshCryptohomeKeysIfPossible();
+
+  cryptauth::RemoteDeviceRefList GetUnlockKeys();
 
   TurnOffFlowStatus turn_off_flow_status_;
   std::unique_ptr<cryptauth::CryptAuthClient> cryptauth_client_;
@@ -174,14 +201,25 @@ class EasyUnlockServiceRegular
   // Responsible for showing all the notifications used for EasyUnlock.
   std::unique_ptr<EasyUnlockNotificationController> notification_controller_;
 
+  device_sync::DeviceSyncClient* device_sync_client_;
+
   // Stores the unlock keys for EasyUnlock before the current device sync, so we
   // can compare it to the unlock keys after syncing.
   std::vector<cryptauth::ExternalDeviceInfo> unlock_keys_before_sync_;
+  cryptauth::RemoteDeviceRefList remote_device_unlock_keys_before_sync_;
 
   // True if the pairing changed notification was shown, so that the next time
   // the Chromebook is unlocked, we can show the subsequent 'pairing applied'
   // notification.
   bool shown_pairing_changed_notification_;
+
+  // If this service is the first caller on DeviceSyncClient, it won't have
+  // devices cached yet. |is_waiting_for_initial_sync_| is set to true if
+  // DeviceSyncClient has no devices, to indicate that we are waiting for the
+  // initial sync, to be inspected in OnNewDevicesSynced(). OnNewDevicesSynced()
+  // needs to know that it is receiving the initial sync, not a newly forced
+  // one, in order to prevent it from running unrelated logic.
+  bool is_waiting_for_initial_sync_ = false;
 
   // Listens to pref changes.
   PrefChangeRegistrar registrar_;

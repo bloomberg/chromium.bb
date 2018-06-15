@@ -29,6 +29,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
+#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "components/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -44,6 +45,7 @@ using testing::AnyNumber;
 using testing::Return;
 
 namespace chromeos {
+
 namespace {
 
 // IDs for fake users used in tests.
@@ -181,10 +183,15 @@ class TestAppManagerFactory {
   DISALLOW_COPY_AND_ASSIGN(TestAppManagerFactory);
 };
 
-// Global TestAppManager factory. It should be created and desctructed in
-// EasyUnlockServiceTest::SetUp and EasyUnlockServiceTest::TearDown
+// Global TestAppManager factory. It should be created and destroyed in
+// EasyUnlockServiceTest::SetUp and EasyUnlockServiceTest::TearDown,
 // respectively.
-TestAppManagerFactory* app_manager_factory = NULL;
+TestAppManagerFactory* app_manager_factory = nullptr;
+
+// Global FakeDeviceSyncClient. It should be created and destroyed in
+// EasyUnlockServiceTest::SetUp and EasyUnlockServiceTest::TearDown,
+// respectively.
+device_sync::FakeDeviceSyncClient* fake_device_sync_client = nullptr;
 
 // EasyUnlockService factory function injected into testing profiles.
 // It creates an EasyUnlockService with test AppManager.
@@ -203,13 +210,16 @@ std::unique_ptr<KeyedService> CreateEasyUnlockServiceForTest(
   std::unique_ptr<EasyUnlockServiceRegular> service(
       new EasyUnlockServiceRegular(
           Profile::FromBrowserContext(context),
-          std::make_unique<MockEasyUnlockNotificationController>()));
+          std::make_unique<MockEasyUnlockNotificationController>(),
+          fake_device_sync_client));
   service->Initialize(std::move(app_manager));
   return std::move(service);
 }
 
+}  // namespace
+
 class EasyUnlockServiceTest : public testing::Test {
- public:
+ protected:
   EasyUnlockServiceTest()
       : mock_user_manager_(new testing::NiceMock<MockUserManager>()),
         scoped_user_manager_(base::WrapUnique(mock_user_manager_)),
@@ -219,6 +229,7 @@ class EasyUnlockServiceTest : public testing::Test {
 
   void SetUp() override {
     app_manager_factory = new TestAppManagerFactory();
+    fake_device_sync_client = new device_sync::FakeDeviceSyncClient();
 
     mock_adapter_ = new testing::NiceMock<MockBluetoothAdapter>();
     device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
@@ -247,8 +258,12 @@ class EasyUnlockServiceTest : public testing::Test {
 
   void TearDown() override {
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
+
     delete app_manager_factory;
-    app_manager_factory = NULL;
+    app_manager_factory = nullptr;
+
+    delete fake_device_sync_client;
+    fake_device_sync_client = nullptr;
   }
 
   void SetEasyUnlockAllowedPolicy(bool allowed) {
@@ -286,13 +301,6 @@ class EasyUnlockServiceTest : public testing::Test {
     app_manager->SetReady();
   }
 
-  void SetUpSecondaryProfile() {
-    SetUpProfile(
-        &secondary_profile_,
-        AccountId::FromUserEmailGaiaId(kTestUserSecondary, kSecondaryGaiaId));
-  }
-
- private:
   // Sets up a test profile with a user id.
   void SetUpProfile(std::unique_ptr<TestingProfile>* profile,
                     const AccountId& account_id) {
@@ -313,11 +321,15 @@ class EasyUnlockServiceTest : public testing::Test {
                                                 account_id.GetUserEmail());
   }
 
- private:
+  void SetUpSecondaryProfile() {
+    SetUpProfile(
+        &secondary_profile_,
+        AccountId::FromUserEmailGaiaId(kTestUserSecondary, kSecondaryGaiaId));
+  }
+
   // Must outlive TestingProfiles.
   content::TestBrowserThreadBundle thread_bundle_;
 
- protected:
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TestingProfile> secondary_profile_;
   MockUserManager* mock_user_manager_;
@@ -413,5 +425,4 @@ TEST_F(EasyUnlockServiceTest, GetAccountId) {
       EasyUnlockService::Get(secondary_profile_.get())->GetAccountId());
 }
 
-}  // namespace
 }  // namespace chromeos

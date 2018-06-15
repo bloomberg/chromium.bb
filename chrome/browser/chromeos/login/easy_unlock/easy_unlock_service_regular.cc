@@ -37,6 +37,7 @@
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
@@ -104,14 +105,18 @@ void LogSmartLockEnabledState(SmartLockEnabledState state) {
 
 }  // namespace
 
-EasyUnlockServiceRegular::EasyUnlockServiceRegular(Profile* profile)
+EasyUnlockServiceRegular::EasyUnlockServiceRegular(
+    Profile* profile,
+    device_sync::DeviceSyncClient* device_sync_client)
     : EasyUnlockServiceRegular(
           profile,
-          std::make_unique<EasyUnlockNotificationController>(profile)) {}
+          std::make_unique<EasyUnlockNotificationController>(profile),
+          device_sync_client) {}
 
 EasyUnlockServiceRegular::EasyUnlockServiceRegular(
     Profile* profile,
-    std::unique_ptr<EasyUnlockNotificationController> notification_controller)
+    std::unique_ptr<EasyUnlockNotificationController> notification_controller,
+    device_sync::DeviceSyncClient* device_sync_client)
     : EasyUnlockService(profile),
       turn_off_flow_status_(EasyUnlockService::IDLE),
       scoped_crypt_auth_device_manager_observer_(this),
@@ -119,18 +124,43 @@ EasyUnlockServiceRegular::EasyUnlockServiceRegular(
       lock_screen_last_shown_timestamp_(base::TimeTicks::Now()),
       deferring_device_load_(false),
       notification_controller_(std::move(notification_controller)),
+      device_sync_client_(device_sync_client),
       shown_pairing_changed_notification_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    // If this is the first GetSyncedDevices() call on DeviceSyncClient, it
+    // won't have devices cached yet. |is_waiting_for_initial_sync_| is flipped
+    // to indicate that we are waiting for this initial sync, to be inspected
+    // in OnNewDevicesSynced(). OnNewDevicesSynced() needs to know that it is
+    // receiving the initial sync, not a newly forced one, in order to prevent
+    // it from running unrelated logic.
+    if (device_sync_client_->GetSyncedDevices().empty())
+      is_waiting_for_initial_sync_ = true;
+    else
+      remote_device_unlock_keys_before_sync_ = GetUnlockKeys();
+
+    device_sync_client_->AddObserver(this);
+  }
+}
 
 EasyUnlockServiceRegular::~EasyUnlockServiceRegular() {
   registrar_.RemoveAll();
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+    device_sync_client_->RemoveObserver(this);
 }
 
 // TODO(jhawkins): This method with |has_unlock_keys| == true is the only signal
 // that SmartLock setup has completed successfully. Make this signal more
 // explicit.
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
-  bool has_unlock_keys = !GetCryptAuthDeviceManager()->GetUnlockKeys().empty();
+  bool has_unlock_keys;
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    has_unlock_keys = !GetUnlockKeys().empty();
+  } else {
+    has_unlock_keys = !GetCryptAuthDeviceManager()->GetUnlockKeys().empty();
+  }
+
   // TODO(jhawkins): The enabled pref should not be tied to whether unlock keys
   // exist; instead, both of these variables should be used to determine
   // IsEnabled().
@@ -162,31 +192,45 @@ void EasyUnlockServiceRegular::LoadRemoteDevices() {
     return;
   }
 
-  remote_device_loader_.reset(new cryptauth::RemoteDeviceLoader(
-      GetCryptAuthDeviceManager()->GetUnlockKeys(),
-      proximity_auth_client()->GetAccountId(),
-      GetCryptAuthEnrollmentManager()->GetUserPrivateKey(),
-      cryptauth::SecureMessageDelegateImpl::Factory::NewInstance()));
-  remote_device_loader_->Load(
-      base::Bind(&EasyUnlockServiceRegular::OnRemoteDevicesLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    UseLoadedRemoteDevices(GetUnlockKeys());
+  } else {
+    remote_device_loader_.reset(new cryptauth::RemoteDeviceLoader(
+        GetCryptAuthDeviceManager()->GetUnlockKeys(),
+        proximity_auth_client()->GetAccountId(),
+        GetCryptAuthEnrollmentManager()->GetUserPrivateKey(),
+        cryptauth::SecureMessageDelegateImpl::Factory::NewInstance()));
+
+    // OnRemoteDevicesLoaded() will call on UseLoadedRemoteDevices() with the
+    // devices it receives.
+    remote_device_loader_->Load(
+        base::Bind(&EasyUnlockServiceRegular::OnRemoteDevicesLoaded,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
     const cryptauth::RemoteDeviceList& remote_devices) {
+  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+
   cryptauth::RemoteDeviceRefList remote_device_refs;
   for (auto& remote_device : remote_devices) {
     remote_device_refs.push_back(cryptauth::RemoteDeviceRef(
         std::make_shared<cryptauth::RemoteDevice>(remote_device)));
   }
 
-  SetProximityAuthDevices(GetAccountId(), remote_device_refs);
+  UseLoadedRemoteDevices(remote_device_refs);
+}
+
+void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
+    const cryptauth::RemoteDeviceRefList& remote_devices) {
+  SetProximityAuthDevices(GetAccountId(), remote_devices);
 
   // We need to store a copy of |remote devices_| in the TPM, so it can be
   // retrieved on the sign-in screen when a user session has not been started
   // yet.
   std::unique_ptr<base::ListValue> device_list(new base::ListValue());
-  for (const auto& device : remote_device_refs) {
+  for (const auto& device : remote_devices) {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     std::string b64_public_key, b64_psk;
     base::Base64UrlEncode(device.public_key(),
@@ -198,10 +242,19 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
 
     dict->SetString("name", device.name());
     dict->SetString("psk", b64_psk);
+
     // TODO(jhawkins): Remove the bluetoothAddress field from this proto.
     dict->SetString("bluetoothAddress", std::string());
-    dict->SetString("permitId", "permit://google.com/easyunlock/v1/" +
-                                    proximity_auth_client()->GetAccountId());
+
+    if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+      dict->SetString("permitId", "permit://google.com/easyunlock/v1/" +
+                                      gaia::CanonicalizeEmail(
+                                          GetAccountId().GetUserEmail()));
+    } else {
+      dict->SetString("permitId", "permit://google.com/easyunlock/v1/" +
+                                      proximity_auth_client()->GetAccountId());
+    }
+
     dict->SetString("permitRecord.id", b64_public_key);
     dict->SetString("permitRecord.type", "license");
     dict->SetString("permitRecord.data", b64_public_key);
@@ -347,25 +400,36 @@ void EasyUnlockServiceRegular::SetRemoteDevices(
 void EasyUnlockServiceRegular::RunTurnOffFlow() {
   if (turn_off_flow_status_ == PENDING)
     return;
-  DCHECK(!cryptauth_client_);
 
   LogToggleFeature(SmartLockToggleFeature::DISABLE);
 
   SetTurnOffFlowStatus(PENDING);
 
-  std::unique_ptr<cryptauth::CryptAuthClientFactory> factory =
-      proximity_auth_client()->CreateCryptAuthClientFactory();
-  cryptauth_client_ = factory->CreateInstance();
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    // Disabling EASY_UNLOCK_HOST is a special case that does not require a
+    // public key to be passed; EASY_UNLOCK_HOST will be disabled for all hosts.
+    device_sync_client_->SetSoftwareFeatureState(
+        std::string() /* public_key */,
+        cryptauth::SoftwareFeature::EASY_UNLOCK_HOST, false /* enabled */,
+        false /* is_exclusive */,
+        base::BindOnce(&EasyUnlockServiceRegular::OnTurnOffEasyUnlockCompleted,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    DCHECK(!cryptauth_client_);
+    std::unique_ptr<cryptauth::CryptAuthClientFactory> factory =
+        proximity_auth_client()->CreateCryptAuthClientFactory();
+    cryptauth_client_ = factory->CreateInstance();
 
-  cryptauth::ToggleEasyUnlockRequest request;
-  request.set_enable(false);
-  request.set_apply_to_all(true);
-  cryptauth_client_->ToggleEasyUnlock(
-      request,
-      base::Bind(&EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed,
-                 weak_ptr_factory_.GetWeakPtr()));
+    cryptauth::ToggleEasyUnlockRequest request;
+    request.set_enable(false);
+    request.set_apply_to_all(true);
+    cryptauth_client_->ToggleEasyUnlock(
+        request,
+        base::Bind(&EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void EasyUnlockServiceRegular::ResetTurnOffFlow() {
@@ -412,7 +476,13 @@ void EasyUnlockServiceRegular::InitializeInternal() {
                                               GetAccountId());
     }
 
-    scoped_crypt_auth_device_manager_observer_.Add(GetCryptAuthDeviceManager());
+    if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+      remote_device_unlock_keys_before_sync_ = GetUnlockKeys();
+    } else {
+      scoped_crypt_auth_device_manager_observer_.Add(
+          GetCryptAuthDeviceManager());
+    }
+
     LoadRemoteDevices();
   }
 
@@ -428,7 +498,11 @@ void EasyUnlockServiceRegular::ShutdownInternal() {
 
   turn_off_flow_status_ = EasyUnlockService::IDLE;
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
-  scoped_crypt_auth_device_manager_observer_.RemoveAll();
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+    device_sync_client_->RemoveObserver(this);
+  else
+    scoped_crypt_auth_device_manager_observer_.RemoveAll();
 }
 
 bool EasyUnlockServiceRegular::IsAllowedInternal() const {
@@ -475,6 +549,8 @@ void EasyUnlockServiceRegular::OnSyncFinished(
     cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
     cryptauth::CryptAuthDeviceManager::DeviceChangeResult
         device_change_result) {
+  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+
   if (sync_result == cryptauth::CryptAuthDeviceManager::SyncResult::FAILURE)
     return;
 
@@ -491,6 +567,47 @@ void EasyUnlockServiceRegular::OnSyncFinished(
     public_keys_after_sync.insert(device_info.public_key());
   }
 
+  ShowNotificationIfNewDevicePresent(public_keys_before_sync,
+                                     public_keys_after_sync);
+
+  LoadRemoteDevices();
+}
+
+void EasyUnlockServiceRegular::OnNewDevicesSynced() {
+  // This method copies EasyUnlockServiceRegular::OnSyncFinished().
+  // TODO(crbug.com/848956): Remove EasyUnlockServiceRegular::OnSyncFinished().
+
+  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+
+  std::set<std::string> public_keys_before_sync;
+  if (is_waiting_for_initial_sync_) {
+    is_waiting_for_initial_sync_ = false;
+
+    // Without this, |public_keys_before_sync| would be incorrectly empty.
+    remote_device_unlock_keys_before_sync_ = GetUnlockKeys();
+  }
+  for (const auto& remote_device : remote_device_unlock_keys_before_sync_) {
+    public_keys_before_sync.insert(remote_device.public_key());
+  }
+
+  cryptauth::RemoteDeviceRefList remote_device_unlock_keys_after_sync =
+      GetUnlockKeys();
+  std::set<std::string> public_keys_after_sync;
+  for (const auto& remote_device : remote_device_unlock_keys_after_sync) {
+    public_keys_after_sync.insert(remote_device.public_key());
+  }
+
+  ShowNotificationIfNewDevicePresent(public_keys_before_sync,
+                                     public_keys_after_sync);
+
+  LoadRemoteDevices();
+
+  remote_device_unlock_keys_before_sync_ = remote_device_unlock_keys_after_sync;
+}
+
+void EasyUnlockServiceRegular::ShowNotificationIfNewDevicePresent(
+    const std::set<std::string>& public_keys_before_sync,
+    const std::set<std::string>& public_keys_after_sync) {
   if (public_keys_after_sync.empty())
     ClearPermitAccess();
 
@@ -504,16 +621,19 @@ void EasyUnlockServiceRegular::OnSyncFinished(
   bool is_setup_fresh =
       short_lived_user_context_ && short_lived_user_context_->user_context();
 
-  if (public_keys_after_sync.size() > 0 && !is_setup_fresh) {
-    if (public_keys_before_sync.size() == 0) {
+  if (!public_keys_after_sync.empty() && !is_setup_fresh) {
+    if (public_keys_before_sync.empty()) {
       notification_controller_->ShowChromebookAddedNotification();
     } else {
       shown_pairing_changed_notification_ = true;
       notification_controller_->ShowPairingChangeNotification();
     }
   }
+}
 
-  LoadRemoteDevices();
+void EasyUnlockServiceRegular::OnForceSyncCompleted(bool success) {
+  if (!success)
+    PA_LOG(WARNING) << "Failed to force device sync.";
 }
 
 void EasyUnlockServiceRegular::OnScreenDidLock(
@@ -592,23 +712,51 @@ void EasyUnlockServiceRegular::SetTurnOffFlowStatus(TurnOffFlowStatus status) {
 
 void EasyUnlockServiceRegular::OnToggleEasyUnlockApiComplete(
     const cryptauth::ToggleEasyUnlockResponse& response) {
+  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+  cryptauth_client_.reset();
+  OnTurnOffEasyUnlockSuccess();
+}
+
+void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(
+    const std::string& error_message) {
+  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+  OnTurnOffEasyUnlockFailure(error_message);
+}
+
+void EasyUnlockServiceRegular::OnTurnOffEasyUnlockCompleted(
+    const base::Optional<std::string>& error_code) {
+  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+
+  if (error_code)
+    OnTurnOffEasyUnlockFailure(*error_code);
+  else
+    OnTurnOffEasyUnlockSuccess();
+}
+
+void EasyUnlockServiceRegular::OnTurnOffEasyUnlockSuccess() {
+  PA_LOG(INFO) << "Successfully turned off Smart Lock.";
   LogToggleFeatureDisableResult(SmartLockResult::SUCCESS);
 
-  cryptauth_client_.reset();
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    remote_device_unlock_keys_before_sync_ = GetUnlockKeys();
+    device_sync_client_->ForceSyncNow(
+        base::BindOnce(&EasyUnlockServiceRegular::OnForceSyncCompleted,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    GetCryptAuthDeviceManager()->ForceSyncNow(
+        cryptauth::InvocationReason::INVOCATION_REASON_FEATURE_TOGGLED);
+  }
 
-  GetCryptAuthDeviceManager()->ForceSyncNow(
-      cryptauth::InvocationReason::INVOCATION_REASON_FEATURE_TOGGLED);
   EasyUnlockService::ResetLocalStateForUser(GetAccountId());
   SetRemoteDevices(base::ListValue());
   SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceRefList());
   pref_manager_->SetIsEasyUnlockEnabled(false);
   SetTurnOffFlowStatus(IDLE);
-  pref_manager_->SetIsEasyUnlockEnabled(false);
   ResetScreenlockState();
   registrar_.RemoveAll();
 }
 
-void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(
+void EasyUnlockServiceRegular::OnTurnOffEasyUnlockFailure(
     const std::string& error_message) {
   LOG(WARNING) << "Failed to turn off Smart Lock: " << error_message;
   LogToggleFeatureDisableResult(SmartLockResult::FAILURE);
@@ -617,6 +765,8 @@ void EasyUnlockServiceRegular::OnToggleEasyUnlockApiFailed(
 
 cryptauth::CryptAuthEnrollmentManager*
 EasyUnlockServiceRegular::GetCryptAuthEnrollmentManager() {
+  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+
   cryptauth::CryptAuthEnrollmentManager* manager =
       ChromeCryptAuthServiceFactory::GetInstance()
           ->GetForBrowserContext(profile())
@@ -627,6 +777,8 @@ EasyUnlockServiceRegular::GetCryptAuthEnrollmentManager() {
 
 cryptauth::CryptAuthDeviceManager*
 EasyUnlockServiceRegular::GetCryptAuthDeviceManager() {
+  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+
   cryptauth::CryptAuthDeviceManager* manager =
       ChromeCryptAuthServiceFactory::GetInstance()
           ->GetForBrowserContext(profile())
@@ -655,6 +807,15 @@ void EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible() {
   } else {
     CheckCryptohomeKeysAndMaybeHardlock();
   }
+}
+
+cryptauth::RemoteDeviceRefList EasyUnlockServiceRegular::GetUnlockKeys() {
+  cryptauth::RemoteDeviceRefList unlock_keys;
+  for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
+    if (remote_device.unlock_key())
+      unlock_keys.push_back(remote_device);
+  }
+  return unlock_keys;
 }
 
 }  // namespace chromeos
