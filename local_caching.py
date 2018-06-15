@@ -44,7 +44,7 @@ def file_write(path, content_generator):
 
 
 def is_valid_file(path, size):
-  """Determines if the given files appears valid.
+  """Returns if the given files appears valid.
 
   Currently it just checks the file exists and its size matches the expectation.
   """
@@ -138,13 +138,32 @@ class Cache(object):
     self._evicted = []
     self._used = []
 
+  def __len__(self):
+    """Returns the number of entries in the cache."""
+    raise NotImplementedError()
+
+  def __iter__(self):
+    """Iterates over all the entries names."""
+    raise NotImplementedError()
+
+  def __contains__(self, name):
+    """Returns if an entry is in the cache."""
+    raise NotImplementedError()
+
+  @property
+  def total_size(self):
+    """Returns the total size of the cache in bytes."""
+    raise NotImplementedError()
+
   @property
   def added(self):
+    """Returns a list of the size for each entry added."""
     with self._lock:
       return self._added[:]
 
   @property
   def used(self):
+    """Returns a list of the size for each entry used."""
     with self._lock:
       return self._used[:]
 
@@ -167,44 +186,16 @@ class ContentAddressedCache(Cache):
   It can be accessed concurrently from multiple threads, so it should protect
   its internal state with some lock.
   """
-  def __init__(self, *args, **kwargs):
-    super(ContentAddressedCache, self).__init__(*args, **kwargs)
-    # These shall be initialized in the constructor.
-    self._initial_number_items = 0
-    self._initial_size = 0
-
-  def __contains__(self, digest):
-    raise NotImplementedError()
 
   def __enter__(self):
     """Context manager interface."""
+    # TODO(maruel): Remove.
     return self
 
   def __exit__(self, _exc_type, _exec_value, _traceback):
     """Context manager interface."""
+    # TODO(maruel): Remove.
     return False
-
-  @property
-  def initial_number_items(self):
-    return self._initial_number_items
-
-  @property
-  def initial_size(self):
-    return self._initial_size
-
-  @property
-  def number_items(self):
-    """Returns the total size of the cache in bytes."""
-    raise NotImplementedError()
-
-  @property
-  def total_size(self):
-    """Returns the total size of the cache in bytes."""
-    raise NotImplementedError()
-
-  def cached_set(self):
-    """Returns a set of all cached digests (always a new object)."""
-    raise NotImplementedError()
 
   def touch(self, digest, size):
     """Ensures item is not corrupted and updates its LRU position.
@@ -233,6 +224,9 @@ class ContentAddressedCache(Cache):
   def write(self, digest, content):
     """Reads data from |content| generator and stores it in cache.
 
+    It is possible to write to an object that already exists. It may be
+    ignored (sent to /dev/null) but the timestamp is still updated.
+
     Returns digest to simplify chaining.
     """
     raise NotImplementedError()
@@ -248,59 +242,73 @@ class MemoryContentAddressedCache(ContentAddressedCache):
     """
     super(MemoryContentAddressedCache, self).__init__(None)
     self._file_mode_mask = file_mode_mask
-    self._contents = {}
+    # Items in a LRU lookup dict(digest: size).
+    self._lru = lru.LRUDict()
+
+  # Cache interface implementation.
+
+  def __len__(self):
+    with self._lock:
+      return len(self._lru)
+
+  def __iter__(self):
+    # This is not thread-safe.
+    return self._lru.__iter__()
 
   def __contains__(self, digest):
     with self._lock:
-      return digest in self._contents
-
-  @property
-  def number_items(self):
-    with self._lock:
-      return len(self._contents)
+      return digest in self._lru
 
   @property
   def total_size(self):
     with self._lock:
-      return sum(len(i) for i in self._contents.itervalues())
+      return sum(len(i) for i in self._lru.itervalues())
 
-  def cached_set(self):
-    with self._lock:
-      return set(self._contents)
+  def trim(self):
+    """Trimming is not implemented for MemoryContentAddressedCache."""
+    return 0
 
   def cleanup(self):
+    """Cleaning is irrelevant, as there's no stateful serialization."""
     pass
+
+  # ContentAddressedCache interface implementation.
+
+  def __contains__(self, digest):
+    with self._lock:
+      return digest in self._lru
 
   def touch(self, digest, size):
     with self._lock:
-      return digest in self._contents
+      try:
+        self._lru.touch(digest)
+      except KeyError:
+        return False
+      return True
 
   def evict(self, digest):
     with self._lock:
-      v = self._contents.pop(digest, None)
-      if v is not None:
+      if digest in self._lru:
+        v = self._lru.pop(digest)
         self._evicted.add(v)
 
   def getfileobj(self, digest):
     with self._lock:
       try:
-        d = self._contents[digest]
+        d = self._lru[digest]
       except KeyError:
         raise CacheMiss(digest)
       self._used.append(len(d))
+      self._lru.touch(digest)
     return io.BytesIO(d)
 
   def write(self, digest, content):
     # Assemble whole stream before taking the lock.
     data = ''.join(content)
     with self._lock:
-      self._contents[digest] = data
+      self._lru.add(digest, data)
       self._added.append(len(data))
     return digest
-
-  def trim(self):
-    """Trimming is not implemented for MemoryContentAddressedCache."""
-    return 0
 
 
 class DiskContentAddressedCache(ContentAddressedCache):
@@ -341,23 +349,24 @@ class DiskContentAddressedCache(ContentAddressedCache):
       with self._lock:
         self._load(trim, time_fn)
 
+  # Cache interface implementation.
+
+  def __len__(self):
+    with self._lock:
+      return len(self._lru)
+
+  def __iter__(self):
+    # This is not thread-safe.
+    return self._lru.__iter__()
+
   def __contains__(self, digest):
     with self._lock:
       return digest in self._lru
 
   @property
-  def number_items(self):
-    with self._lock:
-      return len(self._lru)
-
-  @property
   def total_size(self):
     with self._lock:
       return sum(self._lru.itervalues())
-
-  def cached_set(self):
-    with self._lock:
-      return set(self._lru)
 
   def cleanup(self):
     """Cleans up the cache directory.
@@ -414,6 +423,12 @@ class DiskContentAddressedCache(ContentAddressedCache):
     #        self._path(digest), self.hash_algo):
     #      self.evict(digest)
     #      logging.info('Deleted corrupted item: %s', digest)
+
+  # ContentAddressedCache interface implementation.
+
+  def __contains__(self, digest):
+    with self._lock:
+      return digest in self._lru
 
   def touch(self, digest, size):
     """Verifies an actual file is valid and bumps its LRU position.
@@ -482,7 +497,6 @@ class DiskContentAddressedCache(ContentAddressedCache):
     return digest
 
   def get_oldest(self):
-    """Returns digest of the LRU item or None."""
     try:
       return self._lru.get_oldest()[0]
     except KeyError:
@@ -496,9 +510,10 @@ class DiskContentAddressedCache(ContentAddressedCache):
     return self._lru.get_timestamp(digest)
 
   def trim(self):
-    """Forces retention policies."""
     with self._lock:
       return self._trim()
+
+  # Internal functions.
 
   def _load(self, trim, time_fn):
     """Loads state of the cache from json file.
@@ -522,10 +537,6 @@ class DiskContentAddressedCache(ContentAddressedCache):
       self._lru.time_fn = time_fn
     if trim:
       self._trim()
-    # We want the initial cache size after trimming, i.e. what is readily
-    # avaiable.
-    self._initial_number_items = len(self._lru)
-    self._initial_size = sum(self._lru.itervalues())
     if self._evicted:
       logging.info(
           'Trimming evicted items with the following sizes: %s',
@@ -697,46 +708,8 @@ class NamedCache(Cache):
     if time_fn:
       self._lru.time_fn = time_fn
 
-  def _try_upgrade(self):
-    """Upgrades from the old format to the new one if necessary.
-
-    This code can be removed so all bots are known to have the right new format.
-    """
-    if not self._lru:
-      return
-    _name, data = self._lru.get_oldest()
-    if isinstance(data[0], (list, tuple)):
-      return
-    # Update to v2.
-    def upgrade(_name, rel_cache):
-      abs_cache = os.path.join(self.cache_dir, rel_cache)
-      return rel_cache, _get_recursive_size(abs_cache)
-    self._lru.transform(upgrade)
-    self._save()
-
-  def __len__(self):
-    """Returns number of items in the cache.
-
-    NamedCache must be open.
-    """
-    with self._lock:
-      return len(self._lru)
-
-  def get_oldest(self):
-    """Returns name of the LRU cache or None.
-
-    NamedCache must be open.
-    """
-    with self._lock:
-      try:
-        return self._lru.get_oldest()[0]
-      except KeyError:
-        return None
-
   def get_timestamp(self, name):
     """Returns timestamp of last use of an item.
-
-    NamedCache must be open.
 
     Raises KeyError if cache is not found.
     """
@@ -746,17 +719,14 @@ class NamedCache(Cache):
 
   @property
   def available(self):
-    """Returns a set of names of available caches.
-
-    NamedCache must be open.
-    """
+    """Returns a set of names of available caches."""
     with self._lock:
       return set(self._lru)
 
   def install(self, path, name):
     """Moves the directory for the specified named cache to |path|.
 
-    NamedCache must be open. path must be absolute, unicode and must not exist.
+    path must be absolute, unicode and must not exist.
 
     Raises NamedCacheError if cannot install the cache.
     """
@@ -796,7 +766,7 @@ class NamedCache(Cache):
   def uninstall(self, path, name):
     """Moves the cache directory back. Opposite to install().
 
-    NamedCache must be open. path must be absolute and unicode.
+    path must be absolute and unicode.
 
     Raises NamedCacheError if cannot uninstall the cache.
     """
@@ -851,14 +821,33 @@ class NamedCache(Cache):
       finally:
         self._save()
 
+  # Cache interface implementation.
+
+  def __len__(self):
+    with self._lock:
+      return len(self._lru)
+
+  def __iter__(self):
+    # This is not thread-safe.
+    return self._lru.__iter__()
+
+  def __contains__(self, digest):
+    with self._lock:
+      return digest in self._lru
+
+  @property
+  def total_size(self):
+    with self._lock:
+      return sum(size for _rel_path, size in self._lru.itervalues())
+
+  def get_oldest(self):
+    with self._lock:
+      try:
+        return self._lru.get_oldest()[0]
+      except KeyError:
+        return None
+
   def trim(self):
-    """Purges cache entries that do not comply with the cache policies.
-
-    NamedCache must be open.
-
-    Returns:
-      Number of caches deleted.
-    """
     with self._lock:
       if not os.path.isdir(self.cache_dir):
         return 0
@@ -909,6 +898,25 @@ class NamedCache(Cache):
     # directories!
     pass
 
+  # Internal functions.
+
+  def _try_upgrade(self):
+    """Upgrades from the old format to the new one if necessary.
+
+    This code can be removed so all bots are known to have the right new format.
+    """
+    if not self._lru:
+      return
+    _name, (data, _ts) = self._lru.get_oldest()
+    if isinstance(data, (list, tuple)):
+      return
+    # Update to v2.
+    def upgrade(_name, rel_cache):
+      abs_cache = os.path.join(self.cache_dir, rel_cache)
+      return rel_cache, _get_recursive_size(abs_cache)
+    self._lru.transform(upgrade)
+    self._save()
+
   def _allocate_dir(self):
     """Creates and returns relative path of a new cache directory."""
     # We randomly generate directory names that have two lower/upper case
@@ -931,8 +939,6 @@ class NamedCache(Cache):
 
   def _remove(self, name):
     """Removes a cache directory and entry.
-
-    NamedCache must be open.
 
     Returns:
       Number of caches deleted.

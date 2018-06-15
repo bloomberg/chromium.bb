@@ -710,7 +710,7 @@ class FetchQueue(object):
     self._channel = threading_utils.TaskChannel()
     self._pending = set()
     self._accessed = set()
-    self._fetched = cache.cached_set()
+    self._fetched = set(cache)
     # Pending digests that the caller waits for, see wait_on()/wait().
     self._waiting_on = set()
     # Already fetched digests the caller waits for which are not yet returned by
@@ -736,10 +736,8 @@ class FetchQueue(object):
       # 'touch' returns True if item is in cache and not corrupted.
       if self.cache.touch(digest, size):
         return
-      # isolate_storage.Item is corrupted, remove it from cache and fetch it
-      # again.
+      logging.error('%s is corrupted', digest)
       self._fetched.remove(digest)
-      self.cache.evict(digest)
 
     # TODO(maruel): It should look at the free disk space, the current cache
     # size and the size of the new item on every new item:
@@ -813,7 +811,8 @@ class FetchQueue(object):
 
   def verify_all_cached(self):
     """True if all accessed items are in cache."""
-    return self._accessed.issubset(self.cache.cached_set())
+    # Not thread safe, but called after all work is done.
+    return self._accessed.issubset(self.cache)
 
 
 class FetchStreamVerifier(object):
@@ -1203,7 +1202,7 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
     msg = (
         'Cache is too small to hold all requested files.\n'
         '  %s\n  cache=%dbytes, %d items; %sb free_space') % (
-          cache.policies, cache.total_size, cache.number_items, free_disk)
+          cache.policies, cache.total_size, len(cache), free_disk)
     raise isolated_format.MappingError(msg)
   return bundle
 

@@ -162,6 +162,8 @@ class DiskContentAddressedCacheTest(TestCase):
     # Max policies is 100 bytes, 2 items, 1000 bytes free space.
     self._free_disk = 1101
     cache = self.get_cache()
+    self.assertEqual(0, len(cache))
+    self.assertEqual(0, cache.total_size)
     cache.write(h_a, 'a')
     cache.write(h_large, large)
     # Cache (size and # items) is not enforced while adding items. The
@@ -171,8 +173,8 @@ class DiskContentAddressedCacheTest(TestCase):
     assertItems([(h_a, 1), (h_large, len(large)), (h_b, 1)])
     self.assertEqual(h_a, cache._protected)
     self.assertEqual(1000, cache._free_disk)
-    self.assertEqual(0, cache.initial_number_items)
-    self.assertEqual(0, cache.initial_size)
+    self.assertEqual(3, len(cache))
+    self.assertEqual(101, cache.total_size)
     # Free disk is enforced, because otherwise we assume the task wouldn't
     # be able to start. In this case, it throws an exception since all items
     # are protected. The item is added since it's detected after the fact.
@@ -194,8 +196,8 @@ class DiskContentAddressedCacheTest(TestCase):
         max_age_secs=0)
     cache = self.get_cache()
     cache.write(h_large, large)
-    self.assertEqual(2, cache.initial_number_items)
-    self.assertEqual(2, cache.initial_size)
+    self.assertEqual(3, len(cache))
+    self.assertEqual(101, cache.total_size)
     cache.trim()
 
     self.assertEqual(
@@ -212,8 +214,8 @@ class DiskContentAddressedCacheTest(TestCase):
     assertItems([(h_c, 1), (h_large, len(large))])
     self.assertEqual(None, cache._protected)
     self.assertEqual(1101, cache._free_disk)
-    self.assertEqual(2, cache.initial_number_items)
-    self.assertEqual(100, cache.initial_size)
+    self.assertEqual(2, len(cache))
+    self.assertEqual(100, cache.total_size)
     cache.trim()
 
   def test_policies_trim_old(self):
@@ -232,7 +234,7 @@ class DiskContentAddressedCacheTest(TestCase):
     c.write(hashlib.sha1('recent').hexdigest(), 'recent')
     now += 21*24*60*60
     c.trim()
-    self.assertEqual(set([hashlib.sha1('recent').hexdigest()]), c.cached_set())
+    self.assertEqual([hashlib.sha1('recent').hexdigest()], list(c))
 
   def test_some_file_brutally_deleted(self):
     h_a = self.to_hash('a')[0]
@@ -248,13 +250,13 @@ class DiskContentAddressedCacheTest(TestCase):
 
     cache = self.get_cache()
     # 'Ghost' entry loaded with state.json is still there.
-    self.assertEqual({h_a}, cache.cached_set())
+    self.assertEqual([h_a], list(cache))
     # 'touch' detects the file is missing by returning False.
     self.assertFalse(cache.touch(h_a, local_caching.UNKNOWN_FILE_SIZE))
     self.assertFalse(cache.touch(h_a, 1))
     # Evicting it still works, kills the 'ghost' entry.
     cache.evict(h_a)
-    self.assertEqual(set(), cache.cached_set())
+    self.assertEqual([], list(cache))
     cache.trim()
 
 

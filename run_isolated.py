@@ -148,6 +148,11 @@ for more information.
 """
 
 
+# Currently hardcoded. Eventually could be exposed as a flag once there's value.
+# 3 weeks
+MAX_AGE_SECS = 21*24*60*60
+
+
 TaskData = collections.namedtuple(
     'TaskData', [
       # List of strings; the command line to use, independent of what was
@@ -488,8 +493,6 @@ def fetch_and_map(isolated_hash, storage, cache, outdir, use_symlinks):
       use_symlinks=use_symlinks)
   return bundle, {
     'duration': time.time() - start,
-    'initial_number_items': cache.initial_number_items,
-    'initial_size': cache.initial_size,
     'items_cold': base64.b64encode(large.pack(sorted(cache.added))),
     'items_hot': base64.b64encode(
         large.pack(sorted(set(cache.used) - set(cache.added)))),
@@ -622,32 +625,32 @@ def map_and_run(data, constant_run_path):
     'had_hard_timeout': False,
     'internal_failure': 'run_isolated did not complete properly',
     'stats': {
-    # 'isolated': {
-    #    'cipd': {
-    #      'duration': 0.,
-    #      'get_client_duration': 0.,
-    #    },
-    #    'download': {
-    #      'duration': 0.,
-    #      'initial_number_items': 0,
-    #      'initial_size': 0,
-    #      'items_cold': '<large.pack()>',
-    #      'items_hot': '<large.pack()>',
-    #    },
-    #    'upload': {
-    #      'duration': 0.,
-    #      'items_cold': '<large.pack()>',
-    #      'items_hot': '<large.pack()>',
-    #    },
-    #  },
+      'isolated': {
+        #'cipd': {
+        #  'duration': 0.,
+        #  'get_client_duration': 0.,
+        #},
+        'download': {
+          #'duration': 0.,
+          'initial_number_items': len(data.isolate_cache),
+          'initial_size': data.isolate_cache.total_size,
+          #'items_cold': '<large.pack()>',
+          #'items_hot': '<large.pack()>',
+        },
+        #'upload': {
+        #  'duration': 0.,
+        #  'items_cold': '<large.pack()>',
+        #  'items_hot': '<large.pack()>',
+        #},
+      },
     },
-    # 'cipd_pins': {
-    #   'packages': [
-    #     {'package_name': ..., 'version': ..., 'path': ...},
-    #     ...
-    #   ],
-    #  'client_package': {'package_name': ..., 'version': ...},
-    # },
+    #'cipd_pins': {
+    #  'packages': [
+    #    {'package_name': ..., 'version': ..., 'path': ...},
+    #    ...
+    #  ],
+    # 'client_package': {'package_name': ..., 'version': ...},
+    #},
     'outputs_ref': None,
     'version': 5,
   }
@@ -685,12 +688,13 @@ def map_and_run(data, constant_run_path):
 
       if data.isolated_hash:
         isolated_stats = result['stats'].setdefault('isolated', {})
-        bundle, isolated_stats['download'] = fetch_and_map(
+        bundle, stats = fetch_and_map(
             isolated_hash=data.isolated_hash,
             storage=data.storage,
             cache=data.isolate_cache,
             outdir=run_dir,
             use_symlinks=data.use_symlinks)
+        isolated_stats['download'].update(stats)
         change_tree_read_only(run_dir, bundle.read_only)
         # Inject the command
         if not command and bundle.command:
@@ -1180,8 +1184,7 @@ def process_named_cache_options(parser, options, time_fn=None):
         max_cache_size=1024*1024*1024*1024,
         min_free_space=options.min_free_space,
         max_items=50,
-        # 3 weeks.
-        max_age_secs=21*24*60*60)
+        max_age_secs=MAX_AGE_SECS)
     root_dir = unicode(os.path.abspath(options.named_cache_root))
     return local_caching.NamedCache(root_dir, policies, time_fn=time_fn)
   return None
