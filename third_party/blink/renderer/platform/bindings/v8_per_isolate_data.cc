@@ -29,6 +29,7 @@
 #include <utility>
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"

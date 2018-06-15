@@ -33,6 +33,7 @@
 #include <memory>
 #include "base/location.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_face_creation_params.h"

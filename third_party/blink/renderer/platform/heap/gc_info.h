@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_INFO_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_GC_INFO_H_
 
+#include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/platform/heap/finalizer_traits.h"
 #include "third_party/blink/renderer/platform/heap/name_traits.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
