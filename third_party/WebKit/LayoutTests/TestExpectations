@@ -482,6 +482,7 @@ crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/border-vertical-lr.
 crbug.com/714962 [ Mac Win ] virtual/layout_ng/fast/writing-mode/english-lr-text.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/japanese-rl-text.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/text-orientation-basic.html [ Failure ]
+crbug.com/851075 virtual/layout_ng/fast/writing-mode/vertical-inline-block-hittest.html [ Failure ]
 
 # Crashes/asserts due to inline item reuse.
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/dynamic/remove-block-from-content-after-spanner.html [ Failure Crash Timeout ]
