@@ -246,20 +246,33 @@ class GClientSmoke(GClientSmokeBase):
           ']\n'
           'cache_dir = None\n') % self.git_base)
 
+    test(['config', '--spec', '["blah blah"]'], '["blah blah"]')
+
     os.remove(p)
-    results = self.gclient(['config', '--spec', '["blah blah"]'])
-    self.assertEqual(('', 'Error: No solution specified\n', 1), results)
-
-    results = self.gclient(['config', '--spec',
-                            'solutions=[{"name": "./", "url": None}]'])
-    self.assertEqual(('', 'Error: No solution specified\n', 1), results)
-
     results = self.gclient(['config', 'foo', 'faa', 'fuu'])
     err = ('Usage: gclient.py config [options] [url]\n\n'
            'gclient.py: error: Inconsistent arguments. Use either --spec or one'
            ' or 2 args\n')
     self.check(('', err, 2), results)
     self.assertFalse(os.path.exists(join(self.root_dir, '.gclient')))
+
+  def testSolutionNone(self):
+    results = self.gclient(['config', '--spec',
+                            'solutions=[{"name": "./", "url": None}]'])
+    self.check(('', '', 0), results)
+    results = self.gclient(['sync'])
+    self.check(('', '', 0), results)
+    self.assertTree({})
+    results = self.gclient(['revinfo'])
+    self.check(('./: None\n', '', 0), results)
+    self.check(('', '', 0), self.gclient(['diff']))
+    self.assertTree({})
+    self.check(('', '', 0), self.gclient(['pack']))
+    self.check(('', '', 0), self.gclient(['revert']))
+    self.assertTree({})
+    self.check(('', '', 0), self.gclient(['runhooks']))
+    self.assertTree({})
+    self.check(('', '', 0), self.gclient(['status']))
 
   def testDifferentTopLevelDirectory(self):
     # Check that even if the .gclient file does not mention the directory src
@@ -796,10 +809,8 @@ class GClientSmokeGIT(GClientSmokeBase):
     with open(output_json) as f:
       output_json = json.load(f)
 
-    self.maxDiff = None
     out = [{
-        'solution_url': '%srepo_1@%s' % (
-            self.git_base, self.githash('repo_1', 2)),
+        'solution_url': self.git_base + 'repo_1',
         'managed': True,
         'name': 'src',
         'deps_file': 'DEPS',
@@ -1228,118 +1239,6 @@ class GClientSmokeGIT(GClientSmokeBase):
             self.githash('repo_8', 1)),
     ], deps_contents.splitlines())
 
-  def testFlattenLocalDepsFile(self):
-    if not self.enabled:
-      return
-
-    output_deps = os.path.join(self.root_dir, 'DEPS.flattened')
-    self.assertFalse(os.path.exists(output_deps))
-
-    output_deps_files = os.path.join(self.root_dir, 'DEPS.files')
-    self.assertFalse(os.path.exists(output_deps_files))
-
-    write(
-        os.path.join(self.root_dir, 'DEPS'),
-        'deps = {\n'
-        '    "src": "' + self.git_base + 'repo_10",\n'
-        '}\n'
-        'recursedeps = ["src"]')
-
-    self.gclient(['config', '--spec', 'solutions=[{"deps_file": "DEPS"}]'])
-    self.gclient(['sync', '--process-all-deps'])
-    self.gclient(['flatten', '-v', '-v', '-v',
-                  '--output-deps', output_deps,
-                  '--output-deps-files', output_deps_files])
-
-    with open(output_deps) as f:
-      deps_contents = f.read()
-
-    self.maxDiff = None
-    self.assertEqual([
-        'gclient_gn_args_file = "src/repo2/gclient.args"',
-        "gclient_gn_args = ['str_var']",
-        'deps = {',
-        '  # src',
-        '  "src": {',
-        '    "url": "' + self.git_base + 'repo_10",',
-        '  },',
-        '',
-        '  # src -> src/repo9 -> src/repo8 -> src/recursed_os_repo',
-        '  "src/recursed_os_repo": {',
-        '    "url": "' + self.git_base + 'repo_5",',
-        '    "condition": \'(checkout_linux) or (checkout_mac)\',',
-        '  },',
-        '',
-        '  # src -> src/repo11',
-        '  "src/repo11": {',
-        '    "url": "' + self.git_base + 'repo_11",',
-        '    "condition": \'(checkout_ios) or (checkout_mac)\',',
-        '  },',
-        '',
-        '  # src -> src/repo11 -> src/repo12',
-        '  "src/repo12": {',
-        '    "url": "' + self.git_base + 'repo_12",',
-        '    "condition": \'(checkout_ios) or (checkout_mac)\',',
-        '  },',
-        '',
-        '  # src -> src/repo9 -> src/repo4',
-        '  "src/repo4": {',
-        '    "url": "' + self.git_base + 'repo_4",',
-        '    "condition": \'checkout_android\',',
-        '  },',
-        '',
-        '  # src -> src/repo6',
-        '  "src/repo6": {',
-        '    "url": "' + self.git_base + 'repo_6",',
-        '  },',
-        '',
-        '  # src -> src/repo9 -> src/repo7',
-        '  "src/repo7": {',
-        '    "url": "' + self.git_base + 'repo_7",',
-        '  },',
-        '',
-        '  # src -> src/repo9 -> src/repo8',
-        '  "src/repo8": {',
-        '    "url": "' + self.git_base + 'repo_8",',
-        '  },',
-        '',
-        '  # src -> src/repo9',
-        '  "src/repo9": {',
-        '    "url": "' + self.git_base + 'repo_9",',
-        '  },',
-        '',
-        '}',
-        '',
-        'vars = {',
-        '  # src -> src/repo9',
-        '  "str_var": \'xyz\',',
-        '',
-        '}',
-        '',
-        '# ' + self.git_base + 'repo_10, DEPS',
-        '# ' + self.git_base + 'repo_11, DEPS',
-        '# ' + self.git_base + 'repo_8, DEPS',
-        '# ' + self.git_base + 'repo_9, DEPS',
-    ], deps_contents.splitlines())
-
-    with open(output_deps_files) as f:
-      deps_files_contents = json.load(f)
-
-    self.assertEqual([
-      {'url': self.git_base + 'repo_10', 'deps_file': 'DEPS',
-       'hierarchy': [['src', self.git_base + 'repo_10']]},
-      {'url': self.git_base + 'repo_11', 'deps_file': 'DEPS',
-       'hierarchy': [['src', self.git_base + 'repo_10'],
-                     ['src/repo11', self.git_base + 'repo_11']]},
-      {'url': self.git_base + 'repo_8', 'deps_file': 'DEPS',
-       'hierarchy': [['src', self.git_base + 'repo_10'],
-                     ['src/repo9', self.git_base + 'repo_9'],
-                     ['src/repo8', self.git_base + 'repo_8']]},
-      {'url': self.git_base + 'repo_9', 'deps_file': 'DEPS',
-       'hierarchy': [['src', self.git_base + 'repo_10'],
-                     ['src/repo9', self.git_base + 'repo_9']]},
-    ], deps_files_contents)
-
   def testFlattenRecursedeps(self):
     if not self.enabled:
       return
@@ -1467,7 +1366,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '    "url": "' + self.git_base + 'repo_14",',
         '  },',
         '',
-        '  # src -> src/another_cipd_dep',
+        '  # src -> src/another_cipd_dep:package1',
         '  "src/another_cipd_dep": {',
         '    "packages": [',
         '      {',
@@ -1482,7 +1381,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '    "dep_type": "cipd",',
         '  },',
         '',
-        '  # src -> src/cipd_dep',
+        '  # src -> src/cipd_dep:package0',
         '  "src/cipd_dep": {',
         '    "packages": [',
         '      {',

@@ -77,166 +77,6 @@ class GclientTest(trial_dir.TestCase):
     os.chdir(self.previous_dir)
     super(GclientTest, self).tearDown()
 
-  def testLocalDepsFileRespectsRecursedeps(self):
-    """Test that we only recurse into specified dependencies.
-
-    When parsing a local DEPS file, don't recurse into all of its dependencies,
-    only on the ones specified by the DEPS file.
-    """
-    parser = gclient.OptionParser()
-    options, _ = parser.parse_args([])
-    write(
-        '.gclient',
-        'solutions = [\n'
-        '  {\n'
-        '    "name": None,\n'
-        '    "url": None,\n'
-        '    "deps_file": "DEPS",\n'
-        '  },\n'
-        ']')
-    write(
-        'DEPS',
-        'deps = {\n'
-        '  "foo": "svn://example.com/foo",\n'
-        '  "bar": "svn://example.com/bar",\n'
-        '}\n'
-        'recursedeps=["foo"]')
-    write(
-        os.path.join('foo', 'DEPS'),
-        'deps = {\n'
-        '  "foo/dir1": "svn://example.com/dir1",\n'
-        '}')
-    # We shouldn't process bar/DEPS, since it wasn't specifed as a recursedep.
-    write(
-        os.path.join('bar', 'DEPS'),
-        'ERROR ERROR ERROR')
-
-    obj = gclient.GClient.LoadCurrentConfig(options)
-    obj.RunOnDeps('None', [])
-    self.assertEqual(
-        [('bar', 'svn://example.com/bar'),
-         ('foo', 'svn://example.com/foo'),
-         ('foo/dir1', 'svn://example.com/dir1')],
-        sorted(self._get_processed()))
-
-  def testLocalDepsFilePreservesCustomVars(self):
-    """Test that the processed dependencies respect custom_vars.
-    """
-    parser = gclient.OptionParser()
-    options, _ = parser.parse_args([])
-    write(
-        '.gclient',
-        'solutions = [\n'
-        '  {\n'
-        '    "name": None,\n'
-        '    "url": None,\n'
-        '    "deps_file": "DEPS",\n'
-        '    "custom_vars": {\n'
-        '      "custom_var": "custom_value",\n'
-        '    },\n'
-        '  },\n'
-        ']')
-    write(
-        'DEPS',
-        'deps = {\n'
-        '  "foo": "svn://example.com/foo",\n'
-        '}')
-
-    obj = gclient.GClient.LoadCurrentConfig(options)
-    obj.RunOnDeps('None', [])
-    self.assertEqual(
-        [('foo', 'svn://example.com/foo')],
-        sorted(self._get_processed()))
-
-    # Verify that custom_var is set correctly in foo/dir1 and foo/dir2.
-    foo_vars = obj.dependencies[0].get_vars()
-    self.assertEqual(foo_vars['custom_var'], 'custom_value')
-
-  def testLocalDepsFilePreservesCustomDeps(self):
-    """Test that the processed dependencies respect custom_deps.
-    """
-    parser = gclient.OptionParser()
-    options, _ = parser.parse_args([])
-    write(
-        '.gclient',
-        'solutions = [\n'
-        '  {\n'
-        '    "name": None,\n'
-        '    "url": None,\n'
-        '    "deps_file": "DEPS",\n'
-        '    "custom_deps": {\n'
-        '       "foo/dir1": "svn://example.com/custom",'
-        '    },\n'
-        '  },\n'
-        ']')
-    write(
-        'DEPS',
-        'deps = {\n'
-        '  "foo": "svn://example.com/foo",\n'
-        '}\n'
-        'recursedeps = ["foo"]')
-    write(
-        os.path.join('foo', 'DEPS'),
-        'deps = {\n'
-        '  "foo/dir1": "svn://example.com/dir1",\n'
-        '}')
-
-    obj = gclient.GClient.LoadCurrentConfig(options)
-    obj.RunOnDeps('None', [])
-    self.assertEqual(
-        [('foo', 'svn://example.com/foo'),
-         ('foo/dir1', 'svn://example.com/custom')],
-        sorted(self._get_processed()))
-
-  def testLocalDepsFileInheritsVars(self):
-    """Tests that variables in the local DEPS file are preserved.
-
-    We want to test that the variables in the local DEPS files are preserved
-    when interpreting the DEPS file as a .gclient file.
-
-    In particular, checkout_dir1 should be True in foo/, since it was set in the
-    local DEPS file.
-    """
-    parser = gclient.OptionParser()
-    options, _ = parser.parse_args([])
-    write(
-        '.gclient',
-        'solutions = [\n'
-        '  {\n'
-        '    "name": None,\n'
-        '    "url": None,\n'
-        '    "deps_file": "DEPS",\n'
-        '  },\n'
-        ']')
-    write(
-        'DEPS',
-        'vars = {\n'
-        '  "checkout_dir1": True,\n'
-        '}\n'
-        'deps = {\n'
-        '  "foo": "svn://example.com/foo",\n'
-        '}\n'
-        'recursedeps = ["foo"]\n'
-    )
-    write(
-        os.path.join('foo', 'DEPS'),
-        'vars = {\n'
-        '  "checkout_dir1": False,\n'
-        '}\n'
-        'deps = {\n'
-        '  "foo/dir1": {\n'
-        '    "url": "svn://example.com/dir1",\n'
-        '    "condition": "checkout_dir1",\n'
-        '  },\n'
-        '}')
-
-    obj = gclient.GClient.LoadCurrentConfig(options)
-    obj.RunOnDeps('None', [])
-    self.assertEqual(
-        [('foo', 'svn://example.com/foo'),
-         ('foo/dir1', 'svn://example.com/dir1')],
-        sorted(self._get_processed()))
-
   def testDependencies(self):
     self._dependencies('1')
 
@@ -369,6 +209,7 @@ class GclientTest(trial_dir.TestCase):
         custom_vars=None,
         custom_hooks=None,
         deps_file='',
+        should_process=True,
         should_recurse=False,
         relative=False,
         condition=None,
@@ -390,6 +231,7 @@ class GclientTest(trial_dir.TestCase):
             custom_vars=None,
             custom_hooks=None,
             deps_file='DEPS',
+            should_process=True,
             should_recurse=True,
             relative=False,
             condition=None,
@@ -403,6 +245,7 @@ class GclientTest(trial_dir.TestCase):
             custom_vars=None,
             custom_hooks=None,
             deps_file='DEPS',
+            should_process=True,
             should_recurse=False,
             relative=False,
             condition=None,
@@ -420,6 +263,7 @@ class GclientTest(trial_dir.TestCase):
             custom_vars=None,
             custom_hooks=None,
             deps_file='DEPS',
+            should_process=True,
             should_recurse=False,
             relative=False,
             condition=None,
@@ -431,7 +275,7 @@ class GclientTest(trial_dir.TestCase):
     # pylint: disable=protected-access
     obj.dependencies[0]._file_list.append('foo')
     str_obj = str(obj)
-    self.assertEquals(240, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
+    self.assertEquals(322, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))
 
   def testHooks(self):
     topdir = self.root_dir
@@ -742,12 +586,14 @@ class GclientTest(trial_dir.TestCase):
         ('foo/rel', 'svn://example.com/rel'),
     ], self._get_processed())
 
-    self.assertEqual(4, len(sol.dependencies))
+    self.assertEqual(6, len(sol.dependencies))
     self.assertEqual([
         ('foo/bar', 'svn://example.com/override'),
         ('foo/baz', 'svn://example.com/baz'),
         ('foo/new', 'svn://example.com/new'),
         ('foo/rel', 'svn://example.com/rel'),
+        ('foo/skip', None),
+        ('foo/skip2', None),
     ], [(dep.name, dep.url) for dep in sol.dependencies])
 
   def testDepsOsOverrideDepsInDepsFile(self):
@@ -1196,6 +1042,7 @@ class GclientTest(trial_dir.TestCase):
             custom_vars=None,
             custom_hooks=None,
             deps_file='DEPS',
+            should_process=True,
             should_recurse=True,
             relative=False,
             condition=None,
@@ -1211,6 +1058,7 @@ class GclientTest(trial_dir.TestCase):
                        'version': 'foo_version'},
             cipd_root=cipd_root,
             custom_vars=None,
+            should_process=True,
             relative=False,
             condition='fake_condition'),
         gclient.CipdDependency(
@@ -1220,6 +1068,7 @@ class GclientTest(trial_dir.TestCase):
                        'version': 'bar_version'},
             cipd_root=cipd_root,
             custom_vars=None,
+            should_process=True,
             relative=False,
             condition='fake_condition'),
       ],
