@@ -324,6 +324,41 @@ TEST_F(IndexedDBFactoryTest, BackingStoreRunPreCloseTasks) {
   RunAllTasksUntilIdle();
 }
 
+TEST_F(IndexedDBFactoryTest, BackingStoreCloseImmediatelySwitch) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({kIDBTombstoneStatistics},
+                                {kIDBTombstoneDeletion});
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      kIDBCloseImmediatelySwitch);
+
+  context()->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](IndexedDBContextImpl* context) {
+            base::SimpleTestClock clock;
+            clock.SetNow(base::Time::Now());
+
+            scoped_refptr<MockIDBFactory> factory =
+                base::MakeRefCounted<MockIDBFactory>(context, &clock);
+
+            const Origin origin = Origin::Create(GURL("http://localhost:81"));
+
+            scoped_refptr<IndexedDBBackingStore> store =
+                factory->TestOpenBackingStore(origin, context->data_path());
+
+            // Give up the local refptr so that the factory has the only
+            // outstanding reference.
+            IndexedDBBackingStore* store_ptr = store.get();
+            store = nullptr;
+            EXPECT_FALSE(store_ptr->close_timer()->IsRunning());
+            factory->TestReleaseBackingStore(store_ptr, false);
+            EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
+          },
+          base::Unretained(context())));
+
+  RunAllTasksUntilIdle();
+}
+
 TEST_F(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
   context()->TaskRunner()->PostTask(
       FROM_HERE,

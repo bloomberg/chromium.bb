@@ -32,6 +32,8 @@ class IndexedDBContextImpl;
 CONTENT_EXPORT extern const base::Feature kIDBTombstoneStatistics;
 CONTENT_EXPORT extern const base::Feature kIDBTombstoneDeletion;
 
+constexpr const char kIDBCloseImmediatelySwitch[] = "idb-close-immediately";
+
 class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
  public:
   // Maximum time interval between runs of the IndexedDBSweeper. Sweeping only
@@ -141,6 +143,8 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
                            BackingStoreReleaseDelayedOnClose);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, BackingStoreRunPreCloseTasks);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
+                           BackingStoreCloseImmediatelySwitch);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, BackingStoreNoSweeping);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest, DatabaseFailedOpen);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBFactoryTest,
