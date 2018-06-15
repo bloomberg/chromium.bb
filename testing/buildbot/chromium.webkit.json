@@ -27,31 +27,8 @@
     ]
   },
   "WebKit Linux Trusty (dbg)": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "--debug"
-        ],
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "only_retry_failed_tests": true,
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-14.04"
-            }
-          ],
-          "shards": 20
-        }
-      }
+    "additional_compile_targets": [
+      "base_unittests"
     ]
   },
   "WebKit Linux Trusty ASAN": {
@@ -205,35 +182,7 @@
       }
     ]
   },
-  "WebKit Mac10.11 (dbg)": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "--debug"
-        ],
-        "isolate_name": "webkit_layout_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
-        "name": "webkit_layout_tests",
-        "only_retry_failed_tests": true,
-        "results_handler": "layout tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.11.6"
-            }
-          ],
-          "shards": 12
-        }
-      }
-    ]
-  },
+  "WebKit Mac10.11 (dbg)": {},
   "WebKit Mac10.12": {},
   "WebKit Mac10.12 (retina)": {
     "isolated_scripts": [
