@@ -35,6 +35,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
            gfx::CreateVectorIcon(omnibox::kSwitchIcon,
                                  GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
                                  SK_ColorBLACK));
+  SetHorizontalAlignment(gfx::ALIGN_LEFT);
   if (!calculated_widths_) {
     icon_only_width_ = MdTextButton::CalculatePreferredSize().width();
     SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_SHORT_HINT));
@@ -48,6 +49,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
   set_corner_radius(CalculatePreferredSize().height() / 2.f);
   animation_->SetSlideDuration(500);
   SetElideBehavior(gfx::FADE_TAIL);
+  SetImageLabelSpacing(8);
 
   SetInstallFocusRingOnFocus(true);
   focus_ring()->SetHasFocusPredicate([](View* view) {
