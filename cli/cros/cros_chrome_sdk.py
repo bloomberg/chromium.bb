@@ -677,10 +677,6 @@ class ChromeSDKCommand(command.CliCommand):
     ps1_prefix = ChromeSDKCommand._PS1Prefix(board, version, chroot)
     return '%s %s' % (ps1_prefix, current_ps1)
 
-  def _BuildDir(self):
-    """Returns a full path build directory."""
-    return os.path.join(os.getcwd(), 'out_%s' % self.board, 'Release')
-
   def _FixGoldPath(self, var_contents, toolchain_path):
     """Point to the gold linker in the toolchain tarball.
 
@@ -697,7 +693,7 @@ class ChromeSDKCommand(command.CliCommand):
     """
     cmd, _, gold_path = var_contents.partition(' -B')
     gold_path = os.path.join(toolchain_path, gold_path.lstrip('/'))
-    return '%s -B%s' % (cmd, os.path.relpath(gold_path, self._BuildDir()))
+    return '%s -B%s' % (cmd, gold_path)
 
   def _StripGnArgs(self, gn_args_dict):
     """Strip GN args set by developers and not by the chrome ebuild.
