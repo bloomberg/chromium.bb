@@ -63,8 +63,20 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     MirrorOwnedProperty(window, root_window, aura::client::kTitleKey);
   } else if (key == aura::client::kWindowIconKey) {
     MirrorOwnedProperty(window, root_window, aura::client::kWindowIconKey);
+  } else if (key == kFrameActiveColorKey) {
+    root_window->SetProperty(kFrameActiveColorKey,
+                             window->GetProperty(kFrameActiveColorKey));
+  } else if (key == kFrameInactiveColorKey) {
+    root_window->SetProperty(kFrameInactiveColorKey,
+                             window->GetProperty(kFrameInactiveColorKey));
   } else if (key == kFrameImageActiveKey) {
     MirrorOwnedProperty(window, root_window, kFrameImageActiveKey);
+  } else if (key == kFrameImageInactiveKey) {
+    MirrorOwnedProperty(window, root_window, kFrameImageInactiveKey);
+  } else if (key == kFrameImageOverlayActiveKey) {
+    MirrorOwnedProperty(window, root_window, kFrameImageOverlayActiveKey);
+  } else if (key == kFrameImageOverlayInactiveKey) {
+    MirrorOwnedProperty(window, root_window, kFrameImageOverlayInactiveKey);
   } else if (key == kWindowTitleShownKey) {
     root_window->SetProperty(kWindowTitleShownKey,
                              window->GetProperty(kWindowTitleShownKey));

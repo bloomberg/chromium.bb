@@ -59,10 +59,16 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<BackdropWindowMode>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanConsumeSystemKeysKey;
 
-// The frame's active image. Only set on themed windows. The type is a token
+// The frame header's images. Only set on themed windows. The type is a token
 // which can be redeemed with the ClientImageRegistry to get a gfx::ImageSkia.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
     base::UnguessableToken*>* const kFrameImageActiveKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    base::UnguessableToken*>* const kFrameImageInactiveKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    base::UnguessableToken*>* const kFrameImageOverlayActiveKey;
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
+    base::UnguessableToken*>* const kFrameImageOverlayInactiveKey;
 
 // A property key to indicate whether we should hide this window in overview
 // mode and Alt + Tab.
