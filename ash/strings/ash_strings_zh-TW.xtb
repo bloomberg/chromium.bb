@@ -179,6 +179,7 @@
 <translation id="4544944664594876241">螢幕鎖定快速鍵已變更，請改用 <ph name="NEW_SHORTCUT" /> (停用 <ph name="OLD_SHORTCUT" />)。</translation>
 <translation id="4564869809620998694">字型服務</translation>
 <translation id="4570957409596482333">隨選朗讀按鈕</translation>
+<translation id="4628757576491864469">裝置</translation>
 <translation id="4659419629803378708">ChromeVox 已啟用</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
 <translation id="479989351350248267">search</translation>
@@ -234,6 +235,7 @@
 <translation id="598882571027504733">如要更新，請連接鍵盤並重新啟動 Chromebook。</translation>
 <translation id="5992218262414051481">高對比模式已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + H 鍵即可停用。</translation>
 <translation id="6018164090099858612">退出鏡像模式</translation>
+<translation id="6040143037577758943">關閉</translation>
 <translation id="6043212731627905357">這個顯示器與你的 <ph name="DEVICE_TYPE" /> 不相容 (這是不支援的顯示器)。</translation>
 <translation id="6043994281159824495">立即登出</translation>
 <translation id="6047696787498798094">切換到另一個使用者會停止共用螢幕，你要繼續嗎？</translation>

@@ -108,7 +108,7 @@
     <ph name="LINE_BREAK2" />
     Wybierz mniej zdjęć.</translation>
 <translation id="1149401351239820326">Miesiąc utraty ważności</translation>
-<translation id="1151917987301063366">Zawsze zezwalaj <ph name="HOST" /> na dostęp do czujników</translation>
+<translation id="1151917987301063366">Zawsze zezwalaj witrynie <ph name="HOST" /> na dostęp do czujników</translation>
 <translation id="1153356358378277386">Sparowane urządzenia</translation>
 <translation id="1156488781945104845">Bieżąca godzina</translation>
 <translation id="1161575384898972166">Zaloguj się do urządzenia <ph name="TOKEN_NAME" />, aby wyeksportować certyfikat klienta.</translation>
@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Okno zrzutu ekranu</translation>
 <translation id="1197979282329025000">Podczas pobierania informacji o możliwościach drukarki <ph name="PRINTER_NAME" /> wystąpił błąd. Nie można zarejestrować tej drukarki w usłudze <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Zaczynamy</translation>
-<translation id="1199232041627643649">Aby zakończyć, przytrzymaj klawisz <ph name="KEY_EQUIVALENT" />.</translation>
 <translation id="119944043368869598">Wyczyść wszystko</translation>
 <translation id="1201402288615127009">Dalej</translation>
 <translation id="1202596434010270079">Aplikacja kiosku została zaktualizowana. Odłącz pamięć USB.</translation>
@@ -621,7 +620,7 @@
 <translation id="1897762215429052132">Skonfiguruj połączenie sieciowe, język, układ klawiatury...</translation>
 <translation id="1901303067676059328">Zaznacz &amp;wszystko</translation>
 <translation id="1902576642799138955">Okres ważności</translation>
-<translation id="1905375423839394163">Nazwa urządzenia Chromebook</translation>
+<translation id="1905375423839394163">Nazwa Chromebooka</translation>
 <translation id="1905710495812624430">Przekroczono maksymalną liczbę prób.</translation>
 <translation id="1909880997794698664">Czy na pewno chcesz trwale utrzymywać to urządzenie w trybie kiosku?</translation>
 <translation id="1910721550319506122">Witamy!</translation>
@@ -1270,7 +1269,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2902312830803030883">Więcej czynności</translation>
 <translation id="2903457445916429186">Otwórz zaznaczone elementy</translation>
 <translation id="2903493209154104877">Adresy</translation>
-<translation id="2903882649406874750">Zawsze blokuj <ph name="HOST" /> dostęp do czujników</translation>
+<translation id="2903882649406874750">Zawsze blokuj witrynie <ph name="HOST" /> dostęp do czujników</translation>
 <translation id="290444763029043472">Pobrano <ph name="DOWNLOADED_AMOUNT_MB" /> z <ph name="TOTAL_AMOUNT_MB" /> MB</translation>
 <translation id="2904456025988372123">Pytaj, gdy strona próbuje automatycznie pobrać pliki po pobraniu pierwszego</translation>
 <translation id="2907619724991574506">Startowe adresy URL</translation>
@@ -2713,6 +2712,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="5204967432542742771">Wpisz hasło</translation>
 <translation id="5206215183583316675">Usunąć „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="520621735928254154">Błąd importowania certyfikatu</translation>
+<translation id="5209320130288484488">Nie znaleziono urządzeń</translation>
 <translation id="5209518306177824490">Odcisk cyfrowy SHA-1</translation>
 <translation id="5210365745912300556">Zamknij kartę</translation>
 <translation id="5213891612754844763">Pokaż ustawienia serwera proxy</translation>
@@ -3134,7 +3134,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="580571955903695899">Uporządkuj według tytułu</translation>
 <translation id="5807290661599647102">Ustaw blokadę ekranu</translation>
 <translation id="580961539202306967">Pytaj mnie, gdy strona chce wysyłać mi wiadomości push (zalecane)</translation>
-<translation id="5809725759695043233">Masz aplikacje zoptymalizowane dla Chromebooków</translation>
 <translation id="5814126672212206791">Typ połączenia</translation>
 <translation id="5815645614496570556">Adres X.400</translation>
 <translation id="5816434091619127343">Te zmiany uniemożliwiłyby korzystanie z drukarki.</translation>
@@ -4153,7 +4152,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="7378812711085314936">Korzystanie z transmisji danych</translation>
 <translation id="7384292194278095697">To urządzenie nie jest już obsługiwane</translation>
 <translation id="7385854874724088939">Wystąpił błąd przy próbie drukowania. Sprawdź drukarkę i spróbuj ponownie.</translation>
-<translation id="7386824183915085801">Oprócz informacji, które wybierzesz powyżej, zostanie przesłana używana przez Ciebie wersja Chrome i systemu operacyjnego. Jeśli dołączysz adres e-mail, Google może się z Tobą skontaktować w sprawie Twojego zgłoszenia. Przesłane przez Ciebie informacje pomogą nam poszukać przyczyn problemów oraz ulepszyć Chrome. Wszystkie dane osobowe, które prześlesz celowo lub przypadkowo, będą chronione zgodnie z naszymi zasadami prywatności.<ph name="BEGIN_BOLD" /> Przesyłając to zgłoszenie, zgadzasz się na to, że Google może wykorzystać je, by ulepszyć dowolne swoje usługi.<ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Okno dialogowe „Wyczyść dane przeglądania”</translation>
 <translation id="7388044238629873883">Wszystko jest już prawie gotowe.</translation>
 <translation id="7388222713940428051">Otwórz okno trybu gościa</translation>

@@ -179,6 +179,7 @@
 <translation id="4544944664594876241">Kortkommandot för att låsa skärmen har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Teckensnittstjänst</translation>
 <translation id="4570957409596482333">Knappen Textuppläsning</translation>
+<translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox har aktiverats</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">sök</translation>
@@ -234,6 +235,7 @@
 <translation id="598882571027504733">Starta om Chromebook-enheten med tangentbordet tillkopplat för att uppdatera.</translation>
 <translation id="5992218262414051481">Högkontrastläget har aktiverats. Tryck på Ctrl+Sök+H igen om du vill inaktivera det.</translation>
 <translation id="6018164090099858612">Spegelläge avslutas</translation>
+<translation id="6040143037577758943">Stäng</translation>
 <translation id="6043212731627905357">Skärmen kan inte användas med <ph name="DEVICE_TYPE" /> (det finns inte stöd för skärmen).</translation>
 <translation id="6043994281159824495">Logga ut nu</translation>
 <translation id="6047696787498798094">Skärmdelningen avbryts när du byter till en annan användare. Vill du fortsätta?</translation>

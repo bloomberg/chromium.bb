@@ -100,7 +100,6 @@
 <translation id="1594030484168838125">પસંદ કરો</translation>
 <translation id="1620510694547887537">કૅમેરો</translation>
 <translation id="1623104350909869708">આ પૃષ્ઠને વધારાના સંવાદો બનાવતા અટકાવો</translation>
-<translation id="1629803312968146339">શું તમે ઇચ્છો છો કે Chrome આ કાર્ડ સાચવે?</translation>
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
 <translation id="1640180200866533862">વપરાશકર્તા નીતિઓ</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />સાઇટના હોમપેજની મુલાકાત લેવાનો<ph name="END_LINK" /> પ્રયાસ કરો.</translation>
@@ -192,7 +191,6 @@
 <translation id="2262243747453050782">HTTP ભૂલ</translation>
 <translation id="2270484714375784793">ફોન નંબર</translation>
 <translation id="2292556288342944218">તમારી ઇન્ટરનેટ ઍક્સેસ અવરોધિત છે</translation>
-<translation id="230155334948463882">નવું કાર્ડ?</translation>
 <translation id="2316887270356262533">1 MB કરતાં ઓછું ખાલી કરે છે. તમારી આગલી મુલાકાત સમયે કેટલીક સાઇટો વધુ ધીમે લોડ થઈ શકે છે.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> માટે વપરાશકર્તાનામ અને પાસવર્ડ આવશ્યક છે.</translation>
 <translation id="2317583587496011522">ડેબિટ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
@@ -246,7 +244,6 @@
 <translation id="2699302886720511147">સ્વીકૃત કાર્ડ</translation>
 <translation id="2702801445560668637">વાંચન સૂચિ</translation>
 <translation id="2704283930420550640">મૂલ્ય ફોર્મેટથી મેળ ખાતું  નથી.</translation>
-<translation id="2704951214193499422">આ સમયે Chromium તમારા કાર્ડની પુષ્ટિ કરવામાં અસમર્થ હતું. કૃપા કરીને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="2705137772291741111">આ સાઇટની સાચવેલ (કૅશ કરેલ) કૉપિ વાંચવા યોગ્ય ન હતી.</translation>
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
 <translation id="2710942282213947212">તમારા કમ્પ્યુટરમાંનું સૉફ્ટવેર Chromiumને સુરક્ષિત રીતે વેબ સાથે કનેક્ટ થવાથી રોકી રહ્યું છે</translation>
@@ -299,7 +296,6 @@
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
 <translation id="3037605927509011580">અરર કંઇક ભુલ થઇ!</translation>
 <translation id="3041612393474885105">પ્રમાણપત્ર માહિતી</translation>
-<translation id="3063697135517575841">આ સમયે Chrome તમારા કાર્ડની પુષ્ટિ કરવામાં અસમર્થ હતું. કૃપા કરીને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="3064966200440839136">બાહ્ય ઍપ્લિકેશન મારફતે ચુકવણી કરવા માટે છુપો મોડ છોડી રહ્યાં છીએ. તો ચાલુ રાખીએ?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{કોઈ નહીં}=1{1 પાસવર્ડ}one{# પાસવર્ડ}other{# પાસવર્ડ}}</translation>
 <translation id="3096100844101284527">પિકઅપ માટેનું સરનામું ઉમેરો</translation>
@@ -455,7 +451,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">વૈશ્વિક ડિફોલ્ટનો ઉપયોગ કરો (શોધો)</translation>
 <translation id="4165986682804962316">સાઇટ સેટિંગ્સ</translation>
-<translation id="4169947484918424451">શું તમે ઇચ્છો છો કે Chromium આ કાર્ડ સાચવે?</translation>
 <translation id="4171400957073367226">ખોટી ચકાસણી સહી</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{વધુ <ph name="ITEM_COUNT" /> આઇટમ}one{વધુ <ph name="ITEM_COUNT" /> આઇટમ}other{વધુ <ph name="ITEM_COUNT" /> આઇટમ}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>

@@ -20,7 +20,7 @@
 <translation id="1110994991967754504">اختيار إذن لـ <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">الإشارات الجديدة</translation>
 <translation id="1113869188872983271">تراجع عن إعادة الت&amp;رتيب</translation>
-<translation id="1125573121925420732">قد تكون التحذيرات شائعة أثناء تحديث مواقع الويب لأمانها. وهذا من شأنه أن يتحسَّن قريبًا.</translation>
+<translation id="1125573121925420732">قد يكثر ظهور التحذيرات أثناء إجراء مواقع الويب لتحديثات الأمان، لكنّ هذه المسألة ستتحسَّن قريبًا.</translation>
 <translation id="1126551341858583091">يمثل الحجم على سعة التخزين المحلية <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">ذاكرة التخزين المؤقت للسياسة بحالة جيدة</translation>
 <translation id="1150979032973867961">هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثقة من خلال نظام تشغيل الكمبيوتر. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">اختيار</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
-<translation id="1629803312968146339">‏هل تريد من Chrome حفظ هذه البطاقة؟</translation>
 <translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="1640180200866533862">سياسات المستخدم</translation>
 <translation id="1640244768702815859">جرّب <ph name="BEGIN_LINK" />الانتقال إلى الصفحة الرئيسية للموقع<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">‏خطأ HTTP</translation>
 <translation id="2270484714375784793">رقم الهاتف</translation>
 <translation id="2292556288342944218">تم حظر دخولك إلى الإنترنت</translation>
-<translation id="230155334948463882">بطاقة جديدة؟</translation>
 <translation id="2316887270356262533">يوفِّر أقل من 1 ميغابايت. وقد يتم تحميل بعض المواقع بشكل أبطأ عند زيارتها في المرة القادمة.</translation>
 <translation id="2317259163369394535">يتطلَّب <ph name="DOMAIN" /> اسم مستخدم وكلمة مرور.</translation>
 <translation id="2317583587496011522">يتم قبول بطاقات السحب الآلي.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">البطاقات المقبولة</translation>
 <translation id="2702801445560668637">قائمة القراءة</translation>
 <translation id="2704283930420550640">القيمة لا تطابق التنسيق.</translation>
-<translation id="2704951214193499422">‏لم يتمكن Chromium من التأكد من بطاقتك في الوقت الحالي. يُرجى إعادة المحاولة في وقت لاحق.</translation>
 <translation id="2705137772291741111">تعذر قراءة النسخة المحفوظة (المخزنة في ذاكرة التخزين المؤقت) لموقع الويب هذا.</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="2710942282213947212">‏تعمل البرامج على جهاز الكمبيوتر على منع اتصال Chromium بالويب بشكل آمن</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">نوع السياسة غير صحيح</translation>
 <translation id="3037605927509011580">عذرًا!</translation>
 <translation id="3041612393474885105">معلومات الشهادة</translation>
-<translation id="3063697135517575841">‏لم يتمكن Chrome من التأكد من بطاقتك في الوقت الحالي. يُرجى إعادة المحاولة في وقت لاحق.</translation>
 <translation id="3064966200440839136">ستتم مغادرة وضع التصفح المتخفي للدفع عبر تطبيق خارجي. هل تريد المتابعة؟</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{بدون}=1{كلمة مرور واحدة}two{كلمتا مرور (#)}few{# كلمات مرور}many{# كلمة مرور}other{# كلمة مرور}}</translation>
 <translation id="3096100844101284527">إضافة عنوان الاستلام من المستخدم</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">استخدام الإعدادات العمومية التلقائية (كشف)</translation>
 <translation id="4165986682804962316">إعدادات الموقع</translation>
-<translation id="4169947484918424451">‏هل تريد من Chromium حفظ هذه البطاقة؟</translation>
 <translation id="4171400957073367226">توقيع تحقق سيئ</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{عنصر (<ph name="ITEM_COUNT" />) آخر}zero{<ph name="ITEM_COUNT" /> عنصر آخر}two{عنصران (<ph name="ITEM_COUNT" />) آخران}few{<ph name="ITEM_COUNT" /> عناصر أخرى}many{<ph name="ITEM_COUNT" /> عنصرًا آخر}other{<ph name="ITEM_COUNT" /> عنصر آخر}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
@@ -1117,6 +1112,7 @@
 <translation id="9148507642005240123">تراجع عن ا&amp;لتحرير</translation>
 <translation id="9154194610265714752">تم التحديث</translation>
 <translation id="9157595877708044936">جارٍ الإعداد...</translation>
+<translation id="9168814207360376865">السماح للمواقع بالتحقُّق ممّا إذا كانت لديك طرق دفع محفوظة أم لا</translation>
 <translation id="9169664750068251925">الحظر دومًا على هذا الموقع</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>
 <translation id="9171296965991013597">هل تريد مغادرة التطبيق؟</translation>

@@ -227,7 +227,6 @@
 <translation id="1803646570632580723">Listahan ng mga na-pin na app na ipapakita sa launcher</translation>
 <translation id="1808715480127969042">I-block ang cookies sa mga site na ito</translation>
 <translation id="1810261428246410396">Payagang gamitin ang Instant na Pag-tether.</translation>
-<translation id="1826282708349731794">Kinokontrol kung paano nag-uulat ng data sa Google ang Chrome Cleanup</translation>
 <translation id="1827523283178827583">Gumamit ng mga nakapirming proxy server</translation>
 <translation id="1843117931376765605">I-refresh ang pag-rate para sa patakaran ng user</translation>
 <translation id="1844620919405873871">Kino-configure ang mga patakarang nauugnay sa mabilisang pag-unlock.</translation>
@@ -607,7 +606,6 @@
       Walang epekto ang patakarang ito kung maaaring mag-configure ng mga printer ang mga user sa mga indibidwal na device.  Nilalayon itong maging karagdagan sa configuration ng mga printer ng mga indibidwal na user.
       </translation>
 <translation id="2633084400146331575">Paganahin ang pasalitang feedback</translation>
-<translation id="2640843331263301324">Ine-enable ang Chrome Cleanup sa Windows</translation>
 <translation id="2646290749315461919">Binibigyang-daan kang itakda kung pinapayagan o hindi ang mga website na subaybayan ang pisikal na lokasyon ng mga user. Maaaring payagan bilang default, tanggihan bilang ang pagsubaybay sa pisikal na lokasyon ng mga user, o maaaring tanungin ang user sa bawat pagkakataong humiling ng pisikal na lokasyon ang isang website.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskGeolocation' at magagawa itong baguhin ng user.</translation>
@@ -1854,11 +1852,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinagana mo ang setting na ito o hindi nagtakda ng halaga, mananatiling nasa ilalim ng kontrol ng user ang AutoFill. Bibigyang-daan sila nitong mag-configure ng mga profile ng AutoFill at i-on o i-off ang AutoFill ayon sa sarili nilang paghuhusga.</translation>
 <translation id="6394350458541421998">Hindi na ginagamit ang patakarang ito simula sa <ph name="PRODUCT_OS_NAME" /> bersyon 29. Sa halip, pakigamit ang patakaran ng PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">I-log out ang user</translation>
-<translation id="6412477120967771054">Kung itatakda sa false, pipigilan ang Chrome Cleanup na i-scan ang system para sa hindi gustong software at magsagawa ng mga cleanup. Madi-disable ang manual na pag-trigger sa Chrome Cleanup mula sa chrome://settings/cleanup.
-
-      Kung itatakda sa true o hindi itatakda, pana-panahong isa-scan ng Chrome Cleanup ang system para sa hindi gustong software at kung may anumang mahanap, tatanungin nito ang user kung gusto niya itong alisin. Mae-enable ang manual na pag-trigger sa Chrome Cleanup mula sa chrome://settings.
-
-      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasama sa isang domain ng <ph name="MS_AD_NAME" />.</translation>
 <translation id="6426205278746959912">Hindi mo maaaring pwersahin ang mga Android app na gumamit ng proxy. Available para sa mga Android app ang isang subset ng mga setting ng proxy, na maaari nilang kusang-loob na piliing tanggapin:
 
           Kung pipiliin mong hindi kahit kailan gumamit ng isang proxy server, ipapaalam sa mga Android app na walang naka-configure na proxy.

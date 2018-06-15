@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Ventana de captura de pantalla</translation>
 <translation id="1197979282329025000">Se ha producido un error al recuperar las funciones de la impresora <ph name="PRINTER_NAME" />. Esta impresora no se ha podido registrar en <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">¡Empecemos!</translation>
-<translation id="1199232041627643649">Mantén pulsada la tecla <ph name="KEY_EQUIVALENT" /> para salir.</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1202596434010270079">La aplicación de kiosco se ha actualizado. Extrae el dispositivo USB.</translation>
@@ -2210,7 +2209,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4415748029120993980">Curva elíptica SECG secp384r1 (también denominada NIST P-384)</translation>
 <translation id="4416582610654027550">Escribe una URL válida</translation>
 <translation id="4419409365248380979">Permitir siempre que <ph name="HOST" /> pueda establecer cookies.</translation>
-<translation id="4419556793104466535">Controlar la sincronización la personalización y mucho más</translation>
+<translation id="4419556793104466535">Controlar la sincronización, la personalización y mucho más</translation>
 <translation id="4421932782753506458">Gatito</translation>
 <translation id="4422347585044846479">Editar marcador para esta página</translation>
 <translation id="4423104065312875417">Instalar motores de voz adicionales</translation>
@@ -2709,6 +2708,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5204967432542742771">Escribe tu contraseña</translation>
 <translation id="5206215183583316675">¿Quieres eliminar el certificado <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="520621735928254154">Error al importar el certificado</translation>
+<translation id="5209320130288484488">No se ha encontrado ningún dispositivo.</translation>
 <translation id="5209518306177824490">Huella digital SHA-1</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
 <translation id="5213891612754844763">Mostrar configuración de proxy</translation>
@@ -3130,7 +3130,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="580571955903695899">Reordenar por título</translation>
 <translation id="5807290661599647102">Establecer el bloqueo de pantalla</translation>
 <translation id="580961539202306967">Preguntarme cuando un sitio quiera enviarme mensajes push (recomendado)</translation>
-<translation id="5809725759695043233">Tienes aplicaciones optimizadas para Chromebooks</translation>
 <translation id="5814126672212206791">Tipo de conexión</translation>
 <translation id="5815645614496570556">Dirección X.400</translation>
 <translation id="5816434091619127343">Los cambios solicitados en la impresora harían que no se pudiera usar.</translation>
@@ -4148,13 +4147,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7378812711085314936">Obtener conexión de datos</translation>
 <translation id="7384292194278095697">Este dispositivo ya no es compatible</translation>
 <translation id="7385854874724088939">Se ha producido un error al intentar realizar la impresión. Comprueba la impresora e inténtalo de nuevo.</translation>
-<translation id="7386824183915085801">Tu versión de Chrome y del sistema operativo se enviarán junto con
-          cualquier información que decidas incluir en el campo anterior. Si
-          incluyes tu dirección de correo electrónico, Google podrá ponerse en
-          contacto contigo sobre tus sugerencias, que se utilizarán
-          para el diagnóstico de problemas y para mejorar Chrome. Los datos
-          personales que envíes, ya sea de forma explícita o accidental, se protegerán de acuerdo con nuestras políticas de privacidad.<ph name="BEGIN_BOLD" /> Al enviar estos comentarios, aceptas que Google pueda utilizarlos para mejorar sus
-          productos o servicios.<ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Diálogo "Borrar datos de navegación"</translation>
 <translation id="7388044238629873883">Casi has terminado</translation>
 <translation id="7388222713940428051">Abrir ventana de invitado</translation>
@@ -5171,7 +5163,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8944964446326379280"><ph name="APP_NAME" /> está compartiendo una ventana con <ph name="TAB_NAME" />.</translation>
 <translation id="8946284507644756416">Tu <ph name="DEVICE_TYPE" /> se puede desbloquear con tu teléfono Android.</translation>
 <translation id="8946359700442089734">Las funciones de depuración no se han habilitado completamente en este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="8948006114608036530">Este dispositivo envía a Google datos de diagnósticos y uso del dispositivo y las aplicaciones automáticamente.  El propietario aplica esta configuración. Si has activado la opción Actividad en la Web y en Aplicaciones, esta información se almacenará en tu cuenta para que puedas gestionarla en la sección Mi Actividad.
+<translation id="8948006114608036530">Este dispositivo envía a Google datos de diagnóstico y uso del dispositivo y de las aplicaciones automáticamente. El propietario aplica esta configuración. Si has activado la opción Actividad en la Web y en Aplicaciones, esta información se almacenará en tu cuenta para que puedas gestionarla en la sección Mi Actividad.
 
     Esto es información general sobre el dispositivo y su uso (como el nivel de batería, el uso de las aplicaciones o la conectividad de red). La información se utilizará con el fin de mejorar los productos y servicios de Google para todo el mundo. Parte de los datos recogidos también ayudarán a nuestros colaboradores, como los desarrolladores de Android, a mejorar sus aplicaciones y productos.
     Desactivar esta opción no afecta a la capacidad del dispositivo de enviar la información necesaria para recibir servicios esenciales, como actualizaciones de seguridad y del sistema.

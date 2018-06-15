@@ -229,7 +229,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1803646570632580723">Seznam pripetih aplikacij v zaganjalniku</translation>
 <translation id="1808715480127969042">Blokiraj piškotke na teh mestih</translation>
 <translation id="1810261428246410396">Dovoli uporabo takojšnje povezave z internetom prek mobilnega telefona</translation>
-<translation id="1826282708349731794">Nadzira, kako Chromovo orodje za čiščenje sporoča podatke Googlu</translation>
 <translation id="1827523283178827583">Uporabi fiksne strežnike proxy</translation>
 <translation id="1843117931376765605">Osveži oceno za uporabniški pravilnik</translation>
 <translation id="1844620919405873871">Konfigurira pravilnike, povezane s hitrim odklepanjem.</translation>
@@ -611,7 +610,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Ta pravilnik ne vpliva na to, ali lahko uporabniki konfigurirajo tiskalnike v posameznih napravah. Namenjen je kot dopolnilo konfiguracijam tiskalnikov, ki jih opravijo posamezni uporabniki.
       </translation>
 <translation id="2633084400146331575">Vklop izgovorjave</translation>
-<translation id="2640843331263301324">Omogoča Chromovo orodje za čiščenje v sistemu Windows</translation>
 <translation id="2646290749315461919">Omogoča nastavitev, ali lahko spletna mesta sledijo uporabnikovi fizični lokaciji. Sledenje uporabnikovi fizični lokaciji je lahko privzeto dovoljeno, privzeto zavrnjeno ali pa je lahko uporabnik vprašan vsakič, ko spletno mesto zahteva fizično lokacijo.
 
           Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »AskGeolocation« in uporabnik ga bo lahko spremenil.</translation>
@@ -1871,11 +1869,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če to nastavitev omogočite ali ne nastavite vrednosti zanjo, ostane samodejno izpolnjevanje pod nadzorom uporabnikov. Nastavili bodo lahko profile za samodejno izpolnjevanje in ga poljubno vklapljali ali izklapljali.</translation>
 <translation id="6394350458541421998">Ta pravilnik se ne uporablja od uveljavitve različice <ph name="PRODUCT_OS_NAME" /> 29. Namesto njega uporabite pravilnik PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Odjava uporabnika</translation>
-<translation id="6412477120967771054">Če je pravilnik onemogočen, Chromovemu orodju za čiščenje prepreči pregledovanje, ali je v sistemu neželena programska oprema, in čiščenje. Ročna sprožitev Chromovega orodja za čiščenje v nastavitvah chrome://settings/cleanup je onemogočena.
-
-      Če je pravilnik omogočen ali ni nastavljen, Chromovo orodje za čiščenje redno pregleduje, ali je v sistemu neželena programska oprema, in če jo najde, uporabnik prejme poziv, ali jo želi odstraniti. Ročna sprožitev Chromovega orodja za čiščenje v nastavitvah chrome://settings je omogočena.
-
-      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="6426205278746959912">Aplikacij za Android ni mogoče prisiliti, da bi uporabljale strežnik proxy. Aplikacije za Android imajo na voljo podnabor nastavitev strežnika proxy, ki jih lahko prostovoljno upoštevajo:
 
           Če izberete, da se strežnik proxy ne uporablja, so aplikacije za Android obveščene, da strežnik proxy ni konfiguriran.

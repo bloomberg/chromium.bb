@@ -231,7 +231,6 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1803646570632580723">Liste des applications épinglées à afficher dans le lanceur d'applications</translation>
 <translation id="1808715480127969042">Bloquer les cookies sur ces sites</translation>
 <translation id="1810261428246410396">Autoriser le partage de connexion instantané</translation>
-<translation id="1826282708349731794">Contrôle la manière dont l'outil de nettoyage de Chrome transmet des données à Google</translation>
 <translation id="1827523283178827583">Utiliser des serveurs proxy déterminés</translation>
 <translation id="1843117931376765605">Fréquence d'actualisation des règles relatives aux utilisateurs</translation>
 <translation id="1844620919405873871">Permet de configurer les règles associées au déverrouillage rapide.</translation>
@@ -619,7 +618,6 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Cette règle n'a aucune incidence sur la capacité ou non des utilisateurs à configurer des imprimantes sur différents appareils. Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
       </translation>
 <translation id="2633084400146331575">Activer les commentaires audio</translation>
-<translation id="2640843331263301324">Active l'outil de nettoyage de Chrome sur Windows</translation>
 <translation id="2646290749315461919">Permet de définir si les sites Web sont autorisés à suivre la position géographique des utilisateurs. Ce suivi peut être autorisé par défaut, refusée par défaut, ou l'utilisateur peut recevoir un message chaque fois qu'un site Web demande sa position géographique. 
 
 Si cette règle n'est pas configurée, le paramètre "AskGeolocation" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
@@ -1879,11 +1877,6 @@ Si vous désactivez ce paramètre, la fonction de saisie automatique n'est pas a
 Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de saisie automatique peut être contrôlée par les utilisateurs. Ces derniers peuvent ainsi configurer des profils de saisie automatique et activer ou désactiver la fonction de saisie automatique à leur guise.</translation>
 <translation id="6394350458541421998">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_OS_NAME" />. Veuillez utiliser la règle PresentationScreenDimDelayScale à la place.</translation>
 <translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
-<translation id="6412477120967771054">Si cette règle est définie sur "false", l'outil de nettoyage de Chrome ne peut pas analyser le système pour détecter et supprimer les logiciels indésirables. Le déclenchement manuel de l'outil de nettoyage de Chrome à partir de chrome://settings/cleanup est désactivé.
-
-      Si elle est définie sur "true" ou qu'elle n'est pas définie, l'outil de nettoyage de Chrome analyse régulièrement le système pour détecter les éventuels logiciels indésirables et, s'il en trouve, un message s'affiche demandant à l'utilisateur s'il souhaite les supprimer. Le déclenchement manuel de l'outil de nettoyage de Chrome à partir de chrome://settings est activé.
-
-      Cette règle n'est pas disponible pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="6426205278746959912">Vous ne pouvez pas forcer les applications Android à utiliser un proxy. Celles-ci disposent d'un sous-ensemble de paramètres proxy qu'elles peuvent choisir d'utiliser ou non :
 
           Si vous choisissez de ne jamais utiliser de serveur proxy, vous signalez aux applications Android qu'aucun proxy n'est configuré.
@@ -2006,7 +1999,7 @@ Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de sa
 
       Cette règle détermine les instructions de sélection de l'imprimante par défaut dans <ph name="PRODUCT_NAME" />, la première fois que la fonction d'impression est utilisée avec un profil donné.
 
-      Si cette règle est définie, <ph name="PRODUCT_NAME" /> essaie de trouver une imprimante correspondant à tous les attributs spécifiés et en fait l'imprimante par défaut. La première imprimante retenue d'après ces critères est sélectionnée. Si plusieurs imprimantes correspondent aux attributs spécifiés, l'une d'entre elles est sélectionnée (selon l'ordre dans lequel elles ont été découvertes).
+      Si cette règle est définie, <ph name="PRODUCT_NAME" /> essaie de trouver une imprimante correspondant à tous les attributs spécifiés et la définit comme imprimante par défaut. La première imprimante retenue d'après ces critères est sélectionnée. Si plusieurs imprimantes correspondent aux attributs spécifiés, l'une d'entre elles est sélectionnée (selon l'ordre dans lequel elles ont été découvertes).
 
       Si cette règle n'est pas définie ou si aucune imprimante n'est retenue dans le délai imparti, l'imprimante par défaut est l'imprimante PDF intégrée à l'outil. Si l'imprimante PDF n'est pas disponible, aucune imprimante n'est sélectionnée.
 

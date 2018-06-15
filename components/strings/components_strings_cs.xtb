@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Zvolit</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Bránit této stránce ve vytváření dalších dialogových oken</translation>
-<translation id="1629803312968146339">Chcete, aby Chrome tuto kartu uložil?</translation>
 <translation id="1639239467298939599">Načítání</translation>
 <translation id="1640180200866533862">Zásady pro uživatele</translation>
 <translation id="1640244768702815859">Zkuste <ph name="BEGIN_LINK" />navštívit domovskou stránku webu<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Chyba protokolu HTTP</translation>
 <translation id="2270484714375784793">Telefonní číslo</translation>
 <translation id="2292556288342944218">Vaše připojení k internetu je blokováno</translation>
-<translation id="230155334948463882">Nová karta?</translation>
 <translation id="2316887270356262533">Uvolní více než 1 MB. Je možné, že se některé weby při příští návštěvě budou načítat pomaleji.</translation>
 <translation id="2317259163369394535">Doména <ph name="DOMAIN" /> vyžaduje zadání uživatelského jména a hesla.</translation>
 <translation id="2317583587496011522">Obchodník přijímá debetní karty.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Přijímané karty</translation>
 <translation id="2702801445560668637">Seznam četby</translation>
 <translation id="2704283930420550640">Hodnota neodpovídá formátu.</translation>
-<translation id="2704951214193499422">Prohlížeč Chromium vaši kartu aktuálně nemohl ověřit. Zkuste to prosím znovu později.</translation>
 <translation id="2705137772291741111">Kopii tohoto webu uloženou v mezipaměti se nepodařilo přečíst.</translation>
 <translation id="2709516037105925701">Automatické vyplňování</translation>
 <translation id="2710942282213947212">Software na počítači brání prohlížeči Chromium v bezpečném připojení k webu</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Chybný typ zásady</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3041612393474885105">Informace o certifikátu</translation>
-<translation id="3063697135517575841">Chrome vaši kartu aktuálně nemohl ověřit. Zkuste to prosím znovu později.</translation>
 <translation id="3064966200440839136">Chystáte se opustit anonymní režim, abyste mohli zaplatit v externí aplikaci. Chcete pokračovat?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Žádné}=1{1 heslo}few{# hesla}many{# hesla}other{# hesel}}</translation>
 <translation id="3096100844101284527">Přidat adresu vyzvednutí</translation>
@@ -456,7 +452,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Použít globální výchozí nastavení (zjistit)</translation>
 <translation id="4165986682804962316">Nastavení webu</translation>
-<translation id="4169947484918424451">Chcete, aby prohlížeč Chromium tuto kartu uložil?</translation>
 <translation id="4171400957073367226">Chybný ověřovací podpis</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> další položka}few{<ph name="ITEM_COUNT" /> další položky}many{<ph name="ITEM_COUNT" /> další položky}other{<ph name="ITEM_COUNT" /> dalších položek}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
@@ -1112,6 +1107,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="9148507642005240123">&amp;Vrátit úpravy zpět</translation>
 <translation id="9154194610265714752">Aktualizováno</translation>
 <translation id="9157595877708044936">Nastavování...</translation>
+<translation id="9168814207360376865">Povolit webům zjišťovat, zda máte uložené platební metody</translation>
 <translation id="9169664750068251925">Blokovat vždy na tomto webu</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
 <translation id="9171296965991013597">Zavřít aplikaci?</translation>

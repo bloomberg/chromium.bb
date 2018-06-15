@@ -229,7 +229,6 @@
 <translation id="1803646570632580723">Danh sách các ứng dụng được ghim sẽ hiển thị trong trình chạy</translation>
 <translation id="1808715480127969042">Chặn cookie trên các trang web này</translation>
 <translation id="1810261428246410396">Cho phép sử dụng tính năng Chia sẻ kết nối tức thì.</translation>
-<translation id="1826282708349731794">Kiểm soát cách tính năng Làm sạch Chrome báo cáo dữ liệu cho Google</translation>
 <translation id="1827523283178827583">Sử dụng máy chủ proxy cố định</translation>
 <translation id="1843117931376765605">Chính sách tốc độ làm mới cho người dùng</translation>
 <translation id="1844620919405873871">Định cấu hình chính sách liên quan đến mở khóa nhanh.</translation>
@@ -609,7 +608,6 @@
      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không.  Chính sách này nhằm bổ sung cho cấu hình của các máy in theo từng người dùng.
       </translation>
 <translation id="2633084400146331575">Bật tính năng phản hồi bằng giọng nói</translation>
-<translation id="2640843331263301324">Bật tính năng Làm sạch Chrome trên Windows</translation>
 <translation id="2646290749315461919">Cho phép bạn đặt liệu các trang web có được phép theo dõi vị trí thực của người dùng hay không. Theo dõi vị trí thực của người dùng có thể được cho phép theo mặc định, từ chối theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web yêu cầu cung cấp vị trí thực.
 
           Nếu không thiết lập chính sách này, 'AskGeolocation' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
@@ -898,9 +896,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
 <translation id="3545457887306538845">Cho phép bạn kiểm soát vị trí có thể sử dụng Công cụ dành cho nhà phát triển.
 
-      Nếu đặt chính sách này thành 'DeveloperToolsDisallowedForForceInstalledExtensions' (giá trị 0 là giá trị mặc định) thì nói chung, bạn có thể truy cập vào Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript. Tuy nhiên, trong ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp, thì bạn không thể truy cập vào những mục này.
+      Nếu đặt chính sách này thành 'DeveloperToolsDisallowedForForceInstalledExtensions' (giá trị 0, là giá trị mặc định) thì nói chung, bạn có thể truy cập vào Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript. Tuy nhiên, trong ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp, thì bạn không thể truy cập vào những mục này.
       Nếu đặt chính sách này thành 'DeveloperToolsAllowed' (giá trị 1), thì bạn có thể truy cập cũng như sử dụng Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript trong tất cả các ngữ cảnh, bao gồm cả ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp.
-      Nếu đặt chính sách này thành 'DeveloperToolsDisallowed' (giá trị 2), thì bạn không thể truy cập vào Công cụ dành cho nhà phát triển, cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.</translation>
+      Nếu đặt chính sách này thành 'DeveloperToolsDisallowed' (giá trị 2), thì bạn không thể truy cập vào Công cụ dành cho nhà phát triển, cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="3556806727696701427">Bật tính năng Duyệt web an toàn của <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi mục cài đặt này.
 
@@ -1855,11 +1853,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6392973646875039351">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành các biểu mẫu web bằng cách sử dụng thông tin được lưu trữ trước đây, chẳng hạn như địa chỉ hoặc thông tin thẻ tín dụng. Nếu bạn tắt cài đặt này, người dùng sẽ không sử dụng được tính năng Tự động điền. Nếu bạn bật cài đặt này hoặc không đặt giá trị, Tự động điền sẽ vẫn thuộc quyền kiểm soát của người dùng. Điều này sẽ cho phép họ thiết lập cấu hình Tự động điền và bật hoặc tắt Tự động điền tùy theo ý họ.</translation>
 <translation id="6394350458541421998">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_OS_NAME" /> 29. Vui lòng sử dụng chính sách PresentationScreenDimDelayScale thay vào đó.</translation>
 <translation id="6401669939808766804">Đăng xuất người dùng</translation>
-<translation id="6412477120967771054">Nếu đặt thành false, tính năng Làm sạch Chrome sẽ không được quét hệ thống để tìm phần mềm không mong muốn và thực hiện các thao tác làm sạch. Tùy chọn kích hoạt thủ công tính năng Làm sạch Chrome từ chrome://settings/cleanup đã tắt.
-
-      Nếu đặt thành true hoặc không đặt chính sách này thì tính năng Làm sạch Chrome sẽ định kỳ quét hệ thống để tìm phần mềm không mong muốn và khi tìm được bất kỳ phần mềm không mong muốn nào thì sẽ hỏi người dùng xem họ có muốn xóa chúng không. Tùy chọn kích hoạt thủ công tính năng Làm sạch Chrome từ chrome://settings được bật.
-
-      Chính sách này không có trên các phiên bản Windows chưa tham gia miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="6426205278746959912">Bạn không thể buộc ứng dụng Android sử dụng proxy. Tập hợp con của cài đặt proxy được cung cấp cho ứng dụng Android. Cài đặt mà ứng dụng có thể tự nguyện chọn để thực hiện:
 
           Nếu bạn chọn không bao giờ sử dụng máy chủ proxy, ứng dụng Android được thông báo rằng không có proxy nào được định cấu hình.
@@ -1981,11 +1974,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Chính sách này xác định quy tắc chọn máy in mặc định trong <ph name="PRODUCT_NAME" />. Điều này xảy ra vào lần đầu chức năng in được sử dụng với một cấu hình.
 
-      Khi bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố tìm một máy in khớp với tất cả các thuộc tính đã chỉ định và chọn thiết bị đó làm máy in mặc định. Máy in đầu tiên được tìm thấy phù hợp với chính sách sẽ được chọn, trong trường hợp kết quả trùng khớp không phải duy nhất, có thể chọn bất kỳ máy in trùng khớp nào tùy thuộc vào thứ tự mà máy in được tìm thấy.
+      Khi bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố tìm một máy in khớp với tất cả các thuộc tính đã chỉ định và chọn thiết bị đó làm máy in mặc định. Máy in đầu tiên được tìm thấy phù hợp với chính sách sẽ được chọn, trong trường hợp kết quả trùng khớp không phải duy nhất, thì có thể chọn bất kỳ máy in trùng khớp nào tùy thuộc vào thứ tự mà máy in được tìm thấy.
 
       Nếu bạn chưa đặt chính sách này hoặc không tìm thấy máy in trùng khớp trong khoảng thời gian chờ thì máy in sẽ được đặt mặc định thành máy in PDF tích hợp hoặc không có máy in nào được chọn khi không có máy in PDF.
 
-      Giá trị này được phân tích cú pháp là đối tượng JSON, tuân theo giản đồ sau đây:
+      Giá trị này được phân tích cú pháp dưới dạng đối tượng JSON, tuân theo giản đồ sau đây:
       {
         "type": "object",
         "properties": {
@@ -2006,7 +1999,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       }
 
       Máy in đã kết nối với <ph name="CLOUD_PRINT_NAME" /> được coi là <ph name="PRINTER_TYPE_CLOUD" />, các máy in còn lại được phân loại là <ph name="PRINTER_TYPE_LOCAL" />.
-      Bỏ qua một trường nghĩa là tất cả các giá trị trùng khớp, chẳng hạn như không chỉ rõ kết nối, sẽ làm cho chế độ Xem trước bản in bắt đầu tìm tất cả các loại máy in, cục bộ và trên đám mây.
+      Bỏ qua một trường nghĩa là tất cả các giá trị trùng khớp, chẳng hạn như không chỉ rõ hoạt động kết nối, sẽ làm cho chế độ Xem trước bản in bắt đầu tìm tất cả các loại máy in, cục bộ và trên đám mây.
       Mẫu biểu thức thông thường phải tuân thủ cú pháp JavaScript RegExp và kết quả trùng khớp có phân biệt chữ hoa-thường.</translation>
 <translation id="684856667300805181">Chính sách này đã bị xóa trong <ph name="PRODUCT_NAME" /> 68 và thay thế bằng <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Chính sách này không được dùng nữa và đã bị xóa trong M66, vì chính sách này trước đây chỉ dùng để kiểm tra nội bộ và tiềm ẩn nguy cơ bảo mật.
@@ -2284,9 +2277,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7511361072385293666">Nếu chính sách này được đặt thành true hoặc không được đặt thì được phép sử dụng giao thức QUIC trong <ph name="PRODUCT_NAME" />.
       Nếu chính sách này được đặt thành false thì không được phép sử dụng giao thức QUIC.</translation>
 <translation id="7519251620064708155">Cho phép tạo khóa trên các trang web này</translation>
-<translation id="7529083451528428240">Cho phép bạn khóa phiên của người dùng dựa vào thời gian của ứng dụng hoặc định mức sử dụng trong ngày.
+<translation id="7529083451528428240">Cho phép bạn khóa phiên của người dùng dựa vào thời gian của ứng dụng hoặc hạn mức sử dụng trong ngày.
 
-          |time_window_limit| chỉ định một khoảng thời gian hàng ngày mà phiên của người dùng sẽ bị khóa. Chúng tôi chỉ hỗ trợ mỗi ngày trong tuần một quy tắc, do đó, kích thước của mảng |entries| có thể dao động trong khoảng từ 0 đến 7. |starts_at| và |ends_at| là thời gian bắt đầu và thời gian kết thúc của giới hạn thời gian, khi |ends_at| sớm hơn |starts_at| thì điều đó có nghĩa là |time_limit_window| kết thúc vào ngày tiếp theo. |last_updated_millis| là dấu thời gian UTC cho thời gian gần đây nhất mục này được cập nhật, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
+          |time_window_limit| chỉ định một khoảng thời gian hàng ngày mà phiên của người dùng sẽ bị khóa. Chúng tôi chỉ hỗ trợ một quy tắc mỗi ngày trong tuần, do đó, kích thước của mảng |entries| có thể dao động trong khoảng từ 0 đến 7. |starts_at| và |ends_at| là thời gian bắt đầu và thời gian kết thúc của giới hạn thời gian, khi |ends_at| sớm hơn |starts_at| thì điều đó có nghĩa là |time_limit_window| kết thúc vào ngày tiếp theo. |last_updated_millis| là dấu thời gian UTC cho thời gian gần đây nhất mục này được cập nhật, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
 
           |time_usage_limit| chỉ định định mức sử dụng màn hình hàng ngày, do vậy, khi người dùng đạt đến giới hạn này, phiên của người dùng sẽ bị khóa. Có một khoảng thời gian cho mỗi ngày trong tuần và chỉ nên đặt khoảng thời gian này nếu có định mức hoạt động cho ngày đó. |usage_quota_mins| là khoảng thời gian có thể sử dụng thiết bị được quản lý trong một ngày và |reset_at| là thời gian khi định mức sử dụng được gia hạn. Giá trị mặc định cho |reset_at| là nửa đêm ({'hour': 0, 'minute': 0}). |last_updated_millis| là dấu thời gian UTC cho lần gần đây nhất cập nhật mục này, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
 

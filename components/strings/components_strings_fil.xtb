@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Pumili</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Pigilan ang pahinang ito sa paggawa ng mga karagdagang dialog</translation>
-<translation id="1629803312968146339">Gusto mo bang i-save ng Chrome ang card na ito?</translation>
 <translation id="1639239467298939599">Naglo-load</translation>
 <translation id="1640180200866533862">Mga patakaran ng user</translation>
 <translation id="1640244768702815859">Subukang <ph name="BEGIN_LINK" />bisitahin ang homepage ng site<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Error sa HTTP</translation>
 <translation id="2270484714375784793">Numero ng telepono</translation>
 <translation id="2292556288342944218">Naka-block ang iyong access sa Internet</translation>
-<translation id="230155334948463882">Bagong card?</translation>
 <translation id="2316887270356262533">Magbabakante ng wala pang 1 MB. Maaaring mag-load nang mas mabagal ang ilang site sa iyong susunod na pagbisita.</translation>
 <translation id="2317259163369394535">Kailangan ng <ph name="DOMAIN" /> ng username at password.</translation>
 <translation id="2317583587496011522">Tinatanggap ang mga debit card.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Mga Tinatanggap na Card</translation>
 <translation id="2702801445560668637">Listahan ng Babasahin</translation>
 <translation id="2704283930420550640">Hindi tumutugma ang format sa halaga.</translation>
-<translation id="2704951214193499422">Hindi nakumpirma ng Chromium ang iyong card sa pagkakataong ito. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="2705137772291741111">Hindi mabasa ang naka-save (naka-cache) na kopya ng site na ito.</translation>
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2710942282213947212">Pinipigilan ng software sa iyong computer na makakonekta nang ligtas ang Chromium sa web</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Maling uri ng patakaran</translation>
 <translation id="3037605927509011580">Ay, Naku!</translation>
 <translation id="3041612393474885105">Impormasyon sa Certificate</translation>
-<translation id="3063697135517575841">Hindi nakumpirma ng Chrome ang iyong card sa pagkakataong ito. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="3064966200440839136">Aalis sa incognito mode upang magbayad sa pamamagitan ng external na application. Magpatuloy?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Wala}=1{1 password}one{# password}other{# na password}}</translation>
 <translation id="3096100844101284527">Magdagdag ng Address sa Pag-pick up</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Gamitin ang pangkalahatang default (Tukuyin)</translation>
 <translation id="4165986682804962316">Mga setting ng site</translation>
-<translation id="4169947484918424451">Gusto mo bang i-save ng Chromium ang card na ito?</translation>
 <translation id="4171400957073367226">Hindi wasto ang signature sa pag-verify</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> pang item}one{<ph name="ITEM_COUNT" /> pang item}other{<ph name="ITEM_COUNT" /> pang item}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
@@ -829,7 +824,7 @@
 <translation id="7012363358306927923">China UnionPay</translation>
 <translation id="7029809446516969842">Mga Password</translation>
 <translation id="7050187094878475250">Sinubukan mong puntahan ang <ph name="DOMAIN" />, ngunit nagpakita ang server ng certificate na masyadong mahaba ang panahon ng pagkakaroon ng bisa upang maging mapagkakatiwalaan.</translation>
-<translation id="7053983685419859001">Harangan</translation>
+<translation id="7053983685419859001">I-block</translation>
 <translation id="7064851114919012435">Impormasyon sa pakikipag-ugnayan</translation>
 <translation id="7079718277001814089">Naglalaman ng malware ang site na ito</translation>
 <translation id="7087282848513945231">County</translation>

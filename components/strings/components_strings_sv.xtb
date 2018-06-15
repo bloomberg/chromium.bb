@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Välj</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
-<translation id="1629803312968146339">Vill du att Chrome sparar det här kortet?</translation>
 <translation id="1639239467298939599">Läser in</translation>
 <translation id="1640180200866533862">Användarpolicyer</translation>
 <translation id="1640244768702815859">Testa att <ph name="BEGIN_LINK" />besöka webbplatsens startsida<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">HTTP-fel</translation>
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2292556288342944218">Internetanslutningen har blockerats</translation>
-<translation id="230155334948463882">Har du ett nytt kort?</translation>
 <translation id="2316887270356262533">Frigör mindre än 1 MB. Vissa webbplatser kan läsas in långsammare nästa gång du besöker dem.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> kräver användarnamn och lösenord.</translation>
 <translation id="2317583587496011522">Betalkort kan användas.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Godkända kort</translation>
 <translation id="2702801445560668637">Läslista</translation>
 <translation id="2704283930420550640">Värdet matchar inte formatet.</translation>
-<translation id="2704951214193499422">Chromium kunde inte bekräfta kortet. Försök igen senare.</translation>
 <translation id="2705137772291741111">Det gick inte att läsa den sparade (cachelagrade) kopian av webbplatsen.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="2710942282213947212">Programvara på datorn förhindrar att Chromium ansluts till internet på ett säkert sätt</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Felaktig policytyp</translation>
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="3041612393474885105">Certifikatinformation</translation>
-<translation id="3063697135517575841">Det gick inte att bekräfta kortet. Försök igen senare.</translation>
 <translation id="3064966200440839136">Om du betalar i ett externt program sker inte det i inkognitoläge. Vill du fortsätta?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Ingen}=1{1 lösenord}other{# lösenord}}</translation>
 <translation id="3096100844101284527">Lägg till hämtningsadress</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Använd global standardinställning (Upptäck)</translation>
 <translation id="4165986682804962316">Platsinställningar</translation>
-<translation id="4169947484918424451">Vill du att Chromium sparar det här kortet?</translation>
 <translation id="4171400957073367226">Felaktig verifieringssignatur</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> objekt till}other{<ph name="ITEM_COUNT" /> objekt till}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>

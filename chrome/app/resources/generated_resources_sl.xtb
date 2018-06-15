@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Okno posnetka zaslona</translation>
 <translation id="1197979282329025000">Napaka pri prenosu zmožnosti tiskalnika <ph name="PRINTER_NAME" />. Tega tiskalnika ni mogoče registrirati za storitev <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Začnite</translation>
-<translation id="1199232041627643649">Držite tipko <ph name="KEY_EQUIVALENT" />, če želite končati.</translation>
 <translation id="119944043368869598">Izbriši vse</translation>
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1202596434010270079">Aplikacija za kiosk je posodobljena. Odstranite ključek USB.</translation>
@@ -2714,6 +2713,7 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="5204967432542742771">Vnesite geslo</translation>
 <translation id="5206215183583316675">Želite izbrisati »<ph name="CERTIFICATE_NAME" />«?</translation>
 <translation id="520621735928254154">Napaka pri uvozu potrdila</translation>
+<translation id="5209320130288484488">Najti ni mogoče nobene naprave</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Zapri zavihek</translation>
 <translation id="5213891612754844763">Prikaži nastavitve strežnika proxy</translation>
@@ -3136,7 +3136,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="580571955903695899">Razvrsti po naslovu</translation>
 <translation id="5807290661599647102">Nastavitev zaklepanja zaslona</translation>
 <translation id="580961539202306967">Vprašaj me, ko mi želi spletno mesto poslati potisna sporočila (priporočeno)</translation>
-<translation id="5809725759695043233">Imate aplikacije, prilagojene za Chromebooke</translation>
 <translation id="5814126672212206791">Vrsta povezave</translation>
 <translation id="5815645614496570556">Naslov X.400</translation>
 <translation id="5816434091619127343">Če uveljavite zahtevane spremembe tiskalnika, bo ta neuporaben.</translation>
@@ -4154,14 +4153,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7378812711085314936">Uporaba podatkovne povezave</translation>
 <translation id="7384292194278095697">Ta naprava ni več podprta</translation>
 <translation id="7385854874724088939">Napaka pri tiskanju. Preverite tiskalnik in poskusite znova.</translation>
-<translation id="7386824183915085801">Poleg podatkov, ki jih izberete zgoraj, se pošljeta različici Chroma in operacijskega
-          sistema. Če vključite svoj e-poštni naslov, se lahko Google obrne na vas glede
-          poslanih povratnih informacij. Te povratne informacije uporabljamo za
-          diagnosticiranje težav in izboljšanje Chroma. Če namerno ali nenamerno
-          pošljete kakršne koli osebne podatke, jih varujemo v skladu z našimi pravilniki o
-          zasebnosti.<ph name="BEGIN_BOLD" /> Če pošljete te povratne informacije, se strinjate, da jih lahko
-          Google uporabi za izboljšanje katerega koli svojega izdelka ali storitve.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Pogovorno okno »Izbriši podatke brskanja«</translation>
 <translation id="7388044238629873883">Skoraj ste že končali.</translation>
 <translation id="7388222713940428051">Odpri okno načina za goste</translation>

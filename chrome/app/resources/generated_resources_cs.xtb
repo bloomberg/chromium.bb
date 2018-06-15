@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Snímek okna</translation>
 <translation id="1197979282329025000">Při načítání funkcí tiskárny <ph name="PRINTER_NAME" /> se vyskytla chyba. Tato tiskárna nemůže být zaregistrována do služby <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Začínáme</translation>
-<translation id="1199232041627643649">Ukončení proveďte podržením kláves <ph name="KEY_EQUIVALENT" />.</translation>
 <translation id="119944043368869598">Vymazat vše</translation>
 <translation id="1201402288615127009">Další</translation>
 <translation id="1202596434010270079">Terminálová aplikace byla aktualizována. Vyjměte jednotku USB.</translation>
@@ -2711,6 +2710,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5204967432542742771">Zadejte heslo</translation>
 <translation id="5206215183583316675">Smazat certifikát <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="520621735928254154">Chyba při importu certifikátu</translation>
+<translation id="5209320130288484488">Nebyla nalezena žádná zařízení</translation>
 <translation id="5209518306177824490">Digitální otisk SHA-1</translation>
 <translation id="5210365745912300556">Zavřít kartu</translation>
 <translation id="5213891612754844763">Zobrazit nastavení proxy serveru</translation>
@@ -3131,7 +3131,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="580571955903695899">Znovu uspořádat podle názvu</translation>
 <translation id="5807290661599647102">Nastavit zámek obrazovky</translation>
 <translation id="580961539202306967">Zeptat se, když mi chce web odeslat nabízenou zprávu (doporučeno)</translation>
-<translation id="5809725759695043233">Máte aplikace optimalizované pro Chromebooky</translation>
 <translation id="5814126672212206791">Typ připojení</translation>
 <translation id="5815645614496570556">Adresa X.400</translation>
 <translation id="5816434091619127343">Po provedení požadovaných změn by tiskárna nebyla použitelná.</translation>
@@ -4150,12 +4149,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7378812711085314936">Získání datového připojení</translation>
 <translation id="7384292194278095697">Zařízení již není podporováno</translation>
 <translation id="7385854874724088939">Při pokusu o tisk došlo k chybě. Zkontrolujte tiskárnu a zkuste to znovu.</translation>
-<translation id="7386824183915085801">Kromě informací, které zvolíte výše, budou odeslány také informace o verzi prohlížeče Chrome a operačního systému. Pokud zahrnete e-mailovou
-        adresu, společnost Google vás v souvislosti s nahlášenou zpětnou vazbou může kontaktovat. Zpětnou vazbu použijeme
-        k diagnostice potíží a vylepšení Chromu. Osobní údaje, které odešlete, 
-        ať už úmyslně, či náhodou, budou chráněny podle našich zásad
-        ochrany soukromí.<ph name="BEGIN_BOLD" /> Odesláním zpětné vazby vyjadřujete svůj souhlas s tím, že společnost Google smí poskytnuté údaje použít ke zdokonalování všech produktů a služeb Google.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Dialogové okno Vymazat údaje o prohlížení</translation>
 <translation id="7388044238629873883">Už jste skoro hotovi!</translation>
 <translation id="7388222713940428051">Otevřít okno hosta</translation>

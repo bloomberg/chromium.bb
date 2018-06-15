@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Alegeți</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Restricționați capacitatea acestei pagini de a crea casete de dialog suplimentare</translation>
-<translation id="1629803312968146339">Dorești ca acest card să fie salvat în Chrome?</translation>
 <translation id="1639239467298939599">Se încarcă</translation>
 <translation id="1640180200866533862">Politici privind utilizatorii</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />Accesează pagina de pornire a site-ului<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Eroare HTTP</translation>
 <translation id="2270484714375784793">Număr telefon</translation>
 <translation id="2292556288342944218">Accesul la internet este blocat</translation>
-<translation id="230155334948463882">Card nou?</translation>
 <translation id="2316887270356262533">Eliberează mai puțin de 1 MB. Este posibil ca unele site-uri să se încarce mai lent la următoarea accesare.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> necesită un nume de utilizator și o parolă.</translation>
 <translation id="2317583587496011522">Se acceptă carduri de debit.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Carduri acceptate</translation>
 <translation id="2702801445560668637">Listă de lectură</translation>
 <translation id="2704283930420550640">Valoarea nu se potrivește cu formatul.</translation>
-<translation id="2704951214193499422">Momentan, Chromium nu a putut confirma cardul. Încearcă din nou mai târziu.</translation>
 <translation id="2705137772291741111">Copia salvată (în memoria cache) a acestui site nu a putut fi citită.</translation>
 <translation id="2709516037105925701">Completare automată</translation>
 <translation id="2710942282213947212">Pe computer există software care împiedică Chromium să se conecteze în siguranță la internet</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Tip de politică greșit</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3041612393474885105">Informații despre certificat</translation>
-<translation id="3063697135517575841">Momentan, Chrome nu a putut confirma cardul. Încearcă din nou mai târziu.</translation>
 <translation id="3064966200440839136">Vei părăsi modul incognito pentru a plăti folosind o aplicație externă. Continui?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Niciuna}=1{1 parolă}few{# parole}other{# de parole}}</translation>
 <translation id="3096100844101284527">Adaugă o adresă de preluare</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Folosește global în mod prestabilit (detectează)</translation>
 <translation id="4165986682804962316">Setări pentru site-uri</translation>
-<translation id="4169947484918424451">Dorești ca acest card să fie salvat în Chromium?</translation>
 <translation id="4171400957073367226">Semnătură de verificare nevalidă</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Încă <ph name="ITEM_COUNT" /> articol}few{Încă <ph name="ITEM_COUNT" /> articole}other{Încă <ph name="ITEM_COUNT" /> de articole}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>

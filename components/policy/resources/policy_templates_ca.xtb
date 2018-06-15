@@ -219,7 +219,6 @@
 <translation id="1803646570632580723">Llista d'aplicacions fixades perquè es mostrin a la barra d'execució ràpida</translation>
 <translation id="1808715480127969042">Bloqueja les galetes en aquests llocs</translation>
 <translation id="1810261428246410396">Permet utilitzar Compartició de xarxa instantània</translation>
-<translation id="1826282708349731794">Controla de quina manera Neteja de Chrome comunica dades a Google</translation>
 <translation id="1827523283178827583">Fes servir servidors intermediaris fixos</translation>
 <translation id="1843117931376765605">Freqüència d'actualització de la política d'usuari</translation>
 <translation id="1844620919405873871">Configura polítiques relacionades amb el desbloqueig ràpid.</translation>
@@ -585,7 +584,6 @@
       Aquesta política no influeix en la possibilitat que tenen els usuaris de configurar les impressores en dispositius concrets. La seva finalitat és complementar la configuració de les impressores per part dels usuaris.
       </translation>
 <translation id="2633084400146331575">Activa els comentaris de veu</translation>
-<translation id="2640843331263301324">Activa Neteja de Chrome a Windows</translation>
 <translation id="2646290749315461919">Us permet definir si els llocs web poden rastrejar la ubicació física dels usuaris. El seguiment de la ubicació física dels usuaris es pot autoritzar o denegar de manera predeterminada o bé es pot preguntar a l'usuari cada vegada que un lloc web demani la ubicació física. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AskGeolocation" i l'usuari podrà canviar-lo.</translation>
 <translation id="2647069081229792812">Activa o desactiva l'edició d'adreces d'interès</translation>
 <translation id="2650049181907741121">Acció que cal dur a terme quan l'usuari tanca la tapa</translation>
@@ -1764,11 +1762,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6392973646875039351">Activa la funció d'emplenament automàtic de <ph name="PRODUCT_NAME" /> i permet que els usuaris emplenin formularis web automàticament mitjançant informació emmagatzemada anteriorment, com ara l'adreça o la informació de la targeta de crèdit. Si desactiveu aquest paràmetre, els usuaris no podran accedir a l'emplenament automàtic. Tant si l'activeu com si no hi configureu cap valor, l'usuari podrà controlar l'emplenament automàtic. D'aquesta manera, podrà configurar perfils d'emplenament automàtic i activar o desactivar l'emplenament automàtic segons li convingui.</translation>
 <translation id="6394350458541421998">Aquesta política no està disponible des de la versió 29 de <ph name="PRODUCT_OS_NAME" />. Feu servir la política PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Tanca la sessió de l'usuari</translation>
-<translation id="6412477120967771054">Si s'estableix en "false", Neteja de Chrome no podrà escanejar el sistema per detectar programari no desitjat ni realitzar neteges. L'activació manual de Neteja de Chrome des de chrome://settings/cleanup estarà desactivada.
-
-      Si s'estableix en "true" o es deixa sense establir, Neteja de Chrome escanejarà regularment el sistema per detectar programari no desitjat i, si en troba, preguntarà a l'usuari si el vol suprimir. L'activació manual de Neteja de Chrome des de chrome://settings estarà activada.
-
-      Aquesta política no està disponible en les instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="6426205278746959912">No pots forçar que les aplicacions d'Android utilitzin un servidor intermediari. Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari, que poden decidir si respectar-les:
 
           Si decideixes no utilitzar mai un servidor intermediari, s'informarà les aplicacions per a Android que no hi ha cap servidor intermediari configurat.
@@ -2174,15 +2167,15 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7519251620064708155">Permet que aquests llocs utilitzin la generació de claus</translation>
 <translation id="7529083451528428240">Et permet bloquejar la sessió d'usuari en funció de l'hora del client o de la quota d'ús del dia.
 
-          |time_window_limit| especifica un període de temps diari en què s'ha de bloquejar la sessió d'usuari. Com que només admetem una regla per dia de la setmana, la mida de la matriu |entries| pot variar entre 0-7. |starts_at| i |ends_at| són l'inici i el final del límit de temps. Si |ends_at| és inferior a |starts_at|, vol dir que |time_limit_window| finalitza el dia següent. |last_updated_millis| és la marca de temps en format UTC per a l'última vegada en què s'ha actualitzat aquesta entrada. S'envia com a cadena perquè la marca de temps no cap en un nombre enter.
+          |time_window_limit| especifica un període de temps diari en què s'ha de bloquejar la sessió d'usuari. Com que només admetem una regla per dia de la setmana, la mida de la matriu |entries| pot variar entre 0-7. |starts_at| i |ends_at| són l'inici i el final del període de temps. Si |ends_at| és inferior a |starts_at|, vol dir que |time_limit_window| finalitza el dia següent. |last_updated_millis| és la marca de temps en format UTC per a l'última vegada en què s'ha actualitzat aquesta entrada. S'envia com a cadena perquè la marca de temps no cap en un nombre enter.
 
           |time_usage_limit| especifica una quota de pantalla diària. Quan l'usuari hi arriba, se'n bloqueja la sessió. Hi ha una propietat per a cada dia de la setmana i només s'ha de definir si hi ha una quota activa per al dia en qüestió. |usage_quota_mins| és el temps que es pot fer servir el dispositiu gestionat cada dia i |reset_at| és l'hora en què es reinicialitza la quota d'ús. El valor predeterminat de |reset_at| és la mitjanit ({'hour': 0, 'minute': 0}). |last_updated_millis| és la marca de temps en format UTC per a l'última vegada en què s'ha actualitzat aquesta entrada. S'envia com a cadena perquè la marca de temps no cap en un nombre enter.
 
           |overrides| es proporciona per invalidar temporalment una de les regles anteriors o més.
           * Si no s'activa time_window_limit ni time_usage_limit, es pot fer servir |LOCK| per bloquejar el dispositiu.
-          * |LOCK| bloqueja temporalment una sessió d'usuari fins que s'inicia la instància següent de time_window_limit o time_usage_limit starts.
+          * |LOCK| bloqueja temporalment una sessió d'usuari fins que s'inicia la instància següent de time_window_limit o time_usage_limit.
           * |UNLOCK| desbloqueja una sessió d'usuari bloquejada per time_window_limit o time_usage_limit.
-          |created_time_millis| és la marca de temps en format UTC per a la creació d'una hora de substitució. S'envia com a cadena perquè la marca de temps no cap en un nombre enter. Serveix per determinar si cal aplicar la substitució. Si la funció de límit de temps que està activa actualment (límit de temps d'ús o límit de marge de temps) ha començat després de crear la substitució, no s'activa. A més, si la substitució s'ha creat abans de canviar el valor time_window_limit o time_usage_window per última vegada, no s'aplica.</translation>
+          |created_time_millis| és la marca de temps en format UTC per a la creació d'una hora de substitució. S'envia com a cadena perquè la marca de temps no cap en un nombre enter. Serveix per determinar si cal aplicar la substitució. Si la funció de límit de temps que està activa actualment (límit de temps d'ús o límit de període de temps) ha començat després de crear la substitució, no s'activa. A més, si la substitució s'ha creat abans de canviar el valor time_window_limit o time_usage_window per última vegada, no s'aplica.</translation>
 <translation id="7529100000224450960">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès obrir finestres emergents. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPopupsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="7529144158022474049">Actualitza automàticament el factor de dispersió</translation>
 <translation id="7534199150025803530">Aquesta política no té efecte a l'aplicació Google Drive per a Android. Si vols impedir que Google Drive s'utilitzi a través de connexions mòbils, has de denegar la instal·lació d'aquesta aplicació.</translation>

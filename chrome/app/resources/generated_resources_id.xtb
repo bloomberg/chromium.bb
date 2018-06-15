@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Jendela screenshot</translation>
 <translation id="1197979282329025000">Kesalahan terjadi selagi mengambil informasi kemampuan printer untuk printer <ph name="PRINTER_NAME" />. Printer ini tidak dapat didaftarkan ke <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Mari memulai</translation>
-<translation id="1199232041627643649">Tekan <ph name="KEY_EQUIVALENT" /> untuk Berhenti.</translation>
 <translation id="119944043368869598">Hapus semua</translation>
 <translation id="1201402288615127009">Berikutnya</translation>
 <translation id="1202596434010270079">Aplikasi Kios telah diperbarui. Lepaskan stik USB.</translation>
@@ -2713,6 +2712,7 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="5204967432542742771">Masukkan sandi</translation>
 <translation id="5206215183583316675">Hapus "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Kesalahan Impor Sertifikat</translation>
+<translation id="5209320130288484488">Perangkat tidak ditemukan</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Tutup tab</translation>
 <translation id="5213891612754844763">Tampilkan setelan proxy</translation>
@@ -3134,7 +3134,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="580571955903695899">Susun Ulang menurut Judul</translation>
 <translation id="5807290661599647102">Setel Kunci Layar</translation>
 <translation id="580961539202306967">Tanyakan kepada saya saat situs ingin mengirim pesan push (disarankan)</translation>
-<translation id="5809725759695043233">Anda memiliki aplikasi yang dioptimalkan untuk Chromebook</translation>
 <translation id="5814126672212206791">Jenis sambungan</translation>
 <translation id="5815645614496570556">X.400 Address</translation>
 <translation id="5816434091619127343">Perubahan printer yang diminta akan membuat printer tidak dapat digunakan.</translation>
@@ -4153,14 +4152,6 @@ Saya rasa situs ini tidak perlu diblokir!</translation>
 <translation id="7378812711085314936">Dapatkan koneksi data</translation>
 <translation id="7384292194278095697">Perangkat ini tidak didukung lagi</translation>
 <translation id="7385854874724088939">Ada yang salah saat mencetak. Periksa pencetak Anda dan coba kembali.</translation>
-<translation id="7386824183915085801">Chrome dan versi sistem operasi Anda akan dikirimkan sebagai tambahan
-          atas informasi apa pun yang Anda pilih untuk disertakan di atas. Jika Anda menyertakan alamat
-          email, Google mungkin akan menghubungi Anda terkait laporan masukan Anda. Masukan ini
-          digunakan untuk mendiagnosis masalah dan membantu menyempurnakan Chrome. Informasi pribadi apa pun
-          yang Anda kirimkan, baik secara eksplisit maupun tidak sengaja, akan dilindungi
-          sesuai dengan kebijakan privasi kami.<ph name="BEGIN_BOLD" /> Dengan mengirimkan masukan ini, Anda setuju bahwa Google mungkin menggunakan masukan
-          yang Anda berikan untuk meningkatkan layanan dan produk Google apa pun.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Dialog "Hapus data penjelajahan"</translation>
 <translation id="7388044238629873883">Anda hampir selesai!</translation>
 <translation id="7388222713940428051">Buka jendela Tamu</translation>

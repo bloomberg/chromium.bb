@@ -180,6 +180,7 @@
 <translation id="4544944664594876241">Zmieniliśmy skrót, który blokuje ekran. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Usługa czcionek</translation>
 <translation id="4570957409596482333">Przycisk Przeczytaj na głos</translation>
+<translation id="4628757576491864469">Urządzenia</translation>
 <translation id="4659419629803378708">Włączono ChromeVox</translation>
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
@@ -235,6 +236,7 @@
 <translation id="598882571027504733">Aby pobrać aktualizację, uruchom Chromebooka ponownie z podłączoną klawiaturą.</translation>
 <translation id="5992218262414051481">Tryb wysokiego kontrastu został włączony. Aby go wyłączyć, naciśnij ponownie Ctrl+Search+H.</translation>
 <translation id="6018164090099858612">Wyłączam tryb odbicia lustrzanego</translation>
+<translation id="6040143037577758943">Zamknij</translation>
 <translation id="6043212731627905357">Ten monitor nie działa z Twoim urządzeniem <ph name="DEVICE_TYPE" /> (nie jest obsługiwany).</translation>
 <translation id="6043994281159824495">Wyloguj się teraz</translation>
 <translation id="6047696787498798094">Gdy zmienisz użytkownika, udostępnianie ekranu zostanie zakończone. Chcesz kontynuować?</translation>

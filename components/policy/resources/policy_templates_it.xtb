@@ -216,7 +216,6 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" 
 <translation id="1803646570632580723">Elenco di applicazioni bloccate da visualizzare in Avvio applicazioni</translation>
 <translation id="1808715480127969042">Blocca cookie su questi siti</translation>
 <translation id="1810261428246410396">Consenti l'uso del tethering istantaneo.</translation>
-<translation id="1826282708349731794">Consente di stabilire la modalità di segnalazione dei dati di Chrome Software Cleaner a Google</translation>
 <translation id="1827523283178827583">Utilizza server proxy definiti</translation>
 <translation id="1843117931376765605">Frequenza di aggiornamento per norma utente</translation>
 <translation id="1844620919405873871">Consente di configurare le norme relative allo sblocco rapido.</translation>
@@ -576,7 +575,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Questa norma non influisce sulla capacità degli utenti di configurare le stampanti su singoli dispositivi. È supplementare alla configurazione di stampanti da parte dei singoli utenti.
       </translation>
 <translation id="2633084400146331575">Attiva la funzione di lettura vocale</translation>
-<translation id="2640843331263301324">Consente di attivare Chrome Software Cleaner su Windows</translation>
 <translation id="2646290749315461919">Permette di stabilire se consentire o meno il monitoraggio della posizione fisica degli utenti da parte dei siti web. Il monitoraggio della posizione fisica degli utenti può essere consentito o negato per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera conoscere la posizione fisica. Se questa norma non viene impostata, verrà utilizzato il valore "AskGeolocation", che potrà essere modificato dagli utenti.</translation>
 <translation id="2647069081229792812">Attiva o disattiva la funzione di modifica dei preferiti</translation>
 <translation id="2650049181907741121">Azione da compiere quando l'utente chiude il coperchio</translation>
@@ -1741,11 +1739,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="6392973646875039351">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e di permettere agli utenti di eseguire il completamento automatico dei moduli web utilizzando informazioni memorizzate in precedenza, come l'indirizzo o i dati della carta di credito. Se disattivi questa impostazione, gli utenti non potranno utilizzare la funzione Compilazione automatica. Se attivi questa impostazione o non imposti un valore, la funzione Compilazione automatica potrà essere gestita dagli utenti. Gli utenti potranno quindi configurare i profili di Compilazione automatica e attivare o disattivare a propria scelta la funzione Compilazione automatica.</translation>
 <translation id="6394350458541421998">La norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_OS_NAME" />. Utilizza la norma PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Disconnetti l'utente</translation>
-<translation id="6412477120967771054">Se questa norma viene impostata su false, Chrome Software Cleaner non potrà eseguire la scansione del sistema per individuare eventuale software indesiderato e ripulire il sistema. L'attivazione manuale di Chrome Software Cleaner da chrome://settings/cleanup viene disabilitata.
-
-      Se la norma viene impostata su true o non viene impostata, Chrome Software Cleaner eseguirà periodicamente la scansione del sistema per individuare eventuale software indesiderato e, qualora fosse presente, chiederà all'utente se vuole rimuoverlo. L'attivazione manuale di Chrome Software Cleaner da chrome://settings viene abilitata.
-
-      Questa norma non è disponibile sulle istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="6426205278746959912">Non è possibile imporre l'utilizzo di un proxy alle app Android. Viene messo a disposizione un sottoinsieme di impostazioni proxy che le app Android possono decidere se rispettare o meno.
 
           Se si decide di non usare mai un server proxy, alle app Android viene comunicato che non è configurato alcun proxy.
@@ -1877,16 +1870,16 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
         "type": "object",
         "properties": {
           "kind": {
-            "description": "Whether to limit the search of the matching printer to a specific set of printers.",
+            "description": "Indica se limitare la ricerca della stampante corrispondente a un insieme di stampanti specifico.",
             "type": "string",
             "enum": [ "local", "cloud" ]
           },
           "idPattern": {
-            "description": "Regular expression to match printer id.",
+            "description": "Espressione regolare corrispondente all'ID stampante.",
             "type": "string"
           },
           "namePattern": {
-            "description": "Regular expression to match printer display name.",
+            "description": "Espressione regolare corrispondente al nome visualizzato per la stampante.",
             "type": "string"
           }
         }
@@ -2157,7 +2150,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
           * Se non sono attivi né time_window_limit né time_usage_limit, è possibile usare |LOCK| per bloccare il dispositivo.
           * |LOCK| consente di bloccare temporaneamente una sessione utente fino all'inizio dei valori time_window_limit o time_usage_limit successivi.
           * |UNLOCK| consente di sbloccare la sessione di un utente bloccata in base a time_window_limit o time_usage_limit.
-          |created_time_millis| è il timestamp UTC per la creazione dell'override che viene inviato sotto forma di stringa perché non si adatta a un numero intero. Viene usato per stabilire se applicare ancora o meno l'override. Se la funzione del limite di tempo attivo corrente (limite di tempo di utilizzo o limite della finestra temporale) è iniziata dopo la creazione dell'override, questa non dovrebbe essere applicata. Inoltre, se l'override è stato creato prima dell'ultima modifica del valore time_window_limit o time_usage_window attivi, questo non dovrebbe essere applicato.</translation>
+          |created_time_millis| è il timestamp UTC per la creazione dell'override che viene inviato sotto forma di stringa perché non si adatta a un numero intero. Viene usato per stabilire se applicare ancora o meno l'override. Se la funzione del limite di tempo attivo corrente (limite di tempo di utilizzo o limite della finestra temporale) è iniziata dopo la creazione dell'override, non dovrebbe essere applicata. Inoltre, se l'override è stato creato prima dell'ultima modifica del valore time_window_limit o time_usage_window attivi, non dovrebbe essere applicato.</translation>
 <translation id="7529100000224450960">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'apertura dei popup. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPopupsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="7529144158022474049">Fattore di dispersione aggiornamento automatico</translation>
 <translation id="7534199150025803530">Questa norma non influisce sull'app Google Drive per Android. Se vuoi impedire l'utilizzo di Google Drive tramite rete cellulare, non devi consentire l'installazione dell'app Google Drive per Android.</translation>

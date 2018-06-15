@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Pilih</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Halang halaman ini daripada mencipta dialog tambahan</translation>
-<translation id="1629803312968146339">Adakah anda mahu Chrome menyimpan kad ini?</translation>
 <translation id="1639239467298939599">Memuatkan</translation>
 <translation id="1640180200866533862">Dasar pengguna</translation>
 <translation id="1640244768702815859">Cuba <ph name="BEGIN_LINK" />lawat laman utama tapak<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Ralat HTTP</translation>
 <translation id="2270484714375784793">Nombor telefon</translation>
 <translation id="2292556288342944218">Akses Internet anda disekat</translation>
-<translation id="230155334948463882">Kad baharu?</translation>
 <translation id="2316887270356262533">Mengosongkan kurang daripada 1 MB. Sesetengah tapak mungkin dimuatkan dengan lebih perlahan pada lawatan anda yang seterusnya.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> memerlukan nama pengguna dan kata laluan.</translation>
 <translation id="2317583587496011522">Kad debit diterima.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Kad yang Diterima</translation>
 <translation id="2702801445560668637">Senarai Bacaan</translation>
 <translation id="2704283930420550640">Nilai tidak sepadan dengan format.</translation>
-<translation id="2704951214193499422">Chromium tidak dapat mengesahkan kad anda pada masa ini. Sila cuba lagi nanti.</translation>
 <translation id="2705137772291741111">Salinan tapak ini yang disimpan (cache) tidak boleh dibaca.</translation>
 <translation id="2709516037105925701">Autoisi</translation>
 <translation id="2710942282213947212">Perisian pada komputer anda menghalang Chromium daripada menyambung ke web dengan selamat</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Jenis dasar salah</translation>
 <translation id="3037605927509011580">Oh, Tidak!</translation>
 <translation id="3041612393474885105">Maklumat Sijil</translation>
-<translation id="3063697135517575841">Chrome tidak dapat mengesahkan kad anda pada masa ini. Sila cuba sebentar lagi.</translation>
 <translation id="3064966200440839136">Meninggalkan mod inkognito untuk membayar melalui aplikasi luar. Teruskan?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Tiada}=1{1 kata laluan}other{# kata laluan}}</translation>
 <translation id="3096100844101284527">Tambahkan Alamat Pengambilan</translation>
@@ -461,7 +457,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Gunakan lalai global (Kesan)</translation>
 <translation id="4165986682804962316">Tetapan tapak</translation>
-<translation id="4169947484918424451">Adakah anda mahu Chromium menyimpan kad ini?</translation>
 <translation id="4171400957073367226">Tandatangan pengesahan tidak sah</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> lagi item}other{<ph name="ITEM_COUNT" /> lagi item}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
@@ -1118,6 +1113,7 @@
 <translation id="9148507642005240123">&amp;Buat asal edit</translation>
 <translation id="9154194610265714752">Dikemas kini</translation>
 <translation id="9157595877708044936">Menyediakan...</translation>
+<translation id="9168814207360376865">Benarkan tapak menyemak sama ada anda mempunyai kaedah pembayaran yang disimpan</translation>
 <translation id="9169664750068251925">Sentiasa sekat di tapak ini</translation>
 <translation id="9170848237812810038">&amp;Buat asal</translation>
 <translation id="9171296965991013597">Tinggalkan apl?</translation>

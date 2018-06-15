@@ -142,7 +142,6 @@
 <translation id="119738088725604856">スクリーンショット ウィンドウ</translation>
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> プリンタのプリンタ機能の取得中にエラーが発生しました。このプリンタを <ph name="CLOUD_PRINT_NAME" /> に登録できませんでした。</translation>
 <translation id="1198271701881992799">さあ始めましょう</translation>
-<translation id="1199232041627643649"><ph name="KEY_EQUIVALENT" /> キーを押すと終了します。</translation>
 <translation id="119944043368869598">すべてクリア</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1202596434010270079">キオスクアプリを更新しました。USB スティックを取り外してください。</translation>
@@ -1461,7 +1460,7 @@
 <translation id="3206175707080061730">「$1」という名前のファイルは既に存在します。置き換えますか？</translation>
 <translation id="3208703785962634733">未確認</translation>
 <translation id="3213187967168344806">プリンタを追加できません。パソコンを再起動してもう一度お試しください。</translation>
-<translation id="321356136776075234">端末の組織単位（例: OU=Chromebooks,DC=example,DC=com）</translation>
+<translation id="321356136776075234">端末の組織部門（例: OU=Chromebooks,DC=example,DC=com）</translation>
 <translation id="3217843140356091325">ショートカットを作成しますか？</translation>
 <translation id="321799795901478485">Zip アーカイブ ツール</translation>
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" /> コネクタのプロセスで問題が発生しました。再起動しますか？</translation>
@@ -1807,7 +1806,7 @@
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> は管理コンソールに表示されます</translation>
 <translation id="3741243925913727067">メディア デバイスの写真や動画を Google ドライブにバックアップします。</translation>
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
-<translation id="3742666961763734085">この名前の組織単位が見つかりません。もう一度お試しください。</translation>
+<translation id="3742666961763734085">この名前の組織部門が見つかりません。もう一度お試しください。</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
 <translation id="3748026146096797577">接続されていません</translation>
 <translation id="3749289110408117711">ファイル名</translation>
@@ -2714,6 +2713,7 @@
 <translation id="5204967432542742771">パスワードを入力</translation>
 <translation id="5206215183583316675">「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
 <translation id="520621735928254154">証明書のインポート エラー</translation>
+<translation id="5209320130288484488">デバイスが見つかりませんでした</translation>
 <translation id="5209518306177824490">SHA-1 指紋</translation>
 <translation id="5210365745912300556">タブを閉じる</translation>
 <translation id="5213891612754844763">プロキシ設定を表示</translation>
@@ -3135,7 +3135,6 @@
 <translation id="580571955903695899">タイトルで並べ替え</translation>
 <translation id="5807290661599647102">画面ロックを設定</translation>
 <translation id="580961539202306967">サイトがプッシュ メッセージを送信しようとする際に確認する（推奨）</translation>
-<translation id="5809725759695043233">Chromebooks 用に最適化されたアプリがあります</translation>
 <translation id="5814126672212206791">接続タイプ</translation>
 <translation id="5815645614496570556">X.400 アドレス</translation>
 <translation id="5816434091619127343">リクエストされた変更を行うと、プリンタを使用できなくります。</translation>
@@ -3765,7 +3764,7 @@
 <translation id="6766101255664245434">新しく写真を撮るか、既存の写真またはアイコンを選択してください。
           <ph name="LINE_BREAK" />
           この画像は Chromebook のログイン画面とロック画面に表示されます。</translation>
-<translation id="6767639283522617719">ドメインを追加できません。組織単位の設定が正しいことをご確認ください。</translation>
+<translation id="6767639283522617719">ドメインを追加できません。組織部門の設定が正しいことをご確認ください。</translation>
 <translation id="6769712124046837540">プリンタの追加...</translation>
 <translation id="6771503742377376720">認証局である</translation>
 <translation id="6777817260680419853">リダイレクトがブロックされました</translation>
@@ -4155,15 +4154,6 @@
 <translation id="7378812711085314936">データ接続を行う</translation>
 <translation id="7384292194278095697">この端末はもうサポートされていません</translation>
 <translation id="7385854874724088939">印刷中に問題が発生しました。プリンタを確認してからもう一度お試しください。</translation>
-<translation id="7386824183915085801">上記で送信項目に選択した情報に加えて、お使いの Chrome とオペレーティング 
-        システムのバージョン情報が送信されます。メール アドレスを送信するよう選択した場合は、
-        フィードバック レポートについて Google から連絡させていただく場合があります。
-        このフィードバックは問題の診断と Chrome の品質向上に使用されます。
-        送信された個人情報は、送信の意図にかかわらず、
-        Google のプライバシー ポリシーに従って保護されます。
-        <ph name="BEGIN_BOLD" />このフィードバックを送信すると、フィードバック内容が Google のサービス品質向上に
-        使用されることに同意したことになります。
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">[閲覧履歴の消去] ダイアログ</translation>
 <translation id="7388044238629873883">もうすぐ終わりです。</translation>
 <translation id="7388222713940428051">ゲスト ウィンドウを開く</translation>

@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">選択</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
-<translation id="1629803312968146339">Chrome にこのカードを保存しますか？</translation>
 <translation id="1639239467298939599">読み込み中</translation>
 <translation id="1640180200866533862">ユーザー ポリシー</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />サイトのホームページにアクセス<ph name="END_LINK" />してみてください。</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">HTTP エラーです</translation>
 <translation id="2270484714375784793">電話番号</translation>
 <translation id="2292556288342944218">インターネット アクセスがブロックされています</translation>
-<translation id="230155334948463882">カード情報を更新</translation>
 <translation id="2316887270356262533">最大で 1 MB を解放します。サイトによっては、次回アクセスする際に読み込みに時間がかかる可能性があります。</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> にはユーザー名とパスワードが必要です。</translation>
 <translation id="2317583587496011522">デビットカードをご利用いただけます。</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">利用可能なカード</translation>
 <translation id="2702801445560668637">リーディング リスト</translation>
 <translation id="2704283930420550640">値が有効な形式ではありません。</translation>
-<translation id="2704951214193499422">Chromium でカードを確認できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="2705137772291741111">このサイトの保存（キャッシュ）されたコピーを読み取れませんでした。</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="2710942282213947212">パソコンにインストールされているソフトウェアが原因で、Chromium からインターネットに安全に接続することができません</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
 <translation id="3037605927509011580">エラー</translation>
 <translation id="3041612393474885105">証明書情報</translation>
-<translation id="3063697135517575841">Chrome でカードを確認できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="3064966200440839136">外部アプリケーションを経由したお支払いの処理に進むため、シークレット モードを解除します。続行しますか？</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{なし}=1{1 個のパスワード}other{# 個のパスワード}}</translation>
 <translation id="3096100844101284527">集荷先住所を追加</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">全体の既定値を使用（検出）</translation>
 <translation id="4165986682804962316">サイトの設定</translation>
-<translation id="4169947484918424451">Chromium にこのカードを保存しますか？</translation>
 <translation id="4171400957073367226">確認用の署名に問題があります</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{他 <ph name="ITEM_COUNT" /> 件のアイテム}other{他 <ph name="ITEM_COUNT" /> 件のアイテム}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>

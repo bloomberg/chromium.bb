@@ -179,6 +179,7 @@
 <translation id="4544944664594876241">Комбінація клавіш для блокування екрана змінилася. Тепер це <ph name="NEW_SHORTCUT" />, а не <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Сервіс шрифту</translation>
 <translation id="4570957409596482333">Кнопка "Читання з екрана"</translation>
+<translation id="4628757576491864469">Пристрої</translation>
 <translation id="4659419629803378708">ChromeVox увімкнено</translation>
 <translation id="4776917500594043016">Пароль користувача  <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">пошук</translation>
@@ -234,6 +235,7 @@
 <translation id="598882571027504733">Щоб завантажити оновлення, перезапустіть Chromebook із під’єднаною клавіатурою.</translation>
 <translation id="5992218262414051481">Увімкнено режим високого контрасту. Щоб вимкнути його, знову натисніть Ctrl+Search+H.</translation>
 <translation id="6018164090099858612">Вихід із режиму віддзеркалення</translation>
+<translation id="6040143037577758943">Закрити</translation>
 <translation id="6043212731627905357">Ваш пристрій <ph name="DEVICE_TYPE" /> не підтримує цей монітор.</translation>
 <translation id="6043994281159824495">Вийти зараз</translation>
 <translation id="6047696787498798094">Якщо змінити користувача, спільний доступ до екрана буде скасовано. Продовжити?</translation>

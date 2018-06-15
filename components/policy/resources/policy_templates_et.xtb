@@ -229,7 +229,6 @@
 <translation id="1803646570632580723">Kinnitatud rakenduste loend, mida näidatakse käivitis</translation>
 <translation id="1808715480127969042">Blokeeri nende saitide küpsised</translation>
 <translation id="1810261428246410396">Kiirjagamise kasutamise lubamine.</translation>
-<translation id="1826282708349731794">Määrab, kuidas Chrome Cleanup edastab andmeid Google'ile</translation>
 <translation id="1827523283178827583">Kasuta fikseeritud puhverservereid</translation>
 <translation id="1843117931376765605">Kasutajareegli värskendussagedus</translation>
 <translation id="1844620919405873871">Seadistab kiiravamisega seotud reeglid.</translation>
@@ -609,7 +608,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
       See reegel ei mõjuta seda, kas kasutajad saavad printereid seadistada individuaalsetes seadmetes. See on mõeldud individuaalsete kasutajate printerite seadistuse täienduseks.
       </translation>
 <translation id="2633084400146331575">Luba suuline tagasiside</translation>
-<translation id="2640843331263301324">Chrome Cleanupi lubamine Windowsis</translation>
 <translation id="2646290749315461919">Võimaldab määrata, kas veebisaitidel on lubatud jälgida kasutajate füüsilist asukohta. Kasutajate füüsilise asukoha jälgimine võib olla vaikimisi lubatud või keelatud või kasutajalt võidakse luba küsida iga kord, kui veebisait taotleb füüsilise asukoha jälgimist.
 
           Kui jätate selle reegli määramata, siis kasutatakse reeglit „AskGeolocation” ja kasutaja saab seda muuta.</translation>
@@ -894,8 +892,8 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="3528000905991875314">Luba alternatiivsed vealehed</translation>
 <translation id="3545457887306538845">Võimaldab teil juhtida, kus saab kasutada arendaja tööriistu.
 
-      Kui reegel on seatud väärtusele „DeveloperToolsDisallowedForForceInstalledExtensions” (väärtus 0, mis on vaikeseade ettevõtte kasutajate puhul), on arendaja tööriistad ja JavaScripti konsool üldiselt juurdepääsetavad, ent nendele ei pääse juurde ettevõtte reegli alusel installitud laiendite kontekstis.
-      Kui reegel on seatud väärtusele „DeveloperToolsAllowed” (väärtus 1), on arendaja tööriistad ja JavaScripti konsool juurdepääsetavad ja kasutamiseks saadaval igas kontekstis, sealhulgas ettevõtte reegli alusel installitud laiendite puhul.
+      Kui reegel on seatud väärtusele „DeveloperToolsDisallowedForForceInstalledExtensions” (väärtus 0, mis on vaikeseade ettevõtte kasutajate puhul), on arendaja tööriistad ja JavaScripti konsool üldiselt juurdepääsetavad, ent nendele ei pääse juurde ettevõtte reegli alusel installitud laienduste kontekstis.
+      Kui reegel on seatud väärtusele „DeveloperToolsAllowed” (väärtus 1), on arendaja tööriistad ja JavaScripti konsool juurdepääsetavad ja kasutamiseks saadaval igas kontekstis, sealhulgas ettevõtte reegli alusel installitud laienduste puhul.
       Kui reegel on seatud väärtusele „DeveloperToolsDisallowed” (väärtus 2), ei ole arendaja tööriistad saadaval ja veebisaitide elemente ei saa enam uurida. Kõik arendaja tööriistade või JavaScripti konsooli avamiseks kasutatavad klaviatuuri otseteed ning menüü- ja kontekstimenüükirjed keelatakse.</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="3556806727696701427">Lubab rakenduse <ph name="PRODUCT_NAME" /> Google'i ohutu sirvimise funktsiooni ja takistab kasutajaid seda muutmast.
@@ -1855,11 +1853,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui lubate seade või ei määra väärtust, siis saab kasutaja automaatset täitmist juhtida. See võimaldab neil seadistada automaatse täitmise profiile ning automaatse täitmise soovi korral sisse või välja lülitada.</translation>
 <translation id="6394350458541421998">Reegel on alates rakenduse <ph name="PRODUCT_OS_NAME" /> versioonist 29 kasutusest kõrvaldatud. Kasutage selle asemel reeglit PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Kasutaja väljalogimine</translation>
-<translation id="6412477120967771054">Kui reegel on seatud väärtusele Väär, on Chrome Cleanupil keelatud süsteemi soovimatu tarkvara suhtes skannida ja puhastada. Chrome Cleanupi käsitsi käivitamine aadressil chrome://settings/cleanup on keelatud.
-
-      Kui reegel on määramata või seatud väärtusele Tõene, skannib Chrome Cleanup regulaarselt süsteemi soovimatu tarkvara suhtes. Soovimatu tarkvara leidmisel küsitakse kasutajalt, kas ta soovib selle eemaldada. Chrome Cleanupi käsitsi käivitamine aadressil chrome://settings on lubatud.
-
-      Reegel ei ole saadaval Windowsi eksemplarides, mis ei ole liidetud teenuse <ph name="MS_AD_NAME" /> domeeniga.</translation>
 <translation id="6426205278746959912">Te ei saa Androidi rakenduste puhul jõustada puhverserveri kasutamist. Androidi rakendustele on muudetud kättesaadavaks puhverserveri seadete alamkomplekt, mille kasutamine on vabatahtlik.
 
           Kui otsustate puhverserverit mitte kasutada, antakse Androidi rakendustele teada, et puhverserverit pole seadistatud.

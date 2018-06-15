@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">בחר</translation>
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1623104350909869708">מנע מהדף זה ליצור תיבות דו-שיח נוספות</translation>
-<translation id="1629803312968146339">‏האם תרצה ש-Chrome ישמור את הכרטיס הזה?</translation>
 <translation id="1639239467298939599">טוען</translation>
 <translation id="1640180200866533862">מדיניות משתמשים</translation>
 <translation id="1640244768702815859">נסה <ph name="BEGIN_LINK" />להיכנס לדף הבית של האתר<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">‏שגיאת HTTP</translation>
 <translation id="2270484714375784793">מספר טלפון</translation>
 <translation id="2292556288342944218">הגישה לאינטרנט חסומה</translation>
-<translation id="230155334948463882">כרטיס חדש?</translation>
 <translation id="2316887270356262533">‏פינוי של פחות מ-‎1 MB‎ מהשטח. ייתכן שחלק מהאתרים ייטענו לאט יותר בביקור הבא שלך.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> דורש שם משתמש וסיסמה.</translation>
 <translation id="2317583587496011522">אפשר לשלם בכרטיסי חיוב.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">כרטיסים שהסוחר מקבל</translation>
 <translation id="2702801445560668637">רשימת קריאה</translation>
 <translation id="2704283930420550640">הערך לא תואם לפורמט.</translation>
-<translation id="2704951214193499422">‏ל-Chromium אין כרגע אפשרות לאשר את הכרטיס. נסה שוב מאוחר יותר.</translation>
 <translation id="2705137772291741111">העותק השמור (בקובץ השמור) של האתר הזה היה בלתי קריא.</translation>
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="2710942282213947212">‏תוכנה במחשב שלך מונעת מ-Chromium להתחבר באופן מאובטח לאינטרנט</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">סוג המדיניות שגוי</translation>
 <translation id="3037605927509011580">אוי, לא!</translation>
 <translation id="3041612393474885105">פרטי אישור</translation>
-<translation id="3063697135517575841">‏Chrome לא הצליח לאשר את הכרטיס שלך הפעם. נסה שוב מאוחר יותר.</translation>
 <translation id="3064966200440839136">בחרת לצאת ממצב גלישה בסתר כדי לשלם באמצעות יישום חיצוני. להמשיך?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{ללא}=1{סיסמה אחת}two{שתי סיסמאות}many{# סיסמאות}other{# סיסמאות}}</translation>
 <translation id="3096100844101284527">הוספת כתובת לאיסוף</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">השתמש בברירת מחדל גלובלית (זיהוי)</translation>
 <translation id="4165986682804962316">הגדרות אתרים</translation>
-<translation id="4169947484918424451">‏האם תרצה ש-Chromium ישמור את הכרטיס הזה?</translation>
 <translation id="4171400957073367226">חתימת אימות לא חוקית</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{פריט אחד (<ph name="ITEM_COUNT" />) נוסף}two{<ph name="ITEM_COUNT" /> פריטים נוספים}many{<ph name="ITEM_COUNT" /> פריטים נוספים}other{<ph name="ITEM_COUNT" /> פריטים נוספים}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>

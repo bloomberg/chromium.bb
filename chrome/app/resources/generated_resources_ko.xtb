@@ -142,7 +142,6 @@
 <translation id="119738088725604856">스크린샷 창</translation>
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> 프린터의 인쇄 가능 매수를 검색하는 중에 오류가 발생했습니다. 이 프린터를 <ph name="CLOUD_PRINT_NAME" />(으)로 등록할 수 없습니다.</translation>
 <translation id="1198271701881992799">시작하기</translation>
-<translation id="1199232041627643649">종료하려면 <ph name="KEY_EQUIVALENT" />을(를) 길게 누릅니다.</translation>
 <translation id="119944043368869598">모두 삭제</translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="1202596434010270079">Kiosk 앱이 업데이트되었습니다. USB 메모리를 제거하세요.</translation>
@@ -1025,7 +1024,7 @@
 <translation id="2544853746127077729">인증서가 네트워크에 의해 거부됨</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" />에 추가</translation>
 <translation id="2550212893339833758">교체된 메모리</translation>
-<translation id="2550596535588364872"><ph name="EXTENSION_NAME" />에서 <ph name="FILE_NAME" />을(를) 열도록 허용하시겠습니까?</translation>
+<translation id="2550596535588364872"><ph name="EXTENSION_NAME" />에서 <ph name="FILE_NAME" /> 파일을 열도록 허용하시겠습니까?</translation>
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" />에서 <ph name="NETWORK_ID" />에 연결할 수 없습니다. 다른 네트워크를 선택하거나 다시 시도하세요.</translation>
 <translation id="2553440850688409052">이 플러그인 숨기기</translation>
 <translation id="2554553592469060349">선택한 파일이 너무 큽니다(최대 크기: 3MB).</translation>
@@ -2713,6 +2712,7 @@
 <translation id="5204967432542742771">비밀번호 입력</translation>
 <translation id="5206215183583316675">'<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="520621735928254154">인증서 가져오기 오류</translation>
+<translation id="5209320130288484488">기기를 찾을 수 없음</translation>
 <translation id="5209518306177824490">SHA-1 지문</translation>
 <translation id="5210365745912300556">탭 닫기</translation>
 <translation id="5213891612754844763">프록시 설정 표시</translation>
@@ -2874,7 +2874,7 @@
 <translation id="542872847390508405">손님으로 로그인 중</translation>
 <translation id="5428850089342283580"><ph name="ACCNAME_APP" />(업데이트 사용 가능)</translation>
 <translation id="5431318178759467895">컬러</translation>
-<translation id="5431825016875453137">OpenVPN / L2TP</translation>
+<translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="5432996274932278848">기기, 앱, 웹을 검색합니다. 앱을 탐색하려면 화살표 키를 사용하세요.</translation>
 <translation id="543381445212956829">WiMAX 사용</translation>
 <translation id="5434065355175441495">PKCS #1 RSA 암호화</translation>
@@ -3134,7 +3134,6 @@
 <translation id="580571955903695899">제목순으로 다시 정렬</translation>
 <translation id="5807290661599647102">화면 잠금 설정</translation>
 <translation id="580961539202306967">사이트에서 푸시 메시지를 보내려는 경우 알림(권장)</translation>
-<translation id="5809725759695043233">Chromebook에 최적화된 앱이 있습니다.</translation>
 <translation id="5814126672212206791">연결 유형</translation>
 <translation id="5815645614496570556">X.400 주소</translation>
 <translation id="5816434091619127343">프린터 변경을 요청하면 프린터를 사용할 수 없게 됩니다.</translation>
@@ -4153,14 +4152,6 @@
 <translation id="7378812711085314936">데이터 연결 가져오기</translation>
 <translation id="7384292194278095697">이 기기는 더 이상 지원되지 않습니다.</translation>
 <translation id="7385854874724088939">인쇄를 시도하는 동안 문제가 발생했습니다. 프린터를 점검한 다음 다시 시도해 보세요.</translation>
-<translation id="7386824183915085801">Chrome 및 운영체제 버전이 위에서 포함하도록
-          선택한 정보와 함께 제출됩니다. 이메일 주소를 포함하는 경우 Google에서
-          의견 신고와 관련하여 귀하에게 연락을 드릴 수 있습니다. 귀하의 의견은
-          문제를 진단하고 Chrome을 개선하는 데 사용됩니다. 명시적 또는
-          부수적으로 제출하는 모든 개인정보는 Google의
-          개인정보처리방침에 따라 보호됩니다.<ph name="BEGIN_BOLD" /> 이 의견을 제출함으로써 귀하는 Google에서 Google 제품 또는 서비스 개선을 위해
-          귀하가 제공한 의견을 사용하는 데 동의하는 것으로 간주됩니다.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">'인터넷 사용 기록 삭제' 대화상자</translation>
 <translation id="7388044238629873883">거의 완료되었습니다.</translation>
 <translation id="7388222713940428051">게스트 창 열기</translation>
@@ -4970,7 +4961,7 @@
 <translation id="8642267168767642381">손가락을 너무 느리게 움직였습니다.</translation>
 <translation id="8642947597466641025">텍스트 확대</translation>
 <translation id="8643418457919840804">계속하려면 옵션을 선택하세요.</translation>
-<translation id="8645354835496065562">게속해서 센서 액세스 허용</translation>
+<translation id="8645354835496065562">계속해서 센서 액세스 허용</translation>
 <translation id="8647834505253004544">올바른 웹 주소가 아닙니다.</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> 또는 <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">더 이상 기존 프로필에 액세스할 수 없지만 삭제할 수는 있습니다.</translation>

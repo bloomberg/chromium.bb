@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Scegli</translation>
 <translation id="1620510694547887537">Videocamera</translation>
 <translation id="1623104350909869708">Impedisci la creazione di altre finestre di dialogo in questa pagina</translation>
-<translation id="1629803312968146339">Vuoi che Chrome salvi questa carta?</translation>
 <translation id="1639239467298939599">Caricamento</translation>
 <translation id="1640180200866533862">Criteri utente</translation>
 <translation id="1640244768702815859">Prova a <ph name="BEGIN_LINK" />visitare la home page del sito<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Errore HTTP</translation>
 <translation id="2270484714375784793">Numero di telefono</translation>
 <translation id="2292556288342944218">L'accesso a Internet è bloccato</translation>
-<translation id="230155334948463882">Nuova carta?</translation>
 <translation id="2316887270356262533">Consente di liberare meno di 1 MB. Alcuni siti potrebbero caricarsi più lentamente alla prossima visita.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> richiede un nome utente e una password.</translation>
 <translation id="2317583587496011522">Le carte di debito sono accettate.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Carte accettate</translation>
 <translation id="2702801445560668637">Elenco di lettura</translation>
 <translation id="2704283930420550640">Il valore non corrisponde al formato.</translation>
-<translation id="2704951214193499422">Al momento non è possibile confermare la carta in Chromium. Riprova più tardi.</translation>
 <translation id="2705137772291741111">La copia del sito salvata (nella cache) era illeggibile.</translation>
 <translation id="2709516037105925701">Compilazione automatica</translation>
 <translation id="2710942282213947212">Il software installato sul computer sta impedendo a Chromium di connettersi in sicurezza a Internet</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Tipo di criterio errato</translation>
 <translation id="3037605927509011580">Uffa!</translation>
 <translation id="3041612393474885105">Informazioni certificato</translation>
-<translation id="3063697135517575841">Al momento non è possibile confermare la carta in Chrome. Riprova più tardi.</translation>
 <translation id="3064966200440839136">Per procedere al pagamento tramite un'applicazione esterna, uscirai dalla modalità di navigazione in incognito. Continuare?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Nessuna}=1{1 password}other{# password}}</translation>
 <translation id="3096100844101284527">Aggiungi l'indirizzo di ritiro</translation>
@@ -457,7 +453,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Utilizza impostazioni predefinite globali (Rileva)</translation>
 <translation id="4165986682804962316">Impostazioni sito</translation>
-<translation id="4169947484918424451">Vuoi che Chromium salvi questa carta?</translation>
 <translation id="4171400957073367226">Firma di verifica non valida</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> altro elemento}other{Altri <ph name="ITEM_COUNT" /> elementi}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
@@ -1046,7 +1041,7 @@
 <translation id="8620436878122366504">I tuoi genitori non hanno ancora approvato la richiesta</translation>
 <translation id="8625384913736129811">Salva la carta su questo dispositivo</translation>
 <translation id="8639963783467694461">Impostazioni di Compilazione automatica</translation>
-<translation id="8663226718884576429">Riepilogo ordine, <ph name="TOTAL_LABEL" />, Altri dettagli</translation>
+<translation id="8663226718884576429">Riepilogo ordine, <ph name="TOTAL_LABEL" />, altri dettagli</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, risposta, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN" /> non è criptata.</translation>
 <translation id="8718314106902482036">Pagamento non completato</translation>

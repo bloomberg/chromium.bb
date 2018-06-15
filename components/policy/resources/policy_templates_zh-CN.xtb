@@ -211,7 +211,6 @@
 <translation id="1803646570632580723">要在启动程序中显示的固定应用的列表</translation>
 <translation id="1808715480127969042">在这些网站上阻止 Cookie</translation>
 <translation id="1810261428246410396">允许使用即时网络共享功能。</translation>
-<translation id="1826282708349731794">控制 Chrome 清理工具向 Google 报告数据的方式</translation>
 <translation id="1827523283178827583">使用固定的代理服务器</translation>
 <translation id="1843117931376765605">用户策略的更新频率</translation>
 <translation id="1844620919405873871">配置快速解锁相关政策。</translation>
@@ -562,7 +561,6 @@
       此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
       </translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
-<translation id="2640843331263301324">在 Windows 上启用 Chrome 清理工具</translation>
 <translation id="2646290749315461919">可让您设置是否允许网站跟踪用户的地理位置。默认情况下，可以允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时询问用户。如果未设置此政策，系统将使用“AskGeolocation”并允许用户更改此设置。</translation>
 <translation id="2647069081229792812">启用或停用书签修改功能</translation>
 <translation id="2650049181907741121">当用户合上屏幕时执行的操作</translation>
@@ -1733,11 +1731,6 @@
 <translation id="6392973646875039351">启用 <ph name="PRODUCT_NAME" />的自动填充功能，并允许用户使用以前存储的信息（例如地址或信用卡信息）自动填写网络表单。如果您停用了此设置，用户就无法使用自动填充功能。如果您启用了此设置或未设置值，那么自动填充功能仍由用户控制。这样，用户就可以配置自动填充个人资料，并自行决定是启用还是停用自动填充功能。</translation>
 <translation id="6394350458541421998">此政策从 <ph name="PRODUCT_OS_NAME" />版本 29 起开始弃用。请改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="6401669939808766804">使用户退出</translation>
-<translation id="6412477120967771054">如果此政策设为 false，Chrome 清理工具将无法扫描系统以检测是否存在垃圾软件并进行清理。在这种情况下，系统禁止通过 chrome://settings/cleanup 手动触发 Chrome 清理。
-
-      如果此政策设为 true 或未设置，Chrome 清理工具将会定期扫描系统以检测是否存在垃圾软件。如果发现了垃圾软件，则会询问用户是否要将其移除。在这种情况下，系统允许通过 chrome://settings 手动触发 Chrome 清理。
-
-      此政策不适用于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例。</translation>
 <translation id="6426205278746959912">您无法强制 Android 应用使用代理。一小部分代理设置已可供 Android 应用使用，此类应用可能会主动选择使用这些设置：
 
           如果您选择永不使用代理服务器，则系统会通知 Android 应用未配置任何代理。
@@ -2139,11 +2132,11 @@
 <translation id="7511361072385293666">如果此政策设为 true 或未设置，则允许在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 协议。
       如果此政策设为 false，则禁止使用 QUIC 协议。</translation>
 <translation id="7519251620064708155">允许在这些网站上使用密钥生成功能</translation>
-<translation id="7529083451528428240">让您能够根据客户端时间或当天时间用量配额锁定用户的会话。
+<translation id="7529083451528428240">让您能够根据客户端时间或当天用量配额锁定用户的会话。
 
           |time_window_limit| 用于指定一个每日时段 - 在这段时间内，系统应锁定用户的会话。我们仅支持为一周中的每一天指定 1 条规则，因此 |entries| 数组的大小可能会有所不同（介于 0-7 之间）。|starts_at| 和 |ends_at| 是时段限制的开始时间和结束时间，如果 |ends_at| 小于 |starts_at|，即表示 |time_limit_window| 要到次日才会结束。|last_updated_millis| 是表示此条目的上次更新时间的时间戳（采用世界协调时间），由于时间戳无法转换成整数，因此这项参数会以字符串的形式发送。
 
-          |time_usage_limit| 用于指定每日屏幕使用时间配额，当用户用尽配额时，系统就会锁定用户的会话。一周中的每一天都有一个对应的属性，只有在当天具备有效配额的情况下才能设置相应属性。|usage_quota_mins| 是托管设备的单日可用时间配额，|reset_at| 则是时间用量配额的更新时间。|reset_at| 的默认值是午夜 ({'hour': 0, 'minute': 0})。|last_updated_millis| 是此条目的上次更新时间的时间戳（采用世界协调时间），由于时间戳无法转换成整数，因此这项参数会以字符串的形式发送。
+          |time_usage_limit| 用于指定每日屏幕使用时间配额，当用户用尽配额时，系统就会锁定用户的会话。一周中的每一天都有一个对应的属性，只有在当天具备有效配额的情况下才能设置相应属性。|usage_quota_mins| 是受管理设备的单日可用时间配额，|reset_at| 则是用量配额的更新时间。|reset_at| 的默认值是午夜 ({'hour': 0, 'minute': 0})。|last_updated_millis| 是此条目的上次更新时间的时间戳（采用世界协调时间），由于时间戳无法转换成整数，因此这项参数会以字符串的形式发送。
 
           提供 |overrides| 是为了让一项或多项先前设定的规则暂时失效。
           * 如果 time_window_limit 和 time_usage_limit 都处于无效状态，则可使用 |LOCK| 锁定设备。

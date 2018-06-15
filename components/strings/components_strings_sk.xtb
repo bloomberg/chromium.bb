@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Zvoliť</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Zakázať tejto stránke otvárať ďalšie dialógové okná</translation>
-<translation id="1629803312968146339">Chcete, aby Chrome uložil túto kartu?</translation>
 <translation id="1639239467298939599">Prebieha načítavanie</translation>
 <translation id="1640180200866533862">Pravidlá pre používateľa</translation>
 <translation id="1640244768702815859">Skúste <ph name="BEGIN_LINK" />navštíviť domovskú stránku webu<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Chyba protokolu HTTP</translation>
 <translation id="2270484714375784793">Telefónne číslo</translation>
 <translation id="2292556288342944218">Váš prístup k internetu je blokovaný</translation>
-<translation id="230155334948463882">Nová karta?</translation>
 <translation id="2316887270356262533">Uvoľní menej ako 1 MB. Niektoré weby sa môžu pri ďalšej návšteve načítať pomalšie.</translation>
 <translation id="2317259163369394535">Doména <ph name="DOMAIN" /> vyžaduje používateľské meno a heslo.</translation>
 <translation id="2317583587496011522">Debetné karty sú akceptované.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Akceptované karty</translation>
 <translation id="2702801445560668637">Čitateľský zoznam</translation>
 <translation id="2704283930420550640">Hodnota nezodpovedá formátu.</translation>
-<translation id="2704951214193499422">Prehliadaču Chromium sa nepodarilo overiť vašu kartu. Skúste to znova neskôr.</translation>
 <translation id="2705137772291741111">Uložená kópia tohto webu (vo vyrovnávacej pamäti) bola nečitateľná.</translation>
 <translation id="2709516037105925701">Automatické dopĺňanie</translation>
 <translation id="2710942282213947212">Softvér vo vašom počítači bráni prehliadaču Chromium bezpečne sa pripojiť k webu</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Chybný typ pravidla</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3041612393474885105">Informácie o certifikáte</translation>
-<translation id="3063697135517575841">Chromu sa nepodarilo overiť vašu kartu. Skúste to znova neskôr.</translation>
 <translation id="3064966200440839136">Ak zaplatíte pomocou externej aplikácie, opustíte režim inkognito. Chcete pokračovať?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Žiadne}=1{1 heslo}few{# heslá}many{# hesla}other{# hesiel}}</translation>
 <translation id="3096100844101284527">Pridať adresu vyzdvihnutia</translation>
@@ -456,7 +452,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Použiť globálne predvolené nastavenie (zistiť)</translation>
 <translation id="4165986682804962316">Nastavenia webu</translation>
-<translation id="4169947484918424451">Chcete, aby Chromium uložil túto kartu?</translation>
 <translation id="4171400957073367226">Nesprávny overovací podpis</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ďalšia položka}few{<ph name="ITEM_COUNT" /> ďalšie položky}many{<ph name="ITEM_COUNT" /> ďalšej položky}other{<ph name="ITEM_COUNT" /> ďalších položiek}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
@@ -1046,7 +1041,7 @@
 <translation id="8620436878122366504">Vaši rodičia to zatiaľ neschválili</translation>
 <translation id="8625384913736129811">Uložiť túto kartu do tohto zariadenia</translation>
 <translation id="8639963783467694461">Nastavenia automatického dopĺňania</translation>
-<translation id="8663226718884576429">Súhrn objednávky, <ph name="TOTAL_LABEL" />, Ďalšie podrobnosti</translation>
+<translation id="8663226718884576429">Súhrn objednávky, <ph name="TOTAL_LABEL" />, ďalšie podrobnosti</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, odpoveď, <ph name="ANSWER" /></translation>
 <translation id="8703575177326907206">Vaše pripojenie k doméne <ph name="DOMAIN" /> sa nešifruje.</translation>
 <translation id="8718314106902482036">Platba nebola dokončená</translation>

@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Skärmdumpsfönster</translation>
 <translation id="1197979282329025000">Ett fel inträffade när skrivaregenskaper skulle hämtas för skrivaren <ph name="PRINTER_NAME" />. Skrivaren kunde inte registreras med <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Nu sätter vi igång</translation>
-<translation id="1199232041627643649">Håll nere <ph name="KEY_EQUIVALENT" /> om du vill avsluta.</translation>
 <translation id="119944043368869598">Ta bort alla</translation>
 <translation id="1201402288615127009">Nästa</translation>
 <translation id="1202596434010270079">Kioskappen har uppdaterats. Ta bort USB-minnet.</translation>
@@ -2712,6 +2711,7 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="5204967432542742771">Ange lösenord</translation>
 <translation id="5206215183583316675">Vill du radera <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="520621735928254154">Fel vid import av certifikat</translation>
+<translation id="5209320130288484488">Det gick inte att hitta några enheter</translation>
 <translation id="5209518306177824490">SHA-1-fingeravtryck</translation>
 <translation id="5210365745912300556">Stäng flik</translation>
 <translation id="5213891612754844763">Visa proxyinställningar</translation>
@@ -3133,7 +3133,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="580571955903695899">Ordna efter titel</translation>
 <translation id="5807290661599647102">Konfigurera ett skärmlås</translation>
 <translation id="580961539202306967">Fråga mig när en webbplats vill skicka push-meddelanden (rekommenderas)</translation>
-<translation id="5809725759695043233">Du har appar som optimerats för Chromebook</translation>
 <translation id="5814126672212206791">Anslutningstyp</translation>
 <translation id="5815645614496570556">X.400-adress</translation>
 <translation id="5816434091619127343">De begärda ändringarna av skrivaren innebär att skrivaren inte kan användas.</translation>
@@ -4152,13 +4151,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="7378812711085314936">Dela dataanslutning</translation>
 <translation id="7384292194278095697">Enheten stöds inte längre</translation>
 <translation id="7385854874724088939">Det uppstod ett problem vid utskriften.  Se över skrivaren och försök igen.</translation>
-<translation id="7386824183915085801">Versionen av Chrome och operativsystemet du använder läggs till, liksom 
-        de uppgifter du väljer att ange ovan. Om du inkluderar din e-postadress
-        kan Google kontakta dig angående feedbackrapportering. Din feedback
-        används för att diagnostisera problem och förbättra Chrome. Alla personliga
-        uppgifter du anger, oavsett om det är avsiktligt eller av misstag, skyddas i
-        enlighet med vår sekretesspolicy.<ph name="BEGIN_BOLD" /> Genom att skicka in feedback godkänner du att Google får använda den för att förbättra produkter och tjänster från Google.
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Dialogrutan Rensa sökdata</translation>
 <translation id="7388044238629873883">Du är nästan klar.</translation>
 <translation id="7388222713940428051">Öppna ett gästfönster</translation>

@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Finestra de captura de pantalla</translation>
 <translation id="1197979282329025000">S'ha produït un error en recuperar la capacitat de la impressora <ph name="PRINTER_NAME" />. Aquesta impressora no s'ha pogut registrar a <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Comencem</translation>
-<translation id="1199232041627643649">Manteniu premut <ph name="KEY_EQUIVALENT" /> per sortir.</translation>
 <translation id="119944043368869598">Esborra-ho tot</translation>
 <translation id="1201402288615127009">Següent</translation>
 <translation id="1202596434010270079">L'aplicació Quiosc s'ha actualitzat. Extraieu la memòria USB.</translation>
@@ -2210,7 +2209,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="4415748029120993980">Corba el·líptica secp384r1 d'SECG (també coneguda com a NIST P-384)</translation>
 <translation id="4416582610654027550">Escriu un URL vàlid</translation>
 <translation id="4419409365248380979">Permet sempre que <ph name="HOST" /> pugui emmagatzemar galetes</translation>
-<translation id="4419556793104466535">Controla la sincronització, la personalització i més</translation>
+<translation id="4419556793104466535">Controla la sincronització i la personalització, entre d'altres</translation>
 <translation id="4421932782753506458">Gatet</translation>
 <translation id="4422347585044846479">Editeu l'adreça d'interès d'aquesta pàgina</translation>
 <translation id="4423104065312875417">Instal·la motors de veu addicionals</translation>
@@ -2711,6 +2710,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="5204967432542742771">Escriviu la contrasenya</translation>
 <translation id="5206215183583316675">Vols suprimir "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">S'ha produït un error en importar el certificat</translation>
+<translation id="5209320130288484488">No s'ha trobat cap dispositiu</translation>
 <translation id="5209518306177824490">Empremta SHA-1</translation>
 <translation id="5210365745912300556">Tanca la pestanya</translation>
 <translation id="5213891612754844763">Mostra la configuració del servidor intermediari</translation>
@@ -3099,7 +3099,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="5751545372099101699">Objecte de prestatge 4</translation>
 <translation id="5752453871435543420">Còpia de seguretat de Chrome OS Cloud</translation>
 <translation id="5756163054456765343">C&amp;entre d'ajuda</translation>
-<translation id="5758823144991844964">Reprodueix fitxers</translation>
+<translation id="5758823144991844964">Fitxers de Play</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> pot llegir els documents que envieu a la impressora mitjançant <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">No s'ha trobat cap dispositiu USB</translation>
 <translation id="5764483294734785780">De&amp;sa l'àudio com a...</translation>
@@ -3134,7 +3134,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="580571955903695899">Torna a ordenar per títol</translation>
 <translation id="5807290661599647102">Defineix un bloqueig de pantalla</translation>
 <translation id="580961539202306967">Pregunta'm quan un lloc vulgui enviar-me missatges de tramesa automàtica (recomanat)</translation>
-<translation id="5809725759695043233">Tens aplicacions optimitzades per a Chromebook</translation>
 <translation id="5814126672212206791">Tipus de connexió</translation>
 <translation id="5815645614496570556">Adreça X.400</translation>
 <translation id="5816434091619127343">Els canvis que s'han sol·licitat per a la impressora faran que no es pugui utilitzar.</translation>
@@ -4152,8 +4151,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7378812711085314936">Obtén la connexió de dades</translation>
 <translation id="7384292194278095697">Aquest dispositiu ja no és compatible</translation>
 <translation id="7385854874724088939">S'ha produït un problema en intentar imprimir. Comproveu la impressora i torneu-ho a provar.</translation>
-<translation id="7386824183915085801">La vostra versió de Chrome i del sistema operatiu s'enviarà juntament amb la informació addicional que vulgueu incloure a la secció anterior. Si incloeu l'adreça electrònica, Google podrà contactar-vos en relació amb els suggeriments que heu enviat. Aquesta informació s'utilitza per al diagnosi de problemes i per millorar Chrome. La informació personal que envieu, ja sigui de forma expressa o indirecta, es protegirà segons les nostres polítiques de privadesa.<ph name="BEGIN_BOLD" /> En enviar els suggeriments, accepteu que Google els pugui utilitzar per millorar els seus productes o serveis.
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Diàleg "Esborra les dades de navegació"</translation>
 <translation id="7388044238629873883">Gairebé heu acabat</translation>
 <translation id="7388222713940428051">Obre la finestra de convidat</translation>

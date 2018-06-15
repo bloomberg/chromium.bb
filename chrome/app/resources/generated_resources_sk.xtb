@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Okno snímky obrazovky</translation>
 <translation id="1197979282329025000">Pri načítavaní funkcií tlačiarne <ph name="PRINTER_NAME" /> sa vyskytla chyba. Táto tlačiareň nemôže byť zaregistrovaná do služby <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Začnime</translation>
-<translation id="1199232041627643649">Stlačením tlačidla <ph name="KEY_EQUIVALENT" /> proces ukončíte.</translation>
 <translation id="119944043368869598">Vymazať všetko</translation>
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="1202596434010270079">Aplikácia Kiosk bola aktualizovaná. Odoberte kľúč USB.</translation>
@@ -1460,7 +1459,7 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="3206175707080061730">Súbor s názvom $1 už existuje. Chcete ho nahradiť?</translation>
 <translation id="3208703785962634733">Nepotvrdené</translation>
 <translation id="3213187967168344806">Tlačiareň sa nepodarilo pridať. Reštartujte počítač a skúste to znova.</translation>
-<translation id="321356136776075234">Organizačná jednotka zariadenia (OU) (napr. OU=Chromebooky,DC=príklad,DC=com)</translation>
+<translation id="321356136776075234">Organizačná jednotka zariadenia (OU) (napr. OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3217843140356091325">Vytvoriť odkaz?</translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="3220586366024592812">Proces konektora <ph name="CLOUD_PRINT_NAME" /> zlyhal. Spustiť znova?</translation>
@@ -2713,6 +2712,7 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="5204967432542742771">Zadajte heslo</translation>
 <translation id="5206215183583316675">Odstrániť certifikát <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="520621735928254154">Chyba importovania certifikátu</translation>
+<translation id="5209320130288484488">Nenašli sa žiadne zariadenia</translation>
 <translation id="5209518306177824490">Odtlačok SHA-1</translation>
 <translation id="5210365745912300556">Zatvoriť kartu</translation>
 <translation id="5213891612754844763">Zobraziť nastavenia proxy servera</translation>
@@ -3134,7 +3134,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="580571955903695899">Zoradiť podľa názvu</translation>
 <translation id="5807290661599647102">Nastaviť zámku obrazovky</translation>
 <translation id="580961539202306967">Opýtať sa, keď mi budú chcieť stránky posielať správy push (odporúčané)</translation>
-<translation id="5809725759695043233">Máte aplikácie optimalizované pre Chromebooky</translation>
 <translation id="5814126672212206791">Typ pripojenia</translation>
 <translation id="5815645614496570556">Adresa X.400</translation>
 <translation id="5816434091619127343">Požadované zmeny by tlačiareň znefunkčnili.</translation>
@@ -4151,14 +4150,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7378812711085314936">Získať dátové pripojenie</translation>
 <translation id="7384292194278095697">Toto zariadenie už nie je podporované</translation>
 <translation id="7385854874724088939">Pri pokuse o tlač sa vyskytla chyba. Skontrolujte svoju tlačiareň a skúste to znova.</translation>
-<translation id="7386824183915085801">Spolu s verziou prehliadača Chrome a operačného systému sa odošlú
-          všetky informácie, ktoré ste vybrali vyššie. Ak poskytnete aj svoju e-mailovú
-          adresu, spoločnosť Google vás môže kontaktovať v súvislosti so spätnou väzbou. Táto spätná väzba
-          sa použije na diagnostiku problémov a na zlepšenie prehliadača Chrome. Všetky úmyselne alebo náhodne odoslané
-          osobné informácie budú chránené
-           v súlade s našimi pravidlami ochrany súkromia.<ph name="BEGIN_BOLD" /> Odoslaním tejto spätnej väzby súhlasíte s tým, že spoločnosť Google môže
-          vami poskytnutú spätnú väzbu použiť na zlepšenie ľubovoľného produktu alebo služby Google.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Dialógové okno „Vymazať údaje prehliadania“</translation>
 <translation id="7388044238629873883">Už ste skoro na konci!</translation>
 <translation id="7388222713940428051">Otvoriť okno hosťa</translation>

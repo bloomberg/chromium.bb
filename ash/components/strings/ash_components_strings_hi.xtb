@@ -15,7 +15,7 @@
 <translation id="152892567002884378">वॉल्यूम बढ़ाएं</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="ESC" /></translation>
 <translation id="1652741121070700329">पिछले शब्द की शुरुआत में ले जाएं</translation>
-<translation id="1671169355475348905">पिछली भाषा के इनपुट के तरीके पर स्विच करें</translation>
+<translation id="1671169355475348905">पिछली भाषा के इनपुट के तरीके का इस्तेमाल करें</translation>
 <translation id="1679841710523778799">स्क्रीन की रोशनी बढ़ाएं</translation>
 <translation id="168356808214100546">जब तक कि आप उस विंडो पर नहीं पहुंच जाते जिसे आप खोलना चाहते हैं, तब तक <ph name="ALT" /> दबाकर रखें और <ph name="TAB" /> पर टैप करें, फिर छोड़ दें.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -42,7 +42,7 @@
 <translation id="2568632782096378307">स्‍क्रीन रिज़ॉल्‍यूशन को डिफ़ॉल्‍ट पर रीसेट करें</translation>
 <translation id="2596078834055697711">विंडो का स्क्रीनशॉट लें</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="TAB" /> या <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">अगली भाषा के इनपुट के तरीके पर स्विच करें</translation>
+<translation id="2687057317448262550">अगली भाषा के इनपुट के तरीके का इस्तेमाल करें</translation>
 <translation id="2699509451653686398">अपना अभी वाला वेबपेज बुकमार्क के रूप में सेव करें</translation>
 <translation id="2750942583782703988">अपना अभी वाला पेज फिर लोड करें</translation>
 <translation id="2764005613199379871">खोज पता बार में फ़ोकस रखें</translation>
@@ -76,7 +76,7 @@
 <translation id="3792178297143798024">अपने शेल्फ़ पर हाइलाइट किया गया आइटम खोलें</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 से 8 तक</translation>
 <translation id="3837047332182291558">कीबोर्ड की रोशनी बढ़ाएं (सिर्फ़ बैकलिट कीबोर्ड के लिए)</translation>
-<translation id="3976863468609830880">अपनी अलमारी पर आखिरी आइकॉन पर क्लिक करें</translation>
+<translation id="3976863468609830880">अपनी शेल्फ़ पर आखिरी आइकॉन पर क्लिक करें</translation>
 <translation id="4026843240379844265">कार्रवाई विंडो को डिसप्ले के बीच ले जाएं</translation>
 <translation id="4035482366624727273">पेज पर सब कुछ चुनें</translation>
 <translation id="4060703249685950734">अपना बंद किया गया आखिरी टैब या विंडो फिर से खोलें</translation>

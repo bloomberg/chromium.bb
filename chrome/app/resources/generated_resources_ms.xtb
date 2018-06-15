@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Tetingkap tangkapan skrin</translation>
 <translation id="1197979282329025000">Ralat berlaku semasa mendapatkan semula keupayaan pencetak untuk pencetak <ph name="PRINTER_NAME" />. Pencetak ini tidak boleh didaftarkan dengan <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Mari bermula</translation>
-<translation id="1199232041627643649">Tahan <ph name="KEY_EQUIVALENT" /> untuk Berhenti.</translation>
 <translation id="119944043368869598">Kosongkan semua</translation>
 <translation id="1201402288615127009">Seterusnya</translation>
 <translation id="1202596434010270079">Apl Kiosk telah dikemas kini. Sila alih keluar batang USB.</translation>
@@ -1807,7 +1806,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> kini akan muncul dalam Admin Console</translation>
 <translation id="3741243925913727067">Sandarkan foto dan video peranti media anda pada Google Drive.</translation>
 <translation id="3742055079367172538">Tangkapan skrin diambil</translation>
-<translation id="3742666961763734085">Tidak menemui unit organisasi dengan nama itu. Sila cuba lagi.</translation>
+<translation id="3742666961763734085">Tidak dapat menemui unit organisasi dengan nama itu. Sila cuba lagi.</translation>
 <translation id="3744111561329211289">Penyegerakan latar belakang</translation>
 <translation id="3748026146096797577">Tidak Disambung</translation>
 <translation id="3749289110408117711">Nama fail</translation>
@@ -2714,6 +2713,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="5204967432542742771">Masukkan kata laluan</translation>
 <translation id="5206215183583316675">Padam "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Ralat Pengimportan Sijil</translation>
+<translation id="5209320130288484488">Tiada peranti ditemui</translation>
 <translation id="5209518306177824490">Cap jari SHA-1</translation>
 <translation id="5210365745912300556">Tutup tab</translation>
 <translation id="5213891612754844763">Tunjukkan tetapan proksi</translation>
@@ -3135,7 +3135,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="580571955903695899">Aturkan semula mengikut Tajuk</translation>
 <translation id="5807290661599647102">Tetapkan Kunci Skrin</translation>
 <translation id="580961539202306967">Tanya saya apabila tapak mahu menghantar mesej tolak kepada saya (disyorkan)</translation>
-<translation id="5809725759695043233">Anda mempunyai apl yang dioptimumkan untuk Chromebook</translation>
 <translation id="5814126672212206791">Jenis sambungan</translation>
 <translation id="5815645614496570556">Alamat X.400</translation>
 <translation id="5816434091619127343">Perubahan pencetak yang diminta akan menjadikan pencetak tidak boleh digunakan.</translation>
@@ -4154,13 +4153,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="7378812711085314936">Dapatkan sambungan data</translation>
 <translation id="7384292194278095697">Peranti ini tidak disokong lagi</translation>
 <translation id="7385854874724088939">Sesuatu tidak kena apabila mencuba untuk mencetak.  Sila periksa pencetak anda dan cuba semula.</translation>
-<translation id="7386824183915085801">Versi Chrome dan sistem pengendalian anda akan diserahkan sebagai tambahan
-          kepada sebarang maklumat yang anda pilih untuk dimasukkan di atas. Jika anda memasukkan alamat e-mel anda, Google mungkin menghubungi anda mengenai laporan maklum balas anda. Maklum balas ini
-          digunakan untuk mendiagnosis masalah dan membantu meningkatkan Chrome. Sebarang maklumat peribadi
-          yang anda serahkan, sama ada secara jelas atau kebetulan, akan dilindungi
-          menurut dasar privasi kami.<ph name="BEGIN_BOLD" /> Apabila anda menyerahkan maklum balas ini, anda bersetuju bahawa Google boleh menggunakan maklum balas
-          yang anda berikan untuk meningkatkan sebarang produk atau perkhidmatan Google.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Dialog "Kosongkan data semakan imbas"</translation>
 <translation id="7388044238629873883">Anda hampir selesai!</translation>
 <translation id="7388222713940428051">Buka tetingkap Tetamu</translation>

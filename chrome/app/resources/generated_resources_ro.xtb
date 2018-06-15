@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Face o captură de ecran a ferestrei</translation>
 <translation id="1197979282329025000">A apărut o eroare la preluarea caracteristicilor imprimantei <ph name="PRINTER_NAME" />. Această imprimantă nu a putut fi înregistrată la <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Să începem</translation>
-<translation id="1199232041627643649">Pentru a ieși, ține apăsată tasta <ph name="KEY_EQUIVALENT" />.</translation>
 <translation id="119944043368869598">Șterge-le pe toate</translation>
 <translation id="1201402288615127009">Înainte</translation>
 <translation id="1202596434010270079">Aplicația de tip chioșc a fost actualizată. Scoate stickul USB.</translation>
@@ -2713,6 +2712,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5204967432542742771">Introdu parola</translation>
 <translation id="5206215183583316675">Ștergi „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="520621735928254154">Eroare la importul certificatului</translation>
+<translation id="5209320130288484488">Nu s-a găsit niciun dispozitiv</translation>
 <translation id="5209518306177824490">Amprentă digitală SHA-1</translation>
 <translation id="5210365745912300556">Închide fila</translation>
 <translation id="5213891612754844763">Afișează setările de proxy</translation>
@@ -3099,7 +3099,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5751545372099101699">Elementul 4 din raft</translation>
 <translation id="5752453871435543420">Backup în cloud pentru sistemul de operare Chrome</translation>
 <translation id="5756163054456765343">C&amp;entrul de ajutor</translation>
-<translation id="5758823144991844964">Redă fișierele</translation>
+<translation id="5758823144991844964">Fișiere Play</translation>
 <translation id="5759728514498647443">Documentele pe care le trimiți prin <ph name="APP_NAME" /> pentru a fi printate pot fi citite de <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Nu s-au găsit dispozitive USB</translation>
 <translation id="5764483294734785780">Sal&amp;vează conținutul audio ca...</translation>
@@ -3134,7 +3134,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="580571955903695899">Reordonați după titlu</translation>
 <translation id="5807290661599647102">Setează o blocare a ecranului</translation>
 <translation id="580961539202306967">Notifică-mă dacă un site dorește să trimită mesaje push (recomandat)</translation>
-<translation id="5809725759695043233">Ai aplicații optimizate pentru Chromebookuri</translation>
 <translation id="5814126672212206791">Tipul de conexiune</translation>
 <translation id="5815645614496570556">Adresă X.400</translation>
 <translation id="5816434091619127343">Modificările solicitate ar face imprimanta inutilizabilă.</translation>
@@ -3999,7 +3998,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7134098520442464001">Micșorează textul</translation>
 <translation id="7136694880210472378">Setează ca prestabilit</translation>
 <translation id="7136984461011502314">Bun venit la <ph name="PRODUCT_NAME" /></translation>
-<translation id="7136993520339022828">A apărut o eroare. Încearcă din nou după ce alegi alte imagini.</translation>
+<translation id="7136993520339022828">A apărut o eroare. Încearcă din nou alegând alte imagini.</translation>
 <translation id="7138678301420049075">Altele</translation>
 <translation id="713888829801648570">Ne pare rău. Parola nu a putut fi verificată pentru că ești offline.</translation>
 <translation id="7140928199327930795">Nu există alte dispozitive disponibile.</translation>
@@ -4153,14 +4152,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7378812711085314936">Obține o conexiune de date</translation>
 <translation id="7384292194278095697">Acest dispozitiv nu mai este acceptat</translation>
 <translation id="7385854874724088939">A apărut o eroare la printare. Verifică imprimanta și încearcă din nou.</translation>
-<translation id="7386824183915085801">În plus față de informațiile pe care alegeți să le includeți mai sus, vor fi trimise și
-        versiunea de Chrome și versiunea sistemului dvs. de operare. Dacă includeți adresa de e-mail,
-        Google vă poate contacta în legătură cu raportul dvs. de feedback. Acest feedback
-        este utilizat pentru diagnosticarea problemelor și este util pentru a îmbunătăți Chrome. Toate
-        informațiile personale pe care le trimiteți, fie în mod explicit, fie accidental,
-        vor fi protejate în conformitate cu politicile de confidențialitate Google.<ph name="BEGIN_BOLD" /> Dacă trimiteți acest feedback, sunteți de acord că Google îl poate utiliza
-        pentru îmbunătățirea produselor și a serviciilor sale.
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Caseta de dialog „Șterge datele de navigare”</translation>
 <translation id="7388044238629873883">Aproape ați terminat!</translation>
 <translation id="7388222713940428051">Deschide o fereastră pentru invitați</translation>

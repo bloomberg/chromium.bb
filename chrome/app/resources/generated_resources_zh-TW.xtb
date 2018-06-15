@@ -142,7 +142,6 @@
 <translation id="119738088725604856">螢幕擷取畫面視窗</translation>
 <translation id="1197979282329025000">擷取 <ph name="PRINTER_NAME" /> 的印表機功能狀態時發生錯誤，無法向 <ph name="CLOUD_PRINT_NAME" /> 註冊該印表機。</translation>
 <translation id="1198271701881992799">開始使用</translation>
-<translation id="1199232041627643649">按住 <ph name="KEY_EQUIVALENT" /> 即可結束。</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">繼續</translation>
 <translation id="1202596434010270079">Kiosk 應用程式已更新，請移除 USB 隨身碟。</translation>
@@ -2711,6 +2710,7 @@
 <translation id="5204967432542742771">輸入密碼</translation>
 <translation id="5206215183583316675">要刪除「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="520621735928254154">憑證匯入錯誤</translation>
+<translation id="5209320130288484488">找不到裝置</translation>
 <translation id="5209518306177824490">SHA-1 指紋</translation>
 <translation id="5210365745912300556">關閉分頁</translation>
 <translation id="5213891612754844763">顯示 Proxy 設定</translation>
@@ -3132,7 +3132,6 @@
 <translation id="580571955903695899">按標題重新排序</translation>
 <translation id="5807290661599647102">設定螢幕鎖定</translation>
 <translation id="580961539202306967">每當有網站要傳送推送訊息時詢問我 (建議使用)</translation>
-<translation id="5809725759695043233">你有針對 Chromebook 經過最佳化處理的應用程式</translation>
 <translation id="5814126672212206791">連線類型</translation>
 <translation id="5815645614496570556">X.400 地址</translation>
 <translation id="5816434091619127343">要求的印表機變更會讓這部印表機無法使用。</translation>
@@ -4150,12 +4149,6 @@
 <translation id="7378812711085314936">取得數據連線</translation>
 <translation id="7384292194278095697">我們已不再支援這個裝置</translation>
 <translation id="7385854874724088939">準備列印時出現錯誤，請檢查你的印表機，然後再試一次。</translation>
-<translation id="7386824183915085801">系統會提交你的 Chrome 和作業系統版本，
-以及你在上方選擇一併提交的任何資訊。
-如果你一併提交電子郵件地址，Google 可能會針對你的意見回報與你聯絡。
-這些意見的用途是協助診斷問題及改善 Chrome，若其中含有任何個人資訊，
-無論是你本身願意提供或是不慎加入其中，我們一律會根據隱私權政策保障資訊安全。<ph name="BEGIN_BOLD" />提交這些資訊，即表示你同意 Google 使用你所提供的意見改善任何 Google 產品或服務。
-<ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">[清除瀏覽資料] 對話方塊</translation>
 <translation id="7388044238629873883">就快完成了！</translation>
 <translation id="7388222713940428051">開啟訪客視窗</translation>

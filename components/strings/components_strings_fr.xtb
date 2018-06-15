@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Sélectionner</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
-<translation id="1629803312968146339">Voulez-vous que cette carte soit enregistrée dans Chrome ?</translation>
 <translation id="1639239467298939599">Chargement en cours</translation>
 <translation id="1640180200866533862">Règles relatives aux utilisateurs</translation>
 <translation id="1640244768702815859">Essayez de <ph name="BEGIN_LINK" />consulter la page d'accueil du site<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Erreur HTTP.</translation>
 <translation id="2270484714375784793">N° de téléphone</translation>
 <translation id="2292556288342944218">Votre accès à Internet est bloqué</translation>
-<translation id="230155334948463882">Nouvelle carte ?</translation>
 <translation id="2316887270356262533">Libère moins de 1 Mo. Le chargement de certains sites risque d'être plus lent lors de votre prochaine visite.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> nécessite un nom d'utilisateur et un mot de passe.</translation>
 <translation id="2317583587496011522">Les cartes de débit sont acceptées.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Cartes acceptées</translation>
 <translation id="2702801445560668637">Liste de lecture</translation>
 <translation id="2704283930420550640">La valeur ne respecte pas le format requis.</translation>
-<translation id="2704951214193499422">Impossible de valider votre carte dans Chromium pour le moment. Veuillez réessayer plus tard.</translation>
 <translation id="2705137772291741111">La copie enregistrée (en cache) de ce site est illisible.</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="2710942282213947212">Un logiciel installé sur votre ordinateur empêche Chromium de se connecter au Web de manière sécurisée</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Type de règle incorrect.</translation>
 <translation id="3037605927509011580">Aie aie aie</translation>
 <translation id="3041612393474885105">Informations relatives au certificat</translation>
-<translation id="3063697135517575841">Impossible de valider votre carte dans Chrome pour le moment. Veuillez réessayer plus tard.</translation>
 <translation id="3064966200440839136">En payant via une application externe, vous allez quitter le mode navigation privée. Voulez-vous continuer ?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Aucun}=1{1 mot de passe}one{# mot de passe}other{# mots de passe}}</translation>
 <translation id="3096100844101284527">Ajouter une adresse d'enlèvement</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Utiliser la valeur par défaut globale (Détection)</translation>
 <translation id="4165986682804962316">Paramètres du site</translation>
-<translation id="4169947484918424451">Voulez-vous que cette carte soit enregistrée dans Chromium ?</translation>
 <translation id="4171400957073367226">Signature de validation non valide.</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> élément supplémentaire}one{<ph name="ITEM_COUNT" /> élément supplémentaire}other{<ph name="ITEM_COUNT" /> éléments supplémentaires}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>

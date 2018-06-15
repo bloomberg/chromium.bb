@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Chọn</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1623104350909869708">Ngăn trang này tạo hộp thoại bổ sung</translation>
-<translation id="1629803312968146339">Bạn có muốn Chrome lưu thẻ này không?</translation>
 <translation id="1639239467298939599">Đang tải</translation>
 <translation id="1640180200866533862">Chính sách người dùng</translation>
 <translation id="1640244768702815859">Hãy thử <ph name="BEGIN_LINK" />truy cập trang chủ của trang web<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Lỗi HTTP</translation>
 <translation id="2270484714375784793">Số điện thoại</translation>
 <translation id="2292556288342944218">Quyền truy cập Internet của bạn bị chặn</translation>
-<translation id="230155334948463882">Thẻ mới?</translation>
 <translation id="2316887270356262533">Bộ nhớ đệm còn chưa đầy 1 MB. Một số trang web có thể tải chậm hơn vào lần tới bạn truy cập.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> yêu cầu tên người dùng và mật khẩu.</translation>
 <translation id="2317583587496011522">Thẻ ghi nợ được chấp nhận.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Thẻ được chấp nhận</translation>
 <translation id="2702801445560668637">Danh sách đọc</translation>
 <translation id="2704283930420550640">Giá trị không khớp với định dạng.</translation>
-<translation id="2704951214193499422">Chromium không thể xác nhận thẻ của bạn tại thời điểm này. Vui lòng thử lại sau.</translation>
 <translation id="2705137772291741111">Không thể đọc được bản sao đã lưu (đã lưu vào bộ nhớ đệm) của trang web này.</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
 <translation id="2710942282213947212">Phần mềm trên máy tính của bạn hiện không cho Chromium kết nối an toàn với web</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Loại chính sách sai</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
 <translation id="3041612393474885105">Thông tin Chứng chỉ</translation>
-<translation id="3063697135517575841">Chrome không thể xác nhận thẻ của bạn tại thời điểm này. Vui lòng thử lại sau.</translation>
 <translation id="3064966200440839136">Rời khỏi chế độ ẩn danh để thanh toán qua một ứng dụng bên ngoài. Tiếp tục?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Không có}=1{1 mật khẩu}other{# mật khẩu}}</translation>
 <translation id="3096100844101284527">Thêm địa chỉ nhận hàng</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Sử dụng cài đặt mặc định chung (Phát hiện)</translation>
 <translation id="4165986682804962316">Cài đặt trang web</translation>
-<translation id="4169947484918424451">Bạn có muốn Chromium lưu thẻ này không?</translation>
 <translation id="4171400957073367226">Chữ ký xác minh không hợp lệ</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> mục khác}other{<ph name="ITEM_COUNT" /> mục khác}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>

@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Tag screenshot af vindue</translation>
 <translation id="1197979282329025000">Der opstod en fejl under hentningen af udskriftsegenskaber for printeren <ph name="PRINTER_NAME" />. Denne printer kunne ikke registreres med <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Lad os komme i gang</translation>
-<translation id="1199232041627643649">Hold <ph name="KEY_EQUIVALENT" /> nede for at afslutte.</translation>
 <translation id="119944043368869598">Ryd alle</translation>
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1202596434010270079">Terminalappen er blevet opdateret. Fjern USB-stikket.</translation>
@@ -2711,6 +2710,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5204967432542742771">Angiv adgangskode</translation>
 <translation id="5206215183583316675">Vil du slette "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Fejl ved import af certifikat</translation>
+<translation id="5209320130288484488">Der blev ikke fundet nogen enheder</translation>
 <translation id="5209518306177824490">SHA-1-fingeraftryk</translation>
 <translation id="5210365745912300556">Luk fanen</translation>
 <translation id="5213891612754844763">Vis proxyindstillinger</translation>
@@ -3132,7 +3132,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="580571955903695899">Omorganiser efter titel</translation>
 <translation id="5807290661599647102">Opret en skærmlås</translation>
 <translation id="580961539202306967">Spørg mig, når et website vil sende mig push-meddelelser (anbefales)</translation>
-<translation id="5809725759695043233">Du har apps, der er optimeret til Chromebooks</translation>
 <translation id="5814126672212206791">Forbindelsestype</translation>
 <translation id="5815645614496570556">X.400-adresse</translation>
 <translation id="5816434091619127343">De printerændringer, du har anmodet om, vil gøre printeren ubrugelig.</translation>
@@ -4152,14 +4151,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7378812711085314936">Få dataforbindelse</translation>
 <translation id="7384292194278095697">Denne enhed understøttes ikke længere</translation>
 <translation id="7385854874724088939">Der gik noget galt, da du prøvede at udskrive. Tjek din printer, og prøv igen.</translation>
-<translation id="7386824183915085801">Versionsnummeret på din Chrome-browser og dit operativsystem sendes sammen med
-          eventuelle oplysninger, du vælger at medtage herover. Hvis du medtager din mailadresse,
-          kan Google kontakte dig vedrørende din feedbackrapport. Denne feedback
-          anvendes til at diagnosticere problemer og forbedre Chrome. Eventuelle personlige oplysninger,
-          som du måtte indsende, hvad enten dette sker hændeligt eller bevidst, beskyttes i
-          overensstemmelse med vores privatlivspolitikker.<ph name="BEGIN_BOLD" /> Ved at indsende denne feedback accepterer du, at Google anvender din feedback
-          til at forbedre et hvilket som helst Google-produkt eller en hvilken som helst Google-tjeneste.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Dialogboksen "Ryd browserdata"</translation>
 <translation id="7388044238629873883">Du er næsten færdig.</translation>
 <translation id="7388222713940428051">Åbn gæstevindue</translation>

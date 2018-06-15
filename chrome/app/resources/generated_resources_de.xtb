@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Screenshot von Fenster</translation>
 <translation id="1197979282329025000">Beim Abrufen der Druckerfunktionen für Drucker "<ph name="PRINTER_NAME" />" ist ein Fehler aufgetreten. Dieser Drucker konnte nicht mit <ph name="CLOUD_PRINT_NAME" /> registriert werden.</translation>
 <translation id="1198271701881992799">Erste Schritte</translation>
-<translation id="1199232041627643649">Zum Beenden <ph name="KEY_EQUIVALENT" /> gedrückt halten</translation>
 <translation id="119944043368869598">Alle löschen</translation>
 <translation id="1201402288615127009">Weiter</translation>
 <translation id="1202596434010270079">Die Kiosk-App wurde aktualisiert. Bitte entfernen Sie den USB-Stick.</translation>
@@ -618,7 +617,7 @@
 <translation id="1897762215429052132">Netzwerkverbindung, Sprache und Tastaturlayout einrichten</translation>
 <translation id="1901303067676059328">&amp;Alles auswählen</translation>
 <translation id="1902576642799138955">Gültigkeitsdauer</translation>
-<translation id="1905375423839394163">Name des Chromebook-Geräts</translation>
+<translation id="1905375423839394163">Name des Chromebooks</translation>
 <translation id="1905710495812624430">Die maximal zulässige Anzahl an Versuchen wurde überschritten.</translation>
 <translation id="1909880997794698664">Möchten Sie das Gerät wirklich dauerhaft im Kioskmodus betreiben?</translation>
 <translation id="1910721550319506122">Willkommen!</translation>
@@ -873,7 +872,7 @@
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" hat zusätzliche Berechtigungen angefordert.</translation>
 <translation id="2307462900900812319">Netzwerk konfigurieren</translation>
 <translation id="230927227160767054">Diese Seite möchte einen Service-Handler installieren.</translation>
-<translation id="2309620859903500144">Diese Website darf nicht auf Ihre Bewegungs- oder Lichtsensoren zugreifen.</translation>
+<translation id="2309620859903500144">Diese Website darf nicht auf meine Bewegungs- oder Lichtsensoren zugreifen.</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" /> % abgeschlossen</translation>
 <translation id="2318143611928805047">Papierformat</translation>
@@ -1323,7 +1322,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3003144360685731741">Bevorzugte Netzwerke</translation>
 <translation id="3003623123441819449">CSS-Cache</translation>
 <translation id="3003633581067744647">Zur Miniaturansicht wechseln</translation>
-<translation id="3003828226041301643">Das Gerät konnte der Domain nicht beitreten. Prüfen Sie, ob Ihr Konto Geräte hinzufügen darf.</translation>
+<translation id="3003828226041301643">Das Gerät konnte der Domain nicht beitreten. Prüfen Sie, ob mit Ihrem Konto Geräte hinzugefügt werden dürfen.</translation>
 <translation id="3003967365858406397">Ihr <ph name="PHONE_NAME" /> stellt eine private WLAN-Verbindung her.</translation>
 <translation id="3004391367407090544">Bitte versuchen Sie es später erneut.</translation>
 <translation id="3006881078666935414">Keine Nutzungsdaten</translation>
@@ -1456,7 +1455,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3206175707080061730">Eine Datei mit dem Namen "$1" existiert bereits. Möchten Sie sie ersetzen?</translation>
 <translation id="3208703785962634733">Nicht bestätigt</translation>
 <translation id="3213187967168344806">Drucker kann nicht hinzugefügt werden. Starten Sie Ihren Computer neu und versuchen Sie es noch einmal.</translation>
-<translation id="321356136776075234">Gerät OU (z. B. OU=Chromebooks, DC=example, DC=com)</translation>
+<translation id="321356136776075234">Gerät OU (z. B. OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3217843140356091325">Verknüpfung erstellen?</translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="3220586366024592812">Der <ph name="CLOUD_PRINT_NAME" />-Connector-Prozess ist abgestürzt. Neu starten?</translation>
@@ -2295,7 +2294,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4555769855065597957">Schatten</translation>
 <translation id="4556110439722119938">Lesezeichen, Verlauf, Passwörter und andere Einstellungen werden mit Ihrem Google-Konto synchronisiert, damit Sie sie auf allen Ihren Geräten nutzen können.</translation>
 <translation id="4558426062282641716">Berechtigung zum automatischen Start angefordert</translation>
-<translation id="4559617833001311418">Diese Website greift auf Ihre Bewegungs- oder Lichtsensoren zu.</translation>
+<translation id="4559617833001311418">Diese Website greift auf meine Bewegungs- oder Lichtsensoren zu.</translation>
 <translation id="4562155214028662640">Fingerabdruck hinzufügen</translation>
 <translation id="4565377596337484307">Passwort ausblenden</translation>
 <translation id="4567772783389002344">Wort hinzufügen</translation>
@@ -2481,7 +2480,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4856478137399998590">Ihr mobiler Datendienst ist aktiviert und einsatzbereit.</translation>
 <translation id="4857506433977877623">{COUNT,plural, =0{Alle in &amp;Inkognitofenster öffnen}=1{In &amp;Inkognitofenster öffnen}other{Alle (#) in &amp;Inkognitofenster öffnen}}</translation>
 <translation id="4858913220355269194">Fußball</translation>
-<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> – Video wird im Bild-in-Bild-Modus abgespielt</translation>
+<translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> – Video wird im Bild-im-Bild-Modus abgespielt</translation>
 <translation id="4862050643946421924">Gerät hinzufügen...</translation>
 <translation id="4862642413395066333">Signatur von OCSP-Antworten</translation>
 <translation id="4863769717153320198">Auflösung <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Standard)</translation>
@@ -2709,6 +2708,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5204967432542742771">Passwort eingeben</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" löschen?</translation>
 <translation id="520621735928254154">Fehler beim Importieren des Zertifikats</translation>
+<translation id="5209320130288484488">Keine Geräte gefunden</translation>
 <translation id="5209518306177824490">SHA-1-Fingerabdruck</translation>
 <translation id="5210365745912300556">Schließen</translation>
 <translation id="5213891612754844763">Proxyeinstellungen anzeigen</translation>
@@ -3130,7 +3130,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="580571955903695899">Neu sortieren nach Titel</translation>
 <translation id="5807290661599647102">Displaysperre einrichten</translation>
 <translation id="580961539202306967">Nachfragen, wenn eine Website mir Push-Nachrichten senden möchte (empfohlen)</translation>
-<translation id="5809725759695043233">Sie haben Apps, die für Chromebooks optimiert sind</translation>
 <translation id="5814126672212206791">Verbindungstyp</translation>
 <translation id="5815645614496570556">X.400-Adresse</translation>
 <translation id="5816434091619127343">Die angeforderten Änderungen würden den Drucker unbrauchbar machen.</translation>
@@ -4142,24 +4141,13 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Mauszeiger bei Bewegung hervorheben</translation>
 <translation id="7377169924702866686">Feststelltaste An</translation>
-<translation id="7377451353532943397">Zugriff auf den Sensor weiter blockieren</translation>
+<translation id="7377451353532943397">Zugriff auf den Sensor weiterhin blockieren</translation>
 <translation id="7378627244592794276">Nein</translation>
 <translation id="73786666777299047">Chrome Web Store öffnen</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Datenverbindung nutzen</translation>
 <translation id="7384292194278095697">Dieses Gerät wird nicht mehr unterstützt</translation>
 <translation id="7385854874724088939">Beim Drucken ist ein Fehler aufgetreten. Bitte überprüfen Sie Ihren Drucker und versuchen Sie es erneut.</translation>
-<translation id="7386824183915085801">Neben Ihrer Chrome- und Betriebssystemversion werden auch
-        die oben angegebenen Informationen übermittelt. Wenn Sie Ihre
-        E-Mail-Adresse angegeben haben, setzt sich Google möglicherweise
-        bezüglich Ihres Feedbacks mit Ihnen in Verbindung. Dieses Feedback wird
-        zur Problemdiagnose und Verbesserung von Chrome verwendet. Jegliche
-        personenbezogenen Daten, die Sie übermitteln, ob ausdrücklich
-        oder versehentlich, sind im Rahmen unserer Datenschutzerklärung
-        geschützt.<ph name="BEGIN_BOLD" /> Durch Senden dieses Feedbacks stimmen Sie zu, dass
-        Google Ihr Feedback zur Verbesserung von Google-Produkten oder
-        -Diensten verwenden darf.
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Dialog "Browserdaten löschen"</translation>
 <translation id="7388044238629873883">Sie haben es fast geschafft.</translation>
 <translation id="7388222713940428051">Gastfenster öffnen</translation>
@@ -5179,7 +5167,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8946359700442089734">Die Debugging-Funktionen wurden auf diesem <ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät nicht vollständig aktiviert.</translation>
 <translation id="8948006114608036530">Dieses Gerät sendet derzeit automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Diese Einstellung wird vom Eigentümer des Geräts erzwungen. Wenn Sie zusätzliche Web- &amp; App-Aktivitäten aktiviert haben, werden diese Informationen in Ihrem Konto gespeichert, damit Sie sie unter "Meine Aktivitäten" verwalten können.
 
-    Dies sind allgemeine Informationen und Nutzungsinformationen zu Ihrem Gerät, beispielsweise Daten zum Akkustand, zur App-Nutzung und zur Qualität der Netzwerkverbindung. Diese Informationen werden von Google zur Verbesserung der Produkte und Dienste verwendet. Einige zusammengefasste Informationen helfen auch Partnern wie Android-Entwicklern dabei, ihre Apps und Produkte zu verbessern.
+    Dies sind allgemeine Informationen und Nutzungsinformationen zu Ihrem Gerät, beispielsweise Daten zum Akkustand, zur App-Nutzung und zur Qualität der Netzwerkverbindung. Diese Informationen werden von Google zur Verbesserung der Produkte und Dienste verwendet. Einige zusammengefasste Informationen helfen auch Partnern wie Android-Entwicklern dabei, ihre Apps und Produkte weiter zu verbessern.
     Wenn Sie diese Funktion deaktivieren, kann Ihr Gerät dennoch die Informationen senden, die für wichtige Dienste wie Systemupdates und Sicherheitsmerkmale erforderlich sind.
     Sie können diese Funktion unter "Einstellungen" &gt; "Google" steuern. Wählen Sie im angezeigten Menü "Nutzung &amp; Diagnose" aus.</translation>
 <translation id="894871326938397531">Inkognitomodus deaktivieren?</translation>
@@ -5383,7 +5371,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="952992212772159698">Nicht aktiviert</translation>
 <translation id="957960681186851048">Diese Website hat versucht, automatisch mehrere Dateien herunterzuladen</translation>
 <translation id="9580706199804957">Keine Verbindung mit Google-Diensten möglich</translation>
-<translation id="958416628331784386">Auf diesem Tab wird ein Video im Bild-in-Bild-Modus abgespielt.</translation>
+<translation id="958416628331784386">Auf diesem Tab wird ein Video im Bild-im-Bild-Modus abgespielt.</translation>
 <translation id="958515377357646513">Zum Weitergehen tippen.</translation>
 <translation id="960719561871045870">Betreibercode</translation>
 <translation id="960987915827980018">Noch etwa 1 Stunde</translation>

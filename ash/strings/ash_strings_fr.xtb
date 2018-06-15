@@ -180,6 +180,7 @@
 <translation id="4544944664594876241">Le raccourci permettant de verrouiller l'écran a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="4564869809620998694">Service de gestion des polices</translation>
 <translation id="4570957409596482333">Bouton "Sélectionner pour prononcer"</translation>
+<translation id="4628757576491864469">Appareils</translation>
 <translation id="4659419629803378708">ChromeVox activé</translation>
 <translation id="4776917500594043016">Mot de passe de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">rechercher</translation>
@@ -235,6 +236,7 @@
 <translation id="598882571027504733">Pour télécharger la mise à jour, redémarrez votre Chromebook avec le clavier branché.</translation>
 <translation id="5992218262414051481">Le mode Contraste élevé est activé. Appuyez de nouveau sur Ctrl+Recherche+H pour le désactiver.</translation>
 <translation id="6018164090099858612">Sortie du mode Miroir…</translation>
+<translation id="6040143037577758943">Fermer</translation>
 <translation id="6043212731627905357">Ce moniteur ne fonctionne pas avec votre <ph name="DEVICE_TYPE" /> (il n'est pas compatible).</translation>
 <translation id="6043994281159824495">Se déconnecter maintenant</translation>
 <translation id="6047696787498798094">Le partage d'écran s'arrête lorsque vous passez à un autre utilisateur. Voulez-vous continuer ?</translation>

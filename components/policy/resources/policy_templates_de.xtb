@@ -220,7 +220,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1803646570632580723">Liste der in der Übersicht angezeigten Apps ansehen</translation>
 <translation id="1808715480127969042">Cookies auf diesen Websites blockieren</translation>
 <translation id="1810261428246410396">Verwendung von Instant Tethering erlauben.</translation>
-<translation id="1826282708349731794">Festlegen, wie Daten vom Chrome Software Cleaner an Google gesendet werden</translation>
 <translation id="1827523283178827583">Feste Proxyserver verwenden</translation>
 <translation id="1843117931376765605">Aktualisierungsrate für Nutzerrichtlinien</translation>
 <translation id="1844620919405873871">Konfiguriert Richtlinien zum schnellen Entsperren.</translation>
@@ -587,7 +586,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
       Diese Richtlinie hat keinen Einfluss darauf, ob Nutzer auf einzelnen Geräten Drucker konfigurieren können. Sie ist als Ergänzung zur Konfiguration von Druckern durch einzelne Nutzer gedacht.
       </translation>
 <translation id="2633084400146331575">Gesprochenes Feedback aktivieren</translation>
-<translation id="2640843331263301324">Aktiviert den Chrome Software Cleaner unter Windows</translation>
 <translation id="2646290749315461919">Ermöglicht Ihnen festzulegen, ob Websites den Standort des Nutzers mitverfolgen dürfen. Die Mitverfolgung des Standorts kann standardmäßig gestattet oder nicht gestattet sein oder auf Anfrage beim Nutzer erfolgen. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AskGeolocation" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="2647069081229792812">Bearbeitung von Lesezeichen aktivieren oder deaktivieren</translation>
 <translation id="2650049181907741121">Auszuführende Aktion beim Zuklappen des Geräts</translation>
@@ -1770,11 +1768,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6392973646875039351">Aktiviert die AutoFill-Funktion von <ph name="PRODUCT_NAME" /> und ermöglicht es Nutzern, Web-Formulare automatisch mit zuvor gespeicherten Informationen (etwa Adresse oder Kreditkarteninformationen) ausfüllen zu lassen. Wenn Sie diese Einstellung deaktivieren, können Nutzer die AutoFill-Funktion nicht verwenden. Ist diese Einstellung aktiviert oder nicht konfiguriert, kann der Nutzer entscheiden, ob er AutoFill nutzen möchte. Er kann AutoFill-Profile konfigurieren und AutoFill nach eigenem Ermessen aktivieren und deaktivieren.</translation>
 <translation id="6394350458541421998">Diese Richtlinie ist ab <ph name="PRODUCT_OS_NAME" />-Version 29 nicht mehr vorhanden. Verwenden Sie stattdessen die Richtlinie "PresentationScreenDimDelayScale".</translation>
 <translation id="6401669939808766804">Nutzer abmelden</translation>
-<translation id="6412477120967771054">Wenn "false" festgelegt ist, kann der Chrome Software Cleaner das System nicht nach unerwünschter Software scannen und keine Bereinigungen durchführen. Das manuelle Starten des Chrome Software Cleaners über chrome://settings/cleanup ist deaktiviert.
-
-      Wenn "true" oder nichts festgelegt ist, scannt der Chrome Software Cleaner das System regelmäßig nach unerwünschter Software. Wird welche gefunden, so wird der Nutzer gefragt, ob sie entfernt werden soll. Das manuelle Starten des Chrome Software Cleaners über chrome://settings/cleanup ist aktiviert.
-
-      Diese Richtlinie ist nur für Windows-Instanzen verfügbar, die nicht mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
 <translation id="6426205278746959912">Android-Apps können nicht zur Verwendung eines Proxys gezwungen werden. 
 Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf freiwilliger Basis übernommen werden:
 
@@ -1902,7 +1895,7 @@ Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, ka
 
       Wenn diese Richtlinie nicht konfiguriert wurde oder kein passender Drucker innerhalb des Zeitlimits gefunden wird, wird als Standarddrucker der integrierte PDF-Drucker oder – falls dieser nicht verfügbar ist – gar kein Drucker ausgewählt.
 
-      Der Wert wird als JSON-Objekt gemäß des folgenden Schemas geparst:
+      Der Wert wird als JSON-Objekt gemäß dem folgenden Schema geparst:
       {
         "type": "object",
         "properties": {
@@ -2196,8 +2189,8 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
           Mit |overrides| können die genannten Regeln vorübergehend außer Kraft gesetzt werden.
           * Wenn weder "time_window_limit" noch "time_usage_limit" aktiv sind, kann |LOCK| zur Sperrung des Geräts verwendet werden.
-          * Mit |LOCK| wird eine Nutzersitzung vorübergehend gesperrt, bis das nächste "time_window_limit" oder "time_usage_limit beginnt.
-          * MIt |UNLOCK| wird eine durch "time_window_limit" oder "time_usage_limit" gesperrte Sitzung entsperrt.
+          * Mit |LOCK| wird eine Nutzersitzung vorübergehend gesperrt, bis das nächste "time_window_limit" oder "time_usage_limit" beginnt.
+          * Mit |UNLOCK| wird eine durch "time_window_limit" oder "time_usage_limit" gesperrte Sitzung entsperrt.
           |created_time_millis| ist der UTC-Zeitstempel für die Erstellung der Außerkraftsetzung. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde. Mit ihm wird festgestellt, ob diese Außerkraftsetzung weiterhin angewendet werden soll. Wenn das aktuelle aktive Zeitlimit (Nutzungszeitlimit oder Zeitfensterlimit) gestartet wurde, nachdem die Außerkraftsetzung erfolgt ist, sollte sie keine Auswirkungen haben. Entsprechend gilt: Wenn die Außerkraftsetzung vor der letzten Änderung des aktiven "time_window_limit" oder "time_usage_window" erstellt wurde, sollte sie nicht angewendet werden.</translation>
 <translation id="7529100000224450960">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Öffnen von Pop-ups gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, so kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPopupsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="7529144158022474049">Streufaktor automatisch aktualisieren</translation>

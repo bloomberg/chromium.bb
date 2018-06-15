@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
-<translation id="1001534784610492198">इंस्टॉलर संग्रह अनुपयोगी या अमान्य है. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
+<translation id="1001534784610492198">इंस्‍टॉलर संग्रह खराब या अमान्‍य है. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
 <translation id="102763973188675173">Google Chrome को पसंद के मुताबिक बनाएं और नियंत्रित करें. अपडेट उपलब्ध है.</translation>
 <translation id="1035334672863811645">Chrome में प्रवेश करें</translation>
 <translation id="1065672644894730302">आपकी प्राथमिकताओं को पढ़ा नहीं जा सकता| \\n\\nकुछ विशेषताएं अनुपलब्ध हो सकती हैं और प्राथमिकताओं में किए गए परिवर्तनों को सहेजा नहीं जाएगा.</translation>
@@ -162,7 +162,9 @@
 <translation id="532046782124376502">चेतावनी: Google Chrome आपका ब्राउज़िंग इतिहास रिकॉर्ड करने से एक्‍सटेंशन को नहीं रोक सकता है. गुप्त मोड में इस एक्‍सटेंशन को बंद करने के लिए, इस विकल्‍प का चयन हटाएं.</translation>
 <translation id="5334545119300433702">यह मॉड्यूल Google Chrome से विरोध के लिए जाना जाता है.</translation>
 <translation id="5386244825306882791">इससे यह भी नियंत्रित होता है कि जब आप Chrome को प्रारंभ करते हैं या खोज वाली पट्टी से खोजते हैं तब कौन सा पेज दिखाया जाए.</translation>
-<translation id="5430073640787465221">आपकी प्राथमिकताएं फ़ाइल दूषित या अमान्‍य है. Google Chrome आपकी सेटिंग पुनर्प्राप्त करने में असमर्थ है.</translation>
+<translation id="5430073640787465221">आपकी पसंदीदा फ़ाइल खराब या अमान्‍य है.
+
+Google Chrome आपकी सेटिंग बहाल नहीं कर सकता.</translation>
 <translation id="5495581687705680288">Google Chrome में लोड किए गए मॉड्यूल</translation>
 <translation id="556024056938947818">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>

@@ -179,6 +179,7 @@
 <translation id="4544944664594876241">ಸ್ಕ್ರೀನ್ ಅನ್ನು ಲಾಕ್ ಮಾಡುವ ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಬಳಸಿ.</translation>
 <translation id="4564869809620998694">ಫಾಂಟ್ ಸೇವೆ</translation>
 <translation id="4570957409596482333">ಧ್ವನಿ ಆಯ್ಕೆ ಮಾಡಿ ವೈಶಿಷ್ಟ್ಯದ ಬಟನ್‌</translation>
+<translation id="4628757576491864469">ಸಾಧನಗಳು</translation>
 <translation id="4659419629803378708">ChromeVox ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="479989351350248267">search</translation>
@@ -235,6 +236,7 @@
 <translation id="5992218262414051481">ಹೆಚ್ಚು ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಅದನ್ನು ಟಾಗಲ್‌ ಆಫ್‌ ಮಾಡಲು ಪುನಃ
 Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="6018164090099858612">ಪ್ರತಿಬಿಂಬ ಮೋಡ್ ನಿರ್ಗಮಿಸಲಾಗುತ್ತಿದೆ</translation>
+<translation id="6040143037577758943">ಮುಚ್ಚಿರಿ</translation>
 <translation id="6043212731627905357">ಈ ಮಾನಿಟರ್ ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಜೊತೆ ಸಿಗುತ್ತಿಲ್ಲ (ಮಾನಿಟರ್ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ).</translation>
 <translation id="6043994281159824495">ಈಗ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="6047696787498798094">ನೀವು ಬೇರೊಬ್ಬ ಬಳಕೆದಾರರಿಗೆ ಬದಲಾಯಿಸಿದಾಗ ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೆಯು ನಿಲ್ಲುತ್ತದೆ. ನೀವು ಮುಂದುವರಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>

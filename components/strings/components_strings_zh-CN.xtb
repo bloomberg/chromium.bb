@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">选择</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
-<translation id="1629803312968146339">您希望 Chrome 保存此信用卡吗？</translation>
 <translation id="1639239467298939599">正在加载</translation>
 <translation id="1640180200866533862">用户政策</translation>
 <translation id="1640244768702815859">请尝试<ph name="BEGIN_LINK" />访问该网站的首页<ph name="END_LINK" />。</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">HTTP 错误</translation>
 <translation id="2270484714375784793">电话号码</translation>
 <translation id="2292556288342944218">您被禁止访问互联网</translation>
-<translation id="230155334948463882">要使用新信用卡吗？</translation>
 <translation id="2316887270356262533">释放了不到 1 MB。当您下次访问时，某些网站的加载速度可能会更慢。</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> 要求提供用户名和密码。</translation>
 <translation id="2317583587496011522">接受借记卡。</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">接受的银行卡</translation>
 <translation id="2702801445560668637">读取列表</translation>
 <translation id="2704283930420550640">值不符合格式要求。</translation>
-<translation id="2704951214193499422">Chromium 目前无法确认您的信用卡，请稍后重试。</translation>
 <translation id="2705137772291741111">无法读取此网站的已保存（缓存）副本。</translation>
 <translation id="2709516037105925701">自动填充</translation>
 <translation id="2710942282213947212">您计算机上的软件导致 Chromium 无法安全地连接到网络</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">策略类型有误</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
 <translation id="3041612393474885105">证书信息</translation>
-<translation id="3063697135517575841">Chrome 目前无法确认您的信用卡，请稍后重试。</translation>
 <translation id="3064966200440839136">将要退出隐身模式，以便通过外部应用付款。是否继续？</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{无}=1{1 个密码}other{# 个密码}}</translation>
 <translation id="3096100844101284527">添加取货地址</translation>
@@ -457,7 +453,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">使用全局默认设置（检测）</translation>
 <translation id="4165986682804962316">网站设置</translation>
-<translation id="4169947484918424451">您希望 Chromium 保存此信用卡吗？</translation>
 <translation id="4171400957073367226">验证签名无效</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{另外 <ph name="ITEM_COUNT" /> 项}other{另外 <ph name="ITEM_COUNT" /> 项}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> - <ph name="ROW_CONTENT" /></translation>

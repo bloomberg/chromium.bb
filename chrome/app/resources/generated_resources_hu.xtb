@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Képernyőfelvétel ablak</translation>
 <translation id="1197979282329025000">Hiba történt a(z) <ph name="PRINTER_NAME" /> nyomtató képességeinek lekérésekor. Ez a nyomtató nem regisztrálható itt: <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Kezdjük</translation>
-<translation id="1199232041627643649">Nyomja le a(z) <ph name="KEY_EQUIVALENT" /> billentyűket a kilépéshez.</translation>
 <translation id="119944043368869598">Összes törlése</translation>
 <translation id="1201402288615127009">Következő</translation>
 <translation id="1202596434010270079">A kioszkalkalmazás frissítve. Kérjük, távolítsa el az USB-meghajtót.</translation>
@@ -2713,6 +2712,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5204967432542742771">Írja be a jelszót</translation>
 <translation id="5206215183583316675">Törli a következőt: „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="520621735928254154">Tanúsítványimportálási hiba</translation>
+<translation id="5209320130288484488">Nem találhatók eszközök</translation>
 <translation id="5209518306177824490">SHA-1 ujjlenyomat</translation>
 <translation id="5210365745912300556">Lap bezárása</translation>
 <translation id="5213891612754844763">Proxybeállítások megjelenítése</translation>
@@ -3136,7 +3136,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="580571955903695899">Rendezés cím alapján</translation>
 <translation id="5807290661599647102">Képernyőzár beállítása</translation>
 <translation id="580961539202306967">Kérdezzen meg, amikor egy webhely push üzeneteket szeretne küldeni nekem (ajánlott)</translation>
-<translation id="5809725759695043233">Vannak olyan alkalmazásai, amelyek optimalizálva vannak Chromebookra</translation>
 <translation id="5814126672212206791">Csatlakozás típusa</translation>
 <translation id="5815645614496570556">X.400 cím</translation>
 <translation id="5816434091619127343">A kívánt nyomtatómódosítások használhatatlanná tehetik a nyomtatót.</translation>
@@ -4155,14 +4154,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7378812711085314936">Adatkapcsolat kérése</translation>
 <translation id="7384292194278095697">Ez az eszköz már nem támogatott</translation>
 <translation id="7385854874724088939">Valami nem sikerült a nyomtatás során. Ellenőrizze a nyomtatót, és próbálkozzon újra.</translation>
-<translation id="7386824183915085801">A rendszer a Chrome és az operációs rendszer verziója mellett 
-        a fent kiválasztott információkat is elküldi. Ha megadja e-mail
-        címét, a Google kapcsolatba léphet Önnel a visszajelzéssel kapcsolatban. A visszajelzést
-        a problémák elemzéséhez és a Chrome fejlesztéséhez használjuk fel. Valamennyi beküldött személyes adat
-        esetében az adatvédelmi irányelveink szerinti védelmet biztosítjuk, függetlenül attól, hogy a
-        személyes adatokat Ön közölte, vagy véletlenül szerepelnek.<ph name="BEGIN_BOLD" /> A visszajelzés küldésével beleegyezik, hogy a 
-        Google felhasználja azt bármely Google-termék vagy -szolgáltatás fejlesztésére.
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">"Böngészési adatok törlése" párbeszédablak</translation>
 <translation id="7388044238629873883">Már majdnem elkészült.</translation>
 <translation id="7388222713940428051">Vendég módú ablak megnyitása</translation>

@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Pilih</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Cegah dialog lain dari halaman ini.</translation>
-<translation id="1629803312968146339">Ingin Chrome menyimpan kartu ini?</translation>
 <translation id="1639239467298939599">Memuat</translation>
 <translation id="1640180200866533862">Kebijakan pengguna</translation>
 <translation id="1640244768702815859">Coba <ph name="BEGIN_LINK" />buka beranda situs<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Kesalahan HTTP</translation>
 <translation id="2270484714375784793">Nomor telepon</translation>
 <translation id="2292556288342944218">Akses Internet Anda diblokir</translation>
-<translation id="230155334948463882">Kartu baru?</translation>
 <translation id="2316887270356262533">Sediakan ruang kurang dari 1 MB. Beberapa situs mungkin dimuat lebih lambat dibuka lagi.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> memerlukan nama pengguna dan sandi.</translation>
 <translation id="2317583587496011522">Kartu debit diterima.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Kartu yang Diterima</translation>
 <translation id="2702801445560668637">Daftar Bacaan</translation>
 <translation id="2704283930420550640">Nilai tidak sesuai format.</translation>
-<translation id="2704951214193499422">Saat ini Chromium tidak dapat mengonfirmasi kartu. Coba lagi nanti.</translation>
 <translation id="2705137772291741111">Salinan tersimpan (dalam cache) situs ini tidak dapat dibaca.</translation>
 <translation id="2709516037105925701">Isi-Otomatis</translation>
 <translation id="2710942282213947212">Software di komputer membuat Chromium tidak terhubung dengan aman ke web</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Jenis kebijakan salah</translation>
 <translation id="3037605927509011580">Yah!</translation>
 <translation id="3041612393474885105">Informasi Sertifikat</translation>
-<translation id="3063697135517575841">Saat ini Chrome tidak dapat mengonfirmasi kartu. Coba lagi nanti.</translation>
 <translation id="3064966200440839136">Keluar dari mode penyamaran untuk membayar melalui aplikasi eksternal. Lanjutkan?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Tidak ada}=1{1 sandi}other{# sandi}}</translation>
 <translation id="3096100844101284527">Tambahkan Alamat Pengambilan</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Gunakan default global (Deteksi)</translation>
 <translation id="4165986682804962316">Setelan situs</translation>
-<translation id="4169947484918424451">Ingin Chromium menyimpan kartu ini?</translation>
 <translation id="4171400957073367226">Tanda tangan verifikasi tidak valid</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> item lainnya}other{<ph name="ITEM_COUNT" /> item lainnya}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
@@ -1116,6 +1111,7 @@
 <translation id="9148507642005240123">&amp;Urungkan pengeditan</translation>
 <translation id="9154194610265714752">Diperbarui</translation>
 <translation id="9157595877708044936">Menyiapkan...</translation>
+<translation id="9168814207360376865">Izinkan situs memeriksa apakah Anda telah menyimpan metode pembayaran atau tidak</translation>
 <translation id="9169664750068251925">Selalu cekal di situs ini</translation>
 <translation id="9170848237812810038">&amp;Urung</translation>
 <translation id="9171296965991013597">Tutup aplikasi?</translation>

@@ -108,7 +108,7 @@
     <ph name="LINE_BREAK2" />
     Hãy thử chọn ít ảnh hơn.</translation>
 <translation id="1149401351239820326">Tháng hết hạn</translation>
-<translation id="1151917987301063366">Luôn cho phép <ph name="HOST" /> truy cập vào cảm biến</translation>
+<translation id="1151917987301063366">Luôn cho phép <ph name="HOST" /> sử dụng các cảm biến của thiết bị</translation>
 <translation id="1153356358378277386">Thiết bị được ghép nối</translation>
 <translation id="1156488781945104845">Thời gian hiện tại</translation>
 <translation id="1161575384898972166">Vui lòng đăng nhập vào <ph name="TOKEN_NAME" /> để xuất chứng chỉ ứng dụng khách.</translation>
@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Cửa sổ ảnh chụp màn hình</translation>
 <translation id="1197979282329025000">Đã xảy ra lỗi khi truy xuất các chức năng máy in cho máy in <ph name="PRINTER_NAME" />. Không thể đăng ký máy in này bằng <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Hãy bắt đầu</translation>
-<translation id="1199232041627643649">Giữ <ph name="KEY_EQUIVALENT" /> để thoát.</translation>
 <translation id="119944043368869598">Xóa tất cả</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1202596434010270079">Ứng dụng Kiosk đã được cập nhật. Vui lòng rút thẻ USB.</translation>
@@ -513,7 +512,7 @@
 <translation id="1737968601308870607">Lỗi tệp</translation>
 <translation id="1743570585616704562">Không nhận dạng được</translation>
 <translation id="1743970419083351269">Đóng thanh tài nguyên đã tải xuống</translation>
-<translation id="1744060673522309905">Không thể kết hợp thiết bị với miền. Hãy đảm bảo số thiết bị bạn thêm không vượt quá hạn mức.</translation>
+<translation id="1744060673522309905">Không thể kết hợp thiết bị với miền. Hãy đảm bảo số thiết bị bạn thêm không vượt quá giới hạn.</translation>
 <translation id="1744108098763830590">trang nền</translation>
 <translation id="1745520510852184940">Luôn làm điều này</translation>
 <translation id="174937106936716857">Tổng số lượng tệp</translation>
@@ -877,7 +876,7 @@
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" đã yêu cầu thêm quyền.</translation>
 <translation id="2307462900900812319">Định cấu hình mạng</translation>
 <translation id="230927227160767054">Trang này muốn cài đặt trình xử lý dịch vụ.</translation>
-<translation id="2309620859903500144">Trang web này đã bị chặn truy cập vào cảm biến chuyển động hoặc ánh sáng của bạn.</translation>
+<translation id="2309620859903500144">Trang web này đã bị chặn sử dụng cảm biến chuyển động hoặc ánh sáng của thiết bị.</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
 <translation id="2317842250900878657">Đã hoàn tất <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Khổ giấy</translation>
@@ -1271,7 +1270,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2902312830803030883">Thao tác khác</translation>
 <translation id="2903457445916429186">Mở mục đã chọn</translation>
 <translation id="2903493209154104877">Địa chỉ</translation>
-<translation id="2903882649406874750">Luôn chặn <ph name="HOST" /> truy cập vào cảm biến</translation>
+<translation id="2903882649406874750">Luôn chặn <ph name="HOST" /> sử dụng các cảm biến của thiết bị</translation>
 <translation id="290444763029043472"><ph name="DOWNLOADED_AMOUNT_MB" /> MB / <ph name="TOTAL_AMOUNT_MB" /> MB đã tải xuống</translation>
 <translation id="2904456025988372123">Hỏi khi trang web cố gắng tự động tải tệp xuống sau tệp đầu tiên</translation>
 <translation id="2907619724991574506">URL khởi động</translation>
@@ -1328,7 +1327,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="3003144360685731741">Mạng ưa thích</translation>
 <translation id="3003623123441819449">Bộ nhớ đệm CSS</translation>
 <translation id="3003633581067744647">Chuyển sang chế độ xem hình thu nhỏ</translation>
-<translation id="3003828226041301643">Không thể kết hợp thiết bị với miền. Hãy kiểm tra tài khoản của bạn để đảm bảo bạn có đặc quyền thêm thiết bị.</translation>
+<translation id="3003828226041301643">Không thể kết hợp thiết bị với miền. Hãy kiểm tra tài khoản của bạn để đảm bảo bạn có quyền thêm thiết bị.</translation>
 <translation id="3003967365858406397"><ph name="PHONE_NAME" /> của bạn sẽ tạo kết nối Wi-Fi riêng tư.</translation>
 <translation id="3004391367407090544">Vui lòng quay lại sau</translation>
 <translation id="3006881078666935414">Không có dữ liệu sử dụng</translation>
@@ -1461,7 +1460,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="3206175707080061730">Tệp có tên là "$1" đã tồn tại. Bạn có muốn thay thế tệp đó không?</translation>
 <translation id="3208703785962634733">Không được xác nhận</translation>
 <translation id="3213187967168344806">Không thể thêm máy in. Hãy khởi động lại máy tính của bạn rồi thử lại.</translation>
-<translation id="321356136776075234">Đơn vị tổ chức thiết bị (ví dụ: OU=Chromebooks,DC=example,DC=com)</translation>
+<translation id="321356136776075234">Đơn vị tổ chức của thiết bị (ví dụ: OU=Chromebooks,DC=example,DC=com)</translation>
 <translation id="3217843140356091325">Tạo lối tắt?</translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="3220586366024592812">Quy trình của trình kết nối <ph name="CLOUD_PRINT_NAME" /> đã xảy ra lỗi. Khởi động lại?</translation>
@@ -2000,7 +1999,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="4023146161712577481">Cấu hình thiết bị đang chờ xác định.</translation>
 <translation id="4027804175521224372">(Bạn chưa được đăng nhập—<ph name="IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_LINK" />)</translation>
 <translation id="4031179711345676612">Cho phép micrô</translation>
-<translation id="4031527940632463547">Cảm biến bị chặn</translation>
+<translation id="4031527940632463547">Đã chặn sử dụng cảm biến</translation>
 <translation id="4031910098617850788">F5</translation>
 <translation id="4033471457476425443">Thêm thư mục mới</translation>
 <translation id="4034042927394659004">Giảm độ sáng của phím</translation>
@@ -2300,7 +2299,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="4555769855065597957">Bóng</translation>
 <translation id="4556110439722119938">Dấu trang, lịch sử, mật khẩu và các cài đặt khác sẽ được đồng bộ hóa với Tài khoản Google của bạn để bạn có thể sử dụng chúng trên tất cả thiết bị của mình.</translation>
 <translation id="4558426062282641716">Đã yêu cầu quyền tự động chạy</translation>
-<translation id="4559617833001311418">Trang web này đang truy cập vào cảm biến chuyển động hoặc ánh sáng của bạn.</translation>
+<translation id="4559617833001311418">Trang web này đang sử dụng cảm biến chuyển động hoặc ánh sáng của thiết bị.</translation>
 <translation id="4562155214028662640">Thêm vân tay</translation>
 <translation id="4565377596337484307">Ẩn mật khẩu</translation>
 <translation id="4567772783389002344">Thêm từ</translation>
@@ -2698,7 +2697,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="5170568018924773124">Hiển thị trong thư mục</translation>
 <translation id="5171045022955879922">Tìm kiếm hoặc nhập URL</translation>
 <translation id="5171343362375269016">Đã hoán đổi bộ nhớ</translation>
-<translation id="5175379009094579629">Tên thiết bị không hợp lệ. Hãy nhập tên thiết bị hợp lệ để thử lại.</translation>
+<translation id="5175379009094579629">Tên thiết bị là không hợp lệ. Hãy nhập tên thiết bị hợp lệ để thử lại.</translation>
 <translation id="5177479852722101802">Tiếp tục chặn truy cập vào máy ảnh và micrô</translation>
 <translation id="5177526793333269655">Chế độ xem hình thu nhỏ</translation>
 <translation id="5177549709747445269">Bạn đang sử dụng dữ liệu di động</translation>
@@ -2714,6 +2713,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="5204967432542742771">Nhập mật khẩu</translation>
 <translation id="5206215183583316675">Xóa "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Lỗi nhập chứng chỉ</translation>
+<translation id="5209320130288484488">Không tìm thấy thiết bị nào</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Đóng tab</translation>
 <translation id="5213891612754844763">Hiển thị cài đặt proxy</translation>
@@ -3100,7 +3100,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="5751545372099101699">Mục giá 4</translation>
 <translation id="5752453871435543420">Sao lưu Chrome OS Cloud</translation>
 <translation id="5756163054456765343">Trung tâm trợ g&amp;iúp</translation>
-<translation id="5758823144991844964">Phát tệp</translation>
+<translation id="5758823144991844964">Tệp Play</translation>
 <translation id="5759728514498647443">Tài liệu bạn gửi để in qua <ph name="APP_NAME" /> có thể đọc được bằng <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Không tìm thấy thiết bị USB nào</translation>
 <translation id="5764483294734785780">Lư&amp;u âm thanh thành...</translation>
@@ -3135,7 +3135,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="580571955903695899">Sắp xếp lại theo Tiêu đề</translation>
 <translation id="5807290661599647102">Đặt khóa màn hình</translation>
 <translation id="580961539202306967">Hỏi tôi khi một trang web muốn gửi thông báo đẩy cho tôi (nên chọn)</translation>
-<translation id="5809725759695043233">Bạn có các ứng dụng được tối ưu hóa cho Chromebook</translation>
 <translation id="5814126672212206791">Loại kết nối</translation>
 <translation id="5815645614496570556">Địa chỉ X.400</translation>
 <translation id="5816434091619127343">Các thay đổi đã yêu cầu đối với máy in sẽ làm cho máy in đó không sử dụng được.</translation>
@@ -3296,7 +3295,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="6055171183283175969">Mật khẩu bạn đã nhập không chính xác.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 Với Mã hóa RSA</translation>
 <translation id="6056710589053485679">Tải lại bình thường</translation>
-<translation id="6057381398996433816">Trang web này đã bị chặn sử dụng cảm biến chuyển động và ánh sáng.</translation>
+<translation id="6057381398996433816">Trang web này đã bị chặn sử dụng cảm biến chuyển động và ánh sáng của thiết bị.</translation>
 <translation id="6059652578941944813">Hệ thống cấp bậc của Chứng chỉ</translation>
 <translation id="6059925163896151826">Thiết bị USB</translation>
 <translation id="6064217302520318294">Khóa màn hình</translation>
@@ -3765,7 +3764,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="6766101255664245434">Chụp ảnh mới hoặc chọn biểu tượng hay ảnh hiện có.
           <ph name="LINE_BREAK" />
           Hình ảnh này sẽ hiển thị trên màn hình khóa và màn hình đăng nhập của Chromebook.</translation>
-<translation id="6767639283522617719">Không thể kết hợp miền. Hãy đảm bảo bạn đã cài đặt chính xác đơn vị tổ chức.</translation>
+<translation id="6767639283522617719">Không thể kết hợp miền. Hãy đảm bảo các tùy chọn cài đặt cho đơn vị tổ chức là chính xác.</translation>
 <translation id="6769712124046837540">Đang thêm máy in...</translation>
 <translation id="6771503742377376720">Là Tổ chức phát hành chứng chỉ</translation>
 <translation id="6777817260680419853">Đã chặn chuyển hướng</translation>
@@ -3833,7 +3832,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="6871644448911473373">Phản hồi OCSP: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">Mật khẩu bạn nhập đã bị máy chủ từ chối.</translation>
 <translation id="687588960939994211">Đồng thời, xóa lịch sử, dấu trang, cài đặt và các dữ liệu Chrome khác của bạn được lưu trữ trên thiết bị này.</translation>
-<translation id="6878422606530379992">Cảm biến được cho phép</translation>
+<translation id="6878422606530379992">Được phép sử dụng cảm biến</translation>
 <translation id="6880587130513028875">Hình ảnh đã bị chặn trên trang này.</translation>
 <translation id="6883319974225028188">Rất tiếc! Hệ thống không lưu được cấu hình thiết bị.</translation>
 <translation id="6885771755599377173">Xem trước thông tin hệ thống</translation>
@@ -4147,21 +4146,13 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Đánh dấu con trỏ chuột khi đang di chuyển</translation>
 <translation id="7377169924702866686">Caps Lock đang bật.</translation>
-<translation id="7377451353532943397">Tiếp tục chặn quyền truy cập vào cảm biến</translation>
+<translation id="7377451353532943397">Tiếp tục chặn quyền sử dụng cảm biến</translation>
 <translation id="7378627244592794276">Không</translation>
 <translation id="73786666777299047">Mở cửa hàng Chrome trực tuyến</translation>
 <translation id="7378810950367401542">/</translation>
 <translation id="7378812711085314936">Nhận kết nối dữ liệu</translation>
 <translation id="7384292194278095697">Thiết bị này không còn được hỗ trợ</translation>
 <translation id="7385854874724088939">Có trục trặc xảy ra khi in. Hãy kiểm tra máy in của bạn và thử lại.</translation>
-<translation id="7386824183915085801">Phiên bản Chrome và hệ điều hành của bạn sẽ được gửi đi cùng với
-          bất kỳ thông tin nào bạn chọn để đưa vào ở trên. Nếu bạn đưa vào địa chỉ email của mình,
-          Google có thể liên hệ với bạn về báo cáo phản hồi của bạn. Phản hồi này
-          được sử dụng để chẩn đoán các sự cố và giúp cải tiến Chrome. Bất kỳ thông tin cá nhân nào
-          bạn gửi, cho dù rõ ràng hay vô tình sẽ được bảo vệ theo
-          các chính sách bảo mật của chúng tôi.<ph name="BEGIN_BOLD" /> Bằng cách gửi phản hồi này, bạn đồng ý rằng Google có thể sử dụng phản hồi
-          bạn cung cấp để cải tiến bất kỳ sản phẩm hoặc dịch vụ nào của Google.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Hộp thoại "Xóa dữ liệu duyệt web"</translation>
 <translation id="7388044238629873883">Bạn sắp hoàn tất!</translation>
 <translation id="7388222713940428051">Mở Cửa sổ khách</translation>
@@ -4298,7 +4289,7 @@ Việc cài đặt <ph name="APP_NAME" /> sẽ tải xuống <ph name="DOWNLOAD_
 <translation id="7595453277607160340">Để dùng ứng dụng Android và đảm bảo rằng <ph name="DEVICE_TYPE" /> của bạn hoạt động đúng cách, hãy đăng nhập lại và cập nhật.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (mã lỗi <ph name="ERROR_CODE" />).</translation>
 <translation id="7598466960084663009">Khởi động lại máy tính</translation>
-<translation id="7599527631045201165">Tên thiết bị quá dài. Hãy nhập một tên ngắn hơn để thử lại.</translation>
+<translation id="7599527631045201165">Tên thiết bị là quá dài. Hãy nhập một tên ngắn hơn để thử lại.</translation>
 <translation id="7600965453749440009">Không bao giờ dịch <ph name="LANGUAGE" /></translation>
 <translation id="760197030861754408">Truy cập <ph name="LANDING_PAGE" /> để kết nối.</translation>
 <translation id="7602079150116086782">Không có tab nào từ thiết bị khác</translation>
@@ -4971,7 +4962,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8642267168767642381">Di chuyển ngón tay quá chậm</translation>
 <translation id="8642947597466641025">Phóng to Văn bản</translation>
 <translation id="8643418457919840804">Để tiếp tục, hãy chọn một tùy chọn:</translation>
-<translation id="8645354835496065562">Tiếp tục cho phép truy cập vào cảm biến</translation>
+<translation id="8645354835496065562">Tiếp tục cho phép sử dụng cảm biến</translation>
 <translation id="8647834505253004544">Không phải địa chỉ web hợp lệ</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> hoặc <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8650543407998814195">Mặc dù không thể truy cập vào hồ sơ cũ của mình nữa, nhưng bạn vẫn có thể xóa hồ sơ đó.</translation>
@@ -5178,11 +5169,11 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8944964446326379280"><ph name="APP_NAME" /> đang chia sẻ một cửa sổ với <ph name="TAB_NAME" />.</translation>
 <translation id="8946284507644756416">Có thể mở khóa <ph name="DEVICE_TYPE" /> của bạn bằng điện thoại Android.</translation>
 <translation id="8946359700442089734">Tính năng gỡ lỗi không được bật hoàn toàn trên thiết bị <ph name="IDS_SHORT_PRODUCT_NAME" /> này.</translation>
-<translation id="8948006114608036530">Thiết bị này hiện tự động gửi dữ liệu chẩn đoán, dữ liệu về mức sử dụng ứng dụng và thiết bị tới Google. Tùy chọn cài đặt này do chủ sở hữu thực thi. Nếu bạn bật Hoạt động web và ứng dụng bổ sung, thông tin này sẽ được lưu trữ cùng với tài khoản của bạn để bạn có thể quản lý trong Hoạt động của tôi.
+<translation id="8948006114608036530">Thiết bị này hiện tự động gửi dữ liệu chẩn đoán, dữ liệu về mức sử dụng ứng dụng và thiết bị tới Google. Tùy chọn cài đặt này do chủ sở hữu thiết bị áp dụng. Nếu bạn bật Hoạt động web và ứng dụng bổ sung, thông tin này sẽ được lưu trữ cùng với tài khoản của bạn để bạn có thể quản lý trong Hoạt động của tôi.
 
-    Đây là thông tin chung về thiết bị của bạn và cách bạn sử dụng thiết bị (như mức pin, mức sử dụng ứng dụng và kết nối mạng). Dữ liệu này sẽ dùng để cải thiện các sản phẩm và dịch vụ của Google cho mọi người. Một số thổng tin tổng hợp cũng sẽ giúp các đối tác, chẳng hạn như nhà phát triển Android, cải thiện ứng dụng và sản phẩm của họ.
+    Đây là thông tin chung về thiết bị của bạn và cách bạn sử dụng thiết bị (như mức pin, mức sử dụng ứng dụng và hoạt động kết nối mạng). Dữ liệu này sẽ dùng để cải thiện các sản phẩm và dịch vụ của Google cho mọi người. Một số thổng tin tổng hợp cũng sẽ giúp các đối tác, chẳng hạn như nhà phát triển Android, cải thiện ứng dụng và sản phẩm của họ.
     Việc tắt tính năng này không ảnh hưởng đến khả năng thiết bị gửi thông tin cần thiết cho các dịch vụ thiết yếu như bảo mật và bản cập nhật hệ thống.
-    Bạn có thể kiểm soát tính năng này trong phần Cài đặt &gt; Google. Hãy chọn Sử dụng và chẩn đoán từ menu này.</translation>
+    Bạn có thể kiểm soát tính năng này trong phần Cài đặt &gt; Google. Sau đó, chọn Sử dụng và chẩn đoán từ menu này.</translation>
 <translation id="894871326938397531">Thoát chế độ ẩn danh?</translation>
 <translation id="895347679606913382">Đang bắt đầu...</translation>
 <translation id="8954952943849489823">Di chuyển không thành công, lỗi không mong đợi: $1</translation>

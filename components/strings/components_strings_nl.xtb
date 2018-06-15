@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Kiezen</translation>
 <translation id="1620510694547887537">Camera</translation>
 <translation id="1623104350909869708">Voorkomen dat deze pagina extra dialoogvensters weergeeft</translation>
-<translation id="1629803312968146339">Wil je dat Chrome deze kaart opslaat?</translation>
 <translation id="1639239467298939599">Laden</translation>
 <translation id="1640180200866533862">Gebruikersbeleid</translation>
 <translation id="1640244768702815859">Probeer <ph name="BEGIN_LINK" />de homepage van de site te bezoeken<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">HTTP-fout</translation>
 <translation id="2270484714375784793">Telefoonnummer</translation>
 <translation id="2292556288342944218">Je toegang tot internet wordt geblokkeerd</translation>
-<translation id="230155334948463882">Nieuwe kaart?</translation>
 <translation id="2316887270356262533">Hiermee wordt minder dan 1 MB vrijgemaakt. Sommige sites kunnen langzamer worden geladen wanneer je ze weer bezoekt.</translation>
 <translation id="2317259163369394535">Voor <ph name="DOMAIN" /> zijn een gebruikersnaam en een wachtwoord vereist.</translation>
 <translation id="2317583587496011522">Betaalpassen worden geaccepteerd.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Geaccepteerde kaarten</translation>
 <translation id="2702801445560668637">Leeslijst</translation>
 <translation id="2704283930420550640">Waarde komt niet overeen met notatie.</translation>
-<translation id="2704951214193499422">Chromium kan je creditcard momenteel niet bevestigen. Probeer het later opnieuw.</translation>
 <translation id="2705137772291741111">De in het cachegeheugen opgeslagen versie van deze site is niet bereikbaar.</translation>
 <translation id="2709516037105925701">Automatisch aanvullen</translation>
 <translation id="2710942282213947212">Software op je computer voorkomt dat Chromium veilig verbinding kan maken met internet</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Onjuist beleidstype</translation>
 <translation id="3037605927509011580">Helaas.</translation>
 <translation id="3041612393474885105">Certificaatgegevens</translation>
-<translation id="3063697135517575841">Chrome kan je creditcard momenteel niet bevestigen. Probeer het later opnieuw.</translation>
 <translation id="3064966200440839136">Je verlaat de incognitomodus om te betalen via een externe app. Doorgaan?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Geen}=1{1 wachtwoord}other{# wachtwoorden}}</translation>
 <translation id="3096100844101284527">Ophaaladres toevoegen</translation>
@@ -456,7 +452,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Algemene standaard gebruiken (detecteren)</translation>
 <translation id="4165986682804962316">Site-instellingen</translation>
-<translation id="4169947484918424451">Wil je dat Chromium deze kaart opslaat?</translation>
 <translation id="4171400957073367226">Onjuiste verificatiehandtekening</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Nog <ph name="ITEM_COUNT" /> item}other{Nog <ph name="ITEM_COUNT" /> items}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>

@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Tria</translation>
 <translation id="1620510694547887537">Càmera</translation>
 <translation id="1623104350909869708">Impedeix que aquesta pàgina creï diàlegs addicionals.</translation>
-<translation id="1629803312968146339">Voleu que Chrome desi aquesta targeta?</translation>
 <translation id="1639239467298939599">S'està carregant</translation>
 <translation id="1640180200866533862">Polítiques d'usuari</translation>
 <translation id="1640244768702815859">Prova d'<ph name="BEGIN_LINK" />anar a la pàgina d'inici del lloc<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Error d'HTTP</translation>
 <translation id="2270484714375784793">Número de telèfon</translation>
 <translation id="2292556288342944218">El vostre accés a Internet està bloquejat</translation>
-<translation id="230155334948463882">És una targeta nova?</translation>
 <translation id="2316887270356262533">Allibera menys d'1 MB. És possible que alguns llocs web es carreguin més a poc a poc la propera vegada que els visitis.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> requereix un nom d'usuari i una contrasenya.</translation>
 <translation id="2317583587496011522">S'accepten targetes de dèbit.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Targetes acceptades</translation>
 <translation id="2702801445560668637">Llista de lectura</translation>
 <translation id="2704283930420550640">El valor no coincideix amb el format.</translation>
-<translation id="2704951214193499422">En aquest moment Chromium no ha pogut confirmar la teva targeta. Torna-ho a provar més tard.</translation>
 <translation id="2705137772291741111">La còpia desada (a la memòria cau) d'aquest lloc no s'ha pogut llegir.</translation>
 <translation id="2709516037105925701">Emplenament autom.</translation>
 <translation id="2710942282213947212">L'ordinador conté programari que impedeix que Chromium es connecti de manera segura al web</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Tipus de política incorrecte</translation>
 <translation id="3037605927509011580">Oh, no!</translation>
 <translation id="3041612393474885105">Informació del certificat</translation>
-<translation id="3063697135517575841">Chrome no ha pogut confirmar la teva targeta. Torna-ho a provar més tard.</translation>
 <translation id="3064966200440839136">Per pagar amb una aplicació externa sortiràs del mode d'incògnit. Vols continuar?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Cap}=1{1 contrasenya}other{# contrasenyes}}</translation>
 <translation id="3096100844101284527">Afegeix l'adreça de recollida</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Utilitza el valor predeterminat global (detecta)</translation>
 <translation id="4165986682804962316">Configuració del lloc web</translation>
-<translation id="4169947484918424451">Voleu que Chromium desi aquesta targeta?</translation>
 <translation id="4171400957073367226">La signatura de verificació és incorrecta</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> element més}other{<ph name="ITEM_COUNT" /> elements més}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
