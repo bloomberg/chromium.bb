@@ -588,6 +588,15 @@ TEST_P(SharedMemoryTest, MapTwice) {
 #if !defined(OS_IOS)
 // Create a shared memory object, mmap it, and mprotect it to PROT_EXEC.
 TEST_P(SharedMemoryTest, AnonymousExecutable) {
+#if defined(OS_LINUX)
+  // On Chromecast both /dev/shm and /tmp are mounted with 'noexec' option,
+  // which makes this test fail. But Chromecast doesn't use NaCL so we don't
+  // need this.
+  if (!IsPathExecutable(FilePath("/dev/shm")) &&
+      !IsPathExecutable(FilePath("/tmp"))) {
+    return;
+  }
+#endif  // OS_LINUX
   const uint32_t kTestSize = 1 << 16;
 
   SharedMemory shared_memory;

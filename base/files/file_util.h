@@ -235,6 +235,15 @@ BASE_EXPORT bool SetPosixFilePermissions(const FilePath& path, int mode);
 BASE_EXPORT bool ExecutableExistsInPath(Environment* env,
                                         const FilePath::StringType& executable);
 
+#if defined(OS_LINUX) || defined(OS_AIX)
+// Determine if files under a given |path| can be mapped and then mprotect'd
+// PROT_EXEC. This depends on the mount options used for |path|, which vary
+// among different Linux distributions and possibly local configuration. It also
+// depends on details of kernel--ChromeOS uses the noexec option for /dev/shm
+// but its kernel allows mprotect with PROT_EXEC anyway.
+BASE_EXPORT bool IsPathExecutable(const FilePath& path);
+#endif  // OS_LINUX || OS_AIX
+
 #endif  // OS_POSIX
 
 // Returns true if the given directory is empty

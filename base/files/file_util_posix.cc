@@ -138,35 +138,6 @@ std::string TempFileName() {
 #endif
 }
 
-#if defined(OS_LINUX) || defined(OS_AIX)
-// Determine if /dev/shm files can be mapped and then mprotect'd PROT_EXEC.
-// This depends on the mount options used for /dev/shm, which vary among
-// different Linux distributions and possibly local configuration.  It also
-// depends on details of kernel--ChromeOS uses the noexec option for /dev/shm
-// but its kernel allows mprotect with PROT_EXEC anyway.
-bool DetermineDevShmExecutable() {
-  bool result = false;
-  FilePath path;
-
-  ScopedFD fd(
-      CreateAndOpenFdForTemporaryFileInDir(FilePath("/dev/shm"), &path));
-  if (fd.is_valid()) {
-    DeleteFile(path, false);
-    long sysconf_result = sysconf(_SC_PAGESIZE);
-    CHECK_GE(sysconf_result, 0);
-    size_t pagesize = static_cast<size_t>(sysconf_result);
-    CHECK_GE(sizeof(pagesize), sizeof(sysconf_result));
-    void* mapping = mmap(nullptr, pagesize, PROT_READ, MAP_SHARED, fd.get(), 0);
-    if (mapping != MAP_FAILED) {
-      if (mprotect(mapping, pagesize, PROT_READ | PROT_EXEC) == 0)
-        result = true;
-      munmap(mapping, pagesize);
-    }
-  }
-  return result;
-}
-#endif  // defined(OS_LINUX) || defined(OS_AIX)
-
 bool AdvanceEnumeratorWithStat(FileEnumerator* traversal,
                                FilePath* out_next_path,
                                struct stat* out_next_stat) {
@@ -1016,7 +987,8 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
 #endif
   bool use_dev_shm = true;
   if (executable) {
-    static const bool s_dev_shm_executable = DetermineDevShmExecutable();
+    static const bool s_dev_shm_executable =
+        IsPathExecutable(FilePath("/dev/shm"));
     use_dev_shm = s_dev_shm_executable;
   }
   if (use_dev_shm && !disable_dev_shm) {
@@ -1083,4 +1055,28 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
 }  // namespace internal
 
 #endif  // !defined(OS_NACL_NONSFI)
+
+#if defined(OS_LINUX) || defined(OS_AIX)
+BASE_EXPORT bool IsPathExecutable(const FilePath& path) {
+  bool result = false;
+  FilePath tmp_file_path;
+
+  ScopedFD fd(CreateAndOpenFdForTemporaryFileInDir(path, &tmp_file_path));
+  if (fd.is_valid()) {
+    DeleteFile(tmp_file_path, false);
+    long sysconf_result = sysconf(_SC_PAGESIZE);
+    CHECK_GE(sysconf_result, 0);
+    size_t pagesize = static_cast<size_t>(sysconf_result);
+    CHECK_GE(sizeof(pagesize), sizeof(sysconf_result));
+    void* mapping = mmap(nullptr, pagesize, PROT_READ, MAP_SHARED, fd.get(), 0);
+    if (mapping != MAP_FAILED) {
+      if (mprotect(mapping, pagesize, PROT_READ | PROT_EXEC) == 0)
+        result = true;
+      munmap(mapping, pagesize);
+    }
+  }
+  return result;
+}
+#endif  // defined(OS_LINUX) || defined(OS_AIX)
+
 }  // namespace base
