@@ -472,7 +472,11 @@ void WindowTree::CompleteScheduleEmbedForExistingClient(
 
 mojom::WindowTreeClientPtr
 WindowTree::GetAndRemoveScheduledEmbedWindowTreeClient(
-    const base::UnguessableToken& token) {
+    const base::UnguessableToken& token,
+    std::set<WindowTree*>* visited_trees) {
+  if (visited_trees->count(this))
+    return nullptr;
+
   auto iter = scheduled_embeds_.find(token);
   if (iter != scheduled_embeds_.end()) {
     mojom::WindowTreeClientPtr client = std::move(iter->second);
@@ -480,17 +484,18 @@ WindowTree::GetAndRemoveScheduledEmbedWindowTreeClient(
     return client;
   }
 
-  // TODO(sky): this is wrong, ScheduleEmbedForExistingClient() allows a client
-  // to have multiple roots, rethink this (this code matches what ws1 does).
-  if (client_roots_.empty())
-    return nullptr;
-
-  ServerWindow* root =
-      ServerWindow::GetMayBeNull(client_roots_.begin()->get()->window());
-  DCHECK(root);  // There should always be a ClientWindow for a root.
-  if (root->owning_window_tree() && root->owning_window_tree() != this) {
-    return root->owning_window_tree()
-        ->GetAndRemoveScheduledEmbedWindowTreeClient(token);
+  visited_trees->insert(this);
+  for (auto& client_root : client_roots_) {
+    ServerWindow* root_window =
+        ServerWindow::GetMayBeNull(client_root->window());
+    DCHECK(root_window);  // There should always be a ServerWindow for a root.
+    WindowTree* owning_tree = root_window->owning_window_tree();
+    if (owning_tree) {
+      auto result = owning_tree->GetAndRemoveScheduledEmbedWindowTreeClient(
+          token, visited_trees);
+      if (result)
+        return result;
+    }
   }
   return nullptr;
 }
@@ -1286,8 +1291,9 @@ void WindowTree::EmbedUsingToken(Id transport_window_id,
   }
 
   // Check for a client registered using ScheduleEmbed().
+  std::set<WindowTree*> visited_trees;
   mojom::WindowTreeClientPtr client =
-      GetAndRemoveScheduledEmbedWindowTreeClient(token);
+      GetAndRemoveScheduledEmbedWindowTreeClient(token, &visited_trees);
   if (client) {
     Embed(transport_window_id, std::move(client), embed_flags,
           std::move(callback));
