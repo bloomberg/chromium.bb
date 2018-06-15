@@ -30,7 +30,6 @@
 #include "ash/wm/panels/panel_layout_manager.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/switchable_windows.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
@@ -533,11 +532,6 @@ void WindowSelector::AddItem(aura::Window* window) {
   if (!grid || grid->GetWindowSelectorItemContaining(window))
     return;
 
-  // The dimensions of |window| will be very slim because of dragging the
-  // divider to the edge. Change the window dimensions to its tablet mode
-  // dimensions. Note: if split view is no longer constrained to tablet mode
-  // this will be need to updated.
-  TabletModeWindowState::UpdateWindowPosition(wm::GetWindowState(window));
   grid->AddItem(window);
   ++num_items_;
 
