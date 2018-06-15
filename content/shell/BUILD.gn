@@ -782,6 +782,9 @@ if (is_mac) {
       "HELPER_EXECUTABLE",
       "SHELL_PRODUCT_NAME=\"$content_shell_product_name\"",
     ]
+    deps = [
+      "//sandbox/mac:seatbelt",
+    ]
     ldflags = [
       # The helper is in Content Shell.app/Contents/Frameworks/Content Shell Helper.app/Contents/MacOS/
       # so set rpath up to the base.

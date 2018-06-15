@@ -165,9 +165,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   // Needs to happen before InitializeResourceBundle() and before
   // BlinkTestPlatformInitialize() are called.
   OverrideFrameworkBundlePath();
+  OverrideOuterBundlePath();
   OverrideChildProcessPath();
   OverrideSourceRootPath();
   EnsureCorrectResolutionSettings();
+  OverrideBundleID();
 #endif  // OS_MACOSX
 
   InitLogging(command_line);

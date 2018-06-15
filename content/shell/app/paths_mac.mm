@@ -45,6 +45,12 @@ void OverrideFrameworkBundlePath() {
   base::mac::SetOverrideFrameworkBundlePath(helper_path);
 }
 
+void OverrideOuterBundlePath() {
+  base::FilePath path = GetContentsPath().DirName();
+
+  base::mac::SetOverrideOuterBundlePath(path);
+}
+
 void OverrideChildProcessPath() {
   base::FilePath helper_path =
       GetFrameworksPath().Append("Content Shell Helper.app")

@@ -12,13 +12,17 @@
 
 #include <memory>
 
+#if defined(HELPER_EXECUTABLE)
+#include "sandbox/mac/seatbelt_exec.h"  // nogncheck
+#endif                                  // defined(HELPER_EXECUTABLE)
+
 namespace {
 
-using ContentMainPtr = int (*)(int, const char**);
+using ContentMainPtr = int (*)(int, char**);
 
 }  // namespace
 
-int main(int argc, const char** argv) {
+int main(int argc, char* argv[]) {
   uint32_t exec_path_size = 0;
   int rv = _NSGetExecutablePath(NULL, &exec_path_size);
   if (rv != -1) {
@@ -34,6 +38,20 @@ int main(int argc, const char** argv) {
   }
 
 #if defined(HELPER_EXECUTABLE)
+  sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
+      sandbox::SeatbeltExecServer::CreateFromArguments(exec_path.get(), argc,
+                                                       argv);
+  if (seatbelt.sandbox_required) {
+    if (!seatbelt.server) {
+      fprintf(stderr, "Failed to create seatbelt sandbox server.\n");
+      abort();
+    }
+    if (!seatbelt.server->InitializeSandbox()) {
+      fprintf(stderr, "Failed to initialize sandbox.\n");
+      abort();
+    }
+  }
+
   const char rel_path[] =
       "../../../" SHELL_PRODUCT_NAME " Framework.framework/" SHELL_PRODUCT_NAME
       " Framework";

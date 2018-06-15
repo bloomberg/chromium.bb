@@ -12,6 +12,9 @@ class FilePath;
 // Sets up base::mac::FrameworkBundle.
 void OverrideFrameworkBundlePath();
 
+// Set up base::mac::OuterBundle.
+void OverrideOuterBundlePath();
+
 // Sets up the CHILD_PROCESS_EXE path to properly point to the helper app.
 void OverrideChildProcessPath();
 
