@@ -34,8 +34,8 @@ def GetParser():
   parser.add_argument('--gclient', help=commandline.argparse.SUPPRESS,
                       default=None)
   parser.add_argument('--gclient_template', help='Template gclient input file')
-  parser.add_argument('--skip_cache', help='Skip using git cache',
-                      dest='use_cache', action='store_false')
+  parser.add_argument('--git_cache_dir', help='Git cache directory to use.',
+                      type='path')
   parser.add_argument('--ignore_locks', help='Ignore git cache locks.',
                       action='store_true', default=False)
   parser.add_argument('chrome_root', help='Directory to sync chrome in')
@@ -47,7 +47,7 @@ def SyncChrome(gclient_path, options):
   """Sync new Chrome."""
   gclient.WriteConfigFile(gclient_path, options.chrome_root,
                           options.internal, options.version,
-                          options.gclient_template, options.use_cache)
+                          options.gclient_template, options.git_cache_dir)
   gclient.Sync(gclient_path, options.chrome_root, reset=options.reset,
                ignore_locks=options.ignore_locks)
 

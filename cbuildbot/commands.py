@@ -2858,13 +2858,15 @@ def GetChromeLKGM(revision):
   return base64.b64decode(contents_b64.read()).strip()
 
 
-def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
+def SyncChrome(build_root, chrome_root, useflags, git_cache_dir,
+               tag=None, revision=None):
   """Sync chrome.
 
   Args:
     build_root: The root of the chromium os checkout.
     chrome_root: The directory where chrome is stored.
     useflags: Array of use flags.
+    git_cache_dir: Directory path to use for the git cache..
     tag: If supplied, the Chrome tag to sync.
     revision: If supplied, the Chrome revision to sync.
   """
@@ -2878,6 +2880,7 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
   cmd += ['--internal'] if internal else []
   cmd += ['--tag', tag] if tag is not None else []
   cmd += ['--revision', revision] if revision is not None else []
+  cmd += ['--git_cache_dir', git_cache_dir] if git_cache_dir else []
   cmd += [chrome_root]
   retry_util.RunCommandWithRetries(constants.SYNC_RETRIES, cmd, cwd=build_root)
 

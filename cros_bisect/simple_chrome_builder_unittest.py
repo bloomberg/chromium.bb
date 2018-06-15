@@ -34,7 +34,7 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
 
   def GetBuilder(self, base_dir=None, board=None, reuse_repo=True,
                  chromium_dir=None, build_dir=None, archive_build=True,
-                 reuse_build=True):
+                 reuse_build=True, git_cache_dir=None):
     """Obtains a SimpleChromeBuilder instance.
 
     Args:
@@ -46,6 +46,7 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
       build_dir: Optional. Store build result to it if specified.
       archive_build: True to archive build.
       reuse_build: True to reuse previous build.
+      git_cache_dir: Directory to use for the git cache.
 
     Returns:
       A SimpleChromeBuilder instance.
@@ -57,7 +58,8 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
     options = cros_test_lib.EasyAttr(
         base_dir=base_dir, board=board, reuse_repo=reuse_repo,
         chromium_dir=chromium_dir, build_dir=build_dir,
-        archive_build=archive_build, reuse_build=reuse_build)
+        archive_build=archive_build, reuse_build=reuse_build,
+        git_cache_dir=git_cache_dir)
     builder = simple_chrome_builder.SimpleChromeBuilder(options)
 
     # Override gclient path.
@@ -129,7 +131,8 @@ class TestSimpleChromeBuilder(cros_test_lib.MockTempDirTestCase):
     builder.SetUp()
 
     write_config_mock.assert_called_with(
-        self.gclient_path, self.default_chromium_dir, True, None, managed=False)
+        self.gclient_path, self.default_chromium_dir, True, None,
+        cache_dir=None, managed=False)
     git_mock.assert_called_with(self.default_repo_dir,
                                 ['pull', 'origin', 'master'])
     gsync_mock.assert_called_with(

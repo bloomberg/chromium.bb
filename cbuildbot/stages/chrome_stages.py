@@ -110,7 +110,7 @@ class SyncChromeStage(generic_stages.BuilderStage,
 
     useflags = self._run.config.useflags
     commands.SyncChrome(self._build_root, self._run.options.chrome_root,
-                        useflags, **kwargs)
+                        useflags, self._run.options.git_cache_dir, **kwargs)
     if (self._chrome_rev and not chrome_atom_to_build and
         self._run.options.buildbot and
         self._run.config.build_type == constants.CHROME_PFQ_TYPE):

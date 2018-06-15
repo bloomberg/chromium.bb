@@ -53,6 +53,7 @@ ChromeOS (board specified.) Also, it can deploy the result to ChromeOS DUT
     super(SimpleChromeBuilder, self).__init__(options)
     self.reuse_build = options.reuse_build
     self.archive_build = options.archive_build
+    self.git_cache_dir = options.git_cache_dir
 
     if 'chromium_dir' in options and options.chromium_dir:
       self.chromium_dir = options.chromium_dir
@@ -109,7 +110,7 @@ ChromeOS (board specified.) Also, it can deploy the result to ChromeOS DUT
     # 'managed' should be set to False. Otherwise, 'gclient sync' will call
     # 'git pull' to ruin bisecting point.
     gclient.WriteConfigFile(self.gclient, self.chromium_dir, True, None,
-                            managed=False)
+                            cache_dir=self.git_cache_dir, managed=False)
 
     # Need to perform git pull before gclient sync when managed is set to False.
     git.RunGit(self.repo_dir, ['pull', 'origin', 'master'])
