@@ -1421,6 +1421,13 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 #endif
 
+  // When true this will force a kCover viewport fit value which will result in
+  // the document expanding into the display cutout area.
+  void SetExpandIntoDisplayCutout(bool expand);
+  mojom::ViewportFit GetCurrentViewportFitForTests() const {
+    return viewport_fit_;
+  }
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
@@ -1842,6 +1849,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Stores the current value viewport-fit value.
   mojom::ViewportFit viewport_fit_ = blink::mojom::ViewportFit::kAuto;
+  bool force_expand_display_cutout_ = false;
 
   mojom::blink::DisplayCutoutHostAssociatedPtr display_cutout_host_;
 };

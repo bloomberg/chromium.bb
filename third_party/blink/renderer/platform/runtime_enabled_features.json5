@@ -695,6 +695,9 @@
       name: "MediaCastOverlayButton",
     },
     {
+      name: "MediaControlsExpandGesture"
+    },
+    {
       name: "MediaControlsOverlayPlayButton",
       settable_from_internals: true,
     },

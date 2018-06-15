@@ -72,6 +72,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_timeline_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_toggle_closed_captions_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_volume_slider_element.h"
+#include "third_party/blink/renderer/modules/media_controls/media_controls_display_cutout_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_media_event_listener.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
@@ -373,6 +374,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       media_event_listener_(new MediaControlsMediaEventListener(this)),
       orientation_lock_delegate_(nullptr),
       rotate_to_fullscreen_delegate_(nullptr),
+      display_cutout_delegate_(nullptr),
       hide_media_controls_timer_(
           media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
@@ -410,6 +412,14 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
         new MediaControlsOrientationLockDelegate(
             ToHTMLVideoElement(media_element));
   }
+
+  if (MediaControlsDisplayCutoutDelegate::IsEnabled() &&
+      media_element.IsHTMLVideoElement()) {
+    // Initialize the pinch gesture to expand into the display cutout feature.
+    controls->display_cutout_delegate_ = new MediaControlsDisplayCutoutDelegate(
+        ToHTMLVideoElement(media_element));
+  }
+
   if (RuntimeEnabledFeatures::VideoRotateToFullscreenEnabled() &&
       media_element.IsHTMLVideoElement()) {
     // Initialize the rotate-to-fullscreen feature.
@@ -666,6 +676,8 @@ Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
     orientation_lock_delegate_->Attach();
   if (rotate_to_fullscreen_delegate_)
     rotate_to_fullscreen_delegate_->Attach();
+  if (display_cutout_delegate_)
+    display_cutout_delegate_->Attach();
 
   if (!resize_observer_) {
     resize_observer_ =
@@ -794,6 +806,8 @@ void MediaControlsImpl::RemovedFrom(ContainerNode*) {
     orientation_lock_delegate_->Detach();
   if (rotate_to_fullscreen_delegate_)
     rotate_to_fullscreen_delegate_->Detach();
+  if (display_cutout_delegate_)
+    display_cutout_delegate_->Detach();
 
   if (resize_observer_) {
     resize_observer_->disconnect();
@@ -2028,6 +2042,7 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_event_listener_);
   visitor->Trace(orientation_lock_delegate_);
   visitor->Trace(rotate_to_fullscreen_delegate_);
+  visitor->Trace(display_cutout_delegate_);
   visitor->Trace(download_iph_manager_);
   visitor->Trace(media_button_panel_);
   visitor->Trace(loading_panel_);

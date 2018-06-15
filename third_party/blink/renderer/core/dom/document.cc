@@ -4123,18 +4123,26 @@ void Document::UpdateViewportDescription() {
   // defined from the layout meta tag.
   mojom::ViewportFit current_viewport_fit =
       GetViewportDescription().GetViewportFit();
-  if (viewport_fit_ != current_viewport_fit &&
-      frame_->Client()->GetRemoteNavigationAssociatedInterfaces()) {
-    // Bind the mojo interface.
-    if (!display_cutout_host_.is_bound()) {
-      frame_->Client()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
-          &display_cutout_host_);
-      DCHECK(display_cutout_host_.is_bound());
-    }
 
-    // Even though we bind the mojo interface above there still may be cases
-    // where this will fail (e.g. unit tests).
-    display_cutout_host_->ViewportFitChanged(current_viewport_fit);
+  // If we are forcing to expand into the display cutout then we should override
+  // the viewport fit value.
+  if (force_expand_display_cutout_)
+    current_viewport_fit = mojom::ViewportFit::kCover;
+
+  if (viewport_fit_ != current_viewport_fit) {
+    if (frame_->Client()->GetRemoteNavigationAssociatedInterfaces()) {
+      // Bind the mojo interface.
+      if (!display_cutout_host_.is_bound()) {
+        frame_->Client()
+            ->GetRemoteNavigationAssociatedInterfaces()
+            ->GetInterface(&display_cutout_host_);
+        DCHECK(display_cutout_host_.is_bound());
+      }
+
+      // Even though we bind the mojo interface above there still may be cases
+      // where this will fail (e.g. unit tests).
+      display_cutout_host_->ViewportFitChanged(current_viewport_fit);
+    }
 
     viewport_fit_ = current_viewport_fit;
   }
@@ -7463,6 +7471,14 @@ bool Document::IsSlotAssignmentOrLegacyDistributionDirty() {
     return true;
   }
   return false;
+}
+
+void Document::SetExpandIntoDisplayCutout(bool expand) {
+  if (force_expand_display_cutout_ == expand)
+    return;
+
+  force_expand_display_cutout_ = expand;
+  UpdateViewportDescription();
 }
 
 template class CORE_TEMPLATE_EXPORT Supplement<Document>;
