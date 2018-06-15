@@ -268,13 +268,20 @@ std::string SerializeClientDownloadRequest(const ClientDownloadRequest& cdr) {
   if (cdr.has_archive_valid())
     dict.SetBoolean("archive_valid", cdr.archive_valid());
 
-  auto dict_archived_binaries = std::make_unique<base::DictionaryValue>();
+  auto archived_binaries = std::make_unique<base::ListValue>();
   for (const auto& archived_binary : cdr.archived_binary()) {
+    auto dict_archived_binary = std::make_unique<base::DictionaryValue>();
     if (archived_binary.has_file_basename())
-      dict_archived_binaries->SetString("file_basename",
-                                        archived_binary.file_basename());
+      dict_archived_binary->SetString("file_basename",
+                                      archived_binary.file_basename());
+    if (archived_binary.has_download_type())
+      dict_archived_binary->SetInteger("download_type",
+                                       archived_binary.download_type());
+    if (archived_binary.has_length())
+      dict_archived_binary->SetInteger("length", archived_binary.length());
+    archived_binaries->Append(std::move(dict_archived_binary));
   }
-  dict.SetDictionary("archived_binary", std::move(dict_archived_binaries));
+  dict.SetList("archived_binary", std::move(archived_binaries));
 
   base::Value* request_tree = &dict;
   std::string request_serialized;
