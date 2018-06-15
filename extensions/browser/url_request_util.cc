@@ -30,7 +30,7 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
                                     const ExtensionSet& extensions,
                                     const ProcessMap& process_map,
                                     bool* allowed) {
-  std::string resource_path = url.path();
+  base::StringPiece resource_path = url.path_piece();
 
   // This logic is performed for main frame requests in
   // ExtensionNavigationThrottle::WillStartRequest.
@@ -94,8 +94,8 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
     }
 
     // Also allow if the file is explicitly listed as a web_accessible_resource.
-    if (WebAccessibleResourcesInfo::IsResourceWebAccessible(extension,
-                                                            resource_path)) {
+    if (WebAccessibleResourcesInfo::IsResourceWebAccessible(
+            extension, resource_path.as_string())) {
       *allowed = true;
       return true;
     }
@@ -123,40 +123,11 @@ bool AllowCrossRendererResourceLoadHelper(bool is_guest,
                                           const Extension* extension,
                                           const Extension* owner_extension,
                                           const std::string& partition_id,
-                                          const std::string& resource_path,
+                                          base::StringPiece resource_path,
                                           ui::PageTransition page_transition,
                                           bool* allowed) {
   if (is_guest) {
-    // Exceptionally, the resource at path "/success.html" that belongs to the
-    // sign-in extension (loaded by chrome://chrome-signin) is accessible to
-    // WebViews that are not owned by that extension.
-    // This exception is required as in order to mark the end of the the sign-in
-    // flow, Gaia redirects to the following continue URL:
-    // "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/success.html".
-    //
-    // TODO(http://crbug.com/688565) Remove this check once the sign-in
-    // extension is deprecated and removed.
-    bool is_signin_extension =
-        extension && extension->id() == "mfffpogegjflfpflabcdkioaeobkgjik";
-    if (is_signin_extension && resource_path == "/success.html") {
-      *allowed = true;
-      return true;
-    }
-
-    // Allow mobile setup web UI (chrome://mobilesetup) to embed resources from
-    // the component mobile activation extension in a webview. This is needed
-    // because the activation web UI relies on the activation extension to
-    // provide parts of its UI, and to redirect POST requests to the network
-    // payment URL during mobile device initialization.
-    //
-    // TODO(http://crbug.com/778021): Fix mobile activation UI not to require
-    // this workaround.
-    bool is_mobile_activation_extension =
-        extension && extension->id() == "iadeocfgjdjdmpenejdbfeaocpbikmab";
-    if (is_mobile_activation_extension &&
-        (resource_path == "/activation.html" ||
-         resource_path == "/portal_offline.html" ||
-         resource_path == "/invalid_device_info.html")) {
+    if (AllowSpecialCaseExtensionURLInGuest(extension, resource_path)) {
       *allowed = true;
       return true;
     }
@@ -168,11 +139,54 @@ bool AllowCrossRendererResourceLoadHelper(bool is_guest,
       return true;
     }
 
-    *allowed = WebviewInfo::IsResourceWebviewAccessible(extension, partition_id,
-                                                        resource_path);
+    *allowed = WebviewInfo::IsResourceWebviewAccessible(
+        extension, partition_id, resource_path.as_string());
     return true;
   }
 
+  return false;
+}
+
+bool AllowSpecialCaseExtensionURLInGuest(
+    const Extension* extension,
+    base::Optional<base::StringPiece> resource_path) {
+  // Exceptionally, the resource at path "/success.html" that belongs to the
+  // sign-in extension (loaded by chrome://chrome-signin) is accessible to
+  // WebViews that are not owned by that extension.
+  // This exception is required as in order to mark the end of the the sign-in
+  // flow, Gaia redirects to the following continue URL:
+  // "chrome-extension://mfffpogegjflfpflabcdkioaeobkgjik/success.html".
+  //
+  // TODO(http://crbug.com/688565) Remove this check once the sign-in
+  // extension is deprecated and removed.
+  bool is_signin_extension =
+      extension && extension->id() == "mfffpogegjflfpflabcdkioaeobkgjik";
+  if (is_signin_extension && (!resource_path.has_value() ||
+                              resource_path.value() == "/success.html")) {
+    return true;
+  }
+
+  // Allow mobile setup web UI (chrome://mobilesetup) to embed resources from
+  // the component mobile activation extension in a webview. This is needed
+  // because the activation web UI relies on the activation extension to
+  // provide parts of its UI, and to redirect POST requests to the network
+  // payment URL during mobile device initialization.
+  //
+  // TODO(http://crbug.com/778021): Fix mobile activation UI not to require
+  // this workaround.
+  bool is_mobile_activation_extension =
+      extension && extension->id() == "iadeocfgjdjdmpenejdbfeaocpbikmab";
+  if (is_mobile_activation_extension) {
+    if (!resource_path.has_value())
+      return true;
+    if (resource_path.value() == "/activation.html" ||
+        resource_path.value() == "/portal_offline.html" ||
+        resource_path.value() == "/invalid_device_info.html") {
+      return true;
+    }
+  }
+
+  // Otherwise this isn't a special case, and the normal logic should apply.
   return false;
 }
 

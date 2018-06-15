@@ -4966,10 +4966,35 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params) {
   RenderProcessHost* process = GetProcess();
 
+  // Error pages may sometimes commit a URL in the wrong process, which requires
+  // an exception for the CanCommitURL checks.  This is ok as long as the origin
+  // is unique.
+  // TODO(creis): Kill the renderer if it claims an error page has a non-unique
+  // origin.
+  bool is_permitted_error_page = false;
+  if (validated_params->origin.unique()) {
+    if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+            frame_tree_node_->IsMainFrame())) {
+      // With error page isolation, any URL can commit in an error page process.
+      if (GetSiteInstance()->GetSiteURL() ==
+          GURL(content::kUnreachableWebDataURL)) {
+        is_permitted_error_page = true;
+      }
+    } else {
+      // Without error page isolation, a blocked navigation is expected to
+      // commit in the old renderer process.  This may be true for subframe
+      // navigations even when error page isolation is enabled for main frames.
+      if (GetNavigationHandle() && GetNavigationHandle()->GetNetErrorCode() ==
+                                       net::ERR_BLOCKED_BY_CLIENT) {
+        is_permitted_error_page = true;
+      }
+    }
+  }
+
   // Attempts to commit certain off-limits URL should be caught more strictly
   // than our FilterURL checks.  If a renderer violates this policy, it
   // should be killed.
-  if (!CanCommitURL(validated_params->url)) {
+  if (!is_permitted_error_page && !CanCommitURL(validated_params->url)) {
     VLOG(1) << "Blocked URL " << validated_params->url.spec();
     // Kills the process.
     bad_message::ReceivedBadMessage(process,

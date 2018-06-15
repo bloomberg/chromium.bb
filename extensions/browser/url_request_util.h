@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "content/public/common/resource_type.h"
 #include "ui/base/page_transition_types.h"
 
@@ -47,9 +49,21 @@ bool AllowCrossRendererResourceLoadHelper(bool is_guest,
                                           const Extension* extension,
                                           const Extension* owner_extension,
                                           const std::string& partition_id,
-                                          const std::string& resource_path,
+                                          base::StringPiece resource_path,
                                           ui::PageTransition page_transition,
                                           bool* allowed);
+
+// Checks whether the given |extension| and |resource_path| are part of a
+// special case where an extension URL is permitted to load in any guest
+// process, rather than only in guests of a given platform app. If
+// |resource_path| is base::nullopt, then the check is based solely on which
+// extension is passed in, allowing this to be used for origin checks as well as
+// URL checks.
+// TODO(creis): Remove this method when the special cases (listed by bug number
+// in the definition of this method) are gone.
+bool AllowSpecialCaseExtensionURLInGuest(
+    const Extension* extension,
+    base::Optional<base::StringPiece> resource_path);
 
 }  // namespace url_request_util
 }  // namespace extensions

@@ -13,6 +13,7 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -54,6 +55,7 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/io_thread_extension_message_filter.h"
+#include "extensions/browser/url_request_util.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extensions_client.h"
@@ -418,25 +420,71 @@ bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
     content::RenderProcessHost* process_host, const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // We need to let most extension URLs commit in any process, since this can
-  // be allowed due to web_accessible_resources.  Most hosted app URLs may also
-  // load in any process (e.g., in an iframe).  However, the Chrome Web Store
-  // cannot be loaded in iframes and should never be requested outside its
-  // process.
+  // Enforce that extension URLs commit in the correct extension process where
+  // possible, accounting for many exceptions to the rule.
+
+  // Don't bother if there is no registry.
+  // TODO(rdevlin.cronin): Can this be turned into a DCHECK?  Seems like there
+  // should always be a registry.
   ExtensionRegistry* registry =
       ExtensionRegistry::Get(process_host->GetBrowserContext());
   if (!registry)
     return true;
 
-  const Extension* new_extension =
+  // Only perform the checks below if the URL being committed has an extension
+  // associated with it.
+  const Extension* extension =
       registry->enabled_extensions().GetExtensionOrAppByURL(url);
-  if (new_extension && new_extension->is_hosted_app() &&
-      new_extension->id() == kWebStoreAppId &&
-      !ProcessMap::Get(process_host->GetBrowserContext())
-           ->Contains(new_extension->id(), process_host->GetID())) {
-    return false;
+  if (!extension)
+    return true;
+
+  // If the process is the dedicated process for this extension, then it's safe
+  // to commit.
+  if (ProcessMap::Get(process_host->GetBrowserContext())
+          ->Contains(extension->id(), process_host->GetID())) {
+    return true;
   }
-  return true;
+
+  // Most hosted apps (except for the Chrome Web Store) can commit anywhere.
+  // The Chrome Web Store should never commit outside its process, regardless of
+  // the other exceptions below.
+  if (extension->is_hosted_app())
+    return extension->id() != kWebStoreAppId;
+
+  // Some special case extension URLs must be allowed to load in any guest. Note
+  // that CanCommitURL may be called for validating origins as well, so do not
+  // enforce a path comparison in the special cases unless there is a real path
+  // (more than just "/").
+  // TODO(creis): Remove this call when bugs 688565 and 778021 are resolved.
+  base::StringPiece url_path = url.path_piece();
+  bool is_guest =
+      WebViewRendererState::GetInstance()->IsGuest(process_host->GetID());
+  if (is_guest &&
+      url_request_util::AllowSpecialCaseExtensionURLInGuest(
+          extension, url_path.length() > 1
+                         ? base::make_optional<base::StringPiece>(url_path)
+                         : base::nullopt)) {
+    return true;
+  }
+
+  // Platform app URLs may commit in their own guest processes, when they have
+  // the webview permission.  (Some extensions are allowlisted for webviews as
+  // well, but their pages load in their own extension process and are allowed
+  // through above.)
+  if (is_guest) {
+    std::string owner_extension_id;
+    int owner_process_id = -1;
+    bool found_owner = WebViewRendererState::GetInstance()->GetOwnerInfo(
+        process_host->GetID(), &owner_process_id, &owner_extension_id);
+    DCHECK(found_owner);
+    return extension->is_platform_app() &&
+           extension->permissions_data()->HasAPIPermission(
+               extensions::APIPermission::kWebView) &&
+           extension->id() == owner_extension_id;
+  }
+
+  // Otherwise, the process is wrong for this extension URL.
+  return false;
 }
 
 // static

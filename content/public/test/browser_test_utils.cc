@@ -82,6 +82,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/accessibility_browser_test_utils.h"
+#include "content/test/did_commit_provisional_load_interceptor.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
@@ -565,6 +566,43 @@ const char kHasVideoInputDeviceOnSystem[] = R"(
 
 const char kHasVideoInputDevice[] = "has-video-input-device";
 
+// Interceptor that replaces params.url with |new_url| and params.origin with
+// |new_origin| for any commits to |target_url|.
+class CommitOriginInterceptor : public DidCommitProvisionalLoadInterceptor {
+ public:
+  CommitOriginInterceptor(WebContents* web_contents,
+                          const GURL& target_url,
+                          const GURL& new_url,
+                          const url::Origin& new_origin)
+      : DidCommitProvisionalLoadInterceptor(web_contents),
+        target_url_(target_url),
+        new_url_(new_url),
+        new_origin_(new_origin) {}
+  ~CommitOriginInterceptor() override = default;
+
+  // WebContentsObserver:
+  void WebContentsDestroyed() override { delete this; }
+
+ protected:
+  void WillDispatchDidCommitProvisionalLoad(
+      RenderFrameHost* render_frame_host,
+      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      service_manager::mojom::InterfaceProviderRequest*
+          interface_provider_request) override {
+    if (params->url == target_url_) {
+      params->url = new_url_;
+      params->origin = new_origin_;
+    }
+  }
+
+ private:
+  GURL target_url_;
+  GURL new_url_;
+  url::Origin new_origin_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommitOriginInterceptor);
+};
+
 }  // namespace
 
 bool NavigateIframeToURL(WebContents* web_contents,
@@ -646,6 +684,14 @@ void CrashTab(WebContents* web_contents) {
       rph, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   rph->Shutdown(0);
   watcher.Wait();
+}
+
+void PwnCommitIPC(WebContents* web_contents,
+                  const GURL& target_url,
+                  const GURL& new_url,
+                  const url::Origin& new_origin) {
+  // This will be cleaned up when |web_contents| is destroyed.
+  new CommitOriginInterceptor(web_contents, target_url, new_url, new_origin);
 }
 
 void SimulateUnresponsiveRenderer(WebContents* web_contents,

@@ -547,6 +547,13 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest,
   EXPECT_TRUE(new_site_instance->HasProcess());
   EXPECT_EQ(new_site_instance->GetProcess(),
             web_contents->GetSiteInstance()->GetProcess());
+
+  // Ensure that reloading a blocked error page completes.
+  content::TestNavigationObserver reload_observer(new_web_contents);
+  new_web_contents->GetController().Reload(content::ReloadType::NORMAL, false);
+  reload_observer.Wait();
+  EXPECT_EQ(reload_observer.last_navigation_url(), blocked_url);
+  EXPECT_FALSE(reload_observer.last_navigation_succeeded());
 }
 
 // Check that whether we can access the window object of a window.open()'d url
