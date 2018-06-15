@@ -23,6 +23,8 @@ struct GPU_EXPORT FlushParams {
 
   // Route ID of the command buffer for this flush.
   int32_t route_id;
+  // If nonzero, destroy this transfer buffer instead of flushing.
+  int32_t transfer_buffer_id_to_destroy;
   // Client put offset. Service get offset is updated in shared memory.
   int32_t put_offset;
   // Increasing counter for the flush.
