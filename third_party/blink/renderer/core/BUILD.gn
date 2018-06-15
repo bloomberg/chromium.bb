@@ -1828,6 +1828,7 @@ jumbo_source_set("unit_tests") {
     "frame/use_counter_test.cc",
     "frame/visual_viewport_test.cc",
     "geometry/dom_matrix_test.cc",
+    "html/anchor_element_metrics_test.cc",
     "html/canvas/canvas_async_blob_creator_test.cc",
     "html/canvas/canvas_font_cache_test.cc",
     "html/canvas/image_data_test.cc",

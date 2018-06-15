@@ -9,6 +9,8 @@ blink_core_sources("html") {
   split_count = 4
 
   sources = [
+    "anchor_element_metrics.cc",
+    "anchor_element_metrics.h",
     "canvas/canvas_async_blob_creator.cc",
     "canvas/canvas_async_blob_creator.h",
     "canvas/canvas_context_creation_attributes_core.cc",

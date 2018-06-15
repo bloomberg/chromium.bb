@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -330,6 +331,10 @@ void HTMLAnchorElement::HandleClick(Event* event) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kAnchorClickDispatchForNonConnectedNode);
   }
+
+  auto anchor_metrics = AnchorElementMetrics::From(*this);
+  if (anchor_metrics.has_value())
+    anchor_metrics.value().RecordMetrics();
 
   StringBuilder url;
   url.Append(StripLeadingAndTrailingHTMLSpaces(FastGetAttribute(hrefAttr)));
