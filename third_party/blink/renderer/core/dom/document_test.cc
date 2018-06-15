@@ -1064,6 +1064,10 @@ class ViewportFitDocumentTest : public DocumentTest {
     RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
     GetDocument().GetSettings()->SetViewportMetaEnabled(true);
   }
+
+  mojom::ViewportFit GetViewportFit() const {
+    return GetDocument().GetCurrentViewportFitForTests();
+  }
 };
 
 // Test both meta and @viewport present but no viewport-fit.
@@ -1072,24 +1076,39 @@ TEST_F(ViewportFitDocumentTest, MetaCSSViewportButNoFit) {
       "<style>@viewport { min-width: 100px; }</style>"
       "<meta name='viewport' content='initial-scale=1'>");
 
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetViewportDescription().GetViewportFit());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, GetViewportFit());
 }
 
 // Test @viewport present but no viewport-fit.
 TEST_F(ViewportFitDocumentTest, CSSViewportButNoFit) {
   SetHtmlInnerHTML("<style>@viewport { min-width: 100px; }</style>");
 
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetViewportDescription().GetViewportFit());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, GetViewportFit());
 }
 
 // Test meta viewport present but no viewport-fit.
 TEST_F(ViewportFitDocumentTest, MetaViewportButNoFit) {
   SetHtmlInnerHTML("<meta name='viewport' content='initial-scale=1'>");
 
-  EXPECT_EQ(mojom::ViewportFit::kAuto,
-            GetDocument().GetViewportDescription().GetViewportFit());
+  EXPECT_EQ(mojom::ViewportFit::kAuto, GetViewportFit());
+}
+
+// Test overriding the viewport fit using SetExpandIntoDisplayCutout.
+TEST_F(ViewportFitDocumentTest, ForceExpandIntoCutout) {
+  SetHtmlInnerHTML("<meta name='viewport' content='viewport-fit=contain'>");
+  EXPECT_EQ(mojom::ViewportFit::kContain, GetViewportFit());
+
+  // Now override the viewport fit value and expect it to be kCover.
+  GetDocument().SetExpandIntoDisplayCutout(true);
+  EXPECT_EQ(mojom::ViewportFit::kCover, GetViewportFit());
+
+  // Test that even if we change the value we ignore it.
+  SetHtmlInnerHTML("<meta name='viewport' content='viewport-fit=auto'>");
+  EXPECT_EQ(mojom::ViewportFit::kCover, GetViewportFit());
+
+  // Now remove the override and check that it went back to the previous value.
+  GetDocument().SetExpandIntoDisplayCutout(false);
+  EXPECT_EQ(mojom::ViewportFit::kAuto, GetViewportFit());
 }
 
 // This is a test case for testing a combination of viewport-fit meta value,
@@ -1125,8 +1144,7 @@ class ParameterizedViewportFitDocumentTest
 
 TEST_P(ParameterizedViewportFitDocumentTest, EffectiveViewportFit) {
   LoadTestHTML();
-  EXPECT_EQ(std::get<2>(GetParam()),
-            GetDocument().GetViewportDescription().GetViewportFit());
+  EXPECT_EQ(std::get<2>(GetParam()), GetViewportFit());
 }
 
 INSTANTIATE_TEST_CASE_P(

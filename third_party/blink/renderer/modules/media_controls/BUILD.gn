@@ -68,6 +68,8 @@ blink_modules_sources("media_controls") {
     "elements/media_control_toggle_closed_captions_button_element.h",
     "elements/media_control_volume_slider_element.cc",
     "elements/media_control_volume_slider_element.h",
+    "media_controls_display_cutout_delegate.cc",
+    "media_controls_display_cutout_delegate.h",
     "media_controls_impl.cc",
     "media_controls_impl.h",
     "media_controls_media_event_listener.cc",
