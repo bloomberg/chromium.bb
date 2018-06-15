@@ -357,4 +357,12 @@ void NetworkServiceClient::OnSSLCertificateError(
       std::move(web_contents_getter), ssl_info, fatal);
 }
 
+void NetworkServiceClient::OnFileUploadRequested(
+    uint32_t process_id,
+    bool async,
+    const std::vector<base::FilePath>& file_paths,
+    OnFileUploadRequestedCallback callback) {
+  // TODO(crbug.com/845612): implement this
+}
+
 }  // namespace content

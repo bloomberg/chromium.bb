@@ -45,6 +45,10 @@ class NetworkServiceClient : public network::mojom::NetworkServiceClient {
                              const net::SSLInfo& ssl_info,
                              bool fatal,
                              OnSSLCertificateErrorCallback response) override;
+  void OnFileUploadRequested(uint32_t process_id,
+                             bool async,
+                             const std::vector<base::FilePath>& file_paths,
+                             OnFileUploadRequestedCallback callback) override;
 
  private:
   mojo::Binding<network::mojom::NetworkServiceClient> binding_;

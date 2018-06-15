@@ -908,6 +908,13 @@ class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
     std::move(response).Run(net::OK);
   }
 
+  void OnFileUploadRequested(uint32_t process_id,
+                             bool async,
+                             const std::vector<base::FilePath>& file_paths,
+                             OnFileUploadRequestedCallback callback) override {
+    NOTREACHED();
+  }
+
  private:
   mojo::Binding<network::mojom::NetworkServiceClient> binding_;
 
