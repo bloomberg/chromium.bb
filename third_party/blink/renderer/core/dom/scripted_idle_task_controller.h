@@ -20,6 +20,7 @@ class IdleRequestCallbackWrapper;
 
 class ExecutionContext;
 class IdleRequestOptions;
+class ThreadScheduler;
 
 class CORE_EXPORT ScriptedIdleTaskController
     : public GarbageCollectedFinalized<ScriptedIdleTaskController>,

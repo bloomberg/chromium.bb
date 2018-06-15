@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_animator.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"

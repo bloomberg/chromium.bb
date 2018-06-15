@@ -18,6 +18,7 @@ namespace blink {
 
 class WebThread;
 class WebThreadSupportingGC;
+struct WebThreadCreationParams;
 struct WorkerBackingThreadStartupData;
 
 // WorkerBackingThread represents a WebThread with Oilpan and V8. A client of
