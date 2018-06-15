@@ -47,7 +47,7 @@ class URLRequestContextBuilderMojo;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     : public service_manager::Service,
-      public network::mojom::NetworkService {
+      public mojom::NetworkService {
  public:
   // |net_log| is an optional shared NetLog, which will be used instead of the
   // service's own NetLog. It must outlive the NetworkService.
@@ -93,7 +93,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // TODO(https://crbug.com/767450): Make it so NetworkService can always create
   // its own NetLog, instead of sharing one.
   static std::unique_ptr<NetworkService> Create(
-      network::mojom::NetworkServiceRequest request,
+      mojom::NetworkServiceRequest request,
       net::NetLog* net_log = nullptr);
 
   static std::unique_ptr<NetworkService> CreateForTesting();

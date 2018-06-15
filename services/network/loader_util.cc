@@ -27,7 +27,7 @@ const char kFrameAcceptHeader[] =
 const char kDefaultAcceptHeader[] = "*/*";
 
 bool ShouldSniffContent(net::URLRequest* url_request,
-                        network::ResourceResponse* response) {
+                        ResourceResponse* response) {
   const std::string& mime_type = response->head.mime_type;
 
   std::string content_type_options;
@@ -49,7 +49,7 @@ bool ShouldSniffContent(net::URLRequest* url_request,
   return false;
 }
 
-scoped_refptr<network::HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
+scoped_refptr<HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
     const net::URLRequest& request,
     const net::HttpRawRequestHeaders& raw_request_headers,
     const net::HttpResponseHeaders* raw_response_headers) {

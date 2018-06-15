@@ -188,8 +188,8 @@ TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {
   request.url = test_server.GetURL("/hung-after-headers");
 
   mojom::URLLoaderFactoryPtr loader_factory;
-  network::mojom::URLLoaderFactoryParamsPtr params =
-      network::mojom::URLLoaderFactoryParams::New();
+  mojom::URLLoaderFactoryParamsPtr params =
+      mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
   network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
@@ -775,8 +775,8 @@ TEST_F(NetworkContextTest, CertReporting) {
     request.url = hpkp_test_server.base_url();
 
     mojom::URLLoaderFactoryPtr loader_factory;
-    network::mojom::URLLoaderFactoryParamsPtr params =
-        network::mojom::URLLoaderFactoryParams::New();
+    mojom::URLLoaderFactoryParamsPtr params =
+        mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
     params->is_corb_enabled = false;
     network_context->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
@@ -1120,7 +1120,7 @@ TEST_F(NetworkContextTest, ClearHostCache) {
   const struct {
     // True if the ClearDataFilter should be a nullptr.
     bool null_filter;
-    network::mojom::ClearDataFilter::Type type;
+    mojom::ClearDataFilter::Type type;
     // Bit field of Domains that appear in the filter. The origin vector is
     // never populated.
     int filter_domains;
@@ -1130,36 +1130,31 @@ TEST_F(NetworkContextTest, ClearHostCache) {
       // A null filter should delete everything. The filter type and filter
       // domain lists are ignored.
       {
-          true /* null_filter */,
-          network::mojom::ClearDataFilter::Type::KEEP_MATCHES,
+          true /* null_filter */, mojom::ClearDataFilter::Type::KEEP_MATCHES,
           NO_DOMAINS /* filter_domains */,
           NO_DOMAINS /* expected_cached_domains */
       },
       // An empty DELETE_MATCHES filter should delete nothing.
       {
-          false /* null_filter */,
-          network::mojom::ClearDataFilter::Type::DELETE_MATCHES,
+          false /* null_filter */, mojom::ClearDataFilter::Type::DELETE_MATCHES,
           NO_DOMAINS /* filter_domains */,
           DOMAIN0 | DOMAIN1 | DOMAIN2 | DOMAIN3 /* expected_cached_domains */
       },
       // An empty KEEP_MATCHES filter should delete everything.
       {
-          false /* null_filter */,
-          network::mojom::ClearDataFilter::Type::KEEP_MATCHES,
+          false /* null_filter */, mojom::ClearDataFilter::Type::KEEP_MATCHES,
           NO_DOMAINS /* filter_domains */,
           NO_DOMAINS /* expected_cached_domains */
       },
       // Test a non-empty DELETE_MATCHES filter.
       {
-          false /* null_filter */,
-          network::mojom::ClearDataFilter::Type::DELETE_MATCHES,
+          false /* null_filter */, mojom::ClearDataFilter::Type::DELETE_MATCHES,
           DOMAIN0 | DOMAIN2 /* filter_domains */,
           DOMAIN1 | DOMAIN3 /* expected_cached_domains */
       },
       // Test a non-empty KEEP_MATCHES filter.
       {
-          false /* null_filter */,
-          network::mojom::ClearDataFilter::Type::KEEP_MATCHES,
+          false /* null_filter */, mojom::ClearDataFilter::Type::KEEP_MATCHES,
           DOMAIN0 | DOMAIN2 /* filter_domains */,
           DOMAIN0 | DOMAIN2 /* expected_cached_domains */
       },
@@ -1184,9 +1179,9 @@ TEST_F(NetworkContextTest, ClearHostCache) {
     EXPECT_EQ(base::size(kDomains), host_cache->entries().size());
 
     // Set up and run the filter, according to |test_case|.
-    network::mojom::ClearDataFilterPtr clear_data_filter;
+    mojom::ClearDataFilterPtr clear_data_filter;
     if (!test_case.null_filter) {
-      clear_data_filter = network::mojom::ClearDataFilter::New();
+      clear_data_filter = mojom::ClearDataFilter::New();
       clear_data_filter->type = test_case.type;
       for (size_t i = 0; i < base::size(kDomains); ++i) {
         if (test_case.filter_domains & (1 << i))
@@ -1917,7 +1912,7 @@ TEST_F(NetworkContextTest, CreateUDPSocket) {
   mojom::UDPSocketPtr server_socket;
   network_context->CreateUDPSocket(mojo::MakeRequest(&server_socket),
                                    std::move(receiver_interface_ptr));
-  network::test::UDPSocketTestHelper helper(&server_socket);
+  test::UDPSocketTestHelper helper(&server_socket);
   ASSERT_EQ(net::OK, helper.BindSync(server_addr, nullptr, &server_addr));
 
   // Create a client socket to send datagrams.
@@ -1927,7 +1922,7 @@ TEST_F(NetworkContextTest, CreateUDPSocket) {
   network_context->CreateUDPSocket(std::move(client_socket_request), nullptr);
 
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
-  network::test::UDPSocketTestHelper client_helper(&client_socket);
+  test::UDPSocketTestHelper client_helper(&client_socket);
   ASSERT_EQ(net::OK,
             client_helper.ConnectSync(server_addr, nullptr, &client_addr));
 
@@ -2023,8 +2018,8 @@ TEST_F(NetworkContextTest, CreateNetLogExporterUnbounded) {
   net::TestCompletionCallback cb;
   net_log_exporter->Start(
       std::move(out_file), base::Value(base::Value::Type::DICTIONARY),
-      network::mojom::NetLogExporter::CaptureMode::DEFAULT,
-      network::mojom::NetLogExporter::kUnlimitedFileSize, cb.callback());
+      mojom::NetLogExporter::CaptureMode::DEFAULT,
+      mojom::NetLogExporter::kUnlimitedFileSize, cb.callback());
   EXPECT_EQ(net::OK, cb.WaitForResult());
 
   net_log_exporter->Stop(base::Value(base::Value::Type::DICTIONARY),

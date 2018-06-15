@@ -32,8 +32,7 @@ class SSLInfo;
 namespace network {
 
 // Host of net::WebSocketChannel.
-class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
-    : public network::mojom::WebSocket {
+class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
  public:
   class Delegate {
    public:

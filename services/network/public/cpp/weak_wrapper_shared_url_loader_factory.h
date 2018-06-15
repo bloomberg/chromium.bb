@@ -18,40 +18,40 @@ class COMPONENT_EXPORT(NETWORK_CPP) WeakWrapperSharedURLLoaderFactory
     : public network::SharedURLLoaderFactory {
  public:
   explicit WeakWrapperSharedURLLoaderFactory(
-      network::mojom::URLLoaderFactory* factory_ptr);
+      mojom::URLLoaderFactory* factory_ptr);
 
   // A lazy variant. This is useful when transitionning code that sets up
   // heavy-weight infrastructure, injects a shared_ptr<SharedURLLoaderFactory>
   // into lots of places, but doesn't actually use it.
   explicit WeakWrapperSharedURLLoaderFactory(
-      base::OnceCallback<network::mojom::URLLoaderFactory*()> make_factory_ptr);
+      base::OnceCallback<mojom::URLLoaderFactory*()> make_factory_ptr);
 
   // Detaches from the raw mojom::URLLoaderFactory pointer. All subsequent calls
   // to CreateLoaderAndStart() will fail silently.
   void Detach();
 
   // SharedURLLoaderFactory implementation.
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
+  void CreateLoaderAndStart(mojom::URLLoaderRequest loader,
                             int32_t routing_id,
                             int32_t request_id,
                             uint32_t options,
                             const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
+                            mojom::URLLoaderClientPtr client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override;
+  void Clone(mojom::URLLoaderFactoryRequest request) override;
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;
 
  private:
   ~WeakWrapperSharedURLLoaderFactory() override;
 
   // Uses whichever of make_factory_ptr_ or factory_ptr_ is relevant.
-  network::mojom::URLLoaderFactory* factory();
+  mojom::URLLoaderFactory* factory();
 
-  base::OnceCallback<network::mojom::URLLoaderFactory*()> make_factory_ptr_;
+  base::OnceCallback<mojom::URLLoaderFactory*()> make_factory_ptr_;
 
   // Not owned.
-  network::mojom::URLLoaderFactory* factory_ptr_ = nullptr;
+  mojom::URLLoaderFactory* factory_ptr_ = nullptr;
 };
 
 }  // namespace network

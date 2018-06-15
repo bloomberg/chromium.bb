@@ -168,7 +168,7 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
   if (body->elements()->size() == 1 &&
       body->elements()->begin()->type() ==
           DataElement::TYPE_CHUNKED_DATA_PIPE) {
-    return std::make_unique<network::ChunkedDataPipeUploadDataStream>(
+    return std::make_unique<ChunkedDataPipeUploadDataStream>(
         body, const_cast<DataElement&>(body->elements()->front())
                   .ReleaseChunkedDataPipeGetter());
   }
@@ -375,8 +375,7 @@ URLLoader::URLLoader(
   if (resource_scheduler_client_) {
     resource_scheduler_request_handle_ =
         resource_scheduler_client_->ScheduleRequest(
-            !(options_ & network::mojom::kURLLoadOptionSynchronous),
-            url_request_.get());
+            !(options_ & mojom::kURLLoadOptionSynchronous), url_request_.get());
     resource_scheduler_request_handle_->set_resume_callback(
         base::BindRepeating(&URLLoader::ResumeStart, base::Unretained(this)));
     resource_scheduler_request_handle_->WillStartRequest(&defer);
@@ -497,7 +496,7 @@ void URLLoader::OnAuthRequired(net::URLRequest* url_request,
     return;
   }
 
-  network::mojom::AuthChallengeResponderPtr auth_challenge_responder;
+  mojom::AuthChallengeResponderPtr auth_challenge_responder;
   auto request = mojo::MakeRequest(&auth_challenge_responder);
   DCHECK(!auth_challenge_responder_binding_.is_bound());
   auth_challenge_responder_binding_.Bind(std::move(request));

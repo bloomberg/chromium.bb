@@ -23,16 +23,15 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CORSErrorStatus {
 
   CORSErrorStatus(const CORSErrorStatus& status);
 
-  explicit CORSErrorStatus(network::mojom::CORSError error);
-  CORSErrorStatus(network::mojom::CORSError error,
-                  const std::string& failed_parameter);
+  explicit CORSErrorStatus(mojom::CORSError error);
+  CORSErrorStatus(mojom::CORSError error, const std::string& failed_parameter);
 
   ~CORSErrorStatus();
 
   bool operator==(const CORSErrorStatus& rhs) const;
   bool operator!=(const CORSErrorStatus& rhs) const { return !(*this == rhs); }
 
-  network::mojom::CORSError cors_error;
+  mojom::CORSError cors_error;
 
   // Contains request method name, or header name that didn't pass a CORS check.
   std::string failed_parameter;

@@ -23,26 +23,26 @@ namespace network {
 
 namespace {
 
-network::mojom::CookieChangeCause ChangeCauseTranslation(
+mojom::CookieChangeCause ChangeCauseTranslation(
     net::CookieChangeCause net_cause) {
   switch (net_cause) {
     case net::CookieChangeCause::INSERTED:
-      return network::mojom::CookieChangeCause::INSERTED;
+      return mojom::CookieChangeCause::INSERTED;
     case net::CookieChangeCause::EXPLICIT:
-      return network::mojom::CookieChangeCause::EXPLICIT;
+      return mojom::CookieChangeCause::EXPLICIT;
     case net::CookieChangeCause::UNKNOWN_DELETION:
-      return network::mojom::CookieChangeCause::UNKNOWN_DELETION;
+      return mojom::CookieChangeCause::UNKNOWN_DELETION;
     case net::CookieChangeCause::OVERWRITE:
-      return network::mojom::CookieChangeCause::OVERWRITE;
+      return mojom::CookieChangeCause::OVERWRITE;
     case net::CookieChangeCause::EXPIRED:
-      return network::mojom::CookieChangeCause::EXPIRED;
+      return mojom::CookieChangeCause::EXPIRED;
     case net::CookieChangeCause::EVICTED:
-      return network::mojom::CookieChangeCause::EVICTED;
+      return mojom::CookieChangeCause::EVICTED;
     case net::CookieChangeCause::EXPIRED_OVERWRITE:
-      return network::mojom::CookieChangeCause::EXPIRED_OVERWRITE;
+      return mojom::CookieChangeCause::EXPIRED_OVERWRITE;
   }
   NOTREACHED();
-  return network::mojom::CookieChangeCause::EXPLICIT;
+  return mojom::CookieChangeCause::EXPLICIT;
 }
 
 }  // namespace
@@ -70,7 +70,7 @@ CookieManager::~CookieManager() {
   }
 }
 
-void CookieManager::AddRequest(network::mojom::CookieManagerRequest request) {
+void CookieManager::AddRequest(mojom::CookieManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -99,9 +99,8 @@ void CookieManager::SetContentSettings(
   cookie_settings_.set_content_settings(settings);
 }
 
-void CookieManager::DeleteCookies(
-    network::mojom::CookieDeletionFilterPtr filter,
-    DeleteCookiesCallback callback) {
+void CookieManager::DeleteCookies(mojom::CookieDeletionFilterPtr filter,
+                                  DeleteCookiesCallback callback) {
   cookie_store_->DeleteAllMatchingInfoAsync(
       DeletionFilterToInfo(std::move(filter)), std::move(callback));
 }
@@ -109,7 +108,7 @@ void CookieManager::DeleteCookies(
 void CookieManager::AddCookieChangeListener(
     const GURL& url,
     const std::string& name,
-    network::mojom::CookieChangeListenerPtr listener) {
+    mojom::CookieChangeListenerPtr listener) {
   auto listener_registration = std::make_unique<ListenerRegistration>();
   listener_registration->listener = std::move(listener);
 
@@ -140,7 +139,7 @@ void CookieManager::AddCookieChangeListener(
 }
 
 void CookieManager::AddGlobalChangeListener(
-    network::mojom::CookieChangeListenerPtr listener) {
+    mojom::CookieChangeListenerPtr listener) {
   auto listener_registration = std::make_unique<ListenerRegistration>();
   listener_registration->listener = std::move(listener);
 
@@ -183,8 +182,7 @@ void CookieManager::RemoveChangeListener(ListenerRegistration* registration) {
   NOTREACHED();
 }
 
-void CookieManager::CloneInterface(
-    network::mojom::CookieManagerRequest new_interface) {
+void CookieManager::CloneInterface(mojom::CookieManagerRequest new_interface) {
   AddRequest(std::move(new_interface));
 }
 
@@ -197,8 +195,7 @@ void CookieManager::SetForceKeepSessionState() {
   cookie_store_->SetForceKeepSessionState();
 }
 
-CookieDeletionInfo DeletionFilterToInfo(
-    network::mojom::CookieDeletionFilterPtr filter) {
+CookieDeletionInfo DeletionFilterToInfo(mojom::CookieDeletionFilterPtr filter) {
   CookieDeletionInfo delete_info;
 
   if (filter->created_after_time.has_value() &&
@@ -214,13 +211,13 @@ CookieDeletionInfo DeletionFilterToInfo(
   delete_info.host = std::move(filter->host_name);
 
   switch (filter->session_control) {
-    case network::mojom::CookieDeletionSessionControl::IGNORE_CONTROL:
+    case mojom::CookieDeletionSessionControl::IGNORE_CONTROL:
       delete_info.session_control = CookieDeleteSessionControl::IGNORE_CONTROL;
       break;
-    case network::mojom::CookieDeletionSessionControl::SESSION_COOKIES:
+    case mojom::CookieDeletionSessionControl::SESSION_COOKIES:
       delete_info.session_control = CookieDeleteSessionControl::SESSION_COOKIES;
       break;
-    case network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES:
+    case mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES:
       delete_info.session_control =
           CookieDeleteSessionControl::PERSISTENT_COOKIES;
       break;

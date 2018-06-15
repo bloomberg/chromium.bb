@@ -72,7 +72,7 @@ std::unique_ptr<net::HostResolver> CreateHostResolver(net::NetLog* net_log) {
       *base::CommandLine::ForCurrentProcess();
   std::unique_ptr<net::HostResolver> host_resolver(
       net::HostResolver::CreateDefaultResolver(net_log));
-  if (!command_line.HasSwitch(network::switches::kHostResolverRules))
+  if (!command_line.HasSwitch(switches::kHostResolverRules))
     return host_resolver;
 
   std::unique_ptr<net::MappedHostResolver> remapped_host_resolver(

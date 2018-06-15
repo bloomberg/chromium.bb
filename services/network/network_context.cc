@@ -345,7 +345,7 @@ bool NetworkContext::IsPrimaryNetworkContext() const {
 
 void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
-    network::mojom::URLLoaderFactoryParamsPtr params,
+    mojom::URLLoaderFactoryParamsPtr params,
     scoped_refptr<ResourceSchedulerClient> resource_scheduler_client) {
   url_loader_factories_.emplace(std::make_unique<URLLoaderFactory>(
       this, std::move(params), std::move(resource_scheduler_client),
@@ -354,7 +354,7 @@ void NetworkContext::CreateURLLoaderFactory(
 
 void NetworkContext::CreateURLLoaderFactory(
     mojom::URLLoaderFactoryRequest request,
-    network::mojom::URLLoaderFactoryParamsPtr params) {
+    mojom::URLLoaderFactoryParamsPtr params) {
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client;
   if (params->process_id != mojom::kBrowserProcessId) {
     // Zero process ID means it's from the browser process and we don't want

@@ -1765,8 +1765,7 @@ TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
 
 // A mock NetworkServiceClient that responds auth challenges with previously
 // set credentials.
-class TestAuthNetworkServiceClient
-    : public network::mojom::NetworkServiceClient {
+class TestAuthNetworkServiceClient : public mojom::NetworkServiceClient {
  public:
   TestAuthNetworkServiceClient() = default;
   ~TestAuthNetworkServiceClient() override = default;
@@ -1777,18 +1776,18 @@ class TestAuthNetworkServiceClient
     INCORRECT_CREDENTIALS_THEN_CORRECT_ONES,
   };
 
-  // network::mojom::NetworkServiceClient:
-  void OnAuthRequired(uint32_t process_id,
-                      uint32_t routing_id,
-                      uint32_t request_id,
-                      const GURL& url,
-                      const GURL& site_for_cookies,
-                      bool first_auth_attempt,
-                      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
-                      int32_t resource_type,
-                      const base::Optional<network::ResourceResponseHead>& head,
-                      network::mojom::AuthChallengeResponderPtr
-                          auth_challenge_responder) override {
+  // mojom::NetworkServiceClient:
+  void OnAuthRequired(
+      uint32_t process_id,
+      uint32_t routing_id,
+      uint32_t request_id,
+      const GURL& url,
+      const GURL& site_for_cookies,
+      bool first_auth_attempt,
+      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+      int32_t resource_type,
+      const base::Optional<network::ResourceResponseHead>& head,
+      mojom::AuthChallengeResponderPtr auth_challenge_responder) override {
     switch (credentials_response_) {
       case CredentialsResponse::NO_CREDENTIALS:
         auth_credentials_ = base::nullopt;
@@ -1813,8 +1812,8 @@ class TestAuthNetworkServiceClient
       uint32_t routing_id,
       uint32_t request_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
-          callback) override {
+      mojom::NetworkServiceClient::OnCertificateRequestedCallback callback)
+      override {
     NOTREACHED();
   }
 

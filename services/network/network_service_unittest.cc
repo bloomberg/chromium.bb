@@ -867,23 +867,22 @@ TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
 class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
  public:
   explicit AllowBadCertsNetworkServiceClient(
-      network::mojom::NetworkServiceClientRequest
-          network_service_client_request)
+      mojom::NetworkServiceClientRequest network_service_client_request)
       : binding_(this, std::move(network_service_client_request)) {}
   ~AllowBadCertsNetworkServiceClient() override {}
 
-  // network::mojom::NetworkServiceClient implementation:
-  void OnAuthRequired(uint32_t process_id,
-                      uint32_t routing_id,
-                      uint32_t request_id,
-                      const GURL& url,
-                      const GURL& site_for_cookies,
-                      bool first_auth_attempt,
-                      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
-                      int32_t resource_type,
-                      const base::Optional<network::ResourceResponseHead>& head,
-                      network::mojom::AuthChallengeResponderPtr
-                          auth_challenge_responder) override {
+  // mojom::NetworkServiceClient implementation:
+  void OnAuthRequired(
+      uint32_t process_id,
+      uint32_t routing_id,
+      uint32_t request_id,
+      const GURL& url,
+      const GURL& site_for_cookies,
+      bool first_auth_attempt,
+      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+      int32_t resource_type,
+      const base::Optional<ResourceResponseHead>& head,
+      mojom::AuthChallengeResponderPtr auth_challenge_responder) override {
     NOTREACHED();
   }
 
@@ -892,8 +891,8 @@ class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
       uint32_t routing_id,
       uint32_t request_id,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_info,
-      network::mojom::NetworkServiceClient::OnCertificateRequestedCallback
-          callback) override {
+      mojom::NetworkServiceClient::OnCertificateRequestedCallback callback)
+      override {
     NOTREACHED();
   }
 
@@ -916,7 +915,7 @@ class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
   }
 
  private:
-  mojo::Binding<network::mojom::NetworkServiceClient> binding_;
+  mojo::Binding<mojom::NetworkServiceClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AllowBadCertsNetworkServiceClient);
 };
