@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <set>
 
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -62,6 +63,7 @@ struct FieldDataDescription {
       FieldPropertiesFlags::NO_FLAGS;
   const char* autocomplete_attribute = nullptr;
   const char* value = kNonimportantValue;
+  const char* name = kNonimportantValue;
   const char* form_control_type = "text";
   PasswordFieldPrediction prediction = {.type = autofill::MAX_VALID_FIELD_TYPE};
 };
@@ -70,6 +72,10 @@ struct FieldDataDescription {
 struct FormParsingTestCase {
   const char* description_for_logging;
   std::vector<FieldDataDescription> fields;
+  // -1 just mean no checking.
+  int number_of_all_possible_passwords = -1;
+  // null means no checking
+  const autofill::ValueElementVector* all_possible_passwords = nullptr;
 };
 
 // Returns numbers which are distinct from each other within the scope of one
@@ -120,7 +126,11 @@ FormData GetFormDataAndExpectation(
     const uint32_t unique_id = GetUniqueId();
     field.unique_renderer_id = unique_id;
     field.id = StampUniqueSuffix("html_id");
-    field.name = StampUniqueSuffix("html_name");
+    if (field_description.name == kNonimportantValue) {
+      field.name = StampUniqueSuffix("html_name");
+    } else {
+      field.name = ASCIIToUTF16(field_description.name);
+    }
     field.form_control_type = field_description.form_control_type;
     field.is_focusable = field_description.is_focusable;
     field.is_enabled = field_description.is_enabled;
@@ -245,6 +255,16 @@ void CheckPasswordFormFields(const PasswordForm& password_form,
              "confirmation_password");
 }
 
+// Checks that in a vector of pairs of string16s, all the first parts of the
+// pairs (which represent element values) are unique.
+void CheckAllValuesUnique(const autofill::ValueElementVector& v) {
+  std::set<base::string16> all_values;
+  for (const auto pair : v) {
+    auto insertion = all_values.insert(pair.first);
+    EXPECT_TRUE(insertion.second) << pair.first << " is duplicated";
+  }
+}
+
 // Iterates over |test_cases|, creates a FormData for each, runs the parser and
 // checks the results.
 void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
@@ -272,6 +292,16 @@ void CheckTestData(const std::vector<FormParsingTestCase>& test_cases) {
         ASSERT_TRUE(parsed_form) << "Expected successful parsing";
         EXPECT_TRUE(parsed_form->has_renderer_ids);
         CheckPasswordFormFields(*parsed_form, form_data, expected_ids);
+        CheckAllValuesUnique(parsed_form->all_possible_passwords);
+        if (test_case.number_of_all_possible_passwords >= 0) {
+          EXPECT_EQ(
+              static_cast<size_t>(test_case.number_of_all_possible_passwords),
+              parsed_form->all_possible_passwords.size());
+        }
+        if (test_case.all_possible_passwords) {
+          EXPECT_EQ(*test_case.all_possible_passwords,
+                    parsed_form->all_possible_passwords);
+        }
       }
     }
   }
@@ -283,10 +313,12 @@ TEST(FormParserTest, NotPasswordForm) {
           "No fields", {},
       },
       {
-          "No password fields",
-          {
-              {.form_control_type = "text"}, {.form_control_type = "text"},
-          },
+          .description_for_logging = "No password fields",
+          .fields =
+              {
+                  {.form_control_type = "text"}, {.form_control_type = "text"},
+              },
+          .number_of_all_possible_passwords = 0,
       },
   });
 }
@@ -308,11 +340,13 @@ TEST(FormParserTest, SkipNotTextFields) {
 TEST(FormParserTest, OnlyPasswordFields) {
   CheckTestData({
       {
-          "1 password field",
-          {
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password"},
-          },
+          .description_for_logging = "1 password field",
+          .fields =
+              {
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password"},
+              },
+          .number_of_all_possible_passwords = 1,
       },
       {
           "2 password fields, new and confirmation password",
@@ -351,14 +385,16 @@ TEST(FormParserTest, OnlyPasswordFields) {
           },
       },
       {
-          "3 password fields with different values",
-          {
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password",
-               .value = "pw1"},
-              {.form_control_type = "password", .value = "pw2"},
-              {.form_control_type = "password", .value = "pw3"},
-          },
+          .description_for_logging = "3 password fields with different values",
+          .fields =
+              {
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .value = "pw1"},
+                  {.form_control_type = "password", .value = "pw2"},
+                  {.form_control_type = "password", .value = "pw3"},
+              },
+          .number_of_all_possible_passwords = 3,
       },
       {
           "4 password fields, only the first 3 are considered",
@@ -453,27 +489,30 @@ TEST(FormParserTest, TestFocusability) {
           },
       },
       {
-          "many passwords, some of them focusable",
-          {
-              {.form_control_type = "password", .is_focusable = false},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password",
-               .is_focusable = true},
-              {.role = ElementRole::NEW_PASSWORD,
-               .form_control_type = "password",
-               .is_focusable = true,
-               .value = "pw"},
-              {.form_control_type = "password", .is_focusable = false},
-              {.form_control_type = "password", .is_focusable = false},
-              {.form_control_type = "password", .is_focusable = false},
-              {.form_control_type = "password", .is_focusable = false},
-              {.role = ElementRole::CONFIRMATION_PASSWORD,
-               .form_control_type = "password",
-               .is_focusable = true,
-               .value = "pw"},
-              {.form_control_type = "password", .is_focusable = false},
-              {.form_control_type = "password", .is_focusable = false},
-          },
+          .description_for_logging = "many passwords, some of them focusable",
+          .fields =
+              {
+                  {.form_control_type = "password", .is_focusable = false},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .is_focusable = true},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .form_control_type = "password",
+                   .is_focusable = true,
+                   .value = "pw"},
+                  {.form_control_type = "password", .is_focusable = false},
+                  {.form_control_type = "password", .is_focusable = false},
+                  {.form_control_type = "password", .is_focusable = false},
+                  {.form_control_type = "password", .is_focusable = false},
+                  {.role = ElementRole::CONFIRMATION_PASSWORD,
+                   .form_control_type = "password",
+                   .is_focusable = true,
+                   .value = "pw"},
+                  {.form_control_type = "password", .is_focusable = false},
+                  {.form_control_type = "password", .is_focusable = false},
+              },
+          // 9 distinct values in 10 password fields:
+          .number_of_all_possible_passwords = 9,
       },
   });
 }
@@ -494,12 +533,14 @@ TEST(FormParserTest, TextAndPasswordFields) {
           },
       },
       {
-          "Simple sign-in form with filled data",
-          {
-              {.role = ElementRole::USERNAME, .form_control_type = "text"},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password"},
-          },
+          .description_for_logging = "Simple sign-in form with filled data",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password"},
+              },
+          .number_of_all_possible_passwords = 1,
       },
       {
           "Empty sign-in form with an extra text field",
@@ -575,45 +616,53 @@ TEST(FormParserTest, TextAndPasswordFields) {
 TEST(FormParserTest, TestAutocomplete) {
   CheckTestData({
       {
-          "All possible password autocomplete attributes and some fields "
-          "without autocomplete",
-          {
-              {.role = ElementRole::USERNAME,
-               .form_control_type = "text",
-               .autocomplete_attribute = "username"},
-              {.form_control_type = "text"},
-              {.form_control_type = "password"},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password",
-               .autocomplete_attribute = "current-password"},
-              {.role = ElementRole::NEW_PASSWORD,
-               .form_control_type = "password",
-               .autocomplete_attribute = "new-password",
-               .value = "np"},
-              {.form_control_type = "password"},
-              {.role = ElementRole::CONFIRMATION_PASSWORD,
-               .form_control_type = "password",
-               .autocomplete_attribute = "new-password",
-               .value = "np"},
-          },
+          .description_for_logging =
+              "All possible password autocomplete attributes and some fields "
+              "without autocomplete",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .autocomplete_attribute = "username"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "password"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .autocomplete_attribute = "current-password"},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .form_control_type = "password",
+                   .autocomplete_attribute = "new-password",
+                   .value = "np"},
+                  {.form_control_type = "password"},
+                  {.role = ElementRole::CONFIRMATION_PASSWORD,
+                   .form_control_type = "password",
+                   .autocomplete_attribute = "new-password",
+                   .value = "np"},
+              },
+          // 4 distinct password values in 5 password fields
+          .number_of_all_possible_passwords = 4,
       },
       {
-          "Non-password autocomplete attributes are skipped",
-          {
-              {.form_control_type = "text", .autocomplete_attribute = "email"},
-              {.role = ElementRole::USERNAME, .form_control_type = "text"},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password"},
-              {.role = ElementRole::NEW_PASSWORD,
-               .form_control_type = "password",
-               .value = "pw"},
-              {.role = ElementRole::CONFIRMATION_PASSWORD,
-               .form_control_type = "password",
-               .value = "pw"},
-              // NB: 'password' is not a valid autocomplete type hint.
-              {.form_control_type = "password",
-               .autocomplete_attribute = "password"},
-          },
+          .description_for_logging =
+              "Non-password autocomplete attributes are skipped",
+          .fields =
+              {
+                  {.form_control_type = "text",
+                   .autocomplete_attribute = "email"},
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password"},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .form_control_type = "password",
+                   .value = "pw"},
+                  {.role = ElementRole::CONFIRMATION_PASSWORD,
+                   .form_control_type = "password",
+                   .value = "pw"},
+                  // NB: 'password' is not a valid autocomplete type hint.
+                  {.form_control_type = "password",
+                   .autocomplete_attribute = "password"},
+              },
+          .number_of_all_possible_passwords = 3,
       },
       {
           "Basic heuristics kick in if autocomplete analysis fails",
@@ -737,19 +786,21 @@ TEST(FormParserTest, TestAutocomplete) {
 TEST(FormParserTest, DisabledFields) {
   CheckTestData({
       {
-          "The disabled attribute is ignored",
-          {
-              {.is_enabled = true, .form_control_type = "text"},
-              {.role = ElementRole::USERNAME,
-               .is_enabled = false,
-               .form_control_type = "text"},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password",
-               .is_enabled = false},
-              {.role = ElementRole::NEW_PASSWORD,
-               .form_control_type = "password",
-               .is_enabled = true},
-          },
+          .description_for_logging = "The disabled attribute is ignored",
+          .fields =
+              {
+                  {.is_enabled = true, .form_control_type = "text"},
+                  {.role = ElementRole::USERNAME,
+                   .is_enabled = false,
+                   .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .is_enabled = false},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .form_control_type = "password",
+                   .is_enabled = true},
+              },
+          .number_of_all_possible_passwords = 2,
       },
   });
 }
@@ -766,16 +817,18 @@ TEST(FormParserTest, SkippingFieldsWithCreditCardFields) {
           },
       },
       {
-          "Non-CC fields are considered",
-          {
-              {.role = ElementRole::USERNAME, .form_control_type = "text"},
-              {.form_control_type = "text",
-               .autocomplete_attribute = "cc-name"},
-              {.form_control_type = "password",
-               .autocomplete_attribute = "cc-any-string"},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password"},
-          },
+          .description_for_logging = "Non-CC fields are considered",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.form_control_type = "text",
+                   .autocomplete_attribute = "cc-name"},
+                  {.form_control_type = "password",
+                   .autocomplete_attribute = "cc-any-string"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password"},
+              },
+          .number_of_all_possible_passwords = 2,
       },
   });
 }
@@ -821,20 +874,23 @@ TEST(FormParserTest, ReadonlyFields) {
           },
       },
       {
-          "And passwords already filled by user or Chrome are accepted even if "
-          "readonly",
-          {
-              {.role = ElementRole::USERNAME, .form_control_type = "text"},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .properties_mask = FieldPropertiesFlags::AUTOFILLED,
-               .form_control_type = "password",
-               .is_readonly = true},
-              {.role = ElementRole::NEW_PASSWORD,
-               .properties_mask = FieldPropertiesFlags::USER_TYPED,
-               .form_control_type = "password",
-               .is_readonly = true},
-              {.form_control_type = "password", .is_readonly = true},
-          },
+          .description_for_logging = "And passwords already filled by user or "
+                                     "Chrome are accepted even if "
+                                     "readonly",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME, .form_control_type = "text"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .properties_mask = FieldPropertiesFlags::AUTOFILLED,
+                   .form_control_type = "password",
+                   .is_readonly = true},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .properties_mask = FieldPropertiesFlags::USER_TYPED,
+                   .form_control_type = "password",
+                   .is_readonly = true},
+                  {.form_control_type = "password", .is_readonly = true},
+              },
+          .number_of_all_possible_passwords = 3,
       },
   });
 }
@@ -874,23 +930,25 @@ TEST(FormParserTest, ServerHints) {
           },
       },
       {
-          "Longer predictions work",
-          {
-              {.role = ElementRole::USERNAME,
-               .prediction = {.type = autofill::USERNAME},
-               .form_control_type = "text"},
-              {.form_control_type = "text"},
-              {.form_control_type = "password"},
-              {.role = ElementRole::NEW_PASSWORD,
-               .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD},
-               .form_control_type = "password"},
-              {.role = ElementRole::CONFIRMATION_PASSWORD,
-               .prediction = {.type = autofill::CONFIRMATION_PASSWORD},
-               .form_control_type = "password"},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .prediction = {.type = autofill::PASSWORD},
-               .form_control_type = "password"},
-          },
+          .description_for_logging = "Longer predictions work",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .prediction = {.type = autofill::USERNAME},
+                   .form_control_type = "text"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "password"},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .prediction = {.type = autofill::ACCOUNT_CREATION_PASSWORD},
+                   .form_control_type = "password"},
+                  {.role = ElementRole::CONFIRMATION_PASSWORD,
+                   .prediction = {.type = autofill::CONFIRMATION_PASSWORD},
+                   .form_control_type = "password"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .prediction = {.type = autofill::PASSWORD},
+                   .form_control_type = "password"},
+              },
+          .number_of_all_possible_passwords = 4,
       },
   });
 }
@@ -913,37 +971,43 @@ TEST(FormParserTest, Interactability) {
           },
       },
       {
-          "If some fields are hidden, only visible are considered",
-          {
-              {.role = ElementRole::USERNAME,
-               .form_control_type = "text",
-               .is_focusable = true},
-              {.form_control_type = "text", .is_focusable = false},
-              {.form_control_type = "password", .is_focusable = false},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password",
-               .is_focusable = true},
-          },
+          .description_for_logging =
+              "If some fields are hidden, only visible are considered",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .is_focusable = true},
+                  {.form_control_type = "text", .is_focusable = false},
+                  {.form_control_type = "password", .is_focusable = false},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .is_focusable = true},
+              },
+          .number_of_all_possible_passwords = 2,
       },
       {
-          "If user typed somewhere, only typed-into fields are considered, "
-          "even if not currently visible",
-          {
-              {.role = ElementRole::USERNAME,
-               .properties_mask = FieldPropertiesFlags::USER_TYPED,
-               .form_control_type = "text",
-               .is_focusable = false},
-              {.form_control_type = "text", .is_focusable = true},
-              {.form_control_type = "password", .is_focusable = false},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password",
-               .properties_mask = FieldPropertiesFlags::AUTOFILLED,
-               .is_focusable = true},
-              {.role = ElementRole::NEW_PASSWORD,
-               .form_control_type = "password",
-               .properties_mask = FieldPropertiesFlags::USER_TYPED,
-               .is_focusable = true},
-          },
+          .description_for_logging =
+              "If user typed somewhere, only typed-into fields are considered, "
+              "even if not currently visible",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .properties_mask = FieldPropertiesFlags::USER_TYPED,
+                   .form_control_type = "text",
+                   .is_focusable = false},
+                  {.form_control_type = "text", .is_focusable = true},
+                  {.form_control_type = "password", .is_focusable = false},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .properties_mask = FieldPropertiesFlags::AUTOFILLED,
+                   .is_focusable = true},
+                  {.role = ElementRole::NEW_PASSWORD,
+                   .form_control_type = "password",
+                   .properties_mask = FieldPropertiesFlags::USER_TYPED,
+                   .is_focusable = true},
+              },
+          .number_of_all_possible_passwords = 3,
       },
       {
           "Interactability for usernames is only considered before the first "
@@ -962,6 +1026,89 @@ TEST(FormParserTest, Interactability) {
                .is_focusable = true},
               {.form_control_type = "text", .is_focusable = true, .value = ""},
           },
+      },
+  });
+}
+
+TEST(FormParserTest, AllPossiblePasswords) {
+  const autofill::ValueElementVector kPasswords = {
+      {ASCIIToUTF16("a"), ASCIIToUTF16("p1")},
+      {ASCIIToUTF16("b"), ASCIIToUTF16("p3")},
+  };
+  CheckTestData({
+      {
+          .description_for_logging = "It is always the first field name which "
+                                     "is associated with a duplicated password "
+                                     "value",
+          .fields =
+              {
+                  {.form_control_type = "password", .name = "p1", .value = "a"},
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .autocomplete_attribute = "username"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .autocomplete_attribute = "current-password",
+                   .value = "a"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "password", .name = "p3", .value = "b"},
+                  {.form_control_type = "password", .value = "b"},
+              },
+          .number_of_all_possible_passwords = 2,
+          .all_possible_passwords = &kPasswords,
+      },
+      {
+          .description_for_logging =
+              "Empty values don't get added to all_possible_passwords",
+          .fields =
+              {
+                  {.form_control_type = "password", .value = ""},
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .autocomplete_attribute = "username"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .autocomplete_attribute = "current-password",
+                   .value = ""},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "password", .value = ""},
+                  {.form_control_type = "password", .value = ""},
+              },
+          .number_of_all_possible_passwords = 0,
+      },
+      {
+          .description_for_logging =
+              "A particular type of a squashed form (sign-in + sign-up)",
+          .fields =
+              {
+                  {.role = ElementRole::USERNAME,
+                   .form_control_type = "text",
+                   .autocomplete_attribute = "username"},
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password",
+                   .autocomplete_attribute = "current-password"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "password"},
+                  {.form_control_type = "password"},
+              },
+          .number_of_all_possible_passwords = 3,
+      },
+      {
+          .description_for_logging = "A strange but not squashed form",
+          .fields =
+              {
+                  {.role = ElementRole::CURRENT_PASSWORD,
+                   .form_control_type = "password"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "text"},
+                  {.form_control_type = "password"},
+                  {.form_control_type = "password"},
+                  {.form_control_type = "password"},
+              },
+          .number_of_all_possible_passwords = 4,
       },
   });
 }
