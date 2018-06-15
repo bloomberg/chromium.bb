@@ -4,10 +4,12 @@
 
 #include "components/offline_pages/core/offline_page_archiver.h"
 
+#include <errno.h>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
@@ -37,6 +39,10 @@ PublishArchiveResult MoveAndRegisterArchive(
   bool moved = base::Move(offline_page.file_path, new_file_path);
   if (!moved) {
     archive_result.move_result = SavePageResult::FILE_MOVE_FAILED;
+    DVLOG(0) << "OfflinePage publishing file move failure errno is " << errno
+             << __func__;
+    base::UmaHistogramSparse("OfflinePages.PublishArchive.MoveFileError",
+                             errno);
     return archive_result;
   }
 
