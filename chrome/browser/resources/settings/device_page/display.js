@@ -318,7 +318,7 @@ Polymer({
    * @private
    */
   getSelectedDisplayZoom_: function(selectedDisplay) {
-    const selectedZoom = selectedDisplay.displayZoomFactor * 100;
+    const selectedZoom = selectedDisplay.displayZoomFactor;
     let closestMatch = this.zoomValues_[0].value;
     let minimumDiff = Math.abs(closestMatch - selectedZoom);
 
@@ -344,9 +344,9 @@ Polymer({
     let zoomValues = [];
     for (let i = 0; i < selectedDisplay.availableDisplayZoomFactors.length;
          i++) {
-      const value =
-          Math.round(selectedDisplay.availableDisplayZoomFactors[i] * 100);
-      const label = this.i18n('displayZoomValue', value.toString());
+      const value = selectedDisplay.availableDisplayZoomFactors[i];
+      const label =
+          this.i18n('displayZoomValue', Math.round(value * 100).toString());
       zoomValues.push({value: value, label: label});
     }
     return zoomValues;
@@ -391,7 +391,7 @@ Polymer({
     this.set('selectedModePref_.value', this.currentSelectedModeIndex_);
 
     this.updateLogicalResolutionText_(
-        /** @type {number} */ (this.selectedZoomPref_.value) / 100.0);
+        /** @type {number} */ (this.selectedZoomPref_.value));
   },
 
   /**
@@ -630,8 +630,7 @@ Polymer({
    * @private
    */
   onDisplaySizeSliderDrag_: function(e) {
-    this.updateLogicalResolutionText_(
-        /** @type {number} */ (e.detail.value) / 100.0);
+    this.updateLogicalResolutionText_(/** @type {number} */ (e.detail.value));
   },
 
   /**
@@ -741,7 +740,7 @@ Polymer({
 
     /** @type {!chrome.system.display.DisplayProperties} */ const properties = {
       displayZoomFactor:
-          /** @type {number} */ (this.selectedZoomPref_.value) / 100.0
+          /** @type {number} */ (this.selectedZoomPref_.value)
     };
 
     settings.display.systemDisplayApi.setDisplayProperties(
