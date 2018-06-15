@@ -133,4 +133,6 @@ void FakeLoginDisplayHost::MigrateUserData(const std::string& old_password) {}
 
 void FakeLoginDisplayHost::ResyncUserData() {}
 
+void FakeLoginDisplayHost::ShowFeedback() {}
+
 }  // namespace chromeos
