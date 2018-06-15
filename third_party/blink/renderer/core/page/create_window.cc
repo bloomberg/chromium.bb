@@ -54,8 +54,7 @@ namespace blink {
 // Check that the desired NavigationPolicy |policy| is compatible with the
 // observed input event |current_event|.
 // TODO(dgozman): move this to navigation_policy.cc.
-NavigationPolicy EffectiveNavigationPolicy(NavigationPolicy policy,
-                                           const WebInputEvent* current_event,
+NavigationPolicy EffectiveNavigationPolicy(const WebInputEvent* current_event,
                                            const WebWindowFeatures& features) {
   // If our default configuration was modified by a script or wasn't
   // created by a user gesture, then show as a popup. Else, let this
@@ -71,38 +70,21 @@ NavigationPolicy EffectiveNavigationPolicy(NavigationPolicy policy,
       app_policy == kNavigationPolicyNewPopup) {
     // User and app agree that we want a new window; let the app override the
     // decorations.
-    user_policy = app_policy;
-  } else if (user_policy == kNavigationPolicyCurrentTab) {
-    // User doesn't want a specific policy, use app policy instead.
-    user_policy = app_policy;
+    return app_policy;
   }
 
-  if (policy == kNavigationPolicyIgnore) {
+  if (user_policy == kNavigationPolicyCurrentTab) {
+    // User doesn't want a specific policy, use app policy instead.
+    return app_policy;
+  }
+
+  if (user_policy == kNavigationPolicyDownload) {
     // When the input event suggests a download, but the navigation was
     // initiated by script, we should not override it.
-    if (user_policy == kNavigationPolicyDownload) {
-      return as_popup ? kNavigationPolicyNewPopup
-                      : kNavigationPolicyNewForegroundTab;
-    }
-    return user_policy;
+    return app_policy;
   }
 
-  if (policy == kNavigationPolicyNewBackgroundTab &&
-      user_policy != kNavigationPolicyNewBackgroundTab &&
-      !UIEventWithKeyState::NewTabModifierSetFromIsolatedWorld()) {
-    // Don't allow background tabs to be opened via script setting the
-    // event modifiers.
-    return kNavigationPolicyNewForegroundTab;
-  }
-
-  if (policy == kNavigationPolicyDownload &&
-      user_policy != kNavigationPolicyDownload) {
-    // Don't allow downloads to be triggered via script setting the event
-    // modifiers.
-    return kNavigationPolicyNewForegroundTab;
-  }
-
-  return policy;
+  return user_policy;
 }
 
 // Though isspace() considers \t and \v to be whitespace, Win IE doesn't when
@@ -233,10 +215,8 @@ WebWindowFeatures GetWindowFeaturesFromString(const String& feature_string) {
 static Frame* ReuseExistingWindow(LocalFrame& active_frame,
                                   LocalFrame& lookup_frame,
                                   const AtomicString& frame_name,
-                                  NavigationPolicy policy,
                                   const KURL& destination_url) {
-  if (!frame_name.IsEmpty() && !EqualIgnoringASCIICase(frame_name, "_blank") &&
-      policy == kNavigationPolicyIgnore) {
+  if (!frame_name.IsEmpty() && !EqualIgnoringASCIICase(frame_name, "_blank")) {
     if (Frame* frame = lookup_frame.FindFrameForNavigation(
             frame_name, active_frame, destination_url)) {
       if (!EqualIgnoringASCIICase(frame_name, "_self")) {
@@ -256,14 +236,16 @@ static Frame* ReuseExistingWindow(LocalFrame& active_frame,
 static Frame* CreateNewWindow(LocalFrame& opener_frame,
                               const FrameLoadRequest& request,
                               const WebWindowFeatures& features,
-                              NavigationPolicy policy,
+                              bool force_new_foreground_tab,
                               bool& created) {
   Page* old_page = opener_frame.GetPage();
   if (!old_page)
     return nullptr;
 
-  policy =
-      EffectiveNavigationPolicy(policy, CurrentInputEvent::Get(), features);
+  NavigationPolicy policy =
+      force_new_foreground_tab
+          ? kNavigationPolicyNewForegroundTab
+          : EffectiveNavigationPolicy(CurrentInputEvent::Get(), features);
 
   const SandboxFlags sandbox_flags =
       opener_frame.GetDocument()->IsSandboxed(
@@ -320,7 +302,7 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
                                  LocalFrame& lookup_frame,
                                  const FrameLoadRequest& request,
                                  const WebWindowFeatures& features,
-                                 NavigationPolicy policy,
+                                 bool force_new_foreground_tab,
                                  bool& created) {
   DCHECK(request.GetResourceRequest().RequestorOrigin() ||
          opener_frame.GetDocument()->Url().IsEmpty());
@@ -332,10 +314,10 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
   created = false;
 
   Frame* window =
-      features.noopener
+      features.noopener || force_new_foreground_tab
           ? nullptr
           : ReuseExistingWindow(active_frame, lookup_frame, request.FrameName(),
-                                policy, request.GetResourceRequest().Url());
+                                request.GetResourceRequest().Url());
 
   if (!window) {
     // Sandboxed frames cannot open new auxiliary browsing contexts.
@@ -353,7 +335,7 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
   }
 
   if (window) {
-    // JS can run inside reuseExistingWindow (via onblur), which can detach
+    // JS can run inside ReuseExistingWindow (via onblur), which can detach
     // the target window.
     if (!window->Client())
       return nullptr;
@@ -362,7 +344,8 @@ static Frame* CreateWindowHelper(LocalFrame& opener_frame,
     return window;
   }
 
-  return CreateNewWindow(opener_frame, request, features, policy, created);
+  return CreateNewWindow(opener_frame, request, features,
+                         force_new_foreground_tab, created);
 }
 
 DOMWindow* CreateWindow(const String& url_string,
@@ -436,7 +419,7 @@ DOMWindow* CreateWindow(const String& url_string,
   bool created;
   Frame* new_frame = CreateWindowHelper(
       opener_frame, *active_frame, opener_frame, frame_request, window_features,
-      kNavigationPolicyIgnore, created);
+      false /* force_new_foreground_tab */, created);
   if (!new_frame)
     return nullptr;
   if (new_frame->DomWindow()->IsInsecureScriptAccess(calling_window,
@@ -467,8 +450,7 @@ DOMWindow* CreateWindow(const String& url_string,
 }
 
 void CreateWindowForRequest(const FrameLoadRequest& request,
-                            LocalFrame& opener_frame,
-                            NavigationPolicy policy) {
+                            LocalFrame& opener_frame) {
   DCHECK(request.GetResourceRequest().RequestorOrigin() ||
          (opener_frame.GetDocument() &&
           opener_frame.GetDocument()->Url().IsEmpty()));
@@ -481,15 +463,12 @@ void CreateWindowForRequest(const FrameLoadRequest& request,
       opener_frame.GetDocument()->IsSandboxed(kSandboxPopups))
     return;
 
-  if (policy == kNavigationPolicyCurrentTab)
-    policy = kNavigationPolicyNewForegroundTab;
-
   WebWindowFeatures features;
   features.noopener = request.GetShouldSetOpener() == kNeverSetOpener;
   bool created;
-  Frame* new_frame =
-      CreateWindowHelper(opener_frame, opener_frame, opener_frame, request,
-                         features, policy, created);
+  Frame* new_frame = CreateWindowHelper(
+      opener_frame, opener_frame, opener_frame, request, features,
+      true /* force_new_foreground_tab */, created);
   if (!new_frame)
     return;
   if (request.GetShouldSendReferrer() == kMaybeSendReferrer) {
