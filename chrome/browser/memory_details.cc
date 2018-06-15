@@ -360,9 +360,10 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
   // Using AdaptCallbackForRepeating allows for an easier transition to
   // OnceCallbacks for https://crbug.com/714018.
   memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestGlobalDump(std::vector<std::string>(),
-                          base::AdaptCallbackForRepeating(base::BindOnce(
-                              &MemoryDetails::DidReceiveMemoryDump, this)));
+      ->RequestPrivateMemoryFootprint(
+          base::kNullProcessId,
+          base::AdaptCallbackForRepeating(
+              base::BindOnce(&MemoryDetails::DidReceiveMemoryDump, this)));
 }
 
 void MemoryDetails::DidReceiveMemoryDump(
