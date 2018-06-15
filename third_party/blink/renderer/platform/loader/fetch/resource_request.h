@@ -376,6 +376,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
   bool UpgradeIfInsecure() const { return upgrade_if_insecure_; }
 
+  void SetAllowStaleResponse(bool value) { allow_stale_response_ = value; }
+  bool AllowsStaleResponse() const { return allow_stale_response_; }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -407,6 +410,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool use_stream_on_response_ : 1;
   bool keepalive_ : 1;
   bool should_reset_app_cache_ : 1;
+  bool allow_stale_response_ : 1;
   mojom::FetchCacheMode cache_mode_;
   bool skip_service_worker_ : 1;
   ResourceLoadPriority priority_;

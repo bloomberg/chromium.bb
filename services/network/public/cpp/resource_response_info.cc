@@ -29,7 +29,8 @@ ResourceResponseInfo::ResourceResponseInfo()
       effective_connection_type(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       cert_status(0),
       did_service_worker_navigation_preload(false),
-      should_report_corb_blocking(false) {}
+      should_report_corb_blocking(false),
+      async_revalidation_requested(false) {}
 
 ResourceResponseInfo::ResourceResponseInfo(const ResourceResponseInfo& other) =
     default;

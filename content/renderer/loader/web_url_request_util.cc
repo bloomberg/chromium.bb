@@ -291,6 +291,8 @@ int GetLoadFlagsForWebURLRequest(const WebURLRequest& request) {
     if (extra_data->is_for_no_state_prefetch())
       load_flags |= net::LOAD_PREFETCH;
   }
+  if (request.SupportsAsyncRevalidation())
+    load_flags |= net::LOAD_SUPPORT_ASYNC_REVALIDATION;
 
   return load_flags;
 }

@@ -425,6 +425,10 @@ bool WebURLRequest::UpgradeIfInsecure() const {
   return resource_request_->UpgradeIfInsecure();
 }
 
+bool WebURLRequest::SupportsAsyncRevalidation() const {
+  return resource_request_->AllowsStaleResponse();
+}
+
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {
   DCHECK(resource_request_);
   return *resource_request_;

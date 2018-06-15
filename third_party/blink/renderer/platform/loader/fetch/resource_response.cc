@@ -115,6 +115,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
       data->was_fallback_required_by_service_worker_;
   did_service_worker_navigation_preload_ =
       data->did_service_worker_navigation_preload_;
+  async_revalidation_requested_ = data->async_revalidation_requested_;
   response_type_via_service_worker_ = data->response_type_via_service_worker_;
   security_style_ = data->security_style_;
   security_details_.protocol = data->security_details_.protocol;
@@ -176,6 +177,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
       was_fallback_required_by_service_worker_;
   data->did_service_worker_navigation_preload_ =
       did_service_worker_navigation_preload_;
+  data->async_revalidation_requested_ = async_revalidation_requested_;
   data->response_type_via_service_worker_ = response_type_via_service_worker_;
   data->security_style_ = security_style_;
   data->security_details_.protocol = security_details_.protocol.IsolatedCopy();

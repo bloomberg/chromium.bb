@@ -84,6 +84,8 @@ void PopulateResourceResponse(
   response->head.socket_address = response_info.socket_address;
   response->head.was_fetched_via_proxy = request->was_fetched_via_proxy();
   response->head.network_accessed = response_info.network_accessed;
+  response->head.async_revalidation_requested =
+      response_info.async_revalidation_requested;
   const content::ResourceRequestInfo* request_info =
       content::ResourceRequestInfo::ForRequest(request);
   if (request_info) {
