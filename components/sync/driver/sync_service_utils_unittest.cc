@@ -43,9 +43,14 @@ class TestSyncService : public FakeSyncService {
     return preferred_data_types_;
   }
   ModelTypeSet GetEncryptedDataTypes() const override {
-    if (!custom_passphrase_enabled_)
+    if (!custom_passphrase_enabled_) {
+      // PASSWORDS are always encrypted.
       return ModelTypeSet(syncer::PASSWORDS);
-    return preferred_data_types_;
+    }
+    // Some types can never be encrypted, e.g. DEVICE_INFO and
+    // AUTOFILL_WALLET_DATA, so make sure we don't report them as encrypted.
+    return syncer::Intersection(preferred_data_types_,
+                                syncer::EncryptableUserTypes());
   }
   SyncCycleSnapshot GetLastCycleSnapshot() const override {
     if (sync_cycle_complete_) {
@@ -217,6 +222,8 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfCustomPassphraseInUse) {
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
   ASSERT_EQ(UploadState::ACTIVE,
             GetUploadToGoogleState(&service, syncer::PASSWORDS));
+  ASSERT_EQ(UploadState::ACTIVE,
+            GetUploadToGoogleState(&service, syncer::DEVICE_INFO));
 
   // Once a custom passphrase is in use, upload should be considered disabled:
   // Even if we're technically still uploading, Google can't inspect the data.
@@ -226,6 +233,9 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfCustomPassphraseInUse) {
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
   EXPECT_EQ(UploadState::NOT_ACTIVE,
             GetUploadToGoogleState(&service, syncer::PASSWORDS));
+  // But unencryptable types like DEVICE_INFO are still active.
+  EXPECT_EQ(UploadState::ACTIVE,
+            GetUploadToGoogleState(&service, syncer::DEVICE_INFO));
 }
 
 }  // namespace syncer
