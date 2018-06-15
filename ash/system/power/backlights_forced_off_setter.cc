@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
+#include "ui/display/manager/touch_device_manager.h"
 
 namespace ash {
 
@@ -157,9 +158,15 @@ void BacklightsForcedOffSetter::SetBacklightsForcedOff(bool forced_off) {
 }
 
 void BacklightsForcedOffSetter::UpdateTouchscreenStatus() {
+  // If there is an external touch display connected to the device, then we want
+  // to allow users to wake up the device using this external touch device. The
+  // kernel blocks wake up events from internal input devices when the screen is
+  // off or is in the suspended state.
+  // See https://crbug/797411 for more details.
   const bool disable_touchscreen = backlights_forced_off_.value_or(false) ||
                                    (screen_state_ == ScreenState::OFF_AUTO &&
-                                    disable_touchscreen_while_screen_off_);
+                                    disable_touchscreen_while_screen_off_ &&
+                                    !display::HasExternalTouchscreenDevice());
   Shell::Get()->touch_devices_controller()->SetTouchscreenEnabled(
       !disable_touchscreen, TouchDeviceEnabledSource::GLOBAL);
 }

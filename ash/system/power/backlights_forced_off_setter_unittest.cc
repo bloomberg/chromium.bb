@@ -8,12 +8,22 @@
 #include <utility>
 #include <vector>
 
+#include "ash/shell.h"
 #include "ash/system/power/scoped_backlights_forced_off.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/touch/ash_touch_transform_controller.h"
+#include "ash/touch/touch_devices_controller.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "ui/display/manager/display_manager.h"
+#include "ui/display/manager/test/touch_transform_controller_test_api.h"
+#include "ui/display/manager/touch_transform_setter.h"
+#include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/touch_device_transform.h"
+#include "ui/events/devices/touchscreen_device.h"
 
 namespace ash {
 
@@ -194,6 +204,102 @@ TEST_F(BacklightsForcedOffSetterTest,
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   EXPECT_EQ(std::vector<bool>({false}),
             backlights_forced_off_observer_->forced_off_states());
+}
+
+TEST_F(BacklightsForcedOffSetterTest,
+       ExternalTouchDevicePreventsTouchscreenDisable) {
+  UpdateDisplay("1200x600,600x1000*2");
+  const int64_t kInternalDisplayId =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+
+  display::DisplayIdList display_id_list =
+      display_manager()->GetCurrentDisplayIdList();
+
+  // Pick the non internal display Id.
+  const int64_t kExternalDisplayId = display_id_list[0] == kInternalDisplayId
+                                         ? display_id_list[1]
+                                         : display_id_list[0];
+
+  // Initialize an external touch device.
+  ui::TouchscreenDevice external_touchdevice(
+      123, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL,
+      std::string("test external touch device"), gfx::Size(1000, 1000), 1);
+
+  ui::TouchscreenDevice internal_touchdevice(
+      234, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+      std::string("test internal touch device"), gfx::Size(1000, 1000), 1);
+  ui::InputDeviceClientTestApi().SetTouchscreenDevices(
+      {external_touchdevice, internal_touchdevice});
+
+  std::vector<ui::TouchDeviceTransform> transforms;
+  ui::TouchDeviceTransform touch_device_transform;
+
+  // Add external touch device to the list.
+  touch_device_transform.display_id = kExternalDisplayId;
+  touch_device_transform.device_id = external_touchdevice.id;
+  transforms.push_back(touch_device_transform);
+
+  // Add internal touch device to the list.
+  touch_device_transform.display_id = kInternalDisplayId;
+  touch_device_transform.device_id = internal_touchdevice.id;
+  transforms.push_back(touch_device_transform);
+
+  // Initialize the transforms and the InputDeviceManager.
+  display::test::TouchTransformControllerTestApi(
+      ash::Shell::Get()->touch_transformer_controller())
+      .touch_transform_setter()
+      ->ConfigureTouchDevices(transforms);
+
+  // The brightness change is due to user inactivity or lid close.
+  power_manager::BacklightBrightnessChange change;
+  change.set_cause(power_manager::BacklightBrightnessChange_Cause_OTHER);
+  change.set_percent(0.0);
+
+  power_manager_client_->SendScreenBrightnessChanged(change);
+
+  // The touchscreens should be enabled.
+  EXPECT_TRUE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
+      TouchDeviceEnabledSource::GLOBAL));
+}
+
+TEST_F(BacklightsForcedOffSetterTest, TouchscreensDisableOnBrightnessChange) {
+  UpdateDisplay("1200x600,600x1000*2");
+  const int64_t kInternalDisplayId =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+
+  display::DisplayIdList display_id_list =
+      display_manager()->GetCurrentDisplayIdList();
+
+  ui::TouchscreenDevice internal_touchdevice(
+      234, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+      std::string("test internal touch device"), gfx::Size(1000, 1000), 1);
+  ui::InputDeviceClientTestApi().SetTouchscreenDevices({internal_touchdevice});
+
+  // Add internal touch device to the list.
+  std::vector<ui::TouchDeviceTransform> transforms;
+  ui::TouchDeviceTransform touch_device_transform;
+  touch_device_transform.display_id = kInternalDisplayId;
+  touch_device_transform.device_id = internal_touchdevice.id;
+  transforms.push_back(touch_device_transform);
+
+  // Initialize the transforms and the InputDeviceManager.
+  display::test::TouchTransformControllerTestApi(
+      ash::Shell::Get()->touch_transformer_controller())
+      .touch_transform_setter()
+      ->ConfigureTouchDevices(transforms);
+
+  // The brightness change is due to user inactivity or lid close.
+  power_manager::BacklightBrightnessChange change;
+  change.set_cause(power_manager::BacklightBrightnessChange_Cause_OTHER);
+  change.set_percent(0.0);
+
+  power_manager_client_->SendScreenBrightnessChanged(change);
+
+  // The touchscreens should be disabled.
+  EXPECT_FALSE(Shell::Get()->touch_devices_controller()->GetTouchscreenEnabled(
+      TouchDeviceEnabledSource::GLOBAL));
 }
 
 }  // namespace ash
