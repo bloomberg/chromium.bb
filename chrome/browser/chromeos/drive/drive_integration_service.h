@@ -117,6 +117,13 @@ class DriveIntegrationService : public KeyedService,
   // |IsMounted()|.
   base::FilePath GetMountPointPath() const;
 
+  // Returns true if |local_path| resides inside |GetMountPointPath()|.
+  // In this case |drive_path| will contain 'drive' path of this file, e.g.
+  // reparented to the mount point.
+  // It is only valid to call if |IsMounted()|.
+  bool GetRelativeDrivePath(const base::FilePath& local_path,
+                            base::FilePath* drive_path) const;
+
   // Adds and removes the observer.
   void AddObserver(DriveIntegrationServiceObserver* observer);
   void RemoveObserver(DriveIntegrationServiceObserver* observer);

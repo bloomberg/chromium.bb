@@ -689,7 +689,7 @@ class DriveFsTestVolume : public DriveTestVolume {
     switch (entry.type) {
       case AddEntriesMessage::FILE: {
         fake_drivefs_->SetMetadata(
-            target_path, entry.mime_type,
+            GetRelativeDrivePathForTestEntry(entry), entry.mime_type,
             base::FilePath(entry.target_path).BaseName().value());
 
         if (entry.source_file_name.empty()) {
@@ -764,6 +764,14 @@ class DriveFsTestVolume : public DriveTestVolume {
     if (entry.name_text != entry.target_path)
       return target_path.DirName().Append(entry.name_text);
     return target_path;
+  }
+
+  base::FilePath GetRelativeDrivePathForTestEntry(
+      const AddEntriesMessage::TestEntryInfo& entry) {
+    const base::FilePath target_path = GetTargetPathForTestEntry(entry);
+    base::FilePath drive_path("/");
+    CHECK(root_path().AppendRelativePath(target_path, &drive_path));
+    return drive_path;
   }
 
   base::FilePath GetDriveRoot() { return root_path().Append("root"); }

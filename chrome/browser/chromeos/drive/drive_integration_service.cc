@@ -481,6 +481,23 @@ base::FilePath DriveIntegrationService::GetMountPointPath() const {
                          : drive::util::GetDriveMountPointPath(profile_);
 }
 
+bool DriveIntegrationService::GetRelativeDrivePath(
+    const base::FilePath& local_path,
+    base::FilePath* drive_path) const {
+  if (!IsMounted()) {
+    return false;
+  }
+  base::FilePath mount_point = GetMountPointPath();
+  base::FilePath relative("/");
+  if (!mount_point.AppendRelativePath(local_path, &relative)) {
+    return false;
+  }
+  if (drive_path) {
+    *drive_path = relative;
+  }
+  return true;
+}
+
 void DriveIntegrationService::AddObserver(
     DriveIntegrationServiceObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
