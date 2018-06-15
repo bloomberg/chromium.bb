@@ -280,7 +280,7 @@ void NetworkConnectImpl::CallCreateConfiguration(
   NetworkHandler::Get()
       ->network_configuration_handler()
       ->CreateShillConfiguration(
-          *shill_properties, NetworkConfigurationObserver::SOURCE_USER_ACTION,
+          *shill_properties,
           base::Bind(&NetworkConnectImpl::OnConfigureSucceeded,
                      weak_factory_.GetWeakPtr(), connect_on_configure),
           base::Bind(&NetworkConnectImpl::OnConfigureFailed,
@@ -347,7 +347,6 @@ void NetworkConnectImpl::ConfigureSetProfileSucceeded(
   }
   NetworkHandler::Get()->network_configuration_handler()->SetShillProperties(
       network->path(), *properties_to_set,
-      NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&NetworkConnectImpl::ClearPropertiesAndConnect,
                  weak_factory_.GetWeakPtr(), network_id, properties_to_clear),
       base::Bind(&NetworkConnectImpl::SetPropertiesFailed,
@@ -508,7 +507,6 @@ void NetworkConnectImpl::ConfigureNetworkIdAndConnect(
   }
   NetworkHandler::Get()->network_configuration_handler()->SetNetworkProfile(
       network->path(), profile_path,
-      NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&NetworkConnectImpl::ConfigureSetProfileSucceeded,
                  weak_factory_.GetWeakPtr(), network_id,
                  base::Passed(&properties_to_set)),

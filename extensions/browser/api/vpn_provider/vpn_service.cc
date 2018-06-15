@@ -278,25 +278,18 @@ std::string VpnService::GetKey(const std::string& extension_id,
   return base::HexEncode(key.data(), key.size());
 }
 
-void VpnService::OnConfigurationCreated(const std::string& service_path,
-                                        const std::string& profile_path,
-                                        const base::DictionaryValue& properties,
-                                        Source source) {
-}
+void VpnService::OnConfigurationCreated(
+    const std::string& service_path,
+    const std::string& profile_path,
+    const base::DictionaryValue& properties) {}
 
 void VpnService::OnConfigurationRemoved(const std::string& service_path,
-                                        const std::string& guid,
-                                        Source source) {
-  if (source == SOURCE_EXTENSION_INSTALL) {
-    // No need to process if the configuration was removed using an extension
-    // API since the API would have already done the cleanup.
-    return;
-  }
-
+                                        const std::string& guid) {
   if (service_path_to_configuration_map_.find(service_path) ==
       service_path_to_configuration_map_.end()) {
     // Ignore removal of a configuration unknown to VPN service, which means the
-    // configuration was created internally by the platform.
+    // configuration was created internally by the platform or already removed
+    // by the extension.
     return;
   }
 
@@ -314,14 +307,11 @@ void VpnService::OnConfigurationRemoved(const std::string& service_path,
 
 void VpnService::OnPropertiesSet(const std::string& service_path,
                                  const std::string& guid,
-                                 const base::DictionaryValue& set_properties,
-                                 Source source) {
-}
+                                 const base::DictionaryValue& set_properties) {}
 
-void VpnService::OnConfigurationProfileChanged(const std::string& service_path,
-                                               const std::string& profile_path,
-                                               Source source) {
-}
+void VpnService::OnConfigurationProfileChanged(
+    const std::string& service_path,
+    const std::string& profile_path) {}
 
 void VpnService::OnGetPropertiesSuccess(
     const std::string& service_path,
@@ -423,7 +413,7 @@ void VpnService::CreateConfiguration(const std::string& extension_id,
   properties.SetKey(shill::kGuidProperty, base::Value(guid));
 
   network_configuration_handler_->CreateShillConfiguration(
-      properties, NetworkConfigurationObserver::SOURCE_EXTENSION_INSTALL,
+      properties,
       base::Bind(&VpnService::OnCreateConfigurationSuccess,
                  weak_factory_.GetWeakPtr(), success, configuration),
       base::Bind(&VpnService::OnCreateConfigurationFailure,
@@ -453,7 +443,7 @@ void VpnService::DestroyConfiguration(const std::string& extension_id,
   DestroyConfigurationInternal(configuration);
 
   network_configuration_handler_->RemoveConfiguration(
-      service_path, NetworkConfigurationObserver::SOURCE_EXTENSION_INSTALL,
+      service_path,
       base::Bind(&VpnService::OnRemoveConfigurationSuccess,
                  weak_factory_.GetWeakPtr(), success),
       base::Bind(&VpnService::OnRemoveConfigurationFailure,

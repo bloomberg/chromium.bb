@@ -83,18 +83,14 @@ class VpnService : public KeyedService,
   // NetworkConfigurationObserver:
   void OnConfigurationCreated(const std::string& service_path,
                               const std::string& profile_path,
-                              const base::DictionaryValue& properties,
-                              Source source) override;
+                              const base::DictionaryValue& properties) override;
   void OnConfigurationRemoved(const std::string& service_path,
-                              const std::string& guid,
-                              Source source) override;
+                              const std::string& guid) override;
   void OnPropertiesSet(const std::string& service_path,
                        const std::string& guid,
-                       const base::DictionaryValue& set_properties,
-                       Source source) override;
+                       const base::DictionaryValue& set_properties) override;
   void OnConfigurationProfileChanged(const std::string& service_path,
-                                     const std::string& profile_path,
-                                     Source source) override;
+                                     const std::string& profile_path) override;
 
   // NetworkStateHandlerObserver:
   void NetworkListChanged() override;

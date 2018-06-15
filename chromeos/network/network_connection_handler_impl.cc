@@ -561,7 +561,6 @@ void NetworkConnectionHandlerImpl::VerifyConfiguredAndConnect(
     NET_LOG(EVENT) << "Configuring Network: " << service_path;
     configuration_handler_->SetShillProperties(
         service_path, config_properties,
-        NetworkConfigurationObserver::SOURCE_USER_ACTION,
         base::Bind(&NetworkConnectionHandlerImpl::CallShillConnect, AsWeakPtr(),
                    service_path),
         base::Bind(&NetworkConnectionHandlerImpl::HandleConfigurationFailure,
@@ -768,8 +767,7 @@ void NetworkConnectionHandlerImpl::CheckPendingRequest(
     if (!request->profile_path.empty()) {
       // If a profile path was specified, set it on a successful connection.
       configuration_handler_->SetNetworkProfile(
-          service_path, request->profile_path,
-          NetworkConfigurationObserver::SOURCE_USER_ACTION, base::DoNothing(),
+          service_path, request->profile_path, base::DoNothing(),
           chromeos::network_handler::ErrorCallback());
     }
     InvokeConnectSuccessCallback(request->service_path,

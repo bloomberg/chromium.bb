@@ -388,9 +388,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetShillProperties(
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
   network_configuration_handler_->SetShillProperties(
-      service_path, *shill_dictionary,
-      NetworkConfigurationObserver::SOURCE_USER_ACTION, callback,
-      error_callback);
+      service_path, *shill_dictionary, callback, error_callback);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
@@ -495,17 +493,15 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
                                             validated_properties.get()));
 
   network_configuration_handler_->CreateShillConfiguration(
-      *shill_dictionary, NetworkConfigurationObserver::SOURCE_USER_ACTION,
-      callback, error_callback);
+      *shill_dictionary, callback, error_callback);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::RemoveConfiguration(
     const std::string& service_path,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) const {
-  network_configuration_handler_->RemoveConfiguration(
-      service_path, NetworkConfigurationObserver::SOURCE_USER_ACTION, callback,
-      error_callback);
+  network_configuration_handler_->RemoveConfiguration(service_path, callback,
+                                                      error_callback);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::
@@ -514,8 +510,7 @@ void ManagedNetworkConfigurationHandlerImpl::
         const base::Closure& callback,
         const network_handler::ErrorCallback& error_callback) const {
   network_configuration_handler_->RemoveConfigurationFromCurrentProfile(
-      service_path, NetworkConfigurationObserver::SOURCE_USER_ACTION, callback,
-      error_callback);
+      service_path, callback, error_callback);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
@@ -662,7 +657,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnProfileRemoved(
 void ManagedNetworkConfigurationHandlerImpl::CreateConfigurationFromPolicy(
     const base::DictionaryValue& shill_properties) {
   network_configuration_handler_->CreateShillConfiguration(
-      shill_properties, NetworkConfigurationObserver::SOURCE_POLICY,
+      shill_properties,
       base::Bind(
           &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
           weak_ptr_factory_.GetWeakPtr()),
@@ -698,7 +693,7 @@ void ManagedNetworkConfigurationHandlerImpl::
   shill_properties.MergeDictionary(&new_properties);
 
   network_configuration_handler_->CreateShillConfiguration(
-      shill_properties, NetworkConfigurationObserver::SOURCE_POLICY,
+      shill_properties,
       base::Bind(
           &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
           weak_ptr_factory_.GetWeakPtr()),

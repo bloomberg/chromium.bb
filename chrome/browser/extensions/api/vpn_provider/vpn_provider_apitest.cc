@@ -196,31 +196,28 @@ class VpnProviderApiTest : public extensions::ExtensionApiTest,
 
   void TriggerInternalRemove() {
     NetworkHandler::Get()->network_configuration_handler()->RemoveConfiguration(
-        GetSingleServicePath(),
-        NetworkConfigurationObserver::SOURCE_USER_ACTION, base::DoNothing(),
+        GetSingleServicePath(), base::DoNothing(),
         base::Bind(DoNothingFailureCallback));
   }
 
   // NetworkConfigurationObserver:
-  void OnConfigurationCreated(const std::string& service_path,
-                              const std::string& profile_path,
-                              const base::DictionaryValue& properties,
-                              Source source) override {
+  void OnConfigurationCreated(
+      const std::string& service_path,
+      const std::string& profile_path,
+      const base::DictionaryValue& properties) override {
     service_path_ = service_path;
   }
 
   void OnConfigurationRemoved(const std::string& service_path,
-                              const std::string& guid,
-                              Source source) override {}
+                              const std::string& guid) override {}
 
   void OnPropertiesSet(const std::string& service_path,
                        const std::string& guid,
-                       const base::DictionaryValue& set_properties,
-                       Source source) override {}
+                       const base::DictionaryValue& set_properties) override {}
 
   void OnConfigurationProfileChanged(const std::string& service_path,
-                                     const std::string& profile_path,
-                                     Source source) override {}
+                                     const std::string& profile_path) override {
+  }
 
  protected:
   TestShillThirdPartyVpnDriverClient* test_client_ = nullptr;
@@ -400,10 +397,9 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, ConfigPersistence) {
   properties.SetKey(shill::kProfileProperty, base::Value(kNetworkProfilePath));
   NetworkHandler::Get()
       ->network_configuration_handler()
-      ->CreateShillConfiguration(
-          properties, NetworkConfigurationObserver::SOURCE_EXTENSION_INSTALL,
-          base::Bind(DoNothingSuccessCallback),
-          base::Bind(DoNothingFailureCallback));
+      ->CreateShillConfiguration(properties,
+                                 base::Bind(DoNothingSuccessCallback),
+                                 base::Bind(DoNothingFailureCallback));
   content::RunAllPendingInMessageLoop();
   EXPECT_TRUE(DoesConfigExist(kTestConfig));
 }
