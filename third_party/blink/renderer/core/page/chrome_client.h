@@ -390,6 +390,12 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   FRIEND_TEST_ALL_PREFIXES(ChromeClientTest, SetToolTipFlood);
 };
 
+inline ChromeClient* ToChromeClient(PlatformChromeClient* client) {
+  // In production code, a PlatformChromeClient instance is always a
+  // ChromeClient instance.
+  return static_cast<ChromeClient*>(client);
+}
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_CHROME_CLIENT_H_

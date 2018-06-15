@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment_request.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_constraints_options.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment.h"

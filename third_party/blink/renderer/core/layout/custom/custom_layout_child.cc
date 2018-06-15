@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_child.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/css/cssom/prepopulated_computed_style_property_map.h"
 #include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
 #include "third_party/blink/renderer/core/layout/custom/custom_layout_fragment_request.h"

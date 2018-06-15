@@ -77,7 +77,7 @@ class LayoutThemeMac final : public LayoutTheme {
   int SliderTickOffsetFromTrackCenter() const override;
 
   int PopupInternalPaddingStart(const ComputedStyle&) const override;
-  int PopupInternalPaddingEnd(const ChromeClient*,
+  int PopupInternalPaddingEnd(const PlatformChromeClient*,
                               const ComputedStyle&) const override;
   int PopupInternalPaddingTop(const ComputedStyle&) const override;
   int PopupInternalPaddingBottom(const ComputedStyle&) const override;

@@ -27,15 +27,15 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 
 #include <stdint.h>
 
 namespace base {
+class SingleThreadTaskRunner;
+class TimeTicks;
 namespace sequence_manager {
 class TaskTimeObserver;
 }

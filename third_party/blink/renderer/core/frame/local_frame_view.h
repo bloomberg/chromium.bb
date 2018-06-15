@@ -29,39 +29,24 @@
 #include <memory>
 #include <utility>
 
-#include "base/auto_reset.h"
-#include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/shape_properties.h"
-#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
-#include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
-#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
+#include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
-#include "third_party/blink/renderer/core/page/chrome_client.h"
+#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
-#include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
-#include "third_party/blink/renderer/core/paint/object_paint_properties.h"
+#include "third_party/blink/renderer/core/paint/layout_object_counter.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidation_capable_scrollable_area.h"
-#include "third_party/blink/renderer/core/paint/paint_phase.h"
-#include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
-#include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
-#include "third_party/blink/renderer/platform/ukm_time_aggregator.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace blink {
 
@@ -72,6 +57,7 @@ class Element;
 class ElementVisibilityObserver;
 class Frame;
 class FloatSize;
+class FrameViewAutoSizeInfo;
 class IntRect;
 class JSONArray;
 class JSONObject;
@@ -90,10 +76,12 @@ class PaintArtifactCompositor;
 class PaintController;
 class Page;
 class PrintContext;
+class RootFrameViewport;
 class ScrollingCoordinator;
 class ScrollingCoordinatorContext;
 class TracedValue;
 class TransformState;
+class UkmTimeAggregator;
 class WebPluginContainerImpl;
 struct AnnotatedRegionValue;
 struct IntrinsicSizingInfo;
@@ -482,7 +470,7 @@ class CORE_EXPORT LocalFrameView final
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
   // coordinate space.
-  ChromeClient* GetChromeClient() const override;
+  PlatformChromeClient* GetChromeClient() const override;
 
   SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
 
@@ -979,7 +967,7 @@ class CORE_EXPORT LocalFrameView final
   unsigned visually_non_empty_character_count_;
   uint64_t visually_non_empty_pixel_count_;
   bool is_visually_non_empty_;
-  FirstMeaningfulPaintDetector::LayoutObjectCounter layout_object_counter_;
+  LayoutObjectCounter layout_object_counter_;
 
   Member<Node> fragment_anchor_;
 

@@ -49,12 +49,14 @@
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
+#include "third_party/blink/renderer/core/frame/frame_view_auto_size_info.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
@@ -127,7 +129,9 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
+#include "third_party/blink/renderer/platform/ukm_time_aggregator.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -1809,7 +1813,7 @@ void LocalFrameView::SetNeedsCompositingUpdate(
   }
 }
 
-ChromeClient* LocalFrameView::GetChromeClient() const {
+PlatformChromeClient* LocalFrameView::GetChromeClient() const {
   Page* page = GetFrame().GetPage();
   if (!page)
     return nullptr;
@@ -2378,7 +2382,7 @@ void LocalFrameView::ScrollbarStyleChanged() {
 }
 
 bool LocalFrameView::ScheduleAnimation() {
-  if (ChromeClient* client = GetChromeClient()) {
+  if (auto* client = ToChromeClient(GetChromeClient())) {
     client->ScheduleAnimation(this);
     return true;
   }
@@ -4005,10 +4009,9 @@ IntPoint LocalFrameView::FrameToViewport(const IntPoint& point_in_frame) const {
 }
 
 IntRect LocalFrameView::FrameToScreen(const IntRect& rect) const {
-  ChromeClient* client = GetChromeClient();
-  if (!client)
-    return IntRect();
-  return client->ViewportToScreen(FrameToViewport(rect), this);
+  if (auto* client = ToChromeClient(GetChromeClient()))
+    return client->ViewportToScreen(FrameToViewport(rect), this);
+  return IntRect();
 }
 
 IntPoint LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
