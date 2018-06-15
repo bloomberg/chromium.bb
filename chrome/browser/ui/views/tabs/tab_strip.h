@@ -77,6 +77,9 @@ class TabStrip : public views::View,
   void AddObserver(TabStripObserver* observer);
   void RemoveObserver(TabStripObserver* observer);
 
+  // Called when the colors of the frame change.
+  void FrameColorsChanged();
+
   // Returns the trailing edge of the last tab.
   int GetTabsMaxX() const;
 

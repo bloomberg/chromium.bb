@@ -355,11 +355,14 @@ void BrowserNonClientFrameView::ActivationChanged(bool active) {
   // "correct" state as an override.
   set_active_state_override(&active);
   UpdateProfileIcons();
-  set_active_state_override(nullptr);
 
   // Changing the activation state may change the toolbar top separator color
-  // that's used as the stroke around tabs/the new tab button.
-  browser_view_->tabstrip()->SchedulePaint();
+  // that's used as the stroke around tabs/the new tab button. Under Refresh,
+  // the inactive tabs' backgrounds may match the frame accent color so the text
+  // color needs to be recalculated.
+  browser_view_->tabstrip()->FrameColorsChanged();
+
+  set_active_state_override(nullptr);
 
   // Changing the activation state may change the visible frame color.
   SchedulePaint();
