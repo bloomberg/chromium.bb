@@ -703,6 +703,20 @@ static unsigned ClampOffset(unsigned offset,
                   text_fragment.EndOffset());
 }
 
+// We don't paint a line break the end of inline-block
+// because if an inline-block is at the middle of line, we should not paint
+// a line break.
+// Old layout paints line break if the inline-block is at the end of line, but
+// since its complex to determine if the inline-block is at the end of line on NG,
+// we just cancels block-end line break painting for any inline-block.
+static bool IsLastLineInInlineBlock(const NGPaintFragment& line) {
+  DCHECK(line.PhysicalFragment().IsLineBox());
+  NGPaintFragment* parent = line.Parent();
+  if (!parent->PhysicalFragment().IsAtomicInline())
+    return false;
+  return parent->Children().back().get() == &line;
+}
+
 static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
   if (ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment()).IsLineBreak())
     return false;
@@ -711,6 +725,8 @@ static bool IsBeforeSoftLineBreak(const NGPaintFragment& fragment) {
   // See paint/selection/text-selection-inline-block.html.
   const NGPaintFragment* container_line_box = fragment.ContainerLineBox();
   DCHECK(container_line_box);
+  if (IsLastLineInInlineBlock(*container_line_box))
+    return false;
   const NGPhysicalLineBoxFragment& physical_line_box =
       ToNGPhysicalLineBoxFragment(container_line_box->PhysicalFragment());
   const NGPhysicalFragment* last_leaf = physical_line_box.LastLogicalLeaf();

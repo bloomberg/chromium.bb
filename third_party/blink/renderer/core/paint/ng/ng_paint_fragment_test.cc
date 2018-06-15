@@ -269,8 +269,8 @@ TEST_F(NGPaintFragmentTest, InlineBlock) {
   EXPECT_EQ(LayoutRect(0, 0, 60, 10), outer_text.SelectionVisualRect());
   EXPECT_EQ(LayoutRect(60, 0, 10, 10), box1.VisualRect());
   EXPECT_EQ(LayoutRect(), box1.SelectionVisualRect());
-  EXPECT_EQ(LayoutRect(60, 0, 20, 10), inner_text.VisualRect());
-  EXPECT_EQ(LayoutRect(60, 0, 20, 10), inner_text.SelectionVisualRect());
+  EXPECT_EQ(LayoutRect(60, 0, 10, 10), inner_text.VisualRect());
+  EXPECT_EQ(LayoutRect(60, 0, 10, 10), inner_text.SelectionVisualRect());
   EXPECT_EQ(LayoutRect(70, 10, 10, 10), box2.VisualRect());
   EXPECT_EQ(LayoutRect(), box2.SelectionVisualRect());
 }

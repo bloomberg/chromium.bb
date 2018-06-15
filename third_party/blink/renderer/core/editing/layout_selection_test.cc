@@ -899,6 +899,12 @@ TEST_F(NGLayoutSelectionTest, LineBreakBasic) {
   //    "<div style='display:inline-block'>f^oo</div>bar|"));
 }
 
+TEST_F(NGLayoutSelectionTest, LineBreakInlineBlock) {
+  LoadAhem();
+  EXPECT_FALSE(
+      IsFirstTextLineBreak("<div style='display:inline-block'>^x</div>y|"));
+}
+
 TEST_F(NGLayoutSelectionTest, LineBreakImage) {
   SetSelectionAndUpdateLayoutSelection(
       "<div>^<img id=img1 width=10px height=10px>foo<br>"
