@@ -43,7 +43,7 @@ class DataMessageStanza;
 }  // namespace mcs_proto
 
 namespace net {
-class HttpNetworkSession;
+class URLRequestContext;
 }  // namespace net
 
 namespace gcm {
@@ -69,8 +69,7 @@ class GCMInternalsBuilder {
   virtual std::unique_ptr<ConnectionFactory> BuildConnectionFactory(
       const std::vector<GURL>& endpoints,
       const net::BackoffEntry::Policy& backoff_policy,
-      net::HttpNetworkSession* gcm_network_session,
-      net::HttpNetworkSession* http_network_session,
+      net::URLRequestContext* url_request_context,
       GCMStatsRecorder* recorder);
 };
 
@@ -363,7 +362,6 @@ class GCMClientImpl
   // resetting and loading from the store again and again.
   bool gcm_store_reset_;
 
-  std::unique_ptr<net::HttpNetworkSession> network_session_;
   std::unique_ptr<ConnectionFactory> connection_factory_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 

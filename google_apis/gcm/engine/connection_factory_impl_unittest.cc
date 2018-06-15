@@ -16,8 +16,8 @@
 #include "google_apis/gcm/engine/fake_connection_handler.h"
 #include "google_apis/gcm/monitoring/fake_gcm_stats_recorder.h"
 #include "net/base/backoff_entry.h"
-#include "net/http/http_network_session.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class Policy;
@@ -86,7 +86,8 @@ void WriteContinuation() {
 // backoff policy.
 class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
  public:
-  TestConnectionFactoryImpl(const base::Closure& finished_callback);
+  TestConnectionFactoryImpl(net::URLRequestContext* request_context,
+                            const base::Closure& finished_callback);
   ~TestConnectionFactoryImpl() override;
 
   void InitializeFactory();
@@ -141,12 +142,11 @@ class TestConnectionFactoryImpl : public ConnectionFactoryImpl {
 };
 
 TestConnectionFactoryImpl::TestConnectionFactoryImpl(
+    net::URLRequestContext* request_context,
     const base::Closure& finished_callback)
     : ConnectionFactoryImpl(BuildEndpoints(),
                             net::BackoffEntry::Policy(),
-                            NULL,
-                            NULL,
-                            NULL,
+                            request_context,
                             &dummy_recorder_),
       connect_result_(net::ERR_UNEXPECTED),
       num_expected_attempts_(0),
@@ -274,16 +274,23 @@ class ConnectionFactoryImplTest
  private:
   void ConnectionsComplete();
 
-  TestConnectionFactoryImpl factory_;
   base::MessageLoop message_loop_;
+
+  // Dummy request context that is not used to make network requests, and is
+  // added to make ProxyResolvingClientSocketFactory to not DCHECK on a null
+  // context.
+  net::TestURLRequestContext request_context_;
+
+  TestConnectionFactoryImpl factory_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   GURL connected_server_;
 };
 
 ConnectionFactoryImplTest::ConnectionFactoryImplTest()
-    : factory_(base::Bind(&ConnectionFactoryImplTest::ConnectionsComplete,
-                         base::Unretained(this))),
+    : factory_(&request_context_,
+               base::Bind(&ConnectionFactoryImplTest::ConnectionsComplete,
+                          base::Unretained(this))),
       run_loop_(new base::RunLoop()) {
   factory()->SetConnectionListener(this);
   factory()->Initialize(

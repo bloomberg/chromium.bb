@@ -216,7 +216,6 @@ class MCSProbe {
  private:
   void CheckIn();
   void InitializeNetworkState();
-  void BuildNetworkSession();
 
   void LoadCallback(std::unique_ptr<GCMStore::LoadResult> load_result);
   void UpdateCallback(bool success);
@@ -305,14 +304,13 @@ MCSProbe::~MCSProbe() {
 void MCSProbe::Start() {
   file_thread_.Start();
   InitializeNetworkState();
-  BuildNetworkSession();
   std::vector<GURL> endpoints(
       1, GURL("https://" +
               net::HostPortPair(server_host_, server_port_).ToString()));
 
   connection_factory_ = std::make_unique<ConnectionFactoryImpl>(
-      endpoints, kDefaultBackoffPolicy, network_session_.get(), nullptr,
-      &net_log_, &recorder_);
+      endpoints, kDefaultBackoffPolicy,
+      url_request_context_getter_->GetURLRequestContext(), &recorder_);
   gcm_store_ = std::make_unique<GCMStoreImpl>(
       gcm_store_path_, file_thread_.task_runner(),
       std::make_unique<FakeEncryptor>());
@@ -387,30 +385,6 @@ void MCSProbe::InitializeNetworkState() {
   http_server_properties_ = std::make_unique<net::HttpServerPropertiesImpl>();
   proxy_resolution_service_ =
       net::ProxyResolutionService::CreateDirectWithNetLog(&net_log_);
-}
-
-void MCSProbe::BuildNetworkSession() {
-  net::HttpNetworkSession::Params session_params;
-  session_params.ignore_certificate_errors = true;
-  session_params.testing_fixed_http_port = 0;
-  session_params.testing_fixed_https_port = 0;
-
-  net::HttpNetworkSession::Context session_context;
-  session_context.host_resolver = host_resolver_.get();
-  session_context.cert_verifier = cert_verifier_.get();
-  session_context.channel_id_service = system_channel_id_service_.get();
-  session_context.transport_security_state = transport_security_state_.get();
-  session_context.cert_transparency_verifier =
-      cert_transparency_verifier_.get();
-  session_context.ct_policy_enforcer = ct_policy_enforcer_.get();
-  session_context.ssl_config_service = new net::SSLConfigServiceDefaults();
-  session_context.http_auth_handler_factory = http_auth_handler_factory_.get();
-  session_context.http_server_properties = http_server_properties_.get();
-  session_context.net_log = &net_log_;
-  session_context.proxy_resolution_service = proxy_resolution_service_.get();
-
-  network_session_ = std::make_unique<net::HttpNetworkSession>(session_params,
-                                                               session_context);
 }
 
 void MCSProbe::ErrorCallback() {

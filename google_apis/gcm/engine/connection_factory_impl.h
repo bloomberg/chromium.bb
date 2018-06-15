@@ -22,11 +22,11 @@
 
 namespace network {
 class ProxyResolvingClientSocket;
+class ProxyResolvingClientSocketFactory;
 }
 
 namespace net {
-class HttpNetworkSession;
-class NetLog;
+class URLRequestContext;
 }
 
 namespace gcm {
@@ -37,20 +37,12 @@ class GCM_EXPORT ConnectionFactoryImpl :
     public ConnectionFactory,
     public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  // |http_network_session| is an optional network session to use as a source
-  // for proxy auth credentials (via its HttpAuthCache). |gcm_network_session|
-  // is the network session through which GCM connections should be made, and
-  // must not be the same as |http_network_session|.
-  //
   // The caller is responsible for making sure the ConnectionFactoryImpl is
-  // destroyed before the |gcm_network_session| and |http_network_session|.
-  ConnectionFactoryImpl(
-      const std::vector<GURL>& mcs_endpoints,
-      const net::BackoffEntry::Policy& backoff_policy,
-      net::HttpNetworkSession* gcm_network_session,
-      net::HttpNetworkSession* http_network_session,
-      net::NetLog* net_log,
-      GCMStatsRecorder* recorder);
+  // destroyed before the |url_request_context|.
+  ConnectionFactoryImpl(const std::vector<GURL>& mcs_endpoints,
+                        const net::BackoffEntry::Policy& backoff_policy,
+                        net::URLRequestContext* url_request_context,
+                        GCMStatsRecorder* recorder);
   ~ConnectionFactoryImpl() override;
 
   // ConnectionFactory implementation.
@@ -147,11 +139,8 @@ class GCM_EXPORT ConnectionFactoryImpl :
   const net::BackoffEntry::Policy backoff_policy_;
 
   // ---- net:: components for establishing connections. ----
-  // Network session for creating new GCM connections.
-  net::HttpNetworkSession* gcm_network_session_;
-  // HTTP Network session. If set, is used for extracting proxy auth
-  // credentials. If nullptr, is ignored.
-  net::HttpNetworkSession* http_network_session_;
+  // Socket factory for creating new GCM connections.
+  std::unique_ptr<network::ProxyResolvingClientSocketFactory> socket_factory_;
   // The handle to the socket for the current connection, if one exists.
   std::unique_ptr<network::ProxyResolvingClientSocket> socket_;
   // Current backoff entry.
