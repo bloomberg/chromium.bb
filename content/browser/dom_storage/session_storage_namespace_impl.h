@@ -40,10 +40,14 @@ class SessionStorageNamespaceImpl : public SessionStorageNamespace {
 
   // Constructs a |SessionStorageNamespaceImpl| with id |namespace_id| by
   // cloning |namespace_to_clone|. Allocates it a new ID.
+  // Only set |immediately| to true to cause the clone to immediately happen,
+  // where there definitely will not be a |Clone| call from the
+  // SessionStorageNamespace mojo object.
   static scoped_refptr<SessionStorageNamespaceImpl> CloneFrom(
       scoped_refptr<DOMStorageContextWrapper> context,
       std::string namespace_id,
-      const std::string& namespace_id_to_clone);
+      const std::string& namespace_id_to_clone,
+      bool immediately = false);
 
   DOMStorageContextWrapper* context() const { return context_wrapper_.get(); }
 

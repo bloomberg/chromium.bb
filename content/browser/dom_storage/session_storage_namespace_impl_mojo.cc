@@ -110,6 +110,8 @@ void SessionStorageNamespaceImplMojo::PurgeUnboundAreas() {
   while (it != origin_areas_.end()) {
     if (!it->second->IsBound())
       it = origin_areas_.erase(it);
+    else
+      ++it;
   }
 }
 
@@ -144,16 +146,23 @@ void SessionStorageNamespaceImplMojo::OpenArea(
   }
   auto it = origin_areas_.find(origin);
   if (it == origin_areas_.end()) {
+    scoped_refptr<SessionStorageMetadata::MapData> map_data;
+    // The area may have been purged due to lack of bindings, so check the
+    // metadata for the map.
+    auto map_it = namespace_entry_->second.find(origin);
+    if (map_it != namespace_entry_->second.end()) {
+      map_data = map_it->second;
+    } else {
+      map_data = register_new_map_callback_.Run(namespace_entry_, origin);
+    }
     it = origin_areas_
-             .emplace(std::make_pair(origin,
-                                     std::make_unique<SessionStorageAreaImpl>(
-                                         namespace_entry_, origin,
-                                         SessionStorageDataMap::Create(
-                                             data_map_listener_,
-                                             register_new_map_callback_.Run(
-                                                 namespace_entry_, origin),
-                                             database_),
-                                         register_new_map_callback_)))
+             .emplace(std::make_pair(
+                 origin,
+                 std::make_unique<SessionStorageAreaImpl>(
+                     namespace_entry_, origin,
+                     SessionStorageDataMap::Create(
+                         data_map_listener_, std::move(map_data), database_),
+                     register_new_map_callback_)))
              .first;
   }
   it->second->Bind(std::move(database));
