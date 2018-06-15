@@ -1108,9 +1108,6 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   repositioner->AddBinding(VR_BIND_FUNC(
       gfx::Vector3dF, Model, model_, model->controller.laser_direction,
       Repositioner, repositioner.get(), set_laser_direction));
-  repositioner->AddBinding(
-      VR_BIND(bool, Model, model_, model->controller.recentered, Repositioner,
-              repositioner.get(), if (value) { view->Reset(); }));
   scene_->AddUiElement(k2dBrowsingRoot, std::move(repositioner));
 
   auto hider = Create<UiElement>(k2dBrowsingVisibiltyHider, kPhaseNone);
@@ -1350,9 +1347,6 @@ void UiSceneCreator::CreateContentQuad() {
   resizer->AddBinding(VR_BIND_FUNC(bool, Model, model_,
                                    model->controller.touching_touchpad, Resizer,
                                    resizer.get(), SetTouchingTouchpad));
-  resizer->AddBinding(VR_BIND(bool, Model, model_, model->controller.recentered,
-                              Resizer, resizer.get(),
-                              if (value) { view->Reset(); }));
 
   auto main_content = std::make_unique<ContentElement>(
       content_input_delegate_,
