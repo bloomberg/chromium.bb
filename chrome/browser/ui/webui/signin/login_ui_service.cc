@@ -18,6 +18,7 @@
 
 #if !defined(OS_CHROMEOS)
 #include "base/scoped_observer.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/sync/base/sync_prefs.h"
 
 // The sync consent bump is shown after startup when a profile's browser
@@ -33,7 +35,8 @@
 // It is only shown when |ShouldShowConsentBumpFor(profile)| returns true for a
 // given profile |profile|.
 class ConsentBumpActivator : public BrowserListObserver,
-                             public LoginUIService::Observer {
+                             public LoginUIService::Observer,
+                             public OAuth2TokenService::Observer {
  public:
   // Creates a ConsentBumpActivator for |profile| which is owned by
   // |login_ui_service|.
@@ -41,9 +44,37 @@ class ConsentBumpActivator : public BrowserListObserver,
       : login_ui_service_(login_ui_service),
         profile_(profile),
         scoped_browser_list_observer_(this),
-        scoped_login_ui_service_observer_(this) {
+        scoped_login_ui_service_observer_(this),
+        scoped_token_service_observer_(this) {
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+    if (token_service->AreAllCredentialsLoaded())
+      OnRefreshTokensLoaded();
+    else
+      scoped_token_service_observer_.Add(token_service);
+  }
+
+  // OAuth2TokenService::Observer:
+  void OnRefreshTokensLoaded() override {
+    scoped_token_service_observer_.RemoveAll();
+
+    SigninManager* signin_manager =
+        SigninManagerFactory::GetForProfile(profile_);
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+
+    // Avoid showing the consent bump if the refresh token is missing or is in
+    // an permanent auth error state. When the tokens are loaded, this
+    // corresponds to the case when the refresh token was invalidated
+    // client-side after the user signed out of a Google website (e.g. the user
+    // signed out of Gmail).
+    if (token_service->RefreshTokenHasError(
+            signin_manager->GetAuthenticatedAccountId())) {
+      return;
+    }
+
     // Check if there is already an active browser window for |profile|.
-    Browser* active_browser = chrome::FindLastActiveWithProfile(profile);
+    Browser* active_browser = chrome::FindLastActiveWithProfile(profile_);
     if (active_browser)
       OnBrowserSetLastActive(active_browser);
     else
@@ -118,6 +149,8 @@ class ConsentBumpActivator : public BrowserListObserver,
       scoped_browser_list_observer_;
   ScopedObserver<LoginUIService, ConsentBumpActivator>
       scoped_login_ui_service_observer_;
+  ScopedObserver<OAuth2TokenService, ConsentBumpActivator>
+      scoped_token_service_observer_;
 
   // Used for the action handling of the consent bump.
   Browser* selected_browser_ = nullptr;
