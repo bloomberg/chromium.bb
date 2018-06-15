@@ -90,6 +90,7 @@ void MediaElementEventQueue::DispatchEvent(Event* event) {
   probe::AsyncTask async_task(GetExecutionContext(), event);
   TRACE_EVENT_ASYNC_STEP_INTO1("event", "MediaElementEventQueue:enqueueEvent",
                                event, "dispatch", "type", type);
+  // TODO(hajimehoshi): Always use |owner_| instead of |event->target()|
   EventTarget* target = event->target() ? event->target() : owner_.Get();
   target->DispatchEvent(event);
   TRACE_EVENT_ASYNC_END1("event", "MediaElementEventQueue:enqueueEvent", event,
