@@ -363,10 +363,7 @@ if (is_android) {
   }
 
   junit_binary("device_junit_tests") {
-    java_files = [
-      "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java",
-      "geolocation/android/junit/src/org/chromium/device/geolocation/LocationProviderTest.java",
-    ]
+    java_files = [ "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java" ]
     deps = [
       "$google_play_services_package:google_play_services_base_java",
       "$google_play_services_package:google_play_services_basement_java",
@@ -375,8 +372,6 @@ if (is_android) {
       "//base:base_java_test_support",
       "//base:base_junit_test_support",
       "//device/gamepad:java",
-      "//device/geolocation:geolocation_java",
-      "//device/geolocation/public/java:geolocation_java_test_support",
       "//mojo/public/java:bindings_java",
       "//third_party/android_tools:android_support_annotations_java",
     ]
