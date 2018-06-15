@@ -502,7 +502,7 @@ void HTMLSlotElement::DidRecalcStyle(StyleRecalcChange change) {
     return;
   for (auto& node : assigned_nodes_) {
     if (change == kReattach && node->IsElementNode()) {
-      ToElement(node)->RecalcStyleForReattach();
+      ToElement(node)->RecalcStyle(kReattach);
       continue;
     }
     // We only need to pick up changes for inherited style, we do not actually

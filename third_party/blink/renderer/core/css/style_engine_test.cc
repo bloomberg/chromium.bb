@@ -1417,4 +1417,26 @@ TEST_F(StyleEngineTest, MediaQueriesChangeDefaultFontSize) {
                 GetCSSPropertyColor()));
 }
 
+TEST_F(StyleEngineTest, ShadowRootStyleRecalcCrash) {
+  GetDocument().body()->SetInnerHTMLFromString("<div id=host></div>");
+  HTMLElement* host = ToHTMLElement(GetDocument().getElementById("host"));
+  ASSERT_TRUE(host);
+
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+
+  shadow_root.SetInnerHTMLFromString(R"HTML(
+    <span id=span></span>
+    <style>
+      :nth-child(odd) { color: green }
+    </style>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // This should not cause DCHECK errors on style recalc flags.
+  shadow_root.getElementById("span")->remove();
+  host->SetInlineStyleProperty(CSSPropertyDisplay, "inline");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+}
+
 }  // namespace blink

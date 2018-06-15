@@ -464,7 +464,6 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
   virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
   void RecalcStyle(StyleRecalcChange);
-  void RecalcStyleForReattach();
   bool NeedsRebuildLayoutTree(
       const WhitespaceAttacher& whitespace_attacher) const {
     // TODO(futhark@chromium.org): !CanParticipateInFlatTree() can be replaced
@@ -957,8 +956,10 @@ class CORE_EXPORT Element : public ContainerNode {
   scoped_refptr<ComputedStyle> PropagateInheritedProperties(StyleRecalcChange);
 
   StyleRecalcChange RecalcOwnStyle(StyleRecalcChange);
-  void RecalcShadowIncludingDescendantStylesForReattach();
-  void RecalcShadowRootStylesForReattach();
+
+  // Returns true if we should traverse shadow including children and pseudo
+  // elements for RecalcStyle.
+  bool ShouldCallRecalcStyleForChildren(StyleRecalcChange);
 
   void RebuildPseudoElementLayoutTree(PseudoId, WhitespaceAttacher&);
   void RebuildShadowRootLayoutTree(WhitespaceAttacher&);
