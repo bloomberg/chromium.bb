@@ -105,6 +105,7 @@ ExtensionsAPIPermissions::GetAllPermissions() const {
       {APIPermission::kSystemMemory, "system.memory"},
       {APIPermission::kSystemNetwork, "system.network"},
       {APIPermission::kSystemDisplay, "system.display"},
+      {APIPermission::kSystemPowerSource, "system.powerSource"},
       {APIPermission::kSystemStorage, "system.storage"},
       {APIPermission::kU2fDevices, "u2fDevices"},
       {APIPermission::kUnlimitedStorage, "unlimitedStorage",
