@@ -523,7 +523,7 @@ class TestConnection : public QuicConnection {
 
   void SendPacket(EncryptionLevel level,
                   QuicPacketNumber packet_number,
-                  QuicPacket* packet,
+                  std::unique_ptr<QuicPacket> packet,
                   HasRetransmittableData retransmittable,
                   bool has_ack,
                   bool has_pending_frames) {
@@ -531,7 +531,6 @@ class TestConnection : public QuicConnection {
     size_t encrypted_length =
         QuicConnectionPeer::GetFramer(this)->EncryptPayload(
             ENCRYPTION_NONE, packet_number, *packet, buffer, kMaxPacketSize);
-    delete packet;
     SerializedPacket serialized_packet(
         packet_number, PACKET_4BYTE_PACKET_NUMBER, buffer, encrypted_length,
         has_ack, has_pending_frames);
@@ -1069,14 +1068,15 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     return IsAwaitingPacket(*outgoing_ack(), number, 0);
   }
 
-  QuicPacket* ConstructPacket(QuicPacketHeader header, QuicFrames frames) {
-    QuicPacket* packet = BuildUnsizedDataPacket(&peer_framer_, header, frames);
-    EXPECT_NE(nullptr, packet);
+  std::unique_ptr<QuicPacket> ConstructPacket(const QuicPacketHeader& header,
+                                              const QuicFrames& frames) {
+    auto packet = BuildUnsizedDataPacket(&peer_framer_, header, frames);
+    EXPECT_NE(nullptr, packet.get());
     return packet;
   }
 
-  QuicPacket* ConstructDataPacket(QuicPacketNumber number,
-                                  bool has_stop_waiting) {
+  std::unique_ptr<QuicPacket> ConstructDataPacket(QuicPacketNumber number,
+                                                  bool has_stop_waiting) {
     QuicPacketHeader header;
     // Set connection_id to peer's in memory representation as this data packet
     // is created by peer_framer.
@@ -1097,7 +1097,7 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
     return ConstructPacket(header, frames);
   }
 
-  QuicPacket* ConstructClosePacket(QuicPacketNumber number) {
+  std::unique_ptr<QuicPacket> ConstructClosePacket(QuicPacketNumber number) {
     QuicPacketHeader header;
     // Set connection_id to peer's in memory representation as this connection
     // close packet is created by peer_framer.
@@ -4544,10 +4544,10 @@ TEST_P(QuicConnectionTest, TimeoutAfter3ClientRTOs) {
 TEST_P(QuicConnectionTest, SendScheduler) {
   // Test that if we send a packet without delay, it is not queued.
   QuicFramerPeer::SetPerspective(&peer_framer_, Perspective::IS_CLIENT);
-  QuicPacket* packet = ConstructDataPacket(1, !kHasStopWaiting);
+  std::unique_ptr<QuicPacket> packet = ConstructDataPacket(1, !kHasStopWaiting);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _));
-  connection_.SendPacket(ENCRYPTION_NONE, 1, packet, HAS_RETRANSMITTABLE_DATA,
-                         false, false);
+  connection_.SendPacket(ENCRYPTION_NONE, 1, std::move(packet),
+                         HAS_RETRANSMITTABLE_DATA, false, false);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
 }
 
@@ -4556,19 +4556,19 @@ TEST_P(QuicConnectionTest, FailToSendFirstPacket) {
   // packet at which point self_address_ might be uninitialized.
   QuicFramerPeer::SetPerspective(&peer_framer_, Perspective::IS_CLIENT);
   EXPECT_CALL(visitor_, OnConnectionClosed(_, _, _)).Times(1);
-  QuicPacket* packet = ConstructDataPacket(1, !kHasStopWaiting);
+  std::unique_ptr<QuicPacket> packet = ConstructDataPacket(1, !kHasStopWaiting);
   writer_->SetShouldWriteFail();
-  connection_.SendPacket(ENCRYPTION_NONE, 1, packet, HAS_RETRANSMITTABLE_DATA,
-                         false, false);
+  connection_.SendPacket(ENCRYPTION_NONE, 1, std::move(packet),
+                         HAS_RETRANSMITTABLE_DATA, false, false);
 }
 
 TEST_P(QuicConnectionTest, SendSchedulerEAGAIN) {
   QuicFramerPeer::SetPerspective(&peer_framer_, Perspective::IS_CLIENT);
-  QuicPacket* packet = ConstructDataPacket(1, !kHasStopWaiting);
+  std::unique_ptr<QuicPacket> packet = ConstructDataPacket(1, !kHasStopWaiting);
   BlockOnNextWrite();
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
-  connection_.SendPacket(ENCRYPTION_NONE, 1, packet, HAS_RETRANSMITTABLE_DATA,
-                         false, false);
+  connection_.SendPacket(ENCRYPTION_NONE, 1, std::move(packet),
+                         HAS_RETRANSMITTABLE_DATA, false, false);
   EXPECT_EQ(1u, connection_.NumQueuedPackets());
 }
 
@@ -5642,10 +5642,10 @@ TEST_P(QuicConnectionTest, SendWhenDisconnected) {
                               ConnectionCloseBehavior::SILENT_CLOSE);
   EXPECT_FALSE(connection_.connected());
   EXPECT_FALSE(connection_.CanWriteStreamData());
-  QuicPacket* packet = ConstructDataPacket(1, !kHasStopWaiting);
+  std::unique_ptr<QuicPacket> packet = ConstructDataPacket(1, !kHasStopWaiting);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, 1, _, _)).Times(0);
-  connection_.SendPacket(ENCRYPTION_NONE, 1, packet, HAS_RETRANSMITTABLE_DATA,
-                         false, false);
+  connection_.SendPacket(ENCRYPTION_NONE, 1, std::move(packet),
+                         HAS_RETRANSMITTABLE_DATA, false, false);
 }
 
 TEST_P(QuicConnectionTest, SendConnectivityProbingWhenDisconnected) {

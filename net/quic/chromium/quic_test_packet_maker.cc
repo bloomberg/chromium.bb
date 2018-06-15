@@ -83,7 +83,7 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(
   EXPECT_NE(0u, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
                                      false);
-  return std::unique_ptr<quic::QuicReceivedPacket>(encrypted.Clone());
+  return encrypted.Clone();
 }
 
 std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
@@ -157,7 +157,7 @@ QuicTestPacketMaker::MakeAckAndPingPacket(
   EXPECT_NE(0u, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size,
                                      quic::QuicTime::Zero(), false);
-  return std::unique_ptr<quic::QuicReceivedPacket>(encrypted.Clone());
+  return encrypted.Clone();
 }
 
 std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
@@ -264,7 +264,7 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
   EXPECT_NE(0u, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size,
                                      quic::QuicTime::Zero(), false);
-  return std::unique_ptr<quic::QuicReceivedPacket>(encrypted.Clone());
+  return encrypted.Clone();
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -328,7 +328,7 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   EXPECT_NE(0u, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
                                      false);
-  return std::unique_ptr<quic::QuicReceivedPacket>(encrypted.Clone());
+  return encrypted.Clone();
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
@@ -463,7 +463,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   EXPECT_NE(0u, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
                                      false);
-  return std::unique_ptr<quic::QuicReceivedPacket>(encrypted.Clone());
+  return encrypted.Clone();
 }
 
 // Returns a newly created packet to send kData on stream 1.
@@ -923,7 +923,7 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
   EXPECT_NE(0u, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
                                      false);
-  return std::unique_ptr<quic::QuicReceivedPacket>(encrypted.Clone());
+  return encrypted.Clone();
 }
 
 void QuicTestPacketMaker::InitializeHeader(quic::QuicPacketNumber packet_number,

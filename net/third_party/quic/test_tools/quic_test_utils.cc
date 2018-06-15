@@ -67,9 +67,10 @@ QuicAckFrame MakeAckFrameWithAckBlocks(size_t num_ack_blocks,
   return ack;
 }
 
-QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
-                                   const QuicPacketHeader& header,
-                                   const QuicFrames& frames) {
+std::unique_ptr<QuicPacket> BuildUnsizedDataPacket(
+    QuicFramer* framer,
+    const QuicPacketHeader& header,
+    const QuicFrames& frames) {
   const size_t max_plaintext_size = framer->GetMaxPlaintextSize(kMaxPacketSize);
   size_t packet_size = GetPacketHeaderSize(framer->transport_version(), header);
   for (size_t i = 0; i < frames.size(); ++i) {
@@ -85,18 +86,20 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
   return BuildUnsizedDataPacket(framer, header, frames, packet_size);
 }
 
-QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
-                                   const QuicPacketHeader& header,
-                                   const QuicFrames& frames,
-                                   size_t packet_size) {
+std::unique_ptr<QuicPacket> BuildUnsizedDataPacket(
+    QuicFramer* framer,
+    const QuicPacketHeader& header,
+    const QuicFrames& frames,
+    size_t packet_size) {
   char* buffer = new char[packet_size];
   size_t length = framer->BuildDataPacket(header, frames, buffer, packet_size);
   DCHECK_NE(0u, length);
   // Re-construct the data packet with data ownership.
-  return new QuicPacket(buffer, length, /* owns_buffer */ true,
-                        header.destination_connection_id_length,
-                        header.source_connection_id_length, header.version_flag,
-                        header.nonce != nullptr, header.packet_number_length);
+  return QuicMakeUnique<QuicPacket>(
+      buffer, length, /* owns_buffer */ true,
+      header.destination_connection_id_length,
+      header.source_connection_id_length, header.version_flag,
+      header.nonce != nullptr, header.packet_number_length);
 }
 
 string Sha1Hash(QuicStringPiece data) {
