@@ -16,6 +16,10 @@ class CryptAuthService;
 
 namespace chromeos {
 
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
+
 // A Chrome-specific implementation of the ProximityAuthClient interface.
 // There is one |ChromeProximityAuthClient| per |Profile|.
 class ChromeProximityAuthClient : public proximity_auth::ProximityAuthClient {
@@ -27,6 +31,12 @@ class ChromeProximityAuthClient : public proximity_auth::ProximityAuthClient {
   std::string GetAuthenticatedUsername() const override;
   void UpdateScreenlockState(proximity_auth::ScreenlockState state) override;
   void FinalizeUnlock(bool success) override;
+  void FinalizeSignin(const std::string& secret) override;
+  void GetChallengeForUserAndDevice(
+      const std::string& user_id,
+      const std::string& remote_public_key,
+      const std::string& nonce,
+      base::Callback<void(const std::string& challenge)> callback) override;
   proximity_auth::ProximityAuthPrefManager* GetPrefManager() override;
   std::unique_ptr<cryptauth::CryptAuthClientFactory>
   CreateCryptAuthClientFactory() override;
@@ -35,16 +45,11 @@ class ChromeProximityAuthClient : public proximity_auth::ProximityAuthClient {
   cryptauth::CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager()
       override;
   cryptauth::CryptAuthDeviceManager* GetCryptAuthDeviceManager() override;
-  void FinalizeSignin(const std::string& secret) override;
-  void GetChallengeForUserAndDevice(
-      const std::string& user_id,
-      const std::string& remote_public_key,
-      const std::string& nonce,
-      base::Callback<void(const std::string& challenge)> callback) override;
   std::string GetLocalDevicePublicKey() override;
 
  private:
   cryptauth::CryptAuthService* GetCryptAuthService();
+  device_sync::DeviceSyncClient* GetDeviceSyncClient();
 
   Profile* const profile_;
 
