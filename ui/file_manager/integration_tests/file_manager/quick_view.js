@@ -196,3 +196,49 @@ testcase.openQuickViewUsb = function() {
     },
   ]);
 };
+
+/**
+ * Tests opening Quick View on an MTP file.
+ */
+testcase.openQuickViewMtp = function() {
+  let appId;
+
+  const MTP_VOLUME_QUERY = '#directory-tree [volume-type-icon="mtp"]';
+
+  StepsRunner.run([
+    // Open Files app on local Downloads.
+    function() {
+      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+    },
+    // Mount a non-empty MTP volume.
+    function(results) {
+      appId = results.windowId;
+      chrome.test.sendMessage(
+          JSON.stringify({name: 'mountFakeMtp'}), this.next);
+    },
+    // Wait for MTP volume to mount.
+    function() {
+      remoteCall.waitForElement(appId, MTP_VOLUME_QUERY).then(this.next);
+    },
+    // Click to open the MTP volume.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, [MTP_VOLUME_QUERY], this.next);
+    },
+    // Check: the expected files should appear in the MTP volume.
+    function(result) {
+      chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
+      const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
+      remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
+          .then(this.next);
+    },
+    // Open a file in Quick View.
+    function() {
+      const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
+      StepsRunner.run(openSteps).then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};

@@ -224,6 +224,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("openQuickView").TabletMode(),
                       TestCase("openQuickViewDrive"),
                       TestCase("openQuickViewUsb"),
+                      TestCase("openQuickViewMtp"),
                       TestCase("closeQuickView")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
