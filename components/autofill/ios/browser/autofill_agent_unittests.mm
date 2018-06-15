@@ -58,7 +58,12 @@ class AutofillAgentTests : public PlatformTest {
 // Tests that form's name and fields' identifiers, values, and whether they are
 // autofilled are sent to the JS. Fields with empty values and those that are
 // not autofilled are skipped.
-TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
+#if TARGET_OS_SIMULATOR
+#define MAYBE_OnFormDataFilledTest OnFormDataFilledTest
+#else
+#define MAYBE_OnFormDataFilledTest DISABLED_OnFormDataFilledTest
+#endif
+TEST_F(AutofillAgentTests, MAYBE_OnFormDataFilledTest) {
   autofill::FormData form;
   form.origin = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
@@ -104,7 +109,14 @@ TEST_F(AutofillAgentTests, OnFormDataFilledTest) {
 
 // Tests that in the case of conflict in fields' identifiers, the last seen
 // value of a given field is used.
-TEST_F(AutofillAgentTests, OnFormDataFilledWithNameCollisionTest) {
+#if TARGET_OS_SIMULATOR
+#define MAYBE_OnFormDataFilledWithNameCollisionTest \
+  OnFormDataFilledWithNameCollisionTest
+#else
+#define MAYBE_OnFormDataFilledWithNameCollisionTest \
+  DISABLED_OnFormDataFilledWithNameCollisionTest
+#endif
+TEST_F(AutofillAgentTests, MAYBE_OnFormDataFilledWithNameCollisionTest) {
   autofill::FormData form;
   form.origin = GURL("https://myform.com");
   form.action = GURL("https://myform.com/submit");
