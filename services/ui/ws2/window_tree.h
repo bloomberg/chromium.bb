@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <queue>
+#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -217,10 +218,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   // Returns the WindowTreeClient previously scheduled for an embed with the
   // given |token| from ScheduleEmbed(). If this client is the result of an
   // Embed() and ScheduleEmbed() was not called on this client, then this
-  // recurses to the parent WindowTree. Recursing enables an ancestor to call
-  // ScheduleEmbed() and the ancestor to communicate the token with the client.
+  // recurses to WindowTrees that embedded this tree. |visited_trees| contains
+  // the WindowTrees that have already been visited. Recursing enables an
+  // ancestor to call ScheduleEmbed() and the ancestor to communicate the
+  // token with the client.
   mojom::WindowTreeClientPtr GetAndRemoveScheduledEmbedWindowTreeClient(
-      const base::UnguessableToken& token);
+      const base::UnguessableToken& token,
+      std::set<WindowTree*>* visited_trees);
 
   // Methods with the name Impl() mirror those of mojom::WindowTree. The
   // return value indicates whether they succeeded or not. Generally failure
