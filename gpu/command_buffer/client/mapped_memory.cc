@@ -53,7 +53,7 @@ MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper,
 }
 
 MappedMemoryManager::~MappedMemoryManager() {
-  helper_->OrderingBarrier();
+  helper_->FlushLazy();
   CommandBuffer* cmd_buf = helper_->command_buffer();
   for (auto& chunk : chunks_) {
     cmd_buf->DestroyTransferBuffer(chunk->shm_id());
@@ -152,7 +152,7 @@ void MappedMemoryManager::FreeUnused() {
     chunk->FreeUnused();
     if (chunk->bytes_in_use() == 0u) {
       if (chunk->InUseOrFreePending())
-        helper_->OrderingBarrier();
+        helper_->FlushLazy();
       cmd_buf->DestroyTransferBuffer(chunk->shm_id());
       allocated_memory_ -= chunk->GetSize();
       iter = chunks_.erase(iter);

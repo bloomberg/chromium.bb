@@ -629,8 +629,8 @@ TEST_F(CommandBufferHelperTest, FreeRingBuffer) {
 
   helper_->FreeRingBuffer();
   EXPECT_FALSE(helper_->HaveRingBuffer());
-  // FreeRingBuffer should have caused an ordering barrier and a flush.
-  EXPECT_EQ(command_buffer_->FlushCount(), old_flush_count + 2);
+  // FreeRingBuffer should have caused a flush.
+  EXPECT_EQ(command_buffer_->FlushCount(), old_flush_count + 1);
   // However it shouldn't force a finish.
   EXPECT_EQ(command_buffer_->GetLastState().get_offset, old_get_offset);
 
@@ -638,7 +638,7 @@ TEST_F(CommandBufferHelperTest, FreeRingBuffer) {
   // should work.
   helper_->Finish();
   EXPECT_FALSE(helper_->HaveRingBuffer());
-  EXPECT_EQ(command_buffer_->FlushCount(), old_flush_count + 2);
+  EXPECT_EQ(command_buffer_->FlushCount(), old_flush_count + 1);
   EXPECT_EQ(command_buffer_->GetLastState().get_offset,
             helper_->GetPutOffsetForTest());
 }
