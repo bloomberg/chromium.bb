@@ -11,7 +11,7 @@ layer at (0,0) size 800x600
             text run at (66,0) width 155: "WebKit bug 29968"
         LayoutText {#text} at (221,0) size 560x22
           text run at (221,0) width 560: ": Selecting text with text-overflow ellipsis should not show cut off text"
-layer at (8,50) size 95x20
+layer at (8,50) size 95x20 scrollWidth 121
   LayoutNGBlockFlow {DIV} at (0,41.72) size 95x20
     LayoutText {#text} at (0,0) size 88x19
       text run at (0,0) width 72: "Lorem ipsu"

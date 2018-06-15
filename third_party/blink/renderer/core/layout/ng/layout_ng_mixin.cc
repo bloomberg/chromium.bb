@@ -96,10 +96,6 @@ template <typename Base>
 void LayoutNGMixin<Base>::AddScrollingOverflowFromChildren() {
   const NGPhysicalBoxFragment* physical_fragment = CurrentFragment();
   DCHECK(physical_fragment);
-  // LayoutOverflow is only computed if overflow is not hidden
-  if (physical_fragment->Style().OverflowX() == EOverflow::kHidden &&
-      physical_fragment->Style().OverflowY() == EOverflow::kHidden)
-    return;
   // inline-end LayoutOverflow padding spec is still undecided:
   // https://github.com/w3c/csswg-drafts/issues/129
   // For backwards compatibility, if container clips overflow,
