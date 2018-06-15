@@ -610,7 +610,7 @@ void MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow(
     const base::ListValue* args) {
   DVLOG(1) << "OnAcknowledgeFirstRunFlow";
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
-      prefs::kMediaRouterFirstRunFlowAcknowledged, true);
+      ::prefs::kMediaRouterFirstRunFlowAcknowledged, true);
 
   bool enabled_cloud_services = false;
   // Do not set the relevant cloud services prefs if the user was not shown
@@ -621,9 +621,9 @@ void MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow(
   }
 
   PrefService* pref_service = Profile::FromWebUI(web_ui())->GetPrefs();
-  pref_service->SetBoolean(prefs::kMediaRouterEnableCloudServices,
+  pref_service->SetBoolean(::prefs::kMediaRouterEnableCloudServices,
                            enabled_cloud_services);
-  pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet, true);
+  pref_service->SetBoolean(::prefs::kMediaRouterCloudServicesPrefSet, true);
 }
 
 void MediaRouterWebUIMessageHandler::OnActOnIssue(const base::ListValue* args) {
@@ -1068,13 +1068,13 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
   PrefService* pref_service = profile->GetPrefs();
 
   bool first_run_flow_acknowledged =
-      pref_service->GetBoolean(prefs::kMediaRouterFirstRunFlowAcknowledged);
+      pref_service->GetBoolean(::prefs::kMediaRouterFirstRunFlowAcknowledged);
   bool show_cloud_pref = false;
   // Cloud services preference is shown if user is logged in. If the user
   // enables sync after acknowledging the first run flow, this is treated as
   // the user opting into Google services, including cloud services, if the
   // browser is a Chrome branded build.
-  if (!pref_service->GetBoolean(prefs::kMediaRouterCloudServicesPrefSet)) {
+  if (!pref_service->GetBoolean(::prefs::kMediaRouterCloudServicesPrefSet)) {
     identity::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
     if (identity_manager && identity_manager->HasPrimaryAccount()) {
@@ -1083,8 +1083,10 @@ void MediaRouterWebUIMessageHandler::MaybeUpdateFirstRunFlowData() {
       // enabled, turn on cloud services.
       if (first_run_flow_acknowledged &&
           ProfileSyncServiceFactory::GetForProfile(profile)->IsSyncActive()) {
-        pref_service->SetBoolean(prefs::kMediaRouterEnableCloudServices, true);
-        pref_service->SetBoolean(prefs::kMediaRouterCloudServicesPrefSet, true);
+        pref_service->SetBoolean(::prefs::kMediaRouterEnableCloudServices,
+                                 true);
+        pref_service->SetBoolean(::prefs::kMediaRouterCloudServicesPrefSet,
+                                 true);
         // Return early since the first run flow won't be surfaced.
         return;
       }
