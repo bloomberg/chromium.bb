@@ -5,10 +5,16 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_CAST_AUDIO_JSON_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_CAST_AUDIO_JSON_H_
 
+#include "base/files/file_path.h"
+
 namespace chromecast {
 namespace media {
 
-extern const char kCastAudioJsonFilePath[];
+class CastAudioJson {
+ public:
+  static base::FilePath GetFilePath();
+  static base::FilePath GetFilePathForTuning();
+};
 
 }  // namespace media
 }  // namespace chromecast

@@ -104,7 +104,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     } else {
       // If saved_volumes does not exist, use per device default if it exists.
       auto cast_audio_config =
-          DeserializeJsonFromFile(base::FilePath(kCastAudioJsonFilePath));
+          DeserializeJsonFromFile(CastAudioJson::GetFilePath());
       const base::DictionaryValue* cast_audio_dict;
       if (cast_audio_config &&
           cast_audio_config->GetAsDictionary(&cast_audio_dict)) {

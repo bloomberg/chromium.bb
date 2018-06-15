@@ -41,21 +41,19 @@ StreamPipelineDescriptor::StreamPipelineDescriptor(
 PostProcessingPipelineParser::PostProcessingPipelineParser(
     const std::string& json)
     : postprocessor_config_(nullptr) {
-  if (json.empty() &&
-      !base::PathExists(base::FilePath(kCastAudioJsonFilePath))) {
-    LOG(WARNING) << "Could not open post-processing config in "
-                 << kCastAudioJsonFilePath << ".";
+  base::FilePath path = CastAudioJson::GetFilePath();
+  if (json.empty() && !base::PathExists(path)) {
+    LOG(WARNING) << "Could not open post-processing config in " << path << ".";
     return;
   }
 
   if (json.empty()) {
-    config_dict_ = base::DictionaryValue::From(
-        DeserializeJsonFromFile(base::FilePath(kCastAudioJsonFilePath)));
+    config_dict_ = base::DictionaryValue::From(DeserializeJsonFromFile(path));
   } else {
     config_dict_ = base::DictionaryValue::From(DeserializeFromJson(json));
   }
 
-  CHECK(config_dict_) << "Invalid JSON in " << kCastAudioJsonFilePath;
+  CHECK(config_dict_) << "Invalid JSON in " << path;
   if (!config_dict_->GetDictionary(kPostProcessorsKey,
                                    &postprocessor_config_)) {
     LOG(WARNING) << "No post-processor config found.";
@@ -111,7 +109,7 @@ const base::ListValue* PostProcessingPipelineParser::GetPipelineByKey(
   if (!postprocessor_config_ ||
       !postprocessor_config_->GetDictionary(key, &stream_dict)) {
     LOG(WARNING) << "No post-processor description found for \"" << key
-                 << "\" in " << kCastAudioJsonFilePath
+                 << "\" in " << CastAudioJson::GetFilePath()
                  << ". Using passthrough.";
     return nullptr;
   }
