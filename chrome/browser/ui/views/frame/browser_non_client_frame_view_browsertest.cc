@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 
 using BrowserNonClientFrameViewBrowserTest = extensions::ExtensionBrowserTest;
@@ -27,6 +28,10 @@ using BrowserNonClientFrameViewBrowserTest = extensions::ExtensionBrowserTest;
 // actiavtion state.
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
                        MAYBE_InactiveSeparatorColor) {
+  // Refresh does not draw the toolbar top separator.
+  if (ui::MaterialDesignController::IsRefreshUi())
+    return;
+
   // In the default theme, the active and inactive separator colors may be the
   // same.  Install a custom theme where they are different.
   InstallExtension(test_data_dir_.AppendASCII("theme"), 1);
