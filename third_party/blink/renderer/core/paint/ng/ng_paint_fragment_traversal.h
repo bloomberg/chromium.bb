@@ -24,7 +24,7 @@ struct CORE_EXPORT NGPaintFragmentWithContainerOffset {
 
 // Represents an NGPaintFragment by its parent and its index in the parent's
 // |Children()| vector.
-struct NGPaintFragmentTraversalContext {
+struct CORE_EXPORT NGPaintFragmentTraversalContext {
   STACK_ALLOCATED();
 
   static NGPaintFragmentTraversalContext Create(const NGPaintFragment*);
