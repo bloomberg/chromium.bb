@@ -251,6 +251,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectionClipboard) {
             omnibox_view->GetText());
   EXPECT_EQ(17U, omnibox_view_views->GetCursorPosition());
 
+  // The omnibox can move when it gains focus, so refresh the click location.
+  click_location.set_x(omnibox_view_views->GetBoundsInScreen().origin().x() +
+                       cursor_x + render_text->display_rect().x());
+
   // Middle clicking again, with focus, pastes and updates the cursor.
   SetClipboardText(ui::CLIPBOARD_TYPE_SELECTION, "4567");
   ASSERT_NO_FATAL_FAILURE(Click(ui_controls::MIDDLE,
