@@ -22,7 +22,7 @@ class SharedURLLoaderFactory;
 namespace content {
 
 class URLLoaderThrottle;
-class WebPackageLoader;
+class SignedExchangeLoader;
 
 class WebPackageRequestHandler final : public NavigationLoaderInterceptor {
  public:
@@ -61,7 +61,7 @@ class WebPackageRequestHandler final : public NavigationLoaderInterceptor {
   // Valid after MaybeCreateLoaderForResponse intercepts the request and until
   // the loader is re-bound to the new client for the redirected request in
   // StartResponse.
-  std::unique_ptr<WebPackageLoader> web_package_loader_;
+  std::unique_ptr<SignedExchangeLoader> signed_exchange_loader_;
 
   url::Origin request_initiator_;
   GURL url_;

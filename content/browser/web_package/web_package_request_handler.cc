@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
+#include "content/browser/web_package/signed_exchange_loader.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
-#include "content/browser/web_package/web_package_loader.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -64,7 +64,7 @@ void WebPackageRequestHandler::MaybeCreateLoader(
   // ongoing matching SignedExchangeHandler which was created by a
   // WebPackagePrefetcher.
 
-  if (!web_package_loader_) {
+  if (!signed_exchange_loader_) {
     std::move(callback).Run({});
     return;
   }
@@ -89,7 +89,7 @@ bool WebPackageRequestHandler::MaybeCreateLoaderForResponse(
   // TODO(https://crbug.com/803774): Consider creating a new ThrottlingURLLoader
   // or reusing the existing ThrottlingURLLoader by reattaching URLLoaderClient,
   // to support SafeBrowsing checking of the content of the WebPackage.
-  web_package_loader_ = std::make_unique<WebPackageLoader>(
+  signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       url_, response, std::move(client), url_loader->Unbind(),
       std::move(request_initiator_), url_loader_options_, load_flags_,
       std::make_unique<SignedExchangeDevToolsProxy>(
@@ -104,8 +104,9 @@ bool WebPackageRequestHandler::MaybeCreateLoaderForResponse(
 void WebPackageRequestHandler::StartResponse(
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
-  web_package_loader_->ConnectToClient(std::move(client));
-  mojo::MakeStrongBinding(std::move(web_package_loader_), std::move(request));
+  signed_exchange_loader_->ConnectToClient(std::move(client));
+  mojo::MakeStrongBinding(std::move(signed_exchange_loader_),
+                          std::move(request));
 }
 
 }  // namespace content

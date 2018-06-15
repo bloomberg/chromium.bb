@@ -7,8 +7,8 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
+#include "content/browser/web_package/signed_exchange_loader.h"
 #include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
-#include "content/browser/web_package/web_package_loader.h"
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -47,7 +47,7 @@ WebPackagePrefetchHandler::WebPackagePrefetchHandler(
   } else {
     url_loader_factory = std::move(network_loader_factory);
   }
-  web_package_loader_ = std::make_unique<WebPackageLoader>(
+  signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       outer_request_url, response, std::move(client), std::move(endpoints),
       std::move(request_initiator), network::mojom::kURLLoadOptionNone,
       load_flags,
@@ -63,11 +63,11 @@ WebPackagePrefetchHandler::~WebPackagePrefetchHandler() = default;
 network::mojom::URLLoaderClientRequest
 WebPackagePrefetchHandler::FollowRedirect(
     network::mojom::URLLoaderRequest loader_request) {
-  DCHECK(web_package_loader_);
+  DCHECK(signed_exchange_loader_);
   network::mojom::URLLoaderClientPtr client;
   auto pending_request = mojo::MakeRequest(&client);
-  web_package_loader_->ConnectToClient(std::move(client));
-  mojo::MakeStrongBinding(std::move(web_package_loader_),
+  signed_exchange_loader_->ConnectToClient(std::move(client));
+  mojo::MakeStrongBinding(std::move(signed_exchange_loader_),
                           std::move(loader_request));
   return pending_request;
 }

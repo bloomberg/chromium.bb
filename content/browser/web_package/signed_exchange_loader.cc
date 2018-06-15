@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_package/web_package_loader.h"
+#include "content/browser/web_package/signed_exchange_loader.h"
 
 #include <memory>
 
@@ -45,7 +45,7 @@ SignedExchangeHandlerFactory* g_signed_exchange_factory_for_testing_ = nullptr;
 
 }  // namespace
 
-class WebPackageLoader::ResponseTimingInfo {
+class SignedExchangeLoader::ResponseTimingInfo {
  public:
   explicit ResponseTimingInfo(const network::ResourceResponseHead& response)
       : request_start_(response.request_start),
@@ -79,7 +79,7 @@ class WebPackageLoader::ResponseTimingInfo {
   DISALLOW_COPY_AND_ASSIGN(ResponseTimingInfo);
 };
 
-WebPackageLoader::WebPackageLoader(
+SignedExchangeLoader::SignedExchangeLoader(
     const GURL& outer_request_url,
     const network::ResourceResponseHead& outer_response,
     network::mojom::URLLoaderClientPtr forwarding_client,
@@ -170,43 +170,44 @@ WebPackageLoader::WebPackageLoader(
   pending_client_request_ = mojo::MakeRequest(&client_);
 }
 
-WebPackageLoader::~WebPackageLoader() = default;
+SignedExchangeLoader::~SignedExchangeLoader() = default;
 
-void WebPackageLoader::OnReceiveResponse(
+void SignedExchangeLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head) {
-  // Must not be called because this WebPackageLoader and the client endpoints
-  // were bound after OnReceiveResponse() is called.
+  // Must not be called because this SignedExchangeLoader and the client
+  // endpoints were bound after OnReceiveResponse() is called.
   NOTREACHED();
 }
 
-void WebPackageLoader::OnReceiveRedirect(
+void SignedExchangeLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head) {
-  // Must not be called because this WebPackageLoader and the client endpoints
-  // were bound after OnReceiveResponse() is called.
+  // Must not be called because this SignedExchangeLoader and the client
+  // endpoints were bound after OnReceiveResponse() is called.
   NOTREACHED();
 }
 
-void WebPackageLoader::OnUploadProgress(int64_t current_position,
-                                        int64_t total_size,
-                                        OnUploadProgressCallback ack_callback) {
-  // Must not be called because this WebPackageLoader and the client endpoints
-  // were bound after OnReceiveResponse() is called.
+void SignedExchangeLoader::OnUploadProgress(
+    int64_t current_position,
+    int64_t total_size,
+    OnUploadProgressCallback ack_callback) {
+  // Must not be called because this SignedExchangeLoader and the client
+  // endpoints were bound after OnReceiveResponse() is called.
   NOTREACHED();
 }
 
-void WebPackageLoader::OnReceiveCachedMetadata(
+void SignedExchangeLoader::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {
-  // Curerntly CachedMetadata for WebPackage is not supported.
+  // Curerntly CachedMetadata for Signed Exchange is not supported.
   NOTREACHED();
 }
 
-void WebPackageLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
+void SignedExchangeLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
   // TODO(https://crbug.com/803774): Implement this to progressively update the
   // encoded data length in DevTools.
 }
 
-void WebPackageLoader::OnStartLoadingResponseBody(
+void SignedExchangeLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   auto cert_fetcher_factory = SignedExchangeCertFetcherFactory::Create(
       std::move(request_initiator_), std::move(url_loader_factory_),
@@ -215,7 +216,7 @@ void WebPackageLoader::OnStartLoadingResponseBody(
   if (g_signed_exchange_factory_for_testing_) {
     signed_exchange_handler_ = g_signed_exchange_factory_for_testing_->Create(
         std::make_unique<DataPipeToSourceStream>(std::move(body)),
-        base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
+        base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                        weak_factory_.GetWeakPtr()),
         std::move(cert_fetcher_factory));
     return;
@@ -223,23 +224,23 @@ void WebPackageLoader::OnStartLoadingResponseBody(
 
   signed_exchange_handler_ = std::make_unique<SignedExchangeHandler>(
       content_type_, std::make_unique<DataPipeToSourceStream>(std::move(body)),
-      base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
+      base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
       std::move(cert_fetcher_factory), load_flags_,
       std::move(request_context_getter_), std::move(devtools_proxy_));
 }
 
-void WebPackageLoader::OnComplete(
+void SignedExchangeLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {}
 
-void WebPackageLoader::FollowRedirect(
+void SignedExchangeLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   NOTREACHED();
 }
 
-void WebPackageLoader::ProceedWithResponse() {
+void SignedExchangeLoader::ProceedWithResponse() {
   // TODO(https://crbug.com/791049): Remove this when NetworkService is
   // enabled by default.
   DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
@@ -250,27 +251,27 @@ void WebPackageLoader::ProceedWithResponse() {
   client_->OnStartLoadingResponseBody(std::move(pending_body_consumer_));
 }
 
-void WebPackageLoader::SetPriority(net::RequestPriority priority,
-                                   int intra_priority_value) {
+void SignedExchangeLoader::SetPriority(net::RequestPriority priority,
+                                       int intra_priority_value) {
   // TODO(https://crbug.com/803774): Implement this.
 }
 
-void WebPackageLoader::PauseReadingBodyFromNet() {
+void SignedExchangeLoader::PauseReadingBodyFromNet() {
   // TODO(https://crbug.com/803774): Implement this.
 }
 
-void WebPackageLoader::ResumeReadingBodyFromNet() {
+void SignedExchangeLoader::ResumeReadingBodyFromNet() {
   // TODO(https://crbug.com/803774): Implement this.
 }
 
-void WebPackageLoader::ConnectToClient(
+void SignedExchangeLoader::ConnectToClient(
     network::mojom::URLLoaderClientPtr client) {
   DCHECK(pending_client_request_.is_pending());
   mojo::FuseInterface(std::move(pending_client_request_),
                       client.PassInterface());
 }
 
-void WebPackageLoader::OnHTTPExchangeFound(
+void SignedExchangeLoader::OnHTTPExchangeFound(
     net::Error error,
     const GURL& request_url,
     const std::string& request_method,
@@ -316,7 +317,7 @@ void WebPackageLoader::OnHTTPExchangeFound(
 
   body_data_pipe_adapter_ = std::make_unique<SourceStreamToDataPipe>(
       std::move(payload_stream), std::move(data_pipe.producer_handle),
-      base::BindOnce(&WebPackageLoader::FinishReadingBody,
+      base::BindOnce(&SignedExchangeLoader::FinishReadingBody,
                      base::Unretained(this)));
 
   if (url_loader_options_ &
@@ -330,7 +331,7 @@ void WebPackageLoader::OnHTTPExchangeFound(
   client_->OnStartLoadingResponseBody(std::move(pending_body_consumer_));
 }
 
-void WebPackageLoader::FinishReadingBody(int result) {
+void SignedExchangeLoader::FinishReadingBody(int result) {
   // TODO(https://crbug.com/803774): Fill the data length information too.
   network::URLLoaderCompletionStatus status;
   status.error_code = result;
@@ -347,7 +348,7 @@ void WebPackageLoader::FinishReadingBody(int result) {
   client_->OnComplete(status);
 }
 
-void WebPackageLoader::SetSignedExchangeHandlerFactoryForTest(
+void SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(
     SignedExchangeHandlerFactory* factory) {
   g_signed_exchange_factory_for_testing_ = factory;
 }
