@@ -1551,6 +1551,9 @@ extern const char kEnableWebAuthenticationAPIDescription[];
 extern const char kEnableWebAuthenticationTestingAPIName[];
 extern const char kEnableWebAuthenticationTestingAPIDescription[];
 
+extern const char kEnableWebAuthenticationCtap2SupportName[];
+extern const char kEnableWebAuthenticationCtap2SupportDescription[];
+
 #if defined(GOOGLE_CHROME_BUILD)
 
 extern const char kGoogleBrandedContextMenuName[];

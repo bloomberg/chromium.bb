@@ -2544,6 +2544,11 @@ const char kEnableWebAuthenticationAPIName[] = "Web Authentication API";
 const char kEnableWebAuthenticationAPIDescription[] =
     "Enable Web Authentication API support";
 
+const char kEnableWebAuthenticationCtap2SupportName[] =
+    "Enable Web Authentication API support for CTAP2 security keys";
+const char kEnableWebAuthenticationCtap2SupportDescription[] =
+    "Enable CTAP2 security keys for the Web Authenication API.";
+
 const char kEnableWebAuthenticationTestingAPIName[] =
     "Web Authentication Testing API";
 const char kEnableWebAuthenticationTestingAPIDescription[] =

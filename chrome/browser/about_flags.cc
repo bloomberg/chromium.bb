@@ -3608,6 +3608,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop, SINGLE_VALUE_TYPE(switches::kEnableWebAuthTestingAPI)},
 #endif  // !defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+    {"enable-web-authentication-ctap2-support",
+     flag_descriptions::kEnableWebAuthenticationCtap2SupportName,
+     flag_descriptions::kEnableWebAuthenticationCtap2SupportDescription,
+     kOsDesktop, FEATURE_VALUE_TYPE(device::kNewCtap2Device)},
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_ANDROID)
     {"enable-sole-integration", flag_descriptions::kSoleIntegrationName,
      flag_descriptions::kSoleIntegrationDescription, kOsAndroid,
