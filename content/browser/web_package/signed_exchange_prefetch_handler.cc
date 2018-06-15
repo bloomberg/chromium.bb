@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_package/web_package_prefetch_handler.h"
+#include "content/browser/web_package/signed_exchange_prefetch_handler.h"
 
 #include "base/callback.h"
 #include "base/feature_list.h"
@@ -18,7 +18,7 @@
 
 namespace content {
 
-WebPackagePrefetchHandler::WebPackagePrefetchHandler(
+SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
     bool report_raw_headers,
     int load_flags,
@@ -58,10 +58,10 @@ WebPackagePrefetchHandler::WebPackagePrefetchHandler(
       request_context_getter);
 }
 
-WebPackagePrefetchHandler::~WebPackagePrefetchHandler() = default;
+SignedExchangePrefetchHandler::~SignedExchangePrefetchHandler() = default;
 
 network::mojom::URLLoaderClientRequest
-WebPackagePrefetchHandler::FollowRedirect(
+SignedExchangePrefetchHandler::FollowRedirect(
     network::mojom::URLLoaderRequest loader_request) {
   DCHECK(signed_exchange_loader_);
   network::mojom::URLLoaderClientPtr client;
@@ -72,40 +72,40 @@ WebPackagePrefetchHandler::FollowRedirect(
   return pending_request;
 }
 
-void WebPackagePrefetchHandler::OnReceiveResponse(
+void SignedExchangePrefetchHandler::OnReceiveResponse(
     const network::ResourceResponseHead& head) {
   NOTREACHED();
 }
 
-void WebPackagePrefetchHandler::OnReceiveRedirect(
+void SignedExchangePrefetchHandler::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& head) {
   forwarding_client_->OnReceiveRedirect(redirect_info, head);
 }
 
-void WebPackagePrefetchHandler::OnUploadProgress(
+void SignedExchangePrefetchHandler::OnUploadProgress(
     int64_t current_position,
     int64_t total_size,
     base::OnceCallback<void()> callback) {
   NOTREACHED();
 }
 
-void WebPackagePrefetchHandler::OnReceiveCachedMetadata(
+void SignedExchangePrefetchHandler::OnReceiveCachedMetadata(
     const std::vector<uint8_t>& data) {
   NOTREACHED();
 }
 
-void WebPackagePrefetchHandler::OnTransferSizeUpdated(
+void SignedExchangePrefetchHandler::OnTransferSizeUpdated(
     int32_t transfer_size_diff) {
   NOTREACHED();
 }
 
-void WebPackagePrefetchHandler::OnStartLoadingResponseBody(
+void SignedExchangePrefetchHandler::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   NOTREACHED();
 }
 
-void WebPackagePrefetchHandler::OnComplete(
+void SignedExchangePrefetchHandler::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   forwarding_client_->OnComplete(status);
 }
