@@ -19,6 +19,7 @@ void MockClustersCallback::Done(ContextualSuggestionsResult result) {
   response_peek_text = result.peek_text;
   response_clusters = std::move(result.clusters);
   peek_conditions = result.peek_conditions;
+  experiment_infos = result.experiment_infos;
 }
 
 FetchClustersCallback MockClustersCallback::ToOnceCallback() {
@@ -46,7 +47,7 @@ void ExpectSuggestionsMatch(const ContextualSuggestion& actual,
 void ExpectClustersMatch(const Cluster& actual, const Cluster& expected) {
   EXPECT_EQ(actual.title, expected.title);
   ASSERT_EQ(actual.suggestions.size(), expected.suggestions.size());
-  for (size_t i = 0; i < actual.suggestions.size(); i++) {
+  for (size_t i = 0; i < actual.suggestions.size(); ++i) {
     ExpectSuggestionsMatch(std::move(actual.suggestions[i]),
                            std::move(expected.suggestions[i]));
   }
@@ -60,16 +61,27 @@ void ExpectPeekConditionsMatch(const PeekConditions& actual,
   EXPECT_EQ(actual.maximum_number_of_peeks, expected.maximum_number_of_peeks);
 }
 
+void ExpectServerExperimentInfosMatch(const ServerExperimentInfos& actual,
+                                      const ServerExperimentInfos& expected) {
+  ASSERT_EQ(expected.size(), actual.size());
+  for (size_t i = 0; i < actual.size(); ++i) {
+    EXPECT_EQ(expected[i].name, actual[i].name);
+    EXPECT_EQ(expected[i].group, actual[i].group);
+  }
+}
+
 void ExpectResponsesMatch(const MockClustersCallback& callback,
                           const ContextualSuggestionsResult& expected_result) {
   EXPECT_EQ(callback.response_peek_text, expected_result.peek_text);
   ExpectPeekConditionsMatch(callback.peek_conditions,
                             expected_result.peek_conditions);
   ASSERT_EQ(callback.response_clusters.size(), expected_result.clusters.size());
-  for (size_t i = 0; i < callback.response_clusters.size(); i++) {
+  for (size_t i = 0; i < callback.response_clusters.size(); ++i) {
     ExpectClustersMatch(std::move(callback.response_clusters[i]),
                         std::move(expected_result.clusters[i]));
   }
+  ExpectServerExperimentInfosMatch(callback.experiment_infos,
+                                   expected_result.experiment_infos);
 }
 
 }  // namespace contextual_suggestions

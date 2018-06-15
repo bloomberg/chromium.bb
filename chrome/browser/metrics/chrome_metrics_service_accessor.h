@@ -33,6 +33,11 @@ namespace chrome {
 void AttemptRestart();
 }
 
+namespace contextual_suggestions {
+struct ContextualSuggestionsResult;
+void RegisterSyntheticFieldTrials(const ContextualSuggestionsResult& result);
+}  // namespace contextual_suggestions
+
 namespace domain_reliability {
 class DomainReliabilityServiceFactory;
 }
@@ -106,6 +111,8 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ChromeBrowserMainParts;
   friend class ChromeMetricsServicesManagerClient;
   friend class ChromeRenderMessageFilter;
+  friend void contextual_suggestions::RegisterSyntheticFieldTrials(
+      const contextual_suggestions::ContextualSuggestionsResult& result);
   friend class DataReductionProxyChromeSettings;
   friend class domain_reliability::DomainReliabilityServiceFactory;
   friend class extensions::ChromeExtensionWebContentsObserver;

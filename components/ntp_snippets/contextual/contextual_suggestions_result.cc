@@ -55,15 +55,37 @@ Cluster ClusterBuilder::Build() {
   return std::move(cluster_);
 }
 
+ServerExperimentInfo::ServerExperimentInfo() = default;
+
+ServerExperimentInfo::ServerExperimentInfo(std::string name, std::string group)
+    : name(name), group(group) {}
+
+ServerExperimentInfo::ServerExperimentInfo(const ServerExperimentInfo& other) =
+    default;
+
+ServerExperimentInfo::ServerExperimentInfo(
+    ServerExperimentInfo&& other) noexcept
+    : name(std::move(other.name)), group(std::move(other.group)) {}
+
+ServerExperimentInfo::~ServerExperimentInfo() = default;
+
+ServerExperimentInfo& ServerExperimentInfo::operator=(
+    ServerExperimentInfo&& other) = default;
+
+ServerExperimentInfo& ServerExperimentInfo::operator=(
+    const ServerExperimentInfo& other) = default;
+
 ContextualSuggestionsResult::ContextualSuggestionsResult() = default;
 
 ContextualSuggestionsResult::ContextualSuggestionsResult(
     std::string peek_text,
     std::vector<Cluster> clusters,
-    PeekConditions peek_conditions)
+    PeekConditions peek_conditions,
+    ServerExperimentInfos experiment_infos)
     : clusters(clusters),
       peek_text(peek_text),
-      peek_conditions(peek_conditions) {}
+      peek_conditions(peek_conditions),
+      experiment_infos(std::move(experiment_infos)) {}
 
 ContextualSuggestionsResult::ContextualSuggestionsResult(
     const ContextualSuggestionsResult& other) = default;
@@ -74,7 +96,8 @@ ContextualSuggestionsResult::ContextualSuggestionsResult(
     ContextualSuggestionsResult&& other) noexcept
     : clusters(std::move(other.clusters)),
       peek_text(std::move(other.peek_text)),
-      peek_conditions(std::move(other.peek_conditions)) {}
+      peek_conditions(std::move(other.peek_conditions)),
+      experiment_infos(std::move(other.experiment_infos)) {}
 
 ContextualSuggestionsResult::~ContextualSuggestionsResult() = default;
 

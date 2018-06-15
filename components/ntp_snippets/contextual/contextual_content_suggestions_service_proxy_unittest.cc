@@ -83,8 +83,9 @@ TEST_F(ContextualContentSuggestionsServiceProxyTest,
 
   proxy()->FetchContextualSuggestions(GURL(kValidFromUrl),
                                       mock_cluster_callback.ToOnceCallback());
-  service()->RunClustersCallback(ContextualSuggestionsResult(
-      kTestPeekText, std::vector<Cluster>(), PeekConditions()));
+  service()->RunClustersCallback(
+      ContextualSuggestionsResult(kTestPeekText, std::vector<Cluster>(),
+                                  PeekConditions(), ServerExperimentInfos()));
 
   EXPECT_TRUE(mock_cluster_callback.has_run);
 }

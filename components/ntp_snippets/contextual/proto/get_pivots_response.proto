@@ -23,6 +23,9 @@ message Pivots {
 
   // The text to present to the user in the peek.
   optional PeekText peek_text = 4;
+
+  // Information about experiments running on this request.
+  repeated ExperimentInfo experiment_info = 5;
 }
 
 // One related response.
@@ -138,4 +141,20 @@ message RasterImage {
   // A URL at which the image may be retrieved. The format of the image
   // is determined by the "Content-Type" of the HTTP response for the URL.
   optional Url url = 2;
+}
+
+// Synthetic experiment IDs, which Chrome may log in UMA.
+message ExperimentInfo {
+  // Name of experiment. A single live-experiment will have one
+  // experiment_group_name, and two or more experiment_arm_name's.
+  //
+  // This corresponds to an experiment group in GWS, and a field trial in Chrome
+  // Variations.
+  optional string experiment_group_name = 1;
+
+  // Name of experiment arm.
+  //
+  // This corresponds to an experiment arm in GWS, and a field trial group in
+  // Chrome Variations.
+  optional string experiment_arm_name = 2;
 }
