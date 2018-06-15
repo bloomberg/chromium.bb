@@ -41,14 +41,15 @@ class ResourceMetadata;
 // This object is copyable.
 class DirectoryFetchInfo {
  public:
-  DirectoryFetchInfo() = default;
+  DirectoryFetchInfo();
+  ~DirectoryFetchInfo();
 
   DirectoryFetchInfo(const std::string& local_id,
                      const std::string& resource_id,
-                     const std::string& start_page_token)
-      : local_id_(local_id),
-        resource_id_(resource_id),
-        start_page_token_(start_page_token) {}
+                     const std::string& start_page_token,
+                     const base::FilePath& root_entry_path);
+
+  DirectoryFetchInfo(const DirectoryFetchInfo& other);
 
   // Returns true if the object is empty.
   bool empty() const { return local_id_.empty(); }
@@ -63,6 +64,9 @@ class DirectoryFetchInfo {
   // determine if the directory contents should be fetched.
   const std::string& start_page_token() const { return start_page_token_; }
 
+  // The root path of the directory being fetched.
+  const base::FilePath& root_entry_path() const { return root_entry_path_; }
+
   // Returns a string representation of this object.
   std::string ToString() const;
 
@@ -70,6 +74,7 @@ class DirectoryFetchInfo {
   const std::string local_id_;
   const std::string resource_id_;
   const std::string start_page_token_;
+  const base::FilePath root_entry_path_;
 };
 
 // Class to represent a change list.

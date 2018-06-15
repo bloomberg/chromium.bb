@@ -540,11 +540,12 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory) {
       util::GetDriveMyDriveRootPath(), &root));
   const std::string kNewStartpageToken = "12345";
   ResourceEntryVector refreshed_entries;
-  EXPECT_EQ(FILE_ERROR_OK, ChangeListProcessor::RefreshDirectory(
-                               metadata_.get(),
-                               DirectoryFetchInfo(root.local_id(), kRootId,
-                                                  kNewStartpageToken),
-                               std::move(change_list), &refreshed_entries));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ChangeListProcessor::RefreshDirectory(
+                metadata_.get(),
+                DirectoryFetchInfo(root.local_id(), kRootId, kNewStartpageToken,
+                                   util::GetDriveMyDriveRootPath()),
+                std::move(change_list), &refreshed_entries));
 
   // "new_file" should be added.
   ResourceEntry entry;
@@ -577,11 +578,12 @@ TEST_F(ChangeListProcessorTest, RefreshDirectory_WrongParentId) {
       util::GetDriveMyDriveRootPath(), &root));
   const std::string kNewStartpageToken = "12345";
   ResourceEntryVector refreshed_entries;
-  EXPECT_EQ(FILE_ERROR_OK, ChangeListProcessor::RefreshDirectory(
-                               metadata_.get(),
-                               DirectoryFetchInfo(root.local_id(), kRootId,
-                                                  kNewStartpageToken),
-                               std::move(change_list), &refreshed_entries));
+  EXPECT_EQ(FILE_ERROR_OK,
+            ChangeListProcessor::RefreshDirectory(
+                metadata_.get(),
+                DirectoryFetchInfo(root.local_id(), kRootId, kNewStartpageToken,
+                                   util::GetDriveMyDriveRootPath()),
+                std::move(change_list), &refreshed_entries));
 
   // "new_file" should not be added.
   ResourceEntry entry;

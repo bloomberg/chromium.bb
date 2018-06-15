@@ -48,6 +48,9 @@ const base::FilePath& GetDriveMyDriveRootPath();
 // Returns the path of the directory representing "Team Drives".
 const base::FilePath& GetDriveTeamDrivesRootPath();
 
+// Returns true if |file_path| is a child directory of the team drives root.
+bool IsTeamDrivesPath(const base::FilePath& file_path);
+
 // Escapes a file name in Drive cache.
 // Replaces percent ('%'), period ('.') and slash ('/') with %XX (hex)
 std::string EscapeCacheFileName(const std::string& filename);
