@@ -157,8 +157,17 @@ void PaintDocumentMarkers(GraphicsContext& context,
 
     switch (marker->GetType()) {
       // TODO(yoichio): Implement following cases
-      // case DocumentMarker::kSpelling:
-      // case DocumentMarker::kGrammar:
+      case DocumentMarker::kSpelling:
+      case DocumentMarker::kGrammar: {
+        if (context.Printing())
+          return;
+        if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
+          continue;
+        DocumentMarkerPainter::PaintDocumentMarker(
+            context, box_origin, style, marker->GetType(),
+            text_fragment.LocalRect(paint_start_offset, paint_end_offset)
+                .ToLayoutRect());
+      } break;
       // case DocumentMarker::kTextMatch:
       case DocumentMarker::kComposition:
       case DocumentMarker::kActiveSuggestion:
