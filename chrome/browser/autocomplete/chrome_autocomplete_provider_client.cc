@@ -67,7 +67,7 @@ const char* const kChromeSettingsSubPages[] = {
     chrome::kStylusSubPage,
 #else
     chrome::kCreateProfileSubPage,   chrome::kImportDataSubPage,
-    chrome::kManageProfileSubPage,
+    chrome::kManageProfileSubPage,   chrome::kPeopleSubPage,
 #endif
 };
 #endif  // !defined(OS_ANDROID)

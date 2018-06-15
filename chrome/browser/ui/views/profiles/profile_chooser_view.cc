@@ -669,12 +669,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     if (dice_enabled_ &&
         SigninManagerFactory::GetForProfile(browser_->profile())
             ->IsAuthenticated()) {
-      if (!browser_->profile()->IsSyncAllowed() ||
-          HasAuthError(browser_->profile())) {
-        chrome::ShowSettings(browser_);
-      } else {
-        chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
-      }
+      chrome::ShowSettingsSubPage(browser_, chrome::kPeopleSubPage);
     } else {
       // Open settings to edit profile name and image. The profile doesn't need
       // to be authenticated to open this.
