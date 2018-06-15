@@ -4534,17 +4534,19 @@ TEST_F(NavigationControllerTest, CopyRestoredStateAndNavigate) {
   // Go back to the first entry one at a time and
   // verify that it works as expected.
   EXPECT_EQ(2, controller_impl().GetCurrentEntryIndex());
-  EXPECT_EQ(kInitialUrl, controller_impl().GetActiveEntry()->GetURL());
+  EXPECT_EQ(kInitialUrl, controller_impl().GetLastCommittedEntry()->GetURL());
 
   controller_impl().GoBack();
   contents()->CommitPendingNavigation();
   EXPECT_EQ(1, controller_impl().GetCurrentEntryIndex());
-  EXPECT_EQ(kRestoredUrls[1], controller_impl().GetActiveEntry()->GetURL());
+  EXPECT_EQ(kRestoredUrls[1],
+            controller_impl().GetLastCommittedEntry()->GetURL());
 
   controller_impl().GoBack();
   contents()->CommitPendingNavigation();
   EXPECT_EQ(0, controller_impl().GetCurrentEntryIndex());
-  EXPECT_EQ(kRestoredUrls[0], controller_impl().GetActiveEntry()->GetURL());
+  EXPECT_EQ(kRestoredUrls[0],
+            controller_impl().GetLastCommittedEntry()->GetURL());
 }
 
 // Tests that navigations initiated from the page (with the history object)
