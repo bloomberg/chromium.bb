@@ -277,6 +277,9 @@ void ChangeListLoader::LoadIfNeeded(const FileOperationCallback& callback) {
   // If the metadata is not yet loaded, start loading.
   if (!loaded_ && !IsRefreshing())
     Load(callback);
+  else
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, FILE_ERROR_OK));
 }
 
 void ChangeListLoader::Load(const FileOperationCallback& callback) {
