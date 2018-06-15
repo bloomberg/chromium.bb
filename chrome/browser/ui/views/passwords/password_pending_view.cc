@@ -40,7 +40,7 @@ namespace {
 // TODO(pbos): Investigate expicitly obfuscating items inside ComboboxModel.
 constexpr base::char16 kBulletChar = gfx::RenderText::kPasswordReplacementChar;
 
-enum ColumnSetType {
+enum PasswordPendingViewColumnSetType {
   // | | (LEADING, FILL) | | (FILL, FILL) | |
   // Used for the username/password line of the bubble, for the pending view.
   DOUBLE_VIEW_COLUMN_SET_USERNAME,
@@ -54,7 +54,8 @@ enum ColumnSetType {
 
 // Construct an appropriate ColumnSet for the given |type|, and add it
 // to |layout|.
-void BuildColumnSet(views::GridLayout* layout, ColumnSetType type) {
+void BuildColumnSet(views::GridLayout* layout,
+                    PasswordPendingViewColumnSetType type) {
   views::ColumnSet* column_set = layout->AddColumnSet(type);
   const int column_divider = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
@@ -272,8 +273,9 @@ void PasswordPendingView::BuildCredentialRows(
                                DISTANCE_CONTROL_LIST_VERTICAL));
 
   // Password row.
-  ColumnSetType type = password_view_button ? TRIPLE_VIEW_COLUMN_SET
-                                            : DOUBLE_VIEW_COLUMN_SET_PASSWORD;
+  PasswordPendingViewColumnSetType type = password_view_button
+                                              ? TRIPLE_VIEW_COLUMN_SET
+                                              : DOUBLE_VIEW_COLUMN_SET_PASSWORD;
   BuildColumnSet(layout, type);
   layout->StartRow(0, type);
   layout->AddView(password_label.release(), 1, 1, views::GridLayout::LEADING,

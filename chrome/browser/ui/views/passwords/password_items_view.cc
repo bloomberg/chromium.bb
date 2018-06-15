@@ -37,9 +37,10 @@ constexpr int kUndoButtonTag = 2;
 
 // Column set identifiers for displaying or undoing removal of credentials.
 // They both allocate space differently.
-enum ColumnSetType { PASSWORD_COLUMN_SET, UNDO_COLUMN_SET };
+enum PasswordItemsViewColumnSetType { PASSWORD_COLUMN_SET, UNDO_COLUMN_SET };
 
-void BuildColumnSet(views::GridLayout* layout, ColumnSetType type_id) {
+void BuildColumnSet(views::GridLayout* layout,
+                    PasswordItemsViewColumnSetType type_id) {
   DCHECK(!layout->GetColumnSet(type_id));
   views::ColumnSet* column_set = layout->AddColumnSet(type_id);
   // Passwords are split 60/40 (6:4) as the username is more important
@@ -63,7 +64,8 @@ void BuildColumnSet(views::GridLayout* layout, ColumnSetType type_id) {
                         views::GridLayout::USE_PREF, 0, 0);
 }
 
-void StartRow(views::GridLayout* layout, ColumnSetType type_id) {
+void StartRow(views::GridLayout* layout,
+              PasswordItemsViewColumnSetType type_id) {
   if (!layout->GetColumnSet(type_id))
     BuildColumnSet(layout, type_id);
   layout->StartRow(0, type_id);
