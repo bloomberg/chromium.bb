@@ -524,6 +524,10 @@ std::unique_ptr<PasswordForm> ParseFormData(
   result->action = form_data.action;
   result->form_data = form_data;
   result->all_possible_passwords = std::move(all_possible_passwords);
+  result->scheme = PasswordForm::SCHEME_HTML;
+  result->preferred = false;
+  result->blacklisted_by_user = false;
+  result->type = PasswordForm::TYPE_MANUAL;
 
   if (form_predictions) {
     // Try to parse with server predictions.
