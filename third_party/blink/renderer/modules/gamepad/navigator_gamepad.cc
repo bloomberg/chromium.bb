@@ -65,12 +65,14 @@ void HasGamepadConnectionChanged(const String& old_id,
     *gamepad_lost = id_changed || (old_connected && !new_connected);
 }
 
-bool HasUserActivation(GamepadList& gamepads) {
+bool HasUserActivation(GamepadList* gamepads) {
+  if (!gamepads)
+    return false;
   // A button press counts as a user activation if the button's value is greater
   // than the activation threshold. A threshold is used so that analog buttons
   // or triggers do not generate an activation from a light touch.
-  for (size_t pad_index = 0; pad_index < gamepads.length(); ++pad_index) {
-    Gamepad* pad = gamepads.item(pad_index);
+  for (size_t pad_index = 0; pad_index < gamepads->length(); ++pad_index) {
+    Gamepad* pad = gamepads->item(pad_index);
     if (pad) {
       const GamepadButtonVector& buttons = pad->buttons();
       for (size_t i = 0; i < buttons.size(); ++i) {
@@ -204,9 +206,10 @@ GamepadList* NavigatorGamepad::Gamepads() {
 
   SampleAndCheckConnectedGamepads();
 
-  // Allow gamepad button presses to qualify as user activations.
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled() &&
-      GetPage()->IsPageVisible() && HasUserActivation(*gamepads_)) {
+  // Allow gamepad button presses to qualify as user activations if the page is
+  // visible.
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled() && GetFrame() &&
+      GetPage() && GetPage()->IsPageVisible() && HasUserActivation(gamepads_)) {
     Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
   }
 
