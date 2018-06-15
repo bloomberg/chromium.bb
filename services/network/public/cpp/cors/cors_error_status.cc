@@ -12,14 +12,13 @@ namespace network {
 // valid enum value range. The value is meaningless and should be overriden
 // immediately by IPC desrtialization code.
 CORSErrorStatus::CORSErrorStatus()
-    : CORSErrorStatus(network::mojom::CORSError::kMaxValue) {}
+    : CORSErrorStatus(mojom::CORSError::kMaxValue) {}
 
 CORSErrorStatus::CORSErrorStatus(const CORSErrorStatus& status) = default;
 
-CORSErrorStatus::CORSErrorStatus(network::mojom::CORSError error)
-    : cors_error(error) {}
+CORSErrorStatus::CORSErrorStatus(mojom::CORSError error) : cors_error(error) {}
 
-CORSErrorStatus::CORSErrorStatus(network::mojom::CORSError error,
+CORSErrorStatus::CORSErrorStatus(mojom::CORSError error,
                                  const std::string& failed_parameter)
     : cors_error(error), failed_parameter(failed_parameter) {}
 

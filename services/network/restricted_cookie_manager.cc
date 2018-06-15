@@ -24,26 +24,25 @@ namespace network {
 namespace {
 
 // TODO(pwnall): De-duplicate from cookie_manager.cc
-network::mojom::CookieChangeCause ToCookieChangeCause(
-    net::CookieChangeCause net_cause) {
+mojom::CookieChangeCause ToCookieChangeCause(net::CookieChangeCause net_cause) {
   switch (net_cause) {
     case net::CookieChangeCause::INSERTED:
-      return network::mojom::CookieChangeCause::INSERTED;
+      return mojom::CookieChangeCause::INSERTED;
     case net::CookieChangeCause::EXPLICIT:
-      return network::mojom::CookieChangeCause::EXPLICIT;
+      return mojom::CookieChangeCause::EXPLICIT;
     case net::CookieChangeCause::UNKNOWN_DELETION:
-      return network::mojom::CookieChangeCause::UNKNOWN_DELETION;
+      return mojom::CookieChangeCause::UNKNOWN_DELETION;
     case net::CookieChangeCause::OVERWRITE:
-      return network::mojom::CookieChangeCause::OVERWRITE;
+      return mojom::CookieChangeCause::OVERWRITE;
     case net::CookieChangeCause::EXPIRED:
-      return network::mojom::CookieChangeCause::EXPIRED;
+      return mojom::CookieChangeCause::EXPIRED;
     case net::CookieChangeCause::EVICTED:
-      return network::mojom::CookieChangeCause::EVICTED;
+      return mojom::CookieChangeCause::EVICTED;
     case net::CookieChangeCause::EXPIRED_OVERWRITE:
-      return network::mojom::CookieChangeCause::EXPIRED_OVERWRITE;
+      return mojom::CookieChangeCause::EXPIRED_OVERWRITE;
   }
   NOTREACHED();
-  return network::mojom::CookieChangeCause::EXPLICIT;
+  return mojom::CookieChangeCause::EXPLICIT;
 }
 
 }  // anonymous namespace
@@ -53,7 +52,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   Listener(net::CookieStore* cookie_store,
            const GURL& url,
            net::CookieOptions options,
-           network::mojom::CookieChangeListenerPtr mojo_listener)
+           mojom::CookieChangeListenerPtr mojo_listener)
       : url_(url), options_(options), mojo_listener_(std::move(mojo_listener)) {
     // TODO(pwnall): add a constructor w/options to net::CookieChangeDispatcher.
     cookie_store_subscription_ =
@@ -70,7 +69,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
 
   ~Listener() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
-  network::mojom::CookieChangeListenerPtr& mojo_listener() {
+  mojom::CookieChangeListenerPtr& mojo_listener() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return mojo_listener_;
   }
@@ -93,7 +92,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   // CanonicalCookie::IncludeForRequestURL options for this listener's interest.
   const net::CookieOptions options_;
 
-  network::mojom::CookieChangeListenerPtr mojo_listener_;
+  mojom::CookieChangeListenerPtr mojo_listener_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

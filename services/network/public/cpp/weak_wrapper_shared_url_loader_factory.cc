@@ -10,11 +10,11 @@
 namespace network {
 
 WeakWrapperSharedURLLoaderFactory::WeakWrapperSharedURLLoaderFactory(
-    network::mojom::URLLoaderFactory* factory_ptr)
+    mojom::URLLoaderFactory* factory_ptr)
     : factory_ptr_(factory_ptr) {}
 
 WeakWrapperSharedURLLoaderFactory::WeakWrapperSharedURLLoaderFactory(
-    base::OnceCallback<network::mojom::URLLoaderFactory*()> make_factory_ptr)
+    base::OnceCallback<mojom::URLLoaderFactory*()> make_factory_ptr)
     : make_factory_ptr_(std::move(make_factory_ptr)), factory_ptr_(nullptr) {}
 
 void WeakWrapperSharedURLLoaderFactory::Detach() {
@@ -23,12 +23,12 @@ void WeakWrapperSharedURLLoaderFactory::Detach() {
 }
 
 void WeakWrapperSharedURLLoaderFactory::CreateLoaderAndStart(
-    network::mojom::URLLoaderRequest loader,
+    mojom::URLLoaderRequest loader,
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (!factory())
     return;
@@ -38,7 +38,7 @@ void WeakWrapperSharedURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void WeakWrapperSharedURLLoaderFactory::Clone(
-    network::mojom::URLLoaderFactoryRequest request) {
+    mojom::URLLoaderFactoryRequest request) {
   if (!factory())
     return;
   factory()->Clone(std::move(request));
@@ -46,7 +46,7 @@ void WeakWrapperSharedURLLoaderFactory::Clone(
 
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
 WeakWrapperSharedURLLoaderFactory::Clone() {
-  network::mojom::URLLoaderFactoryPtrInfo factory_ptr_info;
+  mojom::URLLoaderFactoryPtrInfo factory_ptr_info;
   if (factory())
     factory()->Clone(mojo::MakeRequest(&factory_ptr_info));
   return std::make_unique<WrapperSharedURLLoaderFactoryInfo>(
@@ -56,7 +56,7 @@ WeakWrapperSharedURLLoaderFactory::Clone() {
 WeakWrapperSharedURLLoaderFactory::~WeakWrapperSharedURLLoaderFactory() =
     default;
 
-network::mojom::URLLoaderFactory* WeakWrapperSharedURLLoaderFactory::factory() {
+mojom::URLLoaderFactory* WeakWrapperSharedURLLoaderFactory::factory() {
   if (make_factory_ptr_) {
     DCHECK(!factory_ptr_);
     factory_ptr_ = std::move(make_factory_ptr_).Run();

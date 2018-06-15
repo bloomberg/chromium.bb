@@ -213,7 +213,7 @@ TEST_F(UDPSocketTest, Settings) {
 
   test::UDPSocketTestHelper helper(&socket_ptr);
   net::IPEndPoint local_addr;
-  mojom::UDPSocketOptionsPtr options = network::mojom::UDPSocketOptions::New();
+  mojom::UDPSocketOptionsPtr options = mojom::UDPSocketOptions::New();
   options->send_buffer_size = 1024;
   options->receive_buffer_size = 2048;
   ASSERT_EQ(net::OK,
@@ -667,7 +667,7 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
 
   test::UDPSocketTestHelper helper(&socket_ptr);
 
-  mojom::UDPSocketOptionsPtr options = network::mojom::UDPSocketOptions::New();
+  mojom::UDPSocketOptionsPtr options = mojom::UDPSocketOptions::New();
 #if defined(OS_FUCHSIA)
   // Fuchsia currently doesn't support automatic interface selection for
   // multicast, so interface index needs to be set explicitly.
@@ -742,7 +742,7 @@ TEST_F(UDPSocketTest, ErrorHappensDuringSocketOptionsConfiguration) {
   test::UDPSocketTestHelper helper(&socket_ptr);
 
   // Invalid options.
-  mojom::UDPSocketOptionsPtr options = network::mojom::UDPSocketOptions::New();
+  mojom::UDPSocketOptionsPtr options = mojom::UDPSocketOptions::New();
   options->multicast_time_to_live = 256;
 
   net::IPEndPoint local_addr;
@@ -750,8 +750,7 @@ TEST_F(UDPSocketTest, ErrorHappensDuringSocketOptionsConfiguration) {
             helper.ConnectSync(server_addr, std::move(options), &local_addr));
 
   // It's legal to retry Connect() with valid options.
-  mojom::UDPSocketOptionsPtr valid_options =
-      network::mojom::UDPSocketOptions::New();
+  mojom::UDPSocketOptionsPtr valid_options = mojom::UDPSocketOptions::New();
   valid_options->multicast_time_to_live = 255;
   ASSERT_EQ(net::OK,
             helper.ConnectSync(server_addr, std::move(options), &local_addr));

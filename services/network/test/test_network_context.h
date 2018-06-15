@@ -36,7 +36,7 @@ class TestNetworkContext : public mojom::NetworkContext {
 
   void CreateURLLoaderFactory(
       mojom::URLLoaderFactoryRequest request,
-      network::mojom::URLLoaderFactoryParamsPtr params) override {}
+      mojom::URLLoaderFactoryParamsPtr params) override {}
   void GetCookieManager(mojom::CookieManagerRequest cookie_manager) override {}
   void GetRestrictedCookieManager(
       mojom::RestrictedCookieManagerRequest restricted_cookie_manager,
@@ -90,12 +90,11 @@ class TestNetworkContext : public mojom::NetworkContext {
       CreateTCPConnectedSocketCallback callback) override {}
   void CreateProxyResolvingSocketFactory(
       mojom::ProxyResolvingSocketFactoryRequest request) override {}
-  void CreateWebSocket(
-      mojom::WebSocketRequest request,
-      int32_t process_id,
-      int32_t render_frame_id,
-      const url::Origin& origin,
-      network::mojom::AuthenticationHandlerPtr auth_handler) override {}
+  void CreateWebSocket(mojom::WebSocketRequest request,
+                       int32_t process_id,
+                       int32_t render_frame_id,
+                       const url::Origin& origin,
+                       mojom::AuthenticationHandlerPtr auth_handler) override {}
   void CreateNetLogExporter(mojom::NetLogExporterRequest exporter) override {}
   void BlockThirdPartyCookies(bool block) override {}
   void AddHSTSForTesting(const std::string& host,
@@ -104,7 +103,7 @@ class TestNetworkContext : public mojom::NetworkContext {
                          AddHSTSForTestingCallback callback) override {}
   void SetFailingHttpTransactionForTesting(
       int32_t rv,
-      SetFailingHttpTransactionForTestingCallback callback) override{};
+      SetFailingHttpTransactionForTestingCallback callback) override {}
 };
 
 }  // namespace network

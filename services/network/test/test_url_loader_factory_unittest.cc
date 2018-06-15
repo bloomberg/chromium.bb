@@ -118,12 +118,12 @@ TEST_F(TestURLLoaderFactoryTest, Redirects) {
   net::RedirectInfo redirect_info;
   redirect_info.status_code = 301;
   redirect_info.new_url = GURL("http://example2.test/");
-  network::TestURLLoaderFactory::Redirects redirects{
-      {redirect_info, network::ResourceResponseHead()}};
+  TestURLLoaderFactory::Redirects redirects{
+      {redirect_info, ResourceResponseHead()}};
   URLLoaderCompletionStatus status;
   std::string content = "foo";
   status.decoded_body_length = content.size();
-  factory()->AddResponse(url, network::ResourceResponseHead(), content, status,
+  factory()->AddResponse(url, ResourceResponseHead(), content, status,
                          redirects);
   StartRequest(url.spec());
   client()->RunUntilComplete();

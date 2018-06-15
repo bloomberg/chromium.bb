@@ -52,7 +52,7 @@ base::Optional<mojom::CORSError> CheckAccess(
     const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
-    network::mojom::FetchCredentialsMode credentials_mode,
+    mojom::FetchCredentialsMode credentials_mode,
     const url::Origin& origin,
     bool allow_file_origin = false);
 
@@ -66,7 +66,7 @@ base::Optional<mojom::CORSError> CheckPreflightAccess(
     const int response_status_code,
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
-    network::mojom::FetchCredentialsMode actual_credentials_mode,
+    mojom::FetchCredentialsMode actual_credentials_mode,
     const url::Origin& origin,
     bool allow_file_origin = false);
 
