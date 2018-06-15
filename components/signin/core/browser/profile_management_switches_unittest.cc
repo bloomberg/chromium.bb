@@ -37,7 +37,7 @@ TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethod) {
 
 // Check the default account consistency method.
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  EXPECT_EQ(AccountConsistencyMethod::kDiceFixAuthErrors,
+  EXPECT_EQ(AccountConsistencyMethod::kDicePrepareMigration,
             GetAccountConsistencyMethod());
 #else
   EXPECT_EQ(AccountConsistencyMethod::kDisabled, GetAccountConsistencyMethod());

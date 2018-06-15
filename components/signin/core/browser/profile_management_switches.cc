@@ -44,7 +44,7 @@ bool AccountConsistencyMethodGreaterOrEqual(AccountConsistencyMethod a,
 
 // base::Feature definitions.
 const base::Feature kAccountConsistencyFeature{
-    "AccountConsistency", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AccountConsistency", base::FEATURE_ENABLED_BY_DEFAULT};
 const char kAccountConsistencyFeatureMethodParameter[] = "method";
 const char kAccountConsistencyFeatureMethodMirror[] = "mirror";
 const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[] =
@@ -89,14 +89,11 @@ AccountConsistencyMethod GetAccountConsistencyMethod() {
 #endif
 
   const AccountConsistencyMethod kDefaultMethod =
-      AccountConsistencyMethod::kDiceFixAuthErrors;
+      AccountConsistencyMethod::kDicePrepareMigration;
 #else
   const AccountConsistencyMethod kDefaultMethod =
       AccountConsistencyMethod::kDisabled;
 #endif
-
-  if (!base::FeatureList::IsEnabled(kAccountConsistencyFeature))
-    return kDefaultMethod;
 
   std::string method_value = base::GetFieldTrialParamValueByFeature(
       kAccountConsistencyFeature, kAccountConsistencyFeatureMethodParameter);
@@ -114,6 +111,8 @@ AccountConsistencyMethod GetAccountConsistencyMethod() {
     return AccountConsistencyMethod::kDice;
 #endif
 
+  // When the feature is disabled, there is no parameter value, and the default
+  // method is returned.
   return kDefaultMethod;
 }
 
