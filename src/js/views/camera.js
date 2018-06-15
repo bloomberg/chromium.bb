@@ -114,36 +114,11 @@ camera.views.Camera = function(context, router) {
   this.locked_ = false;
 
   /**
-   * Timer for hiding the toast message after some delay.
-   * @type {number?}
+   * Toast for showing the messages.
+   * @type {camera.views.Toast}
    * @private
    */
-  this.toastHideTimer_ = null;
-
-  /**
-   * Toast transition wrapper. Shows or hides the toast with the passed message.
-   * @type {camera.util.StyleEffect}
-   * @private
-   */
-  this.toastEffect_ = new camera.util.StyleEffect(
-      function(args, callback) {
-        var toastElement = document.querySelector('#toast');
-        var toastMessageElement = document.querySelector('#toast-message');
-        // Hide the message if visible.
-        if (!args.visible && toastElement.classList.contains('visible')) {
-          toastElement.classList.remove('visible');
-          camera.util.waitForTransitionCompletion(
-              toastElement, 500, callback);
-        } else if (args.visible) {
-          // If showing requested, then show.
-          toastMessageElement.textContent = args.message;
-          toastElement.classList.add('visible');
-          camera.util.waitForTransitionCompletion(
-             toastElement, 500, callback);
-        } else {
-          callback();
-        }
-      }.bind(this));
+  this.toast_ = new camera.views.Toast();
 
   /**
    * Timer for elapsed recording time for video recording.
@@ -347,8 +322,7 @@ camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
       // Create a media-recorder before proceeding to record video.
       this.mediaRecorder_ = this.createMediaRecorder_(this.stream_);
       if (this.mediaRecorder_ == null) {
-        this.showToastMessage_(chrome.i18n.getMessage(
-            'errorMsgRecordStartFailed'));
+        this.showToastMessage_('errorMsgRecordStartFailed', true);
         return;
       }
     }
@@ -358,8 +332,7 @@ camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
       const track = this.stream_ && this.stream_.getVideoTracks()[0];
       this.imageCapture_ = !track ? null : new ImageCapture(track);
       if (this.imageCapture_ == null) {
-        this.showToastMessage_(chrome.i18n.getMessage(
-            'errorMsgTakePhotoFailed'));
+        this.showToastMessage_('errorMsgTakePhotoFailed', true);
         return;
       }
     }
@@ -383,9 +356,6 @@ camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
  */
 camera.views.Camera.prototype.onToggleTimerClicked_ = function(event) {
   var enabled = document.querySelector('#toggle-timer').checked;
-  this.showToastMessage_(
-      chrome.i18n.getMessage(enabled ? 'toggleTimerActiveMessage' :
-                                       'toggleTimerInactiveMessage'));
   chrome.storage.local.set({toggleTimer: enabled});
 };
 
@@ -450,9 +420,6 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
  */
 camera.views.Camera.prototype.onToggleMirrorClicked_ = function(event) {
   var enabled = document.querySelector('#toggle-mirror').checked;
-  this.showToastMessage_(
-      chrome.i18n.getMessage(enabled ? 'toggleMirrorActiveMessage' :
-                                       'toggleMirrorInactiveMessage'));
   this.mirroringToggles_[this.videoDeviceId_] = enabled;
   chrome.storage.local.set({mirroringToggles: this.mirroringToggles_});
   this.updateMirroring_();
@@ -515,7 +482,6 @@ camera.views.Camera.prototype.updateToolbar_ = function() {
 
 /**
  * Updates the button's labels.
- *
  * @param {HTMLElement} button Button element to be updated.
  * @param {string} label Label to be set.
  * @private
@@ -527,7 +493,6 @@ camera.views.Camera.prototype.updateButtonLabel_ = function(button, label) {
 
 /**
  * Enables the audio track for audio capturing.
- *
  * @param {boolean} enabled True to enable audio track, false to disable.
  * @private
  */
@@ -555,7 +520,14 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
   this.keyBuffer_ = this.keyBuffer_.substr(-10);
 
   if (this.keyBuffer_.indexOf('VER') !== -1) {
-    this.showVersion_();
+    this.showToastMessage_(chrome.runtime.getManifest().version, false);
+    this.keyBuffer_ = '';
+  }
+  if (this.keyBuffer_.indexOf('RES') !== -1) {
+    if (this.capturing) {
+      this.showToastMessage_(
+          this.video_.videoWidth + ' x ' + this.video_.videoHeight, false);
+    }
     this.keyBuffer_ = '';
   }
 
@@ -573,44 +545,13 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
 };
 
 /**
- * Shows a non-intrusive toast message in the middle of the screen.
- * TODO(yuli): Add parameter to take i18n message name.
+ * Shows a non-intrusive toast message.
  * @param {string} message Message to be shown.
+ * @param {boolean} named True if it's i18n named message, false otherwise.
  * @private
  */
-camera.views.Camera.prototype.showToastMessage_ = function(message) {
-  var cancelHideTimer = function() {
-    if (this.toastHideTimer_) {
-      clearTimeout(this.toastHideTimer_);
-      this.toastHideTimer_ = null;
-    }
-  }.bind(this);
-
-  // If running, then reinvoke recursively after closing the toast message.
-  if (this.toastEffect_.animating || this.toastHideTimer_) {
-    cancelHideTimer();
-    this.toastEffect_.invoke({
-      visible: false
-    }, this.showToastMessage_.bind(this, message));
-    return;
-  }
-
-  // Cancel any pending hide timers.
-  cancelHideTimer();
-
-  // Start the hide timer.
-  this.toastHideTimer_ = setTimeout(function() {
-    this.toastEffect_.invoke({
-      visible: false
-    }, function() {});
-    this.toastHideTimer_ = null;
-  }.bind(this), 2000);
-
-  // Show the toast message.
-  this.toastEffect_.invoke({
-    visible: true,
-    message: message
-  }, function() {});
+camera.views.Camera.prototype.showToastMessage_ = function(message, named) {
+  this.toast_.showMessage(named ? chrome.i18n.getMessage(message) : message);
 };
 
 /**
@@ -659,21 +600,6 @@ camera.views.Camera.prototype.hideRecordingTimer_ = function() {
   var timerElement = document.querySelector('#recording-timer');
   timerElement.textContent = '';
   timerElement.classList.remove('visible');
-};
-
-/**
- * Shows a version dialog.
- * @private
- */
-camera.views.Camera.prototype.showVersion_ = function() {
-  // No need to localize, since for debugging purpose only.
-  var message = 'Version: ' + chrome.runtime.getManifest().version + '\n' +
-      'Resolution: ' +
-          this.video_.videoWidth + 'x' + this.video_.videoHeight + '\n';
-  this.router.navigate(camera.Router.ViewIdentifier.DIALOG, {
-    type: camera.views.Dialog.Type.ALERT,
-    message: message
-  });
 };
 
 /**
@@ -750,15 +676,11 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
  */
 camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
   this.doTakePictureTimer_ = setTimeout(function() {
-    var errorToast = function(msg) {
-      this.showToastMessage_(chrome.i18n.getMessage(msg));
-    }.bind(this);
-
     // Add picture to the model.
     var addPicture = function(blob, type) {
       var saveFailure = function() {
-        errorToast('errorMsgGallerySaveFailed');
-      };
+        this.showToastMessage_('errorMsgGallerySaveFailed', true);
+      }.bind(this);
       if (!this.model_) {
         saveFailure();
         return;
@@ -794,8 +716,8 @@ camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
         stopRecordingUI();
         // The recording may have no data available because it's too short or
         // the media recorder is not stable and Chrome needs to restart.
-        errorToast('errorMsgEmptyRecording');
-      }, onFinish);
+        this.showToastMessage_('errorMsgEmptyRecording', true);
+      }.bind(this), onFinish);
 
       // Re-enable the take-picture button to stop recording later and flash
       // the take-picture button until the recording is stopped.
@@ -810,8 +732,8 @@ camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
         this.shutterSound_.play();
         addPicture(blob, camera.models.Gallery.PictureType.STILL);
       }.bind(this), function() {
-        errorToast('errorMsgTakePhotoFailed');
-      }, onFinish);
+        this.showToastMessage_('errorMsgTakePhotoFailed', true);
+      }.bind(this), onFinish);
     }
   }.bind(this), timeout);
 };
@@ -897,7 +819,6 @@ camera.views.Camera.prototype.createBlobOnPhotoTake_ = function(
 
 /**
  * Creates the media recorder for the video stream.
- *
  * @param {MediaStream} stream Media stream to be recorded.
  * @return {MediaRecorder} Media recorder created.
  * @private
@@ -925,7 +846,6 @@ camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
 
 /**
  * Updates the video device id by the constraints or by the acquired stream.
- *
  * @param {!Object} constraints Constraints that acquires the current stream.
  * @private
  */
@@ -949,7 +869,6 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
 
 /**
  * Starts capturing with the specified constraints.
- *
  * @param {!Object} constraints Constraints passed to WebRTC.
  * @param {function()} onSuccess Success callback.
  * @param {function()} onFailure Failure callback, eg. the constraints are
@@ -1178,9 +1097,6 @@ camera.views.Camera.prototype.start_ = function() {
     }
     // Remove the error layer if any.
     this.context_.onErrorRecovered('no-camera');
-
-    this.showToastMessage_(chrome.i18n.getMessage(this.is_recording_mode_ ?
-        'recordVideoActiveMessage' : 'takePictureActiveMessage'));
   }.bind(this);
 
   var onFailure = function() {
