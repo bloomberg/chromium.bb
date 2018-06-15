@@ -120,6 +120,8 @@ CHROMEOS_EXPORT extern const char kEnterpriseEnableZeroTouchEnrollment[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentInitialModulus[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentModulusLimit[];
 CHROMEOS_EXPORT extern const char kFirstExecAfterBoot[];
+CHROMEOS_EXPORT extern const char kFakeDriveFsLauncherChrootPath[];
+CHROMEOS_EXPORT extern const char kFakeDriveFsLauncherSocketPath[];
 CHROMEOS_EXPORT extern const char kForceFirstRunUI[];
 CHROMEOS_EXPORT extern const char kForceHappinessTrackingSystem[];
 CHROMEOS_EXPORT extern const char kForceLoginManagerInTests[];
