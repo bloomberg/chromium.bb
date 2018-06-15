@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <map>
+#include <random>
 #include <utility>
 
 #include "base/at_exit.h"
@@ -107,6 +108,10 @@ const size_t kOutputSnippetLinesLimit = 5000;
 // Limit of output snippet size. Exceeding this limit
 // results in truncating the output and failing the test.
 const size_t kOutputSnippetBytesLimit = 300 * 1024;
+
+// Limit of seed values for gtest shuffling. Arbitrary, but based on
+// gtest's similarly arbitrary choice.
+const uint32_t kRandomSeedUpperBound = 100000;
 
 // Set of live launch test processes with corresponding lock (it is allowed
 // for callers to launch processes on different threads).
@@ -246,8 +251,10 @@ CommandLine PrepareCommandLineForGTest(const CommandLine& command_line,
   CommandLine new_command_line(command_line.GetProgram());
   CommandLine::SwitchMap switches = command_line.GetSwitches();
 
-  // Strip out gtest_repeat flag - this is handled by the launcher process.
+  // Handled by the launcher process.
   switches.erase(kGTestRepeatFlag);
+  switches.erase(kGTestShuffleFlag);
+  switches.erase(kGTestRandomSeedFlag);
 
   // Don't try to write the final XML report in child processes.
   switches.erase(kGTestOutputFlag);
@@ -555,6 +562,8 @@ const char kGTestListTestsFlag[] = "gtest_list_tests";
 const char kGTestRepeatFlag[] = "gtest_repeat";
 const char kGTestRunDisabledTestsFlag[] = "gtest_also_run_disabled_tests";
 const char kGTestOutputFlag[] = "gtest_output";
+const char kGTestShuffleFlag[] = "gtest_shuffle";
+const char kGTestRandomSeedFlag[] = "gtest_random_seed";
 
 TestLauncherDelegate::~TestLauncherDelegate() = default;
 
@@ -578,6 +587,8 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       retry_limit_(0),
       force_run_broken_tests_(false),
       run_result_(true),
+      shuffle_(false),
+      shuffle_seed_(0),
       watchdog_timer_(FROM_HERE,
                       kOutputTimeout,
                       this,
@@ -585,7 +596,9 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       parallel_jobs_(parallel_jobs) {}
 
 TestLauncher::~TestLauncher() {
-  base::TaskScheduler::GetInstance()->Shutdown();
+  if (base::TaskScheduler::GetInstance()) {
+    base::TaskScheduler::GetInstance()->Shutdown();
+  }
 }
 
 bool TestLauncher::Run() {
@@ -939,6 +952,38 @@ bool TestLauncher::Init() {
   if (command_line->HasSwitch(switches::kTestLauncherForceRunBrokenTests))
     force_run_broken_tests_ = true;
 
+  // Some of the TestLauncherDelegate implementations don't call into gtest
+  // until they've already split into test-specific processes. This results
+  // in gtest's native shuffle implementation attempting to shuffle one test.
+  // Shuffling the list of tests in the test launcher (before the delegate
+  // gets involved) ensures that the entire shard is shuffled.
+  if (command_line->HasSwitch(kGTestShuffleFlag)) {
+    shuffle_ = true;
+
+    if (command_line->HasSwitch(kGTestRandomSeedFlag)) {
+      const std::string custom_seed_str =
+          command_line->GetSwitchValueASCII(kGTestRandomSeedFlag);
+      uint32_t custom_seed = 0;
+      if (!StringToUint(custom_seed_str, &custom_seed)) {
+        LOG(ERROR) << "Unable to parse seed \"" << custom_seed_str << "\".";
+        return false;
+      }
+      if (custom_seed >= kRandomSeedUpperBound) {
+        LOG(ERROR) << "Seed " << custom_seed << " outside of expected range "
+                   << "[0, " << kRandomSeedUpperBound << ")";
+        return false;
+      }
+      shuffle_seed_ = custom_seed;
+    } else {
+      std::uniform_int_distribution<uint32_t> dist(0, kRandomSeedUpperBound);
+      std::random_device random_dev;
+      shuffle_seed_ = dist(random_dev);
+    }
+  } else if (command_line->HasSwitch(kGTestRandomSeedFlag)) {
+    LOG(ERROR) << kGTestRandomSeedFlag << " requires " << kGTestShuffleFlag;
+    return false;
+  }
+
   fprintf(stdout, "Using %" PRIuS " parallel jobs.\n", parallel_jobs_);
   fflush(stdout);
 
@@ -1154,6 +1199,15 @@ void TestLauncher::RunTests() {
     results_tracker_.AddTestLocation(test_name, test_id.file, test_id.line);
 
     test_names.push_back(test_name);
+  }
+
+  if (shuffle_) {
+    std::mt19937 randomizer;
+    randomizer.seed(shuffle_seed_);
+    std::shuffle(test_names.begin(), test_names.end(), randomizer);
+
+    fprintf(stdout, "Randomizing with seed %u\n", shuffle_seed_);
+    fflush(stdout);
   }
 
   // Save an early test summary in case the launcher crashes or gets killed.

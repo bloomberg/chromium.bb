@@ -227,18 +227,27 @@
       },
       # chromium.mac
       'Mac10.11 Tests': {
+        # A subset of tests seem to cause WindowServer deaths on VMs.
+        # crbug.com/828031 et al.
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+          '--gtest_shuffle',
         ],
       },
       'Mac10.12 Tests': {
+        # A subset of tests seem to cause WindowServer deaths on VMs.
+        # crbug.com/828031 et al.
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+          '--gtest_shuffle',
         ],
       },
       'Mac10.13 Tests': {
+        # A subset of tests seem to cause WindowServer deaths on VMs.
+        # crbug.com/828031 et al.
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+          '--gtest_shuffle',
         ],
         'experiment_percentage': 100,
       },
