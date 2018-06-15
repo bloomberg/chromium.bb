@@ -45,6 +45,7 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
   void OnDisplaySnapshotsInvalidated() override {}
 
   void ConfigureDisplayFromCommandLine();
+  void SetColorMatrix(const std::vector<float>& color_matrix);
 
  private:
   void ForceInitialConfigure();
@@ -62,6 +63,7 @@ class CastDisplayConfigurator : public display::NativeDisplayObserver {
 
   std::unique_ptr<display::NativeDisplayDelegate> delegate_;
   std::unique_ptr<CastTouchDeviceManager> touch_device_manager_;
+  display::DisplaySnapshot* display_;
   CastScreen* const cast_screen_;
 
   base::WeakPtrFactory<CastDisplayConfigurator> weak_factory_;

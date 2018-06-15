@@ -465,11 +465,12 @@ int CastBrowserMainParts::PreCreateThreads() {
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
 #if defined(USE_AURA)
-  cast_browser_process_->SetCastScreen(base::WrapUnique(new CastScreen()));
+  cast_browser_process_->SetCastScreen(std::make_unique<CastScreen>());
   DCHECK(!display::Screen::GetScreen());
   display::Screen::SetScreenInstance(cast_browser_process_->cast_screen());
-  display_configurator_ = std::make_unique<CastDisplayConfigurator>(
-      cast_browser_process_->cast_screen());
+  cast_browser_process_->SetDisplayConfigurator(
+      std::make_unique<CastDisplayConfigurator>(
+          cast_browser_process_->cast_screen()));
 #endif  // defined(USE_AURA)
 
   content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
@@ -656,8 +657,6 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
   NOTREACHED();
 #else
   window_manager_.reset();
-
-  display_configurator_.reset();
 
   cast_browser_process_->cast_service()->Finalize();
   cast_browser_process_->metrics_service_client()->Finalize();

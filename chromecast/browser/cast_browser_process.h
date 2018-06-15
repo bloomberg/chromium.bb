@@ -37,6 +37,7 @@ class AccessibilityManager;
 
 class CastBrowserContext;
 class CastContentBrowserClient;
+class CastDisplayConfigurator;
 class RemoteDebuggingServer;
 
 class CastBrowserProcess {
@@ -60,6 +61,8 @@ class CastBrowserProcess {
 #endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 
   void SetCastScreen(std::unique_ptr<CastScreen> cast_screen);
+  void SetDisplayConfigurator(
+      std::unique_ptr<CastDisplayConfigurator> display_configurator);
 #endif  // defined(USE_AURA)
   void SetMetricsServiceClient(
       std::unique_ptr<metrics::CastMetricsServiceClient>
@@ -80,6 +83,9 @@ class CastBrowserProcess {
   CastService* cast_service() const { return cast_service_.get(); }
 #if defined(USE_AURA)
   CastScreen* cast_screen() const { return cast_screen_.get(); }
+  CastDisplayConfigurator* display_configurator() const {
+    return display_configurator_.get();
+  }
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   AccessibilityManager* accessibility_manager() const {
@@ -107,6 +113,7 @@ class CastBrowserProcess {
   // CastBrowserMainParts.
 #if defined(USE_AURA)
   std::unique_ptr<CastScreen> cast_screen_;
+  std::unique_ptr<CastDisplayConfigurator> display_configurator_;
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   std::unique_ptr<AccessibilityManager> accessibility_manager_;
