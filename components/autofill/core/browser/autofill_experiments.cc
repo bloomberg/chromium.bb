@@ -147,11 +147,7 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     return false;
   }
 
-  // Check if the upload to Google state is active. This also returns false
-  // for users that have a secondary passphrase. Users who have enabled a
-  // passphrase have chosen to not make their sync information accessible to
-  // Google. Since upload makes credit card data available to other Google
-  // systems, disable it for passphrase users.
+  // Check if the upload to Google state is active.
   if (!base::FeatureList::IsEnabled(
           features::kAutofillEnablePaymentsInteractionsOnAuthError) &&
       syncer::GetUploadToGoogleState(sync_service,
@@ -159,6 +155,13 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
           syncer::UploadState::ACTIVE) {
     return false;
   }
+
+  // Also don't offer upload for users that have a secondary sync passphrase.
+  // Users who have enabled a passphrase have chosen to not make their sync
+  // information accessible to Google. Since upload makes credit card data
+  // available to other Google systems, disable it for passphrase users.
+  if (sync_service->IsUsingSecondaryPassphrase())
+    return false;
 
   // Check Payments integration user setting.
   if (!pref_service->GetBoolean(prefs::kAutofillWalletImportEnabled))
