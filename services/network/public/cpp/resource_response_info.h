@@ -181,6 +181,10 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceResponseInfo {
   // generated in devtools console if this flag is set to true.
   bool should_report_corb_blocking;
 
+  // True if this resource is stale and needs async revalidation. Will only
+  // possibly be set if the load_flags indicated SUPPORT_ASYNC_REVALIDATION.
+  bool async_revalidation_requested;
+
   // NOTE: When adding or changing fields here, also update
   // ResourceResponse::DeepCopy in resource_response.cc.
 };

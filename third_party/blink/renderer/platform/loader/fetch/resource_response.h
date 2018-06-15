@@ -409,6 +409,14 @@ class PLATFORM_EXPORT ResourceResponse final {
   }
   void AppendRedirectResponse(const ResourceResponse&);
 
+  bool AsyncRevalidationRequested() const {
+    return async_revalidation_requested_;
+  }
+
+  void SetAsyncRevalidationRequested(bool requested) {
+    async_revalidation_requested_ = requested;
+  }
+
   // This method doesn't compare the all members.
   static bool Compare(const ResourceResponse&, const ResourceResponse&);
 
@@ -470,6 +478,10 @@ class PLATFORM_EXPORT ResourceResponse final {
   // True if service worker navigation preload was performed due to
   // the request for this resource.
   bool did_service_worker_navigation_preload_ = false;
+
+  // True if this resource is stale and needs async revalidation. Will only
+  // possibly be set if the load_flags indicated SUPPORT_ASYNC_REVALIDATION.
+  bool async_revalidation_requested_ = false;
 
   // The type of the response which was returned by the ServiceWorker.
   network::mojom::FetchResponseType response_type_via_service_worker_ =
@@ -600,6 +612,7 @@ struct CrossThreadResourceResponseData {
   Vector<KURL> url_list_via_service_worker_;
   String cache_storage_cache_name_;
   bool did_service_worker_navigation_preload_;
+  bool async_revalidation_requested_;
   Time response_time_;
   String remote_ip_address_;
   unsigned short remote_port_;

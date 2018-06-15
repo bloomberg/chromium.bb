@@ -59,6 +59,8 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
       head.did_service_worker_navigation_preload;
   new_response->head.should_report_corb_blocking =
       head.should_report_corb_blocking;
+  new_response->head.async_revalidation_requested =
+      head.async_revalidation_requested;
   return new_response;
 }
 

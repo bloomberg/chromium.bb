@@ -356,6 +356,8 @@ class WebURLRequest {
   // due to an Upgrade-Insecure-Requests requirement.
   BLINK_PLATFORM_EXPORT bool UpgradeIfInsecure() const;
 
+  BLINK_PLATFORM_EXPORT bool SupportsAsyncRevalidation() const;
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();
   BLINK_PLATFORM_EXPORT const ResourceRequest& ToResourceRequest() const;

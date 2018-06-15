@@ -443,6 +443,10 @@ void WebURLResponse::SetConnectionInfo(
   resource_response_->SetConnectionInfo(connection_info);
 }
 
+void WebURLResponse::SetAsyncRevalidationRequested(bool requested) {
+  resource_response_->SetAsyncRevalidationRequested(requested);
+}
+
 WebURLResponse::WebURLResponse(ResourceResponse& r) : resource_response_(&r) {}
 
 }  // namespace blink

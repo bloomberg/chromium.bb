@@ -1190,6 +1190,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   response->SetAlpnNegotiatedProtocol(
       WebString::FromUTF8(info.alpn_negotiated_protocol));
   response->SetConnectionInfo(info.connection_info);
+  response->SetAsyncRevalidationRequested(info.async_revalidation_requested);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
 
