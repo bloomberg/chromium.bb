@@ -200,9 +200,10 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
 
   void EraseTimeline(scoped_refptr<AnimationTimeline> timeline);
 
-  bool NeedsTickMutator(base::TimeTicks monotonic_time,
-                        const ScrollTree& scroll_tree,
-                        bool is_active_tree) const;
+  // Return true if there are any animations that get mutated.
+  bool TickMutator(base::TimeTicks monotonic_time,
+                   const ScrollTree& scroll_tree,
+                   bool is_active_tree);
 
   // Return the state representing all ticking worklet animations.
   std::unique_ptr<MutatorInputState> CollectWorkletAnimationsState(

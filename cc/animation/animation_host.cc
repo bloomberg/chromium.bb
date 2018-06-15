@@ -275,22 +275,20 @@ bool AnimationHost::NeedsTickAnimations() const {
   return !ticking_animations_.empty();
 }
 
-bool AnimationHost::NeedsTickMutator(base::TimeTicks monotonic_time,
-                                     const ScrollTree& scroll_tree,
-                                     bool is_active_tree) const {
+bool AnimationHost::TickMutator(base::TimeTicks monotonic_time,
+                                const ScrollTree& scroll_tree,
+                                bool is_active_tree) {
   if (!mutator_ || !mutator_->HasAnimators())
     return false;
 
-  for (auto& animation : ticking_animations_) {
-    if (!animation->IsWorkletAnimation())
-      continue;
+  std::unique_ptr<MutatorInputState> state = CollectWorkletAnimationsState(
+      monotonic_time, scroll_tree, is_active_tree);
+  if (state->IsEmpty())
+    return false;
 
-    if (ToWorkletAnimation(animation.get())
-            ->NeedsUpdate(monotonic_time, scroll_tree, is_active_tree))
-      return true;
-  }
+  mutator_->Mutate(std::move(state));
 
-  return false;
+  return true;
 }
 
 bool AnimationHost::ActivateAnimations() {
@@ -319,15 +317,12 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
 
     did_animate = true;
   }
-  if (NeedsTickMutator(monotonic_time, scroll_tree, is_active_tree)) {
-    // TODO(majidvp): At the moment we call this for both active and pending
-    // trees similar to other animations. However our final goal is to only call
-    // it once, ideally after activation, and only when the input
-    // to an active timeline has changed. http://crbug.com/767210
-    mutator_->Mutate(CollectWorkletAnimationsState(monotonic_time, scroll_tree,
-                                                   is_active_tree));
-    did_animate = true;
-  }
+
+  // TODO(majidvp): At the moment we call this for both active and pending
+  // trees similar to other animations. However our final goal is to only call
+  // it once, ideally after activation, and only when the input
+  // to an active timeline has changed. http://crbug.com/767210
+  did_animate |= TickMutator(monotonic_time, scroll_tree, is_active_tree);
 
   return did_animate;
 }
@@ -339,15 +334,10 @@ void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time,
   // fine-grained approach based on invalidating individual ScrollTimelines and
   // then ticking the animations attached to those timelines. To make
   // this happen we probably need to move "ticking" animations to timeline.
-  const bool is_active_tree = true;
-  if (!NeedsTickMutator(monotonic_time, scroll_tree, is_active_tree))
-    return;
-  DCHECK(mutator_);
 
   // TODO(majidvp): We need to return a boolean here so that LTHI knows
   // whether it needs to schedule another frame.
-  mutator_->Mutate(CollectWorkletAnimationsState(monotonic_time, scroll_tree,
-                                                 is_active_tree));
+  TickMutator(monotonic_time, scroll_tree, true /* is_active_tree */);
 }
 
 std::unique_ptr<MutatorInputState> AnimationHost::CollectWorkletAnimationsState(
