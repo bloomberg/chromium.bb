@@ -183,6 +183,10 @@ const char kAppListAppLaunched[] = "Apps.AppListAppLaunched";
 const char kAppListAppLaunchedFullscreen[] =
     "Apps.AppListAppLaunchedFullscreen";
 
+// The UMA histogram that logs different ways to move an app in app list's apps
+// grid.
+const char kAppListAppMovingType[] = "Apps.AppListAppMovingType";
+
 // The UMA histogram that logs the creation time of the AppListView.
 const char kAppListCreationTimeHistogram[] = "Apps.AppListCreationTime";
 
@@ -216,6 +220,13 @@ const char kNumberOfAppsInFoldersHistogram[] =
 
 // The UMA histogram that logs how many folders users have.
 const char kNumberOfFoldersHistogram[] = "Apps.NumberOfFolders";
+
+// The UMA histogram that logs how many pages users have in top level apps grid.
+const char kNumberOfPagesHistogram[] = "Apps.NumberOfPages";
+
+// The UMA histogram that logs how many pages with empty slots users have in top
+// level apps grid.
+const char kNumberOfPagesNotFullHistogram[] = "Apps.NumberOfPagesNotFull";
 
 // The UMA histogram that logs the type of search result opened.
 const char kSearchResultOpenDisplayTypeHistogram[] =

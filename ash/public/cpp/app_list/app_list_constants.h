@@ -176,8 +176,21 @@ enum AppListPageSwitcherSource {
   kMaxAppListPageSwitcherSource = 7,
 };
 
+// The different ways to move an app in app list's apps grid. These values are
+// written to logs. New enum values can be added, but existing enums must never
+// be renumbered or deleted and reused.
+enum AppListAppMovingType {
+  kMoveIntoFolder = 0,
+  kMoveOutOfFolder = 1,
+  kMoveIntoAnotherFolder = 2,
+  kReorderInFolder = 3,
+  kReorderInTopLevel = 4,
+  kMaxAppListAppMovingType = 5,
+};
+
 ASH_PUBLIC_EXPORT extern const char kAppListAppLaunched[];
 ASH_PUBLIC_EXPORT extern const char kAppListAppLaunchedFullscreen[];
+ASH_PUBLIC_EXPORT extern const char kAppListAppMovingType[];
 ASH_PUBLIC_EXPORT extern const char kAppListCreationTimeHistogram[];
 ASH_PUBLIC_EXPORT extern const char kAppListStateTransitionSourceHistogram[];
 ASH_PUBLIC_EXPORT extern const char kAppListPageSwitcherSourceHistogram[];
@@ -187,6 +200,8 @@ ASH_PUBLIC_EXPORT extern const char kAppListToggleMethodHistogram[];
 ASH_PUBLIC_EXPORT extern const char kPageOpenedHistogram[];
 ASH_PUBLIC_EXPORT extern const char kNumberOfAppsInFoldersHistogram[];
 ASH_PUBLIC_EXPORT extern const char kNumberOfFoldersHistogram[];
+ASH_PUBLIC_EXPORT extern const char kNumberOfPagesHistogram[];
+ASH_PUBLIC_EXPORT extern const char kNumberOfPagesNotFullHistogram[];
 
 ASH_PUBLIC_EXPORT extern const char kSearchResultOpenDisplayTypeHistogram[];
 ASH_PUBLIC_EXPORT extern const char kSearchQueryLength[];

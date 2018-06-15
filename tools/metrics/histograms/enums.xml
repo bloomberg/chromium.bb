@@ -1295,6 +1295,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="17" label="Window Exit Presentation Mode"/>
 </enum>
 
+<enum name="AppListAppMovingType">
+  <int value="0" label="MOVE_INTO_FOLDER"/>
+  <int value="1" label="MOVE_OUT_OF_FOLDER"/>
+  <int value="2" label="MOVE_INTO_ANOTHER_FOLDER"/>
+  <int value="3" label="REORDER_IN_FOLDER"/>
+  <int value="4" label="REORDER_IN_TOP_LEVEL"/>
+</enum>
+
 <enum name="AppListDoodleAction">
   <obsolete>
     App list doesn't support doodles anymore.
