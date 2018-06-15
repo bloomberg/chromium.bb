@@ -6361,6 +6361,7 @@ static void setup_buffer_ref_mvs_inter(
   // Further refinement that is encode side only to test the top few candidates
   // in full and choose the best as the centre point for subsequent searches.
   // The current implementation doesn't support scaling.
+  (void)block_size;
   av1_mv_pred(cpi, x, yv12_mb[ref_frame][0].buf, yv12->y_stride, ref_frame,
               block_size);
 }
@@ -6378,18 +6379,13 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   int sadpb = x->sadperbit16;
   MV mvp_full;
   int ref = mbmi->ref_frame[ref_idx];
-  MV ref_mv = x->mbmi_ext->ref_mvs[ref][0].as_mv;
+  MV ref_mv = av1_get_ref_mv(x, ref_idx).as_mv;
 
   MvLimits tmp_mv_limits = x->mv_limits;
   int cost_list[5];
 
   const YV12_BUFFER_CONFIG *scaled_ref_frame =
       av1_get_scaled_ref_frame(cpi, ref);
-
-  MV pred_mv[3];
-  pred_mv[0] = x->mbmi_ext->ref_mvs[ref][0].as_mv;
-  pred_mv[1] = x->mbmi_ext->ref_mvs[ref][1].as_mv;
-  pred_mv[2] = x->pred_mv[ref];
 
   if (scaled_ref_frame) {
     // Swap out the reference frame for a version that's been scaled to
@@ -6464,7 +6460,7 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (mbmi->motion_mode != SIMPLE_TRANSLATION)
     mvp_full = mbmi->mv[0].as_mv;
   else
-    mvp_full = pred_mv[x->mv_best_ref_index[ref]];
+    mvp_full = ref_mv;
 
   mvp_full.col >>= 3;
   mvp_full.row >>= 3;

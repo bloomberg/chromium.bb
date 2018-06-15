@@ -235,7 +235,6 @@ struct macroblock {
   BLOCK_SIZE min_partition_size;
   BLOCK_SIZE max_partition_size;
 
-  int mv_best_ref_index[REF_FRAMES];
   unsigned int max_mv_context[REF_FRAMES];
   unsigned int source_variance;
   unsigned int pred_sse[REF_FRAMES];
