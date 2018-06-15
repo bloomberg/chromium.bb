@@ -11,7 +11,7 @@ from page_sets.rendering import story_tags
 
 class ToughWebglPage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
-  TAGS = [story_tags.REQUIRED_WEBGL]
+  TAGS = [story_tags.REQUIRED_WEBGL, story_tags.TOUGH_WEBGL]
 
   def __init__(self,
                page_set,

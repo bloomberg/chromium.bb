@@ -5,12 +5,14 @@ from telemetry.page import shared_page_state
 from telemetry import story
 
 from page_sets.rendering import rendering_story
+from page_sets.rendering import story_tags
 from page_sets.system_health import platforms
 
 
 class SimplePage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.SIMPLE_MOBILE_SITES]
 
   def __init__(self,
                page_set,

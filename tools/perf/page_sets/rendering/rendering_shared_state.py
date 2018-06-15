@@ -9,7 +9,7 @@ from telemetry.page import shared_page_state
 
 class RenderingSharedState(shared_page_state.SharedPageState):
   def CanRunOnBrowser(self, browser_info, page):
-    if page.TAGS and story_tags.PINCH_ZOOM in page.TAGS:
+    if page.TAGS and story_tags.TOUGH_PINCH_ZOOM in page.TAGS:
       os_name = self.platform.GetOSName()
       if os_name == 'linux' or os_name == 'win':
         logging.warning('Pinch zoom pages only for Mac, skipping test')

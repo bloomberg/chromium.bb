@@ -10,7 +10,7 @@ from page_sets.rendering import story_tags
 
 class TopRealWorldDesktopPage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
-  TAGS = [story_tags.GPU_RASTERIZATION]
+  TAGS = [story_tags.GPU_RASTERIZATION, story_tags.TOP_REAL_WORLD_DESKTOP]
 
   def __init__(self,
                page_set,

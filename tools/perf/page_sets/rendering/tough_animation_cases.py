@@ -5,11 +5,13 @@ from telemetry.page import shared_page_state
 from telemetry import story
 
 from page_sets.rendering import rendering_story
+from page_sets.rendering import story_tags
 
 
 class ToughAnimationPage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
   NEED_MEASUREMENT_READY = True
+  TAGS = [story_tags.TOUGH_ANIMATION]
 
   def __init__(self,
                page_set,

@@ -5,10 +5,12 @@ from telemetry.page import shared_page_state
 from telemetry import story
 
 from page_sets.rendering import rendering_story
+from page_sets.rendering import story_tags
 
 
 class ToughPathRenderingPage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
+  TAGS = [story_tags.TOUGH_PATH_RENDERING]
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('ClickStart'):
@@ -35,6 +37,7 @@ class MotionMarkCanvasStrokeShapesPage(ToughPathRenderingPage):
 class ChalkboardPage(rendering_story.RenderingStory):
   BASE_NAME = 'ie_chalkboard'
   URL = 'https://testdrive-archive.azurewebsites.net/performance/chalkboard/'
+  TAGS = [story_tags.TOUGH_PATH_RENDERING]
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('ClickStart'):
