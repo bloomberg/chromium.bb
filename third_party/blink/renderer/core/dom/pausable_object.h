@@ -33,6 +33,24 @@
 
 namespace blink {
 
+// A PausableObject responds to situations where Blink is running a nested event
+// loop. At such times, the page should be responsive, but only in a limited
+// sense: the browser should redraw the page as necessary, but should not run
+// timer callbacks, finish promise resolution, fire events, or perform other
+// activity, especially activity which may run script.
+//
+// Pausing can happen in cases such as:
+// - modal dialogs during script execution (e.g. window.alert, window.print)
+// - script execution stopped at a debugger breakpoint
+//
+// The scheduler will automatically suspend certain task queues for the duration
+// that the page is paused.
+//
+// Objects with asynchronous activity, especially activity that may have an
+// observable effect on web-visible state, on should suspend that activity while
+// the page is paused by overriding Pause() and Unpause().
+//
+// https://html.spec.whatwg.org/multipage/webappapis.html#pause
 class CORE_EXPORT PausableObject : public ContextLifecycleObserver {
  public:
   explicit PausableObject(ExecutionContext*);
