@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/web_package/web_package_request_handler.h"
+#include "content/browser/web_package/signed_exchange_request_handler.h"
 
 #include <memory>
 
@@ -24,12 +24,12 @@
 namespace content {
 
 // static
-bool WebPackageRequestHandler::IsSupportedMimeType(
+bool SignedExchangeRequestHandler::IsSupportedMimeType(
     const std::string& mime_type) {
   return mime_type == "application/signed-exchange";
 }
 
-WebPackageRequestHandler::WebPackageRequestHandler(
+SignedExchangeRequestHandler::SignedExchangeRequestHandler(
     url::Origin request_initiator,
     const GURL& url,
     uint32_t url_loader_options,
@@ -54,9 +54,9 @@ WebPackageRequestHandler::WebPackageRequestHandler(
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
 }
 
-WebPackageRequestHandler::~WebPackageRequestHandler() = default;
+SignedExchangeRequestHandler::~SignedExchangeRequestHandler() = default;
 
-void WebPackageRequestHandler::MaybeCreateLoader(
+void SignedExchangeRequestHandler::MaybeCreateLoader(
     const network::ResourceRequest& resource_request,
     ResourceContext* resource_context,
     LoaderCallback callback) {
@@ -69,11 +69,12 @@ void WebPackageRequestHandler::MaybeCreateLoader(
     return;
   }
 
-  std::move(callback).Run(base::BindOnce(
-      &WebPackageRequestHandler::StartResponse, weak_factory_.GetWeakPtr()));
+  std::move(callback).Run(
+      base::BindOnce(&SignedExchangeRequestHandler::StartResponse,
+                     weak_factory_.GetWeakPtr()));
 }
 
-bool WebPackageRequestHandler::MaybeCreateLoaderForResponse(
+bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
@@ -101,7 +102,7 @@ bool WebPackageRequestHandler::MaybeCreateLoaderForResponse(
   return true;
 }
 
-void WebPackageRequestHandler::StartResponse(
+void SignedExchangeRequestHandler::StartResponse(
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
   signed_exchange_loader_->ConnectToClient(std::move(client));

@@ -35,9 +35,9 @@ class URLLoaderThrottle;
 class SourceStreamToDataPipe;
 
 // SignedExchangeLoader handles an origin-signed HTTP exchange response. It is
-// created when a WebPackageRequestHandler recieves an origin-signed HTTP
+// created when a SignedExchangeRequestHandler recieves an origin-signed HTTP
 // exchange response, and is owned by the handler until the StartLoaderCallback
-// of WebPackageRequestHandler::StartResponse is called. After that, it is
+// of SignedExchangeRequestHandler::StartResponse is called. After that, it is
 // owned by the URLLoader mojo endpoint.
 class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
                                    public network::mojom::URLLoader {

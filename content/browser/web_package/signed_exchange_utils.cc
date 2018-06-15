@@ -9,7 +9,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_error.h"
-#include "content/browser/web_package/web_package_request_handler.h"
+#include "content/browser/web_package/signed_exchange_request_handler.h"
 #include "content/public/common/content_features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
@@ -41,7 +41,7 @@ bool ShouldHandleAsSignedHTTPExchange(
   // TODO(crbug/803774): Decide whether we should support it or not.
   if (head.was_fetched_via_service_worker)
     return false;
-  if (!WebPackageRequestHandler::IsSupportedMimeType(head.mime_type))
+  if (!SignedExchangeRequestHandler::IsSupportedMimeType(head.mime_type))
     return false;
   if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
     return true;
