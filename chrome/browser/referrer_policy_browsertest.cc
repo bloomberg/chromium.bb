@@ -218,7 +218,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
     }
 
     EXPECT_EQ(expected_referrer_policy,
-              tab->GetController().GetActiveEntry()->GetReferrer().policy);
+              tab->GetController().GetVisibleEntry()->GetReferrer().policy);
 
     return start_url;
   }
@@ -534,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest, RequestTabletSite) {
   // is complete, so the title change is missed because the title is checked on
   // load. Clearing the title ensures that TitleWatcher will wait for the actual
   // title setting.
-  tab->GetController().GetActiveEntry()->SetTitle(base::string16());
+  tab->GetController().GetVisibleEntry()->SetTitle(base::string16());
 
   // Request tablet version.
   chrome::ToggleRequestTabletSite(browser());
