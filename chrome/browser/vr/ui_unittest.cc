@@ -1230,10 +1230,6 @@ TEST_F(UiTest, ResetRepositioner) {
 
   EXPECT_NE(original, repositioner->world_space_transform());
   repositioner->SetEnabled(false);
-  model_->controller.recentered = true;
-
-  OnBeginFrame();
-  EXPECT_EQ(original, repositioner->world_space_transform());
 }
 
 // No element in the controller root's subtree should be hit testable.
@@ -1311,10 +1307,6 @@ TEST_F(UiTest, RepositionHostedUi) {
 
   EXPECT_NE(original, hosted_ui->world_space_transform());
   repositioner->SetEnabled(false);
-  model_->controller.recentered = true;
-
-  OnBeginFrame();
-  EXPECT_EQ(original, hosted_ui->world_space_transform());
 }
 
 // Ensures that permissions do not appear after showing hosted UI.
