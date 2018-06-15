@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_GPU_SERVICE_PROXY_DELEGATEH_
-#define SERVICES_UI_WS_GPU_SERVICE_PROXY_DELEGATEH_
+#ifndef SERVICES_UI_GPU_HOST_GPU_HOST_DELEGATE_H_
+#define SERVICES_UI_GPU_HOST_GPU_HOST_DELEGATE_H_
 
 #include "base/memory/ref_counted.h"
 
 namespace ui {
-namespace ws {
+namespace gpu_host {
 
 class GpuHostDelegate {
  public:
@@ -17,7 +17,7 @@ class GpuHostDelegate {
   virtual void OnGpuServiceInitialized() = 0;
 };
 
-}  // namespace ws
+}  // namespace gpu_host
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_GPU_SERVICE_PROXY_DELEGATEH_
+#endif  // SERVICES_UI_GPU_HOST_GPU_HOST_DELEGATE_H_

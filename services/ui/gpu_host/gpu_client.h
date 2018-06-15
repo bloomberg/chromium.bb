@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_GPU_CLIENT_H_
-#define SERVICES_UI_WS_GPU_CLIENT_H_
+#ifndef SERVICES_UI_GPU_HOST_GPU_CLIENT_H_
+#define SERVICES_UI_GPU_HOST_GPU_CLIENT_H_
 
 #include "base/memory/weak_ptr.h"
 #include "gpu/config/gpu_feature_info.h"
@@ -17,11 +17,10 @@ class GpuService;
 }  // namespace mojom
 
 class ServerGpuMemoryBufferManager;
-}
+}  // namespace viz
 
 namespace ui {
-
-namespace ws {
+namespace gpu_host {
 
 namespace test {
 class GpuHostTest;
@@ -82,7 +81,7 @@ class GpuClient : public ui::mojom::GpuMemoryBufferFactory,
   DISALLOW_COPY_AND_ASSIGN(GpuClient);
 };
 
-}  // namespace ws
+}  // namespace gpu_host
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_GPU_CLIENT_H_
+#endif  // SERVICES_UI_GPU_HOST_GPU_CLIENT_H_

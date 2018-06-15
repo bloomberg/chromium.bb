@@ -60,6 +60,7 @@ source_set("lib") {
     "//services/catalog/public/cpp",
     "//services/catalog/public/mojom:constants",
     "//services/service_manager/public/cpp",
+    "//services/ui/gpu_host",
     "//services/ui/ime:lib",
     "//services/ui/input_devices",
     "//services/ui/public/interfaces",

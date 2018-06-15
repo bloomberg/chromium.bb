@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_TEST_GPU_HOST_H_
-#define SERVICES_UI_WS_TEST_GPU_HOST_H_
+#ifndef SERVICES_UI_GPU_HOST_TEST_GPU_HOST_H_
+#define SERVICES_UI_GPU_HOST_TEST_GPU_HOST_H_
 
 #include "base/macros.h"
 #include "components/viz/test/test_frame_sink_manager.h"
-#include "services/ui/ws/gpu_host.h"
+#include "services/ui/gpu_host/gpu_host.h"
 
 namespace ui {
-namespace ws {
+namespace gpu_host {
 
-class TestGpuHost : public GpuHost {
+class TestGpuHost : public gpu_host::GpuHost {
  public:
   TestGpuHost();
   ~TestGpuHost() override;
@@ -32,7 +32,7 @@ class TestGpuHost : public GpuHost {
   DISALLOW_COPY_AND_ASSIGN(TestGpuHost);
 };
 
-}  // namespace ws
+}  // namespace gpu_host
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_TEST_GPU_HOST_H_
+#endif  // SERVICES_UI_GPU_HOST_TEST_GPU_HOST_H_

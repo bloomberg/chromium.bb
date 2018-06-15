@@ -13,12 +13,12 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/ui/common/image_cursors_set.h"
+#include "services/ui/gpu_host/test_gpu_host.h"
 #include "services/ui/public/interfaces/cursor/cursor.mojom.h"
 #include "services/ui/ws/cursor_location_manager.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
-#include "services/ui/ws/test_gpu_host.h"
 #include "services/ui/ws/threaded_image_cursors.h"
 #include "services/ui/ws/threaded_image_cursors_factory.h"
 #include "services/ui/ws/window_manager_access_policy.h"
@@ -583,7 +583,8 @@ WindowServerTestHelper::WindowServerTestHelper()
   PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
   window_server_ = std::make_unique<WindowServer>(&window_server_delegate_,
                                                   true /* should_host_viz */);
-  std::unique_ptr<GpuHost> gpu_host = std::make_unique<TestGpuHost>();
+  std::unique_ptr<gpu_host::GpuHost> gpu_host =
+      std::make_unique<gpu_host::TestGpuHost>();
   window_server_->SetGpuHost(std::move(gpu_host));
   window_server_delegate_.set_window_server(window_server_.get());
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_GPU_HOST_H_
-#define SERVICES_UI_WS_GPU_HOST_H_
+#ifndef SERVICES_UI_GPU_HOST_GPU_HOST_H_
+#define SERVICES_UI_GPU_HOST_GPU_HOST_H_
 
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -36,8 +36,7 @@ class ServerGpuMemoryBufferManager;
 }
 
 namespace ui {
-
-namespace ws {
+namespace gpu_host {
 
 class GpuClient;
 
@@ -142,7 +141,7 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
   DISALLOW_COPY_AND_ASSIGN(DefaultGpuHost);
 };
 
-}  // namespace ws
+}  // namespace gpu_host
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_GPU_HOST_H_
+#endif  // SERVICES_UI_GPU_HOST_GPU_HOST_H_
