@@ -357,6 +357,7 @@ CancelCallback DriveAPIService::GetAllFileList(
   if (team_drive_id.empty()) {
     request->set_corpora(google_apis::FilesListCorpora::DEFAULT);
   } else {
+    request->set_team_drive_id(team_drive_id);
     request->set_corpora(google_apis::FilesListCorpora::TEAM_DRIVE);
   }
   return sender_->StartRequestWithAuthRetry(std::move(request));
