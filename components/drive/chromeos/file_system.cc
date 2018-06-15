@@ -928,15 +928,12 @@ void FileSystem::OnTeamDriveListLoaded(
     const std::vector<internal::TeamDrive>& removed_team_drives) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  for (const auto& team_drive : removed_team_drives) {
-    auto it = team_drive_change_list_loaders_.find(team_drive.team_drive_id());
-    if (it != team_drive_change_list_loaders_.end()) {
-      it->second->RemoveChangeListLoaderObserver(this);
-      team_drive_change_list_loaders_.erase(it);
-    }
+  for (auto& team_drive_loader : team_drive_change_list_loaders_) {
+    team_drive_loader.second->RemoveChangeListLoaderObserver(this);
   }
+  team_drive_change_list_loaders_.clear();
 
-  for (const auto& team_drive : added_team_drives) {
+  for (const auto& team_drive : team_drives_list) {
     auto loader = std::make_unique<internal::TeamDriveChangeListLoader>(
         team_drive.team_drive_id(), team_drive.team_drive_path(), logger_,
         blocking_task_runner_.get(), resource_metadata_, scheduler_,
