@@ -28,7 +28,7 @@ namespace AV1CompRoundShift {
 typedef void (*comp_round_shift_array_func)(int32_t *arr, int size, int bit);
 
 const int kValidBitCheck[] = {
-  -4, -3, -2, -1, 0, 1, 2, 3, 4,
+  0, 1, 2, 3, 4,
 };
 
 typedef ::testing::tuple<comp_round_shift_array_func, BLOCK_SIZE, int>
