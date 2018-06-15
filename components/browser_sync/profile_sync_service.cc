@@ -1091,7 +1091,7 @@ void ProfileSyncService::ClearServerDataForTest(const base::Closure& callback) {
 void ProfileSyncService::OnConfigureDone(
     const DataTypeManager::ConfigureResult& result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  data_type_status_table_ = result.data_type_status_table;
+  data_type_error_map_ = result.data_type_status_table.GetAllErrors();
 
   if (!sync_configure_start_time_.is_null()) {
     if (result.status == DataTypeManager::OK) {
@@ -1136,14 +1136,15 @@ void ProfileSyncService::OnConfigureDone(
     }
     // Something catastrophic had happened. We should only have one
     // error representing it.
-    syncer::SyncError error = data_type_status_table_.GetUnrecoverableError();
+    syncer::SyncError error =
+        result.data_type_status_table.GetUnrecoverableError();
     DCHECK(error.IsSet());
     std::string message =
         "Sync configuration failed with status " +
         DataTypeManager::ConfigureStatusToString(result.status) +
         " caused by " +
         syncer::ModelTypeSetToString(
-            data_type_status_table_.GetUnrecoverableErrorTypes()) +
+            result.data_type_status_table.GetUnrecoverableErrorTypes()) +
         ": " + error.message();
     LOG(ERROR) << "ProfileSyncService error: " << message;
     OnInternalUnrecoverableError(error.location(), message, true,
@@ -1609,8 +1610,6 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
   type_status_header->SetString("group_type", "Group Type");
   result->Append(std::move(type_status_header));
 
-  const DataTypeStatusTable::TypeErrorMap error_map =
-      data_type_status_table_.GetAllErrors();
   ModelSafeRoutingInfo routing_info;
   engine_->GetModelSafeRoutingInfo(&routing_info);
   const ModelTypeSet registered = GetRegisteredDataTypes();
@@ -1622,8 +1621,8 @@ std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
     type_status->SetString("group_type",
                            ModelSafeGroupToString(routing_info[type]));
 
-    if (error_map.find(type) != error_map.end()) {
-      const syncer::SyncError& error = error_map.find(type)->second;
+    if (data_type_error_map_.find(type) != data_type_error_map_.end()) {
+      const syncer::SyncError& error = data_type_error_map_.find(type)->second;
       DCHECK(error.IsSet());
       switch (error.GetSeverity()) {
         case syncer::SyncError::SYNC_ERROR_SEVERITY_ERROR:
@@ -2009,11 +2008,6 @@ syncer::ModelTypeSet ProfileSyncService::GetDataTypesFromPreferenceProviders()
     types.PutAll(provider->GetPreferredDataTypes());
   }
   return types;
-}
-
-const DataTypeStatusTable& ProfileSyncService::data_type_status_table() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return data_type_status_table_;
 }
 
 void ProfileSyncService::OnInternalUnrecoverableError(

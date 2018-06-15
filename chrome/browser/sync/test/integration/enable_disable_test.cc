@@ -44,11 +44,6 @@ void VerifyExistence(UserShare* user_share,
       << ModelTypeToString(selectable) << "->" << ModelTypeToString(grouped);
 }
 
-bool IsUnready(const syncer::DataTypeStatusTable& data_type_status_table,
-               ModelType type) {
-  return data_type_status_table.GetUnreadyErrorTypes().Has(type);
-}
-
 // The current approach this test class takes is to examine the Directory and
 // check for root nodes to see if a type is currently enabled. While this works
 // for things in the directory, it does not work for USS types. USS does not
@@ -114,7 +109,6 @@ class EnableDisableSingleClientTest : public SyncTest {
       ASSERT_TRUE(GetClient(0)->SetupSync(ModelTypeSet()));
     }
     user_share_ = GetSyncService(0)->GetUserShare();
-    data_type_status_table_ = GetSyncService(0)->data_type_status_table();
 
     registered_types_ = GetSyncService(0)->GetRegisteredDataTypes();
     selectable_types_ = UserSelectableTypes();
@@ -144,7 +138,6 @@ class EnableDisableSingleClientTest : public SyncTest {
 
   std::unique_ptr<SyncPrefs> sync_prefs_;
   UserShare* user_share_;
-  syncer::DataTypeStatusTable data_type_status_table_;
   ModelTypeSet registered_types_;
   ModelTypeSet selectable_types_;
   ModelTypeSet multi_grouped_types_;
@@ -180,14 +173,6 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   // Setup sync with no disabled types.
   SetupTest(true);
-
-  // Make sure all top-level nodes exist first.
-  for (ModelTypeSet::Iterator rdi = registered_directory_types_.First();
-       rdi.Good(); rdi.Inc()) {
-    EXPECT_TRUE(DoesTopLevelNodeExist(user_share_, rdi.Get()) ||
-                IsUnready(data_type_status_table_, rdi.Get()))
-        << ModelTypeToString(rdi.Get());
-  }
 
   for (ModelTypeSet::Iterator si = selectable_types_.First(); si.Good();
        si.Inc()) {

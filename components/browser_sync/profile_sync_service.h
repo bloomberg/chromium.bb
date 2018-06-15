@@ -470,9 +470,6 @@ class ProfileSyncService : public syncer::SyncService,
     return sync_error_controller_.get();
   }
 
-  // TODO(sync): This is only used in tests.  Can we remove it?
-  const syncer::DataTypeStatusTable& data_type_status_table() const;
-
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   void Shutdown() override;
@@ -782,7 +779,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Tracks the set of failed data types (those that encounter an error
   // or must delay loading for some reason).
-  syncer::DataTypeStatusTable data_type_status_table_;
+  syncer::DataTypeStatusTable::TypeErrorMap data_type_error_map_;
 
   // The set of currently enabled sync experiments.
   syncer::Experiments current_experiments_;
