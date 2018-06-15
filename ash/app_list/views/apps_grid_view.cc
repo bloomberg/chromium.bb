@@ -956,6 +956,9 @@ void AppsGridView::Update() {
   UpdatePulsingBlockViews();
   Layout();
   SchedulePaint();
+
+  if (!folder_delegate_)
+    RecordPageMetrics();
 }
 
 void AppsGridView::UpdateSuggestions() {
@@ -1957,6 +1960,9 @@ void AppsGridView::MoveItemInModel(AppListItemView* item_view,
 
   if (pagination_model_.selected_page() != target.page)
     pagination_model_.SelectPage(target.page, false);
+
+  RecordAppMovingTypeMetrics(folder_delegate_ ? kReorderInFolder
+                                              : kReorderInTopLevel);
 }
 
 void AppsGridView::MoveItemToFolder(AppListItemView* item_view,
@@ -2019,6 +2025,8 @@ void AppsGridView::MoveItemToFolder(AppListItemView* item_view,
   bounds_animator_.SetAnimationDelegate(
       drag_view_, std::unique_ptr<gfx::AnimationDelegate>(
                       new ItemRemoveAnimationDelegate(drag_view_)));
+
+  RecordAppMovingTypeMetrics(kMoveIntoFolder);
 }
 
 void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
@@ -2068,6 +2076,8 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
   item_list_->AddObserver(this);
   model_->AddObserver(this);
   UpdatePaging();
+
+  RecordAppMovingTypeMetrics(kMoveOutOfFolder);
 }
 
 bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
@@ -2153,6 +2163,7 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
                       new ItemRemoveAnimationDelegate(drag_view_)));
   UpdatePaging();
 
+  RecordAppMovingTypeMetrics(kMoveIntoAnotherFolder);
   return true;
 }
 
@@ -2299,6 +2310,7 @@ void AppsGridView::ButtonPressed(views::Button* sender,
 }
 
 void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
+  DCHECK(!item->is_page_break());
   EndDrag(true);
 
   AppListItemView* view = CreateViewForItemAtIndex(index);
@@ -2321,6 +2333,7 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
 }
 
 void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
+  DCHECK(!item->is_page_break());
   EndDrag(true);
 
   DeleteItemViewAtIndex(GetModelIndexOfItem(item), true /* sanitize */);
@@ -2337,6 +2350,7 @@ void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
 void AppsGridView::OnListItemMoved(size_t from_index,
                                    size_t to_index,
                                    AppListItem* item) {
+  DCHECK(!item->is_page_break());
   EndDrag(true);
 
   // The item is updated in the item list but the view_model is not updated, so
@@ -2678,6 +2692,38 @@ int AppsGridView::GetTargetModelIndexFromItemIndex(size_t item_index) {
       ++target_model_index;
   }
   return target_model_index;
+}
+
+void AppsGridView::RecordPageMetrics() {
+  DCHECK(!folder_delegate_);
+  UMA_HISTOGRAM_COUNTS_100(kNumberOfPagesHistogram,
+                           pagination_model_.total_pages());
+
+  // Calculate the number of pages that have empty slots.
+  int page_count = 0;
+  if (IsAppsGridGapEnabled()) {
+    const auto& pages = view_structure_.pages();
+    for (size_t i = 0; i < pages.size(); ++i) {
+      if (static_cast<int>(pages[i].size()) < TilesPerPage(i))
+        ++page_count;
+    }
+  } else {
+    int item_num = view_model_.view_size();
+    for (int i = 0; item_num > 0; ++i) {
+      item_num -= TilesPerPage(i);
+    }
+
+    // Only last page allows gaps if it is not full when apps grid gap is
+    // disabled.
+    if (item_num != 0)
+      page_count = 1;
+  }
+  UMA_HISTOGRAM_COUNTS_100(kNumberOfPagesNotFullHistogram, page_count);
+}
+
+void AppsGridView::RecordAppMovingTypeMetrics(AppListAppMovingType type) {
+  UMA_HISTOGRAM_ENUMERATION(kAppListAppMovingType, type,
+                            kMaxAppListAppMovingType);
 }
 
 }  // namespace app_list

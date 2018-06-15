@@ -584,6 +584,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // updated in item list but its item view has not been updated in view model.
   int GetTargetModelIndexFromItemIndex(size_t item_index);
 
+  // Records the total number of pages, and the number of pages with empty slots
+  // for UMA histograms.
+  void RecordPageMetrics();
+
+  // Records the different ways to move an app in app list's apps grid for UMA
+  // histograms.
+  void RecordAppMovingTypeMetrics(AppListAppMovingType type);
+
   AppListModel* model_ = nullptr;         // Owned by AppListView.
   AppListItemList* item_list_ = nullptr;  // Not owned.
 
