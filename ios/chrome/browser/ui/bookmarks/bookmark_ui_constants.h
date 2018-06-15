@@ -59,4 +59,8 @@ extern const CGFloat kBookmarkCellHorizontalAccessoryViewSpacing;
 // Accessibility identifier of the Create NewFolder Button.
 extern NSString* const kBookmarkCreateNewFolderCellIdentifier;
 
+// Empty state accessibility constants:
+// Accessibility identifier for the explanatory label in the empty state.
+extern NSString* const kBookmarkEmptyStateExplanatoryLabelIdentifier;
+
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_UI_CONSTANTS_H_

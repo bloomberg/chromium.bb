@@ -47,3 +47,6 @@ const CGFloat kBookmarkCellHorizontalAccessoryViewSpacing = 11.0f;
 
 NSString* const kBookmarkCreateNewFolderCellIdentifier =
     @"kBookmarkCreateNewFolderCellIdentifier";
+
+NSString* const kBookmarkEmptyStateExplanatoryLabelIdentifier =
+    @"kBookmarkEmptyStateExplanatoryLabelIdentifier";
