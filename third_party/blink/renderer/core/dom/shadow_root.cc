@@ -150,23 +150,18 @@ void ShadowRoot::RecalcStyle(StyleRecalcChange change) {
   DCHECK(!HasCustomStyleCallbacks());
 
   if (GetStyleChangeType() >= kSubtreeStyleChange) {
-    change = kForce;
-    if (NeedsAttach())
+    if (change < kForce)
+      change = kForce;
+    if (NeedsAttach() || change == kReattach)
       SetNeedsReattachLayoutTree();
   }
-
-  // There's no style to update so just calling recalcStyle means we're updated.
-  ClearNeedsStyleRecalc();
+  // There's no style to update so just calling RecalcStyle means we're updated.
+  if (change != kReattach)
+    ClearNeedsStyleRecalc();
 
   if (change >= kUpdatePseudoElements || ChildNeedsStyleRecalc())
     RecalcDescendantStyles(change);
   ClearChildNeedsStyleRecalc();
-}
-
-void ShadowRoot::RecalcStylesForReattach() {
-  // ShadowRoot doesn't support custom callbacks.
-  DCHECK(!HasCustomStyleCallbacks());
-  RecalcDescendantStylesForReattach();
 }
 
 void ShadowRoot::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {

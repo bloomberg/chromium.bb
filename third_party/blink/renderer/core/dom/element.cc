@@ -2120,6 +2120,18 @@ scoped_refptr<ComputedStyle> Element::OriginalStyleForLayoutObject() {
   return GetDocument().EnsureStyleResolver().StyleForElement(this);
 }
 
+bool Element::ShouldCallRecalcStyleForChildren(StyleRecalcChange change) {
+  if (change != kReattach)
+    return change >= kUpdatePseudoElements || ChildNeedsStyleRecalc();
+  if (!ChildrenCanHaveStyle())
+    return false;
+  if (const ComputedStyle* new_style = GetNonAttachedStyle()) {
+    return LayoutObjectIsNeeded(*new_style) ||
+           ShouldStoreNonLayoutObjectComputedStyle(*new_style);
+  }
+  return !CanParticipateInFlatTree();
+}
+
 void Element::RecalcStyle(StyleRecalcChange change) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!GetDocument().Lifecycle().InDetach());
@@ -2161,29 +2173,27 @@ void Element::RecalcStyle(StyleRecalcChange change) {
           element_animations->SetAnimationStyleChange(false);
       }
     }
+
     if (ParentComputedStyle()) {
       change = RecalcOwnStyle(change);
-    } else if (NeedsAttach()) {
-      if (!CanParticipateInFlatTree()) {
-        // Recalculate style for reattachment of Shadow DOM v0 <content>
-        // fallback.
-        RecalcShadowIncludingDescendantStylesForReattach();
-      }
-      SetNeedsReattachLayoutTree();
-      change = kReattach;
+    } else if (!CanParticipateInFlatTree()) {
+      // Recalculate style for Shadow DOM v0 <content> insertion point.
+      // It does not take style since it's not part of the flat tree, but we
+      // need to traverse into fallback children for reattach.
+      if (NeedsAttach())
+        change = kReattach;
+      if (change == kReattach)
+        SetNeedsReattachLayoutTree();
     }
 
-    // Needed because the rebuildLayoutTree code needs to see what the
-    // styleChangeType() was on reattach roots. See Node::reattachLayoutTree()
+    // Needed because the RebuildLayoutTree code needs to see what the
+    // StyleChangeType() was on reattach roots. See Node::ReattachLayoutTree()
     // for an example.
     if (change != kReattach)
       ClearNeedsStyleRecalc();
   }
 
-  // If we are going to reattach we don't need to recalc the style of
-  // our descendants anymore.
-  if (change < kReattach &&
-      (change >= kUpdatePseudoElements || ChildNeedsStyleRecalc())) {
+  if (ShouldCallRecalcStyleForChildren(change)) {
     SelectorFilterParentScope filter_scope(*this);
 
     UpdatePseudoElement(kPseudoIdBefore, change);
@@ -2277,13 +2287,9 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
     }
   }
 
-  if (local_change == kReattach) {
+  if (change == kReattach || local_change == kReattach) {
     SetNonAttachedStyle(new_style);
     SetNeedsReattachLayoutTree();
-    if (LayoutObjectIsNeeded(*new_style) ||
-        ShouldStoreNonLayoutObjectComputedStyle(*new_style)) {
-      RecalcShadowIncludingDescendantStylesForReattach();
-    }
     return kReattach;
   }
 
@@ -2327,48 +2333,6 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   }
 
   return local_change;
-}
-
-void Element::RecalcStyleForReattach() {
-  DCHECK(!GetNonAttachedStyle());
-  if (HasCustomStyleCallbacks())
-    WillRecalcStyle(kReattach);
-
-  bool recalc_descendants = false;
-  if (ParentComputedStyle()) {
-    scoped_refptr<ComputedStyle> non_attached_style = StyleForLayoutObject();
-    SetNeedsReattachLayoutTree();
-    SetNonAttachedStyle(non_attached_style);
-    recalc_descendants =
-        LayoutObjectIsNeeded(*non_attached_style) ||
-        ShouldStoreNonLayoutObjectComputedStyle(*non_attached_style);
-  } else {
-    // Elements which cannot participate in the flat tree are <content> and
-    // <slot> if SlotInFlatTree is not enabled. Even though we should not
-    // compute their styles for re-attachment, we may need to compute their
-    // children's style if fallback is rendered.
-    recalc_descendants = !CanParticipateInFlatTree();
-  }
-  if (recalc_descendants)
-    RecalcShadowIncludingDescendantStylesForReattach();
-
-  ClearChildNeedsStyleRecalc();
-
-  if (HasCustomStyleCallbacks())
-    DidRecalcStyle(kReattach);
-}
-
-void Element::RecalcShadowIncludingDescendantStylesForReattach() {
-  if (!ChildrenCanHaveStyle())
-    return;
-  SelectorFilterParentScope filterScope(*this);
-  RecalcShadowRootStylesForReattach();
-  RecalcDescendantStylesForReattach();
-}
-
-void Element::RecalcShadowRootStylesForReattach() {
-  if (ShadowRoot* root = GetShadowRoot())
-    root->RecalcStylesForReattach();
 }
 
 void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
@@ -3840,6 +3804,11 @@ void Element::CancelFocusAppearanceUpdate() {
 
 void Element::UpdatePseudoElement(PseudoId pseudo_id,
                                   StyleRecalcChange change) {
+  // TODO(futhark@chromium.org): Update pseudo elements and style as part of
+  // style recalc also when re-attaching.
+  if (change == kReattach)
+    return;
+
   DCHECK(!NeedsStyleRecalc());
   PseudoElement* element = GetPseudoElement(pseudo_id);
 
