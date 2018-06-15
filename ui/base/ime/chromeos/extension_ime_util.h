@@ -54,6 +54,13 @@ std::string UI_BASE_IME_EXPORT
 GetComponentInputMethodID(const std::string& extension_id,
                           const std::string& engine_id);
 
+// Returns InputMethodID for |engine_id| in |extension_id| of ARC IME.
+// This function does not check |extension_id| is one for ARC IME nor
+// |engine_id| is really an installed ARC IME.
+std::string UI_BASE_IME_EXPORT
+GetArcInputMethodID(const std::string& extension_id,
+                    const std::string& engine_id);
+
 // Returns extension ID if |input_method_id| is extension IME ID or component
 // extension IME ID. Otherwise returns an empty string ("").
 std::string UI_BASE_IME_EXPORT
@@ -76,6 +83,10 @@ bool UI_BASE_IME_EXPORT IsExtensionIME(const std::string& input_method_id);
 // IME, please use ComponentExtensionIMEManager::IsWhitelisted instead.
 bool UI_BASE_IME_EXPORT
 IsComponentExtensionIME(const std::string& input_method_id);
+
+// Returns true if |input_method_id| is a Arc IME ID. This function does not
+// check |input_method_id| is really a installed Arc IME.
+bool UI_BASE_IME_EXPORT IsArcIME(const std::string& input_method_id);
 
 // Returns true if the |input_method| is a member of |extension_id| of extension
 // IME, otherwise returns false.
