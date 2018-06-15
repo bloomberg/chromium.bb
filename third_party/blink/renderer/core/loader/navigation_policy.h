@@ -36,7 +36,7 @@
 namespace blink {
 
 class Event;
-class WebInputEvent;
+struct WebWindowFeatures;
 
 enum NavigationPolicy {
   kNavigationPolicyIgnore,
@@ -56,10 +56,11 @@ enum NavigationPolicy {
 // or new tabs without user intention coming from a real input event.
 CORE_EXPORT NavigationPolicy NavigationPolicyFromEvent(Event*);
 
-// This is a helper method which returns policy for a real input event
-// from the user.
-// TODO(dgozman): this function should be gone soon.
-CORE_EXPORT NavigationPolicy NavigationPolicyFromEvent(const WebInputEvent*);
+// Returns a NavigationPolicy to use for navigating a new window.
+// This function respects user intention coming from a real input event,
+// and ensures that we don't perform a download instead of navigation.
+CORE_EXPORT NavigationPolicy
+NavigationPolicyForCreateWindow(const WebWindowFeatures&);
 
 }  // namespace blink
 

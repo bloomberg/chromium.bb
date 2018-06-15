@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
-#include "third_party/blink/renderer/core/page/create_window.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -100,31 +99,8 @@ NavigationPolicy NavigationPolicyFromEventInternal(Event* event) {
   return kNavigationPolicyCurrentTab;
 }
 
-}  // namespace
-
-NavigationPolicy NavigationPolicyFromEvent(Event* event) {
-  NavigationPolicy event_policy = NavigationPolicyFromEventInternal(event);
-  NavigationPolicy input_policy =
-      NavigationPolicyFromEvent(CurrentInputEvent::Get());
-
-  if (event_policy == kNavigationPolicyDownload &&
-      input_policy != kNavigationPolicyDownload) {
-    // No downloads from synthesized events without user intention.
-    return kNavigationPolicyCurrentTab;
-  }
-
-  if (event_policy == kNavigationPolicyNewBackgroundTab &&
-      input_policy != kNavigationPolicyNewBackgroundTab &&
-      !UIEventWithKeyState::NewTabModifierSetFromIsolatedWorld()) {
-    // No "tab-unders" from synthesized events without user intention.
-    // Events originating from an isolated world are exempt.
-    return kNavigationPolicyNewForegroundTab;
-  }
-
-  return event_policy;
-}
-
-NavigationPolicy NavigationPolicyFromEvent(const WebInputEvent* event) {
+NavigationPolicy NavigationPolicyFromCurrentEvent() {
+  const WebInputEvent* event = CurrentInputEvent::Get();
   if (!event)
     return kNavigationPolicyCurrentTab;
 
@@ -160,6 +136,62 @@ NavigationPolicy NavigationPolicyFromEvent(const WebInputEvent* event) {
       event->GetModifiers() & WebInputEvent::kShiftKey,
       event->GetModifiers() & WebInputEvent::kAltKey,
       event->GetModifiers() & WebInputEvent::kMetaKey);
+}
+
+}  // namespace
+
+NavigationPolicy NavigationPolicyFromEvent(Event* event) {
+  NavigationPolicy event_policy = NavigationPolicyFromEventInternal(event);
+  NavigationPolicy input_policy = NavigationPolicyFromCurrentEvent();
+
+  if (event_policy == kNavigationPolicyDownload &&
+      input_policy != kNavigationPolicyDownload) {
+    // No downloads from synthesized events without user intention.
+    return kNavigationPolicyCurrentTab;
+  }
+
+  if (event_policy == kNavigationPolicyNewBackgroundTab &&
+      input_policy != kNavigationPolicyNewBackgroundTab &&
+      !UIEventWithKeyState::NewTabModifierSetFromIsolatedWorld()) {
+    // No "tab-unders" from synthesized events without user intention.
+    // Events originating from an isolated world are exempt.
+    return kNavigationPolicyNewForegroundTab;
+  }
+
+  return event_policy;
+}
+
+NavigationPolicy NavigationPolicyForCreateWindow(
+    const WebWindowFeatures& features) {
+  // If our default configuration was modified by a script or wasn't
+  // created by a user gesture, then show as a popup. Else, let this
+  // new window be opened as a toplevel window.
+  bool as_popup = !features.tool_bar_visible || !features.status_bar_visible ||
+                  !features.scrollbars_visible || !features.menu_bar_visible ||
+                  !features.resizable;
+  NavigationPolicy app_policy =
+      as_popup ? kNavigationPolicyNewPopup : kNavigationPolicyNewForegroundTab;
+  NavigationPolicy user_policy = NavigationPolicyFromCurrentEvent();
+
+  if (user_policy == kNavigationPolicyNewWindow &&
+      app_policy == kNavigationPolicyNewPopup) {
+    // User and app agree that we want a new window; let the app override the
+    // decorations.
+    return app_policy;
+  }
+
+  if (user_policy == kNavigationPolicyCurrentTab) {
+    // User doesn't want a specific policy, use app policy instead.
+    return app_policy;
+  }
+
+  if (user_policy == kNavigationPolicyDownload) {
+    // When the input event suggests a download, but the navigation was
+    // initiated by script, we should not override it.
+    return app_policy;
+  }
+
+  return user_policy;
 }
 
 STATIC_ASSERT_ENUM(kWebNavigationPolicyIgnore, kNavigationPolicyIgnore);

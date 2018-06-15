@@ -5,13 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_CURRENT_INPUT_EVENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_CURRENT_INPUT_EVENT_H_
 
+#include "third_party/blink/renderer/core/core_export.h"
+
 namespace blink {
 
-class WebFrameWidgetImpl;
 class WebInputEvent;
-class WebViewImpl;
 
-class CurrentInputEvent {
+class CORE_EXPORT CurrentInputEvent {
  public:
   // Gets the "current" input event - event that is currently being processed by
   // either blink::WebViewImpl::HandleInputEventInternal or by
@@ -21,6 +21,8 @@ class CurrentInputEvent {
  private:
   friend class WebViewImpl;
   friend class WebFrameWidgetImpl;
+  friend class NavigationPolicyTest;
+
   static const WebInputEvent* current_input_event_;
 };
 
