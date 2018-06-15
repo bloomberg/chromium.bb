@@ -209,6 +209,9 @@ if (is_android || is_chromeos) {
     # over the ones in other places. (instead of the support library from
     # android_tools for example)
     enable_android_deps_repository = true
+
+    # Turns off android lint. Useful for prototyping or for faster local builds.
+    disable_android_lint = false
   }
 
   # We need a second declare_args block to make sure we are using the overridden
