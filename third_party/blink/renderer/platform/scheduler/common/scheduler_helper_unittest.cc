@@ -10,7 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
@@ -58,7 +57,7 @@ class SchedulerHelperTest : public testing::Test {
     std::unique_ptr<base::sequence_manager::TaskQueueManagerForTest>
         task_queue_manager =
             base::sequence_manager::TaskQueueManagerForTest::Create(
-                nullptr, base::ThreadTaskRunnerHandle::Get(),
+                nullptr, task_environment_.GetMainThreadTaskRunner(),
                 task_environment_.GetMockTickClock());
     task_queue_manager_ = task_queue_manager.get();
     scheduler_helper_ = std::make_unique<NonMainThreadSchedulerHelper>(
