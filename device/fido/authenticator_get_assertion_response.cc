@@ -45,7 +45,7 @@ AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
                                              std::move(signature));
   response.SetCredential(PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey, fido_parsing_utils::Materialize(key_handle)));
-  return response;
+  return std::move(response);
 }
 
 AuthenticatorGetAssertionResponse::AuthenticatorGetAssertionResponse(
