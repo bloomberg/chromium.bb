@@ -11,8 +11,8 @@
 #include <zircon/syscalls.h>
 
 #include "base/bits.h"
+#include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_zx_handle.h"
-#include "base/logging.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/process/process_metrics.h"
 
@@ -66,8 +66,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     ScopedZxHandle old_vmo(std::move(vmo));
     status = zx_handle_replace(old_vmo.get(), kNoExecFlags, vmo.receive());
     if (status != ZX_OK) {
-      DLOG(ERROR) << "zx_handle_replace() failed: "
-                  << zx_status_get_string(status);
+      ZX_DLOG(ERROR, status) << "zx_handle_replace()";
       return false;
     }
     ignore_result(old_vmo.release());
@@ -95,7 +94,7 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   zx_status_t status = zx_vmar_map(zx_vmar_root_self(), 0, shm_.GetHandle(),
                                    offset, bytes, flags, &addr);
   if (status != ZX_OK) {
-    DLOG(ERROR) << "zx_vmar_map failed, status=" << status;
+    ZX_DLOG(ERROR, status) << "zx_vmar_map failed";
     return false;
   }
   memory_ = reinterpret_cast<void*>(addr);
@@ -115,7 +114,7 @@ bool SharedMemory::Unmap() {
   uintptr_t addr = reinterpret_cast<uintptr_t>(memory_);
   zx_status_t status = zx_vmar_unmap(zx_vmar_root_self(), addr, mapped_size_);
   if (status != ZX_OK) {
-    DLOG(ERROR) << "zx_vmar_unmap failed, status=" << status;
+    ZX_DLOG(ERROR, status) << "zx_vmar_unmap";
     return false;
   }
 
