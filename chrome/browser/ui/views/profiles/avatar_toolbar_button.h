@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/avatar_button_error_controller.h"
 #include "chrome/browser/ui/avatar_button_error_controller_delegate.h"
@@ -47,7 +48,9 @@ class AvatarToolbarButton : public ToolbarButton,
 
   Profile* const profile_;
 
+#if !defined(OS_CHROMEOS)
   AvatarButtonErrorController error_controller_;
+#endif  // !defined(OS_CHROMEOS)
   ScopedObserver<ProfileAttributesStorage, AvatarToolbarButton>
       profile_observer_;
 
