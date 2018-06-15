@@ -22,6 +22,7 @@
 #include "chromecast/browser/accessibility/accessibility_manager.h"
 #endif  // BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 
+#include "chromecast/browser/cast_display_configurator.h"
 #include "chromecast/graphics/cast_screen.h"
 #endif  // defined(USE_AURA)
 
@@ -75,6 +76,12 @@ void CastBrowserProcess::SetCastScreen(
     std::unique_ptr<CastScreen> cast_screen) {
   DCHECK(!cast_screen_);
   cast_screen_ = std::move(cast_screen);
+}
+
+void CastBrowserProcess::SetDisplayConfigurator(
+    std::unique_ptr<CastDisplayConfigurator> display_configurator) {
+  DCHECK(!display_configurator_);
+  display_configurator_ = std::move(display_configurator);
 }
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)

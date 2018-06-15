@@ -97,8 +97,14 @@ gfx::Rect GetScreenBounds(const gfx::Size& size_in_pixels,
 
 CastDisplayConfigurator::CastDisplayConfigurator(CastScreen* screen)
     : delegate_(
-          ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate()),
+#if defined(USE_OZONE)
+          ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate()
+#else
+          nullptr
+#endif
+              ),
       touch_device_manager_(std::make_unique<CastTouchDeviceManager>()),
+      display_(nullptr),
       cast_screen_(screen),
       weak_factory_(this) {
   if (delegate_) {
@@ -129,7 +135,16 @@ void CastDisplayConfigurator::ConfigureDisplayFromCommandLine() {
                GetRotationFromCommandLine());
 }
 
+void CastDisplayConfigurator::SetColorMatrix(
+    const std::vector<float>& color_matrix) {
+  if (!delegate_ || !display_)
+    return;
+  delegate_->SetColorMatrix(display_->display_id(), color_matrix);
+}
+
 void CastDisplayConfigurator::ForceInitialConfigure() {
+  if (!delegate_)
+    return;
   delegate_->GetDisplays(base::Bind(
       &CastDisplayConfigurator::OnDisplaysAcquired, weak_factory_.GetWeakPtr(),
       true /* force_initial_configure */));
@@ -148,30 +163,30 @@ void CastDisplayConfigurator::OnDisplaysAcquired(
     LOG(WARNING) << "Multiple display detected, using the first one.";
   }
 
-  auto* display = displays[0];
-  if (!display->native_mode()) {
-    LOG(WARNING) << "Display " << display->display_id()
+  display_ = displays[0];
+  if (!display_->native_mode()) {
+    LOG(WARNING) << "Display " << display_->display_id()
                  << " doesn't have a native mode.";
     return;
   }
 
   gfx::Point origin;
-  gfx::Size native_size(display->native_mode()->size());
+  gfx::Size native_size(display_->native_mode()->size());
   if (force_initial_configure) {
     // For initial configuration, pass the native geometry to gfx::Screen
     // before calling Configure(), so that this information is available
     // to chrome during startup. Otherwise we will not have a valid display
     // during the first queries to display::Screen.
-    UpdateScreen(display->display_id(), gfx::Rect(origin, native_size),
+    UpdateScreen(display_->display_id(), gfx::Rect(origin, native_size),
                  GetDeviceScaleFactor(native_size),
                  GetRotationFromCommandLine());
   }
 
   delegate_->Configure(
-      *display, display->native_mode(), origin,
+      *display_, display_->native_mode(), origin,
       base::BindRepeating(&CastDisplayConfigurator::OnDisplayConfigured,
-                          weak_factory_.GetWeakPtr(), display,
-                          display->native_mode(), origin));
+                          weak_factory_.GetWeakPtr(), display_,
+                          display_->native_mode(), origin));
 }
 
 void CastDisplayConfigurator::OnDisplayConfigured(
@@ -181,16 +196,17 @@ void CastDisplayConfigurator::OnDisplayConfigured(
     bool success) {
   DCHECK(display);
   DCHECK(mode);
+  DCHECK_EQ(display, display_);
 
   const gfx::Rect bounds(origin, mode->size());
   VLOG(1) << __func__ << " success=" << success
           << " bounds=" << bounds.ToString();
   if (success) {
     // Need to update the display state otherwise it becomes stale.
-    display->set_current_mode(mode);
-    display->set_origin(origin);
+    display_->set_current_mode(mode);
+    display_->set_origin(origin);
 
-    UpdateScreen(display->display_id(), bounds,
+    UpdateScreen(display_->display_id(), bounds,
                  GetDeviceScaleFactor(display->native_mode()->size()),
                  GetRotationFromCommandLine());
   } else {
