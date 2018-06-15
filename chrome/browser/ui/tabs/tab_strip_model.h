@@ -563,7 +563,8 @@ class TabStripModel {
   // tab's group/opener respectively.
   void FixOpenersAndGroupsReferencing(int index);
 
-  // The WebContents data currently hosted within this TabStripModel.
+  // The WebContents data currently hosted within this TabStripModel. This must
+  // be kept in sync with |selection_model_|.
   std::vector<std::unique_ptr<WebContentsData>> contents_data_;
 
   TabStripModelDelegate* delegate_;
@@ -579,11 +580,12 @@ class TabStripModel {
   // selection should move when a Tab is closed.
   std::unique_ptr<TabStripModelOrderController> order_controller_;
 
+  // This must be kept in sync with |contents_data_|.
   ui::ListSelectionModel selection_model_;
 
-  // Indicates if observers are currently being notified to catch reentrancy
-  // bugs. See for example http://crbug.com/529407
-  bool in_notify_ = false;
+  // TabStripModel is not re-entrancy safe. This member is used to guard public
+  // methods that mutate state of |selection_model_| or |contents_data_|.
+  bool reentrancy_guard_ = false;
 
   base::WeakPtrFactory<TabStripModel> weak_factory_;
 
