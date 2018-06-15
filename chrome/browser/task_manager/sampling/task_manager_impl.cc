@@ -586,8 +586,7 @@ void TaskManagerImpl::Refresh() {
     auto callback = base::Bind(&TaskManagerImpl::OnReceivedMemoryDump,
                                weak_ptr_factory_.GetWeakPtr());
     memory_instrumentation::MemoryInstrumentation::GetInstance()
-        ->RequestPrivateMemoryFootprint(base::kNullProcessId,
-                                        std::move(callback));
+        ->RequestGlobalDump(std::move(callback));
   }
 
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&

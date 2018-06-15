@@ -120,8 +120,7 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
   };
 
   QueuedRequest::Args args(dump_type, level_of_detail, allocator_dump_names,
-                           false /* add_to_trace */, base::kNullProcessId,
-                           /*memory_footprint_only=*/false);
+                           false /* add_to_trace */, base::kNullProcessId);
   RequestGlobalMemoryDumpInternal(args,
                                   base::BindOnce(adapter, std::move(callback)));
 }
@@ -148,27 +147,7 @@ void CoordinatorImpl::RequestGlobalMemoryDumpForPid(
   QueuedRequest::Args args(
       base::trace_event::MemoryDumpType::SUMMARY_ONLY,
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
-      allocator_dump_names, false /* add_to_trace */, pid,
-      /*memory_footprint_only=*/false);
-  RequestGlobalMemoryDumpInternal(args,
-                                  base::BindOnce(adapter, std::move(callback)));
-}
-
-void CoordinatorImpl::RequestPrivateMemoryFootprint(
-    base::ProcessId pid,
-    RequestPrivateMemoryFootprintCallback callback) {
-  // This merely strips out the |dump_guid| argument; this is not relevant
-  // as we are not adding to trace.
-  auto adapter = [](RequestPrivateMemoryFootprintCallback callback,
-                    bool success, uint64_t,
-                    mojom::GlobalMemoryDumpPtr global_memory_dump) {
-    std::move(callback).Run(success, std::move(global_memory_dump));
-  };
-
-  QueuedRequest::Args args(
-      base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND, {},
-      false /* add_to_trace */, pid, /*memory_footprint_only=*/true);
+      allocator_dump_names, false /* add_to_trace */, pid);
   RequestGlobalMemoryDumpInternal(args,
                                   base::BindOnce(adapter, std::move(callback)));
 }
@@ -185,8 +164,7 @@ void CoordinatorImpl::RequestGlobalMemoryDumpAndAppendToTrace(
   };
 
   QueuedRequest::Args args(dump_type, level_of_detail, {},
-                           true /* add_to_trace */, base::kNullProcessId,
-                           /*memory_footprint_only=*/false);
+                           true /* add_to_trace */, base::kNullProcessId);
   RequestGlobalMemoryDumpInternal(args,
                                   base::BindOnce(adapter, std::move(callback)));
 }
