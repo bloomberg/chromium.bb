@@ -37,6 +37,17 @@ Known issues:
    * Can often be fixed by editing `~/.android/avd/YOUR_DEVICE/config.ini`.
      * Look for `hw.sdCard=no` and set it to `yes`
 
+### Cloning an Image
+Running tests on two emulators is twice as fast as running on one. Rather
+than use the UI to create additional avds, you can clone an existing one via:
+
+```shell
+tools/android/emulator/clone_avd.py \
+    --source-ini ~/.android/avd/EMULATOR_ID.ini \
+    --dest-ini ~/.android/avd/EMULATOR_ID_CLONED.ini \
+    --display-name "Cloned Emulator"
+```
+
 ## Starting an Emulator from the Command Line
 Refer to: https://developer.android.com/studio/run/emulator-commandline.html.
 
