@@ -66,10 +66,6 @@ class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
   webrtc::EncodedImageCallback* encoded_callback_ = nullptr;
 
   base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer_;
-
-  // 15-bit incrementing ID applied to RTP payload for each video frame when
-  // VPX is used.
-  uint16_t picture_id_ = 0;
 };
 
 // This is the external encoder factory implementation that is passed to
