@@ -218,6 +218,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
         setSeparatorInset:UIEdgeInsetsMake(
                               0, kBookmarkCellHorizontalLeadingInset, 0, 0)];
   } else {
+    self.navigationController.navigationBarHidden = YES;
     [self.tableView setSeparatorStyle:UITableViewCellSeparatorStyleNone];
   }
 
