@@ -30,6 +30,7 @@ using MemoryMap = std::vector<memory_instrumentation::mojom::VmRegionPtr>;
 
 static constexpr int kNoParent = -1;
 
+#if !defined(ADDRESS_SANITIZER)
 // Finds the first vm region in the given periodic interval. Returns null on
 // failure.
 const base::Value* FindFirstRegionWithAnyName(const base::Value* root) {
@@ -52,6 +53,7 @@ const base::Value* FindFirstRegionWithAnyName(const base::Value* root) {
   }
   return nullptr;
 }
+#endif  // !defined(ADDRESS_SANITIZER)
 
 // Looks up a given string id from the string table. Returns -1 if not found.
 int GetIdFromStringTable(const base::Value* strings, const char* text) {
@@ -440,6 +442,10 @@ TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
   EXPECT_NE(-1, node_bt3);
 }
 
+// GetProcessMemoryMaps iterates through every memory region, making allocations
+// for each one. ASAN will potentially, for each allocation, make memory
+// regions. This will cause the test to time out.
+#if !defined(ADDRESS_SANITIZER)
 TEST(ProfilingJsonExporterTest, MemoryMaps) {
   AllocationEventSet events;
   ExportParams params;
@@ -477,6 +483,7 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   EXPECT_NE(size->GetString(), "");
   EXPECT_NE(size->GetString(), "0");
 }
+#endif  // !defined(ADDRESS_SANITIZER)
 
 TEST(ProfilingJsonExporterTest, Context) {
   BacktraceStorage backtrace_storage;
