@@ -57,14 +57,17 @@ class NewPasswordFormManagerTest : public testing::Test {
     FormFieldData field;
     field.name = ASCIIToUTF16("firstname");
     field.form_control_type = "text";
+    field.unique_renderer_id = 1;
     observed_form_.fields.push_back(field);
 
     field.name = ASCIIToUTF16("username");
     field.form_control_type = "text";
+    field.unique_renderer_id = 2;
     observed_form_.fields.push_back(field);
 
     field.name = ASCIIToUTF16("password");
     field.form_control_type = "password";
+    field.unique_renderer_id = 3;
     observed_form_.fields.push_back(field);
 
     saved_match_.origin = origin;
@@ -132,6 +135,21 @@ TEST_F(NewPasswordFormManagerTest, Autofill) {
   EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
   EXPECT_EQ(observed_form_.fields[2].name, fill_data.password_field.name);
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+}
+
+TEST_F(NewPasswordFormManagerTest, NoAutofillSignUpForm) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  // Make |observed_form_| to be sign-up form.
+  observed_form_.fields.back().autocomplete_attribute = "new-password";
+
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  fetcher.SetNonFederated({&saved_match_}, 0u);
+
+  task_runner_->FastForwardUntilNoTasksRemain();
 }
 
 TEST_F(NewPasswordFormManagerTest, SetSubmitted) {

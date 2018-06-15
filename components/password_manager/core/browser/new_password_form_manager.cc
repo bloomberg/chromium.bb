@@ -15,6 +15,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 
 using autofill::FormData;
+using autofill::FormFieldData;
 using autofill::FormSignature;
 using autofill::FormStructure;
 using base::TimeDelta;
@@ -223,6 +224,11 @@ void NewPasswordFormManager::Fill() {
   // TODO(https://crbug.com/831123). Move this lines to the beginning of the
   // function when the old parsing is removed.
   if (!driver_ || best_matches_.empty() || filled_)
+    return;
+
+  // Do not fill forms without password field.
+  if (observed_password_form->password_element_renderer_id ==
+      FormFieldData::kNotSetFormControlRendererId)
     return;
 
   // TODO(https://crbug.com/831123). Implement correct treating of federated
