@@ -1291,6 +1291,10 @@ class DomTreeExtractionBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
           static_cast<base::DictionaryValue*>(node->Serialize().release()));
       base::DictionaryValue* node_dict = dom_nodes[i].get();
 
+      // Node IDs are assigned in a non deterministic way.
+      if (node_dict->FindKey("backendNodeId"))
+        node_dict->SetString("backendNodeId", "?");
+
       // Frame IDs are random.
       if (node_dict->FindKey("frameId"))
         node_dict->SetString("frameId", "?");
