@@ -18,6 +18,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
@@ -91,9 +92,11 @@ TestCompositorHostOzone::TestCompositorHostOzone(
 TestCompositorHostOzone::~TestCompositorHostOzone() {}
 
 void TestCompositorHostOzone::Show() {
+  ui::PlatformWindowInitProperties properties;
+  properties.bounds = bounds_;
   // Create a PlatformWindow to get the AcceleratedWidget backing it.
   window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-      &window_delegate_, bounds_);
+      &window_delegate_, properties);
   window_->Show();
   DCHECK_NE(window_delegate_.widget(), gfx::kNullAcceleratedWidget);
 

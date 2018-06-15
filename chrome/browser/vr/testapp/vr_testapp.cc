@@ -31,6 +31,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 // This file is a shameless rip-off of ui/ozone's demo application. Ozone lets
 // us spin up a window and collect input without dealing with Linux platform
@@ -101,8 +102,10 @@ class AppWindow : public ui::PlatformWindowDelegate {
         renderer_factory_(renderer_factory),
         vr_(std::make_unique<vr::VrTestContext>()),
         weak_ptr_factory_(this) {
+    ui::PlatformWindowInitProperties properties;
+    properties.bounds = gfx::Rect(1024, 768);
     platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-        this, {1024, 768});
+        this, properties);
     platform_window_->Show();
 
     // Supply an empty cursor to override and hide the default system pointer.

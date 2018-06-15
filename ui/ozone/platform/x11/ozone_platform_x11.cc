@@ -24,6 +24,7 @@
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
@@ -63,9 +64,9 @@ class OzonePlatformX11 : public OzonePlatform {
 
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) override {
+      const PlatformWindowInitProperties& properties) override {
     std::unique_ptr<X11WindowOzone> window = std::make_unique<X11WindowOzone>(
-        window_manager_.get(), delegate, bounds);
+        window_manager_.get(), delegate, properties.bounds);
     window->SetTitle(base::ASCIIToUTF16("Ozone X11"));
     return std::move(window);
   }

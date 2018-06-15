@@ -46,6 +46,7 @@
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
 #include "ui/events/ozone/layout/xkb/xkb_evdev_codes.h"
@@ -159,15 +160,16 @@ class OzonePlatformGbm : public OzonePlatform {
 
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) override {
+      const PlatformWindowInitProperties& properties) override {
     GpuThreadAdapter* adapter = gpu_platform_support_host_.get();
     if (using_mojo_) {
       adapter = host_drm_device_.get();
     }
 
     std::unique_ptr<DrmWindowHost> platform_window(new DrmWindowHost(
-        delegate, bounds, adapter, event_factory_ozone_.get(), cursor_.get(),
-        window_manager_.get(), display_manager_.get(), overlay_manager_.get()));
+        delegate, properties.bounds, adapter, event_factory_ozone_.get(),
+        cursor_.get(), window_manager_.get(), display_manager_.get(),
+        overlay_manager_.get()));
     platform_window->Initialize();
     return std::move(platform_window);
   }
