@@ -11,13 +11,17 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
+namespace views {
+class Widget;
+}  // namespace views
+
 namespace ash {
 
 namespace wm {
 class WindowState;
 }  // namespace wm
 
-class PhantomWindowController;
+class SplitViewDragIndicators;
 
 // WindowResizer implementation for windows in tablet mode. Currently we don't
 // allow any resizing and any dragging happening on the area other than the
@@ -34,18 +38,46 @@ class TabletModeWindowResizer : public WindowResizer {
   void CompleteDrag() override;
   void RevertDrag() override;
 
- private:
-  void UpdateSnapPhantomWindow(const gfx::Point& location_in_parent);
+  SplitViewDragIndicators* split_view_drag_indicators_for_testing() {
+    return split_view_drag_indicators_.get();
+  }
 
-  // Gets the desired snap position to show the phantom window. Phnatom window
-  // is only shown up when the user drags pass the vertical threshold.
-  SplitViewController::SnapPosition GetSnapPositionForPhantomWindow(
-      const gfx::Point& location_in_parent) const;
+ private:
+  enum class EndDragType {
+    NORMAL,
+    REVERT,
+  };
+  void EndDragImpl(EndDragType type);
+
+  // Updates the split view drag indicators and preview window according to the
+  // current location |location_in_screen|.
+  void UpdateIndicatorsAndPreviewWindow(const gfx::Point& location_in_screen);
+
+  // Scales down the source window if the dragged window is dragged past the
+  // |kIndicatorThresholdRatio| threshold and restores it if the dragged window
+  // is dragged back toward the top of the screen. |location_in_screen| is the
+  // current drag location for the dragged window.
+  void UpdateScrimAndSourceWindow(const gfx::Point& location_in_screen);
+
+  // Gets the desired snap position for |location_in_screen|.
+  SplitViewController::SnapPosition GetSnapPosition(
+      const gfx::Point& location_in_screen) const;
+
+  // Shows the scrim with the specified opacity and blur.
+  void ShowScrim(float opacity, float blur);
+
+  // Returns true if the drag indicators should show.
+  bool ShouldShowDragIndicators(const gfx::Point& location_in_screen) const;
 
   SplitViewController* split_view_controller_;
 
-  // Gives a preview of where the dragged window will snapped to.
-  std::unique_ptr<PhantomWindowController> phantom_window_controller_;
+  // A widget placed below the current dragged window to show the blurred or
+  // transparent background and to prevent the dragged window merge into any
+  // browser window beneath it during dragging.
+  std::unique_ptr<views::Widget> scrim_;
+
+  // A widget to display the drag indicators and preview window.
+  std::unique_ptr<SplitViewDragIndicators> split_view_drag_indicators_;
 
   gfx::Point previous_location_in_parent_;
 
@@ -53,9 +85,6 @@ class TabletModeWindowResizer : public WindowResizer {
 
   // The backdrop should be disabled during dragging and resumed after dragging.
   BackdropWindowMode original_backdrop_mode_;
-
-  // Used to determine where to show the phantom window.
-  SplitViewController::SnapPosition snap_position_ = SplitViewController::NONE;
 
   // Used to determine if this has been deleted during a drag such as when a tab
   // gets dragged into another browser window.

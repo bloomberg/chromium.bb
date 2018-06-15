@@ -36,6 +36,10 @@ class ASH_EXPORT DragWindowResizer : public WindowResizer {
   void CompleteDrag() override;
   void RevertDrag() override;
 
+  WindowResizer* next_window_resizer_for_testing() {
+    return next_window_resizer_.get();
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest, DragWindowController);
   FRIEND_TEST_ALL_PREFIXES(DragWindowResizerTest,

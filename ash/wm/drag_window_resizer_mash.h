@@ -25,6 +25,10 @@ class DragWindowResizerMash : public WindowResizer {
   void CompleteDrag() override;
   void RevertDrag() override;
 
+  WindowResizer* next_window_resizer_for_testing() {
+    return next_window_resizer_.get();
+  }
+
  private:
   std::unique_ptr<WindowResizer> next_window_resizer_;
 
