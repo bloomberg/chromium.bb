@@ -4680,6 +4680,21 @@
             ]
         }
     ],
+    "Win10AcceleratedDefaultBrowserFlow": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "Win10AcceleratedDefaultBrowserFlow"
+                    ]
+                }
+            ]
+        }
+    ],
     "WorkStealingInScriptRunner": [
         {
             "platforms": [

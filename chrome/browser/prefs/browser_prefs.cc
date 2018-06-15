@@ -339,6 +339,12 @@ const char kInstantUIZeroSuggestUrlPrefix[] =
 const char kTouchHudProjectionEnabled[] = "touch_hud.projection_enabled";
 #endif
 
+#if defined(OS_WIN)
+// Deprecated 6/2018.
+const char kResetHasSeenWin10PromoPage[] =
+    "browser.reset_has_seen_win10_promo_page";
+#endif
+
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -485,6 +491,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   ModuleDatabase::RegisterLocalStatePrefs(registry);
   ThirdPartyConflictsManager::RegisterLocalStatePrefs(registry);
 #endif  // defined(GOOGLE_CHROME_BUILD)
+
+  registry->RegisterBooleanPref(kResetHasSeenWin10PromoPage, false);
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -746,6 +754,11 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   // Added 5/2018.
   local_state->ClearPref(prefs::kProblematicPrograms);
+#endif
+
+#if defined(OS_WIN)
+  // Added 6/2018.
+  local_state->ClearPref(kResetHasSeenWin10PromoPage);
 #endif
 }
 
