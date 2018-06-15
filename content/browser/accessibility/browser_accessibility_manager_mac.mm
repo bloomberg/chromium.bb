@@ -144,15 +144,10 @@ ui::AXTreeUpdate
 BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() {
   BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
 
-  // On Mac, list boxes should always get focus on the whole list, otherwise
-  // information about the number of selected items will never be reported.
   // For editable combo boxes, focus should stay on the combo box so the user
   // will not be taken out of the combo box while typing.
-  if (focus &&
-      (focus->GetRole() == ax::mojom::Role::kListBox ||
-       (focus->GetRole() == ax::mojom::Role::kTextFieldWithComboBox))) {
+  if (focus && focus->GetRole() == ax::mojom::Role::kTextFieldWithComboBox)
     return focus;
-  }
 
   // For other roles, follow the active descendant.
   return GetActiveDescendant(focus);

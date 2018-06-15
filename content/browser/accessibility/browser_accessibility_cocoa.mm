@@ -72,6 +72,8 @@ NSString* const NSAccessibilityDOMIdentifierAttribute = @"AXDOMIdentifier";
 NSString* const NSAccessibilityDropEffectsAttribute = @"AXDropEffects";
 NSString* const NSAccessibilityEditableAncestorAttribute =
     @"AXEditableAncestor";
+NSString* const NSAccessibilityFocusableAncestorAttribute =
+    @"AXFocusableAncestor";
 NSString* const NSAccessibilityGrabbedAttribute = @"AXGrabbed";
 NSString* const NSAccessibilityHasPopupAttribute = @"AXHasPopup";
 NSString* const NSAccessibilityHasPopupValueAttribute = @"AXHasPopupValue";
@@ -595,6 +597,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       {NSAccessibilityEnabledAttribute, @"enabled"},
       {NSAccessibilityEndTextMarkerAttribute, @"endTextMarker"},
       {NSAccessibilityExpandedAttribute, @"expanded"},
+      {NSAccessibilityFocusableAncestorAttribute, @"focusableAncestor"},
       {NSAccessibilityFocusedAttribute, @"focused"},
       {NSAccessibilityGrabbedAttribute, @"grabbed"},
       {NSAccessibilityHeaderAttribute, @"header"},
@@ -1134,6 +1137,23 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   return [NSNumber numberWithBool:GetState(browserAccessibility_,
                                            ax::mojom::State::kExpanded)];
+}
+
+- (id)focusableAncestor {
+  if (![self instanceActive])
+    return nil;
+
+  BrowserAccessibilityCocoa* focusableRoot = self;
+  while (![focusableRoot browserAccessibility]->HasState(
+      ax::mojom::State::kFocusable)) {
+    BrowserAccessibilityCocoa* parent = [focusableRoot parent];
+    if (!parent || ![parent isKindOfClass:[self class]] ||
+        ![parent instanceActive]) {
+      return nil;
+    }
+    focusableRoot = parent;
+  }
+  return focusableRoot;
 }
 
 - (NSNumber*)focused {
@@ -2985,12 +3005,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
                        NSAccessibilityChildrenAttribute,
                        NSAccessibilityDescriptionAttribute,
                        NSAccessibilityDOMIdentifierAttribute,
-                       NSAccessibilityEditableAncestorAttribute,
                        NSAccessibilityEnabledAttribute,
                        NSAccessibilityEndTextMarkerAttribute,
                        NSAccessibilityFocusedAttribute,
                        NSAccessibilityHelpAttribute,
-                       NSAccessibilityHighestEditableAncestorAttribute,
                        NSAccessibilityInvalidAttribute,
                        NSAccessibilityLinkedUIElementsAttribute,
                        NSAccessibilityParentAttribute,
@@ -3106,6 +3124,15 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
       // NSAccessibilityValueAutofilledAttribute,
       // Not currently supported by Chrome:
       // NSAccessibilityValueAutofillTypeAttribute
+    ]];
+  }
+
+  // Add ancestor attributes if not a web area.
+  if (![role isEqualToString:@"AXWebArea"]) {
+    [ret addObjectsFromArray:@[
+      NSAccessibilityEditableAncestorAttribute,
+      NSAccessibilityFocusableAncestorAttribute,
+      NSAccessibilityHighestEditableAncestorAttribute
     ]];
   }
 

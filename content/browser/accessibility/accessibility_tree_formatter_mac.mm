@@ -179,6 +179,7 @@ NSArray* BuildAllAttributesArray() {
       @"AXEditableAncestor",
       NSAccessibilityEnabledAttribute,
       NSAccessibilityExpandedAttribute,
+      @"AXFocusableAncestor",
       NSAccessibilityFocusedAttribute,
       @"AXGrabbed",
       NSAccessibilityHeaderAttribute,
