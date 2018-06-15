@@ -19,7 +19,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.DeferredStartupHandler;
@@ -117,7 +116,6 @@ public class WebApkIntegrationTest {
     @Test
     @LargeTest
     @Feature({"Webapps"})
-    @FlakyTest(message = "https://crbug.com/852648")
     public void testWebApkLaunchesByLauncherActivity() {
         String pwaRocksUrl = getUrlForHost("pwa.rocks");
 
