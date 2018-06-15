@@ -55,7 +55,8 @@
 
     <template is="dom-if" if="[[showCupsEditPrinterDialog_]]" restamp>
       <settings-cups-edit-printer-dialog id="editPrinterDialog"
-          active-printer="{{activePrinter}}">
+          active-printer="{{activePrinter}}"
+          on-close="onEditPrinterDialogClose_">
       </settings-cups-edit-printer-dialog>
     </template>
 

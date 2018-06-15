@@ -146,13 +146,12 @@ Polymer({
   onAddLanguagesTap_: function(e) {
     e.preventDefault();
     this.showAddLanguagesDialog_ = true;
-    this.async(function() {
-      const dialog = this.$$('settings-add-languages-dialog');
-      dialog.addEventListener('close', () => {
-        this.showAddLanguagesDialog_ = false;
-        cr.ui.focusWithoutInk(assert(this.$.addLanguages));
-      });
-    });
+  },
+
+  /** @private */
+  onAddLanguagesDialogClose_: function() {
+    this.showAddLanguagesDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.$.addLanguages));
   },
 
   /**
