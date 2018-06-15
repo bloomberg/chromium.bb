@@ -32,10 +32,9 @@ public class ExploreSitesBridge {
     /**
      * Fetches a JSON string from URL, returning the parsed JSONobject in a callback.
      */
-    public void getNtpCategories(
-            final String url, final Callback<List<ExploreSitesCategoryTile>> callback) {
+    public void getNtpCategories(final Callback<List<ExploreSitesCategoryTile>> callback) {
         List<ExploreSitesCategoryTile> result = new ArrayList<>();
-        nativeGetNtpCategories(mNativeExploreSitesBridge, url, result, callback);
+        nativeGetNtpCategories(mNativeExploreSitesBridge, "", result, callback);
     }
 
     /**

@@ -77,6 +77,14 @@ public class NewTabPageLayout extends LinearLayout {
         return mSiteSectionView;
     }
 
+    /**
+     * @return the embedded explore sites section.
+     */
+    @Nullable
+    public View getExploreSectionView() {
+        return mExploreSectionView;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
