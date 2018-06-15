@@ -123,6 +123,18 @@ class MEDIA_EXPORT MediaLog {
   int32_t id() const { return id_; }
 
  private:
+  friend class MediaLogTest;
+
+  enum : size_t {
+    // Max length of URLs in Created/Load events. Exceeding triggers truncation.
+    kMaxUrlLength = 1000,
+  };
+
+  // URLs (for Created and Load events) may be of arbitrary length from the
+  // untrusted renderer. This method truncates to |kMaxUrlLength| before storing
+  // the event, and sets the last 3 characters to an ellipsis.
+  static std::string TruncateUrlString(std::string log_string);
+
   // A unique (to this process) id for this MediaLog.
   int32_t id_;
 

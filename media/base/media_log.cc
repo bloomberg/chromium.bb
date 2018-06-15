@@ -186,7 +186,7 @@ std::unique_ptr<MediaLogEvent> MediaLog::CreateCreatedEvent(
     const std::string& origin_url) {
   std::unique_ptr<MediaLogEvent> event(
       CreateEvent(MediaLogEvent::WEBMEDIAPLAYER_CREATED));
-  event->params.SetString("origin_url", origin_url);
+  event->params.SetString("origin_url", TruncateUrlString(origin_url));
   return event;
 }
 
@@ -231,7 +231,7 @@ std::unique_ptr<MediaLogEvent> MediaLog::CreateTimeEvent(
 std::unique_ptr<MediaLogEvent> MediaLog::CreateLoadEvent(
     const std::string& url) {
   std::unique_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::LOAD));
-  event->params.SetString("url", url);
+  event->params.SetString("url", TruncateUrlString(url));
   return event;
 }
 
@@ -304,6 +304,19 @@ void MediaLog::SetBooleanProperty(
       CreateEvent(MediaLogEvent::PROPERTY_CHANGE));
   event->params.SetBoolean(key, value);
   AddEvent(std::move(event));
+}
+
+// static
+std::string MediaLog::TruncateUrlString(std::string log_string) {
+  if (log_string.length() > kMaxUrlLength) {
+    log_string.resize(kMaxUrlLength);
+
+    // Room for the ellipsis.
+    DCHECK_GE(kMaxUrlLength, std::size_t{3});
+    log_string.replace(log_string.end() - 3, log_string.end(), "...");
+  }
+
+  return log_string;
 }
 
 LogHelper::LogHelper(MediaLog::MediaLogLevel level, MediaLog* media_log)
