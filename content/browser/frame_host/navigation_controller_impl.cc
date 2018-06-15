@@ -488,41 +488,9 @@ void NavigationControllerImpl::Reload(ReloadType reload_type,
     if (!IsInitialNavigation())
       DiscardNonCommittedEntriesInternal();
 
-    // If we are reloading an entry that no longer belongs to the current
-    // SiteInstance (for example, refreshing a page for just installed app), the
-    // reload must happen in a new process. The new entry behaves as new
-    // navigation (which happens to clear forward history). Tabs that are
-    // discarded due to low memory conditions may not have a SiteInstance, and
-    // should not be treated as a cross-site reload.
-    SiteInstanceImpl* site_instance = entry->site_instance();
-    // Permit reloading guests without further checks.
-    bool is_for_guests_only = site_instance && site_instance->HasProcess() &&
-        site_instance->GetProcess()->IsForGuestsOnly();
-    if (!is_for_guests_only && site_instance &&
-        site_instance->HasWrongProcessForURL(entry->GetURL())) {
-      // Create a navigation entry that resembles the current one, but do not
-      // copy page id, site instance, content state, or timestamp.
-      NavigationEntryImpl* nav_entry = NavigationEntryImpl::FromNavigationEntry(
-          CreateNavigationEntry(entry->GetURL(), entry->GetReferrer(),
-                                entry->GetTransitionType(), false,
-                                entry->extra_headers(), browser_context_,
-                                nullptr /* blob_url_loader_factory */)
-              .release());
-
-      // Mark the reload type as NO_RELOAD, so navigation will not be considered
-      // a reload in the renderer.
-      reload_type = ReloadType::NONE;
-
-      nav_entry->set_should_replace_entry(true);
-      nav_entry->set_is_renderer_initiated(entry->is_renderer_initiated());
-      pending_entry_ = nav_entry;
-      DCHECK_EQ(-1, pending_entry_index_);
-    } else {
-      pending_entry_ = entry;
-      pending_entry_index_ = current_index;
-
-      pending_entry_->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
-    }
+    pending_entry_ = entry;
+    pending_entry_index_ = current_index;
+    pending_entry_->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
 
     NavigateToPendingEntry(reload_type, nullptr /* navigation_ui_data */);
   }
@@ -840,8 +808,25 @@ bool NavigationControllerImpl::RendererDidNavigate(
     was_restored = true;
   }
 
-  // The renderer tells us whether the navigation replaces the current entry.
-  details->did_replace_entry = params.should_replace_current_entry;
+  // If this is a navigation to a matching pending_entry_ and the SiteInstance
+  // has changed, this must be treated as a new navigation with replacement.
+  // Set the replacement bit here and ClassifyNavigation will identify this
+  // case and return NEW_PAGE.
+  if (!rfh->GetParent() && pending_entry_ &&
+      pending_entry_->GetUniqueID() == params.nav_entry_id &&
+      pending_entry_->site_instance() &&
+      pending_entry_->site_instance() != rfh->GetSiteInstance()) {
+    DCHECK_NE(-1, pending_entry_index_);
+    // TODO(nasko,creis): Instead of setting this value here, set
+    // should_replace_current_entry on the parameters we send to the
+    // renderer process as part of CommitNavigation. The renderer should
+    // in turn send it back here as part of |params| and it can be just
+    // enforced and renderer process terminated on mismatch.
+    details->did_replace_entry = true;
+  } else {
+    // The renderer tells us whether the navigation replaces the current entry.
+    details->did_replace_entry = params.should_replace_current_entry;
+  }
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(rfh, params);
@@ -1039,25 +1024,37 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
     return NAVIGATION_TYPE_EXISTING_PAGE;
   }
 
-  if (pending_entry_ && pending_entry_index_ == -1 &&
-      pending_entry_->GetUniqueID() == params.nav_entry_id) {
-    // In this case, we have a pending entry for a load of a new URL but Blink
-    // didn't do a new navigation (params.did_create_new_entry). First check to
-    // make sure Blink didn't treat a new cross-process navigation as inert, and
-    // thus set params.did_create_new_entry to false. In that case, we must
-    // treat it as NEW since the SiteInstance doesn't match the entry.
-    if (!GetLastCommittedEntry() ||
-        GetLastCommittedEntry()->site_instance() != rfh->GetSiteInstance())
+  if (pending_entry_ && pending_entry_->GetUniqueID() == params.nav_entry_id) {
+    // If the SiteInstance of the |pending_entry_| does not match the
+    // SiteInstance that got committed, treat this as a new navigation with
+    // replacement. This can happen if back/forward/reload encounters a server
+    // redirect to a different site or an isolated error page gets successfully
+    // reloaded into a different SiteInstance.
+    if (pending_entry_->site_instance() &&
+        pending_entry_->site_instance() != rfh->GetSiteInstance()) {
       return NAVIGATION_TYPE_NEW_PAGE;
+    }
 
-    // Otherwise, this happens when you press enter in the URL bar to reload. We
-    // will create a pending entry, but Blink will convert it to a reload since
-    // it's the same page and not create a new entry for it (the user doesn't
-    // want to have a new back/forward entry when they do this). Therefore we
-    // want to just ignore the pending entry and go back to where we were (the
-    // "existing entry").
-    // TODO(creis,avi): Eliminate SAME_PAGE in https://crbug.com/536102.
-    return NAVIGATION_TYPE_SAME_PAGE;
+    if (pending_entry_index_ == -1) {
+      // In this case, we have a pending entry for a load of a new URL but Blink
+      // didn't do a new navigation (params.did_create_new_entry). First check
+      // to make sure Blink didn't treat a new cross-process navigation as
+      // inert, and thus set params.did_create_new_entry to false. In that case,
+      // we must treat it as NEW since the SiteInstance doesn't match the entry.
+      if (!GetLastCommittedEntry() ||
+          GetLastCommittedEntry()->site_instance() != rfh->GetSiteInstance()) {
+        return NAVIGATION_TYPE_NEW_PAGE;
+      }
+
+      // Otherwise, this happens when you press enter in the URL bar to reload.
+      // We will create a pending entry, but Blink will convert it to a reload
+      // since it's the same page and not create a new entry for it (the user
+      // doesn't want to have a new back/forward entry when they do this).
+      // Therefore we want to just ignore the pending entry and go back to where
+      // we were (the "existing entry").
+      // TODO(creis,avi): Eliminate SAME_PAGE in https://crbug.com/536102.
+      return NAVIGATION_TYPE_SAME_PAGE;
+    }
   }
 
   // Everything below here is assumed to be an existing entry, but if there is
@@ -1239,6 +1236,15 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     DiscardNonCommittedEntriesInternal();
     entries_.clear();
     last_committed_entry_index_ = -1;
+  }
+
+  // If this is a new navigation with replacement and there is a
+  // pending_entry_ which matches the navigation reported by the renderer
+  // process, then it should be the one replaced, so update the
+  // last_committed_entry_index_ to use it.
+  if (replace_entry && pending_entry_index_ != -1 &&
+      pending_entry_->GetUniqueID() == params.nav_entry_id) {
+    last_committed_entry_index_ = pending_entry_index_;
   }
 
   InsertOrReplaceEntry(std::move(new_entry), replace_entry);

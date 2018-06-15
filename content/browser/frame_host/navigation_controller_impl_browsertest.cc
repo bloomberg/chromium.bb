@@ -8139,4 +8139,75 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DataURLSameDocumentNavigation) {
   EXPECT_TRUE(capturer.is_same_document());
 }
 
+// Verify that a session history navigation which results in a different
+// SiteInstance from the original commit is correctly handled - classified
+// as new navigation with replacement, resulting in no new navigation
+// entries.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       SiteInstanceChangeOnHistoryNavigation) {
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url3(embedded_test_server()->GetURL("c.com", "/title3.html"));
+  GURL redirecting_url(embedded_test_server()->GetURL(
+      "a.com", "/server-redirect?" + url3.spec()));
+
+  // Start with an initial URL.
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url1, controller.GetEntryAtIndex(0)->GetURL());
+  scoped_refptr<SiteInstance> initial_site_instance =
+      root->current_frame_host()->GetSiteInstance();
+
+  {
+    // history.replaceState(), pointing to a URL that would redirect to |url3|.
+    FrameNavigateParamsCapturer capturer(root);
+    std::string script =
+        "history.replaceState({}, '', '" + redirecting_url.spec() + "')";
+    EXPECT_TRUE(ExecuteScript(root, script));
+    capturer.Wait();
+  }
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(redirecting_url, controller.GetEntryAtIndex(0)->GetURL());
+  EXPECT_EQ(initial_site_instance,
+            root->current_frame_host()->GetSiteInstance());
+
+  // Navigate to a new URL to get new session history entry.
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_NE(initial_site_instance,
+            root->current_frame_host()->GetSiteInstance());
+
+  // Back, which should redirect to |url3|.
+  FrameNavigateParamsCapturer capturer(root);
+  shell()->web_contents()->GetController().GoBack();
+  capturer.Wait();
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+
+  NavigationEntry* entry = controller.GetEntryAtIndex(0);
+  EXPECT_EQ(entry, controller.GetLastCommittedEntry());
+  EXPECT_EQ(url3, entry->GetURL());
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_NE(initial_site_instance,
+              root->current_frame_host()->GetSiteInstance());
+    EXPECT_EQ(SiteInstance::GetSiteForURL(
+                  shell()->web_contents()->GetBrowserContext(), url3),
+              root->current_frame_host()->GetSiteInstance()->GetSiteURL());
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.navigation_type());
+  } else {
+    EXPECT_EQ(initial_site_instance,
+              root->current_frame_host()->GetSiteInstance());
+    EXPECT_EQ(NAVIGATION_TYPE_EXISTING_PAGE, capturer.navigation_type());
+  }
+}
+
 }  // namespace content
