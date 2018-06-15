@@ -99,6 +99,13 @@ class PortTest(LoggingTestCase):
         self.assertEqual(port.output_filename(test_file, '-actual', '.png'),
                          'fast/test_wss_run_type=1-actual.png')
 
+        # Test filename with query string containing a dot
+        test_file = 'fast/test.html?include=HTML.*'
+        self.assertEqual(port.output_filename(test_file, '-expected', '.txt'),
+                         'fast/test_include=HTML._-expected.txt')
+        self.assertEqual(port.output_filename(test_file, '-actual', '.png'),
+                         'fast/test_include=HTML._-actual.png')
+
     def test_expected_baselines(self):
         port = self.make_port(port_name='foo')
         port.FALLBACK_PATHS = {'': ['foo']}
