@@ -8,9 +8,13 @@
 #specifiedHotspot {
     cursor: url('file:///test.ico') 10 20, auto;
 }
+#intOverflowHotspot {
+    cursor: url('file:///test.ico') 3000000000 3000000000, auto;
+}
 </style>
 <div id="noSpecifiedHotspot"></div>
 <div id="specifiedHotspot"></div>
+<div id="intOverflowHotspot"></div>
 <script>
 test(function(){
     assert_equals(getComputedStyle(noSpecifiedHotspot).cursor, 'url("file:///test.ico"), auto');
@@ -19,4 +23,12 @@ test(function(){
 test(function(){
     assert_equals(getComputedStyle(specifiedHotspot).cursor, 'url("file:///test.ico") 10 20, auto');
 }, "Cursor computed style includes the hotspot if it's specified");
+
+test(function(){
+    let computedStyle = getComputedStyle(intOverflowHotspot).cursor;
+    let x = parseInt(computedStyle.split(' ')[1]);
+    let y = parseInt(computedStyle.split(' ')[2]);
+    assert_equals(x, 2147483647);
+    assert_equals(y, 2147483647);
+}, 'Hotspot coordinates clamp instead of overflowing');
 </script>

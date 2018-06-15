@@ -27,10 +27,10 @@ const CSSValue* Cursor::ParseSingleValue(CSSParserTokenRange& range,
     IntPoint hot_spot(-1, -1);
     bool hot_spot_specified = false;
     if (CSSPropertyParserHelpers::ConsumeNumberRaw(range, num)) {
-      hot_spot.SetX(int(num));
+      hot_spot.SetX(clampTo<int>(num));
       if (!CSSPropertyParserHelpers::ConsumeNumberRaw(range, num))
         return nullptr;
-      hot_spot.SetY(int(num));
+      hot_spot.SetY(clampTo<int>(num));
       hot_spot_specified = true;
     }
 
