@@ -308,6 +308,20 @@ class FileSystemTest : public testing::Test {
     file3.mutable_file_info()->set_size(12345);
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(file3, &local_id));
 
+    // drive/team_drive
+    ResourceEntry team_drive_root;
+    ASSERT_EQ(FILE_ERROR_OK,
+              resource_metadata->GetResourceEntryByPath(
+                  util::GetDriveTeamDrivesRootPath(), &team_drive_root));
+
+    // drive/team_drive/team_drive_1
+    ResourceEntry td_dir;
+    td_dir.set_title("team_drive_1");
+    td_dir.set_resource_id("td_id_1");
+    td_dir.set_parent_local_id(team_drive_root.local_id());
+    td_dir.mutable_file_info()->set_is_directory(true);
+    ASSERT_EQ(FILE_ERROR_OK, resource_metadata->AddEntry(td_dir, &local_id));
+
     // Recreate resource metadata.
     SetUpResourceMetadataAndFileSystem();
   }
@@ -793,6 +807,7 @@ TEST_F(FileSystemTest, ReadDirectory_Root) {
 
 // TODO(slamgley): Add more tests for team drives.
 TEST_F(FileSystemTest, ReadDirectory_TeamDrivesRoot) {
+  ASSERT_NO_FATAL_FAILURE(SetUpTestFileSystem(USE_SERVER_TIMESTAMP));
   ASSERT_TRUE(SetupTeamDrives());
 
   // The first load trigger the loading of team drives.
@@ -805,8 +820,6 @@ TEST_F(FileSystemTest, ReadDirectory_TeamDrivesRoot) {
   ASSERT_TRUE(entries);
   ASSERT_EQ(2U, entries->size());
 
-  // The found three directories should be /drive/root, /drive/other,
-  // /drive/trash and /drive/team_drives.
   std::set<base::FilePath> found;
   for (size_t i = 0; i < entries->size(); ++i) {
     found.insert(base::FilePath::FromUTF8Unsafe((*entries)[i].title()));
@@ -814,6 +827,23 @@ TEST_F(FileSystemTest, ReadDirectory_TeamDrivesRoot) {
   EXPECT_EQ(2U, found.size());
   EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe("team_drive_1")));
   EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe("team_drive_2")));
+  EXPECT_EQ(1, fake_drive_service_->team_drive_list_load_count());
+  EXPECT_EQ(2, fake_drive_service_->file_list_load_count());
+
+  // We should be able to read from drive/team_drives/team_drive_1
+  std::unique_ptr<ResourceEntryVector> team_drive_1_entries(ReadDirectorySync(
+      base::FilePath::FromUTF8Unsafe("drive/team_drives/team_drive_1")));
+
+  ASSERT_TRUE(team_drive_1_entries);
+  ASSERT_EQ(1U, team_drive_1_entries->size());
+  std::set<base::FilePath> team_drive_1_found;
+  for (size_t i = 0; i < team_drive_1_entries->size(); ++i) {
+    team_drive_1_found.insert(
+        base::FilePath::FromUTF8Unsafe((*team_drive_1_entries)[i].title()));
+  }
+  EXPECT_EQ(1U, team_drive_1_found.size());
+  EXPECT_EQ(1U,
+            team_drive_1_found.count(base::FilePath::FromUTF8Unsafe("dir1")));
 }
 
 TEST_F(FileSystemTest, ReadDirectory_NonRootDirectory) {
