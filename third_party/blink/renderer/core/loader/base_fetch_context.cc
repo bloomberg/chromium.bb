@@ -131,10 +131,9 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
         }
       }
 
-      String value = String::Format(
-          "cause=%s, destination=%s, target=subresource, site=%s",
-          request.HasUserGesture() ? "user-activation" : "forced",
-          destination_value, site_value);
+      String value =
+          String::Format("destination=%s, target=subresource, site=%s",
+                         destination_value, site_value);
       request.AddHTTPHeaderField("Sec-Metadata", AtomicString(value));
     }
   }
