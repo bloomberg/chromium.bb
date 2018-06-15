@@ -394,7 +394,8 @@
     </settings-animated-pages>
     <template is="dom-if" if="[[showAddLanguagesDialog_]]" restamp>
       <settings-add-languages-dialog languages="{{languages}}"
-          language-helper="[[languageHelper]]">
+          language-helper="[[languageHelper]]"
+          on-close="onAddLanguagesDialogClose_">
       </settings-add-languages-dialog>
     </template>
   </template>

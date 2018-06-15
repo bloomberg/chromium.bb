@@ -185,12 +185,11 @@ Polymer({
   /** @private */
   onShowCupsEditPrinterDialog_: function() {
     this.showCupsEditPrinterDialog_ = true;
-    this.async(function() {
-      const dialog = this.$$('settings-cups-edit-printer-dialog');
-      dialog.addEventListener('close', function() {
-        this.showCupsEditPrinterDialog_ = false;
-      }.bind(this));
-    });
+  },
+
+  /** @private */
+  onEditPrinterDialogClose_: function() {
+    this.showCupsEditPrinterDialog_ = false;
   },
 
   /**
