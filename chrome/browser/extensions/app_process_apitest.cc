@@ -520,8 +520,12 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   LOG(INFO) << "Navigate to path1/empty.html - done.";
   WebContents* contents = browser()->tab_strip_model()->GetWebContentsAt(0);
+  const content::NavigationController& controller = contents->GetController();
   EXPECT_FALSE(
       process_map->Contains(contents->GetMainFrame()->GetProcess()->GetID()));
+  // The test starts with about:blank, then navigates to path1/empty.html,
+  // so there should be two entries.
+  EXPECT_EQ(2, controller.GetEntryCount());
 
   // Enable app and reload the page.
   LOG(INFO) << "Enabling extension.";
@@ -538,6 +542,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
   LOG(INFO) << "Reloading - done.";
   EXPECT_TRUE(
       process_map->Contains(contents->GetMainFrame()->GetProcess()->GetID()));
+  // Reloading, even with changing SiteInstance/process should not add any
+  // more entries.
+  EXPECT_EQ(2, controller.GetEntryCount());
 
   // Disable app and reload the page.
   LOG(INFO) << "Disabling extension.";
@@ -554,6 +561,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadIntoAppProcess) {
   LOG(INFO) << "Reloading - done.";
   EXPECT_FALSE(
       process_map->Contains(contents->GetMainFrame()->GetProcess()->GetID()));
+  EXPECT_EQ(2, controller.GetEntryCount());
 }
 
 // Ensure that reloading a URL with JavaScript after installing or uninstalling

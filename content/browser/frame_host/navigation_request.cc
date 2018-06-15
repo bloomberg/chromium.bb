@@ -807,10 +807,6 @@ void NavigationRequest::OnRequestRedirected(
     return;
   }
 
-  // If a redirect occurs, the original site instance we thought is the
-  // destination could change.
-  dest_site_instance_ = nullptr;
-
   // For now, DevTools needs the POST data sent to the renderer process even if
   // it is no longer a POST after the redirect.
   if (redirect_info.new_method != "POST")

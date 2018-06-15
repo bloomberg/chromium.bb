@@ -58,6 +58,16 @@
 
 namespace content {
 
+namespace {
+
+bool IsDataOrAbout(const GURL& url) {
+  GURL about_srcdoc(content::kAboutSrcDocURL);
+  return url == about_srcdoc || url.IsAboutBlank() ||
+         url.scheme() == url::kDataScheme;
+}
+
+}  // namespace
+
 RenderFrameHostManager::RenderFrameHostManager(
     FrameTreeNode* frame_tree_node,
     RenderFrameHostDelegate* render_frame_delegate,
@@ -1116,14 +1126,26 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
       delegate_->GetControllerForRenderManager();
   BrowserContext* browser_context = controller.GetBrowserContext();
 
-  // If the entry has an instance already we should use it.
+  // If the entry has an instance already we should use it, unless it is no
+  // longer suitable.
   if (dest_instance) {
-    // If we are forcing a swap, this should be in a different BrowsingInstance.
-    if (force_browsing_instance_swap) {
-      CHECK(!dest_instance->IsRelatedSiteInstance(
-                render_frame_host_->GetSiteInstance()));
+    SiteInstanceImpl* dest_instance_impl =
+        static_cast<SiteInstanceImpl*>(dest_instance);
+    // TODO(nasko,creis): The check whether data: or about: URLs are allowed
+    // to commit in the current process should be in HasWrongProcessForURL.
+    // However, making this change has further implications and needs more
+    // investigation of what behavior changes. For now, use a conservative
+    // approach and explicitly check before calling HasWrongProcessForURL.
+    if (IsDataOrAbout(dest_url) ||
+        !dest_instance_impl->HasWrongProcessForURL(dest_url)) {
+      // If we are forcing a swap, this should be in a different
+      // BrowsingInstance.
+      if (force_browsing_instance_swap) {
+        CHECK(!dest_instance->IsRelatedSiteInstance(
+            render_frame_host_->GetSiteInstance()));
+      }
+      return SiteInstanceDescriptor(dest_instance);
     }
-    return SiteInstanceDescriptor(dest_instance);
   }
 
   // If a swap is required, we need to force the SiteInstance AND
@@ -1264,11 +1286,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // redirect arbitary requests to those URLs using webRequest or
   // declarativeWebRequest API.  For these cases, the content isn't controlled
   // by the source SiteInstance, so it need not use it.
-  GURL about_srcdoc(content::kAboutSrcDocURL);
-  bool dest_is_data_or_about = dest_url == about_srcdoc ||
-                               dest_url.IsAboutBlank() ||
-                               dest_url.scheme() == url::kDataScheme;
-  if (source_instance && dest_is_data_or_about && !was_server_redirect)
+  if (source_instance && IsDataOrAbout(dest_url) && !was_server_redirect)
     return SiteInstanceDescriptor(source_instance);
 
   // Use the current SiteInstance for same site navigations.

@@ -1745,7 +1745,7 @@ IN_PROC_BROWSER_TEST_F(
       "</html>");
   first_redirect_response.Done();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_EQ(kFirstRedirectURL, shell()->web_contents()->GetVisibleURL());
+  EXPECT_EQ(kFirstRedirectURL, shell()->web_contents()->GetLastCommittedURL());
 
   // Now reload the original request, but redirect to yet another site.
   TestNavigationManager first_reload(shell()->web_contents(), kOriginalURL);
@@ -1771,19 +1771,24 @@ IN_PROC_BROWSER_TEST_F(
   first_reload.ResumeNavigation();
 
   // The navigation is ready to commit: it has been handed to the speculative
-  // RenderFrameHost for commit.
+  // RenderFrameHost for commit if Site Isolation is enabled, otherwise it
+  // commits in the same RenderFrameHost.
   RenderFrameHostImpl* speculative_rfh =
       static_cast<WebContentsImpl*>(shell()->web_contents())
           ->GetFrameTree()
           ->root()
           ->render_manager()
           ->speculative_frame_host();
-  CHECK(speculative_rfh);
-  EXPECT_TRUE(speculative_rfh->is_loading());
+  if (AreAllSitesIsolatedForTesting()) {
+    CHECK(speculative_rfh);
+  } else {
+    CHECK(!speculative_rfh);
+  }
 
   // The user requests a new reload while the previous reload hasn't committed
   // yet. The navigation start deletes the speculative RenderFrameHost that was
-  // supposed to commit the browser-initiated navigation. This should not crash.
+  // supposed to commit the browser-initiated navigation, unless Site Isolation
+  // is enabled. This should not crash.
   TestNavigationManager second_reload(shell()->web_contents(), kOriginalURL);
   shell()->web_contents()->GetController().Reload(
       ReloadType::ORIGINAL_REQUEST_URL, false);
@@ -1793,7 +1798,11 @@ IN_PROC_BROWSER_TEST_F(
                         ->root()
                         ->render_manager()
                         ->speculative_frame_host();
-  EXPECT_FALSE(speculative_rfh);
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_TRUE(speculative_rfh);
+  } else {
+    EXPECT_FALSE(speculative_rfh);
+  }
 
   // The second reload results in a 204.
   second_reload.ResumeNavigation();
@@ -1815,7 +1824,7 @@ IN_PROC_BROWSER_TEST_F(
 // navigation to the pending NavigationEntry will not crash if it happens
 // because a new navigation to the same pending NavigationEntry started.  This
 // is a variant of the previous test, where we destroy the speculative
-// RenderFrameHost to create another speculative RenderFrameHost.This is a
+// RenderFrameHost to create another speculative RenderFrameHost. This is a
 // regression test for crbug.com/796135.
 IN_PROC_BROWSER_TEST_F(
     RenderFrameHostManagerTest,
@@ -1837,6 +1846,11 @@ IN_PROC_BROWSER_TEST_F(
   const GURL kCrossSiteURL =
       embedded_test_server()->GetURL("c.com", "/title1.html");
 
+  const GURL kOriginalSiteURL = SiteInstance::GetSiteForURL(
+      shell()->web_contents()->GetBrowserContext(), kOriginalURL);
+  const GURL kRedirectSiteURL = SiteInstance::GetSiteForURL(
+      shell()->web_contents()->GetBrowserContext(), kRedirectURL);
+
   // First navigate to the initial URL.
   shell()->LoadURL(kOriginalURL);
   original_response1.WaitForRequest();
@@ -1852,7 +1866,7 @@ IN_PROC_BROWSER_TEST_F(
       "</html>");
   original_response1.Done();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_EQ(kOriginalURL, shell()->web_contents()->GetVisibleURL());
+  EXPECT_EQ(kOriginalURL, shell()->web_contents()->GetLastCommittedURL());
 
   // Navigate cross-site.
   NavigateToURL(shell(), kCrossSiteURL);
@@ -1889,6 +1903,13 @@ IN_PROC_BROWSER_TEST_F(
           ->speculative_frame_host();
   CHECK(speculative_rfh);
   EXPECT_TRUE(speculative_rfh->is_loading());
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_EQ(kRedirectSiteURL,
+              speculative_rfh->GetSiteInstance()->GetSiteURL());
+  } else {
+    EXPECT_EQ(kOriginalSiteURL,
+              speculative_rfh->GetSiteInstance()->GetSiteURL());
+  }
   int site_instance_id = speculative_rfh->GetSiteInstance()->GetId();
 
   // The user starts a navigation towards the redirected URL, for which we have
@@ -1904,7 +1925,9 @@ IN_PROC_BROWSER_TEST_F(
                         ->render_manager()
                         ->speculative_frame_host();
   CHECK(speculative_rfh);
-  EXPECT_EQ(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
+  EXPECT_EQ(kRedirectSiteURL, speculative_rfh->GetSiteInstance()->GetSiteURL());
+  if (AreAllSitesIsolatedForTesting())
+    EXPECT_EQ(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
 
   // The user requests to go back again while the previous back hasn't committed
   // yet. This should delete the speculative RenderFrameHost trying to commit
@@ -1919,7 +1942,9 @@ IN_PROC_BROWSER_TEST_F(
                         ->render_manager()
                         ->speculative_frame_host();
   CHECK(speculative_rfh);
-  EXPECT_NE(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
+  EXPECT_EQ(kOriginalSiteURL, speculative_rfh->GetSiteInstance()->GetSiteURL());
+  if (AreAllSitesIsolatedForTesting())
+    EXPECT_NE(site_instance_id, speculative_rfh->GetSiteInstance()->GetId());
 }
 
 // Test for crbug.com/9682.  We should not show the URL for a pending renderer-
