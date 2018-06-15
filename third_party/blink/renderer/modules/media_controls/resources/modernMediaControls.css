@@ -1090,10 +1090,17 @@ video::-webkit-media-controls.immersive-mode input[pseudo="-internal-media-contr
   height: 43px;
   min-width: 43px;
   margin-left: 5px;
+  background-size: 24px;
 }
 
 video::-webkit-media-controls.immersive-mode div[pseudo="-internal-media-controls-button-panel" i] {
   height: 43px;
+  line-height: 43px;
+}
+
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-current-time-display" i],
+video::-webkit-media-controls.immersive-mode div[pseudo="-webkit-media-controls-time-remaining-display" i] {
+  font-size: 16px;
 }
 
 /* Hover highlighting. */

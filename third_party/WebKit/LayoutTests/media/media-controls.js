@@ -40,6 +40,14 @@ function castButton(videoElement) {
     return button;
 }
 
+function currentTimeElement(videoElement) {
+  var controlID = '-webkit-media-controls-current-time-display';
+  var element = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
+  if (!element)
+    throw 'Failed to find current time element';
+  return element;
+}
+
 function downloadButton(videoElement) {
     var controlID = '-internal-media-controls-download-button';
     var button = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
