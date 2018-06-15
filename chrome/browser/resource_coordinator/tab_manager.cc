@@ -75,6 +75,8 @@ using content::WebContents;
 namespace resource_coordinator {
 namespace {
 
+using LoadingState = TabLoadTracker::LoadingState;
+
 // The default timeout time after which the next background tab gets loaded if
 // the previous tab has not finished loading yet. This is ignored in kPaused
 // loading mode.
@@ -592,7 +594,7 @@ void TabManager::OnLoadingStateChange(content::WebContents* web_contents,
                                       LoadingState new_loading_state) {
   GetWebContentsData(web_contents)->SetTabLoadingState(new_loading_state);
 
-  if (new_loading_state == TabLoadTracker::LOADED) {
+  if (new_loading_state == LoadingState::LOADED) {
     bool was_in_background_tab_opening_session =
         IsInBackgroundTabOpeningSession();
 
@@ -883,7 +885,7 @@ int TabManager::GetNumAliveTabs() const {
 bool TabManager::IsTabLoadingForTest(content::WebContents* contents) const {
   if (base::ContainsKey(loading_contents_, contents))
     return true;
-  DCHECK_NE(TabLoadTracker::LOADING,
+  DCHECK_NE(LoadingState::LOADING,
             GetWebContentsData(contents)->tab_loading_state());
   return false;
 }

@@ -18,6 +18,7 @@ namespace resource_coordinator {
 
 using testing::_;
 using testing::StrictMock;
+using LoadingState = TabLoadTracker::LoadingState;
 
 // Test wrapper of TabLoadTracker that exposes some internals.
 class TestTabLoadTracker : public TabLoadTracker {
@@ -163,18 +164,17 @@ class TabLoadTrackerTest : public ChromeRenderViewHostTestHarness {
 TEST_F(TabLoadTrackerTest, DetermineLoadingState) {
   auto* tester1 = content::WebContentsTester::For(contents1());
 
-  EXPECT_EQ(TestTabLoadTracker::UNLOADED,
+  EXPECT_EQ(LoadingState::UNLOADED,
             tracker().DetermineLoadingState(contents1()));
 
   // Navigate to a page and expect it to be loading.
   tester1->NavigateAndCommit(GURL("http://chromium.org"));
-  EXPECT_EQ(TestTabLoadTracker::LOADING,
+  EXPECT_EQ(LoadingState::LOADING,
             tracker().DetermineLoadingState(contents1()));
 
   // Indicate that loading is finished and expect the state to transition.
   tester1->TestSetIsLoading(false);
-  EXPECT_EQ(TestTabLoadTracker::LOADED,
-            tracker().DetermineLoadingState(contents1()));
+  EXPECT_EQ(LoadingState::LOADED, tracker().DetermineLoadingState(contents1()));
 }
 
 void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
@@ -192,20 +192,17 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
   tester3->TestSetIsLoading(false);
 
   // Add the contents to the trackers.
-  EXPECT_CALL(observer(),
-              OnStartTracking(contents1(), TestTabLoadTracker::UNLOADED));
+  EXPECT_CALL(observer(), OnStartTracking(contents1(), LoadingState::UNLOADED));
   tracker().StartTracking(contents1());
   EXPECT_TAB_COUNTS(1, 1, 0, 0);
   testing::Mock::VerifyAndClearExpectations(&observer());
 
-  EXPECT_CALL(observer(),
-              OnStartTracking(contents2(), TestTabLoadTracker::LOADING));
+  EXPECT_CALL(observer(), OnStartTracking(contents2(), LoadingState::LOADING));
   tracker().StartTracking(contents2());
   EXPECT_TAB_COUNTS(2, 1, 1, 0);
   testing::Mock::VerifyAndClearExpectations(&observer());
 
-  EXPECT_CALL(observer(),
-              OnStartTracking(contents3(), TestTabLoadTracker::LOADED));
+  EXPECT_CALL(observer(), OnStartTracking(contents3(), LoadingState::LOADED));
   tracker().StartTracking(contents3());
   EXPECT_TAB_COUNTS(3, 1, 1, 1);
   testing::Mock::VerifyAndClearExpectations(&observer());
@@ -219,8 +216,8 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
 
   // Finish the loading for contents2.
   EXPECT_CALL(observer(),
-              OnLoadingStateChange(contents2(), TestTabLoadTracker::LOADING,
-                                   TestTabLoadTracker::LOADED));
+              OnLoadingStateChange(contents2(), LoadingState::LOADING,
+                                   LoadingState::LOADED));
   tester2->TestSetIsLoading(false);
   if (enable_pai) {
     // The state transition should only occur *after* the PAI signal when that
@@ -233,8 +230,8 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
 
   // Start the loading for contents1.
   EXPECT_CALL(observer(),
-              OnLoadingStateChange(contents1(), TestTabLoadTracker::UNLOADED,
-                                   TestTabLoadTracker::LOADING));
+              OnLoadingStateChange(contents1(), LoadingState::UNLOADED,
+                                   LoadingState::LOADING));
   tester1->NavigateAndCommit(GURL("http://baz.com"));
   EXPECT_TAB_COUNTS(3, 0, 1, 2);
   testing::Mock::VerifyAndClearExpectations(&observer());
@@ -242,8 +239,8 @@ void TabLoadTrackerTest::StateTransitionsTest(bool enable_pai) {
   // Stop the loading with an error. The tab should go back to a LOADED
   // state.
   EXPECT_CALL(observer(),
-              OnLoadingStateChange(contents1(), TestTabLoadTracker::LOADING,
-                                   TestTabLoadTracker::LOADED));
+              OnLoadingStateChange(contents1(), LoadingState::LOADING,
+                                   LoadingState::LOADED));
   tester1->TestDidFailLoadWithError(GURL("http://baz.com"), 500,
                                     base::UTF8ToUTF16("server error"));
   ExpectTabCounts(3, 0, 0, 3);

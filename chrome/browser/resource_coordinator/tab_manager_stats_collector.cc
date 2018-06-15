@@ -35,6 +35,8 @@ namespace resource_coordinator {
 
 namespace {
 
+using LoadingState = TabLoadTracker::LoadingState;
+
 const char* kSessionTypeName[] = {"SessionRestore", "BackgroundTabOpening"};
 
 constexpr int kSamplingOdds = 10;
@@ -173,21 +175,23 @@ void TabManagerStatsCollector::RecordSwitchToTab(
   DCHECK(new_data);
 
   if (is_session_restore_loading_tabs_) {
-    UMA_HISTOGRAM_ENUMERATION(kHistogramSessionRestoreSwitchToTab,
-                              new_data->tab_loading_state(),
-                              TabLoadTracker::LOADING_STATE_MAX);
+    UMA_HISTOGRAM_ENUMERATION(
+        kHistogramSessionRestoreSwitchToTab,
+        static_cast<int32_t>(new_data->tab_loading_state()),
+        static_cast<int32_t>(LoadingState::kMaxValue) + 1);
   }
   if (is_in_background_tab_opening_session_) {
-    UMA_HISTOGRAM_ENUMERATION(kHistogramBackgroundTabOpeningSwitchToTab,
-                              new_data->tab_loading_state(),
-                              TabLoadTracker::LOADING_STATE_MAX);
+    UMA_HISTOGRAM_ENUMERATION(
+        kHistogramBackgroundTabOpeningSwitchToTab,
+        static_cast<int32_t>(new_data->tab_loading_state()),
+        static_cast<int32_t>(LoadingState::kMaxValue) + 1);
   }
 
   if (old_contents)
     foreground_contents_switched_to_times_.erase(old_contents);
   DCHECK(
       !base::ContainsKey(foreground_contents_switched_to_times_, new_contents));
-  if (new_data->tab_loading_state() != TabLoadTracker::LOADED) {
+  if (new_data->tab_loading_state() != LoadingState::LOADED) {
     foreground_contents_switched_to_times_.insert(
         std::make_pair(new_contents, NowTicks()));
   }

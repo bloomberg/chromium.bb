@@ -10,6 +10,8 @@ namespace resource_coordinator {
 
 namespace {
 
+using LoadingState = TabLoadTracker::LoadingState;
+
 enum class WaitForEvent { NO_LONGER_TRACKED };
 
 class WaitForLoadingStateHelper : public TabLoadTracker::Observer {
@@ -27,7 +29,7 @@ class WaitForLoadingStateHelper : public TabLoadTracker::Observer {
   WaitForLoadingStateHelper(content::WebContents* waiting_for_contents,
                             WaitForEvent no_longer_tracked_unused)
       : waiting_for_contents_(waiting_for_contents),
-        waiting_for_state_(TabLoadTracker::LOADING_STATE_MAX),
+        waiting_for_state_(LoadingState::UNLOADED),
         waiting_for_no_longer_tracked_(true),
         wait_successful_(false) {}
 
@@ -95,23 +97,22 @@ class WaitForLoadingStateHelper : public TabLoadTracker::Observer {
 
 }  // namespace
 
-bool WaitForTransitionToLoadingState(
-    content::WebContents* contents,
-    TabLoadTracker::LoadingState loading_state) {
+bool WaitForTransitionToLoadingState(content::WebContents* contents,
+                                     LoadingState loading_state) {
   WaitForLoadingStateHelper waiter(contents, loading_state);
   return waiter.Wait();
 }
 
 bool WaitForTransitionToUnloaded(content::WebContents* contents) {
-  return WaitForTransitionToLoadingState(contents, TabLoadTracker::UNLOADED);
+  return WaitForTransitionToLoadingState(contents, LoadingState::UNLOADED);
 }
 
 bool WaitForTransitionToLoading(content::WebContents* contents) {
-  return WaitForTransitionToLoadingState(contents, TabLoadTracker::LOADING);
+  return WaitForTransitionToLoadingState(contents, LoadingState::LOADING);
 }
 
 bool WaitForTransitionToLoaded(content::WebContents* contents) {
-  return WaitForTransitionToLoadingState(contents, TabLoadTracker::LOADED);
+  return WaitForTransitionToLoadingState(contents, LoadingState::LOADED);
 }
 
 bool WaitUntilNoLongerTracked(content::WebContents* contents) {

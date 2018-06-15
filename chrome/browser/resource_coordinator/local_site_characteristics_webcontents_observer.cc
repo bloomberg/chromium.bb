@@ -13,6 +13,8 @@ namespace resource_coordinator {
 
 namespace {
 
+using LoadingState = TabLoadTracker::LoadingState;
+
 TabVisibility ContentVisibilityToRCVisibility(content::Visibility visibility) {
   if (visibility == content::Visibility::VISIBLE)
     return TabVisibility::kForeground;
@@ -178,7 +180,7 @@ bool LocalSiteCharacteristicsWebContentsObserver::
     return true;
 
   if (TabLoadTracker::Get()->GetLoadingState(web_contents()) !=
-      TabLoadTracker::LOADED) {
+      LoadingState::LOADED) {
     return true;
   }
 

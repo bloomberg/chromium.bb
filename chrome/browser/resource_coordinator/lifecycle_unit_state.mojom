@@ -21,6 +21,18 @@ enum LifecycleUnitState {
   DISCARDED = 5,
 };
 
+// Indicates the loading state of a lifecycle unit, orthogonal to the basic
+// lifecycle state. Note that these values are written to logs and histograms
+// so need to remain consistent.
+enum LifecycleUnitLoadingState {
+  // The LifecycleUnit is not yet loaded, or loading was attempted but failed.
+  UNLOADED = 0,
+  // The LifecycleUnit is loading.
+  LOADING = 1,
+  // The LifecycleUnit is loaded.
+  LOADED = 2,
+};
+
 // An enumeration of reasons why a lifecycle state change was applied. These are
 // also emitted via UKM so need to remain stable.
 enum LifecycleUnitStateChangeReason {

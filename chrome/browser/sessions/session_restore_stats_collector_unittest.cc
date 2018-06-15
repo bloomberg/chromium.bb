@@ -28,6 +28,7 @@ namespace {
 using resource_coordinator::TabLoadTracker;
 using resource_coordinator::ResourceCoordinatorTabHelper;
 
+using LoadingState = resource_coordinator::TabLoadTracker::LoadingState;
 using TabLoaderStats = SessionRestoreStatsCollector::TabLoaderStats;
 using StatsReportingDelegate =
     SessionRestoreStatsCollector::StatsReportingDelegate;
@@ -293,14 +294,14 @@ class SessionRestoreStatsCollectorTest : public testing::Test {
   void GenerateLoadStart(size_t tab_index) {
     content::WebContents* contents = restored_tabs_[tab_index].contents();
     TabLoadTracker::Get()->TransitionStateForTesting(contents,
-                                                     TabLoadTracker::LOADING);
+                                                     LoadingState::LOADING);
   }
 
   // Generates a load stop notification for the given tab.
   void GenerateLoadStop(size_t tab_index) {
     content::WebContents* contents = restored_tabs_[tab_index].contents();
     TabLoadTracker::Get()->TransitionStateForTesting(contents,
-                                                     TabLoadTracker::LOADED);
+                                                     LoadingState::LOADED);
   }
 
   // Generates a web contents destroyed notification for the given tab.

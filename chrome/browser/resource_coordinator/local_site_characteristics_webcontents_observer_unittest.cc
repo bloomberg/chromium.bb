@@ -19,6 +19,8 @@
 
 namespace resource_coordinator {
 
+using LoadingState = TabLoadTracker::LoadingState;
+
 // A mock implementation of a SiteCharacteristicsDataWriter.
 class LenientMockDataWriter : public SiteCharacteristicsDataWriter {
  public:
@@ -179,7 +181,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   observer()->TitleWasSet(nullptr);
 
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
 
   EXPECT_CALL(*mock_writer,
               NotifySiteVisibilityChanged(TabVisibility::kForeground));
@@ -229,7 +231,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   observer()->TitleWasSet(nullptr);
 
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
-                                                   TabLoadTracker::LOADING);
+                                                   LoadingState::LOADING);
 
   EXPECT_CALL(*mock_writer,
               NotifySiteVisibilityChanged(TabVisibility::kBackground));
