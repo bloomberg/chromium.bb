@@ -92,6 +92,8 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   TimeTicks provisional_first_meaningful_paint_swap_;
   double max_significance_so_far_ = 0.0;
   double accumulated_significance_while_having_blank_text_ = 0.0;
+  double network2_quiet_window_seconds_ = kNetwork2QuietWindowSeconds;
+  double network0_quiet_window_seconds_ = kNetwork0QuietWindowSeconds;
   unsigned prev_layout_object_count_ = 0;
   bool seen_first_meaningful_paint_candidate_ = false;
   bool network0_quiet_reached_ = false;

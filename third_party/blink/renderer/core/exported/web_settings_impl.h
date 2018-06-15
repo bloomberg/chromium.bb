@@ -93,6 +93,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
                             UScriptCode = USCRIPT_COMMON) override;
   void SetFixedFontFamily(const WebString&,
                           UScriptCode = USCRIPT_COMMON) override;
+  void SetFMPNetworkQuietTimeout(double timeout) override;
   void SetForceMainWorldInitialization(bool) override;
   void SetForcePreloadNoneForMediaElements(bool) override;
   void SetForceZeroLayoutHeight(bool) override;

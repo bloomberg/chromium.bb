@@ -511,22 +511,32 @@ void RenderViewImpl::Initialize(
   WebSettings::SelectionStrategyType selection_strategy =
       WebSettings::SelectionStrategyType::kCharacter;
   const std::string selection_strategy_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTouchTextSelectionStrategy);
+      command_line.GetSwitchValueASCII(switches::kTouchTextSelectionStrategy);
   if (selection_strategy_str == "direction")
     selection_strategy = WebSettings::SelectionStrategyType::kDirection;
   webview()->GetSettings()->SetSelectionStrategy(selection_strategy);
 
-  std::string passiveListenersDefault =
+  std::string passive_listeners_default =
       command_line.GetSwitchValueASCII(switches::kPassiveListenersDefault);
-  if (!passiveListenersDefault.empty()) {
+  if (!passive_listeners_default.empty()) {
     WebSettings::PassiveEventListenerDefault passiveDefault =
         WebSettings::PassiveEventListenerDefault::kFalse;
-    if (passiveListenersDefault == "true")
+    if (passive_listeners_default == "true")
       passiveDefault = WebSettings::PassiveEventListenerDefault::kTrue;
-    else if (passiveListenersDefault == "forcealltrue")
+    else if (passive_listeners_default == "forcealltrue")
       passiveDefault = WebSettings::PassiveEventListenerDefault::kForceAllTrue;
     webview()->GetSettings()->SetPassiveEventListenerDefault(passiveDefault);
+  }
+
+  std::string fmp_network_quiet_timeout =
+      command_line.GetSwitchValueASCII(switches::kFMPNetworkQuietTimeout);
+  if (!fmp_network_quiet_timeout.empty()) {
+    double fmp_network_quiet_timeout_seconds = 0.0;
+    if (base::StringToDouble(fmp_network_quiet_timeout,
+                             &fmp_network_quiet_timeout_seconds)) {
+      webview()->GetSettings()->SetFMPNetworkQuietTimeout(
+          fmp_network_quiet_timeout_seconds);
+    }
   }
 
   ApplyBlinkSettings(command_line, webview()->GetSettings());
