@@ -86,8 +86,8 @@ void TransferBufferTest::TearDown() {
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*command_buffer(), OnFlush()).Times(AtMost(1));
   EXPECT_CALL(*command_buffer(), Flush(_)).Times(AtMost(1));
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_)).Times(AtMost(2));
   transfer_buffer_.reset();
 }
 
@@ -122,9 +122,6 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
-      .Times(1)
-      .RetiresOnSaturation();
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
@@ -138,9 +135,6 @@ TEST_F(TransferBufferTest, Free) {
 
   // Free buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
       .Times(1)
       .RetiresOnSaturation();
   transfer_buffer_->Free();
@@ -157,9 +151,6 @@ TEST_F(TransferBufferTest, Free) {
 
   // Free buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
       .Times(1)
       .RetiresOnSaturation();
   transfer_buffer_->Free();
@@ -179,8 +170,8 @@ TEST_F(TransferBufferTest, Free) {
   int32_t put_offset = helper_->GetPutOffsetForTest();
   transfer_buffer_->FreePendingToken(data, token);
 
-  // Free buffer. Should cause an ordering barrier.
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_)).Times(AtMost(1));
+  // Free buffer. Should cause a Flush.
+  EXPECT_CALL(*command_buffer(), Flush(_)).Times(AtMost(1));
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
       .Times(1)
       .RetiresOnSaturation();
@@ -189,7 +180,9 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
   EXPECT_EQ(base::UnguessableToken(),
             transfer_buffer_->shared_memory_handle().GetGUID());
-  // Free should not have caused a finish.
+  // Free should have flushed.
+  EXPECT_EQ(put_offset, command_buffer_->GetServicePutOffset());
+  // However it shouldn't have caused a finish.
   EXPECT_LT(command_buffer_->GetState().get_offset, put_offset);
 
   // See that it gets reallocated.
@@ -204,9 +197,6 @@ TEST_F(TransferBufferTest, Free) {
 
   // Test freeing twice.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
       .Times(1)
       .RetiresOnSaturation();
   transfer_buffer_->Free();
@@ -344,18 +334,11 @@ void TransferBufferExpandContractTest::TearDown() {
     EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
-        .Times(1)
-        .RetiresOnSaturation();
   }
   // For command buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), Flush(_)).Times(1).RetiresOnSaturation();
   transfer_buffer_.reset();
 }
 
@@ -379,9 +362,6 @@ TEST_F(TransferBufferExpandContractTest, Expand) {
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
-      .Times(1)
-      .RetiresOnSaturation();
   EXPECT_CALL(*command_buffer(),
               CreateTransferBuffer(kStartTransferBufferSize * 2, _))
       .WillOnce(Invoke(
@@ -399,9 +379,6 @@ TEST_F(TransferBufferExpandContractTest, Expand) {
   transfer_buffer_->FreePendingToken(ptr, 1);
 
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*command_buffer(),
@@ -438,9 +415,6 @@ TEST_F(TransferBufferExpandContractTest, Contract) {
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
-      .Times(1)
-      .RetiresOnSaturation();
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
@@ -471,9 +445,6 @@ TEST_F(TransferBufferExpandContractTest, Contract) {
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
-      .Times(1)
-      .RetiresOnSaturation();
   transfer_buffer_->Free();
   // See it's freed.
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
@@ -496,9 +467,6 @@ TEST_F(TransferBufferExpandContractTest, Contract) {
 TEST_F(TransferBufferExpandContractTest, OutOfMemory) {
   // Free buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
       .Times(1)
       .RetiresOnSaturation();
   transfer_buffer_->Free();
@@ -525,9 +493,6 @@ TEST_F(TransferBufferExpandContractTest, OutOfMemory) {
 TEST_F(TransferBufferExpandContractTest, ReallocsToDefault) {
   // Free buffer.
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
       .Times(1)
       .RetiresOnSaturation();
   transfer_buffer_->Free();
