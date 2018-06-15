@@ -15,6 +15,8 @@
 namespace device {
 
 class OpenVRDevice;
+class OpenVRTestHook;
+class TestHookRegistration;
 
 class DEVICE_VR_EXPORT OpenVRDeviceProvider : public VRDeviceProvider {
  public:
@@ -31,11 +33,15 @@ class DEVICE_VR_EXPORT OpenVRDeviceProvider : public VRDeviceProvider {
 
   static void RecordRuntimeAvailability();
 
+  static void SetTestHook(OpenVRTestHook*);
+
  private:
   void CreateDevice();
 
   std::unique_ptr<OpenVRDevice> device_;
   bool initialized_ = false;
+  static OpenVRTestHook* test_hook_s;
+  static TestHookRegistration* test_hook_registration_s;
 
   DISALLOW_COPY_AND_ASSIGN(OpenVRDeviceProvider);
 };
