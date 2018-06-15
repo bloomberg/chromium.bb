@@ -73,7 +73,11 @@ def main():
       temp_filter_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
       temp_filter_file.write('\n'.join(filter_list))
       temp_filter_file.close()
-      cmd += ['--test-list=' + temp_filter_file.name]
+      arg_name = 'test-list'
+      for arg in rest_args:
+        if 'run_blinkpy_tests.py' in arg:
+          arg_name = 'file-list'
+      cmd += ['--%s=' % arg_name + temp_filter_file.name]
     if args.xvfb:
       return xvfb.run_executable(cmd, env)
     else:
