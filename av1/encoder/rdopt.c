@@ -574,7 +574,7 @@ static int64_t get_est_rd(BLOCK_SIZE bsize, int rdmult, int64_t sse,
   if (md->ready) {
     const double est_ld = md->a * sse + md->b;
     const double est_residue_cost = (sse - md->dist_mean) / est_ld;
-    const int est_cost = (int)round(est_residue_cost) + curr_cost;
+    const int64_t est_cost = (int64_t)round(est_residue_cost) + curr_cost;
     const int64_t int64_dist_mean = (int64_t)round(md->dist_mean);
     const int64_t est_rd = RDCOST(rdmult, est_cost, int64_dist_mean);
     return est_rd;
