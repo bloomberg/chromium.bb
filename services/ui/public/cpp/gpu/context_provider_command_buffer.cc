@@ -439,7 +439,7 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
 
   size_t max_resource_cache_bytes;
   size_t max_glyph_cache_texture_bytes;
-  gpu::DetermineGrCacheLimitsFromAvailableMemory(
+  gpu::raster::DetermineGrCacheLimitsFromAvailableMemory(
       &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
 
   gpu::gles2::GLES2Interface* gl_interface;

@@ -159,8 +159,8 @@ class GrContext* InProcessContextProvider::GrContext() {
 
   size_t max_resource_cache_bytes;
   size_t max_glyph_cache_texture_bytes;
-  gpu::DefaultGrCacheLimitsForTests(&max_resource_cache_bytes,
-                                    &max_glyph_cache_texture_bytes);
+  gpu::raster::DefaultGrCacheLimitsForTests(&max_resource_cache_bytes,
+                                            &max_glyph_cache_texture_bytes);
   gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
       ContextGL(), ContextSupport(), ContextCapabilities(),
       max_resource_cache_bytes, max_glyph_cache_texture_bytes));

@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 
 namespace gpu {
+namespace raster {
 
 void DetermineGrCacheLimitsFromAvailableMemory(
     size_t* max_resource_cache_bytes,
@@ -49,4 +50,5 @@ void DefaultGrCacheLimitsForTests(size_t* max_resource_cache_bytes,
   *max_glyph_cache_texture_bytes = kDefaultGlyphCacheTextureBytes;
 }
 
+}  // namespace raster
 }  // namespace gpu

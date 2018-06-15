@@ -79,8 +79,6 @@ source_set("common_sources") {
     "mailbox_holder.h",
     "scheduling_priority.cc",
     "scheduling_priority.h",
-    "skia_utils.cc",
-    "skia_utils.h",
     "swap_buffers_complete_params.cc",
     "swap_buffers_complete_params.h",
     "swap_buffers_flags.h",
@@ -139,6 +137,8 @@ source_set("raster_sources") {
     "raster_cmd_format_autogen.h",
     "raster_cmd_ids.h",
     "raster_cmd_ids_autogen.h",
+    "skia_utils.cc",
+    "skia_utils.h",
   ]
 
   configs += [ "//gpu:raster_implementation" ]

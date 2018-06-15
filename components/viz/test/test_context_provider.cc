@@ -257,8 +257,8 @@ class GrContext* TestContextProvider::GrContext() {
 
   size_t max_resource_cache_bytes;
   size_t max_glyph_cache_texture_bytes;
-  gpu::DefaultGrCacheLimitsForTests(&max_resource_cache_bytes,
-                                    &max_glyph_cache_texture_bytes);
+  gpu::raster::DefaultGrCacheLimitsForTests(&max_resource_cache_bytes,
+                                            &max_glyph_cache_texture_bytes);
   gr_context_ = std::make_unique<skia_bindings::GrContextForGLES2Interface>(
       context_gl_.get(), support_.get(), context_gl_->test_capabilities(),
       max_resource_cache_bytes, max_glyph_cache_texture_bytes);

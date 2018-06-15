@@ -102,7 +102,7 @@ class GrContext* VizProcessContextProvider::GrContext() {
 
   size_t max_resource_cache_bytes;
   size_t max_glyph_cache_texture_bytes;
-  gpu::DetermineGrCacheLimitsFromAvailableMemory(
+  gpu::raster::DetermineGrCacheLimitsFromAvailableMemory(
       &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
 
   gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
