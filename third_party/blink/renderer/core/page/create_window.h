@@ -52,11 +52,6 @@ DOMWindow* CreateWindow(const String& url_string,
 void CreateWindowForRequest(const FrameLoadRequest&, LocalFrame& opener_frame);
 
 // Exposed for testing
-CORE_EXPORT NavigationPolicy
-EffectiveNavigationPolicy(const WebInputEvent* current_event,
-                          const WebWindowFeatures&);
-
-// Exposed for testing
 CORE_EXPORT WebWindowFeatures GetWindowFeaturesFromString(const String&);
 
 }  // namespace blink

@@ -31,8 +31,6 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/events/current_input_event.h"
-#include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
@@ -50,42 +48,6 @@
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
-
-// Check that the desired NavigationPolicy |policy| is compatible with the
-// observed input event |current_event|.
-// TODO(dgozman): move this to navigation_policy.cc.
-NavigationPolicy EffectiveNavigationPolicy(const WebInputEvent* current_event,
-                                           const WebWindowFeatures& features) {
-  // If our default configuration was modified by a script or wasn't
-  // created by a user gesture, then show as a popup. Else, let this
-  // new window be opened as a toplevel window.
-  bool as_popup = !features.tool_bar_visible || !features.status_bar_visible ||
-                  !features.scrollbars_visible || !features.menu_bar_visible ||
-                  !features.resizable;
-  NavigationPolicy app_policy =
-      as_popup ? kNavigationPolicyNewPopup : kNavigationPolicyNewForegroundTab;
-  NavigationPolicy user_policy = NavigationPolicyFromEvent(current_event);
-
-  if (user_policy == kNavigationPolicyNewWindow &&
-      app_policy == kNavigationPolicyNewPopup) {
-    // User and app agree that we want a new window; let the app override the
-    // decorations.
-    return app_policy;
-  }
-
-  if (user_policy == kNavigationPolicyCurrentTab) {
-    // User doesn't want a specific policy, use app policy instead.
-    return app_policy;
-  }
-
-  if (user_policy == kNavigationPolicyDownload) {
-    // When the input event suggests a download, but the navigation was
-    // initiated by script, we should not override it.
-    return app_policy;
-  }
-
-  return user_policy;
-}
 
 // Though isspace() considers \t and \v to be whitespace, Win IE doesn't when
 // parsing window features.
@@ -242,10 +204,9 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   if (!old_page)
     return nullptr;
 
-  NavigationPolicy policy =
-      force_new_foreground_tab
-          ? kNavigationPolicyNewForegroundTab
-          : EffectiveNavigationPolicy(CurrentInputEvent::Get(), features);
+  NavigationPolicy policy = force_new_foreground_tab
+                                ? kNavigationPolicyNewForegroundTab
+                                : NavigationPolicyForCreateWindow(features);
 
   const SandboxFlags sandbox_flags =
       opener_frame.GetDocument()->IsSandboxed(

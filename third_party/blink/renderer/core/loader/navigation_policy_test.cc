@@ -28,65 +28,69 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "third_party/blink/renderer/core/loader/navigation_policy.h"
+#include "base/auto_reset.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/web/web_window_features.h"
-#include "third_party/blink/renderer/core/page/create_window.h"
+#include "third_party/blink/renderer/core/events/current_input_event.h"
 
 namespace blink {
 
-class EffectiveNavigationPolicyTest : public testing::Test {
+// TODO(dgozman): add tests for NavigationPolicyFromEvent.
+class NavigationPolicyTest : public testing::Test {
  protected:
-  NavigationPolicy GetNavigationPolicyWithMouseEvent(
-      int modifiers,
-      WebMouseEvent::Button button,
-      bool as_popup) {
+  NavigationPolicy GetPolicyForCreateWindow(int modifiers,
+                                            WebMouseEvent::Button button,
+                                            bool as_popup) {
     WebMouseEvent event(WebInputEvent::kMouseUp, modifiers,
                         WebInputEvent::GetStaticTimeStampForTests());
     event.button = button;
     if (as_popup)
       features.tool_bar_visible = false;
-    return EffectiveNavigationPolicy(&event, features);
+    base::AutoReset<const WebInputEvent*> current_event_change(
+        &CurrentInputEvent::current_input_event_, &event);
+    return NavigationPolicyForCreateWindow(features);
   }
 
   WebWindowFeatures features;
 };
 
-TEST_F(EffectiveNavigationPolicyTest, LeftClick) {
+TEST_F(NavigationPolicyTest, LeftClick) {
   int modifiers = 0;
   WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
   bool as_popup = false;
   EXPECT_EQ(kNavigationPolicyNewForegroundTab,
-            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
+            GetPolicyForCreateWindow(modifiers, button, as_popup));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, LeftClickPopup) {
+TEST_F(NavigationPolicyTest, LeftClickPopup) {
   int modifiers = 0;
   WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
   bool as_popup = true;
   EXPECT_EQ(kNavigationPolicyNewPopup,
-            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
+            GetPolicyForCreateWindow(modifiers, button, as_popup));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, ShiftLeftClick) {
+TEST_F(NavigationPolicyTest, ShiftLeftClick) {
   int modifiers = WebInputEvent::kShiftKey;
   WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
   bool as_popup = false;
   EXPECT_EQ(kNavigationPolicyNewWindow,
-            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
+            GetPolicyForCreateWindow(modifiers, button, as_popup));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, ShiftLeftClickPopup) {
+TEST_F(NavigationPolicyTest, ShiftLeftClickPopup) {
   int modifiers = WebInputEvent::kShiftKey;
   WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
   bool as_popup = true;
   EXPECT_EQ(kNavigationPolicyNewPopup,
-            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
+            GetPolicyForCreateWindow(modifiers, button, as_popup));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaLeftClick) {
+TEST_F(NavigationPolicyTest, ControlOrMetaLeftClick) {
 #if defined(OS_MACOSX)
   int modifiers = WebInputEvent::kMetaKey;
 #else
@@ -95,10 +99,10 @@ TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaLeftClick) {
   WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
   bool as_popup = false;
   EXPECT_EQ(kNavigationPolicyNewBackgroundTab,
-            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
+            GetPolicyForCreateWindow(modifiers, button, as_popup));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaLeftClickPopup) {
+TEST_F(NavigationPolicyTest, ControlOrMetaLeftClickPopup) {
 #if defined(OS_MACOSX)
   int modifiers = WebInputEvent::kMetaKey;
 #else
@@ -107,10 +111,10 @@ TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaLeftClickPopup) {
   WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
   bool as_popup = true;
   EXPECT_EQ(kNavigationPolicyNewBackgroundTab,
-            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
+            GetPolicyForCreateWindow(modifiers, button, as_popup));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaAndShiftLeftClick) {
+TEST_F(NavigationPolicyTest, ControlOrMetaAndShiftLeftClick) {
 #if defined(OS_MACOSX)
   int modifiers = WebInputEvent::kMetaKey;
 #else
@@ -120,10 +124,10 @@ TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaAndShiftLeftClick) {
   WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
   bool as_popup = false;
   EXPECT_EQ(kNavigationPolicyNewForegroundTab,
-            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
+            GetPolicyForCreateWindow(modifiers, button, as_popup));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaAndShiftLeftClickPopup) {
+TEST_F(NavigationPolicyTest, ControlOrMetaAndShiftLeftClickPopup) {
 #if defined(OS_MACOSX)
   int modifiers = WebInputEvent::kMetaKey;
 #else
@@ -133,59 +137,59 @@ TEST_F(EffectiveNavigationPolicyTest, ControlOrMetaAndShiftLeftClickPopup) {
   WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
   bool as_popup = true;
   EXPECT_EQ(kNavigationPolicyNewForegroundTab,
-            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
+            GetPolicyForCreateWindow(modifiers, button, as_popup));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, MiddleClick) {
+TEST_F(NavigationPolicyTest, MiddleClick) {
   int modifiers = 0;
   bool as_popup = false;
   WebMouseEvent::Button button = WebMouseEvent::Button::kMiddle;
   EXPECT_EQ(kNavigationPolicyNewBackgroundTab,
-            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
+            GetPolicyForCreateWindow(modifiers, button, as_popup));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, MiddleClickPopup) {
+TEST_F(NavigationPolicyTest, MiddleClickPopup) {
   int modifiers = 0;
   bool as_popup = true;
   WebMouseEvent::Button button = WebMouseEvent::Button::kMiddle;
   EXPECT_EQ(kNavigationPolicyNewBackgroundTab,
-            GetNavigationPolicyWithMouseEvent(modifiers, button, as_popup));
+            GetPolicyForCreateWindow(modifiers, button, as_popup));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, NoToolbarsForcesPopup) {
+TEST_F(NavigationPolicyTest, NoToolbarsForcesPopup) {
   features.tool_bar_visible = false;
   EXPECT_EQ(kNavigationPolicyNewPopup,
-            EffectiveNavigationPolicy(nullptr, features));
+            NavigationPolicyForCreateWindow(features));
   features.tool_bar_visible = true;
   EXPECT_EQ(kNavigationPolicyNewForegroundTab,
-            EffectiveNavigationPolicy(nullptr, features));
+            NavigationPolicyForCreateWindow(features));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, NoStatusBarForcesPopup) {
+TEST_F(NavigationPolicyTest, NoStatusBarForcesPopup) {
   features.status_bar_visible = false;
   EXPECT_EQ(kNavigationPolicyNewPopup,
-            EffectiveNavigationPolicy(nullptr, features));
+            NavigationPolicyForCreateWindow(features));
   features.status_bar_visible = true;
   EXPECT_EQ(kNavigationPolicyNewForegroundTab,
-            EffectiveNavigationPolicy(nullptr, features));
+            NavigationPolicyForCreateWindow(features));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, NoMenuBarForcesPopup) {
+TEST_F(NavigationPolicyTest, NoMenuBarForcesPopup) {
   features.menu_bar_visible = false;
   EXPECT_EQ(kNavigationPolicyNewPopup,
-            EffectiveNavigationPolicy(nullptr, features));
+            NavigationPolicyForCreateWindow(features));
   features.menu_bar_visible = true;
   EXPECT_EQ(kNavigationPolicyNewForegroundTab,
-            EffectiveNavigationPolicy(nullptr, features));
+            NavigationPolicyForCreateWindow(features));
 }
 
-TEST_F(EffectiveNavigationPolicyTest, NotResizableForcesPopup) {
+TEST_F(NavigationPolicyTest, NotResizableForcesPopup) {
   features.resizable = false;
   EXPECT_EQ(kNavigationPolicyNewPopup,
-            EffectiveNavigationPolicy(nullptr, features));
+            NavigationPolicyForCreateWindow(features));
   features.resizable = true;
   EXPECT_EQ(kNavigationPolicyNewForegroundTab,
-            EffectiveNavigationPolicy(nullptr, features));
+            NavigationPolicyForCreateWindow(features));
 }
 
 }  // namespace blink
