@@ -183,7 +183,10 @@ class ServiceWorkerTest : public ExtensionApiTest,
 
   // Navigates the browser to |url| and returns the new tab's page type.
   content::PageType NavigateAndGetPageType(const GURL& url) {
-    return Navigate(url)->GetController().GetActiveEntry()->GetPageType();
+    return Navigate(url)
+        ->GetController()
+        .GetLastCommittedEntry()
+        ->GetPageType();
   }
 
   // Extracts the innerText from |contents|.
