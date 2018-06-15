@@ -33,7 +33,7 @@ namespace subresource_filter {
 class TestSubresourceFilterObserver : public SubresourceFilterObserver,
                                       public content::WebContentsObserver {
  public:
-  TestSubresourceFilterObserver(content::WebContents* web_contents);
+  explicit TestSubresourceFilterObserver(content::WebContents* web_contents);
   ~TestSubresourceFilterObserver() override;
 
   // SubresourceFilterObserver:
@@ -63,9 +63,9 @@ class TestSubresourceFilterObserver : public SubresourceFilterObserver,
  private:
   std::map<GURL, LoadPolicy> subframe_load_evaluations_;
   std::map<GURL, bool> ad_subframe_evaluations_;
+
   std::map<GURL, ActivationLevel> page_activations_;
   std::map<GURL, SafeBrowsingCheck> safe_browsing_checks_;
-
   std::map<content::NavigationHandle*, ActivationLevel> pending_activations_;
   base::Optional<ActivationLevel> last_committed_activation_;
 
