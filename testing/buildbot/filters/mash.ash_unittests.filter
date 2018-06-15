@@ -238,10 +238,6 @@
 # TODO: Probably event filter problem. http://crbug.com/695758
 -ShellTest.TestPreTargetHandlerOrder
 
-# TODO: ShellPortMash::CreateTabletModeEventHandler. http://crbug.com/698093
--SplitViewWindowSelectorTest.DragToClose
--SplitViewWindowSelectorTest.FlingToClose
-
 # Focus traversal problem. http://crbug.com/814019
 -StatusAreaWidgetFocusTest.FocusOutObserver
 -StatusAreaWidgetFocusTest.FocusOutObserverUnified
