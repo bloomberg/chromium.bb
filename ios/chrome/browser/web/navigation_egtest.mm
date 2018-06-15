@@ -342,36 +342,6 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [ChromeEarlGrey waitForWebViewContainingText:"pony"];
 }
 
-// Tests navigating forward via window.history.forward() to an error page.
-- (void)testHistoryForwardToErrorPage {
-// TODO(crbug.com/694662): This test relies on external URL because of the bug.
-// Re-enable this test on device once the bug is fixed.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
-#endif
-  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
-
-  // Go to page 1 with a button which calls window.history.forward().
-  const GURL forwardURL = self.testServer->GetURL(kWindowHistoryGoTestURL);
-  [ChromeEarlGrey loadURL:forwardURL];
-
-  // Go to page 2: 'www.badurljkljkljklfloofy.com'. This page should display a
-  // page not available error.
-  const GURL badURL("http://www.badurljkljkljklfloofy.com");
-  [ChromeEarlGrey loadURL:badURL];
-  [ChromeEarlGrey waitForErrorPage];
-
-  // Go back to page 1 by clicking back button.
-  [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:OmniboxText(forwardURL.GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Go forward to page 2 by calling window.history.forward() and assert that
-  // the error page is shown.
-  [ChromeEarlGrey tapWebViewElementWithID:kGoForwardID];
-  [ChromeEarlGrey waitForErrorPage];
-}
-
 #pragma mark window.location.hash operations
 
 // Loads a URL and modifies window.location.hash, then goes back and forward

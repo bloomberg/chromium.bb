@@ -127,7 +127,8 @@ NSString* GetNSErrorMessage() {
 }
 
 // Sucessfully loads the page, then loads the URL which fails to load, then
-// sucessfully goes back to the first page.
+// sucessfully goes back to the first page. Back-forward navigations are
+// browser-initiated.
 // TODO(crbug.com/840489): Remove this test.
 - (void)testGoBackFromErrorPageAndForwardToErrorPage {
   // First page loads sucessfully.
@@ -148,6 +149,38 @@ NSString* GetNSErrorMessage() {
 
   // Going forward fails the load.
   [ChromeEarlGrey goForward];
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
+  } else {
+    [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetNSErrorMessage()];
+  }
+}
+
+// Sucessfully loads the page, then loads the URL which fails to load, then
+// sucessfully goes back to the first page. Back-forward navigations are
+// renderer-initiated.
+// TODO(crbug.com/840489): Remove this test.
+- (void)testRendererInitiatedGoBackFromErrorPageAndForwardToErrorPage {
+  // First page loads sucessfully.
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo")];
+  [ChromeEarlGrey waitForWebViewContainingText:"Echo"];
+
+  // Second page fails to load.
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/close-socket")];
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
+  } else {
+    [ChromeEarlGrey waitForStaticHTMLViewContainingText:GetNSErrorMessage()];
+  }
+
+  // Going back should sucessfully load the first page.
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey waitForWebViewContainingText:"Echo"];
+
+  // Going forward fails the load.
+  NSError* error = nil;
+  chrome_test_util::ExecuteJavaScript(@"window.history.forward()", &error);
+  GREYAssertTrue(!error, @"Unexpected error when executing JavaScript.");
   if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
     [ChromeEarlGrey waitForWebViewContainingText:GetErrorMessage()];
   } else {
