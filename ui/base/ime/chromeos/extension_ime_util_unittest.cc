@@ -20,6 +20,11 @@ TEST(ExtensionIMEUtilTest, GetComponentInputMethodID) {
             extension_ime_util::GetComponentInputMethodID("ABCDE", "12345"));
 }
 
+TEST(ExtensionIMEUtilTest, GetArcInputMethodIDTest) {
+  EXPECT_EQ("_arc_ime_ABCDE12345",
+            extension_ime_util::GetArcInputMethodID("ABCDE", "12345"));
+}
+
 TEST(ExtensionIMEUtilTest, GetExtensionIDFromInputMethodIDTest) {
   EXPECT_EQ("",
             extension_ime_util::GetExtensionIDFromInputMethodID("mozc"));
@@ -42,6 +47,9 @@ TEST(ExtensionIMEUtilTest, IsExtensionIMETest) {
   EXPECT_FALSE(extension_ime_util::IsExtensionIME(
       extension_ime_util::GetComponentInputMethodID(
           "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
+  EXPECT_FALSE(extension_ime_util::IsExtensionIME(
+      extension_ime_util::GetArcInputMethodID(
+          "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
   EXPECT_FALSE(extension_ime_util::IsExtensionIME(""));
   EXPECT_FALSE(extension_ime_util::IsExtensionIME("mozc"));
 }
@@ -53,8 +61,25 @@ TEST(ExtensionIMEUtilTest, IsComponentExtensionIMETest) {
   EXPECT_FALSE(extension_ime_util::IsComponentExtensionIME(
       extension_ime_util::GetInputMethodID(
           "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
+  EXPECT_FALSE(extension_ime_util::IsComponentExtensionIME(
+      extension_ime_util::GetArcInputMethodID(
+          "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
   EXPECT_FALSE(extension_ime_util::IsComponentExtensionIME(""));
   EXPECT_FALSE(extension_ime_util::IsComponentExtensionIME("mozc"));
+}
+
+TEST(ExtensionIMEUtilTest, IsArcIMETest) {
+  EXPECT_TRUE(
+      extension_ime_util::IsArcIME(extension_ime_util::GetArcInputMethodID(
+          "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
+  EXPECT_FALSE(
+      extension_ime_util::IsArcIME(extension_ime_util::GetInputMethodID(
+          "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
+  EXPECT_FALSE(extension_ime_util::IsArcIME(
+      extension_ime_util::GetComponentInputMethodID(
+          "abcde_xxxxxxxxxxxxxxxxxxxxxxxxxx", "12345")));
+  EXPECT_FALSE(extension_ime_util::IsArcIME(""));
+  EXPECT_FALSE(extension_ime_util::IsArcIME("mozc"));
 }
 
 TEST(ExtensionIMEUtilTest, IsMemberOfExtension) {

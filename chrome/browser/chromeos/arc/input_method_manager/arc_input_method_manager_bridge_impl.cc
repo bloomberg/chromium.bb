@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
 
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_features.h"
 
 namespace arc {
 
@@ -28,6 +29,9 @@ void ArcInputMethodManagerBridgeImpl::SendEnableIme(
   if (!imm_instance)
     return;
 
+  if (!base::FeatureList::IsEnabled(kEnableInputMethodFeature))
+    return;
+
   imm_instance->EnableIme(ime_id, enable, std::move(callback));
 }
 
@@ -37,6 +41,9 @@ void ArcInputMethodManagerBridgeImpl::SendSwitchImeTo(
   auto* imm_instance = ARC_GET_INSTANCE_FOR_METHOD(
       bridge_service_->input_method_manager(), SwitchImeTo);
   if (!imm_instance)
+    return;
+
+  if (!base::FeatureList::IsEnabled(kEnableInputMethodFeature))
     return;
 
   imm_instance->SwitchImeTo(ime_id, std::move(callback));

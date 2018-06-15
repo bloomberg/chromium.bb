@@ -17,6 +17,9 @@ const char kComponentExtensionIMEPrefix[] = "_comp_ime_";
 const int kComponentExtensionIMEPrefixLength =
     sizeof(kComponentExtensionIMEPrefix) /
         sizeof(kComponentExtensionIMEPrefix[0]) - 1;
+const char kArcIMEPrefix[] = "_arc_ime_";
+const int kArcIMEPrefixLength =
+    sizeof(kArcIMEPrefix) / sizeof(kArcIMEPrefix[0]) - 1;
 const int kExtensionIdLength = 32;
 
 }  // namespace
@@ -42,6 +45,13 @@ std::string GetComponentInputMethodID(const std::string& extension_id,
   return kComponentExtensionIMEPrefix + extension_id + engine_id;
 }
 
+std::string GetArcInputMethodID(const std::string& extension_id,
+                                const std::string& engine_id) {
+  DCHECK(!extension_id.empty());
+  DCHECK(!engine_id.empty());
+  return kArcIMEPrefix + extension_id + engine_id;
+}
+
 std::string GetExtensionIDFromInputMethodID(
     const std::string& input_method_id) {
   if (IsExtensionIME(input_method_id)) {
@@ -52,6 +62,8 @@ std::string GetExtensionIDFromInputMethodID(
     return input_method_id.substr(kComponentExtensionIMEPrefixLength,
                                   kExtensionIdLength);
   }
+  if (IsArcIME(input_method_id))
+    return input_method_id.substr(kArcIMEPrefixLength, kExtensionIdLength);
   return "";
 }
 
@@ -62,6 +74,8 @@ std::string GetComponentIDByInputMethodID(const std::string& input_method_id) {
   if (IsExtensionIME(input_method_id))
     return input_method_id.substr(kExtensionIMEPrefixLength +
                                   kExtensionIdLength);
+  if (IsArcIME(input_method_id))
+    return input_method_id.substr(kArcIMEPrefixLength + kExtensionIdLength);
   return input_method_id;
 }
 
@@ -69,6 +83,8 @@ std::string GetInputMethodIDByEngineID(const std::string& engine_id) {
   if (base::StartsWith(engine_id, kComponentExtensionIMEPrefix,
                        base::CompareCase::SENSITIVE) ||
       base::StartsWith(engine_id, kExtensionIMEPrefix,
+                       base::CompareCase::SENSITIVE) ||
+      base::StartsWith(engine_id, kArcIMEPrefix,
                        base::CompareCase::SENSITIVE)) {
     return engine_id;
   }
@@ -112,6 +128,12 @@ bool IsComponentExtensionIME(const std::string& input_method_id) {
                           base::CompareCase::SENSITIVE) &&
          input_method_id.size() >
              kComponentExtensionIMEPrefixLength + kExtensionIdLength;
+}
+
+bool IsArcIME(const std::string& input_method_id) {
+  return base::StartsWith(input_method_id, kArcIMEPrefix,
+                          base::CompareCase::SENSITIVE) &&
+         input_method_id.size() > kArcIMEPrefixLength + kExtensionIdLength;
 }
 
 bool IsMemberOfExtension(const std::string& input_method_id,
