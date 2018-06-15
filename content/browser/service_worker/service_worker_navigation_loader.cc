@@ -219,6 +219,9 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::BlobPtr body_as_blob,
     scoped_refptr<ServiceWorkerVersion> version) {
+  ServiceWorkerMetrics::RecordFetchEventStatus(true /* is_main_resource */,
+                                               status);
+
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
   if (!delegate_->RequestStillValid(&result)) {
@@ -278,7 +281,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
   response_head_.load_timing.receive_headers_end = base::TimeTicks::Now();
 
   // Make the navigated page inherit the SSLInfo from its controller service
-  // worker's script.  This affects the HTTPS padlock, etc, shown by the
+  // worker's script. This affects the HTTPS padlock, etc, shown by the
   // browser. See https://crbug.com/392409 for details about this design.
   // TODO(horo): When we support mixed-content (HTTP) no-cors requests from a
   // ServiceWorker, we have to check the security level of the responses.

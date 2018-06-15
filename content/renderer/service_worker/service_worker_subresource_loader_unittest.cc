@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -28,8 +29,7 @@
 #include "url/origin.h"
 
 namespace content {
-
-namespace {
+namespace service_worker_subresource_loader_unittest {
 
 // A simple URLLoaderFactory that responds with status 200 to every request.
 // This is the default network loader factory for
@@ -197,6 +197,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
     switch (response_mode_) {
       case ResponseMode::kDefault:
+        response_callback->OnResponse(OkResponse(), base::Time::Now());
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
         break;
@@ -349,7 +350,8 @@ CreateResponseInfoFromServiceWorker() {
   return head;
 }
 
-}  // namespace
+const char kHistogramSubresourceFetchEvent[] =
+    "ServiceWorker.FetchEvent.Subresource.Status";
 
 class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
  protected:
@@ -475,6 +477,8 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 };
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
+  base::HistogramTester histogram_tester;
+
   network::mojom::URLLoaderFactoryPtr factory =
       CreateSubresourceLoaderFactory();
   network::ResourceRequest request =
@@ -488,10 +492,15 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
   EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
   EXPECT_EQ(1, fake_controller_.fetch_event_count());
   EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
+
+  client->RunUntilComplete();
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
   fake_controller_.AbortEventWithNoResponse();
+  base::HistogramTester histogram_tester;
 
   network::mojom::URLLoaderFactoryPtr factory =
       CreateSubresourceLoaderFactory();
@@ -505,6 +514,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
   client->RunUntilComplete();
 
   EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      SERVICE_WORKER_ERROR_ABORT, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
@@ -582,6 +593,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
   connector_->ResetControllerConnection(nullptr);
   base::RunLoop().RunUntilIdle();
 
+  base::HistogramTester histogram_tester;
   {
     // This should fallback to the network.
     network::ResourceRequest request =
@@ -597,6 +609,9 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
     EXPECT_EQ(1, fake_controller_.fetch_event_count());
     EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
   }
+
+  // No fetch event was dispatched, so no sample should be recorded.
+  histogram_tester.ExpectTotalCount(kHistogramSubresourceFetchEvent, 0);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_RestartFetchEvent) {
@@ -632,7 +647,10 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_RestartFetchEvent) {
     EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
     EXPECT_EQ(2, fake_controller_.fetch_event_count());
     EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
+    client->RunUntilComplete();
   }
+
+  base::HistogramTester histogram_tester;
 
   network::ResourceRequest request =
       CreateRequest(GURL("https://www.example.com/foo3.png"));
@@ -650,9 +668,12 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_RestartFetchEvent) {
   EXPECT_EQ(request.method, fake_controller_.fetch_event_request().method);
   EXPECT_EQ(3, fake_controller_.fetch_event_count());
   EXPECT_EQ(2, fake_container_host_.get_controller_service_worker_count());
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_TooManyRestart) {
+  base::HistogramTester histogram_tester;
   // Simulate the container host fails to start a service worker.
   fake_container_host_.set_fake_controller(nullptr);
 
@@ -672,9 +693,15 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_TooManyRestart) {
   EXPECT_EQ(2, fake_container_host_.get_controller_service_worker_count());
   EXPECT_TRUE(client->has_received_completion());
   EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
+
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      SERVICE_WORKER_ERROR_START_WORKER_FAILED,
+                                      1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
+  base::HistogramTester histogram_tester;
+
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
@@ -714,9 +741,14 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
+
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
+  base::HistogramTester histogram_tester;
+
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
   blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
@@ -756,11 +788,15 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
+
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      SERVICE_WORKER_OK, 1);
 }
 
 // Test when the service worker responds with network fallback.
 // i.e., does not call respondWith().
 TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackResponse) {
+  base::HistogramTester histogram_tester;
   fake_controller_.RespondWithFallback();
 
   network::mojom::URLLoaderFactoryPtr factory =
@@ -777,9 +813,13 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackResponse) {
   // OnFallback() should complete the network request using network loader.
   EXPECT_TRUE(client->has_received_completion());
   EXPECT_FALSE(client->response_head().was_fetched_via_service_worker);
+
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, ErrorResponse) {
+  base::HistogramTester histogram_tester;
   fake_controller_.RespondWithError();
 
   network::mojom::URLLoaderFactoryPtr factory =
@@ -794,9 +834,12 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, ErrorResponse) {
   client->RunUntilComplete();
 
   EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
+  base::HistogramTester histogram_tester;
   fake_controller_.RespondWithRedirect("https://www.example.com/bar.png");
 
   network::mojom::URLLoaderFactoryPtr factory =
@@ -867,9 +910,15 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
+
+  // There were 3 fetch events, so expect a count of 3.
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      SERVICE_WORKER_OK, 3);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
+  base::HistogramTester histogram_tester;
+
   int count = 1;
   std::string redirect_location =
       std::string("https://www.example.com/redirect_") +
@@ -914,6 +963,11 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
   EXPECT_FALSE(client->has_received_redirect());
   EXPECT_EQ(net::ERR_TOO_MANY_REDIRECTS,
             client->completion_status().error_code);
+
+  // Expect a sample for each fetch event (kMaxRedirects + 1).
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      SERVICE_WORKER_OK,
+                                      net::URLRequest::kMaxRedirects + 1);
 }
 
 // Test when the service worker responds with network fallback to CORS request.
@@ -1005,4 +1059,5 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackWithRequestBody_DataPipe) {
   RunFallbackWithRequestBodyTest(std::move(request_body), kData);
 }
 
+}  // namespace service_worker_subresource_loader_unittest
 }  // namespace content
