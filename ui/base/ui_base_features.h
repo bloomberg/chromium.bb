@@ -43,11 +43,16 @@ UI_BASE_EXPORT extern const base::Feature kTSFImeSupport;
 UI_BASE_EXPORT bool IsUsingWMPointerForTouch();
 #endif  // defined(OS_WIN)
 
-// TODO(sky): rename this to something that better conveys what it means.
+// NOTE: this feature will either go away (and be replaced by kOopAsh), or
+// kOopAsh will go away in place of this.
 UI_BASE_EXPORT extern const base::Feature kMash;
 
-// Returns true if mash (out-of-process ash system UI) is enabled.
-UI_BASE_EXPORT bool IsMashEnabled();
+// Used to have ash run out of process. |kMash| is transitioning to this.
+UI_BASE_EXPORT extern const base::Feature kOopAsh;
+
+// Returns true if ash is in process (the default). A value of false means ash
+// is running in a separate process (and is hosting the UI Service and Viz).
+UI_BASE_EXPORT bool IsAshInBrowserProcess();
 
 #if defined(OS_MACOSX)
 // Returns true if the NSWindows for apps will be created in the app's process,

@@ -218,7 +218,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
     return base::WrapUnique(new viz::SoftwareOutputDevice);
 
 #if defined(USE_AURA)
-  if (base::FeatureList::IsEnabled(features::kMash)) {
+  if (!features::IsAshInBrowserProcess()) {
     NOTREACHED();
     return nullptr;
   }

@@ -79,7 +79,7 @@ WindowManager::WindowManager(service_manager::Connector* connector,
       show_primary_host_on_connect_(show_primary_host_on_connect),
       wm_state_(std::make_unique<::wm::WMState>()),
       property_converter_(std::make_unique<aura::PropertyConverter>()) {
-  DCHECK(features::IsMashEnabled());
+  DCHECK(!features::IsAshInBrowserProcess());
   RegisterWindowProperties(property_converter_.get());
 }
 

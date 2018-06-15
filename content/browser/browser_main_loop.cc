@@ -700,7 +700,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
         BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
   }
 
-  if (!base::FeatureList::IsEnabled(::features::kMash)) {
+  if (features::IsAshInBrowserProcess()) {
     discardable_shared_memory_manager_ =
         std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     // TODO(boliu): kSingleProcess check is a temporary workaround for
@@ -1156,7 +1156,7 @@ void BrowserMainLoop::GetCompositingModeReporter(
   // CompositingModeReporter.
   return;
 #else
-  if (features::IsMashEnabled()) {
+  if (!features::IsAshInBrowserProcess()) {
     // Mash == ChromeOS, which doesn't support software compositing, so no need
     // to report compositing mode.
     return;
@@ -1194,7 +1194,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   InitializeMojo();
 
 #if BUILDFLAG(ENABLE_MUS)
-  if (features::IsMashEnabled()) {
+  if (!features::IsAshInBrowserProcess()) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableSurfaceSynchronization);
   }
@@ -1233,7 +1233,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
           gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr)));
 
   // If mus is not hosting viz, then the browser must.
-  bool browser_is_viz_host = !base::FeatureList::IsEnabled(::features::kMash);
+  bool browser_is_viz_host = features::IsAshInBrowserProcess();
 
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;
@@ -1498,9 +1498,9 @@ bool BrowserMainLoop::InitializeToolkit() {
 
   // Env creates the compositor. Aura widgets need the compositor to be created
   // before they can be initialized by the browser.
-  env_ = aura::Env::CreateInstance(features::IsMashEnabled()
-                                       ? aura::Env::Mode::MUS
-                                       : aura::Env::Mode::LOCAL);
+  env_ = aura::Env::CreateInstance(features::IsAshInBrowserProcess()
+                                       ? aura::Env::Mode::LOCAL
+                                       : aura::Env::Mode::MUS);
 #endif  // defined(USE_AURA)
 
   if (parts_)

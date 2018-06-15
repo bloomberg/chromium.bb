@@ -239,7 +239,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 

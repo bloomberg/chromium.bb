@@ -387,7 +387,7 @@ void RenderWidgetHostViewGuest::OnDidUpdateVisualPropertiesComplete(
 void RenderWidgetHostViewGuest::OnAttached() {
   RegisterFrameSinkId();
 #if defined(USE_AURA)
-  if (base::FeatureList::IsEnabled(::features::kMash)) {
+  if (!features::IsAshInBrowserProcess()) {
     aura::Env::GetInstance()->ScheduleEmbed(
         GetWindowTreeClientFromRenderer(),
         base::BindOnce(&RenderWidgetHostViewGuest::OnGotEmbedToken,
