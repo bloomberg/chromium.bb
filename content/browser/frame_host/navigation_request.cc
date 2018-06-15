@@ -1144,10 +1144,6 @@ void NavigationRequest::OnRequestFailedInternal(
 
   DCHECK(render_frame_host);
 
-  // Don't ask the renderer to commit an URL if the browser will kill it when
-  // it does.
-  DCHECK(render_frame_host->CanCommitURL(common_params_.url));
-
   NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
                                                            common_params_.url);
 
