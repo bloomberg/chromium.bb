@@ -414,6 +414,17 @@ const char kEnterpriseEnrollmentInitialModulus[] =
 const char kEnterpriseEnrollmentModulusLimit[] =
     "enterprise-enrollment-modulus-limit";
 
+// An absolute path to the chroot hosting the DriveFS to use. This is only used
+// when running on Linux, i.e. when IsRunningOnChromeOS() returns false.
+const char kFakeDriveFsLauncherChrootPath[] =
+    "fake-drivefs-launcher-chroot-path";
+
+// A relative path to socket to communicat with the fake DriveFS launcher within
+// the chroot specified by kFakeDriveFsLauncherChrootPath. This is only used
+// when running on Linux, i.e. when IsRunningOnChromeOS() returns false.
+const char kFakeDriveFsLauncherSocketPath[] =
+    "fake-drivefs-launcher-socket-path";
+
 // Passed to Chrome the first time that it's run after the system boots.
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[] = "first-exec-after-boot";

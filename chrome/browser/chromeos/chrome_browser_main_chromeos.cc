@@ -116,6 +116,7 @@
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/drivefs/drive_file_stream_service_provider_delegate.h"
+#include "chromeos/components/drivefs/fake_drivefs_launcher_client.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/homedir_methods.h"
@@ -599,6 +600,18 @@ int ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
 #endif
 
   dbus_pre_early_init_ = std::make_unique<internal::DBusPreEarlyInit>();
+
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      parsed_command_line().HasSwitch(
+          switches::kFakeDriveFsLauncherChrootPath) &&
+      parsed_command_line().HasSwitch(
+          switches::kFakeDriveFsLauncherSocketPath)) {
+    drivefs::FakeDriveFsLauncherClient::Init(
+        parsed_command_line().GetSwitchValuePath(
+            switches::kFakeDriveFsLauncherChrootPath),
+        parsed_command_line().GetSwitchValuePath(
+            switches::kFakeDriveFsLauncherSocketPath));
+  }
 
   return ChromeBrowserMainPartsLinux::PreEarlyInitialization();
 }

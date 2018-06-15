@@ -11,6 +11,8 @@ component("drivefs") {
     "drivefs_host.cc",
     "drivefs_host.h",
     "drivefs_host_observer.h",
+    "fake_drivefs_launcher_client.cc",
+    "fake_drivefs_launcher_client.h",
     "pending_connection_manager.cc",
     "pending_connection_manager.h",
   ]

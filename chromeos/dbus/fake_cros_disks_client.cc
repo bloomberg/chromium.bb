@@ -21,7 +21,8 @@ namespace {
 
 // Performs fake mounting by creating a directory with a dummy file.
 MountError PerformFakeMount(const std::string& source_path,
-                            const base::FilePath& mounted_path) {
+                            const base::FilePath& mounted_path,
+                            MountType type) {
   if (mounted_path.empty())
     return MOUNT_ERROR_INVALID_ARGUMENT;
 
@@ -30,6 +31,11 @@ MountError PerformFakeMount(const std::string& source_path,
     DLOG(ERROR) << "Failed to create directory at " << mounted_path.value();
     return MOUNT_ERROR_DIRECTORY_CREATION_FAILED;
   }
+
+  // Fake network mounts are responsible for populating their mount paths so
+  // don't need a dummy file.
+  if (type == MOUNT_TYPE_NETWORK_STORAGE)
+    return MOUNT_ERROR_NONE;
 
   // Put a dummy file.
   const base::FilePath dummy_file_path =
@@ -111,7 +117,7 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&PerformFakeMount, source_path, mounted_path),
+      base::BindOnce(&PerformFakeMount, source_path, mounted_path, type),
       base::BindOnce(&FakeCrosDisksClient::DidMount,
                      weak_ptr_factory_.GetWeakPtr(), source_path, type,
                      mounted_path, std::move(callback)));
