@@ -212,7 +212,8 @@ static int rockchip_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_ROCKCHIP_GEM_CREATE, &gem_create);
 
 	if (ret) {
-		drv_log("DRM_IOCTL_ROCKCHIP_GEM_CREATE failed (size=%llu)\n", gem_create.size);
+		drv_log("DRM_IOCTL_ROCKCHIP_GEM_CREATE failed (size=%llu)\n",
+			(unsigned long long)gem_create.size);
 		return ret;
 	}
 
