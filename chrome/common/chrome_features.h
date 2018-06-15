@@ -339,6 +339,10 @@ extern const base::Feature kTPMFirmwareUpdate;
 extern const base::Feature kCrOSEnableUSMUserService;
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN)
+extern const base::Feature kWin10AcceleratedDefaultBrowserFlow;
+#endif  // defined(OS_WIN)
+
 bool PrefServiceEnabled();
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in

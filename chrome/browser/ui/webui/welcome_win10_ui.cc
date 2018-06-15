@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/welcome_win10_handler.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -87,7 +88,14 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
 
+  html_source->SetJsonPath("strings.js");
+
   AddLocalizedStrings(html_source, is_first_run);
+
+  // Controls the accelerated default browser flow experiment.
+  html_source->AddBoolean("acceleratedFlowEnabled",
+                          base::FeatureList::IsEnabled(
+                              features::kWin10AcceleratedDefaultBrowserFlow));
 
   html_source->AddResourcePath("welcome_win10.css", IDR_WELCOME_WIN10_CSS);
   html_source->AddResourcePath("welcome_win10.js", IDR_WELCOME_WIN10_JS);

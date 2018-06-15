@@ -8,9 +8,12 @@
 
   <link rel="import" href="chrome://resources/cr_elements/icons.html">
   <link rel="import" href="chrome://resources/html/cr.html">
+  <link rel="import" href="chrome://resources/html/load_time_data.html">
+  <link rel="import" href="chrome://resources/html/util.html">
+
   <link rel="import" href="chrome://resources/html/action_link.html">
   <link rel="import" href="chrome://resources/html/action_link_css.html">
-  <link rel="import" href="chrome://resources/html/util.html">
+
   <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
@@ -18,17 +21,26 @@
   <link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
   <link rel="stylesheet" href="/welcome_win10.css">
 
+  <script src="strings.js"></script>
+
   <dom-module id="welcome-win10">
     <template>
       <style include="action-link">
         :host {
-          --expandable-section-height: 28.375em;
           align-items: flex-start;
           display: inline-flex;
           flex-direction: column;
           opacity: 0;
           padding: 4em 1.5em 1.5em 1.5em;
           transition: opacity 300ms;
+        }
+
+        :host .section {
+          --expandable-section-height: 28.375em;
+        }
+
+        :host([is-accelerated]) .section {
+          --expandable-section-height: 26.375em;
         }
 
         a {
@@ -52,8 +64,10 @@
           margin: 0 -0.0625em;
         }
 
-        .heading {
+        h1 {
           font-size: 2.125em;
+          font-weight: normal;
+          margin: 0;
           padding-bottom: 2rem;
           padding-top: 1rem;
         }
@@ -274,7 +288,7 @@
         }
       </style>
       <div class="header-logo" role="presentation"></div>
-      <div class="heading">$i18n{headerText}</div>
+      <h1>$i18n{headerText}</h1>
       <div class="sections">
         <div class$="[[computeClasses(isCombined)]]">
           <template is="dom-if" if="[[isCombined]]">
