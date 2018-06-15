@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/secure_channel/ble_scanner.h"
+#include "chromeos/services/secure_channel/ble_service_data_helper.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace device {
@@ -87,6 +88,10 @@ class BleScannerImpl : public BleScanner,
   void OnStopDiscoverySessionError();
 
   void HandleDeviceUpdated(device::BluetoothDevice* bluetooth_device);
+  void HandlePotentialScanResult(
+      const std::string& service_data,
+      const BleServiceDataHelper::DeviceWithBackgroundBool& potential_result,
+      device::BluetoothDevice* bluetooth_device);
 
   void SetServiceDataProviderForTesting(
       std::unique_ptr<ServiceDataProvider> service_data_provider);

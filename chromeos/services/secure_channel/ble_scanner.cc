@@ -16,7 +16,7 @@ BleScanner::BleScanner(Delegate* delegate) : delegate_(delegate) {}
 
 BleScanner::~BleScanner() = default;
 
-void BleScanner::AddScanFilter(const DeviceIdPair& scan_filter) {
+void BleScanner::AddScanFilter(const ScanFilter& scan_filter) {
   if (base::ContainsKey(scan_filters_, scan_filter)) {
     PA_LOG(ERROR) << "BleScanner::AddScanFilter(): Tried to add a scan filter "
                   << "which already existed. Filter: " << scan_filter;
@@ -27,7 +27,7 @@ void BleScanner::AddScanFilter(const DeviceIdPair& scan_filter) {
   HandleScanFilterChange();
 }
 
-void BleScanner::RemoveScanFilter(const DeviceIdPair& scan_filter) {
+void BleScanner::RemoveScanFilter(const ScanFilter& scan_filter) {
   if (!base::ContainsKey(scan_filters_, scan_filter)) {
     PA_LOG(ERROR) << "BleScanner::RemoveScanFilter(): Tried to remove a scan "
                   << "filter which was not present. Filter: " << scan_filter;
@@ -38,16 +38,30 @@ void BleScanner::RemoveScanFilter(const DeviceIdPair& scan_filter) {
   HandleScanFilterChange();
 }
 
-bool BleScanner::HasScanFilter(const DeviceIdPair& scan_filter) {
+bool BleScanner::HasScanFilter(const ScanFilter& scan_filter) {
   return base::ContainsKey(scan_filters_, scan_filter);
+}
+
+DeviceIdPairSet BleScanner::GetAllDeviceIdPairs() {
+  DeviceIdPairSet set;
+  for (const auto& scan_filter : scan_filters_)
+    set.insert(scan_filter.first);
+  return set;
 }
 
 void BleScanner::NotifyReceivedAdvertisementFromDevice(
     const cryptauth::RemoteDeviceRef& remote_device,
     device::BluetoothDevice* bluetooth_device,
-    bool is_background_advertisement) {
+    ConnectionRole connection_role) {
   delegate_->OnReceivedAdvertisement(remote_device, bluetooth_device,
-                                     is_background_advertisement);
+                                     connection_role);
+}
+
+std::ostream& operator<<(std::ostream& stream,
+                         const BleScanner::ScanFilter& scan_filter) {
+  stream << "{device_id_pair: " << scan_filter.first
+         << ", connection_role: " << scan_filter.second << "}";
+  return stream;
 }
 
 }  // namespace secure_channel
