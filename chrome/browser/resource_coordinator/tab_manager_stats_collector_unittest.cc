@@ -33,9 +33,9 @@ namespace resource_coordinator {
 
 using LoadingState = TabLoadTracker::LoadingState;
 
-constexpr TabLoadTracker::LoadingState UNLOADED = TabLoadTracker::UNLOADED;
-constexpr TabLoadTracker::LoadingState LOADING = TabLoadTracker::LOADING;
-constexpr TabLoadTracker::LoadingState LOADED = TabLoadTracker::LOADED;
+constexpr TabLoadTracker::LoadingState UNLOADED = LoadingState::UNLOADED;
+constexpr TabLoadTracker::LoadingState LOADING = LoadingState::LOADING;
+constexpr TabLoadTracker::LoadingState LOADED = LoadingState::LOADED;
 
 class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
  protected:

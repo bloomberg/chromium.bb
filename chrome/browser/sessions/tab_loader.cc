@@ -232,7 +232,7 @@ void TabLoader::OnLoadingStateChange(WebContents* contents,
     // It could be that a tab starts loading from outside of our control. In
     // this case we can consider it as having started to load, and the load
     // start doesn't need to be initiated by us.
-    case TabLoadTracker::LOADING: {
+    case LoadingState::LOADING: {
       // The contents may not be one that we're tracking, but MarkTabAsLoading
       // can handle this.
       MarkTabAsLoading(contents);
@@ -240,9 +240,9 @@ void TabLoader::OnLoadingStateChange(WebContents* contents,
 
     // A tab that transitions here means that loading was aborted or errored
     // out. Either way, we consider it "loaded" from our point of view.
-    case TabLoadTracker::UNLOADED:
+    case LoadingState::UNLOADED:
     // A tab that completes loading successfully will transition to this state.
-    case TabLoadTracker::LOADED: {
+    case LoadingState::LOADED: {
       // Once a first tab has loaded change the timeout that is used.
       did_one_tab_load_ = true;
 
@@ -250,10 +250,6 @@ void TabLoader::OnLoadingStateChange(WebContents* contents,
       // handle this.
       RemoveTab(contents);
     } break;
-
-    case TabLoadTracker::LOADING_STATE_MAX:
-      NOTREACHED();
-      break;
   }
 
   StartTimerIfNeeded();
@@ -356,10 +352,10 @@ void TabLoader::AddTab(WebContents* contents, bool loading_initiated) {
 
   // Handle tabs that have already started or finished loading.
   auto loading_state = TabLoadTracker::Get()->GetLoadingState(contents);
-  if (loading_state != TabLoadTracker::UNLOADED) {
+  if (loading_state != LoadingState::UNLOADED) {
     delegate_->NotifyTabLoadStarted();
     ++scheduled_to_load_count_;
-    if (loading_state == TabLoadTracker::LOADING)
+    if (loading_state == LoadingState::LOADING)
       tabs_loading_.insert(LoadingTab{clock_->NowTicks(), contents});
     return;
   }

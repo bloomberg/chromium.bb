@@ -9,6 +9,8 @@
 
 namespace resource_coordinator {
 
+using LoadingState = TabLoadTracker::LoadingState;
+
 PerformanceMeasurementManager::PerformanceMeasurementManager(
     TabLoadTracker* tab_load_tracker,
     RenderProcessProbe* render_process_probe)
@@ -21,7 +23,7 @@ PerformanceMeasurementManager::~PerformanceMeasurementManager() = default;
 void PerformanceMeasurementManager::OnStartTracking(
     content::WebContents* web_contents,
     LoadingState loading_state) {
-  if (loading_state == TabLoadTracker::LOADED)
+  if (loading_state == LoadingState::LOADED)
     render_process_probe_->StartSingleGather();
 }
 
@@ -29,7 +31,7 @@ void PerformanceMeasurementManager::OnLoadingStateChange(
     content::WebContents* web_contents,
     LoadingState old_loading_state,
     LoadingState new_loading_state) {
-  if (new_loading_state == TabLoadTracker::LOADED)
+  if (new_loading_state == LoadingState::LOADED)
     render_process_probe_->StartSingleGather();
 }
 

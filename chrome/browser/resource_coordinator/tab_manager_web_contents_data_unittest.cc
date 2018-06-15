@@ -20,9 +20,12 @@ using content::WebContentsTester;
 namespace resource_coordinator {
 namespace {
 
-constexpr TabLoadTracker::LoadingState UNLOADED = TabLoadTracker::UNLOADED;
-constexpr TabLoadTracker::LoadingState LOADING = TabLoadTracker::LOADING;
-constexpr TabLoadTracker::LoadingState LOADED = TabLoadTracker::LOADED;
+constexpr TabLoadTracker::LoadingState UNLOADED =
+    TabLoadTracker::LoadingState::UNLOADED;
+constexpr TabLoadTracker::LoadingState LOADING =
+    TabLoadTracker::LoadingState::LOADING;
+constexpr TabLoadTracker::LoadingState LOADED =
+    TabLoadTracker::LoadingState::LOADED;
 
 class TabManagerWebContentsDataTest : public ChromeRenderViewHostTestHarness {
  public:

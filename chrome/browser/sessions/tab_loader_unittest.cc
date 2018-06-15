@@ -25,6 +25,7 @@
 
 using resource_coordinator::TabLoadTracker;
 using resource_coordinator::ResourceCoordinatorTabHelper;
+using LoadingState = TabLoadTracker::LoadingState;
 
 class TabLoaderTest : public testing::Test {
  protected:
@@ -73,9 +74,9 @@ class TabLoaderTest : public testing::Test {
     // in order to satisfy the internal logic of SessionRestoreStatsCollector.
     auto* contents = restored_tabs_[tab_index].contents();
     auto* tracker = TabLoadTracker::Get();
-    if (tracker->GetLoadingState(contents) != TabLoadTracker::LOADING)
-      tracker->TransitionStateForTesting(contents, TabLoadTracker::LOADING);
-    tracker->TransitionStateForTesting(contents, TabLoadTracker::LOADED);
+    if (tracker->GetLoadingState(contents) != LoadingState::LOADING)
+      tracker->TransitionStateForTesting(contents, LoadingState::LOADING);
+    tracker->TransitionStateForTesting(contents, LoadingState::LOADED);
   }
 
   void SimulateLoadedAll() {

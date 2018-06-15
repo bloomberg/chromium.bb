@@ -14,6 +14,17 @@
 
 namespace resource_coordinator {
 
+namespace {
+
+static constexpr TabLoadTracker::LoadingState UNLOADED =
+    TabLoadTracker::LoadingState::UNLOADED;
+static constexpr TabLoadTracker::LoadingState LOADING =
+    TabLoadTracker::LoadingState::LOADING;
+static constexpr TabLoadTracker::LoadingState LOADED =
+    TabLoadTracker::LoadingState::LOADED;
+
+}  // namespace
+
 TabLoadTracker::~TabLoadTracker() = default;
 
 // static
@@ -37,22 +48,22 @@ size_t TabLoadTracker::GetTabCount() const {
 
 size_t TabLoadTracker::GetTabCount(LoadingState loading_state) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return state_counts_[loading_state];
+  return state_counts_[static_cast<size_t>(loading_state)];
 }
 
 size_t TabLoadTracker::GetUnloadedTabCount() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return state_counts_[UNLOADED];
+  return state_counts_[static_cast<size_t>(UNLOADED)];
 }
 
 size_t TabLoadTracker::GetLoadingTabCount() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return state_counts_[LOADING];
+  return state_counts_[static_cast<size_t>(LOADING)];
 }
 
 size_t TabLoadTracker::GetLoadedTabCount() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return state_counts_[LOADED];
+  return state_counts_[static_cast<size_t>(LOADED)];
 }
 
 void TabLoadTracker::AddObserver(Observer* observer) {
@@ -88,7 +99,7 @@ void TabLoadTracker::StartTracking(content::WebContents* web_contents) {
   if (data.loading_state == LOADING)
     data.did_start_loading_seen = true;
   tabs_.insert(std::make_pair(web_contents, data));
-  ++state_counts_[data.loading_state];
+  ++state_counts_[static_cast<size_t>(data.loading_state)];
 
   for (Observer& observer : observers_)
     observer.OnStartTracking(web_contents, loading_state);
@@ -100,8 +111,8 @@ void TabLoadTracker::StopTracking(content::WebContents* web_contents) {
   DCHECK(it != tabs_.end());
 
   auto loading_state = it->second.loading_state;
-  DCHECK_NE(0u, state_counts_[it->second.loading_state]);
-  --state_counts_[it->second.loading_state];
+  DCHECK_NE(0u, state_counts_[static_cast<size_t>(it->second.loading_state)]);
+  --state_counts_[static_cast<size_t>(it->second.loading_state)];
   tabs_.erase(it);
 
   for (Observer& observer : observers_)
@@ -213,16 +224,15 @@ void TabLoadTracker::TransitionState(TabMap::iterator it,
       }
 
       case UNLOADED:  // It never makes sense to transition to UNLOADED.
-      case LOADING_STATE_MAX:
         NOTREACHED();
     }
   }
 #endif
 
   LoadingState previous_state = it->second.loading_state;
-  --state_counts_[previous_state];
+  --state_counts_[static_cast<size_t>(previous_state)];
   it->second.loading_state = loading_state;
-  ++state_counts_[loading_state];
+  ++state_counts_[static_cast<size_t>(loading_state)];
 
   // If the destination state is LOADED, then also clear the
   // |did_start_loading_seen| state.

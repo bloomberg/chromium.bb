@@ -51,8 +51,8 @@ TEST_F(PerformanceMeasurementManagerTest, StartMeasurementOnLoaded) {
   auto contents = CreateWebContents();
 
   EXPECT_CALL(mock_render_process_probe(), StartSingleGather());
-  TabLoadTracker::Get()->TransitionStateForTesting(contents.get(),
-                                                   TabLoadTracker::LOADED);
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      contents.get(), TabLoadTracker::LoadingState::LOADED);
 }
 
 }  // namespace resource_coordinator

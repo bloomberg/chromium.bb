@@ -23,6 +23,7 @@
 
 using content::WebContentsTester;
 using resource_coordinator::TabLoadTracker;
+using LoadingState = TabLoadTracker::LoadingState;
 
 namespace {
 
@@ -116,9 +117,9 @@ class SessionRestoreObserverTest : public ChromeRenderViewHostTestHarness {
     // Transition through LOADING to LOADED in order to keep the
     // SessionRestoreStatsCollector state machine happy.
     TabLoadTracker::Get()->TransitionStateForTesting(contents,
-                                                     TabLoadTracker::LOADING);
+                                                     LoadingState::LOADING);
     TabLoadTracker::Get()->TransitionStateForTesting(contents,
-                                                     TabLoadTracker::LOADED);
+                                                     LoadingState::LOADED);
     mock_observer_.OnDidRestoreTab(contents);
   }
 

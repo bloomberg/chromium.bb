@@ -28,6 +28,7 @@ using content::RenderWidgetHostView;
 using content::Source;
 using content::WebContents;
 using resource_coordinator::TabLoadTracker;
+using LoadingState = resource_coordinator::TabLoadTracker::LoadingState;
 
 // The enumeration values stored in the "SessionRestore.Actions" histogram.
 enum SessionRestoreActionsUma {
@@ -171,7 +172,7 @@ void SessionRestoreStatsCollector::TrackTabs(
     TabState* tab_state = RegisterForNotifications(controller);
     // The tab might already be loading if it is active in a visible window.
     if (TabLoadTracker::Get()->GetLoadingState(tab.contents()) ==
-        TabLoadTracker::LOADING) {
+        LoadingState::LOADING) {
       MarkTabAsLoading(tab_state);
     }
   }
@@ -278,7 +279,7 @@ void SessionRestoreStatsCollector::OnLoadingStateChange(
     return;
 
   switch (new_loading_state) {
-    case TabLoadTracker::LOADING: {
+    case LoadingState::LOADING: {
       // This occurs when a tab has started to load. This can be because of
       // the tab loader (only for non-deferred tabs) or because the user clicked
       // on the tab.
@@ -287,14 +288,10 @@ void SessionRestoreStatsCollector::OnLoadingStateChange(
 
     // A tab that transitions here means that loading was aborted or errored
     // out. Either way, we consider it "loaded" from our point of view.
-    case TabLoadTracker::UNLOADED:
+    case LoadingState::UNLOADED:
     // A tab that completes loading successfully will transition to this state.
-    case TabLoadTracker::LOADED: {
+    case LoadingState::LOADED: {
       MarkTabAsLoaded(tab_state);
-    } break;
-
-    case TabLoadTracker::LOADING_STATE_MAX: {
-      NOTREACHED();
     } break;
   }
 

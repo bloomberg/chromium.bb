@@ -33,6 +33,8 @@ namespace resource_coordinator {
 
 namespace {
 
+using LoadingState = TabLoadTracker::LoadingState;
+
 constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
 
 class MockTabLifecycleObserver : public TabLifecycleObserver {
@@ -288,7 +290,7 @@ TEST_F(TabLifecycleUnitTest, CannotFreezeAFrozenTab) {
                                       tab_strip_model_.get());
   TabLoadTracker::Get()->StartTracking(web_contents_);
   TabLoadTracker::Get()->TransitionStateForTesting(web_contents_,
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   {
     DecisionDetails decision_details;
     EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));

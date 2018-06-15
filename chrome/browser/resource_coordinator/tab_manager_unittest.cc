@@ -59,6 +59,8 @@ using content::WebContentsTester;
 namespace resource_coordinator {
 namespace {
 
+using LoadingState = TabLoadTracker::LoadingState;
+
 constexpr char kTestUrl[] = "http://www.example.com";
 
 // Default parameters for testing proactive LifecycleUnit discarding.
@@ -519,7 +521,7 @@ TEST_F(TabManagerTest, OnTabIsLoaded) {
 
   // Simulate tab 1 has finished loading.
   TabLoadTracker::Get()->TransitionStateForTesting(contents1_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
 
   // After tab 1 has finished loading, TabManager starts loading the next tab.
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents1_.get()));
@@ -576,7 +578,7 @@ TEST_F(TabManagerTest, OnDelayedTabSelected) {
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
   EXPECT_TRUE(tab_manager_->IsNavigationDelayedForTest(nav_handle2_.get()));
   TabLoadTracker::Get()->TransitionStateForTesting(contents1_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents1_.get()));
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
   EXPECT_TRUE(tab_manager_->IsNavigationDelayedForTest(nav_handle2_.get()));
@@ -584,7 +586,7 @@ TEST_F(TabManagerTest, OnDelayedTabSelected) {
   // Simulate tab 3 has finished loading. TabManager starts loading the next tab
   // (tab 2).
   TabLoadTracker::Get()->TransitionStateForTesting(contents3_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents3_.get()));
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
   EXPECT_FALSE(tab_manager_->IsNavigationDelayedForTest(nav_handle2_.get()));
@@ -659,7 +661,7 @@ TEST_F(TabManagerTest, BackgroundTabLoadingMode) {
 
   // Simulate tab 1 has finished loading.
   TabLoadTracker::Get()->TransitionStateForTesting(contents1_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
 
   // Tab 2 and 3 are still pending because of the paused loading mode.
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
@@ -678,7 +680,7 @@ TEST_F(TabManagerTest, BackgroundTabLoadingMode) {
 
   // Simulate tab 2 has finished loading.
   TabLoadTracker::Get()->TransitionStateForTesting(contents2_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
 
   // Tab 3 should start loading now in staggered loading mode.
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents3_.get()));
@@ -729,7 +731,7 @@ TEST_F(TabManagerTest, BackgroundTabsLoadingOrdering) {
   // Simulate tab 1 has finished loading. Tab 3 should be loaded before tab 2,
   // because tab 2 is internal page.
   TabLoadTracker::Get()->TransitionStateForTesting(contents1_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
 
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents3_.get()));
@@ -767,7 +769,7 @@ TEST_F(TabManagerTest, PauseAndResumeBackgroundTabOpening) {
   // Simulate tab 1 has finished loading, which was scheduled to load before
   // pausing.
   TabLoadTracker::Get()->TransitionStateForTesting(contents1_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
 
   // TabManager cannot enter BackgroundTabOpening session when it is in paused
   // mode.
@@ -805,13 +807,13 @@ TEST_F(TabManagerTest, IsInBackgroundTabOpeningSession) {
       tab_manager_->stats_collector()->is_in_background_tab_opening_session());
 
   TabLoadTracker::Get()->TransitionStateForTesting(contents1_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   EXPECT_TRUE(tab_manager_->IsInBackgroundTabOpeningSession());
   EXPECT_TRUE(
       tab_manager_->stats_collector()->is_in_background_tab_opening_session());
 
   TabLoadTracker::Get()->TransitionStateForTesting(contents2_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   EXPECT_TRUE(tab_manager_->IsInBackgroundTabOpeningSession());
   EXPECT_TRUE(
       tab_manager_->stats_collector()->is_in_background_tab_opening_session());
@@ -825,7 +827,7 @@ TEST_F(TabManagerTest, IsInBackgroundTabOpeningSession) {
       tab_manager_->stats_collector()->is_in_background_tab_opening_session());
 
   TabLoadTracker::Get()->TransitionStateForTesting(contents3_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   EXPECT_FALSE(tab_manager_->IsInBackgroundTabOpeningSession());
   EXPECT_FALSE(
       tab_manager_->stats_collector()->is_in_background_tab_opening_session());
@@ -859,7 +861,7 @@ TEST_F(TabManagerWithExperimentDisabledTest, IsInBackgroundTabOpeningSession) {
       tab_manager_->stats_collector()->is_in_background_tab_opening_session());
 
   TabLoadTracker::Get()->TransitionStateForTesting(contents1_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents1_.get()));
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents3_.get()));
@@ -868,7 +870,7 @@ TEST_F(TabManagerWithExperimentDisabledTest, IsInBackgroundTabOpeningSession) {
       tab_manager_->stats_collector()->is_in_background_tab_opening_session());
 
   TabLoadTracker::Get()->TransitionStateForTesting(contents2_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents1_.get()));
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents3_.get()));
@@ -885,7 +887,7 @@ TEST_F(TabManagerWithExperimentDisabledTest, IsInBackgroundTabOpeningSession) {
       tab_manager_->stats_collector()->is_in_background_tab_opening_session());
 
   TabLoadTracker::Get()->TransitionStateForTesting(contents3_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents1_.get()));
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents2_.get()));
   EXPECT_FALSE(tab_manager_->IsTabLoadingForTest(contents3_.get()));
@@ -981,11 +983,11 @@ TEST_F(TabManagerTest, SessionRestoreAfterBackgroundTabOpeningSession) {
   // The background tab opening session ends after existing tracked tabs have
   // finished loading.
   TabLoadTracker::Get()->TransitionStateForTesting(contents1_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   TabLoadTracker::Get()->TransitionStateForTesting(contents2_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   TabLoadTracker::Get()->TransitionStateForTesting(contents3_.get(),
-                                                   TabLoadTracker::LOADED);
+                                                   LoadingState::LOADED);
   EXPECT_FALSE(tab_manager_->IsInBackgroundTabOpeningSession());
   EXPECT_FALSE(
       tab_manager_->stats_collector()->is_in_background_tab_opening_session());

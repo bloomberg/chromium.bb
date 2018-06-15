@@ -79,7 +79,7 @@ void TabManager::WebContentsData::CopyState(
 }
 
 TabManager::WebContentsData::Data::Data()
-    : tab_loading_state(TabLoadTracker::UNLOADED),
+    : tab_loading_state(TabLoadTracker::LoadingState::UNLOADED),
       is_in_session_restore(false),
       is_restored_in_foreground(false) {}
 
