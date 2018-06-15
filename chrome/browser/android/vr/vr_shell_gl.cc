@@ -2080,6 +2080,13 @@ void VrShellGl::SetWebVrMode(bool enabled) {
     // as SubmitFrame from this session anymore. This makes it legal to cancel
     // an outstanding animating frame (if any).
     ClosePresentationBindings();
+
+    // In not-surfaceless mode, webxr_ may not be initialized yet at the time
+    // we get an incoming SetWebVrMode(false) call. In that case, skip the
+    // remaining steps.
+    if (!webxr_)
+      return;
+
     // Ensure that re-entering VR later gets a fresh start by clearing out the
     // current session's animating frame state.
     webxr_->EndPresentation();
