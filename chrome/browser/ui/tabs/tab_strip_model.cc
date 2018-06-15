@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -246,6 +247,10 @@ void TabStripModel::AppendWebContents(std::unique_ptr<WebContents> contents,
 void TabStripModel::InsertWebContentsAt(int index,
                                         std::unique_ptr<WebContents> contents,
                                         int add_types) {
+  // TODO(erikchne): Change this to a CHECK. https://crbug.com/851400.
+  DCHECK(!reentrancy_guard_);
+  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+
   delegate()->WillAddWebContents(contents.get());
 
   bool active = (add_types & ADD_ACTIVE) != 0;
@@ -338,6 +343,10 @@ std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
 
 std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsAt(
     int index) {
+  // TODO(erikchne): Change this to a CHECK. https://crbug.com/851400.
+  DCHECK(!reentrancy_guard_);
+  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+
   DCHECK_NE(active_index(), kNoTab) << "Activate the TabStripModel by "
                                        "selecting at least one tab before "
                                        "trying to detach web contents.";
@@ -360,7 +369,6 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
     int index,
     bool create_historical_tab,
     bool will_delete) {
-  CHECK(!in_notify_);
   if (contents_data_.empty())
     return nullptr;
   DCHECK(ContainsIndex(index));
@@ -1272,6 +1280,10 @@ std::vector<content::WebContents*> TabStripModel::GetWebContentsesByIndices(
 bool TabStripModel::InternalCloseTabs(
     base::span<content::WebContents* const> items,
     uint32_t close_types) {
+  // TODO(erikchne): Change this to a CHECK. https://crbug.com/851400.
+  DCHECK(!reentrancy_guard_);
+  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+
   if (items.empty())
     return true;
 
@@ -1383,13 +1395,10 @@ void TabStripModel::NotifyIfActiveTabChanged(WebContents* old_contents,
   int reason = notify_types == Notify::kUserGesture
                    ? TabStripModelObserver::CHANGE_REASON_USER_GESTURE
                    : TabStripModelObserver::CHANGE_REASON_NONE;
-  CHECK(!in_notify_);
-  in_notify_ = true;
   for (auto& observer : observers_) {
     observer.ActiveTabChanged(old_contents, new_contents, active_index(),
                               reason);
   }
-  in_notify_ = false;
 }
 
 void TabStripModel::NotifyIfActiveOrSelectionChanged(
