@@ -12,10 +12,8 @@ import android.support.annotation.IntDef;
 
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
-import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayoutBase;
-import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimation.OverviewAnimationType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -341,13 +339,13 @@ public class NonOverlappingStack extends Stack {
             return;
         }
 
-        // Make sure we don't leave any tabs stuck in a partially-discarded
-        // state.
-        startAnimation(LayoutManager.time(), OverviewAnimationType.UNDISCARD);
-        mDiscardingTab = null;
-
         mSwitchedAway = true;
         mSuppressScrollClamping = true;
+
+        // Make sure we don't leave any tabs stuck in a partially-discarded state.
+        for (int i = 0; i < mStackTabs.length; i++) {
+            mStackTabs[i].setDiscardAmount(0);
+        }
 
         // Make sure the tabs are not scrolling so the centered tab does not change between the
         // "switch away" and "switch to" animations.
@@ -432,6 +430,17 @@ public class NonOverlappingStack extends Stack {
         set.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator a) {
+                // There are some oddball cases, e.g. a tab was immediately closed before triggering
+                // the toggle animation, where the tab offsets might get left in an undesired state.
+                // Resetting all the scroll offsets here limits the effect of these bugs to just
+                // making the animation look funny vs. leaving the tabs e.g. stuck with gaps between
+                // them or overlapping each other.
+                if (mStackTabs != null) {
+                    for (int i = 0; i < mStackTabs.length; i++) {
+                        mStackTabs[i].setScrollOffset(i * mSpacing);
+                    }
+                }
+
                 mSuppressScrollClamping = false;
                 mLayout.onSwitchToFinished();
             }
