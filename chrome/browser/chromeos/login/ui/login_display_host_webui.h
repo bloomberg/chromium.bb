@@ -77,6 +77,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
       const base::Optional<AccountId>& prefilled_account) override;
   void UpdateGaiaDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
+  void ShowFeedback() override;
 
   // Creates WizardController instance.
   WizardController* CreateWizardController();

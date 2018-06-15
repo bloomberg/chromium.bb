@@ -69,6 +69,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD0(CancelPasswordChangedFlow, void());
   MOCK_METHOD1(MigrateUserData, void(const std::string&));
   MOCK_METHOD0(ResyncUserData, void());
+  MOCK_METHOD0(ShowFeedback, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLoginDisplayHost);

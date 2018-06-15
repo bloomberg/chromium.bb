@@ -213,4 +213,7 @@ interface LoginScreenClient {
   //           locale.
   RequestPublicSessionKeyboardLayouts(signin.mojom.AccountId account_id,
                                       string locale);
+
+  // Request to show a feedback report dialog in chrome.
+  ShowFeedback();
 };

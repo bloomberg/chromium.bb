@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/accelerators/accelerator_controller.h"
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/focus_cycler.h"
 #include "ash/ime/ime_controller.h"
@@ -76,7 +77,7 @@ constexpr int kMediumDensityMarginLeftOfAuthUserPortraitDp = 0;
 constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersLandscapeDp = 220;
 constexpr int kMediumDensityDistanceBetweenAuthUserAndUsersPortraitDp = 84;
 
-constexpr const char kLockContentsViewName[] = "LockContentsView";
+constexpr char kLockContentsViewName[] = "LockContentsView";
 
 // A view which stores two preferred sizes. The embedder can control which one
 // is used.
@@ -303,6 +304,7 @@ LockContentsView::LockContentsView(
   OnLockScreenNoteStateChanged(initial_note_action_state);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
+  RegisterAccelerators();
 }
 
 LockContentsView::~LockContentsView() {
@@ -371,6 +373,15 @@ void LockContentsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kPreviousFocusId,
                              previous_id);
   node_data->SetNameExplicitlyEmpty();
+}
+
+bool LockContentsView::AcceleratorPressed(const ui::Accelerator& accelerator) {
+  auto entry = accel_map_.find(accelerator);
+  if (entry == accel_map_.end())
+    return false;
+
+  PerformAction(entry->second);
+  return true;
 }
 
 void LockContentsView::OnUsersChanged(
@@ -1320,6 +1331,26 @@ void LockContentsView::SetDisplayStyle(DisplayStyle style) {
 void LockContentsView::DisableLockScreenNote() {
   disable_lock_screen_note_ = true;
   OnLockScreenNoteStateChanged(mojom::TrayActionState::kNotAvailable);
+}
+
+void LockContentsView::RegisterAccelerators() {
+  // TODO: Add more accelerators that are applicable to login screen.
+  accel_map_[ui::Accelerator(ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)] =
+      AcceleratorAction::kShowFeedback;
+
+  AcceleratorController* controller = Shell::Get()->accelerator_controller();
+  for (const auto& item : accel_map_)
+    controller->Register({item.first}, this);
+}
+
+void LockContentsView::PerformAction(AcceleratorAction action) {
+  switch (action) {
+    case AcceleratorAction::kShowFeedback:
+      Shell::Get()->login_screen_controller()->ShowFeedback();
+      return;
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace ash
