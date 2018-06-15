@@ -698,8 +698,10 @@ void FileSystem::ReadDirectory(
     // to iterate every time. But then most users have very few team drives so
     // in general this is fine.
     for (auto& team_drive_loader : team_drive_change_list_loaders_) {
-      if (team_drive_loader.second->root_entry_path().IsParent(
-              directory_path)) {
+      const base::FilePath& team_drive_path =
+          team_drive_loader.second->root_entry_path();
+      if (team_drive_path == directory_path ||
+          team_drive_path.IsParent(directory_path)) {
         team_drive_loader.second->ReadDirectory(
             directory_path, entries_callback, completion_callback);
         return;
