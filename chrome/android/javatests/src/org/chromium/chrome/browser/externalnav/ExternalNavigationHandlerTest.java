@@ -413,6 +413,8 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void testYouTubePairingCode() {
@@ -744,6 +746,8 @@ public class ExternalNavigationHandlerTest {
         }
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void testFallbackUrl_IntentResolutionSucceeds() {
@@ -834,6 +838,8 @@ public class ExternalNavigationHandlerTest {
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void testFallbackUrl_RedirectToIntentToMarket() {
@@ -915,6 +921,8 @@ public class ExternalNavigationHandlerTest {
         Assert.assertEquals(null, mDelegate.getReferrerUrlForClobbering());
     }
 
+    @DisableIf.Build(message = "Flaky on K - see https://crbug.com/851444",
+            sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
     @Test
     @SmallTest
     public void testFallback_UseFallbackUrlForRedirectionFromTypedInUrl() {
