@@ -137,13 +137,13 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
           continue;
         }
 
-        // If a point hits a Surface after hitting a non-Surface quad, we should
-        // defer to the renderer. Some DrawQuads are not valid hit test targets
-        // and information needed to distinguish them is not available here.
-        if (non_surface_was_hit) {
-          *out_query_renderer = true;
+        // For any point that hits a Surface, we should defer to the renderer.
+        // Some DrawQuads are not valid hit test targets and information
+        // needed to distinguish them is not available here.
+        *out_query_renderer = true;
+
+        if (non_surface_was_hit)
           return true;
-        }
 
         gfx::Transform transform_to_child_space;
         if (GetTargetSurfaceAtPointInternal(
