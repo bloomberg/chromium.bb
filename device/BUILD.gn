@@ -72,6 +72,7 @@ test("device_unittests") {
     "fido/fido_ble_frames_unittest.cc",
     "fido/fido_cable_device_unittest.cc",
     "fido/fido_cable_discovery_unittest.cc",
+    "fido/fido_cable_handshake_handler_unittest.cc",
     "fido/fido_discovery_unittest.cc",
     "fido/fido_hid_message_unittest.cc",
     "fido/fido_parsing_utils_unittest.cc",

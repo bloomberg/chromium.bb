@@ -63,4 +63,9 @@ const char* CredentialTypeToString(CredentialType type) {
   return kPublicKey;
 }
 
+const char kCableHandshakeKeyInfo[] = "FIDO caBLE v1 handshakeKey";
+const char kCableDeviceEncryptionKeyInfo[] = "FIDO caBLE v1 sessionKey";
+const char kCableAuthenticatorHelloMessage[] = "caBLE v1 authenticator hello";
+const char kCableClientHelloMessage[] = "caBLE v1 client hello";
+
 }  // namespace device

@@ -58,6 +58,8 @@ component("fido") {
     "fido_cable_device.h",
     "fido_cable_discovery.cc",
     "fido_cable_discovery.h",
+    "fido_cable_handshake_handler.cc",
+    "fido_cable_handshake_handler.h",
     "fido_constants.cc",
     "fido_constants.h",
     "fido_device.cc",
@@ -229,6 +231,17 @@ fuzzer_test("ctap_response_fuzzer") {
   ]
   seed_corpus = "response_data_fuzzer_corpus/"
   libfuzzer_options = [ "max_len=65537" ]
+}
+
+fuzzer_test("fido_cable_handshake_handler_fuzzer") {
+  sources = [
+    "fido_cable_handshake_handler_fuzzer.cc",
+  ]
+  deps = [
+    ":fido",
+    "//base",
+  ]
+  libfuzzer_options = [ "max_len=2048" ]
 }
 
 is_linux_without_udev = is_linux && !use_udev

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -27,14 +28,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
   // Encapsulates state FidoCableDevice maintains to encrypt and decrypt
   // data within FidoBleFrame.
   struct COMPONENT_EXPORT(DEVICE_FIDO) EncryptionData {
-    EncryptionData() = delete;
-    EncryptionData(std::string session_key,
-                   const std::array<uint8_t, 8>& nonce);
+    EncryptionData(std::string session_key, base::span<const uint8_t, 8> nonce);
     EncryptionData(EncryptionData&& data);
     EncryptionData& operator=(EncryptionData&& other);
     ~EncryptionData();
 
-    std::string encryption_key;
+    std::string session_key;
     std::array<uint8_t, 8> nonce;
     crypto::Aead aes_key{crypto::Aead::AES_256_GCM};
     uint32_t write_sequence_num = 0;
@@ -45,13 +44,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
 
   using FrameCallback = FidoBleTransaction::FrameCallback;
 
-  FidoCableDevice(std::string address,
-                  std::string session_key,
-                  const std::array<uint8_t, 8>& nonce);
+  FidoCableDevice(std::string address);
   // Constructor used for testing purposes.
-  FidoCableDevice(std::unique_ptr<FidoBleConnection> connection,
-                  std::string session_key,
-                  const std::array<uint8_t, 8>& nonce);
+  FidoCableDevice(std::unique_ptr<FidoBleConnection> connection);
   ~FidoCableDevice() override;
 
   // FidoBleDevice:
@@ -61,13 +56,19 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDevice : public FidoBleDevice {
                        base::Optional<FidoBleFrame> frame) override;
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
+  void SendHandshakeMessage(std::vector<uint8_t> handshake_message,
+                            DeviceCallback callback);
+
+  void SetEncryptionData(std::string session_key,
+                         base::span<const uint8_t, 8> nonce);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(FidoCableDeviceTest,
                            TestCableDeviceSendMultipleRequests);
   FRIEND_TEST_ALL_PREFIXES(FidoCableDeviceTest,
                            TestCableDeviceErrorOnMaxCounter);
 
-  EncryptionData encryption_data_;
+  base::Optional<EncryptionData> encryption_data_;
   base::WeakPtrFactory<FidoCableDevice> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FidoCableDevice);

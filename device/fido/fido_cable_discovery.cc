@@ -254,12 +254,12 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
       found_cable_device_data->client_eid, 0, &nonce);
   if (!extract_success)
     return;
-
-  AddDevice(std::make_unique<FidoCableDevice>(
-      device->GetAddress(),
+  auto cable_device = std::make_unique<FidoCableDevice>(device->GetAddress());
+  cable_device->SetEncryptionData(
       std::string(found_cable_device_data->session_key.begin(),
                   found_cable_device_data->session_key.end()),
-      nonce));
+      nonce);
+  AddDevice(std::move(cable_device));
 }
 
 const FidoCableDiscovery::CableDiscoveryData*

@@ -30,6 +30,7 @@ bool FidoBleFrame::IsValid() const {
     case FidoBleDeviceCommand::kPing:
     case FidoBleDeviceCommand::kMsg:
     case FidoBleDeviceCommand::kCancel:
+    case FidoBleDeviceCommand::kControl:
       return true;
     case FidoBleDeviceCommand::kKeepAlive:
     case FidoBleDeviceCommand::kError:
