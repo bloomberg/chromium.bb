@@ -92,14 +92,12 @@ class WebViewContentsClientAdapter extends AwContentsClient {
     private static final String TAG = "WebViewCallback";
     // Enables API callback tracing
     private static final boolean TRACE = false;
-    // Default WebViewClient used to avoid null checks.
-    private static WebViewClient sNullWebViewClient = new WebViewClient();
     // The WebView instance that this adapter is serving.
     protected final WebView mWebView;
     // The Context to use. This is different from mWebView.getContext(), which should not be used.
     private final Context mContext;
     // A reference to the current WebViewClient associated with this WebView.
-    protected WebViewClient mWebViewClient = sNullWebViewClient;
+    protected WebViewClient mWebViewClient = SharedWebViewChromium.sNullWebViewClient;
     // Some callbacks will be forwarded to this client for apps using the support library.
     private final SupportLibWebViewContentsClientAdapter mSupportLibClient;
     // The WebChromeClient instance that was passed to WebView.setContentViewClient().
@@ -147,7 +145,6 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         try (ScopedSysTraceEvent event =
                         ScopedSysTraceEvent.scoped("WebViewContentsClientAdapter.constructor")) {
             mSupportLibClient = new SupportLibWebViewContentsClientAdapter();
-            setWebViewClient(null);
 
             mUiThreadHandler = new Handler() {
                 @Override
@@ -180,14 +177,8 @@ class WebViewContentsClientAdapter extends AwContentsClient {
     }
 
     void setWebViewClient(WebViewClient client) {
-        if (client != null) {
-            mWebViewClient = client;
-        } else {
-            mWebViewClient = sNullWebViewClient;
-        }
-        // Always reset mSupportLibClient, since the WebViewClient may no longer be a
-        // WebViewClientCompat, or may support a different set of Features.
-        mSupportLibClient.setWebViewClient(mWebViewClient);
+        mWebViewClient = client;
+        mSupportLibClient.setWebViewClient(client);
     }
 
     void setWebChromeClient(WebChromeClient client) {
@@ -220,7 +211,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
      */
     @Override
     public boolean hasWebViewClient() {
-        return mWebViewClient != sNullWebViewClient;
+        return mWebViewClient != SharedWebViewChromium.sNullWebViewClient;
     }
 
     /**

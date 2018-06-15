@@ -1279,7 +1279,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     @Override
     public void setWebViewClient(WebViewClient client) {
         mSharedWebViewChromium.setWebViewClient(client);
-        mContentsClientAdapter.setWebViewClient(client);
+        mContentsClientAdapter.setWebViewClient(mSharedWebViewChromium.getWebViewClient());
     }
 
     @Override
