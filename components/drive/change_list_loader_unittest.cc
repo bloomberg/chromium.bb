@@ -198,6 +198,15 @@ TEST_F(ChangeListLoaderTest, Load) {
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK,
             metadata_->GetResourceEntryByPath(file_path, &entry));
+
+  // Calling LoadIfNeeded a second time is a no-op, ensure that the
+  // callback is called.
+  error = FILE_ERROR_FAILED;
+  change_list_loader_->LoadIfNeeded(
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  EXPECT_FALSE(change_list_loader_->IsRefreshing());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(FILE_ERROR_OK, error);
 }
 
 TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
