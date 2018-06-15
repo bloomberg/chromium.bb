@@ -3271,7 +3271,7 @@ viz::CompositorFrame MakeDelegatedFrame(float scale_factor,
 // This test verifies that returned resources do not require a pending ack.
 TEST_F(RenderWidgetHostViewAuraTest, ReturnedResources) {
   // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  if (!features::IsAshInBrowserProcess())
     return;
 
   gfx::Size view_size(100, 100);
@@ -3305,7 +3305,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 
@@ -3447,7 +3447,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ZeroSizeStillGetsLocalSurfaceId) {
 
 TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorMatchesCompositorFrame) {
   // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  if (!features::IsAshInBrowserProcess())
     return;
 
   gfx::Size frame_size(100, 100);
@@ -3612,7 +3612,7 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 
@@ -3675,7 +3675,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 
@@ -3707,7 +3707,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 
@@ -3745,7 +3745,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DeviceScaleFactorChanges) {
   // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  if (!features::IsAshInBrowserProcess())
     return;
 
   view_->InitAsChild(nullptr);
@@ -3775,7 +3775,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 
@@ -3812,7 +3812,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 
@@ -3954,7 +3954,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 
@@ -4030,7 +4030,7 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 
@@ -4137,7 +4137,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 
@@ -6280,7 +6280,7 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
   // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
   // https://crbug.com/844469
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      base::FeatureList::IsEnabled(features::kMash)) {
+      !features::IsAshInBrowserProcess()) {
     return;
   }
 
@@ -6322,7 +6322,7 @@ TEST_F(RenderWidgetHostViewAuraTest, HitTestRegionListSubmitted) {
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        NewContentRenderingTimeout) {
   // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  if (!features::IsAshInBrowserProcess())
     return;
 
   constexpr base::TimeDelta kTimeout = base::TimeDelta::FromMicroseconds(10);
@@ -6392,7 +6392,7 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        AllocateLocalSurfaceIdOnEviction) {
   // TODO: fix for mash.
-  if (base::FeatureList::IsEnabled(features::kMash))
+  if (!features::IsAshInBrowserProcess())
     return;
 
   view_->InitAsChild(nullptr);

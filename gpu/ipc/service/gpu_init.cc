@@ -323,7 +323,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
 #if defined(OS_CHROMEOS)
-  params.using_mojo = base::FeatureList::IsEnabled(features::kMash) ||
+  params.using_mojo = !features::IsAshInBrowserProcess() ||
                       command_line->HasSwitch(switches::kEnableDrmMojo);
 #else
   params.using_mojo = command_line->HasSwitch(switches::kEnableDrmMojo);

@@ -780,9 +780,9 @@ void RenderThreadImpl::Init(
                           main_thread_runner(), GetConnector()));
 
   gpu_ = ui::Gpu::Create(GetConnector(),
-                         base::FeatureList::IsEnabled(features::kMash)
-                             ? ui::mojom::kServiceName
-                             : mojom::kBrowserServiceName,
+                         features::IsAshInBrowserProcess()
+                             ? mojom::kBrowserServiceName
+                             : ui::mojom::kServiceName,
                          GetIOTaskRunner());
 
   resource_dispatcher_.reset(new ResourceDispatcher());
@@ -838,7 +838,7 @@ void RenderThreadImpl::Init(
   AddFilter(midi_message_filter_.get());
 
 #if defined(USE_AURA)
-  if (features::IsMashEnabled())
+  if (!features::IsAshInBrowserProcess())
     CreateRenderWidgetWindowTreeClientFactory(GetServiceManagerConnection());
 #endif
 
@@ -990,7 +990,7 @@ void RenderThreadImpl::Init(
   categorized_worker_pool_->Start(num_raster_threads);
 
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  if (features::IsMashEnabled()) {
+  if (!features::IsAshInBrowserProcess()) {
 #if defined(USE_AURA)
     GetServiceManagerConnection()->GetConnector()->BindInterface(
         ui::mojom::kServiceName, &manager_ptr);
@@ -1993,7 +1993,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     params.synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
 
 #if defined(USE_AURA)
-  if (base::FeatureList::IsEnabled(features::kMash)) {
+  if (!features::IsAshInBrowserProcess()) {
     if (!RendererWindowTreeClient::Get(routing_id)) {
       callback.Run(nullptr);
       return;

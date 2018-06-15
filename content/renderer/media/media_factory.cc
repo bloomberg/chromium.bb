@@ -139,7 +139,7 @@ void PostMediaContextProviderToCallback(
 // Whether videos should use SurfaceLayers.
 bool VideoSurfaceLayerEnabled() {
   return base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo) &&
-         !base::FeatureList::IsEnabled(features::kMash);
+         features::IsAshInBrowserProcess();
 }
 
 }  // namespace

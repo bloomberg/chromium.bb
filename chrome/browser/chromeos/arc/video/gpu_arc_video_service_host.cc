@@ -53,7 +53,7 @@ class GpuArcVideoServiceHostFactory
 class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
  public:
   VideoAcceleratorFactoryService() {
-    DCHECK(!base::FeatureList::IsEnabled(features::kMash));
+    DCHECK(features::IsAshInBrowserProcess());
   }
 
   ~VideoAcceleratorFactoryService() override = default;
@@ -93,7 +93,7 @@ class VideoAcceleratorFactoryServiceViz
     : public mojom::VideoAcceleratorFactory {
  public:
   VideoAcceleratorFactoryServiceViz() {
-    DCHECK(base::FeatureList::IsEnabled(features::kMash));
+    DCHECK(!features::IsAshInBrowserProcess());
     DETACH_FROM_THREAD(thread_checker_);
     auto* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
@@ -132,7 +132,7 @@ class VideoAcceleratorFactoryServiceViz
 
 std::unique_ptr<mojom::VideoAcceleratorFactory>
 CreateVideoAcceleratorFactory() {
-  if (base::FeatureList::IsEnabled(features::kMash))
+  if (!features::IsAshInBrowserProcess())
     return std::make_unique<VideoAcceleratorFactoryServiceViz>();
   return std::make_unique<VideoAcceleratorFactoryService>();
 }

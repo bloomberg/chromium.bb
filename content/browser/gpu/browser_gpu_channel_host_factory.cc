@@ -276,7 +276,7 @@ BrowserGpuChannelHostFactory::~BrowserGpuChannelHostFactory() {
 void BrowserGpuChannelHostFactory::EstablishGpuChannel(
     gpu::GpuChannelEstablishedCallback callback) {
 #if defined(USE_AURA)
-  DCHECK(!base::FeatureList::IsEnabled(::features::kMash));
+  DCHECK(features::IsAshInBrowserProcess());
 #endif
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (gpu_channel_.get() && gpu_channel_->IsLost()) {

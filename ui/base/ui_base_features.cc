@@ -133,8 +133,11 @@ const base::Feature kPrecisionTouchpadScrollPhase{
 // TODO(jamescook): Make flag only available in Chrome OS.
 const base::Feature kMash = {"Mash", base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsMashEnabled() {
-  return base::FeatureList::IsEnabled(features::kMash);
+const base::Feature kOopAsh = {"OopAsh", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAshInBrowserProcess() {
+  return !base::FeatureList::IsEnabled(features::kMash) &&
+         !base::FeatureList::IsEnabled(features::kOopAsh);
 }
 
 #if defined(OS_MACOSX)

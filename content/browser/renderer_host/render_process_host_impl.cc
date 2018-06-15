@@ -1454,7 +1454,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 
   InitializeChannelProxy();
 
-  if (!base::FeatureList::IsEnabled(features::kMash))
+  if (features::IsAshInBrowserProcess())
     gpu_client_.reset(new GpuClientImpl(GetID()));
 
   GetMemoryDumpProvider().AddHost(this);
