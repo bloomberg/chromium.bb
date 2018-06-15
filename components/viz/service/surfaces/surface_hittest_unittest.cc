@@ -202,13 +202,13 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
   TestCase tests[] = {{root_surface_id, gfx::Point(10, 10), root_surface_id,
                        gfx::Point(10, 10), false},
                       {root_surface_id, gfx::Point(99, 99), root_surface_id,
-                       gfx::Point(99, 99), false},
+                       gfx::Point(99, 99), true},
                       {root_surface_id, gfx::Point(100, 100), child_surface_id,
                        gfx::Point(50, 50), true},
                       {root_surface_id, gfx::Point(199, 199), child_surface_id,
                        gfx::Point(149, 149), true},
                       {root_surface_id, gfx::Point(200, 200), root_surface_id,
-                       gfx::Point(200, 200), false},
+                       gfx::Point(200, 200), true},
                       {root_surface_id, gfx::Point(290, 290), root_surface_id,
                        gfx::Point(290, 290), false}};
 
@@ -237,7 +237,7 @@ TEST_F(SurfaceHittestTest, Hittest_ChildSurface) {
                                               &transform, &query_renderer));
     transform.TransformPoint(&point);
     EXPECT_EQ(gfx::Point(100, 100), point);
-    EXPECT_EQ(query_renderer, false);
+    EXPECT_EQ(query_renderer, true);
 
     gfx::Point point_in_target_space(100, 100);
     gfx::Transform target_transform;
@@ -306,7 +306,7 @@ TEST_F(SurfaceHittestTest, Hittest_OccludedChildSurface) {
                       {root_surface_id, gfx::Point(199, 199), child_surface_id,
                        gfx::Point(149, 149), true},
                       {root_surface_id, gfx::Point(200, 200), root_surface_id,
-                       gfx::Point(200, 200), false},
+                       gfx::Point(200, 200), true},
                       {root_surface_id, gfx::Point(290, 290), root_surface_id,
                        gfx::Point(290, 290), false}};
 
@@ -364,13 +364,13 @@ TEST_F(SurfaceHittestTest, Hittest_InvalidRenderPassDrawQuad) {
   TestCase tests[] = {{root_surface_id, gfx::Point(10, 10), root_surface_id,
                        gfx::Point(10, 10), false},
                       {root_surface_id, gfx::Point(99, 99), root_surface_id,
-                       gfx::Point(99, 99), false},
+                       gfx::Point(99, 99), true},
                       {root_surface_id, gfx::Point(100, 100), child_surface_id,
                        gfx::Point(50, 50), true},
                       {root_surface_id, gfx::Point(199, 199), child_surface_id,
                        gfx::Point(149, 149), true},
                       {root_surface_id, gfx::Point(200, 200), root_surface_id,
-                       gfx::Point(200, 200), false},
+                       gfx::Point(200, 200), true},
                       {root_surface_id, gfx::Point(290, 290), root_surface_id,
                        gfx::Point(290, 290), false}};
 
@@ -488,9 +488,9 @@ TEST_F(SurfaceHittestTest, Hittest_SingleSurface_WithInsetsDelegate) {
       {root_surface_id, gfx::Point(244, 244), child_surface_id,
        gfx::Point(194, 194), true},
       {root_surface_id, gfx::Point(50, 50), root_surface_id, gfx::Point(50, 50),
-       false},
+       true},
       {root_surface_id, gfx::Point(249, 249), root_surface_id,
-       gfx::Point(249, 249), false},
+       gfx::Point(249, 249), true},
   };
 
   TestSurfaceHittestDelegate empty_delegate;
