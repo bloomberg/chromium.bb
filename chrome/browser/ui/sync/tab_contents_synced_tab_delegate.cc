@@ -13,6 +13,7 @@
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
+#include "components/sync_sessions/tab_node_pool.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -30,6 +31,8 @@
 
 using content::NavigationEntry;
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabContentsSyncedTabDelegate);
+
 namespace {
 
 // Helper to access the correct NavigationEntry, accounting for pending entries.
@@ -44,8 +47,10 @@ NavigationEntry* GetPossiblyPendingEntryAtIndex(
 
 }  // namespace
 
-TabContentsSyncedTabDelegate::TabContentsSyncedTabDelegate()
-    : web_contents_(nullptr) {}
+TabContentsSyncedTabDelegate::TabContentsSyncedTabDelegate(
+    content::WebContents* web_contents)
+    : web_contents_(web_contents),
+      sync_session_id_(sync_sessions::TabNodePool::kInvalidTabNodeID) {}
 
 TabContentsSyncedTabDelegate::~TabContentsSyncedTabDelegate() {}
 
@@ -137,6 +142,18 @@ TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
 #endif
 }
 
+bool TabContentsSyncedTabDelegate::IsPlaceholderTab() const {
+  return false;
+}
+
+int TabContentsSyncedTabDelegate::GetSyncId() const {
+  return sync_session_id_;
+}
+
+void TabContentsSyncedTabDelegate::SetSyncId(int sync_id) {
+  sync_session_id_ = sync_id;
+}
+
 bool TabContentsSyncedTabDelegate::ShouldSync(
     sync_sessions::SyncSessionsClient* sessions_client) {
   if (sessions_client->GetSyncedWindowDelegatesGetter()->FindById(
@@ -167,17 +184,4 @@ SessionID TabContentsSyncedTabDelegate::GetSourceTabID() const {
       sync_sessions::SyncSessionsRouterTabHelper::FromWebContents(
           web_contents_);
   return helper->source_tab_id();
-}
-
-const content::WebContents* TabContentsSyncedTabDelegate::web_contents() const {
-  return web_contents_;
-}
-
-content::WebContents* TabContentsSyncedTabDelegate::web_contents() {
-  return web_contents_;
-}
-
-void TabContentsSyncedTabDelegate::SetWebContents(
-    content::WebContents* web_contents) {
-  web_contents_ = web_contents;
 }
