@@ -438,6 +438,7 @@ enum HistogramValue {
   SAFE_BROWSING_PRIVATE_ON_SECURITY_INTERSTITIAL_PROCEEDED,
   ACCESSIBILITY_PRIVATE_ON_SELECT_TO_SPEAK_STATE_CHANGE_REQUESTED,
   INPUT_METHOD_PRIVATE_ON_FOCUS,
+  SYSTEM_POWER_SOURCE_ONPOWERCHANGED,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

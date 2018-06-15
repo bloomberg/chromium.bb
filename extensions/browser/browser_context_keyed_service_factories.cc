@@ -46,6 +46,7 @@
 #include "extensions/browser/renderer_startup_helper.h"
 
 #if defined(OS_CHROMEOS)
+#include "extensions/browser/api/system_power_source/system_power_source_api.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -93,6 +94,9 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   RuntimeAPI::GetFactoryInstance();
   StorageFrontend::GetFactoryInstance();
   SystemInfoAPI::GetFactoryInstance();
+#if defined(OS_CHROMEOS)
+  SystemPowerSourceAPI::GetFactoryInstance();
+#endif
   UsbEventRouter::GetFactoryInstance();
   UsbGuidMap::GetFactoryInstance();
 #if defined(OS_CHROMEOS)
