@@ -61,7 +61,7 @@ void AV1CompRoundShiftTest::RunCheckOutput(
   DECLARE_ALIGNED(32, int32_t, pred_[blk_wd]);
   DECLARE_ALIGNED(32, int32_t, ref_buffer_[blk_wd]);
   for (int i = 0; i < (blk_wd); ++i) {
-    ref_buffer_[i] = pred_[i] = rnd_.Rand31();
+    ref_buffer_[i] = pred_[i] = rnd_.Rand31() / 16;
   }
   av1_round_shift_array_c(ref_buffer_, w, bit);
   test_impl(pred_, w, bit);
