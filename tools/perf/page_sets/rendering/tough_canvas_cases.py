@@ -5,10 +5,12 @@ from telemetry import story
 from telemetry.page import shared_page_state
 
 from page_sets.rendering import rendering_story
+from page_sets.rendering import story_tags
 
 
 class ToughCanvasPage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
+  TAGS = [story_tags.TOUGH_CANVAS]
 
   def __init__(self,
                page_set,

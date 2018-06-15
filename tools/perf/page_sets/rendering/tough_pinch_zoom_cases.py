@@ -11,9 +11,9 @@ from page_sets.system_health import platforms
 
 class ToughPinchZoomPage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
-  TAGS = [story_tags.GPU_RASTERIZATION, story_tags.PINCH_ZOOM]
-  # TODO(crbug.com/852373): expand supported_platforms to both desktop & mobile
+  # TODO(crbug.com/851499): expand supported_platforms to both desktop & mobile
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.GPU_RASTERIZATION, story_tags.TOUGH_PINCH_ZOOM]
 
   def __init__(self,
                page_set,

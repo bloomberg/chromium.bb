@@ -13,7 +13,7 @@ class ToughFastScrollingPage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
   SPEED_IN_PIXELS_PER_SECOND = None
   SYNTHETIC_GESTURE_SOURCE = page_action.GESTURE_SOURCE_DEFAULT
-  TAGS = [story_tags.GPU_RASTERIZATION]
+  TAGS = [story_tags.GPU_RASTERIZATION, story_tags.TOUGH_SCROLLING]
 
   def __init__(self,
                page_set,

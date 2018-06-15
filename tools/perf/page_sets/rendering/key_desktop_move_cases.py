@@ -6,6 +6,7 @@ from telemetry import story
 
 from page_sets.login_helpers import google_login
 from page_sets.rendering import rendering_story
+from page_sets.rendering import story_tags
 from page_sets.system_health import platforms
 
 
@@ -13,6 +14,7 @@ class KeyDesktopMoveCasesPage(rendering_story.RenderingStory):
   """Abstract base class for key desktop move cases pages."""
   ABSTRACT_STORY = True
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.KEY_DESKTOP_MOVE]
 
   def __init__(self,
                page_set,

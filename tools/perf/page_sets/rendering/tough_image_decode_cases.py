@@ -5,10 +5,12 @@ from telemetry.page import shared_page_state
 from telemetry import story
 
 from page_sets.rendering import rendering_story
+from page_sets.rendering import story_tags
 
 
 class ToughImageDecodePage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
+  TAGS = [story_tags.TOUGH_IMAGE_DECODE]
 
   def __init__(self,
                page_set,
