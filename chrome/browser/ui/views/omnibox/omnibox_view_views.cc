@@ -224,16 +224,18 @@ void OmniboxViewViews::ResetTabState(content::WebContents* web_contents) {
 }
 
 void OmniboxViewViews::InstallPlaceholderText() {
-  base::string16 search_provider_name = model()
-                                            ->client()
-                                            ->GetTemplateURLService()
-                                            ->GetDefaultSearchProvider()
-                                            ->short_name();
-  set_placeholder_text(l10n_util::GetStringFUTF16(IDS_OMNIBOX_PLACEHOLDER_TEXT,
-                                                  search_provider_name));
   set_placeholder_text_color(
       location_bar_view_->GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED));
   set_placeholder_text_hidden_on_focus(true);
+
+  const TemplateURL* const default_provider =
+      model()->client()->GetTemplateURLService()->GetDefaultSearchProvider();
+  if (default_provider) {
+    set_placeholder_text(l10n_util::GetStringFUTF16(
+        IDS_OMNIBOX_PLACEHOLDER_TEXT, default_provider->short_name()));
+  } else {
+    set_placeholder_text(base::string16());
+  }
 }
 
 void OmniboxViewViews::UpdateTextIndent() {
