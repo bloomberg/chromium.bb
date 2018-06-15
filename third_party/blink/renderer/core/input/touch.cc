@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 
 namespace blink {
@@ -40,8 +41,7 @@ FloatPoint ContentsOffset(LocalFrame* frame) {
   if (!frame_view)
     return FloatPoint();
   float scale = 1.0f / frame->PageZoomFactor();
-  return FloatPoint(
-             frame_view->LayoutViewportScrollableArea()->GetScrollOffset())
+  return FloatPoint(frame_view->LayoutViewport()->GetScrollOffset())
       .ScaledBy(scale);
 }
 

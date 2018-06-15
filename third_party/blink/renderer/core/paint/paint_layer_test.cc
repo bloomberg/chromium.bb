@@ -1251,8 +1251,8 @@ TEST_P(PaintLayerTest, SquashingOffsets) {
   EXPECT_EQ(LayoutPoint(0, 0), squashed->ComputeOffsetFromAncestor(
                                    squashed->TransformAncestorOrRoot()));
 
-  GetDocument().View()->LayoutViewportScrollableArea()->ScrollBy(
-      ScrollOffset(0, 25), kUserScroll);
+  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 25),
+                                                   kUserScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   PaintLayer::MapPointInPaintInvalidationContainerToBacking(

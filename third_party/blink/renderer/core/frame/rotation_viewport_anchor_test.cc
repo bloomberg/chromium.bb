@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -49,8 +50,7 @@ TEST_F(RotationViewportAnchorTest, SimpleAbsolutePosition) {
   Compositor().BeginFrame();
 
   Document& document = GetDocument();
-  ScrollableArea* layout_viewport =
-      document.View()->LayoutViewportScrollableArea();
+  ScrollableArea* layout_viewport = document.View()->LayoutViewport();
 
   // Place the target at the top-center of the viewport. This is where the
   // rotation anchor finds the node to anchor to.
@@ -90,8 +90,7 @@ TEST_F(RotationViewportAnchorTest, PositionRelativeToViewportSize) {
   Compositor().BeginFrame();
 
   Document& document = GetDocument();
-  ScrollableArea* layout_viewport =
-      document.View()->LayoutViewportScrollableArea();
+  ScrollableArea* layout_viewport = document.View()->LayoutViewport();
 
   IntPoint target_position(5 * WebView().Size().width,
                            5 * WebView().Size().height);

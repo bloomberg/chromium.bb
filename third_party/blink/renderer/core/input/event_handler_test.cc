@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -151,8 +152,8 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
       "</div>");
 
   LocalFrameView* frame_view = GetDocument().View();
-  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 400), kProgrammaticScroll);
+  frame_view->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 400),
+                                                kProgrammaticScroll);
 
   WebMouseEvent mouse_down_event(WebInputEvent::kMouseDown, WebFloatPoint(0, 0),
                                  WebFloatPoint(100, 200),

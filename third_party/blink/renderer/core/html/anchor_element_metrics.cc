@@ -19,10 +19,7 @@ IntSize AnchorElementMetrics::AccumulatedScrollOffset(
   IntSize offset;
   Frame* frame = anchor_element.GetDocument().GetFrame();
   while (frame && frame->View() && frame->IsLocalFrame()) {
-    offset += ToLocalFrame(frame)
-                  ->View()
-                  ->LayoutViewportScrollableArea()
-                  ->ScrollOffsetInt();
+    offset += ToLocalFrame(frame)->View()->LayoutViewport()->ScrollOffsetInt();
     frame = frame->Tree().Parent();
   }
   return offset;
@@ -52,9 +49,8 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::From(
   if (!local_frame_view || !root_frame_view)
     return base::nullopt;
 
-  IntSize visible_size = root_frame_view->LayoutViewportScrollableArea()
-                             ->VisibleContentRect()
-                             .Size();
+  IntSize visible_size =
+      root_frame_view->LayoutViewport()->VisibleContentRect().Size();
   if (visible_size.IsEmpty())
     return base::nullopt;
 
@@ -63,8 +59,7 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::From(
   // Adjust target location due to root layer scrolling.
   // Then map the target location to the root frame.
   IntPoint target_location(target_rect.Location());
-  target_location.Move(
-      -local_frame_view->LayoutViewportScrollableArea()->ScrollOffsetInt());
+  target_location.Move(-local_frame_view->LayoutViewport()->ScrollOffsetInt());
   target_location = local_frame_view->ConvertToRootFrame(target_location);
 
   // Calculate features of the anchor element.

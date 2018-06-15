@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
 namespace blink {
 
@@ -55,7 +56,7 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
     frame_view_->Resize(frame_view_->Width(), min_auto_size_.Height());
 
   IntSize size = frame_view_->Size();
-  ScrollableArea* layout_viewport = frame_view_->LayoutViewportScrollableArea();
+  ScrollableArea* layout_viewport = frame_view_->LayoutViewport();
 
   // Do the resizing twice. The first time is basically a rough calculation
   // using the preferred width which may result in a height change during the

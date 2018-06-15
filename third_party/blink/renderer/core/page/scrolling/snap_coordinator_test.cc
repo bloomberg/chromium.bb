@@ -424,8 +424,7 @@ TEST_F(SnapCoordinatorTest, ScrolledStartAlignmentCalculationOnViewport) {
 
   Element* body = GetDocument().body();
   EXPECT_EQ(body, GetDocument().ViewportDefiningElement());
-  ScrollableArea* scrollable_area =
-      GetDocument().View()->LayoutViewportScrollableArea();
+  ScrollableArea* scrollable_area = GetDocument().View()->LayoutViewport();
   body->scrollBy(20, 20);
   EXPECT_EQ(FloatPoint(20, 20), scrollable_area->ScrollPosition());
   Element* area_element = GetDocument().getElementById("area");

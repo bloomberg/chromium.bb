@@ -304,10 +304,8 @@ InspectorLayerTreeAgent::BuildLayerTree() {
   std::unique_ptr<Array<protocol::LayerTree::Layer>> layers =
       Array<protocol::LayerTree::Layer>::create();
   BuildLayerIdToNodeIdMap(compositor->RootLayer(), layer_id_to_node_id_map);
-  auto* layer_for_scrolling = inspected_frames_->Root()
-                                  ->View()
-                                  ->LayoutViewportScrollableArea()
-                                  ->LayerForScrolling();
+  auto* layer_for_scrolling =
+      inspected_frames_->Root()->View()->LayoutViewport()->LayerForScrolling();
   int scrolling_layer_id =
       layer_for_scrolling ? layer_for_scrolling->CcLayer()->id() : 0;
   bool have_blocking_wheel_event_handlers =

@@ -1003,11 +1003,7 @@ int Element::scrollWidth() {
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().View()) {
       return AdjustForAbsoluteZoom::AdjustInt(
-          GetDocument()
-              .View()
-              ->LayoutViewportScrollableArea()
-              ->ContentsSize()
-              .Width(),
+          GetDocument().View()->LayoutViewport()->ContentsSize().Width(),
           GetDocument().GetFrame()->PageZoomFactor());
     }
     return 0;
@@ -1029,11 +1025,7 @@ int Element::scrollHeight() {
   if (GetDocument().ScrollingElementNoLayout() == this) {
     if (GetDocument().View()) {
       return AdjustForAbsoluteZoom::AdjustInt(
-          GetDocument()
-              .View()
-              ->LayoutViewportScrollableArea()
-              ->ContentsSize()
-              .Height(),
+          GetDocument().View()->LayoutViewport()->ContentsSize().Height(),
           GetDocument().GetFrame()->PageZoomFactor());
     }
     return 0;
@@ -1167,7 +1159,7 @@ void Element::ScrollFrameBy(const ScrollToOptions& scroll_to_options) {
   if (!frame || !frame->View() || !GetDocument().GetPage())
     return;
 
-  ScrollableArea* viewport = frame->View()->LayoutViewportScrollableArea();
+  ScrollableArea* viewport = frame->View()->LayoutViewport();
   if (!viewport)
     return;
 
@@ -1201,7 +1193,7 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
   if (!frame || !frame->View() || !GetDocument().GetPage())
     return;
 
-  ScrollableArea* viewport = frame->View()->LayoutViewportScrollableArea();
+  ScrollableArea* viewport = frame->View()->LayoutViewport();
   if (!viewport)
     return;
 

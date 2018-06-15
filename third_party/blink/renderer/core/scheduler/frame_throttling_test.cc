@@ -395,11 +395,8 @@ TEST_P(FrameThrottlingTest, UnthrottlingTriggersRepaint) {
 
   // Scroll down to unthrottle the frame. The first frame we composite after
   // scrolling won't contain the frame yet, but will schedule another repaint.
-  WebView()
-      .MainFrameImpl()
-      ->GetFrameView()
-      ->LayoutViewportScrollableArea()
-      ->SetScrollOffset(ScrollOffset(0, 480), kProgrammaticScroll);
+  WebView().MainFrameImpl()->GetFrameView()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 480), kProgrammaticScroll);
   auto commands = CompositeFrame();
   EXPECT_FALSE(commands.Contains(SimCanvas::kRect, "green"));
 
@@ -437,11 +434,8 @@ TEST_P(FrameThrottlingTest, UnthrottlingTriggersRepaintInCompositedChild) {
 
   // Scroll down to unthrottle the frame. The first frame we composite after
   // scrolling won't contain the frame yet, but will schedule another repaint.
-  WebView()
-      .MainFrameImpl()
-      ->GetFrameView()
-      ->LayoutViewportScrollableArea()
-      ->SetScrollOffset(ScrollOffset(0, 480), kProgrammaticScroll);
+  WebView().MainFrameImpl()->GetFrameView()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 480), kProgrammaticScroll);
   auto commands = CompositeFrame();
   EXPECT_FALSE(commands.Contains(SimCanvas::kRect, "green"));
 
@@ -473,11 +467,8 @@ TEST_P(FrameThrottlingTest, ChangeStyleInThrottledFrame) {
                                                          "background: green");
 
   // Scroll down to unthrottle the frame.
-  WebView()
-      .MainFrameImpl()
-      ->GetFrameView()
-      ->LayoutViewportScrollableArea()
-      ->SetScrollOffset(ScrollOffset(0, 480), kProgrammaticScroll);
+  WebView().MainFrameImpl()->GetFrameView()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 480), kProgrammaticScroll);
   auto commands = CompositeFrame();
   EXPECT_FALSE(commands.Contains(SimCanvas::kRect, "red"));
   EXPECT_FALSE(commands.Contains(SimCanvas::kRect, "green"));
@@ -610,10 +601,8 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
             frame_element->contentDocument()->Lifecycle().GetState());
   // The fixed background in the throttled sub frame should not cause main
   // thread scrolling.
-  EXPECT_FALSE(GetDocument()
-                   .View()
-                   ->LayoutViewportScrollableArea()
-                   ->ShouldScrollOnMainThread());
+  EXPECT_FALSE(
+      GetDocument().View()->LayoutViewport()->ShouldScrollOnMainThread());
 
   // Make the frame visible by changing its transform. This doesn't cause a
   // layout, but should still unthrottle the frame.
@@ -624,12 +613,10 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
   // The fixed background in the throttled sub frame should be considered.
   EXPECT_TRUE(frame_element->contentDocument()
                   ->View()
-                  ->LayoutViewportScrollableArea()
+                  ->LayoutViewport()
                   ->ShouldScrollOnMainThread());
-  EXPECT_FALSE(GetDocument()
-                   .View()
-                   ->LayoutViewportScrollableArea()
-                   ->ShouldScrollOnMainThread());
+  EXPECT_FALSE(
+      GetDocument().View()->LayoutViewport()->ShouldScrollOnMainThread());
 }
 
 TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {

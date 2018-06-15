@@ -584,9 +584,9 @@ void WebLocalFrameImpl::SetSharedWorkerRepositoryClient(
       SharedWorkerRepositoryClientImpl::Create(client);
 }
 
-ScrollableArea* WebLocalFrameImpl::LayoutViewportScrollableArea() const {
+ScrollableArea* WebLocalFrameImpl::LayoutViewport() const {
   if (LocalFrameView* view = GetFrameView())
-    return view->LayoutViewportScrollableArea();
+    return view->LayoutViewport();
   return nullptr;
 }
 
@@ -600,13 +600,13 @@ bool WebLocalFrameImpl::IsFocused() const {
 }
 
 WebSize WebLocalFrameImpl::GetScrollOffset() const {
-  if (ScrollableArea* scrollable_area = LayoutViewportScrollableArea())
+  if (ScrollableArea* scrollable_area = LayoutViewport())
     return scrollable_area->ScrollOffsetInt();
   return WebSize();
 }
 
 void WebLocalFrameImpl::SetScrollOffset(const WebSize& offset) {
-  if (ScrollableArea* scrollable_area = LayoutViewportScrollableArea()) {
+  if (ScrollableArea* scrollable_area = LayoutViewport()) {
     scrollable_area->SetScrollOffset(ScrollOffset(offset.width, offset.height),
                                      kProgrammaticScroll);
   }
@@ -633,7 +633,7 @@ bool WebLocalFrameImpl::HasVisibleContent() const {
 
 WebRect WebLocalFrameImpl::VisibleContentRect() const {
   if (LocalFrameView* view = GetFrameView())
-    return view->LayoutViewportScrollableArea()->VisibleContentRect();
+    return view->LayoutViewport()->VisibleContentRect();
   return WebRect();
 }
 

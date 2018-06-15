@@ -166,8 +166,8 @@ TEST_F(CompositedLayerMappingTest, TallCompositedScrolledLayerInterestRect) {
   )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 8000), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 8000),
+                                                          kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   Element* element = GetDocument().getElementById("target");
@@ -184,8 +184,8 @@ TEST_F(CompositedLayerMappingTest, TallNonCompositedScrolledLayerInterestRect) {
   )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 8000), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 8000),
+                                                          kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   PaintLayer* paint_layer = GetDocument().View()->Layer();
@@ -223,7 +223,7 @@ TEST_F(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument) {
   )HTML");
 
   GetDocument().View()->UpdateAllLifecyclePhases();
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(-5000, 0), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -628,8 +628,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_EQ(IntRect(0, 0, 800, 4600),
             PreviousInterestRect(root_scrolling_layer));
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 300), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
+                                                          kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
   // Still use the previous interest rect because the recomputed rect hasn't
   // changed enough.
@@ -638,8 +638,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_EQ(IntRect(0, 0, 800, 4600),
             PreviousInterestRect(root_scrolling_layer));
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 600), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 600),
+                                                          kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
   // Use recomputed interest rect because it changed enough.
   EXPECT_EQ(IntRect(0, 0, 800, 5200),
@@ -647,16 +647,16 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_EQ(IntRect(0, 0, 800, 5200),
             PreviousInterestRect(root_scrolling_layer));
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 5400), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 5400),
+                                                          kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(IntRect(0, 1400, 800, 8600),
             RecomputeInterestRect(root_scrolling_layer));
   EXPECT_EQ(IntRect(0, 1400, 800, 8600),
             PreviousInterestRect(root_scrolling_layer));
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 9000), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 9000),
+                                                          kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
   // Still use the previous interest rect because it contains the recomputed
   // interest rect.
@@ -665,8 +665,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
   EXPECT_EQ(IntRect(0, 1400, 800, 8600),
             PreviousInterestRect(root_scrolling_layer));
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 2000), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 2000),
+                                                          kProgrammaticScroll);
   // Use recomputed interest rect because it changed enough.
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(IntRect(0, 0, 800, 6600),
@@ -865,7 +865,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
       "will-change: transform}</style><div id=target></div>");
 
   // Scroll 8000 pixels down to move the iframe into view.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0.0, 8000.0), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -896,7 +896,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Scroll 7500 pixels down to bring the scrollable area to the bottom.
-  ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  ChildDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0.0, 7500.0), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -930,7 +930,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
 
   // Scroll 3000 pixels down to bring the scrollable area to somewhere in the
   // middle.
-  ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  ChildDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0.0, 3000.0), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -972,7 +972,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithFixedContents) {
   // this to the right-most 4000x4000 area.
   EXPECT_EQ(IntRect(1000, 0, 4400, 300), RecomputeInterestRect(graphics_layer));
 
-  ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  ChildDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0.0, 3000.0), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -998,7 +998,7 @@ TEST_F(CompositedLayerMappingTest, ScrolledFixedPositionInterestRect) {
   auto* graphics_layer = fixed->EnclosingLayer()->GraphicsLayerBacking(fixed);
   EXPECT_EQ(IntRect(0, 500, 100, 4030), RecomputeInterestRect(graphics_layer));
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0.0, 200.0), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -2632,8 +2632,8 @@ TEST_F(CompositedLayerMappingTest, SquashingScroll) {
       LayoutPoint(),
       squashed->GroupedMapping()->SquashingOffsetFromTransformedAncestor());
 
-  GetDocument().View()->LayoutViewportScrollableArea()->ScrollBy(
-      ScrollOffset(0, 25), kUserScroll);
+  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 25),
+                                                   kUserScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(
@@ -2658,8 +2658,8 @@ TEST_F(CompositedLayerMappingTest, SquashingScrollInterestRect) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
   EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
 
-  GetDocument().View()->LayoutViewportScrollableArea()->ScrollBy(
-      ScrollOffset(0, 5000), kUserScroll);
+  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 5000),
+                                                   kUserScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   EXPECT_EQ(IntRect(0, 1000, 200, 5000),

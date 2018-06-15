@@ -1884,15 +1884,12 @@ void WebViewImpl::FullscreenElementChanged(Element* old_element,
 bool WebViewImpl::HasHorizontalScrollbar() {
   return MainFrameImpl()
       ->GetFrameView()
-      ->LayoutViewportScrollableArea()
+      ->LayoutViewport()
       ->HorizontalScrollbar();
 }
 
 bool WebViewImpl::HasVerticalScrollbar() {
-  return MainFrameImpl()
-      ->GetFrameView()
-      ->LayoutViewportScrollableArea()
-      ->VerticalScrollbar();
+  return MainFrameImpl()->GetFrameView()->LayoutViewport()->VerticalScrollbar();
 }
 
 WebInputEventResult WebViewImpl::DispatchBufferedTouchEvents() {
@@ -2917,8 +2914,7 @@ void WebViewImpl::ResetScrollAndScaleState() {
 
   if (LocalFrameView* frame_view =
           ToLocalFrame(GetPage()->MainFrame())->View()) {
-    ScrollableArea* scrollable_area =
-        frame_view->LayoutViewportScrollableArea();
+    ScrollableArea* scrollable_area = frame_view->LayoutViewport();
 
     if (!scrollable_area->GetScrollOffset().IsZero())
       scrollable_area->SetScrollOffset(ScrollOffset(), kProgrammaticScroll);

@@ -737,8 +737,7 @@ IntSize LayoutView::GetLayoutSize(
 
   IntSize result = frame_view_->GetLayoutSize(kIncludeScrollbars);
   if (scrollbar_inclusion == kExcludeScrollbars)
-    result =
-        frame_view_->LayoutViewportScrollableArea()->ExcludeScrollbars(result);
+    result = frame_view_->LayoutViewport()->ExcludeScrollbars(result);
   return result;
 }
 

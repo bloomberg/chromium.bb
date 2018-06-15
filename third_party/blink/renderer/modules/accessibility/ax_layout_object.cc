@@ -228,7 +228,7 @@ LayoutBoxModelObject* AXLayoutObject::GetLayoutBoxModelObject() const {
 
 ScrollableArea* AXLayoutObject::GetScrollableAreaIfScrollable() const {
   if (IsWebArea())
-    return DocumentFrameView()->LayoutViewportScrollableArea();
+    return DocumentFrameView()->LayoutViewport();
 
   if (!layout_object_ || !layout_object_->IsBox())
     return nullptr;

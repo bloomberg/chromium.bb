@@ -79,6 +79,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
@@ -275,7 +276,7 @@ void FrameLoader::SaveScrollAnchor() {
 
   HistoryItem* history_item = document_loader_->GetHistoryItem();
   if (ScrollableArea* layout_scrollable_area =
-          frame_->View()->LayoutViewportScrollableArea()) {
+          frame_->View()->LayoutViewport()) {
     ScrollAnchor* scroll_anchor = layout_scrollable_area->GetScrollAnchor();
     DCHECK(scroll_anchor);
 
@@ -302,8 +303,7 @@ void FrameLoader::SaveScrollState() {
     return;
 
   HistoryItem* history_item = document_loader_->GetHistoryItem();
-  if (ScrollableArea* layout_scrollable_area =
-          frame_->View()->LayoutViewportScrollableArea())
+  if (ScrollableArea* layout_scrollable_area = frame_->View()->LayoutViewport())
     history_item->SetScrollOffset(layout_scrollable_area->GetScrollOffset());
   history_item->SetVisualViewportScrollOffset(ToScrollOffset(
       frame_->GetPage()->GetVisualViewport().VisibleRect().Location()));
@@ -1102,7 +1102,7 @@ void FrameLoader::RestoreScrollPositionAndViewState(
     HistoryItem::ViewState* view_state,
     HistoryScrollRestorationType scroll_restoration_type) {
   LocalFrameView* view = frame_->View();
-  if (!view || !view->LayoutViewportScrollableArea() ||
+  if (!view || !view->LayoutViewport() ||
       !state_machine_.CommittedFirstRealDocumentLoad() ||
       !frame_->IsAttached()) {
     return;
@@ -1124,8 +1124,8 @@ void FrameLoader::RestoreScrollPositionAndViewState(
   //    is complete, or if the navigation is same-document (as the new page may
   //    be smaller than the previous page).
   bool can_restore_without_clamping =
-      view->LayoutViewportScrollableArea()->ClampScrollOffset(
-          view_state->scroll_offset_) == view_state->scroll_offset_;
+      view->LayoutViewport()->ClampScrollOffset(view_state->scroll_offset_) ==
+      view_state->scroll_offset_;
 
   bool should_force_clamping = !frame_->IsLoading() || is_same_document;
   // Here |can_restore_without_clamping| is false, but layout might be necessary
@@ -1141,25 +1141,24 @@ void FrameLoader::RestoreScrollPositionAndViewState(
     return;
 
   if (should_restore_scroll) {
-    ScrollOffset previous_offset =
-        view->LayoutViewportScrollableArea()->GetScrollOffset();
+    ScrollOffset previous_offset = view->LayoutViewport()->GetScrollOffset();
 
     // TODO(pnoland): attempt to restore the anchor in more places than this.
     // Anchor-based restore should allow for earlier restoration.
     bool did_restore =
         ShouldSerializeScrollAnchor() &&
-        view->LayoutViewportScrollableArea()->RestoreScrollAnchor(
+        view->LayoutViewport()->RestoreScrollAnchor(
             {view_state->scroll_anchor_data_.selector_,
              LayoutPoint(view_state->scroll_anchor_data_.offset_.x,
                          view_state->scroll_anchor_data_.offset_.y),
              view_state->scroll_anchor_data_.simhash_});
     if (!did_restore) {
-      view->LayoutViewportScrollableArea()->SetScrollOffset(
-          view_state->scroll_offset_, kProgrammaticScroll);
+      view->LayoutViewport()->SetScrollOffset(view_state->scroll_offset_,
+                                              kProgrammaticScroll);
     }
 
-    did_restore |= (previous_offset !=
-                    view->LayoutViewportScrollableArea()->GetScrollOffset());
+    did_restore |=
+        (previous_offset != view->LayoutViewport()->GetScrollOffset());
 
     // Measure how many successful scroll restoration may impacted if we allow
     // using js scroll to prevent browser scroll restoration.
@@ -1180,9 +1179,8 @@ void FrameLoader::RestoreScrollPositionAndViewState(
     // the main frame and the visual viewport as best as we can.
     if (visual_viewport_offset.Width() == -1 &&
         visual_viewport_offset.Height() == -1) {
-      visual_viewport_offset =
-          view_state->scroll_offset_ -
-          view->LayoutViewportScrollableArea()->GetScrollOffset();
+      visual_viewport_offset = view_state->scroll_offset_ -
+                               view->LayoutViewport()->GetScrollOffset();
     }
 
     VisualViewport& visual_viewport = frame_->GetPage()->GetVisualViewport();

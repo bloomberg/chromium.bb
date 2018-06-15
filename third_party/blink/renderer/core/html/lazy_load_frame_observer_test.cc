@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -285,8 +286,8 @@ TEST_P(LazyLoadFramesTest, BelowTheFoldButNearViewportFrame) {
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
 
   // Scroll down until the child frame is visible.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 150), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 150),
+                                                          kProgrammaticScroll);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -377,7 +378,7 @@ TEST_P(LazyLoadFramesTest, HiddenAndTinyFrames) {
       "Blink.VisibleBeforeLoaded.LazyLoadEligibleFrames.BelowTheFold", 0);
 
   // Scroll down to where the hidden frames are.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight + GetLoadingDistanceThreshold()),
       kProgrammaticScroll);
 
@@ -395,7 +396,7 @@ TEST_P(LazyLoadFramesTest, LoadCrossOriginFrameFarFromViewport) {
   if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled()) {
     // If LazyFrameLoading is enabled, then scroll down near the child frame to
     // cause the child frame to start loading.
-    GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+    GetDocument().View()->LayoutViewport()->SetScrollOffset(
         ScrollOffset(0, 150), kProgrammaticScroll);
 
     Compositor().BeginFrame();
@@ -415,7 +416,7 @@ TEST_P(LazyLoadFramesTest, LoadCrossOriginFrameFarFromViewport) {
   ExpectVisibleLoadTimeHistogramSamplesIfApplicable(0, 0);
 
   // Scroll down so that the child frame is visible.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, GetLoadingDistanceThreshold() + 150),
       kProgrammaticScroll);
 
@@ -436,7 +437,7 @@ TEST_P(LazyLoadFramesTest,
       LoadPageWithCrossOriginFrameFarFromViewport();
 
   // Scroll down so that the child frame is visible.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, GetLoadingDistanceThreshold() + 150),
       kProgrammaticScroll);
 
@@ -479,7 +480,7 @@ TEST_P(LazyLoadFramesTest, NestedFrameInCrossOriginFrameFarFromViewport) {
   if (RuntimeEnabledFeatures::LazyFrameLoadingEnabled()) {
     // If LazyFrameLoading is enabled, then scroll down near the child frame to
     // cause the child frame to start loading.
-    GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+    GetDocument().View()->LayoutViewport()->SetScrollOffset(
         ScrollOffset(0, 150), kProgrammaticScroll);
 
     Compositor().BeginFrame();
