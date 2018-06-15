@@ -129,6 +129,7 @@ DBusClientsBrowser::~DBusClientsBrowser() = default;
 void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());
 
+  arc_appfuse_provider_client_->Init(system_bus);
   arc_midis_client_->Init(system_bus);
   arc_obb_mounter_client_->Init(system_bus);
   arc_oemcrypto_client_->Init(system_bus);

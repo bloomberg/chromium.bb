@@ -18,6 +18,8 @@ class AccessibilityHelperHost;
 class AccessibilityHelperInstance;
 class AppHost;
 class AppInstance;
+class AppfuseHost;
+class AppfuseInstance;
 class AudioHost;
 class AudioInstance;
 class AuthHost;
@@ -70,8 +72,8 @@ class RotationLockInstance;
 class ScreenCaptureHost;
 class ScreenCaptureInstance;
 class StorageManagerInstance;
-class TimerInstance;
 class TimerHost;
+class TimerInstance;
 class TracingInstance;
 class TtsHost;
 class TtsInstance;
@@ -105,6 +107,9 @@ class ArcBridgeService {
     return &accessibility_helper_;
   }
   ConnectionHolder<mojom::AppInstance, mojom::AppHost>* app() { return &app_; }
+  ConnectionHolder<mojom::AppfuseInstance, mojom::AppfuseHost>* appfuse() {
+    return &appfuse_;
+  }
   ConnectionHolder<mojom::AudioInstance, mojom::AudioHost>* audio() {
     return &audio_;
   }
@@ -240,6 +245,7 @@ class ArcBridgeService {
                    mojom::AccessibilityHelperHost>
       accessibility_helper_;
   ConnectionHolder<mojom::AppInstance, mojom::AppHost> app_;
+  ConnectionHolder<mojom::AppfuseInstance, mojom::AppfuseHost> appfuse_;
   ConnectionHolder<mojom::AudioInstance, mojom::AudioHost> audio_;
   ConnectionHolder<mojom::AuthInstance, mojom::AuthHost> auth_;
   ConnectionHolder<mojom::BackupSettingsInstance> backup_settings_;

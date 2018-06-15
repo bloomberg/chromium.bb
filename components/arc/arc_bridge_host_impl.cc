@@ -46,6 +46,11 @@ void ArcBridgeHostImpl::OnAppInstanceReady(mojom::AppInstancePtr app_ptr) {
   OnInstanceReady(arc_bridge_service_->app(), std::move(app_ptr));
 }
 
+void ArcBridgeHostImpl::OnAppfuseInstanceReady(
+    mojom::AppfuseInstancePtr appfuse_ptr) {
+  OnInstanceReady(arc_bridge_service_->appfuse(), std::move(appfuse_ptr));
+}
+
 void ArcBridgeHostImpl::OnAudioInstanceReady(
     mojom::AudioInstancePtr audio_ptr) {
   OnInstanceReady(arc_bridge_service_->audio(), std::move(audio_ptr));
