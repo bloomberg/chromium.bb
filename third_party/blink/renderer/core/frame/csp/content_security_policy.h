@@ -455,6 +455,12 @@ class CORE_EXPORT ContentSecurityPolicy
   // perform these checks in NavigationRequest::CheckContentSecurityPolicy.
   WebContentSecurityPolicyList ExposeForNavigationalChecks() const;
 
+  // Retrieves the parsed sandbox flags. A lot of the time the execution
+  // context will be used for all sandbox checks but there are situations
+  // (before installing the document that this CSP will bind to) when
+  // there is no execution context to enforce the sandbox flags.
+  SandboxFlags GetSandboxMask() const { return sandbox_mask_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceSinglePolicy);

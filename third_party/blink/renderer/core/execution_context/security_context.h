@@ -79,7 +79,12 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   virtual void DidUpdateSecurityOrigin() = 0;
 
   SandboxFlags GetSandboxFlags() const { return sandbox_flags_; }
-  bool IsSandboxed(SandboxFlags mask) const { return sandbox_flags_ & mask; }
+  bool IsSandboxed(SandboxFlags mask) const {
+    return IsSandboxed(mask, sandbox_flags_);
+  }
+  static bool IsSandboxed(SandboxFlags mask, SandboxFlags sandbox_flags) {
+    return sandbox_flags & mask;
+  }
   virtual void EnforceSandboxFlags(SandboxFlags mask);
 
   void SetAddressSpace(mojom::IPAddressSpace space) { address_space_ = space; }
