@@ -456,11 +456,17 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.remoteTabsViewController.styler = styler;
 
   UIView* contentView = self.scrollContentView;
-  UIViewController* viewController = self.remoteTabsViewController;
+  RecentTabsTableViewController* viewController = self.remoteTabsViewController;
   viewController.view.translatesAutoresizingMaskIntoConstraints = NO;
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
+  if (@available(iOS 11, *)) {
+    // Adjustments are made in |-viewWillLayoutSubviews|. Automatic adjustments
+    // do not work well with the scrollview.
+    viewController.tableView.contentInsetAdjustmentBehavior =
+        UIScrollViewContentInsetAdjustmentNever;
+  }
   NSArray* constraints = @[
     [viewController.view.topAnchor
         constraintEqualToAnchor:contentView.topAnchor],
