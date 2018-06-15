@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_navigation_loader.h"
 
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -471,6 +472,9 @@ CreateResponseInfoFromServiceWorker() {
   return head;
 }
 
+const char kHistogramMainResourceFetchEvent[] =
+    "ServiceWorker.FetchEvent.MainResource.Status";
+
 // ServiceWorkerNavigationLoaderTest is for testing the handling of requests
 // by a service worker via ServiceWorkerNavigationLoader.
 //
@@ -620,6 +624,8 @@ class ServiceWorkerNavigationLoaderTest
 };
 
 TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
+  base::HistogramTester histogram_tester;
+
   // Perform the request
   LoaderResult result = StartRequest(CreateRequest());
   EXPECT_EQ(LoaderResult::kHandledRequest, result);
@@ -629,9 +635,14 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
   const network::ResourceResponseHead& info = client_.response_head();
   EXPECT_EQ(200, info.headers->response_code());
   ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+
+  histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
+                                      SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
+  base::HistogramTester histogram_tester;
+
   // Clear |version_| to make GetServiceWorkerVersion() return null.
   version_ = nullptr;
 
@@ -641,6 +652,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, NoActiveWorker) {
 
   client_.RunUntilComplete();
   EXPECT_EQ(net::ERR_FAILED, client_.completion_status().error_code);
+
+  // No fetch event was dispatched.
+  histogram_tester.ExpectTotalCount(kHistogramMainResourceFetchEvent, 0);
 }
 
 // Test that the request body is passed to the fetch event.
@@ -850,6 +864,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
 // Test when the service worker responds with network fallback.
 // i.e., does not call respondWith().
 TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
+  base::HistogramTester histogram_tester;
   helper_->RespondWithFallback();
 
   // Perform the request.
@@ -859,10 +874,13 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
   // The request should not be handled by the loader, but it shouldn't be a
   // failure.
   EXPECT_FALSE(was_main_resource_load_failed_called_);
+  histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
+                                      SERVICE_WORKER_OK, 1);
 }
 
 // Test when the service worker rejects the FetchEvent.
 TEST_F(ServiceWorkerNavigationLoaderTest, ErrorResponse) {
+  base::HistogramTester histogram_tester;
   helper_->RespondWithError();
 
   // Perform the request.
@@ -871,16 +889,23 @@ TEST_F(ServiceWorkerNavigationLoaderTest, ErrorResponse) {
 
   client_.RunUntilComplete();
   EXPECT_EQ(net::ERR_FAILED, client_.completion_status().error_code);
+
+  // Event dispatch still succeeded.
+  histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
+                                      SERVICE_WORKER_OK, 1);
 }
 
 // Test when dispatching the fetch event to the service worker failed.
 TEST_F(ServiceWorkerNavigationLoaderTest, FailFetchDispatch) {
+  base::HistogramTester histogram_tester;
   helper_->FailToDispatchFetchEvent();
 
   // Perform the request.
   LoaderResult result = StartRequest(CreateRequest());
   EXPECT_EQ(LoaderResult::kDidNotHandleRequest, result);
   EXPECT_TRUE(was_main_resource_load_failed_called_);
+  histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
+                                      SERVICE_WORKER_ERROR_FAILED, 1);
 }
 
 // Test when the respondWith() promise resolves before the waitUntil() promise
@@ -908,6 +933,8 @@ TEST_F(ServiceWorkerNavigationLoaderTest, EarlyResponse) {
 // happens when there is no active service worker for the URL, or it must be
 // skipped, etc.
 TEST_F(ServiceWorkerNavigationLoaderTest, FallbackToNetwork) {
+  base::HistogramTester histogram_tester;
+
   network::ResourceRequest request;
   request.url = GURL("https://www.example.com/");
   request.method = "GET";
@@ -926,6 +953,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackToNetwork) {
   loader->FallbackToNetwork();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(handler);
+
+  // No fetch event was dispatched.
+  histogram_tester.ExpectTotalCount(kHistogramMainResourceFetchEvent, 0);
 }
 
 // Test responding to the fetch event with the navigation preload response.
@@ -956,6 +986,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, NavigationPreload) {
 
 // Test responding to the fetch event with a redirect response.
 TEST_F(ServiceWorkerNavigationLoaderTest, Redirect) {
+  base::HistogramTester histogram_tester;
   GURL new_url("https://example.com/redirected");
   helper_->RespondWithRedirectResponse(new_url);
 
@@ -972,6 +1003,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Redirect) {
   EXPECT_EQ(301, redirect_info.status_code);
   EXPECT_EQ("GET", redirect_info.new_method);
   EXPECT_EQ(new_url, redirect_info.new_url);
+
+  histogram_tester.ExpectUniqueSample(kHistogramMainResourceFetchEvent,
+                                      SERVICE_WORKER_OK, 1);
 }
 
 }  // namespace service_worker_navigation_loader_unittest

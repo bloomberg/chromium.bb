@@ -34,20 +34,4 @@ TypeConverter<blink::mojom::ServiceWorkerState,
   return blink::mojom::ServiceWorkerState::kUnknown;
 }
 
-content::ServiceWorkerStatusCode
-TypeConverter<content::ServiceWorkerStatusCode,
-              blink::mojom::ServiceWorkerEventStatus>::
-    Convert(blink::mojom::ServiceWorkerEventStatus status) {
-  switch (status) {
-    case blink::mojom::ServiceWorkerEventStatus::COMPLETED:
-      return content::SERVICE_WORKER_OK;
-    case blink::mojom::ServiceWorkerEventStatus::REJECTED:
-      return content::SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
-    case blink::mojom::ServiceWorkerEventStatus::ABORTED:
-      return content::SERVICE_WORKER_ERROR_ABORT;
-  }
-  NOTREACHED() << status;
-  return content::SERVICE_WORKER_ERROR_FAILED;
-}
-
 }  // namespace mojo
