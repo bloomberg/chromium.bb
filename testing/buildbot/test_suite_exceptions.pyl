@@ -2530,7 +2530,7 @@
       'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported
       # chromium.win
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
-      'Win10 Tests x64 (dbg)',  
+      'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
       # chromium.fyi
@@ -2589,6 +2589,9 @@
         },
       },
       'Linux Tests (dbg)(1)': {
+        'args': [
+          '--debug',
+        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -2653,6 +2656,11 @@
           ],
           'shards': 12,
         },
+      },
+      'Mac10.13 Tests (dbg)': {
+        'args': [
+          '--debug',
+        ],
       },
       # chromium.clang
       'ToTMac': {
