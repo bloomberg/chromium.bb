@@ -946,23 +946,24 @@ action("extract_cronet_native_jars") {
   ]
 }
 
+# List of patterns of .class files to exclude from the jar.
+jar_excluded_patterns = [
+  # Excludes Android support libraries crbug.com/832770.
+  "android/*",
+  "*/library_loader/*.class",
+  "*/multidex/*.class",
+  "*/process_launcher/*.class",
+  "*/SysUtils.class",
+  "*/CachedMetrics*.class",
+  "org/chromium/base/memory/MemoryPressureMonitor*.class",
+]
+
 action("repackage_extracted_native_jars") {
   _output_jar = "$_package_dir/cronet_impl_native_java.jar"
 
   script = "//build/android/gyp/jar.py"
   outputs = [
     _output_jar,
-  ]
-
-  jar_excluded_patterns = [
-    # Excludes Android support libraries crbug.com/832770.
-    "android/*",
-    "*/library_loader/*.class",
-    "*/multidex/*.class",
-    "*/process_launcher/*.class",
-    "*/SysUtils.class",
-    "*/CachedMetrics*.class",
-    "org/chromium/base/memory/MemoryPressureMonitor*.class",
   ]
 
   args = [
@@ -1120,6 +1121,10 @@ template("jar_src") {
       deps += invoker.deps
     }
 
+    _excluded_patterns = []
+    if (defined(invoker.excluded_patterns)) {
+      _excluded_patterns = invoker.excluded_patterns
+    }
     _src_jars = []
 
     # Add src-jar files that are listed in "src_jars".
@@ -1157,6 +1162,7 @@ template("jar_src") {
     args += [ "--src-jar=${_src_jars}" ]
     args += [ "--src-files=${_src_files}" ]
     args += [ "--src-list-files=${_src_list_files}" ]
+    args += [ "--excluded-classes=$_excluded_patterns" ]
 
     inputs = _src_jars
     inputs += _src_files
@@ -1220,6 +1226,7 @@ jar_src("jar_cronet_impl_native_java_source") {
                   "//net/android:net_android_java_enums_srcjar",
                   "//net/android:net_errors_java",
                 ]
+  excluded_patterns = jar_excluded_patterns
   jar_path = "$_package_dir/cronet_impl_native_java-src.jar"
 }
 

@@ -43,6 +43,8 @@ def UnzipSourceJar(jar, unzipped_jar_path):
 def main():
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
+  parser.add_option('--excluded-classes',
+      help='A list of .class file patterns to exclude from the jar.')
   parser.add_option('--src-search-dirs', action="append",
       help='A list of directories that should be searched'
            ' for the source files.')
@@ -94,6 +96,15 @@ def main():
     if prefix_position != -1:
       src_files[i] = s[prefix_position:]
 
+  excluded_classes = []
+  if options.excluded_classes:
+    classes = build_utils.ParseGnList(options.excluded_classes)
+    excluded_classes.extend(f.replace('.class', '.java') for f in classes)
+
+  predicate = None
+  if excluded_classes:
+    predicate = lambda f: not build_utils.MatchesGlob(f, excluded_classes)
+
   # Create a dictionary that maps every source directory
   # to source files that it contains.
   dir_to_files_map = {}
@@ -106,7 +117,8 @@ def main():
     for src_search_dir in src_search_dirs:
       if os.path.isfile(os.path.join(src_search_dir, src_file)):
         number_of_file_instances += 1
-        dir_to_files_map[src_search_dir].append(src_file)
+        if not predicate or predicate(src_file):
+          dir_to_files_map[src_search_dir].append(src_file)
     if (number_of_file_instances > 1):
       raise Exception(
           'There is more than one instance of file %s in %s'
