@@ -551,7 +551,15 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
 
 // Tests that an image link returns details for both the image and the link
 // destination when the image source is a file:// url.
-TEST_F(ContextMenuJsFindElementAtPointTest, FindLinkImageAtPointForFileUrl) {
+// TODO(crbug.com/796418): This test is flaky on devices.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_FindLinkImageAtPointForFileUrl FindLinkImageAtPointForFileUrl
+#else
+#define MAYBE_FindLinkImageAtPointForFileUrl \
+  FLAKY_FindLinkImageAtPointForFileUrl
+#endif
+TEST_F(ContextMenuJsFindElementAtPointTest,
+       MAYBE_FindLinkImageAtPointForFileUrl) {
   NSString* link_image =
       @"<a href='file:///linky'>"
        "<img id='foo' style='width:200;height:200;' src='file:///bogus'/>"
