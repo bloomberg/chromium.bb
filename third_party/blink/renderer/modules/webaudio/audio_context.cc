@@ -313,7 +313,15 @@ void AudioContext::NotifySourceNodeStart() {
 }
 
 AutoplayPolicy::Type AudioContext::GetAutoplayPolicy() const {
-  if (RuntimeEnabledFeatures::AutoplayIgnoresWebAudioEnabled()) {
+  Document* document = GetDocument();
+  DCHECK(document);
+
+  auto autoplay_policy =
+      AutoplayPolicy::GetAutoplayPolicyForDocument(*document);
+
+  if (autoplay_policy ==
+          AutoplayPolicy::Type::kDocumentUserActivationRequired &&
+      RuntimeEnabledFeatures::AutoplayIgnoresWebAudioEnabled()) {
 // When ignored, the policy is different on Android compared to Desktop.
 #if defined(OS_ANDROID)
     return AutoplayPolicy::Type::kUserGestureRequired;
@@ -323,9 +331,7 @@ AutoplayPolicy::Type AudioContext::GetAutoplayPolicy() const {
 #endif
   }
 
-  Document* document = GetDocument();
-  DCHECK(document);
-  return AutoplayPolicy::GetAutoplayPolicyForDocument(*document);
+  return autoplay_policy;
 }
 
 bool AudioContext::AreAutoplayRequirementsFulfilled() const {
