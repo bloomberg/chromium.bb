@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
 
 namespace blink {
 MouseWheelEventManager::MouseWheelEventManager(LocalFrame& frame)
@@ -104,8 +105,30 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
         WheelEvent::Create(event, wheel_target_->GetDocument().domWindow());
     DispatchEventResult dom_event_result =
         wheel_target_->DispatchEvent(dom_event);
-    if (dom_event_result != DispatchEventResult::kNotCanceled)
-      return EventHandlingUtil::ToWebInputEventResult(dom_event_result);
+    if (dom_event_result != DispatchEventResult::kNotCanceled) {
+      bool should_enforce_vertical_scroll =
+          dom_event_result == DispatchEventResult::kCanceledByEventHandler &&
+          RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+          !wheel_target_->GetDocument().GetFrame()->IsFeatureEnabled(
+              mojom::FeaturePolicyFeature::kVerticalScroll);
+      // TODO(ekaramad): This does not seem correct. The behavior of shift +
+      // scrolling seems different on Mac vs Linux/Windows. We need this done
+      // properly and perhaps even tag WebMouseWheelEvent with a scrolling
+      // direction (https://crbug.com/853292).
+      // When using shift + mouse scroll (to horizontally scroll), the expected
+      // value of |delta_x| is exactly zero.
+      bool is_vertical =
+          (std::abs(dom_event->deltaX()) < std::abs(dom_event->deltaY())) &&
+          (!dom_event->shiftKey() || dom_event->deltaX() != 0);
+      // TODO(ekaramad): If the only wheel handlers on the page are from such
+      // disabled frames we should simply start scrolling on CC and the events
+      // must get here as passive (https://crbug.com/853059).
+      // Overwriting the dispatch results ensures that vertical scroll cannot be
+      // blocked by disabled frames.
+      return (should_enforce_vertical_scroll && is_vertical)
+                 ? WebInputEventResult::kNotHandled
+                 : EventHandlingUtil::ToWebInputEventResult(dom_event_result);
+    }
   }
 
   return WebInputEventResult::kNotHandled;
