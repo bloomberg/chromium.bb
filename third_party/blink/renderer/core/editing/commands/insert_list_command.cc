@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/editing/commands/insert_list_command.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -42,6 +41,7 @@
 #include "third_party/blink/renderer/core/html/html_li_element.h"
 #include "third_party/blink/renderer/core/html/html_ulist_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

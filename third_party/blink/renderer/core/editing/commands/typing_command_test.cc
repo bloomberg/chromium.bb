@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/editing/commands/typing_command.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/position.h"
@@ -15,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 #include <memory>
 

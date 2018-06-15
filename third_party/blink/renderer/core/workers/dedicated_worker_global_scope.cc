@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
 
 #include <memory>
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -45,6 +44,7 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {

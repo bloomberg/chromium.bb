@@ -7,7 +7,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/remoteplayback/web_remote_playback_state.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_remote_playback_availability_callback.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/remoteplayback/html_media_element_remote_playback.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 

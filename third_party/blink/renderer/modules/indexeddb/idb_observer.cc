@@ -6,7 +6,6 @@
 
 #include <bitset>
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/modules/v8/to_v8_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_observer_callback.h"
@@ -15,6 +14,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_observer_changes.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_observer_init.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

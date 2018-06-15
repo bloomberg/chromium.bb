@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_extendable_message_event.h"
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_extendable_message_event_init.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {

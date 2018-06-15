@@ -29,7 +29,6 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_editing_command_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -64,6 +63,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/kill_ring.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar.h"

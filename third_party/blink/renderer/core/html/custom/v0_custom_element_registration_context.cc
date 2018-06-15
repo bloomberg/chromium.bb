@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/svg/svg_unknown_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

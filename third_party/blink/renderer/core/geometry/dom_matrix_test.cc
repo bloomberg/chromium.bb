@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

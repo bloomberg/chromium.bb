@@ -6,9 +6,9 @@
 
 #include "third_party/blink/public/platform/modules/push_messaging/web_push_subscription_options.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/push_messaging/push_subscription_options_init.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"

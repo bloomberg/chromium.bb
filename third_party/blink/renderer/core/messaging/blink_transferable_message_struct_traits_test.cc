@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/message_port/message_port_channel.h"
 #include "third_party/blink/public/mojom/message_port/message_port.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_deserializer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
@@ -19,6 +18,7 @@
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {

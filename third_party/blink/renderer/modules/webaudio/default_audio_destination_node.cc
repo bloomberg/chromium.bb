@@ -25,11 +25,11 @@
 
 #include "third_party/blink/renderer/modules/webaudio/default_audio_destination_node.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

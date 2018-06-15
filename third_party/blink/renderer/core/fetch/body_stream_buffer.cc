@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "base/auto_reset.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body.h"
 #include "third_party/blink/renderer/core/fetch/readable_stream_bytes_consumer.h"
@@ -14,6 +13,7 @@
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"

@@ -27,13 +27,13 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_storage_area.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/storage/dom_window_storage.h"
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
 #include "third_party/blink/renderer/modules/storage/storage_event.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace_controller.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {

@@ -26,10 +26,10 @@
 
 #include "third_party/blink/renderer/core/clipboard/data_transfer_item_list.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_item.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

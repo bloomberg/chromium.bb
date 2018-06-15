@@ -31,9 +31,9 @@
 #include "third_party/blink/public/web/web_serialized_script_value.h"
 
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

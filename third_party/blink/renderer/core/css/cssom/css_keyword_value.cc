@@ -4,13 +4,13 @@
 
 #include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_inherited_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {

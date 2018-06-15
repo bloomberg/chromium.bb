@@ -23,7 +23,6 @@
 
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
@@ -35,6 +34,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/script/script_runner.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

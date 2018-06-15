@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -25,6 +24,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_connection_callbacks.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_controller.h"
 #include "third_party/blink/renderer/modules/presentation/presentation_error.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

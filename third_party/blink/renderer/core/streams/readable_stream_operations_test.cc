@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/streams/readable_stream_operations.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -15,6 +14,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_wrapper.h"
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"

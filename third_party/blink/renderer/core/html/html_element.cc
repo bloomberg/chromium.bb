@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/html/html_element.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
@@ -64,6 +63,7 @@
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/xml_names.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/text/bidi_resolver.h"
 #include "third_party/blink/renderer/platform/text/bidi_text_run.h"

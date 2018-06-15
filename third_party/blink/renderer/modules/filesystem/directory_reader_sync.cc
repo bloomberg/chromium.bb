@@ -30,12 +30,12 @@
 
 #include "third_party/blink/renderer/modules/filesystem/directory_reader_sync.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/directory_entry_sync.h"
 #include "third_party/blink/renderer/modules/filesystem/entry_sync.h"
 #include "third_party/blink/renderer/modules/filesystem/file_entry_sync.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

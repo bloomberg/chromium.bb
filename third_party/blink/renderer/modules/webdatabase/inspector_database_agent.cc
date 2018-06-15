@@ -28,7 +28,6 @@
 
 #include "third_party/blink/renderer/modules/webdatabase/inspector_database_agent.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/sql_result_set_row_list.h"
 #include "third_party/blink/renderer/modules/webdatabase/sql_transaction.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_value.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 

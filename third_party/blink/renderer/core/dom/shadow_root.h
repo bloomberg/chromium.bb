@@ -27,13 +27,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SHADOW_ROOT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SHADOW_ROOT_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 

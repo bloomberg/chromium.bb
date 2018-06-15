@@ -24,7 +24,6 @@
 
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/dom/raw_data_document_parser.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
@@ -40,6 +39,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_object.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

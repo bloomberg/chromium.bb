@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_framebuffer.h"
@@ -15,6 +14,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_viewport.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/double_size.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"

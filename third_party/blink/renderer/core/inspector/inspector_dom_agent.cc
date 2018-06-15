@@ -33,7 +33,6 @@
 #include <memory>
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
@@ -80,6 +79,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/xml/document_xpath_evaluator.h"
 #include "third_party/blink/renderer/core/xml/xpath_result.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"

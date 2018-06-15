@@ -35,7 +35,6 @@
 
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
@@ -48,6 +47,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_track_constraints.h"
 #include "third_party/blink/renderer/modules/mediastream/overconstrained_error.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_controller.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_center.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 

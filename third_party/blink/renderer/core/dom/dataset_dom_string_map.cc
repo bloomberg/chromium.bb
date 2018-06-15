@@ -25,9 +25,9 @@
 
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 

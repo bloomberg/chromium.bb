@@ -20,10 +20,10 @@
 #include "third_party/blink/renderer/core/css/media_list.h"
 
 #include <memory>
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/media_query_exp.h"
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {

@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/animation/timing_input.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_animation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
 #include "third_party/blink/renderer/core/animation/animation_effect.h"
@@ -12,6 +11,7 @@
 #include "third_party/blink/renderer/core/animation/effect_timing.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_options.h"
 #include "third_party/blink/renderer/core/animation/optional_effect_timing.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 namespace {

@@ -13,7 +13,6 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -28,6 +27,7 @@
 #include "third_party/blink/renderer/modules/payments/payment_instrument.h"
 #include "third_party/blink/renderer/modules/payments/payment_manager.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {

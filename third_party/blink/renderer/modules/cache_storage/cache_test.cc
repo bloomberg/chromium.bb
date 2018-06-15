@@ -16,7 +16,6 @@
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/web_url_response.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
@@ -36,6 +35,7 @@
 #include "third_party/blink/renderer/core/fetch/response_init.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 using blink::mojom::CacheStorageError;

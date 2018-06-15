@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/modules/webmidi/midi_output.h"
 
 #include "media/midi/midi_service.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -41,6 +40,7 @@
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_access.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 using midi::mojom::PortState;
 

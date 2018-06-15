@@ -25,7 +25,6 @@
 
 #include <algorithm>
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_source_options.h"
@@ -33,6 +32,7 @@
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {

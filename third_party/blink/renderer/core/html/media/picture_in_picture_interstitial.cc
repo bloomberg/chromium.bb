@@ -6,10 +6,10 @@
 
 #include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {

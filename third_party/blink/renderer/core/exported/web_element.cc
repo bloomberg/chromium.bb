@@ -31,7 +31,6 @@
 #include "third_party/blink/public/web/web_element.h"
 
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
@@ -40,6 +39,7 @@
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"

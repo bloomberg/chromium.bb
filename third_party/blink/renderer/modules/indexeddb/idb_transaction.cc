@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_transaction.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue_impl.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -37,6 +36,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_open_db_request.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_request_queue_item.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 

@@ -34,7 +34,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_binding_for_modules.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -45,6 +44,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 

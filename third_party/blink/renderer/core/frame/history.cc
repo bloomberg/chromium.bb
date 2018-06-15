@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/frame/history.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
@@ -38,6 +37,7 @@
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"

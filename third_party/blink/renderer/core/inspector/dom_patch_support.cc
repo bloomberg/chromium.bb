@@ -33,7 +33,6 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/context_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -49,6 +48,7 @@
 #include "third_party/blink/renderer/core/inspector/dom_editor.h"
 #include "third_party/blink/renderer/core/inspector/inspector_history.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/crypto.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"

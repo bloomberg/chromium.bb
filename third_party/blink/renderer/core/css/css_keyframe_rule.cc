@@ -25,10 +25,10 @@
 
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/keyframe_style_rule_css_style_declaration.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

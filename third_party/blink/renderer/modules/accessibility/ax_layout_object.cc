@@ -28,7 +28,6 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/accessible_node.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -97,6 +96,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_table_column.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"

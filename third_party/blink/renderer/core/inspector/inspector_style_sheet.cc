@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_style_sheet.h"
 
 #include <algorithm>
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
@@ -54,6 +53,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_container.h"
 #include "third_party/blink/renderer/core/svg/svg_style_element.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"

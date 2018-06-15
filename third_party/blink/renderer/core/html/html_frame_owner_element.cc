@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -40,6 +39,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"

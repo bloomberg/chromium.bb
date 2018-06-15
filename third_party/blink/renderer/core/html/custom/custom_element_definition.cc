@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -18,6 +17,7 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element_upgrade_reaction.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_element_factory.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

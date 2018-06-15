@@ -25,12 +25,12 @@
 
 #include "third_party/blink/renderer/modules/speech/speech_recognition.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_controller.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_error.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_event.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

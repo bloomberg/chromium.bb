@@ -11,7 +11,6 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -24,6 +23,7 @@
 #include "third_party/blink/renderer/modules/crypto/crypto_result_impl.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 using testing::ElementsAre;

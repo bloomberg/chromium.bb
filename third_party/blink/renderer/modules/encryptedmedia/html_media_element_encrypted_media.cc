@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/html_media_element_encrypted_media.h"
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
@@ -17,6 +16,7 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_encrypted_event.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_keys.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/content_decryption_module_result.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"

@@ -31,7 +31,6 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_element_or_long.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_option_element_or_html_opt_group_element.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
@@ -71,6 +70,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 

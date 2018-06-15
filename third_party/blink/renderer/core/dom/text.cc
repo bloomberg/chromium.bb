@@ -22,7 +22,6 @@
 
 #include "third_party/blink/renderer/core/dom/text.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
@@ -40,6 +39,7 @@
 #include "third_party/blink/renderer/core/svg/svg_foreign_object_element.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 

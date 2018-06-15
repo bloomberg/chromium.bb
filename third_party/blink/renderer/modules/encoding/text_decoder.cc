@@ -30,10 +30,10 @@
 
 #include "third_party/blink/renderer/modules/encoding/text_decoder.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/encoding/encoding.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/string_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 

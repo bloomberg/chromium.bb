@@ -26,12 +26,12 @@
 
 #include "third_party/blink/renderer/core/xml/xpath_expression.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/xml/xpath_expression_node.h"
 #include "third_party/blink/renderer/core/xml/xpath_ns_resolver.h"
 #include "third_party/blink/renderer/core/xml/xpath_parser.h"
 #include "third_party/blink/renderer/core/xml/xpath_result.h"
 #include "third_party/blink/renderer/core/xml/xpath_util.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {

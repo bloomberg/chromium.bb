@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 
 #include <ostream>  // NOLINT
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -36,6 +35,7 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 

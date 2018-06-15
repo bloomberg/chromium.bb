@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -34,6 +33,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

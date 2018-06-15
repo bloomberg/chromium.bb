@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -46,6 +45,7 @@
 #include "third_party/blink/renderer/core/html/html_shadow_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/event_dispatch_forbidden_scope.h"
 
 namespace blink {

@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_event_target.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_message_port.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_window.h"
+#include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 
 namespace blink {

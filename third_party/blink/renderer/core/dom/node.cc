@@ -26,7 +26,6 @@
 
 #include "third_party/blink/renderer/core/dom/node.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/node_or_string.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
@@ -100,6 +99,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"

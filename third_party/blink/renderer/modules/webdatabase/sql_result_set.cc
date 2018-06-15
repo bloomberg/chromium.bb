@@ -28,7 +28,7 @@
 
 #include "third_party/blink/renderer/modules/webdatabase/sql_result_set.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {

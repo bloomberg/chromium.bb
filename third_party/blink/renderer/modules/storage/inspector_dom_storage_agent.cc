@@ -29,7 +29,6 @@
 
 #include "third_party/blink/renderer/modules/storage/inspector_dom_storage_agent.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -39,6 +38,7 @@
 #include "third_party/blink/renderer/modules/storage/storage_area.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace.h"
 #include "third_party/blink/renderer/modules/storage/storage_namespace_controller.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {

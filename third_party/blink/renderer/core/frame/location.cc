@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/core/frame/location.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/trustedtypes/trusted_url.h"
@@ -38,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/url/dom_url_utils_read_only.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"

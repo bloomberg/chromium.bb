@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/css/font_face.h"
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/core/css/binary_data_font_face_source.h"
 #include "third_party/blink/renderer/core/css/css_font_face.h"
@@ -61,6 +60,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/histogram.h"
