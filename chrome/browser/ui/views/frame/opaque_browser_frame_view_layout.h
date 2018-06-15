@@ -28,6 +28,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   static const int kContentEdgeShadowThickness;
 
   // Constants public for testing only.
+  static constexpr int kRefreshNonClientExtraTopThickness = 1;
   static const int kFrameBorderThickness;
   static const int kTitlebarTopEdgeThickness;
   static const int kIconLeftSpacing;

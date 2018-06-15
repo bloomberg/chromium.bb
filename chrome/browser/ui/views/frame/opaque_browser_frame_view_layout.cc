@@ -146,7 +146,6 @@ int OpaqueBrowserFrameViewLayout::FrameBorderThickness(bool restored) const {
 }
 
 int OpaqueBrowserFrameViewLayout::FrameTopBorderThickness(bool restored) const {
-  constexpr int kRefreshNonClientExtraTopThickness = 1;
   int thickness = FrameBorderThickness(restored);
   if (MD::IsRefreshUi() &&
       (restored || (!IsTitleBarCondensed() && !delegate_->IsFullscreen())))
