@@ -1889,7 +1889,8 @@ TEST_F(AccountReconcilorTest, NoLoopWithBadPrimary) {
                                       GoogleServiceAuthError::AuthErrorNone());
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
-  ASSERT_TRUE(reconcilor->error_during_last_reconcile_);
+  ASSERT_NE(GoogleServiceAuthError::State::NONE,
+            reconcilor->error_during_last_reconcile_.state());
   testing::Mock::VerifyAndClearExpectations(GetMockReconcilor());
 
   // Now that we've tried once, the token service knows that the primary
@@ -1936,7 +1937,8 @@ TEST_F(AccountReconcilorTest, WontMergeAccountsWithError) {
                                       GoogleServiceAuthError::AuthErrorNone());
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
-  ASSERT_FALSE(reconcilor->error_during_last_reconcile_);
+  ASSERT_EQ(GoogleServiceAuthError::State::NONE,
+            reconcilor->error_during_last_reconcile_.state());
 }
 
 // Test that delegate timeout is called when the delegate offers a valid
