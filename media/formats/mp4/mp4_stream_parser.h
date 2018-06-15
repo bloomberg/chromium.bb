@@ -39,7 +39,7 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
                   bool has_flac);
   ~MP4StreamParser() override;
 
-  void Init(const InitCB& init_cb,
+  void Init(InitCB init_cb,
             const NewConfigCB& config_cb,
             const NewBuffersCB& new_buffers_cb,
             bool ignore_text_tracks,

@@ -297,8 +297,9 @@ class FFmpegDemuxerTest : public testing::Test {
 
     CreateDataSource(name);
 
-    Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb = base::Bind(
-        &FFmpegDemuxerTest::OnEncryptedMediaInitData, base::Unretained(this));
+    Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
+        base::BindRepeating(&FFmpegDemuxerTest::OnEncryptedMediaInitData,
+                            base::Unretained(this));
 
     Demuxer::MediaTracksUpdatedCB tracks_updated_cb = base::Bind(
         &FFmpegDemuxerTest::OnMediaTracksUpdated, base::Unretained(this));

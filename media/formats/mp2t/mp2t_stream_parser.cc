@@ -204,7 +204,7 @@ Mp2tStreamParser::~Mp2tStreamParser() {
 }
 
 void Mp2tStreamParser::Init(
-    const InitCB& init_cb,
+    InitCB init_cb,
     const NewConfigCB& config_cb,
     const NewBuffersCB& new_buffers_cb,
     bool /* ignore_text_tracks */,
@@ -221,7 +221,7 @@ void Mp2tStreamParser::Init(
   DCHECK(!new_segment_cb.is_null());
   DCHECK(!end_of_segment_cb.is_null());
 
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
   config_cb_ = config_cb;
   new_buffers_cb_ = new_buffers_cb;
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
@@ -703,7 +703,7 @@ bool Mp2tStreamParser::FinishInitializationIfNeeded() {
       queue_with_config.audio_config.IsValidConfig() ? 1 : 0;
   params.detected_video_track_count =
       queue_with_config.video_config.IsValidConfig() ? 1 : 0;
-  base::ResetAndReturn(&init_cb_).Run(params);
+  std::move(init_cb_).Run(params);
   is_initialized_ = true;
 
   return true;

@@ -185,15 +185,20 @@ class MP4StreamParserTest : public testing::Test {
 
   void InitializeParserWithInitParametersExpectations(
       StreamParser::InitParameters params) {
-    parser_->Init(
-        base::Bind(&MP4StreamParserTest::InitF, base::Unretained(this), params),
-        base::Bind(&MP4StreamParserTest::NewConfigF, base::Unretained(this)),
-        base::Bind(&MP4StreamParserTest::NewBuffersF, base::Unretained(this)),
-        true,
-        base::Bind(&MP4StreamParserTest::KeyNeededF, base::Unretained(this)),
-        base::Bind(&MP4StreamParserTest::NewSegmentF, base::Unretained(this)),
-        base::Bind(&MP4StreamParserTest::EndOfSegmentF, base::Unretained(this)),
-        &media_log_);
+    parser_->Init(base::BindOnce(&MP4StreamParserTest::InitF,
+                                 base::Unretained(this), params),
+                  base::BindRepeating(&MP4StreamParserTest::NewConfigF,
+                                      base::Unretained(this)),
+                  base::BindRepeating(&MP4StreamParserTest::NewBuffersF,
+                                      base::Unretained(this)),
+                  true,
+                  base::BindRepeating(&MP4StreamParserTest::KeyNeededF,
+                                      base::Unretained(this)),
+                  base::BindRepeating(&MP4StreamParserTest::NewSegmentF,
+                                      base::Unretained(this)),
+                  base::BindRepeating(&MP4StreamParserTest::EndOfSegmentF,
+                                      base::Unretained(this)),
+                  &media_log_);
   }
 
   StreamParser::InitParameters GetDefaultInitParametersExpectations() {

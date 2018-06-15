@@ -78,13 +78,20 @@ class SourceBufferStateTest
   std::unique_ptr<SourceBufferState> CreateAndInitSourceBufferState(
       const std::string& expected_codecs) {
     std::unique_ptr<SourceBufferState> sbs = CreateSourceBufferState();
+    // Instead of using SaveArg<> to update |new_config_cb_| when mocked Init is
+    // called, we use a lambda because SaveArg<> doesn't work if any of the
+    // mocked method's arguments are move-only type.
     EXPECT_CALL(*mock_stream_parser_, Init(_, _, _, _, _, _, _, _))
-        .WillOnce(SaveArg<1>(&new_config_cb_));
-    sbs->Init(base::Bind(&SourceBufferStateTest::SourceInitDone,
-                         base::Unretained(this)),
+        .WillOnce([&](auto init_cb, auto config_cb, auto new_buffers_cb,
+                      auto ignore_text_track, auto encrypted_media_init_data_cb,
+                      auto new_segment_cb, auto end_of_segment_cb,
+                      auto media_log) { new_config_cb_ = config_cb; });
+    sbs->Init(base::BindOnce(&SourceBufferStateTest::SourceInitDone,
+                             base::Unretained(this)),
               expected_codecs,
-              base::Bind(&SourceBufferStateTest::StreamParserEncryptedInitData,
-                         base::Unretained(this)),
+              base::BindRepeating(
+                  &SourceBufferStateTest::StreamParserEncryptedInitData,
+                  base::Unretained(this)),
               base::Bind(&SourceBufferStateTest::StreamParserNewTextTrack,
                          base::Unretained(this)));
 

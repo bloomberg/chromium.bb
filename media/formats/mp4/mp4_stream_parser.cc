@@ -96,7 +96,7 @@ MP4StreamParser::MP4StreamParser(const std::set<int>& audio_object_types,
 MP4StreamParser::~MP4StreamParser() = default;
 
 void MP4StreamParser::Init(
-    const InitCB& init_cb,
+    InitCB init_cb,
     const NewConfigCB& config_cb,
     const NewBuffersCB& new_buffers_cb,
     bool /* ignore_text_tracks */,
@@ -114,7 +114,7 @@ void MP4StreamParser::Init(
   DCHECK(!end_of_segment_cb.is_null());
 
   ChangeState(kParsingBoxes);
-  init_cb_ = init_cb;
+  init_cb_ = std::move(init_cb);
   config_cb_ = config_cb;
   new_buffers_cb_ = new_buffers_cb;
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
@@ -632,7 +632,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
     params.detected_audio_track_count = detected_audio_track_count;
     params.detected_video_track_count = detected_video_track_count;
     params.detected_text_track_count = detected_text_track_count;
-    base::ResetAndReturn(&init_cb_).Run(params);
+    std::move(init_cb_).Run(params);
   }
 
   return true;

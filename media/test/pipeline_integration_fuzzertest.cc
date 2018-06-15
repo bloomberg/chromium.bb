@@ -141,7 +141,7 @@ class ProgressivePipelineIntegrationFuzzerTest
  public:
   ProgressivePipelineIntegrationFuzzerTest() {
     set_encrypted_media_init_data_cb(
-        base::Bind(&OnEncryptedMediaInitData, this));
+        base::BindRepeating(&OnEncryptedMediaInitData, this));
     set_audio_play_delay_cb(
         BindToCurrentLoop(base::BindRepeating(&OnAudioPlayDelay, this)));
   }
@@ -165,7 +165,7 @@ class MediaSourcePipelineIntegrationFuzzerTest
  public:
   MediaSourcePipelineIntegrationFuzzerTest() {
     set_encrypted_media_init_data_cb(
-        base::Bind(&OnEncryptedMediaInitData, this));
+        base::BindRepeating(&OnEncryptedMediaInitData, this));
     set_audio_play_delay_cb(
         BindToCurrentLoop(base::BindRepeating(&OnAudioPlayDelay, this)));
   }

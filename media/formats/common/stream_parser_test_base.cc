@@ -37,13 +37,18 @@ StreamParserTestBase::StreamParserTestBase(
     std::unique_ptr<StreamParser> stream_parser)
     : parser_(std::move(stream_parser)) {
   parser_->Init(
-      base::Bind(&StreamParserTestBase::OnInitDone, base::Unretained(this)),
-      base::Bind(&StreamParserTestBase::OnNewConfig, base::Unretained(this)),
-      base::Bind(&StreamParserTestBase::OnNewBuffers, base::Unretained(this)),
+      base::BindOnce(&StreamParserTestBase::OnInitDone, base::Unretained(this)),
+      base::BindRepeating(&StreamParserTestBase::OnNewConfig,
+                          base::Unretained(this)),
+      base::BindRepeating(&StreamParserTestBase::OnNewBuffers,
+                          base::Unretained(this)),
       true,
-      base::Bind(&StreamParserTestBase::OnKeyNeeded, base::Unretained(this)),
-      base::Bind(&StreamParserTestBase::OnNewSegment, base::Unretained(this)),
-      base::Bind(&StreamParserTestBase::OnEndOfSegment, base::Unretained(this)),
+      base::BindRepeating(&StreamParserTestBase::OnKeyNeeded,
+                          base::Unretained(this)),
+      base::BindRepeating(&StreamParserTestBase::OnNewSegment,
+                          base::Unretained(this)),
+      base::BindRepeating(&StreamParserTestBase::OnEndOfSegment,
+                          base::Unretained(this)),
       &media_log_);
 }
 
