@@ -20,6 +20,10 @@ class SoftwareFeatureManager {
   // |public_key|. If |enabled| and |is_exclusive| are both true, then all other
   // devices associated with this account will have |sofware_feature| disabled.
   // |is_exclusive| is ignored if |enabled| is false.
+  //
+  // Note: In the special case of passing |software_feature| =
+  // SoftwareFeature::EASY_UNLOCK_HOST and |enabled| = false, |public_key| is
+  // ignored.
   virtual void SetSoftwareFeatureState(
       const std::string& public_key,
       SoftwareFeature software_feature,

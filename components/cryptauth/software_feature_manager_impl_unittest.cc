@@ -375,6 +375,7 @@ TEST_F(CryptAuthSoftwareFeatureManagerImplTest, TestEasyUnlockSpecialCase) {
   EXPECT_EQ(false, last_toggle_request_.enable());
   // apply_to_all() should be false when disabling EasyUnlock host capabilities.
   EXPECT_EQ(true, last_toggle_request_.apply_to_all());
+  EXPECT_FALSE(last_toggle_request_.has_public_key());
   InvokeErrorCallback();
   EXPECT_EQ(kErrorSetSoftwareFeatureState, GetResultAndReset());
 }

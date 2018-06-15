@@ -49,6 +49,10 @@ class DeviceSyncClient {
   virtual cryptauth::RemoteDeviceRefList GetSyncedDevices() = 0;
   virtual base::Optional<cryptauth::RemoteDeviceRef>
   GetLocalDeviceMetadata() = 0;
+
+  // Note: In the special case of passing |software_feature| =
+  // SoftwareFeature::EASY_UNLOCK_HOST and |enabled| = false, |public_key| is
+  // ignored.
   virtual void SetSoftwareFeatureState(
       const std::string public_key,
       cryptauth::SoftwareFeature software_feature,
