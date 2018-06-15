@@ -534,17 +534,17 @@ class Port(object):
         Returns:
             A string, the output filename.
         """
-        test_name_root, test_name_ext = self._filesystem.splitext(test_name)
-
         # WPT names might contain query strings, e.g. external/wpt/foo.html?wss,
         # in which case we mangle test_name_root (the part of a path before the
         # last extension point) to external/wpt/foo_wss, and the output filename
         # becomes external/wpt/foo_wss-expected.txt.
-        index = test_name_ext.find('?')
+        index = test_name.find('?')
         if index != -1:
-            query_part = test_name_ext[index + 1:]
-            test_name_root += '_' + self._filesystem.sanitize_filename(query_part)
-
+            test_name_root, _ = self._filesystem.splitext(test_name[:index])
+            query_part = test_name[index:]
+            test_name_root += self._filesystem.sanitize_filename(query_part)
+        else:
+            test_name_root, _ = self._filesystem.splitext(test_name)
         return test_name_root + suffix + extension
 
     def expected_baselines(self, test_name, extension, all_baselines=False, match=True):
