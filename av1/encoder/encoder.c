@@ -4762,6 +4762,11 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   if (cm->large_scale_tile) cm->seq_params.frame_id_numbers_present_flag = 0;
 
   cm->allow_ref_frame_mvs &= frame_might_allow_ref_frame_mvs(cm);
+  // cm->allow_ref_frame_mvs needs to be written into the frame header while
+  // cm->large_scale_tile is 1, therefore, "cm->large_scale_tile=1" case is
+  // separated from frame_might_allow_ref_frame_mvs().
+  cm->allow_ref_frame_mvs &= !cm->large_scale_tile;
+
   cm->allow_warped_motion =
       cpi->oxcf.allow_warped_motion && frame_might_allow_warped_motion(cm);
 

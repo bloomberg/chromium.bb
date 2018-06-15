@@ -642,8 +642,7 @@ static INLINE RefCntBuffer *get_prev_frame(const AV1_COMMON *const cm) {
 
 // Returns 1 if this frame might allow mvs from some reference frame.
 static INLINE int frame_might_allow_ref_frame_mvs(const AV1_COMMON *cm) {
-  return !cm->error_resilient_mode && !cm->large_scale_tile &&
-         cm->seq_params.enable_ref_frame_mvs &&
+  return !cm->error_resilient_mode && cm->seq_params.enable_ref_frame_mvs &&
          cm->seq_params.enable_order_hint && !frame_is_intra_only(cm);
 }
 
