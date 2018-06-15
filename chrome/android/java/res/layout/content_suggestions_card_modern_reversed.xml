@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2017 The Chromium Authors. All rights reserved.
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
@@ -9,7 +9,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/SuggestionCardModern"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content" >
 
     <!-- This layout is nested inside another layout so that we can align the thumbnail corners
          relative to it. The corners are aligned with respect to the whole card, in case the card
@@ -19,49 +19,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <org.chromium.chrome.browser.widget.TintedImageView
-            android:id="@+id/article_thumbnail"
-            android:layout_width="@dimen/snippets_thumbnail_size"
-            android:layout_height="@dimen/snippets_thumbnail_size"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:scaleType="centerCrop"
-            android:contentDescription="@null"
-            android:src="@null"
-            app:chrometint="@color/dark_mode_tint"
-            tools:src="@drawable/ic_snippet_thumbnail_placeholder" />
-
-        <ImageView
-            android:id="@+id/video_badge"
-            android:layout_width="@dimen/content_suggestions_card_modern_badge_size"
-            android:layout_height="@dimen/content_suggestions_card_modern_badge_size"
-            android:layout_alignTop="@id/article_thumbnail"
-            android:layout_alignStart="@id/article_thumbnail"
-            android:layout_marginStart="@dimen/content_suggestions_card_modern_badge_margin_start"
-            android:layout_marginTop="@dimen/content_suggestions_card_modern_badge_margin_top"
-            android:contentDescription="@string/accessibility_suggestion_with_video_badge"
-            android:visibility="gone"
-            app:srcCompat="@drawable/ic_play_circle_filled"
-            tools:src="@drawable/ic_play_circle_filled"/>
-
-        <ImageView
-            android:id="@+id/offline_icon"
-            android:layout_width="@dimen/content_suggestions_card_modern_badge_size"
-            android:layout_height="@dimen/content_suggestions_card_modern_badge_size"
-            android:layout_alignTop="@id/article_thumbnail"
-            android:layout_alignStart="@id/article_thumbnail"
-            android:layout_marginStart="@dimen/content_suggestions_card_modern_badge_margin_start"
-            android:layout_marginTop="@dimen/content_suggestions_card_modern_badge_margin_top"
-            android:contentDescription="@string/accessibility_ntp_offline_badge"
-            android:visibility="gone"
-            app:srcCompat="@drawable/ic_offline_pin_white"
-            tools:src="@drawable/ic_offline_pin_white"/>
-
         <LinearLayout
             android:id="@+id/text_layout"
-            android:layout_alignParentEnd="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_toEndOf="@+id/article_thumbnail"
+            android:layout_toStartOf="@+id/article_thumbnail"
             android:layout_alignWithParentIfMissing="true"
             android:layout_height="wrap_content"
             android:layout_width="wrap_content"
@@ -114,8 +76,42 @@
                     android:textColor="@color/snippets_publisher_name_color"
                     android:textDirection="locale"
                     tools:text=" - 3 hours ago" />
+
+                <!-- We can't add this ImageView as a CompoundDrawable to the TextView because we
+                     want to have different paddings between the favicon (which is a compound
+                     drawable on the TextView) and the offline icon. -->
+                <ImageView
+                    android:id="@+id/offline_icon"
+                    android:layout_width="@dimen/snippets_offline_icon_size"
+                    android:layout_height="@dimen/snippets_offline_icon_size"
+                    android:layout_marginStart="6dp"
+                    android:src="@drawable/offline_pin_round"
+                    android:contentDescription="@string/accessibility_ntp_offline_badge"
+                    android:visibility="gone"
+                    tools:tint="@color/black_alpha_54" />
+
+                <ImageView
+                    android:id="@+id/video_badge"
+                    android:layout_width="@dimen/snippets_offline_icon_size"
+                    android:layout_height="@dimen/snippets_offline_icon_size"
+                    android:layout_marginStart="6dp"
+                    android:contentDescription="@string/accessibility_suggestion_with_video_badge"
+                    android:visibility="gone"
+                    app:srcCompat="@drawable/ic_play_circle_filled_grey"
+                    tools:src="@drawable/ic_play_circle_filled_grey" />
             </LinearLayout>
         </LinearLayout>
+
+        <org.chromium.chrome.browser.widget.TintedImageView
+            android:id="@+id/article_thumbnail"
+            android:layout_width="@dimen/snippets_thumbnail_size"
+            android:layout_height="@dimen/snippets_thumbnail_size"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:scaleType="centerCrop"
+            android:contentDescription="@null"
+            android:src="@null"
+            tools:src="@drawable/ic_snippet_thumbnail_placeholder" />
     </RelativeLayout>
 
     <!-- It would have been nice to use RoundedBitmapDrawable on the thumbnail, but with that you
@@ -125,9 +121,9 @@
         android:layout_width="@dimen/content_suggestions_card_modern_corner_radius"
         android:layout_height="@dimen/content_suggestions_card_modern_corner_radius"
         android:layout_alignTop="@id/card_contents"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:contentDescription="@null"
-        android:scaleX="@integer/automirror_scale_x"
+        android:scaleX="@integer/automirror_scale_x_reverse"
         app:srcCompat="@drawable/content_suggestions_card_corner_top" />
 
     <ImageView
@@ -135,9 +131,9 @@
         android:layout_width="@dimen/content_suggestions_card_modern_corner_radius"
         android:layout_height="@dimen/content_suggestions_card_modern_corner_radius"
         android:layout_alignBottom="@id/card_contents"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:contentDescription="@null"
-        android:scaleX="@integer/automirror_scale_x"
+        android:scaleX="@integer/automirror_scale_x_reverse"
         app:srcCompat="@drawable/content_suggestions_card_corner_bottom" />
 
 </RelativeLayout>

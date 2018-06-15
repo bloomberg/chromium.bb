@@ -14,7 +14,6 @@ import android.graphics.drawable.TransitionDrawable;
 import android.media.ThumbnailUtils;
 import android.os.StrictMode;
 import android.os.SystemClock;
-import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
 import android.support.v4.text.BidiFormatter;
 import android.text.TextUtils;
@@ -450,13 +449,6 @@ public class SuggestionsBinder {
     }
 
     private static int getThumbnailSize(Resources resources) {
-        @DimenRes
-        final int dimension;
-        if (SuggestionsConfig.useModernLayout()) {
-            dimension = R.dimen.snippets_thumbnail_size_modern;
-        } else {
-            dimension = R.dimen.snippets_thumbnail_size;
-        }
-        return resources.getDimensionPixelSize(dimension);
+        return resources.getDimensionPixelSize(R.dimen.snippets_thumbnail_size);
     }
 }

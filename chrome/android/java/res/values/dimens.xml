@@ -355,7 +355,6 @@
     <dimen name="ntp_sign_in_promo_margin_top">20dp</dimen>
     <dimen name="ntp_progress_indicator_diameter">56dp</dimen>
     <dimen name="snippets_thumbnail_size">124dp</dimen>
-    <dimen name="snippets_thumbnail_size_modern">114dp</dimen>
     <dimen name="snippets_thumbnail_size_small">72dp</dimen>
     <dimen name="snippets_thumbnail_small_corner_radius">8dp</dimen>
     <!-- The default padding for the peeking card and the amount the card peeks by in the current
@@ -371,8 +370,8 @@
     <dimen name="ntp_suggestions_footer_padding_bottom">18dp</dimen>
     <dimen name="modern_suggestions_footer_padding_top">24dp</dimen>
     <dimen name="modern_suggestions_footer_padding_bottom">24dp</dimen>
-    <dimen name="content_suggestions_card_modern_margin">16dp</dimen>
-    <dimen name="content_suggestions_card_modern_corner_radius">10dp</dimen>
+    <dimen name="content_suggestions_card_modern_margin">12dp</dimen>
+    <dimen name="content_suggestions_card_modern_corner_radius">8dp</dimen>
     <dimen name="content_suggestions_card_modern_badge_size">18dp</dimen>
     <dimen name="content_suggestions_card_modern_badge_margin_start">8dp</dimen>
     <dimen name="content_suggestions_card_modern_badge_margin_top">8dp</dimen>

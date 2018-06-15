@@ -165,6 +165,8 @@ public abstract class ChromeFeatureList {
     // TODO(mdjones): Remove CHROME_HOME_SWIPE_VELOCITY_FEATURE or rename.
     public static final String CHROME_HOME_SWIPE_VELOCITY_FEATURE = "ChromeHomeSwipeLogicVelocity";
     public static final String CHROME_MEMEX = "ChromeMemex";
+    public static final String CHROME_MODERN_ALTERNATE_CARD_LAYOUT =
+            "ChromeModernAlternateCardLayout";
     public static final String CHROME_MODERN_DESIGN = "ChromeModernDesign";
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";

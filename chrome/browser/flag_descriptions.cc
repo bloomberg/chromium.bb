@@ -2009,6 +2009,11 @@ const char kChromeHomeSwipeLogicDescription[] =
 const char kChromeHomeSwipeLogicRestrictArea[] = "Restrict swipable area";
 const char kChromeHomeSwipeLogicVelocity[] = "Velocity suppression model";
 
+const char kChromeModernAlternateCardLayoutName[] =
+    "Chrome Modern Alternate Card Layout";
+const char kChromeModernAlternateCardLayoutDescription[] =
+    "Enable the alternate card layout for Chrome Modern Design.";
+
 const char kChromeModernDesignName[] = "Chrome Modern Design";
 const char kChromeModernDesignDescription[] =
     "Enable modern design for Chrome. Chrome must be restarted twice for this "
