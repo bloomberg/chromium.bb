@@ -22,7 +22,7 @@ import org.chromium.android_webview.AwWebResourceResponse;
  */
 
 @TargetApi(Build.VERSION_CODES.M)
-public class ApiHelperForM {
+public final class ApiHelperForM {
     private ApiHelperForM() {}
 
     /**

@@ -19,7 +19,7 @@ import org.chromium.base.Callback;
  * encountering the new APIs.
  */
 @TargetApi(Build.VERSION_CODES.O_MR1)
-public class ApiHelperForOMR1 {
+public final class ApiHelperForOMR1 {
     private ApiHelperForOMR1() {}
 
     /**

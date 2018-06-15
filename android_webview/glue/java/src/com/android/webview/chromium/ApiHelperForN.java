@@ -20,7 +20,7 @@ import org.chromium.android_webview.AwContentsClient;
  * encountering the new APIs.
  */
 @TargetApi(Build.VERSION_CODES.N)
-public class ApiHelperForN {
+public final class ApiHelperForN {
     private ApiHelperForN() {}
 
     /**
