@@ -39,5 +39,6 @@ suite('SettingsTextarea', function() {
     settingsTextarea.label = 'foobar';
     assertFalse(label.hidden);
     assertEquals('foobar', label.textContent);
+    assertEquals('foobar', textarea.getAttribute('aria-label'));
   });
 });

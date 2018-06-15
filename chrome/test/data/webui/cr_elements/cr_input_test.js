@@ -29,7 +29,6 @@ suite('cr-input', function() {
     ];
 
     attributesToTest.forEach(attr => {
-      console.log(attr[0]);
       assertEquals(attr[2], input[attr[1]]);
       crInput.setAttribute(attr[0], attr[3]);
       assertEquals(attr[3], input[attr[1]]);
@@ -147,5 +146,31 @@ suite('cr-input', function() {
     crInput.value = '';
     assertFalse(crInput.invalid);
     assertFalse(input.checkValidity());
+  });
+
+  test('ariaLabelsCorrect', function() {
+    assertFalse(!!crInput.inputElement.getAttribute('aria-label'));
+
+    /**
+     * This function assumes attributes are passed in priority order.
+     * @param {!Array<string>} attributes
+     */
+    function testAriaLabel(attributes) {
+      PolymerTest.clearBody();
+      crInput = document.createElement('cr-input');
+      attributes.forEach(attribute => {
+        // Using their name as the value out of convenience.
+        crInput.setAttribute(attribute, attribute);
+      });
+      document.body.appendChild(crInput);
+      Polymer.dom.flush();
+      // Assuming first attribute takes priority.
+      assertEquals(
+          attributes[0], crInput.inputElement.getAttribute('aria-label'));
+    }
+
+    testAriaLabel(['aria-label', 'label', 'placeholder']);
+    testAriaLabel(['label', 'placeholder']);
+    testAriaLabel(['placeholder']);
   });
 });
