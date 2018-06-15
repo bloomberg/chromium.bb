@@ -3997,6 +3997,9 @@
     <message name="IDS_SETTINGS_STORAGE_ITEM_ANDROID" desc="In Device Settings > Storage, label for the total size of Android apps and cache.">
       Android storage
     </message>
+    <message name="IDS_SETTINGS_STORAGE_ITEM_CROSTINI" desc="In Device Settings > Storage, label for the total size of Crostini VMs, apps and cache.">
+      Linux (Beta) storage
+    </message>
     <message name="IDS_SETTINGS_STORAGE_ITEM_OTHER_USERS" desc="In Device Settings > Storage, label for the total size of other users' data directories.">
       Other users
     </message>

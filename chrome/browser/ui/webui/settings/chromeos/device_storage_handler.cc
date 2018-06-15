@@ -24,6 +24,8 @@
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/platform_util.h"
@@ -73,6 +75,7 @@ StorageHandler::StorageHandler()
       updating_drive_cache_size_(false),
       updating_browsing_data_size_(false),
       updating_android_size_(false),
+      updating_crostini_size_(false),
       updating_other_users_size_(false),
       weak_ptr_factory_(this) {}
 
@@ -108,6 +111,7 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   UpdateBrowsingDataSize();
   UpdateOtherUsersSize();
   UpdateAndroidSize();
+  UpdateCrostiniSize();
 }
 
 void StorageHandler::HandleOpenDownloads(
@@ -205,7 +209,7 @@ void StorageHandler::UpdateDriveCacheSize() {
   if (!file_system)
     return;
 
-  // Shows the item "Offline cache" and start calculating size.
+  // Shows the item "Offline cache" and starts calculating size.
   FireWebUIListener("storage-drive-enabled-changed", base::Value(true));
   updating_drive_cache_size_ = true;
   file_system->CalculateCacheSize(base::Bind(
@@ -288,6 +292,29 @@ void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {
   }
 }
 
+void StorageHandler::UpdateCrostiniSize() {
+  Profile* const profile = Profile::FromWebUI(web_ui());
+  if (!IsCrostiniEnabled(profile)) {
+    return;
+  }
+
+  if (updating_crostini_size_)
+    return;
+  updating_crostini_size_ = true;
+
+  crostini::CrostiniManager::GetInstance()->ListVmDisks(
+      CryptohomeIdForProfile(profile),
+      base::BindOnce(&StorageHandler::OnGetCrostiniSize,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void StorageHandler::OnGetCrostiniSize(crostini::ConciergeClientResult result,
+                                       int64_t size) {
+  updating_crostini_size_ = false;
+  FireWebUIListener("storage-crostini-size-changed",
+                    base::Value(ui::FormatBytes(size)));
+}
+
 void StorageHandler::UpdateOtherUsersSize() {
   if (updating_other_users_size_)
     return;
@@ -344,8 +371,9 @@ void StorageHandler::UpdateAndroidSize() {
     return;
   }
 
-  // Shows the item "Android apps and cache" and start calculating size.
+  // Shows the item "Android apps and cache" and starts calculating size.
   FireWebUIListener("storage-android-enabled-changed", base::Value(true));
+
   bool success = false;
   auto* arc_storage_manager =
       arc::ArcStorageManager::GetForBrowserContext(profile);
@@ -361,8 +389,7 @@ void StorageHandler::OnGetAndroidSize(bool succeeded,
                                       arc::mojom::ApplicationsSizePtr size) {
   base::string16 size_string;
   if (succeeded) {
-    uint64_t total_bytes = size->total_code_bytes +
-                           size->total_data_bytes +
+    uint64_t total_bytes = size->total_code_bytes + size->total_data_bytes +
                            size->total_cache_bytes;
     size_string = ui::FormatBytes(total_bytes);
   } else {

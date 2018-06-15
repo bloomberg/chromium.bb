@@ -249,6 +249,20 @@
         </paper-icon-button-light>
       </div>
     </template>
+    <template is="dom-if" if="[[showCrostiniStorage_]]">
+      <div class="settings-box two-line" on-click="onCrostiniTap_" actionable>
+        <div class="start">
+          $i18n{storageItemCrostini}
+          <div id="crostiniSize" class="secondary">
+            $i18n{storageSizeComputing}
+          </div>
+        </div>
+        <paper-icon-button-light class="subpage-arrow">
+          <button aria-label="$i18n{storageItemCrostini}"
+              aria-describedby="crostiniSize"></button>
+        </paper-icon-button-light>
+      </div>
+    </template>
     <template is="dom-if" if="[[!isGuest_]]">
       <div class="settings-box two-line" on-click="onOtherUsersTap_" actionable>
         <div class="start">

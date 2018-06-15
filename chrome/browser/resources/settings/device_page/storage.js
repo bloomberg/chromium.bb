@@ -50,6 +50,15 @@ Polymer({
     },
 
     /** @private */
+    showCrostiniStorage_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @private */
+    showCrostini: Boolean,
+
+    /** @private */
     isGuest_: {
       type: Boolean,
       value: function() {
@@ -66,6 +75,8 @@ Polymer({
     /** @private {settings.StorageSizeStat} */
     sizeStat_: Object,
   },
+
+  observers: ['handleCrostiniEnabledChanged_(prefs.crostini.enabled.value)'],
 
   /**
    * Timer ID for periodic update.
@@ -89,6 +100,9 @@ Polymer({
     this.addWebUIListener(
         'storage-android-size-changed',
         this.handleAndroidSizeChanged_.bind(this));
+    this.addWebUIListener(
+        'storage-crostini-size-changed',
+        this.handleCrostiniSizeChanged_.bind(this));
     if (!this.isGuest_) {
       this.addWebUIListener(
           'storage-other-users-size-changed',
@@ -156,6 +170,14 @@ Polymer({
   },
 
   /**
+   * Handler for tapping the "Linux storage" item.
+   * @private
+   */
+  onCrostiniTap_: function() {
+    settings.navigateTo(settings.routes.CROSTINI_DETAILS);
+  },
+
+  /**
    * Handler for tapping the "Other users" item.
    * @private
    */
@@ -215,6 +237,16 @@ Polymer({
   },
 
   /**
+   * @param {string} size Formatted string representing the size of Crostini
+   *     storage.
+   * @private
+   */
+  handleCrostiniSizeChanged_: function(size) {
+    if (this.showCrostiniStorage_)
+      this.$$('#crostiniSize').textContent = size;
+  },
+
+  /**
    * @param {string} size Formatted string representing the size of Other users.
    * @private
    */
@@ -237,6 +269,14 @@ Polymer({
    */
   handleAndroidEnabledChanged_: function(enabled) {
     this.androidEnabled_ = enabled;
+  },
+
+  /**
+   * @param {boolean} enabled True if Crostini is enabled.
+   * @private
+   */
+  handleCrostiniEnabledChanged_: function(enabled) {
+    this.showCrostiniStorage_ = enabled && this.showCrostini;
   },
 
   /**

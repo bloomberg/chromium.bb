@@ -19,6 +19,10 @@
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/user_manager/user.h"
 
+namespace crostini {
+enum class ConciergeClientResult;
+}  // namespace crostini
+
 namespace chromeos {
 namespace settings {
 
@@ -86,6 +90,13 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   // Callback to update the UI about Android apps and cache.
   void OnGetAndroidSize(bool succeeded, arc::mojom::ApplicationsSizePtr size);
 
+  // Requests updating the space size used by Crostini VMs and their apps and
+  // cache.
+  void UpdateCrostiniSize();
+
+  // Callback to update the UI about Crostini VMs and their apps and cache.
+  void OnGetCrostiniSize(crostini::ConciergeClientResult result, int64_t size);
+
   // Callback called when clearing Drive cache is done.
   void OnClearDriveCacheDone(bool success);
 
@@ -116,6 +127,7 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   bool updating_drive_cache_size_;
   bool updating_browsing_data_size_;
   bool updating_android_size_;
+  bool updating_crostini_size_;
   bool updating_other_users_size_;
 
   base::WeakPtrFactory<StorageHandler> weak_ptr_factory_;
