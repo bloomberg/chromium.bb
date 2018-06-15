@@ -366,15 +366,11 @@ bool KeySystemConfigSelector::IsSupportedEncryptionScheme(
     const std::string& key_system,
     const EmeEncryptionScheme encryption_scheme) {
   switch (encryption_scheme) {
-    // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md.
-    // "A missing or null value indicates that any encryption scheme is
-    //  acceptable."
-    // "Even if the application does not specify an encryption scheme,
-    //  MediaKeySystemAccess.getConfiguration() must fill in a supported
-    //  value."
-    // As Chrome has always supported 'cenc', assume this if encryption
-    // scheme is not specified.
     case EmeEncryptionScheme::kNotSpecified:
+      // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md.
+      // "A missing or null value indicates that any encryption scheme is
+      //  acceptable."
+      return true;
     case EmeEncryptionScheme::kCenc:
       return key_systems_->IsEncryptionSchemeSupported(key_system,
                                                        EncryptionMode::kCenc);
