@@ -114,6 +114,15 @@ unsigned GetTextContentOffset(const Text& text, unsigned offset) {
 
 // ClampOffset modifies |offset| fixed in a range of |text_fragment| start/end
 // offsets.
+// |offset| points not each character but each span between character.
+// With that concept, we can clear catch what is inside start / end.
+// Suppose we have "foo_bar"('_' is a space).
+// There are 8 offsets for that:
+//  f o o _ b a r
+// 0 1 2 3 4 5 6 7
+// If "bar" is a TextFragment. That start(), end() {4, 7} correspond this
+// offset. If a marker has StartOffset / EndOffset as {2, 6},
+// ClampOffset returns{ 4,6 }, which represents "ba" on "foo_bar".
 unsigned ClampOffset(unsigned offset,
                      const NGPhysicalTextFragment& text_fragment) {
   return std::min(std::max(offset, text_fragment.StartOffset()),
