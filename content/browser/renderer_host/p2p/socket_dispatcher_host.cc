@@ -270,7 +270,7 @@ void P2PSocketDispatcherHost::OnCreateSocket(
   if (!proxy_resolving_socket_factory_) {
     proxy_resolving_socket_factory_ =
         std::make_unique<network::ProxyResolvingClientSocketFactory>(
-            nullptr, url_context_->GetURLRequestContext());
+            url_context_->GetURLRequestContext());
   }
   if (sockets_.size() > kMaxSimultaneousSockets) {
     LOG(ERROR) << "Too many sockets created";

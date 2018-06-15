@@ -25,7 +25,6 @@ XmppClientSocketFactory::XmppClientSocketFactory(
     : client_socket_factory_(client_socket_factory),
       request_context_getter_(request_context_getter),
       proxy_resolving_socket_factory_(
-          nullptr,
           request_context_getter->GetURLRequestContext()),
       ssl_config_(ssl_config),
       use_fake_ssl_client_socket_(use_fake_ssl_client_socket) {
@@ -39,8 +38,7 @@ XmppClientSocketFactory::CreateTransportClientSocket(
     const net::HostPortPair& host_and_port) {
   // TODO(akalin): Use socket pools.
   auto transport_socket = proxy_resolving_socket_factory_.CreateSocket(
-      ssl_config_, GURL("https://" + host_and_port.ToString()),
-      false /*use_tls*/);
+      GURL("https://" + host_and_port.ToString()), false /*use_tls*/);
   return (use_fake_ssl_client_socket_
               ? std::unique_ptr<net::StreamSocket>(
                     new FakeSSLClientSocket(std::move(transport_socket)))

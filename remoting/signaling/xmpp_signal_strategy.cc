@@ -184,10 +184,9 @@ void XmppSignalStrategy::Core::Connect() {
   if (!proxy_resolving_socket_factory_) {
     proxy_resolving_socket_factory_ =
         std::make_unique<network::ProxyResolvingClientSocketFactory>(
-            socket_factory_, request_context_getter_->GetURLRequestContext());
+            request_context_getter_->GetURLRequestContext());
   }
   socket_ = proxy_resolving_socket_factory_->CreateSocket(
-      net::SSLConfig(),
       GURL("https://" +
            net::HostPortPair(xmpp_server_config_.host, xmpp_server_config_.port)
                .ToString()),

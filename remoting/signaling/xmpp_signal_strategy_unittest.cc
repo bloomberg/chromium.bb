@@ -119,9 +119,12 @@ class XmppSignalStrategyTest : public testing::Test,
   XmppSignalStrategyTest() : message_loop_(base::MessageLoop::TYPE_IO) {}
 
   void SetUp() override {
+    auto url_request_context = std::make_unique<net::TestURLRequestContext>(
+        true /* delay_initialization */);
+    url_request_context->set_client_socket_factory(&client_socket_factory_);
+    url_request_context->Init();
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        message_loop_.task_runner(),
-        std::make_unique<net::TestURLRequestContext>());
+        message_loop_.task_runner(), std::move(url_request_context));
   }
 
   void CreateSignalStrategy(int port) {

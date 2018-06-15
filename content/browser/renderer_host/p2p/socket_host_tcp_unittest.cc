@@ -487,8 +487,7 @@ TEST(P2PSocketHostTcpWithPseudoTlsTest, Basic) {
   net::MockClientSocketFactory mock_socket_factory;
   context.set_client_socket_factory(&mock_socket_factory);
   context.Init();
-  network::ProxyResolvingClientSocketFactory factory(&mock_socket_factory,
-                                                     &context);
+  network::ProxyResolvingClientSocketFactory factory(&context);
 
   base::StringPiece ssl_client_hello =
       jingle_glue::FakeSSLClientSocket::GetSslClientHello();
@@ -544,8 +543,7 @@ TEST_P(P2PSocketHostTcpWithTlsTest, Basic) {
   net::MockClientSocketFactory mock_socket_factory;
   context.set_client_socket_factory(&mock_socket_factory);
   context.Init();
-  network::ProxyResolvingClientSocketFactory factory(&mock_socket_factory,
-                                                     &context);
+  network::ProxyResolvingClientSocketFactory factory(&context);
   const net::IoMode io_mode = std::get<0>(GetParam());
   const P2PSocketType socket_type = std::get<1>(GetParam());
   // OnOpen() calls DoRead(), so populate the mock socket with a pending read.
