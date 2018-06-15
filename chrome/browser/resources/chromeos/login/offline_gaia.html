@@ -53,12 +53,13 @@
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <link rel="stylesheet" href="oobe_dialog_host.css">
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
+    <link rel="stylesheet" href="gaia_card_parameters.css">
     <template is="dom-if" if="[[glifMode]]" restamp>
       <oobe-dialog role="dialog" has-buttons selected$="[[activeSection]]"
           animation-in-progress$="[[animationInProgress]]">
         <img src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90"
-            class="oobe-icon" alt="">
-        <div id="headerContainer" class="header layout horizontal"
+            slot="oobe-icon" alt="">
+        <div id="headerContainer" slot="header" class="layout horizontal"
             on-animationend="onSlideAnimationEnd_">
           <div id="emailSectionHeader" class="section email-section">
             <h1 class="title">
@@ -72,12 +73,12 @@
             <gaia-header class="title" id="passwordHeader"></gaia-header>
           </div>
         </div>
-        <div id="footerContainer" class="footer layout horizontal">
+        <div id="footerContainer" slot="footer" class="layout horizontal">
           <div id="emailSectionFooter" class="section email-section">
             <gaia-input-form on-submit="onEmailSubmitted_"
                 disabled="[[disabled]]"
                 button-text="[[i18nDynamic(locale, 'offlineLoginNextBtn')]]">
-              <gaia-input id="emailInput" type="email" required
+              <gaia-input slot="inputs" id="emailInput" type="email" required
                   domain="[[emailDomain]]"
                   error="[[i18nDynamic(locale, 'offlineLoginInvalidEmail')]]"
                   label="[[i18nDynamic(locale, 'offlineLoginEmail')]]">
@@ -85,13 +86,14 @@
             </gaia-input-form>
           </div>
           <div id="passwordSectionFooter" class="section password-section">
-            <gaia-input-form class="footer" disabled="[[disabled]]"
+            <gaia-input-form slot="footer" disabled="[[disabled]]"
                 on-submit="onPasswordSubmitted_"
                 button-text="[[i18nDynamic(locale, 'offlineLoginNextBtn')]]">
-              <gaia-input id="passwordInput" type="password" required
+              <gaia-input slot="inputs" id="passwordInput" type="password"
                   error="[[i18nDynamic(locale,
                                        'offlineLoginInvalidPassword')]]"
-                  label="[[i18nDynamic(locale, 'offlineLoginPassword')]]">
+                  label="[[i18nDynamic(locale, 'offlineLoginPassword')]]"
+                  required>
               </gaia-input>
               <gaia-button type="link" on-tap="onForgotPasswordClicked_">
                 [[i18nDynamic(locale, 'offlineLoginForgotPasswordBtn')]]
@@ -99,7 +101,7 @@
             </gaia-input-form>
           </div>
         </div>
-        <div class="bottom-buttons flex layout horizontal">
+        <div slot="bottom-buttons" class="flex layout horizontal">
           <oobe-back-button id="offline-gaia-back-button"
               on-tap="onBackButtonClicked_">
           </oobe-back-button>
@@ -117,21 +119,22 @@
 
         <neon-animatable id="emailSection" class="fit">
             <gaia-card class="fit">
-              <div class="header flex vertical layout end-justified start">
+              <div slot="header"
+                  class="flex vertical layout end-justified start">
                 <h1 class="welcome-message" i18n-content="loginWelcomeMessage">
                 </h1>
                 <p id="managedBy" class="enterprise-info"
                     hidden$="[[!showEnterpriseMessage]]">
                 </p>
               </div>
-              <div class="footer flex vertical layout justified">
+              <div slot="footer" class="flex vertical layout justified">
                 <gaia-input-form on-submit="onEmailSubmitted_"
                     disabled="[[disabled]]"
                     i18n-values="button-text:offlineLoginNextBtn">
-                  <gaia-input id="emailInput" type="email" required
+                  <gaia-input slot="inputs" id="emailInput" type="email"
                       domain="[[emailDomain]]"
                       i18n-values="error:offlineLoginInvalidEmail;
-                                   label:offlineLoginEmail">
+                                   label:offlineLoginEmail" required>
                   </gaia-input>
                 </gaia-input-form>
                 <img src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90"
@@ -142,14 +145,14 @@
 
         <neon-animatable id="passwordSection" class="fit">
             <gaia-card id="passwordCard" class="fit">
-              <gaia-header class="header flex" id="passwordHeader">
+              <gaia-header slot="header" class="flex" id="passwordHeader">
               </gaia-header>
-              <gaia-input-form class="footer" disabled="[[disabled]]"
+              <gaia-input-form slot="footer" disabled="[[disabled]]"
                   on-submit="onPasswordSubmitted_"
                   i18n-values="button-text:offlineLoginNextBtn">
-                <gaia-input id="passwordInput" type="password" required
+                <gaia-input slot="inputs" id="passwordInput" type="password"
                     i18n-values="error:offlineLoginInvalidPassword;
-                                 label:offlineLoginPassword">
+                                 label:offlineLoginPassword" required>
                 </gaia-input>
                 <gaia-button type="link" on-tap="onForgotPasswordClicked_"
                     i18n-content="offlineLoginForgotPasswordBtn">

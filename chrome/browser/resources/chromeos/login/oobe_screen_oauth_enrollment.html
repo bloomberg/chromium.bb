@@ -3,6 +3,7 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://oobe/custom_elements.html">
+<link rel="stylesheet" href="gaia_card_parameters.css">
 
 <div id="oauth-enrollment" class="step no-logo hidden" hidden>
   <div id="oauth-enroll-step-contents">
@@ -45,13 +46,13 @@
     </div>
     <div id="oauth-enroll-step-attribute-prompt">
       <gaia-card id="oauth-enroll-attribute-prompt-card" class="fit">
-        <div class="header flex vertical layout end-justified">
+        <div slot="header" class="flex vertical layout end-justified">
           <h1 class="welcome-message" style="text-transform:capitalize"
               i18n-content="oauthEnrollScreenTitle"></h1>
           <p class="enterprise-info"
               i18n-content="oauthEnrollDeviceInformation"></p>
         </div>
-        <div class="footer flex vertical layout justified">
+        <div slot="footer" class="flex vertical layout justified">
           <div class="oauth-enroll-step-message">
             <span id="oauth-enroll-attribute-prompt-message"
                   i18n-content="oauthEnrollAttributeExplanation"></span>
@@ -60,10 +61,10 @@
                i18n-content="oauthEnrollExplainAttributeLink"></a>
             <gaia-input-form id="oauth-enroll-attribute-input"
                              i18n-values="button-text:oauthEnrollNextBtn">
-              <gaia-input id="oauth-enroll-asset-id" type="text"
+              <gaia-input slot="inputs" id="oauth-enroll-asset-id" type="text"
                   i18n-values="label:oauthEnrollAssetIdLabel">
               </gaia-input>
-              <gaia-input id="oauth-enroll-location" type="text"
+              <gaia-input slot="inputs" id="oauth-enroll-location" type="text"
                   i18n-values="label:oauthEnrollLocationLabel">
               </gaia-input>
               <gaia-button type="link" id="oauth-enroll-skip-button"

@@ -56,13 +56,13 @@ paper-button[android] {
   color: white;
 }
 
-::content * {
+::slotted(*) {
   font: var(--oobe-roboto-medium), sans-serif;
   font-size: 12px;
   text-transform: none;
 }
 
-#textButton[android] #container ::content * {
+#textButton[android] #container ::slotted(*) {
   font-size: 10px;
   text-transform: uppercase;
 }

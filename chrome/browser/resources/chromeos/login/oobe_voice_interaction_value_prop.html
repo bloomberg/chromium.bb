@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="oobe_voice_interaction_value_prop.css">
     <oobe-dialog id="voice-dialog" class="value-prop-loading" role="dialog"
         hide-shadow has-buttons no-footer-padding android>
-      <div class = "header">
+      <div slot="header">
         <div id="view-container">
           <webview id="value-prop-view"></webview>
         </div>
@@ -27,7 +27,7 @@
           <paper-progress class="slow" indeterminate></paper-progress>
         </div>
       </div>
-      <div class="bottom-buttons flex layout horizontal">
+      <div slot="bottom-buttons" class="flex layout horizontal">
         <oobe-text-button id="skip-button" android on-tap="onSkipTap_"
             disabled="[[valuePropButtonsDisabled]]">
          <div i18n-content="voiceInteractionValuePropSkipButton"></div>

@@ -20,10 +20,10 @@
 
   <template>
     <div id="title">
-      <content select=".title"></content>
+      <slot name="title"></slot>
     </div>
     <div id="content">
-      <content></content>
+      <slot></slot>
     </div>
   </template>
 </dom-module>
@@ -35,49 +35,49 @@
     <neon-animated-pages attr-for-selected="name" selected="[[C.page]]"
         entry-animation="fade-in-animation" exit-animation="fade-out-animation">
       <host-pairing-page name="welcome">
-        <div class="title" i18n-content="loginHostPairingScreenWelcomeTitle">
+        <div slot="title" i18n-content="loginHostPairingScreenWelcomeTitle">
         </div>
         <div i18n-content="loginHostPairingScreenWelcomeText"></div>
       </host-pairing-page>
       <host-pairing-page name="initialization-error">
-        <div class="title"
+        <div slot="title"
             i18n-content="loginHostPairingScreenInitializationErrorTitle">
         </div>
         <div i18n-content="loginHostPairingScreenErrorNeedRestartText"></div>
       </host-pairing-page>
       <host-pairing-page name="code-confirmation">
-        <div class="title"
+        <div slot="title"
             i18n-content="loginHostPairingScreenConfirmationTitle">
         </div>
         <div id="code">{{C.code}}</div>
       </host-pairing-page>
       <host-pairing-page name="connection-error">
-        <div class="title"
+        <div slot="title"
             i18n-content="loginHostPairingScreenConnectionErrorTitle">
         </div>
         <div i18n-content="loginHostPairingScreenErrorNeedRestartText"></div>
       </host-pairing-page>
       <host-pairing-page name="setup-basic-configuration">
-        <div class="title"
+        <div slot="title"
             i18n-content="loginHostPairingScreenSetupBasicConfigTitle">
         </div>
       </host-pairing-page>
       <host-pairing-page name="setup-network-error">
-        <div class="title"
+        <div slot="title"
             i18n-content="loginHostPairingScreenSetupNetworkErrorTitle">
         </div>
         <div i18n-content="loginHostPairingScreenErrorNeedRestartText"></div>
       </host-pairing-page>
       <host-pairing-page name="update">
-        <div class="title" i18n-content="loginHostPairingScreenUpdatingTitle">
+        <div slot="title" i18n-content="loginHostPairingScreenUpdatingTitle">
         </div>
       </host-pairing-page>
       <host-pairing-page name="enrollment-introduction">
-        <div class="title" i18n-content="loginHostPairingScreenEnrollTitle">
+        <div slot="title" i18n-content="loginHostPairingScreenEnrollTitle">
         </div>
       </host-pairing-page>
       <host-pairing-page name="enrollment">
-        <div class="title">
+        <div slot="title">
           <!-- 'enrollmentTitle' contains <strong> tag. We need to wrap it in
                'html-echo' to prevent HTML escaping. -->
           <html-echo content="[[getEnrollmentStepTitle_(C.enrollmentDomain)]]">
@@ -85,14 +85,14 @@
         </div>
       </host-pairing-page>
       <host-pairing-page name="enrollment-error">
-        <div class="title"
+        <div slot="title"
             i18n-content="loginHostPairingScreenEnrollmentErrorTitle">
         </div>
         <div>[[C.enrollmentError]]</div>
         <div i18n-content="loginHostPairingScreenErrorNeedRestartText"></div>
       </host-pairing-page>
       <host-pairing-page name="pairing-done">
-        <div class="title" i18n-content="loginHostPairingScreenDoneTitle">
+        <div slot="title" i18n-content="loginHostPairingScreenDoneTitle">
         </div>
         <div i18n-content="loginHostPairingScreenDoneText"></div>
       </host-pairing-page>

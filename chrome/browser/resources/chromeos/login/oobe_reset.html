@@ -34,10 +34,10 @@
     <link rel="stylesheet" href="oobe_reset.css">
     <oobe-dialog id="resetDialog" role="dialog"
         i18n-values="aria-label:resetScreenAccessibleTitle" has-buttons>
-      <hd-iron-icon class="oobe-icon"
+      <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-reset-32:alert" icon2x="oobe-reset-64:alert">
       </hd-iron-icon>
-      <div class="header">
+      <div slot="header">
         <h1 class="title" i18n-content="resetWarningTitle"></h1>
         <div class="subtitle powerwash-warning">
           <div hidden="[[!isState_(uiState_, 'powerwash-proposal-view')]]"
@@ -62,7 +62,7 @@
           </div>
         </div>
       </div>
-      <div class="footer flex layout vertical center">
+      <div slot="footer" class="flex layout vertical center">
         <img srcset="images/reset_illustration_1x.png 1x,
                      images/reset_illustration_2x.png 2x"
             i18n-values="alt:resetScreenIllustrationTitle">
@@ -81,7 +81,7 @@
           </div>
         </div>
       </div>
-      <div class="bottom-buttons flex layout horizontal">
+      <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
         <oobe-text-button id="cancelButton" border on-tap="onCancelTap_"
             hidden="[[isCancelHidden_(uiState_)]]">

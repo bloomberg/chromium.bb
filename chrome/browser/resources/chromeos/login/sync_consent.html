@@ -17,15 +17,15 @@
     <oobe-dialog id="syncConsentOverviewDialog" role="dialog" has-buttons
         aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]"
         no-footer-padding hidden>
-      <hd-iron-icon class="oobe-icon"
+      <hd-iron-icon slot="oobe-icon"
           icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
       </hd-iron-icon>
-      <div class="header">
+      <div slot="header">
         <h1 class="title">
           [[i18nDynamic(locale, 'syncConsentScreenTitle')]]
         </h1>
       </div>
-      <div class="footer layout vertical">
+      <div slot="footer" class="layout vertical">
         <div class="overview-list-item flex layout horizontal center">
           <img srcset="chrome://oobe/logo_24px-1x.svg 1x,
                        chrome://oobe/logo_24px-2x.svg 2x"
@@ -59,7 +59,7 @@
           [[i18nDynamic(locale, 'syncConsentReviewSyncOptionsText')]]
         </cr-checkbox>
       </div>
-      <div class="bottom-buttons layout horizontal end-justified">
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="acceptAndContinue"
           on-tap="onSettingsSaveAndContinue_" class="focus-on-show" inverse>
           <div>[[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]</div>
@@ -71,14 +71,14 @@
         has-buttons no-footer-padding hidden>
       <img srcset="chrome://oobe/logo_24px-1x.svg 1x,
                    chrome://oobe/logo_24px-2x.svg 2x"
-          class="oobe-icon">
+          slot="oobe-icon">
       </img>
-      <div class="header">
+      <div slot="header">
         <h1 class="title">
           [[i18nDynamic(locale, 'syncConsentNewScreenTitle')]]
         </h1>
       </div>
-      <div class="footer layout vertical">
+      <div slot="footer" class="layout vertical">
         <div class="sync-feature-item flex layout horizontal center">
           <hd-iron-icon class="sync-feature-item-icon"
             icon1x="sync-consent-24:sync_ic" icon2x="sync-consent-48:sync_ic">
@@ -121,7 +121,7 @@
         </div>
 
       </div>
-      <div class="bottom-buttons layout horizontal end-justified">
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-welcome-secondary-button id="moreOptionsButton"
             on-tap="onMoreOptionsButton_"
             label-for-aria$="[[i18nDynamic(locale, 'syncConsentNewMoreOptions')]]">
@@ -138,9 +138,9 @@
         has-buttons no-footer-padding hidden>
       <img srcset="chrome://oobe/logo_24px-1x.svg 1x,
                    chrome://oobe/logo_24px-2x.svg 2x"
-          class="oobe-icon">
+          slot="oobe-icon">
       </img>
-      <div class="header">
+      <div slot="header">
         <h1 class="title">
           [[i18nDynamic(locale, 'syncConsentNewSyncOptions')]]
         </h1>
@@ -153,7 +153,7 @@
           </div>
         </div>
       </div>
-      <div class="footer layout vertical">
+      <div slot="footer" class="layout vertical">
         <paper-radio-group id="optionsGroup" selected="reviewOptions"
             on-paper-radio-group-changed="onOptionsSelectionChanged_">
           <paper-radio-button name="reviewOptions" class="focus-on-show"
@@ -194,7 +194,7 @@
           </paper-radio-button>
         </paper-radio-group>
       </div>
-      <div class="bottom-buttons layout horizontal end-justified">
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="acceptAndContinue"
           on-tap="onOptionsAcceptAndContinue_" inverse>
           <div>[[i18nDynamic(locale, 'syncConsentAcceptAndContinue')]]</div>

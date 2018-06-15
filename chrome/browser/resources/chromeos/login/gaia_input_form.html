@@ -6,13 +6,13 @@
 
 <!--
   A simple input form with a button. Being used for typing email or password.
-  User should put one or more <gaia-input>s inside.
+  User should put one or more <gaia-input slot="inputs">s inside.
 
   Example:
     <gaia-input-form button-text="Submit">
-      <gaia-input label="Email" type="email"></gaia-input>
-      <gaia-input label="Password" type="password"></gaia-input>
-      <gaia-input label="OTP"></gaia-input>
+      <gaia-input slot="inputs" label="Email" type="email"></gaia-input>
+      <gaia-input slot="inputs" label="Password" type="password"></gaia-input>
+      <gaia-input slot="inputs" label="OTP"></gaia-input>
     </gaia-input-form>
 
   Attributes:
@@ -29,12 +29,12 @@
 
   <template>
     <div on-keydown="onKeyDown_">
-      <content id="inputs" select="gaia-input"></content>
+      <slot id="inputs" name="inputs"></slot>
       <div class="horizontal-reverse justified layout center">
         <gaia-button id="button" on-tap="onButtonClicked_" class="self-end">
           <span>[[buttonText]]</span>
         </gaia-button>
-        <content> </content>
+        <slot></slot>
       </div>
     </div>
   </template>

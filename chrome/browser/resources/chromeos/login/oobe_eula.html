@@ -46,21 +46,21 @@
     <oobe-dialog id="eulaLoadingDialog" hidden="[[!eulaLoadingScreenShown]]"
         role="dialog" i18n-values="aria-label:termsOfServiceLoading"
         has-buttons>
-      <iron-icon icon="oobe-eula:googleg" class="oobe-icon"></iron-icon>
-      <div class="header">
+      <iron-icon icon="oobe-eula:googleg" slot="oobe-icon"></iron-icon>
+      <div slot="header">
         <h1 class="title" i18n-content="termsOfServiceLoading"></h1>
       </div>
     </oobe-dialog>
     <oobe-dialog id="eulaDialog" hidden="[[eulaLoadingScreenShown]]"
         role="dialog" i18n-values="aria-label:oobeEulaSectionTitle"
         has-buttons>
-      <hd-iron-icon class="oobe-icon"
+      <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-eula-32:googleg" icon2x="oobe-eula-64:googleg">
       </hd-iron-icon>
-      <div class="header">
+      <div slot="header">
         <h1 class="title" i18n-content="oobeEulaSectionTitle"></h1>
       </div>
-      <div class="footer flex layout vertical">
+      <div slot="footer" class="flex layout vertical">
         <webview id="crosEulaFrame"
             role="document" class="focus-on-show"
             i18n-values="aria-label:oobeEulaIframeLabel"
@@ -82,7 +82,7 @@
           </div>
         </div>
       </div>
-      <div class="bottom-buttons flex layout horizontal">
+      <div slot="bottom-buttons" class="flex layout horizontal">
         <oobe-back-button on-tap="onEulaBackButtonPressed_">
         </oobe-back-button>
         <div class="flex">
@@ -97,10 +97,10 @@
     </oobe-dialog>
     <oobe-dialog id="installationSettingsDialog" role="dialog"
         has-buttons hidden>
-      <hd-iron-icon class="oobe-icon"
+      <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-eula-32:googleg" icon2x="oobe-eula-64:googleg">
       </hd-iron-icon>
-      <div class="header">
+      <div slot="header">
         <h1 class="title" i18n-content="eulaSystemInstallationSettings"></h1>
         <div class="subtitle">
           <div i18n-content="eulaTpmDesc"></div>
@@ -122,7 +122,7 @@
           </div>
         </div>
       </div>
-      <div class="bottom-buttons flex layout horizontal">
+      <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
         <oobe-text-button id="settings-close-button" inverse
             on-tap="onInstallationSettingsCloseClicked_">

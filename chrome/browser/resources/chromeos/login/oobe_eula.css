@@ -48,7 +48,7 @@ cr-toggle {
   line-height: 20px;
 }
 
-.bottom-buttons {
+[slot='bottom-buttons'] {
   padding: 0 6px; /* = 8px - 2px back button border */
 }
 

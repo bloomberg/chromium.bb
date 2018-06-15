@@ -12,14 +12,14 @@
     <link rel="stylesheet" href="oobe_dialog_parameters.css">
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="arc-tos-dialog" class="arc-tos-loading" has-buttons>
-      <iron-icon src="chrome://oobe/playstore.svg" class="oobe-icon">
+      <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
-      <div class="header">
+      <div slot="header">
         <h1 class="title" i18n-content="arcTermsOfServiceScreenHeading"></h1>
         <div class="subtitle" i18n-content="arcTermsOfServiceScreenDescription">
         </div>
       </div>
-      <div id="arc-tos-container" class="footer flex layout vertical">
+      <div id="arc-tos-container" slot="footer" class="flex layout vertical">
         <div id="arc-tos-view-container" class="arc-tos-content">
           <webview id="arc-tos-view"></webview>
         </div>
@@ -55,7 +55,7 @@
           <p i18n-content="arcTermsOfServiceError"></p>
         </div>
       </div>
-      <div class="bottom-buttons flex layout horizontal">
+      <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex">
         </div>
         <oobe-text-button id="arc-tos-skip-button" border on-tap="onSkip_"

@@ -28,7 +28,7 @@
     <div on-click="onClick_" on-tap="onClick_">
       <paper-button id="button" disabled="[[disabled]]"
           on-focused-changed="focusedChanged_">
-        <content></content>
+        <slot></slot>
       </paper-button>
     </div>
   </template>

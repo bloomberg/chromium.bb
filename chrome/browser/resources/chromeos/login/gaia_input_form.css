@@ -7,10 +7,10 @@
   font-size: 16px;
 }
 
-#inputs::content gaia-input {
+:host ::slotted(gaia-input) {
   margin-bottom: 24px;
 }
 
-#inputs::content gaia-input:last-of-type {
+:host ::slotted(gaia-input:last-of-type) {
   margin-bottom: 28px;
 }

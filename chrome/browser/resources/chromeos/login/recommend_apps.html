@@ -14,25 +14,25 @@
     <oobe-dialog id="recommend-apps-dialog" role="dialog" has-buttons
         aria-label$="[[i18nDynamic(locale, 'recommendAppsScreenTitle')]]"
         no-footer-padding class="recommend-apps-loading">
-      <iron-icon src="chrome://oobe/playstore.svg" class="oobe-icon">
+      <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
-      <div class="header">
+      <div slot="header">
         <h1 class="title">
           [[i18nDynamic(locale, 'recommendAppsScreenTitle')]]
         </h1>
         <div id="subtitle" class="subtitle"></div>
       </div>
-      <div id="app-list-view-container" class="footer">
+      <div id="app-list-view-container" slot="footer">
         <webview id="app-list-view"
                  src="../arc_support/recommend_app_list_view.html"></webview>
       </div>
-      <div class="app-list-loading footer">
+      <div class="app-list-loading" slot="footer">
         <p>[[i18nDynamic(locale, 'recommendAppsLoading')]]</p>
       </div>
-      <div class="app-list-error footer">
+      <div class="app-list-error" slot="footer">
         <p>[[i18nDynamic(locale, 'recommendAppsError')]]</p>
       </div>
-      <div class="bottom-buttons layout horizontal end-justified">
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
         <oobe-text-button id="recommend-apps-skip-button" border on-tap="onSkip_">
           <div>[[i18nDynamic(locale, 'recommendAppsSkip')]]</div>
         </oobe-text-button>

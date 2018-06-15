@@ -13,9 +13,9 @@
   </iron-iconset-svg>
 
   <oobe-dialog role="dialog" id="error-message-md" has-buttons>
-    <iron-icon icon="error-message-24:dialog-icon" class="oobe-icon">
+    <iron-icon icon="error-message-24:dialog-icon" slot="oobe-icon">
     </iron-icon>
-    <div class="header">
+    <div slot="header">
       <h1 id="error-message-md-header" class="title">
         <div id="error-header-id" class="error-header" aria-live="assertive">
           <img alt class="error-icon"
@@ -41,7 +41,8 @@
         </div>
       </h1>
     </div>
-    <div id="error-message-md-footer" class="footer flex layout vertical">
+    <div id="error-message-md-footer" slot="footer"
+        class="flex layout vertical">
       <div id="error-body-id" class="error-body" aria-live="assertive">
         <div id="kiosk-online-message-body"
             class="error-message-paragraph
@@ -176,7 +177,7 @@
       </div>
       <div id="error-message-md-bottom-margin"></div>
     </div>
-    <div class="bottom-buttons flex layout horizontal">
+    <div slot="bottom-buttons" class="flex layout horizontal">
       <oobe-back-button id="error-message-back-button"></oobe-back-button>
     </div>
   </oobe-dialog>
