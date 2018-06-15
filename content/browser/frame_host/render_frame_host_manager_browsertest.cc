@@ -4280,6 +4280,75 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
             new_shell->web_contents()->GetSiteInstance()->GetProcess());
 }
 
+// Test to verify that reloading an error page once the error condition has
+// cleared up is successful and does not create a new navigation entry.
+// See https://crbug.com/840485.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
+  // This test is only valid if error page isolation is enabled.
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
+    return;
+
+  StartEmbeddedServer();
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  GURL error_url(embedded_test_server()->GetURL("/empty.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      SetupRequestFailForURL(error_url);
+  NavigationControllerImpl& nav_controller =
+      static_cast<NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // Start with a successful navigation to a document and verify there is
+  // only one entry in session history.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  scoped_refptr<SiteInstance> success_site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_EQ(1, nav_controller.GetEntryCount());
+
+  // Navigate to an url resulting in an error page and ensure a new entry
+  // was added to session history.
+  EXPECT_FALSE(NavigateToURL(shell(), error_url));
+  EXPECT_EQ(2, nav_controller.GetEntryCount());
+  EXPECT_EQ(
+      GURL(kUnreachableWebDataURL),
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+
+  // Reload the error page after clearing the error condition, such that the
+  // navigation is successful and verify that no new entry was added to
+  // session history.
+  url_interceptor.reset();
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+    reload_observer.Wait();
+    EXPECT_TRUE(reload_observer.last_navigation_succeeded());
+  }
+  EXPECT_EQ(2, nav_controller.GetEntryCount());
+  EXPECT_NE(
+      GURL(kUnreachableWebDataURL),
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+
+  // Test the same scenario as above, but this time initiated by the
+  // renderer process.
+  url_interceptor = SetupRequestFailForURL(error_url);
+  EXPECT_FALSE(NavigateToURL(shell(), error_url));
+  EXPECT_EQ(2, nav_controller.GetEntryCount());
+  EXPECT_EQ(
+      GURL(kUnreachableWebDataURL),
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+
+  url_interceptor.reset();
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(shell(), "location.reload();"));
+    reload_observer.Wait();
+    EXPECT_TRUE(reload_observer.last_navigation_succeeded());
+  }
+  EXPECT_EQ(2, nav_controller.GetEntryCount());
+  EXPECT_NE(
+      GURL(kUnreachableWebDataURL),
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+}
+
 // Helper class to simplify testing of unload handlers.  It allows waiting for
 // particular HTTP requests to be made to the embedded_test_server(); the tests
 // use this to wait for termination pings (e.g., navigator.sendBeacon()) made
