@@ -38,6 +38,12 @@ void SpellCheckerSessionBridge::RequestTextCheck(
     const base::string16& text,
     RequestTextCheckCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // This allows us to discard |callback| safely in case it's not run due to
+  // failures in initialization of |java_object_|.
+  std::unique_ptr<SpellingRequest> incoming_request =
+      std::make_unique<SpellingRequest>(text, std::move(callback));
+
   // SpellCheckerSessionBridge#create() will return null if spell checker
   // service is unavailable.
   if (java_object_initialization_failed_) {
@@ -71,11 +77,11 @@ void SpellCheckerSessionBridge::RequestTextCheck(
   // If multiple requests arrive during one active request, only the most
   // recent request will run (the others get overwritten).
   if (active_request_) {
-    pending_request_.reset(new SpellingRequest(text, std::move(callback)));
+    pending_request_ = std::move(incoming_request);
     return;
   }
 
-  active_request_.reset(new SpellingRequest(text, std::move(callback)));
+  active_request_ = std::move(incoming_request);
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SpellCheckerSessionBridge_requestTextCheck(
