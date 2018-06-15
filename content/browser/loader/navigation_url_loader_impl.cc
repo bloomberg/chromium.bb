@@ -34,9 +34,9 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
+#include "content/browser/web_package/signed_exchange_request_handler.h"
 #include "content/browser/web_package/signed_exchange_url_loader_factory_for_non_network_service.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
-#include "content/browser/web_package/web_package_request_handler.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
 #include "content/common/navigation_subresource_loader_params.h"
@@ -394,7 +394,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // unretained |this|, because the passed callback will be used by a
       // SignedExchangeHandler which is indirectly owned by |this| until its
       // header is verified and parsed, that's where the getter is used.
-      interceptors_.push_back(std::make_unique<WebPackageRequestHandler>(
+      interceptors_.push_back(std::make_unique<SignedExchangeRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
           request_info->common_params.url,
           GetURLLoaderOptions(request_info->is_main_frame),
@@ -597,14 +597,15 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     if (signed_exchange_utils::IsSignedExchangeHandlingEnabled()) {
       // Signed Exchange is currently disabled when Network Service is enabled
-      // (https://crbug.com/849935), but still create WebPackageRequestHandler
-      // in order to show error message (and devtools warning) to users.
+      // (https://crbug.com/849935), but still create
+      // SignedExchangeRequestHandler in order to show error message (and
+      // devtools warning) to users.
 
       // It is safe to pass the callback of CreateURLLoaderThrottles with the
       // unretained |this|, because the passed callback will be used by a
       // SignedExchangeHandler which is indirectly owned by |this| until its
       // header is verified and parsed, that's where the getter is used.
-      interceptors_.push_back(std::make_unique<WebPackageRequestHandler>(
+      interceptors_.push_back(std::make_unique<SignedExchangeRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
           request_info->common_params.url,
           GetURLLoaderOptions(request_info->is_main_frame),

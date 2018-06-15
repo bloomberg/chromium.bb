@@ -70,9 +70,9 @@ class NavigationFailureObserver : public WebContentsObserver {
 
 }  // namespace
 
-class WebPackageRequestHandlerBrowserTest : public ContentBrowserTest {
+class SignedExchangeRequestHandlerBrowserTest : public ContentBrowserTest {
  public:
-  WebPackageRequestHandlerBrowserTest()
+  SignedExchangeRequestHandlerBrowserTest()
       : mock_cert_verifier_(std::make_unique<net::MockCertVerifier>()){};
 
   void SetUp() override {
@@ -113,7 +113,7 @@ class WebPackageRequestHandlerBrowserTest : public ContentBrowserTest {
       if (!interceptor_) {
         interceptor_ =
             std::make_unique<URLLoaderInterceptor>(base::BindRepeating(
-                &WebPackageRequestHandlerBrowserTest::OnInterceptCallback,
+                &SignedExchangeRequestHandlerBrowserTest::OnInterceptCallback,
                 base::Unretained(this)));
       }
       interceptor_data_path_map_[url] = data_path;
@@ -150,11 +150,11 @@ class WebPackageRequestHandlerBrowserTest : public ContentBrowserTest {
   std::unique_ptr<URLLoaderInterceptor> interceptor_;
   std::map<GURL, std::string> interceptor_data_path_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebPackageRequestHandlerBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTest);
 };
 
-class WebPackageRequestHandlerWithNetworkServiceBrowserTest
-    : public WebPackageRequestHandlerBrowserTest {
+class SignedExchangeRequestHandlerWithNetworkServiceBrowserTest
+    : public SignedExchangeRequestHandlerBrowserTest {
   void SetUpFeatures() override {
     feature_list_.InitWithFeatures(
         {features::kSignedHTTPExchange, network::features::kNetworkService},
@@ -162,7 +162,7 @@ class WebPackageRequestHandlerWithNetworkServiceBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest, Simple) {
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/htxg/test.example.org.public.pem.cbor");
@@ -214,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest, Simple) {
   EXPECT_EQ(original_fingerprint, fingerprint);
 }
 
-IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest,
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
                        InvalidContentType) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
@@ -245,7 +245,7 @@ IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest,
   EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
 }
 
-IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest, CertNotFound) {
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   InstallUrlInterceptor(GURL("https://cert.example.org/cert.msg"),
                         "content/test/data/htxg/404.msg");
 
@@ -261,8 +261,9 @@ IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerBrowserTest, CertNotFound) {
   EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
 }
 
-IN_PROC_BROWSER_TEST_F(WebPackageRequestHandlerWithNetworkServiceBrowserTest,
-                       NetworkServiceEnabled) {
+IN_PROC_BROWSER_TEST_F(
+    SignedExchangeRequestHandlerWithNetworkServiceBrowserTest,
+    NetworkServiceEnabled) {
   InstallUrlInterceptor(
       GURL("https://test.example.org/cert.msg"),
       "content/test/data/htxg/test.example.org.public.pem.cbor");

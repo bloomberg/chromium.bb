@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_REQUEST_HANDLER_H_
-#define CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_REQUEST_HANDLER_H_
+#ifndef CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_HANDLER_H_
+#define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
@@ -24,14 +24,14 @@ namespace content {
 class URLLoaderThrottle;
 class SignedExchangeLoader;
 
-class WebPackageRequestHandler final : public NavigationLoaderInterceptor {
+class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
 
   static bool IsSupportedMimeType(const std::string& mime_type);
 
-  WebPackageRequestHandler(
+  SignedExchangeRequestHandler(
       url::Origin request_initiator,
       const GURL& url,
       uint32_t url_loader_options,
@@ -42,7 +42,7 @@ class WebPackageRequestHandler final : public NavigationLoaderInterceptor {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
-  ~WebPackageRequestHandler() override;
+  ~SignedExchangeRequestHandler() override;
 
   // NavigationLoaderInterceptor implementation
   void MaybeCreateLoader(const network::ResourceRequest& resource_request,
@@ -74,11 +74,11 @@ class WebPackageRequestHandler final : public NavigationLoaderInterceptor {
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
-  base::WeakPtrFactory<WebPackageRequestHandler> weak_factory_;
+  base::WeakPtrFactory<SignedExchangeRequestHandler> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebPackageRequestHandler);
+  DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandler);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_REQUEST_HANDLER_H_
+#endif  // CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_HANDLER_H_
