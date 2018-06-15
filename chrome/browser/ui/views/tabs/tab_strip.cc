@@ -313,6 +313,13 @@ void TabStrip::RemoveObserver(TabStripObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void TabStrip::FrameColorsChanged() {
+  for (int i = 0; i < tab_count(); ++i)
+    tab_at(i)->FrameColorsChanged();
+  new_tab_button_->FrameColorsChanged();
+  SchedulePaint();
+}
+
 int TabStrip::GetTabsMaxX() const {
   // There might be no tabs yet during startup.
   return tab_count() ? ideal_bounds(tab_count() - 1).right() : 0;
@@ -2365,6 +2372,7 @@ void TabStrip::SingleTabModeChanged() {
   const int active_tab_index = controller_->GetActiveIndex();
   if (IsValidModelIndex(active_tab_index))
     tab_at(active_tab_index)->Layout();
+  new_tab_button_->FrameColorsChanged();
 }
 
 void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {

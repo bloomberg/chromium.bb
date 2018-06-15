@@ -159,6 +159,13 @@ void NewTabButton::CloseBubble() {
     new_tab_promo_->CloseBubble();
 }
 
+void NewTabButton::FrameColorsChanged() {
+  if (MD::IsRefreshUi()) {
+    InitButtonIcons();
+    UpdateInkDropBaseColor();
+  }
+}
+
 void NewTabButton::AnimateInkDropToStateForTesting(views::InkDropState state) {
   GetInkDrop()->AnimateToState(state);
 }
@@ -499,20 +506,12 @@ SkColor NewTabButton::GetButtonFillColor() const {
         ui::NativeTheme::kColorId_ProminentButtonColor);
   }
 
-  const ui::ThemeProvider* theme_provider = GetThemeProvider();
-  DCHECK(theme_provider);
-  return theme_provider->GetColor(MD::GetMode() == MD::MATERIAL_TOUCH_OPTIMIZED
-                                      ? ThemeProperties::COLOR_TOOLBAR
-                                      : ThemeProperties::COLOR_BACKGROUND_TAB);
+  return tab_strip_->GetTabBackgroundColor(TAB_INACTIVE);
 }
 
 void NewTabButton::InitButtonIcons() {
   DCHECK(MD::IsNewerMaterialUi());
-
-  const ui::ThemeProvider* theme_provider = GetThemeProvider();
-  DCHECK(theme_provider);
-  const SkColor icon_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_TAB_TEXT);
+  const SkColor icon_color = tab_strip_->GetTabForegroundColor(TAB_INACTIVE);
   plus_icon_ = gfx::CreateVectorIcon(kNewTabButtonPlusIcon, icon_color);
   if (ShouldDrawIncognitoIcon()) {
     incognito_icon_ =

@@ -53,6 +53,11 @@ class NewTabButton : public views::ImageButton,
   // when it exists.
   void CloseBubble();
 
+  // Called when the tab strip transitions to/from single tab mode, the frame
+  // state changes or the accent color changes. Under Refresh this function will
+  // update the glyph colors for the best contrast on the background.
+  void FrameColorsChanged();
+
   void AnimateInkDropToStateForTesting(views::InkDropState state);
 
   NewTabPromoBubbleView* new_tab_promo() { return new_tab_promo_; }

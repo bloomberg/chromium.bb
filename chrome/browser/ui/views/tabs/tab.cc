@@ -1061,6 +1061,11 @@ int Tab::GetWidthOfLargestSelectableRegion() const {
   return std::min(indicator_left, close_button_left);
 }
 
+void Tab::FrameColorsChanged() {
+  OnButtonColorMaybeChanged();
+  SchedulePaint();
+}
+
 // static
 gfx::Size Tab::GetMinimumInactiveSize() {
   return gfx::Size(GetLayoutInsets(TAB).width(), GetLayoutConstant(TAB_HEIGHT));

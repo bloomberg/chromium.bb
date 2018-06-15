@@ -168,6 +168,9 @@ class Tab : public gfx::AnimationDelegate,
   // user to click to select/activate the tab.
   int GetWidthOfLargestSelectableRegion() const;
 
+  // Called when the frame state color changes.
+  void FrameColorsChanged();
+
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumInactiveSize();
 
