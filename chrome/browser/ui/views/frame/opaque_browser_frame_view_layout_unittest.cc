@@ -22,17 +22,17 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
 
-using OBFVL = OpaqueBrowserFrameViewLayout;
-
 namespace {
 
 const int kWindowWidth = 500;
-const int kNonClientBorderThickness = OBFVL::kFrameBorderThickness +
+const int kNonClientBorderThickness =
+    OpaqueBrowserFrameViewLayout::kFrameBorderThickness +
     views::NonClientFrameView::kClientEdgeThickness;
 const int kMinimizeButtonWidth = 26;
 const int kMaximizeButtonWidth = 25;
 const int kCloseButtonWidth = 43;
-const int kMaximizedExtraCloseWidth = OBFVL::kFrameBorderThickness -
+const int kMaximizedExtraCloseWidth =
+    OpaqueBrowserFrameViewLayout::kFrameBorderThickness -
     views::NonClientFrameView::kFrameShadowThickness;
 const int kCaptionButtonsWidth =
     kMinimizeButtonWidth + kMaximizeButtonWidth + kCloseButtonWidth;
@@ -98,7 +98,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     views::ViewsTestBase::SetUp();
 
     delegate_.reset(new TestLayoutDelegate);
-    auto layout = std::make_unique<OBFVL>();
+    auto layout = std::make_unique<OpaqueBrowserFrameViewLayout>();
     layout->set_delegate(delegate_.get());
     layout->set_extra_caption_y(0);
     layout->set_forced_window_caption_spacing_for_test(0);
@@ -175,17 +175,22 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 
   int CaptionLeft() const {
     return kWindowWidth -
-        (delegate_->IsMaximized() ? kMaximizedExtraCloseWidth
-                                  : OBFVL::kFrameBorderThickness) -
-        kCaptionButtonsWidth - OBFVL::kCaptionSpacing;
+           (delegate_->IsMaximized()
+                ? kMaximizedExtraCloseWidth
+                : OpaqueBrowserFrameViewLayout::kFrameBorderThickness) -
+           kCaptionButtonsWidth - OpaqueBrowserFrameViewLayout::kCaptionSpacing;
   }
 
   int IconAndTitleY() const {
     // This approximates the real positioning algorithm, which is complicated.
     const int unavailable_px_at_top =
-        delegate_->IsMaximized() ? 0 : OBFVL::kTitlebarTopEdgeThickness;
+        delegate_->IsMaximized()
+            ? 0
+            : OpaqueBrowserFrameViewLayout::kTitlebarTopEdgeThickness;
     return (unavailable_px_at_top + CaptionY() + kCaptionButtonHeight +
-            OBFVL::kCaptionButtonBottomPadding - delegate_->GetIconSize()) / 2;
+            OpaqueBrowserFrameViewLayout::kCaptionButtonBottomPadding -
+            delegate_->GetIconSize()) /
+           2;
   }
 
   void ExpectCaptionButtons(bool caption_buttons_on_left, int extra_height) {
@@ -198,7 +203,8 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     }
 
     bool maximized = delegate_->IsMaximized();
-    int frame_thickness = maximized ? 0 : OBFVL::kFrameBorderThickness;
+    int frame_thickness =
+        maximized ? 0 : OpaqueBrowserFrameViewLayout::kFrameBorderThickness;
     int close_width =
         kCloseButtonWidth + (maximized ? kMaximizedExtraCloseWidth : 0);
     int close_x = caption_buttons_on_left ?
@@ -232,20 +238,22 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   }
 
   void ExpectTabStripAndMinimumSize(bool caption_buttons_on_left) {
+    using MD = ui::MaterialDesignController;
     int caption_buttons_width = kCaptionButtonsWidth;
     bool show_caption_buttons = delegate_->ShouldShowCaptionButtons();
     bool maximized = delegate_->IsMaximized() || !show_caption_buttons;
     if (avatar_button_) {
       caption_buttons_width +=
           avatar_button_->GetPreferredSize().width() +
-          (maximized ? OBFVL::kCaptionSpacing
+          (maximized ? OpaqueBrowserFrameViewLayout::kCaptionSpacing
                      : -GetLayoutSize(NEW_TAB_BUTTON, delegate_->IsIncognito())
                             .width());
     }
     int tabstrip_x = OpaqueBrowserFrameView::GetAvatarIconPadding();
     if (show_caption_buttons && caption_buttons_on_left) {
       int right_of_close =
-          maximized ? kMaximizedExtraCloseWidth : OBFVL::kFrameBorderThickness;
+          maximized ? kMaximizedExtraCloseWidth
+                    : OpaqueBrowserFrameViewLayout::kFrameBorderThickness;
       tabstrip_x += caption_buttons_width + right_of_close;
     } else if (!maximized) {
       tabstrip_x += kNonClientBorderThickness;
@@ -258,8 +266,13 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     if (maximized) {
       EXPECT_EQ(maximized_top_border_height, tabstrip_bounds.y());
     } else {
-      int tabstrip_nonexcluded_y = OBFVL::kFrameBorderThickness +
-                                   OBFVL::GetNonClientRestoredExtraThickness();
+      int tabstrip_nonexcluded_y =
+          OpaqueBrowserFrameViewLayout::kFrameBorderThickness +
+          OpaqueBrowserFrameViewLayout::GetNonClientRestoredExtraThickness();
+      if (MD::IsRefreshUi()) {
+        tabstrip_nonexcluded_y +=
+            OpaqueBrowserFrameViewLayout::kRefreshNonClientExtraTopThickness;
+      }
       EXPECT_LE(tabstrip_bounds.y(), tabstrip_nonexcluded_y);
     }
     const bool showing_caption_buttons_on_right =
@@ -269,14 +282,15 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     int maximized_spacing =
         showing_caption_buttons_on_right ? kMaximizedExtraCloseWidth : 0;
     int restored_spacing =
-        (caption_buttons_on_left ? kNonClientBorderThickness
-                                 : OBFVL::kFrameBorderThickness);
-    using MD = ui::MaterialDesignController;
+        (caption_buttons_on_left
+             ? kNonClientBorderThickness
+             : OpaqueBrowserFrameViewLayout::kFrameBorderThickness);
     if (!MD::IsRefreshUi()) {
-      maximized_spacing += showing_caption_buttons_on_right
-                               ? OBFVL::kNewTabCaptionCondensedSpacing
-                               : OBFVL::kCaptionSpacing;
-      restored_spacing += OBFVL::kCaptionSpacing;
+      maximized_spacing +=
+          showing_caption_buttons_on_right
+              ? OpaqueBrowserFrameViewLayout::kNewTabCaptionCondensedSpacing
+              : OpaqueBrowserFrameViewLayout::kCaptionSpacing;
+      restored_spacing += OpaqueBrowserFrameViewLayout::kCaptionSpacing;
     }
     int spacing = maximized ? maximized_spacing : restored_spacing;
     const int tabstrip_width =
@@ -286,10 +300,11 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     maximized_spacing = 0;
     restored_spacing = 2 * kNonClientBorderThickness;
     if (!MD::IsRefreshUi()) {
-      maximized_spacing += showing_caption_buttons_on_right
-                               ? OBFVL::kNewTabCaptionCondensedSpacing
-                               : OBFVL::kCaptionSpacing;
-      restored_spacing += OBFVL::kCaptionSpacing;
+      maximized_spacing +=
+          showing_caption_buttons_on_right
+              ? OpaqueBrowserFrameViewLayout::kNewTabCaptionCondensedSpacing
+              : OpaqueBrowserFrameViewLayout::kCaptionSpacing;
+      restored_spacing += OpaqueBrowserFrameViewLayout::kCaptionSpacing;
     }
     spacing = maximized ? maximized_spacing : restored_spacing;
     gfx::Size browser_view_min_size(delegate_->GetBrowserViewMinimumSize());
@@ -298,7 +313,12 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     gfx::Size min_size(layout_manager_->GetMinimumSize(kWindowWidth));
     EXPECT_EQ(min_width, min_size.width());
     int restored_border_height =
-          OBFVL::kFrameBorderThickness + kNonClientBorderThickness;
+        OpaqueBrowserFrameViewLayout::kFrameBorderThickness +
+        kNonClientBorderThickness;
+    if (MD::IsRefreshUi()) {
+      restored_border_height +=
+          OpaqueBrowserFrameViewLayout::kRefreshNonClientExtraTopThickness;
+    }
     int top_border_height =
         maximized ? maximized_top_border_height : restored_border_height;
     int min_height = top_border_height + browser_view_min_size.height();
@@ -312,10 +332,12 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     }
 
     int border_thickness =
-        (delegate_->IsMaximized() || !delegate_->ShouldShowCaptionButtons()) ?
-            0 : OBFVL::kFrameBorderThickness;
+        (delegate_->IsMaximized() || !delegate_->ShouldShowCaptionButtons())
+            ? 0
+            : OpaqueBrowserFrameViewLayout::kFrameBorderThickness;
     gfx::Rect icon_bounds(layout_manager_->IconBounds());
-    EXPECT_EQ(border_thickness + OBFVL::kIconLeftSpacing, icon_bounds.x());
+    EXPECT_EQ(border_thickness + OpaqueBrowserFrameViewLayout::kIconLeftSpacing,
+              icon_bounds.x());
     int icon_y =
         delegate_->ShouldShowWindowTitle() ? IconAndTitleY() : border_thickness;
     EXPECT_EQ(icon_y, icon_bounds.y());
@@ -326,9 +348,11 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 
   void ExpectWindowTitle() {
     int icon_size = delegate_->GetIconSize();
-    int title_x =
-        (delegate_->IsMaximized() ? 0 : OBFVL::kFrameBorderThickness) +
-        OBFVL::kIconLeftSpacing + icon_size + OBFVL::kIconTitleSpacing;
+    int title_x = (delegate_->IsMaximized()
+                       ? 0
+                       : OpaqueBrowserFrameViewLayout::kFrameBorderThickness) +
+                  OpaqueBrowserFrameViewLayout::kIconLeftSpacing + icon_size +
+                  OpaqueBrowserFrameViewLayout::kIconTitleSpacing;
     gfx::Rect title_bounds(window_title_->bounds());
     EXPECT_EQ(title_x, title_bounds.x());
     EXPECT_EQ(IconAndTitleY(), title_bounds.y());
@@ -347,7 +371,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 
   views::Widget* widget_ = nullptr;
   views::View* root_view_ = nullptr;
-  OBFVL* layout_manager_ = nullptr;
+  OpaqueBrowserFrameViewLayout* layout_manager_ = nullptr;
   std::unique_ptr<TestLayoutDelegate> delegate_;
 
   // Widgets:
