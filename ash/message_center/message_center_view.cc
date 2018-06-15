@@ -233,6 +233,8 @@ MessageCenterView::MessageCenterView(
   scroller_->SetContents(scroller_contents);
 
   settings_view_ = new NotifierSettingsView();
+  settings_view_->SetBackground(
+      views::CreateSolidBackground(message_center_style::kBackgroundColor));
 
   no_notifications_view_ = CreateEmptyNotificationView();
 

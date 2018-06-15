@@ -31,6 +31,7 @@
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
+#include "ash/system/unified/unified_notifier_settings_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/system/unified/user_chooser_view.h"
@@ -225,6 +226,10 @@ void UnifiedSystemTrayController::ShowAudioDetailedView() {
   ShowDetailedView(std::make_unique<UnifiedAudioDetailedViewController>(this));
 }
 
+void UnifiedSystemTrayController::ShowNotifierSettingsView() {
+  ShowDetailedView(std::make_unique<UnifiedNotifierSettingsController>(this));
+}
+
 void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {
   detailed_view_controller_.reset();
   unified_view_->ResetDetailedView();
@@ -256,7 +261,7 @@ void UnifiedSystemTrayController::AnimationCanceled(
 void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
-  AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>());
+  AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<RotationLockFeaturePodController>());
   AddFeaturePodItem(std::make_unique<NightLightFeaturePodController>());
   AddFeaturePodItem(std::make_unique<CastFeaturePodController>(this));

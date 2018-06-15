@@ -71,6 +71,8 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   void ShowIMEDetailedView();
   // Show the detailed view of audio. Called from the view.
   void ShowAudioDetailedView();
+  // Show the detailed view of notifier settings. Called from the view.
+  void ShowNotifierSettingsView();
 
   // If you want to add a new detailed view, add here.
 
