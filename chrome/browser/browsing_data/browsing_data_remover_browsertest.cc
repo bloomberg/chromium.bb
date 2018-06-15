@@ -64,6 +64,8 @@ using content::BrowsingDataFilterBuilder;
 namespace {
 static const char* kExampleHost = "example.com";
 static const char* kLocalHost = "localhost";
+static const base::Time kLastHour =
+    base::Time::Now() - base::TimeDelta::FromHours(1);
 
 // Check if |file| matches any regex in |whitelist|.
 bool IsFileWhitelisted(const std::string& file,
@@ -188,11 +190,15 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   }
 
   void RemoveAndWait(int remove_mask) {
+    RemoveAndWait(remove_mask, base::Time());
+  }
+
+  void RemoveAndWait(int remove_mask, base::Time delete_begin) {
     content::BrowsingDataRemover* remover =
         content::BrowserContext::GetBrowsingDataRemover(browser()->profile());
     content::BrowsingDataRemoverCompletionObserver completion_observer(remover);
     remover->RemoveAndReply(
-        base::Time(), base::Time::Max(), remove_mask,
+        delete_begin, base::Time::Max(), remove_mask,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
         &completion_observer);
     completion_observer.BlockUntilCompletion();
@@ -214,7 +220,7 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   // Test a data type by creating a value and checking it is counted by the
   // cookie counter. Then it deletes the value and checks that it has been
   // deleted and the cookie counter is back to zero.
-  void TestSiteData(const std::string& type) {
+  void TestSiteData(const std::string& type, base::Time delete_begin) {
     EXPECT_EQ(0, GetSiteDataCount());
     GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
     ui_test_utils::NavigateToURL(browser(), url);
@@ -226,14 +232,15 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(1, GetSiteDataCount());
     EXPECT_TRUE(HasDataForType(type));
 
-    RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA);
+    RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
+                  delete_begin);
     EXPECT_EQ(0, GetSiteDataCount());
     EXPECT_FALSE(HasDataForType(type));
   }
 
   // Test that storage systems like filesystem and websql, where just an access
   // creates an empty store, are counted and deleted correctly.
-  void TestEmptySiteData(const std::string& type) {
+  void TestEmptySiteData(const std::string& type, base::Time delete_begin) {
     EXPECT_EQ(0, GetSiteDataCount());
     GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
     ui_test_utils::NavigateToURL(browser(), url);
@@ -241,7 +248,9 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     // Opening a store of this type creates a site data entry.
     EXPECT_FALSE(HasDataForType(type));
     EXPECT_EQ(1, GetSiteDataCount());
-    RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA);
+    RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
+                  delete_begin);
+
     EXPECT_EQ(0, GetSiteDataCount());
   }
 
@@ -530,12 +539,17 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, HistoryDeletion) {
   EXPECT_FALSE(HasDataForType(kType));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, CookieDeletion) {
-  TestSiteData("Cookie");
+// Parameterized to run tests for different deletion time ranges.
+class BrowsingDataRemoverBrowserTestP
+    : public BrowsingDataRemoverBrowserTest,
+      public testing::WithParamInterface<base::Time> {};
+
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, CookieDeletion) {
+  TestSiteData("Cookie", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionCookieDeletion) {
-  TestSiteData("SessionCookie");
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, SessionCookieDeletion) {
+  TestSiteData("SessionCookie", GetParam());
 }
 
 // TODO(crbug.com/849238): This test is flaky on Mac (dbg) builds.
@@ -544,15 +558,15 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionCookieDeletion) {
 #else
 #define MAYBE_LocalStorageDeletion LocalStorageDeletion
 #endif
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
                        MAYBE_LocalStorageDeletion) {
-  TestSiteData("LocalStorage");
+  TestSiteData("LocalStorage", GetParam());
 }
 
 // TODO(crbug.com/772337): DISABLED until session storage is working correctly.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
                        DISABLED_SessionStorageDeletion) {
-  TestSiteData("SessionStorage");
+  TestSiteData("SessionStorage", GetParam());
 }
 
 // Test that session storage is not counted until crbug.com/772337 is fixed.
@@ -566,39 +580,44 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionStorageCounting) {
   EXPECT_TRUE(HasDataForType("SessionStorage"));
 }
 
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, ServiceWorkerDeletion) {
-  TestSiteData("ServiceWorker");
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, ServiceWorkerDeletion) {
+  TestSiteData("ServiceWorker", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, CacheStorageDeletion) {
-  TestSiteData("CacheStorage");
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, CacheStorageDeletion) {
+  TestSiteData("CacheStorage", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, FileSystemDeletion) {
-  TestSiteData("FileSystem");
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, FileSystemDeletion) {
+  TestSiteData("FileSystem", GetParam());
 }
 
 // Test that empty filesystems are deleted correctly.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, EmptyFileSystem) {
-  TestEmptySiteData("FileSystem");
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
+                       EmptyFileSystemDeletion) {
+  // TODO(843995, 840080): Change this test to be parameterized when partial
+  // file system deletions are fixed.
+  TestEmptySiteData("FileSystem", base::Time());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, WebSqlDeletion) {
-  TestSiteData("WebSql");
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, WebSqlDeletion) {
+  TestSiteData("WebSql", GetParam());
 }
 
 // Test that empty websql dbs are deleted correctly.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, EmptyWebSql) {
-  TestEmptySiteData("WebSql");
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, EmptyWebSqlDeletion) {
+  // TODO(843995):  Change this test to be parameterized when partial
+  // web sql deletions are fixed.
+  TestEmptySiteData("WebSql", base::Time());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, IndexedDbDeletion) {
-  TestSiteData("IndexedDb");
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, IndexedDbDeletion) {
+  TestSiteData("IndexedDb", GetParam());
 }
 
 // Test that empty indexed dbs are deleted correctly.
-IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, EmptyIndexedDb) {
-  TestEmptySiteData("IndexedDb");
+IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, EmptyIndexedDb) {
+  TestEmptySiteData("IndexedDb", GetParam());
 }
 
 // Test that storage doesn't leave any traces on disk.
@@ -665,3 +684,9 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, StorageRemovedFromDisk) {
   int found = CheckUserDirectoryForString(kLocalHost, whitelist);
   EXPECT_EQ(0, found) << "A non-whitelisted file contains the hostname.";
 }
+
+// Some storage backend use a different code path for full deletions and
+// partial deletions, so we need to test both.
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        BrowsingDataRemoverBrowserTestP,
+                        ::testing::Values(base::Time(), kLastHour));
