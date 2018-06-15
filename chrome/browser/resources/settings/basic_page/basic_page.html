@@ -110,6 +110,15 @@
             </settings-internet-page>
           </settings-section>
         </template>
+        <template is="dom-if"
+            if="[[shouldShowMultidevice_(showMultidevice, pageVisibility)]]"
+            restamp>
+          <settings-section page-title="$i18n{multidevicePageTitle}"
+              section="multidevice">
+            <settings-multidevice-page prefs="{{prefs}}">
+            </settings-multidevice-page>
+          </settings-section>
+        </template>
         <template is="dom-if" if="[[showPage_(pageVisibility.bluetooth)]]"
             restamp>
           <settings-section page-title="$i18n{bluetoothPageTitle}"
@@ -278,17 +287,6 @@
                 </settings-printing-page>
               </settings-section>
             </template>
-<if expr="chromeos">
-            <template is="dom-if"
-                if="[[shouldShowMultidevice_(showMultidevice, pageVisibility)]]"
-                restamp>
-              <settings-section page-title="$i18n{multidevicePageTitle}"
-                  section="multidevice">
-                <settings-multidevice-page prefs="{{prefs}}">
-                </settings-multidevice-page>
-              </settings-section>
-            </template>
-</if>
             <template is="dom-if" if="[[showPage_(pageVisibility.a11y)]]"
                 restamp>
               <settings-section page-title="$i18n{a11yPageTitle}"

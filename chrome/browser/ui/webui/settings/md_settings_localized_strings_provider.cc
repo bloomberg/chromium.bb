@@ -2467,6 +2467,10 @@ void AddWebContentStrings(content::WebUIDataSource* html_source) {
 void AddMultideviceStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"multidevicePageTitle", IDS_SETTINGS_MULTIDEVICE},
+      {"multideviceSetupButton", IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON},
+      {"multideviceSetupItemHeading",
+       IDS_SETTINGS_MULTIDEVICE_SETUP_ITEM_HEADING},
+      {"multideviceSetupSummary", IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY},
       {"smsConnect", IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT},
       {"smsConnectSummary", IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT_SUMMARY},
   };

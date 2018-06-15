@@ -11,4 +11,7 @@ js_type_check("closure_compile") {
 }
 
 js_library("multidevice_page") {
+  deps = [
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
 }
