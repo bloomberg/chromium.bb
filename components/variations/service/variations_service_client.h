@@ -8,12 +8,13 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "base/version.h"
 #include "components/version_info/version_info.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace network_time {
@@ -37,7 +38,8 @@ class VariationsServiceClient {
   virtual base::Callback<base::Version(void)>
   GetVersionForSimulationCallback() = 0;
 
-  virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactory() = 0;
   virtual network_time::NetworkTimeTracker* GetNetworkTimeTracker() = 0;
 
   // Gets the channel of the embedder.

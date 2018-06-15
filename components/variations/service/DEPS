@@ -7,5 +7,7 @@ include_rules = [
   "+components/version_info",
   "+components/web_resource",
   "+net",
+  "+services/network/public",
+  "+services/network/test",
   "+ui/base",
 ]

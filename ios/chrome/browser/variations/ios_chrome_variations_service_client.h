@@ -6,7 +6,12 @@
 #define IOS_CHROME_BROWSER_VARIATIONS_IOS_CHROME_VARIATIONS_SERVICE_CLIENT_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "components/variations/service/variations_service_client.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 // IOSChromeVariationsServiceClient provides an implementation of
 // VariationsServiceClient that depends on ios/chrome/.
@@ -20,7 +25,7 @@ class IOSChromeVariationsServiceClient
   // variations::VariationsServiceClient implementation.
   std::string GetApplicationLocale() override;
   base::Callback<base::Version()> GetVersionForSimulationCallback() override;
-  net::URLRequestContextGetter* GetURLRequestContext() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
   version_info::Channel GetChannel() override;
   bool OverridesRestrictParameter(std::string* parameter) override;
