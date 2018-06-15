@@ -1651,6 +1651,7 @@
     'remove_from': [
       # chromium.win
       'Win7 Tests (1)',  # For swarming capacity reasons.
+      'Win10 Tests x64 (dbg)',  # flaky: https://crbug.com/852786
     ],
   },
   'network_service_extensions_browsertests': {
@@ -1667,8 +1668,8 @@
     ],
     'modifications': {
       # chromium.win
-      'Win10 Tests x64 (dbg)': {  # temporary, https://crbug.com/818832
-        'experiment_percentage': 100,
+      'Win10 Tests x64 (dbg)': {
+        'experiment_percentage': 100,  # https://crbug.com/852786
       },
     },
   },
