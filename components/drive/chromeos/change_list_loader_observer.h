@@ -25,6 +25,9 @@ class ChangeListLoaderObserver {
   // Triggered when content(s) in drive has been changed.
   virtual void OnFileChanged(const FileChange& changed_files) {}
 
+  // Triggered when the users accessible team drives has changed.
+  virtual void OnTeamDrivesChanged(const FileChange& changed_team_drives) {}
+
   // Triggered when loading from the server is complete.
   virtual void OnLoadFromServerComplete() {}
 

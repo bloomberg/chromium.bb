@@ -1904,7 +1904,7 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewTeamDriveEntry(
   new_entry->share_url = net::AppendOrReplaceQueryParameter(
       share_url_base_, "name", team_drive_name);
 
-  AddNewChangestamp(&change, team_drive_id);
+  AddNewChangestamp(&change, std::string());
 
   change.set_modification_date(base::Time() +
                                base::TimeDelta::FromMilliseconds(++date_seq_));
