@@ -140,6 +140,9 @@ class LowbdIntraPredTest : public AV1IntraPredTest<IntraPred, uint8_t> {
   }
 };
 
+// Suppress an unitialized warning. Once there are implementations to test then
+// this can be restored.
+#if 0
 TEST_P(HighbdIntraPredTest, Bitexact) {
   // max block size is 32
   DECLARE_ALIGNED(16, uint16_t, left_col[2 * 32]);
@@ -150,7 +153,10 @@ TEST_P(HighbdIntraPredTest, Bitexact) {
   memset(above_data, 0, sizeof(above_data));
   RunTest(left_col, above_data, dst, ref_dst);
 }
+#endif  // 0
 
+// Same issue as above but for arm.
+#if !HAVE_NEON
 TEST_P(LowbdIntraPredTest, Bitexact) {
   // max block size is 32
   DECLARE_ALIGNED(16, uint8_t, left_col[2 * 32]);
@@ -161,6 +167,7 @@ TEST_P(LowbdIntraPredTest, Bitexact) {
   memset(above_data, 0, sizeof(above_data));
   RunTest(left_col, above_data, dst, ref_dst);
 }
+#endif  // !HAVE_NEON
 
 // -----------------------------------------------------------------------------
 // High Bit Depth Tests
