@@ -41,6 +41,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.content.R;
+import org.chromium.content.browser.ApiHelperForM;
 import org.chromium.content.browser.ContentClassFactory;
 import org.chromium.content.browser.GestureListenerManagerImpl;
 import org.chromium.content.browser.PopupController;
@@ -465,10 +466,9 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         if (!isActionModeValid()) clearSelection();
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
     private ActionMode startFloatingActionMode() {
-        ActionMode actionMode = mView.startActionMode(
-                new FloatingActionModeCallback(this, mCallback), ActionMode.TYPE_FLOATING);
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+        ActionMode actionMode = ApiHelperForM.startActionMode(mView, this, mCallback);
         return actionMode;
     }
 

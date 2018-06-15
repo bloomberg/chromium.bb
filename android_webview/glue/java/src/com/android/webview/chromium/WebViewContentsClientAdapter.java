@@ -535,7 +535,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
             if (mSupportLibClient.isFeatureAvailable(Features.VISUAL_STATE_CALLBACK)) {
                 mSupportLibClient.onPageCommitVisible(mWebView, url);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mWebViewClient.onPageCommitVisible(mWebView, url);
+                ApiHelperForM.onPageCommitVisible(mWebViewClient, mWebView, url);
             }
             // Otherwise, the API does not exist, so do nothing.
         } finally {
@@ -588,8 +588,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                 mSupportLibClient.onReceivedError(
                         mWebView, new WebResourceRequestAdapter(request), error);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mWebViewClient.onReceivedError(mWebView, new WebResourceRequestAdapter(request),
-                        new WebResourceErrorAdapter(error));
+                ApiHelperForM.onReceivedError(mWebViewClient, mWebView, request, error);
             }
             // Otherwise, this is handled by {@link #onReceivedError}.
         } finally {
@@ -632,10 +631,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                                 response.getStatusCode(), response.getReasonPhrase(),
                                 response.getResponseHeaders(), response.getData()));
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                mWebViewClient.onReceivedHttpError(mWebView, new WebResourceRequestAdapter(request),
-                        new WebResourceResponse(true, response.getMimeType(), response.getCharset(),
-                                response.getStatusCode(), response.getReasonPhrase(),
-                                response.getResponseHeaders(), response.getData()));
+                ApiHelperForM.onReceivedHttpError(mWebViewClient, mWebView, request, response);
             }
             // Otherwise, the API does not exist, so do nothing.
         } finally {
