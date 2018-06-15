@@ -12,6 +12,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/tray/tri_view.h"
+#include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/top_shortcuts_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/user/rounded_image_view.h"
@@ -59,7 +60,7 @@ base::string16 GetUserItemAccessibleString(int user_index) {
 
 namespace {
 
-class CloseButton : public views::ImageButton, public views::ButtonListener {
+class CloseButton : public TopShortcutButton, public views::ButtonListener {
  public:
   explicit CloseButton(UnifiedSystemTrayController* controller);
 
@@ -73,12 +74,10 @@ class CloseButton : public views::ImageButton, public views::ButtonListener {
 };
 
 CloseButton::CloseButton(UnifiedSystemTrayController* controller)
-    : ImageButton(this), controller_(controller) {
-  // TODO(crbug.com/845805): Replace the close button icon.
-  gfx::ImageSkia icon =
-      gfx::CreateVectorIcon(kOverviewWindowCloseIcon, kMenuIconColor);
-  SetImage(views::Button::STATE_NORMAL, icon);
-}
+    : TopShortcutButton(this,
+                        kOverviewWindowCloseIcon,
+                        IDS_ASH_WINDOW_CONTROL_ACCNAME_CLOSE),
+      controller_(controller) {}
 
 void CloseButton::ButtonPressed(views::Button* sender, const ui::Event& event) {
   controller_->TransitionToMainView(true /* restore_focus */);
