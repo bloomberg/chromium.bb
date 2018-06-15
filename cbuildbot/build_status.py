@@ -167,9 +167,7 @@ class SlaveStatus(object):
       self.completed_builds = set([build for build in self.completed_builds
                                    if build not in experimental_builders])
 
-    if (self.config is not None and
-        self.metadata is not None and
-        config_lib.UseBuildbucketScheduler(self.config)):
+    if self.config and self.metadata:
       scheduled_buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
           self.metadata)
       # It's possible that CQ-master has a list of important slaves configured
