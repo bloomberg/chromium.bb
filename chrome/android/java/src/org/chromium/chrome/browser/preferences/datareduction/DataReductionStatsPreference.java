@@ -303,10 +303,13 @@ public class DataReductionStatsPreference extends Preference {
         }
         final long savingsDiff = Math.abs(breakdownSavingsTotal - savingsTotalBytes);
         final long usageDiff = Math.abs(breakdownUsageTotal - compressedTotalBytes);
-        final int savingsDiffPercent =
-                (int) (savingsDiff / (breakdownSavingsTotal + savingsTotalBytes) * 100);
-        final int usageDiffPercent =
-                (int) (usageDiff / (breakdownUsageTotal + compressedTotalBytes) * 100);
+        final long savingsTotal = breakdownSavingsTotal + savingsTotalBytes;
+        final long usageTotal = breakdownUsageTotal + compressedTotalBytes;
+
+        if (savingsTotal <= 0 || usageTotal <= 0) return;
+
+        final int savingsDiffPercent = (int) (savingsDiff / savingsTotal * 100);
+        final int usageDiffPercent = (int) (usageDiff / usageTotal * 100);
 
         DataReductionProxyUma.dataReductionProxyUserViewedSavingsDifference(
                 savingsDiffPercent, usageDiffPercent);
