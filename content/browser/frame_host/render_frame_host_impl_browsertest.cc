@@ -548,7 +548,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, POSTNavigation) {
   EXPECT_TRUE(shell()
                   ->web_contents()
                   ->GetController()
-                  .GetActiveEntry()
+                  .GetLastCommittedEntry()
                   ->GetHasPostData());
 
   // Reload and verify the form was submitted.
