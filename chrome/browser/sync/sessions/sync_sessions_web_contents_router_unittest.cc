@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
-
-#include "build/build_config.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
-#include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
+#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -49,10 +47,6 @@ class SyncSessionsWebContentsRouterTest : public testing::Test {
   std::unique_ptr<content::WebContents> test_contents_;
 };
 
-// Disabled on android due to complexity of creating a full TabAndroid object
-// for a unit test. The logic being tested here isn't directly affected by
-// platform-specific peculiarities.
-#if !defined(OS_ANDROID)
 TEST_F(SyncSessionsWebContentsRouterTest, FlareNotRun) {
   StartSyncFlareMock mock;
   router()->InjectStartSyncFlare(
@@ -62,7 +56,7 @@ TEST_F(SyncSessionsWebContentsRouterTest, FlareNotRun) {
   router()->NotifyTabModified(test_contents(), false);
   EXPECT_FALSE(mock.was_run());
 
-  BrowserSyncedTabDelegate::CreateForWebContents(test_contents());
+  TabContentsSyncedTabDelegate::CreateForWebContents(test_contents());
 
   // There's a delegate for the tab, but it's not a load completed event, so the
   // flare still shouldn't run.
@@ -72,12 +66,16 @@ TEST_F(SyncSessionsWebContentsRouterTest, FlareNotRun) {
 
 // Make sure we don't crash when there's not a flare.
 TEST_F(SyncSessionsWebContentsRouterTest, FlareNotSet) {
-  BrowserSyncedTabDelegate::CreateForWebContents(test_contents());
+  TabContentsSyncedTabDelegate::CreateForWebContents(test_contents());
   router()->NotifyTabModified(test_contents(), false);
 }
 
+// Disabled on android due to complexity of creating a full TabAndroid object
+// for a unit test. The logic being tested here isn't directly affected by
+// platform-specific peculiarities.
+#if !defined(OS_ANDROID)
 TEST_F(SyncSessionsWebContentsRouterTest, FlareRunsForLoadCompleted) {
-  BrowserSyncedTabDelegate::CreateForWebContents(test_contents());
+  TabContentsSyncedTabDelegate::CreateForWebContents(test_contents());
 
   StartSyncFlareMock mock;
   router()->InjectStartSyncFlare(

@@ -9,7 +9,7 @@
 
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
-#include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
+#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_handle.h"
@@ -38,7 +38,7 @@ class FakeLocalSessionEventHandler : public LocalSessionEventHandler {
   }
 
  private:
-  bool was_notified_ = false;
+  bool was_notified_;
 };
 
 class SyncSessionsRouterTabHelperTest : public ChromeRenderViewHostTestHarness {
@@ -56,7 +56,7 @@ class SyncSessionsRouterTabHelperTest : public ChromeRenderViewHostTestHarness {
     SyncSessionsRouterTabHelper::CreateForWebContents(web_contents(), router_);
     router_->StartRoutingTo(handler());
 
-    BrowserSyncedTabDelegate::CreateForWebContents(web_contents());
+    TabContentsSyncedTabDelegate::CreateForWebContents(web_contents());
     NavigateAndCommit(GURL("about:blank"));
   }
 
@@ -72,7 +72,7 @@ TEST_F(SyncSessionsRouterTabHelperTest, SubframeNavigationsIgnored) {
   SyncSessionsRouterTabHelper* helper =
       SyncSessionsRouterTabHelper::FromWebContents(web_contents());
 
-  ASSERT_TRUE(handler()->was_notified_since_last_call());
+  EXPECT_TRUE(handler()->was_notified_since_last_call());
 
   content::RenderFrameHost* child_rfh =
       content::RenderFrameHostTester::For(main_rfh())->AppendChild("subframe");
