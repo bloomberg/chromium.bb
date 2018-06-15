@@ -125,8 +125,8 @@ void ContextualContentSuggestionsService::BelowConfidenceThresholdFetchDone(
     FetchClustersCallback callback,
     ReportFetchMetricsCallback metrics_callback) {
   metrics_callback.Run(contextual_suggestions::FETCH_BELOW_THRESHOLD);
-  std::move(callback).Run(
-      ContextualSuggestionsResult("", {}, PeekConditions()));
+  std::move(callback).Run(ContextualSuggestionsResult("", {}, PeekConditions(),
+                                                      ServerExperimentInfos()));
 }
 
 }  // namespace contextual_suggestions

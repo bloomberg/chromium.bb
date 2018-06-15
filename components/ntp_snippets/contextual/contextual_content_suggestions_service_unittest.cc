@@ -231,7 +231,8 @@ TEST_F(ContextualContentSuggestionsServiceTest, ShouldCacheResults) {
   EXPECT_TRUE(mock_callback2.has_run);
   ExpectResponsesMatch(
       mock_callback2,
-      ContextualSuggestionsResult("peek text", clusters, PeekConditions()));
+      ContextualSuggestionsResult("peek text", clusters, PeekConditions(),
+                                  ServerExperimentInfos()));
 }
 
 TEST_F(ContextualContentSuggestionsServiceTest, ShouldEvictOldCachedResults) {
@@ -257,7 +258,8 @@ TEST_F(ContextualContentSuggestionsServiceTest, ShouldEvictOldCachedResults) {
 
     ExpectResponsesMatch(
         mock_callback,
-        ContextualSuggestionsResult("peek text", clusters, PeekConditions()));
+        ContextualSuggestionsResult("peek text", clusters, PeekConditions(),
+                                    ServerExperimentInfos()));
   }
 
   // Urls numbered kFetchCacheCapacity through 1 should be cached still; 0
@@ -269,7 +271,8 @@ TEST_F(ContextualContentSuggestionsServiceTest, ShouldEvictOldCachedResults) {
         context_url, mock_callback.ToOnceCallback(), base::DoNothing());
     ExpectResponsesMatch(
         mock_callback,
-        ContextualSuggestionsResult("peek text", clusters, PeekConditions()));
+        ContextualSuggestionsResult("peek text", clusters, PeekConditions(),
+                                    ServerExperimentInfos()));
   }
 
   GURL context_url("http://www.from.url/0");

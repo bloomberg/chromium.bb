@@ -79,7 +79,7 @@ Cluster PivotToCluster(const PivotCluster& pivot) {
   return cluster_builder.Build();
 }
 
-PeekConditions PeekConditionsFromResponse(
+PeekConditions GetPeekConditionsFromResponse(
     const GetPivotsResponse& response_proto) {
   AutoPeekConditions proto_conditions =
       response_proto.pivots().auto_peek_conditions();
@@ -95,7 +95,7 @@ PeekConditions PeekConditionsFromResponse(
   return peek_conditions;
 }
 
-std::vector<Cluster> ClustersFromResponse(
+std::vector<Cluster> GetClustersFromResponse(
     const GetPivotsResponse& response_proto) {
   std::vector<Cluster> clusters;
   Pivots pivots = response_proto.pivots();
@@ -122,7 +122,7 @@ std::vector<Cluster> ClustersFromResponse(
   return clusters;
 }
 
-std::string PeekTextFromResponse(const GetPivotsResponse& response_proto) {
+std::string GetPeekTextFromResponse(const GetPivotsResponse& response_proto) {
   return response_proto.pivots().peek_text().text();
 }
 
@@ -153,12 +153,26 @@ const std::string SerializedPivotsRequest(const std::string& url,
   return pivot_request.SerializeAsString();
 }
 
+ServerExperimentInfos GetServerExperimentInfosFromResponse(
+    const GetPivotsResponse& response_proto) {
+  ServerExperimentInfos field_trials;
+  for (auto experiment_info : response_proto.pivots().experiment_info()) {
+    std::string trial_name = experiment_info.experiment_group_name();
+    std::string group_name = experiment_info.experiment_arm_name();
+    if (!trial_name.empty() && !group_name.empty())
+      field_trials.emplace_back(std::move(trial_name), std::move(group_name));
+  }
+
+  return field_trials;
+}
+
 ContextualSuggestionsResult ResultFromResponse(
     const GetPivotsResponse& response_proto) {
   return ContextualSuggestionsResult(
-      PeekTextFromResponse(response_proto),
-      ClustersFromResponse(response_proto),
-      PeekConditionsFromResponse(response_proto));
+      GetPeekTextFromResponse(response_proto),
+      GetClustersFromResponse(response_proto),
+      GetPeekConditionsFromResponse(response_proto),
+      GetServerExperimentInfosFromResponse(response_proto));
 }
 
 }  // namespace

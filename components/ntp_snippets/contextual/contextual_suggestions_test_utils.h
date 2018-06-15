@@ -27,6 +27,7 @@ class MockClustersCallback {
   std::string response_peek_text;
   std::vector<Cluster> response_clusters;
   PeekConditions peek_conditions;
+  ServerExperimentInfos experiment_infos;
 };
 
 class MockMetricsCallback {

@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/callback.h"
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -39,6 +40,14 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace contextual_suggestions {
+
+// A whitelisted method to inject synthetic field trials to Chrome Metrics.
+void RegisterSyntheticFieldTrials(const ContextualSuggestionsResult& result) {
+  for (const auto& experiment_info : result.experiment_infos) {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        experiment_info.name, experiment_info.group);
+  }
+}
 
 static jlong JNI_ContextualSuggestionsBridge_Init(
     JNIEnv* env,
@@ -177,6 +186,9 @@ void ContextualSuggestionsBridge::OnSuggestionsAvailable(
           !suggestion.image_id.empty());
     }
   }
+
+  RegisterSyntheticFieldTrials(result);
+
   RunCallbackAndroid(j_callback, j_result);
 }
 
