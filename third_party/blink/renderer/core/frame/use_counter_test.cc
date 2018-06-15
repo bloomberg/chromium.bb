@@ -20,13 +20,6 @@ const char kExtensionFeaturesHistogramName[] =
     "Blink.UseCounter.Extensions.Features";
 
 const char kSVGFeaturesHistogramName[] = "Blink.UseCounter.SVGImage.Features";
-const char kSVGCSSHistogramName[] = "Blink.UseCounter.SVGImage.CSSProperties";
-const char kSVGAnimatedCSSHistogramName[] =
-    "Blink.UseCounter.SVGImage.AnimatedCSSProperties";
-
-const char* kHistogramList[] = {kExtensionFeaturesHistogramName,
-                                kSVGCSSHistogramName,
-                                kSVGAnimatedCSSHistogramName};
 
 // In practice, SVGs always appear to be loaded with an about:blank URL
 const char kSvgUrl[] = "about:blank";
@@ -114,31 +107,6 @@ void UseCounterTest::HistogramBasicTest(
   EXPECT_TRUE(counted(item));
   histogram_tester_.ExpectBucketCount(histogram, histogram_map(item), 2);
   histogram_tester_.ExpectTotalCount(histogram, 4);
-
-  // For all histograms, no other histograms besides |histogram| should
-  // be affected.
-  for (const std::string& unaffected_histogram : kHistogramList) {
-    if (unaffected_histogram == histogram)
-      continue;
-    // CSS histograms are never created in didCommitLoad when the context is
-    // extension.
-    if (histogram == kExtensionFeaturesHistogramName &&
-        unaffected_histogram.find("CSS") != std::string::npos)
-      continue;
-
-    // The expected total count for "Features" of unaffected histograms should
-    // be either:
-    //    a. pageVisits, for "CSSProperties"; or
-    //    b. 0 (pageVisits is 0), for others, including "SVGImage.CSSProperties"
-    //      since no SVG images are loaded at all.
-    histogram_tester_.ExpectTotalCount(
-        unaffected_histogram,
-        unaffected_histogram.find("CSS") != std::string::npos
-            ? histogram_tester_.GetBucketCount(
-                  unaffected_histogram,
-                  GetPageVisitsBucketforHistogram(unaffected_histogram))
-            : 0);
-  }
 }
 
 TEST_F(UseCounterTest, RecordingExtensions) {
@@ -169,38 +137,6 @@ TEST_F(UseCounterTest, SVGImageContextFeatures) {
         use_counter.RecordMeasurement(feature, *GetFrame());
       },
       [](WebFeature feature) -> int { return static_cast<int>(feature); },
-      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
-}
-
-TEST_F(UseCounterTest, SVGImageContextCSSProperties) {
-  UseCounter use_counter(UseCounter::kSVGImageContext);
-  HistogramBasicTest<CSSPropertyID>(
-      kSVGCSSHistogramName, CSSPropertyFont, CSSPropertyZoom,
-      [&](CSSPropertyID property) -> bool {
-        return use_counter.IsCounted(property);
-      },
-      [&](CSSPropertyID property) {
-        use_counter.Count(kHTMLStandardMode, property, GetFrame());
-      },
-      [](CSSPropertyID property) -> int {
-        return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
-      },
-      [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
-}
-
-TEST_F(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
-  UseCounter use_counter(UseCounter::kSVGImageContext);
-  HistogramBasicTest<CSSPropertyID>(
-      kSVGAnimatedCSSHistogramName, CSSPropertyOpacity, CSSPropertyVariable,
-      [&](CSSPropertyID property) -> bool {
-        return use_counter.IsCountedAnimatedCSS(property);
-      },
-      [&](CSSPropertyID property) {
-        use_counter.CountAnimatedCSS(property, GetFrame());
-      },
-      [](CSSPropertyID property) -> int {
-        return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
-      },
       [&](LocalFrame* frame) { use_counter.DidCommitLoad(frame); }, kSvgUrl);
 }
 
