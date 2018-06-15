@@ -12,6 +12,7 @@
 #ifndef _V128_INTRINSICS_H
 #define _V128_INTRINSICS_H
 
+#include <stdint.h>
 #include "aom_dsp/simd/v64_intrinsics_x86.h"
 
 typedef __m128i v128;
@@ -71,7 +72,7 @@ SIMD_INLINE v128 v128_align(v128 a, v128 b, const unsigned int c) {
 #endif
 #else
 #if defined(__SSSE3__)
-#define v128_align(a, b, c) ((c) ? _mm_alignr_epi8(a, b, c) : (b))
+#define v128_align(a, b, c) ((c) ? _mm_alignr_epi8(a, b, (uint8_t)(c)) : (b))
 #else
 #define v128_align(a, b, c) \
   ((c) ? _mm_or_si128(_mm_srli_si128(b, c), _mm_slli_si128(a, 16 - (c))) : (b))
@@ -588,8 +589,8 @@ SIMD_INLINE v128 v128_shr_s64(v128 a, unsigned int c) {
 
 /* These intrinsics require immediate values, so we must use #defines
    to enforce that. */
-#define v128_shl_n_byte(a, c) _mm_slli_si128(a, c)
-#define v128_shr_n_byte(a, c) _mm_srli_si128(a, c)
+#define v128_shl_n_byte(a, c) _mm_slli_si128(a, (c)&127)
+#define v128_shr_n_byte(a, c) _mm_srli_si128(a, (c)&127)
 #define v128_shl_n_8(a, c) \
   _mm_and_si128(_mm_set1_epi8((uint8_t)(0xff << (c))), _mm_slli_epi16(a, c))
 #define v128_shr_n_u8(a, c) \

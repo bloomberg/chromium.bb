@@ -658,12 +658,12 @@ SIMD_INLINE v256 v256_shr_s64(v256 a, unsigned int c) {
    to enforce that. */
 // _mm256_slli_si256 works on 128 bit lanes and can't be used
 #define v256_shl_n_byte(a, n)                                                \
-  ((n) < 16 ? v256_from_v128(v128_align(v256_high_v128(a), v256_low_v128(a), \
-                                        (16 - (n)) & 15),                    \
-                             v128_shl_n_byte(v256_low_v128(a), n))           \
+  ((n) < 16 ? v256_from_v128(                                                \
+                  v128_align(v256_high_v128(a), v256_low_v128(a), 16 - (n)), \
+                  v128_shl_n_byte(v256_low_v128(a), n))                      \
             : _mm256_inserti128_si256(                                       \
                   _mm256_setzero_si256(),                                    \
-                  v128_shl_n_byte(v256_low_v128(a), (n)&15), 1))
+                  v128_shl_n_byte(v256_low_v128(a), (n)-16), 1))
 
 // _mm256_srli_si256 works on 128 bit lanes and can't be used
 #define v256_shr_n_byte(a, n)                                                \
