@@ -105,7 +105,6 @@ class LoadingMobileStorySet(story.StorySet):
       ('http://www.localmoxie.com', 'LocalMoxie'),
       ('http://www.dawn.com', 'Dawn'),
       ('http://www.thairath.co.th', 'Thairath'),
-      ('http://www.hashocean.com', 'HashOcean'),
     ], cache_temperatures, traffic_settings)
 
     self.AddStories(['easy_ttfmp'], [
@@ -118,7 +117,6 @@ class LoadingMobileStorySet(story.StorySet):
       ('http://www.thestar.com.my', 'TheStar'),
       ('http://www.58pic.com', '58Pic'),
       ('http://www.hongkiat.com', 'Hongkiat'),
-      ('http://www.ibicn.com', 'IBI'),
     ], cache_temperatures, traffic_settings)
 
     self.AddStories(['easy_tti'], [
