@@ -95,7 +95,7 @@ AccountReconcilor::AccountReconcilor(
       registered_with_content_settings_(false),
       is_reconcile_started_(false),
       first_execution_(true),
-      error_during_last_reconcile_(false),
+      error_during_last_reconcile_(GoogleServiceAuthError::AuthErrorNone()),
       reconcile_is_noop_(true),
       chrome_accounts_changed_(false),
       account_reconcilor_lock_count_(0),
@@ -213,7 +213,8 @@ void AccountReconcilor::UnregisterWithCookieManagerService() {
 
 signin_metrics::AccountReconcilorState AccountReconcilor::GetState() {
   if (!is_reconcile_started_) {
-    return error_during_last_reconcile_
+    return (error_during_last_reconcile_.state() !=
+            GoogleServiceAuthError::State::NONE)
                ? signin_metrics::ACCOUNT_RECONCILOR_ERROR
                : signin_metrics::ACCOUNT_RECONCILOR_OK;
   }
@@ -340,7 +341,7 @@ void AccountReconcilor::StartReconcile() {
   add_to_cookie_.clear();
   reconcile_start_time_ = base::Time::Now();
   is_reconcile_started_ = true;
-  error_during_last_reconcile_ = false;
+  error_during_last_reconcile_ = GoogleServiceAuthError::AuthErrorNone();
   reconcile_is_noop_ = true;
 
   // Rely on the GCMS to manage calls to and responses from ListAccounts.
@@ -412,8 +413,13 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
     FinishReconcile(primary_account, LoadValidAccountsFromTokenService(),
                     std::move(verified_gaia_accounts));
   } else {
-    if (is_reconcile_started_)
-      error_during_last_reconcile_ = true;
+    // We may have seen a series of errors during reconciliation. Delegates may
+    // rely on the severity of the last seen error (see |OnReconcileError|) and
+    // hence do not override a persistent error, if we have seen one.
+    if (is_reconcile_started_ &&
+        !error_during_last_reconcile_.IsPersistentError()) {
+      error_during_last_reconcile_ = error;
+    }
     AbortReconcile();
   }
 }
@@ -550,8 +556,11 @@ void AccountReconcilor::CalculateIfReconcileIsDone() {
   base::TimeDelta duration = base::Time::Now() - reconcile_start_time_;
   // Record the duration if reconciliation was underway and now it is over.
   if (is_reconcile_started_ && add_to_cookie_.empty()) {
-    signin_metrics::LogSigninAccountReconciliationDuration(duration,
-        !error_during_last_reconcile_);
+    bool was_last_reconcile_successful =
+        (error_during_last_reconcile_.state() ==
+         GoogleServiceAuthError::State::NONE);
+    signin_metrics::LogSigninAccountReconciliationDuration(
+        duration, was_last_reconcile_successful);
     timer_->Stop();
   }
 
@@ -623,8 +632,13 @@ void AccountReconcilor::OnAddAccountToCookieCompleted(
           << "Error was " << error.ToString();
   // Always listens to GaiaCookieManagerService. Only proceed if reconciling.
   if (is_reconcile_started_ && MarkAccountAsAddedToCookie(account_id)) {
-    if (error.state() != GoogleServiceAuthError::State::NONE)
-      error_during_last_reconcile_ = true;
+    // We may have seen a series of errors during reconciliation. Delegates may
+    // rely on the severity of the last seen error (see |OnReconcileError|) and
+    // hence do not override a persistent error, if we have seen one.
+    if (error.state() != GoogleServiceAuthError::State::NONE &&
+        !error_during_last_reconcile_.IsPersistentError()) {
+      error_during_last_reconcile_ = error;
+    }
     CalculateIfReconcileIsDone();
     ScheduleStartReconcileIfChromeAccountsChanged();
   }

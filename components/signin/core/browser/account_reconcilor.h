@@ -271,8 +271,15 @@ class AccountReconcilor : public KeyedService,
   // True iff this is the first time the reconcilor is executing.
   bool first_execution_;
 
-  // True iff an error occured during the last attempt to reconcile.
-  bool error_during_last_reconcile_;
+  // 'Most severe' error encountered during the last attempt to reconcile. If
+  // the last reconciliation attempt was successful, this will be
+  // |GoogleServiceAuthError::State::NONE|.
+  // Severity of an error is defined on the basis of
+  // |GoogleServiceAuthError::IsPersistentError()| only, i.e. any persistent
+  // error is considered more severe than all non-persistent errors, but
+  // persistent (or non-persistent) errors do not have an internal severity
+  // ordering among themselves.
+  GoogleServiceAuthError error_during_last_reconcile_;
 
   // Used for Dice migration: migration can happen if the accounts are
   // consistent, which is indicated by reconcile being a no-op.
