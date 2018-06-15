@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
-#include "chromeos/services/secure_channel/ble_service_data_helper.h"
 #include "chromeos/services/secure_channel/ble_synchronizer_base.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/remote_device_ref.h"
@@ -214,7 +213,7 @@ void BleScannerImpl::HandleDeviceUpdated(
   memcpy(string_contents_ptr, service_data->data(), service_data->size());
 
   auto potential_result = service_data_helper_->IdentifyRemoteDevice(
-      service_data_str, scan_filters());
+      service_data_str, GetAllDeviceIdPairs());
 
   // There was service data for the ProximityAuth UUID, but it did not apply to
   // any active scan filters. The advertisement was likely from a nearby device
@@ -222,21 +221,62 @@ void BleScannerImpl::HandleDeviceUpdated(
   if (!potential_result)
     return;
 
-  // Prepare a hex string of |service_data_str|.
+  HandlePotentialScanResult(service_data_str, *potential_result,
+                            bluetooth_device);
+}
+
+void BleScannerImpl::HandlePotentialScanResult(
+    const std::string& service_data,
+    const BleServiceDataHelper::DeviceWithBackgroundBool& potential_result,
+    device::BluetoothDevice* bluetooth_device) {
+  // Background advertisements correspond to the listener role; foreground
+  // advertisements correspond to the initiator role.
+  ConnectionRole connection_role = potential_result.second
+                                       ? ConnectionRole::kListenerRole
+                                       : ConnectionRole::kInitiatorRole;
+
+  // Check to see if a corresponding scan filter exists. At this point, it is
+  // possible that a scan result was received for the correct DeviceIdPair but
+  // incorrect ConnectionRole.
+  bool does_corresponding_scan_filter_exist = false;
+  for (const auto& scan_filter : scan_filters()) {
+    if (scan_filter.first.remote_device_id() !=
+        potential_result.first.GetDeviceId()) {
+      continue;
+    }
+
+    if (scan_filter.second == connection_role) {
+      does_corresponding_scan_filter_exist = true;
+      break;
+    }
+  }
+
+  // Prepare a hex string of |service_data|.
   std::stringstream ss;
   ss << "0x" << std::hex;
-  for (const auto& character : service_data_str)
+  for (const auto& character : service_data)
     ss << static_cast<uint32_t>(character);
+
+  if (!does_corresponding_scan_filter_exist) {
+    PA_LOG(WARNING) << "BleScannerImpl::HandleDeviceUpdated(): Received scan "
+                    << "result from device with ID \""
+                    << potential_result.first.GetTruncatedDeviceIdForLogs()
+                    << "\", but it did not correspond to an active scan "
+                    << "filter. Service data: " << ss.str()
+                    << ", Background advertisement: "
+                    << (potential_result.second ? "true" : "false");
+    return;
+  }
 
   PA_LOG(INFO) << "BleScannerImpl::HandleDeviceUpdated(): Received scan result "
                << "from device with ID \""
-               << potential_result->first.GetTruncatedDeviceIdForLogs() << "\""
+               << potential_result.first.GetTruncatedDeviceIdForLogs() << "\""
                << ". Service data: " << ss.str()
                << ", Background advertisement: "
-               << (potential_result->second ? "true" : "false");
+               << (potential_result.second ? "true" : "false");
 
-  NotifyReceivedAdvertisementFromDevice(
-      potential_result->first, bluetooth_device, potential_result->second);
+  NotifyReceivedAdvertisementFromDevice(potential_result.first,
+                                        bluetooth_device, connection_role);
 }
 
 void BleScannerImpl::SetServiceDataProviderForTesting(

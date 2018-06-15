@@ -5,9 +5,12 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_SCANNER_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_BLE_SCANNER_H_
 
-#include <unordered_set>
+#include <ostream>
+#include <utility>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "chromeos/services/secure_channel/connection_role.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
 #include "components/cryptauth/remote_device_ref.h"
 
@@ -29,22 +32,24 @@ class BleScanner {
     virtual void OnReceivedAdvertisement(
         cryptauth::RemoteDeviceRef remote_device,
         device::BluetoothDevice* bluetooth_device,
-        bool is_background_advertisement) = 0;
+        ConnectionRole connection_role) = 0;
   };
 
   virtual ~BleScanner();
 
-  // Adds a scan filter for the provided DeviceIdPair. If no scan filters were
+  using ScanFilter = std::pair<DeviceIdPair, ConnectionRole>;
+
+  // Adds a scan filter for the provided ScanFilter. If no scan filters were
   // previously present, adding a scan filter will start a BLE discovery session
   // and attempt to create a connection.
-  void AddScanFilter(const DeviceIdPair& scan_filter);
+  void AddScanFilter(const ScanFilter& scan_filter);
 
-  // Removes a scan filter for the provided DeviceIdPair. If this function
+  // Removes a scan filter for the provided ScanFilter. If this function
   // removes the only remaining filter, the ongoing BLE discovery session will
   // stop.
-  void RemoveScanFilter(const DeviceIdPair& scan_filter);
+  void RemoveScanFilter(const ScanFilter& scan_filter);
 
-  bool HasScanFilter(const DeviceIdPair& scan_filter);
+  bool HasScanFilter(const ScanFilter& scan_filter);
 
  protected:
   BleScanner(Delegate* delegate);
@@ -52,20 +57,24 @@ class BleScanner {
   virtual void HandleScanFilterChange() = 0;
 
   bool should_discovery_session_be_active() { return !scan_filters_.empty(); }
-  const DeviceIdPairSet& scan_filters() { return scan_filters_; }
+  const base::flat_set<ScanFilter>& scan_filters() { return scan_filters_; }
+  DeviceIdPairSet GetAllDeviceIdPairs();
 
   void NotifyReceivedAdvertisementFromDevice(
       const cryptauth::RemoteDeviceRef& remote_device,
       device::BluetoothDevice* bluetooth_device,
-      bool is_background_advertisement);
+      ConnectionRole connection_role);
 
  private:
   Delegate* delegate_;
 
-  DeviceIdPairSet scan_filters_;
+  base::flat_set<ScanFilter> scan_filters_;
 
   DISALLOW_COPY_AND_ASSIGN(BleScanner);
 };
+
+std::ostream& operator<<(std::ostream& stream,
+                         const BleScanner::ScanFilter& scan_filter);
 
 }  // namespace secure_channel
 

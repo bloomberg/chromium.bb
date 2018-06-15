@@ -26,7 +26,7 @@ class FakeBleScanner : public BleScanner {
     return num_scan_filter_changes_handled_;
   }
 
-  std::vector<DeviceIdPair> GetAllScanFiltersForRemoteDevice(
+  std::vector<ScanFilter> GetAllScanFiltersForRemoteDevice(
       const std::string& remote_device_id);
 
   // Public for testing.
@@ -47,8 +47,9 @@ class FakeBleScannerDelegate : public BleScanner::Delegate {
   FakeBleScannerDelegate();
   ~FakeBleScannerDelegate() override;
 
-  using ScannedResultList = std::vector<
-      std::tuple<cryptauth::RemoteDeviceRef, device::BluetoothDevice*, bool>>;
+  using ScannedResultList = std::vector<std::tuple<cryptauth::RemoteDeviceRef,
+                                                   device::BluetoothDevice*,
+                                                   ConnectionRole>>;
 
   const ScannedResultList& handled_scan_results() const {
     return handled_scan_results_;
@@ -57,7 +58,7 @@ class FakeBleScannerDelegate : public BleScanner::Delegate {
  private:
   void OnReceivedAdvertisement(cryptauth::RemoteDeviceRef remote_device,
                                device::BluetoothDevice* bluetooth_device,
-                               bool is_background_advertisement) override;
+                               ConnectionRole connection_role) override;
 
   ScannedResultList handled_scan_results_;
 
