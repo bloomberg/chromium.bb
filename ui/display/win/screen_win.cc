@@ -80,8 +80,9 @@ bool GetPathInfo(HMONITOR monitor, DISPLAYCONFIG_PATH_INFO* path_info) {
   do {
     if (GetDisplayConfigBufferSizes(
             QDC_ONLY_ACTIVE_PATHS, &num_path_array_elements,
-            &num_mode_info_array_elements) == ERROR_SUCCESS)
+            &num_mode_info_array_elements) != ERROR_SUCCESS) {
       return false;
+    }
     path_infos.resize(num_path_array_elements);
     mode_infos.resize(num_mode_info_array_elements);
     result = QueryDisplayConfig(
