@@ -23,7 +23,7 @@ DICTIONARY_H_INCLUDES = frozenset([
 ])
 
 DICTIONARY_CPP_INCLUDES = frozenset([
-    'bindings/core/v8/exception_state.h',
+    'platform/bindings/exception_state.h',
 ])
 
 

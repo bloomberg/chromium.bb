@@ -25,9 +25,9 @@
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 
 #include "base/auto_reset.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

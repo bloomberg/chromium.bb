@@ -14,9 +14,9 @@ UNION_CPP_INCLUDES = frozenset([
 UNION_H_INCLUDES = frozenset([
     'base/optional.h',
     'bindings/core/v8/dictionary.h',
-    'bindings/core/v8/exception_state.h',
     'bindings/core/v8/native_value_traits.h',
     'bindings/core/v8/v8_binding_for_core.h',
+    'platform/bindings/exception_state.h',
     'platform/heap/handle.h',
 ])
 

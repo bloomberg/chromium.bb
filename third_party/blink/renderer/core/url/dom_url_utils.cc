@@ -26,7 +26,7 @@
 
 #include "third_party/blink/renderer/core/url/dom_url_utils.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 
 namespace blink {

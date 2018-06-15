@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/webaudio/stereo_panner_node.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
@@ -12,6 +11,7 @@
 #include "third_party/blink/renderer/modules/webaudio/stereo_panner_options.h"
 #include "third_party/blink/renderer/platform/audio/stereo_panner.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {

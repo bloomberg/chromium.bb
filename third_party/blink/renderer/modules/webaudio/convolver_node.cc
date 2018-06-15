@@ -23,14 +23,14 @@
  * DAMAGE.
  */
 
+#include "third_party/blink/renderer/modules/webaudio/convolver_node.h"
 #include <memory>
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
-#include "third_party/blink/renderer/modules/webaudio/convolver_node.h"
 #include "third_party/blink/renderer/modules/webaudio/convolver_options.h"
 #include "third_party/blink/renderer/platform/audio/reverb.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 // Note about empirical tuning:
 // The maximum FFT size affects reverb performance and accuracy.

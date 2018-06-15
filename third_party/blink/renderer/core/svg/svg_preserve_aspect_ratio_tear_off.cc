@@ -30,8 +30,8 @@
 
 #include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio_tear_off.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

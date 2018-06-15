@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_time_display_element.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 

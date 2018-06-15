@@ -28,13 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_STATE_H_
-#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_STATE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_EXCEPTION_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_EXCEPTION_STATE_H_
 
-#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -44,7 +44,7 @@ namespace blink {
 
 // ExceptionState is a scope-like class and provides a way to throw an exception
 // with an option to cancel it.  An exception message may be auto-generated.
-class CORE_EXPORT ExceptionState {
+class PLATFORM_EXPORT ExceptionState {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(ExceptionState);
 
@@ -177,7 +177,7 @@ class CORE_EXPORT ExceptionState {
 
 // NonThrowableExceptionState never allow call sites to throw an exception.
 // Should be used if an exception must not be thrown.
-class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
+class PLATFORM_EXPORT NonThrowableExceptionState final : public ExceptionState {
  public:
   NonThrowableExceptionState();
   NonThrowableExceptionState(const char*, int);
@@ -211,7 +211,8 @@ class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
 // use DummyExceptionStateForTesting in production code, where you need to
 // handle all exceptions properly. If you really need to ignore exceptions in
 // production code for some special reason, explicitly call clearException().
-class CORE_EXPORT DummyExceptionStateForTesting final : public ExceptionState {
+class PLATFORM_EXPORT DummyExceptionStateForTesting final
+    : public ExceptionState {
  public:
   DummyExceptionStateForTesting()
       : ExceptionState(nullptr,
@@ -242,4 +243,4 @@ class CORE_EXPORT DummyExceptionStateForTesting final : public ExceptionState {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_EXCEPTION_STATE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_EXCEPTION_STATE_H_

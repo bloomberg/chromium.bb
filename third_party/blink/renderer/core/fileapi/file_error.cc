@@ -31,8 +31,8 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 
 #include "third_party/blink/public/platform/web_file_error.h"
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
