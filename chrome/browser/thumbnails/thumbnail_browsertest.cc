@@ -83,13 +83,6 @@ std::string MakeHtmlDocument(const std::string& background_color) {
       background_color.c_str());
 }
 
-void Sleep(base::TimeDelta delta) {
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), delta);
-  run_loop.Run();
-}
-
 class MockThumbnailService : public ThumbnailService {
  public:
   MOCK_METHOD2(SetPageThumbnail,
@@ -321,12 +314,12 @@ IN_PROC_BROWSER_TEST_F(ThumbnailTest,
       .Times(0);
 
   // Navigate to the red page.
-  ui_test_utils::NavigateToURL(browser(), red_url);
-
-  // Give the renderer process some time to actually paint it. Without this,
-  // there's a chance we might attempt to take a screenshot before the first
-  // paint, which would fail.
-  Sleep(base::TimeDelta::FromMilliseconds(200));
+  {
+    NavigationAndFirstPaintWaiter waiter(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    ui_test_utils::NavigateToURL(browser(), red_url);
+    waiter.Wait();
+  }
 
   // Before navigating away from the red page, we should take a thumbnail.
   // Note that the page load is deliberately slowed down, so that the
