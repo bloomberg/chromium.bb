@@ -2368,6 +2368,11 @@
           'shards': 20,
         },
       },
+      # chromium.mac
+      'Mac10.13 Tests': {
+        # Frequent WindowServer crashes. crbug.com/828031
+	'experiment_percentage': 100,
+      },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.

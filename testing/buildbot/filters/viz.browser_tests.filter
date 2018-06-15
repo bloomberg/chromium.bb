@@ -10,3 +10,6 @@
 
 # Mac Flaking with missing browser. https://crbug.com/842664
 -IndependentOTRProfileManagerTest.DeleteImmediatelyWhenBrowsersAlreadyClosed
+
+# Mac Frequent WindowServer crashes. Not just Viz. https://crbug.com/828031
+-ConstrainedWebDialogBrowserTest.*
