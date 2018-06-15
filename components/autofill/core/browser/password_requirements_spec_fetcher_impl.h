@@ -78,6 +78,9 @@ class PasswordRequirementsSpecFetcherImpl
 
     std::unique_ptr<network::SimpleURLLoader> url_loader;
 
+    // Time when the network request is started.
+    base::TimeTicks start_of_request;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(LookupInFlight);
   };
