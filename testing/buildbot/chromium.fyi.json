@@ -1434,7 +1434,9 @@
         "args": [
           "--xvfb",
           "--extra-browser-args=--enable-features=VizDisplayCompositor",
-          "--skip=contrib.cluster_telemetry.screenshot_unittest.ScreenshotUnitTest.testScreenshot"
+          "--skip=contrib.cluster_telemetry.screenshot_unittest.ScreenshotUnitTest.testScreenshot",
+          "--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgs",
+          "--skip=core.perf_benchmark_unittest.PerfBenchmarkTest.testVariationArgsReference"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests_viz",
