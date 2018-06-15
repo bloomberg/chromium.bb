@@ -985,7 +985,12 @@ void {{v8_class_or_partial}}::InstallConditionalFeatures(
     if (prototypeObject->HasOwnProperty(context, unscopablesSymbol).To(&has_unscopables) && has_unscopables) {
       unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
     } else {
+      // Web IDL 3.6.3. Interface prototype object
+      // https://heycam.github.io/webidl/#create-an-interface-prototype-object
+      // step 8.1. Let unscopableObject be the result of performing
+      //   ! ObjectCreate(null).
       unscopables = v8::Object::New(isolate);
+      unscopables->SetPrototype(context, v8::Null(isolate)).ToChecked();
     }
     {% for name, runtime_enabled_feature_name in unscopables %}
     {% filter runtime_enabled(runtime_enabled_feature_name) %}
