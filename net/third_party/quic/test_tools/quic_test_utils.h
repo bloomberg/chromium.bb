@@ -204,14 +204,16 @@ QuicAckFrame MakeAckFrameWithAckBlocks(size_t num_ack_blocks,
 // Returns a QuicPacket that is owned by the caller, and
 // is populated with the fields in |header| and |frames|, or is nullptr if the
 // packet could not be created.
-QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
-                                   const QuicPacketHeader& header,
-                                   const QuicFrames& frames);
+std::unique_ptr<QuicPacket> BuildUnsizedDataPacket(
+    QuicFramer* framer,
+    const QuicPacketHeader& header,
+    const QuicFrames& frames);
 // Returns a QuicPacket that is owned by the caller, and of size |packet_size|.
-QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
-                                   const QuicPacketHeader& header,
-                                   const QuicFrames& frames,
-                                   size_t packet_size);
+std::unique_ptr<QuicPacket> BuildUnsizedDataPacket(
+    QuicFramer* framer,
+    const QuicPacketHeader& header,
+    const QuicFrames& frames,
+    size_t packet_size);
 
 // Compute SHA-1 hash of the supplied std::string.
 std::string Sha1Hash(QuicStringPiece data);

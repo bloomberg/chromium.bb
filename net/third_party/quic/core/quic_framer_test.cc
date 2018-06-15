@@ -549,14 +549,14 @@ class QuicFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
         << " wire_packet_number: " << wire_packet_number;
   }
 
-  QuicPacket* BuildDataPacket(const QuicPacketHeader& header,
-                              const QuicFrames& frames) {
+  std::unique_ptr<QuicPacket> BuildDataPacket(const QuicPacketHeader& header,
+                                              const QuicFrames& frames) {
     return BuildUnsizedDataPacket(&framer_, header, frames);
   }
 
-  QuicPacket* BuildDataPacket(const QuicPacketHeader& header,
-                              const QuicFrames& frames,
-                              size_t packet_size) {
+  std::unique_ptr<QuicPacket> BuildDataPacket(const QuicPacketHeader& header,
+                                              const QuicFrames& frames,
+                                              size_t packet_size) {
     return BuildUnsizedDataPacket(&framer_, header, frames, packet_size);
   }
 
@@ -1137,7 +1137,7 @@ TEST_P(QuicFramerTest, PacketNumberDecreasesThenIncreases) {
   header.packet_number = kPacketNumber;
   header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
   QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
-  data.reset(BuildDataPacket(header, frames));
+  data = BuildDataPacket(header, frames);
   QuicEncryptedPacket encrypted1(data->data(), data->length(), false);
   QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_SERVER);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted1));
@@ -1150,7 +1150,7 @@ TEST_P(QuicFramerTest, PacketNumberDecreasesThenIncreases) {
   header.packet_number = kPacketNumber - 256;
   header.packet_number_length = PACKET_2BYTE_PACKET_NUMBER;
   QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
-  data.reset(BuildDataPacket(header, frames));
+  data = BuildDataPacket(header, frames);
   QuicEncryptedPacket encrypted2(data->data(), data->length(), false);
   QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_SERVER);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted2));
@@ -1163,7 +1163,7 @@ TEST_P(QuicFramerTest, PacketNumberDecreasesThenIncreases) {
   header.packet_number = kPacketNumber - 1;
   header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
   QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
-  data.reset(BuildDataPacket(header, frames));
+  data = BuildDataPacket(header, frames);
   QuicEncryptedPacket encrypted3(data->data(), data->length(), false);
   QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_SERVER);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted3));
@@ -8876,7 +8876,7 @@ TEST_P(QuicFramerTest, CleanTruncation) {
 
   size_t original_raw_length = raw_ack_packet->length();
   QuicFramerPeer::SetPerspective(&framer_, Perspective::IS_CLIENT);
-  raw_ack_packet.reset(BuildDataPacket(header, frames));
+  raw_ack_packet = BuildDataPacket(header, frames);
   ASSERT_TRUE(raw_ack_packet != nullptr);
   EXPECT_EQ(original_raw_length, raw_ack_packet->length());
   ASSERT_TRUE(raw_ack_packet != nullptr);
