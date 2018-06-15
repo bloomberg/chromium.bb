@@ -12,6 +12,8 @@
 
 namespace ash {
 
+class UnifiedSystemTrayController;
+
 // Controller of a feature pod button that toggles do-not-disturb mode.
 // If the do-not-disturb mode is enabled, the button indicates it by bright
 // background color and different icon.
@@ -19,18 +21,22 @@ class QuietModeFeaturePodController
     : public FeaturePodControllerBase,
       public message_center::MessageCenterObserver {
  public:
-  QuietModeFeaturePodController();
+  explicit QuietModeFeaturePodController(
+      UnifiedSystemTrayController* tray_controller);
   ~QuietModeFeaturePodController() override;
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
   void OnIconPressed() override;
+  void OnLabelPressed() override;
   SystemTrayItemUmaType GetUmaType() const override;
 
   // message_center::MessageCenterObserver:
   void OnQuietModeChanged(bool in_quiet_mode) override;
 
  private:
+  UnifiedSystemTrayController* const tray_controller_;
+
   FeaturePodButton* button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(QuietModeFeaturePodController);
