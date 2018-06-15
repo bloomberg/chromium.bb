@@ -47,7 +47,8 @@ FormPredictions ConvertToFormPredictions(const FormData& observed_form,
   DCHECK_EQ(observed_form.fields.size(), form_structure.field_count());
   FormPredictions result;
   if (observed_form.fields.size() != form_structure.field_count()) {
-    // TODO(https://crbug.com/831123). Find the reason why this can happen.
+    // TODO(https://crbug.com/831123). Find the reason why this can happen. See
+    // https://crbug.com/853149#c6 for some ideas.
     return result;
   }
   for (size_t i = 0; i < observed_form.fields.size(); ++i) {
