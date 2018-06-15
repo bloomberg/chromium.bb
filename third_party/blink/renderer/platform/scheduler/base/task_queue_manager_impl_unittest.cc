@@ -1565,7 +1565,7 @@ TEST_F(TaskQueueManagerTest, ShutdownTaskQueue_InTasks) {
 
 namespace {
 
-class MockObserver : public TaskQueueManager::Observer {
+class MockObserver : public SequenceManager::Observer {
  public:
   MOCK_METHOD0(OnTriedToExecuteBlockedTask, void());
   MOCK_METHOD0(OnBeginNestedRunLoop, void());

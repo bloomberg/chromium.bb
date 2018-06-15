@@ -206,7 +206,7 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
   using MainThreadSchedulerImpl::VirtualTimeControlTaskQueue;
 
   MainThreadSchedulerImplForTest(
-      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
+      std::unique_ptr<base::sequence_manager::SequenceManager> manager,
       base::Optional<base::Time> initial_virtual_time)
       : MainThreadSchedulerImpl(std::move(manager), initial_virtual_time),
         update_policy_count_(0) {}

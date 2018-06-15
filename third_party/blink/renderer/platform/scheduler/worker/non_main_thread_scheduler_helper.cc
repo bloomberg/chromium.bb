@@ -14,8 +14,7 @@ namespace scheduler {
 using base::sequence_manager::TaskQueue;
 
 NonMainThreadSchedulerHelper::NonMainThreadSchedulerHelper(
-    std::unique_ptr<base::sequence_manager::TaskQueueManager>
-        task_queue_manager,
+    std::unique_ptr<base::sequence_manager::SequenceManager> task_queue_manager,
     NonMainThreadSchedulerImpl* non_main_thread_scheduler,
     TaskType default_task_type)
     : SchedulerHelper(std::move(task_queue_manager)),

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_H_
 
 #include <memory>
 #include <utility>
@@ -19,64 +19,60 @@
 namespace base {
 namespace sequence_manager {
 
-class PLATFORM_EXPORT TaskQueueManager {
+// SequenceManager manages TaskQueues which have different properties
+// (e.g. priority, common task type) multiplexing all posted tasks into
+// a single backing sequence (currently bound to a single thread, which is
+// refererred as *main thread* in the comments below). SequenceManager
+// implementation can be used in a various ways to apply scheduling logic.
+class PLATFORM_EXPORT SequenceManager {
  public:
-  // Keep TaskQueueManagerImpl in sync with this interface.
-  // The general rule is not to expose methods only used in scheduler/base.
-  // Try to keep interface as lean as possible.
-
-  // Observer class. Always called back on the main thread.
-  class PLATFORM_EXPORT Observer {
+  class Observer {
    public:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
+    // Called back on the main thread.
     virtual void OnBeginNestedRunLoop() = 0;
     virtual void OnExitNestedRunLoop() = 0;
   };
 
-  virtual ~TaskQueueManager() = default;
+  virtual ~SequenceManager() = default;
 
-  // Forwards to TaskQueueManagerImpl::TakeOverCurrentThread.
-  // TODO(kraynov): Any way to make it truly agnostic of TaskQueueManagerImpl?
-  static std::unique_ptr<TaskQueueManager> TakeOverCurrentThread();
+  // Create SequenceManager using MessageLoop on the current thread.
+  static std::unique_ptr<SequenceManager> CreateOnCurrentThread();
 
-  // Should be called once, on main thread only.
-  // If |null| is passed, no callbacks will occur.
-  // Note: |observer| is expected to outlive the SchedulerHelper.
-  // TODO(kraynov): Review these lifetime assumptions.
+  // Must be called once, on the main thread.
+  // Observer is expected to outlive the SequenceManager.
   virtual void SetObserver(Observer* observer) = 0;
 
-  // These functions can only be called on the same thread that the task queue
-  // manager executes its tasks on.
+  // Must be called on the main thread.
   virtual void AddTaskObserver(MessageLoop::TaskObserver* task_observer) = 0;
   virtual void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer) = 0;
   virtual void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) = 0;
   virtual void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) = 0;
 
-  // Time domains must be registered for the task queues to get updated.
+  // TaskQueues have their TimeDomain which must be registered in advance.
   virtual void RegisterTimeDomain(TimeDomain* time_domain) = 0;
   virtual void UnregisterTimeDomain(TimeDomain* time_domain) = 0;
-  virtual RealTimeDomain* GetRealTimeDomain() const = 0;
 
-  virtual const TickClock* GetClock() const = 0;
+  // TODO(kraynov): Upcast to TimeDomain.
+  virtual RealTimeDomain* GetRealTimeDomain() const = 0;
+  virtual const TickClock* GetTickClock() const = 0;
   virtual TimeTicks NowTicks() const = 0;
 
   // Sets the SingleThreadTaskRunner that will be returned by
-  // ThreadTaskRunnerHandle::Get on the thread associated with this
-  // TaskQueueManager.
+  // ThreadTaskRunnerHandle::Get on the main thread.
   virtual void SetDefaultTaskRunner(
       scoped_refptr<SingleThreadTaskRunner> task_runner) = 0;
 
   // Removes all canceled delayed tasks.
   virtual void SweepCanceledDelayedTasks() = 0;
 
-  // Returns true if any task from a monitored task queue was was run since the
-  // last call to GetAndClearSystemIsQuiescentBit.
+  // Some TaskQueues do monitor a quiescent state, so this method returns
+  // true if any such queue has ran a task since the last call.
   virtual bool GetAndClearSystemIsQuiescentBit() = 0;
 
-  // Set the number of tasks executed in a single invocation of the task queue
-  // manager. Increasing the batch size can reduce the overhead of yielding
-  // back to the main message loop -- at the cost of potentially delaying other
-  // tasks posted to the main loop. The batch size is 1 by default.
+  // Set the number of tasks executed in a single SequenceManager invocation.
+  // Increasing this number reduces the overhead of the tasks dispatching
+  // logic at the cost of a potentially worse latency. 1 by default.
   virtual void SetWorkBatchSize(int work_batch_size) = 0;
 
   virtual void EnableCrashKeys(const char* file_name_crash_key,
@@ -86,9 +82,9 @@ class PLATFORM_EXPORT TaskQueueManager {
   // sampled.
   virtual double GetSamplingRateForRecordingCPUTime() const = 0;
 
-  // Creates a task queue with the given type, |spec| and args. Must be called
-  // on the thread this class was created on.
-  // TODO(altimin): TaskQueueManager should not create TaskQueues.
+  // Creates a task queue with the given type, |spec| and args.
+  // Must be called on the main thread.
+  // TODO(scheduler-dev): SequenceManager should not create TaskQueues.
   template <typename TaskQueueType, typename... Args>
   scoped_refptr<TaskQueueType> CreateTaskQueue(const TaskQueue::Spec& spec,
                                                Args&&... args) {
@@ -105,4 +101,4 @@ class PLATFORM_EXPORT TaskQueueManager {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_H_

@@ -18,7 +18,7 @@ class NonMainThreadSchedulerImpl;
 class PLATFORM_EXPORT NonMainThreadSchedulerHelper : public SchedulerHelper {
  public:
   NonMainThreadSchedulerHelper(
-      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
+      std::unique_ptr<base::sequence_manager::SequenceManager> manager,
       NonMainThreadSchedulerImpl* non_main_thread_scheduler,
       TaskType default_task_type);
   ~NonMainThreadSchedulerHelper() override;

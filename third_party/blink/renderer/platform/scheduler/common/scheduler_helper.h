@@ -12,7 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 
 namespace blink {
@@ -20,10 +20,10 @@ namespace scheduler {
 
 // Common scheduler functionality for default tasks.
 class PLATFORM_EXPORT SchedulerHelper
-    : public base::sequence_manager::TaskQueueManager::Observer {
+    : public base::sequence_manager::SequenceManager::Observer {
  public:
   explicit SchedulerHelper(
-      std::unique_ptr<base::sequence_manager::TaskQueueManager>
+      std::unique_ptr<base::sequence_manager::SequenceManager>
           task_queue_manager);
   ~SchedulerHelper() override;
 
@@ -103,7 +103,7 @@ class PLATFORM_EXPORT SchedulerHelper
       TaskType default_task_type);
 
   base::ThreadChecker thread_checker_;
-  std::unique_ptr<base::sequence_manager::TaskQueueManager> task_queue_manager_;
+  std::unique_ptr<base::sequence_manager::SequenceManager> task_queue_manager_;
 
  private:
   friend class SchedulerHelperTest;

@@ -52,7 +52,7 @@ void TimelineIdleTestTask(std::vector<std::string>* timeline,
 class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
   WorkerThreadSchedulerForTest(
-      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
+      std::unique_ptr<base::sequence_manager::SequenceManager> manager,
       const base::TickClock* clock_,
       std::vector<std::string>* timeline)
       : WorkerThreadScheduler(WebThreadType::kTestThread,

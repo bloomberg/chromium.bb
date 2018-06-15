@@ -27,7 +27,7 @@ namespace {
 class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
  public:
   MainThreadSchedulerImplForTest(
-      std::unique_ptr<base::sequence_manager::TaskQueueManager>
+      std::unique_ptr<base::sequence_manager::SequenceManager>
           task_queue_manager,
       base::Optional<base::Time> initial_virtual_time)
       : MainThreadSchedulerImpl(std::move(task_queue_manager),

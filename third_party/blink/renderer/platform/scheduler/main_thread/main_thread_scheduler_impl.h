@@ -99,7 +99,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // with virtual time enabled and paused with base::Time will be overridden to
   // start at |initial_virtual_time|.
   MainThreadSchedulerImpl(
-      std::unique_ptr<base::sequence_manager::TaskQueueManager>
+      std::unique_ptr<base::sequence_manager::SequenceManager>
           task_queue_manager,
       base::Optional<base::Time> initial_virtual_time);
 

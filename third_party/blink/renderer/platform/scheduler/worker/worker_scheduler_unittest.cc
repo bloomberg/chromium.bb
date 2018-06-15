@@ -53,7 +53,7 @@ class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
   WorkerThreadSchedulerForTest(
       WebThreadType thread_type,
-      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
+      std::unique_ptr<base::sequence_manager::SequenceManager> manager,
       WorkerSchedulerProxy* proxy)
       : WorkerThreadScheduler(thread_type, std::move(manager), proxy) {}
 

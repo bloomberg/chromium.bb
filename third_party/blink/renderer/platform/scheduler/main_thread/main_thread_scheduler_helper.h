@@ -17,7 +17,7 @@ class MainThreadSchedulerImpl;
 class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
  public:
   MainThreadSchedulerHelper(
-      std::unique_ptr<base::sequence_manager::TaskQueueManager>
+      std::unique_ptr<base::sequence_manager::SequenceManager>
           task_queue_manager,
       MainThreadSchedulerImpl* main_thread_scheduler);
   ~MainThreadSchedulerHelper() override;

@@ -107,7 +107,7 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
   CreateNonMainThreadScheduler() override {
     return std::make_unique<CompositorThreadScheduler>(
         GetThread(),
-        base::sequence_manager::TaskQueueManager::TakeOverCurrentThread());
+        base::sequence_manager::SequenceManager::CreateOnCurrentThread());
   }
 
   DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);

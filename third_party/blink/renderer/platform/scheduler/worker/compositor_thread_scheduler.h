@@ -28,7 +28,7 @@ class PLATFORM_EXPORT CompositorThreadScheduler
  public:
   CompositorThreadScheduler(
       base::Thread* thread,
-      std::unique_ptr<base::sequence_manager::TaskQueueManager>
+      std::unique_ptr<base::sequence_manager::SequenceManager>
           task_queue_manager);
 
   ~CompositorThreadScheduler() override;

@@ -10,8 +10,8 @@
 #include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
@@ -90,7 +90,7 @@ class IdleTimeEstimatorTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment task_environment_;
-  std::unique_ptr<base::sequence_manager::TaskQueueManager> manager_;
+  std::unique_ptr<base::sequence_manager::SequenceManager> manager_;
   scoped_refptr<base::sequence_manager::TaskQueue> compositor_task_queue_;
   std::unique_ptr<IdleTimeEstimatorForTest> estimator_;
   const base::TimeDelta frame_length_;
