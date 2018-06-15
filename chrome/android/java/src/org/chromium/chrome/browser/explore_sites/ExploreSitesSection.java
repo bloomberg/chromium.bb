@@ -1,0 +1,75 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.explore_sites;
+
+import android.graphics.Bitmap;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.LinearLayout;
+
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
+import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.ui.mojom.WindowOpenDisposition;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * Describes a portion of UI responsible for rendering a group of categories.
+ * It abstracts general tasks related to initializing and fetching data for the UI.
+ */
+public class ExploreSitesSection {
+    private static final int ICON_CORNER_RADIUS = 5;
+
+    private ExploreSitesBridge mBridge;
+    private SuggestionsNavigationDelegate mNavigationDelegate;
+    private View mExploreSection;
+    private LinearLayout mCategorySection;
+
+    private AtomicInteger mCategoryIconFetchesInFlight;
+
+    public ExploreSitesSection(
+            View view, Profile profile, SuggestionsNavigationDelegate navigationDelegate) {
+        mBridge = new ExploreSitesBridge(profile);
+        mExploreSection = view;
+        initialize();
+    }
+
+    private void initialize() {
+        mCategorySection = mExploreSection.findViewById(R.id.explore_sites_tiles);
+        mBridge.getNtpCategories(this ::initializeTiles);
+    }
+
+    private void initializeTiles(List<ExploreSitesCategoryTile> tileList) {
+        if (tileList.isEmpty()) {
+            mBridge.destroy();
+            return;
+        }
+        mCategoryIconFetchesInFlight = new AtomicInteger(tileList.size());
+        for (final ExploreSitesCategoryTile tile : tileList) {
+            final ExploreSitesCategoryTileView tileView =
+                    (ExploreSitesCategoryTileView) LayoutInflater.from(mExploreSection.getContext())
+                            .inflate(R.layout.explore_sites_category_tile_view, mCategorySection,
+                                    false);
+            tileView.initialize(tile);
+            mCategorySection.addView(tileView);
+            tileView.setOnClickListener(
+                    (View v)
+                            -> mNavigationDelegate.navigateToSuggestionUrl(
+                                    WindowOpenDisposition.CURRENT_TAB, tile.getNavigationUrl()));
+            mBridge.getIcon(tile.getIconUrl(), (Bitmap icon) -> onIconRetrieved(tileView, icon));
+        }
+    }
+
+    private void onIconRetrieved(ExploreSitesCategoryTileView tileView, Bitmap icon) {
+        tileView.updateIcon(ViewUtils.createRoundedBitmapDrawable(icon, ICON_CORNER_RADIUS));
+        int curValue = mCategoryIconFetchesInFlight.decrementAndGet();
+        if (curValue == 0) {
+            mBridge.destroy();
+        }
+    }
+}

@@ -32,6 +32,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
+import org.chromium.chrome.browser.explore_sites.ExploreSitesSection;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
@@ -81,6 +82,9 @@ public class NewTabPageView
     private View mTileGridPlaceholder;
     private View mNoSearchLogoSpacer;
     private ViewGroup mShortcutsView;
+
+    @Nullable
+    private ExploreSitesSection mExploreSection; // Null when explore sites disabled.
 
     private OnSearchBoxScrollListener mSearchBoxScrollListener;
 
@@ -255,6 +259,11 @@ public class NewTabPageView
         mSiteSectionViewHolder =
                 SiteSection.createViewHolder(mNewTabPageLayout.getSiteSectionView(), mUiConfig);
         mSiteSectionViewHolder.bindDataSource(mTileGroup, tileRenderer);
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EXPLORE_SITES)) {
+            mExploreSection = new ExploreSitesSection(mNewTabPageLayout.getExploreSectionView(),
+                    profile, mManager.getNavigationDelegate());
+        }
 
         mSearchProviderLogoView = mNewTabPageLayout.findViewById(R.id.search_provider_logo);
         mLogoDelegate = new LogoDelegateImpl(
