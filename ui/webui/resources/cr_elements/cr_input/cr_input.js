@@ -36,6 +36,8 @@ Polymer({
   is: 'cr-input',
 
   properties: {
+    ariaLabel: String,
+
     autofocus: {
       type: Boolean,
       value: false,
@@ -118,6 +120,13 @@ Polymer({
     'input.focus': 'onInputFocusChange_',
     'input.blur': 'onInputFocusChange_',
     'input.change': 'onInputChange_',
+  },
+
+  /** @override */
+  attached: function() {
+    const ariaLabel = this.ariaLabel || this.label || this.placeholder;
+    if (ariaLabel)
+      this.inputElement.setAttribute('aria-label', ariaLabel);
   },
 
   /** @return {!HTMLInputElement} */
