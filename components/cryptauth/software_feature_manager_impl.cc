@@ -79,15 +79,17 @@ void SoftwareFeatureManagerImpl::SetSoftwareFeatureState(
   // Note: For legacy reasons, this proto message mentions "ToggleEasyUnlock"
   // instead of "SetSoftwareFeature" in its name.
   auto request = std::make_unique<ToggleEasyUnlockRequest>();
-  request->set_public_key(public_key);
   request->set_feature(software_feature);
   request->set_enable(enabled);
   request->set_is_exclusive(enabled && is_exclusive);
 
   // Special case for EasyUnlock: if EasyUnlock is being disabled, set the
-  // apply_to_all property to true.
-  request->set_apply_to_all(!enabled && software_feature ==
-                                            SoftwareFeature::EASY_UNLOCK_HOST);
+  // apply_to_all property to true, and do not set the public_key field.
+  bool turn_off_easy_unlock_special_case =
+      !enabled && software_feature == SoftwareFeature::EASY_UNLOCK_HOST;
+  request->set_apply_to_all(turn_off_easy_unlock_special_case);
+  if (!turn_off_easy_unlock_special_case)
+    request->set_public_key(public_key);
 
   pending_requests_.emplace(std::make_unique<Request>(
       std::move(request), success_callback, error_callback));
