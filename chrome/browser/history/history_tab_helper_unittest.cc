@@ -79,7 +79,7 @@ TEST_F(HistoryTabHelperTest, ShouldUpdateTitleInHistory) {
   web_contents_tester()->NavigateAndCommit(page_url_);
 
   content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
   ASSERT_NE(nullptr, entry);
   ASSERT_TRUE(web_contents()->IsLoading());
 
@@ -91,7 +91,7 @@ TEST_F(HistoryTabHelperTest, ShouldLimitTitleUpdatesPerPage) {
   web_contents_tester()->NavigateAndCommit(page_url_);
 
   content::NavigationEntry* entry =
-      web_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
   ASSERT_NE(nullptr, entry);
   ASSERT_TRUE(web_contents()->IsLoading());
 
