@@ -300,7 +300,8 @@ void SessionStorageMetadata::RegisterShallowClonedNamespace(
       source_namespace->second;
   std::map<url::Origin, scoped_refptr<MapData>>& destination_origins =
       destination_namespace->second;
-  DCHECK_EQ(0ul, destination_origins.size());
+  DCHECK_EQ(0ul, destination_origins.size())
+      << "The destination already has data.";
 
   save_operations->reserve(save_operations->size() + source_origins.size());
   for (const auto& origin_map_pair : source_origins) {

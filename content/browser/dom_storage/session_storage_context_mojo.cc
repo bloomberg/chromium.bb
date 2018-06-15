@@ -137,8 +137,8 @@ void SessionStorageContextMojo::OpenSessionStorage(
         data_maps_);
   }
 
-  PurgeUnusedAreasIfNeeded();
   found->second->Bind(std::move(request), process_id);
+  PurgeUnusedAreasIfNeeded();
 
   size_t total_cache_size, unused_area_count;
   GetStatistics(&total_cache_size, &unused_area_count);
@@ -158,15 +158,42 @@ void SessionStorageContextMojo::CreateSessionNamespace(
 
 void SessionStorageContextMojo::CloneSessionNamespace(
     const std::string& namespace_id_to_clone,
-    const std::string& clone_namespace_id) {
-  if (namespaces_.find(clone_namespace_id) != namespaces_.end())
+    const std::string& clone_namespace_id,
+    CloneType clone_type) {
+  if (namespaces_.find(clone_namespace_id) != namespaces_.end()) {
+    // Non-immediate commits expect to be paired with a |Clone| from the mojo
+    // namespace object. If that clone has already happened, then we don't need
+    // to do anything here.
+    // However, immediate commits happen without a |Clone| from the mojo
+    // namespace object, so there should never be a namespace already populated
+    // for an immediate clone.
+    DCHECK_NE(clone_type, CloneType::kImmediate);
     return;
+  }
 
   std::unique_ptr<SessionStorageNamespaceImplMojo> namespace_impl =
       CreateSessionStorageNamespaceImplMojo(clone_namespace_id);
-  namespace_impl->SetWaitingForClonePopulation();
-  namespaces_.emplace(
-      std::make_pair(clone_namespace_id, std::move(namespace_impl)));
+  switch (clone_type) {
+    case CloneType::kImmediate: {
+      auto clone_from_ns = namespaces_.find(namespace_id_to_clone);
+      // If the namespace doesn't exist or it's not populated yet, just create
+      // an empty session storage.
+      if (clone_from_ns == namespaces_.end() ||
+          !clone_from_ns->second->IsPopulated()) {
+        break;
+      }
+      clone_from_ns->second->Clone(clone_namespace_id);
+      return;
+    }
+    case CloneType::kWaitForCloneOnNamespace:
+      namespace_impl->SetWaitingForClonePopulation();
+      break;
+    default:
+      NOTREACHED();
+  }
+  namespaces_.emplace(std::piecewise_construct,
+                      std::forward_as_tuple(clone_namespace_id),
+                      std::forward_as_tuple(std::move(namespace_impl)));
 }
 
 void SessionStorageContextMojo::DeleteSessionNamespace(
@@ -229,7 +256,9 @@ void SessionStorageContextMojo::DeleteStorage(const url::Origin& origin,
     return;
   }
   auto found = namespaces_.find(namespace_id);
-  if (found != namespaces_.end()) {
+  if (found != namespaces_.end() &&
+      (found->second->IsPopulated() ||
+       found->second->waiting_on_clone_population())) {
     found->second->RemoveOriginData(origin);
   } else {
     // If we don't have the namespace loaded, then we can delete it all
@@ -279,6 +308,11 @@ void SessionStorageContextMojo::PurgeMemory() {
       continue;
     }
     it->second->PurgeUnboundAreas();
+    ++it;
+  }
+  // Purge memory from bound maps.
+  for (const auto& data_map_pair : data_maps_) {
+    data_map_pair.second->storage_area()->PurgeMemory();
   }
 
   // Track the size of cache purged.
@@ -311,18 +345,20 @@ void SessionStorageContextMojo::PurgeUnusedAreasIfNeeded() {
   if (purge_reason == SessionStorageCachePurgeReason::kNotNeeded)
     return;
 
-  // Purge all areas that don't have bindings.
+  // Purge all namespaces and areas that don't have bindings.
   for (auto it = namespaces_.begin(); it != namespaces_.end();) {
-    if (!it->second->IsBound())
+    if (!it->second->IsBound()) {
       it = namespaces_.erase(it);
+      continue;
+    }
+    it->second->PurgeUnboundAreas();
+    ++it;
   }
 
   size_t final_total_cache_size;
   GetStatistics(&final_total_cache_size, &unused_area_count);
   size_t purged_size_kib = (total_cache_size - final_total_cache_size) / 1024;
-  RecordSessionStorageCachePurgedHistogram(
-      SessionStorageCachePurgeReason::kAggressivePurgeTriggered,
-      purged_size_kib);
+  RecordSessionStorageCachePurgedHistogram(purge_reason, purged_size_kib);
 }
 
 void SessionStorageContextMojo::ScavengeUnusedNamespaces(
@@ -488,6 +524,17 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
     const std::string& new_namespace_id,
     const SessionStorageNamespaceImplMojo::OriginAreas& clone_from_areas) {
   std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+
+  bool found = false;
+  auto it = namespaces_.find(new_namespace_id);
+  if (it != namespaces_.end()) {
+    found = true;
+    if (it->second->IsPopulated()) {
+      mojo::ReportBadMessage("Cannot clone to already populated namespace");
+      return;
+    }
+  }
+
   SessionStorageMetadata::NamespaceEntry namespace_entry =
       metadata_.GetOrCreateNamespaceEntry(new_namespace_id);
   metadata_.RegisterShallowClonedNamespace(source_namespace_entry,
@@ -496,8 +543,7 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
                    base::BindOnce(&SessionStorageContextMojo::OnCommitResult,
                                   base::Unretained(this)));
 
-  auto it = namespaces_.find(new_namespace_id);
-  if (it != namespaces_.end()) {
+  if (found) {
     it->second->PopulateAsClone(database_.get(), namespace_entry,
                                 clone_from_areas);
     return;
@@ -506,8 +552,9 @@ void SessionStorageContextMojo::RegisterShallowClonedNamespace(
   auto namespace_impl = CreateSessionStorageNamespaceImplMojo(new_namespace_id);
   namespace_impl->PopulateAsClone(database_.get(), namespace_entry,
                                   clone_from_areas);
-  namespaces_.emplace(
-      std::make_pair(new_namespace_id, std::move(namespace_impl)));
+  namespaces_.emplace(std::piecewise_construct,
+                      std::forward_as_tuple(new_namespace_id),
+                      std::forward_as_tuple(std::move(namespace_impl)));
 }
 
 std::unique_ptr<SessionStorageNamespaceImplMojo>

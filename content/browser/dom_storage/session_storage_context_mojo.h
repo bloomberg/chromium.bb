@@ -49,6 +49,15 @@ class CONTENT_EXPORT SessionStorageContextMojo
   using GetStorageUsageCallback =
       base::OnceCallback<void(std::vector<SessionStorageUsageInfo>)>;
 
+  enum class CloneType {
+    // Expect a clone to come from the SessionStorageNamespace mojo object. This
+    // guarantees ordering with any writes from that namespace.
+    kWaitForCloneOnNamespace,
+    // There will not be a clone coming from the SessionStorageNamespace mojo
+    // object, so clone immediately.
+    kImmediate
+  };
+
   SessionStorageContextMojo(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       service_manager::Connector* connector,
@@ -61,7 +70,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   void CreateSessionNamespace(const std::string& namespace_id);
   void CloneSessionNamespace(const std::string& namespace_id_to_clone,
-                             const std::string& clone_namespace_id);
+                             const std::string& clone_namespace_id,
+                             CloneType clone_type);
 
   void DeleteSessionNamespace(const std::string& namespace_id,
                               bool should_persist);

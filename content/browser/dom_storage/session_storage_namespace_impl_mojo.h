@@ -117,7 +117,8 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   void PurgeUnboundAreas();
 
   // Removes data for the given origin from this namespace. If there is no data
-  // map for that given origin, this does nothing.
+  // map for that given origin, this does nothing. Expects that this namespace
+  // is either populated or waiting for clone population.
   void RemoveOriginData(const url::Origin& origin);
 
   // SessionStorageNamespace:
