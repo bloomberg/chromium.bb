@@ -3678,7 +3678,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
 - (void)verifyEmptyBackgroundAppears {
   [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"empty_background_label")]
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkEmptyStateExplanatoryLabelIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
