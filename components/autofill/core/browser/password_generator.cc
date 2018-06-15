@@ -33,7 +33,7 @@ constexpr char kUpperCaseChars[] = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 constexpr char kAlphabeticChars[] =
     "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
 constexpr char kDigits[] = "23456789";
-constexpr char kSymbols[] = "-_.";
+constexpr char kSymbols[] = "-_.:!";
 
 // Returns a default password requirements specification that requires:
 // - at least one lower case letter
@@ -69,6 +69,16 @@ PasswordRequirementsSpec BuildDefaultSpec() {
   spec.mutable_symbols()->set_min(0);
   spec.mutable_symbols()->set_max(0);
   return spec;
+}
+
+// Returns whether the password is difficult to read because it contains
+// sequences of '-' or '_' that are joined into long strokes on the screen
+// in many fonts.
+bool IsDifficultToRead(const base::string16& password) {
+  return std::adjacent_find(password.begin(), password.end(),
+                            [](auto a, auto b) {
+                              return a == b && (a == '-' || a == '_');
+                            }) != password.end();
 }
 
 // Generates a password according to |spec| and tries to maximze the entropy
@@ -177,7 +187,12 @@ base::string16 GenerateMaxEntropyPassword(PasswordRequirementsSpec spec) {
 
   // So far the password contains the minimally required characters at the
   // the beginning. Therefore, we create a random permutation.
-  base::RandomShuffle(password.begin(), password.end());
+  // TODO(crbug.com/847200): Once the unittests allow controlling the generated
+  // string, test that '--' and '__' are eliminated.
+  int remaining_attempts = 5;
+  do {
+    base::RandomShuffle(password.begin(), password.end());
+  } while (IsDifficultToRead(password) && remaining_attempts-- > 0);
 
   return password;
 }
