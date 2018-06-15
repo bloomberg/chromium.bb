@@ -461,11 +461,14 @@ size_t DrawImageRectOp::Serialize(const PaintOp* base_op,
     serialized_flags = &op->flags;
   helper.Write(*serialized_flags);
 
+  // This adjustment mirrors DiscardableImageMap::GatherDiscardableImage logic.
+  SkMatrix matrix = options.canvas->getTotalMatrix();
+  matrix.postConcat(
+      SkMatrix::MakeRectToRect(op->src, op->dst, SkMatrix::kFill_ScaleToFit));
   // Note that we don't request subsets here since the GpuImageCache has no
   // optimizations for using subsets.
   SkSize scale_adjustment = SkSize::Make(1.f, 1.f);
-  helper.Write(CreateDrawImage(op->image, serialized_flags,
-                               options.canvas->getTotalMatrix()),
+  helper.Write(CreateDrawImage(op->image, serialized_flags, matrix),
                &scale_adjustment);
   helper.AlignMemory(alignof(SkScalar));
   helper.Write(scale_adjustment.width());
