@@ -5072,6 +5072,7 @@ interface PerformanceEntry
 interface PerformanceEventTiming : PerformanceEntry
     attribute @@toStringTag
     getter cancelable
+    getter processingEnd
     getter processingStart
     method constructor
     method toJSON

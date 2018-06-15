@@ -12,12 +12,6 @@
 
 namespace blink {
 
-// Events taking longer than this threshold to finish being processed are
-// regarded as long-latency events by event-timing. Shorter-latency events are
-// ignored to reduce performance impact.
-constexpr TimeDelta kEventTimingDurationThreshold =
-    TimeDelta::FromMilliseconds(50);
-
 EventTiming::EventTiming(LocalDOMWindow* window) {
   performance_ = DOMWindowPerformance::performance(*window);
 }
@@ -60,12 +54,9 @@ void EventTiming::DidDispatchEvent(const Event* event) {
   else
     start_time = event->PlatformTimeStamp();
 
-  const TimeDelta duration = CurrentTimeTicks() - start_time;
-  if (duration < kEventTimingDurationThreshold)
-    return;
-
-  performance_->AddEventTiming(event->type(), start_time, processing_start_,
-                               duration, event->cancelable());
+  performance_->RegisterEventTiming(event->type(), start_time,
+                                    processing_start_, CurrentTimeTicks(),
+                                    event->cancelable());
 }
 
 }  // namespace blink

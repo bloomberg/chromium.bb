@@ -33,6 +33,7 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -66,6 +68,11 @@ static const char kCrossOriginAttribution[] = "cross-origin-unreachable";
 namespace blink {
 
 namespace {
+
+// Events taking longer than this threshold to finish being processed are
+// regarded as long-latency events by event-timing. Shorter-latency events are
+// ignored to reduce performance impact.
+constexpr int kEventTimingDurationThresholdInMs = 50;
 
 String GetFrameAttribute(HTMLFrameOwnerElement* frame_owner,
                          const QualifiedName& attr_name,
@@ -198,6 +205,7 @@ void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
 }
 
 void WindowPerformance::Trace(blink::Visitor* visitor) {
+  visitor->Trace(event_timings_);
   visitor->Trace(navigation_);
   visitor->Trace(timing_);
   Performance::Trace(visitor);
@@ -306,24 +314,54 @@ bool WindowPerformance::ObservingEventTimingEntries() {
   return HasObserverFor(PerformanceEntry::kEvent);
 }
 
-void WindowPerformance::AddEventTiming(String event_type,
-                                       TimeTicks start_time,
-                                       TimeTicks processing_start,
-                                       TimeDelta duration,
-                                       bool cancelable) {
+void WindowPerformance::RegisterEventTiming(String event_type,
+                                            TimeTicks start_time,
+                                            TimeTicks processing_start,
+                                            TimeTicks processing_end,
+                                            bool cancelable) {
   DCHECK(OriginTrials::eventTimingEnabled(GetExecutionContext()));
 
   DCHECK(!start_time.is_null());
   DCHECK(!processing_start.is_null());
+  DCHECK(!processing_end.is_null());
+  DCHECK_GE(processing_end, processing_start);
   PerformanceEventTiming* entry = PerformanceEventTiming::Create(
-      event_type, start_time - time_origin_, processing_start - time_origin_,
-      start_time + duration - time_origin_, cancelable);
+      event_type, MonotonicTimeToDOMHighResTimeStamp(start_time),
+      MonotonicTimeToDOMHighResTimeStamp(processing_start),
+      MonotonicTimeToDOMHighResTimeStamp(processing_end), cancelable);
 
-  if (ObservingEventTimingEntries())
-    NotifyObserversOfEntry(*entry);
+  DCHECK(GetFrame());
+  event_timings_.push_back(entry);
+  WebLayerTreeView* layerTreeView =
+      GetFrame()->GetChromeClient().GetWebLayerTreeView(GetFrame());
+  // Only queue a swap promise when |event_timings_| was empty. All of the
+  // elements in |event_timings_| will be processed in a single call of
+  // ReportEventTimings() when the promise suceeds or fails. This method also
+  // clears the vector, so a promise has already been queued when the vector was
+  // not previously empty.
+  if (event_timings_.size() == 1 && layerTreeView) {
+    layerTreeView->NotifySwapTime(ConvertToBaseCallback(
+        CrossThreadBind(&WindowPerformance::ReportEventTimings,
+                        WrapCrossThreadWeakPersistent(this))));
+  }
+}
 
-  if (ShouldBufferEventTiming() && !IsEventTimingBufferFull())
-    AddEventTimingBuffer(*entry);
+void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
+                                           TimeTicks timestamp) {
+  DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
+  for (const auto& entry : event_timings_) {
+    int duration_in_ms = std::ceil((end_time - entry->startTime()) / 8) * 8;
+    if (duration_in_ms <= kEventTimingDurationThresholdInMs)
+      continue;
+
+    entry->SetDuration(duration_in_ms);
+    if (ObservingEventTimingEntries())
+      NotifyObserversOfEntry(*entry);
+
+    if (ShouldBufferEventTiming() && !IsEventTimingBufferFull())
+      AddEventTimingBuffer(*entry);
+  }
+  event_timings_.clear();
 }
 
 }  // namespace blink

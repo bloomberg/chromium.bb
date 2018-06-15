@@ -102,11 +102,13 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
                    double finish_time);
   virtual void BuildJSONValue(V8ObjectBuilder&) const;
 
+  // Protected and not const because PerformanceEventTiming needs to modify it.
+  double duration_;
+
  private:
   const String name_;
   const String entry_type_;
   const double start_time_;
-  const double duration_;
   const PerformanceEntryType entry_type_enum_;
   const int index_;
 };

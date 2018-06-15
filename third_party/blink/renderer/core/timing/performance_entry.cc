@@ -44,10 +44,10 @@ PerformanceEntry::PerformanceEntry(const String& name,
                                    const String& entry_type,
                                    double start_time,
                                    double finish_time)
-    : name_(name),
+    : duration_(finish_time - start_time),
+      name_(name),
       entry_type_(entry_type),
       start_time_(start_time),
-      duration_(finish_time - start_time),
       entry_type_enum_(ToEntryTypeEnum(entry_type)),
       index_(index_seq.GetNext()) {}
 
