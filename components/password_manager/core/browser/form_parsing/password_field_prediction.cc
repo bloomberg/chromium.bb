@@ -46,6 +46,10 @@ FormPredictions ConvertToFormPredictions(const FormData& observed_form,
             form_structure.form_signature());
   DCHECK_EQ(observed_form.fields.size(), form_structure.field_count());
   FormPredictions result;
+  if (observed_form.fields.size() != form_structure.field_count()) {
+    // TODO(https://crbug.com/831123). Find the reason why this can happen.
+    return result;
+  }
   for (size_t i = 0; i < observed_form.fields.size(); ++i) {
     uint32_t unique_id = observed_form.fields[i].unique_renderer_id;
     ServerFieldType server_type = form_structure.field(i)->server_type();
