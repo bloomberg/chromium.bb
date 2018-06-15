@@ -53,68 +53,8 @@ adb shell settings put global package_verifier_enable 0
 
 ### Using Emulators
 
-#### Building for emulation
-
-The fast Android emulators use the X86 instruction set, so anything run on such
-an emulator has to be built for X86. Add
-```
-target_cpu = "x86"
-```
-to your args.gn file. You may want use different out directories for your X86
-and ARM builds.
-
-#### Setting up your workstation
-
-The Android emulators support VM acceleration. This, however, needs to be
-enabled on your workstation, as described in
-https://developer.android.com/studio/run/emulator-acceleration.html#accel-vm.
-
-#### Creating and running emulators from Android Studio
-
-The easiest way to create and run an emulator is to use Android Studio's
-Virtual Device Manager. See
-https://developer.android.com/studio/run/managing-avds.html.
-
-Creating emulators in Android Studio will modify the current SDK. If you are
-using the project's SDK then this can cause problems the next time you sync
-the project, so it is normally better to use a different SDK root when
-creating emulators. You can set this up either by creating the Android Studio
-project using generate_gradle.py's --sdk or --sdk-path options or by
-changing the SDK location within AndroidStudio's settings.
-
-#### Starting an emulator from the command line
-
-Once you have created an emulator (using Android Studio or otherwise) you can
-start it from the command line using the
-[emulator](https://developer.android.com/studio/run/emulator-commandline.html)
-command:
-
-```
-{$ANDROID_SDK_ROOT}/tools/emulator @emulatorName
-```
-
-where emulatorName is the name of the emulator you want to start (e.g.
-Nexus_5X_API_27). The command
-
-```
-{$ANDROID_SDK_ROOT}/tools/emulator -list-avds
-```
-
-will list the available emulators.
-
-#### Creating an emulator from the command line
-
-New emulators can be created from the command line using the
-[avdmanager](https://developer.android.com/studio/command-line/avdmanager.html)
-command. This, however, does not provide any way of creating new device types,
-and provides far fewer options than the Android Studio UI for creating new
-emulators.
-
-The device types are configured through a devices.xml file. The devices.xml
-file for standard device types are within Android Studio's install, and that
-for any additional devices you define are in $ANDROID_EMULATOR_HOME (defaulting
-to ~/.android/). The contents of devices.xml is, however, undocumented (and
-presumably subject to change), so this is best modified using Android Studio.
+Running tests on emulators is the same as on device. Refer to
+[android_emulators.md](android_emulators.md) for setting up emulators.
 
 ## Building Tests
 

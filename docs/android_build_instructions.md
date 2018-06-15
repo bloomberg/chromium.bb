@@ -352,6 +352,11 @@ incremental_apk_by_default = true
 
 This will make `chrome_public_apk` build in incremental mode.
 
+## Installing and Running Chromium on an Emulator
+
+Running on an emulator is the same as on a device. Refer to
+[android_emulators.md](android_emulators.md) for setting up emulators.
+
 
 ## Tips, tricks, and troubleshooting
 
