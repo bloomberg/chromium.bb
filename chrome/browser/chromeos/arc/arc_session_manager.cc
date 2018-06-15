@@ -31,7 +31,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
 #include "chrome/browser/ui/app_list/arc/arc_pai_starter.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -498,7 +497,6 @@ void ArcSessionManager::Shutdown() {
   }
   context_.reset();
   pai_starter_.reset();
-  fast_app_reinstall_starter_.reset();
   profile_ = nullptr;
   state_ = State::NOT_INITIALIZED;
   if (scoped_opt_in_tracker_) {
@@ -688,11 +686,6 @@ bool ArcSessionManager::RequestEnableImpl() {
         ArcPaiStarter::CreateIfNeeded(profile_, profile_->GetPrefs());
   }
 
-  if (!fast_app_reinstall_starter_ && IsPlayStoreAvailable()) {
-    fast_app_reinstall_starter_ = ArcFastAppReinstallStarter::CreateIfNeeded(
-        profile_, profile_->GetPrefs());
-  }
-
   if (start_arc_directly) {
     StartArc();
     // When in ARC kiosk mode, there's no Chrome tabs to restore. Remove the
@@ -731,7 +724,6 @@ void ArcSessionManager::RequestDisable() {
   enable_requested_ = false;
   scoped_opt_in_tracker_.reset();
   pai_starter_.reset();
-  fast_app_reinstall_starter_.reset();
 
   // Reset any pending request to re-enable ARC.
   reenable_arc_ = false;
@@ -996,7 +988,6 @@ void ArcSessionManager::StopArc() {
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcPaiStarted, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, false);
-    profile_->GetPrefs()->SetBoolean(prefs::kArcFastAppReinstallStarted, false);
   }
   ShutdownSession();
   if (support_host_)

@@ -4,13 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_list/arc/arc_fast_app_reinstall_starter.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/arc/arc_prefs.h"
 #include "components/login/localized_values_builder.h"
 
 namespace {
@@ -109,16 +106,7 @@ void RecommendAppsScreenHandler::HandleRetry() {
 }
 
 void RecommendAppsScreenHandler::HandleInstall(const base::ListValue* args) {
-  pref_service_->Set(arc::prefs::kArcFastAppReinstallPackages, *args);
-
-  arc::ArcFastAppReinstallStarter* fast_app_reinstall_starter =
-      arc::ArcSessionManager::Get()->fast_app_resintall_starter();
-  if (fast_app_reinstall_starter) {
-    fast_app_reinstall_starter->OnAppsSelectionFinished();
-  } else {
-    LOG(ERROR)
-        << "Cannot complete Fast App Reinstall flow. Starter is not available.";
-  }
+  pref_service_->Set("userSelectedAppList", *args);
 
   for (auto& observer : observer_list_)
     observer.OnInstall();
