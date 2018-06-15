@@ -235,16 +235,8 @@ bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
       return false;
     }
 
-    for (int i = 0; i < kImageProcBufferCount; i++) {
-      std::vector<base::ScopedFD> fds =
-          image_processor_->GetDmabufsForOutputBuffer(i);
-      if (fds.size() == 0) {
-        VLOGF(1) << "failed to get fds of image processor.";
-        return false;
-      }
-      image_processor_output_buffer_map_.push_back(std::move(fds));
+    for (int i = 0; i < kImageProcBufferCount; i++)
       free_image_processor_output_buffers_.push_back(i);
-    }
   }
 
   if (!InitControls())
@@ -290,9 +282,9 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
       // be no callbacks after processor destroys.
       if (!image_processor_->Process(
               frame, output_buffer_index, std::vector<base::ScopedFD>(),
-              base::Bind(&V4L2VideoEncodeAccelerator::FrameProcessed,
-                         base::Unretained(this), force_keyframe,
-                         frame->timestamp()))) {
+              base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,
+                             base::Unretained(this), force_keyframe,
+                             frame->timestamp(), output_buffer_index))) {
         NOTIFY_ERROR(kPlatformFailureError);
       }
     } else {
@@ -411,33 +403,23 @@ V4L2VideoEncodeAccelerator::GetSupportedProfiles() {
   return device->GetSupportedEncodeProfiles();
 }
 
-void V4L2VideoEncodeAccelerator::FrameProcessed(bool force_keyframe,
-                                                base::TimeDelta timestamp,
-                                                int output_buffer_index) {
+void V4L2VideoEncodeAccelerator::FrameProcessed(
+    bool force_keyframe,
+    base::TimeDelta timestamp,
+    int output_buffer_index,
+    scoped_refptr<VideoFrame> frame) {
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DVLOGF(4) << "force_keyframe=" << force_keyframe
             << ", output_buffer_index=" << output_buffer_index;
   DCHECK_GE(output_buffer_index, 0);
-  DCHECK_LT(static_cast<size_t>(output_buffer_index),
-            image_processor_output_buffer_map_.size());
 
-  scoped_refptr<VideoFrame> output_frame = VideoFrame::WrapExternalDmabufs(
-      device_input_format_, image_processor_->output_allocated_size(),
-      gfx::Rect(visible_size_), visible_size_,
-      DuplicateFDs(image_processor_output_buffer_map_[output_buffer_index]),
-      timestamp);
-  if (!output_frame) {
-    NOTIFY_ERROR(kPlatformFailureError);
-    return;
-  }
-  output_frame->AddDestructionObserver(BindToCurrentLoop(
+  frame->AddDestructionObserver(BindToCurrentLoop(
       base::Bind(&V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer,
                  weak_this_, output_buffer_index)));
 
   encoder_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&V4L2VideoEncodeAccelerator::EncodeTask,
-                 base::Unretained(this), output_frame, force_keyframe));
+      FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::EncodeTask,
+                            base::Unretained(this), frame, force_keyframe));
 }
 
 void V4L2VideoEncodeAccelerator::ReuseImageProcessorOutputBuffer(

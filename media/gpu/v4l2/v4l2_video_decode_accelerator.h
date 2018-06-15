@@ -403,9 +403,12 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Callback that indicates a picture has been cleared.
   void PictureCleared();
 
-  // Image processor returns a processed frame. Its id is |bitstream_buffer_id|
-  // and stored in |output_buffer_index| buffer of image processor.
-  void FrameProcessed(int32_t bitstream_buffer_id, int output_buffer_index);
+  // Image processor returns a processed |frame|. Its id is
+  // |bitstream_buffer_id| and stored in |output_buffer_index| buffer of
+  // image processor.
+  void FrameProcessed(int32_t bitstream_buffer_id,
+                      int output_buffer_index,
+                      scoped_refptr<VideoFrame> frame);
 
   // Image processor notifies an error.
   void ImageProcessorError();
