@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 
+#include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
@@ -33,7 +34,9 @@ AvatarToolbarButton::AvatarToolbarButton(Profile* profile,
                                          views::ButtonListener* listener)
     : ToolbarButton(profile, listener, nullptr),
       profile_(profile),
+#if !defined(OS_CHROMEOS)
       error_controller_(this, profile_),
+#endif  // !defined(OS_CHROMEOS)
       profile_observer_(this) {
   profile_observer_.Add(
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
@@ -57,8 +60,16 @@ AvatarToolbarButton::AvatarToolbarButton(Profile* profile,
 
   Init();
 
+#if defined(OS_CHROMEOS)
+  // On CrOS the avatar toolbar button should only show as badging for Incognito
+  // and Guest sessions. It should not be instantiated for regular profiles and
+  // it should not be enabled as there's no profile switcher to trigger / show.
+  DCHECK(IsIncognito() || profile_->IsGuestSession());
+  SetEnabled(false);
+#else
   // The profile switcher is only available outside incognito.
   SetEnabled(!IsIncognito());
+#endif  // !defined(OS_CHROMEOS)
 
   // Set initial tooltip. UpdateIcon() needs to be called from the outside as
   // GetThemeProvider() is not available until the button is added to
@@ -216,6 +227,7 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
 }
 
 AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() {
+#if !defined(OS_CHROMEOS)
   if (profile_->IsSyncAllowed() && error_controller_.HasAvatarError()) {
     // When DICE is enabled and the error is an auth error, the sync-paused
     // icon is shown.
@@ -228,4 +240,8 @@ AvatarToolbarButton::SyncState AvatarToolbarButton::GetSyncState() {
     return should_show_sync_paused_ui ? SyncState::kPaused : SyncState::kError;
   }
   return SyncState::kNormal;
+#else
+  NOTREACHED();
+  return SyncState::kError;
+#endif  // !defined(OS_CHROMEOS)
 }

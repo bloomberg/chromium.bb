@@ -200,11 +200,16 @@ void ToolbarView::Init() {
   browser_actions_ =
       new BrowserActionsContainer(browser_, main_container, this);
 
-// ChromeOS never shows a profile icon in the browser window.
-#if !defined(OS_CHROMEOS)
-  if (ui::MaterialDesignController::IsNewerMaterialUi())
-    avatar_ = new AvatarToolbarButton(browser_->profile(), this);
+  if (ui::MaterialDesignController::IsRefreshUi()) {
+    bool show_avatar_toolbar_button = true;
+#if defined(OS_CHROMEOS)
+    // ChromeOS only badges Incognito and Guest icons in the browser window.
+    show_avatar_toolbar_button = browser_->profile()->IsOffTheRecord() ||
+                                 browser_->profile()->IsGuestSession();
 #endif  // !defined(OS_CHROMEOS)
+    if (show_avatar_toolbar_button)
+      avatar_ = new AvatarToolbarButton(browser_->profile(), this);
+  }
 
   app_menu_button_ = new BrowserAppMenuButton(this);
   app_menu_button_->EnableCanvasFlippingForRTLUI(true);
