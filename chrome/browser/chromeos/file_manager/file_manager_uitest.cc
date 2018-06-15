@@ -57,43 +57,23 @@ class FileManagerUITest : public InProcessBrowserTest {
   }
 };
 
-// Fails on Linux Chromium OS ASan LSan https://crbug.com/852788
-#if defined(LEAK_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_CheckSelect DISABLED_CheckSelect
-#else
-#define MAYBE_CheckSelect CheckSelect
-#endif
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, MAYBE_CheckSelect) {
+// TODO(joelhockey): Fails on all bots. https://crbug.com/852788
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, DISABLED_CheckSelect) {
   RunTest("checkselect");
 }
 
-// Fails on Linux Chromium OS ASan LSan https://crbug.com/852788
-#if defined(LEAK_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_Crostini DISABLED_Crostini
-#else
-#define MAYBE_Crostini Crostini
-#endif
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, MAYBE_Crostini) {
+// TODO(joelhockey): Fails on all bots. https://crbug.com/852788
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, DISABLED_Crostini) {
   RunTest("crostini");
 }
 
-// Fails on Linux Chromium OS ASan LSan https://crbug.com/852788
-#if defined(LEAK_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_QuickView DISABLED_QuickView
-#else
-#define MAYBE_QuickView QuickView
-#endif
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, MAYBE_QuickView) {
+// TODO(joelhockey): Fails on all bots. https://crbug.com/852788
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, DISABLED_QuickView) {
   RunTest("quickview");
 }
 
-// Fails on Linux Chromium OS ASan LSan https://crbug.com/852788
-#if defined(LEAK_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_UMA DISABLED_UMA
-#else
-#define MAYBE_UMA UMA
-#endif
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, MAYBE_UMA) {
+// TODO(joelhockey): Fails on all bots. https://crbug.com/852788
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, DISABLED_UMA) {
   RunTest("uma");
 }
 
