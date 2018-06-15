@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Screenshot van venster</translation>
 <translation id="1197979282329025000">Er is een fout opgetreden tijdens het ophalen van de printermogelijkheden voor de printer <ph name="PRINTER_NAME" />. Deze printer kan niet worden geregistreerd met <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Aan de slag</translation>
-<translation id="1199232041627643649">Houd <ph name="KEY_EQUIVALENT" /> ingedrukt om te stoppen.</translation>
 <translation id="119944043368869598">Alles wissen</translation>
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="1202596434010270079">De Kiosk-app is geüpdatet. Verwijder de USB-stick.</translation>
@@ -512,7 +511,7 @@
 <translation id="1737968601308870607">Bug indienen</translation>
 <translation id="1743570585616704562">Niet herkend</translation>
 <translation id="1743970419083351269">Downloadbalk sluiten</translation>
-<translation id="1744060673522309905">Kan het apparaat niet aan het domein koppelen. Zorg ervoor dat je niet het aantal apparaten overschrijdt dat je kunt toevoegen.</translation>
+<translation id="1744060673522309905">Kan het apparaat niet aan het domein koppelen. Zorg ervoor dat je het aantal apparaten dat je kunt toevoegen niet overschrijdt.</translation>
 <translation id="1744108098763830590">achtergrondpagina</translation>
 <translation id="1745520510852184940">Dit altijd doen</translation>
 <translation id="174937106936716857">Totaal aantal bestanden</translation>
@@ -1327,7 +1326,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3003144360685731741">Voorkeursnetwerken</translation>
 <translation id="3003623123441819449">CSS-cachegeheugen</translation>
 <translation id="3003633581067744647">Overschakelen naar miniatuurweergave</translation>
-<translation id="3003828226041301643">Kan het apparaat niet aan het domein koppelen. Controleer je account en zorg ervoor dat je over rechten beschikt om apparaten toe te voegen.</translation>
+<translation id="3003828226041301643">Kan het apparaat niet aan het domein koppelen. Controleer je account en zorg ervoor dat je over voldoende rechten beschikt om apparaten toe te voegen.</translation>
 <translation id="3003967365858406397">Je <ph name="PHONE_NAME" /> maakt een privé-wifi-verbinding.</translation>
 <translation id="3004391367407090544">Probeer het later opnieuw</translation>
 <translation id="3006881078666935414">Geen gebruiksgegevens</translation>
@@ -2714,6 +2713,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="5204967432542742771">Wachtwoord invoeren</translation>
 <translation id="5206215183583316675"><ph name="CERTIFICATE_NAME" /> verwijderen?</translation>
 <translation id="520621735928254154">Fout bij importeren van certificaat</translation>
+<translation id="5209320130288484488">Geen apparaten gevonden</translation>
 <translation id="5209518306177824490">SHA-1-vingerafdruk</translation>
 <translation id="5210365745912300556">Tabblad sluiten</translation>
 <translation id="5213891612754844763">Proxyinstellingen weergeven</translation>
@@ -3135,7 +3135,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="580571955903695899">Sorteren op titel</translation>
 <translation id="5807290661599647102">Een schermvergrendeling instellen</translation>
 <translation id="580961539202306967">Vragen als een site mij pushberichten wil sturen (aanbevolen)</translation>
-<translation id="5809725759695043233">Je hebt apps die zijn geoptimaliseerd voor Chromebooks</translation>
 <translation id="5814126672212206791">Verbindingstype</translation>
 <translation id="5815645614496570556">X.400-adres</translation>
 <translation id="5816434091619127343">Met de aangevraagde printerwijzigingen wordt de printer wordt onbruikbaar.</translation>
@@ -4154,14 +4153,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="7378812711085314936">Dataverbinding ophalen</translation>
 <translation id="7384292194278095697">Dit apparaat wordt niet meer ondersteund</translation>
 <translation id="7385854874724088939">Er is iets misgegaan bij het afdrukken. Controleer je printer en probeer het opnieuw.</translation>
-<translation id="7386824183915085801">Je versie van Chrome en van je besturingssysteem worden verzonden, samen met de
-        gegevens die je hierboven hebt geselecteerd voor opname. Als je je
-        e-mailadres opgeeft, kan Google contact met je opnemen naar aanleiding van je feedbackmelding. Deze feedback
-        wordt gebruikt om een diagnose van problemen uit te voeren en helpt bij de verbetering van Chrome. Persoonlijke informatie die je verzendt,
-        of dit nu expliciet of impliciet is, wordt beschermd in
-        overeenstemming met ons privacybeleid.<ph name="BEGIN_BOLD" /> Door het verzenden van deze feedback ga je ermee akkoord dat Google door jou verzonden feedback
-        mag gebruiken om Google-producten of -services te verbeteren.
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Dialoogvenster 'Browsegegevens wissen'</translation>
 <translation id="7388044238629873883">Je bent bijna klaar.</translation>
 <translation id="7388222713940428051">Gastvenster openen</translation>
@@ -4472,7 +4463,7 @@ Als je <ph name="APP_NAME" /> installeert, wordt er <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7839051173341654115">Media bekijken/back-up maken</translation>
 <translation id="7839192898639727867">Sleutel-ID van certificaatonderwerp</translation>
 <translation id="7839804798877833423">Voor het ophalen van deze bestanden wordt ongeveer <ph name="FILE_SIZE" /> aan mobiele data gebruikt.</translation>
-<translation id="7844553762889824470">Markeer wat je wilt horen en druk vervolgens op Zoeken + S. Je kunt ook de zoektoets ingedrukt houden of naast je profielafbeelding op het pictogram 'Selecteer om uitgesproken te worden' tikken om de gewenste optie te selecteren.</translation>
+<translation id="7844553762889824470">Markeer wat je wilt horen en druk daarna op Zoeken + S. Je kunt ook de zoektoets ingedrukt houden of naast je profielafbeelding op het pictogram 'Selecteer om uitgesproken te worden' tikken om de gewenste optie te selecteren.</translation>
 <translation id="7844992432319478437">Diff bijwerken</translation>
 <translation id="7846076177841592234">Selectie opheffen</translation>
 <translation id="7846634333498149051">Toetsenbord</translation>

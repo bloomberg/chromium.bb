@@ -20,6 +20,7 @@
 <translation id="1346748346194534595">Right</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1467432559032391204">Left</translation>
+<translation id="1479743070547893297">Draw with your stylus to select</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1525508553941733066">DISMISS</translation>
@@ -50,8 +51,10 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Set your language</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1993072747612765854">Learn more about the latest <ph name="SYSTEM_APP_NAME" /> update</translation>
 <translation id="1995660704900986789">Power off</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
+<translation id="2016340657076538683">Type a message</translation>
 <translation id="2049639323467105390">This device is managed by <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2067602449040652523">Keyboard brightness</translation>
@@ -75,6 +78,7 @@
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2365393535144473978">Enabling mobile data will enable Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="2412593942846481727">Update available</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2484513351006226581">Hit <ph name="KEYBOARD_SHORTCUT" /> to switch keyboard layout.</translation>
@@ -82,6 +86,7 @@
 <translation id="2509468283778169019">CAPS LOCK is on</translation>
 <translation id="2532589005999780174">High contrast mode</translation>
 <translation id="2575685495496069081">Multiple sign-in has been disabled</translation>
+<translation id="2582112259361606227">Restart to update</translation>
 <translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM card is locked</translation>
 <translation id="2653659639078652383">Submit</translation>
@@ -103,6 +108,7 @@
 <translation id="2911940648265863620">You are sharing your screen</translation>
 <translation id="2942516765047364088">Shelf position</translation>
 <translation id="2946119680249604491">Add connection</translation>
+<translation id="2961963223658824723">Something went wrong. Try again in a few seconds.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> is a public session managed by <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Mono audio</translation>
@@ -147,6 +153,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lock</translation>
 <translation id="3798670284305777884">Speaker (internal)</translation>
+<translation id="380165613292957338">Hi, how can I help?</translation>
 <translation id="3846575436967432996">No network information available</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3891340733213178823">Press Ctrl+Shift+Q twice to sign out.</translation>
@@ -159,6 +166,7 @@
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4072264167173457037">Medium signal</translation>
+<translation id="4200057768455216496">You pressed the shortcut for the docked magnifier. Do you want to turn it on?</translation>
 <translation id="4217571870635786043">Dictation</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -179,6 +187,7 @@
 <translation id="4544944664594876241">The shortcut to lock the screen has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4564869809620998694">Font service</translation>
 <translation id="4570957409596482333">Select-to-Speak button</translation>
+<translation id="4628757576491864469">Devices</translation>
 <translation id="4659419629803378708">ChromeVox enabled</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
@@ -234,6 +243,7 @@
 <translation id="598882571027504733">To get the update, restart your Chromebook with the keyboard attached.</translation>
 <translation id="5992218262414051481">High contrast mode enabled. Press Ctrl+Search+H again to toggle it off.</translation>
 <translation id="6018164090099858612">Exiting mirror mode</translation>
+<translation id="6040143037577758943">Close</translation>
 <translation id="6043212731627905357">This monitor isn't getting along with your <ph name="DEVICE_TYPE" /> (the monitor is not supported).</translation>
 <translation id="6043994281159824495">Sign out now</translation>
 <translation id="6047696787498798094">Screen sharing will stop when you switch to another user. Do you want to continue?</translation>
@@ -255,6 +265,7 @@
 <translation id="6452181791372256707">Reject</translation>
 <translation id="6453179446719226835">Language has been changed</translation>
 <translation id="6459472438155181876">Extending screen to <ph name="DISPLAY_NAME" /></translation>
+<translation id="6482559668224714696">Full-screen magnifier</translation>
 <translation id="6490471652906364588">USB-C device (right port)</translation>
 <translation id="6501401484702599040">Casting screen to <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Handwriting input</translation>
@@ -279,12 +290,14 @@
 <translation id="6820676911989879663">Take a break!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE" /></translation>
+<translation id="6910714959251846841">This update requires powerwashing of your device. Learn more about the latest <ph name="SYSTEM_APP_NAME" /> update.</translation>
 <translation id="6911468394164995108">Join other ...</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="698231206551913481">All files and local data associated with this user will be permanently deleted once this user is removed.</translation>
 <translation id="7015766095477679451">Come back at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Exit session</translation>
 <translation id="7034339000180558234">Casting <ph name="TAB_NAME" /> to <ph name="RECEIVER_NAME" /></translation>
+<translation id="7037152028959403492">You pressed the shortcut for high contrast. Do you want to turn it on?</translation>
 <translation id="7066646422045619941">This network is disabled by your administrator.</translation>
 <translation id="7067196344162293536">Auto rotate</translation>
 <translation id="7076293881109082629">Signing in</translation>
@@ -335,6 +348,7 @@
 <translation id="8132793192354020517">Connected to <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialising...</translation>
 <translation id="8142699993796781067">Private networks</translation>
+<translation id="8152119955266188852">You pressed the shortcut for the full-screen magnifier. Do you want to turn it on?</translation>
 <translation id="8180896103888046100">Stop casting to an unknown receiver</translation>
 <translation id="8190698733819146287">Customise languages and input...</translation>
 <translation id="8261506727792406068">Delete</translation>
@@ -371,6 +385,7 @@
 <translation id="8940956008527784070">Battery low (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Quick launch</translation>
 <translation id="8995603266996330174">Managed by <ph name="DOMAIN" /></translation>
+<translation id="9029474291399787231">Adobe Flash Player update available</translation>
 <translation id="9033907480196064950">You are currently casting <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
@@ -383,6 +398,7 @@
 <translation id="9194617393863864469">Sign in another user...</translation>
 <translation id="9201131092683066720">Battery is <ph name="PERCENTAGE" />% full.</translation>
 <translation id="9210037371811586452">Exiting unified desktop mode</translation>
+<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Set wallpaper</translation>
 <translation id="923686485342484400">Press Control Shift Q twice to sign out.</translation>
 <translation id="945522503751344254">Send feedback</translation>

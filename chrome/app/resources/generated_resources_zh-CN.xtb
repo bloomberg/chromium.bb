@@ -142,7 +142,6 @@
 <translation id="119738088725604856">窗口的屏幕截图</translation>
 <translation id="1197979282329025000">检索打印机“<ph name="PRINTER_NAME" />”的打印功能时发生错误。此打印机无法使用“<ph name="CLOUD_PRINT_NAME" />”进行注册。</translation>
 <translation id="1198271701881992799">让我们开始吧</translation>
-<translation id="1199232041627643649">按住 <ph name="KEY_EQUIVALENT" /> 键退出。</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1202596434010270079">自助服务终端应用已更新完毕。请拔下 U 盘。</translation>
@@ -2705,6 +2704,7 @@
 <translation id="5204967432542742771">输入密码</translation>
 <translation id="5206215183583316675">要删除“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="520621735928254154">导入证书时出现错误</translation>
+<translation id="5209320130288484488">未找到任何设备</translation>
 <translation id="5209518306177824490">SHA-1 指纹</translation>
 <translation id="5210365745912300556">关闭标签页</translation>
 <translation id="5213891612754844763">显示代理设置</translation>
@@ -3121,7 +3121,6 @@
 <translation id="580571955903695899">按标题重新排序</translation>
 <translation id="5807290661599647102">设置屏幕锁定</translation>
 <translation id="580961539202306967">在网站要向我发送推送消息时询问我（推荐）</translation>
-<translation id="5809725759695043233">您有一些已针对 Chromebook 进行了优化的应用</translation>
 <translation id="5814126672212206791">连接类型</translation>
 <translation id="5815645614496570556">X.400 地址</translation>
 <translation id="5816434091619127343">所请求的打印机更改会导致打印机不可用。</translation>
@@ -4139,7 +4138,6 @@
 <translation id="7378812711085314936">获取数据网络连接</translation>
 <translation id="7384292194278095697">此设备不再受支持</translation>
 <translation id="7385854874724088939">尝试打印时出现错误。请检查您的打印机，然后重试。</translation>
-<translation id="7386824183915085801">除了您选择包含的上述所有信息外，还将提交您的Chrome和操作系统版本。如果您提交的信息包含自己的电子邮件地址，Google可能会就您的反馈报告与您联系。该反馈用于诊断问题并帮助改进Chrome。您明确提交或无意中提交的所有个人信息都将按照我们的隐私权政策受到保护。<ph name="BEGIN_BOLD" />提交该反馈即表示您同意Google使用您提供的反馈来改进任何Google产品或服务<ph name="END_BOLD" />。</translation>
 <translation id="7387829944233909572">“清除浏览数据”对话框</translation>
 <translation id="7388044238629873883">即将终结！</translation>
 <translation id="7388222713940428051">以访客身份打开一个窗口</translation>

@@ -142,7 +142,6 @@
 <translation id="119738088725604856">نافذة لقطة شاشة</translation>
 <translation id="1197979282329025000">حدث خطأ أثناء استرداد إمكانيات الطابعة للطابعة <ph name="PRINTER_NAME" />. تعذر تسجيل هذه الطابعة في <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">لنبدأ</translation>
-<translation id="1199232041627643649">اضغط مع الاستمرار على <ph name="KEY_EQUIVALENT" /> للإنهاء.</translation>
 <translation id="119944043368869598">محو جميع التنزيلات</translation>
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1202596434010270079">‏تم تحديث تطبيق Kiosk. يُرجى إزالة جهاز USB.</translation>
@@ -2708,6 +2707,7 @@
 <translation id="5204967432542742771">إدخال كلمة المرور</translation>
 <translation id="5206215183583316675">هل تريد حذف "<ph name="CERTIFICATE_NAME" />"؟</translation>
 <translation id="520621735928254154">خطأ في استيراد الشهادة</translation>
+<translation id="5209320130288484488">لم يتم العثور على أي أجهزة</translation>
 <translation id="5209518306177824490">‏بصمة أصبع SHA-1</translation>
 <translation id="5210365745912300556">إغلاق علامة التبويب</translation>
 <translation id="5213891612754844763">عرض إعدادات الخادم الوكيل</translation>
@@ -3129,7 +3129,6 @@
 <translation id="580571955903695899">إعادة الترتيب بحسب العنوان</translation>
 <translation id="5807290661599647102">تعيين قفل شاشة</translation>
 <translation id="580961539202306967">اسألني عندما يحاول موقع أن يرسل لي رسائل دفع (يُوصى به)</translation>
-<translation id="5809725759695043233">‏تمّ تحسين بعض التطبيقات لاستخدامها مع أجهزة Chromebook.</translation>
 <translation id="5814126672212206791">نوع الاتصال</translation>
 <translation id="5815645614496570556">‏عنوان X.400</translation>
 <translation id="5816434091619127343">تغييرات الطابعة المطلوبة تجعل الطابعة غير قابلة للاستخدام.</translation>
@@ -4149,14 +4148,6 @@
 <translation id="7378812711085314936">الحصول على اتصال البيانات</translation>
 <translation id="7384292194278095697">لم يعد هذا الجهاز مدعومًا</translation>
 <translation id="7385854874724088939">حدث خطأ ما أثناء الطباعة. يُرجى التحقق من الطابعة والمحاولة مرة أخرى.</translation>
-<translation id="7386824183915085801">‏سيتم إرسال إصدار Chrome ونظام التشغيل بالإضافة إلى
-          أي معلومات تختار تضمينها أعلاه. وفي حالة تضمين عنوان
-          بريدك الإلكتروني، فقد تتصل Google بك بشأن إرسال تقرير بالتعليقات. يتم استخدام هذه التعليقات
-          في تشخيص المشكلات والمساعدة في تحسين Chrome. وستتمتع أي معلومات شخصية
-          ترسلها، سواء أكانت صريحة أم ضمنية بالحماية
-          بموجب سياسة الخصوصية المتبعة لدينا.<ph name="BEGIN_BOLD" /> ويُعد إرسال هذه التعليقات بمثابة موافقة منك على حق Google في استخدام التعليقات
-          التي تقدمها لتحسين أي من منتجات أو خدمات Google.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">مربع حوار "محو بيانات التصفّح"</translation>
 <translation id="7388044238629873883">لقد أوشكت على الانتهاء.</translation>
 <translation id="7388222713940428051">فتح نافذة "ضيف"</translation>

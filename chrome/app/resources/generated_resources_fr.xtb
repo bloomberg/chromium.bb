@@ -125,7 +125,7 @@
 <translation id="1175364870820465910">Im&amp;primer...</translation>
 <translation id="117624967391683467">Copie de <ph name="FILE_NAME" /> en cours…</translation>
 <translation id="1177138678118607465">Google peut utiliser votre historique de navigation pour personnaliser la recherche, les annonces et d'autres services Google. Vous pouvez modifier ce paramètre à tout moment sur la page myaccount.google.com/activitycontrols/search</translation>
-<translation id="1177753005899755865">ERREUR : Échec du chargement du composant dans la machine virtuelle.</translation>
+<translation id="1177753005899755865">ERREUR : Échec du chargement du composant de machine virtuelle.</translation>
 <translation id="1177863135347784049">Personnalisé</translation>
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="1181037720776840403">Supprimer</translation>
@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Capture d'écran de la fenêtre</translation>
 <translation id="1197979282329025000">Une erreur s'est produite lors de la récupération des fonctions de l'imprimante <ph name="PRINTER_NAME" />. Cette imprimante n'a pas pu être enregistrée dans <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Mise en route</translation>
-<translation id="1199232041627643649">Maintenez la touche <ph name="KEY_EQUIVALENT" /> enfoncée pour quitter.</translation>
 <translation id="119944043368869598">Tout effacer</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1202596434010270079">L'application kiosque a été mise à jour. Veuillez débrancher la clé USB.</translation>
@@ -504,7 +503,7 @@
 <translation id="1726100011689679555">Serveurs de noms</translation>
 <translation id="1729533290416704613">Elle contrôle également la page qui s'affiche lorsque vous effectuez une recherche dans l'omnibox.</translation>
 <translation id="1731589410171062430">Total : <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> (<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />)</translation>
-<translation id="1731754778936909679">ERREUR : Échec du lancement du service dans la machine virtuelle.</translation>
+<translation id="1731754778936909679">ERREUR : Échec du lancement du service de machine virtuelle.</translation>
 <translation id="1731911755844941020">Envoi de la requête...</translation>
 <translation id="1732215134274276513">Annuler l'épinglage des onglets</translation>
 <translation id="1734824808160898225"><ph name="PRODUCT_NAME" /> risque de ne pas rester à jour</translation>
@@ -1172,7 +1171,7 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2740393541869613458">examiner les sites Web que l'utilisateur supervisé a consultés ;</translation>
 <translation id="2743387203779672305">Copier dans le Presse-papier</translation>
 <translation id="2745080116229976798">Subordination qualifiée Microsoft</translation>
-<translation id="2749295145042071768">Lancement du service dans la machine virtuelle.</translation>
+<translation id="2749295145042071768">Lancement du service de machine virtuelle.</translation>
 <translation id="2749756011735116528">Connexion à <ph name="PRODUCT_NAME" /></translation>
 <translation id="2749881179542288782">Vérifier la grammaire et l'orthographe</translation>
 <translation id="2751739896257479635">Authentification EAP phase 2</translation>
@@ -1905,7 +1904,7 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="3872220884670338524">Autres actions (compte <ph name="USERNAME" /> enregistré sur <ph name="DOMAIN" />)</translation>
 <translation id="3872991219937722530">Libérez de l'espace disque, car l'appareil risque de ne plus répondre.</translation>
 <translation id="3878840326289104869">Création de l'utilisateur supervisé en cours</translation>
-<translation id="3879748587602334249">Gest. de tél.</translation>
+<translation id="3879748587602334249">Gestionnaire de téléchargement</translation>
 <translation id="3888550877729210209">Prise de notes avec <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3892414795099177503">Ajouter une connexion OpenVPN/L2TP…</translation>
 <translation id="3893536212201235195">Consulter et modifier vos paramètres d'accessibilité</translation>
@@ -2713,6 +2712,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5204967432542742771">Mot de passe</translation>
 <translation id="5206215183583316675">Supprimer "<ph name="CERTIFICATE_NAME" />" ?</translation>
 <translation id="520621735928254154">Erreur d'importation du certificat</translation>
+<translation id="5209320130288484488">Aucun appareil trouvé.</translation>
 <translation id="5209518306177824490">Empreinte SHA-1</translation>
 <translation id="5210365745912300556">Fermer l'onglet</translation>
 <translation id="5213891612754844763">Afficher les paramètres de proxy</translation>
@@ -3135,7 +3135,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="580571955903695899">Trier par nom</translation>
 <translation id="5807290661599647102">Configurer le verrouillage de l'écran</translation>
 <translation id="580961539202306967">Me demander lorsqu'un site requiert l'envoi de messages Push (recommandé)</translation>
-<translation id="5809725759695043233">Vous disposez d'applications optimisées pour les Chromebooks</translation>
 <translation id="5814126672212206791">Type de connexion</translation>
 <translation id="5815645614496570556">Adresse X.400</translation>
 <translation id="5816434091619127343">Les modifications demandées concernant l'imprimante risquent de rendre celle-ci inutilisable.</translation>
@@ -3765,7 +3764,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6766101255664245434">Prenez une photo ou choisissez-en une.
           <ph name="LINE_BREAK" />
           Cette photo s'affichera sur l'écran de connexion et l'écran de verrouillage du Chromebook.</translation>
-<translation id="6767639283522617719">Impossible d'effectuer l'association au domaine. Assurez-vous que les paramètres sont corrects concernant l'unité organisationnelle.</translation>
+<translation id="6767639283522617719">Impossible d'effectuer l'association au domaine. Assurez-vous que les paramètres sont corrects pour l'unité organisationnelle.</translation>
 <translation id="6769712124046837540">Ajout d'une imprimante en cours…</translation>
 <translation id="6771503742377376720">Est une autorité de certification</translation>
 <translation id="6777817260680419853">Redirection bloquée</translation>
@@ -4154,14 +4153,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7378812711085314936">Obtenir une connexion de données</translation>
 <translation id="7384292194278095697">Appareil désormais incompatible</translation>
 <translation id="7385854874724088939">Erreur lors de la tentative d'impression. Vérifiez votre imprimante et réessayez.</translation>
-<translation id="7386824183915085801">La version de Chrome et celle du système d'exploitation sont envoyées
-        en sus des informations que vous sélectionnez ci-dessus. Si vous ajoutez
-        votre adresse e-mail, il est possible que nous vous contactions à propos
-        de vos commentaires. Ceux-ci nous permettent de diagnostiquer des problèmes et d'améliorer Chrome. Les informations
-        personnelles que vous envoyez, fournies sciemment ou involontairement, 
-        sont protégées conformément à nos règles de confidentialité.<ph name="BEGIN_BOLD" /> En nous faisant parvenir ces commentaires, vous acceptez que nous les
-        utilisions pour améliorer nos produits ou services.
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Boîte de dialogue "Effacer les données de navigation"</translation>
 <translation id="7388044238629873883">Vous avez presque terminé !</translation>
 <translation id="7388222713940428051">Ouvrir une fenêtre de navigation en tant qu'invité</translation>
@@ -4399,7 +4390,7 @@ Notez que la taille du téléchargement de l'application <ph name="APP_NAME" /> 
 <translation id="7773726648746946405">Stockage de session</translation>
 <translation id="7776701556330691704">Aucune voix trouvée</translation>
 <translation id="7781335840981796660">Tous les comptes utilisateur et toutes les données locales seront supprimés.</translation>
-<translation id="7781540849114045652">Chargement du composant dans la machine virtuelle.</translation>
+<translation id="7781540849114045652">Chargement du composant de machine virtuelle.</translation>
 <translation id="7782102568078991263">Aucune autre suggestion de Google</translation>
 <translation id="778330624322499012">Impossible de charger le plug-in <ph name="PLUGIN_NAME" />.</translation>
 <translation id="7784067724422331729">Les paramètres de sécurité de votre ordinateur ont bloqué ce fichier.</translation>
@@ -4473,7 +4464,7 @@ Notez que la taille du téléchargement de l'application <ph name="APP_NAME" /> 
 <translation id="7839051173341654115">Afficher/Sauvegarder le support</translation>
 <translation id="7839192898639727867">ID de clé de l'objet du certificat</translation>
 <translation id="7839804798877833423">L'opération de récupération de ces fichiers consommera environ <ph name="FILE_SIZE" /> de données mobiles.</translation>
-<translation id="7844553762889824470">Mettez en surbrillance ce que vous souhaitez entendre, puis appuyez simultanément sur la touche de recherche et la touche S. Vous pouvez également appuyer de manière prolongée sur cette même touche de recherche, ou appuyez sur l'icône Sélectionner pour prononcer, située à côté de votre photo de profil afin de sélectionner l'élément souhaité.</translation>
+<translation id="7844553762889824470">Mettez en surbrillance ce que vous souhaitez entendre, puis appuyez simultanément sur la touche de recherche et la touche S. Vous pouvez également appuyer de manière prolongée sur cette même touche de recherche, ou appuyer sur l'icône Sélectionner pour prononcer, située à côté de votre photo de profil afin de sélectionner l'élément souhaité.</translation>
 <translation id="7844992432319478437">Différence de mise à jour</translation>
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="7846634333498149051">Clavier</translation>
@@ -5178,9 +5169,9 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8944964446326379280"><ph name="APP_NAME" /> partage une fenêtre avec <ph name="TAB_NAME" />.</translation>
 <translation id="8946284507644756416">Vous pouvez déverrouiller votre <ph name="DEVICE_TYPE" /> avec votre téléphone Android.</translation>
 <translation id="8946359700442089734">Les fonctionnalités de débogage n'ont pas été complètement activées sur cet appareil <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="8948006114608036530">Cet appareil est actuellement configuré pour nous envoyer automatiquement des données de diagnostic et d'utilisation. Cette configuration est appliquée par le propriétaire. Si vous activez l'option "Activité additionnelle sur le Web et les applications", ces informations sont enregistrées dans votre compte. Vous pouvez ainsi les gérer sur la page "Mon activité".
+<translation id="8948006114608036530">Cet appareil est actuellement configuré pour envoyer automatiquement des données de diagnostic et d'utilisation à Google. Cette configuration est appliquée par le propriétaire. Si vous activez l'option "Activité additionnelle sur le Web et les applications", ces informations sont enregistrées dans votre compte. Vous pouvez ainsi les gérer sur la page "Mon activité".
 
-    Ces informations d'ordre général concernent cet appareil et l'usage qui en est fait (comme le niveau de batterie, l'utilisation des applications et la connectivité réseau). Elles servent à améliorer les produits et services Google au profit de tous. Certaines informations globales aident également nos partenaires, tels que les développeurs Android, à améliorer leurs applications et leurs produits.
+    Ces informations d'ordre général concernent votre appareil et l'usage qui en est fait (comme le niveau de batterie, l'utilisation des applications et la connectivité réseau). Elles servent à améliorer les produits et services Google au profit de tous. Certaines informations globales aident également nos partenaires, tels que les développeurs Android, à améliorer leurs applications et leurs produits.
     Notez que la désactivation de cette fonctionnalité n'empêche pas votre appareil d'envoyer les informations nécessaires pour bénéficier de services essentiels, tels que les mises à jour du système et les fonctions de sécurité.
     Pour contrôler cette fonctionnalité, accédez à Paramètres &gt; Google. Sélectionnez "Utilisation et diagnostics" dans le menu.</translation>
 <translation id="894871326938397531">Quitter le mode navigation privée ?</translation>

@@ -142,7 +142,6 @@
 <translation id="119738088725604856">የቅጽበታዊ ገጽ እይታ መስኮት</translation>
 <translation id="1197979282329025000">የህትመት ብቃቶች ለአታሚ <ph name="PRINTER_NAME" /> በማምጣት ላይ ሳለ አንድ ስህተት ተከስቷል። ይህ አታሚ <ph name="CLOUD_PRINT_NAME" /> ላይ መመዝገብ አይችልም።</translation>
 <translation id="1198271701881992799">እንጀምር</translation>
-<translation id="1199232041627643649">ለመተው <ph name="KEY_EQUIVALENT" />ን ይያዙ።</translation>
 <translation id="119944043368869598">ሁሉንም አጽዳ</translation>
 <translation id="1201402288615127009">ቀጣይ</translation>
 <translation id="1202596434010270079">የKiosk መተግበሪያ ዘምኗል። እባክዎ የዩ.ኤስ.ቢ. ስቲኩን ያስወግዱ።</translation>
@@ -2711,6 +2710,7 @@
 <translation id="5204967432542742771">የይለፍ ቃል ያስገቡ</translation>
 <translation id="5206215183583316675">«<ph name="CERTIFICATE_NAME" />» ይሰረዝ?</translation>
 <translation id="520621735928254154">የእውቅና ማረጋገጫ ማስመጣት ስህተት</translation>
+<translation id="5209320130288484488">ምንም መሣሪያዎች አልተገኙም</translation>
 <translation id="5209518306177824490">SHA-1 የጣት አሻራ</translation>
 <translation id="5210365745912300556">ትር ዝጋ</translation>
 <translation id="5213891612754844763">የተኪ ቅንብሮችን አሳይ</translation>
@@ -3132,7 +3132,6 @@
 <translation id="580571955903695899">በርዕስ ቅደም ተከተል አስይዝ</translation>
 <translation id="5807290661599647102">Screen Lockን አዋቅር</translation>
 <translation id="580961539202306967">አንድ ጣቢያ የግፋ መልዕክቶችን ለመላክ ሲፈልግ ጠይቀኝ (የሚመከር)</translation>
-<translation id="5809725759695043233">ለChromebooks የተቡ መተግበሪያዎች አለዎት</translation>
 <translation id="5814126672212206791">የግንኙነት ዓይነት</translation>
 <translation id="5815645614496570556">X.400 አድራሻ</translation>
 <translation id="5816434091619127343">የተጠየቁት የአታሚ ለውጦች አታሚው ጥቅም እንዳይሰጥ ያደርጉታል።</translation>
@@ -4150,14 +4149,6 @@
 <translation id="7378812711085314936">የውሂብ ግንኙነት ያግኙ</translation>
 <translation id="7384292194278095697">ይህ መሣሪያ ከአሁን በኋላ አይደገፍም</translation>
 <translation id="7385854874724088939">ለማተም በሚሞክርበት ጊዜ አንድ ነገር በትክክል እየሄደ አልነበረም። እባክዎ አታሚዎን ይፈትሹና እንደገና ይሞክሩ።</translation>
-<translation id="7386824183915085801">የእርስዎ የChrome እና የስርዓተ ክወና ስሪት ከላይ ለማካተት ከመረጡት
-        ማንኛውም መረጃ ጋር በተጨማሪነት ይገባሉ። የኢሜይል አድራሻዎን ካካተቱ Google
-        የግብረመልስ ሪፖርትዎን በተመለከተ እርስዎን ሊያነጋግርዎት ይችላል። ይህ ግብረመልስ ችግሮችን
-        ለማወቅና Chromeን ለማሻሻል ስራ ላይ ይውላል። በግልጽም ሆነ በውስጥ ታዋቂነት የሚያካትቱት 
-        ማንኛውም የግል መረጃ በግላዊነት መመሪያዎቻችን
-        መሠረት ይጠበቃሉ።<ph name="BEGIN_BOLD" /> ይህን ግብረመልስ በማስገባት Google ማንኛውም የGoogle ምርትን እና አገልግሎትን ለማሻሻል እርስዎ
-        የሚያስገቡትን ግብረመልስ ሊጠቀም እንደሚችል ተስማምተዋል።
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">«የአሰሳ ውሂብ አጽዳ» መገናኛ</translation>
 <translation id="7388044238629873883">በቃ ሊጨርሱ ነው!</translation>
 <translation id="7388222713940428051">የእንግዳ መስኮትን ክፈት</translation>

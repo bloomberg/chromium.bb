@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Screenshot window</translation>
 <translation id="1197979282329025000">An error occurred while retrieving printer capabilities for printer <ph name="PRINTER_NAME" />. This printer could not be registered with <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Let's get started</translation>
-<translation id="1199232041627643649">Hold <ph name="KEY_EQUIVALENT" /> to Quit.</translation>
 <translation id="119944043368869598">Clear all</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="1202596434010270079">Kiosk app has been updated. Please remove the USB stick.</translation>
@@ -378,6 +377,7 @@
 <translation id="1531004739673299060">Application Window</translation>
 <translation id="1534389735079119190">ERROR: Failed to start container inside VM.</translation>
 <translation id="15373452373711364">Large mouse cursor</translation>
+<translation id="1540605929960647700">Enable demo mode</translation>
 <translation id="1543284117603151572">Imported From Edge</translation>
 <translation id="1545177026077493356">Automatic Kiosk Mode</translation>
 <translation id="1545775234664667895">Installed theme "<ph name="THEME_NAME" />"</translation>
@@ -461,6 +461,7 @@
 <translation id="1657406563541664238">Help make <ph name="PRODUCT_NAME" /> better by automatically sending usage statistics and crash reports to Google.</translation>
 <translation id="1658424621194652532">This page is accessing your microphone.</translation>
 <translation id="1660204651932907780">Allow sites to play sound (recommended)</translation>
+<translation id="1660938185063657230">Verify your Security Key</translation>
 <translation id="1661156625580498328">Enforce AES encryption (recommended).</translation>
 <translation id="1661245713600520330">This page lists all modules loaded into the main process and modules registered to be loaded at a later point.</translation>
 <translation id="166179487779922818">Password is too short.</translation>
@@ -478,6 +479,7 @@
 <translation id="16815041330799488">Do not allow sites to see text and images copied to the clipboard</translation>
 <translation id="1682548588986054654">New Incognito Window</translation>
 <translation id="168715261339224929">To get your bookmarks on all your devices, turn on sync.</translation>
+<translation id="1688867105868176567">Clear site data?</translation>
 <translation id="1688935057616748272">Type a letter</translation>
 <translation id="168991973552362966">Add a nearby printer</translation>
 <translation id="1689945336726856614">Copy &amp;URL</translation>
@@ -584,8 +586,10 @@
 <translation id="1839704667838141620">Change how this file is shared</translation>
 <translation id="1841545962859478868">The device admin may monitor the following:</translation>
 <translation id="1841705068325380214"><ph name="EXTENSION_NAME" /> is disabled</translation>
+<translation id="1842766183094193446">Are you sure that you want to enable demo mode?</translation>
 <translation id="1844692022597038441">This file is not available offline.</translation>
 <translation id="1846308012215045257">Control-click to run <ph name="PLUGIN_NAME" /></translation>
+<translation id="1847880352285315359">Saved</translation>
 <translation id="1848219224579402567">Sign out when lid is closed</translation>
 <translation id="184823282865851239">Block if site tends to show intrusive ads</translation>
 <translation id="1849186935225320012">This page has full control of MIDI devices.</translation>
@@ -683,6 +687,7 @@
 <translation id="200544492091181894">You can always change this later in settings</translation>
 <translation id="2006638907958895361">Open Link in <ph name="APP" /></translation>
 <translation id="2007404777272201486">Report an Issue...</translation>
+<translation id="2016237810978710652">Opening Linux Files…</translation>
 <translation id="2016430552235416146">Traditional</translation>
 <translation id="2017334798163366053">Disable performance data collection</translation>
 <translation id="2017836877785168846">Clears history and autocompletions in the address bar.</translation>
@@ -777,6 +782,7 @@
 <translation id="2154484045852737596">Edit card</translation>
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="2155772377859296191">Looks like <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
+<translation id="2156283799932971644">You can help improve Safe Browsing by sending some system information and page content to Google.</translation>
 <translation id="215753907730220065">Exit Full Screen</translation>
 <translation id="2157875535253991059">This page is now full screen.</translation>
 <translation id="216169395504480358">Add Wi-Fi ...</translation>
@@ -786,6 +792,7 @@
 <translation id="2173801458090845390">Add requisition ID to this device</translation>
 <translation id="2175042898143291048">Always do this</translation>
 <translation id="2175607476662778685">Quick launch bar</translation>
+<translation id="2176087259161165020">Other sources</translation>
 <translation id="2177950615300672361">Incognito Tab: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> on <ph name="PEPPER_PLUGIN_DOMAIN" /> wants to access your computer</translation>
 <translation id="2178614541317717477">CA Compromise</translation>
@@ -917,6 +924,7 @@
 <translation id="2366463953911599217">ERROR: Failed to uninstall <ph name="APP_NAME" />.</translation>
 <translation id="2367199180085172140">Add File Share</translation>
 <translation id="2367972762794486313">Show apps</translation>
+<translation id="2369536625682139252">All data stored by <ph name="SITE" /> will be deleted, except for cookies.</translation>
 <translation id="2371076942591664043">Open when &amp;done</translation>
 <translation id="2377319039870049694">Switch to list view</translation>
 <translation id="2377667304966270281">Hard Faults</translation>
@@ -1038,6 +1046,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2566124945717127842">Powerwash to reset your <ph name="IDS_SHORT_PRODUCT_NAME" /> device to be just like new.</translation>
 <translation id="2567257616420533738">Password saved. View and manage saved passwords at <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="2568774940984945469">Infobar Container</translation>
+<translation id="2570454805927264159">Get the most out of your Assistant</translation>
 <translation id="257088987046510401">Themes</translation>
 <translation id="2572032849266859634">Read-only access to <ph name="VOLUME_NAME" /> has been granted.</translation>
 <translation id="2573269395582837871">Choose a picture and name</translation>
@@ -1333,6 +1342,7 @@ I don't think this site should be blocked!</translation>
 <translation id="3006881078666935414">No usage data</translation>
 <translation id="3007214526293698309">Fix ratio</translation>
 <translation id="3007771295016901659">Duplicate tab</translation>
+<translation id="3008272652534848354">Reset permissions</translation>
 <translation id="3009300415590184725">Are you sure you want to cancel the mobile data service set-up process?</translation>
 <translation id="3009779501245596802">Indexed Databases</translation>
 <translation id="3010279545267083280">Password deleted</translation>
@@ -1893,6 +1903,7 @@ I don't think this site should be blocked!</translation>
 <translation id="3856921555429624101">Data use measuring has ended</translation>
 <translation id="3857228364945137633">Try Smart Lock to unlock your <ph name="DEVICE_TYPE" /> without a password when your phone is nearby.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
+<translation id="3860104611854310167"><ph name="PROFILE_NAME" />: Sync paused</translation>
 <translation id="3860381078714302691">Welcome to Hangouts Meet</translation>
 <translation id="3862134173397075045">Welcome to the Cast experience in Chrome!</translation>
 <translation id="3862788408946266506">App with 'kiosk_only' manifest attribute must be installed in Chrome OS kiosk mode</translation>
@@ -2012,6 +2023,7 @@ I don't think this site should be blocked!</translation>
 <translation id="4044612648082411741">Enter your certificate password</translation>
 <translation id="404493185430269859">Default search engine</translation>
 <translation id="4047112090469382184">How this is secure</translation>
+<translation id="4051049974203704184">Get info for what's on screen</translation>
 <translation id="4052120076834320548">Tiny</translation>
 <translation id="4055023634561256217">A restart is required before your device can be reset with Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2040,6 +2052,7 @@ I don't think this site should be blocked!</translation>
 <translation id="4088095054444612037">Accept for group</translation>
 <translation id="4089235344645910861">Settings saved. Sync started.</translation>
 <translation id="4090103403438682346">Enable Verified Access</translation>
+<translation id="4090947011087001172">Reset site permissions for <ph name="SITE" />?</translation>
 <translation id="4091434297613116013">sheets of paper</translation>
 <translation id="4093955363990068916">Local file:</translation>
 <translation id="4095507791297118304">Primary display</translation>
@@ -2377,6 +2390,7 @@ I don't think this site should be blocked!</translation>
 <translation id="4682551433947286597">Wallpapers appear on the Sign-in Screen.</translation>
 <translation id="4684427112815847243">Sync everything</translation>
 <translation id="4689421377817139245">Sync this bookmark to your iPhone</translation>
+<translation id="4690091457710545971">&lt;Four files generated by Intel Wi-Fi firmware: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. The first three are binary files containing register dumps, and are asserted by Intel to contain no personal or device-identifying information. The last file is an execution trace from the Intel firmware; it has been scrubbed of any personal or device-identifying information, but is too large to display here. These files were generated in response to recent Wi-Fi problems with your device, and will be shared with Intel to help troubleshoot these problems.&gt;</translation>
 <translation id="4692302215262324251">Your <ph name="DEVICE_TYPE" /> has successfully been enrolled for enterprise management by <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
     <ph name="LINE_BREAK_AND_EMPTY_LINE" />
     If this is unexpected, please contact support.</translation>
@@ -2636,6 +2650,7 @@ I don't think this site should be blocked!</translation>
 <translation id="5074318175948309511">This page may need to be reloaded before the new settings take effect.</translation>
 <translation id="5075131525758602494">Enter SIM PIN</translation>
 <translation id="5078638979202084724">Bookmark all tabs</translation>
+<translation id="5079950360618752063">Use suggested password</translation>
 <translation id="5084230410268011727">Allow sites to use motion and light sensors</translation>
 <translation id="5085162214018721575">Checking for updates</translation>
 <translation id="5086082738160935172">HID</translation>
@@ -2674,6 +2689,7 @@ I don't think this site should be blocked!</translation>
 <translation id="5136529877787728692">F7</translation>
 <translation id="5137501176474113045">Delete this item</translation>
 <translation id="5139955368427980650">&amp;Open</translation>
+<translation id="5142961317498132443">Authentication</translation>
 <translation id="5143374789336132547">The extension "<ph name="EXTENSION_NAME" />" has changed the page that is shown when you click the Home button.</translation>
 <translation id="5143712164865402236">Enter Full Screen</translation>
 <translation id="5145331109270917438">Date modified</translation>
@@ -2713,6 +2729,7 @@ I don't think this site should be blocked!</translation>
 <translation id="5204967432542742771">Enter password</translation>
 <translation id="5206215183583316675">Delete "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Certificate import error</translation>
+<translation id="5209320130288484488">No devices found</translation>
 <translation id="5209518306177824490">SHA-1 Fingerprint</translation>
 <translation id="5210365745912300556">Close tab</translation>
 <translation id="5213891612754844763">Show proxy settings</translation>
@@ -3134,7 +3151,6 @@ I don't think this site should be blocked!</translation>
 <translation id="580571955903695899">Reorder by Title</translation>
 <translation id="5807290661599647102">Set a Screen Lock</translation>
 <translation id="580961539202306967">Ask me when a site wants to send me push messages (recommended)</translation>
-<translation id="5809725759695043233">You have apps that are optimised for Chromebooks</translation>
 <translation id="5814126672212206791">Connection type</translation>
 <translation id="5815645614496570556">X.400 Address</translation>
 <translation id="5816434091619127343">Requested printer changes would make the printer unusable.</translation>
@@ -3389,11 +3405,13 @@ I don't think this site should be blocked!</translation>
 <translation id="6198102561359457428">Sign out then sign in again...</translation>
 <translation id="6198252989419008588">Change PIN</translation>
 <translation id="6199801702437275229">Waiting for space info...</translation>
+<translation id="6204015976622790023">See relevant suggestions from your Assistant related to what's on your screen.</translation>
 <translation id="6205710420833115353">Some operations are taking longer than expected. Do you want to abort them?</translation>
 <translation id="6206311232642889873">Cop&amp;y Image</translation>
 <translation id="6207200176136643843">Reset to default zoom level</translation>
 <translation id="620722923698527029">Always open these types of links in the associated app</translation>
 <translation id="6207937957461833379">Country/Region</translation>
+<translation id="6211495400987308581"><ph name="PROFILE_NAME" />: Sync isn't working</translation>
 <translation id="6212039847102026977">Show advanced network properties</translation>
 <translation id="6212168817037875041">Turn off display</translation>
 <translation id="6212752530110374741">Email Link</translation>
@@ -4153,14 +4171,6 @@ I don't think this site should be blocked!</translation>
 <translation id="7378812711085314936">Get data connection</translation>
 <translation id="7384292194278095697">This device is no longer supported</translation>
 <translation id="7385854874724088939">Something went wrong when trying to print.  Please check your printer and try again.</translation>
-<translation id="7386824183915085801">Your Chrome and operating system version will be submitted in addition
-          to any information that you choose to include above. If you include your email
-          address, Google may contact you regarding your feedback report. This feedback
-          is used to diagnose problems and help improve Chrome. Any personal information
-          that you submit, whether explicitly or incidentally will be protected in
-          accordance with our privacy policies.<ph name="BEGIN_BOLD" /> By submitting this feedback, you agree that Google may use feedback
-          that you provide to improve any Google product or service.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">"Clear browsing data" dialogue</translation>
 <translation id="7388044238629873883">You've almost finished!</translation>
 <translation id="7388222713940428051">Open Guest window</translation>
@@ -4673,6 +4683,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8118860139461251237">Manage your downloads</translation>
 <translation id="81238879832906896">Yellow and white flower</translation>
 <translation id="8124313775439841391">Managed ONC</translation>
+<translation id="8125562866093998907">The site wants to verify your Security Key for added security for your account.</translation>
 <translation id="813082847718468539">View site information</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8133676275609324831">&amp;Show in folder</translation>
@@ -4922,6 +4933,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="855081842937141170">Pin tab</translation>
 <translation id="8551388862522347954">Licences</translation>
 <translation id="8553342806078037065">Manage other people</translation>
+<translation id="8554899698005018844">No language</translation>
 <translation id="855773602626431402">An unsandboxed plug-in was prevented from running on this page.</translation>
 <translation id="8557930019681227453">Manifest</translation>
 <translation id="8559694214572302298">Image Decoder</translation>

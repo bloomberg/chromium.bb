@@ -20,6 +20,7 @@
 <translation id="1346748346194534595">Oikealle</translation>
 <translation id="1383876407941801731">Haku</translation>
 <translation id="1467432559032391204">Vasemmalle</translation>
+<translation id="1479743070547893297">Valitse piirtämällä näyttökynällä</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Käynnistysohjelma</translation>
 <translation id="1525508553941733066">HYLKÄÄ</translation>
@@ -50,8 +51,10 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Määritä kieli</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1993072747612765854">Lue lisää uusimmasta <ph name="SYSTEM_APP_NAME" /> ‑päivityksestä.</translation>
 <translation id="1995660704900986789">Virta pois</translation>
 <translation id="2012624427112548395">Ctrl + haku + H</translation>
+<translation id="2016340657076538683">Kirjoita viesti</translation>
 <translation id="2049639323467105390">Tätä laitetta hallinnoi <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pystysuunta</translation>
 <translation id="2067602449040652523">Näppäimistön kirkkaus</translation>
@@ -75,6 +78,7 @@
 <translation id="2359808026110333948">Jatka</translation>
 <translation id="2365393535144473978">Jos otat mobiilidatan käyttöön, Bluetooth otetaan samalla käyttöön.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="2412593942846481727">Päivitys saatavilla</translation>
 <translation id="2429753432712299108">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen. Ennen kuin hyväksyt pyynnön, varmista, että laitteella näkyy tämä avain: <ph name="PASSKEY" /></translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
 <translation id="2484513351006226581">Paina <ph name="KEYBOARD_SHORTCUT" /> vaihtaaksesi näppäimistöasettelua.</translation>
@@ -82,6 +86,7 @@
 <translation id="2509468283778169019">CAPS LOCK on päällä</translation>
 <translation id="2532589005999780174">Suuri kontrasti -tila</translation>
 <translation id="2575685495496069081">Useille tileille kirjautuminen on poistettu käytöstä</translation>
+<translation id="2582112259361606227">Päivitä käynnistämällä uudelleen</translation>
 <translation id="2597972630681408282">Yövalo: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortti on lukittu.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
@@ -103,6 +108,7 @@
 <translation id="2911940648265863620">Jaat näyttösi</translation>
 <translation id="2942516765047364088">Hyllyn sijainti</translation>
 <translation id="2946119680249604491">Lisää yhteys</translation>
+<translation id="2961963223658824723">Jokin meni pieleen. Yritä uudelleen parin sekunnin kuluttua.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> on julkinen käyttökerta, jota hallinnoi <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Monoääni</translation>
@@ -147,6 +153,7 @@
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lukitse</translation>
 <translation id="3798670284305777884">Kaiutin (sisäinen)</translation>
+<translation id="380165613292957338">Hei. Kuinka voin auttaa?</translation>
 <translation id="3846575436967432996">Verkon tietoja ei saatavilla</translation>
 <translation id="385051799172605136">Edellinen</translation>
 <translation id="3891340733213178823">Kirjaudu ulos painamalla Ctrl+Shift+Q kahdesti.</translation>
@@ -159,6 +166,7 @@
 <translation id="3995138139523574647">C-tyypin USB-laite (oikean sivun taaimmainen portti)</translation>
 <translation id="4017989525502048489">Laserosoitin</translation>
 <translation id="4072264167173457037">Keskitasoinen signaali</translation>
+<translation id="4200057768455216496">Painoit kiinnitetyn suurennuksen pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="4217571870635786043">Sanelu</translation>
 <translation id="4279490309300973883">Peilaus päällä</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -180,6 +188,7 @@
 <translation id="4544944664594876241">Näytön lukituksen pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="4564869809620998694">Kirjasinpalvelu</translation>
 <translation id="4570957409596482333">Teksti puhuttuna ‑painike</translation>
+<translation id="4628757576491864469">Laitteet</translation>
 <translation id="4659419629803378708">ChromeVox käytössä</translation>
 <translation id="4776917500594043016">Osoitteen <ph name="USER_EMAIL_ADDRESS" /> salasana</translation>
 <translation id="479989351350248267">haku</translation>
@@ -235,6 +244,7 @@
 <translation id="598882571027504733">Voit asentaa päivityksen käynnistämällä Chromebookisi uudelleen niin, että näppäimistö on kytkettynä.</translation>
 <translation id="5992218262414051481">Suuri kontrasti ‑tila on käytössä. Poista se käytöstä painamalla uudelleen Ctrl + haku + H.</translation>
 <translation id="6018164090099858612">Poistutaan peilitilasta</translation>
+<translation id="6040143037577758943">Sulje</translation>
 <translation id="6043212731627905357">Näyttö ja <ph name="DEVICE_TYPE" /> eivät sovi yhteen (näyttöä ei tueta).</translation>
 <translation id="6043994281159824495">Kirjaudu ulos nyt</translation>
 <translation id="6047696787498798094">Näytön jakaminen loppuu, kun vaihdat toiseen käyttäjään. Haluatko jatkaa?</translation>
@@ -258,6 +268,7 @@
 <translation id="6452181791372256707">Hylkää</translation>
 <translation id="6453179446719226835">Kieli muutettu</translation>
 <translation id="6459472438155181876">Ruutua laajennetaan: <ph name="DISPLAY_NAME" /></translation>
+<translation id="6482559668224714696">Koko näytön suurennus</translation>
 <translation id="6490471652906364588">C-tyypin USB-laite (oikean sivun portti)</translation>
 <translation id="6501401484702599040">Näkymä peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
 <translation id="6521655319214113338">Käsinkirjoitus</translation>
@@ -282,12 +293,14 @@
 <translation id="6820676911989879663">Pidä tauko</translation>
 <translation id="683971173229319003">Haku+L</translation>
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE" /></translation>
+<translation id="6910714959251846841">Tämän päivityksen asennus edellyttää laitteen powerwashia. Lue lisää uusimmasta <ph name="SYSTEM_APP_NAME" /> ‑päivityksestä.</translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="698231206551913481">Kun käyttäjä poistetaan, kaikki kyseiseen käyttäjään yhdistetyt tiedostot ja paikalliset tiedot poistetaan pysyvästi.</translation>
 <translation id="7015766095477679451">Palaa kello <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
 <translation id="7034339000180558234">Välilehti <ph name="TAB_NAME" /> peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
+<translation id="7037152028959403492">Painoit suuren kontrastin pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="7066646422045619941">Järjestelmänvalvoja on poistanut tämän verkon käytöstä.</translation>
 <translation id="7067196344162293536">Automaattinen kierto</translation>
 <translation id="7076293881109082629">Kirjautuminen</translation>
@@ -338,6 +351,7 @@
 <translation id="8132793192354020517">Yhteys muodostettu verkkoon <ph name="NAME" /></translation>
 <translation id="813913629614996137">Käynnistetään…</translation>
 <translation id="8142699993796781067">Yksityinen verkko</translation>
+<translation id="8152119955266188852">Painoit koko näytön suurennuksen pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="8180896103888046100">Lopeta suoratoisto tuntemattomaan kohteeseen</translation>
 <translation id="8190698733819146287">Muokkaa kieliä ja syötettä...</translation>
 <translation id="8261506727792406068">Poista</translation>
@@ -374,6 +388,7 @@
 <translation id="8940956008527784070">Akku vähissä (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="8984179138335769204">Pikakäynnistys</translation>
 <translation id="8995603266996330174">Hallinnoija: <ph name="DOMAIN" /></translation>
+<translation id="9029474291399787231">Adobe Flash Playerin päivitys saatavilla</translation>
 <translation id="9033907480196064950">Suoratoistat tällä hetkellä välilehteä <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
@@ -386,6 +401,7 @@
 <translation id="9194617393863864469">Kirjaa sisään toinen käyttäjä…</translation>
 <translation id="9201131092683066720">Akussa on virtaa <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Poistutaan yhtenäisen työpöydän tilasta</translation>
+<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Aseta taustakuva</translation>
 <translation id="923686485342484400">Kirjaudu ulos painamalla Control Shift Q kahdesti.</translation>
 <translation id="945522503751344254">Lähetä palautetta</translation>

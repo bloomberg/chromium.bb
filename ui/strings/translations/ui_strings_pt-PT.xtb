@@ -13,6 +13,7 @@
 <translation id="1413622004203049571">Desativar notificações de <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto e  }other{# minutos e  }}</translation>
 <translation id="1643823602425662293">Notificação</translation>
+<translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">agora</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minuto}other{# minutos}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -49,6 +50,7 @@
 <translation id="3036649622769666520">Abrir ficheiros</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
+<translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Restaurar</translation>
 <translation id="3183922693828471536">Deslocar-se para aqui</translation>
 <translation id="3234408098842461169">Seta para baixo</translation>

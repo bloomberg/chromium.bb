@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Janela de captura de ecrã</translation>
 <translation id="1197979282329025000">Ocorreu um erro ao obter as capacidades da impressora <ph name="PRINTER_NAME" />. Não foi possível registar esta impressora em <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Vamos começar</translation>
-<translation id="1199232041627643649">Para sair, mantenha <ph name="KEY_EQUIVALENT" /> premido.</translation>
 <translation id="119944043368869598">Limpar tudo</translation>
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1202596434010270079">A aplicação Quiosque foi atualizada. Remova a pen USB.</translation>
@@ -2715,6 +2714,7 @@ Pretende pará-lo?</translation>
 <translation id="5204967432542742771">Introduzir palavra-passe</translation>
 <translation id="5206215183583316675">Pretende eliminar "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Erro de importação do certificado</translation>
+<translation id="5209320130288484488">Não foram encontrados aparelhos</translation>
 <translation id="5209518306177824490">Impressão digital SHA-1</translation>
 <translation id="5210365745912300556">Fechar separador</translation>
 <translation id="5213891612754844763">Mostrar definições de proxy</translation>
@@ -3137,7 +3137,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="580571955903695899">Reordenar por título</translation>
 <translation id="5807290661599647102">Definir um bloqueio de ecrã</translation>
 <translation id="580961539202306967">Perguntar-me quando um site pretender enviar-me mensagens push (recomendado)</translation>
-<translation id="5809725759695043233">Tem aplicações que foram otimizadas para Chromebooks.</translation>
 <translation id="5814126672212206791">Tipo de ligação</translation>
 <translation id="5815645614496570556">Endereço X.400</translation>
 <translation id="5816434091619127343">As alterações solicitadas à impressora deixariam-na inutilizável.</translation>
@@ -4156,14 +4155,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7378812711085314936">Obter ligação de dados</translation>
 <translation id="7384292194278095697">Este dispositivo já não é suportado</translation>
 <translation id="7385854874724088939">Ocorreu um erro ao tentar imprimir. Verifique a impressora e tente novamente.</translation>
-<translation id="7386824183915085801">As versões do Chrome e do sistema operativo serão enviadas juntamente com todas as informações
-        que optar por incluir acima. Se incluir o seu endereço de email,
-        a Google poderá contactá-lo sobre o seu relatório de comentários. Estes comentários
-        são utilizados para diagnosticar problemas e ajudar a melhorar o Chrome. Quaisquer informações pessoais
-        enviadas, explícita ou acidentalmente, serão protegidas
-        em conformidade com as nossas políticas de privacidade.<ph name="BEGIN_BOLD" /> Ao enviar estes comentários, concorda que a Google poderá utilizar os comentários
-        fornecidos para melhorar qualquer produto ou serviço Google.
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Menu de diálogo "Limpar dados de navegação"</translation>
 <translation id="7388044238629873883">Está quase!</translation>
 <translation id="7388222713940428051">Abrir janela de convidado</translation>
@@ -5182,7 +5173,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8946359700442089734">As funcionalidades de depuração não foram totalmente ativadas neste dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="8948006114608036530">Atualmente, este dispositivo envia automaticamente dados de diagnóstico e de utilização do dispositivo e das aplicações para a Google. Esta definição é aplicada pelo proprietário. Se tiver ativada a Atividade da Web e de aplicações adicional, estas informações serão armazenadas na sua conta para que as possa gerir em A minha atividade.
 
-    Trata-se de informações gerais acerca do dispositivo e do modo como o utiliza (tais como o nível da bateria, a utilização de aplicações e as ligações de rede).Os dados serão utilizados para melhorar os produtos e serviços Google para todos. Algumas informações agregadas também ajudam os parceiros, como os programadores para Android, a melhorar os respetivos produtos e aplicações.
+    Trata-se de informações gerais acerca do dispositivo e do modo como o utiliza (tais como o nível da bateria, a utilização de aplicações e as ligações de rede). Os dados serão utilizados para melhorar os produtos e serviços Google para todos. Algumas informações agregadas também ajudam os parceiros, como os programadores Android, a melhorar os respetivos produtos e aplicações.
     A desativação desta funcionalidade não afeta a capacidade de o seu dispositivo enviar as informações necessárias para serviços essenciais, como as atualizações do sistema e a segurança.
     Pode controlar esta funcionalidade a partir de Definições &gt; Google. Selecione Utilização e diagnósticos no menu.</translation>
 <translation id="894871326938397531">Sair da navegação anónima?</translation>

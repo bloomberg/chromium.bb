@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Επιλογή</translation>
 <translation id="1620510694547887537">Κάμερα</translation>
 <translation id="1623104350909869708">Αποτροπή δημιουργίας πρόσθετων παραθύρων διαλόγου από αυτήν τη σελίδα</translation>
-<translation id="1629803312968146339">Θέλετε το Chrome να αποθηκεύσει αυτήν την κάρτα;</translation>
 <translation id="1639239467298939599">Γίνεται φόρτωση</translation>
 <translation id="1640180200866533862">Πολιτικές χρηστών</translation>
 <translation id="1640244768702815859">Δοκιμάστε να <ph name="BEGIN_LINK" />επισκεφτείτε την αρχική σελίδα του ιστότοπου<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Σφάλμα HTTP</translation>
 <translation id="2270484714375784793">Αριθμός τηλεφώνου</translation>
 <translation id="2292556288342944218">Η πρόσβασή σας στο διαδίκτυο είναι αποκλεισμένη</translation>
-<translation id="230155334948463882">Νέα κάρτα;</translation>
 <translation id="2316887270356262533">Απελευθερώνει λιγότερο από 1 MB. Ορισμένοι ιστότοποι μπορεί να φορτωθούν πιο αργά κατά την επόμενη επίσκεψή σας.</translation>
 <translation id="2317259163369394535">Ο τομέας <ph name="DOMAIN" /> απαιτεί ένα όνομα χρήστη και έναν κωδικό πρόσβασης.</translation>
 <translation id="2317583587496011522">Οι χρεωστικές κάρτες γίνονται δεκτές.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Αποδεκτές κάρτες</translation>
 <translation id="2702801445560668637">Λίστα ανάγνωσης</translation>
 <translation id="2704283930420550640">Η τιμή δεν συμφωνεί με τη μορφή.</translation>
-<translation id="2704951214193499422">Δεν ήταν δυνατή η επιβεβαίωση της κάρτας σας από το Chromium αυτήν τη στιγμή. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="2705137772291741111">Δεν είναι δυνατή η ανάγνωση του αποθηκευμένου αντιγράφου (κρυφής μνήμης) αυτού του ιστότοπου.</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
 <translation id="2710942282213947212">Κάποιο λογισμικό στον υπολογιστή σας παρεμποδίζει την ασφαλή σύνδεση του Chromium στον ιστό</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Λανθασμένος τύπος πολιτικής</translation>
 <translation id="3037605927509011580">Όπα! Κάτι πήγε στραβά!</translation>
 <translation id="3041612393474885105">Πληροφορίες πιστοποιητικού</translation>
-<translation id="3063697135517575841">Δεν ήταν δυνατή η επιβεβαίωση της κάρτας σας από το Chrome αυτήν τη στιγμή. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="3064966200440839136">Αποχώρηση από την κατάσταση ανώνυμης περιήγησης για πληρωμή μέσω εξωτερικής εφαρμογής. Συνέχεια;</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Κανένας}=1{1 κωδικός πρόσβασης}other{# κωδικοί πρόσβασης}}</translation>
 <translation id="3096100844101284527">Προσθήκη διεύθυνσης παραλαβής</translation>
@@ -460,7 +456,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Χρήση καθολικής προεπιλογής (Εντοπισμός)</translation>
 <translation id="4165986682804962316">Ρυθμίσεις ιστότοπου</translation>
-<translation id="4169947484918424451">Θέλετε το Chromium να αποθηκεύσει αυτήν την κάρτα;</translation>
 <translation id="4171400957073367226">Εσφαλμένη υπογραφή επαλήθευσης</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ακόμη στοιχείο}other{<ph name="ITEM_COUNT" /> ακόμη στοιχεία}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
@@ -1118,6 +1113,7 @@
 <translation id="9148507642005240123">&amp;Αναίρεση επεξεργασίας</translation>
 <translation id="9154194610265714752">Ενημερώθηκε</translation>
 <translation id="9157595877708044936">Ρύθμιση...</translation>
+<translation id="9168814207360376865">Να επιτρέπεται σε ιστοτόπους να ελέγχουν αν έχετε αποθηκεύσει τρόπους πληρωμής</translation>
 <translation id="9169664750068251925">Να γίνεται πάντα αποκλεισμός σε αυτόν τον ιστότοπο</translation>
 <translation id="9170848237812810038">Αναί&amp;ρεση</translation>
 <translation id="9171296965991013597">Αποχώρηση από την εφαρμογή;</translation>

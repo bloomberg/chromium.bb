@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">തിരഞ്ഞെടുക്കുക</translation>
 <translation id="1620510694547887537">ക്യാമറ</translation>
 <translation id="1623104350909869708">കൂടുതൽ ഡയലോഗുകൾ സൃഷ്‌ടിക്കുന്നതിൽ നിന്നും ഈ പേജിനെ തടയുക</translation>
-<translation id="1629803312968146339">Chrome ഈ കാർഡ് സംരക്ഷിക്കണോ?</translation>
 <translation id="1639239467298939599">ലോഡുചെയ്യുന്നു</translation>
 <translation id="1640180200866533862">ഉപയോക്തൃ നയങ്ങൾ</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />സൈറ്റിന്റെ ഹോം പേജ് സന്ദർശിക്കുന്നത്<ph name="END_LINK" /> പരീക്ഷിച്ചുനോക്കൂ.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">HTTP പിശക്</translation>
 <translation id="2270484714375784793">ഫോൺ നമ്പർ</translation>
 <translation id="2292556288342944218">നിങ്ങളുടെ ഇന്റർനെറ്റ് ആക്‌സസ്സ് ബ്ലോക്കുചെയ്‌തു</translation>
-<translation id="230155334948463882">പുതിയ കാർഡാണോ?</translation>
 <translation id="2316887270356262533">1 MB-യിൽ കുറഞ്ഞ ഡാറ്റ ലാഭിക്കുന്നു. അടുത്തതവണ നിങ്ങൾ സന്ദർശിക്കുമ്പോൾ ചില സൈറ്റുകൾ ഇതിനേക്കാൾ പതുക്കെ ലോഡാകാം.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> ഡൊമെയ്‌ന് ഒരു ഉപയോക്തൃനാമവും പാസ്‌വേഡും വേണം.</translation>
 <translation id="2317583587496011522">ഡെബിറ്റ് കാർഡുകൾ സ്വീകരിക്കുന്നു.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">സ്വീകരിക്കുന്ന കാർഡുകൾ</translation>
 <translation id="2702801445560668637">വായനാ ലിസ്റ്റ്</translation>
 <translation id="2704283930420550640">മൂല്യം ഫോർമാറ്റുമായി പൊരുത്തപ്പെടുന്നില്ല.</translation>
-<translation id="2704951214193499422">Chromium-ത്തിന് ഇപ്പോൾ നിങ്ങളുടെ കാർഡ് സ്ഥിരീകരിക്കാനായില്ല. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="2705137772291741111">ഈ സൈറ്റിന്റെ സംരക്ഷിച്ച (കാഷെ ചെയ്‌ത) പതിപ്പ് വായിക്കാനാകാത്തതാണ്.</translation>
 <translation id="2709516037105925701">ഓട്ടോഫില്‍</translation>
 <translation id="2710942282213947212">വെബിലേക്ക് സുരക്ഷിതമായി കണക്റ്റുചെയ്യുന്നതിൽ നിന്ന് Chromium-ത്തിനെ നിങ്ങളുടെ കമ്പ്യൂട്ടറിലെ സോഫ്റ്റ്‌വെയർ തടയുന്നു</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">തെറ്റായ നയ തരം</translation>
 <translation id="3037605927509011580">കഷ്ടം!</translation>
 <translation id="3041612393474885105">സര്‍‌ട്ടിഫിക്കറ്റ് വിവരങ്ങള്‍‌</translation>
-<translation id="3063697135517575841">Chrome-ന് ഇപ്പോൾ നിങ്ങളുടെ കാർഡ് സ്ഥിരീകരിക്കാനായില്ല. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3064966200440839136">ഒരു എക്‌സ്‌റ്റേണൽ അപ്ലിക്കേഷൻ വഴി പണമടയ്‌ക്കാൻ അദൃശ്യതാ സംവിധാനം ഒഴിവാക്കുന്നു. തുടരണോ?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{ഒന്നുമില്ല}=1{ഒരു പാസ്‌വേഡ്}other{# പാസ്‌വേഡുകൾ}}</translation>
 <translation id="3096100844101284527">പിക്കപ്പ് വിലാസം ചേർക്കുക</translation>
@@ -459,7 +455,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">ആഗോള സ്ഥിരശൈലി ഉപയോഗിക്കുക (കണ്ടെത്തുക)</translation>
 <translation id="4165986682804962316">സൈറ്റ് ക്രമീകരണങ്ങൾ</translation>
-<translation id="4169947484918424451">Chromium ഈ കാർഡ് സംരക്ഷിക്കണോ?</translation>
 <translation id="4171400957073367226">മോശം പരിശോധിച്ചുറപ്പിക്കൽ സിഗ്‌നേച്ചർ</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ഇനം കൂടി}other{<ph name="ITEM_COUNT" /> ഇനങ്ങൾ കൂടി}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>

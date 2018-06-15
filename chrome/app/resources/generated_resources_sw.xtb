@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Dirisha la picha ya skrini</translation>
 <translation id="1197979282329025000">Hitilafu imetokea wakati wa kujaribu kuonyesha mambo ambayo printa ya <ph name="PRINTER_NAME" /> inaweza kufanya. Printa hii haikuweza kusajiliwa kwenye <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Wacha tuanze</translation>
-<translation id="1199232041627643649">Shikilia <ph name="KEY_EQUIVALENT" /> ili Kuondoka.</translation>
 <translation id="119944043368869598">Ondoa vyote</translation>
 <translation id="1201402288615127009">Ifuatayo</translation>
 <translation id="1202596434010270079">Programu ya Skrini Nzima imesasishwa. Tafadhali ondoa hifadhi ya USB.</translation>
@@ -2232,7 +2231,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4448844063988177157">Inatafuta mitandao ya Wi-Fi…</translation>
 <translation id="4449996769074858870">Kichupo hiki kinacheza sauti.</translation>
 <translation id="4450974146388585462">Tambua hitilafu</translation>
-<translation id="4453946976636652378">Tafuta <ph name="SEARCH_ENGINE_NAME" /> au uandike URL</translation>
+<translation id="4453946976636652378">Tafuta kwenye <ph name="SEARCH_ENGINE_NAME" /> au uandike URL</translation>
 <translation id="445923051607553918">Jiunge kwenye mtandao wa Wi-Fi</translation>
 <translation id="4462159676511157176">Seva za jina maalum</translation>
 <translation id="4467100756425880649">Ghala la Duka la Chrome kwenye Wavuti</translation>
@@ -2705,6 +2704,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5204967432542742771">Weka nenosiri</translation>
 <translation id="5206215183583316675">Ungependa kufuta "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Hitilafu ya Kuleta Cheti</translation>
+<translation id="5209320130288484488">Hakuna vifaa vilivyopatikana</translation>
 <translation id="5209518306177824490">Alama ya SHA-1</translation>
 <translation id="5210365745912300556">Funga kichupo</translation>
 <translation id="5213891612754844763">Onyesha mipangilio ya seva mbadala</translation>
@@ -3126,7 +3126,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="580571955903695899">Panga upya kwa Kichwa</translation>
 <translation id="5807290661599647102">Weka mbinu ya Kufunga Skrini</translation>
 <translation id="580961539202306967">Niulize tovuti inapotaka kunitumia ujumbe wa programu hata wakati siitumii (imependekezwa)</translation>
-<translation id="5809725759695043233">Una programu ambazo zimeundwa kutumiwa kwenye Chromebook</translation>
 <translation id="5814126672212206791">Aina ya muunganisho</translation>
 <translation id="5815645614496570556">Anwani X.400</translation>
 <translation id="5816434091619127343">Mabadiliko ya printa yaliyoombwa yatafanya printa isitumike.</translation>
@@ -4145,14 +4144,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7378812711085314936">Pata muunganisho wa data</translation>
 <translation id="7384292194278095697">Kifaa hiki hakitumiki tena</translation>
 <translation id="7385854874724088939">Hitilafu fulani imetokea wakati wa kuchapisha. Tafadhali chunguza printa yako na ujaribu tena.</translation>
-<translation id="7386824183915085801">Chrome na Toleo lako la Mfumo wa Uendeshaji vitawasilishwa pamoja
-          na taarifa yoyote ambayo ungependa kujumuisha hapo juu. Ukijumuisha anwani yako ya 
-          barua pepe, Google inaweza kuwasiliana na wewe kuhusu ripoti ya maoni yako. Maoni haya 
-          hutumiwa kutambua matatizo na husaidia kuboresha Chrome.
-          Maelezo yoyote ya kibinafsi unayowasilisha, kwa kukusudia au kwa bahati mbaya yatalindwa 
-          kwa mujibu wa sera zetu za faragha.<ph name="BEGIN_BOLD" /> Kwa kuwasilisha maoni haya,  
-          unakubali kwamba Google inaweza kutumia maoni unayotoa ili kuboresha bidhaa au huduma yoyote ya Google.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">"Futa data ya kuvinjari" kidadisi</translation>
 <translation id="7388044238629873883">Unakaribia kumaliza!</translation>
 <translation id="7388222713940428051">Fungua Dirisha la Mgeni</translation>
@@ -5173,7 +5164,7 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="8946359700442089734">Vipengele vya kutatua havikuwashwa kikamilifu kwenye kifaa hiki cha <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="8948006114608036530">Kwa sasa, kifaa hiki kinatuma data ya uchanganuzi na ya matumizi ya programu na kifaa kwa Google. Mipangilio hii imewekwa na mmiliki. Ukiwasha historia ya Shughuli kwenye Wavuti na Programu, maelezo haya yatahifadhiwa katika akaunti yako ili uweze kuyadhibiti katika Shughuli Zangu.
 
-    Haya ni maelezo ya jumla kuhusu kifaa chako na jinsi unavyokitumia (kama vile kiwango cha chaji ya betri, matumizi ya  programu na uunganishaji wa mtandao). Data hii itatumika kuboresha huduma na bidhaa za Google kwa manufaa ya kila mtu. Baadhi ya maelezo yaliyojumlishwa yatawasaidia washirika kama vile wasanidi programu wa Android, waboreshe programu na bidhaa zao pia.
+    Haya ni maelezo ya jumla kuhusu kifaa chako na jinsi unavyokitumia (kama vile kiwango cha chaji ya betri, matumizi ya programu na uunganishaji wa mtandao). Data hii itatumika kuboresha huduma na bidhaa za Google kwa manufaa ya kila mtu. Baadhi ya maelezo yaliyojumlishwa yatawasaidia washirika kama vile wasanidi programu wa Android, waboreshe programu na bidhaa zao pia.
     Ukizima kipengele hiki hutaathiri uwezo wa kifaa chako wa kutuma maelezo yanayohitajika ili kutekeleza huduma za msingi kama vile usalama na masasisho ya mfumo.
     Unaweza kudhibiti kipengele hiki kutoka Mipangilio &gt; Google. Chagua 'Matumizi na uchanganuzi' kutoka kwenye menyu.</translation>
 <translation id="894871326938397531">Ungependa kuondoka kwenye hali fiche?</translation>

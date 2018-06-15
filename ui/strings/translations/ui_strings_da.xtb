@@ -13,6 +13,7 @@
 <translation id="1413622004203049571">Deaktiver underretninger fra <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minut og }one{# minutter og }other{# minutter og }}</translation>
 <translation id="1643823602425662293">Underretning</translation>
+<translation id="169515659049020177">Shift</translation>
 <translation id="1710340000377843106">nu</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 minut}one{# minutter}other{# minutter}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
@@ -49,6 +50,7 @@
 <translation id="3036649622769666520">Åbn filer</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Bund</translation>
+<translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">Gendan</translation>
 <translation id="3183922693828471536">Scroll hertil</translation>
 <translation id="3234408098842461169">Pil nedad</translation>

@@ -522,7 +522,7 @@
 <translation id="5585019845078534178">Карти</translation>
 <translation id="5595485650161345191">Редактиране на адреса</translation>
 <translation id="5596627076506792578">Още опции</translation>
-<translation id="5620299005957670886">Забраняване на достъпа на сайтовете до сензорите ви 
+<translation id="5620299005957670886">Разрешаване на достъпа на сайтовете до сензорите ви 
 (препоръчително)</translation>
 <translation id="5620928963363755975">Използвайте бутона „Още опции“, за да намерите файловете и страниците си в „Изтегляния“</translation>
 <translation id="5626134646977739690">Име:</translation>
@@ -727,6 +727,7 @@
 <translation id="7333031090786104871">Още се добавя предишният сайт</translation>
 <translation id="7352939065658542140">ВИДЕОКЛИП</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Споделяне на 1 избран елемент}other{Споделяне на # избрани елемента}}</translation>
+<translation id="7359002509206457351">Достъп до начините на плащане</translation>
 <translation id="7366340029385295517">Предава се към „<ph name="SCREEN_NAME" />“</translation>
 <translation id="7375125077091615385">Тип:</translation>
 <translation id="7400418766976504921">URL адрес</translation>

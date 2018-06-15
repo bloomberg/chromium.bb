@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">Выбрать</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
-<translation id="1629803312968146339">Сохранить эту карту в Chrome?</translation>
 <translation id="1639239467298939599">Загрузка</translation>
 <translation id="1640180200866533862">Пользовательские правила</translation>
 <translation id="1640244768702815859">Попробуйте <ph name="BEGIN_LINK" />открыть главную страницу сайта<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">Ошибка HTTP</translation>
 <translation id="2270484714375784793">Номер телефона</translation>
 <translation id="2292556288342944218">Доступ в Интернет закрыт</translation>
-<translation id="230155334948463882">Добавить карту?</translation>
 <translation id="2316887270356262533">Освободится менее 1 МБ пространства. После этого некоторые веб-страницы могут загружаться дольше обычного.</translation>
 <translation id="2317259163369394535">Для доступа к домену <ph name="DOMAIN" /> необходимо указать имя пользователя и пароль.</translation>
 <translation id="2317583587496011522">Принимаются дебетовые карты.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">Карты, которые принимаются к оплате</translation>
 <translation id="2702801445560668637">Список для чтения</translation>
 <translation id="2704283930420550640">Значение не соответствует формату.</translation>
-<translation id="2704951214193499422">Не удалось подтвердить данные карты. Повторите попытку позже.</translation>
 <translation id="2705137772291741111">Невозможно прочитать копию сайта, сохраненную в кеше.</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
 <translation id="2710942282213947212">ПО, установленное на компьютере, не позволяет Chromium безопасно подключиться к Интернету</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">Неверный тип политики</translation>
 <translation id="3037605927509011580">Опаньки...</translation>
 <translation id="3041612393474885105">Данные сертификата</translation>
-<translation id="3063697135517575841">Не удалось подтвердить данные карты. Повторите попытку позже.</translation>
 <translation id="3064966200440839136">Вы выйдете из режима инкогнито, чтобы произвести оплату во внешнем приложении. Продолжить?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Нет}=1{1 пароль}one{# пароль}few{# пароля}many{# паролей}other{# пароля}}</translation>
 <translation id="3096100844101284527">Добавить адрес получения</translation>
@@ -459,7 +455,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Использовать глобальный параметр по умолчанию (находить)</translation>
 <translation id="4165986682804962316">Настройки сайтов</translation>
-<translation id="4169947484918424451">Сохранить эту карту в Chromium?</translation>
 <translation id="4171400957073367226">Подтверждающая подпись недействительна</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Ещё <ph name="ITEM_COUNT" /> товар}one{Ещё <ph name="ITEM_COUNT" /> товар}few{Ещё <ph name="ITEM_COUNT" /> товара}many{Ещё <ph name="ITEM_COUNT" /> товаров}other{Ещё <ph name="ITEM_COUNT" /> товара}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" />: <ph name="ROW_CONTENT" /></translation>

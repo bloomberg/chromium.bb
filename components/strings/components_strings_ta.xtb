@@ -102,7 +102,6 @@
 <translation id="1594030484168838125">தேர்வுசெய்</translation>
 <translation id="1620510694547887537">கேமரா</translation>
 <translation id="1623104350909869708">கூடுதல் உரையாடல்களை உருவாக்குவதிலிருந்து இந்தப் பக்கத்தைத் தடு</translation>
-<translation id="1629803312968146339">இந்தக் கார்டை Chrome சேமிக்க வேண்டுமா?</translation>
 <translation id="1639239467298939599">ஏற்றுகிறது</translation>
 <translation id="1640180200866533862">பயனர் கொள்கைகள்</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />தளத்தின் முகப்புப் பக்கத்திற்குச் செல்லவும்<ph name="END_LINK" />.</translation>
@@ -195,7 +194,6 @@
 <translation id="2262243747453050782">HTTP பிழை</translation>
 <translation id="2270484714375784793">தொலைபேசி எண்</translation>
 <translation id="2292556288342944218">உங்கள் இணைய அணுகல் தடுக்கப்பட்டது</translation>
-<translation id="230155334948463882">புதிய அட்டையா?</translation>
 <translation id="2316887270356262533">1 மெ.பை. அளவிற்கும் குறைவான இடத்தைக் காலியாக்கும். நீங்கள் அடுத்த முறை பார்வையிடும் போது, சில தளங்கள் மிகவும் மெதுவாக ஏற்றப்படலாம்.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" />க்குப் பயனர்பெயரும் கடவுச்சொல்லும் தேவை.</translation>
 <translation id="2317583587496011522">டெபிட் கார்டுகள் ஏற்கப்படுகின்றன.</translation>
@@ -249,7 +247,6 @@
 <translation id="2699302886720511147">ஏற்கப்படும் கார்டுகள்</translation>
 <translation id="2702801445560668637">வாசிப்புப் பட்டியல்</translation>
 <translation id="2704283930420550640">மதிப்பானது வடிவமைப்பிற்குப் பொருந்தவில்லை.</translation>
-<translation id="2704951214193499422">இப்போது உங்கள் கார்டை உறுதிசெய்ய முடியவில்லை. பிறகு முயலவும்.</translation>
 <translation id="2705137772291741111">இந்தத் தளத்தின் சேமிக்கப்பட்ட (தற்காலிகச் சேமிப்பு) நகலைப் படிக்க முடியவில்லை.</translation>
 <translation id="2709516037105925701">தானாகநிரப்பு</translation>
 <translation id="2710942282213947212">உங்கள் கணினியில் உள்ள மென்பொருளானது, இணையத்துடன் Chromium பாதுகாப்பாக இணைவதை நிறுத்துகிறது</translation>
@@ -303,7 +300,6 @@
 <translation id="3024663005179499861">தவறான கொள்கை வகை</translation>
 <translation id="3037605927509011580">அச்சச்சோ!</translation>
 <translation id="3041612393474885105">சான்றிதழ் தகவல்</translation>
-<translation id="3063697135517575841">இப்போது உங்கள் கார்டை உறுதிசெய்ய முடியவில்லை. பிறகு முயலவும்.</translation>
 <translation id="3064966200440839136">வெளிப்புறப் பயன்பாட்டின் மூலம் பணத்தை செலுத்த, மறைநிலையிலிருந்து வெளியேறுகிறீர்கள். தொடரவா?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{ஏதுமில்லை}=1{1 கடவுச்சொல்}other{# கடவுச்சொற்கள்}}</translation>
 <translation id="3096100844101284527">பிக்அப் முகவரியைச் சேர்</translation>
@@ -457,7 +453,6 @@
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">குளோபல் இயல்பைப் பயன்படுத்து (கண்டறிதல்)</translation>
 <translation id="4165986682804962316">தள அமைப்புகள்</translation>
-<translation id="4169947484918424451">இந்தக் கார்டை Chromium சேமிக்க வேண்டுமா?</translation>
 <translation id="4171400957073367226">தவறான சரிபார்ப்பு கையொப்பம்</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{மேலும் <ph name="ITEM_COUNT" /> உருப்படி}other{மேலும் <ph name="ITEM_COUNT" /> உருப்படிகள்}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
@@ -1113,6 +1108,7 @@
 <translation id="9148507642005240123">&amp;திருத்தலைச் செயல்தவிர்</translation>
 <translation id="9154194610265714752">புதுப்பிக்கப்பட்டது</translation>
 <translation id="9157595877708044936">அமைக்கிறது...</translation>
+<translation id="9168814207360376865">சேமித்துள்ள உங்கள் கட்டண முறைகளைப் பார்க்க தளங்களை அனுமதிக்கவும்</translation>
 <translation id="9169664750068251925">இந்தத் தளத்தில் எப்போதும் தடு</translation>
 <translation id="9170848237812810038">&amp;செயல்தவிர்</translation>
 <translation id="9171296965991013597">ஆப்ஸிலிருந்து வெளியேறவா?</translation>

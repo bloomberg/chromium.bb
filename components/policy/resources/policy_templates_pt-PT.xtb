@@ -228,7 +228,6 @@
 <translation id="1803646570632580723">Lista de aplicações fixadas a mostrar no iniciador</translation>
 <translation id="1808715480127969042">Bloquear cookies nestes sites</translation>
 <translation id="1810261428246410396">Permitir a utilização da ligação via telemóvel instantânea</translation>
-<translation id="1826282708349731794">Controla a forma como a Ferramenta de limpeza do Chrome envia dados para a Google.</translation>
 <translation id="1827523283178827583">Utilizar servidores proxy fixos</translation>
 <translation id="1843117931376765605">Taxa de atualização para a política de utilizador</translation>
 <translation id="1844620919405873871">Configura políticas relacionadas com o desbloqueio rápido.</translation>
@@ -601,7 +600,6 @@
       Esta política não influencia a possibilidade de os utilizadores poderem configurar impressoras em dispositivos individuais e destina-se a complementar a configuração das impressoras por parte de utilizadores individuais.
       </translation>
 <translation id="2633084400146331575">Ativar comentários falados</translation>
-<translation id="2640843331263301324">Ativa a Ferramenta de limpeza do Chrome no Windows.</translation>
 <translation id="2646290749315461919">Permite definir se os Web sites têm permissão para monitorizar a localização física dos utilizadores. A monitorização da localização física dos utilizadores pode ser permitida por predefinição, negada por predefinição ou o utilizador pode ser questionado sempre que um Web site solicitar a localização física. Se esta política não for definida, será utilizada a definição "AskGeolocation" e o utilizador poderá alterá-la.</translation>
 <translation id="2647069081229792812">Ativar ou desativar a edição de marcadores</translation>
 <translation id="2650049181907741121">Ação a realizar quando o utilizador fecha a tampa</translation>
@@ -1787,11 +1785,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6392973646875039351">Ativa a funcionalidade de Preenchimento Automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente formulários Web utilizando informações anteriormente armazenadas, como endereços ou dados de cartões de crédito. Se desativar esta definição, os utilizadores não poderão aceder à funcionalidade de Preenchimento Automático. Se ativar esta definição ou não definir qualquer valor, os utilizadores poderão controlar o Preenchimento Automático, o que lhes permitirá configurar perfis de Preenchimento Automático e ligar ou desligar esta funcionalidade conforme pretendam.</translation>
 <translation id="6394350458541421998">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_OS_NAME" />. Em vez disso, utilize a política PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Terminar a sessão do utilizador</translation>
-<translation id="6412477120967771054">Se estiver definida como falsa, impede que a Ferramenta de limpeza do Chrome procure software indesejado no sistema e realize limpezas. O acionamento manual da Ferramenta de limpeza do Chrome a partir de chrome://settings/cleanup está desativado.
-
-      Se estiver definida como verdadeira ou não estiver definida, a Ferramenta de limpeza do Chrome procura periodicamente software indesejado no sistema e, caso encontre algum, pergunta ao utilizador se o pretende remover. O acionamento manual da Ferramenta de limpeza do Chrome a partir de chrome://settings está ativado.
-
-      Esta política não está disponível em instâncias do Windows que não pertençam a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="6426205278746959912">Não pode forçar as aplicações Android a utilizar um proxy. É disponibilizado um subconjunto de definições de proxy para aplicações Android, que estas podem optar voluntariamente por aceitar:
 
           Se escolher nunca utilizar um servidor proxy, as aplicações Android são informadas de que não existe nenhum proxy configurado.
@@ -1918,7 +1911,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não estiver definida ou não for encontrada uma impressora correspondente no limite de tempo, é predefinida a impressora PDF incorporada ou não é selecionada qualquer impressora quando a impressora PDF não está disponível.
 
-      O valor é analisado com um objeto JSON em conformidade com o esquema seguinte:
+      O valor é analisado como um objeto JSON em conformidade com o esquema seguinte:
       {
         "type": "object",
         "properties": {
@@ -2205,15 +2198,15 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7519251620064708155">Permitir a geração de chaves nestes sites</translation>
 <translation id="7529083451528428240">Permite bloquear a sessão do utilizador com base no tempo do cliente ou na quota de utilização do dia.
 
-          O |time_window_limit| especifica um intervalo diário durante o qual a sessão do utilizador deve ser bloqueada. Suportamos apenas uma regra para cada dia da semana, pelo que o tamanho da matriz de |entries| pode variar entre 0 e 7. |starts_at| e |ends_at| são o início e o fim do limite do intervalo; se |ends_at| for menor do que |starts_at|, significa que o |time_limit_window| termina no dia seguinte. |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
+          |time_window_limit| especifica um intervalo diário durante o qual a sessão do utilizador deve ser bloqueada. Suportamos apenas uma regra para cada dia da semana, pelo que o tamanho da matriz de |entries| pode variar entre 0 e 7. |starts_at| e |ends_at| são o início e o fim do limite do intervalo; se |ends_at| for menor do que |starts_at|, significa que |time_limit_window| termina no dia seguinte. |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
 
-          O |time_usage_limit| especifica uma quota de ecrã diária, pelo que, quando o utilizador a atinge, a respetiva sessão é bloqueada. Existe uma propriedade para cada dia da semana e esta deverá ser definida apenas se houver uma quota ativa para esse dia. |usage_quota_mins| é o período de tempo durante o qual o dispositivo gerido pode ser utilizado num dia e |reset_at| é a hora em que a quota de utilização é renovada. O valor predefinido para |reset_at| é meia-noite ({'hour': 0, 'minute': 0}). |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
+          |time_usage_limit| especifica uma quota de ecrã diária, pelo que, quando o utilizador a atinge, a respetiva sessão é bloqueada. Existe uma propriedade para cada dia da semana e esta deverá ser definida apenas se houver uma quota ativa para esse dia. |usage_quota_mins| é o período de tempo durante o qual o dispositivo gerido pode ser utilizado num dia e |reset_at| é a hora em que a quota de utilização é renovada. O valor predefinido para |reset_at| é meia-noite ({'hour': 0, 'minute': 0}). |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
 
           |overrides| é fornecido para invalidar temporariamente uma ou mais das regras anteriores.
           * Se time_window_limit e time_usage_limit não estiverem ativos, é possível utilizar |LOCK| para bloquear o dispositivo.
           * |LOCK| bloqueia temporariamente a sessão do utilizador até que seja iniciado o próximo time_window_limit ou time_usage_limit.
           * |UNLOCK| desbloqueia uma sessão do utilizador bloqueada por time_window_limit ou time_usage_limit.
-          |created_time_millis| é a data/hora UTC de criação da substituição. É enviado como uma string porque a data/hora não seria suportada como um número inteiro. É utilizado para determinar se esta substituição deve continuar a ser aplicada. Se a funcionalidade de limite de tempo ativa atual (limite de tempo de utilização ou limite de tempo da janela) for iniciada depois de a substituição ter sido criada, não deverá efetuar qualquer ação. Além disso, se a substituição tiver sido criada antes da última alteração do time_window_limit ou do time_usage_window ativo, não deverá ser aplicada.</translation>
+          |created_time_millis| é a data/hora UTC de criação da substituição. É enviado como uma string porque a data/hora não seria suportada como um número inteiro. É utilizado para determinar se esta substituição deve continuar a ser aplicada. Se a funcionalidade de limite de tempo ativa atual (limite de tempo de utilização ou limite de tempo da janela) for iniciada depois de a substituição ter sido criada, não deverá efetuar qualquer ação. Além disso, se a substituição tiver sido criada antes da última alteração de time_window_limit ou de time_usage_window ativo, não deverá ser aplicada.</translation>
 <translation id="7529100000224450960">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a abrir janelas de pop-up. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultPopupsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualização automática</translation>
 <translation id="7534199150025803530">Esta política não tem qualquer efeito na aplicação Google Drive para Android. Se quiser evitar a utilização do Google Drive através da ligação de rede móvel, deve remover a autorização para instalar a aplicação Google Drive para Android.</translation>

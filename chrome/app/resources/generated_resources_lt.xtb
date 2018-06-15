@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Ekrano kopijos langas</translation>
 <translation id="1197979282329025000">Nuskaitant „<ph name="PRINTER_NAME" />“ spausdintuvo charakteristikas įvyko klaida. Šio spausdintuvo nepavyko užregistruoti „<ph name="CLOUD_PRINT_NAME" />“.</translation>
 <translation id="1198271701881992799">Pradėkime</translation>
-<translation id="1199232041627643649">Jei norite išeiti, laikykite paspaudę „<ph name="KEY_EQUIVALENT" />“.</translation>
 <translation id="119944043368869598">Valyti viską</translation>
 <translation id="1201402288615127009">Toliau</translation>
 <translation id="1202596434010270079">Viešojo terminalo buvo atnaujinta. Atjunkite USB atmintuką.</translation>
@@ -2713,6 +2712,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5204967432542742771">Įveskite slaptažodį</translation>
 <translation id="5206215183583316675">Ištrinti „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="520621735928254154">Sertifikato importavimo klaida</translation>
+<translation id="5209320130288484488">Įrenginių nerasta</translation>
 <translation id="5209518306177824490">SHA-1 piršto atspaudas</translation>
 <translation id="5210365745912300556">Uždaryti skirtuką</translation>
 <translation id="5213891612754844763">Rodyti tarpinio serverio nustatymus</translation>
@@ -3135,7 +3135,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="580571955903695899">Pertvarkyti pagal pavadinimą</translation>
 <translation id="5807290661599647102">Nustatyti ekrano užraktą</translation>
 <translation id="580961539202306967">Paklausti, kai svetainė nori siųsti „Push“ pranešimus (rekomenduojama)</translation>
-<translation id="5809725759695043233">Turite programų, kurios optimizuotos naudoti su „Chromebook“</translation>
 <translation id="5814126672212206791">Ryšio tipas</translation>
 <translation id="5815645614496570556">X.400 adresas</translation>
 <translation id="5816434091619127343">Atlikus prašomus spausdintuvo pakeitimus, spausdintuvo nebebus galima naudoti.</translation>
@@ -4154,14 +4153,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7378812711085314936">Gauti duomenų ryšį</translation>
 <translation id="7384292194278095697">Šis įrenginys nebepalaikomas</translation>
 <translation id="7385854874724088939">Bandant spausdinti atsirado triktis. Patikrinkite spausdintuvą ir bandykite dar kartą.</translation>
-<translation id="7386824183915085801">„Chrome“ ir operacinės sistemos versija bus pateikta kartu su
-          informacija, kurią anksčiau pasirinkote įtraukti. Jei įtrauksite el. pašto
-          adresą, „Google“ galės su jumis susisiekti dėl atsiliepimų ataskaitos. Šie atsiliepimai
-          naudojami problemoms diagnozuoti ir siekiant tobulinti „Chrome“. Asmeninė informacija,
-          pateikta tikslingai arba atsitiktinai, bus apsaugota
-          pagal privatumo politiką.<ph name="BEGIN_BOLD" /> Pateikdami šiuos atsiliepimus sutinkate, kad „Google“ gali naudoti atsiliepimus,
-          pateiktus siekiant tobulinti „Google“ produktą arba paslaugą.
-          <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Dialogo langas „Išvalyti naršymo duomenis“</translation>
 <translation id="7388044238629873883">Jau beveik baigėte!</translation>
 <translation id="7388222713940428051">Atidaryti svečio langą</translation>

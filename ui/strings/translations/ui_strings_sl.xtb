@@ -12,6 +12,7 @@
 <translation id="1413622004203049571">Izklop obvestil za <ph name="NOTIFIER_NAME" /></translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 min in }one{# min in }two{# min in }few{# min in }other{# min in }}</translation>
 <translation id="1643823602425662293">Obvestilo</translation>
+<translation id="169515659049020177">Shift</translation>
 <translation id="1752946267035950200">{MINUTES,plural, =1{1 min}one{# min}two{# min}few{# min}other{# min}}</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY" /> B</translation>
 <translation id="1801827354178857021">Obdobje</translation>
@@ -45,6 +46,7 @@
 <translation id="3036649622769666520">Odpri datoteke</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3087734570205094154">Na dno</translation>
+<translation id="3126026824346185272">CTRL</translation>
 <translation id="3157931365184549694">Obnovi</translation>
 <translation id="3183922693828471536">Pomik do sem</translation>
 <translation id="3234408098842461169">Puščica dol</translation>

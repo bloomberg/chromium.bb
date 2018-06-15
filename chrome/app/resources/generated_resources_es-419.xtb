@@ -142,7 +142,6 @@
 <translation id="119738088725604856">Ventana de captura de pantalla</translation>
 <translation id="1197979282329025000">Se produjo un error al recuperar las capacidades de la impresora <ph name="PRINTER_NAME" />. Esta impresora no se pudo registrar con <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="1198271701881992799">Comencemos</translation>
-<translation id="1199232041627643649">Mantén presionada la tecla <ph name="KEY_EQUIVALENT" /> para salir.</translation>
 <translation id="119944043368869598">Borrar todo</translation>
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1202596434010270079">Se actualizó la aplicación de kiosco. Desconecta el dispositivo USB.</translation>
@@ -1803,7 +1802,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="3741158646617793859"><ph name="DEVICE_NAME" /> aparecerá ahora en la Consola del administrador.</translation>
 <translation id="3741243925913727067">Crea una copia de seguridad de las fotos y los videos del dispositivo de medios en Google Drive.</translation>
 <translation id="3742055079367172538">Captura de pantalla tomada</translation>
-<translation id="3742666961763734085">No se encontró ninguna ninguna unidad organizacional con ese nombre. Vuelve a intentarlo.</translation>
+<translation id="3742666961763734085">No se encontró ninguna unidad organizacional con ese nombre. Vuelve a intentarlo.</translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3748026146096797577">Sin conexión</translation>
 <translation id="3749289110408117711">Nombre del archivo</translation>
@@ -2710,6 +2709,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="5204967432542742771">Ingresar contraseña</translation>
 <translation id="5206215183583316675">¿Deseas borrar el certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="520621735928254154">Error en la importación de certificado</translation>
+<translation id="5209320130288484488">No se encontraron dispositivos.</translation>
 <translation id="5209518306177824490">Huella digital SHA-1</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
 <translation id="5213891612754844763">Mostrar la configuración de proxy</translation>
@@ -3131,7 +3131,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="580571955903695899">Reordenar por título</translation>
 <translation id="5807290661599647102">Cómo configurar un bloqueo de pantalla</translation>
 <translation id="580961539202306967">Preguntarme cuando un sitio quiera enviarme mensajes de inserción (recomendado)</translation>
-<translation id="5809725759695043233">Tienes apps que están optimizadas para Chromebooks</translation>
 <translation id="5814126672212206791">Tipo de conexión</translation>
 <translation id="5815645614496570556">Dirección X 400</translation>
 <translation id="5816434091619127343">Los cambios solicitados harán que la impresora no se pueda utilizar.</translation>
@@ -4150,14 +4149,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="7378812711085314936">Obtener conexión de datos</translation>
 <translation id="7384292194278095697">Este dispositivo ya no es compatible</translation>
 <translation id="7385854874724088939">Algo falló al intentar imprimir. Comprueba tu impresora e inténtalo nuevamente.</translation>
-<translation id="7386824183915085801">Las versiones de Chrome y del sistema operativo se enviarán junto con
-        los datos que incluyas en la sección anterior. Si agregas la dirección de
-        correo electrónico, es posible que Google se comunique contigo en relación con tu informe de comentarios. Estos comentarios
-        permiten diagnosticar problemas y ayudan a mejorar Chrome. Cualquier información personal que
-        envíes, ya sea de forma explícita o accidental, quedará protegida de 
-        acuerdo con nuestras políticas de privacidad.<ph name="BEGIN_BOLD" /> Al enviar estos comentarios, aceptas que Google puede utilizar la información
-        que proporcionas para mejorar cualquiera de sus productos o servicios.
-        <ph name="END_BOLD" /></translation>
 <translation id="7387829944233909572">Diálogo "Eliminar datos de navegación"</translation>
 <translation id="7388044238629873883">Falta muy poco</translation>
 <translation id="7388222713940428051">Abrir una ventana como invitado</translation>
@@ -5175,7 +5166,7 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8944964446326379280"><ph name="APP_NAME" /> comparte una ventana con <ph name="TAB_NAME" />.</translation>
 <translation id="8946284507644756416">Tu dispositivo <ph name="DEVICE_TYPE" /> se puede desbloquear con tu teléfono Android.</translation>
 <translation id="8946359700442089734">Las funciones de depuración no se habilitaron completamente en este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="8948006114608036530">Este dispositivo envía a Google datos de diagnóstico y uso sobre el dispositivo y las apps de forma automática. El propietario aplica esta configuración. Si activaste la configuración "Actividad web y de aplicaciones adicional", esta información se almacenará con tu cuenta para que puedas administrarla en Mi actividad.
+<translation id="8948006114608036530">Este dispositivo envía a Google datos de diagnóstico y uso sobre el dispositivo y las apps de forma automática. El propietario aplica esta configuración. Si activaste la configuración "Actividad web y de aplicaciones" adicional, esta información se almacenará con tu cuenta para que puedas administrarla en Mi actividad.
 
 
     Se trata de información general sobre tu dispositivo y la manera en que lo usas (como el nivel de la batería, el uso de las apps y la conexión a redes), que permite mejorar los productos y servicios de Google. Parte de la información global también permitirá que los socios, como los desarrolladores de Android, mejoren sus apps y productos.

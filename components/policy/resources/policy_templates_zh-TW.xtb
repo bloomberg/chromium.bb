@@ -226,7 +226,6 @@
 <translation id="1803646570632580723">要顯示在啟動器中的固定應用程式清單</translation>
 <translation id="1808715480127969042">封鎖這些網站的 Cookie</translation>
 <translation id="1810261428246410396">允許使用即時網路共用功能。</translation>
-<translation id="1826282708349731794">控制 Chrome Cleanup 回報資料給 Google 的方式</translation>
 <translation id="1827523283178827583">使用固定的 Proxy 伺服器</translation>
 <translation id="1843117931376765605">使用者政策的重新整理頻率</translation>
 <translation id="1844620919405873871">設定快速解鎖相關政策。</translation>
@@ -592,7 +591,6 @@
       這項政策旨在補足個別使用者的印表機設定， 對使用者能否在個別裝置上設定印表機沒有影響。
       </translation>
 <translation id="2633084400146331575">啟用互動朗讀</translation>
-<translation id="2640843331263301324">在 Windows 裝置上啟用 Chrome Cleanup</translation>
 <translation id="2646290749315461919">允許你設定是否要讓網站追蹤使用者的實際位置。你可以直接預設為允許或不允許追蹤使用者的實際位置，或讓網站每次要求實際位置時都詢問使用者一次。如果未設定這項政策，系統會使用「AskGeolocation」，不過使用者可以變更設定。</translation>
 <translation id="2647069081229792812">允許或禁止編輯書籤</translation>
 <translation id="2650049181907741121">使用者蓋上螢幕時所採取的動作</translation>
@@ -1777,11 +1775,6 @@
 <translation id="6392973646875039351">啟用「<ph name="PRODUCT_NAME" />」的「自動填入」功能，並允許使用者使用先前儲存的地址或信用卡資料等資訊自動填寫網路表單。如果你停用這項設定，使用者就無法使用「自動填入」功能。如果你啟用這項設定或未設定任何值，使用者就能掌控「自動填入」功能。這允許使用者設定「自動填入」設定檔，並可自行決定是否要開啟「自動填入」功能。</translation>
 <translation id="6394350458541421998">我們已於 <ph name="PRODUCT_OS_NAME" />版本 29 中移除這項政策。請改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="6401669939808766804">登出使用者</translation>
-<translation id="6412477120967771054">如果設為 false，系統會禁止 Chrome Cleanup 掃描系統中的垃圾軟體並執行清理作業。此外，透過 chrome://settings/cleanup 手動觸發 Chrome Cleanup 的功能也會遭到停用。
-
-      如果設為 true 或不設定，Chrome Cleanup 會定期掃描系統中的垃圾軟體，並且在找到垃圾軟體時詢問使用者是否要予以移除。此外，使用者也可以透過 chrome://settings 手動觸發 Chrome Cleanup。
-
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="6426205278746959912">你無法強制 Android 應用程式使用 Proxy。有一部分 Proxy 設定可供 Android 應用程式使用，Android 應用程式可以選擇是否使用：
 
           如果選擇一律不使用 Proxy 伺服器，系統會告知 Android 應用程式未設定 Proxy。

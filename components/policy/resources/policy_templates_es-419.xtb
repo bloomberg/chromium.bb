@@ -226,7 +226,6 @@
 <translation id="1803646570632580723">Lista de aplicaciones fijas para mostrar en el menú de aplicaciones</translation>
 <translation id="1808715480127969042">Bloquear cookies en estos sitios</translation>
 <translation id="1810261428246410396">Permitir usar la conexión instantánea mediante dispositivo portátil</translation>
-<translation id="1826282708349731794">Controla cómo la Herramienta para limpiar Chrome informa datos a Google</translation>
 <translation id="1827523283178827583">Usar servidores proxy fijos</translation>
 <translation id="1843117931376765605">Frecuencia de actualización de la política de usuario</translation>
 <translation id="1844620919405873871">Configura políticas relacionadas con el desbloqueo rápido.</translation>
@@ -585,7 +584,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Esta política no afecta la capacidad del usuario para configurar impresoras en dispositivos individuales. Su objetivo es complementar la configuración de impresoras a cargo de usuarios individuales.
       </translation>
 <translation id="2633084400146331575">Habilitar los comentarios de voz</translation>
-<translation id="2640843331263301324">Habilita la Herramienta para limpiar Chrome en Windows</translation>
 <translation id="2646290749315461919">Te permite establecer si los sitios web pueden rastrear la ubicación física de los usuarios. El rastreo de la ubicación física de los usuarios puede autorizarse en forma predeterminada, puede denegarse en forma predeterminada o se le puede preguntar al usuario cada vez que un sitio web solicita la ubicación física. Si esta política no se configura, se usará "AskGeolocation" y el usuario podrá cambiarla.</translation>
 <translation id="2647069081229792812">Habilitar o inhabilitar la edición de favoritos</translation>
 <translation id="2650049181907741121">Medida que se debe tomar cuando el usuario cierra la tapa</translation>
@@ -861,7 +859,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3545457887306538845">Te permite controlar si se pueden usar las Herramientas para desarrolladores.
 
-      Si esta política se establece como "DeveloperToolsDisallowedForForceInstalledExtensions" (valor de 0, que es la opción predeterminada para usuarios empresariales), las Herramientas para desarrolladores y la Consola de JavaScript están accesibles en general, pero no es posible acceder a ellas en el contexto de extensiones instaladas por una política empresarial.
+      Si esta política se establece como "DeveloperToolsDisallowedForForceInstalledExtensions" (valor de 0, que es la opción predeterminada), las Herramientas para desarrolladores y la Consola de JavaScript están accesibles en general, pero no es posible acceder a ellas en el contexto de extensiones instaladas por una política empresarial.
       Si esta política se establece como "DeveloperToolsAllowed" (valor de 1), las Herramientas para desarrolladores y la Consola de JavaScript están accesibles y se pueden usar en todos los contextos, incluido el de las extensiones instaladas por una política empresarial.
       Si esta política se establece como "DeveloperToolsDisallowed" (valor de 2), no es posible acceder a las Herramientas para desarrolladores y los elementos de los sitios web ya no se pueden inspeccionar. Quedarán inhabilitadas las combinaciones de teclas y las entradas de menú o menú contextual para abrir las Herramientas para desarrolladores o la Consola de JavaScript.</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
@@ -1769,11 +1767,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6392973646875039351">Habilita la función Autocompletar de <ph name="PRODUCT_NAME" /> y permite que los usuarios completen automáticamente formularios web con información que se almacenó con anterioridad como la dirección o datos de la tarjeta de crédito. Si se inhabilita esta configuración, Autocompletar no estará disponible para los usuarios. Si se habilita esta opción o no se configura un valor, Autocompletar permanece bajo el control del usuario. Esto permite configurar los perfiles de autocompletar y activar o desactivar esta opción cuando lo deseen.</translation>
 <translation id="6394350458541421998">Esta política se eliminó a partir de la versión 29 de <ph name="PRODUCT_OS_NAME" />. Utiliza la política PresentationScreenDimDelayScale en su lugar.</translation>
 <translation id="6401669939808766804">Salir de la cuenta de usuario</translation>
-<translation id="6412477120967771054">Si se establece como falsa, impide que la Herramienta para limpiar Chrome analice el sistema para detectar software no deseado y realice limpiezas. La opción de activar manualmente la Herramienta para limpiar Chrome desde chrome://settings/cleanup estará inhabilitada.
-
-      Si se establece como verdadera o no se establece, la Herramienta para limpiar Chrome analiza el sistema periódicamente para detectar software no deseado y, si encuentra alguno, le pregunta al usuario si quiere quitarlo. La opción de activar manualmente la Herramienta para limpiar Chrome desde chrome://settings estará habilitada.
-
-      Esta política no está disponible en instancias de Windows que no están vinculadas a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="6426205278746959912">No puedes forzar las apps de Android a que usen un proxy. Las apps de Android tienen a su disposición un subgrupo de opciones de configuración de proxy que pueden respetar de forma voluntaria:
 
           Si eliges no usar nunca un servidor proxy, se informa a las apps de Android que no hay ningún proxy configurado.
@@ -1910,7 +1903,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
             "enum": [ "local", "cloud" ]
           },
           "idPattern": {
-            "description": "Expresión regular que coincida con la ID de la impresora.",
+            "description": "Expresión regular que coincida con el ID de la impresora.",
             "type": "string"
           },
           "namePattern": {
@@ -1920,9 +1913,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
         }
       }
 
-      Las impresoras conectadas a <ph name="CLOUD_PRINT_NAME" /> se consideran <ph name="PRINTER_TYPE_CLOUD" />, el resto de las impresoras se clasifican como <ph name="PRINTER_TYPE_LOCAL" />.
+      Las impresoras conectadas a <ph name="CLOUD_PRINT_NAME" /> se consideran <ph name="PRINTER_TYPE_CLOUD" />; el resto de las impresoras se clasifican como <ph name="PRINTER_TYPE_LOCAL" />.
       Si se omite un campo, todos los valores se consideran coincidentes. Por ejemplo, si no se especifica la conectividad, la Vista previa de impresión iniciará la búsqueda de todo tipo de impresoras, ya sea locales o en la nube.
-      Los patrones de expresión regulares deben seguir la sintaxis de JavaScript RegExp y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
+      Los patrones de expresión regulares deben seguir la sintaxis de JavaScript RegExp, y las coincidencias distinguen entre mayúsculas y minúsculas.</translation>
 <translation id="684856667300805181">En la versión 68 de <ph name="PRODUCT_NAME" />, se quitó esta política y se reemplazó por <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6856743875250214792">Esta política dejó de estar disponible y se quitó de M66 porque se usó solo para realizar pruebas internas y representa un riesgo para la seguridad.
 
@@ -2189,7 +2182,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="7519251620064708155">Permitir la generación de claves en estos sitios</translation>
 <translation id="7529083451528428240">Permite bloquear la sesión del usuario en función del tiempo del cliente o del uso durante el día.
 
-          El |time_window_limit| especifica un período diario en el que se debe bloquear la sesión del usuario. Solo se admite una regla por día, por lo que el tamaño de |entries| puede variar de 0 a 7. El período comienza a las |starts_at| y finaliza a las |ends_at|. Cuando |ends_at| es anterior a |starts_at| significa que |time_limit_window| finaliza el día siguiente. |last_updated_millis| es la marca de tiempo expresada en UTC correspondiente a la última actualización de la entrada. Se envía como string porque la marca de tiempo no se puede expresar como número entero.
+          El |time_window_limit| especifica un período diario en el que se debe bloquear la sesión del usuario. Solo se admite una regla por día, por lo que el tamaño de |entries| puede variar de 0 a 7. Los parámetros |starts_at| y |ends_at| representan el comienzo y final del período. Cuando |ends_at| es anterior a |starts_at|, significa que |time_limit_window| finaliza el día siguiente. |last_updated_millis| es la marca de tiempo expresada en UTC correspondiente a la última actualización de la entrada. Se envía como string porque la marca de tiempo no se puede expresar como número entero.
 
           El |time_usage_limit| especifica un período de uso diario; cuando el usuario supera ese límite, se bloquea la sesión. Existe una propiedad para cada día de la semana, y debe establecerse solo si hay un horario de actividad ese día. |usage_quota_mins| es la cantidad de tiempo que puede usarse el dispositivo administrado un día determinado, y |reset_at| es la hora cuando se renueva el tiempo de uso. El valor predeterminado para |reset_at| es la medianoche ({"hora": 0, "minuto": 0}). |last_updated_millis| es la marca de tiempo expresada en UTC correspondiente a la última actualización de esta entrada. Se envía como string porque la marca de tiempo no se puede expresar como número entero.
 

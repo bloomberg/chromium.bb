@@ -180,6 +180,7 @@
 <translation id="4544944664594876241">स्‍क्रीन को लॉक करने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="4564869809620998694">फ़ॉन्ट सेवा</translation>
 <translation id="4570957409596482333">चुनें और सुनें बटन</translation>
+<translation id="4628757576491864469">डिवाइस</translation>
 <translation id="4659419629803378708">ChromeVox सक्षम है</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> के लिए पासवर्ड</translation>
 <translation id="479989351350248267">search</translation>
@@ -199,7 +200,7 @@
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग</translation>
 <translation id="5331975486040154427">USB-C डिवाइस (बायां पिछला पोर्ट)</translation>
 <translation id="5397578532367286026">इस उपयोगकर्ता के उपयोग और इतिहास की प्रबंधक (<ph name="MANAGER_EMAIL" />) द्वारा chrome.com पर समीक्षा की जा सकती है.</translation>
-<translation id="5430931332414098647">झटपट टेदरिंग</translation>
+<translation id="5430931332414098647">इंस्टैंट टेदरिंग</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">सभी उपलब्‍ध उपयोगकर्ता पहले से इस सत्र में जोड़ दिए गए हैं.</translation>
 <translation id="5457599981699367932">अतिथि के रूप में ब्राउज़ करें</translation>
@@ -235,6 +236,7 @@
 <translation id="598882571027504733">अपडेट पाने के लिए, अटैच किए गए कीबोर्ड से अपने Chromebook को रीस्टार्ट करें.</translation>
 <translation id="5992218262414051481">उच्च कंट्रास्ट मोड सक्षम है. उसे बंद पर टॉगल करने के लिए Ctrl+Search+H फिर से दबाएं.</translation>
 <translation id="6018164090099858612">मिरर मोड से बाहर निकाला जा रहा है</translation>
+<translation id="6040143037577758943">बंद करें</translation>
 <translation id="6043212731627905357">यह मॉनीटर आपके <ph name="DEVICE_TYPE" /> के साथ काम नहीं कर रहा है (मॉनीटर समर्थित नहीं है).</translation>
 <translation id="6043994281159824495">अब प्रस्थान करें</translation>
 <translation id="6047696787498798094">आपके द्वारा किसी अन्‍य उपयोगकर्ता पर स्‍विच करने से स्‍क्रीन साझाकरण रुक जाएगा. क्‍या आप जारी रखना चाहते हैं?</translation>
