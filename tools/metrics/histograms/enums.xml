@@ -18995,6 +18995,9 @@ Called by update_net_error_codes.py.-->
   <int value="2468" label="PerformanceEventTimingBuffer"/>
   <int value="2469" label="PerformanceEventTimingConstructor"/>
   <int value="2470" label="ReverseIterateDOMStorage"/>
+  <int value="2471" label="TextToSpeech_Speak"/>
+  <int value="2472" label="TextToSpeech_SpeakCrossOrigin"/>
+  <int value="2473" label="TextToSpeech_SpeakDisallowedByAutoplay"/>
 </enum>
 
 <enum name="FeedbackSource">

@@ -1935,6 +1935,9 @@ enum WebFeature {
   kPerformanceEventTimingBuffer = 2468,
   kPerformanceEventTimingConstructor = 2469,
   kReverseIterateDOMStorage = 2470,
+  kTextToSpeech_Speak = 2471,
+  kTextToSpeech_SpeakCrossOrigin = 2472,
+  kTextToSpeech_SpeakDisallowedByAutoplay = 2473,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
