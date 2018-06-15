@@ -4136,6 +4136,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Mobile optimized web page"/>
 </enum>
 
+<enum name="BooleanIsNtp">
+  <int value="0" label="Non-NTP Page"/>
+  <int value="1" label="NTP"/>
+</enum>
+
 <enum name="BooleanIsPhishing">
   <int value="0" label="Not phishing"/>
   <int value="1" label="Is phishing"/>
