@@ -103,6 +103,16 @@ void MachineLevelUserCloudPolicyController::Init(
   //      registered and needs to request a DM token.
   std::string enrollment_token;
   std::string client_id;
+  std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
+
+  DVLOG(1) << "DM token = " << (dm_token.empty() ? "none" : "from persistence");
+
+  if (!dm_token.empty()) {
+    policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
+        policy_manager, local_state, device_management_service,
+        request_context);
+    return;
+  }
 
   if (!GetEnrollmentTokenAndClientId(&enrollment_token, &client_id))
     return;
@@ -118,9 +128,6 @@ void MachineLevelUserCloudPolicyController::Init(
       policy_manager, local_state, device_management_service, request_context);
   policy_register_watcher_ =
       std::make_unique<MachineLevelUserCloudPolicyRegisterWatcher>(this);
-
-  std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
-  DVLOG(1) << "DM token = " << (dm_token.empty() ? "none" : "from persistence");
 
   if (dm_token.empty()) {
     // Not registered already, so do it now.

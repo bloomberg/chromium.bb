@@ -270,8 +270,6 @@ void BrowserDMTokenStorageWin::InitIfNeeded() {
   enrollment_token_ = base::WideToUTF8(
       InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken());
   DVLOG(1) << "Enrollment token = " << enrollment_token_;
-  if (enrollment_token_.empty())
-    return;
 
   dm_token_ = GetDMToken();
   DVLOG(1) << "DM Token = " << dm_token_;

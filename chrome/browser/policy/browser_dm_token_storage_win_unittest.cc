@@ -101,25 +101,17 @@ TEST_F(BrowserDMTokenStorageWinTest, RetrieveEnrollmentToken) {
 TEST_F(BrowserDMTokenStorageWinTest, RetrieveDMToken) {
   ASSERT_TRUE(SetMachineGuid(kClientId1));
 
-  // The DM token will not be read from the system if there is no enrollment
-  // token.
+  // The DM token will be read from the system regardless there is an enrollment
+  // token or not.
   ASSERT_TRUE(SetDMToken(kDMToken1));
   BrowserDMTokenStorageWin storage;
-  EXPECT_THAT(storage.RetrieveDMToken(), IsEmpty());
+  EXPECT_EQ(std::string(kDMToken1), storage.RetrieveDMToken());
 
-  // With the enrollment token now set, an already initialized
-  // BrowserDMTokenStorageWin should still return empty DM token because it
-  // should cache the value.
   ASSERT_TRUE(SetEnrollmentToken(kEnrollmentToken1));
-  EXPECT_THAT(storage.RetrieveDMToken(), IsEmpty());
-
-  // But if enrollment token is set when BrowserDMTokenStorageWin is first used,
-  // it should return the DM token.
-  BrowserDMTokenStorageWin storage2;
-  EXPECT_EQ(std::string(kDMToken1), storage2.RetrieveDMToken());
+  EXPECT_EQ(std::string(kDMToken1), storage.RetrieveDMToken());
 
   // The DM token should be cached in memory and not read from the system again.
   ASSERT_TRUE(SetDMToken(kDMToken2));
-  EXPECT_EQ(std::string(kDMToken1), storage2.RetrieveDMToken());
+  EXPECT_EQ(std::string(kDMToken1), storage.RetrieveDMToken());
 }
 }  // namespace policy
