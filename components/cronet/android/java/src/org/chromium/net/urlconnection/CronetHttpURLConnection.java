@@ -10,6 +10,7 @@ import android.util.Pair;
 
 import org.chromium.net.CronetEngine;
 import org.chromium.net.CronetException;
+import org.chromium.net.ExperimentalUrlRequest;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlResponseInfo;
 
@@ -42,6 +43,10 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     private final MessageLoop mMessageLoop;
     private UrlRequest mRequest;
     private final List<Pair<String, String>> mRequestHeaders;
+    private boolean mTrafficStatsTagSet;
+    private int mTrafficStatsTag;
+    private boolean mTrafficStatsUidSet;
+    private int mTrafficStatsUid;
 
     private CronetInputStream mInputStream;
     private CronetOutputStream mOutputStream;
@@ -256,8 +261,9 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         if (connected) {
             return;
         }
-        final UrlRequest.Builder requestBuilder = mCronetEngine.newUrlRequestBuilder(
-                getURL().toString(), new CronetUrlRequestCallback(), mMessageLoop);
+        final ExperimentalUrlRequest.Builder requestBuilder =
+                (ExperimentalUrlRequest.Builder) mCronetEngine.newUrlRequestBuilder(
+                        getURL().toString(), new CronetUrlRequestCallback(), mMessageLoop);
         if (doOutput) {
             if (method.equals("GET")) {
                 method = "POST";
@@ -291,6 +297,12 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         }
         // Set HTTP method.
         requestBuilder.setHttpMethod(method);
+        if (mTrafficStatsTagSet) {
+            requestBuilder.setTrafficStatsTag(mTrafficStatsTag);
+        }
+        if (mTrafficStatsUidSet) {
+            requestBuilder.setTrafficStatsUid(mTrafficStatsUid);
+        }
 
         connected = true;
         mRequest = requestBuilder.build();
@@ -420,6 +432,54 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     void getMoreData(ByteBuffer byteBuffer) throws IOException {
         mRequest.read(byteBuffer);
         mMessageLoop.loop(getReadTimeout());
+    }
+
+    /**
+     * Sets {@link android.net.TrafficStats} tag to use when accounting socket traffic caused by
+     * this request. See {@link android.net.TrafficStats} for more information. If no tag is
+     * set (e.g. this method isn't called), then Android accounts for the socket traffic caused
+     * by this request as if the tag value were set to 0.
+     * <p>
+     * <b>NOTE:</b>Setting a tag disallows sharing of sockets with requests
+     * with other tags, which may adversely effect performance by prohibiting
+     * connection sharing. In other words use of multiplexed sockets (e.g. HTTP/2
+     * and QUIC) will only be allowed if all requests have the same socket tag.
+     *
+     * @param tag the tag value used to when accounting for socket traffic caused by this
+     *            request. Tags between 0xFFFFFF00 and 0xFFFFFFFF are reserved and used
+     *            internally by system services like {@link android.app.DownloadManager} when
+     *            performing traffic on behalf of an application.
+     */
+    public void setTrafficStatsTag(int tag) {
+        if (connected) {
+            throw new IllegalStateException(
+                    "Cannot modify traffic stats tag after connection is made.");
+        }
+        mTrafficStatsTagSet = true;
+        mTrafficStatsTag = tag;
+    }
+
+    /**
+     * Sets specific UID to use when accounting socket traffic caused by this request. See
+     * {@link android.net.TrafficStats} for more information. Designed for use when performing
+     * an operation on behalf of another application. Caller must hold
+     * {@link android.Manifest.permission#MODIFY_NETWORK_ACCOUNTING} permission. By default
+     * traffic is attributed to UID of caller.
+     * <p>
+     * <b>NOTE:</b>Setting a UID disallows sharing of sockets with requests
+     * with other UIDs, which may adversely effect performance by prohibiting
+     * connection sharing. In other words use of multiplexed sockets (e.g. HTTP/2
+     * and QUIC) will only be allowed if all requests have the same UID set.
+     *
+     * @param uid the UID to attribute socket traffic caused by this request.
+     */
+    public void setTrafficStatsUid(int uid) {
+        if (connected) {
+            throw new IllegalStateException(
+                    "Cannot modify traffic stats UID after connection is made.");
+        }
+        mTrafficStatsUidSet = true;
+        mTrafficStatsUid = uid;
     }
 
     /**
