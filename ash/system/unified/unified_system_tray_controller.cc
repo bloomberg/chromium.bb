@@ -42,6 +42,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/message_center/message_center.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -135,6 +136,17 @@ void UnifiedSystemTrayController::ToggleExpanded() {
     animation_->Hide();
   else
     animation_->Show();
+}
+
+void UnifiedSystemTrayController::HandleClearAllAction() {
+  // When the animation is finished, OnClearAllAnimationEnded() is called.
+  unified_view_->ShowClearAllAnimation();
+}
+
+void UnifiedSystemTrayController::OnClearAllAnimationEnded() {
+  message_center::MessageCenter::Get()->RemoveAllNotifications(
+      true /* by_user */,
+      message_center::MessageCenter::RemoveType::NON_PINNED);
 }
 
 void UnifiedSystemTrayController::BeginDrag(const gfx::Point& location) {

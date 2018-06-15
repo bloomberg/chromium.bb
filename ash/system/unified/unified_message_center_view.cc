@@ -4,13 +4,18 @@
 
 #include "ash/system/unified/unified_message_center_view.h"
 
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/unified/sign_out_button.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
+#include "ui/views/layout/box_layout.h"
 
 using message_center::MessageCenter;
 using message_center::MessageView;
@@ -29,8 +34,10 @@ const int kMaxVisibleNotifications = 100;
 // ///////////////////////////////////////////////////////////
 
 UnifiedMessageCenterView::UnifiedMessageCenterView(
+    UnifiedSystemTrayController* tray_controller,
     MessageCenter* message_center)
-    : message_center_(message_center),
+    : tray_controller_(tray_controller),
+      message_center_(message_center),
       scroller_(new views::ScrollView()),
       message_list_view_(new MessageListView()) {
   SetPaintToLayer();
@@ -48,11 +55,32 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   scroller_->set_draw_overflow_indicator(false);
   AddChildView(scroller_);
 
-  message_list_view_->SetBorder(
-      views::CreateEmptyBorder(0, 0, kUnifiedNotificationCenterSpacing, 0));
   message_list_view_->set_use_fixed_height(false);
   message_list_view_->set_scroller(scroller_);
-  scroller_->SetContents(message_list_view_);
+  message_list_view_->AddObserver(this);
+
+  views::View* scroller_contents = new views::View;
+  auto* contents_layout = scroller_contents->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  contents_layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_STRETCH);
+  scroller_contents->AddChildView(message_list_view_);
+
+  views::View* button_container = new views::View;
+  auto* button_layout =
+      button_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::kHorizontal,
+          gfx::Insets(kUnifiedNotificationCenterSpacing), 0));
+  button_layout->set_main_axis_alignment(
+      views::BoxLayout::MAIN_AXIS_ALIGNMENT_END);
+
+  auto* clear_all_button = new RoundedLabelButton(
+      this, l10n_util::GetStringUTF16(
+                IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
+  button_container->AddChildView(clear_all_button);
+  scroller_contents->AddChildView(button_container);
+
+  scroller_->SetContents(scroller_contents);
 
   SetNotifications(message_center_->GetVisibleNotifications());
 }
@@ -64,6 +92,11 @@ UnifiedMessageCenterView::~UnifiedMessageCenterView() {
 void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
   scroller_->ClipHeightTo(0, max_height);
   Update();
+}
+
+void UnifiedMessageCenterView::ShowClearAllAnimation() {
+  message_list_view_->ClearAllClosableNotifications(
+      scroller_->GetVisibleRect());
 }
 
 void UnifiedMessageCenterView::SetNotifications(
@@ -89,7 +122,11 @@ void UnifiedMessageCenterView::Layout() {
 }
 
 gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
-  return scroller_->GetPreferredSize();
+  gfx::Size preferred_size = scroller_->GetPreferredSize();
+  // Hide Clear All button at the buttom from initial viewport.
+  preferred_size.set_height(preferred_size.height() -
+                            3 * kUnifiedNotificationCenterSpacing);
+  return preferred_size;
 }
 
 void UnifiedMessageCenterView::OnNotificationAdded(const std::string& id) {
@@ -130,6 +167,15 @@ void UnifiedMessageCenterView::OnViewPreferredSizeChanged(
             observed_view->GetClassName());
   UpdateNotification(
       static_cast<MessageView*>(observed_view)->notification_id());
+}
+
+void UnifiedMessageCenterView::ButtonPressed(views::Button* sender,
+                                             const ui::Event& event) {
+  tray_controller_->HandleClearAllAction();
+}
+
+void UnifiedMessageCenterView::OnAllNotificationsCleared() {
+  tray_controller_->OnClearAllAnimationEnded();
 }
 
 void UnifiedMessageCenterView::Update() {
@@ -183,9 +229,13 @@ void UnifiedMessageCenterView::UpdateNotification(const std::string& id) {
 }
 
 void UnifiedMessageCenterView::ScrollToBottom() {
+  // Hide Clear All button at the buttom from initial viewport.
+  int max_position_without_button =
+      scroller_->vertical_scroll_bar()->GetMaxPosition() -
+      3 * kUnifiedNotificationCenterSpacing;
   scroller_->ScrollToPosition(
       const_cast<views::ScrollBar*>(scroller_->vertical_scroll_bar()),
-      scroller_->GetPreferredSize().height());
+      max_position_without_button);
 }
 
 }  // namespace ash

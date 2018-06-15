@@ -77,6 +77,8 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View {
   // Otherwise, it shows intermediate state.
   void SetExpandedAmount(double expanded_amount);
 
+  void ShowClearAllAnimation();
+
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
