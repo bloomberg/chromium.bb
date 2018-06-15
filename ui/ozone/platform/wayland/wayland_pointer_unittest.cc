@@ -12,6 +12,7 @@
 #include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 using ::testing::SaveArg;
 using ::testing::_;
@@ -43,12 +44,14 @@ class WaylandPointerTest : public WaylandTest {
 
 TEST_P(WaylandPointerTest, Leave) {
   MockPlatformWindowDelegate other_delegate;
-  WaylandWindow other_window(&other_delegate, connection_.get(),
-                             gfx::Rect(0, 0, 10, 10));
+  WaylandWindow other_window(&other_delegate, connection_.get());
   gfx::AcceleratedWidget other_widget = gfx::kNullAcceleratedWidget;
   EXPECT_CALL(other_delegate, OnAcceleratedWidgetAvailable(_, _))
       .WillOnce(SaveArg<0>(&other_widget));
-  ASSERT_TRUE(other_window.Initialize());
+  PlatformWindowInitProperties properties;
+  properties.bounds = gfx::Rect(0, 0, 10, 10);
+  properties.type = PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW;
+  ASSERT_TRUE(other_window.Initialize(properties));
   ASSERT_NE(other_widget, gfx::kNullAcceleratedWidget);
 
   Sync();

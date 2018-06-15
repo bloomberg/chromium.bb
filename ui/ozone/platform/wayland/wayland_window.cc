@@ -9,11 +9,15 @@
 #include "base/bind.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_pointer.h"
+#include "ui/ozone/platform/wayland/xdg_popup_wrapper_v5.h"
+#include "ui/ozone/platform/wayland/xdg_popup_wrapper_v6.h"
 #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v5.h"
 #include "ui/ozone/platform/wayland/xdg_surface_wrapper_v6.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
@@ -35,28 +39,49 @@ class XDGShellObjectFactory {
     return std::make_unique<XDGSurfaceWrapperV5>(wayland_window);
   }
 
+  std::unique_ptr<XDGPopupWrapper> CreateXDGPopup(
+      WaylandConnection* connection,
+      WaylandWindow* wayland_window) {
+    if (connection->shell_v6()) {
+      std::unique_ptr<XDGSurfaceWrapper> surface =
+          CreateXDGSurface(connection, wayland_window);
+      surface->Initialize(connection, wayland_window->surface(), false);
+      return std::make_unique<XDGPopupWrapperV6>(std::move(surface),
+                                                 wayland_window);
+    }
+    DCHECK(connection->shell());
+    return std::make_unique<XDGPopupWrapperV5>(wayland_window);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(XDGShellObjectFactory);
 };
 
+gfx::Rect TranslateBoundsToParentCoordinates(const gfx::Rect& child_bounds,
+                                             const gfx::Rect& parent_bounds) {
+  int x = child_bounds.x() - parent_bounds.x();
+  int y = child_bounds.y() - parent_bounds.y();
+  return gfx::Rect(gfx::Point(x, y), child_bounds.size());
+}
+
 }  // namespace
 
 WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
-                             WaylandConnection* connection,
-                             const gfx::Rect& bounds)
+                             WaylandConnection* connection)
     : delegate_(delegate),
       connection_(connection),
       xdg_shell_objects_factory_(new XDGShellObjectFactory()),
-      bounds_(bounds),
       state_(PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN) {}
 
 WaylandWindow::~WaylandWindow() {
   delegate_->OnAcceleratedWidgetDestroying();
 
-  if (xdg_surface_) {
-    PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-    connection_->RemoveWindow(surface_.id());
-  }
+  PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  connection_->RemoveWindow(surface_.id());
+
+  if (parent_window_)
+    parent_window_->set_child_window(nullptr);
+
   if (has_pointer_focus_)
     connection_->pointer()->reset_window_with_pointer_focus();
 
@@ -69,8 +94,12 @@ WaylandWindow* WaylandWindow::FromSurface(wl_surface* surface) {
       wl_proxy_get_user_data(reinterpret_cast<wl_proxy*>(surface)));
 }
 
-bool WaylandWindow::Initialize() {
+bool WaylandWindow::Initialize(const PlatformWindowInitProperties& properties) {
   DCHECK(xdg_shell_objects_factory_);
+
+  bounds_ = properties.bounds;
+  if (properties.parent_widget != gfx::kNullAcceleratedWidget)
+    parent_window_ = GetParentWindow(properties.parent_widget);
 
   surface_.reset(wl_compositor_create_surface(connection_->compositor()));
   if (!surface_) {
@@ -79,7 +108,22 @@ bool WaylandWindow::Initialize() {
   }
   wl_surface_set_user_data(surface_.get(), this);
 
-  CreateXdgSurface();
+  ui::PlatformWindowType ui_window_type = properties.type;
+  switch (ui_window_type) {
+    case ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU:
+    case ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_POPUP:
+      // TODO(msisov, jkim): Handle notification windows, which are marked
+      // as popup windows as well. Those are the windows that do not have
+      // parents and pop up when the browser receives a notification.
+      CreateXdgPopup();
+      break;
+    case ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW:
+      CreateXdgSurface();
+      break;
+    default:
+      NOTREACHED() << "Not supported window type: type=" << ui_window_type;
+      break;
+  }
 
   connection_->ScheduleFlush();
 
@@ -88,6 +132,24 @@ bool WaylandWindow::Initialize() {
   delegate_->OnAcceleratedWidgetAvailable(surface_.id(), 1.f);
 
   return true;
+}
+
+void WaylandWindow::CreateXdgPopup() {
+  if (bounds_.IsEmpty())
+    return;
+
+  DCHECK(parent_window_ && !xdg_popup_);
+
+  gfx::Rect bounds =
+      TranslateBoundsToParentCoordinates(bounds_, parent_window_->GetBounds());
+
+  xdg_popup_ = xdg_shell_objects_factory_->CreateXDGPopup(connection_, this);
+  if (!xdg_popup_ ||
+      !xdg_popup_->Initialize(connection_, surface(), parent_window_, bounds)) {
+    CHECK(false) << "Failed to create xdg_popup";
+  }
+
+  parent_window_->set_child_window(this);
 }
 
 void WaylandWindow::CreateXdgSurface() {
@@ -110,10 +172,26 @@ void WaylandWindow::ApplyPendingBounds() {
   connection_->ScheduleFlush();
 }
 
-void WaylandWindow::Show() {}
+void WaylandWindow::Show() {
+  if (xdg_surface_)
+    return;
+  if (!xdg_popup_) {
+    CreateXdgPopup();
+    connection_->ScheduleFlush();
+  }
+}
 
 void WaylandWindow::Hide() {
-  NOTIMPLEMENTED();
+  if (child_window_)
+    child_window_->Hide();
+  if (xdg_popup_) {
+    parent_window_->set_child_window(nullptr);
+    xdg_popup_.reset();
+    // Detach buffer from surface in order to completely shutdown popups and
+    // release resources.
+    wl_surface_attach(surface_.get(), NULL, 0, 0);
+    wl_surface_commit(surface_.get());
+  }
 }
 
 void WaylandWindow::Close() {
@@ -141,18 +219,17 @@ void WaylandWindow::SetTitle(const base::string16& title) {
 
 void WaylandWindow::SetCapture() {
   // Wayland does implicit grabs, and doesn't allow for explicit grabs. The
-  // exception to that seems to be popups, which can do a grab during show. Need
-  // to evaluate under what circumstances we need this.
-  NOTIMPLEMENTED();
+  // exception to that are popups, but we explicitly send events to a
+  // parent popup if such exists.
 }
 
 void WaylandWindow::ReleaseCapture() {
   // See comment in SetCapture() for details on wayland and grabs.
-  NOTIMPLEMENTED();
 }
 
 bool WaylandWindow::HasCapture() const {
-  return has_implicit_grab_;
+  // If WaylandWindow is a popup window, assume it has the capture.
+  return xdg_popup() ? true : has_implicit_grab_;
 }
 
 void WaylandWindow::ToggleFullscreen() {
@@ -254,6 +331,20 @@ PlatformImeController* WaylandWindow::GetPlatformImeController() {
 }
 
 bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
+  // This window is a nested popup window, all the events must be forwarded
+  // to the main popup window.
+  if (child_window_ && child_window_->xdg_popup())
+    return !!xdg_popup_.get();
+
+  // If this is a nested menu window with a parent, it mustn't recieve any
+  // events.
+  if (parent_window_ && parent_window_->xdg_popup())
+    return false;
+
+  // If another window has capture, return early before checking focus.
+  if (HasCapture())
+    return true;
+
   if (event->IsMouseEvent())
     return has_pointer_focus_;
   if (event->IsKeyEvent())
@@ -264,6 +355,23 @@ bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
 }
 
 uint32_t WaylandWindow::DispatchEvent(const PlatformEvent& native_event) {
+  Event* event = static_cast<Event*>(native_event);
+  // If the window does not have a pointer focus, but received this event, it
+  // means the window is a popup window with a child popup window. In this case,
+  // the location of the event must be converted from the nested popup to the
+  // main popup, which the menu controller needs to properly handle events.
+  if (event->IsLocatedEvent() && xdg_popup()) {
+    // Parent window of the main menu window is not a popup, but rather an
+    // xdg surface.
+    DCHECK(!parent_window_->xdg_popup() && parent_window_->xdg_surface());
+    WaylandWindow* window = connection_->GetCurrentFocusedWindow();
+    if (window) {
+      ConvertEventLocationToTargetWindowLocation(GetBounds().origin(),
+                                                 window->GetBounds().origin(),
+                                                 event->AsLocatedEvent());
+    }
+  }
+
   DispatchEventFromNativeUiEvent(
       native_event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
                                    base::Unretained(delegate_)));
@@ -312,7 +420,10 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
 }
 
 void WaylandWindow::OnCloseRequest() {
-  NOTIMPLEMENTED();
+  // Before calling OnCloseRequest, the |xdg_popup_| must become hidden and
+  // only then call OnCloseRequest().
+  DCHECK(!xdg_popup_);
+  delegate_->OnCloseRequest();
 }
 
 bool WaylandWindow::IsMinimized() const {
@@ -346,6 +457,26 @@ void WaylandWindow::SetPendingBounds(int32_t width, int32_t height) {
 
   if (!IsFullscreen() && !IsMaximized())
     restored_bounds_ = gfx::Rect();
+}
+
+WaylandWindow* WaylandWindow::GetParentWindow(
+    gfx::AcceleratedWidget parent_widget) {
+  WaylandWindow* parent_window = connection_->GetWindow(parent_widget);
+
+  // If propagated parent has already had a child, it means that |this| is a
+  // submenu of a 3-dot menu. In aura, the parent of a 3-dot menu and its
+  // submenu is the main native widget, which is the main window. In contrast,
+  // Wayland requires a menu window to be a parent of a submenu window. Thus,
+  // check if the suggested parent has a child. If yes, take its child as a
+  // parent of |this|.
+  // Another case is a notifcation window or a drop down window, which do not
+  // have a parent in aura. In this case, take the current focused window as a
+  // parent.
+  if (parent_window && parent_window->child_window_)
+    return parent_window->child_window_;
+  if (!parent_window)
+    return connection_->GetCurrentFocusedWindow();
+  return parent_window;
 }
 
 }  // namespace ui

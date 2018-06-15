@@ -17,6 +17,7 @@
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/wayland_test.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 using ::testing::Eq;
 using ::testing::Mock;
@@ -79,6 +80,24 @@ class WaylandWindowTest : public WaylandTest {
   void InitializeWlArrayWithActivatedState(wl_array* states) {
     wl_array_init(states);
     SetWlArrayWithState(XDG_SURFACE_STATE_ACTIVATED, states);
+  }
+
+  std::unique_ptr<WaylandWindow> CreateWaylandWindowWithParams(
+      PlatformWindowType type,
+      gfx::AcceleratedWidget parent_widget,
+      const gfx::Rect bounds,
+      MockPlatformWindowDelegate* delegate) {
+    PlatformWindowInitProperties properties;
+    // TODO(msisov): use a fancy method to calculate position of a popup window.
+    properties.bounds = bounds;
+    properties.type = type;
+    properties.parent_widget = parent_widget;
+
+    std::unique_ptr<WaylandWindow> window =
+        std::make_unique<WaylandWindow>(delegate, connection_.get());
+
+    EXPECT_TRUE(window->Initialize(properties));
+    return window;
   }
 
   wl::MockXdgSurface* xdg_surface_;
@@ -456,6 +475,96 @@ TEST_P(WaylandWindowTest, OnAcceleratedWidgetDestroy) {
   EXPECT_CALL(delegate_, OnAcceleratedWidgetDestroying()).Times(1);
   EXPECT_CALL(delegate_, OnAcceleratedWidgetDestroyed()).Times(1);
   window_.reset();
+}
+
+TEST_P(WaylandWindowTest, CreateAndDestroyMenuWindow) {
+  MockPlatformWindowDelegate menu_window_delegate;
+  EXPECT_CALL(menu_window_delegate, OnAcceleratedWidgetDestroying()).Times(1);
+  EXPECT_CALL(menu_window_delegate, OnAcceleratedWidgetDestroyed()).Times(1);
+
+  std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
+      PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, widget_,
+      gfx::Rect(0, 0, 10, 10), &menu_window_delegate);
+
+  Sync();
+}
+
+TEST_P(WaylandWindowTest, CreateAndDestroyNestedMenuWindow) {
+  MockPlatformWindowDelegate menu_window_delegate;
+  gfx::AcceleratedWidget menu_window_widget;
+  EXPECT_CALL(menu_window_delegate, OnAcceleratedWidgetAvailable(_, _))
+      .WillOnce(SaveArg<0>(&menu_window_widget));
+
+  std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
+      PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, widget_,
+      gfx::Rect(0, 0, 10, 10), &menu_window_delegate);
+  ASSERT_NE(menu_window_widget, gfx::kNullAcceleratedWidget);
+
+  Sync();
+
+  MockPlatformWindowDelegate nested_menu_window_delegate;
+  std::unique_ptr<WaylandWindow> nested_menu_window =
+      CreateWaylandWindowWithParams(
+          PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, menu_window_widget,
+          gfx::Rect(20, 0, 10, 10), &nested_menu_window_delegate);
+
+  Sync();
+}
+
+TEST_P(WaylandWindowTest, CanDispatchEventToMenuWindowNonNested) {
+  MockPlatformWindowDelegate menu_window_delegate;
+  std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
+      PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, widget_,
+      gfx::Rect(0, 0, 10, 10), &menu_window_delegate);
+
+  wl_seat_send_capabilities(server_.seat()->resource(),
+                            WL_SEAT_CAPABILITY_POINTER);
+  Sync();
+  ASSERT_TRUE(connection_->pointer());
+  window_->set_pointer_focus(true);
+
+  // Make sure the events are sent to the menu window despite the pointer focus
+  // on the main window. Typically, it's the menu controller, which must get all
+  // the events in the case like this.
+  EXPECT_FALSE(window_->CanDispatchEvent(&test_mouse_event_));
+  EXPECT_TRUE(menu_window->CanDispatchEvent(&test_mouse_event_));
+
+  menu_window.reset();
+}
+
+TEST_P(WaylandWindowTest, CanDispatchEventToMenuWindowNested) {
+  MockPlatformWindowDelegate menu_window_delegate;
+  gfx::AcceleratedWidget menu_window_widget;
+  EXPECT_CALL(menu_window_delegate, OnAcceleratedWidgetAvailable(_, _))
+      .WillOnce(SaveArg<0>(&menu_window_widget));
+
+  std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
+      PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, widget_,
+      gfx::Rect(0, 0, 10, 10), &menu_window_delegate);
+
+  Sync();
+
+  MockPlatformWindowDelegate nested_menu_window_delegate;
+  std::unique_ptr<WaylandWindow> nested_menu_window =
+      CreateWaylandWindowWithParams(
+          PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, menu_window_widget,
+          gfx::Rect(20, 0, 10, 10), &nested_menu_window_delegate);
+
+  Sync();
+
+  wl_seat_send_capabilities(server_.seat()->resource(),
+                            WL_SEAT_CAPABILITY_POINTER);
+  Sync();
+  ASSERT_TRUE(connection_->pointer());
+  window_->set_pointer_focus(true);
+
+  // In case of nested menu windows, it is the main menu window, which must
+  // receive all the events.
+  EXPECT_FALSE(window_->CanDispatchEvent(&test_mouse_event_));
+  EXPECT_TRUE(menu_window->CanDispatchEvent(&test_mouse_event_));
+  EXPECT_FALSE(nested_menu_window->CanDispatchEvent(&test_mouse_event_));
+
+  Sync();
 }
 
 INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,

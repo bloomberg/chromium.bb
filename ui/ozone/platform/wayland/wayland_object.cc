@@ -113,6 +113,9 @@ const wl_interface* ObjectTraits<xdg_surface>::interface =
     &xdg_surface_interface;
 void (*ObjectTraits<xdg_surface>::deleter)(xdg_surface*) = &xdg_surface_destroy;
 
+const wl_interface* ObjectTraits<xdg_popup>::interface = &xdg_popup_interface;
+void (*ObjectTraits<xdg_popup>::deleter)(xdg_popup*) = &xdg_popup_destroy;
+
 const wl_interface* ObjectTraits<zxdg_shell_v6>::interface =
     &zxdg_shell_v6_interface;
 void (*ObjectTraits<zxdg_shell_v6>::deleter)(zxdg_shell_v6*) =
@@ -127,5 +130,15 @@ const wl_interface* ObjectTraits<zxdg_toplevel_v6>::interface =
     &zxdg_toplevel_v6_interface;
 void (*ObjectTraits<zxdg_toplevel_v6>::deleter)(zxdg_toplevel_v6*) =
     &zxdg_toplevel_v6_destroy;
+
+const wl_interface* ObjectTraits<zxdg_popup_v6>::interface =
+    &zxdg_popup_v6_interface;
+void (*ObjectTraits<zxdg_popup_v6>::deleter)(zxdg_popup_v6*) =
+    &zxdg_popup_v6_destroy;
+
+const wl_interface* ObjectTraits<zxdg_positioner_v6>::interface =
+    &zxdg_positioner_v6_interface;
+void (*ObjectTraits<zxdg_positioner_v6>::deleter)(zxdg_positioner_v6*) =
+    &zxdg_positioner_v6_destroy;
 
 }  // namespace wl

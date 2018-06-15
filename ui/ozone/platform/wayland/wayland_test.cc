@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 #if BUILDFLAG(USE_XKBCOMMON)
 #include "ui/ozone/platform/wayland/wayland_xkb_keyboard_layout_engine.h"
@@ -28,8 +29,7 @@ WaylandTest::WaylandTest() {
       std::make_unique<StubKeyboardLayoutEngine>());
 #endif
   connection_.reset(new WaylandConnection);
-  window_ = std::make_unique<WaylandWindow>(&delegate_, connection_.get(),
-                                            gfx::Rect(0, 0, 800, 600));
+  window_ = std::make_unique<WaylandWindow>(&delegate_, connection_.get());
 }
 
 WaylandTest::~WaylandTest() {}
@@ -39,7 +39,10 @@ void WaylandTest::SetUp() {
   ASSERT_TRUE(connection_->Initialize());
   EXPECT_CALL(delegate_, OnAcceleratedWidgetAvailable(_, _))
       .WillOnce(SaveArg<0>(&widget_));
-  ASSERT_TRUE(window_->Initialize());
+  PlatformWindowInitProperties properties;
+  properties.bounds = gfx::Rect(0, 0, 800, 600);
+  properties.type = PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW;
+  ASSERT_TRUE(window_->Initialize(properties));
   ASSERT_NE(widget_, gfx::kNullAcceleratedWidget);
 
   // Wait for the client to flush all pending requests from initialization.

@@ -91,6 +91,43 @@ class MockXdgTopLevel : public MockXdgSurface {
   DISALLOW_COPY_AND_ASSIGN(MockXdgTopLevel);
 };
 
+// A mocked positioner object, which provides a collection of rules of a child
+// surface relative to a parent surface.
+class MockPositioner : public ServerObject {
+ public:
+  explicit MockPositioner(wl_resource* resource);
+  ~MockPositioner() override;
+
+  void set_size(gfx::Size size) { size_ = size; }
+  gfx::Size size() const { return size_; }
+
+  void set_anchor_rect(gfx::Rect anchor_rect) { anchor_rect_ = anchor_rect; }
+  gfx::Rect anchor_rect() const { return anchor_rect_; }
+
+  void set_anchor(uint32_t anchor) { anchor_ = anchor; }
+
+  void set_gravity(uint32_t gravity) { gravity_ = gravity; }
+
+ private:
+  gfx::Rect anchor_rect_;
+  gfx::Size size_;
+  uint32_t anchor_;
+  uint32_t gravity_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPositioner);
+};
+
+class MockXdgPopup : public ServerObject {
+ public:
+  MockXdgPopup(wl_resource* resource, const void* implementation);
+  ~MockXdgPopup() override;
+
+  MOCK_METHOD1(Grab, void(uint32_t serial));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockXdgPopup);
+};
+
 // Manage client surface
 class MockSurface : public ServerObject {
  public:

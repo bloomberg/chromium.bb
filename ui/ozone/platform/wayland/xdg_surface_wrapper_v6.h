@@ -23,7 +23,9 @@ class XDGSurfaceWrapperV6 : public XDGSurfaceWrapper {
   XDGSurfaceWrapperV6(WaylandWindow* wayland_window);
   ~XDGSurfaceWrapperV6() override;
 
-  bool Initialize(WaylandConnection* connection, wl_surface* surface) override;
+  bool Initialize(WaylandConnection* connection,
+                  wl_surface* surface,
+                  bool with_toplevel) override;
   void SetMaximized() override;
   void UnSetMaximized() override;
   void SetFullscreen() override;
@@ -49,11 +51,15 @@ class XDGSurfaceWrapperV6 : public XDGSurfaceWrapper {
   static void CloseTopLevel(void* data,
                             struct zxdg_toplevel_v6* zxdg_toplevel_v6);
 
+  zxdg_surface_v6* xdg_surface() const;
+
  private:
   WaylandWindow* wayland_window_;
   uint32_t pending_configure_serial_;
   wl::Object<zxdg_surface_v6> zxdg_surface_v6_;
   wl::Object<zxdg_toplevel_v6> zxdg_toplevel_v6_;
+
+  bool surface_for_popup_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(XDGSurfaceWrapperV6);
 };
