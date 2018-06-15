@@ -1,6 +1,7 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 package com.android.webview.chromium;
 
 import android.annotation.TargetApi;
@@ -17,7 +18,7 @@ import org.chromium.android_webview.AwRenderProcessGoneDetail;
  * encountering the new APIs.
  */
 @TargetApi(Build.VERSION_CODES.O)
-public class ApiHelperForO {
+public final class ApiHelperForO {
     private ApiHelperForO() {}
 
     /**
