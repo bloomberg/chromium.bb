@@ -71,6 +71,10 @@ void WebSettingsImpl::SetFixedFontFamily(const WebString& font,
     settings_->NotifyGenericFontFamilyChange();
 }
 
+void WebSettingsImpl::SetFMPNetworkQuietTimeout(double timeout) {
+  settings_->SetFMPNetworkQuietTimeout(timeout);
+}
+
 void WebSettingsImpl::SetForceMainWorldInitialization(bool enabled) {
   settings_->SetForceMainWorldInitialization(enabled);
 }

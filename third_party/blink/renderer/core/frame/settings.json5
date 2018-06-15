@@ -575,6 +575,15 @@
       initial: false,
     },
 
+    // Set the timeout seconds of NetworkQuietTimers in FirstMeaningfulPainterDetector.
+    // Used by embedders who want to change the timeout time in order to run web contents
+    // on various embedded devices and changeable network bandwidths in different regions.
+    {
+      name: "FMPNetworkQuietTimeout",
+      initial: "0.5",
+      type: "double",
+    },
+
     // Forces initialization of main world, even if no scripts will be executed.
     // Used by inspector to report all contexts.
     {

@@ -505,6 +505,13 @@ const char kForcePresentationReceiverForTesting[] =
 // overrides this if present.
 const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
 
+// Sets the timeout seconds of NetworkQuietTimers in
+// FirstMeaningfulPainterDectector. Used by embedders who want to change the
+// timeout time in order to run web contents on various embedded devices and
+// changeable network bandwidths in different regions. For example, it's useful
+// when using FMP signal to dismiss a splash screen.
+const char kFMPNetworkQuietTimeout[] = "fmp-network-quiet-timeout";
+
 // For development / testing only. When running content_browsertests,
 // saves output of failing accessibility tests to their expectations files in
 // content/test/data/accessibility/, overwriting existing file content.
