@@ -126,13 +126,6 @@ class LRUDict(object):
     item = self._items.get(key)
     return item[0] if item is not None else default
 
-  def get_timestamp(self, key):
-    """Returns timestamp of last use of |key|.
-
-    Raises KeyError if |key| is not in the dict.
-    """
-    return self._items[key][1]
-
   def touch(self, key):
     """Marks |key| as most recently used.
 

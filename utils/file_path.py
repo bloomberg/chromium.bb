@@ -901,9 +901,6 @@ def set_read_only(path, read_only):
   else:
     if stat.S_ISLNK(mode):
       # Skip symlink without lchmod() support.
-      logging.debug(
-          'Can\'t change %sw bit on symlink %s',
-          '-' if read_only else '+', path)
       return
 
     # TODO(maruel): Implement proper DACL modification on Windows.
@@ -932,11 +929,16 @@ def remove(filepath):
 
 
 def try_remove(filepath):
-  """Removes a file without crashing even if it doesn't exist."""
+  """Removes a file without crashing even if it doesn't exist.
+
+  Returns:
+    True if the removal successed.
+  """
   try:
     remove(filepath)
+    return True
   except OSError:
-    pass
+    return False
 
 
 def link_file(outfile, infile, action):

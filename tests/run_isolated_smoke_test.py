@@ -400,11 +400,12 @@ class RunIsolatedTest(unittest.TestCase):
     file1_hash = self._store('file1.txt')
 
     # Run the test once to generate the cache.
+    # The weird file mode is because of test_utils.py that sets umask(0070).
     _out, _err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode)
     expected = {
-      u'.': (040700, 040700, 040777),
-      u'state.json': (0100600, 0100600, 0100666),
+      u'.': (040707, 040707, 040777),
+      u'state.json': (0100606, 0100606, 0100666),
       # The reason for 0100666 on Windows is that the file node had to be
       # modified to delete the hardlinked node. The read only bit is reset on
       # load.
@@ -427,8 +428,8 @@ class RunIsolatedTest(unittest.TestCase):
     out, err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode, (out, err, returncode))
     expected = {
-      u'.': (040700, 040700, 040777),
-      u'state.json': (0100600, 0100600, 0100666),
+      u'.': (040707, 040707, 040777),
+      u'state.json': (0100606, 0100606, 0100666),
       unicode(file1_hash): (0100400, 0100400, 0100666),
       unicode(isolated_hash): (0100400, 0100400, 0100444),
     }

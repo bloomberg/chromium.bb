@@ -1019,37 +1019,6 @@ def install_client_and_packages(
       })
 
 
-def clean_caches(isolate_cache, named_cache):
-  """Trims isolated and named caches.
-
-  The goal here is to coherently trim both caches, deleting older items
-  independent of which container they belong to.
-  """
-  # TODO(maruel): Trim CIPD cache the same way.
-  total = 0
-  oldest_isolated = isolate_cache.get_oldest()
-  oldest_named = named_cache.get_oldest()
-  trimmers = [
-    (
-      isolate_cache.trim,
-      isolate_cache.get_timestamp(oldest_isolated) if oldest_isolated else 0,
-    ),
-    (
-      named_cache.trim,
-      named_cache.get_timestamp(oldest_named) if oldest_named else 0,
-    ),
-  ]
-  trimmers.sort(key=lambda (_, ts): ts)
-  # TODO(maruel): This is incorrect, we want to trim 'items' that are strictly
-  # the oldest independent of in which cache they live in. Right now, the
-  # cache with the oldest item pays the price.
-  for trim, _ in trimmers:
-    total += trim()
-  named_cache.trim()
-  isolate_cache.cleanup()
-  return total
-
-
 def create_option_parser():
   parser = logging_utils.OptionParserWithLogging(
       usage='%prog <options> [command to run or extra args]',
@@ -1226,8 +1195,16 @@ def main(args):
   if not file_path.enable_symlink():
     logging.error('Symlink support is not enabled')
 
+  # TODO(maruel): CIPD caches should be defined at an higher level here too, so
+  # they can be cleaned the same way.
   isolate_cache = isolateserver.process_cache_options(options, trim=False)
   named_cache = process_named_cache_options(parser, options)
+  caches = []
+  if isolate_cache:
+    caches.append(isolate_cache)
+  if named_cache:
+    caches.append(named_cache)
+  root = caches[0].cache_dir if caches else unicode(os.getcwd())
   if options.clean:
     if options.isolated:
       parser.error('Can\'t use --isolated with --clean.')
@@ -1237,11 +1214,23 @@ def main(args):
       parser.error('Can\'t use --json with --clean.')
     if options.named_caches:
       parser.error('Can\t use --named-cache with --clean.')
-    clean_caches(isolate_cache, named_cache)
+    # Trim first, then clean.
+    local_caching.trim_caches(
+        caches,
+        root,
+        min_free_space=options.min_free_space,
+        max_age_secs=MAX_AGE_SECS)
+    for c in caches:
+      c.clean()
     return 0
 
   if not options.no_clean:
-    clean_caches(isolate_cache, named_cache)
+    # Trim but do not clean (which is slower).
+    local_caching.trim_caches(
+        caches,
+        root,
+        min_free_space=options.min_free_space,
+        max_age_secs=MAX_AGE_SECS)
 
   if not options.isolated and not args:
     parser.error('--isolated or command to run is required.')

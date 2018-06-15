@@ -141,8 +141,6 @@ class LRUDictTest(unittest.TestCase):
     lru_dict.add('kb', 'vb')
     now += 1
 
-    self.assertEqual(lru_dict.get_timestamp('ka'), 0)
-    self.assertEqual(lru_dict.get_timestamp('kb'), 1)
     self.assertEqual(lru_dict.get_oldest(), ('ka', ('va', 0)))
     self.assertEqual(lru_dict.pop_oldest(), ('ka', ('va', 0)))
     self.assertEqual(lru_dict.get_oldest(), ('kb', ('vb', 1)))
