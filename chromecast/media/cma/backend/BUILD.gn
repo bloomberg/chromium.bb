@@ -156,14 +156,23 @@ cast_source_set("audio_codec_support") {
   ]
 }
 
+cast_source_set("cast_audio_json") {
+  sources = [
+    "cast_audio_json.cc",
+    "cast_audio_json.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
 cast_source_set("for_mixer_audio") {
   sources = [
     "audio_decoder_for_mixer.cc",
     "audio_decoder_for_mixer.h",
     "buffering_mixer_source.cc",
     "buffering_mixer_source.h",
-    "cast_audio_json.cc",
-    "cast_audio_json.h",
     "direct_mixer_source.cc",
     "direct_mixer_source.h",
     "filter_group.cc",
@@ -189,6 +198,7 @@ cast_source_set("for_mixer_audio") {
   deps = [
     ":audio_buildflags",
     ":audio_helpers",
+    ":cast_audio_json",
     ":public",
     "//base",
     "//chromecast/base",

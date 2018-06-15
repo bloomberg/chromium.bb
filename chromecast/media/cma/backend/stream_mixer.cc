@@ -297,7 +297,7 @@ void StreamMixer::CreatePostProcessors(
           << "media/audio/audio_device_description.cc";
       CHECK(used_streams.insert(stream_type).second)
           << "Multiple instances of stream type '" << stream_type << "' in "
-          << kCastAudioJsonFilePath << ".";
+          << CastAudioJson::GetFilePath() << ".";
     }
     filter_groups_.push_back(CreateFilterGroup(
         FilterGroup::GroupType::kStream, kNumInputChannels,
