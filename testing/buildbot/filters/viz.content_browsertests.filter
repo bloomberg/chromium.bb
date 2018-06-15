@@ -1,8 +1,3 @@
-# WaitForChildFrameSurfaceReady doesn't work http://crbug.com/787945
--SitePerProcessBrowserTouchActionTest.EffectiveTouchActionPropagatesAcrossFrames
--SitePerProcessBrowserTouchActionTest.EffectiveTouchActionPropagatesAcrossNestedFrames
--SitePerProcessBrowserTouchActionTest.EffectiveTouchActionPropagatesWhenChildFrameNavigates
-
 # SynchronizeVisualPropertiesMessageFilter::WaitForRect() times out.
 # https://crbug.com/848825
 -SitePerProcessBrowserTest.ViewBoundsInNestedFrameTest

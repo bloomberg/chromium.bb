@@ -11945,18 +11945,21 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
   // Waits until the parent frame has had enough time to propagate the effective
   // touch action to the child frame and the child frame has had enough time to
   // process it.
-  void WaitForTouchActionUpdated(MainThreadFrameObserver* observer,
-                                 content::RenderFrameHost* child_frame) {
-    // Ensures that main frame has calculated the new effective touch action for
-    // child frames.
-    observer->Wait();
-    // Ensures that if a child frame is in progress we will wait until the next
-    // one.
-    WaitForChildFrameSurfaceReady(child_frame);
-    // This child frame should receive the effective touch action from parent
-    // (if the previous one didn't) and propagates it.
-    WaitForChildFrameSurfaceReady(child_frame);
-    observer->Wait();
+  void WaitForTouchActionUpdated(
+      MainThreadFrameObserver* root_thread_observer,
+      MainThreadFrameObserver* child_thread_observer) {
+    // Sends an event to the root frame's renderer main thread, upon return the
+    // root frame should have calculated the new effective touch action for the
+    // child frame.
+    root_thread_observer->Wait();
+    // Sends an event to the child frame's renderer main thread, upon return the
+    // child frame should have received the effective touch action from parent
+    // and propagated it.
+    child_thread_observer->Wait();
+    // The child's handling of the touch action may lead to further propagation
+    // back to the parent. This sends an event to the root frame's renderer main
+    // thread, upon return it should have handled any touch action update.
+    root_thread_observer->Wait();
   }
 };
 
@@ -11971,9 +11974,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
   RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       child->current_frame_host()->GetRenderWidgetHost()->GetView());
-  std::unique_ptr<MainThreadFrameObserver> observer(new MainThreadFrameObserver(
-      root->current_frame_host()->GetRenderWidgetHost()));
-  observer->Wait();
+  std::unique_ptr<MainThreadFrameObserver> root_thread_observer(
+      new MainThreadFrameObserver(
+          root->current_frame_host()->GetRenderWidgetHost()));
+  root_thread_observer->Wait();
 
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
   NavigateFrameToURL(child, b_url);
@@ -11982,7 +11986,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   EXPECT_TRUE(
       ExecuteScript(shell(), "document.body.style.touchAction = 'none'"));
   // Waits for the next frame.
-  WaitForChildFrameSurfaceReady(child->current_frame_host());
+  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  std::unique_ptr<MainThreadFrameObserver> child_thread_observer(
+      new MainThreadFrameObserver(
+          child->current_frame_host()->GetRenderWidgetHost()));
 
   RenderWidgetHostViewChildFrame* child_view =
       static_cast<RenderWidgetHostViewChildFrame*>(
@@ -11993,7 +12000,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   RenderWidgetHostInputEventRouter* router =
       static_cast<WebContentsImpl*>(web_contents())->GetInputEventRouter();
 
-  WaitForTouchActionUpdated(observer.get(), child->current_frame_host());
+  WaitForTouchActionUpdated(root_thread_observer.get(),
+                            child_thread_observer.get());
   // Gestures are filtered by the intersection of touch-action values of the
   // touched element and all its ancestors up to the one that implements the
   // gesture. Since iframe allows scrolling, touch action pan restrictions will
@@ -12005,7 +12013,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
 
   EXPECT_TRUE(
       ExecuteScript(shell(), "document.body.style.touchAction = 'auto'"));
-  WaitForTouchActionUpdated(observer.get(), child->current_frame_host());
+  WaitForTouchActionUpdated(root_thread_observer.get(),
+                            child_thread_observer.get());
   EXPECT_EQ(cc::TouchAction::kTouchActionAuto,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
                                             point_inside_child));
@@ -12038,15 +12047,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
   RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       child->current_frame_host()->GetRenderWidgetHost()->GetView());
-  std::unique_ptr<MainThreadFrameObserver> observer(new MainThreadFrameObserver(
-      root->current_frame_host()->GetRenderWidgetHost()));
-  observer->Wait();
+  std::unique_ptr<MainThreadFrameObserver> root_thread_observer(
+      new MainThreadFrameObserver(
+          root->current_frame_host()->GetRenderWidgetHost()));
+  root_thread_observer->Wait();
 
   EXPECT_TRUE(
       ExecuteScript(shell(), "document.body.style.touchAction = 'none'"));
 
   // Wait for child frame ready in order to get the correct point inside child.
-  WaitForChildFrameSurfaceReady(child->current_frame_host());
+  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  std::unique_ptr<MainThreadFrameObserver> child_thread_observer(
+      new MainThreadFrameObserver(
+          child->current_frame_host()->GetRenderWidgetHost()));
   RenderWidgetHostViewChildFrame* child_view =
       static_cast<RenderWidgetHostViewChildFrame*>(
           child->current_frame_host()->GetRenderWidgetHost()->GetView());
@@ -12057,7 +12070,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
       static_cast<WebContentsImpl*>(web_contents())->GetInputEventRouter();
 
   // Child should inherit effective touch action none from root.
-  WaitForTouchActionUpdated(observer.get(), child->current_frame_host());
+  WaitForTouchActionUpdated(root_thread_observer.get(),
+                            child_thread_observer.get());
   EXPECT_EQ(cc::TouchAction::kTouchActionPan,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
                                             point_inside_child));
@@ -12068,7 +12082,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   EXPECT_TRUE(ExecuteScript(
       parent,
       "document.getElementById('parent-div').style.touchAction = 'none';"));
-  WaitForTouchActionUpdated(observer.get(), child->current_frame_host());
+  WaitForTouchActionUpdated(root_thread_observer.get(),
+                            child_thread_observer.get());
   EXPECT_EQ(cc::TouchAction::kTouchActionPan,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
                                             point_inside_child));
@@ -12077,7 +12092,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   EXPECT_TRUE(ExecuteScript(
       parent,
       "document.getElementById('parent-div').style.touchAction = 'auto'"));
-  WaitForTouchActionUpdated(observer.get(), child->current_frame_host());
+  WaitForTouchActionUpdated(root_thread_observer.get(),
+                            child_thread_observer.get());
   EXPECT_EQ(cc::TouchAction::kTouchActionAuto,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
                                             point_inside_child));
@@ -12105,15 +12121,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
   RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       child->current_frame_host()->GetRenderWidgetHost()->GetView());
-  std::unique_ptr<MainThreadFrameObserver> observer(new MainThreadFrameObserver(
-      root->current_frame_host()->GetRenderWidgetHost()));
-  observer->Wait();
+  std::unique_ptr<MainThreadFrameObserver> root_thread_observer(
+      new MainThreadFrameObserver(
+          root->current_frame_host()->GetRenderWidgetHost()));
+  root_thread_observer->Wait();
 
   EXPECT_TRUE(
       ExecuteScript(shell(), "document.body.style.touchAction = 'none'"));
 
   // Wait for child frame ready in order to get the correct point inside child.
-  WaitForChildFrameSurfaceReady(child->current_frame_host());
+  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  std::unique_ptr<MainThreadFrameObserver> child_thread_observer(
+      new MainThreadFrameObserver(
+          child->current_frame_host()->GetRenderWidgetHost()));
   RenderWidgetHostViewChildFrame* child_view =
       static_cast<RenderWidgetHostViewChildFrame*>(
           child->current_frame_host()->GetRenderWidgetHost()->GetView());
@@ -12123,7 +12143,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   RenderWidgetHostInputEventRouter* router =
       static_cast<WebContentsImpl*>(web_contents())->GetInputEventRouter();
   // Child should inherit effective touch action none from root.
-  WaitForTouchActionUpdated(observer.get(), child->current_frame_host());
+  WaitForTouchActionUpdated(root_thread_observer.get(),
+                            child_thread_observer.get());
   EXPECT_EQ(cc::TouchAction::kTouchActionPan,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
                                             point_inside_child));
@@ -12131,12 +12152,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   // After navigation, child should still inherit effective touch action none
   // from parent.
   GURL new_url(embedded_test_server()->GetURL("c.com", "/title2.html"));
+  // Reset before navigation, as navigation destroys the underlying
+  // RenderWidgetHost being observed.
+  child_thread_observer.reset();
   NavigateFrameToURL(child, new_url);
-  WaitForChildFrameSurfaceReady(child->current_frame_host());
+  WaitForHitTestDataOrChildSurfaceReady(child->current_frame_host());
+  // Navigation destroys the previous RenderWidgetHost, so we need to begin
+  // observing the new renderer main thread associated with the child frame.
+  child_thread_observer.reset(new MainThreadFrameObserver(
+      child->current_frame_host()->GetRenderWidgetHost()));
+
   rwhv_child = static_cast<RenderWidgetHostViewBase*>(
       child->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  WaitForTouchActionUpdated(observer.get(), child->current_frame_host());
+  WaitForTouchActionUpdated(root_thread_observer.get(),
+                            child_thread_observer.get());
   EXPECT_EQ(cc::TouchAction::kTouchActionPan,
             GetEffectiveTouchActionForChild(router, rwhv_root, rwhv_child,
                                             point_inside_child));
