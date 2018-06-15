@@ -506,6 +506,10 @@ void ChromeAppListModelUpdater::OnItemUpdated(
     ash::mojom::AppListItemMetadataPtr item) {
   ChromeAppListItem* chrome_item = FindItem(item->id);
   DCHECK(chrome_item);
+
+  // Preserve icon once it cannot be modified at ash.
+  item->icon = chrome_item->icon();
+
   chrome_item->SetMetadata(std::move(item));
   if (delegate_)
     delegate_->OnAppListItemUpdated(chrome_item);
