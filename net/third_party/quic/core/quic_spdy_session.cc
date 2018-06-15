@@ -504,13 +504,6 @@ void QuicSpdySession::OnPromiseHeaderList(QuicStreamId stream_id,
                                 ConnectionCloseBehavior::SILENT_CLOSE);
 }
 
-void QuicSpdySession::OnConfigNegotiated() {
-  QuicSession::OnConfigNegotiated();
-  if (config()->HasClientSentConnectionOption(kDHDT, perspective())) {
-    DisableHpackDynamicTable();
-  }
-}
-
 bool QuicSpdySession::ShouldReleaseHeadersStreamSequencerBuffer() {
   return false;
 }
@@ -581,9 +574,6 @@ void QuicSpdySession::OnCompressedFrameSize(size_t frame_len) {
   frame_len_ += frame_len;
 }
 
-void QuicSpdySession::DisableHpackDynamicTable() {
-  spdy_framer_.UpdateHeaderEncoderTableSize(0);
-}
 
 void QuicSpdySession::SetHpackEncoderDebugVisitor(
     std::unique_ptr<QuicHpackDebugVisitor> visitor) {

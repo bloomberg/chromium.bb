@@ -117,8 +117,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
 
   QuicHeadersStream* headers_stream() { return headers_stream_.get(); }
 
-  void OnConfigNegotiated() override;
-
   bool server_push_enabled() const { return server_push_enabled_; }
 
   // Called by |QuicHeadersStream::UpdateEnableServerPush()| with
@@ -165,11 +163,6 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
 
   bool supports_push_promise() { return supports_push_promise_; }
-
-  // Experimental: force HPACK to use static table and huffman coding
-  // only.  Part of exploring improvements related to headers stream
-  // induced HOL blocking in QUIC.
-  void DisableHpackDynamicTable();
 
   // Optional, enables instrumentation related to go/quic-hpack.
   void SetHpackEncoderDebugVisitor(
