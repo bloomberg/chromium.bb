@@ -21,6 +21,7 @@
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::FlushParams)
   IPC_STRUCT_TRAITS_MEMBER(route_id)
+  IPC_STRUCT_TRAITS_MEMBER(transfer_buffer_id_to_destroy)
   IPC_STRUCT_TRAITS_MEMBER(put_offset)
   IPC_STRUCT_TRAITS_MEMBER(flush_id)
   IPC_STRUCT_TRAITS_MEMBER(sync_token_fences)

@@ -125,8 +125,10 @@ void CommandBufferHelper::SetGetBuffer(int32_t id,
 
 void CommandBufferHelper::FreeRingBuffer() {
   if (HaveRingBuffer()) {
-    FlushLazy();
+    OrderingBarrier();
     command_buffer_->DestroyTransferBuffer(ring_buffer_id_);
+    // SetGetBuffer is an IPC, so previous work needs to be flushed first.
+    Flush();
     SetGetBuffer(-1, nullptr);
   }
 }
