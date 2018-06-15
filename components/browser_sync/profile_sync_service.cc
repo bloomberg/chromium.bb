@@ -233,14 +233,12 @@ void ProfileSyncService::Initialize() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_client_->Initialize();
 
-  // We don't pass StartupController an Unretained reference to future-proof
-  // against the controller impl changing to post tasks.
   startup_controller_ = std::make_unique<syncer::StartupController>(
       &sync_prefs_,
       base::BindRepeating(&ProfileSyncService::CanSyncStart,
                           base::Unretained(this)),
       base::BindRepeating(&ProfileSyncService::StartUpSlowEngineComponents,
-                          weak_factory_.GetWeakPtr()));
+                          base::Unretained(this)));
   local_device_ = sync_client_->GetSyncApiComponentFactory()
                       ->CreateLocalDeviceInfoProvider();
   DCHECK(local_device_);
@@ -557,22 +555,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   if (!IsFirstSetupComplete())
     ClearStaleErrors();
 
-  InitializeEngine();
-
-  UpdateFirstSyncTimePref();
-
-  ReportPreviousSessionMemoryWarningCount();
-
-  // TODO(treib): Consider kicking off an access token fetch here. Currently,
-  // the flow goes as follows: The SyncEngine tries to connect to the server,
-  // but has no access token, so it ends up calling OnConnectionStatusChange(
-  // syncer::CONNECTION_AUTH_ERROR) which in turn causes SyncAuthManager to
-  // request a new access token. That seems needlessly convoluted.
-}
-
-void ProfileSyncService::InitializeEngine() {
-  DCHECK(engine_);
-
   if (!sync_thread_) {
     sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
     base::Thread::Options options;
@@ -630,6 +612,16 @@ void ProfileSyncService::InitializeEngine() {
   }
 
   engine_->Initialize(std::move(params));
+
+  UpdateFirstSyncTimePref();
+
+  ReportPreviousSessionMemoryWarningCount();
+
+  // TODO(treib): Consider kicking off an access token fetch here. Currently,
+  // the flow goes as follows: The SyncEngine tries to connect to the server,
+  // but has no access token, so it ends up calling OnConnectionStatusChange(
+  // syncer::CONNECTION_AUTH_ERROR) which in turn causes SyncAuthManager to
+  // request a new access token. That seems needlessly convoluted.
 }
 
 void ProfileSyncService::Shutdown() {
@@ -846,9 +838,7 @@ void ProfileSyncService::ReenableDatatype(syncer::ModelType type) {
   data_type_manager_->ReenableType(type);
 }
 
-void ProfileSyncService::UpdateEngineInitUMA(bool success) {
-  is_first_time_sync_configure_ = !IsFirstSetupComplete();
-
+void ProfileSyncService::UpdateEngineInitUMA(bool success) const {
   if (is_first_time_sync_configure_) {
     UMA_HISTOGRAM_BOOLEAN("Sync.BackendInitializeFirstTimeSuccess", success);
   } else {
@@ -873,6 +863,9 @@ void ProfileSyncService::OnEngineInitialized(
     const std::string& cache_guid,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  is_first_time_sync_configure_ = !IsFirstSetupComplete();
+
   UpdateEngineInitUMA(success);
 
   if (!success) {
@@ -1162,8 +1155,7 @@ void ProfileSyncService::OnConfigureDone(
 
   // We should never get in a state where we have no encrypted datatypes
   // enabled, and yet we still think we require a passphrase for decryption.
-  DCHECK(
-      !(IsPassphraseRequiredForDecryption() && !IsEncryptedDatatypeEnabled()));
+  DCHECK(!IsPassphraseRequiredForDecryption() || IsEncryptedDatatypeEnabled());
 
   // This must be done before we start syncing with the server to avoid
   // sending unencrypted data up on a first time sync.
@@ -1584,7 +1576,7 @@ syncer::SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshot() const {
 void ProfileSyncService::HasUnsyncedItemsForTest(
     base::OnceCallback<void(bool)> cb) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(HasSyncingEngine());
+  DCHECK(engine_);
   DCHECK(engine_initialized_);
   engine_->HasUnsyncedItemsForTest(std::move(cb));
 }
@@ -1777,7 +1769,7 @@ void ProfileSyncService::AddProtocolEventObserver(
     ProtocolEventObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   protocol_event_observers_.AddObserver(observer);
-  if (HasSyncingEngine()) {
+  if (engine_) {
     engine_->RequestBufferedProtocolEventsAndEnableForwarding();
   }
 }
@@ -1786,7 +1778,7 @@ void ProfileSyncService::RemoveProtocolEventObserver(
     ProtocolEventObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   protocol_event_observers_.RemoveObserver(observer);
-  if (HasSyncingEngine() && !protocol_event_observers_.might_have_observers()) {
+  if (engine_ && !protocol_event_observers_.might_have_observers()) {
     engine_->DisableProtocolEventForwarding();
   }
 }
@@ -2107,10 +2099,6 @@ void ProfileSyncService::OverrideNetworkResourcesForTest(
     RequestStart();
     DCHECK(engine_);
   }
-}
-
-bool ProfileSyncService::HasSyncingEngine() const {
-  return engine_ != nullptr;
 }
 
 void ProfileSyncService::UpdateFirstSyncTimePref() {
