@@ -34,12 +34,6 @@ js_type_check("closure_compile") {
   ]
 }
 
-js_type_check("media_import_handler_compile") {
-  deps = [
-    ":media_import_handler",
-  ]
-}
-
 js_library("app_window_wrapper") {
   deps = [
     ":app_windows",
