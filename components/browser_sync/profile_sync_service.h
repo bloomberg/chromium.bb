@@ -408,9 +408,6 @@ class ProfileSyncService : public syncer::SyncService,
   // assume it's running on the UI thread.
   static bool IsSyncAllowedByFlag();
 
-  // Returns whether sync is currently allowed on this platform.
-  bool IsSyncAllowedByPlatform() const;
-
   // Whether sync is currently blocked from starting because the sync
   // confirmation dialog hasn't been shown. Note that once the dialog is
   // showing (i.e. IsFirstSetupInProgress() is true), this will return false.
@@ -565,6 +562,9 @@ class ProfileSyncService : public syncer::SyncService,
 
   friend class TestProfileSyncService;
 
+  // Returns whether sync is currently allowed on this platform.
+  bool IsSyncAllowedByPlatform() const;
+
   // Helper to install and configure a data type manager.
   void ConfigureDataTypeManager();
 
@@ -606,11 +606,8 @@ class ProfileSyncService : public syncer::SyncService,
 
   void ClearUnrecoverableError();
 
-  // Starts up the engine sync components.
-  virtual void StartUpSlowEngineComponents();
-
   // Kicks off asynchronous initialization of the SyncEngine.
-  void InitializeEngine();
+  virtual void StartUpSlowEngineComponents();
 
   // Collects preferred sync data types from |preference_providers_|.
   syncer::ModelTypeSet GetDataTypesFromPreferenceProviders() const;
@@ -629,13 +626,10 @@ class ProfileSyncService : public syncer::SyncService,
                                     UnrecoverableErrorReason reason);
 
   // Update UMA for syncing engine.
-  void UpdateEngineInitUMA(bool success);
+  void UpdateEngineInitUMA(bool success) const;
 
   // Whether sync has been authenticated with an account ID.
   bool IsSignedIn() const;
-
-  // True if a syncing engine exists.
-  bool HasSyncingEngine() const;
 
   // Update first sync time stored in preferences
   void UpdateFirstSyncTimePref();
