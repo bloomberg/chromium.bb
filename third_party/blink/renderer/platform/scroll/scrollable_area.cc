@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scroll/main_thread_scrolling_reason.h"
 #include "third_party/blink/renderer/platform/scroll/programmatic_scroll_animator.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
 

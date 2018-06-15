@@ -12,6 +12,8 @@
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
+#include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
 
 namespace blink {
 namespace {

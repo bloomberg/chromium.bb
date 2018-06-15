@@ -1925,7 +1925,7 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
   IntPoint location_in_viewport =
       visual_viewport.RootFrameToViewport(location_in_root_frame);
   IntPoint global_position =
-      view->GetChromeClient()
+      ToChromeClient(view->GetChromeClient())
           ->ViewportToScreen(IntRect(location_in_viewport, IntSize()),
                              frame_->View())
           .Location();

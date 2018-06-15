@@ -270,7 +270,7 @@ static void InvalidatePaintRectangleOnWindow(
   if (paint_rect.IsEmpty())
     return;
 
-  if (ChromeClient* client = frame_view->GetChromeClient())
+  if (auto* client = ToChromeClient(frame_view->GetChromeClient()))
     client->InvalidateRect(frame_view->ConvertToRootFrame(paint_rect));
 }
 

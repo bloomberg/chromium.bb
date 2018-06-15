@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
 
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"

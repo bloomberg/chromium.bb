@@ -16,6 +16,7 @@
 namespace blink {
 
 class Document;
+class LayoutObjectCounter;
 class PaintTiming;
 
 // FirstMeaningfulPaintDetector observes layout operations during page load
@@ -26,18 +27,6 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
     : public GarbageCollectedFinalized<FirstMeaningfulPaintDetector> {
 
  public:
-  // Used by FrameView to keep track of the number of layout objects created
-  // in the frame.
-  class LayoutObjectCounter {
-   public:
-    void Reset() { count_ = 0; }
-    void Increment() { count_++; }
-    unsigned Count() const { return count_; }
-
-   private:
-    unsigned count_ = 0;
-  };
-
   static FirstMeaningfulPaintDetector& From(Document&);
 
   FirstMeaningfulPaintDetector(PaintTiming*, Document&);

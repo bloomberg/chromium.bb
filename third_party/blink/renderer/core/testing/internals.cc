@@ -161,6 +161,7 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scroll/programmatic_scroll_animator.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"

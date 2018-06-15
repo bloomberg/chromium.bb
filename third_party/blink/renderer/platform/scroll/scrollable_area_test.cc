@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_test_suite.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme_mock.h"

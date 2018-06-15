@@ -91,6 +91,7 @@
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
+#include "third_party/blink/renderer/platform/scroll/smooth_scroll_sequencer.h"
 #include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 
 namespace blink {
