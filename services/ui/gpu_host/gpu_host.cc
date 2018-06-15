@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/gpu_host.h"
+#include "services/ui/gpu_host/gpu_host.h"
 
 #include "base/command_line.h"
 #include "base/memory/shared_memory.h"
@@ -17,8 +17,8 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/ws/gpu_client.h"
-#include "services/ui/ws/gpu_host_delegate.h"
+#include "services/ui/gpu_host/gpu_client.h"
+#include "services/ui/gpu_host/gpu_host_delegate.h"
 #include "services/viz/public/interfaces/constants.mojom.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -27,11 +27,11 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "services/ui/ws/arc_client.h"
+#include "services/ui/gpu_host/arc_client.h"
 #endif
 
 namespace ui {
-namespace ws {
+namespace gpu_host {
 
 namespace {
 
@@ -212,5 +212,5 @@ void DefaultGpuHost::RecordLogMessage(int32_t severity,
                                       const std::string& header,
                                       const std::string& message) {}
 
-}  // namespace ws
+}  // namespace gpu_host
 }  // namespace ui

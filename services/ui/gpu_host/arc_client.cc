@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/arc_client.h"
+#include "services/ui/gpu_host/arc_client.h"
 
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
 namespace ui {
-namespace ws {
+namespace gpu_host {
 
 ArcClient::ArcClient(viz::mojom::GpuService* gpu_service)
     : gpu_service_(gpu_service) {}
@@ -35,5 +35,5 @@ void ArcClient::CreateProtectedBufferManager(
   gpu_service_->CreateArcProtectedBufferManager(std::move(pbm_request));
 }
 
-}  // namespace ws
+}  // namespace gpu_host
 }  // namespace ui

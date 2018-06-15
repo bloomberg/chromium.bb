@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/gpu_client.h"
+#include "services/ui/gpu_host/gpu_client.h"
 
 #include "components/viz/host/server_gpu_memory_buffer_manager.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 
 namespace ui {
-namespace ws {
+namespace gpu_host {
 
 GpuClient::GpuClient(
     int client_id,
@@ -44,7 +44,7 @@ void GpuClient::OnGpuChannelEstablished(
 
 // mojom::Gpu overrides:
 void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
-  // TODO(sad): crbug.com/617415 figure out how to generate a meaningful
+  // TODO(sad): https://crbug.com/617415 figure out how to generate a meaningful
   // tracing id.
   const uint64_t client_tracing_id = 0;
   constexpr bool is_gpu_host = false;
@@ -92,5 +92,5 @@ void GpuClient::CreateGpuMemoryBufferFactory(
   gpu_memory_buffer_factory_bindings_.AddBinding(this, std::move(request));
 }
 
-}  // namespace ws
+}  // namespace gpu_host
 }  // namespace ui

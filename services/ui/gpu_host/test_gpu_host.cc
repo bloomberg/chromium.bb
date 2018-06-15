@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/test_gpu_host.h"
+#include "services/ui/gpu_host/test_gpu_host.h"
 
 namespace ui {
-namespace ws {
+namespace gpu_host {
 
 TestGpuHost::TestGpuHost() = default;
 
@@ -20,5 +20,5 @@ void TestGpuHost::CreateFrameSinkManager(
                                    std::move(client));
 }
 
-}  // namespace ws
+}  // namespace gpu_host
 }  // namespace ui

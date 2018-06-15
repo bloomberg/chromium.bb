@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/gpu_host.h"
+#include "services/ui/gpu_host/gpu_host.h"
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -11,15 +11,14 @@
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/config/gpu_info.h"
+#include "services/ui/gpu_host/gpu_client.h"
+#include "services/ui/gpu_host/gpu_host_delegate.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
-#include "services/ui/ws/gpu_client.h"
-#include "services/ui/ws/gpu_host_delegate.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/init/gl_factory.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-
 namespace ui {
-namespace ws {
+namespace gpu_host {
 namespace test {
 namespace {
 
@@ -145,5 +144,5 @@ TEST_F(GpuHostTest, GpuClientDestroyedWhileChannelRequestInFlight) {
 }
 
 }  // namespace test
-}  // namespace ws
+}  // namespace gpu_host
 }  // namespace ui

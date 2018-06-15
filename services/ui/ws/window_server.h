@@ -19,10 +19,10 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/ui/gpu_host/gpu_host_delegate.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws/async_event_dispatcher_lookup.h"
-#include "services/ui/ws/gpu_host_delegate.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/operation.h"
 #include "services/ui/ws/server_window_delegate.h"
@@ -32,12 +32,16 @@
 #include "services/ui/ws/video_detector_impl.h"
 
 namespace ui {
+
+namespace gpu_host {
+class GpuHost;
+}
+
 namespace ws {
 
 class AccessPolicy;
 class Display;
 class DisplayManager;
-class GpuHost;
 class ServerWindow;
 class ThreadedImageCursorsFactory;
 class UserActivityMonitor;
@@ -59,7 +63,7 @@ struct WindowTreeAndWindowId {
 // WindowTrees) as well as providing the root of the hierarchy.
 class WindowServer : public ServerWindowDelegate,
                      public ServerWindowObserver,
-                     public GpuHostDelegate,
+                     public gpu_host::GpuHostDelegate,
                      public UserDisplayManagerDelegate,
                      public AsyncEventDispatcherLookup {
  public:
@@ -78,8 +82,8 @@ class WindowServer : public ServerWindowDelegate,
     return display_creation_config_;
   }
 
-  void SetGpuHost(std::unique_ptr<GpuHost> gpu_host);
-  GpuHost* gpu_host() { return gpu_host_.get(); }
+  void SetGpuHost(std::unique_ptr<gpu_host::GpuHost> gpu_host);
+  gpu_host::GpuHost* gpu_host() { return gpu_host_.get(); }
 
   bool is_hosting_viz() const { return !!host_frame_sink_manager_; }
 
@@ -408,7 +412,7 @@ class WindowServer : public ServerWindowDelegate,
   // Next id supplied to the window manager.
   uint32_t next_wm_change_id_;
 
-  std::unique_ptr<GpuHost> gpu_host_;
+  std::unique_ptr<gpu_host::GpuHost> gpu_host_;
   base::OnceCallback<void(ServerWindow*)> surface_activation_callback_;
 
   std::unique_ptr<UserActivityMonitor> user_activity_monitor_;

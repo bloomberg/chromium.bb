@@ -66,11 +66,6 @@ static_library("lib") {
     "focus_controller_observer.h",
     "frame_generator.cc",
     "frame_generator.h",
-    "gpu_client.cc",
-    "gpu_client.h",
-    "gpu_host.cc",
-    "gpu_host.h",
-    "gpu_host_delegate.h",
     "modal_window_controller.cc",
     "modal_window_controller.h",
     "operation.cc",
@@ -135,6 +130,7 @@ static_library("lib") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
+    "//services/ui/gpu_host",
     "//services/viz/privileged/interfaces",
   ]
 
@@ -170,10 +166,6 @@ static_library("lib") {
     public_deps += [ "//ui/ozone" ]
   }
   if (is_chromeos) {
-    sources += [
-      "arc_client.cc",
-      "arc_client.h",
-    ]
     public_deps += [ "//ui/chromeos/events" ]
     if (use_ozone) {
       public_deps += [ "//ui/events/ozone:events_ozone" ]
@@ -263,11 +255,8 @@ source_set("tests") {
     "event_processor_unittest.cc",
     "focus_controller_unittest.cc",
     "frame_generator_unittest.cc",
-    "gpu_host_unittest.cc",
     "modal_window_controller_unittest.cc",
     "server_window_drawn_tracker_unittest.cc",
-    "test_gpu_host.cc",
-    "test_gpu_host.h",
     "test_server_window_delegate.cc",
     "test_server_window_delegate.h",
     "test_utils.cc",
@@ -312,6 +301,8 @@ source_set("tests") {
     "//services/service_manager/public/mojom",
     "//services/ui/common:mus_common",
     "//services/ui/common:task_runner_test_base",
+    "//services/ui/gpu_host",
+    "//services/ui/gpu_host:test_support",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
     "//testing/gtest",

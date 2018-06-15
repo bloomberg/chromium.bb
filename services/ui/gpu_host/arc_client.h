@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_ARC_CLIENT_H_
-#define SERVICES_UI_WS_ARC_CLIENT_H_
+#ifndef SERVICES_UI_GPU_HOST_ARC_CLIENT_H_
+#define SERVICES_UI_GPU_HOST_ARC_CLIENT_H_
 
 #include "services/ui/public/interfaces/arc.mojom.h"
 
@@ -14,7 +14,7 @@ class GpuService;
 }  // namespace viz
 
 namespace ui {
-namespace ws {
+namespace gpu_host {
 
 // The implementation that relays requests from clients to the real
 // service implementation in the GPU process over mojom.GpuService.
@@ -43,7 +43,7 @@ class ArcClient : public mojom::Arc {
   DISALLOW_COPY_AND_ASSIGN(ArcClient);
 };
 
-}  // namespace ws
+}  // namespace gpu_host
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_ARC_CLIENT_H_
+#endif  // SERVICES_UI_GPU_HOST_ARC_CLIENT_H_

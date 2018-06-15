@@ -11,11 +11,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/viz/common/switches.h"
+#include "services/ui/gpu_host/gpu_host.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/frame_generator.h"
-#include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/operation.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/user_activity_monitor.h"
@@ -177,7 +177,7 @@ void WindowServer::SetDisplayCreationConfig(DisplayCreationConfig config) {
   display_manager_->OnDisplayCreationConfigSet();
 }
 
-void WindowServer::SetGpuHost(std::unique_ptr<GpuHost> gpu_host) {
+void WindowServer::SetGpuHost(std::unique_ptr<gpu_host::GpuHost> gpu_host) {
   DCHECK(host_frame_sink_manager_);
   gpu_host_ = std::move(gpu_host);
   CreateFrameSinkManager();

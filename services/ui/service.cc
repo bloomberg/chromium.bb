@@ -22,6 +22,7 @@
 #include "services/ui/common/image_cursors_set.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/display/screen_manager.h"
+#include "services/ui/gpu_host/gpu_host.h"
 #include "services/ui/ime/ime_driver_bridge.h"
 #include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/ws/accessibility_manager.h"
@@ -29,7 +30,6 @@
 #include "services/ui/ws/display_creation_config.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/event_injector.h"
-#include "services/ui/ws/gpu_host.h"
 #include "services/ui/ws/threaded_image_cursors.h"
 #include "services/ui/ws/threaded_image_cursors_factory.h"
 #include "services/ui/ws/user_activity_monitor.h"
@@ -259,8 +259,8 @@ void Service::OnStart() {
 
   window_server_ = std::make_unique<ws::WindowServer>(this, should_host_viz_);
   if (should_host_viz_) {
-    std::unique_ptr<ws::GpuHost> gpu_host =
-        std::make_unique<ws::DefaultGpuHost>(
+    std::unique_ptr<gpu_host::GpuHost> gpu_host =
+        std::make_unique<gpu_host::DefaultGpuHost>(
             window_server_.get(), context()->connector(),
             discardable_shared_memory_manager_);
     window_server_->SetGpuHost(std::move(gpu_host));
