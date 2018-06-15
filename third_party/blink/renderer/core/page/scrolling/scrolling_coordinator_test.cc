@@ -111,7 +111,7 @@ class ScrollingCoordinatorTest : public testing::Test,
 
   cc::Layer* GetRootScrollLayer() {
     GraphicsLayer* layer =
-        GetFrame()->View()->LayoutViewportScrollableArea()->LayerForScrolling();
+        GetFrame()->View()->LayoutViewport()->LayerForScrolling();
     return layer ? layer->CcLayer() : nullptr;
   }
 
@@ -1144,9 +1144,9 @@ TEST_P(ScrollingCoordinatorTest, iframeScrolling) {
   ASSERT_TRUE(inner_compositor->InCompositingMode());
 
   GraphicsLayer* scroll_layer =
-      inner_frame_view->LayoutViewportScrollableArea()->LayerForScrolling();
+      inner_frame_view->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
-  ASSERT_EQ(inner_frame_view->LayoutViewportScrollableArea(),
+  ASSERT_EQ(inner_frame_view->LayoutViewport(),
             scroll_layer->GetScrollableArea());
 
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
@@ -1155,13 +1155,11 @@ TEST_P(ScrollingCoordinatorTest, iframeScrolling) {
 #if defined(OS_ANDROID)
   // Now verify we've attached impl-side scrollbars onto the scrollbar layers
   GraphicsLayer* horizontal_scrollbar_layer =
-      inner_frame_view->LayoutViewportScrollableArea()
-          ->LayerForHorizontalScrollbar();
+      inner_frame_view->LayoutViewport()->LayerForHorizontalScrollbar();
   ASSERT_TRUE(horizontal_scrollbar_layer);
   ASSERT_TRUE(horizontal_scrollbar_layer->HasContentsLayer());
   GraphicsLayer* vertical_scrollbar_layer =
-      inner_frame_view->LayoutViewportScrollableArea()
-          ->LayerForVerticalScrollbar();
+      inner_frame_view->LayoutViewport()->LayerForVerticalScrollbar();
   ASSERT_TRUE(vertical_scrollbar_layer);
   ASSERT_TRUE(vertical_scrollbar_layer->HasContentsLayer());
 #endif
@@ -1198,20 +1196,19 @@ TEST_P(ScrollingCoordinatorTest, rtlIframe) {
   ASSERT_TRUE(inner_compositor->InCompositingMode());
 
   GraphicsLayer* scroll_layer =
-      inner_frame_view->LayoutViewportScrollableArea()->LayerForScrolling();
+      inner_frame_view->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
-  ASSERT_EQ(inner_frame_view->LayoutViewportScrollableArea(),
+  ASSERT_EQ(inner_frame_view->LayoutViewport(),
             scroll_layer->GetScrollableArea());
 
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
 
-  int expected_scroll_position =
-      958 + (inner_frame_view->LayoutViewportScrollableArea()
-                     ->VerticalScrollbar()
-                     ->IsOverlayScrollbar()
-                 ? 0
-                 : 15);
+  int expected_scroll_position = 958 + (inner_frame_view->LayoutViewport()
+                                                ->VerticalScrollbar()
+                                                ->IsOverlayScrollbar()
+                                            ? 0
+                                            : 15);
   ASSERT_EQ(expected_scroll_position,
             cc_scroll_layer->CurrentScrollOffset().x());
 }
@@ -1265,7 +1262,7 @@ TEST_P(ScrollingCoordinatorTest, setupScrollbarLayerShouldSetScrollLayerOpaque)
   ASSERT_TRUE(frame_view);
 
   GraphicsLayer* scrollbar_graphics_layer =
-      frame_view->LayoutViewportScrollableArea()->LayerForHorizontalScrollbar();
+      frame_view->LayoutViewport()->LayerForHorizontalScrollbar();
   ASSERT_TRUE(scrollbar_graphics_layer);
 
   cc::Layer* platform_layer = scrollbar_graphics_layer->CcLayer();
@@ -1380,9 +1377,9 @@ TEST_P(ScrollingCoordinatorTest,
   ASSERT_TRUE(inner_compositor->InCompositingMode());
 
   GraphicsLayer* scroll_layer =
-      inner_frame_view->LayoutViewportScrollableArea()->LayerForScrolling();
+      inner_frame_view->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
-  ASSERT_EQ(inner_frame_view->LayoutViewportScrollableArea(),
+  ASSERT_EQ(inner_frame_view->LayoutViewport(),
             scroll_layer->GetScrollableArea());
 
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
@@ -1402,9 +1399,8 @@ TEST_P(ScrollingCoordinatorTest,
   layout_object = iframe->GetLayoutObject();
   ASSERT_TRUE(layout_object);
 
-  scroll_layer = layout_object->GetFrameView()
-                     ->LayoutViewportScrollableArea()
-                     ->LayerForScrolling();
+  scroll_layer =
+      layout_object->GetFrameView()->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
 
   cc_scroll_layer = scroll_layer->CcLayer();
@@ -1425,9 +1421,8 @@ TEST_P(ScrollingCoordinatorTest,
   layout_object = iframe->GetLayoutObject();
   ASSERT_TRUE(layout_object);
 
-  scroll_layer = layout_object->GetFrameView()
-                     ->LayoutViewportScrollableArea()
-                     ->LayerForScrolling();
+  scroll_layer =
+      layout_object->GetFrameView()->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
 
   cc_scroll_layer = scroll_layer->CcLayer();
@@ -1460,9 +1455,8 @@ TEST_P(ScrollingCoordinatorTest,
   layout_object = element->GetLayoutObject();
   ASSERT_TRUE(layout_object);
 
-  GraphicsLayer* scroll_layer = layout_object->GetFrameView()
-                                    ->LayoutViewportScrollableArea()
-                                    ->LayerForScrolling();
+  GraphicsLayer* scroll_layer =
+      layout_object->GetFrameView()->LayoutViewport()->LayerForScrolling();
   ASSERT_TRUE(scroll_layer);
 
   cc::Layer* cc_scroll_layer = scroll_layer->CcLayer();
@@ -1487,7 +1481,7 @@ TEST_P(ScrollingCoordinatorTest, StickyTriggersMainThreadScroll) {
       "<body style='height: 1200px'>"
       "<div style='position: sticky; top: 0'>sticky</div>");
   ForceFullCompositingUpdate();
-  ScrollableArea* viewport = GetFrame()->View()->LayoutViewportScrollableArea();
+  ScrollableArea* viewport = GetFrame()->View()->LayoutViewport();
   cc::Layer* scroll_layer = viewport->LayerForScrolling()->CcLayer();
   ASSERT_EQ(MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects,
             scroll_layer->main_thread_scrolling_reasons());

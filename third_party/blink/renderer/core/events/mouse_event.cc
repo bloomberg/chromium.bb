@@ -47,8 +47,7 @@ DoubleSize ContentsScrollOffset(AbstractView* abstract_view) {
   LocalFrame* frame = ToLocalDOMWindow(abstract_view)->GetFrame();
   if (!frame)
     return DoubleSize();
-  ScrollableArea* scrollable_area =
-      frame->View()->LayoutViewportScrollableArea();
+  ScrollableArea* scrollable_area = frame->View()->LayoutViewport();
   if (!scrollable_area)
     return DoubleSize();
   float scale_factor = frame->PageZoomFactor();

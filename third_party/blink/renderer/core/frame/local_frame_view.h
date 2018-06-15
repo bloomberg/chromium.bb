@@ -74,6 +74,7 @@ class LayoutScrollbarPart;
 class LayoutView;
 class PaintArtifactCompositor;
 class PaintController;
+class PaintLayerScrollableArea;
 class Page;
 class PrintContext;
 class RootFrameViewport;
@@ -637,14 +638,14 @@ class CORE_EXPORT LocalFrameView final
 
   // Returns the scrollable area for the frame. For the root frame, this will
   // be the RootFrameViewport, which adds pinch-zoom semantics to scrolling.
-  // For non-root frames, this will be the the ScrollableArea used by the
-  // LocalFrameView, depending on whether root-layer-scrolls is enabled.
+  // For non-root frames, this will be the ScrollableArea of the LayoutView.
   ScrollableArea* GetScrollableArea();
 
-  // Used to get at the underlying layoutViewport in the rare instances where
-  // we actually want to scroll *just* the layout viewport (e.g. when sending
-  // deltas from CC). For typical scrolling cases, use getScrollableArea().
-  ScrollableArea* LayoutViewportScrollableArea();
+  // Returns the ScrollableArea of the LayoutView, a.k.a. the layout viewport.
+  // In the root frame, this is the "outer" viewport in the pinch-zoom dual
+  // viewport model.  Callers that need awareness of both inner and outer
+  // viewports should use GetScrollableArea() instead.
+  PaintLayerScrollableArea* LayoutViewport() const;
 
   // If this is the main frame, this will return the RootFrameViewport used
   // to scroll the main frame. Otherwise returns nullptr. Unless you need a

@@ -209,7 +209,7 @@ TEST_P(VisualRectMappingTest, LayoutView) {
 
   // This case involves clipping: frame height is 50, y-coordinate of result
   // rect is 13, so height should be clipped to (50 - 13) == 37.
-  ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  ChildDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, 47), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -284,7 +284,7 @@ TEST_P(VisualRectMappingTest, LayoutViewDisplayNone) {
 
   // This part is copied from the LayoutView test, just to ensure that the
   // mapped rect is valid before display:none is set on the iframe.
-  ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  ChildDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, 47), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -970,7 +970,7 @@ TEST_P(VisualRectMappingTest, FixedContentsInIframe) {
                                       LayoutRect(0, 0, 400, 300), fixed,
                                       root_view, kDefaultVisualRectFlags, true);
 
-  ChildDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  ChildDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, 50), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -1004,8 +1004,8 @@ TEST_P(VisualRectMappingTest, FixedContentsWithScrollOffset) {
                                       LayoutRect(0, -10, 400, 300), fixed,
                                       ancestor, kDefaultVisualRectFlags, true);
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 50), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 50),
+                                                          kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // The fixed element does not scroll but the ancestor does which changes the
@@ -1032,8 +1032,8 @@ TEST_P(VisualRectMappingTest, FixedContentsUnderViewWithScrollOffset) {
       LayoutRect(0, 0, 400, 300), LayoutRect(0, 0, 400, 300), fixed,
       fixed->View(), kDefaultVisualRectFlags, true);
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 50), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 50),
+                                                          kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Results of mapping to ancestor are in absolute coordinates of the

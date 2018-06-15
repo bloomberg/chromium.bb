@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_delegate.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_compositor.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -128,8 +129,8 @@ TEST_P(IntersectionObserverTest, ResumePostsTask) {
 
   // When document is not suspended, beginFrame() will generate notifications
   // and post a task to deliver them.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 300), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
+                                                          kProgrammaticScroll);
   Compositor().BeginFrame();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
   test::RunPendingTasks();
@@ -139,8 +140,8 @@ TEST_P(IntersectionObserverTest, ResumePostsTask) {
   // but it will not be delivered.  The notification will, however, be
   // available via takeRecords();
   GetDocument().PauseScheduledTasks();
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 0), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 0),
+                                                          kProgrammaticScroll);
   Compositor().BeginFrame();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
   test::RunPendingTasks();
@@ -149,8 +150,8 @@ TEST_P(IntersectionObserverTest, ResumePostsTask) {
 
   // Generate a notification while document is suspended; then resume document.
   // Notification should happen in a post task.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 300), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
+                                                          kProgrammaticScroll);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
@@ -188,8 +189,8 @@ TEST_P(IntersectionObserverTest, DisconnectClearsNotifications) {
 
   // If disconnect() is called while an observer has unsent notifications,
   // those notifications should be discarded.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 300), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 300),
+                                                          kProgrammaticScroll);
   Compositor().BeginFrame();
   observer->disconnect();
   test::RunPendingTasks();
@@ -237,8 +238,8 @@ TEST_P(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   ASSERT_EQ(observer_delegate->CallCount(), 1);
   EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 600), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 600),
+                                                          kProgrammaticScroll);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   ASSERT_EQ(observer_delegate->CallCount(), 2);
@@ -246,8 +247,8 @@ TEST_P(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   EXPECT_EQ(FloatRect(200, 400, 100, 100),
             observer_delegate->LastIntersectionRect());
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 1200), kProgrammaticScroll);
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 1200),
+                                                          kProgrammaticScroll);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   ASSERT_EQ(observer_delegate->CallCount(), 3);

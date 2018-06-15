@@ -33,7 +33,7 @@ ScrollableArea* ScrollableAreaForRootScroller(const Node* node) {
     // getScrollableArea() since that could be the RootFrameViewport. The
     // rootScroller's ScrollableArea will be swapped in as the layout viewport
     // in RootFrameViewport so we need to ensure we get the layout viewport.
-    return node->GetDocument().View()->LayoutViewportScrollableArea();
+    return node->GetDocument().View()->LayoutViewport();
   }
 
   DCHECK(node->IsElementNode());

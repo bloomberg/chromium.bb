@@ -154,7 +154,7 @@ TEST_F(ScrollbarsTest, DocumentStyleRecalcPreservesScrollbars) {
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style> body { width: 1600px; height: 1200px; } </style>)HTML");
-  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
 
   Compositor().BeginFrame();
   ASSERT_TRUE(layout_viewport->VerticalScrollbar() &&
@@ -277,8 +277,7 @@ TEST_F(ScrollbarsTest, CustomScrollbarsCauseLayoutOnExistenceChange) {
     <div id='box' class='box'></div>
   )HTML");
 
-  ScrollableArea* layout_viewport =
-      GetDocument().View()->LayoutViewportScrollableArea();
+  ScrollableArea* layout_viewport = GetDocument().View()->LayoutViewport();
 
   Compositor().BeginFrame();
 
@@ -319,8 +318,7 @@ TEST_F(ScrollbarsTest, TransparentBackgroundUsesDarkOverlayColorTheme) {
   // are enabled.
   DCHECK(GetScrollbarTheme().UsesOverlayScrollbars());
 
-  ScrollableArea* layout_viewport =
-      GetDocument().View()->LayoutViewportScrollableArea();
+  ScrollableArea* layout_viewport = GetDocument().View()->LayoutViewport();
 
   EXPECT_EQ(kScrollbarOverlayColorThemeDark,
             layout_viewport->GetScrollbarOverlayColorTheme());
@@ -341,8 +339,7 @@ TEST_F(ScrollbarsTest, BodyBackgroundChangesOverlayColorTheme) {
   // are enabled.
   DCHECK(GetScrollbarTheme().UsesOverlayScrollbars());
 
-  ScrollableArea* layout_viewport =
-      GetDocument().View()->LayoutViewportScrollableArea();
+  ScrollableArea* layout_viewport = GetDocument().View()->LayoutViewport();
 
   EXPECT_EQ(kScrollbarOverlayColorThemeDark,
             layout_viewport->GetScrollbarOverlayColorTheme());
@@ -388,8 +385,7 @@ TEST_F(ScrollbarsTest, OverlayScrollbarChangeToDisplayNoneDynamically) {
   ScrollableArea* scrollable_div =
       ToLayoutBox(div->GetLayoutObject())->GetScrollableArea();
 
-  ScrollableArea* scrollable_root =
-      GetDocument().View()->LayoutViewportScrollableArea();
+  ScrollableArea* scrollable_root = GetDocument().View()->LayoutViewport();
 
   DCHECK(scrollable_div->VerticalScrollbar());
   DCHECK(scrollable_div->VerticalScrollbar()->IsOverlayScrollbar());
@@ -488,8 +484,7 @@ TEST_F(ScrollbarsTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
   Element* scroller = document.getElementById("scroller");
   ScrollableArea* scroller_area =
       ToLayoutBox(scroller->GetLayoutObject())->GetScrollableArea();
-  ScrollableArea* frame_scroller_area =
-      frame_view->LayoutViewportScrollableArea();
+  ScrollableArea* frame_scroller_area = frame_view->LayoutViewport();
 
   // Scrollbars are hidden at start.
   scroller_area->SetScrollbarsHiddenIfOverlay(true);
@@ -603,7 +598,7 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
   WebView()
       .MainFrameImpl()
       ->GetFrameView()
-      ->LayoutViewportScrollableArea()
+      ->LayoutViewport()
       ->SetScrollbarsHiddenIfOverlay(false);
 
   Document& document = GetDocument();
@@ -640,7 +635,7 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
   WebView()
       .MainFrameImpl()
       ->GetFrameView()
-      ->LayoutViewportScrollableArea()
+      ->LayoutViewport()
       ->SetScrollbarsHiddenIfOverlay(true);
 
   // Ensure hittest only has link
@@ -756,7 +751,7 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarAndIFrame) {
   WebView()
       .MainFrameImpl()
       ->GetFrameView()
-      ->LayoutViewportScrollableArea()
+      ->LayoutViewport()
       ->SetScrollbarsHiddenIfOverlay(false);
 
   frame_resource.Complete("<!DOCTYPE html>");
@@ -794,7 +789,7 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarAndIFrame) {
   WebView()
       .MainFrameImpl()
       ->GetFrameView()
-      ->LayoutViewportScrollableArea()
+      ->LayoutViewport()
       ->SetScrollbarsHiddenIfOverlay(true);
 
   // Ensure hittest has IFRAME and no scrollbar.
@@ -1060,8 +1055,7 @@ TEST_F(ScrollbarsTest, CustomScrollbarChangeToMobileByEmulator) {
 
   Document& document = GetDocument();
 
-  ScrollableArea* root_scrollable =
-      document.View()->LayoutViewportScrollableArea();
+  ScrollableArea* root_scrollable = document.View()->LayoutViewport();
 
   Element* div = document.getElementById("d1");
 
@@ -1353,8 +1347,7 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
 
   Document& document = GetDocument();
 
-  ScrollableArea* root_scrollable =
-      document.View()->LayoutViewportScrollableArea();
+  ScrollableArea* root_scrollable = document.View()->LayoutViewport();
 
   Element* div = document.getElementById("d1");
 
@@ -1425,8 +1418,7 @@ TEST_P(ScrollbarAppearanceTest, ThemeEngineDefinesMinimumThumbLength) {
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style> body { width: 1000000px; height: 1000000px; } </style>)HTML");
-  ScrollableArea* scrollable_area =
-      GetDocument().View()->LayoutViewportScrollableArea();
+  ScrollableArea* scrollable_area = GetDocument().View()->LayoutViewport();
 
   Compositor().BeginFrame();
   ASSERT_TRUE(scrollable_area->VerticalScrollbar());
@@ -1451,8 +1443,7 @@ TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <style> body { margin: 0px; height: 10000000px; } </style>)HTML");
-  ScrollableArea* scrollable_area =
-      GetDocument().View()->LayoutViewportScrollableArea();
+  ScrollableArea* scrollable_area = GetDocument().View()->LayoutViewport();
 
   Compositor().BeginFrame();
 
@@ -1501,7 +1492,7 @@ TEST_F(ScrollbarsTest, WideBodyShouldNotHaveScrollbars) {
     }
   )HTML");
   Compositor().BeginFrame();
-  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
   EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
 }
@@ -1525,7 +1516,7 @@ TEST_F(ScrollbarsTest, TallBodyShouldNotHaveScrollbars) {
     }
   )HTML");
   Compositor().BeginFrame();
-  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
   EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
 }
@@ -1550,7 +1541,7 @@ TEST_F(ScrollbarsTest, TallAndWideBodyShouldNotHaveScrollbars) {
     }
   )HTML");
   Compositor().BeginFrame();
-  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
   EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
 }
@@ -1575,7 +1566,7 @@ TEST_F(ScrollbarsTest, BodySizeEqualWindowSizeShouldNotHaveScrollbars) {
     }
   )HTML");
   Compositor().BeginFrame();
-  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
   EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
 }
@@ -1601,7 +1592,7 @@ TEST_F(ScrollbarsTest, WidePercentageBodyShouldHaveScrollbar) {
     </style>
   )HTML");
   Compositor().BeginFrame();
-  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
   EXPECT_TRUE(layout_viewport->HorizontalScrollbar());
 }
@@ -1627,7 +1618,7 @@ TEST_F(ScrollbarsTest, WidePercentageAndTallBodyShouldHaveScrollbar) {
     </style>
   )HTML");
   Compositor().BeginFrame();
-  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
   EXPECT_FALSE(layout_viewport->VerticalScrollbar());
   EXPECT_TRUE(layout_viewport->HorizontalScrollbar());
 }
@@ -1653,7 +1644,7 @@ TEST_F(ScrollbarsTest, TallPercentageBodyShouldHaveScrollbar) {
     </style>
   )HTML");
   Compositor().BeginFrame();
-  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
   EXPECT_TRUE(layout_viewport->VerticalScrollbar());
   EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
 }
@@ -1679,7 +1670,7 @@ TEST_F(ScrollbarsTest, TallPercentageAndWideBodyShouldHaveScrollbar) {
     </style>
   )HTML");
   Compositor().BeginFrame();
-  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
   EXPECT_TRUE(layout_viewport->VerticalScrollbar());
   EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
 }
@@ -1705,7 +1696,7 @@ TEST_F(ScrollbarsTest, TallAndWidePercentageBodyShouldHaveScrollbars) {
     </style>
   )HTML");
   Compositor().BeginFrame();
-  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* layout_viewport = GetDocument().View()->LayoutViewport();
   EXPECT_TRUE(layout_viewport->VerticalScrollbar());
   EXPECT_TRUE(layout_viewport->HorizontalScrollbar());
 }
@@ -1789,7 +1780,7 @@ TEST_F(ScrollbarsTest, AutosizeTest) {
   test::RunPendingTasks();
 
   LocalFrameView* frame_view = WebView().MainFrameImpl()->GetFrameView();
-  ScrollableArea* layout_viewport = frame_view->LayoutViewportScrollableArea();
+  ScrollableArea* layout_viewport = frame_view->LayoutViewport();
 
   // Enable auto size mode where the frame is resized such that the content
   // doesn't need scrollbars (up to a maximum).
@@ -1940,7 +1931,7 @@ TEST_F(ScrollbarsTest, OverlayScrollbarHitTest) {
   WebView()
       .MainFrameImpl()
       ->GetFrameView()
-      ->LayoutViewportScrollableArea()
+      ->LayoutViewport()
       ->SetScrollbarsHiddenIfOverlay(false);
 
   frame_resource.Complete("<!DOCTYPE html><body style='height: 999px'></body>");
@@ -1951,7 +1942,7 @@ TEST_F(ScrollbarsTest, OverlayScrollbarHitTest) {
       ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
   iframe_element->contentDocument()
       ->View()
-      ->LayoutViewportScrollableArea()
+      ->LayoutViewport()
       ->SetScrollbarsHiddenIfOverlay(false);
 
   // Hit test on and off the main frame scrollbar.
@@ -1985,7 +1976,7 @@ TEST_F(ScrollbarsTest, NotAllowMiddleButtonPressOnScrollbar) {
   Compositor().BeginFrame();
 
   ScrollableArea* scrollable_area =
-      WebView().MainFrameImpl()->GetFrameView()->LayoutViewportScrollableArea();
+      WebView().MainFrameImpl()->GetFrameView()->LayoutViewport();
 
   Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
   ASSERT_TRUE(scrollbar);
@@ -2017,7 +2008,7 @@ TEST_F(ScrollbarsTest, MiddleClickShouldNotAffectScrollbarPress) {
   Compositor().BeginFrame();
 
   ScrollableArea* scrollable_area =
-      WebView().MainFrameImpl()->GetFrameView()->LayoutViewportScrollableArea();
+      WebView().MainFrameImpl()->GetFrameView()->LayoutViewport();
 
   Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
   ASSERT_TRUE(scrollbar);

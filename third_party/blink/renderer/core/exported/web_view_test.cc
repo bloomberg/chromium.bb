@@ -4737,7 +4737,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   // Initial transform takes current page scale and scroll position into
   // account.
   web_view_impl->SetPageScaleFactor(1.5f);
-  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
+  frame_view->LayoutViewport()->SetScrollOffset(
       ScrollOffset(100, 150), kProgrammaticScroll, kScrollBehaviorInstant);
   dev_tools_emulator->ForceViewport(WebFloatPoint(50, 55), 2.f);
   expected_matrix.MakeIdentity()
@@ -4752,7 +4752,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
             *dev_tools_emulator->VisibleContentRectForPainting());
 
   // Transform adapts to scroll changes.
-  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
+  frame_view->LayoutViewport()->SetScrollOffset(
       ScrollOffset(50, 55), kProgrammaticScroll, kScrollBehaviorInstant);
   expected_matrix.MakeIdentity()
       .Scale(2.f)
@@ -4914,8 +4914,7 @@ TEST_F(WebViewTest, DeviceEmulationResetScrollbars) {
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   auto* frame_view = frame->GetFrameView();
   EXPECT_FALSE(frame_view->VisualViewportSuppliesScrollbars());
-  EXPECT_NE(nullptr,
-            frame_view->LayoutViewportScrollableArea()->VerticalScrollbar());
+  EXPECT_NE(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
 
   WebDeviceEmulationParams params;
   params.screen_position = WebDeviceEmulationParams::kMobile;
@@ -4932,8 +4931,7 @@ TEST_F(WebViewTest, DeviceEmulationResetScrollbars) {
 
   // The view should once again provide the scrollbars.
   EXPECT_FALSE(frame_view->VisualViewportSuppliesScrollbars());
-  EXPECT_NE(nullptr,
-            frame_view->LayoutViewportScrollableArea()->VerticalScrollbar());
+  EXPECT_NE(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
 }
 
 TEST_F(WebViewTest, SetZoomLevelWhilePluginFocused) {

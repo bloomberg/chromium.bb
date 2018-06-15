@@ -459,7 +459,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   HitTestResult HitTestResultForVisualViewportPos(const IntPoint&);
 
   WebPlugin* FocusedPluginIfInputMethodSupported();
-  ScrollableArea* LayoutViewportScrollableArea() const;
+  ScrollableArea* LayoutViewport() const;
 
   // A helper for DispatchBeforePrintEvent() and DispatchAfterPrintEvent().
   void DispatchPrintEventRecursively(const AtomicString& event_type);

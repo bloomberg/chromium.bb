@@ -31,7 +31,7 @@ class ScrollAnchorTest : public RenderingTest {
   }
 
   ScrollableArea* LayoutViewport() {
-    return GetDocument().View()->LayoutViewportScrollableArea();
+    return GetDocument().View()->LayoutViewport();
   }
 
   VisualViewport& GetVisualViewport() {

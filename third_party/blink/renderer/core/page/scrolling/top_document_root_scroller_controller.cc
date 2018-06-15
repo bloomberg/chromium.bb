@@ -70,7 +70,7 @@ IntSize TopDocumentRootScrollerController::RootScrollerVisibleArea() const {
 
   return TopDocument()
              ->View()
-             ->LayoutViewportScrollableArea()
+             ->LayoutViewport()
              ->VisibleContentRect(kExcludeScrollbars)
              .Size() +
          IntSize(0, browser_controls_adjustment);
@@ -211,8 +211,8 @@ void TopDocumentRootScrollerController::DidDisposeScrollableArea(
   RootFrameViewport* rfv = frame_view->GetRootFrameViewport();
 
   if (rfv && &area == &rfv->LayoutViewport()) {
-    DCHECK(frame_view->LayoutViewportScrollableArea());
-    rfv->SetLayoutViewport(*frame_view->LayoutViewportScrollableArea());
+    DCHECK(frame_view->LayoutViewport());
+    rfv->SetLayoutViewport(*frame_view->LayoutViewport());
   }
 }
 

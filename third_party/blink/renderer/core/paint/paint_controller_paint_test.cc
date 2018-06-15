@@ -155,7 +155,7 @@ TEST_P(PaintControllerPaintTestForSPv2, FrameScrollingContents) {
                       TestDisplayItem(GetLayoutView(), kScrollHitTestType),
                       TestDisplayItem(div1, kBackgroundType));
 
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(5000, 5000), kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 

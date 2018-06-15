@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 
@@ -54,7 +55,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureExtract) {
   EXPECT_EQ(feature.GetIsInIframe(), false);
 
   // Scroll down.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight / 2), kProgrammaticScroll);
 
   auto feature2 = AnchorElementMetrics::From(*anchor_element).value();
@@ -109,7 +110,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   EXPECT_EQ(feature.GetIsInIframe(), true);
 
   // Scroll down the main frame.
-  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 1.5), kProgrammaticScroll);
 
   auto feature2 = AnchorElementMetrics::From(*anchor_element).value();
@@ -117,7 +118,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   EXPECT_FLOAT_EQ(feature2.GetRatioDistanceVisibleTop(), 1);
 
   // Scroll down inside iframe.
-  subframe->View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  subframe->View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kViewportHeight * 0.2), kProgrammaticScroll);
 
   auto feature3 = AnchorElementMetrics::From(*anchor_element).value();

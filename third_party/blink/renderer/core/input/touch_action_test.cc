@@ -55,7 +55,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
@@ -212,7 +212,7 @@ WebViewImpl* TouchActionTest::SetupTest(
   const int kScrollOffset = 100;
   Document* document =
       static_cast<Document*>(web_view->MainFrameImpl()->GetDocument());
-  document->GetFrame()->View()->LayoutViewportScrollableArea()->SetScrollOffset(
+  document->GetFrame()->View()->LayoutViewport()->SetScrollOffset(
       ScrollOffset(0, kScrollOffset), kProgrammaticScroll);
 
   return web_view;

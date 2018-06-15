@@ -1016,10 +1016,7 @@ bool LayoutBoxModelObject::IsSlowRepaintConstrainedObject() const {
 
 FloatRect LayoutBoxModelObject::ComputeStickyConstrainingRect() const {
   if (Layer()->AncestorOverflowLayer()->IsRootLayer()) {
-    return View()
-        ->GetFrameView()
-        ->LayoutViewportScrollableArea()
-        ->VisibleContentRect();
+    return View()->GetFrameView()->LayoutViewport()->VisibleContentRect();
   }
 
   LayoutBox* enclosing_clipping_box =

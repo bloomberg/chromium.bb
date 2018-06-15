@@ -1669,14 +1669,14 @@ TEST_F(WebFrameTest, WideViewportSetsTo980WithoutViewportTag) {
   EXPECT_EQ(980, web_view_helper.GetWebView()
                      ->MainFrameImpl()
                      ->GetFrameView()
-                     ->LayoutViewportScrollableArea()
+                     ->LayoutViewport()
                      ->ContentsSize()
                      .Width());
   EXPECT_EQ(980.0 / viewport_width * viewport_height,
             web_view_helper.GetWebView()
                 ->MainFrameImpl()
                 ->GetFrameView()
-                ->LayoutViewportScrollableArea()
+                ->LayoutViewport()
                 ->ContentsSize()
                 .Height());
 }
@@ -2192,10 +2192,8 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesMargin) {
   frame_view->SetNeedsLayout();
   frame_view->UpdateAllLifecyclePhases();
   // Expect scrollbars to be enabled by default.
-  EXPECT_NE(nullptr,
-            frame_view->LayoutViewportScrollableArea()->HorizontalScrollbar());
-  EXPECT_NE(nullptr,
-            frame_view->LayoutViewportScrollableArea()->VerticalScrollbar());
+  EXPECT_NE(nullptr, frame_view->LayoutViewport()->HorizontalScrollbar());
+  EXPECT_NE(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
 }
 
 TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling) {
@@ -2515,8 +2513,7 @@ TEST_F(WebFrameTest, IgnoreOverflowHiddenQuirk) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   LocalFrameView* view = web_view_helper.LocalMainFrame()->GetFrameView();
-  EXPECT_TRUE(view->LayoutViewportScrollableArea()->UserInputScrollable(
-      kVerticalScrollbar));
+  EXPECT_TRUE(view->LayoutViewport()->UserInputScrollable(kVerticalScrollbar));
 }
 
 TEST_F(WebFrameTest, NonZeroValuesNoQuirk) {
@@ -2729,7 +2726,7 @@ TEST_F(WebFrameTest, pageScaleFactorDoesNotApplyCssTransform) {
   EXPECT_EQ(980, web_view_helper.GetWebView()
                      ->MainFrameImpl()
                      ->GetFrameView()
-                     ->LayoutViewportScrollableArea()
+                     ->LayoutViewport()
                      ->ContentsSize()
                      .Width());
 }
@@ -3335,7 +3332,7 @@ TEST_F(WebFrameTest, pageScaleFactorUpdatesScrollbars) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   LocalFrameView* view = web_view_helper.LocalMainFrame()->GetFrameView();
-  ScrollableArea* scrollable_area = view->LayoutViewportScrollableArea();
+  ScrollableArea* scrollable_area = view->LayoutViewport();
   EXPECT_EQ(scrollable_area->ScrollSize(kHorizontalScrollbar),
             scrollable_area->ContentsSize().Width() -
                 view->VisibleContentRect().Width());
@@ -3409,16 +3406,12 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
 
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
   LocalFrameView* view = web_view_helper.LocalMainFrame()->GetFrameView();
-  EXPECT_TRUE(
-      view->LayoutViewportScrollableArea()->LayerForHorizontalScrollbar());
-  EXPECT_TRUE(
-      view->LayoutViewportScrollableArea()->LayerForVerticalScrollbar());
+  EXPECT_TRUE(view->LayoutViewport()->LayerForHorizontalScrollbar());
+  EXPECT_TRUE(view->LayoutViewport()->LayerForVerticalScrollbar());
 
   web_view_helper.Resize(WebSize(view_width * 10, view_height * 10));
-  EXPECT_FALSE(
-      view->LayoutViewportScrollableArea()->LayerForHorizontalScrollbar());
-  EXPECT_FALSE(
-      view->LayoutViewportScrollableArea()->LayerForVerticalScrollbar());
+  EXPECT_FALSE(view->LayoutViewport()->LayerForHorizontalScrollbar());
+  EXPECT_FALSE(view->LayoutViewport()->LayerForVerticalScrollbar());
 }
 
 void SetScaleAndScrollAndLayout(WebViewImpl* web_view,
@@ -5376,7 +5369,7 @@ TEST_F(WebFrameTest, SetTickmarks) {
 
   // Get the tickmarks for the original find request.
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
-  ScrollableArea* layout_viewport = frame_view->LayoutViewportScrollableArea();
+  ScrollableArea* layout_viewport = frame_view->LayoutViewport();
   Vector<IntRect> original_tickmarks;
   layout_viewport->GetTickmarks(original_tickmarks);
   EXPECT_EQ(4u, original_tickmarks.size());
@@ -6752,7 +6745,7 @@ TEST_F(WebFrameTest, DisambiguationPopupVisualViewport) {
   // Scroll main frame to the bottom of the document
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 400));
   EXPECT_EQ(ScrollOffset(0, 400),
-            frame->View()->LayoutViewportScrollableArea()->GetScrollOffset());
+            frame->View()->LayoutViewport()->GetScrollOffset());
 
   web_view_impl->SetPageScaleFactor(2.0);
 
@@ -7499,8 +7492,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   EXPECT_FALSE(client.WasFrameScrolled());
   EXPECT_FALSE(initial_scroll_state.was_scrolled_by_user);
 
-  auto* scrollable_area =
-      frame_impl->GetFrameView()->LayoutViewportScrollableArea();
+  auto* scrollable_area = frame_impl->GetFrameView()->LayoutViewport();
 
   // Do a compositor scroll, verify that this is counted as a user scroll.
   scrollable_area->DidScroll(gfx::ScrollOffset(0, 1));
@@ -8348,27 +8340,27 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
 
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
   EXPECT_EQ(ScrollOffset(0, 1900),
-            frame_view->LayoutViewportScrollableArea()->GetScrollOffset());
+            frame_view->LayoutViewport()->GetScrollOffset());
 
   // Simulate the browser controls showing by 20px, thus shrinking the viewport
   // and allowing it to scroll an additional 20px.
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, 20.0f / browser_controls_height);
   EXPECT_EQ(ScrollOffset(0, 1920),
-            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+            frame_view->LayoutViewport()->MaximumScrollOffset());
 
   // Show more, make sure the scroll actually gets clamped.
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, 20.0f / browser_controls_height);
   web_view->MainFrameImpl()->SetScrollOffset(WebSize(0, 2000));
   EXPECT_EQ(ScrollOffset(0, 1940),
-            frame_view->LayoutViewportScrollableArea()->GetScrollOffset());
+            frame_view->LayoutViewport()->GetScrollOffset());
 
   // Hide until there's 10px showing.
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, -30.0f / browser_controls_height);
   EXPECT_EQ(ScrollOffset(0, 1910),
-            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+            frame_view->LayoutViewport()->MaximumScrollOffset());
 
   // Simulate a LayoutEmbeddedContent::resize. The frame is resized to
   // accomodate the browser controls and Blink's view of the browser controls
@@ -8378,13 +8370,13 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   web_view->ResizeWithBrowserControls(WebSize(100, 60), 40.0f, 0, true);
   web_view->UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1940),
-            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+            frame_view->LayoutViewport()->MaximumScrollOffset());
 
   // Now simulate hiding.
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, -10.0f / browser_controls_height);
   EXPECT_EQ(ScrollOffset(0, 1930),
-            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+            frame_view->LayoutViewport()->MaximumScrollOffset());
 
   // Reset to original state: 100px widget height, browser controls fully
   // hidden.
@@ -8394,7 +8386,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
                                       browser_controls_height, 0, false);
   web_view->UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1900),
-            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+            frame_view->LayoutViewport()->MaximumScrollOffset());
 
   // Show the browser controls by just 1px, since we're zoomed in to 2X, that
   // should allow an extra 0.5px of scrolling in the visual viewport. Make
@@ -8403,12 +8395,12 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, 1.0f / browser_controls_height);
   EXPECT_EQ(ScrollOffset(0, 1901),
-            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+            frame_view->LayoutViewport()->MaximumScrollOffset());
 
   web_view->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                 1.0f, 2.0f / browser_controls_height);
   EXPECT_EQ(ScrollOffset(0, 1903),
-            frame_view->LayoutViewportScrollableArea()->MaximumScrollOffset());
+            frame_view->LayoutViewport()->MaximumScrollOffset());
 }
 
 TEST_F(WebFrameTest, MaximumScrollPositionCanBeNegative) {
@@ -8432,7 +8424,7 @@ TEST_F(WebFrameTest, MaximumScrollPositionCanBeNegative) {
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
 
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
-  ScrollableArea* layout_viewport = frame_view->LayoutViewportScrollableArea();
+  ScrollableArea* layout_viewport = frame_view->LayoutViewport();
   EXPECT_LT(layout_viewport->MaximumScrollOffset().Width(), 0);
 }
 
@@ -8551,7 +8543,7 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
   cc::Layer* cc_scroll_layer = web_view_impl->MainFrameImpl()
                                    ->GetFrame()
                                    ->View()
-                                   ->LayoutViewportScrollableArea()
+                                   ->LayoutViewport()
                                    ->LayerForScrolling()
                                    ->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
@@ -8576,7 +8568,7 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
   cc_scroll_layer = web_view_impl->MainFrameImpl()
                         ->GetFrame()
                         ->View()
-                        ->LayoutViewportScrollableArea()
+                        ->LayoutViewport()
                         ->LayerForScrolling()
                         ->CcLayer();
   ASSERT_TRUE(cc_scroll_layer->scrollable());
@@ -11735,7 +11727,7 @@ TEST_F(WebFrameSimTest, TickmarksDocumentRelative) {
 
   // Get the tickmarks for the original find request.
   Vector<IntRect> original_tickmarks;
-  frame_view->LayoutViewportScrollableArea()->GetTickmarks(original_tickmarks);
+  frame_view->LayoutViewport()->GetTickmarks(original_tickmarks);
   EXPECT_EQ(1u, original_tickmarks.size());
 
   EXPECT_EQ(IntPoint(800, 2000), original_tickmarks[0].Location());
@@ -11877,7 +11869,7 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
 
   EXPECT_EQ(1, WebView().FakePageScaleAnimationPageScaleForTesting());
 
-  frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
+  frame_view->LayoutViewport()->SetScrollOffset(
       ToFloatSize(WebView().FakePageScaleAnimationTargetPositionForTesting()),
       kProgrammaticScroll);
 
@@ -12158,7 +12150,7 @@ TEST_F(WebFrameSimTest, ScrollFocusedEditableIntoViewNoLayoutObject) {
   Element* input = GetDocument().getElementById("target");
   input->focus();
 
-  ScrollableArea* area = GetDocument().View()->LayoutViewportScrollableArea();
+  ScrollableArea* area = GetDocument().View()->LayoutViewport();
   area->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
 
   ASSERT_TRUE(input->GetLayoutObject());
@@ -12281,7 +12273,7 @@ TEST_F(WebFrameSimTest, RtlInitialScrollOffsetWithViewport) {
   )HTML");
 
   Compositor().BeginFrame();
-  ScrollableArea* area = GetDocument().View()->LayoutViewportScrollableArea();
+  ScrollableArea* area = GetDocument().View()->LayoutViewport();
   ASSERT_EQ(ScrollOffset(0, 0), area->GetScrollOffset());
 }
 
@@ -12300,7 +12292,7 @@ TEST_F(WebFrameSimTest, LayoutViewportExceedsLayoutOverflow) {
   )HTML");
 
   Compositor().BeginFrame();
-  ScrollableArea* area = GetDocument().View()->LayoutViewportScrollableArea();
+  ScrollableArea* area = GetDocument().View()->LayoutViewport();
   ASSERT_EQ(540, area->VisibleHeight());
   ASSERT_EQ(IntSize(400, 570), area->ContentsSize());
 
@@ -12983,7 +12975,7 @@ TEST_P(SlimmingPaintWebFrameTest, FrameViewScroll) {
 
   WebView()->UpdateAllLifecyclePhases();
 
-  auto* scrollable_area = GetLocalFrameView()->LayoutViewportScrollableArea();
+  auto* scrollable_area = GetLocalFrameView()->LayoutViewport();
   EXPECT_NE(nullptr, scrollable_area);
 
   EXPECT_EQ(ScrollHitTestLayerCount(), 1u);

@@ -243,7 +243,7 @@ static ScrollableArea* ScrollableAreaForNode(Node* node) {
   if (node->IsDocumentNode()) {
     // This can be removed after root layer scrolling is enabled.
     if (LocalFrameView* frame_view = ToDocument(node)->View())
-      return frame_view->LayoutViewportScrollableArea();
+      return frame_view->LayoutViewport();
   }
 
   LayoutObject* layout_object = node->GetLayoutObject();
@@ -269,8 +269,8 @@ void Internals::ResetToConsistentState(Page* page) {
   page->SetDefaultPageScaleLimits(1, 4);
   page->SetPageScaleFactor(1);
   LocalFrame* frame = page->DeprecatedLocalMainFrame();
-  frame->View()->LayoutViewportScrollableArea()->SetScrollOffset(
-      ScrollOffset(), kProgrammaticScroll);
+  frame->View()->LayoutViewport()->SetScrollOffset(ScrollOffset(),
+                                                   kProgrammaticScroll);
   OverrideUserPreferredLanguagesForTesting(Vector<AtomicString>());
   if (page->DeprecatedLocalMainFrame()->GetEditor().IsOverwriteModeEnabled())
     page->DeprecatedLocalMainFrame()->GetEditor().ToggleOverwriteModeEnabled();

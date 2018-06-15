@@ -4585,7 +4585,7 @@ void LayoutBlockFlow::PositionDialog() {
     return;
   }
 
-  auto* scrollable_area = GetDocument().View()->LayoutViewportScrollableArea();
+  auto* scrollable_area = GetDocument().View()->LayoutViewport();
   LayoutUnit top =
       LayoutUnit((Style()->GetPosition() == EPosition::kFixed)
                      ? 0

@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 
 namespace blink {
@@ -127,7 +128,7 @@ void PrintContext::ComputePageRectsWithPageSizeInternal(
                                 ? inline_direction_start
                                 : inline_direction_start - page_logical_width;
 
-    auto* scrollable_area = GetFrame()->View()->LayoutViewportScrollableArea();
+    auto* scrollable_area = GetFrame()->View()->LayoutViewport();
     IntSize frame_scroll = scrollable_area->ScrollOffsetInt();
     page_logical_left -= frame_scroll.Width();
     page_logical_top -= frame_scroll.Height();
@@ -190,7 +191,7 @@ int PrintContext::PageNumberForElement(Element* element,
 
   FloatSize scaled_page_size = page_size_in_pixels;
   scaled_page_size.Scale(
-      frame->View()->LayoutViewportScrollableArea()->ContentsSize().Width() /
+      frame->View()->LayoutViewport()->ContentsSize().Width() /
       page_rect.Width());
   print_context->ComputePageRectsWithPageSize(scaled_page_size);
 
@@ -309,7 +310,7 @@ int PrintContext::NumberOfPages(LocalFrame* frame,
   // Account for shrink-to-fit.
   FloatSize scaled_page_size = page_size_in_pixels;
   scaled_page_size.Scale(
-      frame->View()->LayoutViewportScrollableArea()->ContentsSize().Width() /
+      frame->View()->LayoutViewport()->ContentsSize().Width() /
       page_rect.Width());
   print_context->ComputePageRectsWithPageSize(scaled_page_size);
   return print_context->PageCount();

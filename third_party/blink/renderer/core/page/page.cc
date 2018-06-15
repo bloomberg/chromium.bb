@@ -267,8 +267,7 @@ DOMRectList* Page::NonFastScrollableRects(const LocalFrame* frame) {
   // scrollable region.
   frame->View()->UpdateAllLifecyclePhasesExceptPaint();
 
-  GraphicsLayer* layer =
-      frame->View()->LayoutViewportScrollableArea()->LayerForScrolling();
+  GraphicsLayer* layer = frame->View()->LayoutViewport()->LayerForScrolling();
   if (!layer)
     return DOMRectList::Create();
   const cc::Region& region = layer->CcLayer()->non_fast_scrollable_region();

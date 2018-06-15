@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -223,22 +224,16 @@ TEST_F(ImageDocumentTest, MAYBE(ImageCenteredAtDeviceScaleFactor)) {
 
   EXPECT_TRUE(GetDocument().ShouldShrinkToFit());
   GetDocument().ImageClicked(15, 27);
-  ScrollOffset offset = GetDocument()
-                            .GetFrame()
-                            ->View()
-                            ->LayoutViewportScrollableArea()
-                            ->GetScrollOffset();
+  ScrollOffset offset =
+      GetDocument().GetFrame()->View()->LayoutViewport()->GetScrollOffset();
   EXPECT_EQ(22, offset.Width());
   EXPECT_EQ(42, offset.Height());
 
   GetDocument().ImageClicked(20, 20);
 
   GetDocument().ImageClicked(12, 15);
-  offset = GetDocument()
-               .GetFrame()
-               ->View()
-               ->LayoutViewportScrollableArea()
-               ->GetScrollOffset();
+  offset =
+      GetDocument().GetFrame()->View()->LayoutViewport()->GetScrollOffset();
   EXPECT_EQ(11, offset.Width());
   EXPECT_EQ(22, offset.Height());
 }

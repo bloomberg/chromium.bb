@@ -107,7 +107,7 @@ void ScrollingCoordinator::SetShouldHandleScrollGestureOnMainThreadRegion(
     const Region& region,
     LocalFrameView* frame_view) {
   if (cc::Layer* scroll_layer = GraphicsLayerToCcLayer(
-          frame_view->LayoutViewportScrollableArea()->LayerForScrolling())) {
+          frame_view->LayoutViewport()->LayerForScrolling())) {
     scroll_layer->SetNonFastScrollableRegion(RegionToCCRegion(region));
   }
 }
@@ -967,8 +967,7 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
       frame->GetPage()->GetVisualViewport().ScrollLayer();
   cc::Layer* visual_viewport_scroll_layer =
       GraphicsLayerToCcLayer(visual_viewport_layer);
-  GraphicsLayer* layer =
-      frame->View()->LayoutViewportScrollableArea()->LayerForScrolling();
+  GraphicsLayer* layer = frame->View()->LayoutViewport()->LayerForScrolling();
   if (cc::Layer* scroll_layer = GraphicsLayerToCcLayer(layer)) {
     if (main_thread_scrolling_reasons) {
       ScrollableArea* scrollable_area = layer->GetScrollableArea();
@@ -1302,9 +1301,8 @@ bool ScrollingCoordinator::IsForMainFrame(
     return false;
 
   // FIXME(305811): Refactor for OOPI.
-  return scrollable_area == page_->DeprecatedLocalMainFrame()
-                                ->View()
-                                ->LayoutViewportScrollableArea();
+  return scrollable_area ==
+         page_->DeprecatedLocalMainFrame()->View()->LayoutViewport();
 }
 
 void ScrollingCoordinator::FrameViewRootLayerDidChange(
@@ -1326,11 +1324,10 @@ bool ScrollingCoordinator::FrameScrollerIsDirty(
 
   if (cc::Layer* scroll_layer =
           frame_view ? GraphicsLayerToCcLayer(
-                           frame_view->LayoutViewportScrollableArea()
-                               ->LayerForScrolling())
+                           frame_view->LayoutViewport()->LayerForScrolling())
                      : nullptr) {
     return static_cast<gfx::Size>(
-               frame_view->LayoutViewportScrollableArea()->ContentsSize()) !=
+               frame_view->LayoutViewport()->ContentsSize()) !=
            scroll_layer->bounds();
   }
   return false;

@@ -38,8 +38,8 @@ TEST_F(CompositingRequirementsUpdaterTest, FixedPosOverlap) {
       CompositingReason::kOverlap | CompositingReason::kSquashingDisallowed,
       fixed->Layer()->GetCompositingReasons());
 
-  GetDocument().View()->LayoutViewportScrollableArea()->ScrollBy(
-      ScrollOffset(0, 100), kUserScroll);
+  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 100),
+                                                   kUserScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // No longer overlaps the first div.

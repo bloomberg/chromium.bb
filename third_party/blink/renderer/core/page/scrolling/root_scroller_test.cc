@@ -538,9 +538,8 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   // No root scroller set, the documentElement should be the effective root
   // and the main LocalFrameView's scroll layer should be the layer to use.
   {
-    EXPECT_EQ(
-        main_controller.RootScrollerLayer(),
-        MainFrameView()->LayoutViewportScrollableArea()->LayerForScrolling());
+    EXPECT_EQ(main_controller.RootScrollerLayer(),
+              MainFrameView()->LayoutViewport()->LayerForScrolling());
     EXPECT_TRUE(main_controller.IsViewportScrollCallback(
         MainFrame()->GetDocument()->documentElement()->GetApplyScroll()));
   }
@@ -550,9 +549,8 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   {
     SetAndSelectRootScroller(*iframe->contentDocument(), container);
 
-    EXPECT_EQ(
-        main_controller.RootScrollerLayer(),
-        MainFrameView()->LayoutViewportScrollableArea()->LayerForScrolling());
+    EXPECT_EQ(main_controller.RootScrollerLayer(),
+              MainFrameView()->LayoutViewport()->LayerForScrolling());
     EXPECT_TRUE(main_controller.IsViewportScrollCallback(
         MainFrame()->GetDocument()->documentElement()->GetApplyScroll()));
   }
@@ -580,11 +578,10 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   // documentElement becomes the global root scroller.
   {
     SetAndSelectRootScroller(*iframe->contentDocument(), nullptr);
-    EXPECT_EQ(main_controller.RootScrollerLayer(),
-              iframe->contentDocument()
-                  ->View()
-                  ->LayoutViewportScrollableArea()
-                  ->LayerForScrolling());
+    EXPECT_EQ(main_controller.RootScrollerLayer(), iframe->contentDocument()
+                                                       ->View()
+                                                       ->LayoutViewport()
+                                                       ->LayerForScrolling());
     EXPECT_FALSE(
         main_controller.IsViewportScrollCallback(container->GetApplyScroll()));
     EXPECT_FALSE(main_controller.IsViewportScrollCallback(
@@ -597,9 +594,8 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   // documentElement and corresponding layer.
   {
     SetAndSelectRootScroller(*MainFrame()->GetDocument(), nullptr);
-    EXPECT_EQ(
-        main_controller.RootScrollerLayer(),
-        MainFrameView()->LayoutViewportScrollableArea()->LayerForScrolling());
+    EXPECT_EQ(main_controller.RootScrollerLayer(),
+              MainFrameView()->LayoutViewport()->LayerForScrolling());
     EXPECT_TRUE(main_controller.IsViewportScrollCallback(
         MainFrame()->GetDocument()->documentElement()->GetApplyScroll()));
     EXPECT_FALSE(
@@ -948,9 +944,8 @@ TEST_F(RootScrollerTest, DocumentElementHasNoLayoutObject) {
 
   EXPECT_EQ(MainFrame()->GetDocument()->documentElement(),
             global_controller.GlobalRootScroller());
-  EXPECT_EQ(
-      MainFrameView()->LayoutViewportScrollableArea()->LayerForScrolling(),
-      global_controller.RootScrollerLayer());
+  EXPECT_EQ(MainFrameView()->LayoutViewport()->LayerForScrolling(),
+            global_controller.RootScrollerLayer());
 }
 
 // On Android, the main scrollbars are owned by the visual viewport and the
@@ -993,8 +988,7 @@ TEST_F(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
 
   MainFrameView()->UpdateAllLifecyclePhases();
 
-  ScrollableArea* container_scroller =
-      child_frame->View()->LayoutViewportScrollableArea();
+  ScrollableArea* container_scroller = child_frame->View()->LayoutViewport();
 
   EXPECT_FALSE(container_scroller->HorizontalScrollbar());
   EXPECT_FALSE(container_scroller->VerticalScrollbar());
@@ -1220,14 +1214,14 @@ TEST_F(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
 
   LocalFrame* iframe_local_frame = ToLocalFrame(iframe->ContentFrame());
   EXPECT_EQ(iframe, &main_controller.EffectiveRootScroller());
-  EXPECT_EQ(iframe_local_frame->View()->LayoutViewportScrollableArea(),
+  EXPECT_EQ(iframe_local_frame->View()->LayoutViewport(),
             &MainFrameView()->GetRootFrameViewport()->LayoutViewport());
 
   // Remove the <iframe> and make sure the layout viewport reverts to the
   // LocalFrameView without a layout.
   iframe->remove();
 
-  EXPECT_EQ(MainFrameView()->LayoutViewportScrollableArea(),
+  EXPECT_EQ(MainFrameView()->LayoutViewport(),
             &MainFrameView()->GetRootFrameViewport()->LayoutViewport());
 }
 

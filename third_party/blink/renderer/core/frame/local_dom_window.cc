@@ -89,6 +89,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
@@ -1009,8 +1010,7 @@ double LocalDOMWindow::scrollX() const {
 
   // TODO(bokan): This is wrong when the document.rootScroller is non-default.
   // crbug.com/505516.
-  double viewport_x =
-      view->LayoutViewportScrollableArea()->GetScrollOffset().Width();
+  double viewport_x = view->LayoutViewport()->GetScrollOffset().Width();
   return AdjustForAbsoluteZoom::AdjustScroll(viewport_x,
                                              GetFrame()->PageZoomFactor());
 }
@@ -1027,8 +1027,7 @@ double LocalDOMWindow::scrollY() const {
 
   // TODO(bokan): This is wrong when the document.rootScroller is non-default.
   // crbug.com/505516.
-  double viewport_y =
-      view->LayoutViewportScrollableArea()->GetScrollOffset().Height();
+  double viewport_y = view->LayoutViewport()->GetScrollOffset().Height();
   return AdjustForAbsoluteZoom::AdjustScroll(viewport_y,
                                              GetFrame()->PageZoomFactor());
 }
@@ -1139,7 +1138,7 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
   if (scroll_to_options.hasTop())
     y = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top());
 
-  ScrollableArea* viewport = view->LayoutViewportScrollableArea();
+  ScrollableArea* viewport = view->LayoutViewport();
   ScrollOffset current_offset = viewport->GetScrollOffset();
   ScrollOffset scaled_delta(x * GetFrame()->PageZoomFactor(),
                             y * GetFrame()->PageZoomFactor());
@@ -1199,7 +1198,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
   double scaled_x = 0.0;
   double scaled_y = 0.0;
 
-  ScrollableArea* viewport = view->LayoutViewportScrollableArea();
+  ScrollableArea* viewport = view->LayoutViewport();
   ScrollOffset current_offset = viewport->GetScrollOffset();
   scaled_x = current_offset.Width();
   scaled_y = current_offset.Height();

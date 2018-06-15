@@ -666,10 +666,9 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
     absolute_rect_for_parent =
         GetScrollableArea()->ScrollIntoView(absolute_rect_to_scroll, params);
   } else if (!parent_box && CanBeProgramaticallyScrolled()) {
-    ScrollableArea* area_to_scroll =
-        params.make_visible_in_visual_viewport
-            ? GetFrameView()->GetScrollableArea()
-            : GetFrameView()->LayoutViewportScrollableArea();
+    ScrollableArea* area_to_scroll = params.make_visible_in_visual_viewport
+                                         ? GetFrameView()->GetScrollableArea()
+                                         : GetFrameView()->LayoutViewport();
     absolute_rect_for_parent =
         area_to_scroll->ScrollIntoView(absolute_rect_to_scroll, params);
 
@@ -3814,8 +3813,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
       // Don't use visibleContentRect since the PaintLayer's size has not been
       // set yet.
       LayoutSize viewport_size(
-          frame_view->LayoutViewportScrollableArea()->ExcludeScrollbars(
-              frame_view->Size()));
+          frame_view->LayoutViewport()->ExcludeScrollbars(frame_view->Size()));
       return LayoutUnit(containing_block->IsHorizontalWritingMode()
                             ? viewport_size.Width()
                             : viewport_size.Height());
@@ -3878,8 +3876,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
       // Don't use visibleContentRect since the PaintLayer's size has not been
       // set yet.
       LayoutSize viewport_size(
-          frame_view->LayoutViewportScrollableArea()->ExcludeScrollbars(
-              frame_view->Size()));
+          frame_view->LayoutViewport()->ExcludeScrollbars(frame_view->Size()));
       return containing_block->IsHorizontalWritingMode()
                  ? viewport_size.Height()
                  : viewport_size.Width();

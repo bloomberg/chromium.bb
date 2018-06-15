@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/editing/selection_modifier.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
 namespace blink {
 
@@ -55,8 +56,7 @@ unsigned MoveCommands::VerticalScrollDistance(LocalFrame& frame) {
         style->OverflowY() == EOverflow::kAuto ||
         HasEditableStyle(*focused_element)))
     return 0;
-  const ScrollableArea& scrollable_area =
-      *frame.View()->LayoutViewportScrollableArea();
+  const ScrollableArea& scrollable_area = *frame.View()->LayoutViewport();
   const int height = std::min<int>(layout_box.ClientHeight().ToInt(),
                                    scrollable_area.VisibleHeight());
   return static_cast<unsigned>(

@@ -2438,7 +2438,7 @@ void LocalFrameView::DidAttachDocument() {
 
   if (frame_->IsMainFrame()) {
     ScrollableArea& visual_viewport = frame_->GetPage()->GetVisualViewport();
-    ScrollableArea* layout_viewport = LayoutViewportScrollableArea();
+    ScrollableArea* layout_viewport = LayoutViewport();
     DCHECK(layout_viewport);
 
     RootFrameViewport* root_frame_viewport =
@@ -3348,7 +3348,7 @@ IntPoint LocalFrameView::RootFrameToDocument(
 FloatPoint LocalFrameView::RootFrameToDocument(
     const FloatPoint& point_in_root_frame) {
   FloatPoint local_frame = ConvertFromRootFrame(point_in_root_frame);
-  return local_frame + LayoutViewportScrollableArea()->GetScrollOffset();
+  return local_frame + LayoutViewport()->GetScrollOffset();
 }
 
 DoublePoint LocalFrameView::DocumentToFrame(
@@ -3596,15 +3596,12 @@ void LocalFrameView::RemoveResizerArea(LayoutBox& resizer_box) {
 bool LocalFrameView::FrameIsScrollableDidChange() {
   DCHECK(GetFrame().IsLocalRoot());
   return GetScrollingContext()->WasScrollable() !=
-         LayoutViewportScrollableArea()->IsScrollable();
+         LayoutViewport()->IsScrollable();
 }
 
 void LocalFrameView::ClearFrameIsScrollableDidChange() {
-  GetScrollingContext()->SetWasScrollable(GetFrame()
-                                              .LocalFrameRoot()
-                                              .View()
-                                              ->LayoutViewportScrollableArea()
-                                              ->IsScrollable());
+  GetScrollingContext()->SetWasScrollable(
+      GetFrame().LocalFrameRoot().View()->LayoutViewport()->IsScrollable());
 }
 
 void LocalFrameView::ScrollableAreasDidChange() {
@@ -3728,11 +3725,11 @@ bool LocalFrameView::VisualViewportSuppliesScrollbars() {
   const TopDocumentRootScrollerController& controller =
       frame_->GetPage()->GlobalRootScrollerController();
 
-  if (!LayoutViewportScrollableArea())
+  if (!LayoutViewport())
     return false;
 
   return RootScrollerUtil::ScrollableAreaForRootScroller(
-             controller.GlobalRootScroller()) == LayoutViewportScrollableArea();
+             controller.GlobalRootScroller()) == LayoutViewport();
 }
 
 AXObjectCache* LocalFrameView::ExistingAXObjectCache() const {
@@ -3791,15 +3788,9 @@ IntSize LocalFrameView::MaximumScrollOffsetInt() const {
   Page* page = frame_->GetPage();
   DCHECK(page);
 
-  // We need to perform this const_cast since maximumScrollOffsetInt is a const
-  // method but we can't make layoutViewportScrollableArea const since it can
-  // return |this|. Once root-layer-scrolls ships layoutViewportScrollableArea
-  // can be made const.
-  const ScrollableArea* layout_viewport =
-      const_cast<LocalFrameView*>(this)->LayoutViewportScrollableArea();
   TopDocumentRootScrollerController& controller =
       page->GlobalRootScrollerController();
-  if (layout_viewport == controller.RootScrollerArea())
+  if (LayoutViewport() == controller.RootScrollerArea())
     visible_size = controller.RootScrollerVisibleArea();
 
   IntSize maximum_offset =
@@ -3934,7 +3925,7 @@ ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
   // is styled overflow: hidden.  (Other overflow: hidden elements won't have
   // composited scrolling layers per crbug.com/784053, so we don't have to worry
   // about them.)
-  ScrollableArea* viewport = LayoutViewportScrollableArea();
+  ScrollableArea* viewport = LayoutViewport();
   if (id == viewport->GetCompositorElementId())
     return viewport;
 
@@ -4276,11 +4267,11 @@ ScrollableArea* LocalFrameView::GetScrollableArea() {
   if (viewport_scrollable_area_)
     return viewport_scrollable_area_.Get();
 
-  return LayoutViewportScrollableArea();
+  return LayoutViewport();
 }
 
-ScrollableArea* LocalFrameView::LayoutViewportScrollableArea() {
-  auto* layout_view = this->GetLayoutView();
+PaintLayerScrollableArea* LocalFrameView::LayoutViewport() const {
+  auto* layout_view = GetLayoutView();
   return layout_view ? layout_view->GetScrollableArea() : nullptr;
 }
 
@@ -4626,14 +4617,12 @@ void LocalFrameView::UpdateSubFrameScrollOnMainReason(
   if (frame_view.ShouldThrottleRendering())
     return;
 
-  if (!frame_view.LayoutViewportScrollableArea())
+  if (!frame_view.LayoutViewport())
     return;
 
   reasons |= frame_view.MainThreadScrollingReasonsPerFrame();
-  if (GraphicsLayer* layer_for_scrolling = ToLocalFrame(frame)
-                                               .View()
-                                               ->LayoutViewportScrollableArea()
-                                               ->LayerForScrolling()) {
+  if (GraphicsLayer* layer_for_scrolling =
+          ToLocalFrame(frame).View()->LayoutViewport()->LayerForScrolling()) {
     if (cc::Layer* platform_layer_for_scrolling =
             layer_for_scrolling->CcLayer()) {
       if (reasons) {
@@ -4736,7 +4725,7 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
   } else {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean);
     if (GraphicsLayer* layer_for_scrolling =
-            LayoutViewportScrollableArea()->LayerForScrolling()) {
+            LayoutViewport()->LayerForScrolling()) {
       if (cc::Layer* cc_layer = layer_for_scrolling->CcLayer())
         reasons = cc_layer->main_thread_scrolling_reasons();
     }

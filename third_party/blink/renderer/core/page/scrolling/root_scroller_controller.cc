@@ -85,8 +85,7 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
     if (!frame_view)
       return nullptr;
 
-    return ToPaintLayerScrollableArea(
-        frame_view->LayoutViewportScrollableArea());
+    return frame_view->LayoutViewport();
   }
 
   DCHECK(element.GetLayoutObject()->IsBox());

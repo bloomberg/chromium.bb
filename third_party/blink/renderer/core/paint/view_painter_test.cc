@@ -43,7 +43,7 @@ void ViewPainterTest::RunFixedBackgroundTest(
   )HTML");
 
   LocalFrameView* frame_view = GetDocument().View();
-  ScrollableArea* layout_viewport = frame_view->LayoutViewportScrollableArea();
+  ScrollableArea* layout_viewport = frame_view->LayoutViewport();
 
   ScrollOffset scroll_offset(200, 150);
   layout_viewport->SetScrollOffset(scroll_offset, kUserScroll);

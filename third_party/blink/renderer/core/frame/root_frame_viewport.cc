@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -74,7 +75,7 @@ LayoutRect RootFrameViewport::RootContentsToLayoutViewportContents(
   // If the root LocalFrameView is the layout viewport then coordinates in the
   // root LocalFrameView's content space are already in the layout viewport's
   // content space.
-  if (root_frame_view.LayoutViewportScrollableArea() == &LayoutViewport())
+  if (root_frame_view.LayoutViewport() == &LayoutViewport())
     return ret;
 
   // Make the given rect relative to the top of the layout viewport's content

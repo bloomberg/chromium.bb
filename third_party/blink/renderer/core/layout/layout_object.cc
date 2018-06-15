@@ -1223,11 +1223,8 @@ bool LayoutObject::GetUpperLeftCorner(ExpandScrollMargin expand,
   // document. Scroll to the bottom.
   // FIXME: who said anything about scrolling?
   if (!runner && GetDocument().View()) {
-    point = FloatPoint(0, GetDocument()
-                              .View()
-                              ->LayoutViewportScrollableArea()
-                              ->ContentsSize()
-                              .Height());
+    point = FloatPoint(
+        0, GetDocument().View()->LayoutViewport()->ContentsSize().Height());
     return true;
   }
   return false;
