@@ -17,22 +17,20 @@
 namespace blink {
 
 class AbortSignal;
-class BytesConsumer;
 class Dictionary;
-class ExecutionContext;
 class ExceptionState;
+class ScriptState;
 
 // FIXME: Use IDL dictionary instead of this class.
 class RequestInit {
   STACK_ALLOCATED();
 
  public:
-  RequestInit(ExecutionContext*, const Dictionary&, ExceptionState&);
+  RequestInit(ScriptState*, const Dictionary&, ExceptionState&);
 
   const String& Method() const { return method_; }
   const HeadersInit& GetHeaders() const { return headers_; }
-  const String& ContentType() const { return content_type_; }
-  BytesConsumer* GetBody() { return body_; }
+  ScriptValue GetBody() const { return body_; }
   const Referrer& GetReferrer() const { return referrer_; }
   const String& Mode() const { return mode_; }
   const String& Credentials() const { return credentials_; }
@@ -61,8 +59,9 @@ class RequestInit {
 
   String method_;
   HeadersInit headers_;
-  String content_type_;
-  Member<BytesConsumer> body_;
+  // Having a ScriptValue is safe here because this struct is STACK_ALLOCATED
+  // and not intended to live long.
+  ScriptValue body_;
   Referrer referrer_;
   String mode_;
   String credentials_;
