@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_DOCUMENT_MARKER_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_DOCUMENT_MARKER_PAINTER_H_
 
+#include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -28,6 +29,11 @@ class DocumentMarkerPainter {
                                             const ComputedStyle& style,
                                             const FloatRect& marker_rect,
                                             LayoutUnit logical_height);
+  static void PaintDocumentMarker(GraphicsContext& context,
+                                  const LayoutPoint& box_origin,
+                                  const ComputedStyle& style,
+                                  DocumentMarker::MarkerType marker_type,
+                                  const LayoutRect& local_rect);
 };
 
 }  // namespace blink

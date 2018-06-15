@@ -818,7 +818,6 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
                                                const ComputedStyle& style,
                                                const Font& font,
                                                bool grammar) {
-  // Never print spelling/grammar markers (5327887)
   if (inline_text_box_.GetLineLayoutItem().GetDocument().Printing())
     return;
 
@@ -861,7 +860,18 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
     start = marker_rect.X() - start_point.X();
     width = LayoutUnit(marker_rect.Width());
   }
+  DocumentMarkerPainter::PaintDocumentMarker(
+      context, box_origin, style, marker.GetType(),
+      LayoutRect(start, LayoutUnit(), width, inline_text_box_.LogicalHeight()));
+}
 
+// TODO(yoichio): Move this to document_marker_painter.cc
+void DocumentMarkerPainter::PaintDocumentMarker(
+    GraphicsContext& context,
+    const LayoutPoint& box_origin,
+    const ComputedStyle& style,
+    DocumentMarker::MarkerType marker_type,
+    const LayoutRect& local_rect) {
   // IMPORTANT: The misspelling underline is not considered when calculating the
   // text bounds, so we have to make sure to fit within those bounds.  This
   // means the top pixel(s) of the underline will overlap the bottom pixel(s) of
@@ -872,28 +882,24 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
   // not so good so we pin to two pixels under the baseline.
   int line_thickness = kMisspellingLineThickness;
 
-  const SimpleFontData* font_data =
-      inline_text_box_.GetLineLayoutItem()
-          .Style(inline_text_box_.IsFirstLineStyle())
-          ->GetFont()
-          .PrimaryFont();
+  const SimpleFontData* font_data = style.GetFont().PrimaryFont();
   DCHECK(font_data);
-  int baseline = font_data ? font_data->GetFontMetrics().Ascent() : 0;
-  int descent = (inline_text_box_.LogicalHeight() - baseline).ToInt();
+  int baseline = font_data->GetFontMetrics().Ascent();
+  int descent = (local_rect.Height() - baseline).ToInt();
   int underline_offset;
   if (descent <= (line_thickness + 2)) {
     // Place the underline at the very bottom of the text in small/medium fonts.
-    underline_offset =
-        (inline_text_box_.LogicalHeight() - line_thickness).ToInt();
+    underline_offset = (local_rect.Height() - line_thickness).ToInt();
   } else {
     // In larger fonts, though, place the underline up near the baseline to
     // prevent a big gap.
     underline_offset = baseline + 2;
   }
   DrawDocumentMarker(context,
-                     FloatPoint((box_origin.X() + start).ToFloat(),
+                     FloatPoint((box_origin.X() + local_rect.X()).ToFloat(),
                                 (box_origin.Y() + underline_offset).ToFloat()),
-                     width.ToFloat(), marker.GetType(), style.EffectiveZoom());
+                     local_rect.Width().ToFloat(), marker_type,
+                     style.EffectiveZoom());
 }
 
 template <InlineTextBoxPainter::PaintOptions options>
