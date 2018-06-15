@@ -49,6 +49,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -491,6 +492,10 @@ void ShelfView::ButtonPressed(views::Button* sender,
   // So, it is safe to be checked after handling overflow button.
   if (!ShouldEventActivateButton(sender, event))
     return;
+
+  // Ensure the keyboard is hidden and stays hidden (as long as it isn't locked)
+  if (keyboard::KeyboardController::Get()->enabled())
+    keyboard::KeyboardController::Get()->HideKeyboardExplicitlyBySystem();
 
   // Close the overflow bubble if an item on either shelf is clicked. Press
   // events elsewhere will close the overflow shelf via OverflowBubble's
