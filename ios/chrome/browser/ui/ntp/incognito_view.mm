@@ -68,6 +68,11 @@ UIFont* TitleFont() {
   return [UIFont fontWithDescriptor:styleDescriptor size:0.0];
 }
 
+// Returns the color to use for body text.
+UIColor* BodyTextColor() {
+  return [UIColor colorWithWhite:1.0 alpha:0.7];
+}
+
 // Returns a font, scaled to the current dynamic type settings, that is suitable
 // for the body text of the incognito page.
 UIFont* BodyFont() {
@@ -292,6 +297,21 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   [super willMoveToSuperview:newSuperview];
 }
 
+#pragma mark - Notifications
+
+- (void)contentSizeCategoryDidChange {
+  UIColor* bodyTextColor = BodyTextColor();
+
+  // Recompute the text for |_notSavedLabel| and |_visibleDataLabel|, as these
+  // two include font information in their attributedText.
+  _notSavedLabel.attributedText = FormatHTMLListForUILabel(
+      l10n_util::GetNSString(IDS_NEW_TAB_OTR_NOT_SAVED));
+  _notSavedLabel.textColor = bodyTextColor;
+  _visibleDataLabel.attributedText =
+      FormatHTMLListForUILabel(l10n_util::GetNSString(IDS_NEW_TAB_OTR_VISIBLE));
+  _visibleDataLabel.textColor = bodyTextColor;
+}
+
 #pragma mark - Private
 
 // Triggers a navigation to the help page.
@@ -304,7 +324,7 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 // Adds views containing the text of the incognito page to |_stackView|.
 - (void)addUIRefreshTextSections {
   UIColor* titleTextColor = [UIColor whiteColor];
-  UIColor* bodyTextColor = [UIColor colorWithWhite:1.0 alpha:0.7];
+  UIColor* bodyTextColor = BodyTextColor();
   UIColor* linkTextColor = UIColorFromRGB(kLinkColor);
 
   // Title.
@@ -377,6 +397,13 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     [_visibleDataLabel.widthAnchor
         constraintEqualToAnchor:subtitleStackView.widthAnchor],
   ]];
+
+  // Register for notifications when the Dynamic Type setting is changed.
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(contentSizeCategoryDidChange)
+             name:UIContentSizeCategoryDidChangeNotification
+           object:nil];
 }
 
 #pragma mark - Legacy UI
