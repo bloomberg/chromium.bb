@@ -46,6 +46,7 @@ class WaylandConnection : public PlatformEventSource,
   wl_data_device* data_device() { return data_device_->data_device(); }
 
   WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
+  WaylandWindow* GetCurrentFocusedWindow();
   void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
   void RemoveWindow(gfx::AcceleratedWidget widget);
 

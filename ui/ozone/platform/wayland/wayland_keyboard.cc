@@ -82,14 +82,18 @@ void WaylandKeyboard::Enter(void* data,
                             uint32_t serial,
                             wl_surface* surface,
                             wl_array* keys) {
-  WaylandWindow::FromSurface(surface)->set_keyboard_focus(true);
+  // wl_surface might have been destroyed by this time.
+  if (surface)
+    WaylandWindow::FromSurface(surface)->set_keyboard_focus(true);
 }
 
 void WaylandKeyboard::Leave(void* data,
                             wl_keyboard* obj,
                             uint32_t serial,
                             wl_surface* surface) {
-  WaylandWindow::FromSurface(surface)->set_keyboard_focus(false);
+  // wl_surface might have been destroyed by this time.
+  if (surface)
+    WaylandWindow::FromSurface(surface)->set_keyboard_focus(false);
 
   WaylandKeyboard* keyboard = static_cast<WaylandKeyboard*>(data);
   DCHECK(keyboard);

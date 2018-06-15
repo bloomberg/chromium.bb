@@ -18,7 +18,8 @@ XDGSurfaceWrapperV5::XDGSurfaceWrapperV5(WaylandWindow* wayland_window)
 XDGSurfaceWrapperV5::~XDGSurfaceWrapperV5() {}
 
 bool XDGSurfaceWrapperV5::Initialize(WaylandConnection* connection,
-                                     wl_surface* surface) {
+                                     wl_surface* surface,
+                                     bool with_toplevel) {
   static const xdg_surface_listener xdg_surface_listener = {
       &XDGSurfaceWrapperV5::Configure, &XDGSurfaceWrapperV5::Close,
   };

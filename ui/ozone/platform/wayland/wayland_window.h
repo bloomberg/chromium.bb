@@ -18,7 +18,10 @@ namespace ui {
 class BitmapCursorOzone;
 class PlatformWindowDelegate;
 class WaylandConnection;
+class XDGPopupWrapper;
 class XDGSurfaceWrapper;
+
+struct PlatformWindowInitProperties;
 
 namespace {
 class XDGShellObjectFactory;
@@ -27,15 +30,16 @@ class XDGShellObjectFactory;
 class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
  public:
   WaylandWindow(PlatformWindowDelegate* delegate,
-                WaylandConnection* connection,
-                const gfx::Rect& bounds);
+                WaylandConnection* connection);
   ~WaylandWindow() override;
 
   static WaylandWindow* FromSurface(wl_surface* surface);
 
-  bool Initialize();
+  bool Initialize(const PlatformWindowInitProperties& properties);
 
   wl_surface* surface() const { return surface_.get(); }
+  XDGSurfaceWrapper* xdg_surface() const { return xdg_surface_.get(); }
+  XDGPopupWrapper* xdg_popup() const { return xdg_popup_.get(); }
 
   // Apply the bounds specified in the most recent configure event. This should
   // be called after processing all pending events in the wayland connection.
@@ -50,6 +54,10 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   // Set whether this window has touch focus and should dispatch touch events.
   void set_touch_focus(bool focus) { has_touch_focus_ = focus; }
+
+  // Set a child of this window. It is very important in case of nested
+  // xdg_popups as long as they must be destroyed in the back order.
+  void set_child_window(WaylandWindow* window) { child_window_ = window; }
 
   // Set whether this window has an implicit grab (often referred to as capture
   // in Chrome code). Implicit grabs happen while a pointer is down.
@@ -98,20 +106,28 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   void SetPendingBounds(int32_t width, int32_t height);
 
+  // Creates a popup window, which is visible as a menu window.
+  void CreateXdgPopup();
   // Creates a surface window, which is visible as a main window.
   void CreateXdgSurface();
 
+  // Gets a parent window for this window.
+  WaylandWindow* GetParentWindow(gfx::AcceleratedWidget parent_widget);
+
   PlatformWindowDelegate* delegate_;
   WaylandConnection* connection_;
+  WaylandWindow* parent_window_ = nullptr;
+  WaylandWindow* child_window_ = nullptr;
 
   // Creates xdg objects based on xdg shell version.
   std::unique_ptr<XDGShellObjectFactory> xdg_shell_objects_factory_;
 
   wl::Object<wl_surface> surface_;
 
-  // Wrapper around xdg v5 and xdg v6 objects. WaylandWindow doesn't
+  // Wrappers around xdg v5 and xdg v6 objects. WaylandWindow doesn't
   // know anything about the version.
   std::unique_ptr<XDGSurfaceWrapper> xdg_surface_;
+  std::unique_ptr<XDGPopupWrapper> xdg_popup_;
 
   // The current cursor bitmap (immutable).
   scoped_refptr<BitmapCursorOzone> bitmap_;

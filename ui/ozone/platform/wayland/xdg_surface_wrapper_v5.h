@@ -20,7 +20,11 @@ class XDGSurfaceWrapperV5 : public XDGSurfaceWrapper {
   ~XDGSurfaceWrapperV5() override;
 
   // XDGSurfaceWrapper:
-  bool Initialize(WaylandConnection* connection, wl_surface* surface) override;
+  // |with_toplevel| is not used with xdg_surface_v5 as long as it can have
+  // only xdg_surface role.
+  bool Initialize(WaylandConnection* connection,
+                  wl_surface* surface,
+                  bool with_toplevel) override;
   void SetMaximized() override;
   void UnSetMaximized() override;
   void SetFullscreen() override;
