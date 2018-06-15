@@ -102,7 +102,10 @@ void TeamDriveChangeListLoader::ReadDirectory(
     const ReadDirectoryEntriesCallback& entries_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(root_entry_path_.IsParent(directory_path));
+  DCHECK(root_entry_path_ == directory_path ||
+         root_entry_path_.IsParent(directory_path))
+      << "Directory paths are not related: " << root_entry_path_.value()
+      << " -> " << directory_path.value();
 
   directory_loader_->ReadDirectory(directory_path, entries_callback,
                                    completion_callback);

@@ -846,6 +846,42 @@ TEST_F(FileSystemTest, ReadDirectory_TeamDrivesRoot) {
             team_drive_1_found.count(base::FilePath::FromUTF8Unsafe("dir1")));
 }
 
+TEST_F(FileSystemTest, ReadDirectory_TeamDriveFolder) {
+  ASSERT_TRUE(SetupTeamDrives());
+
+  // The first load trigger the loading of team drives.
+  ReadDirectorySync(base::FilePath::FromUTF8Unsafe("."));
+
+  // Add a new entry to drive/team_drives/team_drive_1
+  // Create a file in the test directory.
+  std::unique_ptr<google_apis::FileResource> entry;
+  {
+    google_apis::DriveApiErrorCode error = google_apis::DRIVE_OTHER_ERROR;
+    fake_drive_service_->AddNewFile(
+        "text/plain", "(dummy data)", "td_id_1", "TestFile",
+        false,  // shared_with_me
+        google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+    base::RunLoop().RunUntilIdle();
+    ASSERT_EQ(google_apis::HTTP_CREATED, error);
+  }
+
+  // Notify the update to the file system.
+  file_system_->CheckForUpdates();
+
+  std::unique_ptr<ResourceEntryVector> entries(ReadDirectorySync(
+      base::FilePath::FromUTF8Unsafe("drive/team_drives/team_drive_1")));
+  // The root directory should be read correctly.
+  ASSERT_TRUE(entries);
+
+  std::set<base::FilePath> found;
+  for (size_t i = 0; i < entries->size(); ++i) {
+    found.insert(base::FilePath::FromUTF8Unsafe((*entries)[i].title()));
+  }
+  EXPECT_EQ(2U, found.size());
+  EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe("dir1")));
+  EXPECT_EQ(1U, found.count(base::FilePath::FromUTF8Unsafe("TestFile")));
+}
+
 TEST_F(FileSystemTest, ReadDirectory_NonRootDirectory) {
   // ReadDirectory() should kick off the resource list loading.
   std::unique_ptr<ResourceEntryVector> entries(ReadDirectorySync(
