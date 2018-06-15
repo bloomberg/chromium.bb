@@ -246,6 +246,14 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // Provides a Display for CreateRootCompositorFrameSink().
   DisplayProvider* const display_provider_;
 
+  PrimaryBeginFrameSource primary_source_;
+
+  // Must be created after and destroyed before |primary_source_|.
+  SurfaceManager surface_manager_;
+
+  // Must be created after and destroyed before |surface_manager_|.
+  HitTestManager hit_test_manager_;
+
   // Contains registered frame sink ids, debug labels and synchronization
   // labels. Map entries will be created when frame sink is registered and
   // destroyed when frame sink is invalidated.
@@ -266,14 +274,6 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   // [Root]CompositorFrameSinkImpls are owned in this map.
   base::flat_map<FrameSinkId, std::unique_ptr<mojom::CompositorFrameSink>>
       sink_map_;
-
-  PrimaryBeginFrameSource primary_source_;
-
-  // |surface_manager_| should be placed under |primary_source_| so that all
-  // surfaces are destroyed before |primary_source_|.
-  SurfaceManager surface_manager_;
-
-  HitTestManager hit_test_manager_;
 
   base::flat_set<std::unique_ptr<FrameSinkVideoCapturerImpl>,
                  base::UniquePtrComparator>
