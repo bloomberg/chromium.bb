@@ -86,7 +86,6 @@ class LoadingDesktopStorySet(story.StorySet):
          ('http://www.imdb.com/title/tt0910970/', 'IMDB'),
          ('http://www.flickr.com/search/?q=monkeys&f=hp', 'Flickr'),
          ('http://money.cnn.com/', 'money.cnn'),
-         ('http://www.nationalgeographic.com/', 'NatGeo'),
          ('http://premierleague.com', 'PremierLeague'),
          ('http://walgreens.com', 'Walgreens'),
          ('http://colorado.edu', 'Colorado.edu'),
