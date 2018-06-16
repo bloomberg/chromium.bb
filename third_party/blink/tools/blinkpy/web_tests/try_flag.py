@@ -27,7 +27,7 @@ BUILDER_CONFIGS = {
     'win7_chromium_rel_ng': TestConfiguration('Win', '', 'release')
 }
 BUILDER_BUCKETS = {
-    'linux_chromium_rel_ng': 'master.tryserver.chromium.linux',
+    'linux_chromium_rel_ng': 'luci.chromium.try',
     'mac_chromium_rel_ng': 'master.tryserver.chromium.mac',
     'win7_chromium_rel_ng': 'master.tryserver.chromium.win'
 }
