@@ -11,6 +11,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
@@ -416,7 +417,7 @@ public class NewTabPageView
 
         if (SuggestionsConfig.useModernLayout()
                 && !DeviceFormFactor.isWindowOnTablet(mTab.getWindowAndroid())) {
-            ApiCompatibilityUtils.setMarginEnd(
+            MarginLayoutParamsCompat.setMarginEnd(
                     (MarginLayoutParams) mVoiceSearchButton.getLayoutParams(),
                     getResources().getDimensionPixelSize(
                             R.dimen.ntp_search_box_voice_search_margin_end_modern));

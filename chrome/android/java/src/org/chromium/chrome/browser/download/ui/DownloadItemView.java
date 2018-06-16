@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
 import android.text.format.Formatter;
@@ -231,7 +232,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mItem = item;
         setItem(item);
 
-        ApiCompatibilityUtils.setMarginStart(
+        MarginLayoutParamsCompat.setMarginStart(
                 (MarginLayoutParams) mLayoutContainer.getLayoutParams(),
                 item.isSuggested() ? mMarginSubsection : mMargin);
 
@@ -304,12 +305,12 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             // to 0 by removing its text and eliminating the margin.
             if (progress.isIndeterminate()) {
                 mDownloadPercentageView.setText(null);
-                ApiCompatibilityUtils.setMarginEnd(
+                MarginLayoutParamsCompat.setMarginEnd(
                         (MarginLayoutParams) mDownloadPercentageView.getLayoutParams(), 0);
             } else {
                 mDownloadPercentageView.setText(
                         DownloadUtils.getPercentageString(progress.getPercentage()));
-                ApiCompatibilityUtils.setMarginEnd(
+                MarginLayoutParamsCompat.setMarginEnd(
                         (MarginLayoutParams) mDownloadPercentageView.getLayoutParams(), mMargin);
             }
         }

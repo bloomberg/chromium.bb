@@ -35,7 +35,6 @@ import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
-import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodSubtype;
@@ -186,50 +185,6 @@ public class ApiCompatibilityUtils {
             labelView.setLabelFor(id);
         } else {
             // Do nothing. #setLabelFor() isn't supported before JB MR1.
-        }
-    }
-
-    /**
-     * @see android.view.ViewGroup.MarginLayoutParams#setMarginEnd(int)
-     */
-    public static void setMarginEnd(MarginLayoutParams layoutParams, int end) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            layoutParams.setMarginEnd(end);
-        } else {
-            layoutParams.rightMargin = end;
-        }
-    }
-
-    /**
-     * @see android.view.ViewGroup.MarginLayoutParams#getMarginEnd()
-     */
-    public static int getMarginEnd(MarginLayoutParams layoutParams) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return layoutParams.getMarginEnd();
-        } else {
-            return layoutParams.rightMargin;
-        }
-    }
-
-    /**
-     * @see android.view.ViewGroup.MarginLayoutParams#setMarginStart(int)
-     */
-    public static void setMarginStart(MarginLayoutParams layoutParams, int start) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            layoutParams.setMarginStart(start);
-        } else {
-            layoutParams.leftMargin = start;
-        }
-    }
-
-    /**
-     * @see android.view.ViewGroup.MarginLayoutParams#getMarginStart()
-     */
-    public static int getMarginStart(MarginLayoutParams layoutParams) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return layoutParams.getMarginStart();
-        } else {
-            return layoutParams.leftMargin;
         }
     }
 

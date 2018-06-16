@@ -8,14 +8,13 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
-
-import org.chromium.base.ApiCompatibilityUtils;
 
 /**
  * The adapter used to populate ColorPickerSimple.
@@ -108,9 +107,9 @@ public class ColorSuggestionListAdapter extends BaseAdapter implements View.OnCl
                 View button = new View(mContext);
                 LinearLayout.LayoutParams layoutParams =
                         new LinearLayout.LayoutParams(0, buttonHeight, 1f);
-                ApiCompatibilityUtils.setMarginStart(layoutParams, -1);
+                MarginLayoutParamsCompat.setMarginStart(layoutParams, -1);
                 if (i == COLORS_PER_ROW - 1) {
-                    ApiCompatibilityUtils.setMarginEnd(layoutParams, -1);
+                    MarginLayoutParamsCompat.setMarginEnd(layoutParams, -1);
                 }
                 button.setLayoutParams(layoutParams);
                 button.setBackgroundResource(R.drawable.color_button_background);

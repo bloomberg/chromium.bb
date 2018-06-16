@@ -7,6 +7,7 @@ package org.chromium.ui;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
@@ -163,8 +164,8 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             iconLayoutParams.height = iconSize;
             int iconMargin =
                     mContext.getResources().getDimensionPixelSize(item.getIconMarginResId());
-            ApiCompatibilityUtils.setMarginStart(iconLayoutParams, iconMargin);
-            ApiCompatibilityUtils.setMarginEnd(iconLayoutParams, iconMargin);
+            MarginLayoutParamsCompat.setMarginStart(iconLayoutParams, iconMargin);
+            MarginLayoutParamsCompat.setMarginEnd(iconLayoutParams, iconMargin);
             iconView.setLayoutParams(iconLayoutParams);
             iconView.setImageDrawable(AppCompatResources.getDrawable(mContext, item.getIconId()));
             iconView.setVisibility(View.VISIBLE);

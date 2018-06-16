@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.content.ClipData;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.view.MotionEvent;
 import android.view.PointerIcon;
 import android.view.View;
@@ -151,7 +152,7 @@ public class ViewAndroidDelegate {
             widthInt = containerView.getWidth() - startMargin;
         }
         LayoutParams lp = new LayoutParams(widthInt, heightInt);
-        ApiCompatibilityUtils.setMarginStart(lp, startMargin);
+        MarginLayoutParamsCompat.setMarginStart(lp, startMargin);
         lp.topMargin = topMargin;
         view.setLayoutParams(lp);
     }

@@ -14,6 +14,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Handler;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
@@ -385,7 +386,7 @@ public class EditorDialog
 
                 firstParams.width = 0;
                 firstParams.weight = 1;
-                ApiCompatibilityUtils.setMarginEnd(firstParams, mHalfRowMargin);
+                MarginLayoutParamsCompat.setMarginEnd(firstParams, mHalfRowMargin);
                 lastParams.width = 0;
                 lastParams.weight = 1;
 
