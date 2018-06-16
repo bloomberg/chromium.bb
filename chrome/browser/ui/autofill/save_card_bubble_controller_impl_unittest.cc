@@ -78,7 +78,8 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     return new SaveCardBubbleTestBrowserWindow();
   }
 
-  void SetLegalMessage(const std::string& message_json) {
+  void SetLegalMessage(const std::string& message_json,
+                       bool should_request_name_from_user = false) {
     std::unique_ptr<base::Value> value(base::JSONReader::Read(message_json));
     ASSERT_TRUE(value);
     base::DictionaryValue* dictionary;
@@ -86,23 +87,26 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     std::unique_ptr<base::DictionaryValue> legal_message =
         dictionary->CreateDeepCopy();
     controller()->ShowBubbleForUpload(CreditCard(), std::move(legal_message),
-                                      base::Bind(&SaveCardCallback));
+                                      should_request_name_from_user,
+                                      base::BindOnce(&UploadSaveCardCallback));
   }
 
   void ShowLocalBubble(CreditCard* card = nullptr) {
+    // TODO(crbug.com/852562): Migrate this to BindOnce/OnceClosure.
     controller()->ShowBubbleForLocalSave(
         card ? CreditCard(*card)
              : autofill::test::GetCreditCard(),  // Visa by default
-        base::Bind(&SaveCardCallback));
+        base::Bind(&LocalSaveCardCallback));
   }
 
-  void ShowUploadBubble() {
+  void ShowUploadBubble(bool should_request_name_from_user = false) {
     SetLegalMessage(
         "{"
         "  \"line\" : [ {"
         "     \"template\": \"This is the entire message.\""
         "  } ]"
-        "}");
+        "}",
+        should_request_name_from_user);
   }
 
   void CloseAndReshowBubble() {
@@ -137,7 +141,8 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     std::unique_ptr<TestSaveCardBubbleView> save_card_bubble_view_;
   };
 
-  static void SaveCardCallback() {}
+  static void UploadSaveCardCallback(const base::string16& cardholder_name) {}
+  static void LocalSaveCardCallback() {}
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleControllerImplTest);
 };
@@ -149,6 +154,18 @@ TEST_F(SaveCardBubbleControllerImplTest, LegalMessageLinesEmptyOnLocalSave) {
   controller()->OnBubbleClosed();
   ShowLocalBubble();
   EXPECT_TRUE(controller()->GetLegalMessageLines().empty());
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       PropagateShouldRequestNameFromUserWhenFalse) {
+  ShowUploadBubble();
+  EXPECT_FALSE(controller()->ShouldRequestNameFromUser());
+}
+
+TEST_F(SaveCardBubbleControllerImplTest,
+       PropagateShouldRequestNameFromUserWhenTrue) {
+  ShowUploadBubble(/*should_request_name_from_user=*/true);
+  EXPECT_TRUE(controller()->ShouldRequestNameFromUser());
 }
 
 TEST_F(SaveCardBubbleControllerImplTest, Metrics_Local_FirstShow_ShowBubble) {

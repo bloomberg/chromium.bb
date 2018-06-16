@@ -54,6 +54,16 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
     COUNTRY_CODE = 1 << 7,
     // Set if the user is already syncing data from a Google Payments account.
     HAS_GOOGLE_PAYMENTS_ACCOUNT = 1 << 8,
+    // Card expiration month (not currently used).
+    CARD_EXPIRATION_MONTH = 1 << 9,
+    // Card expiration year (not currently used).
+    CARD_EXPIRATION_YEAR = 1 << 10,
+    // Phone number was found on any address (not currently used).
+    PHONE_NUMBER = 1 << 11,
+    // Set if cardholder name was explicitly requested in the offer-to-save
+    // dialog.  In general, this should happen when name is conflicting/missing
+    // and the user does not have a Google Payments account.
+    USER_PROVIDED_NAME = 1 << 12,
   };
 
   // An observer class used by browsertests that gets notified whenever
@@ -121,8 +131,9 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
   int GetDetectedValues() const;
 
   // Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
-  // the risk data is available.
-  void OnUserDidAcceptUpload();
+  // the risk data is available. Sets the cardholder name on the upload request
+  // if |cardholder_name| is set.
+  void OnUserDidAcceptUpload(const base::string16& cardholder_name);
 
   // Saves risk data in |uploading_risk_data_| and calls SendUploadCardRequest
   // if the user has accepted the prompt.
@@ -176,6 +187,10 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
 
   // |true| if the user has opted to upload save their credit card to Google.
   bool user_did_accept_upload_prompt_ = false;
+
+  // |should_request_name_from_user_| is |true| if the upload save dialog should
+  // request cardholder name from the user (prefilled with Google Account name).
+  bool should_request_name_from_user_ = false;
 
   // |found_cvc_field_| is |true| if there exists a field that is determined to
   // be a CVC field via heuristics.

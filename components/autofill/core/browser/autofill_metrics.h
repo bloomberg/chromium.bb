@@ -89,6 +89,9 @@ class AutofillMetrics {
     // One or more valid addresses, and a name were available but the request to
     // Payments for upload details failed.
     UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED = 1 << 11,
+    // A textfield for the user to enter/confirm cardholder name was surfaced
+    // in the offer-to-save dialog.
+    USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME = 1 << 12,
     // Update |kNumCardUploadDecisionMetrics| when adding new enum here.
   };
 
@@ -1085,7 +1088,7 @@ class AutofillMetrics {
   };
 
  private:
-  static const int kNumCardUploadDecisionMetrics = 12;
+  static const int kNumCardUploadDecisionMetrics = 13;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };

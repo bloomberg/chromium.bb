@@ -76,8 +76,9 @@ void TestAutofillClient::ConfirmSaveCreditCardLocally(
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    const base::Closure& callback) {
-  callback.Run();
+    bool should_request_name_from_user,
+    base::OnceCallback<void(const base::string16&)> callback) {
+  std::move(callback).Run(base::string16());
 }
 
 void TestAutofillClient::ConfirmCreditCardFillAssist(

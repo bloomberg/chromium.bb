@@ -30,16 +30,25 @@ AutofillSaveCardInfoBarDelegateMobile::AutofillSaveCardInfoBarDelegateMobile(
     bool upload,
     const CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    const base::Closure& save_card_callback,
+    base::OnceCallback<void(const base::string16&)> upload_save_card_callback,
+    base::Closure local_save_card_callback,
     PrefService* pref_service)
     : ConfirmInfoBarDelegate(),
       upload_(upload),
-      save_card_callback_(save_card_callback),
+      upload_save_card_callback_(std::move(upload_save_card_callback)),
+      local_save_card_callback_(local_save_card_callback),
       pref_service_(pref_service),
       had_user_interaction_(false),
       issuer_icon_id_(CreditCard::IconResourceId(card.network())),
       card_label_(card.NetworkAndLastFourDigits()),
       card_sub_label_(card.AbbreviatedExpirationDateForDisplay()) {
+  if (upload) {
+    DCHECK(!upload_save_card_callback_.is_null());
+    DCHECK(local_save_card_callback_.is_null());
+  } else {
+    DCHECK(upload_save_card_callback_.is_null());
+    DCHECK(!local_save_card_callback_.is_null());
+  }
   if (legal_message) {
     if (!LegalMessageLine::Parse(*legal_message, &legal_messages_,
                                  /*escape_apostrophes=*/true)) {
@@ -138,8 +147,12 @@ base::string16 AutofillSaveCardInfoBarDelegateMobile::GetButtonLabel(
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::Accept() {
-  save_card_callback_.Run();
-  save_card_callback_.Reset();
+  if (upload_) {
+    std::move(upload_save_card_callback_).Run(base::string16());
+  } else {
+    local_save_card_callback_.Run();
+    local_save_card_callback_.Reset();
+  }
   LogUserAction(AutofillMetrics::INFOBAR_ACCEPTED);
   return true;
 }

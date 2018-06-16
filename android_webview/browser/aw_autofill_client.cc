@@ -266,7 +266,8 @@ void AwAutofillClient::ConfirmSaveCreditCardLocally(
 void AwAutofillClient::ConfirmSaveCreditCardToCloud(
     const autofill::CreditCard& card,
     std::unique_ptr<base::DictionaryValue> legal_message,
-    const base::Closure& callback) {
+    bool should_request_name_from_user,
+    base::OnceCallback<void(const base::string16&)> callback) {
   NOTIMPLEMENTED();
 }
 

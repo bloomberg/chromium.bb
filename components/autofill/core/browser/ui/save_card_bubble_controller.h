@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/legal_message_line.h"
+#include "components/signin/core/browser/account_info.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -31,11 +32,21 @@ class SaveCardBubbleController {
   // Returns an empty string if no message should be displayed.
   virtual base::string16 GetExplanatoryMessage() const = 0;
 
+  // Returns the account info of the signed-in user.
+  virtual const AccountInfo& GetAccountInfo() const = 0;
+
   // Returns the card that will be uploaded if the user accepts.
-  virtual const CreditCard GetCard() const = 0;
+  virtual const CreditCard& GetCard() const = 0;
+
+  // Returns whether the dialog should include a textfield requesting the user
+  // to confirm/provide cardholder name.
+  virtual bool ShouldRequestNameFromUser() const = 0;
 
   // Interaction.
-  virtual void OnSaveButton() = 0;
+  // OnSaveButton takes in a string value representing the cardholder name
+  // confirmed/entered by the user if it was requested, or an empty string
+  // otherwise.
+  virtual void OnSaveButton(const base::string16& cardholder_name) = 0;
   virtual void OnCancelButton() = 0;
   virtual void OnLegalMessageLinkClicked(const GURL& url) = 0;
   virtual void OnBubbleClosed() = 0;

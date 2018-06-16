@@ -181,11 +181,21 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
         kAutofillUpstreamUpdatePromptExplanation.name);
   }
 
+  int detected_values = GetDetectedValues();
+  // If the user must provide cardholder name, log it and set
+  // |should_request_name_from_user_| so the offer-to-save dialog know to ask
+  // for it.
+  if (detected_values & DetectedValue::USER_PROVIDED_NAME) {
+    upload_decision_metrics_ |=
+        AutofillMetrics::USER_REQUESTED_TO_PROVIDE_CARDHOLDER_NAME;
+    should_request_name_from_user_ = true;
+  }
+
   // All required data is available, start the upload process.
   if (observer_for_testing_)
     observer_for_testing_->OnDecideToRequestUploadSave();
   payments_client_->GetUploadDetails(
-      upload_request_.profiles, GetDetectedValues(),
+      upload_request_.profiles, detected_values,
       base::UTF16ToASCII(CreditCard::StripSeparators(card.number()))
           .substr(0, 6),
       upload_request_.active_experiments, app_locale_);
@@ -236,8 +246,9 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     user_did_accept_upload_prompt_ = false;
     client_->ConfirmSaveCreditCardToCloud(
         upload_request_.card, std::move(legal_message),
-        base::Bind(&CreditCardSaveManager::OnUserDidAcceptUpload,
-                   weak_ptr_factory_.GetWeakPtr()));
+        should_request_name_from_user_,
+        base::BindOnce(&CreditCardSaveManager::OnUserDidAcceptUpload,
+                       weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(
         base::Bind(&CreditCardSaveManager::OnDidGetUploadRiskData,
                    weak_ptr_factory_.GetWeakPtr()));
@@ -470,10 +481,34 @@ int CreditCardSaveManager::GetDetectedValues() const {
           prefs::kAutofillBillingCustomerNumber)) != 0)
     detected_values |= DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT;
 
+  // If one of the following is true, signal that cardholder name will be
+  // explicitly requested in the offer-to-save bubble:
+  //  1) Name is conflicting/missing, and the user does NOT have a Google
+  //     Payments account
+  //  2) The AutofillUpstreamAlwaysRequestCardholderName experiment is enabled
+  //     (should only ever be used by testers, never launched)
+  if ((!(detected_values & DetectedValue::CARDHOLDER_NAME) &&
+       !(detected_values & DetectedValue::ADDRESS_NAME) &&
+       !(detected_values & DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT) &&
+       IsAutofillUpstreamEditableCardholderNameExperimentEnabled()) ||
+      IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled()) {
+    detected_values |= DetectedValue::USER_PROVIDED_NAME;
+  }
+
   return detected_values;
 }
 
-void CreditCardSaveManager::OnUserDidAcceptUpload() {
+void CreditCardSaveManager::OnUserDidAcceptUpload(
+    const base::string16& cardholder_name) {
+  // If cardholder name was explicitly requested for the user to enter/confirm,
+  // replace the name on |upload_request_.card| with the entered name.  (Note
+  // that it is possible a name already existed on the card if conflicting names
+  // were found, which this intentionally overwrites.)
+  if (!cardholder_name.empty()) {
+    DCHECK(should_request_name_from_user_);
+    upload_request_.card.SetInfo(CREDIT_CARD_NAME_FULL, cardholder_name,
+                                 app_locale_);
+  }
   user_did_accept_upload_prompt_ = true;
   // Populating risk data and offering upload occur asynchronously.
   // If |risk_data| has already been loaded, send the upload card request.

@@ -329,6 +329,14 @@ const char kEnableAutofillCreditCardLastUsedDateDisplayName[] =
 const char kEnableAutofillCreditCardLastUsedDateDisplayDescription[] =
     "If enabled, display the last used date of a credit card in autofill.";
 
+const char kEnableAutofillCreditCardUploadEditableCardholderNameName[] =
+    "Make cardholder name editable in dialog during credit card upload";
+const char kEnableAutofillCreditCardUploadEditableCardholderNameDescription[] =
+    "If enabled, in certain situations when offering credit card upload to "
+    "Google Payments, the cardholder name can be edited within the "
+    "offer-to-save dialog, which is prefilled with the name from the signed-in "
+    "Google Account.";
+
 const char kEnableAutofillCreditCardUploadGooglePayOnAndroidBrandingName[] =
     "Enable Google Pay branding when offering credit card upload on Android";
 const char

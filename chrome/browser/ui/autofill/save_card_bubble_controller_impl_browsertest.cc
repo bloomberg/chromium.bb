@@ -60,9 +60,11 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
       controller_->ShowBubbleForLocalSave(test::GetCreditCard(),
                                           base::DoNothing());
     } else {
-      controller_->ShowBubbleForUpload(test::GetMaskedServerCard(),
-                                       GetTestLegalMessage(),
-                                       base::DoNothing());
+      bool should_request_name_from_user =
+          name == "Server_WithCardholderNameTextfield";
+      controller_->ShowBubbleForUpload(
+          test::GetMaskedServerCard(), GetTestLegalMessage(),
+          should_request_name_from_user, base::DoNothing());
     }
   }
 
@@ -83,6 +85,13 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Local) {
 // Invokes a bubble asking the user if they want to save a credit card to the
 // server.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest, InvokeUi_Server) {
+  ShowAndVerifyUi();
+}
+
+// Invokes a bubble asking the user if they want to save a credit card to the
+// server, with an added textfield for entering/confirming cardholder name.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleControllerImplTest,
+                       InvokeUi_Server_WithCardholderNameTextfield) {
   ShowAndVerifyUi();
 }
 
