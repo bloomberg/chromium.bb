@@ -35,16 +35,12 @@ login.createScreen('FatalErrorScreen', 'fatal-error', function() {
 
     /** @override */
     onBeforeShow: function() {
-      this.savedUIStates_.progressDotHidden = $('progress-dots').hidden;
-      $('progress-dots').hidden = true;
-
       this.savedUIStates_.headerHidden = Oobe.getInstance().headerHidden;
       Oobe.getInstance().headerHidden = true;
     },
 
     /** @override */
     onBeforeHide: function() {
-      $('progress-dots').hidden = this.savedUIStates_.progressDotHidden;
       Oobe.getInstance().headerHidden = this.savedUIStates_.headerHidden;
     },
 

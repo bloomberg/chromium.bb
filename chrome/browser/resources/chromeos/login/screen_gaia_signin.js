@@ -561,7 +561,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.screenMode = ScreenMode.DEFAULT;
       this.loading = true;
       chrome.send('loginUIStateChanged', ['gaia-signin', true]);
-      $('progress-dots').hidden = true;
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
 
       // Ensure that GAIA signin (or loading UI) is actually visible.

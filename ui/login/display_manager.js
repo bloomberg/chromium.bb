@@ -645,7 +645,6 @@ cr.define('cr.ui.login', function() {
               'transitionend', function f(e) {
                 innerContainer.removeEventListener('transitionend', f);
                 outerContainer.classList.remove('down');
-                $('progress-dots').classList.remove('down');
                 chrome.send('loginVisible', ['oobe']);
                 // Refresh defaultControl. It could have changed.
                 var defaultControl = newStep.defaultControl;
@@ -746,13 +745,6 @@ cr.define('cr.ui.login', function() {
       header.textContent = el.header ? el.header : '';
       header.className = 'header-section';
       $('header-sections').appendChild(header);
-
-      var dot = document.createElement('div');
-      dot.id = screenId + '-dot';
-      dot.className = 'progdot';
-      var progressDots = $('progress-dots');
-      if (progressDots)
-        progressDots.appendChild(dot);
 
       this.appendButtons_(el.buttons, screenId);
     },

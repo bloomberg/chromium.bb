@@ -197,12 +197,6 @@ login.createScreen('EulaScreen', 'eula', function() {
     enableKeyboardFlow: function() {},
 
     /**
-     * This method takes care of switching to material-design OOBE.
-     * @private
-     */
-    setMDMode_: function() {},
-
-    /**
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {

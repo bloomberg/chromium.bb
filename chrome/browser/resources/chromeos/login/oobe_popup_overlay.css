@@ -4,7 +4,7 @@
 
 .popup-overlay {
   align-items: center;
-  background: rgba(255, 255, 255, .75);
+  background: rgba(0, 0, 0, .5);
   bottom: 0;
   display: flex;
   justify-content: center;
@@ -15,10 +15,6 @@
   top: 0;
   transition: 250ms opacity;
   z-index: 5;
-}
-
-#popup-overlay[md-mode] {
-  background: rgba(0, 0, 0, .5);
 }
 
 .oobe-popup {

@@ -116,17 +116,8 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
      * @param {Object} data Screen init payload.
      */
     onBeforeShow: function(data) {
-      this.setMDMode_();
       $('oobe-hid-detection-md').setMouseState(this.CONNECTION.SEARCHING);
       $('oobe-hid-detection-md').setKeyboardState(this.CONNECTION.SEARCHING);
-    },
-
-    /**
-     * This method takes care of switching to material-design OOBE.
-     * @private
-     */
-    setMDMode_: function() {
-      $('oobe-hid-detection-md').hidden = false;
     },
   };
 });

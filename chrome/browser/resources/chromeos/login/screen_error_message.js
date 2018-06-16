@@ -280,7 +280,6 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
         // Hide header bar and progress dots, because there are no way
         // from the error screen about broken local state.
         Oobe.getInstance().headerHidden = true;
-        $('progress-dots').hidden = true;
       }
       this.onContentChange_();
     },

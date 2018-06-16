@@ -113,11 +113,5 @@ login.createScreen('NetworkScreen', 'connect', function() {
     onWindowResize: function() {
       $('oobe-welcome-md').onWindowResize();
     },
-
-    /**
-     * This method takes care of switching to material-design OOBE.
-     * @private
-     */
-    setMDMode_: function() {}
   };
 });

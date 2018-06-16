@@ -63,7 +63,6 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
       if (attemptCount > 0)
         this.confirmPasswordForm_.invalidate();
       Oobe.showScreen({id: SCREEN_CONFIRM_PASSWORD});
-      $('progress-dots').hidden = true;
     }
   };
 });
