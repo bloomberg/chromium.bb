@@ -64,6 +64,9 @@ void av1_calculate_tile_cols(AV1_COMMON *const cm) {
     cm->tile_col_start_sb[i] = sb_cols;
     cm->min_log2_tile_rows = AOMMAX(cm->min_log2_tiles - cm->log2_tile_cols, 0);
     cm->max_tile_height_sb = sb_rows >> cm->min_log2_tile_rows;
+
+    cm->tile_width = size_sb << cm->seq_params.mib_size_log2;
+    cm->tile_width = AOMMIN(cm->tile_width, cm->mi_cols);
   } else {
     int max_tile_area_sb = (sb_rows * sb_cols);
     int widest_tile_sb = 1;
@@ -94,6 +97,9 @@ void av1_calculate_tile_rows(AV1_COMMON *const cm) {
     }
     cm->tile_rows = i;
     cm->tile_row_start_sb[i] = sb_rows;
+
+    cm->tile_height = size_sb << cm->seq_params.mib_size_log2;
+    cm->tile_height = AOMMIN(cm->tile_height, cm->mi_rows);
   } else {
     cm->log2_tile_rows = tile_log2(1, cm->tile_rows);
   }

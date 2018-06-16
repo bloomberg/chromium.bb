@@ -2204,29 +2204,6 @@ static void write_tile_info(const AV1_COMMON *const cm,
 static void write_ext_tile_info(const AV1_COMMON *const cm,
                                 struct aom_write_bit_buffer *saved_wb,
                                 struct aom_write_bit_buffer *wb) {
-  const int tile_width =
-      ALIGN_POWER_OF_TWO(cm->tile_width, cm->seq_params.mib_size_log2) >>
-      cm->seq_params.mib_size_log2;
-  const int tile_height =
-      ALIGN_POWER_OF_TWO(cm->tile_height, cm->seq_params.mib_size_log2) >>
-      cm->seq_params.mib_size_log2;
-
-  assert(tile_width > 0);
-  assert(tile_height > 0);
-
-  // Write the tile sizes
-  if (cm->seq_params.sb_size == BLOCK_128X128) {
-    assert(tile_width <= 32);
-    assert(tile_height <= 32);
-    aom_wb_write_literal(wb, tile_width - 1, 5);
-    aom_wb_write_literal(wb, tile_height - 1, 5);
-  } else {
-    assert(tile_width <= 64);
-    assert(tile_height <= 64);
-    aom_wb_write_literal(wb, tile_width - 1, 6);
-    aom_wb_write_literal(wb, tile_height - 1, 6);
-  }
-
   *saved_wb = *wb;
   if (cm->tile_rows * cm->tile_cols > 1) {
     // Note that the last item in the uncompressed header is the data

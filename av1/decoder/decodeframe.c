@@ -2216,47 +2216,11 @@ static void read_ext_tile_info(AV1Decoder *const pbi,
                                struct aom_read_bit_buffer *const rb) {
   AV1_COMMON *const cm = &pbi->common;
 
-  // Read the tile width/height
-  if (cm->seq_params.sb_size == BLOCK_128X128) {
-    cm->tile_width = aom_rb_read_literal(rb, 5) + 1;
-    cm->tile_height = aom_rb_read_literal(rb, 5) + 1;
-  } else {
-    cm->tile_width = aom_rb_read_literal(rb, 6) + 1;
-    cm->tile_height = aom_rb_read_literal(rb, 6) + 1;
-  }
-
-  cm->tile_width <<= cm->seq_params.mib_size_log2;
-  cm->tile_height <<= cm->seq_params.mib_size_log2;
-
-  cm->tile_width = AOMMIN(cm->tile_width, cm->mi_cols);
-  cm->tile_height = AOMMIN(cm->tile_height, cm->mi_rows);
-
-  // Get the number of tiles
-  cm->tile_cols = 1;
-  while (cm->tile_cols * cm->tile_width < cm->mi_cols) ++cm->tile_cols;
-
-  cm->tile_rows = 1;
-  while (cm->tile_rows * cm->tile_height < cm->mi_rows) ++cm->tile_rows;
-
   if (cm->tile_cols * cm->tile_rows > 1) {
     // Read the number of bytes used to store tile size
     pbi->tile_col_size_bytes = aom_rb_read_literal(rb, 2) + 1;
     pbi->tile_size_bytes = aom_rb_read_literal(rb, 2) + 1;
   }
-  for (int i = 0; i <= cm->tile_cols; i++) {
-    cm->tile_col_start_sb[i] =
-        ((i * cm->tile_width - 1) >> cm->seq_params.mib_size_log2) + 1;
-  }
-  for (int i = 0; i <= cm->tile_rows; i++) {
-    cm->tile_row_start_sb[i] =
-        ((i * cm->tile_height - 1) >> cm->seq_params.mib_size_log2) + 1;
-  }
-
-  // This is only needed to be compatible with max_tile.
-  cm->log2_tile_cols = 0;
-  while (cm->tile_cols > (1 << cm->log2_tile_cols)) ++cm->log2_tile_cols;
-  cm->log2_tile_rows = 0;
-  while (cm->tile_rows > (1 << cm->log2_tile_rows)) ++cm->log2_tile_rows;
 }
 #endif  // EXT_TILE_DEBUG
 

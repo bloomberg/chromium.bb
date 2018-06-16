@@ -783,7 +783,7 @@ void av1_new_framerate(AV1_COMP *cpi, double framerate) {
   av1_rc_update_framerate(cpi, cpi->common.width, cpi->common.height);
 }
 
-static void set_tile_info_max_tile(AV1_COMP *cpi) {
+static void set_tile_info(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   int i, start_sb;
 
@@ -828,54 +828,6 @@ static void set_tile_info_max_tile(AV1_COMP *cpi) {
     cm->tile_row_start_sb[i] = sb_rows;
   }
   av1_calculate_tile_rows(cm);
-}
-
-static void set_tile_info(AV1_COMP *cpi) {
-  AV1_COMMON *const cm = &cpi->common;
-  if (cpi->oxcf.large_scale_tile) {
-    if (cpi->oxcf.superblock_size != AOM_SUPERBLOCK_SIZE_64X64) {
-      cm->tile_width = clamp(cpi->oxcf.tile_columns, 1, 32);
-      cm->tile_height = clamp(cpi->oxcf.tile_rows, 1, 32);
-      cm->tile_width <<= MAX_MIB_SIZE_LOG2;
-      cm->tile_height <<= MAX_MIB_SIZE_LOG2;
-    } else {
-      cm->tile_width = clamp(cpi->oxcf.tile_columns, 1, 64);
-      cm->tile_height = clamp(cpi->oxcf.tile_rows, 1, 64);
-      cm->tile_width <<= MAX_MIB_SIZE_LOG2 - 1;
-      cm->tile_height <<= MAX_MIB_SIZE_LOG2 - 1;
-    }
-
-    cm->tile_width = AOMMIN(cm->tile_width, cm->mi_cols);
-    cm->tile_height = AOMMIN(cm->tile_height, cm->mi_rows);
-
-    assert(cm->tile_width >> MAX_MIB_SIZE_LOG2 <= 32);
-    assert(cm->tile_height >> MAX_MIB_SIZE_LOG2 <= 32);
-
-    // Get the number of tiles
-    cm->tile_cols = 1;
-    while (cm->tile_cols * cm->tile_width < cm->mi_cols) ++cm->tile_cols;
-
-    cm->tile_rows = 1;
-    while (cm->tile_rows * cm->tile_height < cm->mi_rows) ++cm->tile_rows;
-    int i;
-    for (i = 0; i <= cm->tile_cols; i++) {
-      cm->tile_col_start_sb[i] =
-          ((i * cm->tile_width - 1) >> cm->seq_params.mib_size_log2) + 1;
-    }
-    for (i = 0; i <= cm->tile_rows; i++) {
-      cm->tile_row_start_sb[i] =
-          ((i * cm->tile_height - 1) >> cm->seq_params.mib_size_log2) + 1;
-    }
-
-    // (Yunqing) This is needed to be compatible with max_tile. Otherwise, the
-    // decoder would crash.
-    cm->log2_tile_cols = 0;
-    while (cm->tile_cols > (1 << cm->log2_tile_cols)) ++cm->log2_tile_cols;
-    cm->log2_tile_rows = 0;
-    while (cm->tile_rows > (1 << cm->log2_tile_rows)) ++cm->log2_tile_rows;
-  } else {
-    set_tile_info_max_tile(cpi);
-  }
 }
 
 static void update_frame_size(AV1_COMP *cpi) {

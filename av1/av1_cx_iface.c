@@ -283,28 +283,9 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(cfg, large_scale_tile, 1);
   RANGE_CHECK_HI(extra_cfg, single_tile_decoding, 1);
 
-  if (cfg->large_scale_tile) {
-    // TODO(any): Warning. If CONFIG_EXT_TILE is true, tile_columns really
-    // means tile_width, and tile_rows really means tile_hight. The interface
-    // should be sanitized.
-    // While cfg->large_scale_tile = 1, only allow AOM_SUPERBLOCK_SIZE_64X64 and
-    // AOM_SUPERBLOCK_SIZE_128X128 for superblock_size. If superblock_size =
-    // AOM_SUPERBLOCK_SIZE_DYNAMIC(default), hard set it to
-    // AOM_SUPERBLOCK_SIZE_64X64(default value in large_scale_tile) in
-    // set_encoder_config().
-    if (extra_cfg->superblock_size == AOM_SUPERBLOCK_SIZE_128X128) {
-      if (extra_cfg->tile_columns != 0)
-        RANGE_CHECK(extra_cfg, tile_columns, 1, 32);
-      if (extra_cfg->tile_rows != 0) RANGE_CHECK(extra_cfg, tile_rows, 1, 32);
-    } else {
-      if (extra_cfg->tile_columns != 0)
-        RANGE_CHECK(extra_cfg, tile_columns, 1, 64);
-      if (extra_cfg->tile_rows != 0) RANGE_CHECK(extra_cfg, tile_rows, 1, 64);
-    }
-  } else {
-    RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
-    RANGE_CHECK_HI(extra_cfg, tile_rows, 6);
-  }
+  RANGE_CHECK_HI(extra_cfg, tile_columns, 6);
+  RANGE_CHECK_HI(extra_cfg, tile_rows, 6);
+
   RANGE_CHECK_HI(cfg, monochrome, 1);
 
   if (cfg->large_scale_tile && extra_cfg->aq_mode)
@@ -634,24 +615,17 @@ static aom_codec_err_t set_encoder_config(
       (oxcf->large_scale_tile) ? extra_cfg->single_tile_decoding : 0;
   if (oxcf->large_scale_tile) {
     // The superblock_size can only be AOM_SUPERBLOCK_SIZE_64X64 or
-    // AOM_SUPERBLOCK_SIZE_128X128 while oxcf->large_scale_tile = 1;
+    // AOM_SUPERBLOCK_SIZE_128X128 while oxcf->large_scale_tile = 1. If
+    // superblock_size = AOM_SUPERBLOCK_SIZE_DYNAMIC, hard set it to
+    // AOM_SUPERBLOCK_SIZE_64X64(default value in large_scale_tile).
     if (extra_cfg->superblock_size != AOM_SUPERBLOCK_SIZE_64X64 &&
         extra_cfg->superblock_size != AOM_SUPERBLOCK_SIZE_128X128)
       oxcf->superblock_size = AOM_SUPERBLOCK_SIZE_64X64;
-    const unsigned int max =
-        oxcf->superblock_size == AOM_SUPERBLOCK_SIZE_64X64 ? 64 : 32;
-    // If tile size is not set, set it to the default value.
-    const unsigned int tc =
-        (!extra_cfg->tile_columns) ? UINT_MAX : extra_cfg->tile_columns;
-    const unsigned int tr =
-        (!extra_cfg->tile_rows) ? UINT_MAX : extra_cfg->tile_rows;
-
-    oxcf->tile_columns = AOMMIN(tc, max);
-    oxcf->tile_rows = AOMMIN(tr, max);
-  } else {
-    oxcf->tile_columns = extra_cfg->tile_columns;
-    oxcf->tile_rows = extra_cfg->tile_rows;
   }
+
+  oxcf->tile_columns = extra_cfg->tile_columns;
+  oxcf->tile_rows = extra_cfg->tile_rows;
+
   oxcf->monochrome = cfg->monochrome;
   oxcf->full_still_picture_hdr = cfg->full_still_picture_hdr;
   oxcf->enable_dual_filter = extra_cfg->use_dual_filter;

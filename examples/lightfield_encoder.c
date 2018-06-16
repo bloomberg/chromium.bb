@@ -342,12 +342,11 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
     die_codec(&codec, "Failed to set frame parallel decoding");
   if (aom_codec_control(&codec, AV1E_SET_SINGLE_TILE_DECODING, 1))
     die_codec(&codec, "Failed to turn on single tile decoding");
-  // Set tile size to 64 pixels. The tile_columns and
-  // tile_rows in the tile coding are overloaded to represent tile_width
-  // and tile_height, that range from 1 to 64, in the unit of 64 pixels.
-  if (aom_codec_control(&codec, AV1E_SET_TILE_COLUMNS, 1))
+  // Set tile_columns and tile_rows to MAX values, which guarantees the tile
+  // size of 64 x 64 pixels(i.e. 1 SB) for <= 4k resolution.
+  if (aom_codec_control(&codec, AV1E_SET_TILE_COLUMNS, 6))
     die_codec(&codec, "Failed to set tile width");
-  if (aom_codec_control(&codec, AV1E_SET_TILE_ROWS, 1))
+  if (aom_codec_control(&codec, AV1E_SET_TILE_ROWS, 6))
     die_codec(&codec, "Failed to set tile height");
 
   for (bv = 0; bv < v_blocks; ++bv) {
