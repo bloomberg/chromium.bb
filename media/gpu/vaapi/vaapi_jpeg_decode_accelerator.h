@@ -46,18 +46,7 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   bool IsSupported() override;
 
  private:
-  // An input buffer and the corresponding output video frame awaiting
-  // consumption, provided by the client.
-  struct DecodeRequest {
-    DecodeRequest(int32_t bitstream_buffer_id,
-                  std::unique_ptr<UnalignedSharedMemory> shm,
-                  const scoped_refptr<VideoFrame>& video_frame);
-    ~DecodeRequest();
-
-    int32_t bitstream_buffer_id;
-    std::unique_ptr<UnalignedSharedMemory> shm;
-    scoped_refptr<VideoFrame> video_frame;
-  };
+  struct DecodeRequest;
 
   // Notifies the client that an error has occurred and decoding cannot
   // continue.
@@ -66,7 +55,7 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   void VideoFrameReady(int32_t bitstream_buffer_id);
 
   // Processes one decode |request|.
-  void DecodeTask(const std::unique_ptr<DecodeRequest>& request);
+  void DecodeTask(std::unique_ptr<DecodeRequest> request);
 
   // Puts contents of |va_surface| into given |video_frame|, releases the
   // surface and passes the |input_buffer_id| of the resulting picture to
@@ -76,21 +65,13 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
                      const scoped_refptr<VideoFrame>& video_frame);
 
   // ChildThread's task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // GPU IO task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // The client of this class.
   Client* client_;
-
-  // WeakPtr<> pointing to |this| for use in posting tasks from the decoder
-  // thread back to the ChildThread.  Because the decoder thread is a member of
-  // this class, any task running on the decoder thread is guaranteed that this
-  // object is still alive.  As a result, tasks posted from ChildThread to
-  // decoder thread should use base::Unretained(this), and tasks posted from the
-  // decoder thread to the ChildThread should use |weak_this_|.
-  base::WeakPtr<VaapiJpegDecodeAccelerator> weak_this_;
 
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
@@ -110,7 +91,11 @@ class MEDIA_GPU_EXPORT VaapiJpegDecodeAccelerator
   // The VA RT format associated with |va_surface_id_|.
   unsigned int va_rt_format_;
 
-  // The WeakPtrFactory for |weak_this_|.
+  // WeakPtr factory for use in posting tasks from |decoder_task_runner_| back
+  // to |task_runner_|.  Since |decoder_thread_| is a fully owned member of
+  // this class, tasks posted to it may use base::Unretained(this), and tasks
+  // posted from the |decoder_task_runner_| to |task_runner_| should use a
+  // WeakPtr (obtained via weak_this_factory_.GetWeakPtr()).
   base::WeakPtrFactory<VaapiJpegDecodeAccelerator> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VaapiJpegDecodeAccelerator);
