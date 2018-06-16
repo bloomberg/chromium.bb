@@ -30,6 +30,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -102,7 +103,9 @@ views::View* SaveCardBubbleViews::CreateFootnoteView() {
 
 bool SaveCardBubbleViews::Accept() {
   if (controller_)
-    controller_->OnSaveButton();
+    controller_->OnSaveButton(cardholder_name_textfield_
+                                  ? cardholder_name_textfield_->text()
+                                  : base::string16());
   return true;
 }
 
@@ -138,6 +141,21 @@ base::string16 SaveCardBubbleViews::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
                                        ? IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT
                                        : IDS_NO_THANKS);
+}
+
+bool SaveCardBubbleViews::IsDialogButtonEnabled(ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_CANCEL)
+    return true;
+
+  DCHECK_EQ(ui::DIALOG_BUTTON_OK, button);
+  if (cardholder_name_textfield_) {
+    // If requesting the user confirm the name, it cannot be blank.
+    base::string16 trimmed_text;
+    base::TrimWhitespace(cardholder_name_textfield_->text(), base::TRIM_ALL,
+                         &trimmed_text);
+    return !trimmed_text.empty();
+  }
+  return true;
 }
 
 gfx::Size SaveCardBubbleViews::CalculatePreferredSize() const {
@@ -199,6 +217,12 @@ void SaveCardBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
 
   // |range| was not found.
   NOTREACHED();
+}
+
+void SaveCardBubbleViews::ContentsChanged(views::Textfield* sender,
+                                          const base::string16& new_contents) {
+  DCHECK_EQ(cardholder_name_textfield_, sender);
+  DialogModelChanged();
 }
 
 views::View* SaveCardBubbleViews::GetFootnoteViewForTesting() {
@@ -264,6 +288,21 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
 
   description_view->AddChildView(
       new views::Label(card.AbbreviatedExpirationDateForDisplay()));
+
+  // If necessary, add the cardholder name textfield to the upload save dialog.
+  if (controller_->ShouldRequestNameFromUser()) {
+    DCHECK(!cardholder_name_textfield_);
+    cardholder_name_textfield_ = new views::Textfield();
+    cardholder_name_textfield_->set_controller(this);
+    cardholder_name_textfield_->set_id(DialogViewId::CARDHOLDER_NAME_TEXTFIELD);
+    cardholder_name_textfield_->set_placeholder_text(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME));
+    cardholder_name_textfield_->SetTextInputType(
+        ui::TextInputType::TEXT_INPUT_TYPE_TEXT);
+    cardholder_name_textfield_->SetText(
+        base::ASCIIToUTF16(controller_->GetAccountInfo().full_name));
+    view->AddChildView(cardholder_name_textfield_);
+  }
 
   return view;
 }

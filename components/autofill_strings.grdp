@@ -240,6 +240,18 @@
       </message>
     </else>
   </if>
+  <if expr="is_linux and not chromeos">
+    <then>
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments, according to April 2018 UI guidelines. The prompt will be shown in a bubble below the omnibox.">
+        To pay faster next time, save your card, name, and billing address to your Google Account.
+      </message>
+    </then>
+    <else>
+      <message name="IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_V3_WITH_NAME" desc="Explanation of the effect of the Autofill save card prompt when the card is to be saved by uploading it to Google Payments and also saved locally, according to April 2018 UI guidelines. The prompt can be either a bubble or an infobar.">
+        To pay faster next time, save your card, name, and billing address to your Google Account and to this device.
+      </message>
+    </else>
+  </if>
 
   <!-- Autofill credit card suggestion popup -->
   <message name="IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR" desc="Abbreviated label for credit card expiration date. [CHAR-LIMIT=32]">
@@ -383,6 +395,9 @@
   </message>
   <message name="IDS_AUTOFILL_CARD_UNMASK_NEW_CARD_LINK" desc="Text for link that prompts user to update their credit card after it may have been re-issued." formatter_data="android_java">
     Update card
+  </message>
+  <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME" desc="The placeholder/label text for a cardholder name textfield.">
+    Cardholder name
   </message>
   <message name="IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC" desc="The placeholder/label text for credit card verification code in the requestAutocomplete dialog.">
     CVC

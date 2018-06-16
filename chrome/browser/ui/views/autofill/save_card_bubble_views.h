@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "ui/views/controls/styled_label_listener.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 
 namespace content {
 class WebContents;
@@ -17,6 +18,7 @@ class WebContents;
 
 namespace views {
 class StyledLabel;
+class Textfield;
 }
 
 namespace autofill {
@@ -26,7 +28,8 @@ namespace autofill {
 // previously saved.
 class SaveCardBubbleViews : public SaveCardBubbleView,
                             public LocationBarBubbleDelegateView,
-                            public views::StyledLabelListener {
+                            public views::StyledLabelListener,
+                            public views::TextfieldController {
  public:
   // Bubble will be anchored to |anchor_view|.
   SaveCardBubbleViews(views::View* anchor_view,
@@ -46,6 +49,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   bool Close() override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
@@ -61,6 +65,10 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override;
+
+  // views::TextfieldController:
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
 
   // Returns the footnote view, so it can be searched for clickable views.
   // Exists for testing (specifically, browsertests).
@@ -101,6 +109,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   SaveCardBubbleController* controller_;  // Weak reference.
 
   views::View* footnote_view_ = nullptr;
+  views::Textfield* cardholder_name_textfield_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViews);
 };

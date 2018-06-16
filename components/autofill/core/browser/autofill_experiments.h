@@ -39,6 +39,8 @@ extern const base::Feature kAutofillSuppressDisusedAddresses;
 extern const base::Feature kAutofillSuppressDisusedCreditCards;
 extern const base::Feature kAutofillUpstream;
 extern const base::Feature kAutofillUpstreamAllowAllEmailDomains;
+extern const base::Feature kAutofillUpstreamAlwaysRequestCardholderName;
+extern const base::Feature kAutofillUpstreamEditableCardholderName;
 extern const base::Feature kAutofillUpstreamSendDetectedValues;
 extern const base::Feature kAutofillUpstreamSendPanFirstSix;
 extern const base::Feature kAutofillUpstreamUpdatePromptExplanation;
@@ -85,6 +87,19 @@ bool ShowExpirationDateInAutofillCreditCardLastUsedDate();
 
 // Returns whether Autofill credit card bank name display experiment is enabled.
 bool IsAutofillCreditCardBankNameDisplayExperimentEnabled();
+
+// For testing purposes; not to be launched.  When enabled, Chrome Upstream
+// always requests that the user enters/confirms cardholder name in the
+// offer-to-save dialog, regardless of if it was present or if the user is a
+// Google Payments customer.  Note that this will override the detected
+// cardholder name, if one was found.
+bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled();
+
+// Returns whether the experiment is enabled where Chrome Upstream can request
+// the user to enter/confirm cardholder name in the offer-to-save bubble if it
+// was not detected or was conflicting during the checkout flow and the user is
+// NOT a Google Payments customer.
+bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled();
 
 // Returns whether the experiment is enabled where Chrome Upstream always checks
 // to see if it can offer to save (even though some data like name, address, and

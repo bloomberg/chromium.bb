@@ -133,11 +133,13 @@ class AutofillClient : public RiskDataLoader {
                                             const base::Closure& callback) = 0;
 
   // Runs |callback| if the |card| should be uploaded to Payments. Displays the
-  // contents of |legal_message| to the user.
+  // contents of |legal_message| to the user. Displays a cardholder name
+  // textfield in the bubble if |should_request_name_from_user| is true.
   virtual void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
-      const base::Closure& callback) = 0;
+      bool should_request_name_from_user,
+      base::OnceCallback<void(const base::string16&)> callback) = 0;
 
   // Will show an infobar to get user consent for Credit Card assistive filling.
   // Will run |callback| on success.

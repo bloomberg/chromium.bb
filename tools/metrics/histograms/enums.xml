@@ -2198,6 +2198,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="9" label="Name not found on card or address profiles"/>
   <int value="10" label="Card and/or addresses had conflicting names"/>
   <int value="11" label="Get upload details RPC failed"/>
+  <int value="12" label="User requested to provide cardholder name"/>
 </enum>
 
 <enum name="AutofillCreditCardInfoBar">
@@ -27052,6 +27053,8 @@ from previous Chrome versions.
   <int value="-1631329950" label="ssl-version-max"/>
   <int value="-1630419335" label="enable-download-notification"/>
   <int value="-1625881240" label="FullscreenExitUI:disabled"/>
+  <int value="-1625777277"
+      label="AutofillUpstreamEditableCardholderName:disabled"/>
   <int value="-1624854957" label="enable-es3-apis"/>
   <int value="-1624593106" label="NewTabPageBackgrounds:enabled"/>
   <int value="-1620804800" label="NoScriptPreviews:disabled"/>
@@ -27561,6 +27564,8 @@ from previous Chrome versions.
   <int value="-536230323" label="SingleClickAutofill:disabled"/>
   <int value="-535662704" label="BundledConnectionHelp:enabled"/>
   <int value="-535208779" label="enable-native-cups"/>
+  <int value="-533552313"
+      label="AutofillUpstreamEditableCardholderName:enabled"/>
   <int value="-531810064" label="saveas-menu-label"/>
   <int value="-531792555" label="UseModernMediaControls:disabled"/>
   <int value="-531651776" label="NewRemotePlaybackPipeline:enabled"/>

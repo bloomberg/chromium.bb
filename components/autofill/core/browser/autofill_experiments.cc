@@ -61,6 +61,12 @@ const base::Feature kAutofillUpstream{"AutofillUpstream",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamAllowAllEmailDomains{
     "AutofillUpstreamAllowAllEmailDomains", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillUpstreamAlwaysRequestCardholderName{
+    "AutofillUpstreamAlwaysRequestCardholderName",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillUpstreamEditableCardholderName{
+    "AutofillUpstreamEditableCardholderName",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamSendDetectedValues{
     "AutofillUpstreamSendDetectedValues", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillUpstreamSendPanFirstSix{
@@ -181,6 +187,15 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   }
 
   return base::FeatureList::IsEnabled(kAutofillUpstream);
+}
+
+bool IsAutofillUpstreamAlwaysRequestCardholderNameExperimentEnabled() {
+  return base::FeatureList::IsEnabled(
+      kAutofillUpstreamAlwaysRequestCardholderName);
+}
+
+bool IsAutofillUpstreamEditableCardholderNameExperimentEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillUpstreamEditableCardholderName);
 }
 
 bool IsAutofillUpstreamSendDetectedValuesExperimentEnabled() {

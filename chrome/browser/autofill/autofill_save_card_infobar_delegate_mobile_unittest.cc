@@ -50,6 +50,12 @@ class AutofillSaveCardInfoBarDelegateMobileTest
   std::unique_ptr<TestPersonalDataManager> personal_data_;
 
  private:
+  void UploadSaveCardCallback(const base::string16& cardholder_name) {
+    personal_data_.get()->SaveImportedCreditCard(credit_card_to_save_);
+  }
+
+  CreditCard credit_card_to_save_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillSaveCardInfoBarDelegateMobileTest);
 };
 
@@ -110,9 +116,27 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
   profile()->GetPrefs()->SetInteger(
       prefs::kAutofillAcceptSaveCreditCardPromptState,
       previous_save_credit_card_prompt_user_decision);
+  if (is_uploading) {
+    // Upload save infobar delegate:
+    credit_card_to_save_ = credit_card;
+    std::unique_ptr<ConfirmInfoBarDelegate> delegate(
+        new AutofillSaveCardInfoBarDelegateMobile(
+            is_uploading, credit_card, std::move(legal_message),
+            /*upload_save_card_callback=*/
+            base::BindOnce(&AutofillSaveCardInfoBarDelegateMobileTest::
+                               UploadSaveCardCallback,
+                           base::Unretained(this)),
+            /*local_save_card_callback=*/base::Closure(),
+            profile()->GetPrefs()));
+    return delegate;
+  }
+  // Local save infobar delegate:
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new AutofillSaveCardInfoBarDelegateMobile(
           is_uploading, credit_card, std::move(legal_message),
+          /*upload_save_card_callback=*/
+          base::OnceCallback<void(const base::string16&)>(),
+          /*local_save_card_callback=*/
           base::Bind(base::IgnoreResult(
                          &TestPersonalDataManager::SaveImportedCreditCard),
                      base::Unretained(personal_data_.get()), credit_card),

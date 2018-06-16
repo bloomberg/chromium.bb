@@ -26,6 +26,9 @@ enum DialogViewId : int {
 
   // The following are views::Link objects (clickable).
   LEARN_MORE_LINK,
+
+  // The following are views::Textfield objects.
+  CARDHOLDER_NAME_TEXTFIELD,  // Used for cardholder name entry/confirmation
 };
 
 }  // namespace autofill
