@@ -12,7 +12,6 @@
 #include "content/browser/dom_storage/session_storage_area_impl.h"
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -137,7 +136,6 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
  private:
   const std::string namespace_id_;
   SessionStorageMetadata::NamespaceEntry namespace_entry_;
-  int process_id_ = ChildProcessHost::kInvalidUniqueID;
   leveldb::mojom::LevelDBDatabase* database_;
 
   SessionStorageDataMap::Listener* data_map_listener_;
@@ -150,7 +148,8 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
 
   bool populated_ = false;
   OriginAreas origin_areas_;
-  mojo::BindingSet<blink::mojom::SessionStorageNamespace> bindings_;
+  // The context is the process id.
+  mojo::BindingSet<blink::mojom::SessionStorageNamespace, int> bindings_;
 };
 
 }  // namespace content
