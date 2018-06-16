@@ -36,10 +36,10 @@
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
+#include "third_party/blink/renderer/core/events/mouse_event.h"
 
 namespace blink {
 
-// TODO(dgozman): add tests for NavigationPolicyFromEvent.
 class NavigationPolicyTest : public testing::Test {
  protected:
   NavigationPolicy GetPolicyForCreateWindow(int modifiers,
@@ -53,6 +53,38 @@ class NavigationPolicyTest : public testing::Test {
     base::AutoReset<const WebInputEvent*> current_event_change(
         &CurrentInputEvent::current_input_event_, &event);
     return NavigationPolicyForCreateWindow(features);
+  }
+
+  Event* GetEvent(int modifiers, WebMouseEvent::Button button) {
+    MouseEventInit mouse_initializer;
+    if (button == WebMouseEvent::Button::kLeft)
+      mouse_initializer.setButton(0);
+    if (button == WebMouseEvent::Button::kMiddle)
+      mouse_initializer.setButton(1);
+    if (button == WebMouseEvent::Button::kRight)
+      mouse_initializer.setButton(2);
+    if (modifiers & WebInputEvent::kShiftKey)
+      mouse_initializer.setShiftKey(true);
+    if (modifiers & WebInputEvent::kControlKey)
+      mouse_initializer.setCtrlKey(true);
+    if (modifiers & WebInputEvent::kAltKey)
+      mouse_initializer.setAltKey(true);
+    if (modifiers & WebInputEvent::kMetaKey)
+      mouse_initializer.setMetaKey(true);
+    return MouseEvent::Create(nullptr, EventTypeNames::click,
+                              mouse_initializer);
+  }
+
+  NavigationPolicy GetPolicyFromEvent(int modifiers,
+                                      WebMouseEvent::Button button,
+                                      int user_modifiers,
+                                      WebMouseEvent::Button user_button) {
+    WebMouseEvent event(WebInputEvent::kMouseUp, user_modifiers,
+                        WebInputEvent::GetStaticTimeStampForTests());
+    event.button = user_button;
+    base::AutoReset<const WebInputEvent*> current_event_change(
+        &CurrentInputEvent::current_input_event_, &event);
+    return NavigationPolicyFromEvent(GetEvent(modifiers, button));
   }
 
   WebWindowFeatures features;
@@ -190,6 +222,108 @@ TEST_F(NavigationPolicyTest, NotResizableForcesPopup) {
   features.resizable = true;
   EXPECT_EQ(kNavigationPolicyNewForegroundTab,
             NavigationPolicyForCreateWindow(features));
+}
+
+TEST_F(NavigationPolicyTest, EventLeftClick) {
+  int modifiers = 0;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(kNavigationPolicyCurrentTab,
+            NavigationPolicyFromEvent(GetEvent(modifiers, button)));
+}
+
+TEST_F(NavigationPolicyTest, EventShiftLeftClick) {
+  int modifiers = WebInputEvent::kShiftKey;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(kNavigationPolicyNewWindow,
+            NavigationPolicyFromEvent(GetEvent(modifiers, button)));
+}
+
+TEST_F(NavigationPolicyTest, EventControlOrMetaLeftClick) {
+#if defined(OS_MACOSX)
+  int modifiers = WebInputEvent::kMetaKey;
+#else
+  int modifiers = WebInputEvent::kControlKey;
+#endif
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(kNavigationPolicyNewForegroundTab,
+            NavigationPolicyFromEvent(GetEvent(modifiers, button)));
+}
+
+TEST_F(NavigationPolicyTest, EventControlOrMetaLeftClickWithUserEvent) {
+#if defined(OS_MACOSX)
+  int modifiers = WebInputEvent::kMetaKey;
+#else
+  int modifiers = WebInputEvent::kControlKey;
+#endif
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(kNavigationPolicyNewBackgroundTab,
+            GetPolicyFromEvent(modifiers, button, modifiers, button));
+}
+
+TEST_F(NavigationPolicyTest,
+       EventControlOrMetaLeftClickWithDifferentUserEvent) {
+#if defined(OS_MACOSX)
+  int modifiers = WebInputEvent::kMetaKey;
+#else
+  int modifiers = WebInputEvent::kControlKey;
+#endif
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(kNavigationPolicyNewForegroundTab,
+            GetPolicyFromEvent(modifiers, button, 0, button));
+}
+
+TEST_F(NavigationPolicyTest, EventShiftControlOrMetaLeftClick) {
+#if defined(OS_MACOSX)
+  int modifiers = WebInputEvent::kMetaKey | WebInputEvent::kShiftKey;
+#else
+  int modifiers = WebInputEvent::kControlKey | WebInputEvent::kShiftKey;
+#endif
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(kNavigationPolicyNewForegroundTab,
+            NavigationPolicyFromEvent(GetEvent(modifiers, button)));
+}
+
+TEST_F(NavigationPolicyTest, EventMiddleClick) {
+  int modifiers = 0;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kMiddle;
+  EXPECT_EQ(kNavigationPolicyNewForegroundTab,
+            NavigationPolicyFromEvent(GetEvent(modifiers, button)));
+}
+
+TEST_F(NavigationPolicyTest, EventMiddleClickWithUserEvent) {
+  int modifiers = 0;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kMiddle;
+  EXPECT_EQ(kNavigationPolicyNewBackgroundTab,
+            GetPolicyFromEvent(modifiers, button, modifiers, button));
+}
+
+TEST_F(NavigationPolicyTest, EventMiddleClickWithDifferentUserEvent) {
+  int modifiers = 0;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kMiddle;
+  WebMouseEvent::Button user_button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(kNavigationPolicyNewForegroundTab,
+            GetPolicyFromEvent(modifiers, button, modifiers, user_button));
+}
+
+TEST_F(NavigationPolicyTest, EventAltClick) {
+  int modifiers = WebInputEvent::kAltKey;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(kNavigationPolicyCurrentTab,
+            NavigationPolicyFromEvent(GetEvent(modifiers, button)));
+}
+
+TEST_F(NavigationPolicyTest, EventAltClickWithUserEvent) {
+  int modifiers = WebInputEvent::kAltKey;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(kNavigationPolicyDownload,
+            GetPolicyFromEvent(modifiers, button, modifiers, button));
+}
+
+TEST_F(NavigationPolicyTest, EventAltClickWithDifferentUserEvent) {
+  int modifiers = WebInputEvent::kAltKey;
+  WebMouseEvent::Button button = WebMouseEvent::Button::kLeft;
+  EXPECT_EQ(kNavigationPolicyCurrentTab,
+            GetPolicyFromEvent(modifiers, button, 0, button));
 }
 
 }  // namespace blink
