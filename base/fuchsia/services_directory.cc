@@ -34,7 +34,7 @@ ServicesDirectory::~ServicesDirectory() {
 // static
 ServicesDirectory* ServicesDirectory::GetDefault() {
   static base::NoDestructor<ServicesDirectory> directory(
-      zx::channel(zx_get_startup_handle(PA_DIRECTORY_REQUEST)));
+      zx::channel(zx_take_startup_handle(PA_DIRECTORY_REQUEST)));
   return directory.get();
 }
 

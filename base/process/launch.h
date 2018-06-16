@@ -188,8 +188,9 @@ struct BASE_EXPORT LaunchOptions {
 
   // Specifies additional handles to transfer (not duplicate) to the child
   // process. Each entry is an <id,handle> pair, with an |id| created using the
-  // PA_HND() macro. The child retrieves the handle |zx_get_startup_handle(id)|.
-  // The supplied handles are consumed by LaunchProcess() even on failure.
+  // PA_HND() macro. The child retrieves the handle
+  // |zx_take_startup_handle(id)|. The supplied handles are consumed by
+  // LaunchProcess() even on failure.
   HandlesToTransferVector handles_to_transfer;
 
   // Specifies which basic capabilities to grant to the child process.

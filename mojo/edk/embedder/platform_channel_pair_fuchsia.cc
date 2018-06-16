@@ -61,7 +61,7 @@ PlatformChannelPair::PassClientHandleFromParentProcessFromString(
     return ScopedInternalPlatformHandle();
   }
   return ScopedInternalPlatformHandle(InternalPlatformHandle::ForHandle(
-      zx_get_startup_handle(base::checked_cast<uint32_t>(id))));
+      zx_take_startup_handle(base::checked_cast<uint32_t>(id))));
 }
 
 void PlatformChannelPair::PrepareToPassClientHandleToChildProcess(
