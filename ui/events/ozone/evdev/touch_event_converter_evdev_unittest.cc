@@ -1201,12 +1201,12 @@ class TouchEventConverterEvdevTouchNoiseTest
   ~TouchEventConverterEvdevTouchNoiseTest() override {}
 
   // Makes the FalseTouchFinder use |filter| and only |filter| to filter out
-  // touch noise. Also removes the edge touch filter.
+  // touch noise. Also removes any delay filters.
   void SetTouchNoiseFilter(std::unique_ptr<TouchFilter> filter) {
     FalseTouchFinder* finder = device()->false_touch_finder();
     finder->noise_filters_.clear();
     finder->noise_filters_.push_back(std::move(filter));
-    finder->edge_touch_filter_.reset();
+    finder->delay_filters_.clear();
   }
 
   // Returns the first of FalseTouchFinder's filters.

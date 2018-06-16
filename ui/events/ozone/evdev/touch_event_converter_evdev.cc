@@ -251,17 +251,7 @@ void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
   if (cancelled_state)
     CancelAllTouches();
 
-  bool touch_noise_filtering =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kExtraTouchNoiseFiltering);
-  bool edge_touch_filtering =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEdgeTouchFiltering);
-  if (touch_noise_filtering || edge_touch_filtering) {
-    false_touch_finder_.reset(new FalseTouchFinder(touch_noise_filtering,
-                                                  edge_touch_filtering,
-                                                  GetTouchscreenSize()));
-  }
+  false_touch_finder_ = FalseTouchFinder::Create(GetTouchscreenSize());
 }
 
 void TouchEventConverterEvdev::Reinitialize() {

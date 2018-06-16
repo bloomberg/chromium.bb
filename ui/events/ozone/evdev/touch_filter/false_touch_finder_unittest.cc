@@ -9,10 +9,12 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event_switches.h"
 #include "ui/events/ozone/evdev/touch_evdev_types.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -80,8 +82,11 @@ class FalseTouchFinderTest : public testing::Test {
  private:
   // testing::Test:
   void SetUp() override {
-    false_touch_finder_.reset(
-        new FalseTouchFinder(true, true, touchscreen_size));
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kExtraTouchNoiseFiltering);
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEdgeTouchFiltering);
+    false_touch_finder_ = FalseTouchFinder::Create(touchscreen_size);
   }
 
   std::unique_ptr<FalseTouchFinder> false_touch_finder_;

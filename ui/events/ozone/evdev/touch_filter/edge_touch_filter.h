@@ -15,7 +15,7 @@ namespace ui {
 class EdgeTouchFilter : public TouchFilter {
  public:
   EdgeTouchFilter(gfx::Size& touchscreen_size);
-  ~EdgeTouchFilter() override {}
+  ~EdgeTouchFilter() override;
 
   // TouchFilter:
   void Filter(const std::vector<InProgressTouchEvdev>& touches,
@@ -23,8 +23,9 @@ class EdgeTouchFilter : public TouchFilter {
               std::bitset<kNumTouchEvdevSlots>* slots_should_delay) override;
 
  private:
-  // Tracks in progress taps in slots.
-  gfx::Point tracked_taps_[kNumTouchEvdevSlots];
+  // Tracks in progress touches in slots.
+  gfx::Point start_positions_[kNumTouchEvdevSlots];
+  std::bitset<kNumTouchEvdevSlots> slots_filtered_;
 
   gfx::Size touchscreen_size_;
 
