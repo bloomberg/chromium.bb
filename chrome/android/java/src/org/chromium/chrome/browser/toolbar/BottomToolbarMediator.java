@@ -11,6 +11,8 @@ import android.view.View.OnTouchListener;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 
@@ -19,12 +21,15 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.Fullscreen
  * coordinators, running most of the business logic associated with the bottom toolbar, and updating
  * the model accordingly.
  */
-class BottomToolbarMediator implements FullscreenListener {
+class BottomToolbarMediator implements FullscreenListener, OverviewModeObserver {
     /** The model for the bottom toolbar that holds all of its state. */
     private BottomToolbarModel mModel;
 
     /** The fullscreen manager to observe browser controls events. */
     private ChromeFullscreenManager mFullscreenManager;
+
+    /** The overview mode manager. */
+    private OverviewModeBehavior mOverviewModeBehavior;
 
     /**
      * Build a new mediator that handles events from outside the bottom toolbar.
@@ -50,6 +55,7 @@ class BottomToolbarMediator implements FullscreenListener {
      */
     public void destroy() {
         mFullscreenManager.removeListener(this);
+        mOverviewModeBehavior.removeOverviewModeObserver(this);
     }
 
     @Override
@@ -71,6 +77,22 @@ class BottomToolbarMediator implements FullscreenListener {
     @Override
     public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
 
+    @Override
+    public void onOverviewModeStartedShowing(boolean showToolbar) {
+        mModel.setValue(BottomToolbarModel.SEARCH_ACCELERATOR_VISIBLE, false);
+    }
+
+    @Override
+    public void onOverviewModeFinishedShowing() {}
+
+    @Override
+    public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
+        mModel.setValue(BottomToolbarModel.SEARCH_ACCELERATOR_VISIBLE, true);
+    }
+
+    @Override
+    public void onOverviewModeFinishedHiding() {}
+
     public void setButtonListeners(OnClickListener searchAcceleratorListener,
             OnClickListener homeButtonListener, OnTouchListener menuButtonListener) {
         mModel.setValue(BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER, searchAcceleratorListener);
@@ -80,5 +102,10 @@ class BottomToolbarMediator implements FullscreenListener {
 
     public void setLayoutManager(LayoutManager layoutManager) {
         mModel.setValue(BottomToolbarModel.LAYOUT_MANAGER, layoutManager);
+    }
+
+    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeBehavior.addOverviewModeObserver(this);
     }
 }
