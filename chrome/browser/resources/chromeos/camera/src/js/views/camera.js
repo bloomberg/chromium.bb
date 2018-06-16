@@ -224,25 +224,30 @@ camera.views.Camera = function(context, router) {
   // End of properties, seal the object.
   Object.seal(this);
 
-  // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(
       'click', this.onTakePictureClicked_.bind(this));
 
-  document.querySelector('#toolbar #album-enter').addEventListener('click',
-      this.onAlbumEnterClicked_.bind(this));
+  document.querySelector('#album-enter').addEventListener(
+      'click', this.onAlbumEnterClicked_.bind(this));
 
   document.querySelector('#toggle-record').addEventListener(
       'click', this.onToggleRecordClicked_.bind(this));
-  document.querySelector('#toggle-timer').addEventListener(
-      'keypress', this.onToggleTimerKeyPress_.bind(this));
-  document.querySelector('#toggle-timer').addEventListener(
-      'click', this.onToggleTimerClicked_.bind(this));
   document.querySelector('#toggle-camera').addEventListener(
       'click', this.onToggleCameraClicked_.bind(this));
-  document.querySelector('#toggle-mirror').addEventListener(
-      'keypress', this.onToggleMirrorKeyPress_.bind(this));
+  document.querySelector('#toggle-timer').addEventListener(
+      'click', this.onToggleTimerClicked_.bind(this));
   document.querySelector('#toggle-mirror').addEventListener(
       'click', this.onToggleMirrorClicked_.bind(this));
+
+  // Handle key-press for checkbox-type toggles.
+  ['#toggle-timer', '#toggle-mirror'].forEach(function(selectors) {
+    var element = document.querySelector(selectors);
+    element.addEventListener('keypress', function(event) {
+      if (camera.util.getShortcutIdentifier(event) == 'Enter') {
+        element.click();
+      }
+    });
+  });
 
   // Load the shutter, tick, and recording sound.
   this.shutterSound_.src = '../sounds/shutter.ogg';
@@ -369,26 +374,6 @@ camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
  */
 camera.views.Camera.prototype.onAlbumEnterClicked_ = function(event) {
   this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
-};
-
-/**
- * Handles pressing a key on the timer switch.
- * @param {Event} event Key press event.
- * @private
- */
-camera.views.Camera.prototype.onToggleTimerKeyPress_ = function(event) {
-  if (camera.util.getShortcutIdentifier(event) == 'Enter')
-    document.querySelector('#toggle-timer').click();
-};
-
-/**
- * Handles pressing a key on the mirror switch.
- * @param {Event} event Key press event.
- * @private
- */
-camera.views.Camera.prototype.onToggleMirrorKeyPress_ = function(event) {
-  if (camera.util.getShortcutIdentifier(event) == 'Enter')
-    document.querySelector('#toggle-mirror').click();
 };
 
 /**
