@@ -20,6 +20,7 @@ class LayoutObject;
 class LayoutTableSection;
 class LocalFrameView;
 class PaintLayer;
+class VisualViewport;
 
 // The context for PaintPropertyTreeBuilder.
 // It's responsible for bookkeeping tree state in other order, for example, the
@@ -158,6 +159,13 @@ struct PaintPropertyTreeBuilderContext {
   // Whether composited raster invalidation is supported for this object.
   // If not, subtree invalidations occur on every property tree change.
   bool supports_composited_raster_invalidation = true;
+};
+
+class VisualViewportPaintPropertyTreeBuilder {
+ public:
+  // Update the paint properties for the visual viewport and ensure the context
+  // is up to date.
+  static void Update(VisualViewport&, PaintPropertyTreeBuilderContext&);
 };
 
 // Creates paint property tree nodes for non-local effects in the layout tree.

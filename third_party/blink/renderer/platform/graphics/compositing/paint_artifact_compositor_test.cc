@@ -108,7 +108,7 @@ class PaintArtifactCompositorTest : public testing::Test,
     WillBeRemovedFromFrame();
   }
 
-  const cc::PropertyTrees& GetPropertyTrees() {
+  cc::PropertyTrees& GetPropertyTrees() {
     return *web_layer_tree_view_->GetLayerTreeHost()->property_trees();
   }
 
@@ -146,7 +146,16 @@ class PaintArtifactCompositorTest : public testing::Test,
 
   void Update(const PaintArtifact& artifact,
               CompositorElementIdSet& element_ids) {
-    paint_artifact_compositor_->Update(artifact, element_ids);
+    // Pass nullptr for the visual viewport paint property nodes since we're
+    // really just checking the internals of PaintArtifactCompositor.
+    Update(artifact, element_ids, nullptr);
+  }
+
+  void Update(const PaintArtifact& artifact,
+              CompositorElementIdSet& element_ids,
+              TransformPaintPropertyNode* viewport_scale_transform_node) {
+    paint_artifact_compositor_->Update(artifact, element_ids,
+                                       viewport_scale_transform_node);
     web_layer_tree_view_->GetLayerTreeHost()->LayoutAndUpdateLayers();
   }
 
@@ -2944,6 +2953,32 @@ TEST_F(PaintArtifactCompositorTest, LayerRasterInvalidationWithClip) {
   EXPECT_THAT(
       layer->GetPicture(),
       Pointee(DrawsRectangle(FloatRect(0, 0, 390, 580), Color::kBlack)));
+}
+
+// Test that PaintArtifactCompositor creates the correct nodes for the visual
+// viewport's page scale and scroll layers to support pinch-zooming.
+TEST_F(PaintArtifactCompositorTest, CreatesViewportNodes) {
+  TransformationMatrix matrix;
+  matrix.Scale(2);
+  TransformPaintPropertyNode::State transform_state{matrix, FloatPoint3D()};
+  transform_state.compositor_element_id =
+      CompositorElementIdFromUniqueObjectId(1);
+
+  auto scale_transform_node = TransformPaintPropertyNode::Create(
+      TransformPaintPropertyNode::Root(), std::move(transform_state));
+
+  TestPaintArtifact artifact;
+  CompositorElementIdSet element_ids;
+  Update(artifact.Build(), element_ids, scale_transform_node.get());
+
+  cc::TransformTree& transform_tree = GetPropertyTrees().transform_tree;
+  cc::TransformNode* cc_transform_node = transform_tree.FindNodeFromElementId(
+      transform_state.compositor_element_id);
+  EXPECT_TRUE(cc_transform_node);
+  EXPECT_EQ(TransformationMatrix::ToTransform(matrix),
+            cc_transform_node->post_local);
+  EXPECT_TRUE(cc_transform_node->local.IsIdentity());
+  EXPECT_TRUE(cc_transform_node->pre_local.IsIdentity());
 }
 
 }  // namespace blink

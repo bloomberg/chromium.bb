@@ -128,7 +128,6 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
          static_cast<gfx::Size>(foreign_layer_display_item.Bounds()))
       << "\n  layer bounds: " << layer->bounds().ToString()
       << "\n  display item bounds: " << foreign_layer_display_item.Bounds();
-  DCHECK(layer->DrawsContent());
   return layer;
 }
 
@@ -693,7 +692,8 @@ cc::Layer* PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
 
 void PaintArtifactCompositor::Update(
     const PaintArtifact& paint_artifact,
-    CompositorElementIdSet& composited_element_ids) {
+    CompositorElementIdSet& composited_element_ids,
+    TransformPaintPropertyNode* viewport_scale_node) {
   DCHECK(root_layer_);
 
   // The tree will be null after detaching and this update can be ignored.
@@ -714,6 +714,14 @@ void PaintArtifactCompositor::Update(
                                             g_s_property_tree_sequence_number);
   Vector<PendingLayer, 0> pending_layers;
   CollectPendingLayers(paint_artifact, pending_layers);
+
+  // The page scale layer would create this below but we need to use the
+  // special EnsureCompositorPageScaleTransformNode method since the transform
+  // created in a different way so we call it here.
+  if (viewport_scale_node) {
+    property_tree_manager.EnsureCompositorPageScaleTransformNode(
+        viewport_scale_node);
+  }
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers.size());

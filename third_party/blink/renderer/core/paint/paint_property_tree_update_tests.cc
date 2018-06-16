@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -250,6 +251,8 @@ TEST_P(PaintPropertyTreeUpdateTest,
   )HTML");
   Element* overflow_a = GetDocument().getElementById("overflowA");
   Element* overflow_b = GetDocument().getElementById("overflowB");
+  VisualViewport& visual_viewport =
+      GetDocument().GetPage()->GetVisualViewport();
 
   // This should be false. We are not as strict about main thread scrolling
   // reasons as we could be.
@@ -265,13 +268,12 @@ TEST_P(PaintPropertyTreeUpdateTest,
                    ->ScrollTranslation()
                    ->ScrollNode()
                    ->HasBackgroundAttachmentFixedDescendants());
-  EXPECT_TRUE(overflow_b->GetLayoutObject()
-                  ->FirstFragment()
-                  .PaintProperties()
-                  ->ScrollTranslation()
-                  ->ScrollNode()
-                  ->Parent()
-                  ->IsRoot());
+  EXPECT_EQ(visual_viewport.GetScrollNode(), overflow_b->GetLayoutObject()
+                                                 ->FirstFragment()
+                                                 .PaintProperties()
+                                                 ->ScrollTranslation()
+                                                 ->ScrollNode()
+                                                 ->Parent());
 
   // Removing a main thread scrolling reason should update the entire tree.
   overflow_b->removeAttribute("class");

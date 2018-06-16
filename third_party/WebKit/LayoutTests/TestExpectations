@@ -1915,6 +1915,11 @@ crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoo
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow-desktop.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
 
+# These tests are currently flaky.
+crbug.com/840017 virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Failure Pass ]
+crbug.com/840017 virtual/threaded/fast/events/pinch/pinch-zoom-pan-position-fixed.html [ Failure Pass ]
+crbug.com/840017 virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed-viewport.html [ Failure Pass ]
+
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/520170 fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]

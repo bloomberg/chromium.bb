@@ -6,8 +6,10 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
 
 #include <iomanip>
@@ -34,6 +36,8 @@ class FrameViewPropertyTreePrinter
   using Traits = PropertyTreePrinterTraits<PropertyTreeNode>;
 
   void CollectNodes(const LocalFrameView& frame_view) {
+    Traits::AddVisualViewportProperties(
+        frame_view.GetPage()->GetVisualViewport(), *this);
     if (LayoutView* layout_view = frame_view.GetLayoutView())
       CollectNodes(*layout_view);
     for (Frame* child = frame_view.GetFrame().Tree().FirstChild(); child;
@@ -61,6 +65,12 @@ class FrameViewPropertyTreePrinter
 template <>
 class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
  public:
+  static void AddVisualViewportProperties(
+      const VisualViewport& visual_viewport,
+      PropertyTreePrinter<TransformPaintPropertyNode>& printer) {
+    printer.AddNode(visual_viewport.GetPageScaleNode());
+    printer.AddNode(visual_viewport.GetScrollTranslationNode());
+  }
   static void AddObjectPaintProperties(
       const LayoutObject& object,
       const ObjectPaintProperties& properties,
@@ -76,6 +86,9 @@ class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
 template <>
 class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
  public:
+  static void AddVisualViewportProperties(
+      const VisualViewport& visual_viewport,
+      PropertyTreePrinter<ClipPaintPropertyNode>& printer) {}
   static void AddObjectPaintProperties(
       const LayoutObject& object,
       const ObjectPaintProperties& properties,
@@ -94,6 +107,10 @@ class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
 template <>
 class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
  public:
+  static void AddVisualViewportProperties(
+      const VisualViewport& visual_viewport,
+      PropertyTreePrinter<EffectPaintPropertyNode>& printer) {}
+
   static void AddObjectPaintProperties(
       const LayoutObject& object,
       const ObjectPaintProperties& properties,
@@ -108,6 +125,12 @@ class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
 template <>
 class PropertyTreePrinterTraits<ScrollPaintPropertyNode> {
  public:
+  static void AddVisualViewportProperties(
+      const VisualViewport& visual_viewport,
+      PropertyTreePrinter<ScrollPaintPropertyNode>& printer) {
+    printer.AddNode(visual_viewport.GetScrollNode());
+  }
+
   static void AddObjectPaintProperties(
       const LayoutObject& object,
       const ObjectPaintProperties& properties,
@@ -133,6 +156,13 @@ void SetDebugName(const PropertyTreeNode* node,
 }  // namespace
 
 namespace PaintPropertyTreePrinter {
+
+void UpdateDebugNames(const VisualViewport& viewport) {
+  viewport.GetPageScaleNode()->SetDebugName("VisualViewport Scale Node");
+  viewport.GetScrollTranslationNode()->SetDebugName(
+      "VisualViewport Translate Node");
+  viewport.GetScrollNode()->SetDebugName("VisualViewport Scroll Node");
+}
 
 void UpdateDebugNames(const LayoutObject& object,
                       ObjectPaintProperties& properties) {

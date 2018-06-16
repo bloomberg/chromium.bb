@@ -142,6 +142,12 @@ class AnimationForTesting : public CompositorAnimationClient {
 };
 
 TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
+  // TODO(bokan): This test doesn't yet work in blink-gen-property-trees
+  // because cc::Layers can't set an element id in that mode. We fail at
+  // AttachElement since the element id is invalid. https://crbug.com/836897.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    return;
+
   ASSERT_FALSE(cc_layer_->HasTickingAnimationForTesting());
 
   std::unique_ptr<CompositorFloatAnimationCurve> curve =

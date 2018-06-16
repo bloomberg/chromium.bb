@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_layer_property_updater.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -43,6 +44,10 @@ void PrePaintTreeWalk::WalkTree(LocalFrameView& root_frame_view) {
       NeedsTreeBuilderContextUpdate(root_frame_view, context_storage_.back());
   if (needs_tree_builder_context_update)
     GeometryMapper::ClearCache();
+
+  VisualViewportPaintPropertyTreeBuilder::Update(
+      root_frame_view.GetPage()->GetVisualViewport(),
+      *context_storage_.back().tree_builder_context);
 
   Walk(root_frame_view);
   paint_invalidator_.ProcessPendingDelayedPaintInvalidations();

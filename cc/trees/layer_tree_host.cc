@@ -1000,9 +1000,9 @@ void LayerTreeHost::RegisterViewportLayers(const ViewportLayers& layers) {
   //     overscroll elasticity (optional)
   //       page scale
   //         inner viewport scroll
-  DCHECK(!layers.page_scale ||
+  DCHECK(IsUsingLayerLists() || !layers.page_scale ||
          layers.inner_viewport_scroll->parent() == layers.page_scale);
-  DCHECK(!layers.page_scale ||
+  DCHECK(IsUsingLayerLists() || !layers.page_scale ||
          layers.page_scale->parent() == layers.overscroll_elasticity ||
          layers.page_scale->parent() == layers.inner_viewport_container);
   viewport_layers_.overscroll_elasticity = layers.overscroll_elasticity;
@@ -1341,7 +1341,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
       EventListenerClass::kTouchEndOrCancel,
       event_listener_properties(EventListenerClass::kTouchEndOrCancel));
 
-  if (viewport_layers_.page_scale && viewport_layers_.inner_viewport_scroll) {
+  if (viewport_layers_.inner_viewport_scroll) {
     LayerTreeImpl::ViewportLayerIds ids;
     if (viewport_layers_.overscroll_elasticity)
       ids.overscroll_elasticity = viewport_layers_.overscroll_elasticity->id();

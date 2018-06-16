@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/fragmentainer_iterator.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -46,6 +47,31 @@ PaintPropertyTreeBuilderFragmentContext::
       &TransformPaintPropertyNode::Root();
   current.scroll = absolute_position.scroll = fixed_position.scroll =
       &ScrollPaintPropertyNode::Root();
+}
+
+void VisualViewportPaintPropertyTreeBuilder::Update(
+    VisualViewport& visual_viewport,
+    PaintPropertyTreeBuilderContext& full_context) {
+  if (full_context.fragments.IsEmpty())
+    full_context.fragments.push_back(PaintPropertyTreeBuilderFragmentContext());
+
+  PaintPropertyTreeBuilderFragmentContext& context = full_context.fragments[0];
+
+  visual_viewport.UpdatePaintPropertyNodes(context.current.transform,
+                                           context.current.scroll);
+
+  context.current.transform = visual_viewport.GetScrollTranslationNode();
+  context.absolute_position.transform =
+      visual_viewport.GetScrollTranslationNode();
+  context.fixed_position.transform = visual_viewport.GetScrollTranslationNode();
+
+  context.current.scroll = visual_viewport.GetScrollNode();
+  context.absolute_position.scroll = visual_viewport.GetScrollNode();
+  context.fixed_position.scroll = visual_viewport.GetScrollNode();
+
+#if DCHECK_IS_ON()
+  PaintPropertyTreePrinter::UpdateDebugNames(visual_viewport);
+#endif
 }
 
 void PaintPropertyTreeBuilder::SetupContextForFrame(

@@ -32,6 +32,7 @@
 
 #include <utility>
 
+#include "cc/trees/layer_tree_settings.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -475,7 +476,17 @@ TestWebViewClient::GetLayerTreeViewForTesting() {
 }
 
 WebLayerTreeView* TestWebViewClient::InitializeLayerTreeView() {
-  layer_tree_view_ = std::make_unique<WebLayerTreeViewImplForTesting>();
+  auto layer_tree_settings =
+      WebLayerTreeViewImplForTesting::DefaultLayerTreeSettings();
+
+  // BlinkGenPropertyTrees should imply layer lists in the compositor. Some
+  // code across the boundaries makes assumptions based on this so ensure tests
+  // run using this configuration as well.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    layer_tree_settings.use_layer_lists = true;
+
+  layer_tree_view_ =
+      std::make_unique<WebLayerTreeViewImplForTesting>(layer_tree_settings);
   return layer_tree_view_.get();
 }
 
@@ -484,7 +495,17 @@ WebLayerTreeView* TestWebViewWidgetClient::InitializeLayerTreeView() {
 }
 
 WebLayerTreeView* TestWebWidgetClient::InitializeLayerTreeView() {
-  layer_tree_view_ = std::make_unique<WebLayerTreeViewImplForTesting>();
+  auto layer_tree_settings =
+      WebLayerTreeViewImplForTesting::DefaultLayerTreeSettings();
+
+  // BlinkGenPropertyTrees should imply layer lists in the compositor. Some
+  // code across the boundaries makes assumptions based on this so ensure tests
+  // run using this configuration as well.
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+    layer_tree_settings.use_layer_lists = true;
+
+  layer_tree_view_ =
+      std::make_unique<WebLayerTreeViewImplForTesting>(layer_tree_settings);
   return layer_tree_view_.get();
 }
 

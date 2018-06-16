@@ -54,6 +54,8 @@ class IntRect;
 class IntSize;
 class LocalFrame;
 class Page;
+class ScrollPaintPropertyNode;
+class TransformPaintPropertyNode;
 
 // Represents the visual viewport the user is currently seeing the page through.
 // This class corresponds to the InnerViewport on the compositor. It is a
@@ -244,6 +246,18 @@ class CORE_EXPORT VisualViewport final
 
   ScrollbarTheme& GetPageScrollbarTheme() const override;
 
+  TransformPaintPropertyNode* GetPageScaleNode() const;
+  TransformPaintPropertyNode* GetScrollTranslationNode() const;
+  ScrollPaintPropertyNode* GetScrollNode() const;
+
+  // Create/update the page scale translation, viewport scroll, and viewport
+  // translation property nodes. Also set the layer states (inner viewport
+  // container, page scale layer, inner viewport scroll layer) to reference
+  // these nodes.
+  void UpdatePaintPropertyNodes(
+      scoped_refptr<const TransformPaintPropertyNode> transform_parent,
+      scoped_refptr<const ScrollPaintPropertyNode> scroll_parent);
+
  private:
   explicit VisualViewport(Page&);
 
@@ -282,6 +296,8 @@ class CORE_EXPORT VisualViewport final
     return *page_;
   }
 
+  CompositorElementId GetCompositorScrollElementId() const;
+
   // Contracts the given size by the thickness of any visible scrollbars. Does
   // not contract the size if the scrollbar is overlay.
   IntSize ExcludeScrollbars(const IntSize&) const;
@@ -302,6 +318,10 @@ class CORE_EXPORT VisualViewport final
       scrollbar_layer_group_vertical_;
   std::unique_ptr<GraphicsLayer> overlay_scrollbar_horizontal_;
   std::unique_ptr<GraphicsLayer> overlay_scrollbar_vertical_;
+
+  scoped_refptr<TransformPaintPropertyNode> scale_transform_node_;
+  scoped_refptr<TransformPaintPropertyNode> translation_transform_node_;
+  scoped_refptr<ScrollPaintPropertyNode> scroll_node_;
 
   // Offset of the visual viewport from the main frame's origin, in CSS pixels.
   ScrollOffset offset_;
