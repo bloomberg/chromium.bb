@@ -33,6 +33,7 @@ bool IsNearBorder(const gfx::Point& point, gfx::Size touchscreen_size) {
 EdgeTouchFilter::EdgeTouchFilter(gfx::Size& touchscreen_size)
     : touchscreen_size_(touchscreen_size) {
 }
+EdgeTouchFilter::~EdgeTouchFilter() {}
 
 void EdgeTouchFilter::Filter(
     const std::vector<InProgressTouchEvdev>& touches,
@@ -41,24 +42,24 @@ void EdgeTouchFilter::Filter(
 
   for (const InProgressTouchEvdev& touch : touches) {
     size_t slot = touch.slot;
-    gfx::Point& tracked_tap = tracked_taps_[slot];
     gfx::Point touch_pos = gfx::Point(touch.x, touch.y);
-    bool should_delay = false;
 
     if (!touch.touching && !touch.was_touching)
       continue;  // Only look at slots with active touches.
 
-    if (!touch.was_touching && IsNearBorder(touch_pos, touchscreen_size_)) {
-      should_delay = true;  // Delay new contact near border.
-      tracked_taps_[slot] = touch_pos;
+    if (!touch.was_touching) {
+      // Track new contact and delay if near border.
+      bool near_border = IsNearBorder(touch_pos, touchscreen_size_);
+      slots_filtered_.set(slot, near_border);
+      if (near_border)
+        start_positions_[slot] = touch_pos;
     }
 
-    if (slots_should_delay->test(slot) && touch_pos == tracked_tap) {
-      should_delay = true;  // Continue delaying contacts that don't move.
-    }
-
-    slots_should_delay->set(slot, should_delay);
+    if (touch_pos != start_positions_[slot])
+      slots_filtered_.set(slot, false);  // Stop delaying contacts that move.
   }
+
+  (*slots_should_delay) |= slots_filtered_;
 }
 
 }  // namespace ui

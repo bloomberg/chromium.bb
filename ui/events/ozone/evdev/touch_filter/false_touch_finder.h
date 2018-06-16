@@ -24,10 +24,9 @@ class TouchFilter;
 // Finds touches which are should be filtered.
 class EVENTS_OZONE_EVDEV_EXPORT FalseTouchFinder {
  public:
-  FalseTouchFinder(bool touch_noise_filtering,
-              bool edge_filtering,
-              gfx::Size touchscreen_size);
   ~FalseTouchFinder();
+
+  static std::unique_ptr<FalseTouchFinder> Create(gfx::Size touchscreen_size);
 
   // Updates which ABS_MT_SLOTs should be filtered. |touches| should contain
   // all of the in-progress touches at |time| (including filtered touches).
@@ -44,6 +43,10 @@ class EVENTS_OZONE_EVDEV_EXPORT FalseTouchFinder {
   bool SlotShouldDelay(size_t slot) const;
 
  private:
+  FalseTouchFinder(bool touch_noise_filtering,
+                   bool edge_filtering,
+                   gfx::Size touchscreen_size);
+
   // Records how frequently noisy touches occur to UMA.
   void RecordUMA(bool had_noise, base::TimeTicks time);
 
@@ -62,9 +65,9 @@ class EVENTS_OZONE_EVDEV_EXPORT FalseTouchFinder {
   // cancelled by the touch converter.
   std::vector<std::unique_ptr<TouchFilter>> noise_filters_;
 
-  // The edge filter detects taps on the edge. The edge filter should only
-  // filter slots which it is already filtering or which are new.
-  std::unique_ptr<TouchFilter> edge_touch_filter_;
+  // Delay filters may filter questionable new touches for an indefinite time,
+  // but should not start filtering a touch that it had previously allowed.
+  std::vector<std::unique_ptr<TouchFilter>> delay_filters_;
 
   DISALLOW_COPY_AND_ASSIGN(FalseTouchFinder);
 };
