@@ -779,7 +779,7 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   void TestMigrationOnMultipleWriteErrors(IoMode first_write_error_mode,
                                           IoMode second_write_error_mode);
   void TestMigrationOnWriteErrorWithNotificationQueued(bool disconnected);
-  void TestMigrationOnNotificationWithWriteErrorQueued(bool disconnected);
+  void TestMigrationOnWriteErrorWithNotificationQueuedLater(bool disconnected);
   void OnNetworkDisconnected(bool async_write_before);
   void OnNetworkMadeDefault(bool async_write_before);
   void TestMigrationOnWriteErrorPauseBeforeConnected(IoMode write_error_mode);
@@ -4295,8 +4295,10 @@ TEST_P(QuicStreamFactoryTest,
   TestMigrationOnWriteErrorWithNotificationQueued(/*disconnected=*/false);
 }
 
-void QuicStreamFactoryTestBase::TestMigrationOnNotificationWithWriteErrorQueued(
-    bool disconnected) {
+// Sets up the connection migration test where network change notification is
+// queued AFTER connection migration attempt on write error is posted.
+void QuicStreamFactoryTestBase::
+    TestMigrationOnWriteErrorWithNotificationQueuedLater(bool disconnected) {
   InitializeConnectionMigrationV2Test(
       {kDefaultNetworkForTests, kNewNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -4391,14 +4393,34 @@ void QuicStreamFactoryTestBase::TestMigrationOnNotificationWithWriteErrorQueued(
   EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
 }
 
+// This test verifies that session attempts connection migration successfully
+// with signals delivered in the following order (alternate network is always
+// available):
+// - write error is triggered: session posts a task to complete connection
+//   migration.
+// - a notification that alternate network is made default is queued.
+// - connection migration attempt proceeds successfully, session is marked as
+//   going away.
+// - new default notification is delivered after connection migration has been
+//   completed.
 TEST_P(QuicStreamFactoryTest,
-       MigrateSessionOnNetworkDisconnectedWithWriteErrorQueued) {
-  TestMigrationOnNotificationWithWriteErrorQueued(/*disconnected=*/true);
+       MigrateOnWriteErrorWithNetworkMadeDefaultQueuedLater) {
+  TestMigrationOnWriteErrorWithNotificationQueuedLater(/*disconnected=*/false);
 }
 
+// This test verifies that session attempts connection migration successfully
+// with signals delivered in the following order (alternate network is always
+// available):
+// - write error is triggered: session posts a task to complete connection
+//   migration.
+// - a notification that default network is diconnected is queued.
+// - connection migration attempt proceeds successfully, session is marked as
+//   going away.
+// - disconnect notification is delivered after connection migration has been
+//   completed.
 TEST_P(QuicStreamFactoryTest,
-       MigrateSessionOnNetworkMadeDefaultWithWriteErrorQueued) {
-  TestMigrationOnNotificationWithWriteErrorQueued(/*disconnected=*/true);
+       MigrateOnWriteErrorWithNetworkDisconnectedQueuedLater) {
+  TestMigrationOnWriteErrorWithNotificationQueuedLater(/*disconnected=*/true);
 }
 
 // This tests connection migration on write error with signals delivered in the
