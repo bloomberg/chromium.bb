@@ -30,6 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -78,9 +79,46 @@ public class VariationsSeedLoader {
     // is exceeded, proceed with variations disabled.
     private static final long SEED_LOAD_TIMEOUT_MILLIS = 20;
 
+    // Must match AndroidWebViewVariationsEnableState UMA enum. Do not reorder
+    private static final int DEFAULT_ENABLED = 0;
+    private static final int CONTROL_DISABLED = 1;
+    private static final int EXPERIMENT_ENABLED = 2;
+    private static final int ENABLE_STATE_COUNT = 3;
+    private static final int ENABLE_STATE_UNINITIALIZED = -1;
+
     // If false, then variations will be enabled if either the CMD flag or the AGSA experiment file
     // is present. If true, then variations will be enabled regardless of flag or experiment file.
     private static boolean sVariationsAlwaysEnabled = true;
+
+    private SeedLoadAndUpdateRunnable mRunnable;
+
+    // See Android.WebView.VariationsEnableState in histograms.xml for explanation. This setting
+    // overrides sVariationsAlwaysEnabled if the latter is true.
+    private int mEnableState = ENABLE_STATE_UNINITIALIZED;
+
+    // Generate an EnableState with the following probabilities:
+    // 99.8 % - DEFAULT_ENABLED
+    //  0.1 % - CONTROL_DISABLED
+    //  0.1 % - EXPERIMENT_ENABLED
+    // It's difficult to prevent this state from changing across runs without adding IPC or file
+    // I/O, which could perturb performance metrics, defeating the purpose of the experiment. So the
+    // state is allowed to change on each run. This doesn't break variations, since WebView doesn't
+    // support permanent consistency studies anyway.
+    private static int chooseEnableState() {
+        Random r = new Random();
+        int i = r.nextInt(1000);
+        if (i == 0) return CONTROL_DISABLED;
+        if (i == 1) return EXPERIMENT_ENABLED;
+        return DEFAULT_ENABLED;
+    }
+
+    private static int chooseAndLogEnableState() {
+        int state = chooseEnableState();
+        EnumeratedHistogramSample histogram = new EnumeratedHistogramSample(
+                "Android.WebView.VariationsEnableState", ENABLE_STATE_COUNT);
+        histogram.record(state);
+        return state;
+    }
 
     private static void recordLoadSeedResult(int result) {
         EnumeratedHistogramSample histogram = new EnumeratedHistogramSample(
@@ -172,7 +210,7 @@ public class VariationsSeedLoader {
                 try {
                     mCurrentSeedDate = seed.parseDate().getTime();
                 } catch (ParseException e) {
-                    // Should never happen, as date was alread verified by readSeedFile.
+                    // Should never happen, as date was already verified by readSeedFile.
                     assert false;
                     return null;
                 }
@@ -216,7 +254,9 @@ public class VariationsSeedLoader {
         // mEnabledByExperiment is set in mLoadTask, so isVariationsEnabled() should only be called
         // after run() returns.
         public boolean isVariationsEnabled() {
-            return sVariationsAlwaysEnabled || mEnabledByCmd || mEnabledByExperiment;
+            assert mEnableState != ENABLE_STATE_UNINITIALIZED;
+            return (sVariationsAlwaysEnabled && mEnableState != CONTROL_DISABLED)
+                    || mEnabledByCmd || mEnabledByExperiment;
         }
     }
 
@@ -257,8 +297,6 @@ public class VariationsSeedLoader {
         @Override
         public void onServiceDisconnected(ComponentName name) {}
     }
-
-    private SeedLoadAndUpdateRunnable mRunnable;
 
     private SeedInfo getSeedBlockingAndLog() {
         long start = SystemClock.elapsedRealtime();
@@ -330,6 +368,8 @@ public class VariationsSeedLoader {
     // Begin asynchronously loading the variations seed. ContextUtils.getApplicationContext() and
     // AwBrowserProcess.getWebViewPackageName() must be ready to use before calling this.
     public void startVariationsInit() {
+        assert mEnableState == ENABLE_STATE_UNINITIALIZED;
+        mEnableState = chooseAndLogEnableState();
         mRunnable = new SeedLoadAndUpdateRunnable(isEnabledByCmd());
         (new Thread(mRunnable)).start();
     }
