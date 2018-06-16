@@ -37,15 +37,14 @@ buzz::AsyncSocket* CreateSocket(
   // XmppSocketAdapter.
   const size_t kReadBufSize = 64U * 1024U;
   const size_t kWriteBufSize = 64U * 1024U;
-  jingle_glue::XmppClientSocketFactory* const client_socket_factory =
-      new jingle_glue::XmppClientSocketFactory(
-          net::ClientSocketFactory::GetDefaultFactory(),
-          ssl_config,
-          request_context_getter,
-          use_fake_ssl_client_socket);
+  auto client_socket_factory =
+      std::make_unique<jingle_glue::XmppClientSocketFactory>(
+          net::ClientSocketFactory::GetDefaultFactory(), ssl_config,
+          request_context_getter, use_fake_ssl_client_socket);
 
-  return new jingle_glue::ChromeAsyncSocket(client_socket_factory, kReadBufSize,
-                                            kWriteBufSize, traffic_annotation);
+  return new jingle_glue::ChromeAsyncSocket(std::move(client_socket_factory),
+                                            kReadBufSize, kWriteBufSize,
+                                            traffic_annotation);
 }
 
 }  // namespace
@@ -90,7 +89,7 @@ XmppConnection::~XmppConnection() {
   // things happen when the stack pops back up to the XmppClient's
   // (which is deleted by |task_pump_|) function.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
-                                                  task_pump_.release());
+                                                  std::move(task_pump_));
 }
 
 void XmppConnection::OnStateChange(buzz::XmppEngine::State state) {
