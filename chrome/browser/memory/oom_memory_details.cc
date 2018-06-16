@@ -14,16 +14,14 @@
 namespace memory {
 
 // static
-void OomMemoryDetails::Log(const std::string& title,
-                           const base::Closure& callback) {
+void OomMemoryDetails::Log(const std::string& title) {
   // Deletes itself upon completion.
-  OomMemoryDetails* details = new OomMemoryDetails(title, callback);
+  OomMemoryDetails* details = new OomMemoryDetails(title);
   details->StartFetch();
 }
 
-OomMemoryDetails::OomMemoryDetails(const std::string& title,
-                                   const base::Closure& callback)
-    : title_(title), callback_(callback) {
+OomMemoryDetails::OomMemoryDetails(const std::string& title)
+    : title_(title) {
   AddRef();  // Released in OnDetailsAvailable().
   start_time_ = base::TimeTicks::Now();
 }
@@ -45,8 +43,6 @@ void OomMemoryDetails::OnDetailsAvailable() {
 #endif
   LOG(WARNING) << title_ << " (" << delta.InMilliseconds() << " ms):\n"
                << log_string;
-  if (!callback_.is_null())
-    callback_.Run();
   // Delete ourselves so we don't have to worry about OomPriorityManager
   // deleting us when we're still working.
   Release();

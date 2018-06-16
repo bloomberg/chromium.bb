@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/memory_details.h"
@@ -19,12 +18,12 @@ namespace memory {
 // memory event in an attempt to identify the culprit.
 class OomMemoryDetails : public MemoryDetails {
  public:
-  // Logs the memory details asynchronously and then run |callback|.
+  // Logs the memory details asynchronously.
   // The |title| is printed at the beginning of the message.
-  static void Log(const std::string& title, const base::Closure& callback);
+  static void Log(const std::string& title);
 
  private:
-  OomMemoryDetails(const std::string& title, const base::Closure& callback);
+  OomMemoryDetails(const std::string& title);
   ~OomMemoryDetails() override;
 
   // MemoryDetails overrides:
@@ -32,7 +31,6 @@ class OomMemoryDetails : public MemoryDetails {
 
   std::string title_;
   base::TimeTicks start_time_;
-  base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OomMemoryDetails);
 };

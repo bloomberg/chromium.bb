@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -119,8 +118,8 @@ class TabManager : public LifecycleUnitObserver,
   // multiple threads and takes time.
   void LogMemoryAndDiscardTab(DiscardReason reason);
 
-  // Log memory statistics for the running processes, then call the callback.
-  void LogMemory(const std::string& title, const base::Closure& callback);
+  // Log memory statistics for the running processes.
+  void LogMemory(const std::string& title);
 
   // TODO(fdoray): Remove these methods. TabManager shouldn't know about tabs.
   // https://crbug.com/775644

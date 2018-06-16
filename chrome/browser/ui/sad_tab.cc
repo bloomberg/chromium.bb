@@ -267,7 +267,7 @@ SadTab::SadTab(content::WebContents* web_contents, SadTabKind kind)
       {
         const std::string spec = web_contents->GetURL().GetOrigin().spec();
         memory::OomMemoryDetails::Log(
-            "Tab OOM-Killed Memory details: " + spec + ", ", base::Closure());
+            "Tab OOM-Killed Memory details: " + spec + ", ");
       }
       FALLTHROUGH;
 #endif

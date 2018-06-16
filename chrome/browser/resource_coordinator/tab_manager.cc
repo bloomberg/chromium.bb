@@ -304,14 +304,15 @@ WebContents* TabManager::DiscardTabByExtension(content::WebContents* contents) {
 }
 
 void TabManager::LogMemoryAndDiscardTab(DiscardReason reason) {
-  LogMemory("Tab Discards Memory details",
-            base::Bind(&TabManager::PurgeMemoryAndDiscardTab, reason));
+  // Discard immediately without waiting for LogMemory() (https://crbug/850545).
+  // Consider removing LogMemory() at all if nobody cares about the log.
+  LogMemory("Tab Discards Memory details");
+  PurgeMemoryAndDiscardTab(reason);
 }
 
-void TabManager::LogMemory(const std::string& title,
-                           const base::Closure& callback) {
+void TabManager::LogMemory(const std::string& title) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  memory::OomMemoryDetails::Log(title, callback);
+  memory::OomMemoryDetails::Log(title);
 }
 
 void TabManager::AddObserver(TabLifecycleObserver* observer) {
