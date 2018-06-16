@@ -13,6 +13,7 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/ui/ws2/ids.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -78,6 +79,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
 
   void set_focus_owner(WindowTree* owner) { focus_owner_ = owner; }
   WindowTree* focus_owner() const { return focus_owner_; }
+
+  // Save |cursor| in |cursor_|. Since this does not update the active cursor,
+  // and to avoid confusion, the function is not called set_cursor().
+  void StoreCursor(const ui::Cursor& cursor);
+  const ui::Cursor& cursor() const { return cursor_; }
 
   // Returns true if the window has an embedding, and the owning client
   // intercepts events that would normally target descendants.
@@ -166,6 +172,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
   base::Optional<viz::LocalSurfaceId> local_surface_id_;
 
   std::unique_ptr<DragDropDelegate> drag_drop_delegate_;
+
+  // The last cursor that the client has requested. This is only set for embed
+  // roots. For top level windows, see WmNativeWidgetAura.
+  ui::Cursor cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(ServerWindow);
 };

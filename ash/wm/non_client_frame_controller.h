@@ -80,6 +80,11 @@ class ASH_EXPORT NonClientFrameController
   void SetClientArea(const gfx::Insets& insets,
                      const std::vector<gfx::Rect>& additional_client_areas);
 
+  // Stores |cursor| as this window's active cursor. It does not actually update
+  // the active cursor by calling into CursorManager, but will update the return
+  // value provided by the associated window's aura::WindowDelegate::GetCursor.
+  void StoreCursor(const ui::Cursor& cursor);
+
  private:
   ~NonClientFrameController() override;
 

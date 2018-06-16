@@ -1672,6 +1672,7 @@ test("ash_unittests") {
     "app_list/presenter/app_list_presenter_impl_unittest.cc",
     "assistant/assistant_controller_unittest.cc",
     "autoclick/autoclick_unittest.cc",
+    "cursor_unittest.cc",
     "detachable_base/detachable_base_handler_unittest.cc",
     "detachable_base/detachable_base_notification_controller_unittest.cc",
     "dip_unittest.cc",

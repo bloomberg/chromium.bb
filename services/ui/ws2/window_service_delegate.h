@@ -15,6 +15,7 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "ui/base/cursor/cursor.h"
 
 namespace aura {
 class PropertyConverter;
@@ -47,6 +48,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
 
   // Called for KeyEvents the client does not handle.
   virtual void OnUnhandledKeyEvent(const KeyEvent& key_event) {}
+
+  // Sets the cursor for |window| to |cursor|. This will immediately change the
+  // actual on-screen cursor if the pointer is hovered over |window|. Also store
+  // |cursor| on the widget for |window| if there is one. The return value
+  // indicates whether the cursor was stored for |window|.
+  virtual bool StoreAndSetCursor(aura::Window* window, ui::Cursor cursor);
 
   // Called to start a move operation on |window|. When done, |callback| should
   // be run with the result (true if the move was successful). If a move is not
