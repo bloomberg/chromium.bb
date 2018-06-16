@@ -1845,6 +1845,12 @@
         },
         {
           "board_name": "grunt",
+          "name": "careena",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "grunt",
           "name": "grunt",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
