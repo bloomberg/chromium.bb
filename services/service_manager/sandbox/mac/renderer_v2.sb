@@ -18,6 +18,11 @@
   (path "/dev/autofs_nowait")
   (path "/dev/fd"))
 
+; Reads of signed Mach-O blobs created by the CVMS server.
+; https://crbug.com/850021
+(allow file-read-data
+  (prefix "/private/tmp/cvmsCodeSignObj"))
+
 (allow file-write-data
   (require-all
     (path "/dev/null")
@@ -37,6 +42,10 @@
   (subpath "/System/Library/Extensions")  ; https://crbug.com/847518
   (subpath "/System/Library/LinguisticData"))
 
+; Reads from /Library.
+(allow file-read-data
+  (subpath "/Library/GPUBundles"))  ; https://crbug.com/850021
+
 ; IOKit
 (allow iokit-open
   (iokit-registry-entry-class "IOSurfaceRootUserClient")
@@ -54,6 +63,8 @@
   ; crbug.com/792257
   (global-name "com.apple.distributed_notifications@Uv3")
   (global-name "com.apple.lsd.mapdb")
+  ; https://crbug.com/850021
+  (global-name "com.apple.cvmsServ")
   ; crbug.com/792217
   (global-name "com.apple.system.notification_center")
   (global-name "com.apple.windowserver.active"))
