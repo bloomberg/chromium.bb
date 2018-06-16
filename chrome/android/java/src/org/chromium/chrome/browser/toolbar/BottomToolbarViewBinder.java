@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
@@ -68,6 +69,11 @@ public class BottomToolbarViewBinder
         } else if (BottomToolbarModel.HOME_BUTTON_LISTENER == propertyKey) {
             view.toolbarRoot.findViewById(R.id.home_button)
                     .setOnClickListener(model.getValue(BottomToolbarModel.HOME_BUTTON_LISTENER));
+        } else if (BottomToolbarModel.SEARCH_ACCELERATOR_VISIBLE == propertyKey) {
+            view.toolbarRoot.findViewById(R.id.search_button)
+                    .setVisibility(model.getValue(BottomToolbarModel.SEARCH_ACCELERATOR_VISIBLE)
+                                    ? View.VISIBLE
+                                    : View.INVISIBLE);
         } else {
             assert false : "Unhandled property detected in BottomToolbarViewBinder!";
         }

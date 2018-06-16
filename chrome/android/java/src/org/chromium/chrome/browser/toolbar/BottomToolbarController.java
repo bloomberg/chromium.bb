@@ -12,6 +12,7 @@ import android.view.ViewStub;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
@@ -85,14 +86,16 @@ public class BottomToolbarController {
      *                           menu button is clicked.
      * @param tabModelSelector A {@link TabModelSelector} that the tab switcher button uses to
      *                         keep its tab count updated.
+     * @param overviewModeBehavior The overview mode manager.
      */
     public void initializeWithNative(ResourceManager resourceManager, LayoutManager layoutManager,
             OnClickListener tabSwitcherListener, OnClickListener searchAcceleratorListener,
             OnClickListener homeButtonListener, OnTouchListener menuButtonListener,
-            TabModelSelector tabModelSelector) {
+            TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior) {
         mMediator.setButtonListeners(
                 searchAcceleratorListener, homeButtonListener, menuButtonListener);
         mMediator.setLayoutManager(layoutManager);
+        mMediator.setOverviewModeBehavior(overviewModeBehavior);
 
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
         mTabSwitcherButtonCoordinator.setTabModelSelector(tabModelSelector);

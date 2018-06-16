@@ -35,9 +35,12 @@ public class BottomToolbarModel extends PropertyModel {
     /** A {@link LayoutManager} to attach overlays to. */
     public static final ObjectPropertyKey<LayoutManager> LAYOUT_MANAGER = new ObjectPropertyKey<>();
 
+    /** Whether or not the search accelerator is visible. */
+    public static final BooleanPropertyKey SEARCH_ACCELERATOR_VISIBLE = new BooleanPropertyKey();
+
     /** Default constructor. */
     public BottomToolbarModel() {
         super(Y_OFFSET, ANDROID_VIEW_VISIBILITY, SEARCH_ACCELERATOR_LISTENER, HOME_BUTTON_LISTENER,
-                MENU_BUTTON_LISTENER, LAYOUT_MANAGER);
+                MENU_BUTTON_LISTENER, LAYOUT_MANAGER, SEARCH_ACCELERATOR_VISIBLE);
     }
 }
