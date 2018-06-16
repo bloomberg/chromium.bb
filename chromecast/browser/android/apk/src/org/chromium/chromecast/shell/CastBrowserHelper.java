@@ -6,6 +6,8 @@ package org.chromium.chromecast.shell;
 
 import android.content.Context;
 
+import org.chromium.base.CommandLine;
+import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -20,6 +22,7 @@ import org.chromium.net.NetworkChangeNotifier;
  */
 public class CastBrowserHelper {
     private static final String TAG = "CastBrowserHelper";
+    private static final String COMMAND_LINE_FILE = "castshell-command-line";
 
     private static boolean sIsBrowserInitialized = false;
 
@@ -38,8 +41,10 @@ public class CastBrowserHelper {
         ChromecastConfigAndroid.initializeForBrowser(context);
 
         // Initializing the command line must occur before loading the library.
-        CastCommandLineHelper.initCommandLineWithSavedArgs(
-                () -> { ((CastApplication) context.getApplicationContext()).initCommandLine(); });
+        CastCommandLineHelper.initCommandLineWithSavedArgs(() -> {
+            CommandLineInitUtil.initCommandLine(COMMAND_LINE_FILE);
+            return CommandLine.getInstance();
+        });
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(context);
 

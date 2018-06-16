@@ -16,6 +16,7 @@ import org.chromium.chromecast.base.Inheritance.Base;
 import org.chromium.chromecast.base.Inheritance.Derived;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -41,5 +42,29 @@ public class ItertoolsTest {
     public void testAssignReversedToIterableOfSuperclass() {
         // Compile error if the generics are wrong.
         Iterable<Base> reversed = Itertools.reverse(new ArrayList<Derived>());
+    }
+
+    @Test
+    public void testForEachLoopWithIterator() {
+        Iterator<String> emptyIterator = new Iterator<String>() {
+            @Override
+            public boolean hasNext() {
+                return false;
+            }
+
+            @Override
+            public String next() {
+                throw new IllegalStateException();
+            }
+        };
+        List<String> result = new ArrayList<>();
+        // The following won't compile because for-each loops expect Iterables.
+        // for (String item : emptyIterator) {
+        //     result.add(item);
+        // }
+        for (String item : Itertools.fromIterator(emptyIterator)) {
+            result.add(item);
+        }
+        assertThat(result, emptyIterable());
     }
 }

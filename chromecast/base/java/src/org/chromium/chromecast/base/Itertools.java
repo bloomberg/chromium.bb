@@ -46,4 +46,13 @@ public class Itertools {
             };
         });
     }
+
+    /**
+     * Create an Iterable from an Iterator.
+     *
+     * Wrap an expression that returns an Iterator with this method to use it in a for-each loop.
+     */
+    public static <T> Iterable<T> fromIterator(Iterator<T> iterator) {
+        return () -> iterator;
+    }
 }
