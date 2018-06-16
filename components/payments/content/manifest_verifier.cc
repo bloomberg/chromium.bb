@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/utility/payment_manifest_parser.h"
@@ -40,10 +41,8 @@ void EnableMethodManifestUrlForSupportedApps(
     for (auto& app : *apps) {
       if (app_origin.IsSameOriginWith(
               url::Origin::Create(app.second->scope.GetOrigin()))) {
-        app.second->has_explicitly_verified_methods =
-            std::find(supported_origin_strings.begin(),
-                      supported_origin_strings.end(),
-                      app_origin.Serialize()) != supported_origin_strings.end();
+        app.second->has_explicitly_verified_methods = base::ContainsValue(
+            supported_origin_strings, app_origin.Serialize());
         if (all_origins_supported ||
             app.second->has_explicitly_verified_methods) {
           app.second->enabled_methods.emplace_back(method_manifest_url.spec());

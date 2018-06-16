@@ -346,8 +346,7 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
   // Payment app that needs installation only supports url based payment
   // methods.
   if (needs_installation_) {
-    return std::find(methods.begin(), methods.end(),
-                     installable_enabled_method_) != methods.end();
+    return base::ContainsValue(methods, installable_enabled_method_);
   }
 
   std::vector<std::string> matched_methods;

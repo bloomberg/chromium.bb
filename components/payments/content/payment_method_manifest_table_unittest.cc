@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/stl_util.h"
 #include "components/webdata/common/web_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,12 +71,8 @@ TEST_F(PaymentMethodManifestTableTest, AddAndGetSingleManifest) {
   retrieved_web_app_ids =
       payment_method_manifest_table->GetManifest("https://bobpay.com");
   ASSERT_EQ(web_app_ids.size(), retrieved_web_app_ids.size());
-  ASSERT_TRUE(std::find(retrieved_web_app_ids.begin(),
-                        retrieved_web_app_ids.end(),
-                        web_app_ids[0]) != retrieved_web_app_ids.end());
-  ASSERT_TRUE(std::find(retrieved_web_app_ids.begin(),
-                        retrieved_web_app_ids.end(),
-                        web_app_ids[1]) != retrieved_web_app_ids.end());
+  ASSERT_TRUE(base::ContainsValue(retrieved_web_app_ids, web_app_ids[0]));
+  ASSERT_TRUE(base::ContainsValue(retrieved_web_app_ids, web_app_ids[1]));
 }
 
 TEST_F(PaymentMethodManifestTableTest, AddAndGetMultipleManifest) {
@@ -109,20 +106,14 @@ TEST_F(PaymentMethodManifestTableTest, AddAndGetMultipleManifest) {
   bobpay_web_app_ids =
       payment_method_manifest_table->GetManifest(method_name_1);
   ASSERT_EQ(web_app_ids.size(), bobpay_web_app_ids.size());
-  ASSERT_TRUE(std::find(bobpay_web_app_ids.begin(), bobpay_web_app_ids.end(),
-                        web_app_ids[0]) != bobpay_web_app_ids.end());
-  ASSERT_TRUE(std::find(bobpay_web_app_ids.begin(), bobpay_web_app_ids.end(),
-                        web_app_ids[1]) != bobpay_web_app_ids.end());
+  ASSERT_TRUE(base::ContainsValue(bobpay_web_app_ids, web_app_ids[0]));
+  ASSERT_TRUE(base::ContainsValue(bobpay_web_app_ids, web_app_ids[1]));
 
   alicepay_web_app_ids =
       payment_method_manifest_table->GetManifest(method_name_1);
   ASSERT_EQ(web_app_ids.size(), alicepay_web_app_ids.size());
-  ASSERT_TRUE(std::find(alicepay_web_app_ids.begin(),
-                        alicepay_web_app_ids.end(),
-                        web_app_ids[0]) != alicepay_web_app_ids.end());
-  ASSERT_TRUE(std::find(alicepay_web_app_ids.begin(),
-                        alicepay_web_app_ids.end(),
-                        web_app_ids[1]) != alicepay_web_app_ids.end());
+  ASSERT_TRUE(base::ContainsValue(alicepay_web_app_ids, web_app_ids[0]));
+  ASSERT_TRUE(base::ContainsValue(alicepay_web_app_ids, web_app_ids[1]));
 }
 
 }  // namespace
