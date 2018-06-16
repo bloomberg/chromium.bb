@@ -1696,7 +1696,8 @@ HitTestResult LayoutObject::HitTestForOcclusion(
   DCHECK(!frame->View()->NeedsLayout());
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kListBased | HitTestRequest::kPenetratingList |
-      HitTestRequest::kIgnorePointerEventsNone | HitTestRequest::kReadOnly;
+      HitTestRequest::kIgnorePointerEventsNone | HitTestRequest::kReadOnly |
+      HitTestRequest::kIgnoreClipping;
   return frame->GetEventHandler().HitTestResultAtRect(hit_rect, hit_type, this,
                                                       true);
 }
