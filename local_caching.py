@@ -746,6 +746,7 @@ class NamedCache(Cache):
   """
   _DIR_ALPHABET = string.ascii_letters + string.digits
   STATE_FILE = u'state.json'
+  NAMED_DIR = u'named'
 
   def __init__(self, cache_dir, policies, time_fn=None):
     """Initializes NamedCaches.
@@ -956,9 +957,70 @@ class NamedCache(Cache):
     return evicted
 
   def cleanup(self):
-    # TODO(maruel): Implement. In particular, remove the unexpected files and
-    # directories!
-    pass
+    """Removes unknown directories.
+
+    Does not recalculate the cache size since it's surprisingly slow on some
+    OSes.
+    """
+    success = True
+    with self._lock:
+      try:
+        actual = set(fs.listdir(self.cache_dir))
+        actual.discard(self.NAMED_DIR)
+        actual.discard(self.STATE_FILE)
+        expected = {v[0]: k for k, v in self._lru.iteritems()}
+        # First, handle the actual cache content.
+        # Remove missing entries.
+        for missing in (set(expected) - actual):
+          self._lru.pop(expected[missing])
+        # Remove unexpected items.
+        for unexpected in (actual - set(expected)):
+          try:
+            p = os.path.join(self.cache_dir, unexpected)
+            if fs.isdir(p):
+              file_path.rmtree(p)
+            else:
+              fs.remove(p)
+          except (IOError, OSError) as e:
+            logging.error('Failed to remove %s: %s', unexpected, e)
+            success = False
+
+        # Second, fix named cache links.
+        named = os.path.join(self.cache_dir, self.NAMED_DIR)
+        if os.path.isdir(named):
+          actual = set(fs.listdir(named))
+          expected = set(self._lru)
+          # Confirm entries. Do not add missing ones for now.
+          for name in expected.intersection(actual):
+            p = os.path.join(self.cache_dir, self.NAMED_DIR, name)
+            expected_link = os.path.join(self.cache_dir, self._lru[name][0])
+            if fs.islink(p):
+              link = fs.readlink(p)
+              if expected_link == link:
+                continue
+              logging.warning(
+                  'Unexpected symlink for cache %s: %s, expected %s',
+                  name, link, expected_link)
+            else:
+              logging.warning('Unexpected non symlink for cache %s', name)
+            if fs.isdir(p):
+              file_path.rmtree(p)
+            else:
+              fs.remove(p)
+          # Remove unexpected items.
+          for unexpected in (actual - expected):
+            try:
+              p = os.path.join(self.cache_dir, self.NAMED_DIR, unexpected)
+              if fs.isdir(p):
+                file_path.rmtree(p)
+              else:
+                fs.remove(p)
+            except (IOError, OSError) as e:
+              logging.error('Failed to remove %s: %s', unexpected, e)
+              success = False
+      finally:
+        self._save()
+    return success
 
   # Internal functions.
 
@@ -1033,4 +1095,4 @@ class NamedCache(Cache):
     self._lru.save(self.state_file)
 
   def _get_named_path(self, name):
-    return os.path.join(self.cache_dir, 'named', name)
+    return os.path.join(self.cache_dir, self.NAMED_DIR, name)
