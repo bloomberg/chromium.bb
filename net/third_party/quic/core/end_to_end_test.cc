@@ -3073,9 +3073,9 @@ TEST_P(EndToEndTest, PreSharedKey) {
 
 TEST_P(EndToEndTest, PreSharedKeyMismatch) {
   client_config_.set_max_time_before_crypto_handshake(
-      QuicTime::Delta::FromSeconds(1));
+      QuicTime::Delta::FromMilliseconds(100));
   client_config_.set_max_idle_time_before_crypto_handshake(
-      QuicTime::Delta::FromSeconds(1));
+      QuicTime::Delta::FromMilliseconds(100));
   pre_shared_key_client_ = "foo";
   pre_shared_key_server_ = "bar";
   ASSERT_TRUE(Initialize());
@@ -3086,9 +3086,9 @@ TEST_P(EndToEndTest, PreSharedKeyMismatch) {
 
 TEST_P(EndToEndTest, PreSharedKeyNoClient) {
   client_config_.set_max_time_before_crypto_handshake(
-      QuicTime::Delta::FromSeconds(1));
+      QuicTime::Delta::FromMilliseconds(100));
   client_config_.set_max_idle_time_before_crypto_handshake(
-      QuicTime::Delta::FromSeconds(1));
+      QuicTime::Delta::FromMilliseconds(100));
   pre_shared_key_server_ = "foobar";
   ASSERT_TRUE(Initialize());
 
@@ -3098,9 +3098,9 @@ TEST_P(EndToEndTest, PreSharedKeyNoClient) {
 
 TEST_P(EndToEndTest, PreSharedKeyNoServer) {
   client_config_.set_max_time_before_crypto_handshake(
-      QuicTime::Delta::FromSeconds(1));
+      QuicTime::Delta::FromMilliseconds(100));
   client_config_.set_max_idle_time_before_crypto_handshake(
-      QuicTime::Delta::FromSeconds(1));
+      QuicTime::Delta::FromMilliseconds(100));
   pre_shared_key_client_ = "foobar";
   ASSERT_TRUE(Initialize());
 

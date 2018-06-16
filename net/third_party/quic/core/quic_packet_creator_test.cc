@@ -231,6 +231,11 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
         num_padding_bytes, encryption_level, packet_number_length);
   }
 
+  bool IsDefaultTestConfiguration() {
+    TestParams p = GetParam();
+    return p.version == AllSupportedVersions()[0] && p.version_serialization;
+  }
+
   static const QuicStreamOffset kOffset = 0u;
 
   char buffer_[kMaxPacketSize];
@@ -960,6 +965,11 @@ TEST_P(QuicPacketCreatorTest, SerializeAndSendStreamFrame) {
 }
 
 TEST_P(QuicPacketCreatorTest, AddUnencryptedStreamDataClosesConnection) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (!IsDefaultTestConfiguration()) {
+    return;
+  }
+
   creator_.set_encryption_level(ENCRYPTION_NONE);
   EXPECT_CALL(delegate_, OnUnrecoverableError(_, _, _));
   QuicStreamFrame stream_frame(kHeadersStreamId, /*fin=*/false, 0u,
@@ -969,6 +979,11 @@ TEST_P(QuicPacketCreatorTest, AddUnencryptedStreamDataClosesConnection) {
 }
 
 TEST_P(QuicPacketCreatorTest, ChloTooLarge) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (!IsDefaultTestConfiguration()) {
+    return;
+  }
+
   CryptoHandshakeMessage message;
   message.set_tag(kCHLO);
   message.set_minimum_size(kMaxPacketSize);

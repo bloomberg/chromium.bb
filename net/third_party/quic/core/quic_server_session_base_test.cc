@@ -358,6 +358,11 @@ TEST_P(QuicServerSessionBaseTest, GetEvenIncomingError) {
 }
 
 TEST_P(QuicServerSessionBaseTest, GetStreamDisconnected) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (GetParam() != AllSupportedVersions()[0]) {
+    return;
+  }
+
   // Don't create new streams if the connection is disconnected.
   QuicConnectionPeer::TearDownLocalConnectionState(connection_);
   EXPECT_QUIC_BUG(QuicServerSessionBasePeer::GetOrCreateDynamicStream(
