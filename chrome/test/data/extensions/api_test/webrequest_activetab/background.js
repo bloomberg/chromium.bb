@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 window.webRequestCount = 0;
+window.requestedHostnames = [];
 
 chrome.webRequest.onBeforeRequest.addListener(function(details) {
   ++window.webRequestCount;
+  window.requestedHostnames.push((new URL(details.url)).hostname);
 }, {urls:['<all_urls>']});
 
 chrome.test.sendMessage('ready');
