@@ -3006,17 +3006,6 @@
   {
     'name': 'chromium.webkit',
     'machines': {
-      'WebKit Linux Trusty': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'WebKit Linux Trusty (dbg)': {
-        # TODO(dpranke): Remove this builder, it is now redundant
-        'additional_compile_targets': [
-          'base_unittests',
-        ],
-      },
       'WebKit Linux Trusty ASAN': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -3031,35 +3020,6 @@
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
-      },
-      'WebKit Mac10.10': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': 'none',
-              'os': 'Mac-10.10.5',
-            }
-          ],
-        },
-      },
-      'WebKit Mac10.11': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-        'swarming': {
-          'dimension_sets': [
-            {
-              'gpu': 'none',
-              'os': 'Mac-10.11.6',
-            }
-          ],
-        },
-      },
-      'WebKit Mac10.11 (dbg)': {
-        # TODO(dpranke): Remove this builder, it is now redundant
       },
       'WebKit Mac10.12 (retina)': {
         'test_suites': {
@@ -3076,40 +3036,10 @@
           ],
         },
       },
-      'WebKit Mac10.12': {
-        # TODO(dpranke): Remove this builder, it is now redundant
-        # w/ Mac10.13 Tests on chromium.mac
-      },
-      'WebKit Win x64 Builder': {
-        # TODO(dpranke): Remove this builder, it is now redundant
-        # w/ Win 7 Tests x64 (1) on chromium.win.
-        'additional_compile_targets': [
-          'base_unittests',
-        ],
-      },
-      'WebKit Win x64 Builder (dbg)': {
-        # TODO(dpranke): Remove this builder, it is now redundant
-        # w/ Win 7 Tests x64 (1)(dbg) on chromium.win.
-        'additional_compile_targets': [
-          'base_unittests',
-        ],
-      },
       'WebKit Win10': {
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
-      },
-      'WebKit Win7': {
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'WebKit Win7 (dbg)': {
-        # TODO(dpranke): Remove this builder, it is now redundant
-        # w/ Win 7 Tests (1)(dbg) on chromium.win.
-        'additional_compile_targets': [
-          'base_unittests',
-        ],
       },
     },
   },
