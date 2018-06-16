@@ -492,7 +492,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, IsAppOpen) {
   const std::string app_id = GetTestApp1Id(kTestAppPackage);
 
   AppListClientImpl* client = AppListClientImpl::GetInstance();
-  AppListControllerDelegate* delegate = client->GetControllerDelegate();
+  AppListControllerDelegate* delegate = client;
   EXPECT_FALSE(delegate->IsAppOpen(app_id));
   arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_FALSE(delegate->IsAppOpen(app_id));

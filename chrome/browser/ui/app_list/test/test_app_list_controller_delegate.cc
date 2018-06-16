@@ -21,8 +21,6 @@ int64_t TestAppListControllerDelegate::GetAppListDisplayId() {
   return display::kInvalidDisplayId;
 }
 
-void TestAppListControllerDelegate::SetAppListDisplayId(int64_t display_id) {}
-
 void TestAppListControllerDelegate::DismissView() {}
 
 bool TestAppListControllerDelegate::IsAppPinned(const std::string& app_id) {

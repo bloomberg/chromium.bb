@@ -57,9 +57,6 @@ class AppListControllerDelegate {
   // Gets display ID of app list window.
   virtual int64_t GetAppListDisplayId() = 0;
 
-  // Sets display ID of app list window whenever it changes.
-  virtual void SetAppListDisplayId(int64_t display_id) = 0;
-
   // Gets the content bounds of the app info dialog of the app list in the
   // screen coordinates. On platforms that do not use views, this returns a 0x0
   // rectangle.

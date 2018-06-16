@@ -17,7 +17,6 @@ class TestAppListControllerDelegate : public AppListControllerDelegate {
   ~TestAppListControllerDelegate() override;
 
   int64_t GetAppListDisplayId() override;
-  void SetAppListDisplayId(int64_t display_id) override;
   void DismissView() override;
   bool IsAppPinned(const std::string& app_id) override;
   void PinApp(const std::string& app_id) override;
