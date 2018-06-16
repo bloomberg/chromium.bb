@@ -257,7 +257,7 @@ void PaintLayerScrollableArea::CalculateScrollbarModes(
   ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
 }
 
-ChromeClient* PaintLayerScrollableArea::GetChromeClient() const {
+PlatformChromeClient* PaintLayerScrollableArea::GetChromeClient() const {
   if (HasBeenDisposed())
     return nullptr;
   if (Page* page = GetLayoutBox()->GetFrame()->GetPage())
@@ -2300,7 +2300,7 @@ bool PaintLayerScrollableArea::VisualViewportSuppliesScrollbars() const {
 }
 
 bool PaintLayerScrollableArea::ScheduleAnimation() {
-  if (ChromeClient* client = GetChromeClient()) {
+  if (ChromeClient* client = ToChromeClient(GetChromeClient())) {
     client->ScheduleAnimation(GetLayoutBox()->GetFrame()->View());
     return true;
   }

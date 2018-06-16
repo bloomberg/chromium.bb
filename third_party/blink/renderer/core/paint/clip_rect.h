@@ -28,11 +28,11 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
+class FloatClipRect;
 class HitTestLocation;
 
 class ClipRect {
@@ -40,18 +40,11 @@ class ClipRect {
 
  public:
   ClipRect() : has_radius_(false) {}
-
   ClipRect(const LayoutRect& rect) : rect_(rect), has_radius_(false) {}
-
-  ClipRect(const FloatClipRect& rect)
-      : rect_(rect.Rect()), has_radius_(rect.HasRadius()) {}
-
-  void SetRect(const FloatClipRect& rect) {
-    rect_ = LayoutRect(rect.Rect());
-    has_radius_ = rect.HasRadius();
-  }
+  ClipRect(const FloatClipRect& rect);
 
   const LayoutRect& Rect() const { return rect_; }
+  void SetRect(const FloatClipRect& rect);
 
   bool HasRadius() const { return has_radius_; }
   void SetHasRadius(bool has_radius) { has_radius_ = has_radius; }

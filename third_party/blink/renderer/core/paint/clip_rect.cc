@@ -27,9 +27,18 @@
 #include "third_party/blink/renderer/core/paint/clip_rect.h"
 
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
+#include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+ClipRect::ClipRect(const FloatClipRect& rect)
+    : rect_(rect.Rect()), has_radius_(rect.HasRadius()) {}
+
+void ClipRect::SetRect(const FloatClipRect& rect) {
+  rect_ = LayoutRect(rect.Rect());
+  has_radius_ = rect.HasRadius();
+}
 
 bool ClipRect::Intersects(const HitTestLocation& hit_test_location) const {
   return hit_test_location.Intersects(rect_);
