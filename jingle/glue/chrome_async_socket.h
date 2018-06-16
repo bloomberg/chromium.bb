@@ -34,11 +34,11 @@ class ResolvingClientSocketFactory;
 class ChromeAsyncSocket : public buzz::AsyncSocket {
  public:
   // Takes ownership of |resolving_client_socket_factory|.
-  ChromeAsyncSocket(
-      ResolvingClientSocketFactory* resolving_client_socket_factory,
-      size_t read_buf_size,
-      size_t write_buf_size,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation);
+  ChromeAsyncSocket(std::unique_ptr<ResolvingClientSocketFactory>
+                        resolving_client_socket_factory,
+                    size_t read_buf_size,
+                    size_t write_buf_size,
+                    const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Does not raise any signals.
   ~ChromeAsyncSocket() override;

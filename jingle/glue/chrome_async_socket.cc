@@ -27,11 +27,13 @@
 namespace jingle_glue {
 
 ChromeAsyncSocket::ChromeAsyncSocket(
-    ResolvingClientSocketFactory* resolving_client_socket_factory,
+    std::unique_ptr<ResolvingClientSocketFactory>
+        resolving_client_socket_factory,
     size_t read_buf_size,
     size_t write_buf_size,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
-    : resolving_client_socket_factory_(resolving_client_socket_factory),
+    : resolving_client_socket_factory_(
+          std::move(resolving_client_socket_factory)),
       state_(STATE_CLOSED),
       error_(ERROR_NONE),
       net_error_(net::OK),
