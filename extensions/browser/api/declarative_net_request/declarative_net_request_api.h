@@ -13,19 +13,19 @@
 
 namespace extensions {
 
-// Helper base class to update the set of whitelisted pages.
-class DeclarativeNetRequestUpdateWhitelistedPagesFunction
+// Helper base class to update the set of allowed pages.
+class DeclarativeNetRequestUpdateAllowedPagesFunction
     : public UIThreadExtensionFunction {
  protected:
   enum class Action {
-    ADD,     // Add whitelisted pages.
-    REMOVE,  // Remove whitelisted pages.
+    ADD,     // Add allowed pages.
+    REMOVE,  // Remove allowed pages.
   };
-  DeclarativeNetRequestUpdateWhitelistedPagesFunction();
-  ~DeclarativeNetRequestUpdateWhitelistedPagesFunction() override;
+  DeclarativeNetRequestUpdateAllowedPagesFunction();
+  ~DeclarativeNetRequestUpdateAllowedPagesFunction() override;
 
-  // Updates the set of whitelisted pages for the extension.
-  ExtensionFunction::ResponseAction UpdateWhitelistedPages(
+  // Updates the set of allowed pages for the extension.
+  ExtensionFunction::ResponseAction UpdateAllowedPages(
       const std::vector<std::string>& patterns,
       Action action);
 
@@ -33,67 +33,67 @@ class DeclarativeNetRequestUpdateWhitelistedPagesFunction
   bool PreRunValidation(std::string* error) override;
 
  private:
-  void OnWhitelistedPagesUpdated();
+  void OnAllowedPagesUpdated();
 
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestUpdateWhitelistedPagesFunction);
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestUpdateAllowedPagesFunction);
 };
 
-// Implements the "declarativeNetRequest.addWhitelistedPages" extension
+// Implements the "declarativeNetRequest.addAllowedPages" extension
 // function.
-class DeclarativeNetRequestAddWhitelistedPagesFunction
-    : public DeclarativeNetRequestUpdateWhitelistedPagesFunction {
+class DeclarativeNetRequestAddAllowedPagesFunction
+    : public DeclarativeNetRequestUpdateAllowedPagesFunction {
  public:
-  DeclarativeNetRequestAddWhitelistedPagesFunction();
-  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.addWhitelistedPages",
-                             DECLARATIVENETREQUEST_ADDWHITELISTEDPAGES);
+  DeclarativeNetRequestAddAllowedPagesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.addAllowedPages",
+                             DECLARATIVENETREQUEST_ADDALLOWEDPAGES);
 
  protected:
-  ~DeclarativeNetRequestAddWhitelistedPagesFunction() override;
+  ~DeclarativeNetRequestAddAllowedPagesFunction() override;
 
   // ExtensionFunction override:
   ExtensionFunction::ResponseAction Run() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestAddWhitelistedPagesFunction);
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestAddAllowedPagesFunction);
 };
 
-// Implements the "declarativeNetRequest.removeWhitelistedPages" extension
+// Implements the "declarativeNetRequest.removeAllowedPages" extension
 // function.
-class DeclarativeNetRequestRemoveWhitelistedPagesFunction
-    : public DeclarativeNetRequestUpdateWhitelistedPagesFunction {
+class DeclarativeNetRequestRemoveAllowedPagesFunction
+    : public DeclarativeNetRequestUpdateAllowedPagesFunction {
  public:
-  DeclarativeNetRequestRemoveWhitelistedPagesFunction();
-  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.removeWhitelistedPages",
-                             DECLARATIVENETREQUEST_REMOVEWHITELISTEDPAGES);
+  DeclarativeNetRequestRemoveAllowedPagesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.removeAllowedPages",
+                             DECLARATIVENETREQUEST_REMOVEALLOWEDPAGES);
 
  protected:
-  ~DeclarativeNetRequestRemoveWhitelistedPagesFunction() override;
+  ~DeclarativeNetRequestRemoveAllowedPagesFunction() override;
 
   // ExtensionFunction override:
   ExtensionFunction::ResponseAction Run() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestRemoveWhitelistedPagesFunction);
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestRemoveAllowedPagesFunction);
 };
 
-// Implements the "declarativeNetRequest.getWhitelistedPages" extension
+// Implements the "declarativeNetRequest.getAllowedPages" extension
 // function.
-class DeclarativeNetRequestGetWhitelistedPagesFunction
+class DeclarativeNetRequestGetAllowedPagesFunction
     : public UIThreadExtensionFunction {
  public:
-  DeclarativeNetRequestGetWhitelistedPagesFunction();
-  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getWhitelistedPages",
-                             DECLARATIVENETREQUEST_GETWHITELISTEDPAGES);
+  DeclarativeNetRequestGetAllowedPagesFunction();
+  DECLARE_EXTENSION_FUNCTION("declarativeNetRequest.getAllowedPages",
+                             DECLARATIVENETREQUEST_GETALLOWEDPAGES);
 
  protected:
-  ~DeclarativeNetRequestGetWhitelistedPagesFunction() override;
+  ~DeclarativeNetRequestGetAllowedPagesFunction() override;
 
   // ExtensionFunction overrides:
   bool PreRunValidation(std::string* error) override;
   ExtensionFunction::ResponseAction Run() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetWhitelistedPagesFunction);
+  DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestGetAllowedPagesFunction);
 };
 
 }  // namespace extensions

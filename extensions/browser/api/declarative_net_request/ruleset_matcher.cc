@@ -77,10 +77,10 @@ bool RulesetMatcher::ShouldBlockRequest(const GURL& url,
   const bool disable_generic_rules = false;
 
   bool success =
-      !!blacklist_matcher_.FindMatch(
+      !!blocking_matcher_.FindMatch(
           url, first_party_origin, element_type, flat_rule::ActivationType_NONE,
           is_third_party, disable_generic_rules, FindRuleStrategy::kAny) &&
-      !whitelist_matcher_.FindMatch(
+      !allowing_matcher_.FindMatch(
           url, first_party_origin, element_type, flat_rule::ActivationType_NONE,
           is_third_party, disable_generic_rules, FindRuleStrategy::kAny);
   return success;
@@ -130,8 +130,8 @@ bool RulesetMatcher::ShouldRedirectRequest(
 RulesetMatcher::RulesetMatcher(std::string ruleset_data)
     : ruleset_data_(std::move(ruleset_data)),
       root_(flat::GetExtensionIndexedRuleset(ruleset_data_.data())),
-      blacklist_matcher_(root_->blacklist_index()),
-      whitelist_matcher_(root_->whitelist_index()),
+      blocking_matcher_(root_->blocking_index()),
+      allowing_matcher_(root_->allowing_index()),
       redirect_matcher_(root_->redirect_index()),
       metadata_list_(root_->extension_metadata()) {}
 

@@ -51,8 +51,8 @@ class FlatRulesetIndexer {
 
   flatbuffers::FlatBufferBuilder builder_;
 
-  UrlPatternIndexBuilder blacklist_index_builder_;
-  UrlPatternIndexBuilder whitelist_index_builder_;
+  UrlPatternIndexBuilder blocking_index_builder_;
+  UrlPatternIndexBuilder allowing_index_builder_;
   UrlPatternIndexBuilder redirect_index_builder_;
   std::vector<flatbuffers::Offset<flat::UrlRuleMetadata>> metadata_;
 

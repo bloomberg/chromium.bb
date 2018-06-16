@@ -374,12 +374,12 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
                               false /*is_incognito_context*/, &redirect_url));
 }
 
-TEST_P(RulesetManagerTest, PageWhitelistingAPI) {
+TEST_P(RulesetManagerTest, PageAllowingAPI) {
   RulesetManager* manager = info_map()->GetRulesetManager();
   ASSERT_TRUE(manager);
 
   // Add an extension which blocks all requests except for requests from
-  // http://google.com/whitelist* which are whitelisted.
+  // http://google.com/allow* which are allowed.
   {
     std::unique_ptr<RulesetMatcher> matcher;
 
@@ -401,7 +401,7 @@ TEST_P(RulesetManagerTest, PageWhitelistingAPI) {
         true /* background_script */));
 
     URLPatternSet pattern_set(
-        {URLPattern(URLPattern::SCHEME_ALL, "http://google.com/whitelist*")});
+        {URLPattern(URLPattern::SCHEME_ALL, "http://google.com/allow*")});
     manager->AddRuleset(last_loaded_extension()->id(), std::move(matcher),
                         std::move(pattern_set));
   }
@@ -411,7 +411,7 @@ TEST_P(RulesetManagerTest, PageWhitelistingAPI) {
   constexpr int kDummyParentFrameId = 1;
   constexpr int kDummyTabId = 5;
   constexpr int kDummyWindowId = 7;
-  constexpr char kWhitelistedPageURL[] = "http://google.com/whitelist123";
+  constexpr char kAllowedPageURL[] = "http://google.com/allow123";
 
   struct FrameDataParams {
     int frame_id;
@@ -425,10 +425,10 @@ TEST_P(RulesetManagerTest, PageWhitelistingAPI) {
     base::Optional<std::string> initiator;
     int frame_routing_id;
     base::Optional<FrameDataParams> frame_data_params;
-    bool expect_blocked_with_whitelist;
+    bool expect_blocked_with_allowed_pages;
   } test_cases[] = {
-      // Main frame requests. Whitelisted based on request url.
-      {kWhitelistedPageURL, content::RESOURCE_TYPE_MAIN_FRAME, base::nullopt,
+      // Main frame requests. Allowed based on request url.
+      {kAllowedPageURL, content::RESOURCE_TYPE_MAIN_FRAME, base::nullopt,
        MSG_ROUTING_NONE,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
@@ -438,24 +438,24 @@ TEST_P(RulesetManagerTest, PageWhitelistingAPI) {
        base::nullopt, MSG_ROUTING_NONE,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kWhitelistedPageURL, base::nullopt}),
+                        kAllowedPageURL, base::nullopt}),
        true},
 
-      // Non-navigation browser or service worker request. Not whitelisted,
+      // Non-navigation browser or service worker request. Not allowed,
       // since the request doesn't correspond to a frame.
       {"http://google.com/xyz", content::RESOURCE_TYPE_SCRIPT, base::nullopt,
        MSG_ROUTING_NONE, base::nullopt, true},
 
-      // Renderer requests - with no |pending_main_frame_url|. Whitelisted based
+      // Renderer requests - with no |pending_main_frame_url|. Allowed based
       // on the |last_committed_main_frame_url|.
-      {kWhitelistedPageURL, content::RESOURCE_TYPE_SCRIPT, "http://google.com",
+      {kAllowedPageURL, content::RESOURCE_TYPE_SCRIPT, "http://google.com",
        kDummyFrameRoutingId,
        FrameDataParams({kDummyFrameId, kDummyParentFrameId,
                         "http://google.com/xyz", base::nullopt}),
        true},
       {"http://google.com/xyz", content::RESOURCE_TYPE_SCRIPT,
        "http://google.com", kDummyFrameRoutingId,
-       FrameDataParams({kDummyFrameId, kDummyParentFrameId, kWhitelistedPageURL,
+       FrameDataParams({kDummyFrameId, kDummyParentFrameId, kAllowedPageURL,
                         base::nullopt}),
        false},
 
@@ -468,16 +468,16 @@ TEST_P(RulesetManagerTest, PageWhitelistingAPI) {
        "http://example.com", kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kWhitelistedPageURL, "http://example.com/xyz"}),
+                        kAllowedPageURL, "http://example.com/xyz"}),
        true},
 
-      // Here we'll determine |kWhitelistedPageURL| to be the main
+      // Here we'll determine |kAllowedPageURL| to be the main
       // frame url due to the origin.
       {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
        "http://google.com", kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kWhitelistedPageURL, "http://yahoo.com/xyz"}),
+                        kAllowedPageURL, "http://yahoo.com/xyz"}),
        false},
 
       // In these cases both |pending_main_frame_url| and
@@ -487,20 +487,19 @@ TEST_P(RulesetManagerTest, PageWhitelistingAPI) {
        "http://google.com", kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        "http://google.com/abc", kWhitelistedPageURL}),
+                        "http://google.com/abc", kAllowedPageURL}),
        false},
       {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
        base::nullopt, kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        kWhitelistedPageURL, "http://google.com/abc"}),
+                        kAllowedPageURL, "http://google.com/abc"}),
        false},
       {"http://example.com/script.js", content::RESOURCE_TYPE_SCRIPT,
        base::nullopt, kDummyFrameRoutingId,
        FrameDataParams({ExtensionApiFrameIdMap::kTopFrameId,
                         ExtensionApiFrameIdMap::kInvalidFrameId,
-                        "http://yahoo.com/abc",
-                        "http://yahoo.com/whitelist123"}),
+                        "http://yahoo.com/abc", "http://yahoo.com/allow123"}),
        true},
   };
 
@@ -531,8 +530,9 @@ TEST_P(RulesetManagerTest, PageWhitelistingAPI) {
 
     GURL redirect_url;
     RulesetManager::Action expected_action =
-        test_case.expect_blocked_with_whitelist ? RulesetManager::Action::BLOCK
-                                                : RulesetManager::Action::NONE;
+        test_case.expect_blocked_with_allowed_pages
+            ? RulesetManager::Action::BLOCK
+            : RulesetManager::Action::NONE;
     EXPECT_EQ(expected_action,
               manager->EvaluateRequest(info, false /*is_incognito_context*/,
                                        &redirect_url));

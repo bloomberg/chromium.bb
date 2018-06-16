@@ -183,13 +183,13 @@ void VerifyExtensionMetadata(
 //    - Constructs an ExtensionIndexedRuleset flatbuffer from the passed
 //      IndexedRule(s) using FlatRulesetIndexer.
 //    - Verifies that the ExtensionIndexedRuleset created is valid.
-void AddRulesAndVerifyIndex(const std::vector<IndexedRule>& blacklist_rules,
-                            const std::vector<IndexedRule>& whitelist_rules,
+void AddRulesAndVerifyIndex(const std::vector<IndexedRule>& blocking_rules,
+                            const std::vector<IndexedRule>& allowing_rules,
                             const std::vector<IndexedRule>& redirect_rules) {
   FlatRulesetIndexer indexer;
-  for (const auto& rule : blacklist_rules)
+  for (const auto& rule : blocking_rules)
     indexer.AddUrlRule(rule);
-  for (const auto& rule : whitelist_rules)
+  for (const auto& rule : allowing_rules)
     indexer.AddUrlRule(rule);
   for (const auto& rule : redirect_rules)
     indexer.AddUrlRule(rule);
@@ -197,7 +197,7 @@ void AddRulesAndVerifyIndex(const std::vector<IndexedRule>& blacklist_rules,
   indexer.Finish();
   FlatRulesetIndexer::SerializedData data = indexer.GetData();
   EXPECT_EQ(
-      blacklist_rules.size() + whitelist_rules.size() + redirect_rules.size(),
+      blocking_rules.size() + allowing_rules.size() + redirect_rules.size(),
       indexer.indexed_rules_count());
   flatbuffers::Verifier verifier(data.first, data.second);
   ASSERT_TRUE(flat::VerifyExtensionIndexedRulesetBuffer(verifier));
@@ -206,8 +206,8 @@ void AddRulesAndVerifyIndex(const std::vector<IndexedRule>& blacklist_rules,
       flat::GetExtensionIndexedRuleset(data.first);
   ASSERT_TRUE(ruleset);
 
-  VerifyIndexEquality(blacklist_rules, ruleset->blacklist_index());
-  VerifyIndexEquality(whitelist_rules, ruleset->whitelist_index());
+  VerifyIndexEquality(blocking_rules, ruleset->blocking_index());
+  VerifyIndexEquality(allowing_rules, ruleset->allowing_index());
   VerifyIndexEquality(redirect_rules, ruleset->redirect_index());
   VerifyExtensionMetadata(redirect_rules, ruleset->extension_metadata());
 }
@@ -217,19 +217,19 @@ TEST_F(FlatRulesetIndexerTest, TestEmptyIndex) {
 }
 
 TEST_F(FlatRulesetIndexerTest, MultipleRules) {
-  std::vector<IndexedRule> blacklist_rules;
-  std::vector<IndexedRule> whitelist_rules;
+  std::vector<IndexedRule> blocking_rules;
+  std::vector<IndexedRule> allowing_rules;
   std::vector<IndexedRule> redirect_rules;
 
   // Explicitly push the elements instead of using the initializer list
   // constructor, because it does not support move-only types.
-  blacklist_rules.push_back(CreateIndexedRule(
+  blocking_rules.push_back(CreateIndexedRule(
       7, kMinValidPriority, flat_rule::OptionFlag_NONE,
       flat_rule::ElementType_OBJECT, flat_rule::ActivationType_NONE,
       flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_NONE,
       flat_rule::AnchorType_BOUNDARY, "google.com", {"a.com"}, {"x.a.com"},
       ""));
-  blacklist_rules.push_back(CreateIndexedRule(
+  blocking_rules.push_back(CreateIndexedRule(
       2, kMinValidPriority, flat_rule::OptionFlag_APPLIES_TO_THIRD_PARTY,
       flat_rule::ElementType_IMAGE | flat_rule::ElementType_WEBSOCKET,
       flat_rule::ActivationType_NONE, flat_rule::UrlPatternType_WILDCARDED,
@@ -254,20 +254,20 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
       flat_rule::AnchorType_NONE, flat_rule::AnchorType_NONE, "*", {}, {},
       "http://example2.com"));
 
-  whitelist_rules.push_back(CreateIndexedRule(
+  allowing_rules.push_back(CreateIndexedRule(
       17, kMinValidPriority, flat_rule::OptionFlag_IS_WHITELIST,
       flat_rule::ElementType_PING | flat_rule::ElementType_SCRIPT,
       flat_rule::ActivationType_NONE, flat_rule::UrlPatternType_SUBSTRING,
       flat_rule::AnchorType_SUBDOMAIN, flat_rule::AnchorType_NONE,
       "example1.com", {"xyz.com"}, {}, ""));
-  whitelist_rules.push_back(CreateIndexedRule(
+  allowing_rules.push_back(CreateIndexedRule(
       16, kMinValidPriority,
       flat_rule::OptionFlag_IS_WHITELIST | flat_rule::OptionFlag_IS_MATCH_CASE,
       flat_rule::ElementType_IMAGE, flat_rule::ActivationType_NONE,
       flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_NONE,
       flat_rule::AnchorType_NONE, "example3", {}, {}, ""));
 
-  AddRulesAndVerifyIndex(blacklist_rules, whitelist_rules, redirect_rules);
+  AddRulesAndVerifyIndex(blocking_rules, allowing_rules, redirect_rules);
 }
 
 }  // namespace
