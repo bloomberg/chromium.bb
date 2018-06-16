@@ -24,6 +24,9 @@ class MEDIA_BLINK_EXPORT WebMediaCapabilitiesClientImpl
       const blink::WebMediaConfiguration&,
       std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks>) override;
 
+  void BindVideoDecodePerfHistoryForTests(
+      mojom::VideoDecodePerfHistoryPtr decode_history_ptr);
+
  private:
   mojom::VideoDecodePerfHistoryPtr decode_history_ptr_;
 
