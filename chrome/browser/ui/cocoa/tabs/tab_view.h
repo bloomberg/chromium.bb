@@ -114,7 +114,6 @@ const SkColor kDefaultTabTextColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 // clear the |controller_| pointer when it is dying.
 @interface TabView (TabControllerInterface)
 - (void)setController:(TabController*)controller;
-- (CALayer*)maskLayerWithPadding:(int)padding;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_TABS_TAB_VIEW_H_
