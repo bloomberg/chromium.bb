@@ -31,6 +31,7 @@ import android.os.StatFs;
 import android.os.StrictMode;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
@@ -66,6 +67,29 @@ public class ApiCompatibilityUtils {
      */
     public static int compareBoolean(boolean lhs, boolean rhs) {
         return lhs == rhs ? 0 : lhs ? 1 : -1;
+    }
+
+    /**
+     * Checks that the object reference is not null and throws NullPointerException if it is.
+     * See {@link Objects#requireNonNull} which is available since API level 19.
+     * @param obj The object to check
+     */
+    @NonNull
+    public static <T> T requireNonNull(T obj) {
+        if (obj == null) throw new NullPointerException();
+        return obj;
+    }
+
+    /**
+     * Checks that the object reference is not null and throws NullPointerException if it is.
+     * See {@link Objects#requireNonNull} which is available since API level 19.
+     * @param obj The object to check
+     * @param message The message to put into NullPointerException
+     */
+    @NonNull
+    public static <T> T requireNonNull(T obj, String message) {
+        if (obj == null) throw new NullPointerException(message);
+        return obj;
     }
 
     /**
