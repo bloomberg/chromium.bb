@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.GridLayout;
 import android.text.SpannableStringBuilder;
@@ -365,7 +366,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
         LinearLayout.LayoutParams rightLayoutParams = new LinearLayout.LayoutParams(
                 LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        ApiCompatibilityUtils.setMarginStart(rightLayoutParams,
+        MarginLayoutParamsCompat.setMarginStart(rightLayoutParams,
                 getContext().getResources().getDimensionPixelSize(
                         R.dimen.editor_dialog_section_small_spacing));
 
@@ -390,7 +391,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         // The logo has a pre-defined height and width.
         LayoutParams params =
                 new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        ApiCompatibilityUtils.setMarginStart(params, startMargin);
+        MarginLayoutParamsCompat.setMarginStart(params, startMargin);
         parent.addView(view, params);
         return view;
     }
@@ -403,7 +404,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
         LayoutParams params =
                 new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        ApiCompatibilityUtils.setMarginStart(params, mLargeSpacing);
+        MarginLayoutParamsCompat.setMarginStart(params, mLargeSpacing);
         parent.addView(view, params);
         return view;
     }
@@ -418,7 +419,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         // Wrap whatever image is passed in.
         LayoutParams params =
                 new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        ApiCompatibilityUtils.setMarginStart(params, mLargeSpacing);
+        MarginLayoutParamsCompat.setMarginStart(params, mLargeSpacing);
         parent.addView(view, params);
         return view;
     }
@@ -585,10 +586,10 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             ApiCompatibilityUtils.setTextAlignment(mUpdatedView, TEXT_ALIGNMENT_TEXT_END);
             mUpdatedView.setTextColor(ApiCompatibilityUtils.getColor(
                     context.getResources(), R.color.google_green_700));
-            ApiCompatibilityUtils.setMarginStart(updatedLayoutParams,
+            MarginLayoutParamsCompat.setMarginStart(updatedLayoutParams,
                     context.getResources().getDimensionPixelSize(
                             R.dimen.editor_dialog_section_small_spacing));
-            ApiCompatibilityUtils.setMarginEnd(updatedLayoutParams,
+            MarginLayoutParamsCompat.setMarginEnd(updatedLayoutParams,
                     context.getResources().getDimensionPixelSize(
                             R.dimen.editor_dialog_section_small_spacing));
 
@@ -653,7 +654,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 GridLayout.LayoutParams amountParams = new GridLayout.LayoutParams(
                         GridLayout.spec(i, 1, GridLayout.END),
                         GridLayout.spec(1, 1, GridLayout.END));
-                ApiCompatibilityUtils.setMarginStart(amountParams,
+                MarginLayoutParamsCompat.setMarginStart(amountParams,
                         context.getResources().getDimensionPixelSize(
                                 R.dimen.payments_section_descriptive_item_spacing));
 
@@ -907,7 +908,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                         GridLayout.spec(rowIndex, 1, GridLayout.CENTER),
                         GridLayout.spec(0, 1, GridLayout.CENTER));
                 buttonParams.topMargin = mVerticalMargin;
-                ApiCompatibilityUtils.setMarginEnd(buttonParams, mLargeSpacing);
+                MarginLayoutParamsCompat.setMarginEnd(buttonParams, mLargeSpacing);
                 parent.addView(view, buttonParams);
 
                 view.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -977,7 +978,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                     // end margin) when edit icon exits in that row, like below:
                     // ---Label---------------------[label margin]|---option icon---|
                     // ---Label---[label margin]|---option icon---|----edit icon----|
-                    ApiCompatibilityUtils.setMarginEnd(labelParams, mLargeSpacing);
+                    MarginLayoutParamsCompat.setMarginEnd(labelParams, mLargeSpacing);
                 }
                 parent.addView(labelView, labelParams);
 
@@ -1481,16 +1482,16 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
             int margin =
                     resources.getDimensionPixelSize(R.dimen.editor_dialog_section_large_spacing);
-            ApiCompatibilityUtils.setMarginStart(params, margin);
-            ApiCompatibilityUtils.setMarginEnd(params, margin);
+            MarginLayoutParamsCompat.setMarginStart(params, margin);
+            MarginLayoutParamsCompat.setMarginEnd(params, margin);
             parent.addView(this, index, params);
         }
 
         /** Expand the separator to be the full width of the dialog. */
         public void expand() {
             LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) getLayoutParams();
-            ApiCompatibilityUtils.setMarginStart(params, 0);
-            ApiCompatibilityUtils.setMarginEnd(params, 0);
+            MarginLayoutParamsCompat.setMarginStart(params, 0);
+            MarginLayoutParamsCompat.setMarginEnd(params, 0);
         }
     }
 }

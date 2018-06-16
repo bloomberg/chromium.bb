@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.support.annotation.Nullable;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.util.AttributeSet;
@@ -18,7 +19,6 @@ import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -228,8 +228,9 @@ public class LocationBarPhone extends LocationBarLayout {
 
         // Shrink the margin down to 50% minus half of the G width (in the end state).
         final float finalGoogleGMargin = (mGoogleGMargin - mGoogleGWidth * finalGScale) / 2f;
-        ApiCompatibilityUtils.setMarginEnd(layoutParams, Math.round(MathUtils.interpolate(
-                mGoogleGMargin, finalGoogleGMargin, animationProgress)));
+        MarginLayoutParamsCompat.setMarginEnd(layoutParams,
+                Math.round(MathUtils.interpolate(
+                        mGoogleGMargin, finalGoogleGMargin, animationProgress)));
         // Just calling requestLayout() would not resolve the end margin.
         mGoogleG.setLayoutParams(layoutParams);
 

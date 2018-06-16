@@ -27,6 +27,7 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.graphics.drawable.DrawableWrapper;
 import android.text.TextUtils;
@@ -478,8 +479,8 @@ public class ToolbarPhone extends ToolbarLayout
                 MeasureSpec.makeMeasureSpec(screenSize.x, MeasureSpec.AT_MOST),
                 MeasureSpec.makeMeasureSpec(screenSize.y, MeasureSpec.AT_MOST));
 
-        ApiCompatibilityUtils.setMarginEnd(getFrameLayoutParams(mNewTabButton),
-                mToolbarButtonsContainer.getMeasuredWidth());
+        MarginLayoutParamsCompat.setMarginEnd(
+                getFrameLayoutParams(mNewTabButton), mToolbarButtonsContainer.getMeasuredWidth());
     }
 
     private void enableTabSwitchingResources() {

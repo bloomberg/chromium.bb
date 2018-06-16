@@ -20,6 +20,7 @@ import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
+import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.Editable;
 import android.text.InputType;
@@ -1171,8 +1172,8 @@ public class LocationBarLayout
                 ViewGroup.MarginLayoutParams childLayoutParams =
                         (ViewGroup.MarginLayoutParams) childView.getLayoutParams();
                 urlContainerMarginEnd += childLayoutParams.width
-                        + ApiCompatibilityUtils.getMarginStart(childLayoutParams)
-                        + ApiCompatibilityUtils.getMarginEnd(childLayoutParams);
+                        + MarginLayoutParamsCompat.getMarginStart(childLayoutParams)
+                        + MarginLayoutParamsCompat.getMarginEnd(childLayoutParams);
             }
         }
         return urlContainerMarginEnd;
@@ -1187,8 +1188,8 @@ public class LocationBarLayout
             View childView = getChildAt(i);
             if (childView.getVisibility() != GONE) {
                 LayoutParams childLayoutParams = (LayoutParams) childView.getLayoutParams();
-                if (ApiCompatibilityUtils.getMarginStart(childLayoutParams) != startMargin) {
-                    ApiCompatibilityUtils.setMarginStart(childLayoutParams, startMargin);
+                if (MarginLayoutParamsCompat.getMarginStart(childLayoutParams) != startMargin) {
+                    MarginLayoutParamsCompat.setMarginStart(childLayoutParams, startMargin);
                     childView.setLayoutParams(childLayoutParams);
                 }
                 if (childView == mUrlBar) break;
@@ -1222,8 +1223,8 @@ public class LocationBarLayout
 
         int urlContainerMarginEnd = getUrlContainerMarginEnd();
         LayoutParams urlLayoutParams = (LayoutParams) mUrlBar.getLayoutParams();
-        if (ApiCompatibilityUtils.getMarginEnd(urlLayoutParams) != urlContainerMarginEnd) {
-            ApiCompatibilityUtils.setMarginEnd(urlLayoutParams, urlContainerMarginEnd);
+        if (MarginLayoutParamsCompat.getMarginEnd(urlLayoutParams) != urlContainerMarginEnd) {
+            MarginLayoutParamsCompat.setMarginEnd(urlLayoutParams, urlContainerMarginEnd);
             mUrlBar.setLayoutParams(urlLayoutParams);
         }
     }
