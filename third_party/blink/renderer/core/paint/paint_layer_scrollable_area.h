@@ -48,7 +48,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
-#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidation_capable_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_fragment.h"
@@ -245,7 +244,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void CalculateScrollbarModes(ScrollbarMode& h_mode,
                                ScrollbarMode& v_mode) const;
 
-  ChromeClient* GetChromeClient() const override;
+  PlatformChromeClient* GetChromeClient() const override;
 
   SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
 
