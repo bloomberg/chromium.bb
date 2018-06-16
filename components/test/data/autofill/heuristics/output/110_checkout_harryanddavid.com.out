@@ -2,9 +2,9 @@ UNKNOWN_TYPE | typeOfAddress | Business address | H | typeOfAddress_1-default
 UNKNOWN_TYPE | personTitle | Title |  | typeOfAddress_1-default
 UNKNOWN_TYPE | recipientRelation | Relationship | 0 | typeOfAddress_1-default
 UNKNOWN_TYPE |  | Company name* | Χ  | typeOfAddress_1-default
-UNKNOWN_TYPE | organizationName | Company name* |  | typeOfAddress_1-default
+COMPANY_NAME | organizationName | Company name* |  | typeOfAddress_1-default
 UNKNOWN_TYPE |  | Attn. Line* | Χ  | typeOfAddress_1-default
-COMPANY_NAME | businessTitle | Attn. Line* |  | typeOfAddress_1-default
+UNKNOWN_TYPE | businessTitle | Attn. Line* |  | typeOfAddress_1-default
 UNKNOWN_TYPE |  | First Name* | Χ  | typeOfAddress_1-default
 NAME_FIRST | firstName | First Name* |  | typeOfAddress_1-default
 UNKNOWN_TYPE |  | Last Name* | Χ  | typeOfAddress_1-default
