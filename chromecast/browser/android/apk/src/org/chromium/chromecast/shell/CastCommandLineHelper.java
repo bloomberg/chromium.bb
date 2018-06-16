@@ -14,8 +14,8 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chromecast.base.Itertools;
 
-import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -63,8 +63,7 @@ public class CastCommandLineHelper {
 
     /**
      * Reads command line args from persistent storage and initializes the CommandLine with those
-     * args. Does not initialize CommandLine if no args were saved in storage, or if it has been
-     * already been done.
+     * args. Does not initialize CommandLine if it has been already been done.
      */
     public static void initCommandLineWithSavedArgs(CommandLineInitializer commandLineInitializer) {
         // CommandLine is a singleton, so check whether CastCommandLineHelper has initialized it
@@ -76,33 +75,15 @@ public class CastCommandLineHelper {
         }
         assert !CommandLine.isInitialized();
 
-        final SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        final String argsJson = prefs.getString(COMMAND_LINE_FLAGS_PREF, null);
-        if (argsJson == null) {
-            return;
-        }
-
-        final JSONObject args;
-        try {
-            args = new JSONObject(argsJson);
-        } catch (JSONException e) {
-            Log.e(TAG, "failed to parse cmd line args stored in shared prefs: %s", e);
-            return;
-        }
-        if (args.length() == 0) {
-            return;
-        }
+        final JSONObject args = loadArgsFromPrefs(ContextUtils.getAppSharedPreferences());
 
         // Let the injected delegate do the standard command line initialization.
-        commandLineInitializer.initCommandLine();
+        final CommandLine cmdline = commandLineInitializer.initCommandLine();
 
         // If SharedPreferences contains any command line args previously saved from an Intent,
         // apply them as defaults, i.e. if a value isn't already present in the CommandLine
         // singleton. Values may already be present if loaded by the Application.
-        final CommandLine cmdline = CommandLine.getInstance();
-        final Iterator<String> switches = args.keys();
-        while (switches.hasNext()) {
-            String swtch = switches.next();
+        for (String swtch : Itertools.fromIterator(args.keys())) {
             String value;
             try {
                 value = args.isNull(swtch) ? null : args.getString(swtch);
@@ -118,6 +99,20 @@ public class CastCommandLineHelper {
                 Log.w(TAG, "skipped command line arg from intent, value already present: %s=%s",
                         swtch, value);
             }
+        }
+    }
+
+    private static JSONObject loadArgsFromPrefs(SharedPreferences prefs) {
+        final String argsJson = prefs.getString(COMMAND_LINE_FLAGS_PREF, null);
+        if (argsJson == null) {
+            Log.i(TAG, "no saved command line args.");
+            return new JSONObject();
+        }
+        try {
+            return new JSONObject(argsJson);
+        } catch (JSONException e) {
+            Log.e(TAG, "failed to parse cmd line args stored in shared prefs: %s", e);
+            return new JSONObject();
         }
     }
 
@@ -143,5 +138,5 @@ public class CastCommandLineHelper {
      * Consider refactoring CastCommandLineHelper and other scattered CommandLine logic to depend
      * less on singletons and other code smells.
      */
-    public interface CommandLineInitializer { public void initCommandLine(); }
+    public interface CommandLineInitializer { public CommandLine initCommandLine(); }
 }

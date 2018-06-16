@@ -8,12 +8,8 @@ import android.app.Application;
 import android.content.Context;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Entry point for the Android cast shell application.  Handles initialization of information that
@@ -24,12 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * require a few basic pieces (found here).
  */
 public class CastApplication extends Application {
-    private static final String TAG = "CastApplication";
-
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "cast_shell";
-    private static final String COMMAND_LINE_FILE = "castshell-command-line";
-
-    private static final AtomicBoolean sCommandLineInitialized = new AtomicBoolean(false);
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -42,13 +33,5 @@ public class CastApplication extends Application {
         super.onCreate();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
         ApplicationStatus.initialize(this);
-    }
-
-    public void initCommandLine() {
-        if (!sCommandLineInitialized.compareAndSet(false, true)) {
-            Log.i(TAG, "Command line has already been initialized. Skip.");
-            return;
-        }
-        CommandLineInitUtil.initCommandLine(COMMAND_LINE_FILE);
     }
 }

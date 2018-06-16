@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 
@@ -22,15 +21,14 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.ContextUtils;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 
 import java.util.Arrays;
 import java.util.List;
 
 /** Unit tests for {@link CastCommandLineHelper}. */
-@RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, application = CastCommandLineHelperTest.FakeApplication.class)
+@RunWith(BaseRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class CastCommandLineHelperTest {
     private static final String NON_WHITELISTED_ARG = "non-whitelisted-arg";
     private static final String WHITELISTED_ARG = "audio-input-disable-eraser";
@@ -38,17 +36,6 @@ public class CastCommandLineHelperTest {
     private static final String WHITELISTED_ARG_WITH_VALUE2 = "default-eureka-name-prefix";
     private static final List<String> COMMAND_LINE_ARG_WHITELIST =
             Arrays.asList(WHITELISTED_ARG, WHITELISTED_ARG_WITH_VALUE, WHITELISTED_ARG_WITH_VALUE2);
-
-    // CastApplication inherits from ContentApplication, which starts a bunch of unnecessary stuff,
-    // and it also calls initApplicationContext() which causes problems because the Application is
-    // recreated for every test. Use a minimal fake instead.
-    public static class FakeApplication extends Application {
-        @Override
-        protected void attachBaseContext(Context base) {
-            super.attachBaseContext(base);
-            ContextUtils.initApplicationContextForTests(this);
-        }
-    }
 
     private static Context getApplicationContext() {
         return RuntimeEnvironment.application;
@@ -73,7 +60,10 @@ public class CastCommandLineHelperTest {
     }
 
     private void initCommandLineWithSavedArgs(String[] initialArgs) {
-        CastCommandLineHelper.initCommandLineWithSavedArgs(() -> CommandLine.init(initialArgs));
+        CastCommandLineHelper.initCommandLineWithSavedArgs(() -> {
+            CommandLine.init(initialArgs);
+            return CommandLine.getInstance();
+        });
     }
 
     @Rule
@@ -90,7 +80,7 @@ public class CastCommandLineHelperTest {
     public void testNullIntent() {
         CastCommandLineHelper.saveCommandLineArgsFromIntent(null, COMMAND_LINE_ARG_WHITELIST);
         initCommandLineWithSavedArgs(null);
-        assertFalse(CommandLine.isInitialized());
+        assertTrue(CommandLine.isInitialized());
     }
 
     @Test
@@ -98,7 +88,7 @@ public class CastCommandLineHelperTest {
         CastCommandLineHelper.saveCommandLineArgsFromIntent(
                 new Intent(), COMMAND_LINE_ARG_WHITELIST);
         initCommandLineWithSavedArgs(null);
-        assertFalse(CommandLine.isInitialized());
+        assertTrue(CommandLine.isInitialized());
     }
 
     @Test
@@ -108,7 +98,7 @@ public class CastCommandLineHelperTest {
 
         CastCommandLineHelper.saveCommandLineArgsFromIntent(intent, COMMAND_LINE_ARG_WHITELIST);
         initCommandLineWithSavedArgs(null);
-        assertFalse(CommandLine.isInitialized());
+        assertTrue(CommandLine.isInitialized());
     }
 
     @Test
