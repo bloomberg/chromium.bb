@@ -245,8 +245,20 @@ class NullServiceProcessLauncherFactory
  private:
   std::unique_ptr<service_manager::ServiceProcessLauncher> Create(
       const base::FilePath& service_path) override {
-    LOG(ERROR) << "Attempting to run unsupported native service: "
-               << service_path.value();
+    // There are innocuous races where browser code may attempt to connect
+    // to a specific renderer instance through the Service Manager after that
+    // renderer has been terminated. These result in this code path being hit
+    // fairly regularly and the resulting log spam causes confusion. We suppress
+    // this message only for "content_renderer".
+    const base::FilePath::StringType kRendererServiceFilename =
+        base::FilePath().AppendASCII(mojom::kRendererServiceName).value();
+    const base::FilePath::StringType service_executable =
+        service_path.BaseName().value();
+    if (service_executable.find(kRendererServiceFilename) ==
+        base::FilePath::StringType::npos) {
+      LOG(ERROR) << "Attempting to run unsupported native service: "
+                 << service_path.value();
+    }
     return nullptr;
   }
 
