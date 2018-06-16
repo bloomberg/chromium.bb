@@ -134,12 +134,6 @@ login.createScreen('ResetScreen', 'reset', function() {
     },
 
     /**
-     * This method takes care of switching to material-design OOBE.
-     * @private
-     */
-    setMDMode_: function() {},
-
-    /**
      * Event handler that is invoked just before the screen in shown.
      * @param {Object} data Screen init payload.
      */

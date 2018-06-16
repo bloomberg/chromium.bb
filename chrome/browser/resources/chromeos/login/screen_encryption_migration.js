@@ -47,7 +47,6 @@ login.createScreen(
          * Event handler that is invoked just before the screen in shown.
          */
         onBeforeShow: function() {
-          $('progress-dots').hidden = true;
           var headerBar = $('login-header-bar');
           headerBar.allowCancel = false;
           headerBar.showGuestButton = false;

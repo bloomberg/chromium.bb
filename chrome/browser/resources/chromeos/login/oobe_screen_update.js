@@ -148,11 +148,5 @@ login.createScreen('UpdateScreen', 'update', function() {
     showUpdateCurtain: function(visible) {
       $('oobe-update-md').checkingForUpdate = visible;
     },
-
-    /**
-     * This method takes care of switching to material-design OOBE.
-     * @private
-     */
-    setMDMode_: function() {},
   };
 });

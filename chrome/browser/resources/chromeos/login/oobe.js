@@ -25,7 +25,6 @@ cr.define('cr.ui.Oobe', function() {
      * be invoked to do final setup.
      */
     initialize: function() {
-      this.setMDMode_();
       cr.ui.login.DisplayManager.initialize();
       login.HIDDetectionScreen.register();
       login.WrongHWIDScreen.register();
@@ -242,8 +241,6 @@ cr.define('cr.ui.Oobe', function() {
       loadTimeData.overrideValues(data);
       i18nTemplate.process(document, loadTimeData);
 
-      this.setMDMode_();
-
       // Update localized content of the screens.
       Oobe.updateLocalizedContent();
     },
@@ -272,15 +269,6 @@ cr.define('cr.ui.Oobe', function() {
     updateLocalizedContent: function() {
       // Buttons, headers and links.
       Oobe.getInstance().updateLocalizedContent_();
-    },
-
-    /**
-     * This method takes care of switching to material-design OOBE.
-     * @private
-     */
-    setMDMode_: function() {
-      $('oobe').setAttribute('md-mode', 'true');
-      $('popup-overlay').setAttribute('md-mode', 'true');
     },
   };
 });
