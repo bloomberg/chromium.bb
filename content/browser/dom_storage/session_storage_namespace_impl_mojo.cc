@@ -79,7 +79,6 @@ void SessionStorageNamespaceImplMojo::PopulateAsClone(
 
 void SessionStorageNamespaceImplMojo::Reset() {
   namespace_entry_ = SessionStorageMetadata::NamespaceEntry();
-  process_id_ = ChildProcessHost::kInvalidUniqueID;
   database_ = nullptr;
   waiting_on_clone_population_ = false;
   bind_waiting_on_clone_population_ = false;
@@ -100,8 +99,7 @@ void SessionStorageNamespaceImplMojo::Bind(
     return;
   }
   DCHECK(IsPopulated());
-  process_id_ = process_id;
-  bindings_.AddBinding(this, std::move(request));
+  bindings_.AddBinding(this, std::move(request), process_id);
   bind_waiting_on_clone_population_ = false;
 }
 
@@ -138,9 +136,9 @@ void SessionStorageNamespaceImplMojo::OpenArea(
     blink::mojom::StorageAreaAssociatedRequest database) {
   DCHECK(IsPopulated());
   DCHECK(!bindings_.empty());
-  DCHECK_NE(process_id_, ChildProcessHost::kInvalidUniqueID);
+  int process_id = bindings_.dispatch_context();
   if (!ChildProcessSecurityPolicy::GetInstance()->CanAccessDataForOrigin(
-          process_id_, origin.GetURL())) {
+          process_id, origin.GetURL())) {
     bindings_.ReportBadMessage("Access denied for sessionStorage request");
     return;
   }

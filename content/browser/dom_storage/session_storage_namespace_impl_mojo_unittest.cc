@@ -448,5 +448,46 @@ TEST_F(SessionStorageNamespaceImplMojoTest, PurgeUnused) {
   namespaces_.clear();
 }
 
+TEST_F(SessionStorageNamespaceImplMojoTest, NamespaceBindingPerOrigin) {
+  // Tries to open an area with a process that is locked to a different origin
+  // and verifies the bad message callback.
+  SessionStorageNamespaceImplMojo* namespace_impl =
+      CreateSessionStorageNamespaceImplMojo(test_namespace_id1_);
+
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
+      .Times(1);
+
+  namespace_impl->PopulateFromMetadata(
+      &database_, metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
+      std::map<std::vector<uint8_t>, SessionStorageDataMap*>());
+
+  blink::mojom::SessionStorageNamespacePtr ss_namespace_o1;
+  namespace_impl->Bind(mojo::MakeRequest(&ss_namespace_o1),
+                       kTestProcessIdOrigin1);
+  blink::mojom::StorageAreaAssociatedPtr leveldb_1;
+  ss_namespace_o1->OpenArea(test_origin1_, mojo::MakeRequest(&leveldb_1));
+  ss_namespace_o1.FlushForTesting();
+  EXPECT_FALSE(bad_message_called_);
+
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
+      .Times(1);
+
+  blink::mojom::SessionStorageNamespacePtr ss_namespace_o2;
+  namespace_impl->Bind(mojo::MakeRequest(&ss_namespace_o2),
+                       kTestProcessIdOrigin3);
+  blink::mojom::StorageAreaAssociatedPtr leveldb_2;
+  ss_namespace_o2->OpenArea(test_origin3_, mojo::MakeRequest(&leveldb_2));
+  ss_namespace_o2.FlushForTesting();
+  EXPECT_FALSE(bad_message_called_);
+
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
+      .Times(1);
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("1")))
+      .Times(1);
+  namespaces_.clear();
+}
+
 }  // namespace
 }  // namespace content
