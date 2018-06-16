@@ -190,7 +190,7 @@ void AshTestBase::TearDown() {
 
   // These depend upon WindowService, which is owned by Shell, so they must
   // be destroyed before the Shell (owned by AshTestHelper).
-  window_tree_test_helper.reset();
+  window_tree_test_helper_.reset();
   window_tree_.reset();
 
   // Flush the message loop to finish pending release tasks.
@@ -545,7 +545,7 @@ display::Display AshTestBase::GetSecondaryDisplay() {
 
 ui::ws2::WindowTreeTestHelper* AshTestBase::GetWindowTreeTestHelper() {
   CreateWindowTreeIfNecessary();
-  return window_tree_test_helper.get();
+  return window_tree_test_helper_.get();
 }
 
 ui::ws2::TestWindowTreeClient* AshTestBase::GetTestWindowTreeClient() {
@@ -582,7 +582,7 @@ void AshTestBase::CreateWindowTreeIfNecessary() {
       Shell::Get()->window_service_owner()->window_service()->CreateWindowTree(
           window_tree_client_.get());
   window_tree_->InitFromFactory();
-  window_tree_test_helper =
+  window_tree_test_helper_ =
       std::make_unique<ui::ws2::WindowTreeTestHelper>(window_tree_.get());
 }
 

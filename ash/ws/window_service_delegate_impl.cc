@@ -7,6 +7,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/container_finder.h"
+#include "ash/wm/non_client_frame_controller.h"
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "base/bind.h"
@@ -19,6 +20,8 @@
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/hit_test.h"
+#include "ui/views/widget/widget.h"
+#include "ui/wm/core/compound_event_filter.h"
 
 namespace ash {
 namespace {
@@ -73,6 +76,17 @@ std::unique_ptr<aura::Window> WindowServiceDelegateImpl::NewTopLevel(
 void WindowServiceDelegateImpl::OnUnhandledKeyEvent(
     const ui::KeyEvent& key_event) {
   Shell::Get()->accelerator_controller()->Process(ui::Accelerator(key_event));
+}
+
+bool WindowServiceDelegateImpl::StoreAndSetCursor(aura::Window* window,
+                                                  ui::Cursor cursor) {
+  auto* frame = NonClientFrameController::Get(window);
+  if (frame)
+    frame->StoreCursor(cursor);
+
+  ash::Shell::Get()->env_filter()->SetCursorForWindow(window, cursor);
+
+  return !!frame;
 }
 
 void WindowServiceDelegateImpl::RunWindowMoveLoop(

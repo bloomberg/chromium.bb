@@ -192,6 +192,8 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
       custom_frame_view_->SetHeaderHeight({height});
   }
 
+  void set_cursor(const ui::Cursor& cursor) { cursor_ = cursor; }
+
   // views::NativeWidgetAura:
   views::NonClientFrameView* CreateNonClientFrameView() override {
     if (window_manager_client_) {
@@ -225,6 +227,10 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
     return custom_frame_view_;
   }
 
+  gfx::NativeCursor GetCursor(const gfx::Point& point) override {
+    return cursor_;
+  }
+
  private:
   const bool remove_standard_frame_;
   const bool enable_immersive_;
@@ -241,6 +247,11 @@ class WmNativeWidgetAura : public views::NativeWidgetAura {
   // Not used for panels or if |remove_standard_frame_| is true. This is owned
   // by the Widget's view hierarchy (e.g. it's a child of Widget's root View).
   CustomFrameViewAsh* custom_frame_view_ = nullptr;
+
+  // The cursor for this widget. CompoundEventFilter will retrieve this cursor
+  // via GetCursor and update the CursorManager's active cursor as appropriate
+  // (i.e. when the mouse pointer is over this widget).
+  ui::Cursor cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(WmNativeWidgetAura);
 };
@@ -365,6 +376,11 @@ void NonClientFrameController::SetClientArea(
   additional_client_areas_ = additional_client_areas;
   static_cast<WmNativeWidgetAura*>(widget_->native_widget())
       ->SetHeaderHeight(insets.top());
+}
+
+void NonClientFrameController::StoreCursor(const ui::Cursor& cursor) {
+  static_cast<WmNativeWidgetAura*>(widget_->native_widget())
+      ->set_cursor(cursor);
 }
 
 NonClientFrameController::~NonClientFrameController() {

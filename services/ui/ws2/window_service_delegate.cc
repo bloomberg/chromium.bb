@@ -7,6 +7,11 @@
 namespace ui {
 namespace ws2 {
 
+bool WindowServiceDelegate::StoreAndSetCursor(aura::Window* window,
+                                              ui::Cursor cursor) {
+  return false;
+}
+
 void WindowServiceDelegate::RunWindowMoveLoop(aura::Window* window,
                                               mojom::MoveLoopSource source,
                                               const gfx::Point& cursor,

@@ -273,7 +273,7 @@ class AshTestBase : public testing::Test,
 
   std::unique_ptr<ui::ws2::TestWindowTreeClient> window_tree_client_;
   std::unique_ptr<ui::ws2::WindowTree> window_tree_;
-  std::unique_ptr<ui::ws2::WindowTreeTestHelper> window_tree_test_helper;
+  std::unique_ptr<ui::ws2::WindowTreeTestHelper> window_tree_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

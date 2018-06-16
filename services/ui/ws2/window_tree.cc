@@ -30,6 +30,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
@@ -888,6 +889,40 @@ bool WindowTree::SetFocusImpl(const ClientWindowId& window_id) {
   return focus_handler_.SetFocus(GetWindowByClientId(window_id));
 }
 
+bool WindowTree::SetCursorImpl(const ClientWindowId& window_id,
+                               ui::CursorData cursor) {
+  aura::Window* window = GetWindowByClientId(window_id);
+  if (!window) {
+    DVLOG(1) << "SetCursor failed (no window)";
+    return false;
+  }
+  if (!IsClientCreatedWindow(window) && !IsClientRootWindow(window)) {
+    DVLOG(1) << "SerCursor failed (access denied)";
+    return false;
+  }
+
+  auto* server_window = ServerWindow::GetMayBeNull(window);
+
+  // Convert from CursorData to Cursor. TODO(estade): remove this conversion.
+  // See class level comment on CursorData. Also support kCustom, i.e. image
+  // cursors.
+  ui::Cursor old_cursor_type(cursor.cursor_type());
+  if (cursor.cursor_type() == ui::CursorType::kCustom)
+    NOTIMPLEMENTED_LOG_ONCE();
+
+  // Ask our delegate to set the cursor. This will save the cursor for toplevels
+  // and also update the active cursor if appropriate (i.e. if |window| is the
+  // last to have set the cursor/is currently hovered).
+  if (!window_service_->delegate()->StoreAndSetCursor(window,
+                                                      old_cursor_type)) {
+    // Store the cursor on ServerWindow. This will later be accessed by the
+    // WindowDelegate for non-toplevels, i.e. WindowDelegateImpl.
+    server_window->StoreCursor(old_cursor_type);
+  }
+
+  return true;
+}
+
 bool WindowTree::StackAboveImpl(const ClientWindowId& above_window_id,
                                 const ClientWindowId& below_window_id) {
   DVLOG(3) << "StackAbove above_window_id=" << above_window_id
@@ -1363,9 +1398,11 @@ void WindowTree::SetCanFocus(Id transport_window_id, bool can_focus) {
 }
 
 void WindowTree::SetCursor(uint32_t change_id,
-                           Id window_id,
+                           Id transport_window_id,
                            ui::CursorData cursor) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  window_tree_client_->OnChangeCompleted(
+      change_id,
+      SetCursorImpl(MakeClientWindowId(transport_window_id), cursor));
 }
 
 void WindowTree::SetWindowTextInputState(Id window_id,

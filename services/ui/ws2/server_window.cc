@@ -459,6 +459,10 @@ void ServerWindow::SetCaptureOwner(WindowTree* owner) {
       ->OnCaptureOwnerChanged();
 }
 
+void ServerWindow::StoreCursor(const ui::Cursor& cursor) {
+  cursor_ = cursor;
+}
+
 bool ServerWindow::DoesOwnerInterceptEvents() const {
   return embedding_ && embedding_->embedding_tree_intercepts_events();
 }

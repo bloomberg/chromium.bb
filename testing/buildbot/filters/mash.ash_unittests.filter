@@ -36,6 +36,9 @@
 -AppListPresenterDelegateTest.TapAppListWithVirtualKeyboardDismissesVirtualKeyboard/1
 -AppListPresenterDelegateTest.WhitespaceQuery
 
+# These tests exercise the WindowService, which is no longer applicable to mash.
+-CursorTest.*
+
 # TODO: CursorManagerTestApi. http://crbug.com/780637
 -CursorWindowControllerTest.DSF
 -CursorWindowControllerTest.MoveToDifferentDisplay

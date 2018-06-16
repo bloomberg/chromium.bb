@@ -22,6 +22,7 @@ class WindowServiceDelegateImpl : public ui::ws2::WindowServiceDelegate {
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
   void OnUnhandledKeyEvent(const ui::KeyEvent& key_event) override;
+  bool StoreAndSetCursor(aura::Window* window, ui::Cursor cursor) override;
   void RunWindowMoveLoop(aura::Window* window,
                          ui::mojom::MoveLoopSource source,
                          const gfx::Point& cursor,

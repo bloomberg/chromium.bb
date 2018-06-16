@@ -151,6 +151,11 @@ void WindowTreeTestHelper::SetCanFocus(aura::Window* window, bool can_focus) {
                             can_focus);
 }
 
+void WindowTreeTestHelper::SetCursor(aura::Window* window,
+                                     ui::CursorData cursor) {
+  window_tree_->SetCursorImpl(ClientWindowIdForWindow(window), cursor);
+}
+
 void WindowTreeTestHelper::DestroyEmbedding(Embedding* embedding) {
   // Triggers WindowTree deleting the Embedding.
   window_tree_->OnEmbeddedClientConnectionLost(embedding);
