@@ -325,6 +325,11 @@ TEST_P(QuicSimpleServerSessionTest, AcceptClosedStream) {
 }
 
 TEST_P(QuicSimpleServerSessionTest, CreateIncomingDynamicStreamDisconnected) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (GetParam() != AllSupportedVersions()[0]) {
+    return;
+  }
+
   // Tests that incoming stream creation fails when connection is not connected.
   size_t initial_num_open_stream = session_->GetNumOpenIncomingStreams();
   QuicConnectionPeer::TearDownLocalConnectionState(connection_);
@@ -353,6 +358,11 @@ TEST_P(QuicSimpleServerSessionTest, CreateIncomingDynamicStream) {
 }
 
 TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamDisconnected) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (GetParam() != AllSupportedVersions()[0]) {
+    return;
+  }
+
   // Tests that outgoing stream creation fails when connection is not connected.
   size_t initial_num_open_stream = session_->GetNumOpenOutgoingStreams();
   QuicConnectionPeer::TearDownLocalConnectionState(connection_);
@@ -364,6 +374,11 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamDisconnected) {
 }
 
 TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUnencrypted) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (GetParam() != AllSupportedVersions()[0]) {
+    return;
+  }
+
   // Tests that outgoing stream creation fails when encryption has not yet been
   // established.
   size_t initial_num_open_stream = session_->GetNumOpenOutgoingStreams();

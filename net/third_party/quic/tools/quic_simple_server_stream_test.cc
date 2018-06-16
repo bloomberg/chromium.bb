@@ -457,6 +457,11 @@ TEST_P(QuicSimpleServerStreamTest, SendReponseWithPushResources) {
 }
 
 TEST_P(QuicSimpleServerStreamTest, PushResponseOnClientInitiatedStream) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (GetParam() != AllSupportedVersions()[0]) {
+    return;
+  }
+
   // Calling PushResponse() on a client initialted stream is never supposed to
   // happen.
   EXPECT_QUIC_BUG(stream_->PushResponse(spdy::SpdyHeaderBlock()),

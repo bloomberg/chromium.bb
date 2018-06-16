@@ -1204,6 +1204,12 @@ class QuicConnectionTest : public QuicTestWithParam<TestParams> {
                                           packets_between_probes_base);
   }
 
+  bool IsDefaultTestConfiguration() {
+    TestParams p = GetParam();
+    return p.ack_response == AckResponse::kImmediate &&
+           p.version == AllSupportedVersions()[0] && p.no_stop_waiting;
+  }
+
   QuicConnectionId connection_id_;
   QuicFramer framer_;
 
@@ -1536,6 +1542,11 @@ TEST_P(QuicConnectionTest, ReceivePaddedPingAtServer) {
 }
 
 TEST_P(QuicConnectionTest, WriteOutOfOrderQueuedPackets) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (!IsDefaultTestConfiguration()) {
+    return;
+  }
+
   set_perspective(Perspective::IS_CLIENT);
 
   BlockOnNextWrite();
@@ -2114,6 +2125,11 @@ TEST_P(QuicConnectionTest, RejectPacketTooFarOut) {
 }
 
 TEST_P(QuicConnectionTest, RejectUnencryptedStreamData) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (!IsDefaultTestConfiguration()) {
+    return;
+  }
+
   // Process an unencrypted packet from the non-crypto stream.
   frame1_.stream_id = 3;
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
@@ -5649,6 +5665,11 @@ TEST_P(QuicConnectionTest, SendWhenDisconnected) {
 }
 
 TEST_P(QuicConnectionTest, SendConnectivityProbingWhenDisconnected) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (!IsDefaultTestConfiguration()) {
+    return;
+  }
+
   EXPECT_TRUE(connection_.connected());
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PEER_GOING_AWAY, _,
                                            ConnectionCloseSource::FROM_SELF));
@@ -6280,6 +6301,11 @@ TEST_P(QuicConnectionTest, SendBlockedImmediately) {
 }
 
 TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (!IsDefaultTestConfiguration()) {
+    return;
+  }
+
   EXPECT_CALL(visitor_,
               OnConnectionClosed(QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA,
                                  _, ConnectionCloseSource::FROM_SELF));

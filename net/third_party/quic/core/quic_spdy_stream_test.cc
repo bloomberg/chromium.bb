@@ -960,6 +960,11 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
 }
 
 TEST_P(QuicSpdyStreamTest, WritingTrailersAfterFIN) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (GetParam() != AllSupportedVersions()[0]) {
+    return;
+  }
+
   // Test that it is not possible to write Trailers after a FIN has been sent.
   Initialize(kShouldProcessData);
   EXPECT_CALL(*session_, WritevData(_, _, _, _, _))

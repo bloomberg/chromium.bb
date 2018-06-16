@@ -386,6 +386,11 @@ TEST_P(QuicSessionTestServer, ManyAvailableStreams) {
 }
 
 TEST_P(QuicSessionTestServer, DebugDFatalIfMarkingClosedStreamWriteBlocked) {
+  // EXPECT_QUIC_BUG tests are expensive so only run one instance of them.
+  if (GetParam() != AllSupportedVersions()[0]) {
+    return;
+  }
+
   TestStream* stream2 = session_.CreateOutgoingDynamicStream();
   QuicStreamId closed_stream_id = stream2->id();
   // Close the stream.
