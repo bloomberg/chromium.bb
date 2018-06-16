@@ -159,7 +159,7 @@ void AddressField::AddClassifications(
 }
 
 bool AddressField::ParseCompany(AutofillScanner* scanner) {
-  if (company_ && !company_->IsEmpty())
+  if (company_)
     return false;
 
   return ParseField(scanner, UTF8ToUTF16(kCompanyRe), &company_);
@@ -223,7 +223,7 @@ bool AddressField::ParseAddressLines(AutofillScanner* scanner) {
 }
 
 bool AddressField::ParseCountry(AutofillScanner* scanner) {
-  if (country_ && !country_->IsEmpty())
+  if (country_)
     return false;
 
   scanner->SaveCursor();
