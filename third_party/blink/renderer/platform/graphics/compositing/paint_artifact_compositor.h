@@ -61,7 +61,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // Populates |composited_element_ids| with the CompositorElementId of all
   // animations for which we saw a paint chunk and created a layer.
   void Update(const PaintArtifact&,
-              CompositorElementIdSet& composited_element_ids);
+              CompositorElementIdSet& composited_element_ids,
+              TransformPaintPropertyNode* viewport_scale_node);
 
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }

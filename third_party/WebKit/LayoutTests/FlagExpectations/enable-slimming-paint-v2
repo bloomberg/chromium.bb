@@ -1412,3 +1412,7 @@ Bug(none) paint/invalidation/vertical-align2.html [ Failure ]
 Bug(none) paint/invalidation/selection/japanese-rl-selection-repaint.html [ Failure ]
 Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-action-manual.tentative.html [ Failure ]
 Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Failure ]
+
+Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Pass Failure Crash ]
+Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-pan-position-fixed.html [ Pass Failure Crash ]
+Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed-viewport.html [ Pass Failure Crash ]

@@ -15,9 +15,11 @@ namespace blink {
 class LocalFrameView;
 class LayoutObject;
 class ObjectPaintProperties;
+class VisualViewport;
 
 namespace PaintPropertyTreePrinter {
 
+void UpdateDebugNames(const VisualViewport&);
 void UpdateDebugNames(const LayoutObject&, ObjectPaintProperties&);
 
 }  // namespace PaintPropertyTreePrinter

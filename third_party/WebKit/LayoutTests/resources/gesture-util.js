@@ -27,6 +27,23 @@ function waitFor(condition) {
   });
 }
 
+// Enums for gesture_source_type parameters in gpuBenchmarking synthetic
+// gesture methods. Must match C++ side enums in synthetic_gesture_params.h
+const GestureSourceType = {
+  DEFAULT_INPUT: 0,
+  TOUCH_INPUT: 1,
+  MOUSE_INPUT: 2,
+  PEN_INPUT: 3
+};
+
+// Use this for speed to make gestures (effectively) instant. That is, finish
+// entirely within one Begin|Update|End triplet. This is in physical
+// pixels/second.
+// TODO(bokan): This isn't really instant but high enough that it works for
+// current purposes. This should be replaced with the Infinity value and
+// the synthetic gesture code modified to guarantee the single update behavior.
+const SPEED_INSTANT = 200000;
+
 function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, direction, speed_in_pixels_s) {
   return new Promise((resolve, reject) => {
     if (chrome && chrome.gpuBenchmarking) {

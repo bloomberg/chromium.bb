@@ -53,6 +53,9 @@
 </div>
 
 <script>
+  if (window.internals)
+    internals.settings.setScrollAnimatorEnabled(false);
+
   function scrollDown(pixels_to_scroll, start_x, start_y,
       gesture_source_type, speed_in_pixels_s) {
     return new Promise((resolve, reject) => {

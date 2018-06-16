@@ -2901,6 +2901,55 @@ void LocalFrameView::PrePaint() {
   });
 }
 
+static void CollectViewportLayersForLayerList(GraphicsContext& context,
+                                              VisualViewport& visual_viewport) {
+  DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
+
+  // Collect the visual viewport container layer.
+  {
+    GraphicsLayer* container_layer = visual_viewport.ContainerLayer();
+    ScopedPaintChunkProperties container_scope(
+        context.GetPaintController(), container_layer->GetPropertyTreeState(),
+        *container_layer, DisplayItem::kForeignLayerWrapper);
+
+    // TODO(trchen): Currently the GraphicsLayer hierarchy is still built during
+    // CompositingUpdate, and we have to clear them here to ensure no extraneous
+    // layers are still attached. In future we will disable all those layer
+    // hierarchy code so we won't need this line.
+    container_layer->CcLayer()->RemoveAllChildren();
+    RecordForeignLayer(context, *container_layer,
+                       DisplayItem::kForeignLayerWrapper,
+                       container_layer->CcLayer(), IntPoint(),
+                       IntSize(container_layer->CcLayer()->bounds()));
+  }
+
+  // Collect the page scale layer.
+  {
+    GraphicsLayer* scale_layer = visual_viewport.PageScaleLayer();
+    ScopedPaintChunkProperties scale_scope(
+        context.GetPaintController(), scale_layer->GetPropertyTreeState(),
+        *scale_layer, DisplayItem::kForeignLayerWrapper);
+
+    scale_layer->CcLayer()->RemoveAllChildren();
+    RecordForeignLayer(context, *scale_layer, DisplayItem::kForeignLayerWrapper,
+                       scale_layer->CcLayer(), IntPoint(), IntSize());
+  }
+
+  // Collect the visual viewport scroll layer.
+  {
+    GraphicsLayer* scroll_layer = visual_viewport.ScrollLayer();
+    ScopedPaintChunkProperties scroll_scope(
+        context.GetPaintController(), scroll_layer->GetPropertyTreeState(),
+        *scroll_layer, DisplayItem::kForeignLayerWrapper);
+
+    scroll_layer->CcLayer()->RemoveAllChildren();
+    RecordForeignLayer(context, *scroll_layer,
+                       DisplayItem::kForeignLayerWrapper,
+                       scroll_layer->CcLayer(), IntPoint(),
+                       IntSize(scroll_layer->CcLayer()->bounds()));
+  }
+}
+
 static void CollectDrawableLayersForLayerListRecursively(
     GraphicsContext& context,
     const GraphicsLayer* layer) {
@@ -3003,6 +3052,15 @@ void LocalFrameView::PaintTree() {
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
     GraphicsContext context(*paint_controller_);
+    // Note: Some blink unit tests run without turning on compositing which
+    // means we don't create viewport layers.
+    if (GetLayoutView()->Compositor()->InCompositingMode()) {
+      // TODO(bokan): We should eventually stop creating layers for the visual
+      // viewport. At that point, we can remove this. However, for now, CC
+      // still has some dependencies on the viewport scale and scroll layers.
+      CollectViewportLayersForLayerList(context,
+                                        frame_->GetPage()->GetVisualViewport());
+    }
     // With BlinkGenPropertyTrees, |PaintRootGraphicsLayer| is the ancestor of
     // all drawable layers (see: PaintLayerCompositor::PaintRootGraphicsLayer)
     // so we do not need to collect scrollbars separately.
@@ -3046,8 +3104,9 @@ void LocalFrameView::PushPaintArtifactToCompositor(
   SCOPED_UMA_AND_UKM_TIMER("Blink.Compositing.UpdateTime",
                            UkmMetricNames::kCompositing);
 
-  paint_artifact_compositor_->Update(paint_controller_->GetPaintArtifact(),
-                                     composited_element_ids);
+  paint_artifact_compositor_->Update(
+      paint_controller_->GetPaintArtifact(), composited_element_ids,
+      frame_->GetPage()->GetVisualViewport().GetPageScaleNode());
 }
 
 std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(

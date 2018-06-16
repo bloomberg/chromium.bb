@@ -71,6 +71,100 @@ VisualViewport::VisualViewport(Page& owner)
   Reset();
 }
 
+TransformPaintPropertyNode* VisualViewport::GetPageScaleNode() const {
+  return scale_transform_node_.get();
+}
+
+TransformPaintPropertyNode* VisualViewport::GetScrollTranslationNode() const {
+  return translation_transform_node_.get();
+}
+
+ScrollPaintPropertyNode* VisualViewport::GetScrollNode() const {
+  return scroll_node_.get();
+}
+
+void VisualViewport::UpdatePaintPropertyNodes(
+    scoped_refptr<const TransformPaintPropertyNode> transform_parent,
+    scoped_refptr<const ScrollPaintPropertyNode> scroll_parent) {
+  DCHECK(transform_parent);
+  DCHECK(scroll_parent);
+
+  if (inner_viewport_container_layer_) {
+    inner_viewport_container_layer_->SetLayerState(
+        PropertyTreeState(&TransformPaintPropertyNode::Root(),
+                          &ClipPaintPropertyNode::Root(),
+                          &EffectPaintPropertyNode::Root()),
+        IntPoint());
+  }
+
+  {
+    TransformationMatrix scale_transform;
+    scale_transform.Scale(Scale());
+    TransformPaintPropertyNode::State state{scale_transform, FloatPoint3D()};
+    state.compositor_element_id = GetCompositorElementId();
+
+    if (!scale_transform_node_) {
+      scale_transform_node_ = TransformPaintPropertyNode::Create(
+          *transform_parent, std::move(state));
+    } else {
+      scale_transform_node_->Update(*transform_parent, std::move(state));
+    }
+  }
+
+  if (page_scale_layer_) {
+    page_scale_layer_->SetLayerState(
+        PropertyTreeState(scale_transform_node_.get(),
+                          &ClipPaintPropertyNode::Root(),
+                          &EffectPaintPropertyNode::Root()),
+        IntPoint());
+  }
+
+  {
+    ScrollPaintPropertyNode::State state;
+    state.container_rect = IntRect(IntPoint(), ExcludeScrollbars(size_));
+    state.contents_rect = IntRect(IntPoint(), ContentsSize());
+
+    state.user_scrollable_horizontal =
+        UserInputScrollable(kHorizontalScrollbar);
+    state.user_scrollable_vertical = UserInputScrollable(kVerticalScrollbar);
+    state.scrolls_inner_viewport = true;
+    state.max_scroll_offset_affected_by_page_scale = true;
+    state.compositor_element_id = GetCompositorScrollElementId();
+
+    if (!scroll_node_) {
+      scroll_node_ =
+          ScrollPaintPropertyNode::Create(*scroll_parent, std::move(state));
+    } else {
+      scroll_node_->Update(*scroll_parent, std::move(state));
+    }
+  }
+
+  {
+    TransformationMatrix translate_transform;
+    ScrollOffset scroll_position = GetScrollOffset();
+    translate_transform.Translate(-scroll_position.Width(),
+                                  -scroll_position.Height());
+    TransformPaintPropertyNode::State state{translate_transform,
+                                            FloatPoint3D()};
+    state.scroll = scroll_node_;
+    if (!translation_transform_node_) {
+      translation_transform_node_ = TransformPaintPropertyNode::Create(
+          *scale_transform_node_, std::move(state));
+    } else {
+      translation_transform_node_->Update(*scale_transform_node_,
+                                          std::move(state));
+    }
+  }
+
+  if (inner_viewport_scroll_layer_) {
+    inner_viewport_scroll_layer_->SetLayerState(
+        PropertyTreeState(translation_transform_node_.get(),
+                          &ClipPaintPropertyNode::Root(),
+                          &EffectPaintPropertyNode::Root()),
+        IntPoint());
+  }
+}
+
 VisualViewport::~VisualViewport() {
   SendUMAMetrics();
 }
@@ -375,8 +469,8 @@ void VisualViewport::CreateLayerTree() {
       static_cast<gfx::Size>(size_));
   DCHECK(MainFrame());
   DCHECK(MainFrame()->GetDocument());
-  inner_viewport_scroll_layer_->SetElementId(
-      CompositorElementIdFromUniqueObjectId(unique_id_));
+  inner_viewport_scroll_layer_->SetElementId(GetCompositorScrollElementId());
+  page_scale_layer_->SetElementId(GetCompositorElementId());
 
   root_transform_layer_->AddChild(inner_viewport_container_layer_.get());
   inner_viewport_container_layer_->AddChild(overscroll_elasticity_layer_.get());
@@ -514,8 +608,13 @@ bool VisualViewport::VisualViewportSuppliesScrollbars() const {
 }
 
 CompositorElementId VisualViewport::GetCompositorElementId() const {
-  // TODO(chrishtr): Implement http://crbug.com/638473.
-  return CompositorElementId();
+  return CompositorElementIdFromUniqueObjectId(
+      unique_id_, CompositorElementIdNamespace::kPrimary);
+}
+
+CompositorElementId VisualViewport::GetCompositorScrollElementId() const {
+  return CompositorElementIdFromUniqueObjectId(
+      unique_id_, CompositorElementIdNamespace::kScroll);
 }
 
 bool VisualViewport::ScrollAnimatorEnabled() const {

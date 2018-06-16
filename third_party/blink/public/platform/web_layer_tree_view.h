@@ -29,6 +29,7 @@
 #include "base/callback.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
+#include "cc/trees/element_id.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/platform/web_browser_controls_state.h"

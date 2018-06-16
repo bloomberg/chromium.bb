@@ -184,6 +184,7 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   if (compositor_element_id) {
     property_trees_.element_id_to_transform_node_index[compositor_element_id] =
         id;
+    compositor_node.element_id = compositor_element_id;
   }
 
   // If this transform is a scroll offset translation, create the associated
@@ -210,6 +211,21 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   GetTransformTree().set_needs_update(true);
 
   return id;
+}
+
+void PropertyTreeManager::EnsureCompositorPageScaleTransformNode(
+    const TransformPaintPropertyNode* node) {
+  int id = EnsureCompositorTransformNode(node);
+  DCHECK(GetTransformTree().Node(id));
+  cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
+
+  // The page scale node is special because its transform matrix is assumed to
+  // be in the post_local matrix by the compositor. There should be no
+  // translation from the origin so we clear the other matrices.
+  DCHECK(node->Origin() == FloatPoint3D());
+  compositor_node.post_local.matrix() = compositor_node.local.matrix();
+  compositor_node.pre_local.matrix().setIdentity();
+  compositor_node.local.matrix().setIdentity();
 }
 
 int PropertyTreeManager::EnsureCompositorClipNode(
@@ -263,6 +279,10 @@ void PropertyTreeManager::CreateCompositorScrollNode(
       scroll_node->UserScrollableHorizontal();
   compositor_node.user_scrollable_vertical =
       scroll_node->UserScrollableVertical();
+  compositor_node.scrolls_inner_viewport = scroll_node->ScrollsInnerViewport();
+  compositor_node.scrolls_outer_viewport = scroll_node->ScrollsOuterViewport();
+  compositor_node.max_scroll_offset_affected_by_page_scale =
+      scroll_node->MaxScrollOffsetAffectedByPageScale();
   compositor_node.main_thread_scrolling_reasons =
       scroll_node->GetMainThreadScrollingReasons();
 

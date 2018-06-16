@@ -812,13 +812,12 @@ void LayerTreeImpl::UpdateTransformAnimation(ElementId element_id,
 }
 
 TransformNode* LayerTreeImpl::PageScaleTransformNode() {
-  if (!PageScaleLayer())
+  auto* page_scale = PageScaleLayer();
+  if (!page_scale)
     return nullptr;
 
-  DCHECK_GE(PageScaleLayer()->transform_tree_index(),
-            TransformTree::kRootNodeId);
   return property_trees()->transform_tree.Node(
-      PageScaleLayer()->transform_tree_index());
+      page_scale->transform_tree_index());
 }
 
 void LayerTreeImpl::UpdatePageScaleNode() {
@@ -1095,10 +1094,11 @@ void LayerTreeImpl::ClearViewportLayers() {
 }
 
 const ScrollNode* LayerTreeImpl::InnerViewportScrollNode() const {
-  if (!InnerViewportScrollLayer())
+  auto* inner_scroll = InnerViewportScrollLayer();
+  if (!inner_scroll)
     return nullptr;
-  return property_trees()->scroll_tree.Node(
-      InnerViewportScrollLayer()->scroll_tree_index());
+
+  return property_trees()->scroll_tree.Node(inner_scroll->scroll_tree_index());
 }
 
 const ScrollNode* LayerTreeImpl::OuterViewportScrollNode() const {

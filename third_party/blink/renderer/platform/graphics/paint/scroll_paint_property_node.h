@@ -39,6 +39,9 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     IntRect contents_rect;
     bool user_scrollable_horizontal = false;
     bool user_scrollable_vertical = false;
+    bool scrolls_inner_viewport = false;
+    bool scrolls_outer_viewport = false;
+    bool max_scroll_offset_affected_by_page_scale = false;
     MainThreadScrollingReasons main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNotScrollingOnMain;
     // The scrolling element id is stored directly on the scroll node and not on
@@ -50,6 +53,10 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
              contents_rect == o.contents_rect &&
              user_scrollable_horizontal == o.user_scrollable_horizontal &&
              user_scrollable_vertical == o.user_scrollable_vertical &&
+             scrolls_inner_viewport == o.scrolls_inner_viewport &&
+             scrolls_outer_viewport == o.scrolls_outer_viewport &&
+             max_scroll_offset_affected_by_page_scale ==
+                 o.max_scroll_offset_affected_by_page_scale &&
              main_thread_scrolling_reasons == o.main_thread_scrolling_reasons &&
              compositor_element_id == o.compositor_element_id;
     }
@@ -91,6 +98,11 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   }
   bool UserScrollableVertical() const {
     return state_.user_scrollable_vertical;
+  }
+  bool ScrollsInnerViewport() const { return state_.scrolls_inner_viewport; }
+  bool ScrollsOuterViewport() const { return state_.scrolls_outer_viewport; }
+  bool MaxScrollOffsetAffectedByPageScale() const {
+    return state_.max_scroll_offset_affected_by_page_scale;
   }
 
   // Return reason bitfield with values from cc::MainThreadScrollingReason.
