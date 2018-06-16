@@ -1476,7 +1476,7 @@ def process_isolate_server_options(
 def add_cache_options(parser):
   cache_group = optparse.OptionGroup(parser, 'Cache management')
   cache_group.add_option(
-      '--cache', metavar='DIR',
+      '--cache', metavar='DIR', default='cache',
       help='Directory to keep a local cache of the files. Accelerates download '
            'by reusing already downloaded files. Default=%default')
   cache_group.add_option(

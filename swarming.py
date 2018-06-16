@@ -37,6 +37,7 @@ from utils import tools
 import auth
 import cipd
 import isolateserver
+import isolated_format
 import local_caching
 import run_isolated
 
@@ -1638,8 +1639,17 @@ def CMDreproduce(parser, args):
   them after --.
   """
   parser.add_option(
-      '--output-dir', metavar='DIR', default='out',
+      '--output', metavar='DIR', default='out',
       help='Directory that will have results stored into')
+  parser.add_option(
+      '--work', metavar='DIR', default='work',
+      help='Directory to map the task input files into')
+  parser.add_option(
+      '--cache', metavar='DIR', default='cache',
+      help='Directory that contains the input cache')
+  parser.add_option(
+      '--leak', action='store_true',
+      help='Do not delete the working directory after execution')
   options, args = parser.parse_args(args)
   extra_args = []
   if not args:
@@ -1657,9 +1667,9 @@ def CMDreproduce(parser, args):
     print >> sys.stderr, 'Failed to retrieve request data for the task'
     return 1
 
-  workdir = unicode(os.path.abspath('work'))
+  workdir = unicode(os.path.abspath(options.work))
   if fs.isdir(workdir):
-    parser.error('Please delete the directory \'work\' first')
+    parser.error('Please delete the directory %r first' % options.work)
   fs.mkdir(workdir)
   cachedir = unicode(os.path.abspath('cipd_cache'))
   if not fs.exists(cachedir):
@@ -1695,12 +1705,16 @@ def CMDreproduce(parser, args):
     with isolateserver.get_storage(
           properties['inputs_ref']['isolatedserver'],
           properties['inputs_ref']['namespace']) as storage:
+      # Do not use MemoryContentAddressedCache here, as on 32-bits python,
+      # inputs larger than ~1GiB will not fit in memory. This is effectively a
+      # leak.
+      policies = local_caching.CachePolicies(0, 0, 0, 0)
+      algo = isolated_format.get_hash_algo(
+          properties['inputs_ref']['namespace'])
+      cache = local_caching.DiskContentAddressedCache(
+          unicode(os.path.abspath(options.cache)), policies, algo, False)
       bundle = isolateserver.fetch_isolated(
-          properties['inputs_ref']['isolated'],
-          storage,
-          local_caching.MemoryContentAddressedCache(file_mode_mask=0700),
-          workdir,
-          False)
+          properties['inputs_ref']['isolated'], storage, cache, workdir, False)
       command = bundle.command
       if bundle.relative_cwd:
         workdir = os.path.join(workdir, bundle.relative_cwd)
@@ -1711,17 +1725,17 @@ def CMDreproduce(parser, args):
 
   # https://chromium.googlesource.com/infra/luci/luci-py.git/+/master/appengine/swarming/doc/Magic-Values.md
   command = tools.fix_python_cmd(command, env)
-  if not options.output_dir:
+  if not options.output:
     new_command = run_isolated.process_command(command, 'invalid', None)
     if new_command != command:
       parser.error('The task has outputs, you must use --output-dir')
   else:
     # Make the path absolute, as the process will run from a subdirectory.
-    options.output_dir = os.path.abspath(options.output_dir)
+    options.output = os.path.abspath(options.output)
     new_command = run_isolated.process_command(
-        command, options.output_dir, None)
-    if not os.path.isdir(options.output_dir):
-      os.makedirs(options.output_dir)
+        command, options.output, None)
+    if not os.path.isdir(options.output):
+      os.makedirs(options.output)
   command = new_command
   file_path.ensure_command_has_abs_path(command, workdir)
 
@@ -1747,6 +1761,10 @@ def CMDreproduce(parser, args):
     print >> sys.stderr, 'Failed to run: %s' % ' '.join(command)
     print >> sys.stderr, str(e)
     return 1
+  finally:
+    # Do not delete options.cache.
+    if not options.leak:
+      file_path.rmtree(workdir)
 
 
 @subcommand.usage('bot_id')
