@@ -1052,6 +1052,12 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="Undos Dismissed (Action) (Deprecated)"/>
 </enum>
 
+<enum name="AndroidWebViewVariationsEnableState">
+  <int value="0" label="DEFAULT_ENABLED"/>
+  <int value="1" label="CONTROL_DISABLED"/>
+  <int value="2" label="EXPERIMENT_ENABLED"/>
+</enum>
+
 <enum name="ANGLEProgramCacheResult">
   <int value="0" label="Cache Miss"/>
   <int value="1" label="Cache Hit From Memory"/>
