@@ -170,6 +170,45 @@ assert(
 assert(!enable_cdm_host_verification || is_mac || is_win,
        "CDM host verification is only supported on Mac and Windows.")
 
+_default_mojo_media_services = []
+_default_mojo_media_host = "none"
+
+# Default mojo_media_services and mojo_media_host on various platforms.
+# Can be overridden by gn build arguments from the --args command line flag
+# for local testing.
+if (enable_mojo_media) {
+  if (is_chromecast && is_cast_using_cma_backend) {
+    _default_mojo_media_services = [
+      "cdm",
+      "renderer",
+    ]
+    _default_mojo_media_host = "browser"
+  } else if (is_android) {
+    # Both chrome for Android and cast for ATV belongs to this case
+    _default_mojo_media_services = [
+      "cdm",
+      "audio_decoder",
+      "video_decoder",
+    ]
+    _default_mojo_media_host = "gpu"
+  } else if (is_mac || is_win) {
+    _default_mojo_media_services = [ "video_decoder" ]
+    _default_mojo_media_host = "gpu"
+  }
+
+  if (enable_library_cdms) {
+    _default_mojo_media_services += [ "cdm" ]
+
+    # Having a CDM running means it could require a CdmProxy running in the GPU
+    # process.
+    assert(
+        _default_mojo_media_host == "none" || _default_mojo_media_host == "gpu",
+        "For now, mojo_media_host should not overwrite it with a different " +
+            "value if it has been set.")
+    _default_mojo_media_host = "gpu"
+  }
+}
+
 # Use another declare_args() to pick up possible overrides of enable_mojo_media
 # from --args command line flags. See "gn help declare_args".
 declare_args() {
@@ -182,7 +221,7 @@ declare_args() {
   #                    Renderer. Cannot be used with the mojo Renderer above.
   # - "video_decoder": Use mojo-based video decoder in the default media
   #                    Renderer. Cannot be used with the mojo Renderer above.
-  mojo_media_services = []
+  mojo_media_services = _default_mojo_media_services
 
   # The process that the mojo MediaService runs in. By default, all services
   # registered in |mojo_media_services| are hosted in the MediaService, with the
@@ -195,43 +234,7 @@ declare_args() {
   # - "browser": Use mojo media service hosted in the browser process.
   # - "gpu": Use mojo media service hosted in the gpu process.
   # - "utility": Use mojo media service hosted in the utility process.
-  mojo_media_host = "none"
-}
-
-# Default mojo_media_services and mojo_media_host on various platforms.
-# Can be overridden by gn build arguments from the --args command line flag
-# for local testing.
-if (enable_mojo_media) {
-  if (is_chromecast && is_cast_using_cma_backend) {
-    mojo_media_services = [
-      "cdm",
-      "renderer",
-    ]
-    mojo_media_host = "browser"
-  } else if (is_android) {
-    # Both chrome for Android and cast for ATV belongs to this case
-    mojo_media_services = [
-      "cdm",
-      "audio_decoder",
-      "video_decoder",
-    ]
-    mojo_media_host = "gpu"
-  } else if (is_mac || is_win) {
-    mojo_media_services += [ "video_decoder" ]
-    mojo_media_host = "gpu"
-  }
-
-  if (enable_library_cdms) {
-    mojo_media_services += [ "cdm" ]
-    assert(
-        mojo_media_host == "none" || mojo_media_host == "gpu",
-        "For now, mojo_media_host should not overwrite it with a different " +
-            "value if it has been set.")
-
-    # Having a CDM running means it could require a CdmProxy running in the GPU
-    # process.
-    mojo_media_host = "gpu"
-  }
+  mojo_media_host = _default_mojo_media_host
 }
 
 declare_args() {
