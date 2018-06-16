@@ -62,7 +62,9 @@ bool IsRefreshInfobarEnabled() {
 }
 
 bool IsRefreshLocationBarEnabled() {
-  return base::FeatureList::IsEnabled(kUIRefreshLocationBar);
+  // Refresh location bar requires UIRefreshPhase1 as well.
+  return base::FeatureList::IsEnabled(kUIRefreshLocationBar) &&
+         IsUIRefreshPhase1Enabled();
 }
 
 bool IsRefreshPopupPresentationEnabled() {
