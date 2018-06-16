@@ -5,12 +5,13 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/testing/accessibility_test.h"
 
 namespace blink {
 
 TEST_F(AccessibilityTest, IsDescendantOf) {
-  SetBodyInnerHTML(R"HTML(<button id='button'>button</button>)HTML");
+  SetBodyInnerHTML(R"HTML(<button id="button">button</button>)HTML");
 
   const AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
@@ -24,7 +25,7 @@ TEST_F(AccessibilityTest, IsDescendantOf) {
 }
 
 TEST_F(AccessibilityTest, IsAncestorOf) {
-  SetBodyInnerHTML(R"HTML(<button id='button'>button</button>)HTML");
+  SetBodyInnerHTML(R"HTML(<button id="button">button</button>)HTML");
 
   const AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
@@ -38,9 +39,9 @@ TEST_F(AccessibilityTest, IsAncestorOf) {
 }
 
 TEST_F(AccessibilityTest, SimpleTreeNavigation) {
-  SetBodyInnerHTML(R"HTML(<input id='input' type='text' value='value'>"
-                   R"<p id='paragraph'>hello<br id='br'>there</p>"
-                   R"<button id='button'>button</button>)HTML");
+  SetBodyInnerHTML(R"HTML(<input id="input" type="text" value="value">
+                   <p id="paragraph">hello<br id="br">there</p>
+                   <button id="button">button</button>)HTML");
 
   const AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
@@ -70,8 +71,8 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
   EXPECT_EQ(AccessibilityRole::kStaticTextRole,
             paragraph->DeepestLastChild()->RoleValue());
 
-  // There is a static text element in between the input and the paragraph.
-  EXPECT_EQ(paragraph->PreviousSibling(), input->NextSibling());
+  EXPECT_EQ(paragraph->PreviousSibling(), input);
+  EXPECT_EQ(paragraph, input->NextSibling());
   ASSERT_NE(nullptr, br->NextSibling());
   EXPECT_EQ(AccessibilityRole::kStaticTextRole, br->NextSibling()->RoleValue());
   ASSERT_NE(nullptr, br->PreviousSibling());
@@ -80,9 +81,9 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
 }
 
 TEST_F(AccessibilityTest, AXObjectComparisonOperators) {
-  SetBodyInnerHTML(R"HTML(<input id='input' type='text' value='value'>"
-                   R"<p id='paragraph'>hello<br id='br'>there</p>"
-                   R"<button id='button'>button</button>)HTML");
+  SetBodyInnerHTML(R"HTML(<input id="input" type="text" value="value">
+                   <p id="paragraph">hello<br id="br">there</p>
+                   <button id="button">button</button>)HTML");
 
   const AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
@@ -119,6 +120,51 @@ TEST_F(AccessibilityTest, AXObjectComparisonOperators) {
   EXPECT_TRUE(*button <= *button);
   EXPECT_TRUE(*button >= *button);
   EXPECT_FALSE(*button > *button);
+}
+
+TEST_F(AccessibilityTest, AXObjectAncestorsIterator) {
+  SetBodyInnerHTML(
+      R"HTML(<p id="paragraph"><b id="bold"><br id="br"></b></p>)HTML");
+
+  AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+  AXObject* paragraph = GetAXObjectByElementId("paragraph");
+  ASSERT_NE(nullptr, paragraph);
+  AXObject* bold = GetAXObjectByElementId("bold");
+  ASSERT_NE(nullptr, bold);
+  AXObject* br = GetAXObjectByElementId("br");
+  ASSERT_NE(nullptr, br);
+  ASSERT_EQ(AccessibilityRole::kLineBreakRole, br->RoleValue());
+
+  AXObject::AncestorsIterator iter = br->AncestorsBegin();
+  EXPECT_EQ(*paragraph, *iter);
+  EXPECT_EQ(AccessibilityRole::kParagraphRole, iter->RoleValue());
+  EXPECT_EQ(*root, *++iter);
+  EXPECT_EQ(*root, *iter++);
+  EXPECT_EQ(br->AncestorsEnd(), ++iter);
+}
+
+TEST_F(AccessibilityTest, AXObjectInOrderTraversalIterator) {
+  SetBodyInnerHTML(R"HTML(<button id="button">Button</button>)HTML");
+
+  AXObject* root = GetAXRootObject();
+  ASSERT_NE(nullptr, root);
+  AXObject* button = GetAXObjectByElementId("button");
+  ASSERT_NE(nullptr, button);
+
+  AXObject::InOrderTraversalIterator iter = root->GetInOrderTraversalIterator();
+  EXPECT_EQ(*root, *iter);
+  ++iter;  // Skip the generic container which is an ignored object.
+  EXPECT_NE(GetAXObjectCache().InOrderTraversalEnd(), iter);
+  EXPECT_EQ(*button, *++iter);
+  EXPECT_EQ(AccessibilityRole::kButtonRole, iter->RoleValue());
+  EXPECT_EQ(*button, *iter++);
+  EXPECT_EQ(GetAXObjectCache().InOrderTraversalEnd(), iter);
+  EXPECT_EQ(*button, *--iter);
+  EXPECT_EQ(*button, *iter--);
+  --iter;  // Skip the generic container which is an ignored object.
+  EXPECT_EQ(AccessibilityRole::kWebAreaRole, iter->RoleValue());
+  EXPECT_EQ(GetAXObjectCache().InOrderTraversalBegin(), iter);
 }
 
 }  // namespace blink
