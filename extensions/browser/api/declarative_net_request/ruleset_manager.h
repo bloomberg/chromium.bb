@@ -52,14 +52,14 @@ class RulesetManager {
   // in succession for an extension.
   void AddRuleset(const ExtensionId& extension_id,
                   std::unique_ptr<RulesetMatcher> ruleset_matcher,
-                  URLPatternSet whitelisted_pages);
+                  URLPatternSet allowed_pages);
 
   // Removes the ruleset for |extension_id|. Should be called only after a
   // corresponding AddRuleset.
   void RemoveRuleset(const ExtensionId& extension_id);
 
-  void UpdateWhitelistedPages(const ExtensionId& extension_id,
-                              URLPatternSet whitelisted_pages);
+  void UpdateAllowedPages(const ExtensionId& extension_id,
+                          URLPatternSet allowed_pages);
 
   // Returns the action to take for the given request. |redirect_url| will be
   // populated if the returned action is |REDIRECT|. Blocking rules have higher
@@ -81,7 +81,7 @@ class RulesetManager {
     ExtensionRulesetData(const ExtensionId& extension_id,
                          const base::Time& extension_install_time,
                          std::unique_ptr<RulesetMatcher> matcher,
-                         URLPatternSet whitelisted_pages);
+                         URLPatternSet allowed_pages);
     ~ExtensionRulesetData();
     ExtensionRulesetData(ExtensionRulesetData&& other);
     ExtensionRulesetData& operator=(ExtensionRulesetData&& other);
@@ -89,7 +89,7 @@ class RulesetManager {
     ExtensionId extension_id;
     base::Time extension_install_time;
     std::unique_ptr<RulesetMatcher> matcher;
-    URLPatternSet whitelisted_pages;
+    URLPatternSet allowed_pages;
 
     bool operator<(const ExtensionRulesetData& other) const;
 

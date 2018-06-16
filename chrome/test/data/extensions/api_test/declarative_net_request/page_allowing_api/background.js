@@ -16,34 +16,34 @@ var checkUnordererArrayEquality = function(expected, actual) {
 };
 
 chrome.test.runTests([
-  function addWhitelistedPages() {
+  function addAllowedPages() {
     // Any duplicates in arguments will be filtered out.
     var toAdd = [
       'https://www.google.com/', 'https://www.google.com/',
       'https://www.yahoo.com/'
     ];
-    chrome.declarativeNetRequest.addWhitelistedPages(
+    chrome.declarativeNetRequest.addAllowedPages(
         toAdd, callbackPass(function() {}));
   },
 
-  function verifyAddWhitelistedPages() {
-    chrome.declarativeNetRequest.getWhitelistedPages(
+  function verifyAddAllowedPages() {
+    chrome.declarativeNetRequest.getAllowedPages(
         callbackPass(function(patterns) {
           checkUnordererArrayEquality(
               ['https://www.google.com/', 'https://www.yahoo.com/'], patterns);
         }));
   },
 
-  function removeWhitelistedPages() {
+  function removeAllowedPages() {
     // It's ok for |toRemove| to specify a pattern which is not currently
-    // whitelisted.
+    // allowed.
     var toRemove = ['https://www.google.com/', 'https://www.reddit.com/'];
-    chrome.declarativeNetRequest.removeWhitelistedPages(
+    chrome.declarativeNetRequest.removeAllowedPages(
         toRemove, callbackPass(function() {}));
   },
 
-  function verifyRemoveWhitelistedPages() {
-    chrome.declarativeNetRequest.getWhitelistedPages(
+  function verifyRemoveAllowedPages() {
+    chrome.declarativeNetRequest.getAllowedPages(
         callbackPass(function(patterns) {
           checkUnordererArrayEquality(['https://www.yahoo.com/'], patterns);
         }));
@@ -51,26 +51,26 @@ chrome.test.runTests([
 
   function verifyErrorOnAddingInvalidMatchPattern() {
     // The second match pattern here is invalid. The current set of
-    // whitelisted pages won't change since no addition is performed in case
+    // allowed pages won't change since no addition is performed in case
     // any of the match patterns are invalid.
     var toAdd = ['https://www.reddit.com/', 'https://google*.com/'];
     var expectedError = 'Invalid url pattern \'https://google*.com/\'';
-    chrome.declarativeNetRequest.addWhitelistedPages(
+    chrome.declarativeNetRequest.addAllowedPages(
         toAdd, callbackFail(expectedError));
   },
 
   function verifyErrorOnRemovingInvalidMatchPattern() {
     // The second match pattern here is invalid since it has no path
-    // component. current set of whitelisted pages won't change since no
+    // component. current set of allowed pages won't change since no
     // removal is performed in case any of the match patterns are invalid.
     var toRemove = ['https://yahoo.com/', 'https://www.reddit.com'];
     var expectedError = 'Invalid url pattern \'https://www.reddit.com\'';
-    chrome.declarativeNetRequest.removeWhitelistedPages(
+    chrome.declarativeNetRequest.removeAllowedPages(
         toRemove, callbackFail(expectedError));
   },
 
   function verifyExpectedPatternSetDidNotChange() {
-    chrome.declarativeNetRequest.getWhitelistedPages(
+    chrome.declarativeNetRequest.getAllowedPages(
         callbackPass(function(patterns) {
           checkUnordererArrayEquality(['https://www.yahoo.com/'], patterns);
         }));
@@ -78,60 +78,60 @@ chrome.test.runTests([
 
   function reachMaximumPatternLimit() {
     var toAdd = [];
-    var numPatterns = 1;  // The extension already has one whitelisted pattern.
+    var numPatterns = 1;  // The extension already has one allowed pattern.
     while (numPatterns <
-           chrome.declarativeNetRequest.MAX_NUMBER_OF_WHITELISTED_PAGES) {
+           chrome.declarativeNetRequest.MAX_NUMBER_OF_ALLOWED_PAGES) {
       toAdd.push('https://' + numPatterns + '.com/');
       numPatterns++;
     }
 
-    chrome.declarativeNetRequest.addWhitelistedPages(
+    chrome.declarativeNetRequest.addAllowedPages(
         toAdd, callbackPass(function() {}));
   },
 
   function errorOnExceedingMaximumPatternLimit() {
-    chrome.declarativeNetRequest.addWhitelistedPages(
+    chrome.declarativeNetRequest.addAllowedPages(
         ['https://example.com/'],
         callbackFail(
-            'The number of whitelisted page patterns can\'t exceed ' +
-            chrome.declarativeNetRequest.MAX_NUMBER_OF_WHITELISTED_PAGES));
+            'The number of allowed page patterns can\'t exceed ' +
+            chrome.declarativeNetRequest.MAX_NUMBER_OF_ALLOWED_PAGES));
   },
 
   function addingDuplicatePatternSucceeds() {
     // Adding a duplicate pattern should still succeed since the final set of
-    // whitelisted patterns is still at the limit.
-    chrome.declarativeNetRequest.addWhitelistedPages(
+    // allowed patterns is still at the limit.
+    chrome.declarativeNetRequest.addAllowedPages(
         ['https://www.yahoo.com/'], callbackPass(function() {}));
   },
 
   function verifyPatterns() {
-    chrome.declarativeNetRequest.getWhitelistedPages(
+    chrome.declarativeNetRequest.getAllowedPages(
         callbackPass(function(patterns) {
           chrome.test.assertTrue(patterns.includes('https://www.yahoo.com/'));
           chrome.test.assertEq(
-              chrome.declarativeNetRequest.MAX_NUMBER_OF_WHITELISTED_PAGES,
+              chrome.declarativeNetRequest.MAX_NUMBER_OF_ALLOWED_PAGES,
               patterns.length, 'Incorrect number of patterns observed.');
         }));
   },
 
   function removePattern() {
-    chrome.declarativeNetRequest.removeWhitelistedPages(
+    chrome.declarativeNetRequest.removeAllowedPages(
         ['https://www.yahoo.com/'], callbackPass(function() {}));
   },
 
   function addPattern() {
     // Adding a pattern should now succeed since removing the pattern caused us
     // to go under the limit.
-    chrome.declarativeNetRequest.addWhitelistedPages(
+    chrome.declarativeNetRequest.addAllowedPages(
         ['https://www.example.com/'], callbackPass(function() {}));
   },
 
   function verifyPatterns() {
-    chrome.declarativeNetRequest.getWhitelistedPages(
+    chrome.declarativeNetRequest.getAllowedPages(
         callbackPass(function(patterns) {
           chrome.test.assertTrue(patterns.includes('https://www.example.com/'));
           chrome.test.assertEq(
-              chrome.declarativeNetRequest.MAX_NUMBER_OF_WHITELISTED_PAGES,
+              chrome.declarativeNetRequest.MAX_NUMBER_OF_ALLOWED_PAGES,
               patterns.length, 'Incorrect number of patterns observed.');
         }));
   }

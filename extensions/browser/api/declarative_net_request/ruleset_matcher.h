@@ -83,8 +83,8 @@ class RulesetMatcher {
   const std::string ruleset_data_;
 
   const flat::ExtensionIndexedRuleset* const root_;
-  const UrlPatternIndexMatcher blacklist_matcher_;
-  const UrlPatternIndexMatcher whitelist_matcher_;
+  const UrlPatternIndexMatcher blocking_matcher_;
+  const UrlPatternIndexMatcher allowing_matcher_;
   const UrlPatternIndexMatcher redirect_matcher_;
   const ExtensionMetadataList* const metadata_list_;
 

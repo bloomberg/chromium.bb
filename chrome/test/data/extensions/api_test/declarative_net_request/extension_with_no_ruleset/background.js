@@ -7,21 +7,21 @@ var expectedError =
     'The extension must have a ruleset in order to call this function.';
 
 chrome.test.runTests([
-  // The extension shouldn't be able to call any of the page whitelisting
+  // The extension shouldn't be able to call any of the page allowing
   // functions from chrome.declarativeNetRequest.* since it does not have a
   // declarative ruleset.
-  function addWhitelistedPages() {
-    chrome.declarativeNetRequest.addWhitelistedPages(
+  function addAllowedPages() {
+    chrome.declarativeNetRequest.addAllowedPages(
         ['https://www.google.com/'], callbackFail(expectedError));
   },
 
-  function removeWhitelistedPages() {
-    chrome.declarativeNetRequest.removeWhitelistedPages(
+  function removeAllowedPages() {
+    chrome.declarativeNetRequest.removeAllowedPages(
         ['https://www.google.com/'], callbackFail(expectedError));
   },
 
-  function getWhitelistedPages() {
-    chrome.declarativeNetRequest.getWhitelistedPages(
+  function getAllowedPages() {
+    chrome.declarativeNetRequest.getAllowedPages(
         callbackFail(expectedError));
   }
 ]);

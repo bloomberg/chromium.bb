@@ -42,8 +42,8 @@ class DeclarativeNetRequestAPItest : public extensions::ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestAPItest);
 };
 
-IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, PageWhitelistingAPI) {
-  ASSERT_TRUE(RunExtensionTest("page_whitelisting_api")) << message_;
+IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, PageAllowingAPI) {
+  ASSERT_TRUE(RunExtensionTest("page_allowing_api")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, ExtensionWithNoRuleset) {

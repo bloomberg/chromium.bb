@@ -43,18 +43,18 @@ FlatStringListOffset BuildVectorOfSharedStrings(
 dnr_api::RuleActionType GetRuleActionType(const IndexedRule& indexed_rule) {
   if (indexed_rule.options & flat_rule::OptionFlag_IS_WHITELIST) {
     DCHECK(indexed_rule.redirect_url.empty());
-    return dnr_api::RULE_ACTION_TYPE_WHITELIST;
+    return dnr_api::RULE_ACTION_TYPE_ALLOW;
   }
   if (!indexed_rule.redirect_url.empty())
     return dnr_api::RULE_ACTION_TYPE_REDIRECT;
-  return dnr_api::RULE_ACTION_TYPE_BLACKLIST;
+  return dnr_api::RULE_ACTION_TYPE_BLOCK;
 }
 
 }  // namespace
 
 FlatRulesetIndexer::FlatRulesetIndexer()
-    : blacklist_index_builder_(&builder_),
-      whitelist_index_builder_(&builder_),
+    : blocking_index_builder_(&builder_),
+      allowing_index_builder_(&builder_),
       redirect_index_builder_(&builder_) {}
 
 FlatRulesetIndexer::~FlatRulesetIndexer() = default;
@@ -94,8 +94,8 @@ void FlatRulesetIndexer::Finish() {
   DCHECK(!finished_);
   finished_ = true;
 
-  auto blacklist_index_offset = blacklist_index_builder_.Finish();
-  auto whitelist_index_offset = whitelist_index_builder_.Finish();
+  auto blocking_index_offset = blocking_index_builder_.Finish();
+  auto allowing_index_offset = allowing_index_builder_.Finish();
   auto redirect_index_offset = redirect_index_builder_.Finish();
 
   // Store the extension metadata sorted by ID to support fast lookup through
@@ -104,7 +104,7 @@ void FlatRulesetIndexer::Finish() {
       builder_.CreateVectorOfSortedTables(&metadata_);
 
   auto root_offset = flat::CreateExtensionIndexedRuleset(
-      builder_, blacklist_index_offset, whitelist_index_offset,
+      builder_, blocking_index_offset, allowing_index_offset,
       redirect_index_offset, extension_metadata_offset);
   flat::FinishExtensionIndexedRulesetBuffer(builder_, root_offset);
 }
@@ -118,10 +118,10 @@ FlatRulesetIndexer::SerializedData FlatRulesetIndexer::GetData() {
 FlatRulesetIndexer::UrlPatternIndexBuilder* FlatRulesetIndexer::GetBuilder(
     dnr_api::RuleActionType type) {
   switch (type) {
-    case dnr_api::RULE_ACTION_TYPE_BLACKLIST:
-      return &blacklist_index_builder_;
-    case dnr_api::RULE_ACTION_TYPE_WHITELIST:
-      return &whitelist_index_builder_;
+    case dnr_api::RULE_ACTION_TYPE_BLOCK:
+      return &blocking_index_builder_;
+    case dnr_api::RULE_ACTION_TYPE_ALLOW:
+      return &allowing_index_builder_;
     case dnr_api::RULE_ACTION_TYPE_REDIRECT:
       return &redirect_index_builder_;
     case dnr_api::RULE_ACTION_TYPE_NONE:

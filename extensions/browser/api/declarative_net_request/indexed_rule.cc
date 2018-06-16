@@ -124,7 +124,7 @@ class UrlFilterParser {
 uint8_t GetOptionsMask(const dnr_api::Rule& parsed_rule) {
   uint8_t mask = flat_rule::OptionFlag_NONE;
 
-  if (parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_WHITELIST)
+  if (parsed_rule.action.type == dnr_api::RULE_ACTION_TYPE_ALLOW)
     mask |= flat_rule::OptionFlag_IS_WHITELIST;
   if (parsed_rule.condition.is_url_filter_case_sensitive &&
       *parsed_rule.condition.is_url_filter_case_sensitive) {

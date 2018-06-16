@@ -87,7 +87,7 @@ TestRule CreateGenericRule() {
   TestRuleCondition condition;
   condition.url_filter = std::string("filter");
   TestRuleAction action;
-  action.type = std::string("blacklist");
+  action.type = std::string("block");
   TestRule rule;
   rule.id = kMinValidID;
   rule.action = action;

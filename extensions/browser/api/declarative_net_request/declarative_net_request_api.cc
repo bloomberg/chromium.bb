@@ -39,25 +39,25 @@ bool HasRegisteredRuleset(content::BrowserContext* context,
   return false;
 }
 
-void UpdateWhitelistPagesOnIOThread(const ExtensionId& extension_id,
-                                    URLPatternSet whitelisted_pages,
-                                    InfoMap* info_map) {
+void UpdateAllowPagesOnIOThread(const ExtensionId& extension_id,
+                                URLPatternSet allowed_pages,
+                                InfoMap* info_map) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(info_map);
 
-  info_map->GetRulesetManager()->UpdateWhitelistedPages(
-      extension_id, std::move(whitelisted_pages));
+  info_map->GetRulesetManager()->UpdateAllowedPages(extension_id,
+                                                    std::move(allowed_pages));
 }
 
 }  // namespace
 
-DeclarativeNetRequestUpdateWhitelistedPagesFunction::
-    DeclarativeNetRequestUpdateWhitelistedPagesFunction() = default;
-DeclarativeNetRequestUpdateWhitelistedPagesFunction::
-    ~DeclarativeNetRequestUpdateWhitelistedPagesFunction() = default;
+DeclarativeNetRequestUpdateAllowedPagesFunction::
+    DeclarativeNetRequestUpdateAllowedPagesFunction() = default;
+DeclarativeNetRequestUpdateAllowedPagesFunction::
+    ~DeclarativeNetRequestUpdateAllowedPagesFunction() = default;
 
 ExtensionFunction::ResponseAction
-DeclarativeNetRequestUpdateWhitelistedPagesFunction::UpdateWhitelistedPages(
+DeclarativeNetRequestUpdateAllowedPagesFunction::UpdateAllowedPages(
     const std::vector<std::string>& patterns,
     Action action) {
   if (patterns.empty())
@@ -65,7 +65,7 @@ DeclarativeNetRequestUpdateWhitelistedPagesFunction::UpdateWhitelistedPages(
 
   // It's ok to allow file access and to use SCHEME_ALL since this is not
   // actually granting any permissions to the extension. This will only be used
-  // to whitelist requests.
+  // to allow requests.
   URLPatternSet delta;
   std::string error;
   if (!delta.Populate(patterns, URLPattern::SCHEME_ALL,
@@ -74,7 +74,7 @@ DeclarativeNetRequestUpdateWhitelistedPagesFunction::UpdateWhitelistedPages(
   }
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
-  URLPatternSet current_set = prefs->GetDNRWhitelistedPages(extension_id());
+  URLPatternSet current_set = prefs->GetDNRAllowedPages(extension_id());
   URLPatternSet new_set;
   switch (action) {
     case Action::ADD:
@@ -86,92 +86,90 @@ DeclarativeNetRequestUpdateWhitelistedPagesFunction::UpdateWhitelistedPages(
   }
 
   if (static_cast<int>(new_set.size()) >
-      api::declarative_net_request::MAX_NUMBER_OF_WHITELISTED_PAGES) {
+      api::declarative_net_request::MAX_NUMBER_OF_ALLOWED_PAGES) {
     return RespondNow(Error(base::StringPrintf(
-        "The number of whitelisted page patterns can't exceed %d",
-        api::declarative_net_request::MAX_NUMBER_OF_WHITELISTED_PAGES)));
+        "The number of allowed page patterns can't exceed %d",
+        api::declarative_net_request::MAX_NUMBER_OF_ALLOWED_PAGES)));
   }
 
   // Persist |new_set| as part of preferences.
-  prefs->SetDNRWhitelistedPages(extension_id(), new_set);
+  prefs->SetDNRAllowedPages(extension_id(), new_set);
 
-  // Update the new whitelist set on the IO thread.
-  base::OnceClosure updated_whitelist_pages_io_task = base::BindOnce(
-      &UpdateWhitelistPagesOnIOThread, extension_id(), std::move(new_set),
+  // Update the new allowed set on the IO thread.
+  base::OnceClosure updated_allow_pages_io_task = base::BindOnce(
+      &UpdateAllowPagesOnIOThread, extension_id(), std::move(new_set),
       base::RetainedRef(ExtensionSystem::Get(browser_context())->info_map()));
 
-  base::OnceClosure updated_whitelisted_pages_ui_reply =
-      base::BindOnce(&DeclarativeNetRequestUpdateWhitelistedPagesFunction::
-                         OnWhitelistedPagesUpdated,
-                     this);
+  base::OnceClosure updated_allowed_pages_ui_reply = base::BindOnce(
+      &DeclarativeNetRequestUpdateAllowedPagesFunction::OnAllowedPagesUpdated,
+      this);
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      std::move(updated_whitelist_pages_io_task),
-      std::move(updated_whitelisted_pages_ui_reply));
+      std::move(updated_allow_pages_io_task),
+      std::move(updated_allowed_pages_ui_reply));
 
   return RespondLater();
 }
 
-void DeclarativeNetRequestUpdateWhitelistedPagesFunction::
-    OnWhitelistedPagesUpdated() {
+void DeclarativeNetRequestUpdateAllowedPagesFunction::OnAllowedPagesUpdated() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   Respond(NoArguments());
 }
 
-bool DeclarativeNetRequestUpdateWhitelistedPagesFunction::PreRunValidation(
+bool DeclarativeNetRequestUpdateAllowedPagesFunction::PreRunValidation(
     std::string* error) {
   return UIThreadExtensionFunction::PreRunValidation(error) &&
          HasRegisteredRuleset(browser_context(), extension(), error);
 }
 
-DeclarativeNetRequestAddWhitelistedPagesFunction::
-    DeclarativeNetRequestAddWhitelistedPagesFunction() = default;
-DeclarativeNetRequestAddWhitelistedPagesFunction::
-    ~DeclarativeNetRequestAddWhitelistedPagesFunction() = default;
+DeclarativeNetRequestAddAllowedPagesFunction::
+    DeclarativeNetRequestAddAllowedPagesFunction() = default;
+DeclarativeNetRequestAddAllowedPagesFunction::
+    ~DeclarativeNetRequestAddAllowedPagesFunction() = default;
 
 ExtensionFunction::ResponseAction
-DeclarativeNetRequestAddWhitelistedPagesFunction::Run() {
-  using Params = api::declarative_net_request::AddWhitelistedPages::Params;
+DeclarativeNetRequestAddAllowedPagesFunction::Run() {
+  using Params = api::declarative_net_request::AddAllowedPages::Params;
 
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  return UpdateWhitelistedPages(params->page_patterns, Action::ADD);
+  return UpdateAllowedPages(params->page_patterns, Action::ADD);
 }
 
-DeclarativeNetRequestRemoveWhitelistedPagesFunction::
-    DeclarativeNetRequestRemoveWhitelistedPagesFunction() = default;
-DeclarativeNetRequestRemoveWhitelistedPagesFunction::
-    ~DeclarativeNetRequestRemoveWhitelistedPagesFunction() = default;
+DeclarativeNetRequestRemoveAllowedPagesFunction::
+    DeclarativeNetRequestRemoveAllowedPagesFunction() = default;
+DeclarativeNetRequestRemoveAllowedPagesFunction::
+    ~DeclarativeNetRequestRemoveAllowedPagesFunction() = default;
 
 ExtensionFunction::ResponseAction
-DeclarativeNetRequestRemoveWhitelistedPagesFunction::Run() {
-  using Params = api::declarative_net_request::AddWhitelistedPages::Params;
+DeclarativeNetRequestRemoveAllowedPagesFunction::Run() {
+  using Params = api::declarative_net_request::AddAllowedPages::Params;
 
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  return UpdateWhitelistedPages(params->page_patterns, Action::REMOVE);
+  return UpdateAllowedPages(params->page_patterns, Action::REMOVE);
 }
 
-DeclarativeNetRequestGetWhitelistedPagesFunction::
-    DeclarativeNetRequestGetWhitelistedPagesFunction() = default;
-DeclarativeNetRequestGetWhitelistedPagesFunction::
-    ~DeclarativeNetRequestGetWhitelistedPagesFunction() = default;
+DeclarativeNetRequestGetAllowedPagesFunction::
+    DeclarativeNetRequestGetAllowedPagesFunction() = default;
+DeclarativeNetRequestGetAllowedPagesFunction::
+    ~DeclarativeNetRequestGetAllowedPagesFunction() = default;
 
-bool DeclarativeNetRequestGetWhitelistedPagesFunction::PreRunValidation(
+bool DeclarativeNetRequestGetAllowedPagesFunction::PreRunValidation(
     std::string* error) {
   return UIThreadExtensionFunction::PreRunValidation(error) &&
          HasRegisteredRuleset(browser_context(), extension(), error);
 }
 
 ExtensionFunction::ResponseAction
-DeclarativeNetRequestGetWhitelistedPagesFunction::Run() {
+DeclarativeNetRequestGetAllowedPagesFunction::Run() {
   const ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
-  URLPatternSet current_set = prefs->GetDNRWhitelistedPages(extension_id());
+  URLPatternSet current_set = prefs->GetDNRAllowedPages(extension_id());
 
   return RespondNow(ArgumentList(
-      api::declarative_net_request::GetWhitelistedPages::Results::Create(
+      api::declarative_net_request::GetAllowedPages::Results::Create(
           *current_set.ToStringVector())));
 }
 
