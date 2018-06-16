@@ -107,7 +107,7 @@ ManagedDisplayInfo::ManagedDisplayModeList::const_iterator FindDisplayMode(
 void SetInternalManagedDisplayModeList(ManagedDisplayInfo* info) {
   ManagedDisplayMode native_mode(info->bounds_in_native().size(),
                                  0.0 /* refresh_rate */, false /* interlaced */,
-                                 false /* native_mode */, 1.0 /* ui_scale */,
+                                 true /* native_mode */, 1.0 /* ui_scale */,
                                  info->device_scale_factor());
   info->SetManagedDisplayModes(
       CreateInternalManagedDisplayModeList(native_mode));

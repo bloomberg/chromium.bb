@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -159,6 +160,25 @@ class ScreenLayoutObserverTestMultiMirroring
   DISALLOW_COPY_AND_ASSIGN(ScreenLayoutObserverTestMultiMirroring);
 };
 
+class ScreenLayoutObserverTestMultiMirroringWithUiScale
+    : public ScreenLayoutObserverTestMultiMirroring {
+ public:
+  ScreenLayoutObserverTestMultiMirroringWithUiScale() = default;
+  ~ScreenLayoutObserverTestMultiMirroringWithUiScale() override = default;
+
+  // ScreenLayoutObserverTestMultiMirroring
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kEnableDisplayZoomSetting);
+    ScreenLayoutObserverTestMultiMirroring::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenLayoutObserverTestMultiMirroringWithUiScale);
+};
+
 // Instantiate the boolean which is used to enable/disable multi-mirroring in
 // the parameterized tests.
 INSTANTIATE_TEST_CASE_P(,
@@ -190,28 +210,6 @@ TEST_P(ScreenLayoutObserverTestMultiMirroring, DisplayNotifications) {
                     IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION)),
             GetDisplayNotificationAdditionalText());
   EXPECT_TRUE(GetDisplayNotificationText().empty());
-
-  // UI-scale
-  CloseNotification();
-  UpdateDisplay("400x400@1.5");
-  EXPECT_EQ(l10n_util::GetStringFUTF16(
-                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-                GetFirstDisplayName(), base::UTF8ToUTF16("600x600")),
-            GetDisplayNotificationAdditionalText());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE),
-            GetDisplayNotificationText());
-
-  // UI-scale to 1.0
-  CloseNotification();
-  UpdateDisplay("400x400");
-  EXPECT_EQ(l10n_util::GetStringFUTF16(
-                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-                GetFirstDisplayName(), base::UTF8ToUTF16("400x400")),
-            GetDisplayNotificationAdditionalText());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE),
-            GetDisplayNotificationText());
 
   // No-update
   CloseNotification();
@@ -278,16 +276,6 @@ TEST_P(ScreenLayoutObserverTestMultiMirroring, DisplayNotifications) {
   }
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
-  // Resize the first display.
-  UpdateDisplay("400x400@1.5,200x200");
-  EXPECT_EQ(l10n_util::GetStringFUTF16(
-                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-                GetFirstDisplayName(), base::UTF8ToUTF16("600x600")),
-            GetDisplayNotificationAdditionalText());
-  EXPECT_EQ(l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE),
-            GetDisplayNotificationText());
-
   // Rotate the second.
   UpdateDisplay("400x400@1.5,200x200/r");
   EXPECT_EQ(l10n_util::GetStringFUTF16(
@@ -303,6 +291,42 @@ TEST_P(ScreenLayoutObserverTestMultiMirroring, DisplayNotifications) {
       display_manager()->GetSecondaryDisplay().id());
   UpdateDisplay("400x400@1.5");
   EXPECT_TRUE(GetDisplayNotificationText().empty());
+}
+
+TEST_P(ScreenLayoutObserverTestMultiMirroringWithUiScale,
+       DisplayNotifications) {
+  Shell::Get()->screen_layout_observer()->set_show_notifications_for_testing(
+      true);
+
+  UpdateDisplay("400x400@1.5");
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
+                GetFirstDisplayName(), base::UTF8ToUTF16("600x600")),
+            GetDisplayNotificationAdditionalText());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE),
+            GetDisplayNotificationText());
+
+  // UI-scale to 1.0
+  CloseNotification();
+  UpdateDisplay("400x400");
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
+                GetFirstDisplayName(), base::UTF8ToUTF16("400x400")),
+            GetDisplayNotificationAdditionalText());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE),
+            GetDisplayNotificationText());
+
+  // Resize the first display.
+  UpdateDisplay("400x400@1.5,200x200");
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
+                GetFirstDisplayName(), base::UTF8ToUTF16("600x600")),
+            GetDisplayNotificationAdditionalText());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED_TITLE),
+            GetDisplayNotificationText());
 }
 
 // Zooming in Unified Mode results in display size changes rather than changes

@@ -345,10 +345,20 @@ TEST_P(DisplayPrefsTest, BasicStores) {
   window_tree_host_manager->SetOverscanInsets(id1, gfx::Insets(10, 11, 12, 13));
   display_manager()->SetDisplayRotation(id1, display::Display::ROTATE_90,
                                         display::Display::RotationSource::USER);
-  EXPECT_TRUE(display::test::DisplayManagerTestApi(display_manager())
-                  .SetDisplayUIScale(id1, 1.25f));
-  EXPECT_FALSE(display::test::DisplayManagerTestApi(display_manager())
-                   .SetDisplayUIScale(id2, 1.25f));
+
+  constexpr float zoom_factor_1 = 1.f / 2.25f;
+  constexpr float zoom_factor_2 = 1.60f;
+
+  const bool is_display_zoom_enabled = GetParam();
+  if (is_display_zoom_enabled) {
+    display_manager()->UpdateZoomFactor(id1, zoom_factor_1);
+    display_manager()->UpdateZoomFactor(id2, zoom_factor_2);
+  } else {
+    EXPECT_TRUE(display::test::DisplayManagerTestApi(display_manager())
+                    .SetDisplayUIScale(id1, 1.25f));
+    EXPECT_FALSE(display::test::DisplayManagerTestApi(display_manager())
+                     .SetDisplayUIScale(id2, 1.25f));
+  }
 
   // Set touch calibration data for display |id2|.
   uint32_t id_1 = 1234;
@@ -413,11 +423,15 @@ TEST_P(DisplayPrefsTest, BasicStores) {
   EXPECT_TRUE(property->GetInteger("rotation", &rotation));
   EXPECT_TRUE(property->GetInteger("ui-scale", &ui_scale));
   EXPECT_EQ(1, rotation);
-  const bool is_display_zoom_enabled = GetParam();
-  if (is_display_zoom_enabled)
+
+  if (is_display_zoom_enabled) {
     EXPECT_EQ(-1000, ui_scale);
-  else
+    double display_zoom_1;
+    EXPECT_TRUE(property->GetDouble("display_zoom_factor", &display_zoom_1));
+    EXPECT_NEAR(display_zoom_1, zoom_factor_1, 0.0001);
+  } else {
     EXPECT_EQ(1250, ui_scale);
+  }
 
   // Internal display never registered the resolution.
   int width = 0, height = 0;
@@ -464,10 +478,16 @@ TEST_P(DisplayPrefsTest, BasicStores) {
   EXPECT_TRUE(property->GetInteger("ui-scale", &ui_scale));
   EXPECT_EQ(0, rotation);
   // ui_scale works only on 2x scale factor/1st display.
-  if (is_display_zoom_enabled)
+  if (is_display_zoom_enabled) {
     EXPECT_EQ(-1000, ui_scale);
-  else
+
+    double display_zoom_2;
+    EXPECT_TRUE(property->GetDouble("display_zoom_factor", &display_zoom_2));
+    EXPECT_NEAR(display_zoom_2, zoom_factor_2, 0.0001);
+  } else {
     EXPECT_EQ(1000, ui_scale);
+  }
+
   EXPECT_FALSE(property->GetInteger("insets_top", &top));
   EXPECT_FALSE(property->GetInteger("insets_left", &left));
   EXPECT_FALSE(property->GetInteger("insets_bottom", &bottom));
@@ -484,10 +504,6 @@ TEST_P(DisplayPrefsTest, BasicStores) {
                                    1.0 /* ui_scale */,
                                    1.25f /* device_scale_factor */);
   display_manager()->SetDisplayMode(id2, mode);
-  float zoom_factor_1 = 1.f / 2.25f;
-  float zoom_factor_2 = 1.60f;
-  display_manager()->UpdateZoomFactor(id1, zoom_factor_1);
-  display_manager()->UpdateZoomFactor(id2, zoom_factor_2);
 
   window_tree_host_manager->SetPrimaryDisplayId(id2);
 
@@ -500,10 +516,6 @@ TEST_P(DisplayPrefsTest, BasicStores) {
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
 
-  double display_zoom_1;
-  EXPECT_TRUE(property->GetDouble("display_zoom_factor", &display_zoom_1));
-  EXPECT_NEAR(display_zoom_1, zoom_factor_1, 0.0001);
-
   // External display's resolution must be stored this time because
   // it's not best.
   int device_scale_factor = 0;
@@ -515,10 +527,6 @@ TEST_P(DisplayPrefsTest, BasicStores) {
   EXPECT_EQ(300, width);
   EXPECT_EQ(200, height);
   EXPECT_EQ(1250, device_scale_factor);
-
-  double display_zoom_2;
-  EXPECT_TRUE(property->GetDouble("display_zoom_factor", &display_zoom_2));
-  EXPECT_NEAR(display_zoom_2, zoom_factor_2, 0.0001);
 
   // The layout is swapped.
   EXPECT_TRUE(displays->GetDictionary(key, &layout_value));
@@ -753,8 +761,14 @@ TEST_P(DisplayPrefsTestGuest, DisplayPrefsTestGuest) {
   display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
                                          display::DisplayPlacement::TOP, 10));
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetDisplayUIScale(id1, 1.25f);
+  const bool is_display_zoom_enabled = GetParam();
+  const float scale = 1.25f;
+  if (is_display_zoom_enabled) {
+    display_manager()->UpdateZoomFactor(id1, 1.f / scale);
+  } else {
+    display::test::DisplayManagerTestApi(display_manager())
+        .SetDisplayUIScale(id1, scale);
+  }
   window_tree_host_manager->SetPrimaryDisplayId(id2);
   int64_t new_primary = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   window_tree_host_manager->SetOverscanInsets(new_primary,
@@ -784,12 +798,20 @@ TEST_P(DisplayPrefsTestGuest, DisplayPrefsTestGuest) {
 
   const display::ManagedDisplayInfo& info1 =
       display_manager()->GetDisplayInfo(id1);
-  EXPECT_EQ(1.25f, info1.configured_ui_scale());
+  if (is_display_zoom_enabled) {
+    EXPECT_FLOAT_EQ(1.f / scale, info1.zoom_factor());
+  } else {
+    EXPECT_FLOAT_EQ(scale, info1.configured_ui_scale());
+  }
 
   const display::ManagedDisplayInfo& info_primary =
       display_manager()->GetDisplayInfo(new_primary);
   EXPECT_EQ(display::Display::ROTATE_90, info_primary.GetActiveRotation());
-  EXPECT_EQ(1.0f, info_primary.configured_ui_scale());
+  if (is_display_zoom_enabled) {
+    EXPECT_EQ(1.0f, info_primary.zoom_factor());
+  } else {
+    EXPECT_EQ(1.0f, info_primary.configured_ui_scale());
+  }
 }
 
 TEST_P(DisplayPrefsTest, StorePowerStateNoLogin) {

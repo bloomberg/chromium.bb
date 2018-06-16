@@ -16,6 +16,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/cursor_manager_test_api.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
@@ -23,6 +24,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -118,8 +120,8 @@ class RootWindowTransformersTest : public AshTestBase {
   RootWindowTransformersTest() = default;
   ~RootWindowTransformersTest() override = default;
 
-  float GetStoredUIScale(int64_t id) {
-    return display_manager()->GetDisplayInfo(id).GetEffectiveUIScale();
+  float GetStoredZoomScale(int64_t id) {
+    return display_manager()->GetDisplayInfo(id).zoom_factor();
   }
 
   std::unique_ptr<RootWindowTransformer>
@@ -137,6 +139,28 @@ class RootWindowTransformersTest : public AshTestBase {
   }
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowTransformersTest);
+};
+
+class RootWindowTransformersUiScaleTest : public RootWindowTransformersTest {
+ public:
+  RootWindowTransformersUiScaleTest() = default;
+  ~RootWindowTransformersUiScaleTest() override = default;
+
+  // RootWindowTransformersTest
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kEnableDisplayZoomSetting);
+    RootWindowTransformersTest::SetUp();
+  }
+
+  float GetStoredUIScale(int64_t id) {
+    return display_manager()->GetDisplayInfo(id).GetEffectiveUIScale();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(RootWindowTransformersUiScaleTest);
 };
 
 }  // namespace
@@ -245,7 +269,7 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   TestEventHandler event_handler;
   Shell::Get()->AddPreTargetHandler(&event_handler);
 
-  UpdateDisplay("600x400*2@1.5,500x300");
+  UpdateDisplay("600x400*2@0.8,500x300");
 
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
@@ -256,28 +280,27 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
 
   magnifier->SetEnabled(true);
   EXPECT_EQ(2.0f, magnifier->GetScale());
-  EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
-  EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
-  EXPECT_EQ("450,0 500x300", display2.bounds().ToString());
-  EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
-  EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
+  EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
+  EXPECT_EQ("0,0 375x250", root_windows[0]->bounds().ToString());
+  EXPECT_EQ("375,0 500x300", display2.bounds().ToString());
+  EXPECT_EQ(0.8f, GetStoredZoomScale(display1.id()));
+  EXPECT_EQ(1.0f, GetStoredZoomScale(display2.id()));
 
   ui::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseToInHost(500, 200);
-  EXPECT_EQ("299,150", event_handler.GetLocationAndReset());
+  EXPECT_EQ("249,124", event_handler.GetLocationAndReset());
   magnifier->SetEnabled(false);
 
-  display::test::DisplayManagerTestApi(display_manager())
-      .SetDisplayUIScale(display1.id(), 1.25f);
+  display_manager()->UpdateZoomFactor(display1.id(), 1.f / 1.5f);
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
   display2 = display_manager()->GetSecondaryDisplay();
   magnifier->SetEnabled(true);
   EXPECT_EQ(2.0f, magnifier->GetScale());
-  EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
-  EXPECT_EQ("0,0 375x250", root_windows[0]->bounds().ToString());
-  EXPECT_EQ("375,0 500x300", display2.bounds().ToString());
-  EXPECT_EQ(1.25f, GetStoredUIScale(display1.id()));
-  EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
+  EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
+  EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
+  EXPECT_EQ("450,0 500x300", display2.bounds().ToString());
+  EXPECT_FLOAT_EQ(1.f / 1.5f, GetStoredZoomScale(display1.id()));
+  EXPECT_EQ(1.0f, GetStoredZoomScale(display2.id()));
   magnifier->SetEnabled(false);
 
   Shell::Get()->RemovePreTargetHandler(&event_handler);
@@ -319,6 +342,91 @@ TEST_F(RootWindowTransformersTest, TouchScaleAndMagnify) {
 }
 
 TEST_F(RootWindowTransformersTest, ConvertHostToRootCoords) {
+  TestEventHandler event_handler;
+  Shell::Get()->AddPreTargetHandler(&event_handler);
+  MagnificationController* magnifier = Shell::Get()->magnification_controller();
+
+  // Test 1
+  UpdateDisplay("600x400*2/r@0.8");
+
+  display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ("0,0 250x375", display1.bounds().ToString());
+  EXPECT_EQ("0,0 250x375", root_windows[0]->bounds().ToString());
+  EXPECT_EQ(0.8f, GetStoredZoomScale(display1.id()));
+
+  ui::test::EventGenerator generator(root_windows[0]);
+  generator.MoveMouseToInHost(300, 200);
+  magnifier->SetEnabled(true);
+  EXPECT_EQ("125,187", event_handler.GetLocationAndReset());
+  EXPECT_FLOAT_EQ(2.0f, magnifier->GetScale());
+
+  generator.MoveMouseToInHost(300, 200);
+  EXPECT_EQ("124,186", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(200, 300);
+  EXPECT_EQ("155,218", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(100, 400);
+  EXPECT_EQ("204,249", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(0, 0);
+  EXPECT_EQ("125,298", event_handler.GetLocationAndReset());
+
+  magnifier->SetEnabled(false);
+  EXPECT_FLOAT_EQ(1.0f, magnifier->GetScale());
+
+  // Test 2
+  UpdateDisplay("600x400*2/u@0.8");
+  display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
+  EXPECT_EQ("0,0 375x250", root_windows[0]->bounds().ToString());
+  EXPECT_EQ(0.8f, GetStoredZoomScale(display1.id()));
+
+  generator.MoveMouseToInHost(300, 200);
+  magnifier->SetEnabled(true);
+  EXPECT_EQ("187,125", event_handler.GetLocationAndReset());
+  EXPECT_FLOAT_EQ(2.0f, magnifier->GetScale());
+
+  generator.MoveMouseToInHost(300, 200);
+  EXPECT_EQ("186,124", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(200, 300);
+  EXPECT_EQ("218,93", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(100, 400);
+  EXPECT_EQ("249,43", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(0, 0);
+  EXPECT_EQ("298,125", event_handler.GetLocationAndReset());
+
+  magnifier->SetEnabled(false);
+  EXPECT_FLOAT_EQ(1.0f, magnifier->GetScale());
+
+  // Test 3
+  UpdateDisplay("600x400*2/l@0.8");
+  display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ("0,0 250x375", display1.bounds().ToString());
+  EXPECT_EQ("0,0 250x375", root_windows[0]->bounds().ToString());
+  EXPECT_EQ(0.8f, GetStoredZoomScale(display1.id()));
+
+  generator.MoveMouseToInHost(300, 200);
+  magnifier->SetEnabled(true);
+  EXPECT_EQ("125,187", event_handler.GetLocationAndReset());
+  EXPECT_FLOAT_EQ(2.0f, magnifier->GetScale());
+
+  generator.MoveMouseToInHost(300, 200);
+  EXPECT_EQ("124,186", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(200, 300);
+  EXPECT_EQ("93,155", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(100, 400);
+  EXPECT_EQ("43,124", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(0, 0);
+  EXPECT_EQ("125,74", event_handler.GetLocationAndReset());
+
+  magnifier->SetEnabled(false);
+  EXPECT_FLOAT_EQ(1.0f, magnifier->GetScale());
+
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
+}
+
+TEST_F(RootWindowTransformersUiScaleTest, ConvertHostToRootCoords) {
   TestEventHandler event_handler;
   Shell::Get()->AddPreTargetHandler(&event_handler);
   MagnificationController* magnifier = Shell::Get()->magnification_controller();
@@ -399,6 +507,48 @@ TEST_F(RootWindowTransformersTest, ConvertHostToRootCoords) {
 
   magnifier->SetEnabled(false);
   EXPECT_FLOAT_EQ(1.0f, magnifier->GetScale());
+
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
+}
+
+TEST_F(RootWindowTransformersUiScaleTest, ScaleAndMagnify) {
+  TestEventHandler event_handler;
+  Shell::Get()->AddPreTargetHandler(&event_handler);
+
+  UpdateDisplay("600x400*2@1.5,500x300");
+
+  display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         display1.id());
+  display::Display display2 = display_manager()->GetSecondaryDisplay();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  MagnificationController* magnifier = Shell::Get()->magnification_controller();
+
+  magnifier->SetEnabled(true);
+  EXPECT_EQ(2.0f, magnifier->GetScale());
+  EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
+  EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
+  EXPECT_EQ("450,0 500x300", display2.bounds().ToString());
+  EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
+  EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
+
+  ui::test::EventGenerator generator(root_windows[0]);
+  generator.MoveMouseToInHost(500, 200);
+  EXPECT_EQ("299,150", event_handler.GetLocationAndReset());
+  magnifier->SetEnabled(false);
+
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetDisplayUIScale(display1.id(), 1.25f);
+  display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display2 = display_manager()->GetSecondaryDisplay();
+  magnifier->SetEnabled(true);
+  EXPECT_EQ(2.0f, magnifier->GetScale());
+  EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
+  EXPECT_EQ("0,0 375x250", root_windows[0]->bounds().ToString());
+  EXPECT_EQ("375,0 500x300", display2.bounds().ToString());
+  EXPECT_EQ(1.25f, GetStoredUIScale(display1.id()));
+  EXPECT_EQ(1.0f, GetStoredUIScale(display2.id()));
+  magnifier->SetEnabled(false);
 
   Shell::Get()->RemovePreTargetHandler(&event_handler);
 }

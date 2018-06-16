@@ -1382,23 +1382,23 @@ TEST_F(DisplayInfoProviderChromeosTest, SetOverscanForInternal) {
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
-  UpdateDisplay("1200x600,600x1000");
+  UpdateDisplay("1200x600,600x1000#500x900|400x800|300x700");
 
   DisplayUnitInfoList result = GetAllDisplaysInfo();
   ASSERT_GE(result.size(), 1u);
-  const api::system_display::DisplayUnitInfo& primary_info = result[0];
+  const api::system_display::DisplayUnitInfo& secondary_info = result[1];
   // Ensure that we have two modes for the primary display so that we can
   // test changing modes.
-  ASSERT_GE(primary_info.modes.size(), 2u);
+  ASSERT_GE(secondary_info.modes.size(), 2u);
 
   // Get the currently active mode and one other mode to switch to.
   int64_t id;
-  base::StringToInt64(primary_info.id, &id);
+  base::StringToInt64(secondary_info.id, &id);
   display::ManagedDisplayMode active_mode;
   EXPECT_TRUE(GetDisplayManager()->GetActiveModeForDisplayId(id, &active_mode));
   const api::system_display::DisplayMode* cur_mode = nullptr;
   const api::system_display::DisplayMode* other_mode = nullptr;
-  for (const auto& mode : primary_info.modes) {
+  for (const auto& mode : secondary_info.modes) {
     if (mode.is_selected)
       cur_mode = &mode;
     else if (!other_mode)

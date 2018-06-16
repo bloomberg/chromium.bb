@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/display/display_switches.h"
@@ -197,6 +198,25 @@ class CrosDisplayConfigTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(CrosDisplayConfigTest);
 };
 
+// For tests involving ui scale we need to disable the display zoom feature.
+class CrosDisplayConfigTestWithUiScale : public CrosDisplayConfigTest {
+ public:
+  CrosDisplayConfigTestWithUiScale() = default;
+  ~CrosDisplayConfigTestWithUiScale() override = default;
+
+  // CrosDisplayConfigTest
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kEnableDisplayZoomSetting);
+    CrosDisplayConfigTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(CrosDisplayConfigTestWithUiScale);
+};
+
 }  // namespace
 
 TEST_F(CrosDisplayConfigTest, OnDisplayConfigChanged) {
@@ -353,7 +373,7 @@ TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListBasic) {
   EXPECT_EQ(96, info_1.dpi_y);
 }
 
-TEST_F(CrosDisplayConfigTest, GetDisplayUnitInfoListModes) {
+TEST_F(CrosDisplayConfigTestWithUiScale, GetDisplayUnitInfoListModes) {
   UpdateDisplay("1024x512,1024x512");
   std::vector<mojom::DisplayUnitInfoPtr> result = GetDisplayUnitInfoList();
   ASSERT_EQ(2u, result.size());
@@ -572,7 +592,7 @@ TEST_F(CrosDisplayConfigTest, SetDisplayPropertiesDisplayZoomFactor) {
       display_manager()->GetDisplayInfo(display_id_list[1]).zoom_factor());
 }
 
-TEST_F(CrosDisplayConfigTest, SetDisplayMode) {
+TEST_F(CrosDisplayConfigTestWithUiScale, SetDisplayMode) {
   UpdateDisplay("1024x512,1024x512");
   std::vector<mojom::DisplayUnitInfoPtr> result = GetDisplayUnitInfoList();
   ASSERT_EQ(2u, result.size());
