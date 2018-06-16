@@ -121,17 +121,14 @@ bool ShouldTabShowFavicon(int capacity,
                           TabAlertState alert_state) {
   if (!has_favicon)
     return false;
-
-  int other_icons = 0;
+  int required_capacity = 1;
   if (ShouldTabShowCloseButton(capacity, is_pinned_tab, is_active_tab))
-    ++other_icons;
+    ++required_capacity;
   if (ShouldTabShowAlertIndicator(capacity, is_pinned_tab, is_active_tab,
-                                  has_favicon, alert_state))
-    ++other_icons;
-
-  // The favicon can be centered and clipped when it's alone, so if there are no
-  // other icons to show, we can show the favicon even when there's no capacity.
-  return !other_icons || (capacity > other_icons);
+                                  has_favicon, alert_state)) {
+    ++required_capacity;
+  }
+  return capacity >= required_capacity;
 }
 
 bool ShouldTabShowAlertIndicator(int capacity,
