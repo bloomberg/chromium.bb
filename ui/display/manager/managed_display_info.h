@@ -84,7 +84,7 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // The format is
   //
   // [origin-]widthxheight[*device_scale_factor][#resolutions list]
-  //     [/<properties>][@ui-scale]
+  //     [/<properties>][@zoom-factor]
   //
   // where [] are optional:
   // - |origin| is given in x+y- format.
@@ -93,24 +93,24 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   //   (5%), and one rotation property where 'r' is 90 degree clock-wise
   //   (to the 'r'ight) 'u' is 180 degrees ('u'pside-down) and 'l' is
   //   270 degrees (to the 'l'eft).
-  // - ui-scale is floating value, e.g. @1.5 or @1.25.
+  // - zoom-factor is floating value, e.g. @1.5 or @1.25.
   // - |resolution list| is the list of size that is given in
   //   |width x height [% refresh_rate]| separated by '|'.
   //
   // A couple of examples:
   // "100x100"
   //      100x100 window at 0,0 origin. 1x device scale factor. no overscan.
-  //      no rotation. 1.0 ui scale.
+  //      no rotation. 1.0 zoom factor.
   // "5+5-300x200*2"
   //      300x200 window at 5,5 origin. 2x device scale factor.
-  //      no overscan, no rotation. 1.0 ui scale.
+  //      no overscan, no rotation. 1.0 zoom factor.
   // "300x200/ol"
   //      300x200 window at 0,0 origin. 1x device scale factor.
   //      with 5% overscan. rotated to left (90 degree counter clockwise).
-  //      1.0 ui scale.
+  //      1.0 zoom factor.
   // "10+20-300x200/u@1.5"
   //      300x200 window at 10,20 origin. 1x device scale factor.
-  //      no overscan. flipped upside-down (180 degree) and 1.5 ui scale.
+  //      no overscan. flipped upside-down (180 degree) and 1.5 zoom factor.
   // "200x100#300x200|200x100%59.0|100x100%60"
   //      200x100 window at 0,0 origin, with 3 possible resolutions,
   //      300x200, 200x100 at 59 Hz, and 100x100 at 60 Hz.

@@ -4,7 +4,9 @@
 
 #include "ui/display/manager/managed_display_info.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/display/manager/touch_device_manager.h"
@@ -24,9 +26,30 @@ std::string GetModeSizeInDIP(const gfx::Size& size,
 
 }  // namespace
 
-typedef testing::Test DisplayInfoTest;
+class DisplayInfoTest : public testing::Test,
+                        public testing::WithParamInterface<bool> {
+ public:
+  DisplayInfoTest() = default;
+  ~DisplayInfoTest() override = default;
 
-TEST_F(DisplayInfoTest, CreateFromSpec) {
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kEnableDisplayZoomSetting);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kEnableDisplayZoomSetting);
+    }
+    testing::Test::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayInfoTest);
+};
+
+TEST_P(DisplayInfoTest, CreateFromSpec) {
   ManagedDisplayInfo info =
       ManagedDisplayInfo::CreateFromSpecWithID("200x100", 10);
   EXPECT_EQ(10, info.id());
@@ -58,7 +81,10 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   info = ManagedDisplayInfo::CreateFromSpecWithID("10+20-300x400*2/l@1.5", 10);
   EXPECT_EQ("10,20 300x400", info.bounds_in_native().ToString());
   EXPECT_EQ(Display::ROTATE_270, info.GetActiveRotation());
-  EXPECT_EQ(1.5f, info.configured_ui_scale());
+  if (GetParam())
+    EXPECT_EQ(1.5f, info.zoom_factor());
+  else
+    EXPECT_EQ(1.5f, info.configured_ui_scale());
 
   info = ManagedDisplayInfo::CreateFromSpecWithID(
       "200x200#300x200|200x200%59.9|100x100%60|150x100*2|150x150*1.25%30", 10);
@@ -91,7 +117,7 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_TRUE(info.display_modes()[4].native());
 }
 
-TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPNormal) {
+TEST_P(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPNormal) {
   gfx::Size size(1366, 768);
   EXPECT_EQ("1536x864", GetModeSizeInDIP(size, 1.0f, 1.125f, true));
   EXPECT_EQ("1366x768", GetModeSizeInDIP(size, 1.0f, 1.0f, true));
@@ -100,7 +126,7 @@ TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPNormal) {
   EXPECT_EQ("683x384", GetModeSizeInDIP(size, 1.0f, 0.5f, true));
 }
 
-TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPHiDPI) {
+TEST_P(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPHiDPI) {
   gfx::Size size(2560, 1700);
   EXPECT_EQ("2560x1700", GetModeSizeInDIP(size, 2.0f, 2.0f, true));
   EXPECT_EQ("1920x1275", GetModeSizeInDIP(size, 2.0f, 1.5f, true));
@@ -112,7 +138,7 @@ TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPHiDPI) {
   EXPECT_EQ("640x425", GetModeSizeInDIP(size, 2.0f, 0.5f, true));
 }
 
-TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeInDIP125) {
+TEST_P(DisplayInfoTest, ManagedDisplayModeGetSizeInDIP125) {
   gfx::Size size(1920, 1080);
   EXPECT_EQ("2400x1350", GetModeSizeInDIP(size, 1.25f, 1.25f, true));
   EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 1.25f, 1.0f, true));
@@ -121,11 +147,13 @@ TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeInDIP125) {
   EXPECT_EQ("960x540", GetModeSizeInDIP(size, 1.25f, 0.5f, true));
 }
 
-TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeForExternal4K) {
+TEST_P(DisplayInfoTest, ManagedDisplayModeGetSizeForExternal4K) {
   gfx::Size size(3840, 2160);
   EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 2.0f, 1.0f, false));
   EXPECT_EQ("3072x1728", GetModeSizeInDIP(size, 1.25f, 1.0f, false));
   EXPECT_EQ("3840x2160", GetModeSizeInDIP(size, 1.0f, 1.0f, false));
 }
+
+INSTANTIATE_TEST_CASE_P(IsDisplayZoomEnabled, DisplayInfoTest, testing::Bool());
 
 }  // namespace display

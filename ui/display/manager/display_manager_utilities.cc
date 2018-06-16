@@ -105,6 +105,16 @@ struct ScaleComparator {
 
 ManagedDisplayInfo::ManagedDisplayModeList CreateInternalManagedDisplayModeList(
     const ManagedDisplayMode& native_mode) {
+  // When display zoom option is available, we cannot change the mode for
+  // internal displays.
+  if (features::IsDisplayZoomSettingEnabled()) {
+    ManagedDisplayMode mode(native_mode.size(), native_mode.refresh_rate(),
+                            native_mode.is_interlaced(), true, 1.f,
+                            native_mode.device_scale_factor());
+    mode.set_is_default(true);
+    return ManagedDisplayInfo::ManagedDisplayModeList{mode};
+  }
+
   ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
 
   float native_ui_scale = (native_mode.device_scale_factor() == 1.25f)

@@ -150,13 +150,15 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
 #endif
   std::string main_spec = spec;
 
-  float ui_scale = 1.0f;
+  // When display zoom mode is disabled, |zoom_factor| is used to compute
+  // the ui_scale.
+  float zoom_factor = 1.0f;
   std::vector<std::string> parts = base::SplitString(
       main_spec, "@", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   if (parts.size() == 2) {
     double scale_in_double = 0;
     if (base::StringToDouble(parts[1], &scale_in_double))
-      ui_scale = scale_in_double;
+      zoom_factor = scale_in_double;
     main_spec = parts[0];
   }
 
@@ -242,7 +244,11 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
       id, base::StringPrintf("Display-%d", static_cast<int>(id)), has_overscan);
   display_info.set_device_scale_factor(device_scale_factor);
   display_info.SetRotation(rotation, Display::RotationSource::ACTIVE);
-  display_info.set_configured_ui_scale(ui_scale);
+  if (features::IsDisplayZoomSettingEnabled()) {
+    display_info.set_zoom_factor(zoom_factor);
+  } else {
+    display_info.set_configured_ui_scale(zoom_factor);
+  }
   display_info.SetBounds(bounds_in_native);
   display_info.SetManagedDisplayModes(display_modes);
 
@@ -378,6 +384,10 @@ float ManagedDisplayInfo::GetEffectiveDeviceScaleFactor() const {
 }
 
 float ManagedDisplayInfo::GetEffectiveUIScale() const {
+  // When the display zoom setting is enabled, the configured UI scale should
+  // also be 1.
+  DCHECK(!features::IsDisplayZoomSettingEnabled() ||
+         configured_ui_scale_ == 1.f);
   if (Display::IsInternalDisplayId(id_) && device_scale_factor_ == 1.25f)
     return (configured_ui_scale_ == 0.8f) ? 1.0f : configured_ui_scale_;
   if (device_scale_factor_ == configured_ui_scale_)

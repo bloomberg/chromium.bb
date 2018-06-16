@@ -18,6 +18,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -28,6 +29,7 @@
 #include "ui/display/display_layout.h"
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/display_observer.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -183,6 +185,8 @@ class TestHelper {
 
   float GetStoredUIScale(int64_t id);
 
+  float GetStoredZoomScale(int64_t id);
+
  private:
   AshTestBase* delegate_;  // Not owned
   DISALLOW_COPY_AND_ASSIGN(TestHelper);
@@ -215,6 +219,10 @@ void TestHelper::SetDefaultDisplayLayout(
 
 float TestHelper::GetStoredUIScale(int64_t id) {
   return delegate_->display_manager()->GetDisplayInfo(id).GetEffectiveUIScale();
+}
+
+float TestHelper::GetStoredZoomScale(int64_t id) {
+  return delegate_->display_manager()->GetDisplayInfo(id).zoom_factor();
 }
 
 class WindowTreeHostManagerShutdownTest : public AshTestBase,
@@ -680,9 +688,32 @@ TEST_F(WindowTreeHostManagerTest, BoundsUpdated) {
   EXPECT_EQ(0, observer.CountAndReset());
   EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
   EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
+}
 
+class WindowTreeHostManagerWithUiScaleTest : public WindowTreeHostManagerTest {
+ public:
+  WindowTreeHostManagerWithUiScaleTest() = default;
+  ~WindowTreeHostManagerWithUiScaleTest() override = default;
+
+  // WindowTreeHostManagerTest
+  void SetUp() override {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kEnableDisplayZoomSetting);
+    WindowTreeHostManagerTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeHostManagerWithUiScaleTest);
+};
+
+TEST_F(WindowTreeHostManagerWithUiScaleTest, BoundsUpdated) {
+  UpdateDisplay("400x500*2,300x300");
+
+  TestObserver observer;
   // UI scale is eanbled only on internal display.
   int64_t secondary_id = GetSecondaryDisplay().id();
+  int64_t primary_id = GetPrimaryDisplay().id();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
                                                          secondary_id);
   // Changing internal ID display changes the DisplayIdPair (it comes
@@ -1282,6 +1313,40 @@ TEST_F(WindowTreeHostManagerTest, ScaleRootWindow) {
   TestEventHandler event_handler;
   Shell::Get()->AddPreTargetHandler(&event_handler);
 
+  UpdateDisplay("600x400*2@0.8,500x300");
+
+  display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         display1.id());
+
+  display::Display display2 = display_manager()->GetSecondaryDisplay();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
+  EXPECT_EQ("0,0 375x250", root_windows[0]->bounds().ToString());
+  EXPECT_EQ("375,0 500x300", display2.bounds().ToString());
+  EXPECT_FLOAT_EQ(0.8f, GetStoredZoomScale(display1.id()));
+  EXPECT_FLOAT_EQ(1.0f, GetStoredZoomScale(display2.id()));
+
+  ui::test::EventGenerator generator(root_windows[0]);
+  generator.MoveMouseToInHost(599, 200);
+  EXPECT_EQ("374,125", event_handler.GetLocationAndReset());
+
+  display_manager()->UpdateZoomFactor(display1.id(), 1.f / 1.5f);
+  display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  display2 = display_manager()->GetSecondaryDisplay();
+  EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
+  EXPECT_EQ("0,0 450x300", root_windows[0]->bounds().ToString());
+  EXPECT_EQ("450,0 500x300", display2.bounds().ToString());
+  EXPECT_FLOAT_EQ(1.f / 1.5f, GetStoredZoomScale(display1.id()));
+  EXPECT_FLOAT_EQ(1.0f, GetStoredZoomScale(display2.id()));
+
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
+}
+
+TEST_F(WindowTreeHostManagerWithUiScaleTest, ScaleRootWindow) {
+  TestEventHandler event_handler;
+  Shell::Get()->AddPreTargetHandler(&event_handler);
+
   UpdateDisplay("600x400*2@1.5,500x300");
 
   display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -1342,7 +1407,7 @@ TEST_F(WindowTreeHostManagerTest, TouchScale) {
   Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
 
-TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
+TEST_F(WindowTreeHostManagerWithUiScaleTest, ConvertHostToRootCoords) {
   TestEventHandler event_handler;
   Shell::Get()->AddPreTargetHandler(&event_handler);
 
@@ -1393,6 +1458,63 @@ TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
   EXPECT_EQ("300,449", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 399);
   EXPECT_EQ("0,449", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(0, 399);
+  EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
+
+  Shell::Get()->RemovePreTargetHandler(&event_handler);
+}
+
+TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
+  TestEventHandler event_handler;
+  Shell::Get()->AddPreTargetHandler(&event_handler);
+
+  UpdateDisplay("600x400*2/r@0.8");
+
+  display::Display display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ("0,0 250x375", display1.bounds().ToString());
+  EXPECT_EQ("0,0 250x375", root_windows[0]->bounds().ToString());
+  EXPECT_EQ(0.8f, GetStoredZoomScale(display1.id()));
+
+  ui::test::EventGenerator generator(root_windows[0]);
+  generator.MoveMouseToInHost(0, 0);
+  EXPECT_EQ("0,375", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(599, 0);
+  EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(599, 399);
+  EXPECT_EQ("249,0", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(0, 399);
+  EXPECT_EQ("249,375", event_handler.GetLocationAndReset());
+
+  UpdateDisplay("600x400*2/u@0.8");
+  display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
+  EXPECT_EQ("0,0 375x250", root_windows[0]->bounds().ToString());
+  EXPECT_EQ(0.8f, GetStoredZoomScale(display1.id()));
+
+  generator.MoveMouseToInHost(0, 0);
+  EXPECT_EQ("375,250", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(599, 0);
+  EXPECT_EQ("0,250", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(599, 399);
+  EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(0, 399);
+  EXPECT_EQ("375,0", event_handler.GetLocationAndReset());
+
+  UpdateDisplay("600x400*2/l@0.8");
+  display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
+  root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ("0,0 250x375", display1.bounds().ToString());
+  EXPECT_EQ("0,0 250x375", root_windows[0]->bounds().ToString());
+  EXPECT_EQ(0.8f, GetStoredZoomScale(display1.id()));
+
+  generator.MoveMouseToInHost(0, 0);
+  EXPECT_EQ("250,0", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(599, 0);
+  EXPECT_EQ("250,374", event_handler.GetLocationAndReset());
+  generator.MoveMouseToInHost(599, 399);
+  EXPECT_EQ("0,374", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(0, 399);
   EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
 
