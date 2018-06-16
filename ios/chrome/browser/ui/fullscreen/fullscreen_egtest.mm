@@ -124,6 +124,14 @@ void AssertURLIs(const GURL& expectedURL) {
       "http://ios/testing/data/http_server_files/single_page_wide.pdf");
   [ChromeEarlGrey loadURL:URL];
 
+  // TODO(crbug.com/852393): Investigate why synchronization isn't working.  Is
+  // an animation going on forever?
+  if (@available(iOS 12, *)) {
+    [[GREYConfiguration sharedInstance]
+            setValue:@NO
+        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  }
+
   // Test that the toolbar is still visible after a user swipes down.
   [[EarlGrey
       selectElementWithMatcher:WebViewScrollView(
@@ -131,9 +139,23 @@ void AssertURLIs(const GURL& expectedURL) {
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
-  // Test that the toolbar is no longer visible after a user swipes up.
-  HideToolbarUsingUI();
-  [ChromeEarlGreyUI waitForToolbarVisible:NO];
+  if (base::ios::IsRunningOnIOS12OrLater()) {
+    // Test that the toolbar is still visible even after attempting to hide it
+    // on swipe up.
+    HideToolbarUsingUI();
+    [ChromeEarlGreyUI waitForToolbarVisible:YES];
+  } else {
+    // Test that the toolbar is no longer visible after a user swipes up.
+    HideToolbarUsingUI();
+    [ChromeEarlGreyUI waitForToolbarVisible:NO];
+  }
+
+  // Reenable synchronization.
+  if (@available(iOS 12, *)) {
+    [[GREYConfiguration sharedInstance]
+            setValue:@YES
+        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  }
 }
 
 // Verifies that the toolbar properly appears/disappears when scrolling up/down
