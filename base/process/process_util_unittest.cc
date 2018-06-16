@@ -72,6 +72,8 @@
 #include <zircon/processargs.h>
 #include <zircon/syscalls.h>
 #include "base/base_paths_fuchsia.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/fuchsia/file_utils.h"
 #endif
 
 namespace base {
@@ -88,6 +90,9 @@ const char kSignalFileTerm[] = "TerminatedChildProcess.die";
 
 #if defined(OS_FUCHSIA)
 const char kSignalFileClone[] = "ClonedTmpDir.die";
+const char kDataDirHasStaged[] = "DataDirHasStaged.die";
+const char kFooDirHasStaged[] = "FooDirHasStaged.die";
+const char kFooDirDoesNotHaveStaged[] = "FooDirDoesNotHaveStaged.die";
 #endif
 
 #if defined(OS_WIN)
@@ -223,6 +228,100 @@ TEST_F(ProcessUtilTest, DISABLED_GetTerminationStatusExit) {
 
 #if defined(OS_FUCHSIA)
 
+MULTIPROCESS_TEST_MAIN(CheckDataDirHasStaged) {
+  if (!PathExists(base::FilePath("/data/staged"))) {
+    return 1;
+  }
+  WaitToDie(ProcessUtilTest::GetSignalFilePath(kDataDirHasStaged).c_str());
+  return kSuccess;
+}
+
+// Test transferred paths override cloned paths.
+TEST_F(ProcessUtilTest, HandleTransfersOverrideClones) {
+  const std::string signal_file =
+      ProcessUtilTest::GetSignalFilePath(kDataDirHasStaged);
+  remove(signal_file.c_str());
+
+  // Create a tempdir with "staged" as its contents.
+  ScopedTempDir tmpdir_with_staged;
+  ASSERT_TRUE(tmpdir_with_staged.CreateUniqueTempDir());
+  {
+    base::FilePath staged_file_path =
+        tmpdir_with_staged.GetPath().Append("staged");
+    base::File staged_file(staged_file_path,
+                           base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+    ASSERT_TRUE(staged_file.created());
+    staged_file.Close();
+  }
+
+  base::LaunchOptions options;
+  options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
+
+  // Attach the tempdir to "data", but also try to duplicate the existing "data"
+  // directory.
+  options.paths_to_clone.push_back(base::FilePath("/data"));
+  options.paths_to_clone.push_back(base::FilePath("/tmp"));
+  options.paths_to_transfer.push_back(
+      {FilePath("/data"),
+       fuchsia::GetHandleFromFile(
+           base::File(base::FilePath(tmpdir_with_staged.GetPath()),
+                      base::File::FLAG_OPEN | base::File::FLAG_READ))
+           .release()});
+
+  // Verify from that "/data/staged" exists from the child process' perspective.
+  Process process(SpawnChildWithOptions("CheckDataDirHasStaged", options));
+  ASSERT_TRUE(process.IsValid());
+  SignalChildren(signal_file.c_str());
+
+  int exit_code = 42;
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_EQ(kSuccess, exit_code);
+}
+
+MULTIPROCESS_TEST_MAIN(CheckMountedDir) {
+  if (!PathExists(base::FilePath("/foo/staged"))) {
+    return 1;
+  }
+  WaitToDie(ProcessUtilTest::GetSignalFilePath(kFooDirHasStaged).c_str());
+  return kSuccess;
+}
+
+// Test that we can install an opaque handle in the child process' namespace.
+TEST_F(ProcessUtilTest, TransferHandleToPath) {
+  const std::string signal_file =
+      ProcessUtilTest::GetSignalFilePath(kFooDirHasStaged);
+  remove(signal_file.c_str());
+
+  // Create a tempdir with "staged" as its contents.
+  ScopedTempDir new_tmpdir;
+  ASSERT_TRUE(new_tmpdir.CreateUniqueTempDir());
+  base::FilePath staged_file_path = new_tmpdir.GetPath().Append("staged");
+  base::File staged_file(staged_file_path,
+                         base::File::FLAG_CREATE | base::File::FLAG_WRITE);
+  ASSERT_TRUE(staged_file.created());
+  staged_file.Close();
+
+  // Mount the tempdir to "/foo".
+  zx::handle tmp_handle = fuchsia::GetHandleFromFile(
+      base::File(base::FilePath(new_tmpdir.GetPath()),
+                 base::File::FLAG_OPEN | base::File::FLAG_READ));
+  ASSERT_TRUE(tmp_handle.is_valid());
+  LaunchOptions options;
+  options.paths_to_clone.push_back(base::FilePath("/tmp"));
+  options.paths_to_transfer.push_back(
+      {base::FilePath("/foo"), tmp_handle.release()});
+  options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
+
+  // Verify from that "/foo/staged" exists from the child process' perspective.
+  Process process(SpawnChildWithOptions("CheckMountedDir", options));
+  ASSERT_TRUE(process.IsValid());
+  SignalChildren(signal_file.c_str());
+
+  int exit_code = 42;
+  EXPECT_TRUE(process.WaitForExit(&exit_code));
+  EXPECT_EQ(kSuccess, exit_code);
+}
+
 MULTIPROCESS_TEST_MAIN(CheckTmpFileExists) {
   // Look through the filesystem to ensure that no other directories
   // besides "tmp" are in the namespace.
@@ -241,13 +340,13 @@ MULTIPROCESS_TEST_MAIN(CheckTmpFileExists) {
   return kSuccess;
 }
 
-TEST_F(ProcessUtilTest, SelectivelyClonedDir) {
+TEST_F(ProcessUtilTest, CloneTmp) {
   const std::string signal_file =
       ProcessUtilTest::GetSignalFilePath(kSignalFileClone);
   remove(signal_file.c_str());
 
   LaunchOptions options;
-  options.paths_to_map.push_back(base::FilePath("/tmp"));
+  options.paths_to_clone.push_back(base::FilePath("/tmp"));
   options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
 
   Process process(SpawnChildWithOptions("CheckTmpFileExists", options));
@@ -260,6 +359,45 @@ TEST_F(ProcessUtilTest, SelectivelyClonedDir) {
   EXPECT_EQ(kSuccess, exit_code);
 }
 
+MULTIPROCESS_TEST_MAIN(CheckMountedDirDoesNotExist) {
+  if (PathExists(base::FilePath("/foo"))) {
+    return 1;
+  }
+  WaitToDie(
+      ProcessUtilTest::GetSignalFilePath(kFooDirDoesNotHaveStaged).c_str());
+  return kSuccess;
+}
+
+TEST_F(ProcessUtilTest, TransferInvalidHandleFails) {
+  LaunchOptions options;
+  options.paths_to_clone.push_back(base::FilePath("/tmp"));
+  options.paths_to_transfer.push_back(
+      {base::FilePath("/foo"), ZX_HANDLE_INVALID});
+  options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
+
+  // Verify that the process is never constructed.
+  const std::string signal_file =
+      ProcessUtilTest::GetSignalFilePath(kFooDirDoesNotHaveStaged);
+  remove(signal_file.c_str());
+  Process process(
+      SpawnChildWithOptions("CheckMountedDirDoesNotExist", options));
+  ASSERT_FALSE(process.IsValid());
+}
+
+TEST_F(ProcessUtilTest, CloneInvalidDirFails) {
+  const std::string signal_file =
+      ProcessUtilTest::GetSignalFilePath(kSignalFileClone);
+  remove(signal_file.c_str());
+
+  LaunchOptions options;
+  options.paths_to_clone.push_back(base::FilePath("/tmp"));
+  options.paths_to_clone.push_back(base::FilePath("/definitely_not_a_dir"));
+  options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
+
+  Process process(SpawnChildWithOptions("CheckTmpFileExists", options));
+  ASSERT_FALSE(process.IsValid());
+}
+
 // Test that we can clone other directories. CheckTmpFileExists will return an
 // error code if it detects a directory other than "/tmp", so we can use that as
 // a signal that it successfully detected another entry in the root namespace.
@@ -269,8 +407,8 @@ TEST_F(ProcessUtilTest, CloneAlternateDir) {
   remove(signal_file.c_str());
 
   LaunchOptions options;
-  options.paths_to_map.push_back(base::FilePath("/tmp"));
-  options.paths_to_map.push_back(base::FilePath("/data"));
+  options.paths_to_clone.push_back(base::FilePath("/tmp"));
+  options.paths_to_clone.push_back(base::FilePath("/data"));
   options.spawn_flags = FDIO_SPAWN_CLONE_STDIO;
 
   Process process(SpawnChildWithOptions("CheckTmpFileExists", options));
@@ -284,9 +422,9 @@ TEST_F(ProcessUtilTest, CloneAlternateDir) {
 }
 
 TEST_F(ProcessUtilTest, HandlesToTransferClosedOnSpawnFailure) {
-  ScopedZxHandle handles[2];
-  zx_status_t result =
-      zx_channel_create(0, handles[0].receive(), handles[1].receive());
+  zx::handle handles[2];
+  zx_status_t result = zx_channel_create(0, handles[0].reset_and_get_address(),
+                                         handles[1].reset_and_get_address());
   ZX_CHECK(ZX_OK == result, result) << "zx_channel_create";
 
   LaunchOptions options;
@@ -308,15 +446,16 @@ TEST_F(ProcessUtilTest, HandlesToTransferClosedOnSpawnFailure) {
 }
 
 TEST_F(ProcessUtilTest, HandlesToTransferClosedOnBadPathToMapFailure) {
-  ScopedZxHandle handles[2];
-  zx_status_t result =
-      zx_channel_create(0, handles[0].receive(), handles[1].receive());
+  zx::handle handles[2];
+  zx_status_t result = zx_channel_create(0, handles[0].reset_and_get_address(),
+                                         handles[1].reset_and_get_address());
   ZX_CHECK(ZX_OK == result, result) << "zx_channel_create";
 
   LaunchOptions options;
   options.handles_to_transfer.push_back({0, handles[0].get()});
   options.spawn_flags = options.spawn_flags & ~FDIO_SPAWN_CLONE_NAMESPACE;
-  options.paths_to_map.emplace_back("💩magical_path_that_will_never_exist_ever");
+  options.paths_to_clone.emplace_back(
+      "💩magical_path_that_will_never_exist_ever");
 
   // LaunchProces should fail to open() the path_to_map, and fail before
   // fdio_spawn().

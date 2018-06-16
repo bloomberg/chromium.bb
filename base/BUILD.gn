@@ -1352,6 +1352,8 @@ jumbo_component("base") {
       "fuchsia/default_job.h",
       "fuchsia/fidl_interface_request.cc",
       "fuchsia/fidl_interface_request.h",
+      "fuchsia/file_utils.cc",
+      "fuchsia/file_utils.h",
       "fuchsia/fuchsia_logging.cc",
       "fuchsia/fuchsia_logging.h",
       "fuchsia/scoped_zx_handle.cc",
