@@ -80,15 +80,21 @@ static unsigned int VaSurfaceFormatForJpeg(
 
 }  // namespace
 
-VaapiJpegDecodeAccelerator::DecodeRequest::DecodeRequest(
-    int32_t bitstream_buffer_id,
-    std::unique_ptr<UnalignedSharedMemory> shm,
-    const scoped_refptr<VideoFrame>& video_frame)
-    : bitstream_buffer_id(bitstream_buffer_id),
-      shm(std::move(shm)),
-      video_frame(video_frame) {}
+// An input buffer and the corresponding output video frame awaiting
+// consumption, provided by the client.
+struct VaapiJpegDecodeAccelerator::DecodeRequest {
+  DecodeRequest(int32_t bitstream_buffer_id,
+                std::unique_ptr<UnalignedSharedMemory> shm,
+                const scoped_refptr<VideoFrame>& video_frame)
+      : bitstream_buffer_id(bitstream_buffer_id),
+        shm(std::move(shm)),
+        video_frame(video_frame) {}
+  ~DecodeRequest() = default;
 
-VaapiJpegDecodeAccelerator::DecodeRequest::~DecodeRequest() {}
+  int32_t bitstream_buffer_id;
+  std::unique_ptr<UnalignedSharedMemory> shm;
+  scoped_refptr<VideoFrame> video_frame;
+};
 
 void VaapiJpegDecodeAccelerator::NotifyError(int32_t bitstream_buffer_id,
                                              Error error) {
@@ -102,9 +108,10 @@ void VaapiJpegDecodeAccelerator::NotifyErrorFromDecoderThread(
     int32_t bitstream_buffer_id,
     Error error) {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&VaapiJpegDecodeAccelerator::NotifyError,
-                                    weak_this_, bitstream_buffer_id, error));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VaapiJpegDecodeAccelerator::NotifyError,
+                                weak_this_factory_.GetWeakPtr(),
+                                bitstream_buffer_id, error));
 }
 
 void VaapiJpegDecodeAccelerator::VideoFrameReady(int32_t bitstream_buffer_id) {
@@ -118,9 +125,7 @@ VaapiJpegDecodeAccelerator::VaapiJpegDecodeAccelerator(
       io_task_runner_(io_task_runner),
       decoder_thread_("VaapiJpegDecoderThread"),
       va_surface_id_(VA_INVALID_SURFACE),
-      weak_this_factory_(this) {
-  weak_this_ = weak_this_factory_.GetWeakPtr();
-}
+      weak_this_factory_(this) {}
 
 VaapiJpegDecodeAccelerator::~VaapiJpegDecodeAccelerator() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -167,12 +172,9 @@ bool VaapiJpegDecodeAccelerator::OutputPicture(
             << " into video_frame associated with input buffer id "
             << input_buffer_id;
 
-  VAImage image;
-  VAImageFormat format;
-  const uint32_t kI420Fourcc = VA_FOURCC('I', '4', '2', '0');
-  memset(&image, 0, sizeof(image));
-  memset(&format, 0, sizeof(format));
-  format.fourcc = kI420Fourcc;
+  VAImage image = {};
+  VAImageFormat format = {};
+  format.fourcc = VA_FOURCC_I420;
   format.byte_order = VA_LSB_FIRST;
   format.bits_per_pixel = 12;  // 12 for I420
 
@@ -216,14 +218,15 @@ bool VaapiJpegDecodeAccelerator::OutputPicture(
   vaapi_wrapper_->ReturnVaImage(&image);
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VaapiJpegDecodeAccelerator::VideoFrameReady,
-                            weak_this_, input_buffer_id));
+      FROM_HERE,
+      base::BindOnce(&VaapiJpegDecodeAccelerator::VideoFrameReady,
+                     weak_this_factory_.GetWeakPtr(), input_buffer_id));
 
   return true;
 }
 
 void VaapiJpegDecodeAccelerator::DecodeTask(
-    const std::unique_ptr<DecodeRequest>& request) {
+    std::unique_ptr<DecodeRequest> request) {
   DVLOGF(4);
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("jpeg", "DecodeTask");
@@ -314,8 +317,9 @@ void VaapiJpegDecodeAccelerator::Decode(
       new DecodeRequest(bitstream_buffer.id(), std::move(shm), video_frame));
 
   decoder_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VaapiJpegDecodeAccelerator::DecodeTask,
-                            base::Unretained(this), base::Passed(&request)));
+      FROM_HERE,
+      base::BindOnce(&VaapiJpegDecodeAccelerator::DecodeTask,
+                     base::Unretained(this), base::Passed(std::move(request))));
 }
 
 bool VaapiJpegDecodeAccelerator::IsSupported() {

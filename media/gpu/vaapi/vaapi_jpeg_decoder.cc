@@ -189,41 +189,43 @@ bool VaapiJpegDecoder::Decode(VaapiWrapper* vaapi_wrapper,
   VAPictureParameterBufferJPEGBaseline pic_param;
   FillPictureParameters(parse_result.frame_header, &pic_param);
   if (!vaapi_wrapper->SubmitBuffer(VAPictureParameterBufferType,
-                                   sizeof(pic_param), &pic_param))
+                                   sizeof(pic_param), &pic_param)) {
     return false;
+  }
 
   // Set quantization table.
   VAIQMatrixBufferJPEGBaseline iq_matrix;
   FillIQMatrix(parse_result.q_table, &iq_matrix);
   if (!vaapi_wrapper->SubmitBuffer(VAIQMatrixBufferType, sizeof(iq_matrix),
-                                   &iq_matrix))
+                                   &iq_matrix)) {
     return false;
+  }
 
   // Set huffman table.
   VAHuffmanTableBufferJPEGBaseline huffman_table;
   FillHuffmanTable(parse_result.dc_table, parse_result.ac_table,
                    &huffman_table);
   if (!vaapi_wrapper->SubmitBuffer(VAHuffmanTableBufferType,
-                                   sizeof(huffman_table), &huffman_table))
+                                   sizeof(huffman_table), &huffman_table)) {
     return false;
+  }
 
   // Set slice parameters.
   VASliceParameterBufferJPEGBaseline slice_param;
   FillSliceParameters(parse_result, &slice_param);
   if (!vaapi_wrapper->SubmitBuffer(VASliceParameterBufferType,
-                                   sizeof(slice_param), &slice_param))
+                                   sizeof(slice_param), &slice_param)) {
     return false;
+  }
 
   // Set scan data.
   if (!vaapi_wrapper->SubmitBuffer(VASliceDataBufferType,
                                    parse_result.data_size,
-                                   const_cast<char*>(parse_result.data)))
+                                   const_cast<char*>(parse_result.data))) {
     return false;
+  }
 
-  if (!vaapi_wrapper->ExecuteAndDestroyPendingBuffers(va_surface))
-    return false;
-
-  return true;
+  return vaapi_wrapper->ExecuteAndDestroyPendingBuffers(va_surface);
 }
 
 }  // namespace media
