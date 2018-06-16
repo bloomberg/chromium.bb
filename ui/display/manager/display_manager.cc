@@ -40,6 +40,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
+#include "base/time/time.h"
 #include "chromeos/system/devicemode.h"
 #include "ui/display/manager/display_util.h"
 #endif
@@ -63,6 +64,17 @@ const char kMirrorModeTypesHistogram[] = "DisplayManager.MirrorModeTypes";
 // displays in mirror mode can reside.
 const char kMirroringDisplayCountRangesHistogram[] =
     "DisplayManager.MirroringDisplayCountRanges";
+
+#if defined(OS_CHROMEOS)
+// The UMA historgram that logs the zoom percentage level of the intenral
+// display.
+constexpr char kInternalDisplayZoomPercentageHistogram[] =
+    "DisplayManager.InternalDisplayZoomPercentage";
+
+// Timeout in seconds after which we consider the change to the display zoom
+// is not temporary.
+constexpr int kDisplayZoomModifyTimeoutSec = 15;
+#endif  // defined(OS_CHROMEOS)
 
 struct DisplaySortFunctor {
   bool operator()(const Display& a, const Display& b) {
@@ -305,6 +317,19 @@ enum class MirrorModeTypes {
   kCount,
 };
 
+#if defined(OS_CHROMEOS)
+void OnInternalDisplayZoomChanged(float zoom_factor) {
+  constexpr static int kMaxValue = 300;
+  constexpr static int kBucketSize = 5;
+  constexpr static int kNumBuckets = kMaxValue / kBucketSize + 1;
+
+  base::LinearHistogram::FactoryGet(
+      kInternalDisplayZoomPercentageHistogram, kBucketSize, kMaxValue,
+      kNumBuckets, base::HistogramBase::kUmaTargetedHistogramFlag)
+      ->Add(std::round(zoom_factor * 100));
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 DisplayManager::BeginEndNotifier::BeginEndNotifier(
@@ -343,6 +368,7 @@ DisplayManager::~DisplayManager() {
 #if defined(OS_CHROMEOS)
   // Reset the font params.
   gfx::SetFontRenderParamsDeviceScaleFactor(1.0f);
+  on_display_zoom_modify_timeout_.Cancel();
 #endif
 }
 
@@ -1516,6 +1542,15 @@ void DisplayManager::UpdateZoomFactor(int64_t display_id, float zoom_factor) {
   if (iter == display_info_.end())
     return;
 
+  if (Display::IsInternalDisplayId(display_id)) {
+    on_display_zoom_modify_timeout_.Cancel();
+    on_display_zoom_modify_timeout_.Reset(
+        base::BindRepeating(&OnInternalDisplayZoomChanged, zoom_factor));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, on_display_zoom_modify_timeout_.callback(),
+        base::TimeDelta::FromSeconds(kDisplayZoomModifyTimeoutSec));
+  }
+
   iter->second.set_zoom_factor(zoom_factor);
 
   for (const auto& display : active_display_list_) {
@@ -1658,8 +1693,9 @@ bool DisplayManager::ZoomDisplay(int64_t display_id, bool up) {
   if (next_zoom_idx < 0 || next_zoom_idx >= zooms.size())
     return false;
 
-  iter->second.set_zoom_factor(zooms[next_zoom_idx]);
-  UpdateDisplays();
+  // Update zoom factor via the display manager API to ensure UMA metrics are
+  // recorded.
+  UpdateZoomFactor(display_id, zooms[next_zoom_idx]);
   return true;
 #else
   return false;
