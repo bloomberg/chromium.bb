@@ -39,6 +39,10 @@ class CommandLine;
 #if defined(OS_WIN)
 typedef std::vector<HANDLE> HandlesToInheritVector;
 #elif defined(OS_FUCHSIA)
+struct PathToTransfer {
+  base::FilePath path;
+  zx_handle_t handle;
+};
 struct HandleToTransfer {
   uint32_t id;
   zx_handle_t handle;
@@ -202,10 +206,15 @@ struct BASE_EXPORT LaunchOptions {
                          FDIO_SPAWN_CLONE_JOB;
 
   // Specifies paths to clone from the calling process' namespace into that of
-  // the child process. If |paths_to_map| is empty then the process will receive
-  // either a full copy of the parent's namespace, or an empty one, depending on
-  // whether FDIO_SPAWN_CLONE_NAMESPACE is set.
-  std::vector<FilePath> paths_to_map;
+  // the child process. If |paths_to_clone| is empty then the process will
+  // receive either a full copy of the parent's namespace, or an empty one,
+  // depending on whether FDIO_SPAWN_CLONE_NAMESPACE is set.
+  std::vector<FilePath> paths_to_clone;
+
+  // Specifies handles which will be installed as files or directories in the
+  // child process' namespace. Paths installed by |paths_to_clone| will be
+  // overridden by these entries.
+  std::vector<PathToTransfer> paths_to_transfer;
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX)

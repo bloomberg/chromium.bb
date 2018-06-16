@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/fuchsia/default_job.h"
+#include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -60,45 +61,6 @@ bool GetAppOutputInternal(const CommandLine& cmd_line,
   close(pipe_fd[0]);
 
   return process.WaitForExit(exit_code);
-}
-
-ScopedZxHandle OpenHandleForPath(const FilePath& path) {
-  if (!PathExists(path)) {
-    DLOG(ERROR) << "Path does not exist: " << path;
-    return ScopedZxHandle();
-  }
-
-  // Open the specified |path|.
-  File dir(path, File::FLAG_OPEN | File::FLAG_READ);
-  ScopedPlatformFile scoped_fd(dir.TakePlatformFile());
-
-  // Unwrap |scoped_fd| into |handles|. Negative result indicates failure.
-  zx_handle_t handles[FDIO_MAX_HANDLES] = {};
-  uint32_t types[FDIO_MAX_HANDLES] = {};
-  zx_status_t num_handles =
-      fdio_transfer_fd(scoped_fd.get(), 0, handles, types);
-  if (num_handles <= 0) {
-    DCHECK_LT(num_handles, 0);
-    ZX_LOG(ERROR, num_handles) << "fdio_transfer_fd";
-    return ScopedZxHandle();
-  }
-
-  // fdio_transfer_fd() has torn-down the file-descriptor, on success.
-  ignore_result(scoped_fd.release());
-
-  // Wrap the returned handles, so they will be closed on error.
-  ScopedZxHandle owned_handles[FDIO_MAX_HANDLES];
-  for (int i = 0; i < FDIO_MAX_HANDLES; ++i)
-    owned_handles[i] = ScopedZxHandle(handles[i]);
-
-  // We expect a single handle, of type PA_FDIO_REMOTE.
-  if (num_handles != 1 || types[0] != PA_FDIO_REMOTE) {
-    LOG(ERROR) << "Path " << path.AsUTF8Unsafe() << " had " << num_handles
-               << " handles, and type:" << types[0];
-    return ScopedZxHandle();
-  }
-
-  return std::move(owned_handles[0]);
 }
 
 fdio_spawn_action_t FdioSpawnAction(uint32_t action) {
@@ -147,7 +109,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
 
   // Handles to be transferred to the child are owned by this vector, so that
   // they they are closed on early-exit, and can be release()d otherwise.
-  std::vector<ScopedZxHandle> transferred_handles;
+  std::vector<zx::handle> transferred_handles;
 
   // Add caller-supplied handles for transfer. We must do this first to ensure
   // that the handles are consumed even if some later step fails.
@@ -196,19 +158,34 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   // Add actions to clone handles for any specified paths into the new process'
   // namespace.
   std::vector<const char*> mapped_paths_cstr;
-  if (!options.paths_to_map.empty()) {
+  if (!options.paths_to_clone.empty() || !options.paths_to_transfer.empty()) {
     DCHECK((options.spawn_flags & FDIO_SPAWN_CLONE_NAMESPACE) == 0);
-    mapped_paths_cstr.reserve(options.paths_to_map.size());
+    mapped_paths_cstr.reserve(options.paths_to_clone.size() +
+                              options.paths_to_transfer.size());
     transferred_handles.reserve(transferred_handles.size() +
-                                options.paths_to_map.size());
+                                options.paths_to_clone.size() +
+                                options.paths_to_transfer.size());
 
-    for (auto& path_to_map : options.paths_to_map) {
-      ScopedZxHandle handle(OpenHandleForPath(path_to_map));
-      if (!handle)
-        return Process();
+    for (const auto& path_to_transfer : options.paths_to_transfer) {
+      zx::handle handle(path_to_transfer.handle);
       spawn_actions.push_back(FdioSpawnActionAddNamespaceEntry(
-          path_to_map.value().c_str(), handle.get()));
-      mapped_paths_cstr.push_back(path_to_map.value().c_str());
+          path_to_transfer.path.value().c_str(), handle.get()));
+      mapped_paths_cstr.push_back(path_to_transfer.path.value().c_str());
+      transferred_handles.push_back(std::move(handle));
+    }
+
+    for (const auto& path_to_clone : options.paths_to_clone) {
+      zx::handle handle = fuchsia::GetHandleFromFile(
+          base::File(base::FilePath(path_to_clone),
+                     base::File::FLAG_OPEN | base::File::FLAG_READ));
+      if (!handle) {
+        LOG(WARNING) << "Could not open handle for path: " << path_to_clone;
+        return base::Process();
+      }
+
+      spawn_actions.push_back(FdioSpawnActionAddNamespaceEntry(
+          path_to_clone.value().c_str(), handle.get()));
+      mapped_paths_cstr.push_back(path_to_clone.value().c_str());
       transferred_handles.push_back(std::move(handle));
     }
   }
