@@ -2204,6 +2204,11 @@ static void write_tile_info(const AV1_COMMON *const cm,
 static void write_ext_tile_info(const AV1_COMMON *const cm,
                                 struct aom_write_bit_buffer *saved_wb,
                                 struct aom_write_bit_buffer *wb) {
+  // This information is stored as a separate byte.
+  int mod = wb->bit_offset % CHAR_BIT;
+  if (mod > 0) aom_wb_write_literal(wb, 0, CHAR_BIT - mod);
+  assert(aom_wb_is_byte_aligned(wb));
+
   *saved_wb = *wb;
   if (cm->tile_rows * cm->tile_cols > 1) {
     // Note that the last item in the uncompressed header is the data

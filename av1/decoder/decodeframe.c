@@ -2216,6 +2216,11 @@ static void read_ext_tile_info(AV1Decoder *const pbi,
                                struct aom_read_bit_buffer *const rb) {
   AV1_COMMON *const cm = &pbi->common;
 
+  // This information is stored as a separate byte.
+  int mod = rb->bit_offset % CHAR_BIT;
+  if (mod > 0) aom_rb_read_literal(rb, CHAR_BIT - mod);
+  assert(rb->bit_offset % CHAR_BIT == 0);
+
   if (cm->tile_cols * cm->tile_rows > 1) {
     // Read the number of bytes used to store tile size
     pbi->tile_col_size_bytes = aom_rb_read_literal(rb, 2) + 1;
@@ -4093,7 +4098,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   read_film_grain(cm, rb);
 
 #if EXT_TILE_DEBUG
-  if (cm->large_scale_tile) {
+  if (pbi->ext_tile_debug && cm->large_scale_tile) {
     read_ext_tile_info(pbi, rb);
     av1_set_single_tile_decoding_mode(cm);
   }

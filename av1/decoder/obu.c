@@ -659,6 +659,10 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       return -1;
     }
 
+    // Record obu size header information.
+    pbi->obu_size_hdr.data = data + obu_header.size;
+    pbi->obu_size_hdr.size = bytes_read - obu_header.size;
+
     // Note: aom_read_obu_header_and_size() takes care of checking that this
     // doesn't cause 'data' to advance past 'data_end'.
     data += bytes_read;
@@ -717,6 +721,7 @@ int aom_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           if (cm->large_scale_tile) pbi->camera_frame_header_ready = 1;
         }
         decoded_payload_size = frame_header_size;
+        pbi->frame_header_size = (size_t)frame_header_size;
 
         if (cm->show_existing_frame) {
           frame_decoding_finished = 1;

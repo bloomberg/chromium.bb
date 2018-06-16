@@ -167,10 +167,44 @@ int main(int argc, char **argv) {
     const unsigned char *frame =
         aom_video_reader_get_frame(reader, &frame_size);
     pts = (aom_codec_pts_t)aom_video_reader_get_frame_pts(reader);
+    aom_tile_data frame_header_info = { 0, NULL, 0 };
 
-    // Copy camera frame bitstream directly to get the header.
-    if (!aom_video_writer_write_frame(writer, frame, frame_size, pts))
-      die_codec(&codec, "Failed to copy compressed camera frame.");
+    // Need to decode frame header to get camera frame header info. So, here
+    // decoding 1 tile is enough.
+    aom_codec_control_(&codec, AV1_SET_DECODE_TILE_ROW, 0);
+    aom_codec_control_(&codec, AV1_SET_DECODE_TILE_COL, 0);
+
+    aom_codec_err_t aom_status =
+        aom_codec_decode(&codec, frame, frame_size, NULL);
+    if (aom_status) die_codec(&codec, "Failed to decode tile.");
+
+    aom_codec_control_(&codec, AV1D_GET_FRAME_HEADER_INFO, &frame_header_info);
+
+    size_t obu_size_offset =
+        (uint8_t *)frame_header_info.coded_tile_data - frame;
+    size_t length_field_size = frame_header_info.coded_tile_data_size;
+    uint32_t frame_header_size =
+        frame_header_info.extra_size - 1;  // Remove ext-tile tile info.
+    size_t bytes_to_copy =
+        obu_size_offset + length_field_size + frame_header_size;
+
+    unsigned char *frame_hdr_buf = (unsigned char *)malloc(bytes_to_copy);
+    if (frame_hdr_buf == NULL)
+      die_codec(&codec, "Failed to allocate frame header buffer.");
+
+    memcpy(frame_hdr_buf, frame, bytes_to_copy);
+
+    // Update frame header OBU size.
+    size_t bytes_written = 0;
+    if (aom_uleb_encode_fixed_size(
+            frame_header_size, length_field_size, length_field_size,
+            frame_hdr_buf + obu_size_offset, &bytes_written))
+      die_codec(&codec, "Failed to encode the tile list obu size.");
+
+    // Copy camera frame header bitstream.
+    if (!aom_video_writer_write_frame(writer, frame_hdr_buf, bytes_to_copy,
+                                      pts))
+      die_codec(&codec, "Failed to copy compressed camera frame header.");
   }
 
   // Allocate a buffer to store tile list bitstream. Image format
@@ -214,7 +248,7 @@ int main(int argc, char **argv) {
 
     // Write each tile's data
     for (i = 0; i <= tile_count_minus_1; i++) {
-      aom_tile_data tile_data = { 0, NULL };
+      aom_tile_data tile_data = { 0, NULL, 0 };
 
       int image_idx = tile_list[n][i].image_idx;
       int ref_idx = tile_list[n][i].reference_idx;
@@ -275,7 +309,7 @@ int main(int argc, char **argv) {
                                    &bytes_written))
       die_codec(&codec, "Failed to encode the tile list obu size.");
 
-    // Copy camera frame bitstream directly to get the header.
+    // Copy the tile list.
     if (!aom_video_writer_write_frame(
             writer, tl_buf, tile_list_obu_header_size + tile_list_obu_size,
             tl_pts))

@@ -54,6 +54,11 @@ typedef struct TileBufferDec {
   size_t size;
 } TileBufferDec;
 
+typedef struct DataBuffer {
+  const uint8_t *data;
+  size_t size;
+} DataBuffer;
+
 typedef struct EXTERNAL_REFERENCES {
   YV12_BUFFER_CONFIG refs[MAX_EXTERNAL_REFERENCES];
   int num;
@@ -119,6 +124,8 @@ typedef struct AV1Decoder {
   // State if the camera frame header is already decoded while
   // large_scale_tile = 1.
   int camera_frame_header_ready;
+  size_t frame_header_size;
+  DataBuffer obu_size_hdr;
   int output_frame_width_in_tiles_minus_1;
   int output_frame_height_in_tiles_minus_1;
   int tile_count_minus_1;

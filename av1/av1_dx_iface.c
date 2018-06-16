@@ -849,6 +849,27 @@ static aom_codec_err_t ctrl_get_frame_size(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_INVALID_PARAM;
 }
 
+static aom_codec_err_t ctrl_get_frame_header_info(aom_codec_alg_priv_t *ctx,
+                                                  va_list args) {
+  aom_tile_data *const frame_header_info = va_arg(args, aom_tile_data *);
+
+  if (frame_header_info) {
+    if (ctx->frame_workers) {
+      AVxWorker *const worker = ctx->frame_workers;
+      FrameWorkerData *const frame_worker_data =
+          (FrameWorkerData *)worker->data1;
+      const AV1Decoder *pbi = frame_worker_data->pbi;
+      frame_header_info->coded_tile_data_size = pbi->obu_size_hdr.size;
+      frame_header_info->coded_tile_data = pbi->obu_size_hdr.data;
+      frame_header_info->extra_size = pbi->frame_header_size;
+    } else {
+      return AOM_CODEC_ERROR;
+    }
+  }
+
+  return AOM_CODEC_INVALID_PARAM;
+}
+
 static aom_codec_err_t ctrl_get_tile_data(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   aom_tile_data *const tile_data = va_arg(args, aom_tile_data *);
@@ -1078,6 +1099,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1_GET_NEW_FRAME_IMAGE, ctrl_get_new_frame_image },
   { AV1_COPY_NEW_FRAME_IMAGE, ctrl_copy_new_frame_image },
   { AV1_GET_REFERENCE, ctrl_get_reference },
+  { AV1D_GET_FRAME_HEADER_INFO, ctrl_get_frame_header_info },
   { AV1D_GET_TILE_DATA, ctrl_get_tile_data },
 
   { -1, NULL },
