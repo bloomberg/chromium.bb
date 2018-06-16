@@ -2698,30 +2698,7 @@
         },
       },
 
-      # TODO(dpranke): Clean up all of the unneeded exceptions on
       # chromium.webkit.
-      'WebKit Linux Trusty': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
-        },
-      },
-      'WebKit Linux Trusty (dbg)': {
-        'args': [
-          '--debug',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
-          'shards': 20,
-        },
-      },
       'WebKit Linux Trusty ASAN': {
         'args': [
           '--additional-expectations',
@@ -2776,11 +2753,6 @@
           'shards': 20,
         },
       },
-      'WebKit Mac10.11 (dbg)': {
-        'args': [
-          '--debug',
-        ],
-      },
       'WebKit Win10': {
         'swarming': {
           'dimension_sets': [
@@ -2790,28 +2762,6 @@
           ],
         },
       },
-      'WebKit Win7': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-7-SP1',
-            },
-          ],
-        },
-      },
-      'WebKit Win7 (dbg)': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Windows-7-SP1',
-            },
-          ]
-        },
-      },
-
-      'Win7 Tests (1)': {
-      },
-
       # chromium.win
       'Win7 Tests (dbg)(1)': {
         'args': [
