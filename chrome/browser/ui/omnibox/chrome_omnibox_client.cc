@@ -353,9 +353,12 @@ gfx::Image ChromeOmniboxClient::GetFaviconForPageUrl(
 
 gfx::Image ChromeOmniboxClient::GetFaviconForDefaultSearchProvider(
     FaviconFetchedCallback on_favicon_fetched) {
-  const GURL& favicon_url =
-      GetTemplateURLService()->GetDefaultSearchProvider()->favicon_url();
-  return favicon_cache_.GetFaviconForIconUrl(favicon_url,
+  const TemplateURL* const default_provider =
+      GetTemplateURLService()->GetDefaultSearchProvider();
+  if (!default_provider)
+    return gfx::Image();
+
+  return favicon_cache_.GetFaviconForIconUrl(default_provider->favicon_url(),
                                              std::move(on_favicon_fetched));
 }
 
