@@ -1973,6 +1973,21 @@ AXObject* AXObject::ElementAccessibilityHitTest(const IntPoint& point) const {
   return const_cast<AXObject*>(this);
 }
 
+AXObject::AncestorsIterator AXObject::AncestorsBegin() {
+  AXObject* parent = ParentObjectUnignored();
+  if (parent)
+    return AXObject::AncestorsIterator(*parent);
+  return AncestorsEnd();
+}
+
+AXObject::AncestorsIterator AXObject::AncestorsEnd() {
+  return AXObject::AncestorsIterator();
+}
+
+AXObject::InOrderTraversalIterator AXObject::GetInOrderTraversalIterator() {
+  return InOrderTraversalIterator(*this);
+}
+
 int AXObject::ChildCount() const {
   return static_cast<int>(Children().size());
 }

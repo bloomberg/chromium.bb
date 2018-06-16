@@ -232,6 +232,163 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     }
   };
 
+  // Iterator for doing an in-order traversal of the accessibility tree.
+  // Includes ignored objects in the traversal.
+  class MODULES_EXPORT InOrderTraversalIterator final
+      : public GarbageCollectedFinalized<InOrderTraversalIterator> {
+   public:
+    ~InOrderTraversalIterator() = default;
+
+    InOrderTraversalIterator(const InOrderTraversalIterator& other)
+        : current_(other.current_), previous_(other.previous_) {}
+
+    InOrderTraversalIterator& operator=(const InOrderTraversalIterator& other) {
+      current_ = other.current_;
+      previous_ = other.previous_;
+      return *this;
+    }
+
+    InOrderTraversalIterator& operator++() {
+      previous_ = current_;
+      current_ = (current_ && !current_->IsDetached())
+                     ? current_->NextInTreeObject()
+                     : nullptr;
+      return *this;
+    }
+
+    InOrderTraversalIterator operator++(int) {
+      InOrderTraversalIterator ret = *this;
+      ++*this;
+      return ret;
+    }
+
+    InOrderTraversalIterator& operator--() {
+      current_ = previous_;
+      previous_ = (current_ && !current_->IsDetached())
+                      ? current_->PreviousInTreeObject()
+                      : nullptr;
+      return *this;
+    }
+
+    InOrderTraversalIterator operator--(int) {
+      InOrderTraversalIterator ret = *this;
+      --*this;
+      return ret;
+    }
+
+    AXObject& operator*() const {
+      DCHECK(current_);
+      return *current_;
+    }
+
+    AXObject* operator->() const {
+      DCHECK(current_);
+      return static_cast<AXObject*>(current_);
+    }
+
+    void Trace(blink::Visitor* visitor) {
+      visitor->Trace(current_);
+      visitor->Trace(previous_);
+    }
+
+    MODULES_EXPORT friend void swap(InOrderTraversalIterator& left,
+                                    InOrderTraversalIterator& right) {
+      std::swap(left.current_, right.current_);
+      std::swap(left.previous_, right.previous_);
+    }
+
+    MODULES_EXPORT friend bool operator==(
+        const InOrderTraversalIterator& left,
+        const InOrderTraversalIterator& right) {
+      return left.current_ == right.current_;
+    }
+
+    MODULES_EXPORT friend bool operator!=(
+        const InOrderTraversalIterator& left,
+        const InOrderTraversalIterator& right) {
+      return !(left == right);
+    }
+
+   private:
+    InOrderTraversalIterator() = default;
+
+    explicit InOrderTraversalIterator(AXObject& current)
+        : current_(&current), previous_(nullptr) {}
+
+    friend class AXObject;
+    friend class AXObjectCacheImpl;
+
+    Member<AXObject> current_;
+    Member<AXObject> previous_;
+  };
+
+  // Iterator for the ancestors of an |AXObject|.
+  // Walks through all the unignored parents of the object up to the root.
+  // Does not include the object itself in the list of ancestors.
+  class MODULES_EXPORT AncestorsIterator final
+      : public GarbageCollectedFinalized<AncestorsIterator> {
+   public:
+    ~AncestorsIterator() = default;
+
+    AncestorsIterator(const AncestorsIterator& other)
+        : current_(other.current_) {}
+
+    AncestorsIterator& operator=(const AncestorsIterator& other) {
+      current_ = other.current_;
+      return *this;
+    }
+
+    AncestorsIterator& operator++() {
+      current_ = (current_ && !current_->IsDetached())
+                     ? current_->ParentObjectUnignored()
+                     : nullptr;
+      return *this;
+    }
+
+    AncestorsIterator operator++(int) {
+      AncestorsIterator ret = *this;
+      ++*this;
+      return ret;
+    }
+
+    AXObject& operator*() const {
+      DCHECK(current_);
+      return *current_;
+    }
+
+    AXObject* operator->() const {
+      DCHECK(current_);
+      return static_cast<AXObject*>(current_);
+    }
+
+    void Trace(blink::Visitor* visitor) { visitor->Trace(current_); }
+
+    MODULES_EXPORT friend void swap(AncestorsIterator& left,
+                                    AncestorsIterator& right) {
+      std::swap(left.current_, right.current_);
+    }
+
+    MODULES_EXPORT friend bool operator==(const AncestorsIterator& left,
+                                          const AncestorsIterator& right) {
+      return left.current_ == right.current_;
+    }
+
+    MODULES_EXPORT friend bool operator!=(const AncestorsIterator& left,
+                                          const AncestorsIterator& right) {
+      return !(left == right);
+    }
+
+   private:
+    AncestorsIterator() = default;
+
+    explicit AncestorsIterator(AXObject& current) : current_(&current) {}
+
+    friend class AXObject;
+    friend class AXObjectCacheImpl;
+
+    Member<AXObject> current_;
+  };
+
  protected:
   AXObject(AXObjectCacheImpl&);
 
@@ -630,6 +787,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // High-level accessibility tree access. Other modules should only use these
   // functions.
+  AncestorsIterator AncestorsBegin();
+  AncestorsIterator AncestorsEnd();
+  InOrderTraversalIterator GetInOrderTraversalIterator();
   int ChildCount() const;
   const AXObjectVector& Children() const;
   const AXObjectVector& Children();

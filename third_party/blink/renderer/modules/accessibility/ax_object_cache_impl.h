@@ -98,6 +98,13 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void Dispose() override;
 
+  //
+  // Iterators.
+  //
+
+  AXObject::InOrderTraversalIterator InOrderTraversalBegin();
+  AXObject::InOrderTraversalIterator InOrderTraversalEnd();
+
   void SelectionChanged(Node*) override;
   void UpdateReverseRelations(const AXObject* relation_source,
                               const Vector<String>& target_ids);
@@ -159,9 +166,6 @@ class MODULES_EXPORT AXObjectCacheImpl
   String ComputedNameForNode(Node*) override;
 
   void OnTouchAccessibilityHover(const IntPoint&) override;
-
-  // Returns the root object for the entire document.
-  AXObject* RootObject();
 
   AXObject* ObjectFromAXID(AXID id) const { return objects_.at(id); }
   AXObject* Root();
