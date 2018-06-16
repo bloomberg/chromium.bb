@@ -117,6 +117,7 @@ android_resources("chrome_java_resources") {
 }
 
 java_strings_grd("chrome_strings_grd") {
+  defines = chrome_grit_defines
   grd_file = "java/strings/android_chrome_strings.grd"
   outputs = [
     "values-am/android_chrome_strings.xml",

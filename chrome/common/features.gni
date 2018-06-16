@@ -71,6 +71,7 @@ use_brlapi = is_chromeos
 # proper build flags can be set.
 chrome_grit_defines = [
   "enable_app_list=$enable_app_list",
+  "enable_arcore=$enable_arcore",
   "enable_background_mode=$enable_background_mode",
   "enable_background_contents=$enable_background_contents",
   "enable_extensions=$enable_extensions",

@@ -1000,7 +1000,11 @@ if (enable_java_templates) {
     _grit_output_dir = "$target_gen_dir/${target_name}_grit_output"
 
     grit(_grit_target_name) {
-      forward_variables_from(invoker, [ "deps" ])
+      forward_variables_from(invoker,
+                             [
+                               "deps",
+                               "defines",
+                             ])
       grit_flags = [
         "-E",
         "ANDROID_JAVA_TAGGED_ONLY=false",
