@@ -216,14 +216,13 @@ camera.Camera.prototype.start = function() {
     Promise.all([
         new Promise(this.cameraView_.initialize.bind(this.cameraView_)),
         new Promise(this.albumView_.initialize.bind(this.albumView_)),
-        new Promise(this.browserView_.initialize.bind(this.browserView_))]).
-      then(function() {
+        new Promise(this.browserView_.initialize.bind(this.browserView_))])
+      .then(() => {
         this.tooltipManager_.initialize();
         this.viewsStack_.push(this.cameraView_);
         camera.util.makeElementsUnfocusableByMouse();
         camera.util.setAriaAttributes();
-      }.bind(this)).
-      catch(function(error) {
+      }).catch(error => {
         console.error('Failed to initialize the Camera app.', error);
         this.onError_('view-failure', 'App initialize failed.');
       });
@@ -334,7 +333,7 @@ camera.Camera.prototype.onWindowResize_ = function() {
   // top of the camera-view.
   this.viewsStack_.all.forEach(function(view) {
     view.onResize();
-  }.bind(this));
+  });
 };
 
 /**
