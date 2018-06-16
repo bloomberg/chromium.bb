@@ -337,7 +337,7 @@ camera.views.Camera.prototype.onInactivate = function() {
  * @private
  */
 camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
-  if (this.is_recording_mode_ && this.mediaRecorder_ == null) {
+  if (this.is_recording_mode_) {
     if (this.mediaRecorder_ == null) {
       // Create a media-recorder before proceeding to record video.
       this.mediaRecorder_ = this.createMediaRecorder_(this.stream_);
