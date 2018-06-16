@@ -57,23 +57,19 @@ class FileManagerUITest : public InProcessBrowserTest {
   }
 };
 
-// TODO(joelhockey): Fails on all bots. https://crbug.com/852788
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, DISABLED_CheckSelect) {
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, CheckSelect) {
   RunTest("checkselect");
 }
 
-// TODO(joelhockey): Fails on all bots. https://crbug.com/852788
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, DISABLED_Crostini) {
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, Crostini) {
   RunTest("crostini");
 }
 
-// TODO(joelhockey): Fails on all bots. https://crbug.com/852788
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, DISABLED_QuickView) {
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, QuickView) {
   RunTest("quickview");
 }
 
-// TODO(joelhockey): Fails on all bots. https://crbug.com/852788
-IN_PROC_BROWSER_TEST_F(FileManagerUITest, DISABLED_UMA) {
+IN_PROC_BROWSER_TEST_F(FileManagerUITest, UMA) {
   RunTest("uma");
 }
 

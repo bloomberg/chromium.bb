@@ -21,9 +21,13 @@ test.Event.prototype.addListener = function(callback) {
 test.Event.prototype.removeListener = function(callback) {
   this.listeners_ = this.listeners_.filter(l => l !== callback);
 };
-/** @param {...*} var_args */
-test.Event.prototype.dispatchEvent = function(var_args) {
-  this.listeners_.forEach(l => l.apply(null, arguments));
+/** @param {...*} args */
+test.Event.prototype.dispatchEvent = function(...args) {
+  setTimeout(() => {
+    for (let listener of this.listeners_) {
+      listener(...args);
+    }
+  }, 0);
 };
 
 chrome = {
