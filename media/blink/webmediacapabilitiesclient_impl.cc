@@ -140,16 +140,33 @@ WebMediaCapabilitiesClientImpl::WebMediaCapabilitiesClientImpl() = default;
 
 WebMediaCapabilitiesClientImpl::~WebMediaCapabilitiesClientImpl() = default;
 
+namespace {
+// This structs wraps WebMediaCapabilitiesQueryCallbacks and makes sure
+// they are called even when the mojo response is not received
+// (connection error) as there is a pending promise waiting for the callback.
+// See https://crbug.com/847211
+struct CallbacksHolder {
+  std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks> callbacks;
+
+  CallbacksHolder(CallbacksHolder&&) = default;
+  ~CallbacksHolder() {
+    if (callbacks) {
+      callbacks->OnError();
+    }
+  }
+};
+
 void VideoPerfInfoCallback(
-    std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks> callbacks,
+    CallbacksHolder callbacks_holder,
     std::unique_ptr<blink::WebMediaCapabilitiesInfo> info,
     bool is_smooth,
     bool is_power_efficient) {
   DCHECK(info->supported);
   info->smooth = is_smooth;
   info->power_efficient = is_power_efficient;
-  callbacks->OnSuccess(std::move(info));
+  std::move(callbacks_holder.callbacks)->OnSuccess(std::move(info));
 }
+}  // namespace
 
 void WebMediaCapabilitiesClientImpl::DecodingInfo(
     const blink::WebMediaConfiguration& configuration,
@@ -209,8 +226,13 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
 
   decode_history_ptr_->GetPerfInfo(
       std::move(features),
-      base::BindOnce(&VideoPerfInfoCallback, std::move(callbacks),
-                     std::move(info)));
+      base::BindOnce(&VideoPerfInfoCallback,
+                     CallbacksHolder{std::move(callbacks)}, std::move(info)));
+}
+
+void WebMediaCapabilitiesClientImpl::BindVideoDecodePerfHistoryForTests(
+    mojom::VideoDecodePerfHistoryPtr decode_history_ptr) {
+  decode_history_ptr_ = std::move(decode_history_ptr);
 }
 
 }  // namespace media
