@@ -153,6 +153,18 @@ PermissionsData::PageAccess CanExtensionAccessURLInternal(
       break;
     case WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL:
       access = GetHostAccessForURL(*extension, url, tab_id);
+      // If access to the host was withheld, check if the extension has access
+      // to the initiator. If it does, allow the extension to see the request.
+      // This is important for extensions with webRequest to work well with
+      // runtime host permissions.
+      if (access == PermissionsData::PageAccess::kWithheld) {
+        PermissionsData::PageAccess initiator_access =
+            initiator
+                ? GetHostAccessForURL(*extension, initiator->GetURL(), tab_id)
+                : PermissionsData::PageAccess::kDenied;
+        if (initiator_access == PermissionsData::PageAccess::kAllowed)
+          access = PermissionsData::PageAccess::kAllowed;
+      }
       break;
     case WebRequestPermissions::REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR: {
       PermissionsData::PageAccess request_access =

@@ -184,6 +184,29 @@ int GetWebRequestCountFromBackgroundPage(const Extension* extension,
                                     "window.webRequestCount");
 }
 
+// Returns true if the |extension|'s background page saw an event for a request
+// with the given |hostname| (|hostname| should exclude port).
+bool HasSeenWebRequestInBackgroundPage(const Extension* extension,
+                                       content::BrowserContext* context,
+                                       const std::string& hostname) {
+  // TODO(devlin): Here and in Get*CountFromBackgroundPage(), we should leverage
+  // ExecuteScriptInBackgroundPage().
+  ExtensionHost* host =
+      ProcessManager::Get(context)->GetBackgroundHostForExtension(
+          extension->id());
+  if (!host || !host->host_contents())
+    return false;
+
+  bool seen = false;
+  std::string script = base::StringPrintf(
+      R"(domAutomationController.send(
+                 window.requestedHostnames.includes('%s'));)",
+      hostname.c_str());
+  EXPECT_TRUE(
+      ExecuteScriptAndExtractBool(host->host_contents(), script, &seen));
+  return seen;
+}
+
 // The DevTool's remote front-end is hardcoded to a URL with a fixed port.
 // Redirect all responses to a URL with port.
 class DevToolsFrontendInterceptor : public net::URLRequestInterceptor {
@@ -805,6 +828,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // The extension shouldn't have currently received any webRequest events,
   // since it doesn't have permission (and shouldn't receive any from an XHR).
   EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  EXPECT_FALSE(
+      HasSeenWebRequestInBackgroundPage(extension, profile(), "b.com"));
 
   content::RenderFrameHost* main_frame = nullptr;
   content::RenderFrameHost* child_frame = nullptr;
@@ -842,8 +867,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension));
 
   int xhr_count = GetWebRequestCountFromBackgroundPage(extension, profile());
-  // ... which means that we should have a non-zero xhr count...
+  // ... which means that we should have a non-zero xhr count, and the extension
+  // should see the request for the cross-site subframe...
   EXPECT_GT(xhr_count, 0);
+  EXPECT_TRUE(HasSeenWebRequestInBackgroundPage(extension, profile(), "b.com"));
   // ... and the extension should receive future events.
   PerformXhrInFrame(main_frame, kHost, port, kXhrPath);
   ++xhr_count;
@@ -870,6 +897,59 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   EXPECT_EQ(xhr_count,
             GetWebRequestCountFromBackgroundPage(extension, profile()));
   EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
+}
+
+// Test that extensions with granted runtime host permissions to a tab can
+// intercept cross-origin requests from that tab.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       WebRequestWithheldPermissionsCrossOriginRequests) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+
+  content::SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load an extension that registers a listener for webRequest events, and
+  // wait until it's initialized.
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("webrequest_activetab"));
+  ASSERT_TRUE(extension) << message_;
+  ScriptingPermissionsModifier(profile(), base::WrapRefCounted(extension))
+      .SetWithholdAllUrls(true);
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "a.com", "/extensions/cross_site_script.html"));
+
+  const std::string kCrossSiteHost("b.com");
+  EXPECT_FALSE(
+      HasSeenWebRequestInBackgroundPage(extension, profile(), kCrossSiteHost));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ExtensionActionRunner* runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+  ASSERT_TRUE(runner);
+
+  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
+
+  // Grant runtime host permission to the page. The page should refresh. Even
+  // though the request is for b.com (and the extension only has access to
+  // a.com), it should still see the request. This is necessary for extensions
+  // with webRequest to work with runtime host permissions.
+  // https://crbug.com/851722.
+  runner->set_default_bubble_close_action_for_testing(
+      base::WrapUnique(new ToolbarActionsBarBubbleDelegate::CloseAction(
+          ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE)));
+  runner->RunAction(extension, true /* grant tab permissions */);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+  EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension));
+
+  EXPECT_TRUE(
+      HasSeenWebRequestInBackgroundPage(extension, profile(), kCrossSiteHost));
 }
 
 // Verify that requests to clientsX.google.com are protected properly.
