@@ -7,3 +7,6 @@ Running: selectNode
 
 Running: switchPanels
 
+Running: switchBackToElements
+Is editing: false
+

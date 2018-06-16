@@ -36,6 +36,13 @@
         TestRunner.addResult('FAILURE: exception caught while switching panels.');
         TestRunner.completeTest();
       }
+    },
+
+    async function switchBackToElements(next) {
+      await UI.inspectorView.showPanel('elements');
+      const treeOutline = ElementsTestRunner.firstElementsTreeOutline();
+      TestRunner.addResult(`Is editing: ${treeOutline.editing()}`);
+      next();
     }
   ]);
 })();
