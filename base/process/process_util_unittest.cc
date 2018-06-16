@@ -941,7 +941,7 @@ TEST_F(ProcessUtilTest, FDRemappingIncludesStdio) {
 const uint16_t kStartupHandleId = 43;
 MULTIPROCESS_TEST_MAIN(ProcessUtilsVerifyHandle) {
   zx_handle_t handle =
-      zx_get_startup_handle(PA_HND(PA_USER0, kStartupHandleId));
+      zx_take_startup_handle(PA_HND(PA_USER0, kStartupHandleId));
   CHECK_NE(ZX_HANDLE_INVALID, handle);
 
   // Write to the pipe so the parent process can observe output.

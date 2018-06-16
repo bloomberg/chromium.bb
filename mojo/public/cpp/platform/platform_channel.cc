@@ -238,7 +238,7 @@ PlatformChannelEndpoint PlatformChannel::RecoverPassedEndpointFromString(
     return PlatformChannelEndpoint();
   }
   return PlatformChannelEndpoint(PlatformHandle(base::ScopedZxHandle(
-      zx_get_startup_handle(base::checked_cast<uint32_t>(handle_value)))));
+      zx_take_startup_handle(base::checked_cast<uint32_t>(handle_value)))));
 #elif defined(OS_ANDROID)
   base::GlobalDescriptors::Key key = -1;
   if (value.empty() || !base::StringToUint(value, &key)) {
