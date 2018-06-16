@@ -29,9 +29,16 @@
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/common/service_manager_connection.h"
+#include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -52,7 +59,6 @@ AppListClientImpl::AppListClientImpl()
   ash::mojom::AppListClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   app_list_controller_->SetClient(std::move(client));
-  controller_delegate_.SetAppListController(app_list_controller_.get());
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
   DCHECK(!g_app_list_client_instance);
@@ -74,7 +80,7 @@ AppListClientImpl* AppListClientImpl::GetInstance() {
 void AppListClientImpl::StartSearch(const base::string16& trimmed_query) {
   if (search_controller_) {
     search_controller_->Start(trimmed_query);
-    controller_delegate_.OnSearchStarted();
+    OnSearchStarted();
   }
 }
 
@@ -131,7 +137,7 @@ void AppListClientImpl::SearchResultContextMenuItemSelected(
 }
 
 void AppListClientImpl::ViewClosing() {
-  controller_delegate_.SetAppListDisplayId(display::kInvalidDisplayId);
+  display_id_ = display::kInvalidDisplayId;
 }
 
 void AppListClientImpl::ViewShown(int64_t display_id) {
@@ -140,7 +146,7 @@ void AppListClientImpl::ViewShown(int64_t display_id) {
     base::UmaHistogramSparse("Apps.AppListBadgedAppsCount",
                              model_updater_->BadgedItemCount());
   }
-  controller_delegate_.SetAppListDisplayId(display_id);
+  display_id_ = display_id;
 }
 
 void AppListClientImpl::ActivateItem(const std::string& id, int event_flags) {
@@ -295,8 +301,8 @@ void AppListClientImpl::SetUpSearchUI() {
   search_resource_manager_.reset(
       new app_list::SearchResourceManager(profile_, model_updater_));
 
-  search_controller_ = app_list::CreateSearchController(
-      profile_, model_updater_, &controller_delegate_);
+  search_controller_ =
+      app_list::CreateSearchController(profile_, model_updater_, this);
 }
 
 app_list::SearchController* AppListClientImpl::GetSearchControllerForTest() {
@@ -332,22 +338,114 @@ void AppListClientImpl::ShowAppList() {
   app_list_controller_->ShowAppList();
 }
 
-void AppListClientImpl::DismissAppList() {
+Profile* AppListClientImpl::GetCurrentAppListProfile() const {
+  return ChromeLauncherController::instance()->profile();
+}
+
+ash::mojom::AppListController* AppListClientImpl::GetAppListController() const {
+  return app_list_controller_.get();
+}
+
+void AppListClientImpl::DismissView() {
   if (!app_list_controller_)
     return;
   app_list_controller_->DismissAppList();
 }
 
-Profile* AppListClientImpl::GetCurrentAppListProfile() const {
-  return ChromeLauncherController::instance()->profile();
+int64_t AppListClientImpl::GetAppListDisplayId() {
+  return display_id_;
 }
 
-AppListControllerDelegate* AppListClientImpl::GetControllerDelegate() {
-  return &controller_delegate_;
+void AppListClientImpl::GetAppInfoDialogBounds(
+    GetAppInfoDialogBoundsCallback callback) {
+  if (!app_list_controller_) {
+    LOG(ERROR) << "app_list_controller_ is null";
+    std::move(callback).Run(gfx::Rect());
+    return;
+  }
+  app_list_controller_->GetAppInfoDialogBounds(std::move(callback));
 }
 
-ash::mojom::AppListController* AppListClientImpl::GetAppListController() const {
-  return app_list_controller_.get();
+bool AppListClientImpl::IsAppPinned(const std::string& app_id) {
+  return ChromeLauncherController::instance()->IsAppPinned(app_id);
+}
+
+bool AppListClientImpl::IsAppOpen(const std::string& app_id) const {
+  return ChromeLauncherController::instance()->IsOpen(ash::ShelfID(app_id));
+}
+
+void AppListClientImpl::PinApp(const std::string& app_id) {
+  ChromeLauncherController::instance()->PinAppWithID(app_id);
+}
+
+void AppListClientImpl::UnpinApp(const std::string& app_id) {
+  ChromeLauncherController::instance()->UnpinAppWithID(app_id);
+}
+
+AppListControllerDelegate::Pinnable AppListClientImpl::GetPinnable(
+    const std::string& app_id) {
+  return GetPinnableForAppID(app_id,
+                             ChromeLauncherController::instance()->profile());
+}
+
+void AppListClientImpl::CreateNewWindow(Profile* profile, bool incognito) {
+  if (incognito)
+    chrome::NewEmptyWindow(profile->GetOffTheRecordProfile());
+  else
+    chrome::NewEmptyWindow(profile);
+}
+
+void AppListClientImpl::OpenURL(Profile* profile,
+                                const GURL& url,
+                                ui::PageTransition transition,
+                                WindowOpenDisposition disposition) {
+  NavigateParams params(profile, url, transition);
+  params.disposition = disposition;
+  Navigate(&params);
+}
+
+void AppListClientImpl::ActivateApp(Profile* profile,
+                                    const extensions::Extension* extension,
+                                    AppListSource source,
+                                    int event_flags) {
+  // Platform apps treat activations as a launch. The app can decide whether to
+  // show a new window or focus an existing window as it sees fit.
+  if (extension->is_platform_app()) {
+    LaunchApp(profile, extension, source, event_flags, GetAppListDisplayId());
+    return;
+  }
+
+  ChromeLauncherController::instance()->ActivateApp(
+      extension->id(), AppListSourceToLaunchSource(source), event_flags,
+      GetAppListDisplayId());
+
+  if (!IsHomeLauncherEnabledInTabletMode())
+    DismissView();
+}
+
+void AppListClientImpl::LaunchApp(Profile* profile,
+                                  const extensions::Extension* extension,
+                                  AppListSource source,
+                                  int event_flags,
+                                  int64_t display_id) {
+  ChromeLauncherController::instance()->LaunchApp(
+      ash::ShelfID(extension->id()), AppListSourceToLaunchSource(source),
+      event_flags, display_id);
+
+  if (!IsHomeLauncherEnabledInTabletMode())
+    DismissView();
+}
+
+ash::ShelfLaunchSource AppListClientImpl::AppListSourceToLaunchSource(
+    AppListSource source) {
+  switch (source) {
+    case LAUNCH_FROM_APP_LIST:
+      return ash::LAUNCH_FROM_APP_LIST;
+    case LAUNCH_FROM_APP_LIST_SEARCH:
+      return ash::LAUNCH_FROM_APP_LIST_SEARCH;
+    default:
+      return ash::LAUNCH_FROM_UNKNOWN;
+  }
 }
 
 void AppListClientImpl::FlushMojoForTesting() {

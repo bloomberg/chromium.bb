@@ -401,10 +401,8 @@ void AppListSyncableService::BuildModel() {
 
   // TODO(calamity): make this a DCHECK after a dev channel release.
   CHECK(IsExtensionServiceReady());
-  AppListControllerDelegate* controller = NULL;
   AppListClientImpl* client = AppListClientImpl::GetInstance();
-  if (client)
-    controller = client->GetControllerDelegate();
+  AppListControllerDelegate* controller = client;
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
   if (arc::IsArcAllowedForProfile(profile_))
     arc_apps_builder_.reset(new ArcAppModelBuilder(controller));

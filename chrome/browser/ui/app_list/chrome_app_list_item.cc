@@ -120,9 +120,8 @@ extensions::AppSorting* ChromeAppListItem::GetAppSorting() {
 }
 
 AppListControllerDelegate* ChromeAppListItem::GetController() {
-  return g_controller_for_test != nullptr
-             ? g_controller_for_test
-             : AppListClientImpl::GetInstance()->GetControllerDelegate();
+  return g_controller_for_test != nullptr ? g_controller_for_test
+                                          : AppListClientImpl::GetInstance();
 }
 
 void ChromeAppListItem::UpdateFromSync(
