@@ -195,9 +195,22 @@
       'CrWinAsanCov',
       'linux-win_cross-rel',
       'ToTLinuxUBSanVptr',
+      'ToTMac', # https://crbug.com/828031
+      'ToTMacASan', # https://crbug.com/828031
       'UBSanVptr Linux',
+      # chromium.fyi
+      'Chromium Mac 10.13', # https://crbug.com/828031
+      'Out of Process Profiling Mac', # https://crbug.com/828031
+      'mac-views-rel', # https://crbug.com/828031
+      # chromium.mac
+      'Mac10.10 Tests', # https://crbug.com/828031
+      'Mac10.11 Tests', # https://crbug.com/828031
+      'Mac10.12 Tests', # https://crbug.com/828031
+      'Mac10.13 Tests', # https://crbug.com/828031
+      'Mac10.13 Tests (dbg)', # https://crbug.com/828031
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
+      'Mac ASan 64 Tests (1)', # https://crbug.com/828031
       # chromium.win
       'Win10 Tests x64 (dbg)',
     ],
@@ -224,32 +237,6 @@
         'swarming': {
           'shards': 5,
         },
-      },
-      # chromium.mac
-      'Mac10.11 Tests': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-      },
-      'Mac10.12 Tests': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-      },
-      'Mac10.13 Tests': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-        'experiment_percentage': 100,
       },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {
@@ -2024,6 +2011,14 @@
       },
     },
   },
+  'surface_sync_browser_tests': {
+    'remove_from': [
+      # chromium.fyi
+      'Chromium Mac 10.13', # https://crbug.com/828031
+      'Out of Process Profiling Mac', # https://crbug.com/828031
+      'mac-views-rel', # https://crbug.com/828031
+    ],
+  },
   'swiftshader_unittests': {
     'remove_from': [
       # Save capacity on the hardware where we have only a few machines.
@@ -2363,8 +2358,22 @@
   },
   'viz_browser_tests': {
     'remove_from': [
+      # chromium.clang
+      'ToTMac', # https://crbug.com/828031
+      'ToTMacASan', # https://crbug.com/828031
+      # chromium.fyi
+      'Chromium Mac 10.13', # https://crbug.com/828031
+      'Out of Process Profiling Mac', # https://crbug.com/828031
+      'mac-views-rel', # https://crbug.com/828031
+      # chromium.mac
+      'Mac10.10 Tests', # https://crbug.com/828031
+      'Mac10.11 Tests', # https://crbug.com/828031
+      'Mac10.12 Tests', # https://crbug.com/828031
+      'Mac10.13 Tests', # https://crbug.com/828031
+      'Mac10.13 Tests (dbg)', # https://crbug.com/828031
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
+      'Mac ASan 64 Tests (1)', # https://crbug.com/828031
       # chromium.win
       # Currently too flaky on Windows.
       'Win 7 Tests x64 (1)',
@@ -2383,11 +2392,6 @@
         'swarming': {
           'shards': 20,
         },
-      },
-      # chromium.mac
-      'Mac10.13 Tests': {
-        # Frequent WindowServer crashes. crbug.com/828031
-	'experiment_percentage': 100,
       },
       # chromium.memory
       'Linux ASan LSan Tests (1)': {

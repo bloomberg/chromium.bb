@@ -381,36 +381,6 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-surface-synchronization"
-        ],
-        "name": "surface_sync_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
-        ],
-        "name": "viz_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "swarming": {
           "can_use_on_swarming_builders": true
         },
         "test": "cacheinvalidation_unittests"
@@ -3632,36 +3602,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "boringssl_ssl_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-surface-synchronization"
-        ],
-        "name": "surface_sync_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
-        ],
-        "name": "viz_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
       },
       {
         "swarming": {
@@ -7297,40 +7237,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "boringssl_ssl_tests"
-      },
-      {
-        "args": [
-          "--enable-features=ViewsBrowserWindows"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-surface-synchronization",
-          "--enable-features=ViewsBrowserWindows"
-        ],
-        "name": "surface_sync_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--enable-features=VizDisplayCompositor,ViewsBrowserWindows",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
-        ],
-        "name": "viz_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "shards": 10
-        },
-        "test": "browser_tests"
       },
       {
         "args": [
