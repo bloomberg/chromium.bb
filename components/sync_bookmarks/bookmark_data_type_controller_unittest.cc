@@ -292,7 +292,7 @@ TEST_F(SyncBookmarkDataTypeControllerTest, StartAborted) {
       base::Bind(&ModelLoadCallbackMock::Run,
                  base::Unretained(&model_load_callback_)));
 
-  bookmark_dtc_->Stop();
+  bookmark_dtc_->Stop(syncer::KEEP_METADATA);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 }
 
@@ -307,6 +307,6 @@ TEST_F(SyncBookmarkDataTypeControllerTest, Stop) {
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
   Start();
   EXPECT_EQ(DataTypeController::RUNNING, bookmark_dtc_->state());
-  bookmark_dtc_->Stop();
+  bookmark_dtc_->Stop(syncer::KEEP_METADATA);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, bookmark_dtc_->state());
 }

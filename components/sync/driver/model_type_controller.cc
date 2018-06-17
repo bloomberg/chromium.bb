@@ -231,7 +231,7 @@ void ModelTypeController::DeactivateDataType(ModelTypeConfigurer* configurer) {
   }
 }
 
-void ModelTypeController::Stop() {
+void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate) {
   DCHECK(CalledOnValidThread());
 
   if (state() == NOT_RUNNING)

@@ -76,7 +76,8 @@ void FrontendDataTypeController::StartAssociating(
                             base::AsWeakPtr(this)));
 }
 
-void FrontendDataTypeController::Stop() {
+// For directory datatypes metadata clears by SyncManager::PurgeDisabledTypes().
+void FrontendDataTypeController::Stop(SyncStopMetadataFate metadata_fate) {
   DCHECK(CalledOnValidThread());
 
   if (state_ == NOT_RUNNING)

@@ -53,7 +53,7 @@ void ProxyDataTypeController::StartAssociating(
                      syncer_merge_result);
 }
 
-void ProxyDataTypeController::Stop() {
+void ProxyDataTypeController::Stop(SyncStopMetadataFate metadata_fate) {
   state_ = NOT_RUNNING;
 }
 

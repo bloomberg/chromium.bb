@@ -120,7 +120,8 @@ void AsyncDirectoryTypeController::StartAssociating(
   }
 }
 
-void AsyncDirectoryTypeController::Stop() {
+// For directory datatypes metadata clears by SyncManager::PurgeDisabledTypes().
+void AsyncDirectoryTypeController::Stop(SyncStopMetadataFate metadata_fate) {
   DCHECK(CalledOnValidThread());
 
   if (state() == NOT_RUNNING)

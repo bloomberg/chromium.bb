@@ -136,7 +136,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
   Start();
   EXPECT_EQ(syncer::DataTypeController::FAILED, search_engine_dtc_.state());
   EXPECT_FALSE(syncable_service_.syncing());
-  search_engine_dtc_.Stop();
+  search_engine_dtc_.Stop(syncer::KEEP_METADATA);
   EXPECT_EQ(syncer::DataTypeController::NOT_RUNNING,
             search_engine_dtc_.state());
   EXPECT_FALSE(syncable_service_.syncing());
@@ -153,7 +153,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
   Start();
   EXPECT_EQ(syncer::DataTypeController::RUNNING, search_engine_dtc_.state());
   EXPECT_TRUE(syncable_service_.syncing());
-  search_engine_dtc_.Stop();
+  search_engine_dtc_.Stop(syncer::KEEP_METADATA);
   EXPECT_EQ(syncer::DataTypeController::NOT_RUNNING,
             search_engine_dtc_.state());
   // AsyncDirectoryTypeController::Stop posts call to StopLocalService to model
@@ -171,7 +171,7 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StopBeforeLoaded) {
   EXPECT_EQ(syncer::DataTypeController::MODEL_STARTING,
             search_engine_dtc_.state());
   EXPECT_FALSE(syncable_service_.syncing());
-  search_engine_dtc_.Stop();
+  search_engine_dtc_.Stop(syncer::KEEP_METADATA);
   EXPECT_EQ(nullptr, search_engine_dtc_.GetSubscriptionForTesting());
   EXPECT_EQ(syncer::DataTypeController::NOT_RUNNING,
             search_engine_dtc_.state());

@@ -25,7 +25,7 @@ class FrontendDataTypeControllerMock : public FrontendDataTypeController {
   MOCK_METHOD1(StartAssociating, void(const StartCallback& start_callback));
   MOCK_METHOD1(LoadModels, void(const ModelLoadCallback& model_load_callback));
 
-  MOCK_METHOD0(Stop, void());
+  MOCK_METHOD1(Stop, void(SyncStopMetadataFate));
   MOCK_CONST_METHOD0(type, ModelType());
   MOCK_CONST_METHOD0(name, std::string());
   MOCK_CONST_METHOD0(state, State());

@@ -176,8 +176,9 @@ TEST_F(SyncFrontendDataTypeControllerTest, StartStopBeforeAssociation) {
   EXPECT_CALL(model_load_callback_, Run(_, _));
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FrontendDataTypeController::Stop,
-                            base::AsWeakPtr(frontend_dtc_.get())));
+      FROM_HERE,
+      base::BindOnce(&FrontendDataTypeController::Stop,
+                     base::AsWeakPtr(frontend_dtc_.get()), KEEP_METADATA));
   Start();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
@@ -189,7 +190,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, AbortDuringStartModels) {
   frontend_dtc_->LoadModels(base::Bind(
       &ModelLoadCallbackMock::Run, base::Unretained(&model_load_callback_)));
   EXPECT_EQ(DataTypeController::MODEL_STARTING, frontend_dtc_->state());
-  frontend_dtc_->Stop();
+  frontend_dtc_->Stop(KEEP_METADATA);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
 
@@ -244,7 +245,7 @@ TEST_F(SyncFrontendDataTypeControllerTest, Stop) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
   Start();
   EXPECT_EQ(DataTypeController::RUNNING, frontend_dtc_->state());
-  frontend_dtc_->Stop();
+  frontend_dtc_->Stop(KEEP_METADATA);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, frontend_dtc_->state());
 }
 

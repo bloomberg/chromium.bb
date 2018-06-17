@@ -115,9 +115,11 @@ TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
 
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::ASSOCIATING);
-  model_association_manager.Stop();
+  model_association_manager.Stop(KEEP_METADATA);
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
+  EXPECT_EQ(
+      0, GetController(controllers_, BOOKMARKS)->clear_metadata_call_count());
 }
 
 // Start a type, let it finish and then call stop.
@@ -139,9 +141,11 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
             DataTypeController::ASSOCIATING);
   GetController(controllers_, BOOKMARKS)->FinishStart(DataTypeController::OK);
 
-  model_association_manager.Stop();
+  model_association_manager.Stop(KEEP_METADATA);
   EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
             DataTypeController::NOT_RUNNING);
+  EXPECT_EQ(
+      0, GetController(controllers_, BOOKMARKS)->clear_metadata_call_count());
 }
 
 // Make a type fail model association and verify correctness.
@@ -512,6 +516,30 @@ TEST_F(SyncModelAssociationManagerTest, TypeRegistrationCallSequence) {
             GetController(controllers_, BOOKMARKS)->state());
   EXPECT_EQ(DataTypeController::MODEL_LOADED,
             GetController(controllers_, APPS)->state());
+}
+
+// Test that Stop clears metadata for disabled type.
+TEST_F(SyncModelAssociationManagerTest, StopClearMetadata) {
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::NOT_RUNNING);
+
+  ModelTypeSet desired_types(BOOKMARKS);
+
+  // Initialize() kicks off model loading.
+  model_association_manager.Initialize(desired_types);
+
+  ASSERT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::MODEL_LOADED);
+
+  model_association_manager.Stop(CLEAR_METADATA);
+
+  EXPECT_EQ(GetController(controllers_, BOOKMARKS)->state(),
+            DataTypeController::NOT_RUNNING);
+  EXPECT_EQ(
+      1, GetController(controllers_, BOOKMARKS)->clear_metadata_call_count());
 }
 
 }  // namespace syncer

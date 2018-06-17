@@ -370,6 +370,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOne) {
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
   EXPECT_TRUE(configurer_.registered_directory_types().Empty());
+  EXPECT_EQ(0, GetController(BOOKMARKS)->clear_metadata_call_count());
 }
 
 // Set up a DTM with a single controller, configure it, but stop it
@@ -792,6 +793,8 @@ TEST_F(SyncDataTypeManagerImplTest, OneControllerFailsAssociation) {
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
   EXPECT_TRUE(configurer_.registered_directory_types().Empty());
+  EXPECT_EQ(0, GetController(BOOKMARKS)->clear_metadata_call_count());
+  EXPECT_EQ(0, GetController(PREFERENCES)->clear_metadata_call_count());
 }
 
 // Set up a DTM with two controllers.  Then:
@@ -1732,6 +1735,24 @@ TEST_F(SyncDataTypeManagerImplTest, RegisterWithBackendAfterLoadModelsError) {
   // RegisterWithBackend should be called for passwords, but not bookmarks.
   EXPECT_EQ(0, GetController(BOOKMARKS)->register_with_backend_call_count());
   EXPECT_EQ(1, GetController(PASSWORDS)->register_with_backend_call_count());
+}
+
+// Test that Stop with DISABLE_SYNC calls DTC Stop with CLEAR_METADATA for
+// active data types.
+TEST_F(SyncDataTypeManagerImplTest, StopWithDisableSync) {
+  // Initiate configuration for two datatypes but block them at LoadModels.
+  AddController(BOOKMARKS, true, true);
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::ABORTED, DataTypeStatusTable());
+
+  Configure(ModelTypeSet(BOOKMARKS));
+  EXPECT_EQ(DataTypeController::MODEL_STARTING,
+            GetController(BOOKMARKS)->state());
+
+  dtm_->Stop(DISABLE_SYNC);
+  EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+  EXPECT_TRUE(configurer_.activated_types().Empty());
+  EXPECT_EQ(1, GetController(BOOKMARKS)->clear_metadata_call_count());
 }
 
 }  // namespace syncer

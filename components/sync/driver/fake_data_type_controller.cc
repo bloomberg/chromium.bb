@@ -22,7 +22,8 @@ FakeDataTypeController::FakeDataTypeController(ModelType type)
       model_load_delayed_(false),
       ready_for_start_(true),
       should_load_model_before_configure_(false),
-      register_with_backend_call_count_(0) {}
+      register_with_backend_call_count_(0),
+      clear_metadata_call_count_(0) {}
 
 FakeDataTypeController::~FakeDataTypeController() {}
 
@@ -100,14 +101,18 @@ void FakeDataTypeController::FinishStart(ConfigureResult result) {
 }
 
 // * -> NOT_RUNNING
-void FakeDataTypeController::Stop() {
+void FakeDataTypeController::Stop(SyncStopMetadataFate metadata_fate) {
   DCHECK(CalledOnValidThread());
-  if (!model_load_callback_.is_null()) {
+  if (state() == MODEL_STARTING) {
     // Real data type controllers run the callback and specify "ABORTED" as an
     // error.  We should probably find a way to use the real code and mock out
     // unnecessary pieces.
     SimulateModelLoadFinishing();
   }
+
+  if (metadata_fate == CLEAR_METADATA)
+    ++clear_metadata_call_count_;
+
   state_ = NOT_RUNNING;
 }
 
