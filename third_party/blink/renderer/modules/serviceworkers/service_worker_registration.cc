@@ -115,8 +115,9 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   handle_->Registration()->Update(
-      std::make_unique<
-          CallbackPromiseAdapter<void, ServiceWorkerErrorForUpdate>>(resolver));
+      std::make_unique<CallbackPromiseAdapter<ServiceWorkerRegistration,
+                                              ServiceWorkerErrorForUpdate>>(
+          resolver));
   return promise;
 }
 

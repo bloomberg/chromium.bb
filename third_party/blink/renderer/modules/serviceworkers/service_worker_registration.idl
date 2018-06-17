@@ -24,7 +24,7 @@
     readonly attribute USVString scope;
     [RuntimeEnabled=ServiceWorkerUpdateViaCache] readonly attribute ServiceWorkerUpdateViaCache updateViaCache;
 
-    [CallWith=ScriptState] Promise<void> update();
+    [CallWith=ScriptState] Promise<ServiceWorkerRegistration> update();
     [CallWith=ScriptState] Promise<boolean> unregister();
 
     attribute EventHandler onupdatefound;
