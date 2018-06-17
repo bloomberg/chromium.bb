@@ -570,7 +570,6 @@ void RootWindowController::ActivateKeyboard(
   aura::Window* keyboard_window = keyboard_controller->GetContainerWindow();
   DCHECK(!keyboard_window->parent());
 
-  Shell::Get()->NotifyVirtualKeyboardActivated(true, GetRootWindow());
   aura::Window* vk_container =
       GetContainer(kShellWindowId_VirtualKeyboardContainer);
   DCHECK(vk_container);
@@ -597,7 +596,6 @@ void RootWindowController::DeactivateKeyboard(
     DCHECK(vk_container);
     DCHECK_EQ(vk_container, keyboard_window->parent());
     vk_container->RemoveChild(keyboard_window);
-    Shell::Get()->NotifyVirtualKeyboardActivated(false, GetRootWindow());
   }
 }
 

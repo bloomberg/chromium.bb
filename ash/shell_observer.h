@@ -71,10 +71,6 @@ class ASH_EXPORT ShellObserver {
   // Called when dicatation is ended.
   virtual void OnDictationEnded() {}
 
-  // Called when keyboard is activated/deactivated in |root_window|.
-  virtual void OnVirtualKeyboardStateChanged(bool activated,
-                                             aura::Window* root_window) {}
-
   // Called when a new KeyboardController is created.
   virtual void OnKeyboardControllerCreated() {}
 
