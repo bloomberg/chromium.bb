@@ -51,7 +51,6 @@ enable=cros-logging-import
 disable=
     abstract-class-little-used,
     abstract-class-not-used,
-    bad-builtin,
     broad-except,
     fixme,
     file-ignored,
@@ -147,8 +146,9 @@ generated-members=REQUEST,acl_users,aq_parent,AndRaise,AndReturn,InAnyOrder,Mult
 # Required attributes for module, separated by a comma
 #required-attributes=
 
-# List of builtins function names that should not be used, separated by a comma
-#bad-functions=map,filter,apply,input
+# List of builtins function names that should not be used, separated by a comma.
+# XXX: Should we ban map() & filter() for list comprehensions?
+bad-functions=apply,input
 
 # Regular expression which should only match correct module names
 #module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
