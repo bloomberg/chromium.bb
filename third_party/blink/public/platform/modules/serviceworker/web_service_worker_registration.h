@@ -25,18 +25,6 @@ class WebServiceWorkerRegistration {
  public:
   virtual ~WebServiceWorkerRegistration() = default;
 
-  using WebServiceWorkerUpdateCallbacks =
-      WebCallbacks<void, const WebServiceWorkerError&>;
-  using WebServiceWorkerUnregistrationCallbacks =
-      WebCallbacks<bool, const WebServiceWorkerError&>;
-  using WebEnableNavigationPreloadCallbacks =
-      WebCallbacks<void, const WebServiceWorkerError&>;
-  using WebGetNavigationPreloadStateCallbacks =
-      WebCallbacks<const WebNavigationPreloadState&,
-                   const WebServiceWorkerError&>;
-  using WebSetNavigationPreloadHeaderCallbacks =
-      WebCallbacks<void, const WebServiceWorkerError&>;
-
   // The handle interface that retains a reference to the implementation of
   // WebServiceWorkerRegistration in the embedder and is owned by
   // ServiceWorkerRegistration object in Blink. The embedder must keep the
@@ -46,6 +34,18 @@ class WebServiceWorkerRegistration {
     virtual ~Handle() = default;
     virtual WebServiceWorkerRegistration* Registration() { return nullptr; }
   };
+
+  using WebServiceWorkerUpdateCallbacks =
+      WebCallbacks<std::unique_ptr<Handle>, const WebServiceWorkerError&>;
+  using WebServiceWorkerUnregistrationCallbacks =
+      WebCallbacks<bool, const WebServiceWorkerError&>;
+  using WebEnableNavigationPreloadCallbacks =
+      WebCallbacks<void, const WebServiceWorkerError&>;
+  using WebGetNavigationPreloadStateCallbacks =
+      WebCallbacks<const WebNavigationPreloadState&,
+                   const WebServiceWorkerError&>;
+  using WebSetNavigationPreloadHeaderCallbacks =
+      WebCallbacks<void, const WebServiceWorkerError&>;
 
   virtual void SetProxy(WebServiceWorkerRegistrationProxy*) {}
   virtual WebServiceWorkerRegistrationProxy* Proxy() { return nullptr; }

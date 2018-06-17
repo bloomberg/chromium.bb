@@ -123,6 +123,10 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorkerObject(
       blink::mojom::ServiceWorkerObjectInfoPtr info);
 
+  void OnUpdated(std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks,
+                 blink::mojom::ServiceWorkerErrorType error,
+                 const base::Optional<std::string>& error_msg);
+
   // Implements blink::mojom::ServiceWorkerRegistrationObject.
   void SetVersionAttributes(
       int changed_mask,
