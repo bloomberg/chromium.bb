@@ -8701,14 +8701,14 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   MV_REFERENCE_FRAME ref_frame = INTRA_FRAME;
-  int_mv *const candidates = x->mbmi_ext->ref_mvs[ref_frame];
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
                    mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs,
                    mbmi_ext->global_mvs, mi_row, mi_col,
                    mbmi_ext->mode_context);
 
   int_mv nearestmv, nearmv;
-  av1_find_best_ref_mvs(0, candidates, &nearestmv, &nearmv, 0);
+  av1_find_best_ref_mvs_from_stack(0, mbmi_ext, ref_frame, &nearestmv, &nearmv,
+                                   0);
 
   int_mv dv_ref = nearestmv.as_int == 0 ? nearmv : nearestmv;
   if (dv_ref.as_int == 0)
@@ -9296,10 +9296,6 @@ static void set_params_rd_pick_inter_mode(
       assert(get_ref_frame_buffer(cpi, ref_frame) != NULL);
       setup_buffer_ref_mvs_inter(cpi, x, ref_frame, bsize, mi_row, mi_col,
                                  yv12_mb);
-      int_mv dummy_nearmv, dummy_nearestmv;
-      av1_find_best_ref_mvs(cm->allow_high_precision_mv,
-                            x->mbmi_ext->ref_mvs[ref_frame], &dummy_nearmv,
-                            &dummy_nearestmv, cm->cur_frame_force_integer_mv);
     }
   }
 

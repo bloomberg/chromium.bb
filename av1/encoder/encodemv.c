@@ -206,3 +206,16 @@ int_mv av1_get_ref_mv(const MACROBLOCK *x, int ref_idx) {
   return av1_get_ref_mv_from_stack(ref_idx, mbmi->ref_frame, ref_mv_idx,
                                    x->mbmi_ext);
 }
+
+void av1_find_best_ref_mvs_from_stack(int allow_hp,
+                                      const MB_MODE_INFO_EXT *mbmi_ext,
+                                      MV_REFERENCE_FRAME ref_frame,
+                                      int_mv *nearest_mv, int_mv *near_mv,
+                                      int is_integer) {
+  const int ref_idx = 0;
+  MV_REFERENCE_FRAME ref_frames[2] = { ref_frame, NONE_FRAME };
+  *nearest_mv = av1_get_ref_mv_from_stack(ref_idx, ref_frames, 0, mbmi_ext);
+  lower_mv_precision(&nearest_mv->as_mv, allow_hp, is_integer);
+  *near_mv = av1_get_ref_mv_from_stack(ref_idx, ref_frames, 1, mbmi_ext);
+  lower_mv_precision(&near_mv->as_mv, allow_hp, is_integer);
+}

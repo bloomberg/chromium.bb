@@ -34,6 +34,12 @@ int_mv av1_get_ref_mv_from_stack(int ref_idx,
                                  const MV_REFERENCE_FRAME *ref_frame,
                                  int ref_mv_idx,
                                  const MB_MODE_INFO_EXT *mbmi_ext);
+void av1_find_best_ref_mvs_from_stack(int allow_hp,
+                                      const MB_MODE_INFO_EXT *mbmi_ext,
+                                      MV_REFERENCE_FRAME ref_frame,
+                                      int_mv *nearest_mv, int_mv *near_mv,
+                                      int is_integer);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
