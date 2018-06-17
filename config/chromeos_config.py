@@ -2512,6 +2512,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'link',
       'monroe',
       'moblab-generic-vm',
+      'nami',
       'nyan_big',
       'nyan_kitty',
       'oak',
@@ -2556,7 +2557,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cheza', #contact: philipchen@
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
-      'nami',
       'nocturne', # contact:moragues@
       'octopus',
       'tael',
