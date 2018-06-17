@@ -127,6 +127,7 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types) {
 }
 
 void ModelAssociationManager::StopDatatype(const SyncError& error,
+                                           SyncStopMetadataFate metadata_fate,
                                            DataTypeController* dtc) {
   loaded_types_.Remove(dtc->type());
   associated_types_.Remove(dtc->type());
@@ -135,7 +136,7 @@ void ModelAssociationManager::StopDatatype(const SyncError& error,
   if (error.IsSet() || dtc->state() != DataTypeController::NOT_RUNNING) {
     // If an error was set, the delegate must be informed of the error.
     delegate_->OnSingleDataTypeWillStop(dtc->type(), error);
-    dtc->Stop();
+    dtc->Stop(metadata_fate);
   }
 }
 
@@ -147,7 +148,7 @@ void ModelAssociationManager::StopDisabledTypes() {
     if (dtc->state() != DataTypeController::NOT_RUNNING &&
         !desired_types_.Has(dtc->type())) {
       DVLOG(1) << "ModelAssociationManager: stop " << dtc->name();
-      StopDatatype(SyncError(), dtc);
+      StopDatatype(SyncError(), KEEP_METADATA, dtc);
     }
   }
 }
@@ -231,7 +232,7 @@ void ModelAssociationManager::StartAssociationAsync(
   }
 }
 
-void ModelAssociationManager::Stop() {
+void ModelAssociationManager::Stop(SyncStopMetadataFate metadata_fate) {
   // Ignore callbacks from controllers.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
@@ -240,7 +241,7 @@ void ModelAssociationManager::Stop() {
        it != controllers_->end(); ++it) {
     DataTypeController* dtc = (*it).second.get();
     if (dtc->state() != DataTypeController::NOT_RUNNING) {
-      StopDatatype(SyncError(), dtc);
+      StopDatatype(SyncError(), metadata_fate, dtc);
       DVLOG(1) << "ModelAssociationManager: Stopped " << dtc->name();
     }
   }
@@ -310,7 +311,7 @@ void ModelAssociationManager::TypeStartCallback(
     DVLOG(1) << "ModelAssociationManager: Type encountered an error.";
     desired_types_.Remove(type);
     DataTypeController* dtc = controllers_->find(type)->second.get();
-    StopDatatype(local_merge_result.error(), dtc);
+    StopDatatype(local_merge_result.error(), KEEP_METADATA, dtc);
     NotifyDelegateIfReadyForConfigure();
 
     // Update configuration result.
@@ -384,7 +385,7 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
                                 static_cast<int>(MODEL_TYPE_COUNT));
       StopDatatype(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                              "Association timed out.", dtc->type()),
-                   dtc);
+                   KEEP_METADATA, dtc);
     }
   }
 

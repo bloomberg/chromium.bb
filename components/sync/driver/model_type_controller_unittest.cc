@@ -216,7 +216,7 @@ class ModelTypeControllerTest : public testing::Test {
 
   void DeactivateDataTypeAndStop() {
     controller_->DeactivateDataType(&configurer_);
-    controller_->Stop();
+    controller_->Stop(KEEP_METADATA);
   }
 
   // These threads can ping-pong for a bit so we run the model thread twice.
@@ -450,7 +450,7 @@ TEST_F(ModelTypeControllerTest, StopBeforeLoadModels) {
 
   // Clearing preferences emulates signing out.
   sync_prefs()->ClearPreferences();
-  controller()->Stop();
+  controller()->Stop(KEEP_METADATA);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
   // Ensure that DisableSync is not called.
   EXPECT_EQ(0, disable_sync_call_count());

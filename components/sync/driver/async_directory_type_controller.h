@@ -37,7 +37,7 @@ class AsyncDirectoryTypeController : public DirectoryDataTypeController {
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
-  void Stop() override;
+  void Stop(SyncStopMetadataFate metadata_fate) override;
   ChangeProcessor* GetChangeProcessor() const override;
   State state() const override;
 
