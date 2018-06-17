@@ -127,11 +127,7 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
   // TODO(mash): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
   if (!ash_util::IsRunningInMash()) {
-    if (keyboard::KeyboardController::Get()->enabled())
-      keyboard::KeyboardController::Get()->AddObserver(this);
-    // TODO(crbug.com/648733): OnVirtualKeyboardStateChanged not supported in
-    // mash
-    ash::Shell::Get()->AddShellObserver(this);
+    keyboard::KeyboardController::Get()->AddObserver(this);
   } else {
     NOTIMPLEMENTED();
   }
@@ -215,20 +211,12 @@ WebUILoginView::~WebUILoginView() {
   for (auto& observer : observer_list_)
     observer.OnHostDestroying();
 
-  // TODO(crbug.com/648733): OnVirtualKeyboardStateChanged not supported in mash
-  if (!ash_util::IsRunningInMash()) {
-    ash::Shell::Get()->RemoveShellObserver(this);
-    if (keyboard::KeyboardController::Get()->enabled())
-      keyboard::KeyboardController::Get()->RemoveObserver(this);
-  }
-
   if (!ash_util::IsRunningInMash()) {
     ash::Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(
         this);
-  }
-
-  if (!ash_util::IsRunningInMash())
     ash::Shell::Get()->accelerator_controller()->UnregisterAll(this);
+    keyboard::KeyboardController::Get()->RemoveObserver(this);
+  }
 
   // Clear any delegates we have set on the WebView.
   WebContents* web_contents = web_view()->GetWebContents();
@@ -456,23 +444,6 @@ void WebUILoginView::ClearLockScreenAppFocusCyclerDelegate() {
     return;
   lock_screen_apps::StateController::Get()->SetFocusCyclerDelegate(nullptr);
   delegates_lock_screen_app_focus_cycle_ = false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ash::ShellObserver:
-
-void WebUILoginView::OnVirtualKeyboardStateChanged(bool activated,
-                                                   aura::Window* root_window) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  DCHECK(keyboard_controller);
-  if (keyboard_controller->enabled()) {
-    if (activated) {
-      if (!keyboard_controller->HasObserver(this))
-        keyboard_controller->AddObserver(this);
-    } else {
-      keyboard_controller->RemoveObserver(this);
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

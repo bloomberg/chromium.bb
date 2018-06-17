@@ -643,11 +643,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Notifies observers that |pinned_window| changed its pinned window state.
   void NotifyPinnedStateChanged(aura::Window* pinned_window);
 
-  // Notifies observers that the virtual keyboard has been
-  // activated/deactivated for |root_window|.
-  void NotifyVirtualKeyboardActivated(bool activated,
-                                      aura::Window* root_window);
-
   // Notifies observers that the shelf was created for |root_window|.
   // TODO(jamescook): Move to Shelf.
   void NotifyShelfCreatedForRootWindow(aura::Window* root_window);

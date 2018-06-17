@@ -22,7 +22,6 @@
 #include "ash/shell_observer.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
-#include "base/scoped_observer.h"
 #include "components/sync/model/string_ordinal.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -171,8 +170,6 @@ class ASH_EXPORT AppListControllerImpl
   void FlushForTesting();
 
   // ShellObserver:
-  void OnVirtualKeyboardStateChanged(bool activated,
-                                     aura::Window* root_window) override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnding() override;
 
@@ -220,10 +217,6 @@ class ASH_EXPORT AppListControllerImpl
   // Token to view map for classic/mus ash (i.e. non-mash).
   std::unique_ptr<app_list::AnswerCardContentsRegistry>
       answer_card_contents_registry_;
-
-  ScopedObserver<keyboard::KeyboardController,
-                 keyboard::KeyboardControllerObserver>
-      keyboard_observer_;
 
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;

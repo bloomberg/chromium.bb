@@ -41,7 +41,6 @@ namespace ash {
 
 AppListControllerImpl::AppListControllerImpl()
     : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
-      keyboard_observer_(this),
       is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()) {
   model_.AddObserver(this);
 
@@ -63,9 +62,11 @@ AppListControllerImpl::AppListControllerImpl()
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
+  keyboard::KeyboardController::Get()->AddObserver(this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->wallpaper_controller()->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
@@ -444,18 +445,6 @@ app_list::AppListViewState AppListControllerImpl::GetAppListViewState() {
 
 void AppListControllerImpl::FlushForTesting() {
   bindings_.FlushForTesting();
-}
-
-void AppListControllerImpl::OnVirtualKeyboardStateChanged(
-    bool activated,
-    aura::Window* root_window) {
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (!keyboard_controller->enabled())
-    return;
-  if (activated && !keyboard_observer_.IsObserving(keyboard_controller))
-    keyboard_observer_.Add(keyboard_controller);
-  else if (!activated && keyboard_observer_.IsObserving(keyboard_controller))
-    keyboard_observer_.Remove(keyboard_controller);
 }
 
 void AppListControllerImpl::OnOverviewModeStarting() {

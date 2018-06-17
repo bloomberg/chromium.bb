@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "ash/shell_observer.h"
 #include "ash/system/system_tray_focus_observer.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -42,7 +41,6 @@ class OobeUI;
 // View used to render a WebUI supporting Widget. This widget is used for the
 // WebUI based start up and lock screens. It contains a WebView.
 class WebUILoginView : public views::View,
-                       public ash::ShellObserver,
                        public keyboard::KeyboardControllerObserver,
                        public content::WebContentsDelegate,
                        public content::NotificationObserver,
@@ -146,10 +144,6 @@ class WebUILoginView : public views::View,
  private:
   // Map type for the accelerator-to-identifier map.
   typedef std::map<ui::Accelerator, std::string> AccelMap;
-
-  // ash::ShellObserver:
-  void OnVirtualKeyboardStateChanged(bool activated,
-                                     aura::Window* root_window) override;
 
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardAvailabilityChanged(bool is_available) override;
