@@ -1913,7 +1913,7 @@ def Collection(classname, **kwargs):
 
   # Create the class in a local namespace as exec requires.
   namespace = {}
-  exec expr in namespace
+  exec expr in namespace  # pylint: disable=exec-used
   new_class = namespace[classname]
 
   # Bind the helpers.

@@ -53,7 +53,6 @@ disable=
     abstract-class-not-used,
     bad-builtin,
     broad-except,
-    exec-used,
     fixme,
     file-ignored,
     invalid-name,

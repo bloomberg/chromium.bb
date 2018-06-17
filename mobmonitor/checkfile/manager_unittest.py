@@ -408,6 +408,7 @@ class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
     os.path.getmtime.return_value = TEST_MTIME
 
     checkmodule = imp.new_module('test_check')
+    # pylint: disable=exec-used
     exec CHECKFILE_MANY_SIMPLE in checkmodule.__dict__
     self.StartPatcher(mock.patch('imp.load_source'))
     imp.load_source.return_value = checkmodule
@@ -426,6 +427,7 @@ class CheckFileManagerHelperTest(cros_test_lib.MockTestCase):
     os.path.getmtime.return_value = TEST_MTIME
 
     checkmodule = imp.new_module('test_check')
+    # pylint: disable=exec-used
     exec CHECKFILE_MANY_SIMPLE_ONE_BAD in checkmodule.__dict__
     self.StartPatcher(mock.patch('imp.load_source'))
     imp.load_source.return_value = checkmodule
