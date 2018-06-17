@@ -2111,8 +2111,17 @@
         },
       },
       'mac10.12-blink-rel-dummy': {
-        # TODO(dpranke): Looks like we don't actually run the layout
-        # tests on mac10.12_blink_rel at the moment. We should fix that.
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': 'none',
+              'os': 'Mac-10.12.6',
+            }
+          ],
+        },
       },
       'mac10.12_retina-blink-rel-dummy': {
         'test_suites': {
@@ -2142,15 +2151,31 @@
           'hard_timeout': 900,
         },
         'test_suites': {
-          'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'win10-blink-rel-dummy': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-10-15063',
+            },
+          ],
+          'hard_timeout': 900,
+        },
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'win7-blink-rel-dummy': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Windows-7-SP1',
+            },
+          ],
+          'hard_timeout': 900,
+        },
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
