@@ -36,33 +36,43 @@ load-plugins=chromite.cli.cros.lint
 enable=cros-logging-import
 
 # Disable the message, report, category or checker with the given id(s). You
-# can either give multiple identifier separated by comma (,) or put this option
-# multiple times (only on the command line, not in the configuration file where
-# it should appear only once).
-# C0103: Invalid name "LOADERS" (should match [a-z_][a-z0-9_]{2,30}$)
-# C0111: Missing docstring
-# C0302: Too many lines in module (N)
-# E1103: Instance has no '*' member (but some types could not be inferred)
-# I0011: Locally disabling warning.
-# I0012: Locally enabling warning.
-# R0201: Method could be a function
-# R0902: Too many instance attributes (N/7)
-# R0903: Too few public methods (N/2)
-# R0911: Too many return statements (N/6)
-# R0912: Too many branches (N/12)
-# R0913: Too many arguments (N/5)
-# R0914: Too many local variables (N/15)
-# R0915: Too many statements (N/50)
-# W0122: Use of the exec statement
-# W0141: Used builtin function ''
-# W0142: Used * or ** magic
-# W0403: Relative import 'constants', should be 'chromite.cbuildbot.constants'
-# W0511: Used when a warning note as FIXME or XXX is detected.
-# W0703: Catching too general exception Exception.
-# R0904: Too many public methods
-# R0921: Abstract class not referenced.
-# R0922: Abstract class is only referenced N times.
-disable=C0103,C0111,C0302,E1103,I0011,I0012,R0201,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0142,W0403,W0511,W0703,R0904,R0921,R0922
+# can either give multiple identifiers separated by comma (,) or put this
+# option multiple times (only on the command line, not in the configuration
+# file where it should appear only once). You can also use "--disable=all" to
+# disable everything first and then reenable specific checks. For example, if
+# you want to run only the similarities checker, you can use "--disable=all
+# --enable=similarities". If you want to run only the classes checker, but have
+# no Warning level messages displayed, use "--disable=all --enable=classes
+# --disable=W".
+# We leave many of the style warnings to judgement/peer review.
+# TODO: Once we upgrade to pylint-1.4.5+, drop abstract-class-little-used,
+# abstract-class-not-used, and star-args.
+# TODO: We need to re-enable broad-except, but requires cleaning up our code.
+disable=
+    abstract-class-little-used,
+    abstract-class-not-used,
+    bad-builtin,
+    broad-except,
+    exec-used,
+    fixme,
+    file-ignored,
+    invalid-name,
+    locally-disabled,
+    locally-enabled,
+    missing-docstring,
+    no-member,
+    no-self-use,
+    relative-import,
+    star-args,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-branches,
+    too-many-instance-attributes,
+    too-many-lines,
+    too-many-locals,
+    too-many-public-methods,
+    too-many-return-statements,
+    too-many-statements,
 
 
 [REPORTS]
