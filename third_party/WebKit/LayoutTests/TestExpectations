@@ -109,7 +109,7 @@ crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video.html [ P
 crbug.com/726075 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-filter-in-worker.html [ Pass Timeout ]
 crbug.com/845266 [ Mac ] virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass Timeout ]
 
-crbug.com/693568 [ Mac ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure ]
+crbug.com/693568 [ Mac ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure Pass Timeout ]
 
 # Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
@@ -252,7 +252,7 @@ crbug.com/722825 virtual/video-surface-layer/media/controls/video-enter-exit-ful
 #### crbug.com/783229 overflow
 crbug.com/724701 overflow/overflow-basic-004.html [ Failure ]
 
-crbug.com/846753 [ Mac ] http/tests/media/reload-after-dialog.html [ Failure Pass ]
+crbug.com/846753 [ Mac ] http/tests/media/reload-after-dialog.html [ Failure Pass Timeout ]
 
 ### external/wpt/css/css-tables/
 crbug.com/598134 external/wpt/css/css-tables/table-has-box-sizing-border-box-002.html [ Failure ]
@@ -4702,5 +4702,18 @@ crbug.com/851746 [ Linux ] virtual/gpu/fast/canvas/color-space/canvas-colorManag
 # Update the DataView case when crbug.com/v8/7816 is fixed
 crbug.com/v8/7816 fast/js/constructor-length.html [ Skip ]
 
-crbug.com/853360 [ Mac10.13 ] fast/text/drawBidiText.html [ Failure ]
-crbug.com/853360 [ Mac10.13 ] fast/forms/calendar-picker/calendar-picker-appearance-required.html [ Failure ]
+crbug.com/853360 [ Mac ] external/wpt/accelerometer/Accelerometer-iframe-access.https.html [ Failure ]
+crbug.com/853360 [ Mac ] fast/css/input-search-padding.html [ Failure ]
+crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Failure ]
+crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-minimum-date.html [ Failure ]
+crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-required-ar.html [ Failure ]
+crbug.com/853360 [ Mac ] fast/forms/calendar-picker/month-picker-appearance-step.html [ Failure ]
+crbug.com/853360 [ Mac ] fast/forms/calendar-picker/week-picker-appearance.html [ Failure ]
+crbug.com/853360 [ Mac10.13 ] http/tests/eventsource/workers/eventsource-cors-no-server.html [ Failure ]
+crbug.com/853360 [ Mac ] http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
+crbug.com/853360 [ Mac ] http/tests/misc/slow-loading-image-in-pattern.html [ Pass Timeout ]
+crbug.com/853360 [ Mac ] paint/invalidation/media-audio-no-spurious-repaints.html [ Failure ]
+crbug.com/853360 [ Mac ] tables/mozilla/bugs/bug30692.html [ Failure ]
+crbug.com/853360 [ Mac ] virtual/new-remote-playback-pipeline/http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
+crbug.com/853360 [ Mac ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure ]
+crbug.com/853360 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
