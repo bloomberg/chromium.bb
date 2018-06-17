@@ -1057,11 +1057,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const override;
 
-  // Returns whether content which overflows should be clipped. This is not just
-  // because of overflow clip, but other types of clip as well, such as
-  // control clips or contain: paint.
-  virtual bool ShouldClipOverflow() const;
-
   // Returns the intersection of all overflow clips which apply.
   virtual LayoutRect OverflowClipRect(
       const LayoutPoint& location,
@@ -1418,6 +1413,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
  protected:
+  virtual bool ComputeShouldClipOverflow() const;
   virtual LayoutRect ControlClipRect(const LayoutPoint&) const {
     return LayoutRect();
   }
