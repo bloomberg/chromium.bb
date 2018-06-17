@@ -2598,6 +2598,7 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/list-item-with-empty-first-
 crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-clipped.html [ Skip ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/ellipsis-printing-style.html [ Skip ]
 crbug.com/591500 [ Win10 ] printing/ellipsis-printing-style.html [ Skip ]
+crbug.com/591500 [ Win10 ] virtual/layout_ng_experimental/printing/ellipsis-printing-style.html [ Skip ]
 
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 

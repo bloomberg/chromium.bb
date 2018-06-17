@@ -10,7 +10,7 @@ layer at (0,0) size 800x104
         LayoutNGBlockFlow {DT} at (0,22) size 384x22
           LayoutText {#text} at (0,0) size 212x21
             text run at (0,0) width 212: "Lorem ipsum dolor sit amet"
-layer at (248,52) size 344x22
+layer at (248,52) size 344x22 scrollWidth 438
   LayoutNGBlockFlow {DD} at (40,0) size 344x22
     LayoutText {#text} at (0,0) size 342x21
       text run at (0,0) width 56: "Lorem "
