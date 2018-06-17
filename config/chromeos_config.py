@@ -521,6 +521,7 @@ _x86_internal_release_boards = frozenset([
     'clapper',
     'coral',
     'cyan',
+    'dragonegg',
     'edgar',
     'enguarde',
     'eve',
@@ -2553,6 +2554,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'auron_paine',
       'cheza', #contact: philipchen@
+      'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
       'nami',
       'nocturne', # contact:moragues@
