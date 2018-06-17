@@ -271,6 +271,8 @@ void LayoutBox::StyleDidChange(StyleDifference diff,
     ClearPercentHeightDescendants();
   }
 
+  SetShouldClipOverflow(ComputeShouldClipOverflow());
+
   // If our zoom factor changes and we have a defined scrollLeft/Top, we need to
   // adjust that value into the new zoomed coordinate space.  Note that the new
   // scroll offset may be outside the normal min/max range of the scrollable
@@ -6040,7 +6042,7 @@ LayoutRect LayoutBox::DebugRect() const {
   return rect;
 }
 
-bool LayoutBox::ShouldClipOverflow() const {
+bool LayoutBox::ComputeShouldClipOverflow() const {
   return HasOverflowClip() || ShouldApplyPaintContainment() || HasControlClip();
 }
 

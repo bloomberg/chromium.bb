@@ -895,6 +895,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsOutOfFlowPositioned() && !Style()->HasAutoClip();
   }
   bool HasOverflowClip() const { return bitfields_.HasOverflowClip(); }
+  bool ShouldClipOverflow() const { return bitfields_.ShouldClipOverflow(); }
   bool HasClipRelatedProperty() const;
 
   bool HasTransformRelatedProperty() const {
@@ -1125,6 +1126,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void SetHasOverflowClip(bool has_overflow_clip) {
     bitfields_.SetHasOverflowClip(has_overflow_clip);
+  }
+  void SetShouldClipOverflow(bool should_clip_overflow) {
+    bitfields_.SetShouldClipOverflow(should_clip_overflow);
   }
   void SetHasLayer(bool has_layer) { bitfields_.SetHasLayer(has_layer); }
   void SetHasTransformRelatedProperty(bool has_transform) {
@@ -2385,6 +2389,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           horizontal_writing_mode_(true),
           has_layer_(false),
           has_overflow_clip_(false),
+          should_clip_overflow_(false),
           has_transform_related_property_(false),
           has_reflection_(false),
           can_contain_fixed_position_objects_(false),
@@ -2531,6 +2536,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // details). Only set for LayoutBoxes and descendants.
     ADD_BOOLEAN_BITFIELD(has_overflow_clip_, HasOverflowClip);
 
+    // Returns whether content which overflows should be clipped. This is not
+    // just because of overflow clip, but other types of clip as well, such as
+    // control clips or contain: paint.
+    ADD_BOOLEAN_BITFIELD(should_clip_overflow_, ShouldClipOverflow);
+
     // This boolean is the cached value from
     // ComputedStyle::hasTransformRelatedProperty.
     ADD_BOOLEAN_BITFIELD(has_transform_related_property_,
@@ -2634,7 +2644,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned unused_bits_ : 1;
+    // Increment this to 63 if a new bit is added.
+    // unsigned unused_bits_ : 0;
 
    private:
     // This is the cached 'position' value of this object
