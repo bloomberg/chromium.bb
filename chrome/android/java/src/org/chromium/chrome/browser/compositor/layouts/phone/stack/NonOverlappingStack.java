@@ -247,7 +247,7 @@ public class NonOverlappingStack extends Stack {
 
     @Override
     protected int computeReferenceIndex() {
-        return -Math.round(mScrollTarget / mSpacing);
+        return getCenteredTabIndex();
     }
 
     @Override
