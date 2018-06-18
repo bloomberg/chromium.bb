@@ -152,6 +152,13 @@ component("network_service") {
     ]
   }
 
+  if (is_android) {
+    deps += [
+      "//crypto",
+      "//third_party/boringssl",
+    ]
+  }
+
   if (is_win) {
     deps += [ "//sandbox/win:sandbox" ]
   }
