@@ -260,9 +260,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   core_handler_ = core_handler.get();
   AddWebUIHandler(std::move(core_handler));
 
-  auto network_dropdown_handler = std::make_unique<NetworkDropdownHandler>();
-  network_dropdown_handler_ = network_dropdown_handler.get();
-  AddWebUIHandler(std::move(network_dropdown_handler));
+  AddWebUIHandler(std::make_unique<NetworkDropdownHandler>());
 
   AddScreenHandler(std::make_unique<UpdateScreenHandler>());
 
@@ -292,7 +290,6 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   AddScreenHandler(std::make_unique<HIDDetectionScreenHandler>(core_handler_));
 
   AddScreenHandler(std::make_unique<ErrorScreenHandler>());
-  network_dropdown_handler_->AddObserver(GetView<ErrorScreenHandler>());
 
   error_screen_.reset(new ErrorScreen(nullptr, GetView<ErrorScreenHandler>()));
   ErrorScreen* error_screen = error_screen_.get();
@@ -400,7 +397,6 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
 }
 
 OobeUI::~OobeUI() {
-  network_dropdown_handler_->RemoveObserver(GetView<ErrorScreenHandler>());
 }
 
 CoreOobeView* OobeUI::GetCoreOobeView() {

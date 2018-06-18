@@ -374,7 +374,6 @@ cr.define('cr.ui.login', function() {
       this.forceKeyboardFlow_ = value;
       if (value) {
         keyboard.initializeKeyboardFlow(false);
-        cr.ui.DropDown.enableKeyboardFlow();
         for (var i = 0; i < this.screens_.length; ++i) {
           var screen = $(this.screens_[i]);
           if (screen.enableKeyboardFlow)
@@ -812,11 +811,6 @@ cr.define('cr.ui.login', function() {
       var currentScreenId = this.screens_[this.currentStep_];
       var currentScreen = $(currentScreenId);
       this.updateScreenSize(currentScreen);
-
-      // Trigger network drop-down to reload its state
-      // so that strings are reloaded.
-      // Will be reloaded if drowdown is actually shown.
-      cr.ui.DropDown.refresh();
     },
 
     /**

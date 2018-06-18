@@ -46,7 +46,6 @@ class KioskAutolaunchScreenView;
 class KioskEnableScreenView;
 class LoginScreenContext;
 class NativeWindowDelegate;
-class NetworkDropdownHandler;
 class NetworkStateInformer;
 class NetworkView;
 class OobeDisplayChooser;
@@ -216,10 +215,6 @@ class OobeUI : public content::WebUIController,
 
   // Reference to CoreOobeHandler that handles common requests of Oobe page.
   CoreOobeHandler* core_handler_ = nullptr;
-
-  // Reference to NetworkDropdownHandler that handles interaction with
-  // network dropdown.
-  NetworkDropdownHandler* network_dropdown_handler_ = nullptr;
 
   SupervisedUserCreationScreenHandler* supervised_user_creation_screen_view_ =
       nullptr;
