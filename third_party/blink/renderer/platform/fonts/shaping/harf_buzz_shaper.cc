@@ -919,28 +919,6 @@ void HarfBuzzShaper::ShapeSegment(
   }
 }
 
-// Get a RunSegmenter for the specified range and FontOrientation.
-//
-// Because RunSegmenter needs pre-context but is foward-only, it needs to start
-// from the beginning for each range. By caching the last-used RunSegmenter,
-// when caller shapes multiple ranges of a string incrementally, we can re-use
-// existing instance and avoid scanning from the beginning.
-RunSegmenter* HarfBuzzShaper::CachedRunSegmenter(
-    unsigned start,
-    unsigned end,
-    FontOrientation orientation) const {
-  if (!run_segmenter_.has_value() || run_segmenter_->HasProgressedPast(start) ||
-      !run_segmenter_->Supports(orientation)) {
-    // RunSegmenter is not created yet, or existing instance cannot be reused
-    // for the new range. Create a new instance.
-    //
-    // Run segmentation needs to operate on the entire string, regardless of the
-    // shaping window (defined by the start and end parameters).
-    run_segmenter_.emplace(text_, text_length_, orientation);
-  }
-  return &run_segmenter_.value();
-}
-
 scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
     const Font* font,
     TextDirection direction,
@@ -967,14 +945,12 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(
   if (pre_segmented) {
     ShapeSegment(&range_data, *pre_segmented, result.get());
   } else {
-    // TODO(kojii): With pre_segmented, CachedRunSegmenter is probably no longer
-    // needed. Confirm and cleanup.
-    RunSegmenter* run_segmenter = CachedRunSegmenter(
-        start, end, font->GetFontDescription().Orientation());
+    // Run segmentation needs to operate on the entire string, regardless of the
+    // shaping window (defined by the start and end parameters).
+    RunSegmenter run_segmenter(text_, text_length_,
+                               font->GetFontDescription().Orientation());
     RunSegmenter::RunSegmenterRange segment_range = RunSegmenter::NullRange();
-    for (unsigned run_segmenter_start = start;
-         run_segmenter->ConsumePast(run_segmenter_start, &segment_range);
-         run_segmenter_start = segment_range.end) {
+    while (run_segmenter.Consume(&segment_range)) {
       // Only shape segments overlapping with the range indicated by start and
       // end. Not only those strictly within.
       if (start < segment_range.end && end > segment_range.start)

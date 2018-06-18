@@ -357,9 +357,7 @@ void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) {
   RunSegmenter segmenter(text_content.Characters16(), text_content.length(),
                          FontOrientation::kHorizontal);
   RunSegmenter::RunSegmenterRange range = RunSegmenter::NullRange();
-  for (unsigned item_index = 0, segmenter_start = 0;
-       segmenter.ConsumePast(segmenter_start, &range);
-       segmenter_start = range.end) {
+  for (unsigned item_index = 0; segmenter.Consume(&range);) {
     DCHECK_EQ(items[item_index].start_offset_, range.start);
     item_index = NGInlineItem::PopulateItemsFromRun(items, item_index, range);
   }

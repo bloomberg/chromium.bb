@@ -74,34 +74,9 @@ void RunSegmenter::ConsumeSymbolsIteratorPastLastSplit() {
   }
 }
 
-bool RunSegmenter::Supports(FontOrientation orientation) const {
-  bool needs_orientation_iterator =
-      orientation == FontOrientation::kVerticalMixed;
-  return (needs_orientation_iterator == !!orientation_iterator_.get());
-}
-
-bool RunSegmenter::HasProgressedPast(unsigned start) const {
-  return candidate_range_.start > start;
-}
-
-bool RunSegmenter::ConsumePast(unsigned start, RunSegmenterRange* next_range) {
-  DCHECK(!HasProgressedPast(start));
-  while (true) {
-    // Check the candidate range first, before checking |at_end_| because
-    // |Consume()| sets |at_end_| even when the current range is valid.
-    if (candidate_range_.start <= start && start < candidate_range_.end) {
-      *next_range = candidate_range_;
-      return true;
-    }
-
-    if (!Consume())
-      return false;
-  }
-}
-
 // Consume the input until the next range. Returns false if no more ranges are
 // available.
-bool RunSegmenter::Consume() {
+bool RunSegmenter::Consume(RunSegmenterRange* next_range) {
   if (at_end_)
     return false;
 
@@ -126,6 +101,7 @@ bool RunSegmenter::Consume() {
 
   candidate_range_.start = candidate_range_.end;
   candidate_range_.end = last_split_;
+  *next_range = candidate_range_;
 
   at_end_ = last_split_ == buffer_size_;
   return true;
