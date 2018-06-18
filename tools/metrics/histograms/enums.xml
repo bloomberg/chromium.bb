@@ -19005,6 +19005,7 @@ Called by update_net_error_codes.py.-->
   <int value="2471" label="TextToSpeech_Speak"/>
   <int value="2472" label="TextToSpeech_SpeakCrossOrigin"/>
   <int value="2473" label="TextToSpeech_SpeakDisallowedByAutoplay"/>
+  <int value="2474" label="StaleWhileRevalidateEnabled"/>
 </enum>
 
 <enum name="FeedbackSource">

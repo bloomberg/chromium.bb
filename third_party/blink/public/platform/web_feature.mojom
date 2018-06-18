@@ -1938,6 +1938,7 @@ enum WebFeature {
   kTextToSpeech_Speak = 2471,
   kTextToSpeech_SpeakCrossOrigin = 2472,
   kTextToSpeech_SpeakDisallowedByAutoplay = 2473,
+  kStaleWhileRevalidateEnabled = 2474,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
