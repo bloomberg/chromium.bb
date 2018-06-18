@@ -23,6 +23,7 @@
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
@@ -73,7 +74,7 @@ class OzonePlatformScenic : public OzonePlatform {
 
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const PlatformWindowInitProperties& properties) override {
+      PlatformWindowInitProperties properties) override {
     NOTREACHED();
     return nullptr;
   }

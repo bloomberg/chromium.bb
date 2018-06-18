@@ -96,7 +96,7 @@ void TestCompositorHostOzone::Show() {
   properties.bounds = bounds_;
   // Create a PlatformWindow to get the AcceleratedWidget backing it.
   window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-      &window_delegate_, properties);
+      &window_delegate_, std::move(properties));
   window_->Show();
   DCHECK_NE(window_delegate_.widget(), gfx::kNullAcceleratedWidget);
 

@@ -67,7 +67,7 @@ class OzonePlatformWindows : public OzonePlatform {
   }
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const PlatformWindowInitProperties& properties) override {
+      PlatformWindowInitProperties properties) override {
     return std::make_unique<WindowsWindow>(delegate, properties.bounds);
   }
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()

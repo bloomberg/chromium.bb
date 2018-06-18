@@ -35,7 +35,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
   static WaylandWindow* FromSurface(wl_surface* surface);
 
-  bool Initialize(const PlatformWindowInitProperties& properties);
+  bool Initialize(PlatformWindowInitProperties properties);
 
   wl_surface* surface() const { return surface_.get(); }
   XDGSurfaceWrapper* xdg_surface() const { return xdg_surface_.get(); }

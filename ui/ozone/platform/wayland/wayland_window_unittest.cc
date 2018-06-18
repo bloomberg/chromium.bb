@@ -96,7 +96,7 @@ class WaylandWindowTest : public WaylandTest {
     std::unique_ptr<WaylandWindow> window =
         std::make_unique<WaylandWindow>(delegate, connection_.get());
 
-    EXPECT_TRUE(window->Initialize(properties));
+    EXPECT_TRUE(window->Initialize(std::move(properties)));
     return window;
   }
 

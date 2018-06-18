@@ -68,7 +68,7 @@ class OzonePlatformHeadless : public OzonePlatform {
   }
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const PlatformWindowInitProperties& properties) override {
+      PlatformWindowInitProperties properties) override {
     return std::make_unique<HeadlessWindow>(delegate, window_manager_.get(),
                                             properties.bounds);
   }
