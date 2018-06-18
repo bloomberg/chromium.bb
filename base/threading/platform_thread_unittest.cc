@@ -259,7 +259,13 @@ class ThreadPriorityTestThread : public FunctionTestThread {
 
 // Test changing a created thread's priority (which has different semantics on
 // some platforms).
-TEST(PlatformThreadTest, ThreadPriorityCurrentThread) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/851759): Thread priorities are not implemented in Fuchsia.
+#define MAYBE_ThreadPriorityCurrentThread DISABLED_ThreadPriorityCurrentThread
+#else
+#define MAYBE_ThreadPriorityCurrentThread ThreadPriorityCurrentThread
+#endif
+TEST(PlatformThreadTest, MAYBE_ThreadPriorityCurrentThread) {
   const bool increase_priority_allowed =
       PlatformThread::CanIncreaseCurrentThreadPriority();
 

@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/trace_event/category_registry.h"
 #include "base/trace_event/trace_category.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -119,7 +120,13 @@ TEST_F(TraceCategoryTest, Basic) {
 
 // Tries to cover the case of multiple threads creating the same category
 // simultaneously. Should never end up with distinct entries with the same name.
-TEST_F(TraceCategoryTest, ThreadRaces) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/738275): This is flaky on Fuchsia.
+#define MAYBE_ThreadRaces DISABLED_ThreadRaces
+#else
+#define MAYBE_ThreadRaces ThreadRaces
+#endif
+TEST_F(TraceCategoryTest, MAYBE_ThreadRaces) {
   const int kNumThreads = 32;
   std::unique_ptr<Thread> threads[kNumThreads];
   for (int i = 0; i < kNumThreads; i++) {

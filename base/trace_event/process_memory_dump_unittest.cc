@@ -472,7 +472,13 @@ TEST(ProcessMemoryDumpTest, GuidsTest) {
 }
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
-TEST(ProcessMemoryDumpTest, CountResidentBytes) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/851760): Counting resident bytes is not supported on Fuchsia.
+#define MAYBE_CountResidentBytes DISABLED_CountResidentBytes
+#else
+#define MAYBE_CountResidentBytes CountResidentBytes
+#endif
+TEST(ProcessMemoryDumpTest, MAYBE_CountResidentBytes) {
   const size_t page_size = ProcessMemoryDump::GetSystemPageSize();
 
   // Allocate few page of dirty memory and check if it is resident.
@@ -493,7 +499,14 @@ TEST(ProcessMemoryDumpTest, CountResidentBytes) {
   Unmap(memory2, kVeryLargeMemorySize);
 }
 
-TEST(ProcessMemoryDumpTest, CountResidentBytesInSharedMemory) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/851760): Counting resident bytes is not supported on Fuchsia.
+#define MAYBE_CountResidentBytesInSharedMemory \
+  DISABLED_CountResidentBytesInSharedMemory
+#else
+#define MAYBE_CountResidentBytesInSharedMemory CountResidentBytesInSharedMemory
+#endif
+TEST(ProcessMemoryDumpTest, MAYBE_CountResidentBytesInSharedMemory) {
 #if defined(OS_IOS)
   // TODO(crbug.com/748410): Reenable this test.
   if (!base::ios::IsRunningOnIOS10OrLater()) {

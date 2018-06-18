@@ -24,6 +24,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -634,7 +635,13 @@ static void ThreadSafeObserverHarness(int num_threads,
   }
 }
 
-TEST(ObserverListThreadSafeTest, CrossThreadObserver) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/738275): This is flaky on Fuchsia.
+#define MAYBE_CrossThreadObserver DISABLED_CrossThreadObserver
+#else
+#define MAYBE_CrossThreadObserver CrossThreadObserver
+#endif
+TEST(ObserverListThreadSafeTest, MAYBE_CrossThreadObserver) {
   // Use 7 observer threads.  Notifications only come from
   // the main thread.
   ThreadSafeObserverHarness(7, false);

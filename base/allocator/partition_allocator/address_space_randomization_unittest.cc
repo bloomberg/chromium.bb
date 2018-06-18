@@ -191,6 +191,9 @@ void RandomBitCorrelation(int random_bit) {
   }
 }
 
+// TODO(crbug.com/811881): These are flaky on Fuchsia
+#if !defined(OS_FUCHSIA)
+
 // Tests are fairly slow, so give each random bit its own test.
 #define TEST_RANDOM_BIT(BIT)                                        \
   TEST(AddressSpaceRandomizationTest, RandomBitCorrelations##BIT) { \
@@ -238,6 +241,8 @@ TEST_RANDOM_BIT(47)
 TEST_RANDOM_BIT(48)
 // No platforms have more than 48 address bits.
 #endif  // defined(ARCH_CPU_64_BITS)
+
+#endif  // defined(OS_FUCHSIA)
 
 #undef TEST_RANDOM_BIT
 
