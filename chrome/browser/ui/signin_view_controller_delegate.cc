@@ -89,6 +89,12 @@ void SigninViewControllerDelegate::LoadingStateChanged(
         "inline.login.showCloseButton");
 }
 
+void SigninViewControllerDelegate::HandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  NOTREACHED();
+}
+
 bool SigninViewControllerDelegate::CanGoBack(
     content::WebContents* web_ui_web_contents) const {
   auto* auth_web_contents = GetAuthFrameWebContents(web_ui_web_contents);

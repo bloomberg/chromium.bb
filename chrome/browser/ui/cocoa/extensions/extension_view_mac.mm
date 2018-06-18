@@ -81,7 +81,7 @@ void ExtensionViewMac::HandleKeyboardEvent(
   ChromeEventProcessingWindow* event_window =
       base::mac::ObjCCastStrict<ChromeEventProcessingWindow>(
           [GetNativeView() window]);
-  [event_window redispatchKeyEvent:event.os_event];
+  [[event_window commandDispatcher] redispatchKeyEvent:event.os_event];
 }
 
 void ExtensionViewMac::OnLoaded() {

@@ -53,7 +53,7 @@ CGFloat GetPatternVerticalOffsetWithTabStrip(bool tabStripVisible) {
       static_cast<ChromeEventProcessingWindow*>(window);
   DCHECK([event_window isKindOfClass:[ChromeEventProcessingWindow class]]);
 
-  return [event_window redispatchKeyEvent:event];
+  return [[event_window commandDispatcher] redispatchKeyEvent:event];
 }
 
 + (NSString*)scheduleReplaceOldTitle:(NSString*)oldTitle

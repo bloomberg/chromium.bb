@@ -4,6 +4,7 @@
 
 #import "ui/base/cocoa/command_dispatcher.h"
 
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
@@ -61,8 +62,8 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 
 @implementation CommandDispatcher {
  @private
-  BOOL redispatchingEvent_;
   BOOL eventHandled_;
+  BOOL isRedispatchingKeyEvent_;
 
   // If CommandDispatcher handles a keyEquivalent: [e.g. cmd + w], then it
   // should suppress future key-up events, e.g. [cmd + w (key up)].
@@ -80,8 +81,21 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   return self;
 }
 
+// When an event is being redispatched, its window is rewritten to be the owner_
+// of the CommandDispatcher. However, AppKit may still choose to send the event
+// to the key window. To check of an event is being redispatched, we check the
+// event's window.
+- (BOOL)isEventBeingRedispatched:(NSEvent*)event {
+  if ([event.window conformsToProtocol:@protocol(CommandDispatchingWindow)]) {
+    NSObject<CommandDispatchingWindow>* window =
+        static_cast<NSObject<CommandDispatchingWindow>*>(event.window);
+    return [window commandDispatcher]->isRedispatchingKeyEvent_;
+  }
+  return NO;
+}
+
 - (BOOL)doPerformKeyEquivalent:(NSEvent*)event {
-  // If |redispatchingEvent_| is true, then this is the second time
+  // If the event is being redispatched, then this is the second time
   // performKeyEquivalent: is being called on the event. The first time, a
   // WebContents was firstResponder and claimed to have handled the event [but
   // instead sent the event asynchronously to the renderer process]. The
@@ -91,7 +105,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   //
   // We skip all steps before postPerformKeyEquivalent, since those were already
   // triggered on the first pass of the event.
-  if (redispatchingEvent_) {
+  if ([self isEventBeingRedispatched:event]) {
     if ([delegate_ postPerformKeyEquivalent:event
                                      window:owner_
                                isRedispatch:YES]) {
@@ -168,6 +182,9 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 }
 
 - (BOOL)redispatchKeyEvent:(NSEvent*)event {
+  DCHECK(!isRedispatchingKeyEvent_);
+  base::AutoReset<BOOL> resetter(&isRedispatchingKeyEvent_, YES);
+
   DCHECK(event);
   NSEventType eventType = [event type];
   if (eventType != NSKeyDown && eventType != NSKeyUp &&
@@ -187,12 +204,10 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 
   // Redispatch the event.
   eventHandled_ = YES;
-  redispatchingEvent_ = YES;
   [NSApp sendEvent:event];
-  redispatchingEvent_ = NO;
 
-  // If the event was not handled by [NSApp sendEvent:], the sendEvent:
-  // method below will be called, and because |redispatchingEvent_| is YES,
+  // If the event was not handled by [NSApp sendEvent:], the preSendEvent:
+  // method below will be called, and because the event is being redispatched,
   // |eventHandled_| will be set to NO.
   return eventHandled_;
 }
@@ -208,7 +223,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
       return YES;
   }
 
-  if (redispatchingEvent_) {
+  if ([self isEventBeingRedispatched:event]) {
     // If we get here, then the event was not handled by NSApplication.
     eventHandled_ = NO;
     // Return YES to stop native -sendEvent handling.

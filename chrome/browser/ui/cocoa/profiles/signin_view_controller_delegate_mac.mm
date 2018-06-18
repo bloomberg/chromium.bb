@@ -219,14 +219,12 @@ void SigninViewControllerDelegateMac::DisplayModal() {
 void SigninViewControllerDelegateMac::HandleKeyboardEvent(
     content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
-  int chrome_command_id = [BrowserWindowUtils getCommandId:event];
-  bool can_handle_command = [BrowserWindowUtils isTextEditingEvent:event] ||
-                            chrome_command_id == IDC_CLOSE_WINDOW ||
-                            chrome_command_id == IDC_EXIT;
-  if ([BrowserWindowUtils shouldHandleKeyboardEvent:event] &&
-      can_handle_command) {
-    [[NSApp mainMenu] performKeyEquivalent:event.os_event];
-  }
+  if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
+    return;
+
+  // Redispatch the event. If it's a keyEquivalent:, this gives
+  // CommandDispatcher the opportunity to finish passing the event to consumers.
+  [[window_ commandDispatcher] redispatchKeyEvent:event.os_event];
 }
 
 void SigninViewControllerDelegateMac::CleanupAndDeleteThis() {

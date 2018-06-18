@@ -189,8 +189,8 @@
   commandHandler_.reset([commandHandler retain]);
 }
 
-- (BOOL)redispatchKeyEvent:(NSEvent*)event {
-  return [commandDispatcher_ redispatchKeyEvent:event];
+- (CommandDispatcher*)commandDispatcher {
+  return commandDispatcher_.get();
 }
 
 - (BOOL)defaultPerformKeyEquivalent:(NSEvent*)event {
