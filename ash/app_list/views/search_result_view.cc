@@ -360,23 +360,10 @@ void SearchResultView::OnMetadataChanged() {
 void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
                                     views::ImageView* const icon,
                                     const int icon_dimension) {
-  // Copy.
   gfx::ImageSkia image(source);
-
-  // Scales down big icons but leave small ones unchanged.
-  if (image.width() > icon_dimension || image.height() > icon_dimension) {
-    image = gfx::ImageSkiaOperations::CreateResizedImage(
-        image, skia::ImageOperations::RESIZE_BEST,
-        gfx::Size(icon_dimension, icon_dimension));
-  } else {
-    icon->ResetImageSize();
-  }
-
-  // Set the image to an empty image before we reset the image because
-  // since we're using the same backing store for our images, sometimes
-  // ImageView won't detect that we have a new image set due to the pixel
-  // buffer pointers remaining the same despite the image changing.
-  icon->SetImage(gfx::ImageSkia());
+  image = gfx::ImageSkiaOperations::CreateResizedImage(
+      source, skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(icon_dimension, icon_dimension));
   icon->SetImage(image);
 }
 

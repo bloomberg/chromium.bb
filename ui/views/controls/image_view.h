@@ -87,6 +87,9 @@ class VIEWS_EXPORT ImageView : public View {
 
   void OnPaintImage(gfx::Canvas* canvas);
 
+  // Gets an ImageSkia to paint that has proper rep for |scale|.
+  gfx::ImageSkia GetPaintImage(float scale);
+
   // Returns true if |img| is the same as the last image we painted. This is
   // intended to be a quick check, not exhaustive. In other words it's possible
   // for this to return false even though the images are in fact equal.
@@ -104,6 +107,9 @@ class VIEWS_EXPORT ImageView : public View {
 
   // The underlying image.
   gfx::ImageSkia image_;
+
+  // Caches the scaled image reps.
+  gfx::ImageSkia scaled_image_;
 
   // Horizontal alignment.
   Alignment horizontal_alignment_;
