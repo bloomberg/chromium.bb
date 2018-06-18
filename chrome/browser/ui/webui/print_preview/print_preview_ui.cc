@@ -51,6 +51,7 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
@@ -578,7 +579,8 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
 
   bool new_print_preview_enabled =
-      base::FeatureList::IsEnabled(features::kNewPrintPreview);
+      base::FeatureList::IsEnabled(features::kNewPrintPreview) ||
+      base::FeatureList::IsEnabled(features::kExperimentalUi);
   if (new_print_preview_enabled) {
     content::WebUIDataSource::Add(profile,
                                   CreateNewPrintPreviewUISource(profile));
