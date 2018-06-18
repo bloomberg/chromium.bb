@@ -9,6 +9,7 @@
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/ui/ash/assistant/assistant_image_downloader.h"
+#include "chrome/browser/ui/ash/assistant/assistant_setup.h"
 #include "chrome/browser/ui/ash/assistant/web_contents_manager.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -59,8 +60,8 @@ void AssistantClient::MaybeInit(service_manager::Connector* connector) {
 
   assistant_image_downloader_ =
       std::make_unique<AssistantImageDownloader>(connector);
-
   web_contents_manager_ = std::make_unique<WebContentsManager>(connector);
+  assistant_setup_ = std::make_unique<AssistantSetup>(connector);
 }
 
 void AssistantClient::OnAssistantStatusChanged(bool running) {

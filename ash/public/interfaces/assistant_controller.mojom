@@ -6,6 +6,7 @@ module ash.mojom;
 
 import "ash/public/interfaces/assistant_image_downloader.mojom";
 import "ash/public/interfaces/web_contents_manager.mojom";
+import "ash/public/interfaces/assistant_setup.mojom";
 import "chromeos/services/assistant/public/mojom/assistant.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -25,6 +26,9 @@ interface AssistantController {
   // Provides an interface to the |web_contents_manager| owned by
   // AssistantClient.
   SetWebContentsManager(WebContentsManager web_contents_manager);
+
+  // Provides an interface to the |assistant_setup| owned by AssistantClient.
+  SetAssistantSetup(AssistantSetup assistant_setup);
 
   // Requests screenshot of specified |rect| region and returns the screenshot
   // encoded in JPEG format. If |rect| is empty, it returns fullscreen
