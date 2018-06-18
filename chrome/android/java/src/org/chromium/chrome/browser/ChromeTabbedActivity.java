@@ -1429,6 +1429,8 @@ public class ChromeTabbedActivity
         super.initializeToolbar();
         if (isTablet()) {
             getToolbarManager().setShouldUpdateToolbarPrimaryColor(false);
+        } else if (FeatureUtilities.isBottomToolbarEnabled()) {
+            getToolbarManager().enableBottomToolbar();
         }
     }
 
