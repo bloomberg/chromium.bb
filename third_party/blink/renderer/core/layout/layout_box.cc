@@ -3698,14 +3698,25 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
 
 LayoutUnit LayoutBox::AvailableLogicalHeight(
     AvailableLogicalHeightType height_type) const {
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    // LayoutNG code is correct, Legacy code incorrectly ConstrainsMinMax
+    // when height is -1, and returns 0, not -1.
+    // The reason this code is NG-only is that this code causes perfomance
+    // regression for nested-percent-height-tables test case.
+    // This code gets executed 740 times in the test case.
+    // https://chromium-review.googlesource.com/c/chromium/src/+/1103289
+    LayoutUnit height =
+        AvailableLogicalHeightUsing(Style()->LogicalHeight(), height_type);
+    if (UNLIKELY(height == -1))
+      return height;
+    return ConstrainContentBoxLogicalHeightByMinMax(height, LayoutUnit(-1));
+  }
   // http://www.w3.org/TR/CSS2/visudet.html#propdef-height - We are interested
   // in the content height.
   // FIXME: Should we pass intrinsicContentLogicalHeight() instead of -1 here?
-  LayoutUnit height =
-      AvailableLogicalHeightUsing(Style()->LogicalHeight(), height_type);
-  if (height != -1)
-    height = ConstrainContentBoxLogicalHeightByMinMax(height, LayoutUnit(-1));
-  return height;
+  return ConstrainContentBoxLogicalHeightByMinMax(
+      AvailableLogicalHeightUsing(Style()->LogicalHeight(), height_type),
+      LayoutUnit(-1));
 }
 
 LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
@@ -3773,6 +3784,7 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
   // mode.
   LayoutUnit available_height =
       ContainingBlockLogicalHeightForContent(height_type);
+  // FIXME: This is incorrect if available_height == -1 || 0
   if (height_type == kExcludeMarginBorderPadding) {
     // FIXME: Margin collapsing hasn't happened yet, so this incorrectly removes
     // collapsed margins.
