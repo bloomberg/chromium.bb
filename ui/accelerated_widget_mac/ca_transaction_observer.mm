@@ -5,7 +5,9 @@
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 
 #include "base/no_destructor.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 
 #import <AppKit/AppKit.h>
 #import <CoreFoundation/CoreFoundation.h>
@@ -50,44 +52,62 @@ void CATransactionCoordinator::SynchronizeImpl() {
     observer.OnActivateForTransaction();
 
   [CATransaction addCommitHandler:^{
-    TRACE_EVENT0("ui", "CATransactionCoordinator: pre-commit handler");
-
-    NSDate* start_date = [NSDate date];
-    for (;;) {
-      base::TimeDelta timeout;
-      for (auto& observer : pre_commit_observers_) {
-        if (observer.ShouldWaitInPreCommit())
-          timeout = std::max(timeout, observer.PreCommitTimeout());
-      }
-      NSDate* deadline =
-          [start_date dateByAddingTimeInterval:timeout.InSecondsF()];
-      if ([deadline isLessThanOrEqualTo:[NSDate date]])
-        break;
-      [NSRunLoop.currentRunLoop runMode:kRunLoopMode beforeDate:deadline];
-    }
+    PreCommitHandler();
   }
                          forPhase:kCATransactionPhasePreCommit];
 
   [CATransaction addCommitHandler:^{
-    TRACE_EVENT0("ui", "CATransactionCoordinator: post-commit handler");
-
-    for (auto& observer : post_commit_observers_)
-      observer.OnEnterPostCommit();
-
-    NSDate* deadline =
-        [NSDate dateWithTimeIntervalSinceNow:kPostCommitTimeout.InSecondsF()];
-    for (;;) {
-      if (!std::any_of(
-              post_commit_observers_.begin(), post_commit_observers_.end(),
-              std::mem_fn(&PostCommitObserver::ShouldWaitInPostCommit)))
-        break;
-      if ([deadline isLessThanOrEqualTo:[NSDate date]])
-        break;
-      [NSRunLoop.currentRunLoop runMode:kRunLoopMode beforeDate:deadline];
-    }
-    active_ = false;
+    PostCommitHandler();
   }
                          forPhase:kCATransactionPhasePostCommit];
+}
+
+void CATransactionCoordinator::PreCommitHandler() {
+  TRACE_EVENT0("ui", "CATransactionCoordinator: pre-commit handler");
+  auto* clock = base::DefaultTickClock::GetInstance();
+  const base::TimeTicks start_time = clock->NowTicks();
+  while (true) {
+    bool continue_waiting = false;
+    base::TimeTicks deadline = start_time;
+    for (auto& observer : pre_commit_observers_) {
+      if (observer.ShouldWaitInPreCommit()) {
+        continue_waiting = true;
+        deadline = std::max(deadline, start_time + observer.PreCommitTimeout());
+      }
+    }
+    if (!continue_waiting)
+      break;  // success
+
+    base::TimeDelta time_left = deadline - clock->NowTicks();
+    if (time_left <= base::TimeDelta::FromSeconds(0))
+      break;  // timeout
+
+    ui::WindowResizeHelperMac::Get()->WaitForSingleTaskToRun(time_left);
+  }
+}
+
+void CATransactionCoordinator::PostCommitHandler() {
+  TRACE_EVENT0("ui", "CATransactionCoordinator: post-commit handler");
+
+  for (auto& observer : post_commit_observers_)
+    observer.OnEnterPostCommit();
+
+  auto* clock = base::DefaultTickClock::GetInstance();
+  const base::TimeTicks deadline = clock->NowTicks() + kPostCommitTimeout;
+  while (true) {
+    bool continue_waiting = std::any_of(
+        post_commit_observers_.begin(), post_commit_observers_.end(),
+        std::mem_fn(&PostCommitObserver::ShouldWaitInPostCommit));
+    if (!continue_waiting)
+      break;  // success
+
+    base::TimeDelta time_left = deadline - clock->NowTicks();
+    if (time_left <= base::TimeDelta::FromSeconds(0))
+      break;  // timeout
+
+    ui::WindowResizeHelperMac::Get()->WaitForSingleTaskToRun(time_left);
+  }
+  active_ = false;
 }
 
 CATransactionCoordinator::CATransactionCoordinator() = default;

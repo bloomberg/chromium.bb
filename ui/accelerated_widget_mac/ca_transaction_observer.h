@@ -75,6 +75,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CATransactionCoordinator {
 
   API_AVAILABLE(macos(10.11))
   void SynchronizeImpl();
+  void PreCommitHandler();
+  void PostCommitHandler();
 
   bool active_ = false;
   base::ObserverList<PreCommitObserver> pre_commit_observers_;
