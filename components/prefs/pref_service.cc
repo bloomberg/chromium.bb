@@ -480,6 +480,14 @@ base::Time PrefService::GetTime(const std::string& path) const {
       base::TimeDelta::FromMicroseconds(GetInt64(path)));
 }
 
+void PrefService::SetTimeDelta(const std::string& path, base::TimeDelta value) {
+  SetInt64(path, value.InMicroseconds());
+}
+
+base::TimeDelta PrefService::GetTimeDelta(const std::string& path) const {
+  return base::TimeDelta::FromMicroseconds(GetInt64(path));
+}
+
 base::Value* PrefService::GetMutableUserPref(const std::string& path,
                                              base::Value::Type type) {
   CHECK(type == base::Value::Type::DICTIONARY ||

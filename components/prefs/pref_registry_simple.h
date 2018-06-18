@@ -75,6 +75,10 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
                         base::Time default_value,
                         uint32_t flags = NO_REGISTRATION_FLAGS);
 
+  void RegisterTimeDeltaPref(const std::string& path,
+                             base::TimeDelta default_value,
+                             uint32_t flags = NO_REGISTRATION_FLAGS);
+
  protected:
   ~PrefRegistrySimple() override;
 

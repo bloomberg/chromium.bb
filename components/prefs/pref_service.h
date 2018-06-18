@@ -16,6 +16,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -247,11 +248,14 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   uint64_t GetUint64(const std::string& path) const;
 
   // Time helper methods that actually store the given value as a string, which
-  // represents the number of microseconds elapsed since the Windows epoch. Note
-  // that if obtaining the named value via GetDictionary or GetList, the Value
-  // type will be Type::STRING.
+  // represents the number of microseconds elapsed (absolute for TimeDelta and
+  // relative to Windows epoch for Time variants). Note that if obtaining the
+  // named value via GetDictionary or GetList, the Value type will be
+  // Type::STRING.
   void SetTime(const std::string& path, base::Time value);
   base::Time GetTime(const std::string& path) const;
+  void SetTimeDelta(const std::string& path, base::TimeDelta value);
+  base::TimeDelta GetTimeDelta(const std::string& path) const;
 
   // Returns the value of the given preference, from the user pref store. If
   // the preference is not set in the user pref store, returns NULL.
