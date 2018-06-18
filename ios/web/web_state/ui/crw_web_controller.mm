@@ -5367,7 +5367,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       navigationContext =
           [self contextForPendingMainFrameNavigationWithURL:newURL];
     }
-    DCHECK(navigationContext->IsSameDocument());
+    navigationContext->SetIsSameDocument(true);
     _webStateImpl->OnNavigationStarted(navigationContext);
     [self didStartLoading];
     self.navigationManagerImpl->CommitPendingItem();
