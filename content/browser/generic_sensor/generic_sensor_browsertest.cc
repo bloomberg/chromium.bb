@@ -122,14 +122,7 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(GenericSensorBrowserTest);
 };
 
-// Flakily crashes on Linux ASAN/TSAN bots.  https://crbug.com/789515
-// Flakily times out on Windows bots.  https://crbug.com/809537
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_AmbientLightSensorTest DISABLED_AmbientLightSensorTest
-#else
-#define MAYBE_AmbientLightSensorTest AmbientLightSensorTest
-#endif
-IN_PROC_BROWSER_TEST_F(GenericSensorBrowserTest, MAYBE_AmbientLightSensorTest) {
+IN_PROC_BROWSER_TEST_F(GenericSensorBrowserTest, AmbientLightSensorTest) {
   // The test page will create an AmbientLightSensor object in Javascript,
   // expects to get events with fake values then navigates to #pass.
   GURL test_url =

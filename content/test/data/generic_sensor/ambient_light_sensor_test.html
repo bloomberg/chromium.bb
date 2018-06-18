@@ -4,10 +4,17 @@
     <script type="text/javascript">
       var timeOrigin;
       var sensor;
+      var activated = false;
+
+      function onAmbientLightActivate() {
+        activated = true;
+      }
+
       function onAmbientLightReading() {
-        if (sensor.illuminance == 50 &&
-            sensor.timestamp > timeOrigin &&
-            sensor.timestamp < window.performance.now()) {
+        if (activated &&
+            sensor.illuminance == 50 &&
+            sensor.timestamp >= timeOrigin &&
+            sensor.timestamp <= window.performance.now()) {
           pass();
         } else {
           fail();
@@ -17,8 +24,8 @@
       function start() {
         sensor = new AmbientLightSensor();
         timeOrigin = window.performance.now();
-        sensor.onreading =
-            onAmbientLightReading;
+        sensor.onactivate = onAmbientLightActivate;
+        sensor.onreading = onAmbientLightReading;
         sensor.start();
       }
 
