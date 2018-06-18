@@ -479,7 +479,7 @@
     </para>
     <para>
       MIME is defined in RFC's 2045-2049. A
-      <ulink url="ftp://ftp.isi.edu/in-notes/iana/assignments/media-types/">
+      <ulink url="https://www.iana.org/assignments/media-types/media-types.xhtml">
       registry of MIME types</ulink> is maintained by the Internet Assigned
       Numbers Authority (IANA).
     </para>
