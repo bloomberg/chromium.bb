@@ -1799,13 +1799,14 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
 
 LayoutUnit NGBlockLayoutAlgorithm::ComputeLineBoxBaselineOffset(
     const NGBaselineRequest& request,
-    const NGPhysicalLineBoxFragment& line_box) const {
+    const NGPhysicalLineBoxFragment& line_box,
+    LayoutUnit line_box_block_offset) const {
   NGLineHeightMetrics metrics = line_box.BaselineMetrics(request.baseline_type);
 
   // NGLineHeightMetrics is line-relative, which matches to the flow-relative
   // unless this box is in flipped-lines writing-mode.
   if (!Style().IsFlippedLinesWritingMode())
-    return metrics.ascent;
+    return metrics.ascent + line_box_block_offset;
 
   if (Node().IsInlineLevel()) {
     // If this box is inline-level, since we're in NGBlockLayoutAlgorithm, this
@@ -1813,13 +1814,14 @@ LayoutUnit NGBlockLayoutAlgorithm::ComputeLineBoxBaselineOffset(
     DCHECK(Node().IsAtomicInlineLevel());
     // This box will be flipped when the containing line is flipped. Compute the
     // baseline offset from the block-end (right in vertical-lr) content edge.
-    return metrics.ascent + border_scrollbar_padding_.block_end -
-           border_scrollbar_padding_.block_start;
+    line_box_block_offset = container_builder_.Size().block_size -
+                            (line_box_block_offset + line_box.Size().width);
+    return metrics.ascent + line_box_block_offset;
   }
 
   // Otherwise, the baseline is offset by the descent from the block-start
   // content edge.
-  return metrics.descent;
+  return metrics.descent + line_box_block_offset;
 }
 
 // Add a baseline from a child box fragment.
@@ -1836,8 +1838,9 @@ bool NGBlockLayoutAlgorithm::AddBaseline(const NGBaselineRequest& request,
     if (line_box->Children().IsEmpty())
       return false;
 
-    LayoutUnit offset = ComputeLineBoxBaselineOffset(request, *line_box);
-    container_builder_.AddBaseline(request, offset + child_offset);
+    LayoutUnit offset =
+        ComputeLineBoxBaselineOffset(request, *line_box, child_offset);
+    container_builder_.AddBaseline(request, offset);
     return true;
   }
 

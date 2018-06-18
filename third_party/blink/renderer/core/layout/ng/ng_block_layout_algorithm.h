@@ -204,7 +204,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // offset in flow-relative coordinates.
   LayoutUnit ComputeLineBoxBaselineOffset(
       const NGBaselineRequest&,
-      const NGPhysicalLineBoxFragment&) const;
+      const NGPhysicalLineBoxFragment&,
+      LayoutUnit line_box_block_offset) const;
 
   // If still unresolved, resolve the fragment's BFC offset.
   //
