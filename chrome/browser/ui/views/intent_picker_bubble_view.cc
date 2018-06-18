@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -82,9 +83,10 @@ class IntentPickerLabelButton : public views::LabelButton {
     if (!icon->IsEmpty())
       SetImage(views::ImageButton::STATE_NORMAL, *icon->ToImageSkia());
     SetBorder(views::CreateEmptyBorder(8, 16, 8, 0));
+    SetFocusForPlatform();
+    set_ink_drop_base_color(SK_ColorGRAY);
+    set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
   }
-
-  SkColor GetInkDropBaseColor() const override { return SK_ColorGRAY; }
 
   void MarkAsUnselected(const ui::Event* event) {
     AnimateInkDrop(views::InkDropState::HIDDEN,
@@ -158,7 +160,10 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   // TODO(aleventhal) Should not need to be focusable as only descendant widgets
   // are interactive; however, it does call RequestFocus(). If it is going to be
   // focusable, it needs an accessible name so that it can pass accessibility
-  // checks. Use the same accessible name as the icon.
+  // checks. Use the same accessible name as the icon. Set the role as kDialog
+  // to ensure screen readers immediately announce the text of this view.
+  intent_picker_bubble_->GetViewAccessibility().OverrideRole(
+      ax::mojom::Role::kDialog);
   intent_picker_bubble_->GetViewAccessibility().OverrideName(
       l10n_util::GetStringUTF16(IDS_TOOLTIP_INTENT_PICKER_ICON));
   intent_picker_bubble_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
