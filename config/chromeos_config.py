@@ -2922,33 +2922,83 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   board_configs = CreateInternalBoardConfigs(
       site_config, boards_dict, ge_build_config)
 
-  site_config.Add(
-      'beaglebone-incremental',
+  master_config = site_config.Add(
+      'master-incremental',
       site_config.templates.incremental,
-      site_config.templates.beaglebone,
-      boards=['beaglebone'],
-      description='Incremental Beaglebone Builder',
+      site_config.templates.internal_incremental,
+      boards=[],
+      master=True,
+      manifest_version=True,
+      slave_configs=[],
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 10m interval',
   )
 
   # Build external source, for an internal board.
-  site_config.Add(
-      'daisy-incremental',
-      site_config.templates.incremental,
-      board_configs['daisy'],
-      site_config.templates.external,
-      useflags=append_useflags(['-chrome_internal']),
-      active_waterfall=waterfall.WATERFALL_EXTERNAL,
+  master_config.AddSlave(
+      site_config.Add(
+          'daisy-incremental',
+          site_config.templates.incremental,
+          board_configs['daisy'],
+          site_config.templates.external,
+          manifest_version=True,
+          useflags=append_useflags(['-chrome_internal']),
+          active_waterfall=waterfall.WATERFALL_EXTERNAL,
+      )
   )
 
-  site_config.Add(
-      'amd64-generic-incremental',
-      site_config.templates.incremental,
-      # This builder runs on a VM, so it can't run VM tests.
-      site_config.templates.no_vmtest_builder,
-      board_configs['amd64-generic'],
-      active_waterfall=waterfall.WATERFALL_EXTERNAL,
+  master_config.AddSlave(
+      site_config.Add(
+          'amd64-generic-incremental',
+          site_config.templates.incremental,
+          # This builder runs on a VM, so it can't run VM tests.
+          site_config.templates.no_vmtest_builder,
+          board_configs['amd64-generic'],
+          manifest_version=True,
+          active_waterfall=waterfall.WATERFALL_EXTERNAL,
+      )
   )
 
+  master_config.AddSlave(
+      site_config.Add(
+          'betty-incremental',
+          site_config.templates.incremental,
+          site_config.templates.internal_incremental,
+          boards=['betty'],
+          manifest_version=True,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
+          vm_tests=getInfoVMTest(),
+          vm_tests_override=getInfoVMTest(),
+      )
+  )
+
+  master_config.AddSlave(
+      site_config.Add(
+          'chell-incremental',
+          site_config.templates.incremental,
+          site_config.templates.internal_incremental,
+          boards=['chell'],
+          manifest_version=True,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
+      )
+  )
+
+  master_config.AddSlave(
+      site_config.Add(
+          'lakitu-incremental',
+          site_config.templates.incremental,
+          site_config.templates.internal_incremental,
+          site_config.templates.lakitu_notification_emails,
+          board_configs['lakitu'],
+          site_config.templates.lakitu_test_customizations,
+          manifest_version=True,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
+      )
+  )
+
+  #
+  # Available, but not regularly scheduled.
+  #
   # TODO(ihf): Delete this builder.
   site_config.Add(
       'x32-generic-incremental',
@@ -2959,31 +3009,11 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.Add(
-      'betty-incremental',
+      'beaglebone-incremental',
       site_config.templates.incremental,
-      site_config.templates.internal_incremental,
-      boards=['betty'],
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
-      vm_tests=getInfoVMTest(),
-      vm_tests_override=getInfoVMTest(),
-  )
-
-  site_config.Add(
-      'chell-incremental',
-      site_config.templates.incremental,
-      site_config.templates.internal_incremental,
-      boards=['chell'],
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
-  )
-
-  site_config.Add(
-      'lakitu-incremental',
-      site_config.templates.incremental,
-      site_config.templates.internal_incremental,
-      site_config.templates.lakitu_notification_emails,
-      board_configs['lakitu'],
-      site_config.templates.lakitu_test_customizations,
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
+      site_config.templates.beaglebone,
+      boards=['beaglebone'],
+      description='Incremental Beaglebone Builder',
   )
 
   site_config.Add(

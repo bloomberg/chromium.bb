@@ -669,13 +669,14 @@ class CBuildBotTest(ChromeosConfigTestBase):
     # TODO(akeshet): Remove this whitelist requirement once buildbot master
     # logic is fully chromite-driven.
     BUILD_TYPE_WHITELIST = (
-        'canary',
-        'pfq',
-        'paladin',
-        'toolchain',
-        'chrome',
-        'android',
-        'full',
+        constants.CANARY_TYPE,
+        constants.PFQ_TYPE,
+        constants.PALADIN_TYPE,
+        constants.TOOLCHAIN_TYPE,
+        constants.CHROME_PFQ_TYPE,
+        constants.ANDROID_PFQ_TYPE,
+        constants.FULL_TYPE,
+        constants.INCREMENTAL_TYPE,
     )
 
     found_types = set()

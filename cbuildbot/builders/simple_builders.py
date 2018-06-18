@@ -517,6 +517,10 @@ class DistributedBuilder(SimpleBuilder):
       sync_stage = self._GetStageInstance(sync_stages.MasterSlaveLKGMSyncStage)
       self.completion_stage_class = (
           completion_stages.MasterSlaveSyncCompletionStage)
+    elif self._run.config.build_type == constants.INCREMENTAL_TYPE:
+      sync_stage = self._GetStageInstance(sync_stages.MasterSlaveLKGMSyncStage)
+      self.completion_stage_class = (
+          completion_stages.MasterSlaveSyncCompletionStage)
     else:
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)
