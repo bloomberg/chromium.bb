@@ -343,7 +343,7 @@ void WindowManager::OnWmClientJankinessChanged(
 }
 
 void WindowManager::OnWmBuildDragImage(const gfx::Point& screen_location,
-                                       const SkBitmap& drag_image,
+                                       const gfx::ImageSkia& drag_image,
                                        const gfx::Vector2d& drag_image_offset,
                                        ui::mojom::PointerKind source) {
   if (drag_image.isNull())
@@ -353,16 +353,13 @@ void WindowManager::OnWmBuildDragImage(const gfx::Point& screen_location,
   // the drag drop code is multidisplay aware.
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 
-  // TODO(erg): SkBitmap is the wrong data type for the drag image; we should
-  // be passing ImageSkias once http://crbug.com/655874 is implemented.
-
   ui::DragDropTypes::DragEventSource ui_source =
       source == ui::mojom::PointerKind::MOUSE
           ? ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE
           : ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH;
   std::unique_ptr<DragImageView> drag_view =
       std::make_unique<DragImageView>(root_window, ui_source);
-  drag_view->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(drag_image));
+  drag_view->SetImage(drag_image);
   gfx::Size size = drag_view->GetPreferredSize();
   gfx::Rect drag_image_bounds(screen_location - drag_image_offset, size);
   drag_view->SetBoundsInScreen(drag_image_bounds);

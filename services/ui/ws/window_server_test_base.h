@@ -106,7 +106,7 @@ class WindowServerTestBase : public WindowServerServiceTestBase,
   void OnWmClientJankinessChanged(const std::set<aura::Window*>& client_windows,
                                   bool not_responding) override;
   void OnWmBuildDragImage(const gfx::Point& screen_location,
-                          const SkBitmap& drag_image,
+                          const gfx::ImageSkia& drag_image,
                           const gfx::Vector2d& drag_image_offset,
                           ui::mojom::PointerKind source) override {}
   void OnWmMoveDragImage(const gfx::Point& screen_location) override {}

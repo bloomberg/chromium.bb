@@ -2090,7 +2090,7 @@ void WindowTreeClient::WmClientJankinessChanged(ui::ClientSpecificId client_id,
 }
 
 void WindowTreeClient::WmBuildDragImage(const gfx::Point& screen_location,
-                                        const SkBitmap& drag_image,
+                                        const gfx::ImageSkia& drag_image,
                                         const gfx::Vector2d& drag_image_offset,
                                         ui::mojom::PointerKind source) {
   if (!window_manager_delegate_)

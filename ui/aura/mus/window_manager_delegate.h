@@ -202,7 +202,7 @@ class AURA_EXPORT WindowManagerDelegate {
   // Called when a Mus client has started a drag, and wants this image to be
   // the drag representation.
   virtual void OnWmBuildDragImage(const gfx::Point& screen_location,
-                                  const SkBitmap& drag_image,
+                                  const gfx::ImageSkia& drag_image,
                                   const gfx::Vector2d& drag_image_offset,
                                   ui::mojom::PointerKind source) = 0;
 

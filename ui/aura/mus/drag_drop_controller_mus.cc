@@ -163,7 +163,7 @@ int DragDropControllerMus::StartDragAndDrop(
 
   window_tree_->PerformDragDrop(
       change_id, root_window_mus->server_id(), screen_location,
-      mojo::MapToFlatMap(drag_data), *data.provider().GetDragImage().bitmap(),
+      mojo::MapToFlatMap(drag_data), data.provider().GetDragImage(),
       data.provider().GetDragImageOffset(), drag_operations, mojo_source);
 
   run_loop.Run();

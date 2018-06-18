@@ -64,7 +64,7 @@ void MusDemoInternal::OnWmClientJankinessChanged(
 }
 
 void MusDemoInternal::OnWmBuildDragImage(const gfx::Point& screen_location,
-                                         const SkBitmap& drag_image,
+                                         const gfx::ImageSkia& drag_image,
                                          const gfx::Vector2d& drag_image_offset,
                                          ui::mojom::PointerKind source) {}
 
