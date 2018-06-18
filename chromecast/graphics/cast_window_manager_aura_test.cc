@@ -35,6 +35,23 @@ class CastTestWindowDelegate : public aura::test::TestWindowDelegate {
   DISALLOW_COPY_AND_ASSIGN(CastTestWindowDelegate);
 };
 
+class TestWindow {
+ public:
+  TestWindow(int id) : window_(&delegate_) {
+    window_.Init(ui::LAYER_NOT_DRAWN);
+    window_.set_id(id);
+    window_.SetBounds(gfx::Rect(0, 0, 1280, 720));
+  }
+
+  aura::Window* window() { return &window_; }
+
+ private:
+  CastTestWindowDelegate delegate_;
+  aura::Window window_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWindow);
+};
+
 TEST_F(CastWindowManagerAuraTest, InitialWindowId) {
   CastTestWindowDelegate window_delegate;
   aura::Window window(&window_delegate);
@@ -100,6 +117,60 @@ TEST_F(CastWindowManagerAuraTest, WindowInputDisabled) {
   ui::test::EventGenerator event_generator(&window);
   event_generator.PressKey(ui::VKEY_0, ui::EF_NONE);
   EXPECT_EQ(ui::VKEY_UNKNOWN, window_delegate.key_code());
+}
+
+void VerifyWindowOrder(aura::Window* root_window) {
+  for (size_t i = 0; i < root_window->children().size() - 1; ++i)
+    EXPECT_LE(root_window->children()[i]->id(),
+              root_window->children()[i + 1]->id());
+}
+
+TEST_F(CastWindowManagerAuraTest, CheckProperWindowOrdering) {
+  std::unique_ptr<CastWindowManagerAura> window_manager =
+      std::make_unique<CastWindowManagerAura>(false /* enable input */);
+
+  TestWindow window1(1);
+  TestWindow window3(3);
+  window_manager->AddWindow(window1.window());
+  window_manager->AddWindow(window3.window());
+  window1.window()->Show();
+  window3.window()->Show();
+  // Verify update for top window.
+  VerifyWindowOrder(window_manager->GetRootWindow());
+
+  TestWindow window0(0);
+  window_manager->AddWindow(window0.window());
+  window0.window()->Show();
+  // Verify update for bottom window.
+  VerifyWindowOrder(window_manager->GetRootWindow());
+
+  TestWindow window2(2);
+  window_manager->AddWindow(window2.window());
+  window2.window()->Show();
+  // Verify update for middle window.
+  VerifyWindowOrder(window_manager->GetRootWindow());
+
+  TestWindow window4(4);
+  TestWindow window5(5);
+  TestWindow window6(6);
+  window_manager->AddWindow(window6.window());
+  window_manager->AddWindow(window4.window());
+  window_manager->AddWindow(window5.window());
+  window5.window()->Show();
+  // Verify update with hidden windows.
+  VerifyWindowOrder(window_manager->GetRootWindow());
+
+  TestWindow window7(2);
+  window_manager->AddWindow(window7.window());
+  window7.window()->Show();
+  // Verify update with same window ID.
+  VerifyWindowOrder(window_manager->GetRootWindow());
+  EXPECT_EQ(window7.window(), window_manager->GetRootWindow()->children()[3]);
+
+  window2.window()->Hide();
+  window2.window()->Show();
+  // Verify update ordering with same window ID.
+  EXPECT_EQ(window2.window(), window_manager->GetRootWindow()->children()[3]);
 }
 
 }  // namespace test

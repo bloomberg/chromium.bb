@@ -177,27 +177,21 @@ void CastLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
 
   // Determine z-order relative to existing windows.
   aura::Window::Windows windows = parent->children();
-  aura::Window* above = nullptr;
-  aura::Window* below = nullptr;
-  for (auto* other : windows) {
-    if (other == child) {
-      continue;
-    }
-    if ((other->id() < child->id()) && (!below || other->id() > below->id())) {
-      below = other;
-    } else if ((other->id() > child->id()) &&
-               (!above || other->id() < above->id())) {
-      above = other;
-    }
-  }
+  std::stable_sort(windows.begin(), windows.end(),
+                   [child](aura::Window* lhs, aura::Window* rhs) {
+                     // Promote |child| to the top of the stack of windows with
+                     // the same ID.
+                     if (lhs->id() == rhs->id() && rhs == child)
+                       return true;
 
-  // Adjust the z-order of the new child window.
-  if (above) {
-    parent->StackChildBelow(child, above);
-  } else if (below) {
-    parent->StackChildAbove(child, below);
-  } else {
-    parent->StackChildAtBottom(child);
+                     return lhs->id() < rhs->id();
+                   });
+
+  for (size_t i = 0; i < windows.size(); ++i) {
+    if (i == 0)
+      parent->StackChildAtBottom(windows[i]);
+    else
+      parent->StackChildAbove(windows[i], windows[i - 1]);
   }
 }
 
