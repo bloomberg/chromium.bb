@@ -4257,6 +4257,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "extensions_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -5760,6 +5766,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "events_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
