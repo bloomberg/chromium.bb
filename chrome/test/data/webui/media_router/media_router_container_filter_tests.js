@@ -169,7 +169,7 @@ cr.define('media_router_container_filter', function() {
       // Tests that focusing the sink search input will cause the container to
       // enter filter view.
       test('focus sink search input', function(done) {
-        MockInteractions.focus(container.$$('#sink-search-input'));
+        container.$$('#sink-search-input').focus();
         setTimeout(function() {
           checkCurrentView(media_router.MediaRouterView.FILTER);
           assertEquals(

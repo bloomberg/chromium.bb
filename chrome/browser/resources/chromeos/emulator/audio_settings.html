@@ -2,13 +2,13 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="icons.html">
 <link rel="import" href="shared_styles.html">
@@ -24,12 +24,12 @@
       <div slot="body">
         <form>
           <div class="form-field-section">
-            <paper-input value="{{currentEditableObject.deviceName}}"
-                label="Device Name"></paper-input>
-            <paper-input value="{{currentEditableObject.name}}"
-                label="Tray Name"></paper-input>
-            <paper-input value="{{currentEditableObject.id}}"
-                label="ID" disabled></paper-input>
+            <cr-input value="{{currentEditableObject.deviceName}}"
+                label="Device Name"></cr-input>
+            <cr-input value="{{currentEditableObject.name}}"
+                label="Tray Name"></cr-input>
+            <cr-input value="{{currentEditableObject.id}}"
+                label="ID" disabled></cr-input>
           </div>
           <div class="form-field-section">
             <span class="toggle-button-label">Is Input</span>
