@@ -142,6 +142,9 @@ KEYBOARD_EXPORT bool IsFullscreenHandwritingVirtualKeyboardEnabled();
 // Returns true if stylus virtual keyboard feature is enabled.
 KEYBOARD_EXPORT bool IsStylusVirtualKeyboardEnabled();
 
+// Returns true if virtual keyboard md ui feature is enabled.
+KEYBOARD_EXPORT bool IsVirtualKeyboardMdUiEnabled();
+
 // Returns true if gesture typing option is enabled for virtual keyboard.
 KEYBOARD_EXPORT bool IsGestureTypingEnabled();
 
