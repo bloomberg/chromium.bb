@@ -80,6 +80,10 @@ class FeedStorageDatabase {
   void DeleteContentByPrefix(const std::string& prefix_to_delete,
                              ConfirmationCallback callback);
 
+  // Delete all content, |callback| will be called when all content is deleted
+  // or if there is an error.
+  void DeleteAllContent(ConfirmationCallback callback);
+
   // Loads the journal data for the |key| and passes it to |callback|.
   void LoadJournal(const std::string& key, JournalLoadCallback callback);
 
@@ -104,15 +108,15 @@ class FeedStorageDatabase {
   // is deleted or if there is an error.
   void DeleteJournal(const std::string& key, ConfirmationCallback callback);
 
+  // Delete all journals, |callback| will be called when all journals are
+  // deleted or if there is an error.
+  void DeleteAllJournals(ConfirmationCallback callback);
+
  private:
   // Callback methods given to |storage_database_| for async responses.
   void OnDatabaseInitialized(bool success);
   void OnLoadEntriesForLoadContent(
       ContentLoadCallback callback,
-      bool success,
-      std::unique_ptr<std::vector<FeedStorageProto>> content);
-  void OnLoadEntriesForDeleteContent(
-      ConfirmationCallback callback,
       bool success,
       std::unique_ptr<std::vector<FeedStorageProto>> content);
   void OnGetEntryForLoadJournal(JournalLoadCallback callback,

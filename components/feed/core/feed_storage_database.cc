@@ -160,13 +160,13 @@ void FeedStorageDatabase::DeleteContent(
     ConfirmationCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::unordered_set<std::string> key_set;
+  auto content_to_delete = std::make_unique<std::vector<std::string>>();
   for (const auto& key : keys_to_delete) {
-    key_set.insert(FormatContentKeyToStorageKey(key));
+    content_to_delete->emplace_back(FormatContentKeyToStorageKey(key));
   }
-  storage_database_->LoadEntriesWithFilter(
-      base::BindRepeating(&DatabaseKeyFilter, std::move(key_set)),
-      base::BindOnce(&FeedStorageDatabase::OnLoadEntriesForDeleteContent,
+  storage_database_->UpdateEntries(
+      std::make_unique<StorageEntryVector>(), std::move(content_to_delete),
+      base::BindOnce(&FeedStorageDatabase::OnStorageCommitted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -176,9 +176,21 @@ void FeedStorageDatabase::DeleteContentByPrefix(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::string key_prefix = FormatContentKeyToStorageKey(prefix_to_delete);
-  storage_database_->LoadEntriesWithFilter(
+  storage_database_->UpdateEntriesWithRemoveFilter(
+      std::make_unique<StorageEntryVector>(),
       base::BindRepeating(&DatabasePrefixFilter, std::move(key_prefix)),
-      base::BindOnce(&FeedStorageDatabase::OnLoadEntriesForDeleteContent,
+      base::BindOnce(&FeedStorageDatabase::OnStorageCommitted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FeedStorageDatabase::DeleteAllContent(ConfirmationCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::string key_prefix = FormatContentKeyToStorageKey(std::string());
+  storage_database_->UpdateEntriesWithRemoveFilter(
+      std::make_unique<StorageEntryVector>(),
+      base::BindRepeating(&DatabasePrefixFilter, std::move(key_prefix)),
+      base::BindOnce(&FeedStorageDatabase::OnStorageCommitted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -237,6 +249,17 @@ void FeedStorageDatabase::DeleteJournal(const std::string& key,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void FeedStorageDatabase::DeleteAllJournals(ConfirmationCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  std::string key_prefix = FormatJournalKeyToStorageKey(std::string());
+  storage_database_->UpdateEntriesWithRemoveFilter(
+      std::make_unique<StorageEntryVector>(),
+      base::BindRepeating(&DatabasePrefixFilter, std::move(key_prefix)),
+      base::BindOnce(&FeedStorageDatabase::OnStorageCommitted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void FeedStorageDatabase::OnDatabaseInitialized(bool success) {
   DCHECK_EQ(database_status_, UNINITIALIZED);
 
@@ -268,28 +291,6 @@ void FeedStorageDatabase::OnLoadEntriesForLoadContent(
   }
 
   std::move(callback).Run(std::move(results));
-}
-
-void FeedStorageDatabase::OnLoadEntriesForDeleteContent(
-    ConfirmationCallback callback,
-    bool success,
-    std::unique_ptr<std::vector<FeedStorageProto>> content) {
-  if (!success || !content) {
-    DVLOG_IF(1, !success) << "FeedStorageDatabase load content failed.";
-    std::move(callback).Run(success);
-    return;
-  }
-
-  auto contents_to_delete = std::make_unique<std::vector<std::string>>();
-  for (const auto& proto : *content) {
-    DCHECK(proto.has_content_data());
-    contents_to_delete->push_back(FormatContentKeyToStorageKey(proto.key()));
-  }
-
-  storage_database_->UpdateEntries(
-      std::make_unique<StorageEntryVector>(), std::move(contents_to_delete),
-      base::BindOnce(&FeedStorageDatabase::OnStorageCommitted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void FeedStorageDatabase::OnGetEntryForLoadJournal(

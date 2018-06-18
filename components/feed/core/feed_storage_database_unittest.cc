@@ -225,7 +225,6 @@ TEST_F(FeedStorageDatabaseTest, DeleteContent) {
       std::move(keys),
       base::BindOnce(&FeedStorageDatabaseTest::OnStorageCommitted,
                      base::Unretained(this)));
-  storage_db()->LoadCallback(true);
   storage_db()->UpdateCallback(true);
 
   // Make sure only |kContentKey2| got deleted.
@@ -255,7 +254,6 @@ TEST_F(FeedStorageDatabaseTest, DeleteContentByPrefix) {
       kContentKeyPrefix,
       base::BindOnce(&FeedStorageDatabaseTest::OnStorageCommitted,
                      base::Unretained(this)));
-  storage_db()->LoadCallback(true);
   storage_db()->UpdateCallback(true);
 
   // Make sure |kContentKey1| and |kContentKey2| got deleted.
@@ -268,6 +266,48 @@ TEST_F(FeedStorageDatabaseTest, DeleteContentByPrefix) {
       base::BindOnce(&FeedStorageDatabaseTest::OnContentEntriesReceived,
                      base::Unretained(this)));
   storage_db()->LoadCallback(true);
+}
+
+TEST_F(FeedStorageDatabaseTest, DeleteAllContent) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Store |kContentKey1| and |kContentKey2|.
+  InjectContentStorageProto(kContentKey1, kContentData1);
+  InjectContentStorageProto(kContentKey2, kContentData2);
+
+  // Store |kJournalKey1|, |kJournalKey2|, |kJournalKey3|.
+  InjectJournalStorageProto(kJournalKey1,
+                            {kJournalData1, kJournalData2, kJournalData3});
+  InjectJournalStorageProto(kJournalKey2, {kJournalData4, kJournalData5});
+  InjectJournalStorageProto(kJournalKey3, {kJournalData6});
+
+  // Delete all content, meaning |kContentKey1| and |kContentKey2| are expected
+  // to be deleted.
+  EXPECT_CALL(*this, OnStorageCommitted(true));
+  db()->DeleteAllContent(base::BindOnce(
+      &FeedStorageDatabaseTest::OnStorageCommitted, base::Unretained(this)));
+  storage_db()->UpdateCallback(true);
+
+  // Make sure |kContentKey1| and |kContentKey2| got deleted.
+  EXPECT_CALL(*this, OnContentEntriesReceived(_))
+      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+        EXPECT_EQ(results.size(), 0U);
+      });
+  db()->LoadContent(
+      {kContentKey1, kContentKey2},
+      base::BindOnce(&FeedStorageDatabaseTest::OnContentEntriesReceived,
+                     base::Unretained(this)));
+  storage_db()->LoadCallback(true);
+
+  // Make sure all journals are there.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 3U);
+      });
+  db()->LoadAllJournalKeys(
+      base::BindOnce(&FeedStorageDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->LoadKeysCallback(true);
 }
 
 TEST_F(FeedStorageDatabaseTest, LoadJournalEntry) {
@@ -485,6 +525,52 @@ TEST_F(FeedStorageDatabaseTest, DeleteJournal) {
       base::BindOnce(&FeedStorageDatabaseTest::OnJournalEntryReceived,
                      base::Unretained(this)));
   storage_db()->LoadKeysCallback(true);
+}
+
+TEST_F(FeedStorageDatabaseTest, DeleteAllJournals) {
+  CreateDatabase(/*init_database=*/true);
+
+  // Store |kContentKey1| and |kContentKey2|.
+  InjectContentStorageProto(kContentKey1, kContentData1);
+  InjectContentStorageProto(kContentKey2, kContentData2);
+
+  // Store |kJournalKey1|, |kJournalKey2|, |kJournalKey3|.
+  InjectJournalStorageProto(kJournalKey1,
+                            {kJournalData1, kJournalData2, kJournalData3});
+  InjectJournalStorageProto(kJournalKey2, {kJournalData4, kJournalData5});
+  InjectJournalStorageProto(kJournalKey3, {kJournalData6});
+
+  // Delete all journals, meaning |kJournalKey1|, |kJournalKey2| and
+  // |kJournalKey3| are expected to be deleted.
+  EXPECT_CALL(*this, OnStorageCommitted(true));
+  db()->DeleteAllJournals(base::BindOnce(
+      &FeedStorageDatabaseTest::OnStorageCommitted, base::Unretained(this)));
+  storage_db()->UpdateCallback(true);
+
+  // Make sure all journals got deleted.
+  EXPECT_CALL(*this, OnJournalEntryReceived(_))
+      .WillOnce([](std::vector<std::string> results) {
+        ASSERT_EQ(results.size(), 0U);
+      });
+  db()->LoadAllJournalKeys(
+      base::BindOnce(&FeedStorageDatabaseTest::OnJournalEntryReceived,
+                     base::Unretained(this)));
+  storage_db()->LoadKeysCallback(true);
+
+  // Make sure all content are still there.
+  EXPECT_CALL(*this, OnContentEntriesReceived(_))
+      .WillOnce([](std::vector<std::pair<std::string, std::string>> results) {
+        ASSERT_EQ(results.size(), 2U);
+        EXPECT_EQ(results[0].first, kContentKey1);
+        EXPECT_EQ(results[0].second, kContentData1);
+        EXPECT_EQ(results[1].first, kContentKey2);
+        EXPECT_EQ(results[1].second, kContentData2);
+      });
+  db()->LoadContent(
+      {kContentKey1, kContentKey2},
+      base::BindOnce(&FeedStorageDatabaseTest::OnContentEntriesReceived,
+                     base::Unretained(this)));
+  storage_db()->LoadCallback(true);
 }
 
 }  // namespace feed
