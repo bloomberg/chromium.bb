@@ -22,9 +22,6 @@ Polymer({
     'updateFromSettings_(capability, settings.vendorItems.value)',
   ],
 
-  /** @private {boolean} */
-  highlighted_: false,
-
   /** @private */
   updateFromSettings_: function() {
     const settings = this.getSetting('vendorItems').value;
@@ -152,11 +149,10 @@ Polymer({
 
   /**
    * @param {?RegExp} query The current search query.
-   * @return {boolean} Whether the current query is a match for this item.
+   * @return {!print_preview.HighlightResults} The highlight wrappers and
+   *     search bubbles that were created.
    */
   updateHighlighting: function(query) {
-    this.highlighted_ =
-        print_preview.updateHighlights(this, query, this.highlighted_);
-    return this.highlighted_ || !query;
+    return print_preview.updateHighlights(this, query);
   },
 });

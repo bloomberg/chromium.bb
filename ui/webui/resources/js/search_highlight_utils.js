@@ -16,6 +16,36 @@ cr.define('cr.search_highlight_utils', function() {
   const SEARCH_BUBBLE_CSS_CLASS = 'search-bubble';
 
   /**
+   * Replaces the the highlight wrappers given in |wrappers| with the original
+   * search nodes.
+   * @param {!Array<!Node>} wrappers
+   */
+  function removeHighlights(wrappers) {
+    for (let wrapper of wrappers) {
+      // If wrapper is already removed, do nothing.
+      if (!wrapper.parentElement)
+        continue;
+
+      const textNode =
+          wrapper.querySelector(`.${ORIGINAL_CONTENT_CSS_CLASS}`).firstChild;
+      wrapper.parentElement.replaceChild(textNode, wrapper);
+    }
+  }
+
+  /**
+   * Finds all previous highlighted nodes under |node| and replaces the
+   * highlights (yellow rectangles) with the original search node. Searches only
+   * within the same shadowRoot and assumes that only one highlight wrapper
+   * exists under |node|.
+   * @param {!Node} node
+   */
+  function findAndRemoveHighlights(node) {
+    const wrappers = Array.from(node.querySelectorAll(`.${WRAPPER_CSS_CLASS}`));
+    assert(wrappers.length == 1);
+    removeHighlights(wrappers);
+  }
+
+  /**
    * Applies the highlight UI (yellow rectangle) around all matches in |node|.
    * @param {!Node} node The text node to be highlighted. |node| ends up
    *     being hidden.
@@ -24,6 +54,7 @@ cr.define('cr.search_highlight_utils', function() {
    *     odd indices hold the text to be highlighted. For example:
    *     const r = new RegExp('(foo)', 'i');
    *     'barfoobar foo bar'.split(r) => ['bar', 'foo', 'bar ', 'foo', ' bar']
+   * @return {!Node} The new highlight wrapper.
    */
   function highlight(node, tokens) {
     const wrapper = document.createElement('span');
@@ -52,37 +83,7 @@ cr.define('cr.search_highlight_utils', function() {
         wrapper.appendChild(hitSpan);
       }
     }
-  }
-
-  /**
-   * Finds all previous highlighted nodes under |node| (both within self and
-   * children's Shadow DOM) and replaces the highlights (yellow rectangles)
-   * with the original search node.
-   * @param {!Node} node
-   * @private
-   */
-  function findAndRemoveHighlights(node) {
-    const wrappers = node.querySelectorAll(`* /deep/ .${WRAPPER_CSS_CLASS}`);
-
-    for (let i = 0; i < wrappers.length; i++) {
-      const wrapper = wrappers[i];
-      const textNode =
-          wrapper.querySelector(`.${ORIGINAL_CONTENT_CSS_CLASS}`).firstChild;
-      wrapper.parentElement.replaceChild(textNode, wrapper);
-    }
-  }
-
-  /**
-   * Finds and removes all previously created yellow search bubbles under
-   * |node| (both within self and children's Shadow DOM).
-   * @param {!Node} node
-   * @private
-   */
-  function findAndRemoveBubbles(node) {
-    const searchBubbles =
-        node.querySelectorAll(`* /deep/ .${SEARCH_BUBBLE_CSS_CLASS}`);
-    for (let bubble of searchBubbles)
-      bubble.remove();
+    return wrapper;
   }
 
   /**
@@ -90,6 +91,8 @@ cr.define('cr.search_highlight_utils', function() {
    * should already be visible or the bubble will render incorrectly.
    * @param {!HTMLElement} element The element to be highlighted.
    * @param {string} rawQuery The search query.
+   * @return {?Node} The search bubble that was added, or null if no new bubble
+   *     was added.
    * @private
    */
   function highlightControlWithBubble(element, rawQuery) {
@@ -97,7 +100,7 @@ cr.define('cr.search_highlight_utils', function() {
     // If the element has already been highlighted, there is no need to do
     // anything.
     if (searchBubble)
-      return;
+      return null;
 
     searchBubble = document.createElement('div');
     searchBubble.classList.add(SEARCH_BUBBLE_CSS_CLASS);
@@ -119,12 +122,13 @@ cr.define('cr.search_highlight_utils', function() {
       innards.classList.toggle('above');
       updatePosition();
     });
+    return searchBubble;
   }
 
   return {
+    removeHighlights: removeHighlights,
+    findAndRemoveHighlights: findAndRemoveHighlights,
     highlight: highlight,
     highlightControlWithBubble: highlightControlWithBubble,
-    findAndRemoveBubbles: findAndRemoveBubbles,
-    findAndRemoveHighlights: findAndRemoveHighlights,
   };
 });
