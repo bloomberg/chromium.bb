@@ -26428,7 +26428,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="150" label="openSUSE Other"/>
   <int value="151" label="openSUSE Leap 42.2"/>
   <int value="152" label="openSUSE Leap 42.3"/>
-  <int value="153" label="openSUSE Leap 15"/>
+  <int value="153" label="openSUSE Leap 15.0"/>
+  <int value="154" label="openSUSE Leap 15.1"/>
+  <int value="155" label="openSUSE Leap 15.2"/>
   <int value="200" label="Ubuntu Other"/>
   <int value="201" label="Ubuntu 14.04"/>
   <int value="202" label="Ubuntu 16.04"/>
