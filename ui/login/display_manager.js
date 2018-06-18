@@ -474,7 +474,7 @@ cr.define('cr.ui.login', function() {
         chrome.send('setOobeBootstrappingSlave');
       } else if (name == ACCELERATOR_DEMO_MODE) {
         if (DEMO_MODE_SETUP_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) !=
-          -1 && this.isOobeUI()) {
+            -1) {
           this.showEnableDemoModeDialog_();
         }
       } else if (name == ACCELERATOR_SEND_FEEDBACK) {
