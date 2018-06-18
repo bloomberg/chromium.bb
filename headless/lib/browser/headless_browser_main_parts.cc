@@ -12,8 +12,7 @@
 namespace headless {
 
 HeadlessBrowserMainParts::HeadlessBrowserMainParts(HeadlessBrowserImpl* browser)
-    : browser_(browser)
-    , devtools_http_handler_started_(false) {}
+    : browser_(browser) {}
 
 HeadlessBrowserMainParts::~HeadlessBrowserMainParts() = default;
 
@@ -27,11 +26,21 @@ void HeadlessBrowserMainParts::PreMainMessageLoopRun() {
   browser_->PlatformInitialize();
 }
 
+void HeadlessBrowserMainParts::PreDefaultMainMessageLoopRun(
+    base::OnceClosure quit_closure) {
+  quit_main_message_loop_ = std::move(quit_closure);
+}
+
 void HeadlessBrowserMainParts::PostMainMessageLoopRun() {
   if (devtools_http_handler_started_) {
     StopLocalDevToolsHttpHandler();
     devtools_http_handler_started_ = false;
   }
+}
+
+void HeadlessBrowserMainParts::QuitMainMessageLoop() {
+  if (quit_main_message_loop_)
+    std::move(quit_main_message_loop_).Run();
 }
 
 }  // namespace headless
