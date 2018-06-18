@@ -75,8 +75,7 @@ StackSamplingProfiler::Frame::Frame(uintptr_t instruction_pointer,
 StackSamplingProfiler::Frame::~Frame() = default;
 
 StackSamplingProfiler::Frame::Frame()
-    : instruction_pointer(0), module_index(kUnknownModuleIndex) {
-}
+    : instruction_pointer(0), module_index(kUnknownModuleIndex) {}
 
 // StackSamplingProfiler::Sample ----------------------------------------------
 
@@ -114,6 +113,40 @@ StackSamplingProfiler::CallStackProfile::CopyForTesting() const {
 StackSamplingProfiler::CallStackProfile::CallStackProfile(
     const CallStackProfile& other) = default;
 
+// StackSamplingProfiler::SamplingProfileBuilder ------------------------------
+
+StackSamplingProfiler::SamplingProfileBuilder::SamplingProfileBuilder(
+    const CompletedCallback& callback)
+    : callback_(callback) {}
+
+StackSamplingProfiler::SamplingProfileBuilder::~SamplingProfileBuilder() =
+    default;
+
+void StackSamplingProfiler::SamplingProfileBuilder::RecordAnnotations() {
+  // The code inside this method must not do anything that could acquire a
+  // mutex, including allocating memory (which includes LOG messages) because
+  // that mutex could be held by a stopped thread, thus resulting in deadlock.
+  sample_.process_milestones = subtle::NoBarrier_Load(&process_milestones_);
+}
+
+void StackSamplingProfiler::SamplingProfileBuilder::OnProfileCompleted(
+    TimeDelta profile_duration,
+    TimeDelta sampling_period) {
+  profile_.profile_duration = profile_duration;
+  profile_.sampling_period = sampling_period;
+
+  // Run the associated callback, passing the collected profile.
+  callback_.Run(std::move(profile_));
+}
+
+void StackSamplingProfiler::SamplingProfileBuilder::OnSampleCompleted(
+    std::vector<Frame> frames) {
+  DCHECK_EQ(sample_.frames.size(), 0u);
+  sample_.frames = std::move(frames);
+  profile_.samples.push_back(std::move(sample_));
+  sample_ = Sample();
+}
+
 // StackSamplingProfiler::SamplingThread --------------------------------------
 
 class StackSamplingProfiler::SamplingThread : public Thread {
@@ -146,28 +179,30 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   struct CollectionContext {
     CollectionContext(PlatformThreadId target,
                       const SamplingParams& params,
-                      const CompletedCallback& callback,
                       WaitableEvent* finished,
-                      std::unique_ptr<NativeStackSampler> sampler)
+                      std::unique_ptr<NativeStackSampler> sampler,
+                      std::unique_ptr<SamplingProfileBuilder> profile_builder)
         : collection_id(next_collection_id.GetNext()),
           target(target),
           params(params),
-          callback(callback),
           finished(finished),
-          native_sampler(std::move(sampler)) {}
+          native_sampler(std::move(sampler)),
+          profile_builder(std::move(profile_builder)) {}
     ~CollectionContext() = default;
 
     // An identifier for this collection, used to uniquely identify the
     // collection to outside interests.
     const int collection_id;
 
-    const PlatformThreadId target;     // ID of The thread being sampled.
-    const SamplingParams params;       // Information about how to sample.
-    const CompletedCallback callback;  // Callback made when sampling complete.
-    WaitableEvent* const finished;     // Signaled when all sampling complete.
+    const PlatformThreadId target;  // ID of The thread being sampled.
+    const SamplingParams params;    // Information about how to sample.
+    WaitableEvent* const finished;  // Signaled when all sampling complete.
 
     // Platform-specific module that does the actual sampling.
     std::unique_ptr<NativeStackSampler> native_sampler;
+
+    // Receives the sampling data and builds a CallStackProfile.
+    std::unique_ptr<SamplingProfileBuilder> profile_builder;
 
     // The absolute time for the next sample.
     Time next_sample_time;
@@ -177,9 +212,6 @@ class StackSamplingProfiler::SamplingThread : public Thread {
 
     // Counter that indicates the current sample position along the acquisition.
     int sample_count = 0;
-
-    // The collected stack samples.
-    CallStackProfile profile;
 
     // Sequence number for generating new collection ids.
     static AtomicSequenceNumber next_collection_id;
@@ -232,10 +264,10 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   // Get task runner that is usable from the sampling thread itself.
   scoped_refptr<SingleThreadTaskRunner> GetTaskRunnerOnSamplingThread();
 
-  // Finishes a collection and reports collected data via callback. The
-  // collection's |finished| waitable event will be signalled. The |collection|
-  // should already have been removed from |active_collections_| by the caller,
-  // as this is needed to avoid flakiness in unit tests.
+  // Finishes a collection. The collection's |finished| waitable event will be
+  // signalled. The |collection| should already have been removed from
+  // |active_collections_| by the caller, as this is needed to avoid flakiness
+  // in unit tests.
   void FinishCollection(CollectionContext* collection);
 
   // Check if the sampling thread is idle and begin a shutdown if it is.
@@ -488,24 +520,16 @@ void StackSamplingProfiler::SamplingThread::FinishCollection(
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
   DCHECK_EQ(0u, active_collections_.count(collection->collection_id));
 
-  collection->profile.profile_duration = Time::Now() -
-                                         collection->profile_start_time +
-                                         collection->params.sampling_interval;
+  TimeDelta profile_duration = Time::Now() - collection->profile_start_time +
+                               collection->params.sampling_interval;
+
   collection->native_sampler->ProfileRecordingStopped();
 
-  // Extract some information so callback and event-signalling can still be
-  // done after the collection has been removed from the list of "active"
-  // ones. This allows the the controlling object (and tests using it) to be
-  // confident that collection is fully finished when those things occur.
-  const CompletedCallback callback = collection->callback;
-  CallStackProfile profile = std::move(collection->profile);
-  WaitableEvent* finished = collection->finished;
-
-  // Run the associated callback, passing the collected profile.
-  callback.Run(std::move(profile));
+  collection->profile_builder->OnProfileCompleted(
+      profile_duration, collection->params.sampling_interval);
 
   // Signal that this collection is finished.
-  finished->Signal();
+  collection->finished->Signal();
 
   ScheduleShutdownIfIdle();
 }
@@ -583,19 +607,18 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
 
   CollectionContext* collection = found->second.get();
 
-  // If this is the first sample, the profile params need to be filled.
+  // If this is the first sample, the collection params need to be filled.
   if (collection->sample_count == 0) {
-    collection->profile.sampling_period = collection->params.sampling_interval;
     collection->profile_start_time = Time::Now();
     collection->next_sample_time = Time::Now();
     collection->native_sampler->ProfileRecordingStarting(
-        &collection->profile.modules);
+        collection->profile_builder->modules());
   }
 
   // Record a single sample.
-  collection->profile.samples.push_back(Sample());
-  collection->native_sampler->RecordStackSample(
-      stack_buffer_.get(), &collection->profile.samples.back());
+  collection->profile_builder->OnSampleCompleted(
+      collection->native_sampler->RecordStackFrames(
+          stack_buffer_.get(), collection->profile_builder.get()));
 
   // Schedule the next sample recording if there is one.
   if (++collection->sample_count < collection->params.samples_per_profile) {
@@ -745,9 +768,10 @@ void StackSamplingProfiler::Start() {
   if (completed_callback_.is_null())
     return;
 
+  profile_builder_.reset(new SamplingProfileBuilder(completed_callback_));
+
   std::unique_ptr<NativeStackSampler> native_sampler =
-      NativeStackSampler::Create(thread_id_, &RecordAnnotations,
-                                 test_delegate_);
+      NativeStackSampler::Create(thread_id_, test_delegate_);
 
   if (!native_sampler)
     return;
@@ -767,8 +791,8 @@ void StackSamplingProfiler::Start() {
   DCHECK_EQ(kNullProfilerId, profiler_id_);
   profiler_id_ = SamplingThread::GetInstance()->Add(
       std::make_unique<SamplingThread::CollectionContext>(
-          thread_id_, params_, completed_callback_, &profiling_inactive_,
-          std::move(native_sampler)));
+          thread_id_, params_, &profiling_inactive_, std::move(native_sampler),
+          std::move(profile_builder_)));
   DCHECK_NE(kNullProfilerId, profiler_id_);
 }
 
@@ -783,14 +807,6 @@ void StackSamplingProfiler::SetProcessMilestone(int milestone) {
   DCHECK_GT(static_cast<int>(sizeof(process_milestones_) * 8), milestone);
   DCHECK_EQ(0, subtle::NoBarrier_Load(&process_milestones_) & (1 << milestone));
   ChangeAtomicFlags(&process_milestones_, 1 << milestone, 0);
-}
-
-// static
-void StackSamplingProfiler::RecordAnnotations(Sample* sample) {
-  // The code inside this method must not do anything that could acquire a
-  // mutex, including allocating memory (which includes LOG messages) because
-  // that mutex could be held by a stopped thread, thus resulting in deadlock.
-  sample->process_milestones = subtle::NoBarrier_Load(&process_milestones_);
 }
 
 // StackSamplingProfiler::Frame global functions ------------------------------
