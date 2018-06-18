@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/db/test_database_manager.h"
@@ -892,6 +893,65 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
                                  base::TimeDelta::FromMilliseconds(0), 1);
   tester().ExpectTotalCount(kSafeBrowsingCheckTime, 2);
+}
+
+struct RedirectSamplesAndResults {
+  std::vector<GURL> urls;
+  bool expected_activation;
+  ActivationPosition expected_position;
+};
+
+TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
+       ActivationTriggeredOnRedirect) {
+  // Turn on the feature to perform safebrowsing on redirects.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      kSafeBrowsingSubresourceFilterConsiderRedirects);
+  std::string histogram_string =
+      "SubresourceFilter.PageLoad.Activation.RedirectPosition";
+
+  // Set up the urls for enforcement.
+  GURL enforce_url("https://example.enforce");
+  GURL warn_url("https://example.warning");
+  GURL normal_url("https://example.regular");
+  safe_browsing::SubresourceFilterType type =
+      safe_browsing::SubresourceFilterType::ABUSIVE;
+  safe_browsing::ThreatMetadata metadata;
+  metadata.subresource_filter_match[type] =
+      safe_browsing::SubresourceFilterLevel::WARN;
+  ConfigureForMatch(enforce_url,
+                    safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER);
+  ConfigureForMatch(warn_url, safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
+                    metadata);
+
+  // Check cases where there are multiple redirection.
+  const RedirectSamplesAndResults kTestCases[] = {
+      {{enforce_url, normal_url, normal_url}, true, ActivationPosition::kFirst},
+      {{warn_url, normal_url, enforce_url}, true, ActivationPosition::kLast},
+      {{enforce_url, normal_url, warn_url}, true, ActivationPosition::kFirst},
+      {{normal_url, enforce_url, warn_url}, true, ActivationPosition::kMiddle},
+      {{normal_url, normal_url}, false, ActivationPosition::kMaxValue},
+      {{enforce_url}, true, ActivationPosition::kOnly},
+  };
+  for (const auto& test_case : kTestCases) {
+    const base::HistogramTester histograms;
+    SimulateStartAndExpectProceed(test_case.urls[0]);
+    for (size_t index = 1; index < test_case.urls.size(); index++) {
+      SimulateRedirectAndExpectProceed(test_case.urls[index]);
+    }
+    RunUntilIdle();
+    SimulateCommitAndExpectProceed();
+    if (test_case.expected_activation) {
+      EXPECT_EQ(ActivationLevel::ENABLED,
+                *observer()->GetPageActivationForLastCommittedLoad());
+      histograms.ExpectUniqueSample(histogram_string,
+                                    test_case.expected_position, 1);
+    } else {
+      EXPECT_EQ(ActivationLevel::DISABLED,
+                *observer()->GetPageActivationForLastCommittedLoad());
+      histograms.ExpectTotalCount(histogram_string, 0);
+    }
+  }
 }
 
 // Disabled due to flaky failures: https://crbug.com/753669.

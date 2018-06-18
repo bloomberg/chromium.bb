@@ -40246,6 +40246,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Kill (He's dead, Jim!)"/>
 </enum>
 
+<enum name="SafeBrowsingActivationPosition">
+  <int value="0" label="Only URL in redirect chain"/>
+  <int value="1" label="First URL in redirect chain"/>
+  <int value="2" label="Any middle URL in redirect chain"/>
+  <int value="3" label="Last redirect in URL chain"/>
+</enum>
+
 <enum name="SafeBrowsingAppOptIn">
   <int value="0" label="No opt-in preference in manifest"/>
   <int value="1" label="Explicit opt-in via manifest"/>
