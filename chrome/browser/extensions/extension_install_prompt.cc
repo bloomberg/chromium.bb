@@ -95,12 +95,6 @@ bool AutoConfirmPrompt(ExtensionInstallPrompt::DoneCallback* callback) {
   return false;
 }
 
-Profile* ProfileForWebContents(content::WebContents* web_contents) {
-  if (!web_contents)
-    return NULL;
-  return Profile::FromBrowserContext(web_contents->GetBrowserContext());
-}
-
 }  // namespace
 
 ExtensionInstallPrompt::Prompt::InstallPromptPermissions::
@@ -523,14 +517,14 @@ scoped_refptr<Extension>
 }
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
-    : profile_(ProfileForWebContents(contents)),
+    : profile_(contents
+                   ? Profile::FromBrowserContext(contents->GetBrowserContext())
+                   : nullptr),
       extension_(NULL),
-      install_ui_(extensions::CreateExtensionInstallUI(
-          ProfileForWebContents(contents))),
+      install_ui_(extensions::CreateExtensionInstallUI(profile_)),
       show_params_(new ExtensionInstallPromptShowParams(contents)),
       did_call_show_dialog_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
                                                gfx::NativeWindow native_window)
