@@ -11,6 +11,11 @@ function log(msg) {
 }
 
 if (window.testRunner) {
+    // Depending on timing, this test may end before or after a CSP event source
+    // violation is fired. Make this test deterministic by don't dumping console
+    // messages.
+    testRunner.setDumpConsoleMessages(false);
+
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
 }
