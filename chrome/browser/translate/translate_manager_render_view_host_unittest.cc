@@ -441,7 +441,7 @@ class TranslateManagerRenderViewHostTest
     params.spellcheck_enabled = false;
     params.is_editable = false;
     params.page_url =
-        web_contents()->GetController().GetActiveEntry()->GetURL();
+        web_contents()->GetController().GetLastCommittedEntry()->GetURL();
 #if defined(OS_MACOSX)
     params.writing_direction_default = 0;
     params.writing_direction_left_to_right = 0;
