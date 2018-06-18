@@ -2413,7 +2413,7 @@
       },
       'Linux TSan Tests': {
         'swarming': {
-          'shards': 5,
+          'shards': 7,
         },
       },
     },
