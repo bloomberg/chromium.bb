@@ -24,6 +24,7 @@
 namespace blink {
 
 class BodyStreamBuffer;
+class ExceptionState;
 class FetchHeaderList;
 class ScriptState;
 class WebServiceWorkerResponse;
@@ -54,7 +55,7 @@ class CORE_EXPORT FetchResponseData final
     return internal_response_;
   }
 
-  FetchResponseData* Clone(ScriptState*);
+  FetchResponseData* Clone(ScriptState*, ExceptionState& exception_state);
 
   network::mojom::FetchResponseType GetType() const { return type_; }
   const KURL* Url() const;
