@@ -14,9 +14,7 @@ namespace content {
 
 bool IsKeySystemSupported(
     const std::string& key_system,
-    std::vector<media::VideoCodec>* supported_video_codecs,
-    bool* supports_persistent_license,
-    std::vector<media::EncryptionMode>* supported_encryption_schemes) {
+    media::mojom::KeySystemCapabilityPtr* key_system_capability) {
   DVLOG(3) << __func__ << " key_system: " << key_system;
 
   bool is_supported = false;
@@ -24,9 +22,8 @@ bool IsKeySystemSupported(
   content::RenderThread::Get()->GetConnector()->BindInterface(
       mojom::kBrowserServiceName, mojo::MakeRequest(&key_system_support));
 
-  key_system_support->IsKeySystemSupported(
-      key_system, &is_supported, supported_video_codecs,
-      supports_persistent_license, supported_encryption_schemes);
+  key_system_support->IsKeySystemSupported(key_system, &is_supported,
+                                           key_system_capability);
   return is_supported;
 }
 

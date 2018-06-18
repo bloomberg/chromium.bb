@@ -59,20 +59,36 @@ KeySystemSupportImpl::~KeySystemSupportImpl() = default;
 void KeySystemSupportImpl::IsKeySystemSupported(
     const std::string& key_system,
     IsKeySystemSupportedCallback callback) {
-  DVLOG(3) << __func__;
-  std::unique_ptr<CdmInfo> cdm = GetCdmInfoForKeySystem(key_system);
-  if (!cdm) {
+  DVLOG(3) << __func__ << ": key_system = " << key_system;
+
+  auto cdm_info = GetCdmInfoForKeySystem(key_system);
+  if (!cdm_info) {
     SendCdmAvailableUMA(key_system, false);
-    std::move(callback).Run(false, {}, false, {});
+    std::move(callback).Run(false, nullptr);
     return;
   }
 
-  const base::flat_set<media::EncryptionMode>& schemes =
-      cdm->supported_encryption_schemes;
   SendCdmAvailableUMA(key_system, true);
-  std::move(callback).Run(
-      true, cdm->supported_video_codecs, cdm->supports_persistent_license,
-      std::vector<media::EncryptionMode>(schemes.begin(), schemes.end()));
+
+  // Supported codecs and encryption schemes.
+  auto capability = media::mojom::KeySystemCapability::New();
+  const auto& schemes = cdm_info->supported_encryption_schemes;
+  capability->video_codecs = cdm_info->supported_video_codecs;
+  capability->encryption_schemes =
+      std::vector<media::EncryptionMode>(schemes.begin(), schemes.end());
+
+  // TODO(xhwang): Populate hw_secure* fields on Windows.
+
+  // Temporary session is always supported.
+  // TODO(xhwang): Populate this from CdmInfo.
+  capability->session_types.push_back(media::CdmSessionType::TEMPORARY_SESSION);
+
+  if (cdm_info->supports_persistent_license) {
+    capability->session_types.push_back(
+        media::CdmSessionType::PERSISTENT_LICENSE_SESSION);
+  }
+
+  std::move(callback).Run(true, std::move(capability));
 }
 
 }  // namespace content
