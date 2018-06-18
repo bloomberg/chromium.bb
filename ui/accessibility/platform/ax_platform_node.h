@@ -70,6 +70,14 @@ class AX_EXPORT AXPlatformNode {
 
   static bool HasInputSuggestions();
 
+  // Return the focused object in any UI popup overlaying content, or null.
+  static gfx::NativeViewAccessible GetPopupFocusOverride();
+
+  // Set the focused object withn any UI popup overlaying content, or null.
+  // The focus override is the perceived focus within the popup, and it changes
+  // each time a user navigates to a new item within the popup.
+  static void SetPopupFocusOverride(gfx::NativeViewAccessible focus_override);
+
   // Call Destroy rather than deleting this, because the subclass may
   // use reference counting.
   virtual void Destroy();
@@ -104,6 +112,11 @@ class AX_EXPORT AXPlatformNode {
   static AXMode ax_mode_;
 
   static bool has_input_suggestions_;
+
+  // This allows UI menu popups like to act as if they are focused in the
+  // exposed platform accessibility API, even though actual focus remains in
+  // underlying content.
+  static gfx::NativeViewAccessible popup_focus_override_;
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNode);
 };

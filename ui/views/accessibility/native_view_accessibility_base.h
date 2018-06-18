@@ -88,11 +88,6 @@ class VIEWS_EXPORT NativeViewAccessibilityBase
   // Levels of menu are currently open, e.g. 0: none, 1: top, 2: submenu ...
   static int32_t menu_depth_;
 
-  // This allows UI menu popups like to act as if they are focused in the
-  // exposed platform accessibility API, even though true focus remains in
-  // underlying content.
-  static int32_t fake_focus_view_id_;
-
   DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityBase);
 };
 

@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
@@ -1383,6 +1384,16 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (id)accessibilityFocusedUIElement {
+  // If content is overlayed with a focused popup from native UI code, this
+  // getter must return the current menu item as the focused element, rather
+  // than the focus within the content. An example of this occurs with the
+  // Autofill feature, where focus is actually still in the textbox although
+  // the UX acts as if focus is in the popup.
+  gfx::NativeViewAccessible popup_focus_override =
+      ui::AXPlatformNode::GetPopupFocusOverride();
+  if (popup_focus_override)
+    return popup_focus_override;
+
   BrowserAccessibilityManager* manager =
       client_->GetRootBrowserAccessibilityManager();
   if (manager) {
