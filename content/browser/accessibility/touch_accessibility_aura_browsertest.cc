@@ -10,6 +10,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/hit_test_region_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -169,10 +170,11 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
       child_frame->GetOrCreateBrowserAccessibilityManager();
   ASSERT_NE(nullptr, child_manager);
 
-  // If OOPIFs are enabled, wait until compositor frames are all properly
-  // displayed, otherwise the touch event will not get sent to the correct
-  // renderer process.
-  WaitForChildFrameSurfaceReady(child_frame);
+  // If OOPIFs are enabled, wait until hit testing data is ready, otherwise the
+  // touch event will not get sent to the correct renderer process. However the
+  // |child_frame| being used here is not actually a
+  // RenderWidgetHostViewChildFrame.
+  WaitForHitTestDataOrChildSurfaceReady(child_frame);
 
   // Send a touch exploration event to the button in the first iframe.
   // A touch exploration event is just a mouse move event with
