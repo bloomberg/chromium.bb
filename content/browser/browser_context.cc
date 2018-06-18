@@ -349,6 +349,14 @@ BrowserContext::BlobContextGetter BrowserContext::GetBlobStorageContext(
 }
 
 // static
+blink::mojom::BlobPtr BrowserContext::GetBlobPtr(
+    BrowserContext* browser_context,
+    const std::string& uuid) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return ChromeBlobStorageContext::GetBlobPtr(browser_context, uuid);
+}
+
+// static
 void BrowserContext::DeliverPushMessage(
     BrowserContext* browser_context,
     const GURL& origin,
