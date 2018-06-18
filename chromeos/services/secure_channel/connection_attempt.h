@@ -17,6 +17,7 @@
 #include "chromeos/services/secure_channel/connection_attempt_details.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
+#include "chromeos/services/secure_channel/pending_connection_request_delegate.h"
 
 namespace chromeos {
 
@@ -29,7 +30,7 @@ class AuthenticatedChannel;
 // more PendingConnectionRequests and notifies its delegate when the attempt has
 // succeeded or failed.
 template <typename FailureDetailType>
-class ConnectionAttempt {
+class ConnectionAttempt : public PendingConnectionRequestDelegate {
  public:
   // Extracts all of the ClientConnectionParameters owned by |attempt|'s
   // PendingConnectionRequests. This function deletes |attempt| as part of this
@@ -57,7 +58,7 @@ class ConnectionAttempt {
       return false;
     }
 
-    if (has_notified_delegate_) {
+    if (has_notified_delegate_of_success_) {
       PA_LOG(ERROR) << "ConnectionAttempt::AddPendingConnectionRequest(): "
                     << "Tried to add an additional request,but the attempt had "
                     << "already finished.";
@@ -88,21 +89,21 @@ class ConnectionAttempt {
 
   void OnConnectionAttemptSucceeded(
       std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
-    if (has_notified_delegate_) {
+    if (has_notified_delegate_of_success_) {
       PA_LOG(ERROR) << "ConnectionAttempt::OnConnectionAttemptSucceeded(): "
                     << "Tried to alert delegate of a successful connection, "
                     << "but the attempt had already finished.";
       return;
     }
 
-    has_notified_delegate_ = true;
+    has_notified_delegate_of_success_ = true;
     delegate_->OnConnectionAttemptSucceeded(
         connection_attempt_details_.GetAssociatedConnectionDetails(),
         std::move(authenticated_channel));
   }
 
   void OnConnectionAttemptFinishedWithoutConnection() {
-    if (has_notified_delegate_) {
+    if (has_notified_delegate_of_success_) {
       PA_LOG(ERROR) << "ConnectionAttempt::"
                     << "OnConnectionAttemptFinishedWithoutConnection(): "
                     << "Tried to alert delegate of a failed connection, "
@@ -110,7 +111,6 @@ class ConnectionAttempt {
       return;
     }
 
-    has_notified_delegate_ = true;
     delegate_->OnConnectionAttemptFinishedWithoutConnection(
         connection_attempt_details_);
   }
@@ -119,7 +119,7 @@ class ConnectionAttempt {
   ConnectionAttemptDelegate* delegate_;
   const ConnectionAttemptDetails connection_attempt_details_;
 
-  bool has_notified_delegate_ = false;
+  bool has_notified_delegate_of_success_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionAttempt);
 };

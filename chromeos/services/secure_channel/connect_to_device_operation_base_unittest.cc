@@ -20,7 +20,6 @@ namespace secure_channel {
 
 namespace {
 
-const char kTestFailureReason[] = "testFailureReason";
 const char kTestRemoteDeviceId[] = "testRemoteDeviceId";
 const char kTestLocalDeviceId[] = "testLocalDeviceId";
 
@@ -32,16 +31,14 @@ class TestConnectToDeviceOperation
   static std::unique_ptr<TestConnectToDeviceOperation> Create(
       ConnectToDeviceOperation<std::string>::ConnectionSuccessCallback
           success_callback,
-      ConnectToDeviceOperation<std::string>::ConnectionFailedCallback
+      const ConnectToDeviceOperation<std::string>::ConnectionFailedCallback&
           failure_callback,
       const DeviceIdPair& device_id_pair,
-      ConnectionPriority connection_priority,
-      base::OnceClosure destructor_callback) {
+      ConnectionPriority connection_priority) {
     auto test_task_runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     auto operation = base::WrapUnique(new TestConnectToDeviceOperation(
         std::move(success_callback), std::move(failure_callback),
-        device_id_pair, connection_priority, std::move(destructor_callback),
-        test_task_runner));
+        device_id_pair, connection_priority, test_task_runner));
     test_task_runner->RunUntilIdle();
     return operation;
   }
@@ -70,19 +67,16 @@ class TestConnectToDeviceOperation
   TestConnectToDeviceOperation(
       ConnectToDeviceOperation<std::string>::ConnectionSuccessCallback
           success_callback,
-      ConnectToDeviceOperation<std::string>::ConnectionFailedCallback
+      const ConnectToDeviceOperation<std::string>::ConnectionFailedCallback&
           failure_callback,
       const DeviceIdPair& device_id_pair,
       ConnectionPriority connection_priority,
-      base::OnceClosure destructor_callback,
       scoped_refptr<base::TestSimpleTaskRunner> test_task_runner)
-      : ConnectToDeviceOperationBase<std::string>(
-            std::move(success_callback),
-            std::move(failure_callback),
-            device_id_pair,
-            connection_priority,
-            std::move(destructor_callback),
-            test_task_runner) {}
+      : ConnectToDeviceOperationBase<std::string>(std::move(success_callback),
+                                                  std::move(failure_callback),
+                                                  device_id_pair,
+                                                  connection_priority,
+                                                  test_task_runner) {}
 
   bool has_attempted_connection_ = false;
   bool has_canceled_connection_ = false;
@@ -97,25 +91,15 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
 
   ~SecureChannelConnectToDeviceOperationBaseTest() override = default;
 
-  // testing::Test:
-  void TearDown() override {
-    EXPECT_FALSE(destructor_callback_called_);
-    test_operation_.reset();
-    EXPECT_TRUE(destructor_callback_called_);
-  }
-
   void CreateOperation(ConnectionPriority connection_priority) {
     test_operation_ = TestConnectToDeviceOperation::Create(
         base::BindOnce(&SecureChannelConnectToDeviceOperationBaseTest::
                            OnSuccessfulConnectionAttempt,
                        base::Unretained(this)),
-        base::BindOnce(&SecureChannelConnectToDeviceOperationBaseTest::
-                           OnFailedConnectionAttempt,
-                       base::Unretained(this)),
-        test_device_id_pair_, connection_priority,
-        base::BindOnce(
-            &SecureChannelConnectToDeviceOperationBaseTest::OnOperationDeleted,
-            base::Unretained(this)));
+        base::BindRepeating(&SecureChannelConnectToDeviceOperationBaseTest::
+                                OnFailedConnectionAttempt,
+                            base::Unretained(this)),
+        test_device_id_pair_, connection_priority);
     EXPECT_TRUE(test_operation_->has_attempted_connection());
   }
 
@@ -141,14 +125,11 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
     last_failure_detail_ = failure_detail;
   }
 
-  void OnOperationDeleted() { destructor_callback_called_ = true; }
-
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const DeviceIdPair test_device_id_pair_;
 
   std::unique_ptr<AuthenticatedChannel> last_authenticated_channel_;
   std::string last_failure_detail_;
-  bool destructor_callback_called_ = false;
 
   std::unique_ptr<TestConnectToDeviceOperation> test_operation_;
 
@@ -177,8 +158,14 @@ TEST_F(SecureChannelConnectToDeviceOperationBaseTest, Success) {
 
 TEST_F(SecureChannelConnectToDeviceOperationBaseTest, Failure) {
   CreateOperation(ConnectionPriority::kLow);
-  test_operation()->OnFailedConnectionAttempt(kTestFailureReason);
-  EXPECT_EQ(kTestFailureReason, last_failure_detail());
+
+  test_operation()->OnFailedConnectionAttempt("failureReason1");
+  EXPECT_EQ("failureReason1", last_failure_detail());
+
+  test_operation()->OnFailedConnectionAttempt("failureReason2");
+  EXPECT_EQ("failureReason2", last_failure_detail());
+
+  test_operation()->Cancel();
 }
 
 TEST_F(SecureChannelConnectToDeviceOperationBaseTest, Cancelation) {
