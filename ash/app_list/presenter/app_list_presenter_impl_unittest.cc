@@ -6,14 +6,19 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "ash/app_list/test/app_list_test_view_delegate.h"
+#include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_view.h"
+#include "ash/app_list/views/apps_grid_view.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/wm/core/default_activation_client.h"
 #include "ui/wm/core/window_util.h"
@@ -32,6 +37,10 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
   bool init_called() const { return init_called_; }
   bool on_shown_called() const { return on_shown_called_; }
   bool on_dismissed_called() const { return on_dismissed_called_; }
+
+  AppListViewDelegate* GetAppListViewDelegate() override {
+    return &app_list_view_delegate_;
+  }
 
  private:
   // AppListPresenterDelegate:
@@ -58,9 +67,6 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
     return base::TimeDelta::FromMilliseconds(0);
   }
   bool IsHomeLauncherEnabledInTabletMode() override { return false; }
-  AppListViewDelegate* GetAppListViewDelegate() override {
-    return &app_list_view_delegate_;
-  }
   bool GetOnScreenKeyboardShown() override { return false; }
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override {
     return nullptr;
@@ -177,6 +183,50 @@ TEST_F(AppListPresenterImplTest, WidgetDestroyed) {
   presenter()->GetView()->GetWidget()->CloseNow();
   EXPECT_FALSE(presenter()->GetTargetVisibility());
   EXPECT_TRUE(delegate());
+}
+
+// Test that clicking on app list context menus doesn't close the app list.
+TEST_F(AppListPresenterImplTest, ClickingContextMenuDoesNotDismiss) {
+  // Populate some apps since we will show the context menu over a view.
+  test::AppListTestViewDelegate* view_delegate =
+      static_cast<test::AppListTestViewDelegate*>(
+          delegate()->GetAppListViewDelegate());
+  view_delegate->GetTestModel()->PopulateApps(2);
+
+  // Show the app list on the primary display.
+  presenter()->Show(display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+                    base::TimeTicks());
+  aura::Window* window = presenter()->GetWindow();
+  ASSERT_TRUE(window);
+
+  // Show a context menu for the first app list item view.
+  app_list::AppListView::TestApi test_api(presenter()->GetView());
+  app_list::AppsGridView* grid_view = test_api.GetRootAppsGridView();
+  app_list::AppListItemView* item_view = grid_view->GetItemViewAt(0);
+  DCHECK(item_view);
+  item_view->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
+
+  // Find the context menu as a transient child of the app list.
+  aura::Window* transient_parent = window;
+  const std::vector<aura::Window*>& transient_children =
+      wm::GetTransientChildren(transient_parent);
+  ASSERT_EQ(1u, transient_children.size());
+  aura::Window* menu = transient_children[0];
+
+  // Press the left mouse button on the menu window, it should not close the
+  // app list nor the context menu on this pointer event.
+  ui::test::EventGenerator menu_event_generator(menu);
+  menu_event_generator.set_current_location(menu->GetBoundsInScreen().origin());
+  menu_event_generator.PressLeftButton();
+
+  // Check that the window and the app list are still open.
+  ASSERT_EQ(window, presenter()->GetWindow());
+  EXPECT_EQ(1u, wm::GetTransientChildren(transient_parent).size());
+
+  // Close app list so that views are destructed and unregistered from the
+  // model's observer list.
+  presenter()->Dismiss(base::TimeTicks());
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace app_list

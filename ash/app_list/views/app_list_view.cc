@@ -230,6 +230,17 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// AppListView::TestApi
+
+AppListView::TestApi::TestApi(AppListView* view) : view_(view) {}
+
+AppListView::TestApi::~TestApi() = default;
+
+AppsGridView* AppListView::TestApi::GetRootAppsGridView() {
+  return view_->GetRootAppsGridView();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // AppListView:
 
 AppListView::AppListView(AppListViewDelegate* delegate)
