@@ -28,6 +28,7 @@
 #include "ui/events/blink/fling_booster.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
+#include "ui/events/blink/scroll_predictor.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/latency/latency_info.h"
@@ -216,6 +217,10 @@ InputHandlerProxy::InputHandlerProxy(
       base::FeatureList::IsEnabled(features::kVsyncAlignedInputEvents)
           ? std::make_unique<CompositorThreadEventQueue>()
           : nullptr;
+  scroll_predictor_ =
+      base::FeatureList::IsEnabled(features::kResamplingScrollEvents)
+          ? std::make_unique<ScrollPredictor>()
+          : nullptr;
 }
 
 InputHandlerProxy::~InputHandlerProxy() {}
@@ -303,6 +308,10 @@ void InputHandlerProxy::DispatchSingleInputEvent(
     const base::TimeTicks now) {
   if (compositor_event_queue_ &&
       IsGestureScrollOrFlingOrPinch(event_with_callback->event().GetType())) {
+    if (scroll_predictor_)
+      scroll_predictor_->HandleEvent(event_with_callback->original_events(),
+                                     now, event_with_callback->event_pointer());
+
     // Report the coalesced count only for continuous events to avoid the noise
     // from non-continuous events.
     if (IsContinuousGestureEvent(event_with_callback->event().GetType())) {
