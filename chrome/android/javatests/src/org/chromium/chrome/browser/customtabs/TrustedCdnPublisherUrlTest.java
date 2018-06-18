@@ -145,6 +145,7 @@ public class TrustedCdnPublisherUrlTest {
     @Feature({"UiCatalogue"})
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
+    @DisabledTest // Disabled for flakiness! See http://crbug.com/847341
     public void testHttp() throws Exception {
         runTrustedCdnPublisherUrlTest("http://example.com/test", "com.example.test", "example.com",
                 org.chromium.chrome.R.drawable.omnibox_info);
@@ -156,6 +157,7 @@ public class TrustedCdnPublisherUrlTest {
     @Feature({"UiCatalogue"})
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
+    @DisabledTest // Disabled for flakiness! See http://crbug.com/847341
     public void testRtl() throws Exception {
         String publisher = "\u200e\u202b\u0645\u0648\u0642\u0639\u002e\u0648\u0632\u0627\u0631"
                 + "\u0629\u002d\u0627\u0644\u0623\u062a\u0635\u0627\u0644\u0627\u062a\u002e\u0645"
@@ -230,6 +232,7 @@ public class TrustedCdnPublisherUrlTest {
     @Feature({"UiCatalogue"})
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
+    @DisabledTest // Disabled for flakiness! See http://crbug.com/847341
     public void testPageInfo() throws Exception {
         runTrustedCdnPublisherUrlTest("https://example.com/test", "com.example.test", "example.com",
                 R.drawable.omnibox_https_valid);
@@ -246,6 +249,7 @@ public class TrustedCdnPublisherUrlTest {
     @Feature({"UiCatalogue"})
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
+    @DisabledTest // Disabled for flakiness! See http://crbug.com/847341
     public void testNavigateAway() throws Exception {
         runTrustedCdnPublisherUrlTest("https://example.com/test", "com.example.test", "example.com",
                 R.drawable.omnibox_https_valid);
@@ -263,6 +267,7 @@ public class TrustedCdnPublisherUrlTest {
     @Feature({"UiCatalogue"})
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
+    @DisabledTest // Disabled for flakiness! See http://crbug.com/847341
     public void testReparent() throws Exception {
         String publisherUrl = "https://example.com/test";
         runTrustedCdnPublisherUrlTest(
@@ -308,6 +313,7 @@ public class TrustedCdnPublisherUrlTest {
     @SmallTest
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
+    @DisabledTest // Disabled for flakiness! See http://crbug.com/847341
     public void testOfflinePage() throws TimeoutException, InterruptedException {
         String publisherUrl = "https://example.com/test";
         runTrustedCdnPublisherUrlTest(
