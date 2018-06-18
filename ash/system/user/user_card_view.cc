@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "ash/ash_view_ids.h"
 #include "ash/media_controller.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"

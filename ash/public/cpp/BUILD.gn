@@ -44,6 +44,7 @@ component("cpp") {
     "ash_switches.h",
     "ash_typography.cc",
     "ash_typography.h",
+    "ash_view_ids.h",
     "config.h",
     "immersive/immersive_context.cc",
     "immersive/immersive_context.h",

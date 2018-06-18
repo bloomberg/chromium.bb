@@ -4,8 +4,8 @@
 
 #include <vector>
 
-#include "ash/ash_view_ids.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.mojom.h"

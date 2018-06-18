@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASH_VIEW_IDS_H_
-#define ASH_ASH_VIEW_IDS_H_
+#ifndef ASH_PUBLIC_CPP_ASH_VIEW_IDS_H_
+#define ASH_PUBLIC_CPP_ASH_VIEW_IDS_H_
 
 namespace ash {
 
-// TODO(jamescook): Move to //ash/public/cpp.
 enum ViewID {
   VIEW_ID_NONE = 0,
 
@@ -40,4 +39,4 @@ enum ViewID {
 
 }  // namespace ash
 
-#endif  // ASH_ASH_VIEW_IDS_H_
+#endif  // ASH_PUBLIC_CPP_ASH_VIEW_IDS_H_
