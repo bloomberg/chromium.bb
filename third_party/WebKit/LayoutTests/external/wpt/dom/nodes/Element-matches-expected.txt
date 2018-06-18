@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 657 tests; 654 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 659 tests; 657 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Selectors-API Level 2 Test Suite: HTML with Selectors Level 3
 PASS Document should not support matches
 PASS Detached Element supports matches
@@ -84,6 +84,7 @@ PASS In-document Element.matches: Invalid namespace: $|div
 PASS In-document Element.matches: Relative selector: >*
 PASS In-document Element.matches: Type selector, matching html element (with no refNodes): html
 PASS In-document Element.matches: Type selector, matching body element (with no refNodes): body
+PASS In-document Element.matches: Universal selector, matching all elements (with no refNodes): *
 PASS In-document Element.matches: Universal selector, matching all children of element with specified ID (with no refNodes): #universal>*
 PASS In-document Element.matches: Universal selector, matching all grandchildren of element with specified ID (with no refNodes): #universal>*>*
 PASS In-document Element.matches: Universal selector, matching all descendants of element with specified ID (with no refNodes): #universal *
@@ -248,6 +249,7 @@ PASS In-document Element.matches: Syntax, group of selectors separator, whitespa
 PASS In-document Element.matches: Syntax, group of selectors separator, whitespace before (with no refNodes): #group em	\r
 ,#group strong
 PASS In-document Element.matches: Syntax, group of selectors separator, no whitespace (with no refNodes): #group em,#group strong
+PASS Detached Element.matches: Universal selector, matching all elements (with no refNodes): *
 PASS Detached Element.matches: Universal selector, matching all children of element with specified ID (with no refNodes): #universal>*
 PASS Detached Element.matches: Universal selector, matching all grandchildren of element with specified ID (with no refNodes): #universal>*>*
 PASS Detached Element.matches: Universal selector, matching all descendants of element with specified ID (with no refNodes): #universal *
@@ -407,6 +409,7 @@ PASS Detached Element.matches: Syntax, group of selectors separator, whitespace 
 PASS Detached Element.matches: Syntax, group of selectors separator, whitespace before (with no refNodes): #group em	\r
 ,#group strong
 PASS Detached Element.matches: Syntax, group of selectors separator, no whitespace (with no refNodes): #group em,#group strong
+PASS Fragment Element.matches: Universal selector, matching all elements (with no refNodes): *
 PASS Fragment Element.matches: Universal selector, matching all children of element with specified ID (with no refNodes): #universal>*
 PASS Fragment Element.matches: Universal selector, matching all grandchildren of element with specified ID (with no refNodes): #universal>*>*
 PASS Fragment Element.matches: Universal selector, matching all descendants of element with specified ID (with no refNodes): #universal *
@@ -566,7 +569,6 @@ PASS Fragment Element.matches: Syntax, group of selectors separator, whitespace 
 PASS Fragment Element.matches: Syntax, group of selectors separator, whitespace before (with no refNodes): #group em	\r
 ,#group strong
 PASS Fragment Element.matches: Syntax, group of selectors separator, no whitespace (with no refNodes): #group em,#group strong
-FAIL In-document Element.matches: Universal selector, matching all descendants of the specified reference element (with refNode Element): * assert_false: The element #universal should not match the selector. expected false got true
 PASS In-document Element.matches: Attribute presence selector, matching align attribute with value (with refNode Element): .attr-presence-div1[align]
 PASS In-document Element.matches: Attribute presence selector, matching align attribute with empty value (with refNode Element): .attr-presence-div2[align]
 PASS In-document Element.matches: Attribute presence selector, matching title attribute, case insensitivity (with refNode Element): [TiTlE]
