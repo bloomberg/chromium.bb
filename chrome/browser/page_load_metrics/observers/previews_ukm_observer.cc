@@ -88,6 +88,15 @@ PreviewsUKMObserver::FlushMetricsOnAppEnterBackground(
   return STOP_OBSERVING;
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+PreviewsUKMObserver::OnHidden(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  RecordPreviewsTypes(info);
+  return STOP_OBSERVING;
+}
+
 void PreviewsUKMObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
