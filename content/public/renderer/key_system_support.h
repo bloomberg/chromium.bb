@@ -9,20 +9,16 @@
 #include <vector>
 
 #include "content/common/content_export.h"
-#include "media/base/decrypt_config.h"
-#include "media/base/video_codecs.h"
+#include "media/mojo/interfaces/key_system_support.mojom.h"
 
 namespace content {
 
 // Determines if |key_system| is supported by calling into the browser.
-// If it is supported, return true and |supported_video_codecs|,
-// |supports_persistent_license| and |supported_encryption_schemes| are updated
+// If it is supported, return true and |key_system_capability| is updated
 // to match what |key_system| supports. If not supported, false is returned.
 CONTENT_EXPORT bool IsKeySystemSupported(
     const std::string& key_system,
-    std::vector<media::VideoCodec>* supported_video_codecs,
-    bool* supports_persistent_license,
-    std::vector<media::EncryptionMode>* supported_encryption_schemes);
+    media::mojom::KeySystemCapabilityPtr* key_system_capability);
 
 }  // namespace content
 

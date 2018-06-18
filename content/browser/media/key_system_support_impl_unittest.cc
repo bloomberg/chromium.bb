@@ -22,10 +22,34 @@ namespace content {
 
 namespace {
 
+using VideoCodec = media::VideoCodec;
+using EncryptionMode = media::EncryptionMode;
+using CdmSessionType = media::CdmSessionType;
+
 const char kTestCdmGuid[] = "62FE9C4B-384E-48FD-B28A-9F6F248BC8CC";
 const char kVersion[] = "1.1.1.1";
 const char kTestPath[] = "/aa/bb";
 const char kTestFileSystemId[] = "file_system_id";
+
+// Helper function to compare a STL container to an initializer_list.
+template <typename Container, typename T>
+bool StlEquals(const Container a, std::initializer_list<T> b) {
+  return a == Container(b);
+}
+
+#define EXPECT_STL_EQ(a, ...)                 \
+  do {                                        \
+    EXPECT_TRUE(StlEquals(a, {__VA_ARGS__})); \
+  } while (false)
+
+#define EXPECT_VIDEO_CODECS(...) \
+  EXPECT_STL_EQ(capability_->video_codecs, __VA_ARGS__)
+
+#define EXPECT_ENCRYPTION_SCHEMES(...) \
+  EXPECT_STL_EQ(capability_->encryption_schemes, __VA_ARGS__)
+
+#define EXPECT_SESSION_TYPES(...) \
+  EXPECT_STL_EQ(capability_->session_types, __VA_ARGS__)
 
 }  // namespace
 
@@ -58,8 +82,7 @@ class KeySystemSupportTest : public testing::Test {
     DVLOG(1) << __func__;
     bool is_available = false;
     key_system_support_->IsKeySystemSupported(key_system, &is_available,
-                                              &codecs_, &persistent_,
-                                              &encryption_schemes_);
+                                              &capability_);
     return is_available;
   }
 
@@ -67,9 +90,7 @@ class KeySystemSupportTest : public testing::Test {
   TestBrowserThreadBundle test_browser_thread_bundle_;
 
   // Updated by IsSupported().
-  std::vector<media::VideoCodec> codecs_;
-  bool persistent_;
-  std::vector<media::EncryptionMode> encryption_schemes_;
+  media::mojom::KeySystemCapabilityPtr capability_;
 };
 
 // Note that as CdmRegistry::GetInstance() is a static, it is shared between
@@ -78,18 +99,18 @@ class KeySystemSupportTest : public testing::Test {
 
 TEST_F(KeySystemSupportTest, NoKeySystems) {
   EXPECT_FALSE(IsSupported("KeySystem1"));
+  EXPECT_FALSE(capability_);
 }
 
 TEST_F(KeySystemSupportTest, OneKeySystem) {
-  Register("KeySystem2", {media::VideoCodec::kCodecVP8}, true,
-           {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs});
+  Register("KeySystem2", {VideoCodec::kCodecVP8}, true,
+           {EncryptionMode::kCenc, EncryptionMode::kCbcs});
+
   EXPECT_TRUE(IsSupported("KeySystem2"));
-  EXPECT_EQ(1u, codecs_.size());
-  EXPECT_EQ(media::VideoCodec::kCodecVP8, codecs_[0]);
-  EXPECT_TRUE(persistent_);
-  EXPECT_EQ(2u, encryption_schemes_.size());
-  EXPECT_EQ(media::EncryptionMode::kCenc, encryption_schemes_[0]);
-  EXPECT_EQ(media::EncryptionMode::kCbcs, encryption_schemes_[1]);
+  EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP8);
+  EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCenc, EncryptionMode::kCbcs);
+  EXPECT_SESSION_TYPES(CdmSessionType::TEMPORARY_SESSION,
+                       CdmSessionType::PERSISTENT_LICENSE_SESSION);
 }
 
 TEST_F(KeySystemSupportTest, MultipleKeySystems) {
@@ -98,25 +119,25 @@ TEST_F(KeySystemSupportTest, MultipleKeySystems) {
            {media::EncryptionMode::kCenc});
   Register("KeySystem4", {media::VideoCodec::kCodecVP9}, false,
            {media::EncryptionMode::kCbcs});
+
   EXPECT_TRUE(IsSupported("KeySystem3"));
-  EXPECT_EQ(2u, codecs_.size());
-  EXPECT_EQ(media::VideoCodec::kCodecVP8, codecs_[0]);
-  EXPECT_EQ(media::VideoCodec::kCodecVP9, codecs_[1]);
-  EXPECT_TRUE(persistent_);
-  EXPECT_EQ(1u, encryption_schemes_.size());
-  EXPECT_EQ(media::EncryptionMode::kCenc, encryption_schemes_[0]);
+  EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP8, VideoCodec::kCodecVP9);
+  EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCenc);
+  EXPECT_SESSION_TYPES(CdmSessionType::TEMPORARY_SESSION,
+                       CdmSessionType::PERSISTENT_LICENSE_SESSION);
+
   EXPECT_TRUE(IsSupported("KeySystem4"));
-  EXPECT_EQ(1u, codecs_.size());
-  EXPECT_EQ(media::VideoCodec::kCodecVP9, codecs_[0]);
-  EXPECT_FALSE(persistent_);
-  EXPECT_EQ(1u, encryption_schemes_.size());
-  EXPECT_EQ(media::EncryptionMode::kCbcs, encryption_schemes_[0]);
+  EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP9);
+  EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCbcs);
+  EXPECT_SESSION_TYPES(CdmSessionType::TEMPORARY_SESSION);
 }
 
 TEST_F(KeySystemSupportTest, MissingKeySystem) {
   Register("KeySystem5", {media::VideoCodec::kCodecVP8}, true,
            {media::EncryptionMode::kCenc});
+
   EXPECT_FALSE(IsSupported("KeySystem6"));
+  EXPECT_FALSE(capability_);
 }
 
 }  // namespace content

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -80,12 +81,9 @@ static void AddExternalClearKey(
   static const char kExternalClearKeyCdmProxyKeySystem[] =
       "org.chromium.externalclearkey.cdmproxy";
 
-  std::vector<media::VideoCodec> supported_video_codecs;
-  bool supports_persistent_license;
-  std::vector<media::EncryptionMode> supported_encryption_schemes;
-  if (!content::IsKeySystemSupported(
-          kExternalClearKeyKeySystem, &supported_video_codecs,
-          &supports_persistent_license, &supported_encryption_schemes)) {
+  media::mojom::KeySystemCapabilityPtr capability;
+  if (!content::IsKeySystemSupported(kExternalClearKeyKeySystem, &capability)) {
+    DVLOG(1) << "External Clear Key not supported";
     return;
   }
 
@@ -233,30 +231,39 @@ static void AddWidevine(
     return;
 #endif  // defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
 
-  std::vector<media::VideoCodec> supported_video_codecs;
-  bool supports_persistent_license = false;
-  std::vector<media::EncryptionMode> supported_encryption_schemes;
-  if (!content::IsKeySystemSupported(
-          kWidevineKeySystem, &supported_video_codecs,
-          &supports_persistent_license, &supported_encryption_schemes)) {
+  media::mojom::KeySystemCapabilityPtr capability;
+  if (!content::IsKeySystemSupported(kWidevineKeySystem, &capability)) {
     DVLOG(1) << "Widevine CDM is not currently available.";
     return;
   }
 
-  auto supported_codecs = GetSupportedCodecs(supported_video_codecs);
+  auto supported_codecs = GetSupportedCodecs(capability->video_codecs);
+  const auto& supported_encryption_schemes = capability->encryption_schemes;
 
   // On ChromeOS, we do not have real hardware secure codecs. But this does not
   // affect HW_SECURE* support since the support doesn't require hardware secure
   // codecs. See WidevineKeySystemProperties::GetRobustnessConfigRule().
-  // TODO(crbug.com/848532): Populate supported secure codecs if supported by
-  // CDM and the platform.
-  auto supported_hw_secure_codecs = media::EME_CODEC_NONE;
+  auto supported_hw_secure_codecs =
+      GetSupportedCodecs(capability->hw_secure_video_codecs);
 
+  // TODO(crbug.com/853261): Support capability->hw_secure_encryption_schemes.
+
+  bool cdm_supports_temporary_session = base::ContainsValue(
+      capability->session_types, media::CdmSessionType::TEMPORARY_SESSION);
+  if (!cdm_supports_temporary_session) {
+    DVLOG(1) << "Temporary session must be supported.";
+    return;
+  }
+
+  bool cdm_supports_persistent_license =
+      base::ContainsValue(capability->session_types,
+                          media::CdmSessionType::PERSISTENT_LICENSE_SESSION);
   auto persistent_license_support =
-      GetPersistentLicenseSupport(supports_persistent_license);
+      GetPersistentLicenseSupport(cdm_supports_persistent_license);
 
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
+  // TODO(xhwang/jrummell): Parse hw_secure_encryption_schemes.
   concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
       supported_encryption_schemes, supported_codecs,
       supported_hw_secure_codecs,
