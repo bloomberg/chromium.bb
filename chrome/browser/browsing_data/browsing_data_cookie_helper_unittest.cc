@@ -195,6 +195,11 @@ class BrowsingDataCookieHelperTest : public testing::Test {
     }
   }
 
+  content::StoragePartition* storage_partition() {
+    return content::BrowserContext::GetDefaultStoragePartition(
+        testing_profile_.get());
+  }
+
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> testing_profile_;
@@ -206,7 +211,7 @@ class BrowsingDataCookieHelperTest : public testing::Test {
 TEST_F(BrowsingDataCookieHelperTest, FetchData) {
   CreateCookiesForTest();
   scoped_refptr<BrowsingDataCookieHelper> cookie_helper(
-      new BrowsingDataCookieHelper(testing_profile_->GetRequestContext()));
+      new BrowsingDataCookieHelper(storage_partition()));
 
   cookie_helper->StartFetching(
       base::Bind(&BrowsingDataCookieHelperTest::FetchCallback,
@@ -217,7 +222,7 @@ TEST_F(BrowsingDataCookieHelperTest, FetchData) {
 TEST_F(BrowsingDataCookieHelperTest, DomainCookie) {
   CreateCookiesForDomainCookieTest();
   scoped_refptr<BrowsingDataCookieHelper> cookie_helper(
-      new BrowsingDataCookieHelper(testing_profile_->GetRequestContext()));
+      new BrowsingDataCookieHelper(storage_partition()));
 
   cookie_helper->StartFetching(
       base::Bind(&BrowsingDataCookieHelperTest::DomainCookieCallback,
@@ -228,7 +233,7 @@ TEST_F(BrowsingDataCookieHelperTest, DomainCookie) {
 TEST_F(BrowsingDataCookieHelperTest, DeleteCookie) {
   CreateCookiesForTest();
   scoped_refptr<BrowsingDataCookieHelper> cookie_helper(
-      new BrowsingDataCookieHelper(testing_profile_->GetRequestContext()));
+      new BrowsingDataCookieHelper(storage_partition()));
 
   cookie_helper->StartFetching(
       base::Bind(&BrowsingDataCookieHelperTest::FetchCallback,
@@ -247,8 +252,7 @@ TEST_F(BrowsingDataCookieHelperTest, DeleteCookie) {
 TEST_F(BrowsingDataCookieHelperTest, CannedDeleteCookie) {
   CreateCookiesForTest();
   scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(
-          testing_profile_->GetRequestContext()));
+      new CannedBrowsingDataCookieHelper(storage_partition()));
 
   ASSERT_TRUE(helper->empty());
 
@@ -284,8 +288,7 @@ TEST_F(BrowsingDataCookieHelperTest, CannedDomainCookie) {
   net::CookieList cookie;
 
   scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(
-          testing_profile_->GetRequestContext()));
+      new CannedBrowsingDataCookieHelper(storage_partition()));
 
   ASSERT_TRUE(helper->empty());
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
@@ -316,8 +319,7 @@ TEST_F(BrowsingDataCookieHelperTest, CannedUnique) {
   const GURL origin("http://www.google.com");
 
   scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(
-          testing_profile_->GetRequestContext()));
+      new CannedBrowsingDataCookieHelper(storage_partition()));
 
   ASSERT_TRUE(helper->empty());
   std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
@@ -344,8 +346,7 @@ TEST_F(BrowsingDataCookieHelperTest, CannedReplaceCookie) {
   const GURL origin("http://www.google.com");
 
   scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(
-          testing_profile_->GetRequestContext()));
+      new CannedBrowsingDataCookieHelper(storage_partition()));
 
   ASSERT_TRUE(helper->empty());
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
@@ -415,8 +416,7 @@ TEST_F(BrowsingDataCookieHelperTest, CannedEmpty) {
   const GURL url_google("http://www.google.com");
 
   scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(
-          testing_profile_->GetRequestContext()));
+      new CannedBrowsingDataCookieHelper(storage_partition()));
 
   ASSERT_TRUE(helper->empty());
   std::unique_ptr<net::CanonicalCookie> changed_cookie(
@@ -446,8 +446,7 @@ TEST_F(BrowsingDataCookieHelperTest, CannedDifferentFrames) {
   GURL request_url("http://www.google.com");
 
   scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(
-          testing_profile_->GetRequestContext()));
+      new CannedBrowsingDataCookieHelper(storage_partition()));
 
   ASSERT_TRUE(helper->empty());
   std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
@@ -479,8 +478,7 @@ TEST_F(BrowsingDataCookieHelperTest, CannedGetCookieCount) {
   std::string cookie_domain(".www.google.com");
 
   scoped_refptr<CannedBrowsingDataCookieHelper> helper(
-      new CannedBrowsingDataCookieHelper(
-          testing_profile_->GetRequestContext()));
+      new CannedBrowsingDataCookieHelper(storage_partition()));
 
   // Add two different cookies (distinguished by the tuple [cookie-name,
   // domain-value, path-value]) for a HTTP request to |frame1_url| and verify

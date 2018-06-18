@@ -624,7 +624,7 @@ class SiteDataDeleteHelper : public CookiesTreeModel::Observer {
     storage::FileSystemContext* file_system_context =
         storage_partition->GetFileSystemContext();
     auto container = std::make_unique<LocalDataContainer>(
-        new BrowsingDataCookieHelper(profile_->GetRequestContext()),
+        new BrowsingDataCookieHelper(storage_partition),
         new BrowsingDataDatabaseHelper(profile_),
         new BrowsingDataLocalStorageHelper(profile_), nullptr,
         new BrowsingDataAppCacheHelper(profile_),

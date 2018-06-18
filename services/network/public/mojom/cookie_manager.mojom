@@ -171,9 +171,10 @@ interface CookieManager {
       CanonicalCookie cookie, bool secure_source, bool modify_http_only) =>
       (bool success);
 
+  // Delete a cookie. Returns true if a cookie was deleted.
+  DeleteCanonicalCookie(CanonicalCookie cookie) => (bool success);
+
   // Delete a set of cookies matching the passed filter.
-  // To delete a single cookie, use SetCanonicalCookie with an expiry
-  // time in the past.
   // Returns the number of cookies deleted.
   DeleteCookies(CookieDeletionFilter filter) => (uint32 num_deleted);
 

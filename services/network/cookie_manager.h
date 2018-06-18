@@ -59,6 +59,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieManager
                           bool secure_source,
                           bool modify_http_only,
                           SetCanonicalCookieCallback callback) override;
+  void DeleteCanonicalCookie(const net::CanonicalCookie& cookie,
+                             DeleteCanonicalCookieCallback callback) override;
   void SetContentSettings(const ContentSettingsForOneType& settings) override;
   void DeleteCookies(mojom::CookieDeletionFilterPtr filter,
                      DeleteCookiesCallback callback) override;
