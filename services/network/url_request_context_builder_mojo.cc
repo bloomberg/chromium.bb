@@ -46,7 +46,8 @@ URLRequestContextOwner URLRequestContextBuilderMojo::Create(
       nullptr /* out_require_ct_delegate */,
       nullptr /* out_certificate_report_sender */,
       nullptr /* out_expect_ct_reporter */,
-      nullptr /* out_static_user_agent_settings */);
+      nullptr /* out_static_user_agent_settings */,
+      nullptr /* out_context_network_delegate */);
 }
 
 std::unique_ptr<net::ProxyResolutionService>

@@ -498,7 +498,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   profile_params_ = std::move(params);
 
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
-      &enable_referrers_,
       &force_google_safesearch_,
       &force_youtube_restrict_,
       &allowed_domains_for_apps_,
@@ -1074,11 +1073,11 @@ void ProfileIOData::Init(
       std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
           new ChromeNetworkDelegate(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-              io_thread_globals->extension_event_router_forwarder.get(),
+              io_thread_globals->extension_event_router_forwarder.get()));
 #else
-              NULL,
+              nullptr));
 #endif
-              &enable_referrers_));
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       chrome_network_delegate->set_extension_info_map(
           profile_params_->extension_info_map.get());
@@ -1336,7 +1335,6 @@ void ProfileIOData::ShutdownOnUIThread(
   sync_suppress_start_.Destroy();
   sync_first_setup_complete_.Destroy();
   sync_has_auth_error_.Destroy();
-  enable_referrers_.Destroy();
   force_google_safesearch_.Destroy();
   force_youtube_restrict_.Destroy();
   allowed_domains_for_apps_.Destroy();

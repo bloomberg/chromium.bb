@@ -229,10 +229,8 @@ class ExtensionWebRequestTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        &enable_referrers_, nullptr, nullptr, nullptr,
-        profile_.GetTestingPrefService());
-    network_delegate_.reset(
-        new ChromeNetworkDelegate(event_router_.get(), &enable_referrers_));
+        nullptr, nullptr, nullptr, profile_.GetTestingPrefService());
+    network_delegate_.reset(new ChromeNetworkDelegate(event_router_.get()));
     network_delegate_->set_profile(&profile_);
     network_delegate_->set_cookie_settings(
         CookieSettingsFactory::GetForProfile(&profile_).get());
@@ -252,7 +250,6 @@ class ExtensionWebRequestTest : public testing::Test {
   TestingProfile profile_;
   TestingProfileManager profile_manager_;
   net::TestDelegate delegate_;
-  BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
   scoped_refptr<EventRouterForwarder> event_router_;
   std::unique_ptr<ChromeNetworkDelegate> network_delegate_;
@@ -1125,10 +1122,8 @@ class ExtensionWebRequestHeaderModificationTest
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        &enable_referrers_, nullptr, nullptr, nullptr,
-        profile_.GetTestingPrefService());
-    network_delegate_.reset(
-        new ChromeNetworkDelegate(event_router_.get(), &enable_referrers_));
+        nullptr, nullptr, nullptr, profile_.GetTestingPrefService());
+    network_delegate_.reset(new ChromeNetworkDelegate(event_router_.get()));
     network_delegate_->set_profile(&profile_);
     network_delegate_->set_cookie_settings(
         CookieSettingsFactory::GetForProfile(&profile_).get());
@@ -1144,7 +1139,6 @@ class ExtensionWebRequestHeaderModificationTest
   TestingProfile profile_;
   TestingProfileManager profile_manager_;
   net::TestDelegate delegate_;
-  BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
   scoped_refptr<EventRouterForwarder> event_router_;
   std::unique_ptr<ChromeNetworkDelegate> network_delegate_;

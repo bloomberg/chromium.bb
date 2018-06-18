@@ -75,6 +75,8 @@ class ProfileNetworkContextService : public KeyedService {
   // |pref_accept_language_|
   std::string ComputeAcceptLanguage() const;
 
+  void UpdateReferrersEnabled();
+
   // Creates parameters for the NetworkContext. May only be called once, since
   // it initializes some class members.
   network::mojom::NetworkContextParamsPtr CreateMainNetworkContextParams();
@@ -102,6 +104,8 @@ class ProfileNetworkContextService : public KeyedService {
 
   BooleanPrefMember quic_allowed_;
   StringPrefMember pref_accept_language_;
+
+  BooleanPrefMember enable_referrers_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileNetworkContextService);
 };

@@ -33,13 +33,18 @@
 
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
     : profile_(profile), proxy_config_monitor_(profile) {
+  PrefService* profile_prefs = profile->GetPrefs();
   quic_allowed_.Init(
-      prefs::kQuicAllowed, profile->GetPrefs(),
+      prefs::kQuicAllowed, profile_prefs,
       base::Bind(&ProfileNetworkContextService::DisableQuicIfNotAllowed,
                  base::Unretained(this)));
   pref_accept_language_.Init(
-      prefs::kAcceptLanguages, profile->GetPrefs(),
+      prefs::kAcceptLanguages, profile_prefs,
       base::BindRepeating(&ProfileNetworkContextService::UpdateAcceptLanguage,
+                          base::Unretained(this)));
+  enable_referrers_.Init(
+      prefs::kEnableReferrers, profile_prefs,
+      base::BindRepeating(&ProfileNetworkContextService::UpdateReferrersEnabled,
                           base::Unretained(this)));
   DisableQuicIfNotAllowed();
 }
@@ -128,6 +133,12 @@ std::string ProfileNetworkContextService::ComputeAcceptLanguage() const {
       pref_accept_language_.GetValue());
 }
 
+void ProfileNetworkContextService::UpdateReferrersEnabled() {
+  content::BrowserContext::GetDefaultStoragePartition(profile_)
+      ->GetNetworkContext()
+      ->SetEnableReferrers(enable_referrers_.GetValue());
+}
+
 void ProfileNetworkContextService::FlushProxyConfigMonitorForTesting() {
   proxy_config_monitor_.FlushForTesting();
 }
@@ -148,6 +159,7 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   network_context_params->context_name = std::string("main");
 
   network_context_params->accept_language = ComputeAcceptLanguage();
+  network_context_params->enable_referrers = enable_referrers_.GetValue();
 
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;

@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "chrome/browser/net/proxy_config_monitor.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_member.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/ssl_config.mojom.h"
 
@@ -123,6 +124,8 @@ class SystemNetworkContextManager {
  private:
   class URLLoaderFactoryForSystem;
 
+  void UpdateReferrersEnabled();
+
   // Creates parameters for the NetworkContext. May only be called once, since
   // it initializes some class members.
   network::mojom::NetworkContextParamsPtr CreateNetworkContextParams();
@@ -151,6 +154,8 @@ class SystemNetworkContextManager {
   bool is_quic_allowed_ = true;
 
   PrefChangeRegistrar pref_change_registrar_;
+
+  BooleanPrefMember enable_referrers_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNetworkContextManager);
 };

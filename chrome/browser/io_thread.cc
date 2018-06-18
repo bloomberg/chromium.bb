@@ -290,7 +290,6 @@ IOThread::IOThread(
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
-      &system_enable_referrers_,
       nullptr,
       nullptr,
       nullptr,
@@ -417,7 +416,6 @@ void IOThread::CleanUp() {
 
 // static
 void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
   data_reduction_proxy::RegisterPrefs(registry);
 }
 
@@ -468,7 +466,7 @@ void IOThread::ConstructSystemRequestContext() {
         std::make_unique<network::URLRequestContextBuilderMojo>();
 
     auto chrome_network_delegate = std::make_unique<ChromeNetworkDelegate>(
-        extension_event_router_forwarder(), &system_enable_referrers_);
+        extension_event_router_forwarder());
     // By default, data usage is considered off the record.
     chrome_network_delegate->set_data_use_aggregator(
         globals_->data_use_aggregator.get(),

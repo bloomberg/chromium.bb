@@ -151,16 +151,14 @@ class ChromeNetworkDelegateTest : public testing::Test {
 
   void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        &enable_referrers_, nullptr, nullptr, nullptr,
-        profile_.GetTestingPrefService());
+        nullptr, nullptr, nullptr, profile_.GetTestingPrefService());
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
   }
 
   virtual void Initialize() {
-    network_delegate_.reset(
-        new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
+    network_delegate_.reset(new ChromeNetworkDelegate(forwarder()));
     context_->set_client_socket_factory(&socket_factory_);
     context_->set_network_delegate(network_delegate_.get());
     context_->Init();
@@ -189,7 +187,6 @@ class ChromeNetworkDelegateTest : public testing::Test {
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
 #endif
   TestingProfile profile_;
-  BooleanPrefMember enable_referrers_;
   std::unique_ptr<ChromeNetworkDelegate> network_delegate_;
   net::MockClientSocketFactory socket_factory_;
   std::unique_ptr<net::TestURLRequestContext> context_;
@@ -318,7 +315,6 @@ class ChromeNetworkDelegatePolicyTest : public testing::Test {
   scoped_refptr<extensions::EventRouterForwarder> forwarder_;
 #endif
   TestingProfile profile_;
-  BooleanPrefMember enable_referrers_;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegatePolicyTest);
@@ -329,7 +325,6 @@ class ChromeNetworkDelegateSafeSearchTest :
  public:
   void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        &enable_referrers_,
         &force_google_safe_search_,
         &force_youtube_restrict_,
         nullptr,
@@ -339,7 +334,7 @@ class ChromeNetworkDelegateSafeSearchTest :
  protected:
   std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate() {
     std::unique_ptr<ChromeNetworkDelegate> network_delegate(
-        new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
+        new ChromeNetworkDelegate(forwarder()));
     network_delegate->set_force_google_safe_search(&force_google_safe_search_);
     network_delegate->set_force_youtube_restrict(&force_youtube_restrict_);
     return std::move(network_delegate);
@@ -400,7 +395,6 @@ class ChromeNetworkDelegateAllowedDomainsTest :
 
   void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        &enable_referrers_,
         nullptr,
         nullptr,
         &allowed_domains_for_apps_,
@@ -410,7 +404,7 @@ class ChromeNetworkDelegateAllowedDomainsTest :
  protected:
   std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate() {
     std::unique_ptr<ChromeNetworkDelegate> network_delegate(
-        new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
+        new ChromeNetworkDelegate(forwarder()));
     network_delegate->set_allowed_domains_for_apps(&allowed_domains_for_apps_);
     return std::move(network_delegate);
   }
@@ -497,14 +491,13 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
 
   void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        &enable_referrers_, nullptr, nullptr, nullptr,
-        profile_.GetTestingPrefService());
+        nullptr, nullptr, nullptr, profile_.GetTestingPrefService());
   }
 
  protected:
   std::unique_ptr<ChromeNetworkDelegate> CreateNetworkDelegate() {
     std::unique_ptr<ChromeNetworkDelegate> network_delegate(
-        new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
+        new ChromeNetworkDelegate(forwarder()));
     network_delegate->set_cookie_settings(cookie_settings_);
     return network_delegate;
   }
@@ -529,7 +522,6 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
 #endif
   TestingProfile profile_;
   content_settings::CookieSettings* cookie_settings_;
-  BooleanPrefMember enable_referrers_;
   std::unique_ptr<net::URLRequest> request_;
   net::TestURLRequestContext context_;
   net::NetworkDelegate* network_delegate_;

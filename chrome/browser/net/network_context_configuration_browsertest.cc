@@ -65,6 +65,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -230,29 +231,28 @@ class NetworkContextConfigurationBrowserTest
     return StorageType::kNone;
   }
 
-  // Sets the proxy preference on a PrefService based on the NetworkContextType,
-  // and waits for it to be applied.
-  void SetProxyPref(const net::HostPortPair& host_port_pair) {
-    // Get the correct PrefService.
-    PrefService* pref_service = nullptr;
+  // Returns the pref service with most prefs related to the NetworkContext
+  // being tested.
+  PrefService* GetPrefService() {
     switch (GetParam().network_context_type) {
       case NetworkContextType::kSystem:
       case NetworkContextType::kSafeBrowsing:
-        pref_service = g_browser_process->local_state();
-        break;
+        return g_browser_process->local_state();
       case NetworkContextType::kProfile:
-        pref_service = browser()->profile()->GetPrefs();
-        break;
+        return browser()->profile()->GetPrefs();
       case NetworkContextType::kIncognitoProfile:
-        // Incognito uses the non-incognito prefs.
-        pref_service =
-            browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
-        break;
+        // Incognito actually uses the non-incognito prefs, so this should end
+        // up being the same pref store as in the KProfile case.
+        return browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
     }
+  }
 
-    pref_service->Set(proxy_config::prefs::kProxy,
-                      *ProxyConfigDictionary::CreateFixedServers(
-                          host_port_pair.ToString(), std::string()));
+  // Sets the proxy preference on a PrefService based on the NetworkContextType,
+  // and waits for it to be applied.
+  void SetProxyPref(const net::HostPortPair& host_port_pair) {
+    GetPrefService()->Set(proxy_config::prefs::kProxy,
+                          *ProxyConfigDictionary::CreateFixedServers(
+                              host_port_pair.ToString(), std::string()));
 
     // Wait for the new ProxyConfig to be passed over the pipe. Needed because
     // Mojo doesn't guarantee ordering of events on different Mojo pipes, and
@@ -328,10 +328,16 @@ class NetworkContextConfigurationBrowserTest
     controllable_http_response_->WaitForRequest();
   }
 
+  // Sends a request to the test server's echoheader URL and sets
+  // |header_value_out| to the value of the specified response header. Returns
+  // false if the request fails. If non-null, uses |request| to make the
+  // request, after setting its |url| value.
   bool FetchHeaderEcho(const std::string& header_name,
-                       std::string* header_value_out) {
-    std::unique_ptr<network::ResourceRequest> request =
-        std::make_unique<network::ResourceRequest>();
+                       std::string* header_value_out,
+                       std::unique_ptr<network::ResourceRequest> request =
+                           nullptr) WARN_UNUSED_RESULT {
+    if (!request)
+      request = std::make_unique<network::ResourceRequest>();
     request->url = embedded_test_server()->GetURL(
         base::StrCat({"/echoheader?", header_name}));
     content::SimpleURLLoaderTestHelper simple_loader_helper;
@@ -877,6 +883,66 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   EXPECT_EQ(system ? kNoAcceptLanguage : "uk,en_US;q=0.9", accept_language3);
   ASSERT_TRUE(FetchHeaderEcho("user-agent", &user_agent3));
   EXPECT_EQ(::GetUserAgent(), user_agent3);
+}
+
+// First part of testing enable referrers. Check that referrers are enabled by
+// default at browser start, and referrers are indeed sent. Then disable
+// referrers, and make sure that they aren't set.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       PRE_EnableReferrers) {
+  const GURL kReferrer("http://referrer/");
+
+  // Referrers should be enabled by default.
+  EXPECT_TRUE(GetPrefService()->GetBoolean(prefs::kEnableReferrers));
+
+  // Send a request, make sure the referrer is sent.
+  std::string referrer;
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->referrer = kReferrer;
+  ASSERT_TRUE(FetchHeaderEcho("referer", &referrer, std::move(request)));
+
+  // SafeBrowsing never sends the referrer when then network service is enabled,
+  // since it doesn't need to. When the network service is disabled, it matches
+  // the behavior of the system NetworkContext, since it shares internals.
+  if (GetParam().network_context_type == NetworkContextType::kSafeBrowsing &&
+      base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    EXPECT_EQ("None", referrer);
+  } else {
+    EXPECT_EQ(kReferrer.spec(), referrer);
+  }
+
+  // Disable referrers, and flush the NetworkContext mojo interface it's set on,
+  // to avoid any races with the URLLoaderFactory pipe.
+  GetPrefService()->SetBoolean(prefs::kEnableReferrers, false);
+  FlushNetworkInterface();
+
+  // Send a request and make sure its referer is not sent.
+  std::string referrer2;
+  std::unique_ptr<network::ResourceRequest> request2 =
+      std::make_unique<network::ResourceRequest>();
+  request2->referrer = kReferrer;
+  ASSERT_TRUE(FetchHeaderEcho("referer", &referrer2, std::move(request2)));
+  EXPECT_EQ("None", referrer2);
+}
+
+// Second part of enable referrer test. Referrer should still be disabled. Make
+// sure that disable referrers option is respected after startup, as to just
+// after changing it.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       EnableReferrers) {
+  const GURL kReferrer("http://referrer/");
+
+  // Referrers should still be disabled.
+  EXPECT_FALSE(GetPrefService()->GetBoolean(prefs::kEnableReferrers));
+
+  // Send a request and make sure its referer is not sent.
+  std::string referrer;
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->referrer = kReferrer;
+  ASSERT_TRUE(FetchHeaderEcho("referer", &referrer, std::move(request)));
+  EXPECT_EQ("None", referrer);
 }
 
 class NetworkContextConfigurationFixedPortBrowserTest
