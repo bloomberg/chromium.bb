@@ -38,8 +38,8 @@ bool SameDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
     : appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
       channel_ids_(new CannedBrowsingDataChannelIDHelper()),
-      cookies_(
-          new CannedBrowsingDataCookieHelper(profile->GetRequestContext())),
+      cookies_(new CannedBrowsingDataCookieHelper(
+          content::BrowserContext::GetDefaultStoragePartition(profile))),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
       file_systems_(new CannedBrowsingDataFileSystemHelper(profile)),
       indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(

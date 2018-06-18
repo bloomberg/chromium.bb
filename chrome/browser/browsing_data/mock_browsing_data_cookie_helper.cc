@@ -9,13 +9,14 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
 #include "net/cookies/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-MockBrowsingDataCookieHelper::MockBrowsingDataCookieHelper(
-    net::URLRequestContextGetter* request_context_getter)
-    : BrowsingDataCookieHelper(request_context_getter) {
-}
+MockBrowsingDataCookieHelper::MockBrowsingDataCookieHelper(Profile* profile)
+    : BrowsingDataCookieHelper(
+          content::BrowserContext::GetDefaultStoragePartition(profile)) {}
 
 MockBrowsingDataCookieHelper::~MockBrowsingDataCookieHelper() {
 }

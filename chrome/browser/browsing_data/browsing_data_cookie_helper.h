@@ -20,7 +20,9 @@ class GURL;
 
 namespace net {
 class CanonicalCookie;
-class URLRequestContextGetter;
+}
+namespace content {
+class StoragePartition;
 }
 
 // This class fetches cookie information on behalf of a caller
@@ -33,7 +35,7 @@ class BrowsingDataCookieHelper
  public:
   using FetchCallback = base::Callback<void(const net::CookieList&)>;
   explicit BrowsingDataCookieHelper(
-      net::URLRequestContextGetter* request_context_getter);
+      content::StoragePartition* storage_partition);
 
   // Starts the fetching process, which will notify its completion via
   // callback.
@@ -48,18 +50,8 @@ class BrowsingDataCookieHelper
   friend class base::RefCountedThreadSafe<BrowsingDataCookieHelper>;
   virtual ~BrowsingDataCookieHelper();
 
-  net::URLRequestContextGetter* request_context_getter() {
-    return request_context_getter_.get();
-  }
-
  private:
-  // Fetch the cookies. This must be called in the IO thread.
-  void FetchCookiesOnIOThread(const FetchCallback& callback);
-
-  // Delete a single cookie. This must be called in IO thread.
-  void DeleteCookieOnIOThread(const net::CanonicalCookie& cookie);
-
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  content::StoragePartition* storage_partition_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataCookieHelper);
 };
@@ -82,7 +74,7 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
       OriginCookieSetMap;
 
   explicit CannedBrowsingDataCookieHelper(
-      net::URLRequestContextGetter* request_context);
+      content::StoragePartition* storage_partition);
 
   // Adds the cookies from |cookie_list|. Current cookies that have the same
   // cookie name, cookie domain, cookie path, host-only-flag tuple as passed

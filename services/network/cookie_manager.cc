@@ -94,6 +94,18 @@ void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
       modify_http_only, std::move(callback));
 }
 
+void CookieManager::DeleteCanonicalCookie(
+    const net::CanonicalCookie& cookie,
+    DeleteCanonicalCookieCallback callback) {
+  cookie_store_->DeleteCanonicalCookieAsync(
+      cookie,
+      base::BindOnce(
+          [](DeleteCanonicalCookieCallback callback, uint32_t num_deleted) {
+            std::move(callback).Run(num_deleted > 0);
+          },
+          std::move(callback)));
+}
+
 void CookieManager::SetContentSettings(
     const ContentSettingsForOneType& settings) {
   cookie_settings_.set_content_settings(settings);

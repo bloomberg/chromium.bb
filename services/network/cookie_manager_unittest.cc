@@ -102,6 +102,16 @@ class SynchronousCookieManager {
     return result;
   }
 
+  bool DeleteCanonicalCookie(const net::CanonicalCookie& cookie) {
+    base::RunLoop run_loop;
+    bool result;
+    cookie_service_->DeleteCanonicalCookie(
+        cookie, base::BindOnce(&SynchronousCookieManager::SetCookieCallback,
+                               &run_loop, &result));
+    run_loop.Run();
+    return result;
+  }
+
   uint32_t DeleteCookies(mojom::CookieDeletionFilter filter) {
     base::RunLoop run_loop;
     uint32_t num_deleted = 0u;
@@ -511,6 +521,20 @@ TEST_F(CookieManagerTest, GetCookieListAccessTime) {
   EXPECT_FALSE(cookies[0].LastAccessDate().is_null());
   EXPECT_GE(cookies[0].LastAccessDate(), start);
   EXPECT_LE(cookies[0].LastAccessDate(), base::Time::Now());
+}
+
+TEST_F(CookieManagerTest, DeleteCanonicalCookie) {
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "A", "B", "foo_host", "/", base::Time(), base::Time(), base::Time(),
+          /*secure=*/false, /*httponly=*/false,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  std::vector<net::CanonicalCookie> cookies =
+      service_wrapper()->GetAllCookies();
+  ASSERT_EQ(1U, cookies.size());
+  EXPECT_TRUE(service_wrapper()->DeleteCanonicalCookie(cookies[0]));
+  EXPECT_EQ(0U, service_wrapper()->GetAllCookies().size());
 }
 
 TEST_F(CookieManagerTest, DeleteThroughSet) {

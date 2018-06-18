@@ -269,7 +269,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
     storage::FileSystemContext* file_system_context =
         storage_partition->GetFileSystemContext();
     auto container = std::make_unique<LocalDataContainer>(
-        new BrowsingDataCookieHelper(profile->GetRequestContext()),
+        new BrowsingDataCookieHelper(storage_partition),
         new BrowsingDataDatabaseHelper(profile),
         new BrowsingDataLocalStorageHelper(profile),
         /*session_storage_helper=*/nullptr,

@@ -104,8 +104,6 @@ void SessionDataDeleter::Run(content::StoragePartition* storage_partition) {
 
 void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
     const std::vector<net::CanonicalCookie>& cookies) {
-  base::Time yesterday(base::Time::Now() - base::TimeDelta::FromDays(1));
-
   auto delete_cookie_predicate =
       storage_policy_->CreateDeleteCookieOnExitPredicate();
   DCHECK(delete_cookie_predicate);
@@ -114,17 +112,8 @@ void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
     if (!delete_cookie_predicate.Run(cookie.Domain(), cookie.IsSecure())) {
       continue;
     }
-
-    // Delete a single cookie by setting its expiration time into the past.
-    cookie_manager_->SetCanonicalCookie(
-        net::CanonicalCookie(cookie.Name(), cookie.Value(), cookie.Domain(),
-                             cookie.Path(), cookie.CreationDate(), yesterday,
-                             cookie.LastAccessDate(), cookie.IsSecure(),
-                             cookie.IsHttpOnly(), cookie.SameSite(),
-                             cookie.Priority()),
-        true /* secure_source */, true /* modify_http_only */,
-        // Fire and forget
-        network::mojom::CookieManager::SetCanonicalCookieCallback());
+    // Fire and forget.
+    cookie_manager_->DeleteCanonicalCookie(cookie, base::DoNothing());
   }
 }
 

@@ -382,8 +382,6 @@ void DeleteFilteredCookies(network::mojom::CookieManager* cookie_manager,
                            const std::string& path,
                            std::unique_ptr<DeleteCookiesCallback> callback,
                            const std::vector<net::CanonicalCookie>& cookies) {
-  base::Time yesterday(base::Time::Now() - base::TimeDelta::FromDays(1));
-
   std::vector<net::CanonicalCookie> filtered_list =
       FilterCookies(cookies, name, normalized_domain, path);
 
@@ -392,17 +390,10 @@ void DeleteFilteredCookies(network::mojom::CookieManager* cookie_manager,
       base::BindOnce(&DeleteCookiesCallback::sendSuccess, std::move(callback)));
 
   for (auto& cookie : filtered_list) {
-    // Delete a single cookie by setting its expiration time into the past.
-    cookie_manager->SetCanonicalCookie(
-        net::CanonicalCookie(cookie.Name(), cookie.Value(), cookie.Domain(),
-                             cookie.Path(), cookie.CreationDate(), yesterday,
-                             cookie.LastAccessDate(), cookie.IsSecure(),
-                             cookie.IsHttpOnly(), cookie.SameSite(),
-                             cookie.Priority()),
-        true /* secure_source */, true /* modify_http_only */,
-        base::BindOnce(
-            [](base::RepeatingClosure callback, bool) { callback.Run(); },
-            barrier_closure));
+    cookie_manager->DeleteCanonicalCookie(
+        cookie, base::BindOnce([](base::RepeatingClosure callback,
+                                  bool) { callback.Run(); },
+                               barrier_closure));
   }
 }
 

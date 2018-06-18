@@ -244,7 +244,7 @@ void StorageHandler::UpdateBrowsingDataSize() {
         content::BrowserContext::GetDefaultStoragePartition(profile);
     site_data_size_collector_.reset(new SiteDataSizeCollector(
         storage_partition->GetPath(),
-        new BrowsingDataCookieHelper(profile->GetRequestContext()),
+        new BrowsingDataCookieHelper(storage_partition),
         new BrowsingDataDatabaseHelper(profile),
         new BrowsingDataLocalStorageHelper(profile),
         new BrowsingDataAppCacheHelper(profile),
