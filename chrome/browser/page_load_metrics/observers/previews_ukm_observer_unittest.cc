@@ -547,6 +547,34 @@ TEST_F(PreviewsUKMObserverTest, DataSaverEnabled) {
               true /* save_data_enabled_expected */);
 }
 
+TEST_F(PreviewsUKMObserverTest, CheckReportingForHidden) {
+  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
+          false /* noscript_on */, false /* origin_opt_out */,
+          true /* save_data_enabled */);
+
+  web_contents()->WasHidden();
+
+  ValidateUKM(false /* server_lofi_expected */,
+              false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* noscript_expected */, false /* opt_out_expected */,
+              false /* origin_opt_out_expected */,
+              true /* save_data_enabled_expected */);
+}
+
+TEST_F(PreviewsUKMObserverTest, CheckReportingForFlushMetrics) {
+  RunTest(false /* data_reduction_proxy_used */, false /* lite_page_received */,
+          false /* noscript_on */, false /* origin_opt_out */,
+          true /* save_data_enabled */);
+
+  SimulateAppEnterBackground();
+
+  ValidateUKM(false /* server_lofi_expected */,
+              false /* client_lofi_expected */, false /* lite_page_expected */,
+              false /* noscript_expected */, false /* opt_out_expected */,
+              false /* origin_opt_out_expected */,
+              true /* save_data_enabled_expected */);
+}
+
 }  // namespace
 
 }  // namespace previews
