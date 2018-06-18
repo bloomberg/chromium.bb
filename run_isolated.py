@@ -1221,7 +1221,7 @@ def main(args):
         min_free_space=options.min_free_space,
         max_age_secs=MAX_AGE_SECS)
     for c in caches:
-      c.clean()
+      c.cleanup()
     return 0
 
   if not options.no_clean:
