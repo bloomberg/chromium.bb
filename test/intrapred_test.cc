@@ -21,6 +21,7 @@
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "av1/common/blockd.h"
+#include "av1/common/common.h"
 #include "av1/common/pred_common.h"
 #include "aom_mem/aom_mem.h"
 
@@ -149,8 +150,8 @@ TEST_P(HighbdIntraPredTest, Bitexact) {
   DECLARE_ALIGNED(16, uint16_t, above_data[2 * 32 + 32]);
   DECLARE_ALIGNED(16, uint16_t, dst[3 * 32 * 32]);
   DECLARE_ALIGNED(16, uint16_t, ref_dst[3 * 32 * 32]);
-  memset(left_col, 0, sizeof(left_col));
-  memset(above_data, 0, sizeof(above_data));
+  av1_zero(left_col);
+  av1_zero(above_data);
   RunTest(left_col, above_data, dst, ref_dst);
 }
 #endif  // 0
@@ -163,8 +164,8 @@ TEST_P(LowbdIntraPredTest, Bitexact) {
   DECLARE_ALIGNED(16, uint8_t, above_data[2 * 32 + 32]);
   DECLARE_ALIGNED(16, uint8_t, dst[3 * 32 * 32]);
   DECLARE_ALIGNED(16, uint8_t, ref_dst[3 * 32 * 32]);
-  memset(left_col, 0, sizeof(left_col));
-  memset(above_data, 0, sizeof(above_data));
+  av1_zero(left_col);
+  av1_zero(above_data);
   RunTest(left_col, above_data, dst, ref_dst);
 }
 #endif  // !HAVE_NEON
