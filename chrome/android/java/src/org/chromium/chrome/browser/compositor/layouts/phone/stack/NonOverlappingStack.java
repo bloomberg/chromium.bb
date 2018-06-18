@@ -261,7 +261,13 @@ public class NonOverlappingStack extends Stack {
 
         if (mStackTabs == null) return 0;
         for (int i = mStackTabs.length - 1; i >= 0; i--) {
-            if (!mStackTabs[i].isDying()) return -mStackTabs[i].getScrollOffset();
+            // The getScrollOffset() != 0 check avoids a bug when undiscarding the last tab, in
+            // which case the tab's scroll offset is initially set to 0, which would cause us to
+            // immediately center the first tab. If 0 is the correct offset to return, it's the
+            // default value anyway after going through all the tabs.
+            if (!mStackTabs[i].isDying() && mStackTabs[i].getScrollOffset() != 0) {
+                return -mStackTabs[i].getScrollOffset();
+            }
         }
 
         return 0;
