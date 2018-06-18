@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_context_options.h"
@@ -105,6 +106,8 @@ AudioContext* AudioContext::Create(Document& document,
         "https://goo.gl/7K7WLu"));
   }
 
+  probe::didCreateAudioContext(&document);
+
   return audio_context;
 }
 
@@ -173,6 +176,9 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
     // Since we don't have any way of knowing when the hardware actually stops,
     // we'll just resolve the promise now.
     resolver->Resolve();
+
+    // Probe reports the suspension only when the promise is resolved.
+    probe::didSuspendAudioContext(GetDocument());
   }
 
   return promise;
@@ -204,6 +210,9 @@ ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
       // Do not set the state to running here.  We wait for the
       // destination to start to set the state.
       StartRendering();
+
+      // Probe reports only when the user gesture allows the audio rendering.
+      probe::didResumeAudioContext(GetDocument());
     }
   }
 
@@ -267,6 +276,8 @@ ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
   // JS has no references. uninitialize() will also resolve the Promise created
   // here.
   Uninitialize();
+
+  probe::didCloseAudioContext(GetDocument());
 
   return promise;
 }

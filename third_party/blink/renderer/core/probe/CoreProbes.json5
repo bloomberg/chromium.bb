@@ -81,6 +81,10 @@
         "willModifyDOMAttr",
         "willRemoveDOMNode",
         "willSendXMLHttpOrFetchNetworkRequest",
+        "didCreateAudioContext",
+        "didCloseAudioContext",
+        "didResumeAudioContext",
+        "didSuspendAudioContext",
       ]
     },
     InspectorDOMSnapshotAgent: {
