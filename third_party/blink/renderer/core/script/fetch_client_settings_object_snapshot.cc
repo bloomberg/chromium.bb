@@ -11,13 +11,15 @@ namespace blink {
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     ExecutionContext& execution_context)
     : FetchClientSettingsObjectSnapshot(execution_context.GetSecurityOrigin(),
-                                        execution_context.GetReferrerPolicy()) {
-}
+                                        execution_context.GetReferrerPolicy(),
+                                        execution_context.OutgoingReferrer()) {}
 
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     const scoped_refptr<const SecurityOrigin> security_origin,
-    ReferrerPolicy referrer_policy)
+    ReferrerPolicy referrer_policy,
+    const String& outgoing_referrer)
     : security_origin_(std::move(security_origin)),
-      referrer_policy_(referrer_policy) {}
+      referrer_policy_(referrer_policy),
+      outgoing_referrer_(outgoing_referrer) {}
 
 }  // namespace blink

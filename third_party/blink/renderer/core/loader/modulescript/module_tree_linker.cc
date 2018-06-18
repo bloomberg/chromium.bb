@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
 
@@ -182,8 +183,10 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   // Step 2. Perform the internal module script graph fetching procedure given
   // ... with the top-level module fetch flag set. ...
   ModuleScriptFetchRequest request(
-      url, destination_, options, Referrer::NoReferrer(),
-      fetch_client_settings_object_.GetReferrerPolicy(),
+      url, destination_, options,
+      SecurityPolicy::GenerateReferrer(
+          fetch_client_settings_object_.GetReferrerPolicy(), url,
+          fetch_client_settings_object_.GetOutgoingReferrer()),
       TextPosition::MinimumPosition());
 
   InitiateInternalModuleScriptGraphFetching(
@@ -373,8 +376,11 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
     // [FD] Step 7. ... perform the internal module script graph fetching
     // procedure given ... with the top-level module fetch flag unset. ...
     ModuleScriptFetchRequest request(
-        urls[i], destination_, options, module_script->BaseURL().GetString(),
-        fetch_client_settings_object_.GetReferrerPolicy(), positions[i]);
+        urls[i], destination_, options,
+        SecurityPolicy::GenerateReferrer(
+            fetch_client_settings_object_.GetReferrerPolicy(), urls[i],
+            module_script->BaseURL().GetString()),
+        positions[i]);
     InitiateInternalModuleScriptGraphFetching(
         request, ModuleGraphLevel::kDependentModuleFetch);
   }

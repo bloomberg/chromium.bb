@@ -24,37 +24,32 @@ class ModuleScriptFetchRequest final {
   ModuleScriptFetchRequest(const KURL& url,
                            WebURLRequest::RequestContext destination,
                            const ScriptFetchOptions& options,
-                           const String& referrer,
-                           ReferrerPolicy referrer_policy,
+                           const Referrer& referrer,
                            const TextPosition& referrer_position)
       : url_(url),
         destination_(destination),
         options_(options),
         referrer_(referrer),
-        referrer_policy_(referrer_policy),
         referrer_position_(referrer_position) {}
 
   static ModuleScriptFetchRequest CreateForTest(const KURL& url) {
-    return ModuleScriptFetchRequest(
-        url, WebURLRequest::kRequestContextScript, ScriptFetchOptions(),
-        Referrer::NoReferrer(), kReferrerPolicyDefault,
-        TextPosition::MinimumPosition());
+    return ModuleScriptFetchRequest(url, WebURLRequest::kRequestContextScript,
+                                    ScriptFetchOptions(), Referrer(),
+                                    TextPosition::MinimumPosition());
   }
   ~ModuleScriptFetchRequest() = default;
 
   const KURL& Url() const { return url_; }
   WebURLRequest::RequestContext Destination() const { return destination_; }
   const ScriptFetchOptions& Options() const { return options_; }
-  const AtomicString& GetReferrer() const { return referrer_; }
-  ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
+  const Referrer& GetReferrer() const { return referrer_; }
   const TextPosition& GetReferrerPosition() const { return referrer_position_; }
 
  private:
   const KURL url_;
   const WebURLRequest::RequestContext destination_;
   const ScriptFetchOptions options_;
-  const AtomicString referrer_;
-  const ReferrerPolicy referrer_policy_;
+  const Referrer referrer_;
   const TextPosition referrer_position_;
 };
 
