@@ -352,7 +352,8 @@ OverlayPlane ScreenManager::GetModesetBuffer(
 
   gfx::BufferFormat format = display::DisplaySnapshot::PrimaryFormat();
   uint32_t fourcc_format = ui::GetFourCCFormatForOpaqueFramebuffer(format);
-  const auto& modifiers = controller->GetFormatModifiers(fourcc_format);
+  const auto& modifiers =
+      controller->GetFormatModifiersForModesetting(fourcc_format);
   if (window) {
     const OverlayPlane* primary = window->GetLastModesetBuffer();
     const DrmDevice* drm = controller->GetAllocationDrmDevice().get();

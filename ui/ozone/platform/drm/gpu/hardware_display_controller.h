@@ -127,6 +127,14 @@ class HardwareDisplayController {
   // controller.
   std::vector<uint64_t> GetFormatModifiers(uint32_t fourcc_format);
 
+  // Return the supported modifiers for |fourcc_format| for this
+  // controller to be used for modeset buffers. Currently, this only exists
+  // because we can't provide valid AFBC buffers during modeset.
+  // See https://crbug.com/852675
+  // TODO: Remove this.
+  std::vector<uint64_t> GetFormatModifiersForModesetting(
+      uint32_t fourcc_format);
+
   // Set the hardware cursor to show the contents of |surface|.
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
 
