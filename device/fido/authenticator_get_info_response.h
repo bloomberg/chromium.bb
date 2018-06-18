@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/authenticator_supported_options.h"
@@ -24,13 +25,13 @@ namespace device {
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticatorGetInfo
 class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
  public:
-  AuthenticatorGetInfoResponse(std::vector<std::string> versions,
+  AuthenticatorGetInfoResponse(base::flat_set<ProtocolVersion> versions,
                                std::vector<uint8_t> aaguid);
   AuthenticatorGetInfoResponse(AuthenticatorGetInfoResponse&& that);
   AuthenticatorGetInfoResponse& operator=(AuthenticatorGetInfoResponse&& other);
   ~AuthenticatorGetInfoResponse();
 
-  AuthenticatorGetInfoResponse& SetMaxMsgSize(uint8_t max_msg_size);
+  AuthenticatorGetInfoResponse& SetMaxMsgSize(uint32_t max_msg_size);
   AuthenticatorGetInfoResponse& SetPinProtocols(
       std::vector<uint8_t> pin_protocols);
   AuthenticatorGetInfoResponse& SetExtensions(
@@ -38,9 +39,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
   AuthenticatorGetInfoResponse& SetOptions(
       AuthenticatorSupportedOptions options);
 
-  const std::vector<std::string>& versions() { return versions_; }
+  const base::flat_set<ProtocolVersion>& versions() { return versions_; }
   const std::vector<uint8_t>& aaguid() const { return aaguid_; }
-  const base::Optional<uint8_t>& max_msg_size() const { return max_msg_size_; }
+  const base::Optional<uint32_t>& max_msg_size() const { return max_msg_size_; }
   const base::Optional<std::vector<uint8_t>>& pin_protocol() const {
     return pin_protocols_;
   }
@@ -50,9 +51,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
   const AuthenticatorSupportedOptions& options() const { return options_; }
 
  private:
-  std::vector<std::string> versions_;
+  base::flat_set<ProtocolVersion> versions_;
   std::vector<uint8_t> aaguid_;
-  base::Optional<uint8_t> max_msg_size_;
+  base::Optional<uint32_t> max_msg_size_;
   base::Optional<std::vector<uint8_t>> pin_protocols_;
   base::Optional<std::vector<std::string>> extensions_;
   AuthenticatorSupportedOptions options_;

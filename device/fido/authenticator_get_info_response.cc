@@ -9,7 +9,7 @@
 namespace device {
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
-    std::vector<std::string> versions,
+    base::flat_set<ProtocolVersion> versions,
     std::vector<uint8_t> aaguid)
     : versions_(std::move(versions)), aaguid_(std::move(aaguid)) {}
 
@@ -22,7 +22,7 @@ AuthenticatorGetInfoResponse& AuthenticatorGetInfoResponse::operator=(
 AuthenticatorGetInfoResponse::~AuthenticatorGetInfoResponse() = default;
 
 AuthenticatorGetInfoResponse& AuthenticatorGetInfoResponse::SetMaxMsgSize(
-    uint8_t max_msg_size) {
+    uint32_t max_msg_size) {
   max_msg_size_ = max_msg_size;
   return *this;
 }

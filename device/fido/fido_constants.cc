@@ -19,7 +19,7 @@ const std::array<uint8_t, 32> kBogusChallenge = {
 const char kResidentKeyMapKey[] = "rk";
 const char kUserVerificationMapKey[] = "uv";
 const char kUserPresenceMapKey[] = "up";
-const char kClientPinMapKey[] = "client_pin";
+const char kClientPinMapKey[] = "clientPin";
 const char kPlatformDeviceMapKey[] = "plat";
 
 const size_t kHidPacketSize = 64;
@@ -67,5 +67,8 @@ const char kCableHandshakeKeyInfo[] = "FIDO caBLE v1 handshakeKey";
 const char kCableDeviceEncryptionKeyInfo[] = "FIDO caBLE v1 sessionKey";
 const char kCableAuthenticatorHelloMessage[] = "caBLE v1 authenticator hello";
 const char kCableClientHelloMessage[] = "caBLE v1 client hello";
+
+const char kCtap2Version[] = "FIDO_2_0";
+const char kU2fVersion[] = "U2F_V2";
 
 }  // namespace device

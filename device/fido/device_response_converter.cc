@@ -21,8 +21,19 @@
 namespace device {
 
 namespace {
+
 constexpr size_t kResponseCodeLength = 1;
+
+ProtocolVersion ConvertStringToProtocolVersion(base::StringPiece version) {
+  if (version == kCtap2Version)
+    return ProtocolVersion::kCtap;
+  if (version == kU2fVersion)
+    return ProtocolVersion::kU2f;
+
+  return ProtocolVersion::kUnknown;
 }
+
+}  // namespace
 
 using CBOR = cbor::CBORValue;
 
@@ -146,22 +157,34 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
   const auto& response_map = decoded_response->GetMap();
 
   auto it = response_map.find(CBOR(1));
-  if (it == response_map.end() || !it->second.is_array())
+  if (it == response_map.end() || !it->second.is_array() ||
+      it->second.GetArray().size() > 2) {
     return base::nullopt;
+  }
 
-  std::vector<std::string> versions;
+  base::flat_set<ProtocolVersion> protocol_versions;
   for (const auto& version : it->second.GetArray()) {
     if (!version.is_string())
       return base::nullopt;
 
-    versions.push_back(version.GetString());
+    auto protocol = ConvertStringToProtocolVersion(version.GetString());
+    if (protocol == ProtocolVersion::kUnknown) {
+      DLOG(ERROR) << "Unexpected protocol version received.";
+      return base::nullopt;
+    }
+
+    if (!protocol_versions.insert(protocol).second)
+      return base::nullopt;
   }
+
+  if (protocol_versions.empty())
+    return base::nullopt;
 
   it = response_map.find(CBOR(3));
   if (it == response_map.end() || !it->second.is_bytestring())
     return base::nullopt;
 
-  AuthenticatorGetInfoResponse response(std::move(versions),
+  AuthenticatorGetInfoResponse response(std::move(protocol_versions),
                                         it->second.GetBytestring());
 
   it = response_map.find(CBOR(2));
