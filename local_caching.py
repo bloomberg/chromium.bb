@@ -995,6 +995,11 @@ class NamedCache(Cache):
             p = os.path.join(self.cache_dir, self.NAMED_DIR, name)
             expected_link = os.path.join(self.cache_dir, self._lru[name][0])
             if fs.islink(p):
+              if sys.platform == 'win32':
+                # TODO(maruel): Implement readlink() on Windows in fs.py, then
+                # remove this condition.
+                # https://crbug.com/853721
+                continue
               link = fs.readlink(p)
               if expected_link == link:
                 continue

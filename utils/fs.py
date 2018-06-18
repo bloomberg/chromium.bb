@@ -176,6 +176,7 @@ if sys.platform == 'win32':
 
   def readlink(path):
     extend(path)
+    # https://crbug.com/853721
     raise NotImplementedError(
         'Implement readlink() via DeviceIoControl(h, FSCTL_GET_REPARSE_POINT, '
         '...)')
