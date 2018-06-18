@@ -1561,12 +1561,8 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
 }
 
 // TODO(crbug.com/803286): The npot texture check failed on asan tests bot.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_OpenAppListInOverviewMode DISABLED_OpenAppListInOverviewMode
-#else
-#define MAYBE_OpenAppListInOverviewMode OpenAppListInOverviewMode
-#endif
-TEST_F(WorkspaceLayoutManagerBackdropTest, MAYBE_OpenAppListInOverviewMode) {
+// TODO(crbug.com/838756): Very flaky on mash_ash_unittests.
+TEST_F(WorkspaceLayoutManagerBackdropTest, DISABLED_OpenAppListInOverviewMode) {
   WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
 
