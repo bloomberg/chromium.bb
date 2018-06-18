@@ -7,13 +7,40 @@
 
 #include "base/observer_list.h"
 
-// Encapsulates the model behind the Web Authentication request dialog.
+// Encapsulates the model behind the Web Authentication request dialog's UX
+// flow. This is essentially a state machine going through the states defined in
+// the `Step` enumeration.
 //
 // Ultimately, this will become an observer of the AuthenticatorRequest, and
 // contain the logic to figure out which steps the user needs to take, in which
 // order, to complete the authentication flow.
 class AuthenticatorRequestDialogModel {
  public:
+  // Defines the potential steps of the Web Authentication API request UX flow.
+  enum class Step {
+    kInitial,
+    kTransportSelection,
+    kErrorTimedOut,
+    kCompleted,
+
+    // Universal Serial Bus (USB).
+    kUsbInsert,
+    kUsbActivate,
+    kUsbVerifying,
+
+    // Bluetooth Low Energy (BLE).
+    kBlePowerOnAutomatic,
+    kBlePowerOnManual,
+
+    kBlePairingBegin,
+    kBleEnterPairingMode,
+    kBleDeviceSelection,
+    kBlePinEntry,
+
+    kBleActivate,
+    kBleVerifying,
+  };
+
   // Implemented by the dialog to observe this model and show the UI panels
   // appropriate for the current step.
   class Observer {
@@ -21,12 +48,65 @@ class AuthenticatorRequestDialogModel {
     // Called just before the model is destructed.
     virtual void OnModelDestroyed() = 0;
 
-    // Called when the authentication request completes (successfully or not).
-    virtual void OnRequestComplete() {}
+    // Called when the UX flow has navigated to a different step, so the UI
+    // should update.
+    virtual void OnStepTransition() {}
   };
 
   AuthenticatorRequestDialogModel();
   ~AuthenticatorRequestDialogModel();
+
+  void set_current_step(Step step) { current_step_ = step; }
+  Step current_step() const { return current_step_; }
+
+  // Requests that the step-by-step wizard flow commence, guiding the user
+  // through using the Secutity Key with the given |transport|.
+  //
+  // Valid action when at step: kTransportSelection.
+  // TODO(engedy): Use AuthenticatorTransport type when ready.
+  void StartGuidedFlowForTransport(int transport);
+
+  // Tries if the BLE adapter is now powered -- the user claims they turned it
+  // on.
+  //
+  // Valid action when at step: kBlePowerOnManual.
+  void TryIfBleAdapterIsPowered();
+
+  // Turns on the BLE adapter automatically.
+  //
+  // Valid action when at step: kBlePowerOnAutomatic.
+  void PowerOnBleAdapter();
+
+  // Lets the pairing procedure start after the user learned about the need.
+  //
+  // Valid action when at step: kBlePairingBegin.
+  void StartBleDiscovery();
+
+  // Initiates pairing of the device that the user has chosen.
+  //
+  // Valid action when at step: kBleDeviceSelection.
+  void InitiatePairingDevice(const std::string& device_address);
+
+  // Finishes pairing of the previously chosen device with the |pin| code
+  // entered.
+  //
+  // Valid action when at step: kBlePinEntry.
+  void FinishPairingWithPin(const base::string16& pin);
+
+  // Tries if a USB device is present -- the user claims they plugged it in.
+  //
+  // Valid action when at step: kUsbInsert.
+  void TryUsbDevice();
+
+  // Cancels the flow as a result of the user clicking `Cancel` on the UI.
+  //
+  // Valid action at all steps.
+  void Cancel();
+
+  // Backtracks in the flow as a result of the user clicking `Back` on the UI.
+  //
+  // Valid action at all steps.
+  void Back();
 
   // The |observer| must either outlive the object, or unregister itself on its
   // destruction.
@@ -37,6 +117,12 @@ class AuthenticatorRequestDialogModel {
   void OnRequestComplete();
 
  private:
+  // Notifies observers when a step transition has occurred.
+  void NotifyStepTransition();
+
+  // The current step of the request UX flow that is currently shown.
+  Step current_step_ = Step::kInitial;
+
   base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModel);

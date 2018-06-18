@@ -62,7 +62,7 @@ class AuthenticatorRequestDialogView
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;
-  void OnRequestComplete() override;
+  void OnStepTransition() override;
 
  private:
   friend class test::AuthenticatorRequestDialogViewTestApi;
