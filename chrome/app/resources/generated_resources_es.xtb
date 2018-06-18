@@ -376,6 +376,7 @@
 <translation id="1531004739673299060">Ventana de la aplicación</translation>
 <translation id="1534389735079119190">Error: No se ha podido iniciar el contenedor de la máquina virtual.</translation>
 <translation id="15373452373711364">Cursor del ratón grande</translation>
+<translation id="1540605929960647700">Habilitar modo de demostración</translation>
 <translation id="1543284117603151572">Importado desde Edge</translation>
 <translation id="1545177026077493356">Modo kiosco automático</translation>
 <translation id="1545775234664667895">El tema <ph name="THEME_NAME" /> se ha instalado.</translation>
@@ -459,6 +460,7 @@
 <translation id="1657406563541664238">Ayúdanos a mejorar <ph name="PRODUCT_NAME" /> enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="1658424621194652532">Esta página está accediendo al micrófono</translation>
 <translation id="1660204651932907780">Permitir que los sitios web reproduzcan sonidos (recomendado)</translation>
+<translation id="1660938185063657230">Verifica tu llave de seguridad</translation>
 <translation id="1661156625580498328">Fuerza el cifrado AES (recomendado).</translation>
 <translation id="1661245713600520330">En esta página, se incluyen todos los módulos cargados en el proceso principal y los módulos registrados para cargarse más adelante.</translation>
 <translation id="166179487779922818">La contraseña es demasiado corta.</translation>
@@ -476,6 +478,7 @@
 <translation id="16815041330799488">No permitir que los sitios web vean el texto y las imágenes que se hayan copiado en el portapapeles</translation>
 <translation id="1682548588986054654">Nueva ventana de incógnito</translation>
 <translation id="168715261339224929">Activa la sincronización para ver tus marcadores en todos tus dispositivos.</translation>
+<translation id="1688867105868176567">¿Quieres borrar los datos del sitio web?</translation>
 <translation id="1688935057616748272">Escribe una letra</translation>
 <translation id="168991973552362966">Añadir una impresora cercana</translation>
 <translation id="1689945336726856614">Copiar &amp;URL</translation>
@@ -582,8 +585,10 @@
 <translation id="1839704667838141620">Cambiar forma de compartir este archivo</translation>
 <translation id="1841545962859478868">Es posible que el administrador del dispositivo supervise lo siguiente:</translation>
 <translation id="1841705068325380214"><ph name="EXTENSION_NAME" /> está inhabilitada</translation>
+<translation id="1842766183094193446">¿Seguro que quieres habilitar el modo de demostración?</translation>
 <translation id="1844692022597038441">Este archivo no está disponible sin conexión.</translation>
 <translation id="1846308012215045257">Pulsa la tecla Ctrl y haz clic para ejecutar <ph name="PLUGIN_NAME" /></translation>
+<translation id="1847880352285315359">Guardados</translation>
 <translation id="1848219224579402567">Cerrar sesión cuando la tapa esté cerrada</translation>
 <translation id="184823282865851239">Bloquear si el sitio web suele mostrar anuncios invasivos</translation>
 <translation id="1849186935225320012">Esta página tiene un control absoluto de los dispositivos MIDI.</translation>
@@ -681,6 +686,7 @@
 <translation id="200544492091181894">Puedes cambiar esta opción más tarde en Configuración</translation>
 <translation id="2006638907958895361">Abrir enlace en <ph name="APP" /></translation>
 <translation id="2007404777272201486">Notificar un problema...</translation>
+<translation id="2016237810978710652">Abriendo archivos de Linux...</translation>
 <translation id="2016430552235416146">Tradicional</translation>
 <translation id="2017334798163366053">Inhabilitar recolección de datos de rendimiento</translation>
 <translation id="2017836877785168846">Borra el historial y los autocompletados de la barra de direcciones.</translation>
@@ -775,6 +781,7 @@
 <translation id="2154484045852737596">Editar tarjeta</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2155772377859296191">Resolución de <ph name="WIDTH" />x<ph name="HEIGHT" /></translation>
+<translation id="2156283799932971644">Puedes ayudar a mejorar la Navegación Segura enviando a Google información sobre el sistema y contenido de las páginas.</translation>
 <translation id="215753907730220065">Desactivar pantalla completa</translation>
 <translation id="2157875535253991059">Esta página se muestra ahora en pantalla completa.</translation>
 <translation id="216169395504480358">Añadir Wi-Fi...</translation>
@@ -784,6 +791,7 @@
 <translation id="2173801458090845390">Añadir solicitud de ID para este dispositivo</translation>
 <translation id="2175042898143291048">Hacer esto siempre</translation>
 <translation id="2175607476662778685">Barra de inicio rápido</translation>
+<translation id="2176087259161165020">Otras fuentes</translation>
 <translation id="2177950615300672361">Pestaña de incógnito: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">El complemento <ph name="PEPPER_PLUGIN_NAME" /> de <ph name="PEPPER_PLUGIN_DOMAIN" /> quiere acceder a tu ordenador</translation>
 <translation id="2178614541317717477">Compromiso de entidad emisora de certificados</translation>
@@ -915,6 +923,7 @@
 <translation id="2366463953911599217">ERROR: No se ha podido desinstalar <ph name="APP_NAME" />.</translation>
 <translation id="2367199180085172140">Añadir uso compartido de archivo</translation>
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
+<translation id="2369536625682139252">Se eliminarán todos los datos que almacena <ph name="SITE" />, excepto las cookies.</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
 <translation id="2377319039870049694">Cambiar a vista de lista</translation>
 <translation id="2377667304966270281">Fallos graves</translation>
@@ -1036,6 +1045,7 @@ No creo que este sitio deba bloquearse</translation>
 <translation id="2566124945717127842">Haz un Powerwash y restablece el estado de fábrica de tu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para que quede como nuevo.</translation>
 <translation id="2567257616420533738">Se ha guardado la contraseña. Consulta y administra las contraseñas guardadas en la página <ph name="SAVED_PASSWORDS_LINK" /></translation>
 <translation id="2568774940984945469">Contenedor de barra de información</translation>
+<translation id="2570454805927264159">Saca el máximo partido al Asistente</translation>
 <translation id="257088987046510401">Temas</translation>
 <translation id="2572032849266859634">Se ha concedido acceso de solo lectura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2573269395582837871">Elige una imagen y un nombre</translation>
@@ -1332,6 +1342,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3006881078666935414">No hay datos de uso</translation>
 <translation id="3007214526293698309">Corregir proporción</translation>
 <translation id="3007771295016901659">Duplicar pestaña</translation>
+<translation id="3008272652534848354">Borrar permisos</translation>
 <translation id="3009300415590184725">¿Seguro que quieres cancelar el proceso de configuración del servicio de datos para móviles?</translation>
 <translation id="3009779501245596802">Bases de datos indexadas</translation>
 <translation id="3010279545267083280">Contraseña eliminada</translation>
@@ -1890,6 +1901,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3856921555429624101">La medición del uso de datos ha finalizado</translation>
 <translation id="3857228364945137633">Prueba Smart Lock para desbloquear tu <ph name="DEVICE_TYPE" /> sin una contraseña cuando tu teléfono esté cerca.</translation>
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
+<translation id="3860104611854310167"><ph name="PROFILE_NAME" />: sincronización en pausa</translation>
 <translation id="3860381078714302691">Te damos la bienvenida a Hangouts Meet</translation>
 <translation id="3862134173397075045">Te damos la bienvenida a la experiencia Cast en Chrome</translation>
 <translation id="3862788408946266506">La aplicación con el atributo del archivo de manifiesto "kiosk_only" se debe instalar en el modo kiosco de Chrome OS</translation>
@@ -2008,6 +2020,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4044612648082411741">Introduce la contraseña del certificado</translation>
 <translation id="404493185430269859">Motor de búsqueda predeterminado</translation>
 <translation id="4047112090469382184">Seguridad</translation>
+<translation id="4051049974203704184">Obtener información sobre lo que se muestra en la pantalla</translation>
 <translation id="4052120076834320548">Diminuto</translation>
 <translation id="4055023634561256217">Es necesario reiniciar el dispositivo antes de poder restablecerlo con Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
@@ -2036,6 +2049,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4088095054444612037">Aceptar la invitación para el grupo</translation>
 <translation id="4089235344645910861">Se ha guardado la configuración y se ha iniciado la sincronización.</translation>
 <translation id="4090103403438682346">Habilitar acceso verificado</translation>
+<translation id="4090947011087001172">¿Quieres borrar los permisos del sitio web <ph name="SITE" />?</translation>
 <translation id="4091434297613116013">hojas de papel</translation>
 <translation id="4093955363990068916">Archivo local:</translation>
 <translation id="4095507791297118304">Pantalla principal</translation>
@@ -2373,6 +2387,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4682551433947286597">Aparecen fondos de pantalla en la pantalla de inicio de sesión.</translation>
 <translation id="4684427112815847243">Sincronizar todo</translation>
 <translation id="4689421377817139245">Sincronizar este marcador con tu iPhone</translation>
+<translation id="4690091457710545971">&lt;El firmware del Wi‑Fi de Intel ha generado cuatro archivos: csr.lst, fh_regs.lst, radio_reg.lst y monitor.lst.sysmon. Los tres primeros son archivos binarios que contienen volcados de registro, e Intel afirma que no contienen información personal o que identifique el dispositivo. El último archivo es un seguimiento de ejecución del firmware de Intel del cual se ha eliminado toda la información personal o que identifique el dispositivo, pero es demasiado grande para mostrarse aquí. Estos archivos se han generado como respuesta a los problemas recientes de tu dispositivo con la conexión Wi‑Fi y se compartirán con Intel para que ayude a solucionarlos.</translation>
 <translation id="4692302215262324251"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ha registrado el dispositivo <ph name="DEVICE_TYPE" /> para ser administrado por la empresa.
     <ph name="LINE_BREAK_AND_EMPTY_LINE" />
     Si no te lo esperabas, ponte en contacto con el equipo de asistencia.</translation>
@@ -2631,6 +2646,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5074318175948309511">Es posible que debas actualizar la página para que se aplique la nueva configuración.</translation>
 <translation id="5075131525758602494">Introducir el PIN de la tarjeta SIM</translation>
 <translation id="5078638979202084724">Añadir todas las pestañas a marcadores</translation>
+<translation id="5079950360618752063">Utiliza la contraseña sugerida</translation>
 <translation id="5084230410268011727">Permitir que los sitios web usen los sensores de luz y movimiento</translation>
 <translation id="5085162214018721575">Buscando actualizaciones...</translation>
 <translation id="5086082738160935172">Dispositivos de interfaz humana (HID)</translation>
@@ -2669,6 +2685,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5136529877787728692">F7</translation>
 <translation id="5137501176474113045">Eliminar este elemento</translation>
 <translation id="5139955368427980650">&amp;Abrir</translation>
+<translation id="5142961317498132443">Autenticación</translation>
 <translation id="5143374789336132547">La extensión <ph name="EXTENSION_NAME" /> ha cambiado la página que se muestra al hacer clic en el botón Página de inicio.</translation>
 <translation id="5143712164865402236">Activar pantalla completa</translation>
 <translation id="5145331109270917438">Fecha de modificación</translation>
@@ -3384,11 +3401,13 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6198102561359457428">Cerrar y volver a iniciar sesión...</translation>
 <translation id="6198252989419008588">Cambiar PIN</translation>
 <translation id="6199801702437275229">Esperando información sobre el espacio...</translation>
+<translation id="6204015976622790023">Consulta sugerencias útiles del Asistente relacionadas con lo que aparece en la pantalla.</translation>
 <translation id="6205710420833115353">Algunas operaciones están tardando más de lo esperado. ¿Quieres cancelarlas?</translation>
 <translation id="6206311232642889873">Copia&amp;r imagen</translation>
 <translation id="6207200176136643843">Restablecer el nivel de zoom predeterminado</translation>
 <translation id="620722923698527029">Abrir siempre este tipo de enlaces en la aplicación asociada</translation>
 <translation id="6207937957461833379">País o región</translation>
+<translation id="6211495400987308581"><ph name="PROFILE_NAME" />: la sincronización no funciona</translation>
 <translation id="6212039847102026977">Mostrar propiedades de red avanzadas</translation>
 <translation id="6212168817037875041">Apagar la pantalla</translation>
 <translation id="6212752530110374741">Enviar enlace por correo electrónico</translation>
@@ -4659,6 +4678,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8118860139461251237">Gestionar tus descargas</translation>
 <translation id="81238879832906896">Flor blanca y amarilla</translation>
 <translation id="8124313775439841391">ONC administrado</translation>
+<translation id="8125562866093998907">El sitio web quiere verificar tu llave de seguridad para ofrecerte una mayor seguridad en tu cuenta.</translation>
 <translation id="813082847718468539">Ver información del sitio</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8133676275609324831">&amp;Mostrar en carpeta</translation>
@@ -4908,6 +4928,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="855081842937141170">Fijar pestaña</translation>
 <translation id="8551388862522347954">Licencias</translation>
 <translation id="8553342806078037065">Administrar otros usuarios</translation>
+<translation id="8554899698005018844">Sin idioma</translation>
 <translation id="855773602626431402">Se ha evitado que un complemento no incluido en la zona de pruebas se ejecutara en esta página.</translation>
 <translation id="8557930019681227453">Archivo de manifiesto</translation>
 <translation id="8559694214572302298">Decodificador de imágenes</translation>

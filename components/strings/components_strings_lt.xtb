@@ -811,6 +811,7 @@
 <translation id="6891596781022320156">Politikos lygis nepalaikomas.</translation>
 <translation id="6895330447102777224">Kortelė patvirtinta</translation>
 <translation id="6897140037006041989">Naudotojo atstovas</translation>
+<translation id="6903319715792422884">Padėkite tobulinti Saugų naršymą siųsdami tam tikrą <ph name="BEGIN_WHITEPAPER_LINK" />sistemos informaciją ir puslapių turinį<ph name="END_WHITEPAPER_LINK" /> „Google“. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Naudotojas:</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
 <translation id="6948701128805548767">Jei norite peržiūrėti paėmimo metodus ir reikalavimus, pasirinkite adresą</translation>
@@ -1015,6 +1016,7 @@
 <translation id="8308427013383895095">Vertimas nepavyko dėl tinklo ryšio problemos.</translation>
 <translation id="8311129316111205805">Įkelti sesiją</translation>
 <translation id="8332188693563227489">Prieiga prie <ph name="HOST_NAME" /> atmesta</translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_YEAR" />/<ph name="EXPIRATION_MONTH" /></translation>
 <translation id="834457929814110454">Jei suprantate, kokia rizika gali kilti jūsų saugai, galite <ph name="BEGIN_LINK" />apsilankyti šioje svetainėje<ph name="END_LINK" />, kol iš jos dar nepašalintos kenkėjiškos programos.</translation>
 <translation id="8349305172487531364">Žymių juosta</translation>
 <translation id="8363502534493474904">Išjungti lėktuvo režimą</translation>
@@ -1044,6 +1046,7 @@
 <translation id="858637041960032120">Pridėti tel. nr.
 </translation>
 <translation id="859285277496340001">Sertifikatas nenurodo mechanizmo, skirto patikrinti, ar jis buvo panaikintas.</translation>
+<translation id="860043288473659153">Kortelės savininko vardas</translation>
 <translation id="8620436878122366504">Jūsų tėvai dar jos nepatvirtino</translation>
 <translation id="8625384913736129811">Išsaugoti šią kortelę šiame įrenginyje</translation>
 <translation id="8639963783467694461">Automatinio pildymo nustatymai</translation>

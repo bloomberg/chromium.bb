@@ -15,6 +15,7 @@
 <translation id="1335095011850992622">ક્રેડિટ</translation>
 <translation id="1342835525016946179">લેખ</translation>
 <translation id="1359897965706325498">બેનર</translation>
+<translation id="1548116112524424341">ચિત્ર-માં-ચિત્ર મોડમાં વીડિઓ ચલાવો</translation>
 <translation id="1589122976691792535">પ્રદેશ</translation>
 <translation id="1591562245178063882">આ મહિને</translation>
 <translation id="1637811476055996098">ફાઇલો પસંદ કરો</translation>
@@ -25,6 +26,7 @@
 <translation id="1821985195704844674">ટ્રી ગ્રિડ</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="1832974991323546415">રિમોટ ઉપકરણ પર ચલાવો</translation>
+<translation id="190587075670221089">ડિલીટ</translation>
 <translation id="1907737156431278478">ઉદાહરણ</translation>
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">સ્થિતિ</translation>
@@ -142,6 +144,7 @@
 <translation id="6164829606128959761">મીટર</translation>
 <translation id="6166809985690652833">સમાપન ભાષણ</translation>
 <translation id="6213469881011901533">શબ્દાવલી</translation>
+<translation id="6310801910862476708">ચિત્ર-માં-ચિત્રમાંથી બહાર નીકળો</translation>
 <translation id="6398862346408813489">મહિના પસંદગી પેનલ દર્શાવો</translation>
 <translation id="6404546809543547843">ઑડિઓ સમય સ્ક્રબર</translation>
 <translation id="6453774872122745852">સ્વીકૃતિઓ</translation>
@@ -164,6 +167,7 @@
 <translation id="689129560213475294">પ્રકાશકની માહિતી</translation>
 <translation id="6934078000481955284">બ્લૉકક્વોટ</translation>
 <translation id="6941933287844615239">મીડિયા ડાઉનલોડ કરો</translation>
+<translation id="6981594929165378967">સમ્મિલન</translation>
 <translation id="6989848892321993519">કૃપા કરીને આ ટેક્સ્ટને <ph name="MIN_CHARACTERS" /> અથવા તેથી વધુ અક્ષર સુધી લંબાવો (તમે હાલમાં 1 અક્ષરનો ઉપયોગ કરી રહ્યાં છો).</translation>
 <translation id="709897737746224366">કૃપા કરીને વિનંતી કરેલા ફોર્મેટ સાથે મેળ કરો.</translation>
 <translation id="7139483182332611405">પ્રસ્તાવના</translation>
@@ -227,11 +231,13 @@
 <translation id="9048119486235211610">નેવિગેશન</translation>
 <translation id="9050748414552849310">ઉપશીર્ષક બતાવો</translation>
 <translation id="9062295712474918030">દસ્તાવેજ</translation>
+<translation id="9093215626363556771">ચિત્ર-માં-ચિત્રમાંથી બહાર નીકળો</translation>
 <translation id="9108370397979208512">ગણિત</translation>
 <translation id="9132465097189459683">અન્ય...</translation>
 <translation id="9138385573473225930">ચેતવણી</translation>
 <translation id="9155987714137265666"><ph name="WEEK" />, <ph name="WEEK_START_DATE" /> થી શરૂ કરીને</translation>
 <translation id="9168329111483466115">ફૂટનોટ</translation>
 <translation id="947831847158436616">કોષ</translation>
+<translation id="954003015749068518">ચિત્ર-માં-ચિત્રમાં પ્રવેશ કરો</translation>
 <translation id="966787709310836684">મેનૂ</translation>
 </translationbundle>
