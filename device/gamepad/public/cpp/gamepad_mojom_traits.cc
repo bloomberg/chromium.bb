@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/gamepad/public/mojom/gamepad_mojom_traits.h"
+#include "device/gamepad/public/cpp/gamepad_mojom_traits.h"
 
 #include "base/containers/span.h"
 
