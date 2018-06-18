@@ -886,10 +886,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void SetupInputRouter();
 
-  bool SurfacePropertiesMismatch(
-      const RenderWidgetSurfaceProperties& first,
-      const RenderWidgetSurfaceProperties& second) const;
-
   // Start intercepting system keyboard events.
   bool LockKeyboard();
 

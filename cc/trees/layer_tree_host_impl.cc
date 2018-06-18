@@ -1976,7 +1976,9 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
            metadata.bottom_controls_height ||
        last_draw_render_frame_metadata_->bottom_controls_shown_ratio !=
            metadata.bottom_controls_shown_ratio ||
-       last_draw_render_frame_metadata_->selection != metadata.selection);
+       last_draw_render_frame_metadata_->selection != metadata.selection ||
+       last_draw_render_frame_metadata_->has_transparent_background !=
+           metadata.has_transparent_background);
 #endif
 
   viz::LocalSurfaceId local_surface_id =
