@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/libdrm/src/include/drm/drm_fourcc.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -160,6 +161,23 @@ std::vector<uint64_t> HardwareDisplayController::GetFormatModifiers(
   }
 
   return modifiers;
+}
+
+std::vector<uint64_t>
+HardwareDisplayController::GetFormatModifiersForModesetting(
+    uint32_t fourcc_format) {
+  const auto& modifiers = GetFormatModifiers(fourcc_format);
+  std::vector<uint64_t> filtered_modifiers;
+  for (auto modifier : modifiers) {
+    // AFBC for modeset buffers doesn't work correctly, as we can't fill it with
+    // a valid AFBC buffer. For now, don't use AFBC for modeset buffers.
+    // TODO: Use AFBC for modeset buffers if it is available.
+    // See https://crbug.com/852675.
+    if (modifier != DRM_FORMAT_MOD_CHROMEOS_ROCKCHIP_AFBC) {
+      filtered_modifiers.push_back(modifier);
+    }
+  }
+  return filtered_modifiers;
 }
 
 bool HardwareDisplayController::SetCursor(
