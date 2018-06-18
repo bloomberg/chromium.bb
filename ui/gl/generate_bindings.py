@@ -1914,6 +1914,11 @@ EGL_FUNCTIONS = [
   'names': ['eglCreateWindowSurface'],
   'arguments': 'EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, '
                'const EGLint* attrib_list', },
+{ 'return_type': 'EGLint',
+  'known_as': 'eglDebugMessageControlKHR',
+  'versions': [{ 'name': 'eglDebugMessageControlKHR',
+                 'client_extensions': ['EGL_KHR_debug'], }],
+  'arguments': 'EGLDEBUGPROCKHR callback, const EGLAttrib* attrib_list', },
 { 'return_type': 'EGLBoolean',
   'names': ['eglDestroyContext'],
   'arguments': 'EGLDisplay dpy, EGLContext ctx', },
@@ -2048,6 +2053,12 @@ EGL_FUNCTIONS = [
 { 'return_type': 'EGLBoolean',
   'names': ['eglInitialize'],
   'arguments': 'EGLDisplay dpy, EGLint* major, EGLint* minor', },
+{ 'return_type': 'EGLint',
+  'known_as': 'eglLabelObjectKHR',
+  'versions': [{ 'name': 'eglLabelObjectKHR',
+                 'client_extensions': ['EGL_KHR_debug'], }],
+  'arguments': 'EGLDisplay display, EGLenum objectType, EGLObjectKHR object, '
+    'EGLLabelKHR label', },
 { 'return_type': 'EGLBoolean',
   'names': ['eglMakeCurrent'],
   'arguments':
@@ -2081,6 +2092,11 @@ EGL_FUNCTIONS = [
   'names': ['eglQueryContext'],
   'arguments':
       'EGLDisplay dpy, EGLContext ctx, EGLint attribute, EGLint* value', },
+{ 'return_type': 'EGLBoolean',
+  'known_as': 'eglQueryDebugKHR',
+  'versions': [{ 'name': 'eglQueryDebugKHR',
+                 'client_extensions': ['EGL_KHR_debug'], }],
+  'arguments': 'EGLint attribute, EGLAttrib* value', },
 { 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglQueryStreamKHR',
                  'extensions': ['EGL_KHR_stream'] }],
@@ -2918,6 +2934,9 @@ void DriverEGL::InitializeExtensionBindings() {
         r'GLDEBUGPROC ([a-zA-Z0-9_]+)',
         r'GLDEBUGPROC_\1', log_argument_names)
     log_argument_names = re.sub(
+        r'EGLDEBUGPROCKHR ([a-zA-Z0-9_]+)',
+        r'EGLDEBUGPROCKHR_\1', log_argument_names)
+    log_argument_names = re.sub(
         r'(?<!E)GLenum ([a-zA-Z0-9_]+)', r'GLenum_\1', log_argument_names)
     # Strip remaining types.
     log_argument_names = re.sub(
@@ -2938,6 +2957,9 @@ void DriverEGL::InitializeExtensionBindings() {
         log_argument_names)
     log_argument_names = re.sub(
         r'GLDEBUGPROC_([a-zA-Z0-9_]+)',
+        r'reinterpret_cast<void*>(\1)', log_argument_names)
+    log_argument_names = re.sub(
+        r'EGLDEBUGPROCKHR_([a-zA-Z0-9_]+)',
         r'reinterpret_cast<void*>(\1)', log_argument_names)
     log_argument_names = re.sub(
         r'GLenum_([a-zA-Z0-9_]+)', r'GLEnums::GetStringEnum(\1)',
