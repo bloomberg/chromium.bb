@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_SHAPER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_HARF_BUZZ_SHAPER_H_
 
-#include "base/optional.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -45,8 +44,6 @@ class HarfBuzzShaper;
 struct ReshapeQueueItem;
 struct RangeData;
 struct BufferSlice;
-
-enum class FontOrientation;
 
 class PLATFORM_EXPORT HarfBuzzShaper final {
  public:
@@ -108,15 +105,8 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
                     const BufferSlice&,
                     ShapeResult*) const;
 
-  RunSegmenter* CachedRunSegmenter(unsigned start,
-                                   unsigned end,
-                                   FontOrientation) const;
-
   const UChar* text_;
   unsigned text_length_;
-
-  // Cache an instnace of |RunSegmenter|. See |CachedRunSegmenter()|.
-  mutable base::Optional<RunSegmenter> run_segmenter_;
 };
 
 }  // namespace blink
