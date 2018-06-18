@@ -310,13 +310,24 @@ test(function(t) {
 }, "aria-posinset attribute reflects.");
 </script>
 
+<button id="pressed" aria-pressed="true"></button>
+
+<script>
+test(function(t) {
+    var element = document.getElementById("pressed");
+    assert_equals(element.ariaPressed, "true");
+    element.ariaPressed = "false";
+    assert_equals(element.getAttribute("aria-pressed"), "false");
+}, "aria-pressed attribute reflects.");
+</script>
+
 <div id="readonly" aria-readonly="true"></div>
 
 <script>
 test(function(t) {
     var element = document.getElementById("readonly");
-    assert_equals(element.ariaPressed, "true");
-    element.ariaPressed = "false";
+    assert_equals(element.ariaReadOnly, "true");
+    element.ariaReadOnly = "false";
     assert_equals(element.getAttribute("aria-readonly"), "false");
 }, "aria-readonly attribute reflects.");
 </script>
