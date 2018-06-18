@@ -65,7 +65,7 @@ bool PathProvider(int key, base::FilePath* result) {
       CHECK(base::PathService::Get(base::DIR_ANDROID_APP_DATA, &base_dir));
       *result = base_dir.Append("paks/cast_shell.pak");
 #else
-      CHECK(base::PathService::Get(base::DIR_MODULE, &base_dir));
+      CHECK(base::PathService::Get(base::DIR_ASSETS, &base_dir));
       *result = base_dir.Append("assets/cast_shell.pak");
 #endif  // defined(OS_ANDROID)
       return true;
