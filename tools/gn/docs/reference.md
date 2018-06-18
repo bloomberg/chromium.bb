@@ -6028,11 +6028,12 @@
        "//foo/bar/*"  (all targets in any subdir of //foo/bar)
        "./*"  (all targets in the current build file or sub dirs)
 
-  Any of the above forms can additionally take an explicit toolchain. In this
-  case, the toolchain must be fully qualified (no wildcards are supported in
-  the toolchain name).
+  Any of the above forms can additionally take an explicit toolchain
+  in parenthesis at the end of the label pattern. In this case, the
+  toolchain must be fully qualified (no wildcards are supported in the
+  toolchain name).
 
-    "//foo:bar(//build/toochain:mac)"
+    "//foo:bar(//build/toolchain:mac)"
         An explicit target in an explicit toolchain.
 
     ":*(//build/toolchain/linux:32bit)"
