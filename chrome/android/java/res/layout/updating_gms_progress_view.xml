@@ -8,7 +8,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center"
     android:padding="24dp"
-    app:maxWidth="312dp"
+    app:maxWidthLandscape="312dp"
+    app:maxWidthPortrait="312dp"
     style="@style/AlertDialogContent" >
 
     <ProgressBar

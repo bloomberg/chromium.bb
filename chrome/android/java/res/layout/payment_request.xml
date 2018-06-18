@@ -12,7 +12,8 @@
     android:id="@+id/payment_request"
     android:orientation="vertical"
     android:gravity="center"
-    app:maxWidth="@dimen/payments_ui_max_dialog_width"
+    app:maxWidthLandscape="@dimen/payments_ui_max_dialog_width"
+    app:maxWidthPortrait="@dimen/payments_ui_max_dialog_width"
     android:background="@android:color/white" >
 
     <include layout="@layout/payment_request_header" />
