@@ -67,8 +67,7 @@ void ModulatorImplBase::FetchTree(
   // of this algorithm specified custom perform the fetch steps, pass those
   // along as well.</spec>
 
-  ModuleTreeLinker::Fetch(url, fetch_client_settings_object,
-                          GetExecutionContext()->BaseURL(), destination,
+  ModuleTreeLinker::Fetch(url, fetch_client_settings_object, destination,
                           options, this, tree_linker_registry_, client);
 
   // <spec label="fetch-a-module-script-tree" step="3">When the internal module
