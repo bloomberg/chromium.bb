@@ -34,11 +34,8 @@ class ARCoreDevice : public VRDeviceBase {
   // VRDeviceBase implementation.
   void PauseTracking() override;
   void ResumeTracking() override;
-  void RequestSession(
-      int render_process_id,
-      int render_frame_id,
-      bool has_user_activation,
-      mojom::VRDisplayHost::RequestSessionCallback callback) override;
+  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
+                      VRDeviceRequestSessionCallback callback) override;
 
   base::WeakPtr<ARCoreDevice> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -60,7 +57,7 @@ class ARCoreDevice : public VRDeviceBase {
   void OnMailboxBridgeReady();
   void OnARCoreGlThreadInitialized();
   void OnRequestCameraPermissionComplete(
-      mojom::VRDisplayHost::RequestSessionCallback callback,
+      base::OnceCallback<void(bool)> callback,
       bool success);
 
   template <typename... Args>
@@ -87,31 +84,28 @@ class ARCoreDevice : public VRDeviceBase {
       int render_process_id,
       int render_frame_id,
       bool has_user_activation,
-      mojom::VRDisplayHost::RequestSessionCallback callback);
+      base::OnceCallback<void(bool)> callback);
   void OnRequestARCoreInstallOrUpdateComplete(
       int render_process_id,
       int render_frame_id,
       bool has_user_activation,
-      mojom::VRDisplayHost::RequestSessionCallback callback);
+      base::OnceCallback<void(bool)> callback);
   void CallDeferredRequestInstallSupportedARCore();
-  void RequestCameraPermission(
-      int render_process_id,
-      int render_frame_id,
-      bool has_user_activation,
-      mojom::VRDisplayHost::RequestSessionCallback callback);
-  void OnRequestCameraPermissionResult(
-      content::WebContents* web_contents,
-      mojom::VRDisplayHost::RequestSessionCallback callback,
-      ContentSetting content_setting);
+  void RequestCameraPermission(int render_process_id,
+                               int render_frame_id,
+                               bool has_user_activation,
+                               base::OnceCallback<void(bool)> callback);
+  void OnRequestCameraPermissionResult(content::WebContents* web_contents,
+                                       base::OnceCallback<void(bool)> callback,
+                                       ContentSetting content_setting);
   void OnRequestAndroidCameraPermissionResult(
-      mojom::VRDisplayHost::RequestSessionCallback callback,
+      base::OnceCallback<void(bool)> callback,
       bool was_android_camera_permission_granted);
   void OnRequestSessionPreconditionsComplete(
-      mojom::VRDisplayHost::RequestSessionCallback callback,
+      VRDeviceRequestSessionCallback callback,
       bool success);
-  void OnARCoreGlInitializationComplete(
-      mojom::VRDisplayHost::RequestSessionCallback callback,
-      bool success);
+  void OnARCoreGlInitializationComplete(VRDeviceRequestSessionCallback callback,
+                                        bool success);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;

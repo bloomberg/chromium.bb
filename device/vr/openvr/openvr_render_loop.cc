@@ -145,25 +145,24 @@ void OpenVRRenderLoop::UpdateLayerBounds(int16_t frame_id,
   source_size_ = source_size;
 };
 
-void OpenVRRenderLoop::RequestPresent(
-    mojom::VRSubmitFrameClientPtrInfo submit_client_info,
-    mojom::VRPresentationProviderRequest request,
-    device::mojom::VRRequestPresentOptionsPtr present_options,
-    device::mojom::VRDisplayHost::RequestPresentCallback callback) {
+void OpenVRRenderLoop::RequestSession(
+    const XRDeviceRuntimeSessionOptions& options,
+    RequestSessionCallback callback) {
+  DCHECK(options.exclusive);
 #if defined(OS_WIN)
   int32_t adapter_index;
   vr::VRSystem()->GetDXGIOutputInfo(&adapter_index);
   if (!texture_helper_.SetAdapterIndex(adapter_index) ||
       !texture_helper_.EnsureInitialized()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false, nullptr));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), false, nullptr, nullptr, nullptr));
     return;
   }
 #endif
-  submit_client_.Bind(std::move(submit_client_info));
-
   binding_.Close();
-  binding_.Bind(std::move(request));
+  device::mojom::VRPresentationProviderPtr provider;
+  binding_.Bind(mojo::MakeRequest(&provider));
 
   device::mojom::VRDisplayFrameTransportOptionsPtr transport_options =
       device::mojom::VRDisplayFrameTransportOptions::New();
@@ -173,28 +172,26 @@ void OpenVRRenderLoop::RequestPresent(
   // able to safely ignore ones that our implementation doesn't care about.
   transport_options->wait_for_transfer_notification = true;
 
-  report_webxr_input_ = present_options->webxr_input;
-  if (report_webxr_input_) {
-    // Reset the active states for all the controllers.
-    for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) {
-      InputActiveState& input_active_state = input_active_states_[i];
-      input_active_state.active = false;
-      input_active_state.primary_input_pressed = false;
-      input_active_state.device_class = vr::TrackedDeviceClass_Invalid;
-      input_active_state.controller_role = vr::TrackedControllerRole_Invalid;
-    }
+  // Reset the active states for all the controllers.
+  for (uint32_t i = 0; i < vr::k_unMaxTrackedDeviceCount; ++i) {
+    InputActiveState& input_active_state = input_active_states_[i];
+    input_active_state.active = false;
+    input_active_state.primary_input_pressed = false;
+    input_active_state.device_class = vr::TrackedDeviceClass_Invalid;
+    input_active_state.controller_role = vr::TrackedControllerRole_Invalid;
   }
 
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(callback), true, std::move(transport_options)));
+      base::BindOnce(std::move(callback), true,
+                     mojo::MakeRequest(&submit_client_),
+                     provider.PassInterface(), std::move(transport_options)));
   is_presenting_ = true;
   vr_compositor_->SuspendRendering(false);
 }
 
 void OpenVRRenderLoop::ExitPresent() {
   is_presenting_ = false;
-  report_webxr_input_ = false;
   binding_.Close();
   submit_client_ = nullptr;
   vr_compositor_->SuspendRendering(true);
@@ -211,10 +208,9 @@ mojom::VRPosePtr OpenVRRenderLoop::GetPose() {
       rendering_poses[vr::k_unTrackedDeviceIndex_Hmd]);
 
   // Update WebXR input sources.
-  if (pose && report_webxr_input_) {
-    pose->input_state =
-        GetInputState(rendering_poses, vr::k_unMaxTrackedDeviceCount);
-  }
+  DCHECK(pose);
+  pose->input_state =
+      GetInputState(rendering_poses, vr::k_unMaxTrackedDeviceCount);
 
   return pose;
 }

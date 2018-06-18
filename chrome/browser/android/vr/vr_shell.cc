@@ -700,16 +700,11 @@ void VrShell::CancelToast(JNIEnv* env,
 }
 
 void VrShell::ConnectPresentingService(
-    device::mojom::VRSubmitFrameClientPtr submit_client,
-    device::mojom::VRPresentationProviderRequest request,
     device::mojom::VRDisplayInfoPtr display_info,
-    device::mojom::VRRequestPresentOptionsPtr present_options) {
-  PostToGlThread(
-      FROM_HERE,
-      base::BindOnce(&VrShellGl::ConnectPresentingService,
-                     gl_thread_->GetVrShellGl(), submit_client.PassInterface(),
-                     std::move(request), std::move(display_info),
-                     std::move(present_options)));
+    const device::XRDeviceRuntimeSessionOptions& options) {
+  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::ConnectPresentingService,
+                                           gl_thread_->GetVrShellGl(),
+                                           std::move(display_info), options));
 }
 
 void VrShell::SetHistoryButtonsEnabled(JNIEnv* env,
@@ -755,8 +750,14 @@ void VrShell::GvrDelegateReady(gvr::ViewerType viewer_type) {
 
 void VrShell::SendRequestPresentReply(
     bool success,
+    device::mojom::VRSubmitFrameClientRequest request,
+    device::mojom::VRPresentationProviderPtrInfo provider_info,
     device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
-  delegate_provider_->SendRequestPresentReply(success,
+  device::mojom::VRPresentationProviderPtr provider;
+  provider.Bind(std::move(provider_info));
+
+  delegate_provider_->SendRequestPresentReply(success, std::move(request),
+                                              std::move(provider),
                                               std::move(transport_options));
 }
 

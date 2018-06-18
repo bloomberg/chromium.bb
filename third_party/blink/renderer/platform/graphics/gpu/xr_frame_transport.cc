@@ -30,12 +30,10 @@ void XRFrameTransport::SetTransportOptions(
   transport_options_ = std::move(transport_options);
 }
 
-device::mojom::blink::VRSubmitFrameClientPtr
-XRFrameTransport::GetSubmitFrameClient() {
-  device::mojom::blink::VRSubmitFrameClientPtr submit_frame_client;
+void XRFrameTransport::BindSubmitFrameClient(
+    device::mojom::blink::VRSubmitFrameClientRequest request) {
   submit_frame_client_binding_.Close();
-  submit_frame_client_binding_.Bind(mojo::MakeRequest(&submit_frame_client));
-  return submit_frame_client;
+  submit_frame_client_binding_.Bind(std::move(request));
 }
 
 bool XRFrameTransport::DrawingIntoSharedBuffer() {

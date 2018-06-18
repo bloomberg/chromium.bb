@@ -82,32 +82,33 @@ void BrowserXrDevice::ExitPresent(VRDisplayHost* display) {
   }
 }
 
-void BrowserXrDevice::RequestPresent(
+void BrowserXrDevice::RequestSession(
     VRDisplayHost* display,
-    device::mojom::VRSubmitFrameClientPtr submit_client,
-    device::mojom::VRPresentationProviderRequest request,
-    device::mojom::VRRequestPresentOptionsPtr present_options,
-    device::mojom::VRDisplayHost::RequestPresentCallback callback) {
-  device_->RequestPresent(
-      std::move(submit_client), std::move(request), std::move(present_options),
-      base::BindOnce(&BrowserXrDevice::OnRequestPresentResult,
-                     weak_ptr_factory_.GetWeakPtr(), display,
-                     std::move(callback)));
+    const device::XRDeviceRuntimeSessionOptions& options,
+    device::mojom::VRDisplayHost::RequestSessionCallback callback) {
+  device_->RequestSession(
+      options, base::BindOnce(&BrowserXrDevice::OnRequestSessionResult,
+                              weak_ptr_factory_.GetWeakPtr(), display, options,
+                              std::move(callback)));
 }
 
-void BrowserXrDevice::OnRequestPresentResult(
+void BrowserXrDevice::OnRequestSessionResult(
     VRDisplayHost* display,
-    device::mojom::VRDisplayHost::RequestPresentCallback callback,
-    bool result,
-    device::mojom::VRDisplayFrameTransportOptionsPtr transport_options,
+    const device::XRDeviceRuntimeSessionOptions& options,
+    device::mojom::VRDisplayHost::RequestSessionCallback callback,
+    device::mojom::XRPresentationConnectionPtr connection,
     device::XrSessionController* exclusive_session_controller) {
-  if (result && (displays_.find(display) != displays_.end())) {
-    presenting_display_host_ = display;
-    exclusive_session_controller_ = exclusive_session_controller;
-    std::move(callback).Run(result, std::move(transport_options));
+  if (connection && (displays_.find(display) != displays_.end())) {
+    if (options.exclusive) {
+      presenting_display_host_ = display;
+      exclusive_session_controller_ = exclusive_session_controller;
+    }
+    std::move(callback).Run(std::move(connection));
   } else {
-    std::move(callback).Run(false, nullptr);
-    if (result) {
+    std::move(callback).Run(nullptr);
+    if (connection) {
+      // The device has been removed, but we still got connection, so make sure
+      // to clean up this weird state.
       exclusive_session_controller_ = exclusive_session_controller;
       StopExclusiveSession();
     }

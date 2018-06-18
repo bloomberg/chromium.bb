@@ -460,21 +460,16 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
 
     pending_present_resolvers_.push_back(resolver);
 
-    frame_transport_ = new XRFrameTransport();
-    // Set up RequestPresentOptions based on canvas properties.
-    device::mojom::blink::VRRequestPresentOptionsPtr options =
-        device::mojom::blink::VRRequestPresentOptions::New();
-    options->preserve_drawing_buffer =
-        rendering_context_->CreationAttributes().preserve_drawing_buffer;
+    // Set up the VR backwards compatible XRSessionOptions based on canvas
+    // properties.
+    device::mojom::blink::XRSessionOptionsPtr options =
+        device::mojom::blink::XRSessionOptions::New();
+    options->exclusive = true;
+    options->use_legacy_webvr_render_path = true;
 
-    display_->RequestPresent(
-        frame_transport_->GetSubmitFrameClient(),
-        mojo::MakeRequest(&vr_presentation_provider_), std::move(options),
-        in_display_activate_,
-        WTF::Bind(&VRDisplay::OnPresentComplete, WrapPersistent(this)));
-    vr_presentation_provider_.set_connection_error_handler(
-        WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
-                  WrapWeakPersistent(this)));
+    display_->RequestSession(
+        std::move(options), in_display_activate_,
+        WTF::Bind(&VRDisplay::OnRequestSessionReturned, WrapPersistent(this)));
     pending_present_request_ = true;
 
     // The old vr_presentation_provider_ won't be delivering any vsyncs anymore,
@@ -489,12 +484,21 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* script_state,
   return promise;
 }
 
-void VRDisplay::OnPresentComplete(
-    bool success,
-    device::mojom::blink::VRDisplayFrameTransportOptionsPtr transport_options) {
-  frame_transport_->SetTransportOptions(std::move(transport_options));
+void VRDisplay::OnRequestSessionReturned(
+    device::mojom::blink::XRPresentationConnectionPtr connection) {
   pending_present_request_ = false;
-  if (success) {
+  if (connection) {
+    vr_presentation_provider_.Bind(std::move(connection->provider));
+    vr_presentation_provider_.set_connection_error_handler(
+        WTF::Bind(&VRDisplay::OnPresentationProviderConnectionError,
+                  WrapWeakPersistent(this)));
+
+    frame_transport_ = new XRFrameTransport();
+    frame_transport_->BindSubmitFrameClient(
+        std::move(connection->client_request));
+    frame_transport_->SetTransportOptions(
+        std::move(connection->transport_options));
+
     this->BeginPresent();
   } else {
     this->ForceExitPresent();
