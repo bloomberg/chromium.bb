@@ -29,7 +29,7 @@ class ConnectionHelpTabHelper
     kSucceeded = 0,
     kFailedWithInterstitial = 1,
     kFailedOther = 2,
-    kLearnMoreResultCount = 3
+    kLearnMoreResultCount = kFailedOther
   };
 
   ~ConnectionHelpTabHelper() override;

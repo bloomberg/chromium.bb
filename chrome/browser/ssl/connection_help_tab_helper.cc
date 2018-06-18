@@ -18,7 +18,7 @@
 
 namespace {
 const char kHelpCenterConnectionHelpUrl[] =
-    "https://support.google.com/chrome/answer/6098869/";
+    "https://support.google.com/chrome/answer/6098869";
 const char kBundledConnectionHelpUrl[] = "chrome://connection-help";
 
 void MaybeRedirectToBundledHelp(content::WebContents* web_contents) {
@@ -55,8 +55,9 @@ void ConnectionHelpTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   GURL::Replacements replacements;
   replacements.ClearRef();
-  if (web_contents()->GetURL().ReplaceComponents(replacements) ==
-      GetHelpCenterURL()) {
+  if (navigation_handle->IsInMainFrame() &&
+      web_contents()->GetURL().ReplaceComponents(replacements) ==
+          GetHelpCenterURL()) {
     LearnMoreClickResult histogram_value;
     if (navigation_handle->IsErrorPage()) {
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(
