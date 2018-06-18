@@ -48,19 +48,25 @@ class ChromeOSChildAccountReconcilorDelegate
   }
 
   void OnReconcileError(const GoogleServiceAuthError& error) override {
-    if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED) {
-      // Mark the account to require an online sign in.
-      const user_manager::User* primary_user =
-          user_manager::UserManager::Get()->GetPrimaryUser();
-      user_manager::UserManager::Get()->SaveForceOnlineSignin(
-          primary_user->GetAccountId(), true /* force_online_signin */);
-
-      // Force a logout.
-      UMA_HISTOGRAM_BOOLEAN(
-          "ChildAccountReconcilor.ForcedUserExitOnReconcileError", true);
-      chrome::AttemptUserExit();
+    // If |error| is |GoogleServiceAuthError::State::NONE| or a transient error.
+    if (!error.IsPersistentError()) {
+      return;
     }
+
+    // Mark the account to require an online sign in.
+    const user_manager::User* primary_user =
+        user_manager::UserManager::Get()->GetPrimaryUser();
+    user_manager::UserManager::Get()->SaveForceOnlineSignin(
+        primary_user->GetAccountId(), true /* force_online_signin */);
+
+    // Force a logout.
+    UMA_HISTOGRAM_BOOLEAN(
+        "ChildAccountReconcilor.ForcedUserExitOnReconcileError", true);
+    chrome::AttemptUserExit();
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeOSChildAccountReconcilorDelegate);
 };
 #endif
 

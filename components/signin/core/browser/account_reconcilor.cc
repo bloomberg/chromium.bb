@@ -319,6 +319,15 @@ void AccountReconcilor::StartReconcile() {
     return;
   }
 
+  // Begin reconciliation. Reset initial states.
+  for (auto& observer : observer_list_)
+    observer.OnStartReconcile();
+  add_to_cookie_.clear();
+  reconcile_start_time_ = base::Time::Now();
+  is_reconcile_started_ = true;
+  error_during_last_reconcile_ = GoogleServiceAuthError::AuthErrorNone();
+  reconcile_is_noop_ = true;
+
   if (!timeout_.is_max()) {
     // This is NOT a repeating callback but to test it, we need a |MockTimer|,
     // which mocks |Timer| and not |OneShotTimer|. |Timer| currently does not
@@ -329,20 +338,14 @@ void AccountReconcilor::StartReconcile() {
                             base::Unretained(this)));
   }
 
-  if (token_service_->RefreshTokenHasError(
-          signin_manager_->GetAuthenticatedAccountId()) &&
+  const std::string& account_id = signin_manager_->GetAuthenticatedAccountId();
+  if (token_service_->RefreshTokenHasError(account_id) &&
       delegate_->ShouldAbortReconcileIfPrimaryHasError()) {
     VLOG(1) << "AccountReconcilor::StartReconcile: primary has error, abort.";
+    error_during_last_reconcile_ = token_service_->GetAuthError(account_id);
+    AbortReconcile();
     return;
   }
-
-  for (auto& observer : observer_list_)
-    observer.OnStartReconcile();
-  add_to_cookie_.clear();
-  reconcile_start_time_ = base::Time::Now();
-  is_reconcile_started_ = true;
-  error_during_last_reconcile_ = GoogleServiceAuthError::AuthErrorNone();
-  reconcile_is_noop_ = true;
 
   // Rely on the GCMS to manage calls to and responses from ListAccounts.
   std::vector<gaia::ListedAccount> accounts;
@@ -406,7 +409,8 @@ void AccountReconcilor::OnGaiaAccountsInCookieUpdated(
     if (delegate_->ShouldAbortReconcileIfPrimaryHasError() &&
         token_service_->RefreshTokenHasError(primary_account)) {
       VLOG(1) << "Primary account has error, abort.";
-      is_reconcile_started_ = false;
+      DCHECK(is_reconcile_started_);
+      AbortReconcile();
       return;
     }
 
@@ -550,6 +554,9 @@ void AccountReconcilor::AbortReconcile() {
   VLOG(1) << "AccountReconcilor::AbortReconcile: try again later";
   add_to_cookie_.clear();
   CalculateIfReconcileIsDone();
+
+  DCHECK(!is_reconcile_started_);
+  DCHECK(!timer_->IsRunning());
 }
 
 void AccountReconcilor::CalculateIfReconcileIsDone() {
@@ -561,7 +568,20 @@ void AccountReconcilor::CalculateIfReconcileIsDone() {
          GoogleServiceAuthError::State::NONE);
     signin_metrics::LogSigninAccountReconciliationDuration(
         duration, was_last_reconcile_successful);
+
+    // Reconciliation has actually finished (and hence stop the timer), but it
+    // may have ended in some failures. Pass this information to the
+    // |delegate_|.
     timer_->Stop();
+    if (!was_last_reconcile_successful) {
+      // Note: This is the only call to |OnReconcileError| in this file. We MUST
+      // make sure that we do not call |OnReconcileError| multiple times in the
+      // same reconciliation batch.
+      // The enclosing if-condition |is_reconcile_started_ &&
+      // add_to_cookie_.empty()| represents the halting condition for one batch
+      // of reconciliation.
+      delegate_->OnReconcileError(error_during_last_reconcile_);
+    }
   }
 
   is_reconcile_started_ = !add_to_cookie_.empty();
@@ -691,7 +711,17 @@ void AccountReconcilor::set_timer_for_testing(
 }
 
 void AccountReconcilor::HandleReconcileTimeout() {
+  // A reconciliation was still succesfully in progress but could not complete
+  // in the given time. For a delegate, this is equivalent to a
+  // |GoogleServiceAuthError::State::CONNECTION_FAILED|.
+  if (error_during_last_reconcile_.state() ==
+      GoogleServiceAuthError::State::NONE) {
+    error_during_last_reconcile_ = GoogleServiceAuthError(
+        GoogleServiceAuthError::State::CONNECTION_FAILED);
+  }
+
+  // Will stop reconciliation and inform |delegate_| about
+  // |error_during_last_reconcile_|, through |CalculateIfReconcileIsDone|.
   AbortReconcile();
-  delegate_->OnReconcileError(
-      GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
+  DCHECK(!timer_->IsRunning());
 }

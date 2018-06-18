@@ -299,7 +299,13 @@ class AccountReconcilor : public KeyedService,
   base::ObserverList<Observer, true> observer_list_;
 
   // A timer to set off reconciliation timeout handlers, if account
-  // reconciliation does not happen in a given timeout duration.
+  // reconciliation does not happen in a given |timeout_| duration.
+  // Any delegate that wants to use this feature must override
+  // |AccountReconcilorDelegate::GetReconcileTimeout|.
+  // Note: This is intended as a safeguard for delegates that want a 'guarantee'
+  // of reconciliation completing within a finite time. It is technically
+  // possible for account reconciliation to be running/waiting forever in cases
+  // such as a network connection not being present.
   std::unique_ptr<base::Timer> timer_;
   base::TimeDelta timeout_;
 
