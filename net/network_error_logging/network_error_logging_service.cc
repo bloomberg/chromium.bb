@@ -545,11 +545,11 @@ const int NetworkErrorLoggingService::kMaxNestedReportDepth = 1;
 const char NetworkErrorLoggingService::kUriKey[] = "uri";
 const char NetworkErrorLoggingService::kReferrerKey[] = "referrer";
 const char NetworkErrorLoggingService::kSamplingFractionKey[] =
-    "sampling-fraction";
-const char NetworkErrorLoggingService::kServerIpKey[] = "server-ip";
+    "sampling_fraction";
+const char NetworkErrorLoggingService::kServerIpKey[] = "server_ip";
 const char NetworkErrorLoggingService::kProtocolKey[] = "protocol";
-const char NetworkErrorLoggingService::kStatusCodeKey[] = "status-code";
-const char NetworkErrorLoggingService::kElapsedTimeKey[] = "elapsed-time";
+const char NetworkErrorLoggingService::kStatusCodeKey[] = "status_code";
+const char NetworkErrorLoggingService::kElapsedTimeKey[] = "elapsed_time";
 const char NetworkErrorLoggingService::kTypeKey[] = "type";
 
 // static
