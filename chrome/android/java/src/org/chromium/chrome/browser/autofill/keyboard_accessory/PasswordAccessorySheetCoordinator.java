@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -24,6 +26,37 @@ public class PasswordAccessorySheetCoordinator {
     private final Context mContext;
     private final SimpleListObservable<Item> mModel = new SimpleListObservable<>();
     private final KeyboardAccessoryData.Observer<Item> mMediator = mModel::set;
+    private final PasswordAccessorySheetViewBinder mBinder = new PasswordAccessorySheetViewBinder();
+
+    private final KeyboardAccessoryData.Tab mTab;
+
+    @VisibleForTesting
+    static class IconProvider {
+        private final static IconProvider sInstance = new IconProvider();
+        private Drawable mIcon;
+        private IconProvider() {}
+
+        public static IconProvider getInstance() {
+            return sInstance;
+        }
+
+        /**
+         * Loads and remembers the icon used for this class. Used to mock icons in unit tests.
+         * @param context The context containing the icon resources.
+         * @return The icon as {@link Drawable}.
+         */
+        public Drawable getIcon(Context context) {
+            if (mIcon != null) return mIcon;
+            mIcon = VectorDrawableCompat.create(
+                    context.getResources(), R.drawable.ic_vpn_key_grey, context.getTheme());
+            return mIcon;
+        }
+
+        @VisibleForTesting
+        void setIconForTesting(Drawable icon) {
+            mIcon = icon;
+        }
+    }
 
     /**
      * Creates the passwords tab.
@@ -31,6 +64,14 @@ public class PasswordAccessorySheetCoordinator {
      */
     public PasswordAccessorySheetCoordinator(Context context) {
         mContext = context;
+        mTab = new KeyboardAccessoryData.Tab(IconProvider.getInstance().getIcon(mContext),
+                null, // TODO(fhorschig): Load from strings or native side.
+                R.layout.password_accessory_sheet, this::onTabCreated);
+    }
+
+    private void onTabCreated(View view) {
+        mBinder.initializeView((RecyclerView) view,
+                PasswordAccessorySheetCoordinator.createAdapter(mModel, mBinder));
     }
 
     /**
@@ -47,6 +88,7 @@ public class PasswordAccessorySheetCoordinator {
         return adapter;
     }
 
+    // TODO(fhorschig): There is only one. Make this a ctor param and self-destruct with it.
     /**
      * Registered item providers can replace the currently shown data in the password sheet.
      * @param actionProvider The provider this component will listen to.
@@ -56,37 +98,12 @@ public class PasswordAccessorySheetCoordinator {
     }
 
     /**
-     * Returns a new Tab object that describes the appearance of this class in the keyboard
-     * keyboard accessory or its accessory sheet.
-     * @return Returns a new {@link KeyboardAccessoryData.Tab} that is connected to this sheet.
+     * Returns the Tab object that describes the appearance of this class in the keyboard accessory
+     * or its accessory sheet. The returned object doesn't change for this instance.
+     * @return Returns a stable {@link KeyboardAccessoryData.Tab} that is connected to this sheet.
      */
-    public KeyboardAccessoryData.Tab createTab() {
-        return new KeyboardAccessoryData.Tab() {
-            @Override
-            public Drawable getIcon() {
-                return mContext.getResources().getDrawable(R.drawable.ic_vpn_key_grey);
-            }
-
-            @Override
-            public String getContentDescription() {
-                // TODO(fhorschig): Load resource from strings or via mediator from native side.
-                return null;
-            }
-
-            @Override
-            public int getTabLayout() {
-                return R.layout.password_accessory_sheet;
-            }
-
-            @Override
-            public Listener getListener() {
-                final PasswordAccessorySheetViewBinder binder =
-                        new PasswordAccessorySheetViewBinder();
-                return view
-                        -> binder.initializeView((RecyclerView) view,
-                                PasswordAccessorySheetCoordinator.createAdapter(mModel, binder));
-            }
-        };
+    public KeyboardAccessoryData.Tab getTab() {
+        return mTab;
     }
 
     @VisibleForTesting

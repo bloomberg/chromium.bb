@@ -412,10 +412,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             getWindowAndroid().setAnimationPlaceholderView(
                     mCompositorViewHolder.getCompositorView());
 
-            mManualFillingController = new ManualFillingCoordinator(getWindowAndroid(),
-                    findViewById(R.id.keyboard_accessory_stub),
-                    findViewById(R.id.keyboard_accessory_sheet_stub));
-
             initializeToolbar();
             initializeTabModels();
             if (!isFinishing() && getFullscreenManager() != null) {
@@ -1422,6 +1418,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mStatusBarScrimFraction = fraction;
             setStatusBarColor(null, mBaseStatusBarColor);
         }, coordinator);
+
+        mManualFillingController = new ManualFillingCoordinator(getWindowAndroid(),
+                findViewById(R.id.keyboard_accessory_stub),
+                findViewById(R.id.keyboard_accessory_sheet_stub));
 
         if (supportsContextualSuggestionsBottomSheet()
                 && FeatureUtilities.isContextualSuggestionsBottomSheetEnabled(isTablet())) {

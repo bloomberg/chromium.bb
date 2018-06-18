@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import android.graphics.drawable.Drawable;
 import android.support.annotation.LayoutRes;
 import android.support.test.filters.MediumTest;
 import android.support.v4.view.ViewPager;
@@ -22,12 +21,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -43,7 +42,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordAccessorySheetViewTest {
-    private SimpleListObservable<KeyboardAccessoryData.Item> mModel;
+    private SimpleListObservable<Item> mModel;
     private AtomicReference<RecyclerView> mView = new AtomicReference<>();
 
     @Rule
@@ -68,24 +67,7 @@ public class PasswordAccessorySheetViewTest {
                     @Override
                     public void onPageScrollStateChanged(int i) {}
                 });
-        accessorySheet.addTab(new KeyboardAccessoryData.Tab() {
-            @Override
-            public Drawable getIcon() {
-                return null;
-            }
-            @Override
-            public String getContentDescription() {
-                return null;
-            }
-            @Override
-            public @LayoutRes int getTabLayout() {
-                return layout;
-            }
-            @Override
-            public Listener getListener() {
-                return listener;
-            }
-        });
+        accessorySheet.addTab(new KeyboardAccessoryData.Tab(null, null, layout, listener));
         ThreadUtils.runOnUiThreadBlocking(accessorySheet::show);
     }
 
@@ -113,32 +95,8 @@ public class PasswordAccessorySheetViewTest {
     public void testAddingCaptionsToTheModelRendersThem() {
         assertThat(mView.get().getChildCount(), is(0));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.add(new KeyboardAccessoryData.Item() {
-            @Override
-            public int getType() {
-                return KeyboardAccessoryData.Item.TYPE_LABEL;
-            }
-
-            @Override
-            public String getCaption() {
-                return "Passwords";
-            }
-
-            @Override
-            public String getContentDescription() {
-                return null;
-            }
-
-            @Override
-            public boolean isPassword() {
-                return false;
-            }
-
-            @Override
-            public Callback<KeyboardAccessoryData.Item> getItemSelectedCallback() {
-                return null;
-            }
-        }));
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mModel.add(new Item(Item.TYPE_LABEL, "Passwords", null, false, null)));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
         assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
@@ -151,32 +109,10 @@ public class PasswordAccessorySheetViewTest {
         final AtomicReference<Boolean> clicked = new AtomicReference<>(false);
         assertThat(mView.get().getChildCount(), is(0));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.add(new KeyboardAccessoryData.Item() {
-            @Override
-            public int getType() {
-                return KeyboardAccessoryData.Item.TYPE_SUGGESTIONS;
-            }
-
-            @Override
-            public String getCaption() {
-                return "Name Suggestion";
-            }
-
-            @Override
-            public String getContentDescription() {
-                return null;
-            }
-
-            @Override
-            public boolean isPassword() {
-                return false;
-            }
-
-            @Override
-            public Callback<KeyboardAccessoryData.Item> getItemSelectedCallback() {
-                return item -> clicked.set(true);
-            }
-        }));
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mModel.add(new Item(Item.TYPE_SUGGESTIONS, "Name Suggestion", null,
+                                false, item -> clicked.set(true))));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
         assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
@@ -194,32 +130,10 @@ public class PasswordAccessorySheetViewTest {
         final AtomicReference<Boolean> clicked = new AtomicReference<>(false);
         assertThat(mView.get().getChildCount(), is(0));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> mModel.add(new KeyboardAccessoryData.Item() {
-            @Override
-            public int getType() {
-                return KeyboardAccessoryData.Item.TYPE_SUGGESTIONS;
-            }
-
-            @Override
-            public String getCaption() {
-                return "Password Suggestion";
-            }
-
-            @Override
-            public String getContentDescription() {
-                return null;
-            }
-
-            @Override
-            public boolean isPassword() {
-                return true;
-            }
-
-            @Override
-            public Callback<KeyboardAccessoryData.Item> getItemSelectedCallback() {
-                return item -> clicked.set(true);
-            }
-        }));
+        ThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mModel.add(new Item(Item.TYPE_SUGGESTIONS, "Password Suggestion", null,
+                                true, item -> clicked.set(true))));
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
         assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));

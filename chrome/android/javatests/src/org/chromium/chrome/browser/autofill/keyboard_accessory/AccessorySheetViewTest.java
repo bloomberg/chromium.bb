@@ -18,8 +18,6 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
-import android.graphics.drawable.Drawable;
-import android.support.annotation.LayoutRes;
 import android.support.test.filters.MediumTest;
 import android.support.v4.view.ViewPager;
 import android.view.View;
@@ -37,6 +35,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
 import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -96,7 +95,7 @@ public class AccessorySheetViewTest {
     @MediumTest
     public void testAddingTabToModelRendersTabsView() {
         final String kSampleAction = "Some Action";
-        mModel.getTabList().add(createTestTab(view -> {
+        mModel.getTabList().add(new Tab(null, null, R.layout.empty_accessory_sheet, view -> {
             assertNotNull("The tab must have been created!", view);
             assertTrue("Empty tab is a layout.", view instanceof LinearLayout);
             LinearLayout baseLayout = (LinearLayout) view;
@@ -173,32 +172,8 @@ public class AccessorySheetViewTest {
         onView(isRoot()).check((r, e) -> waitForView((ViewGroup) r, withText(kSecondTab)));
     }
 
-    private KeyboardAccessoryData.Tab createTestTab(KeyboardAccessoryData.Tab.Listener listener) {
-        return new KeyboardAccessoryData.Tab() {
-            @Override
-            public Drawable getIcon() {
-                return null; // Unused.
-            }
-
-            @Override
-            public String getContentDescription() {
-                return null; // Unused.
-            }
-
-            @Override
-            public @LayoutRes int getTabLayout() {
-                return R.layout.empty_accessory_sheet;
-            }
-
-            @Override
-            public Listener getListener() {
-                return listener;
-            }
-        };
-    }
-
-    private KeyboardAccessoryData.Tab createTestTabWithTextView(String textViewCaption) {
-        return createTestTab(view -> {
+    private Tab createTestTabWithTextView(String textViewCaption) {
+        return new Tab(null, null, R.layout.empty_accessory_sheet, view -> {
             TextView sampleTextView = new TextView(mActivityTestRule.getActivity());
             sampleTextView.setText(textViewCaption);
             view.addView(sampleTextView);

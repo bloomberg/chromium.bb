@@ -57,7 +57,8 @@ public class ManualFillingIntegrationTest {
         Assert.assertNotNull("Accessory Sheet should have an instance.",
                 mActivityTestRule.getActivity()
                         .getManualFillingController()
-                        .getAccessorySheetForTesting());
+                        .getMediatorForTesting()
+                        .getAccessorySheet());
     }
 
     @Test

@@ -24,6 +24,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetModel.PropertyKey;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
 
@@ -41,14 +42,10 @@ public class AccessorySheetControllerTest {
     private ViewStub mMockViewStub;
     @Mock
     private ViewPager mMockView;
-    @Mock
-    private KeyboardAccessoryData.Tab mMockTab;
-    @Mock
-    private KeyboardAccessoryData.Tab mSecondMockTab;
-    @Mock
-    private KeyboardAccessoryData.Tab mThirdMockTab;
-    @Mock
-    private KeyboardAccessoryData.Tab mFourthMockTab;
+
+    private final Tab[] mTabs =
+            new Tab[] {new Tab(null, null, 0, null), new Tab(null, null, 0, null),
+                    new Tab(null, null, 0, null), new Tab(null, null, 0, null)};
 
     private AccessorySheetCoordinator mCoordinator;
     private AccessorySheetMediator mMediator;
@@ -96,7 +93,7 @@ public class AccessorySheetControllerTest {
         mModel.getTabList().addObserver(mTabListObserver);
 
         assertThat(mModel.getTabList().getItemCount(), is(0));
-        mCoordinator.addTab(mMockTab);
+        mCoordinator.addTab(mTabs[0]);
         verify(mTabListObserver).onItemRangeInserted(mModel.getTabList(), 0, 1);
         assertThat(mModel.getTabList().getItemCount(), is(1));
     }
@@ -110,14 +107,14 @@ public class AccessorySheetControllerTest {
         assertThat(mCoordinator.getTab(), is(nullValue()));
 
         // The first tab becomes the active Tab.
-        mCoordinator.addTab(mMockTab);
+        mCoordinator.addTab(mTabs[0]);
         verify(mMockPropertyObserver).onPropertyChanged(mModel, PropertyKey.ACTIVE_TAB_INDEX);
         assertThat(mModel.getTabList().getItemCount(), is(1));
         assertThat(mModel.getActiveTabIndex(), is(0));
-        assertThat(mCoordinator.getTab(), is(mMockTab));
+        assertThat(mCoordinator.getTab(), is(mTabs[0]));
 
         // A second tab is added but doesn't become automatically active.
-        mCoordinator.addTab(mSecondMockTab);
+        mCoordinator.addTab(mTabs[1]);
         verify(mMockPropertyObserver).onPropertyChanged(mModel, PropertyKey.ACTIVE_TAB_INDEX);
         assertThat(mModel.getTabList().getItemCount(), is(2));
         assertThat(mModel.getActiveTabIndex(), is(0));
@@ -125,14 +122,14 @@ public class AccessorySheetControllerTest {
 
     @Test
     public void testDeletingFirstTabActivatesNewFirstTab() {
-        mCoordinator.addTab(mMockTab);
-        mCoordinator.addTab(mSecondMockTab);
-        mCoordinator.addTab(mThirdMockTab);
-        mCoordinator.addTab(mFourthMockTab);
+        mCoordinator.addTab(mTabs[0]);
+        mCoordinator.addTab(mTabs[1]);
+        mCoordinator.addTab(mTabs[2]);
+        mCoordinator.addTab(mTabs[3]);
         assertThat(mModel.getTabList().getItemCount(), is(4));
         assertThat(mModel.getActiveTabIndex(), is(0));
 
-        mCoordinator.removeTab(mMockTab);
+        mCoordinator.removeTab(mTabs[0]);
 
         assertThat(mModel.getTabList().getItemCount(), is(3));
         assertThat(mModel.getActiveTabIndex(), is(0));
@@ -140,8 +137,8 @@ public class AccessorySheetControllerTest {
 
     @Test
     public void testDeletingFirstAndOnlyTabInvalidatesActiveTab() {
-        mCoordinator.addTab(mMockTab);
-        mCoordinator.removeTab(mMockTab);
+        mCoordinator.addTab(mTabs[0]);
+        mCoordinator.removeTab(mTabs[0]);
 
         assertThat(mModel.getTabList().getItemCount(), is(0));
         assertThat(mModel.getActiveTabIndex(), is(AccessorySheetModel.NO_ACTIVE_TAB));
@@ -149,14 +146,14 @@ public class AccessorySheetControllerTest {
 
     @Test
     public void testDeletedActiveTabDisappearsAndActivatesLeftNeighbor() {
-        mCoordinator.addTab(mMockTab);
-        mCoordinator.addTab(mSecondMockTab);
-        mCoordinator.addTab(mThirdMockTab);
-        mCoordinator.addTab(mFourthMockTab);
+        mCoordinator.addTab(mTabs[0]);
+        mCoordinator.addTab(mTabs[1]);
+        mCoordinator.addTab(mTabs[2]);
+        mCoordinator.addTab(mTabs[3]);
         mModel.setActiveTabIndex(2);
         mModel.addObserver(mMockPropertyObserver);
 
-        mCoordinator.removeTab(mThirdMockTab);
+        mCoordinator.removeTab(mTabs[2]);
 
         verify(mMockPropertyObserver).onPropertyChanged(mModel, PropertyKey.ACTIVE_TAB_INDEX);
         assertThat(mModel.getTabList().getItemCount(), is(3));
@@ -165,14 +162,14 @@ public class AccessorySheetControllerTest {
 
     @Test
     public void testCorrectsPositionOfActiveTabForDeletedPredecessors() {
-        mCoordinator.addTab(mMockTab);
-        mCoordinator.addTab(mSecondMockTab);
-        mCoordinator.addTab(mThirdMockTab);
-        mCoordinator.addTab(mFourthMockTab);
+        mCoordinator.addTab(mTabs[0]);
+        mCoordinator.addTab(mTabs[1]);
+        mCoordinator.addTab(mTabs[2]);
+        mCoordinator.addTab(mTabs[3]);
         mModel.setActiveTabIndex(2);
         mModel.addObserver(mMockPropertyObserver);
 
-        mCoordinator.removeTab(mSecondMockTab);
+        mCoordinator.removeTab(mTabs[1]);
 
         verify(mMockPropertyObserver).onPropertyChanged(mModel, PropertyKey.ACTIVE_TAB_INDEX);
         assertThat(mModel.getTabList().getItemCount(), is(3));
@@ -181,13 +178,13 @@ public class AccessorySheetControllerTest {
 
     @Test
     public void testDoesntChangePositionOfActiveTabForDeletedSuccessors() {
-        mCoordinator.addTab(mMockTab);
-        mCoordinator.addTab(mSecondMockTab);
-        mCoordinator.addTab(mThirdMockTab);
-        mCoordinator.addTab(mFourthMockTab);
+        mCoordinator.addTab(mTabs[0]);
+        mCoordinator.addTab(mTabs[1]);
+        mCoordinator.addTab(mTabs[2]);
+        mCoordinator.addTab(mTabs[3]);
         mModel.setActiveTabIndex(2);
 
-        mCoordinator.removeTab(mFourthMockTab);
+        mCoordinator.removeTab(mTabs[3]);
 
         assertThat(mModel.getTabList().getItemCount(), is(3));
         assertThat(mModel.getActiveTabIndex(), is(2));

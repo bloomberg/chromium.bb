@@ -25,7 +25,6 @@ import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
-import android.graphics.drawable.Drawable;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
@@ -63,44 +62,13 @@ public class KeyboardAccessoryViewTest {
     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
 
-    private static KeyboardAccessoryData.Action createTestAction(
-            String caption, KeyboardAccessoryData.Action.Delegate delegate) {
-        return new KeyboardAccessoryData.Action() {
-            @Override
-            public String getCaption() {
-                return caption;
-            }
-
-            @Override
-            public Delegate getDelegate() {
-                return delegate;
-            }
-        };
-    }
-
     private KeyboardAccessoryData.Tab createTestTab(String contentDescription) {
-        return new KeyboardAccessoryData.Tab() {
-            @Override
-            public Drawable getIcon() {
-                return mActivityTestRule.getActivity().getResources().getDrawable(
-                        android.R.drawable.ic_lock_lock);
-            }
-
-            @Override
-            public String getContentDescription() {
-                return contentDescription;
-            }
-
-            @Override
-            public int getTabLayout() {
-                return R.layout.empty_accessory_sheet; // Unused.
-            }
-
-            @Override
-            public Listener getListener() {
-                return null; // Unused.
-            }
-        };
+        return new KeyboardAccessoryData.Tab(
+                mActivityTestRule.getActivity().getResources().getDrawable(
+                        android.R.drawable.ic_lock_lock), // Unused.
+                contentDescription,
+                R.layout.empty_accessory_sheet, // Unused.
+                null); // Unused.
     }
 
     /**
@@ -147,7 +115,7 @@ public class KeyboardAccessoryViewTest {
     public void testClickableActionAddedWhenChangingModel() {
         final AtomicReference<Boolean> buttonClicked = new AtomicReference<>();
         final KeyboardAccessoryData.Action testAction =
-                createTestAction("Test Button", action -> buttonClicked.set(true));
+                new KeyboardAccessoryData.Action("Test Button", action -> buttonClicked.set(true));
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.setVisible(true);
@@ -165,9 +133,9 @@ public class KeyboardAccessoryViewTest {
     public void testCanAddSingleButtons() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.setVisible(true);
-            mModel.getActionList().set(
-                    new KeyboardAccessoryData.Action[] {createTestAction("First", action -> {}),
-                            createTestAction("Second", action -> {})});
+            mModel.getActionList().set(new KeyboardAccessoryData.Action[] {
+                    new KeyboardAccessoryData.Action("First", action -> {}),
+                    new KeyboardAccessoryData.Action("Second", action -> {})});
         });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("First")));
@@ -175,7 +143,9 @@ public class KeyboardAccessoryViewTest {
         onView(withText("Second")).check(matches(isDisplayed()));
 
         ThreadUtils.runOnUiThreadBlocking(
-                () -> mModel.getActionList().add(createTestAction("Third", action -> {})));
+                ()
+                        -> mModel.getActionList().add(
+                                new KeyboardAccessoryData.Action("Third", action -> {})));
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Third")));
         onView(withText("First")).check(matches(isDisplayed()));
@@ -188,10 +158,10 @@ public class KeyboardAccessoryViewTest {
     public void testCanRemoveSingleButtons() {
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mModel.setVisible(true);
-            mModel.getActionList().set(
-                    new KeyboardAccessoryData.Action[] {createTestAction("First", action -> {}),
-                            createTestAction("Second", action -> {}),
-                            createTestAction("Third", action -> {})});
+            mModel.getActionList().set(new KeyboardAccessoryData.Action[] {
+                    new KeyboardAccessoryData.Action("First", action -> {}),
+                    new KeyboardAccessoryData.Action("Second", action -> {}),
+                    new KeyboardAccessoryData.Action("Third", action -> {})});
         });
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("First")));

@@ -22,7 +22,6 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.SimpleListObservable;
@@ -51,7 +50,7 @@ public class PasswordAccessorySheetControllerTest {
 
     @Test
     public void testCreatesValidTab() {
-        KeyboardAccessoryData.Tab tab = mCoordinator.createTab();
+        KeyboardAccessoryData.Tab tab = mCoordinator.getTab();
         assertNotNull(tab);
         assertNotNull(tab.getIcon());
         assertNotNull(tab.getListener());
@@ -59,7 +58,7 @@ public class PasswordAccessorySheetControllerTest {
 
     @Test
     public void testSetsViewAdapterOnTabCreation() {
-        KeyboardAccessoryData.Tab tab = mCoordinator.createTab();
+        KeyboardAccessoryData.Tab tab = mCoordinator.getTab();
         assertNotNull(tab);
         assertNotNull(tab.getListener());
         tab.getListener().onTabCreated(mMockView);
@@ -70,29 +69,8 @@ public class PasswordAccessorySheetControllerTest {
     public void testModelNotifiesAboutActionsChangedByProvider() {
         final KeyboardAccessoryData.PropertyProvider<KeyboardAccessoryData.Item> testProvider =
                 new KeyboardAccessoryData.PropertyProvider<>();
-        final KeyboardAccessoryData.Item testItem = new KeyboardAccessoryData.Item() {
-            @Override
-            public int getType() {
-                return KeyboardAccessoryData.Item.TYPE_LABEL;
-            }
-            @Override
-            public String getCaption() {
-                return "Test Item";
-            }
-            @Override
-            public String getContentDescription() {
-                return null;
-            }
-            @Override
-            public boolean isPassword() {
-                return false;
-            }
-
-            @Override
-            public Callback<KeyboardAccessoryData.Item> getItemSelectedCallback() {
-                return null;
-            }
-        };
+        final KeyboardAccessoryData.Item testItem = new KeyboardAccessoryData.Item(
+                KeyboardAccessoryData.Item.TYPE_LABEL, "Test Item", null, false, null);
 
         mModel.addObserver(mMockItemListObserver);
         mCoordinator.registerItemProvider(testProvider);

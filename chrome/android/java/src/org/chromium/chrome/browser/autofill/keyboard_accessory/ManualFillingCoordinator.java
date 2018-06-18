@@ -8,6 +8,7 @@ import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -20,7 +21,6 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class ManualFillingCoordinator {
     private final ManualFillingMediator mMediator = new ManualFillingMediator();
-    // TODO(fhorschig): Manual filling needs a model to map from tab/URL to sheet state/providers.
     // Ideally, it just manages |Provider|s and attaches them to the accessory when tabs change.
 
     /**
@@ -47,14 +47,12 @@ public class ManualFillingCoordinator {
         mMediator.destroy();
     }
 
-    // TODO(fhorschig): Ideally, this isn't exposed. (Apply Hollywood principle to tabs).
-    void addTab(KeyboardAccessoryData.Tab tab) {
-        mMediator.addTab(tab);
+    void registerActionProvider(Provider<KeyboardAccessoryData.Action> actionProvider) {
+        mMediator.registerActionProvider(actionProvider);
     }
 
-    // TODO(fhorschig): Ideally, this isn't exposed neither.
-    void removeTab(KeyboardAccessoryData.Tab tab) {
-        mMediator.removeTab(tab);
+    void registerPasswordProvider(Provider<KeyboardAccessoryData.Item> itemProvider) {
+        mMediator.registerPasswordProvider(itemProvider);
     }
 
     // TODO(fhorschig): Should be @VisibleForTesting.
@@ -67,12 +65,8 @@ public class ManualFillingCoordinator {
         return mMediator.getKeyboardAccessory();
     }
 
-    /**
-     * Allows access to the accessory sheet.
-     * @return The coordinator of the Accessory sheet component.
-     */
     @VisibleForTesting
-    AccessorySheetCoordinator getAccessorySheetForTesting() {
-        return mMediator.getAccessorySheet();
+    ManualFillingMediator getMediatorForTesting() {
+        return mMediator;
     }
 }

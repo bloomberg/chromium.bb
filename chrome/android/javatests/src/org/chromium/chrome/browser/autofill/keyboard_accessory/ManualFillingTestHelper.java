@@ -17,8 +17,6 @@ import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
 
-import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.PerformException;
@@ -102,30 +100,11 @@ public class ManualFillingTestHelper {
      * Creates and adds an empty tab without listener to keyboard accessory and sheet.
      */
     public void createTestTab() {
-        mActivityTestRule.getActivity().getManualFillingController().addTab(
-                new KeyboardAccessoryData.Tab() {
-                    @Override
-                    public Drawable getIcon() {
-                        return InstrumentationRegistry.getContext().getResources().getDrawable(
-                                android.R.drawable.ic_lock_lock);
-                    }
-
-                    @Override
-                    public String getContentDescription() {
-                        return "TestTabDescription";
-                    }
-
-                    @Override
-                    public int getTabLayout() {
-                        return R.layout.empty_accessory_sheet;
-                    }
-
-                    @Nullable
-                    @Override
-                    public Listener getListener() {
-                        return null;
-                    }
-                });
+        mActivityTestRule.getActivity().getManualFillingController().getMediatorForTesting().addTab(
+                new KeyboardAccessoryData.Tab(
+                        InstrumentationRegistry.getContext().getResources().getDrawable(
+                                android.R.drawable.ic_lock_lock),
+                        "TestTabDescription", R.layout.empty_accessory_sheet, null));
     }
 
     /**
