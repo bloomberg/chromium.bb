@@ -178,6 +178,9 @@ class LoginDisplayHost {
   // user data.
   virtual void ResyncUserData() = 0;
 
+  // Shows a feedback report dialog.
+  virtual void ShowFeedback() = 0;
+
  protected:
   LoginDisplayHost();
   virtual ~LoginDisplayHost();

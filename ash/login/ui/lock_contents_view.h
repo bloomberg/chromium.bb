@@ -5,6 +5,7 @@
 #ifndef ASH_LOGIN_UI_LOCK_CONTENTS_VIEW_H_
 #define ASH_LOGIN_UI_LOCK_CONTENTS_VIEW_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -99,6 +100,10 @@ class ASH_EXPORT LockContentsView
     kExclusivePublicAccountExpandedView,
   };
 
+  enum class AcceleratorAction {
+    kShowFeedback,
+  };
+
   // Number of login attempts before a login dialog is shown. For example, if
   // this value is 4 then the user can submit their password 4 times, and on the
   // 4th bad attempt the login dialog is shown. This only applies to the login
@@ -118,6 +123,7 @@ class ASH_EXPORT LockContentsView
   void OnFocus() override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // LoginScreenController::Observer:
   void SetAvatarForUser(const AccountId& account_id,
@@ -331,6 +337,12 @@ class ASH_EXPORT LockContentsView
   // All the subsequent calls of |OnLockScreenNoteStateChanged| will be ignored.
   void DisableLockScreenNote();
 
+  // Register accelerators used in login screen.
+  void RegisterAccelerators();
+
+  // Performs the specified accelerator action.
+  void PerformAction(AcceleratorAction action);
+
   const LockScreen::ScreenType screen_type_;
 
   std::vector<UserState> users_;
@@ -391,6 +403,9 @@ class ASH_EXPORT LockContentsView
   // keyboard state changes to KeyboardControllerState::SHOWN or to
   // KeyboardControllerState::HIDDEN.
   bool keyboard_shown_ = false;
+
+  // Accelerators handled by login screen.
+  std::map<ui::Accelerator, AcceleratorAction> accel_map_;
 
   DISALLOW_COPY_AND_ASSIGN(LockContentsView);
 };
