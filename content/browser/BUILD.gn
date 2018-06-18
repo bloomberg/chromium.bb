@@ -2033,6 +2033,8 @@ jumbo_source_set("browser") {
       "renderer_host/pepper/quota_reservation.h",
       "renderer_host/pepper/ssl_context_helper.cc",
       "renderer_host/pepper/ssl_context_helper.h",
+      "renderer_host/plugin_registry_impl.cc",
+      "renderer_host/plugin_registry_impl.h",
     ]
     deps += [
       "//ppapi/host",

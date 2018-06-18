@@ -43,6 +43,7 @@
           "blink.mojom.LockManager",
           "blink.mojom.Hyphenation",
           "blink.mojom.MimeRegistry",
+          "blink.mojom.PluginRegistry",
           "blink.mojom.ReportingServiceProxy",
           "blink.mojom.StoragePartitionService",
           "blink.mojom.WebDatabaseHost",

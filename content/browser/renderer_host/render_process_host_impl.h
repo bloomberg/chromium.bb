@@ -79,6 +79,7 @@ class MediaStreamTrackMetricsHost;
 class P2PSocketDispatcherHost;
 class PermissionServiceContext;
 class PeerConnectionTrackerHost;
+class PluginRegistryImpl;
 class PushMessagingManager;
 class RenderFrameMessageFilter;
 class RenderProcessHostFactory;
@@ -813,6 +814,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       push_messaging_manager_;
 
   std::unique_ptr<EmbeddedFrameSinkProviderImpl> embedded_frame_sink_provider_;
+  std::unique_ptr<PluginRegistryImpl, BrowserThread::DeleteOnIOThread>
+      plugin_registry_;
 
   mojom::ChildControlPtr child_control_interface_;
   mojom::RouteProviderAssociatedPtr remote_route_provider_;

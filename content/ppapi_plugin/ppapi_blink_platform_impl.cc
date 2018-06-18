@@ -194,13 +194,6 @@ blink::WebThemeEngine* PpapiBlinkPlatformImpl::ThemeEngine() {
   return nullptr;
 }
 
-void PpapiBlinkPlatformImpl::GetPluginList(
-    bool refresh,
-    const blink::WebSecurityOrigin& mainFrameOrigin,
-    blink::WebPluginListBuilder* builder) {
-  NOTREACHED();
-}
-
 blink::WebData PpapiBlinkPlatformImpl::GetDataResource(const char* name) {
   NOTREACHED();
   return blink::WebData();

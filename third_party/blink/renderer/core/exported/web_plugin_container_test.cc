@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
@@ -102,6 +103,7 @@ class WebPluginContainerTest : public testing::Test {
   }
 
  protected:
+  ScopedFakePluginRegistry fake_plugins_;
   std::string base_url_;
 };
 

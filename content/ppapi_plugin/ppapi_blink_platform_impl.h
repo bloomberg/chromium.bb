@@ -37,9 +37,6 @@ class PpapiBlinkPlatformImpl : public BlinkPlatformImpl {
                                    const blink::WebURL& site_for_cookies);
   blink::WebString DefaultLocale() override;
   blink::WebThemeEngine* ThemeEngine() override;
-  void GetPluginList(bool refresh,
-                     const blink::WebSecurityOrigin& mainFrameOrigin,
-                     blink::WebPluginListBuilder*) override;
   blink::WebData GetDataResource(const char* name) override;
   std::unique_ptr<blink::WebStorageNamespace> CreateLocalStorageNamespace()
       override;

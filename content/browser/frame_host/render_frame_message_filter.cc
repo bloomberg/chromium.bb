@@ -66,10 +66,6 @@ namespace content {
 
 namespace {
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-const int kPluginsRefreshThresholdInSeconds = 3;
-#endif
-
 void CreateChildFrameOnUI(
     int process_id,
     int parent_routing_id,
@@ -288,7 +284,6 @@ bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER_GENERIC(FrameHostMsg_RenderProcessGone,
                                 OnRenderProcessGone())
 #if BUILDFLAG(ENABLE_PLUGINS)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_GetPlugins, OnGetPlugins)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GetPluginInfo, OnGetPluginInfo)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(FrameHostMsg_OpenChannelToPepperPlugin,
                                     OnOpenChannelToPepperPlugin)
@@ -585,58 +580,6 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-
-void RenderFrameMessageFilter::OnGetPlugins(
-    bool refresh,
-    const url::Origin& main_frame_origin,
-    IPC::Message* reply_msg) {
-  // Don't refresh if the specified threshold has not been passed.  Note that
-  // this check is performed before off-loading to the file thread.  The reason
-  // we do this is that some pages tend to request that the list of plugins be
-  // refreshed at an excessive rate.  This instigates disk scanning, as the list
-  // is accumulated by doing multiple reads from disk.  This effect is
-  // multiplied when we have several pages requesting this operation.
-  if (refresh) {
-    const base::TimeDelta threshold = base::TimeDelta::FromSeconds(
-        kPluginsRefreshThresholdInSeconds);
-    const base::TimeTicks now = base::TimeTicks::Now();
-    if (now - last_plugin_refresh_time_ >= threshold) {
-      // Only refresh if the threshold hasn't been exceeded yet.
-      PluginServiceImpl::GetInstance()->RefreshPlugins();
-      last_plugin_refresh_time_ = now;
-    }
-  }
-
-  PluginServiceImpl::GetInstance()->GetPlugins(
-      base::BindOnce(&RenderFrameMessageFilter::GetPluginsCallback, this,
-                     reply_msg, main_frame_origin));
-}
-
-void RenderFrameMessageFilter::GetPluginsCallback(
-    IPC::Message* reply_msg,
-    const url::Origin& main_frame_origin,
-    const std::vector<WebPluginInfo>& all_plugins) {
-  // Filter the plugin list.
-  PluginServiceFilter* filter = PluginServiceImpl::GetInstance()->GetFilter();
-  std::vector<WebPluginInfo> plugins;
-
-  int child_process_id = -1;
-  int routing_id = MSG_ROUTING_NONE;
-  // In this loop, copy the WebPluginInfo (and do not use a reference) because
-  // the filter might mutate it.
-  for (WebPluginInfo plugin : all_plugins) {
-    // TODO(crbug.com/621724): Pass an url::Origin instead of a GURL.
-    if (!filter ||
-        filter->IsPluginAvailable(child_process_id, routing_id,
-                                  resource_context_, main_frame_origin.GetURL(),
-                                  main_frame_origin, &plugin)) {
-      plugins.push_back(plugin);
-    }
-  }
-
-  FrameHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
-  Send(reply_msg);
-}
 
 void RenderFrameMessageFilter::OnGetPluginInfo(
     int render_frame_id,

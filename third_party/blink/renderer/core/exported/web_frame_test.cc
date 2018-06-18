@@ -156,6 +156,7 @@
 #include "third_party/blink/renderer/platform/scroll/scrollbar_test_suite.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
+#include "third_party/blink/renderer/platform/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl_hash.h"
@@ -12741,6 +12742,7 @@ TEST_F(WebFrameTest, AltTextOnAboutBlankPage) {
 }
 
 TEST_F(WebFrameTest, NavigatorPluginsClearedWhenPluginsDisabled) {
+  ScopedFakePluginRegistry fake_plugins;
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize();
   v8::HandleScope scope(v8::Isolate::GetCurrent());

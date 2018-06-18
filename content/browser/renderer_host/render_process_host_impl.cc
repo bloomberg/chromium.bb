@@ -118,6 +118,7 @@
 #include "content/browser/renderer_host/p2p/socket_dispatcher_host.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/renderer_host/pepper/pepper_renderer_connection.h"
+#include "content/browser/renderer_host/plugin_registry_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -2036,6 +2037,17 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   registry->AddInterface(
       base::BindRepeating(&BlobRegistryWrapper::Bind,
                           storage_partition_impl_->GetBlobRegistry(), GetID()));
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // Initialization can happen more than once (in the case of a child process
+  // crash), but we don't want to lose the plugin registry in this case.
+  if (!plugin_registry_) {
+    plugin_registry_.reset(
+        new PluginRegistryImpl(GetBrowserContext()->GetResourceContext()));
+  }
+  registry->AddInterface(base::BindRepeating(
+      &PluginRegistryImpl::Bind, base::Unretained(plugin_registry_.get())));
+#endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   registry->AddInterface(base::BindRepeating(&KeySystemSupportImpl::Create));

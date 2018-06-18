@@ -33,7 +33,6 @@
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
-#include "third_party/blink/public/platform/web_plugin_list_builder.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -332,14 +331,6 @@ blink::WebThread* TestBlinkWebUnitTestSupport::CurrentThread() {
   if (web_thread_ && web_thread_->IsCurrentThread())
     return web_thread_.get();
   return BlinkPlatformImpl::CurrentThread();
-}
-
-void TestBlinkWebUnitTestSupport::GetPluginList(
-    bool refresh,
-    const blink::WebSecurityOrigin& mainFrameOrigin,
-    blink::WebPluginListBuilder* builder) {
-  builder->AddPlugin("pdf", "pdf", "pdf-files", SkColorSetRGB(38, 38, 38));
-  builder->AddMediaTypeToLastPlugin("application/pdf", "pdf");
 }
 
 namespace {
