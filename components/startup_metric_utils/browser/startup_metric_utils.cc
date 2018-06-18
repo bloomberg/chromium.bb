@@ -47,8 +47,6 @@ base::TimeTicks g_process_creation_ticks;
 
 base::TimeTicks g_browser_main_entry_point_ticks;
 
-base::TimeTicks g_browser_main_entry_point_ticks_computed_from_time;
-
 base::TimeTicks g_renderer_main_entry_point_ticks;
 
 base::TimeTicks g_browser_exe_main_entry_point_ticks;
@@ -433,22 +431,21 @@ base::TimeTicks StartupTimeToTimeTicks(base::Time time) {
 }
 
 void RecordRendererMainEntryHistogram() {
-  if (!g_browser_main_entry_point_ticks_computed_from_time.is_null() &&
+  if (!g_browser_main_entry_point_ticks.is_null() &&
       !g_renderer_main_entry_point_ticks.is_null()) {
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMainToRendererMain",
-        g_browser_main_entry_point_ticks_computed_from_time,
-        g_renderer_main_entry_point_ticks);
+        g_browser_main_entry_point_ticks, g_renderer_main_entry_point_ticks);
   }
 }
 
 void AddStartupEventsForTelemetry()
 {
-  DCHECK(!g_browser_main_entry_point_ticks_computed_from_time.is_null());
+  DCHECK(!g_browser_main_entry_point_ticks.is_null());
 
-  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
-      "startup", "Startup.BrowserMainEntryPoint", 0,
-      g_browser_main_entry_point_ticks_computed_from_time);
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP0("startup",
+                                      "Startup.BrowserMainEntryPoint", 0,
+                                      g_browser_main_entry_point_ticks);
 }
 
 // Logs the Startup.TimeSinceLastStartup histogram. Obtains the timestamp of the
@@ -551,11 +548,6 @@ void RecordMainEntryPointTime(base::Time wall_time, base::TimeTicks ticks) {
   DCHECK(g_browser_main_entry_point_ticks.is_null());
   g_browser_main_entry_point_ticks = ticks;
   DCHECK(!g_browser_main_entry_point_ticks.is_null());
-
-  DCHECK(g_browser_main_entry_point_ticks_computed_from_time.is_null());
-  g_browser_main_entry_point_ticks_computed_from_time =
-      StartupTimeToTimeTicks(wall_time);
-  DCHECK(!g_browser_main_entry_point_ticks_computed_from_time.is_null());
 }
 
 void RecordExeMainEntryPointTicks(base::TimeTicks ticks) {
@@ -598,14 +590,8 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun2",
-        g_browser_main_entry_point_ticks_computed_from_time, ticks);
+        g_browser_main_entry_point_ticks, ticks);
   } else {
-    // TODO(pasko): Stop recording the "...MainEntry2" histogram after M65 hits
-    // Stable.
-    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-        UMA_HISTOGRAM_LONG_TIMES,
-        "Startup.BrowserMessageLoopStartTimeFromMainEntry2",
-        g_browser_main_entry_point_ticks_computed_from_time, ticks);
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry3",
@@ -629,15 +615,13 @@ void RecordBrowserMainMessageLoopStart(base::TimeTicks ticks,
     // chrome.exe:main() to chrome.dll:main().
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain2",
-        g_browser_exe_main_entry_point_ticks,
-        g_browser_main_entry_point_ticks_computed_from_time);
+        g_browser_exe_main_entry_point_ticks, g_browser_main_entry_point_ticks);
 
     // Process create to chrome.dll:main(). Reported as a histogram only as
     // the other two events above are sufficient for tracing purposes.
     UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain2",
-        g_browser_main_entry_point_ticks_computed_from_time -
-            g_process_creation_ticks);
+        g_browser_main_entry_point_ticks - g_process_creation_ticks);
   }
 }
 
@@ -792,7 +776,7 @@ void RecordBrowserWindowFirstPaintCompositingEnded(
 }
 
 base::TimeTicks MainEntryPointTicks() {
-  return g_browser_main_entry_point_ticks_computed_from_time;
+  return g_browser_main_entry_point_ticks;
 }
 
 }  // namespace startup_metric_utils
