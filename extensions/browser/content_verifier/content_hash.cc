@@ -20,6 +20,7 @@
 #include "extensions/common/file_util.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace extensions {
 
@@ -79,9 +80,10 @@ ContentHash::ExtensionKey& ContentHash::ExtensionKey::operator=(
     const ContentHash::ExtensionKey& other) = default;
 
 ContentHash::FetchParams::FetchParams(
-    net::URLRequestContextGetter* request_context,
+    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info,
     const GURL& fetch_url)
-    : request_context(request_context), fetch_url(fetch_url) {}
+    : url_loader_factory_ptr_info(std::move(url_loader_factory_ptr_info)),
+      fetch_url(fetch_url) {}
 ContentHash::FetchParams::~FetchParams() = default;
 ContentHash::FetchParams::FetchParams(FetchParams&&) = default;
 ContentHash::FetchParams& ContentHash::FetchParams::operator=(FetchParams&&) =
