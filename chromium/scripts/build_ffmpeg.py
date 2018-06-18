@@ -264,14 +264,14 @@ def SetupWindowsCrossCompileToolchain(target_arch):
   ])
 
   flags = gn_helpers.FromGNArgs(output)
-  cwd = os.getcwd():
+  cwd = os.getcwd()
   for cflag in flags['include_flags_imsvc'].split(' '):
     # Apparently setup_toolchain prefers relative include paths, which
     # may work for chrome, but it does not work for ffmpeg, so let's make
     # them asbolute again.
     cflag = cflag.strip('"')
-     if cflag.startswith("-imsvc"):
-       cflag = "-imsvc" + os.path.join(cwd, cflag[6:])
+    if cflag.startswith("-imsvc"):
+      cflag = "-imsvc" + os.path.join(cwd, cflag[6:])
     new_args += ['--extra-cflags=' + cflag]
 
   # TODO(dalecurtis): Why isn't the ucrt path printed?
