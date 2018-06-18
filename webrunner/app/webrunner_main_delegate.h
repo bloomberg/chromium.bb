@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "content/public/app/content_main_delegate.h"
+#include "webrunner/common/webrunner_export.h"
 
 namespace content {
 class ContentClient;
@@ -16,7 +17,8 @@ class ContentClient;
 
 namespace webrunner {
 
-class WebRunnerMainDelegate : public content::ContentMainDelegate {
+class WEBRUNNER_EXPORT WebRunnerMainDelegate
+    : public content::ContentMainDelegate {
  public:
   WebRunnerMainDelegate();
   ~WebRunnerMainDelegate() override;

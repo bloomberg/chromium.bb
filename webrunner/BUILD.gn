@@ -6,11 +6,27 @@ assert(is_fuchsia)
 
 import("//build/config/fuchsia/fidl_library.gni")
 import("//build/config/fuchsia/rules.gni")
+import("//testing/test.gni")
 import("//tools/grit/repack.gni")
+
+config("webrunner_implementation") {
+  defines = [ "WEBRUNNER_IMPLEMENTATION" ]
+}
 
 executable("webrunner") {
   deps = [
-    ":fidl",
+    ":webrunner_lib",
+    "//base",
+    "//content/public/app:both",
+  ]
+
+  sources = [
+    "app/webrunner_main.cc",
+  ]
+}
+
+component("webrunner_lib") {
+  deps = [
     ":webrunner_pak",
     "//base",
     "//components/version_info",
@@ -29,9 +45,16 @@ executable("webrunner") {
   data = [
     "$root_out_dir/webrunner.pak",
   ]
+  public_deps = [
+    ":fidl",
+  ]
+  configs += [ ":webrunner_implementation" ]
 
   sources = [
-    "app/webrunner_main.cc",
+    "app/context_provider/context_provider_impl.cc",
+    "app/context_provider/context_provider_impl.h",
+    "app/switches.cc",
+    "app/switches.h",
     "app/webrunner_main_delegate.cc",
     "app/webrunner_main_delegate.h",
     "browser/webrunner_browser_context.cc",
@@ -50,6 +73,7 @@ executable("webrunner") {
     "browser/webrunner_url_request_context_getter.h",
     "common/webrunner_content_client.cc",
     "common/webrunner_content_client.h",
+    "common/webrunner_export.h",
   ]
 }
 
@@ -95,8 +119,24 @@ repack("webrunner_pak") {
   output = "$root_out_dir/webrunner.pak"
 }
 
+test("webrunner_unittests") {
+  sources = [
+    "app/context_provider/context_provider_impl_unittest.cc",
+  ]
+  deps = [
+    ":fidl",
+    ":webrunner_lib",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 fidl_library("fidl") {
-  library_name = "chromium.web"
+  library_name = "web"
+  namespace = "chromium"
+  namespace_path = "chromium"
 
   sources = [
     "fidl/context.fidl",
@@ -106,7 +146,8 @@ fidl_library("fidl") {
     "fidl/navigation_controller.fidl",
   ]
 
-  deps = [
+  public_deps = [
+    "//third_party/fuchsia-sdk:gfx",
     "//third_party/fuchsia-sdk:sys",
     "//third_party/fuchsia-sdk:views_v1",
   ]
