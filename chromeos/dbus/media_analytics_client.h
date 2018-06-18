@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_MEDIA_ANALYTICS_CLIENT_H_
 
 #include "base/callback.h"
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
@@ -46,6 +47,12 @@ class CHROMEOS_EXPORT MediaAnalyticsClient : public DBusClient {
   // over D-Bus as a Diagnostics proto message.
   virtual void GetDiagnostics(
       DBusMethodCallback<mri::Diagnostics> callback) = 0;
+
+  // Bootstrap the Mojo connection between Chrome and the media analytics
+  // process. Should pass in the file descriptor for the child end of the Mojo
+  // pipe.
+  virtual void BootstrapMojoConnection(base::ScopedFD file_descriptor,
+                                       VoidDBusMethodCallback callback) = 0;
 
   // Factory function, creates new instance and returns ownership.
   // For normal usage, access the singleton via DbusThreadManager::Get().

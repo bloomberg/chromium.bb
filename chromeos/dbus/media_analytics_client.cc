@@ -70,6 +70,20 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void BootstrapMojoConnection(base::ScopedFD file_descriptor,
+                               VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(media_perception::kMediaPerceptionServiceName,
+                                 media_perception::kBootstrapMojoConnection);
+    dbus::MessageWriter writer(&method_call);
+
+    writer.AppendFileDescriptor(file_descriptor.get());
+    dbus_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(
+            &MediaAnalyticsClientImpl::OnBootstrapMojoConnectionCallback,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     dbus_proxy_ = bus->GetObjectProxy(
@@ -86,6 +100,11 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
   }
 
  private:
+  void OnBootstrapMojoConnectionCallback(VoidDBusMethodCallback callback,
+                                         dbus::Response* response) {
+    std::move(callback).Run(response != nullptr);
+  }
+
   void OnSignalConnected(const std::string& interface,
                          const std::string& signal,
                          bool succeeded) {
