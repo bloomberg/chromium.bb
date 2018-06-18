@@ -203,6 +203,10 @@ bool IsStylusVirtualKeyboardEnabled() {
   return base::FeatureList::IsEnabled(features::kEnableStylusVirtualKeyboard);
 }
 
+bool IsVirtualKeyboardMdUiEnabled() {
+  return base::FeatureList::IsEnabled(features::kEnableVirtualKeyboardMdUi);
+}
+
 bool IsGestureTypingEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGestureTyping);
