@@ -44,7 +44,7 @@ class CORE_EXPORT NGInlineFragmentTraversal {
 
   // Returns list of inline fragments produced from the specified LayoutObject.
   // The search is restricted in the subtree of |container|.
-  static Vector<NGPhysicalFragmentWithOffset, 1> SelfFragmentsOf(
+  static Vector<NGPhysicalFragmentWithOffset> SelfFragmentsOf(
       const NGPhysicalContainerFragment& container,
       const LayoutObject* target);
 };
