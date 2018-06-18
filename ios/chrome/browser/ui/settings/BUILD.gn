@@ -41,6 +41,10 @@ source_set("settings") {
     "dataplan_usage_collection_view_controller.mm",
     "do_not_track_collection_view_controller.h",
     "do_not_track_collection_view_controller.mm",
+    "google_services_settings_coordinator.h",
+    "google_services_settings_coordinator.mm",
+    "google_services_settings_view_controller.h",
+    "google_services_settings_view_controller.mm",
     "handoff_collection_view_controller.h",
     "handoff_collection_view_controller.mm",
     "import_data_collection_view_controller.h",
@@ -395,6 +399,28 @@ source_set("eg_tests") {
     "//net",
     "//ui/base",
     "//url",
+  ]
+  libs = [
+    "UIKit.framework",
+    "XCTest.framework",
+  ]
+}
+
+source_set("unified_consent_eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "google_services_settings_egtest.mm",
+  ]
+
+  deps = [
+    ":settings",
+    "//base",
+    "//base/test:test_support",
+    "//components/signin/core/browser",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ui/base",
   ]
   libs = [
     "UIKit.framework",

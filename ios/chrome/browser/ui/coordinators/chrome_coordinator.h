@@ -42,6 +42,10 @@ initWithBaseViewController:(nullable UIViewController*)viewController
 @property(weak, nonatomic, nullable, readonly)
     UIViewController* baseViewController;
 
+// The navigation controller this coordinator was initialized with.
+@property(weak, nonatomic, nullable, readwrite)
+    UINavigationController* navigationController;
+
 // The coordinator's BrowserState.
 @property(assign, nonatomic, nullable, readonly)
     ios::ChromeBrowserState* browserState;

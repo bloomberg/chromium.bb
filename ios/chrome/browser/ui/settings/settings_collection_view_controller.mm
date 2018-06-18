@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -22,6 +23,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -49,6 +51,7 @@
 #import "ios/chrome/browser/ui/settings/bandwidth_management_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/account_signin_item.h"
 #import "ios/chrome/browser/ui/settings/content_settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/material_cell_catalog_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
@@ -101,6 +104,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSignInButton = kItemTypeEnumZero,
   ItemTypeSigninPromo,
   ItemTypeAccount,
+  ItemGoogleServices,
   ItemTypeHeader,
   ItemTypeSearchEngine,
   ItemTypeSavedPasswords,
@@ -168,14 +172,16 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
 #pragma mark - SettingsCollectionViewController
 
-@interface SettingsCollectionViewController ()<BooleanObserver,
-                                               ChromeIdentityServiceObserver,
-                                               PrefObserverDelegate,
-                                               SettingsControllerProtocol,
-                                               SettingsMainPageCommands,
-                                               SigninPresenter,
-                                               SigninPromoViewConsumer,
-                                               SyncObserverModelBridge> {
+@interface SettingsCollectionViewController ()<
+    BooleanObserver,
+    ChromeIdentityServiceObserver,
+    GoogleServicesSettingsCoordinatorDelegate,
+    PrefObserverDelegate,
+    SettingsControllerProtocol,
+    SettingsMainPageCommands,
+    SigninPresenter,
+    SigninPromoViewConsumer,
+    SyncObserverModelBridge> {
   // The current browser state that hold the settings. Never off the record.
   ios::ChromeBrowserState* _browserState;  // weak
 
@@ -195,6 +201,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   // Mediator to configure the sign-in promo cell. Also used to received
   // identity update notifications.
   SigninPromoViewMediator* _signinPromoViewMediator;
+  GoogleServicesSettingsCoordinator* _googleServicesSettingsCoordinator;
 
   // Cached resized profile image.
   UIImage* _resizedImage;
@@ -362,6 +369,10 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     [model addItem:[self accountCellItem]
         toSectionWithIdentifier:SectionIdentifierSignIn];
   }
+  if (base::FeatureList::IsEnabled(signin::kUnifiedConsent)) {
+    [model addItem:[self googleServicesCellItem]
+        toSectionWithIdentifier:SectionIdentifierSignIn];
+  }
 
   // Basics section
   [model addSectionWithIdentifier:SectionIdentifierBasics];
@@ -460,6 +471,13 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                                           kAccountProfilePhotoDimension);
   signInTextItem.image = image;
   return signInTextItem;
+}
+
+- (CollectionViewItem*)googleServicesCellItem {
+  return [self detailItemWithType:ItemGoogleServices
+                             text:l10n_util::GetNSString(
+                                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE)
+                       detailText:nil];
 }
 
 - (CollectionViewItem*)accountCellItem {
@@ -763,15 +781,17 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                initWithBrowserState:_browserState
           closeSettingsOnAddAccount:NO];
       break;
+    case ItemGoogleServices:
+      [self showSyncGoogleService];
+      break;
     case ItemTypeSearchEngine:
       controller = [[SearchEngineSettingsCollectionViewController alloc]
           initWithBrowserState:_browserState];
       break;
-    case ItemTypeSavedPasswords: {
+    case ItemTypeSavedPasswords:
       controller = [[SavePasswordsCollectionViewController alloc]
           initWithBrowserState:_browserState];
       break;
-    }
     case ItemTypeAutofill:
       controller = [[AutofillCollectionViewController alloc]
           initWithBrowserState:_browserState];
@@ -918,6 +938,17 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 #endif  // CHROMIUM_BUILD && !defined(NDEBUG)
 
 #pragma mark Private methods
+
+- (void)showSyncGoogleService {
+  DCHECK(!_googleServicesSettingsCoordinator);
+  _googleServicesSettingsCoordinator =
+      [[GoogleServicesSettingsCoordinator alloc]
+          initWithBaseViewController:self.navigationController];
+  _googleServicesSettingsCoordinator.navigationController =
+      self.navigationController;
+  _googleServicesSettingsCoordinator.delegate = self;
+  [_googleServicesSettingsCoordinator start];
+}
 
 // Sets the NSUserDefaults BOOL |value| for |key|.
 - (void)setBooleanNSUserDefaultsValue:(BOOL)value forKey:(NSString*)key {
@@ -1211,6 +1242,14 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 - (void)signinPromoViewMediatorCloseButtonWasTapped:
     (SigninPromoViewMediator*)mediator {
   [self reloadData];
+}
+
+#pragma mark - GoogleServicesSettingsCoordinatorDelegate
+
+- (void)googleServicesSettingsCoordinatorDidRemove:
+    (GoogleServicesSettingsCoordinator*)coordinator {
+  DCHECK_EQ(_googleServicesSettingsCoordinator, coordinator);
+  _googleServicesSettingsCoordinator = nil;
 }
 
 @end
