@@ -2766,6 +2766,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableSlimmingPaintV2,
     switches::kEnableThreadedCompositing,
     switches::kEnableTouchDragDrop,
+    switches::kEnableUnsafeWebGPU,
     switches::kEnableUseZoomForDSF,
     switches::kEnableViewport,
     switches::kEnableVtune,

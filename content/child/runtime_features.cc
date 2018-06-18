@@ -204,6 +204,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   else
     WebRuntimeFeatures::EnableV8IdleTasks(true);
 
+  if (command_line.HasSwitch(switches::kEnableUnsafeWebGPU))
+    WebRuntimeFeatures::EnableWebGPU(true);
+
   if (command_line.HasSwitch(switches::kEnableWebVR))
     WebRuntimeFeatures::EnableWebVR(true);
 
