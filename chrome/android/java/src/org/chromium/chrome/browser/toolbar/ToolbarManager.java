@@ -722,6 +722,40 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     }
 
     /**
+     * Show the update badge in both the top and bottom toolbar.
+     * TODO(amaralp): Only the top or bottom menu should be visible.
+     */
+    public void showAppMenuUpdateBadge() {
+        mToolbar.showAppMenuUpdateBadge();
+        if (mBottomToolbarController != null) {
+            mBottomToolbarController.showAppMenuUpdateBadge();
+        }
+    }
+
+    /**
+     * Remove the update badge in both the top and bottom toolbar.
+     * TODO(amaralp): Only the top or bottom menu should be visible.
+     */
+    public void removeAppMenuUpdateBadge(boolean animate) {
+        mToolbar.removeAppMenuUpdateBadge(animate);
+        if (mBottomToolbarController != null) {
+            mBottomToolbarController.removeAppMenuUpdateBadge();
+        }
+    }
+
+    /**
+     * @return Whether the badge is showing (either in the top or bottom toolbar).
+     * TODO(amaralp): Only the top or bottom menu should be visible.
+     */
+    public boolean isShowingAppMenuUpdateBadge() {
+        if (mBottomToolbarController != null
+                && mBottomToolbarController.isShowingAppMenuUpdateBadge()) {
+            return true;
+        }
+        return mToolbar.isShowingAppMenuUpdateBadge();
+    }
+
+    /**
      * @return The bookmarks bridge.
      */
     public BookmarkBridge getBookmarkBridge() {

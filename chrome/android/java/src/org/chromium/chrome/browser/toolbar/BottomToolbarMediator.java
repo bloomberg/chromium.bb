@@ -107,4 +107,12 @@ class BottomToolbarMediator implements FullscreenListener, OverviewModeObserver 
         mOverviewModeBehavior = overviewModeBehavior;
         mOverviewModeBehavior.addOverviewModeObserver(this);
     }
+
+    public void setUpdateBadgeVisibility(boolean visible) {
+        mModel.setValue(BottomToolbarModel.UPDATE_BADGE_VISIBLE, visible);
+    }
+
+    public boolean isShowingAppMenuUpdateBadge() {
+        return mModel.getValue(BottomToolbarModel.UPDATE_BADGE_VISIBLE);
+    }
 }

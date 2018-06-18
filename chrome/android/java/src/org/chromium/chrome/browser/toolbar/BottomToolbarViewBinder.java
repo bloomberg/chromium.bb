@@ -75,6 +75,11 @@ public class BottomToolbarViewBinder
                     .setVisibility(model.getValue(BottomToolbarModel.SEARCH_ACCELERATOR_VISIBLE)
                                     ? View.VISIBLE
                                     : View.INVISIBLE);
+        } else if (BottomToolbarModel.UPDATE_BADGE_VISIBLE == propertyKey) {
+            view.toolbarRoot.findViewById(R.id.menu_badge)
+                    .setVisibility(model.getValue(BottomToolbarModel.UPDATE_BADGE_VISIBLE)
+                                    ? View.VISIBLE
+                                    : View.GONE);
         } else {
             assert false : "Unhandled property detected in BottomToolbarViewBinder!";
         }

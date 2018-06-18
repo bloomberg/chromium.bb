@@ -59,26 +59,8 @@
             android:layout_gravity="top"
             android:contentDescription="@string/accessibility_toolbar_btn_tabswitcher_toggle_default" />
 
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/menu_button_wrapper">
+        <include layout="@layout/menu_button"/>
 
-            <org.chromium.chrome.browser.widget.TintedImageButton
-                android:id="@+id/menu_button"
-                style="@style/ToolbarMenuButtonPhone"
-                android:src="@drawable/ic_more_vert_black_24dp"
-                android:contentDescription="@string/accessibility_toolbar_btn_menu"
-                app:chrometint="@color/dark_mode_tint" />
-
-            <ImageView
-                android:id="@+id/menu_badge"
-                style="@style/ToolbarMenuButtonPhone"
-                android:src="@drawable/badge_update_dark"
-                android:contentDescription="@null"
-                android:importantForAccessibility="no"
-                android:visibility="invisible" />
-        </FrameLayout>
     </LinearLayout>
 
 </merge>
