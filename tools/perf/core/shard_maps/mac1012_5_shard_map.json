@@ -24,14 +24,14 @@
             "media.desktop": {},
             "media.mobile": {},
             "memory.desktop": {
-                "end": 5
+                "end": 6
             }
         }
     },
     "1": {
         "benchmarks": {
             "memory.desktop": {
-                "begin": 5
+                "begin": 6
             },
             "memory.long_running_idle_gmail_background_tbmv2": {},
             "memory.long_running_idle_gmail_tbmv2": {},
@@ -47,14 +47,14 @@
             "rendering.mobile": {},
             "scheduler.tough_scheduling_cases": {},
             "smoothness.desktop_tough_pinch_zoom_cases": {
-                "end": 14
+                "end": 6
             }
         }
     },
     "2": {
         "benchmarks": {
             "smoothness.desktop_tough_pinch_zoom_cases": {
-                "begin": 14
+                "begin": 6
             },
             "smoothness.gpu_rasterization.polymer": {},
             "smoothness.gpu_rasterization.top_25_smooth": {},
@@ -114,14 +114,14 @@
             "thread_times.tough_scrolling_cases": {},
             "tracing.tracing_with_background_memory_infra": {},
             "v8.browsing_desktop": {
-                "end": 17
+                "end": 16
             }
         }
     },
     "4": {
         "benchmarks": {
             "v8.browsing_desktop": {
-                "begin": 17
+                "begin": 16
             },
             "v8.browsing_desktop-future": {},
             "v8.browsing_mobile": {},
