@@ -12,7 +12,7 @@ function performActions()
     var promise = new Promise((fulfill) => window.callWhenDone = fulfill);
     var content = "" +
         "var fn2 = function() {" +
-        "    console.markTimeline(\\"Script evaluated\\");" +
+        "    console.timeStamp(\\"Script evaluated\\");" +
         "    window.callWhenDone();" +
         "};\\\\n" +
         "var fn1 = function() {" +
