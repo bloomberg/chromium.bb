@@ -26,7 +26,6 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/buildflags.h"
 #include "components/metrics/data_use_tracker.h"
-#include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "extensions/buildflags/buildflags.h"
@@ -214,8 +213,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // lifetime of the IO thread.
 
   Globals* globals_;
-
-  BooleanPrefMember system_enable_referrers_;
 
   // These are set on the UI thread, and then consumed during initialization on
   // the IO thread.

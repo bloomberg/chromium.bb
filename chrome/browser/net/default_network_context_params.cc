@@ -39,6 +39,10 @@ network::mojom::NetworkContextParamsPtr CreateDefaultNetworkContextParams() {
 
   network_context_params->user_agent = GetUserAgent();
 
+  // Disable referrers by default. Any consumer that enables referrers should
+  // respect prefs::kEnableReferrers from the appropriate pref store.
+  network_context_params->enable_referrers = false;
+
   std::string quic_user_agent_id = chrome::GetChannelName();
   if (!quic_user_agent_id.empty())
     quic_user_agent_id.push_back(' ');

@@ -55,11 +55,11 @@ class URLRequest;
 // add hooks into the network stack.
 class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
  public:
-  // |enable_referrers| (and all of the other optional PrefMembers) should be
-  // initialized on the UI thread (see below) beforehand. This object's owner is
-  // responsible for cleaning them up at shutdown.
-  ChromeNetworkDelegate(extensions::EventRouterForwarder* event_router,
-                        BooleanPrefMember* enable_referrers);
+  // All optional PrefMembers should be initialized on the UI thread (see below)
+  // before first use. This object's owner is responsible for cleaning them up
+  // at shutdown.
+  explicit ChromeNetworkDelegate(
+      extensions::EventRouterForwarder* event_router);
   ~ChromeNetworkDelegate() override;
 
   // Pass through to ChromeExtensionsNetworkDelegate::set_extension_info_map().
@@ -122,10 +122,9 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
       bool is_data_usage_off_the_record);
 
   // Binds the pref members to |pref_service| and moves them to the IO thread.
-  // |enable_referrers| cannot be nullptr, the others can.
-  // This method should be called on the UI thread.
+  // All arguments can be nullptr. This method should be called on the UI
+  // thread.
   static void InitializePrefsOnUIThread(
-      BooleanPrefMember* enable_referrers,
       BooleanPrefMember* force_google_safe_search,
       IntegerPrefMember* force_youtube_restrict,
       StringPrefMember* allowed_domains_for_apps,
@@ -217,7 +216,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
 
   // Weak, owned by our owner.
-  BooleanPrefMember* enable_referrers_;
   BooleanPrefMember* force_google_safe_search_;
   IntegerPrefMember* force_youtube_restrict_;
   StringPrefMember* allowed_domains_for_apps_;

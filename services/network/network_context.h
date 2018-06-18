@@ -160,6 +160,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void SetNetworkConditions(const std::string& profile_id,
                             mojom::NetworkConditionsPtr conditions) override;
   void SetAcceptLanguage(const std::string& new_accept_language) override;
+  void SetEnableReferrers(bool enable_referrers) override;
   void SetCTPolicy(
       const std::vector<std::string>& required_hosts,
       const std::vector<std::string>& excluded_hosts,
@@ -205,6 +206,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void DestroyURLLoaderFactory(URLLoaderFactory* url_loader_factory);
 
  private:
+  class ContextNetworkDelegate;
   friend class URLRequestContextBuilderMojo;
 
   // Applies the values in |network_context_params| to |builder|, and builds
@@ -226,7 +228,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
           out_require_ct_delegate,
       std::unique_ptr<net::ReportSender>* out_certificate_report_sender,
       std::unique_ptr<ExpectCTReporter>* out_expect_ct_reporter,
-      net::StaticHttpUserAgentSettings** out_http_user_agent_settings);
+      net::StaticHttpUserAgentSettings** out_http_user_agent_settings,
+      ContextNetworkDelegate** out_context_network_delegate_ptr);
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
   void OnHttpCacheCleared(ClearHttpCacheCallback callback,
@@ -249,6 +252,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   URLRequestContextOwner url_request_context_owner_;
 
   net::URLRequestContext* url_request_context_;
+
+  // Owned by URLRequestContext.
+  ContextNetworkDelegate* context_network_delegate_ = nullptr;
 
   mojom::NetworkContextParamsPtr params_;
 

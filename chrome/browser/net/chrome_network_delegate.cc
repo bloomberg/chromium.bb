@@ -199,12 +199,10 @@ bool IsAccessAllowedInternal(const base::FilePath& path,
 }  // namespace
 
 ChromeNetworkDelegate::ChromeNetworkDelegate(
-    extensions::EventRouterForwarder* event_router,
-    BooleanPrefMember* enable_referrers)
+    extensions::EventRouterForwarder* event_router)
     : extensions_delegate_(
           ChromeExtensionsNetworkDelegate::Create(event_router)),
       profile_(nullptr),
-      enable_referrers_(enable_referrers),
       force_google_safe_search_(nullptr),
       force_youtube_restrict_(nullptr),
       allowed_domains_for_apps_(nullptr),
@@ -212,9 +210,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableExperimentalWebPlatformFeatures)),
       data_use_aggregator_(nullptr),
-      is_data_usage_off_the_record_(true) {
-  DCHECK(enable_referrers);
-}
+      is_data_usage_off_the_record_(true) {}
 
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
 
@@ -242,15 +238,11 @@ void ChromeNetworkDelegate::set_data_use_aggregator(
 
 // static
 void ChromeNetworkDelegate::InitializePrefsOnUIThread(
-    BooleanPrefMember* enable_referrers,
     BooleanPrefMember* force_google_safe_search,
     IntegerPrefMember* force_youtube_restrict,
     StringPrefMember* allowed_domains_for_apps,
     PrefService* pref_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  enable_referrers->Init(prefs::kEnableReferrers, pref_service);
-  enable_referrers->MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   if (force_google_safe_search) {
     force_google_safe_search->Init(prefs::kForceGoogleSafeSearch, pref_service);
     force_google_safe_search->MoveToThread(
@@ -273,9 +265,6 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
     net::CompletionOnceCallback callback,
     GURL* new_url) {
   extensions_delegate_->ForwardStartRequestStatus(request);
-
-  if (!enable_referrers_->GetValue())
-    request->SetReferrer(std::string());
 
   bool force_safe_search =
       (force_google_safe_search_ && force_google_safe_search_->GetValue());

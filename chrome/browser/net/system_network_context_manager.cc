@@ -341,6 +341,11 @@ SystemNetworkContextManager::SystemNetworkContextManager()
   pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
                              auth_pref_callback);
 #endif  // defined(OS_ANDROID)
+
+  enable_referrers_.Init(
+      prefs::kEnableReferrers, g_browser_process->local_state(),
+      base::BindRepeating(&SystemNetworkContextManager::UpdateReferrersEnabled,
+                          base::Unretained(this)));
 }
 
 SystemNetworkContextManager::~SystemNetworkContextManager() {
@@ -394,6 +399,11 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kAuthAndroidNegotiateAccountType,
                                std::string());
 #endif  // defined(OS_ANDROID)
+
+  // Per-NetworkContext pref. The pref value from
+  // g_browser_process->local_state() is used for the system NetworkContext, and
+  // the per-profile pref values are used for the profile NetworkContexts.
+  registry->RegisterBooleanPref(prefs::kEnableReferrers, true);
 }
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(
@@ -476,6 +486,8 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
 
   network_context_params->context_name = std::string("system");
 
+  network_context_params->enable_referrers = enable_referrers_.GetValue();
+
   network_context_params->http_cache_enabled = false;
 
   // These are needed for PAC scripts that use file or data URLs (Or FTP URLs?).
@@ -492,4 +504,8 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 
   return network_context_params;
+}
+
+void SystemNetworkContextManager::UpdateReferrersEnabled() {
+  GetContext()->SetEnableReferrers(enable_referrers_.GetValue());
 }

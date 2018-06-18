@@ -561,7 +561,6 @@ class ProfileIOData {
   mutable signin::AccountConsistencyMethod account_consistency_;
 
   // Member variables which are pointed to by the various context objects.
-  mutable BooleanPrefMember enable_referrers_;
   mutable BooleanPrefMember force_google_safesearch_;
   mutable IntegerPrefMember force_youtube_restrict_;
   mutable BooleanPrefMember safe_browsing_enabled_;

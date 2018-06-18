@@ -68,6 +68,7 @@ class TestNetworkContext : public mojom::NetworkContext {
   void SetNetworkConditions(const std::string& profile_id,
                             mojom::NetworkConditionsPtr conditions) override {}
   void SetAcceptLanguage(const std::string& new_accept_language) override {}
+  void SetEnableReferrers(bool enable_referrers) override {}
   void SetCTPolicy(
       const std::vector<std::string>& required_hosts,
       const std::vector<std::string>& excluded_hosts,

@@ -31,6 +31,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/base/layered_network_delegate.h"
+#include "net/base/network_delegate.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
@@ -211,6 +213,37 @@ void OnClearedChannelIds(net::SSLConfigService* ssl_config_service,
 
 constexpr bool NetworkContext::enable_resource_scheduler_;
 
+// net::NetworkDelegate that wraps the main NetworkDelegate to remove the
+// Referrer from requests, if needed.
+// TODO(mmenke): Once the network service has shipped, this can be done in
+// URLLoader instead.
+class NetworkContext::ContextNetworkDelegate
+    : public net::LayeredNetworkDelegate {
+ public:
+  ContextNetworkDelegate(
+      std::unique_ptr<net::NetworkDelegate> nested_network_delegate,
+      bool enable_referrers)
+      : LayeredNetworkDelegate(std::move(nested_network_delegate)),
+        enable_referrers_(enable_referrers) {}
+
+  ~ContextNetworkDelegate() override {}
+
+  void OnBeforeURLRequestInternal(net::URLRequest* request,
+                                  GURL* new_url) override {
+    if (!enable_referrers_)
+      request->SetReferrer(std::string());
+  }
+
+  void set_enable_referrers(bool enable_referrers) {
+    enable_referrers_ = enable_referrers;
+  }
+
+ private:
+  bool enable_referrers_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextNetworkDelegate);
+};
+
 NetworkContext::NetworkContext(
     NetworkService* network_service,
     mojom::NetworkContextRequest request,
@@ -260,7 +293,7 @@ NetworkContext::NetworkContext(
       network_service_->GetHttpAuthHandlerFactory(),
       network_service_->sth_reporter(), &ct_tree_tracker_,
       &require_ct_delegate_, &certificate_report_sender_, &expect_ct_reporter_,
-      &user_agent_settings_);
+      &user_agent_settings_, &context_network_delegate_);
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
   network_service_->RegisterNetworkContext(this);
@@ -566,6 +599,13 @@ void NetworkContext::SetAcceptLanguage(const std::string& new_accept_language) {
   user_agent_settings_->set_accept_language(new_accept_language);
 }
 
+void NetworkContext::SetEnableReferrers(bool enable_referrers) {
+  // This may only be called on NetworkContexts created with a constructor that
+  // calls ApplyContextParamsToBuilder.
+  DCHECK(context_network_delegate_);
+  context_network_delegate_->set_enable_referrers(enable_referrers);
+}
+
 void NetworkContext::SetCTPolicy(
     const std::vector<std::string>& required_hosts,
     const std::vector<std::string>& excluded_hosts,
@@ -688,7 +728,8 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         out_require_ct_delegate,
     std::unique_ptr<net::ReportSender>* out_certificate_report_sender,
     std::unique_ptr<ExpectCTReporter>* out_expect_ct_reporter,
-    net::StaticHttpUserAgentSettings** out_http_user_agent_settings) {
+    net::StaticHttpUserAgentSettings** out_http_user_agent_settings,
+    ContextNetworkDelegate** out_context_network_delegate) {
   if (net_log)
     builder->set_net_log(net_log);
 
@@ -829,6 +870,26 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
                          -> std::unique_ptr<net::HttpTransactionFactory> {
         return std::make_unique<ThrottlingNetworkTransactionFactory>(session);
       }));
+
+  // Can't just overwrite the NetworkDelegate because one might have already
+  // been set on the |builder| before it was passed to the NetworkContext.
+  // TODO(mmenke): Clean this up, once NetworkContext no longer needs to
+  // support taking a URLRequestContextBuilder with a pre-configured
+  // NetworkContext.
+  builder->SetCreateLayeredNetworkDelegateCallback(base::BindOnce(
+      [](mojom::NetworkContextParams* network_context_params,
+         ContextNetworkDelegate** out_context_network_delegate,
+         std::unique_ptr<net::NetworkDelegate> nested_network_delegate)
+          -> std::unique_ptr<net::NetworkDelegate> {
+        std::unique_ptr<ContextNetworkDelegate> context_network_delegate =
+            std::make_unique<ContextNetworkDelegate>(
+                std::move(nested_network_delegate),
+                network_context_params->enable_referrers);
+        if (out_context_network_delegate)
+          *out_context_network_delegate = context_network_delegate.get();
+        return context_network_delegate;
+      },
+      network_context_params, out_context_network_delegate));
 
   std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
   if (!network_context_params->ct_logs.empty()) {
@@ -1040,7 +1101,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
                        : nullptr,
       network_service_ ? network_service_->sth_reporter() : nullptr,
       &ct_tree_tracker_, &require_ct_delegate_, &certificate_report_sender_,
-      &expect_ct_reporter_, &user_agent_settings_);
+      &expect_ct_reporter_, &user_agent_settings_, &context_network_delegate_);
 
   return result;
 }
