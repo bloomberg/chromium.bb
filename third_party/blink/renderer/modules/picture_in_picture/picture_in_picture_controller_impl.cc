@@ -82,9 +82,16 @@ PictureInPictureControllerImpl::IsElementAllowed(
 void PictureInPictureControllerImpl::EnterPictureInPicture(
     HTMLVideoElement* element,
     ScriptPromiseResolver* resolver) {
-  element->enterPictureInPicture(WTF::Bind(
-      &PictureInPictureControllerImpl::OnEnteredPictureInPicture,
-      WrapPersistent(this), WrapPersistent(element), WrapPersistent(resolver)));
+  if (picture_in_picture_element_ != element) {
+    element->enterPictureInPicture(
+        WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
+                  WrapPersistent(this), WrapPersistent(element),
+                  WrapPersistent(resolver)));
+    return;
+  }
+
+  if (resolver)
+    resolver->Resolve(picture_in_picture_window_);
 }
 
 void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
