@@ -51,9 +51,10 @@ void MachineLevelUserCloudPolicyStore::LoadImmediately() {
   // There is no global dm token, stop loading the policy cache. The policy will
   // be fetched in the end of enrollment process.
   if (machine_dm_token_.empty()) {
-    DVLOG(1) << "LoadImmediately ignored, no DM token";
+    VLOG(1) << "LoadImmediately ignored, no DM token present.";
     return;
   }
+  VLOG(1) << "Load policy cache Immediately.";
   DesktopCloudPolicyStore::LoadImmediately();
 }
 
@@ -61,9 +62,10 @@ void MachineLevelUserCloudPolicyStore::Load() {
   // There is no global dm token, stop loading the policy cache. The policy will
   // be fetched in the end of enrollment process.
   if (machine_dm_token_.empty()) {
-    DVLOG(1) << "Load ignored, no DM token";
+    VLOG(1) << "Load ignored, no DM token present.";
     return;
   }
+  VLOG(1) << "Load policy cache.";
   DesktopCloudPolicyStore::Load();
 }
 

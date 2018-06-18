@@ -23,6 +23,14 @@
 
 namespace policy {
 
+namespace {
+
+void OnPolicyFetchCompleted(bool success) {
+  VLOG(1) << "Policy fetch " << (success ? "succeeded" : "failed");
+}
+
+}  // namespace
+
 /* MachineLevelUserCloudPolicyRegistrar */
 MachineLevelUserCloudPolicyRegistrar::MachineLevelUserCloudPolicyRegistrar(
     DeviceManagementService* device_management_service,
@@ -106,7 +114,8 @@ void MachineLevelUserCloudPolicyFetcher::SetupRegistrationAndFetchPolicy(
   policy_manager_->store()->SetupRegistration(dm_token, client_id);
   DCHECK(policy_manager_->IsClientRegistered());
 
-  policy_manager_->core()->service()->RefreshPolicy(base::DoNothing());
+  policy_manager_->core()->service()->RefreshPolicy(
+      base::BindRepeating(&OnPolicyFetchCompleted));
 }
 
 void MachineLevelUserCloudPolicyFetcher::OnInitializationCompleted(
@@ -119,6 +128,8 @@ void MachineLevelUserCloudPolicyFetcher::OnInitializationCompleted(
   // Note that Chrome will not fetch policy again immediately here if DM server
   // returns a policy that Chrome is not able to validate.
   if (!policy_manager_->IsClientRegistered()) {
+    VLOG(1) << "OnInitializationCompleted: Fetching policy when there is no "
+               "valid local cache.";
     TryToFetchPolicy();
   }
 }
@@ -134,6 +145,8 @@ void MachineLevelUserCloudPolicyFetcher::InitializeManager(
   // which means there is no valid policy cache.
   if (policy_manager_->store()->is_initialized() &&
       !policy_manager_->IsClientRegistered()) {
+    VLOG(1) << "InitializeManager: Fetching policy when there is no valid "
+               "local cache.";
     TryToFetchPolicy();
   }
 }

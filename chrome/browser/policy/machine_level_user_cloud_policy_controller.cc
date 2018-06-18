@@ -61,6 +61,10 @@ MachineLevelUserCloudPolicyController::CreatePolicyManager() {
   std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
   std::string client_id = BrowserDMTokenStorage::Get()->RetrieveClientId();
 
+  VLOG(1) << "DM token = " << (dm_token.empty() ? "none" : "from persistence");
+  VLOG(1) << "Enrollment token = " << enrollment_token;
+  VLOG(1) << "Client ID = " << client_id;
+
   if (enrollment_token.empty() && dm_token.empty())
     return nullptr;
 
@@ -105,8 +109,6 @@ void MachineLevelUserCloudPolicyController::Init(
   std::string client_id;
   std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
 
-  DVLOG(1) << "DM token = " << (dm_token.empty() ? "none" : "from persistence");
-
   if (!dm_token.empty()) {
     policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
         policy_manager, local_state, device_management_service,
@@ -119,8 +121,6 @@ void MachineLevelUserCloudPolicyController::Init(
 
   DCHECK(!enrollment_token.empty());
   DCHECK(!client_id.empty());
-  DVLOG(1) << "Enrollment token = " << enrollment_token;
-  DVLOG(1) << "Client ID = " << client_id;
 
   policy_registrar_ = std::make_unique<MachineLevelUserCloudPolicyRegistrar>(
       device_management_service, request_context);
@@ -187,14 +187,14 @@ void MachineLevelUserCloudPolicyController::
     RegisterForPolicyWithEnrollmentTokenCallback(const std::string& dm_token,
                                                  const std::string& client_id) {
   if (dm_token.empty()) {
-    DVLOG(1) << "No DM token returned from browser registration";
+    VLOG(1) << "No DM token returned from browser registration.";
     RecordEnrollmentResult(
         MachineLevelUserCloudPolicyEnrollmentResult::kFailedToFetch);
     NotifyPolicyRegisterFinished(false);
     return;
   }
 
-  DVLOG(1) << "DM token = retrieved from server";
+  VLOG(1) << "DM token retrieved from server.";
 
   // TODO(alito): Log failures to store the DM token. Should we try again later?
   BrowserDMTokenStorage::Get()->StoreDMToken(
@@ -211,6 +211,7 @@ void MachineLevelUserCloudPolicyController::
       }));
 
   // Start fetching policies.
+  VLOG(1) << "Fetch policy after enrollment.";
   policy_fetcher_->SetupRegistrationAndFetchPolicy(dm_token, client_id);
   NotifyPolicyRegisterFinished(true);
 }
