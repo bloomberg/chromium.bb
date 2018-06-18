@@ -38,6 +38,9 @@ template("generate_vm_runner_script") {
       "//build/chromeos/",
       "//build/cros_cache/chrome-sdk/misc/",
 
+      # We use luci-py's subprocess42 to launch test processes.
+      "//tools/swarming_client/utils/",
+
       # The LKGM file controls what version of the VM image to download. Add it
       # as data here so that changes to it will trigger analyze.
       "//chromeos/CHROMEOS_LKGM",

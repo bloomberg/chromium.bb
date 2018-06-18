@@ -12,7 +12,6 @@ import os
 import re
 import signal
 import stat
-import subprocess
 import sys
 
 import psutil
@@ -25,6 +24,11 @@ CHROMIUM_SRC_PATH = os.path.abspath(os.path.join(
 sys.path.insert(0, os.path.join(CHROMIUM_SRC_PATH, 'build', 'android'))
 from pylib.base import base_test_result
 from pylib.results import json_results
+
+# Use luci-py's subprocess42.py
+sys.path.insert(
+    0, os.path.join(CHROMIUM_SRC_PATH, 'tools', 'swarming_client', 'utils'))
+import subprocess42
 
 CHROMITE_PATH = os.path.abspath(os.path.join(
     CHROMIUM_SRC_PATH, 'third_party', 'chromite'))
@@ -85,7 +89,7 @@ def host_cmd(args, unknown_args):
   logging.info('Running the following command:')
   logging.info(' '.join(cros_run_vm_test_cmd))
 
-  return subprocess.call(
+  return subprocess42.call(
       cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr)
 
 
@@ -216,13 +220,12 @@ def vm_test(args, unknown_args):
   if not env_copy.get('GN_ARGS'):
     env_copy['GN_ARGS'] = 'is_chromeos = true'
   env_copy['PATH'] = env_copy['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin')
-  test_proc = subprocess.Popen(
-      cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr, env=env_copy)
 
   # Traps SIGTERM and kills all child processes of cros_run_vm_test when it's
   # caught. This will allow us to capture logs from the VM if a test hangs
   # and gets timeout-killed by swarming. See also:
   # https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
+  test_proc = None
   def _kill_child_procs(trapped_signal, _):
     logging.warning(
         'Received signal %d. Killing child processes of test.', trapped_signal)
@@ -233,8 +236,38 @@ def vm_test(args, unknown_args):
     for child in psutil.Process(test_proc.pid).children():
       logging.warning('Killing process %s', child)
       child.kill()
+
+  # Standard GTests should handle retries and timeouts themselves.
+  retries, timeout = 0, None
+  if is_sanity_test:
+    # 5 min should be enough time for the sanity test to pass.
+    retries, timeout = 2, 300
   signal.signal(signal.SIGTERM, _kill_child_procs)
-  test_proc.wait()
+
+  for i in xrange(retries+1):
+    logging.info('########################################')
+    logging.info('Test attempt #%d', i)
+    logging.info('########################################')
+    test_proc = subprocess42.Popen(
+        cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr,
+        env=env_copy)
+    try:
+      test_proc.wait(timeout=timeout)
+    except subprocess42.TimeoutExpired:
+      logging.error('Test timed out. Sending SIGTERM.')
+      # SIGTERM the proc and wait 10s for it to close.
+      test_proc.terminate()
+      try:
+        test_proc.wait(timeout=10)
+      except subprocess42.TimeoutExpired:
+        # If it hasn't closed in 10s, SIGKILL it.
+        logging.error('Test did not exit in time. Sending SIGKILL.')
+        test_proc.kill()
+        test_proc.wait()
+    logging.info('Test exitted with %d.', test_proc.returncode)
+    if test_proc.returncode == 0:
+      break
+
   rc = test_proc.returncode
 
   # Create a simple json results file for the sanity test if needed. The results
