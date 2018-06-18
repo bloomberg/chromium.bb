@@ -131,9 +131,10 @@ class D3D11DecryptorTest : public ::testing::Test {
 
     ON_CALL(create_device_mock_,
             Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
-        .WillByDefault(DoAll(SetArgPointee<7>(device_mock_.Get()),
-                             SetArgPointee<9>(device_context_mock_.Get()),
-                             Return(S_OK)));
+        .WillByDefault(
+            DoAll(AddRefAndSetArgPointee<7>(device_mock_.Get()),
+                  AddRefAndSetArgPointee<9>(device_context_mock_.Get()),
+                  Return(S_OK)));
 
     decryptor_->SetCreateDeviceCallbackForTesting(
         base::BindRepeating(&D3D11CreateDeviceMock::Create,
@@ -179,14 +180,14 @@ TEST_F(D3D11DecryptorTest, FullSampleCtrDecrypt) {
 
   EXPECT_CALL(create_device_mock_,
               Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
-      .WillOnce(DoAll(SetArgPointee<7>(device_mock_.Get()),
-                      SetArgPointee<9>(device_context_mock_.Get()),
+      .WillOnce(DoAll(AddRefAndSetArgPointee<7>(device_mock_.Get()),
+                      AddRefAndSetArgPointee<9>(device_context_mock_.Get()),
                       Return(S_OK)));
   EXPECT_CALL(*device_context_mock_.Get(),
               QueryInterface(IID_ID3D11VideoContext, _))
       .Times(AtLeast(1))
-      .WillRepeatedly(
-          DoAll(SetArgPointee<1>(video_context_mock_.Get()), Return(S_OK)));
+      .WillRepeatedly(DoAll(
+          AddRefAndSetArgPointee<1>(video_context_mock_.Get()), Return(S_OK)));
 
   ComPtr<D3D11BufferMock> staging_buffer1 = CreateD3D11Mock<D3D11BufferMock>();
   ComPtr<D3D11BufferMock> staging_buffer2 = CreateD3D11Mock<D3D11BufferMock>();
@@ -204,13 +205,16 @@ TEST_F(D3D11DecryptorTest, FullSampleCtrDecrypt) {
                   BufferDescHas(D3D11_USAGE_STAGING, 0u,
                                 D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE),
                   nullptr, _))
-      .WillOnce(DoAll(SetArgPointee<2>(staging_buffer1.Get()), Return(S_OK)))
-      .WillOnce(DoAll(SetArgPointee<2>(staging_buffer2.Get()), Return(S_OK)));
+      .WillOnce(
+          DoAll(AddRefAndSetArgPointee<2>(staging_buffer1.Get()), Return(S_OK)))
+      .WillOnce(DoAll(AddRefAndSetArgPointee<2>(staging_buffer2.Get()),
+                      Return(S_OK)));
   EXPECT_CALL(*device_mock_.Get(),
               CreateBuffer(BufferDescHas(D3D11_USAGE_DEFAULT,
                                          D3D11_BIND_RENDER_TARGET, 0u),
                            nullptr, _))
-      .WillOnce(DoAll(SetArgPointee<2>(gpu_buffer.Get()), Return(S_OK)));
+      .WillOnce(
+          DoAll(AddRefAndSetArgPointee<2>(gpu_buffer.Get()), Return(S_OK)));
 
   D3D11_MAPPED_SUBRESOURCE staging_buffer1_subresource = {};
   auto staging_buffer1_subresource_buffer = std::make_unique<uint8_t[]>(20000);
@@ -315,14 +319,14 @@ TEST_F(D3D11DecryptorTest, SubsampleCtrDecrypt) {
 
   EXPECT_CALL(create_device_mock_,
               Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
-      .WillOnce(DoAll(SetArgPointee<7>(device_mock_.Get()),
-                      SetArgPointee<9>(device_context_mock_.Get()),
+      .WillOnce(DoAll(AddRefAndSetArgPointee<7>(device_mock_.Get()),
+                      AddRefAndSetArgPointee<9>(device_context_mock_.Get()),
                       Return(S_OK)));
   EXPECT_CALL(*device_context_mock_.Get(),
               QueryInterface(IID_ID3D11VideoContext, _))
       .Times(AtLeast(1))
-      .WillRepeatedly(
-          DoAll(SetArgPointee<1>(video_context_mock_.Get()), Return(S_OK)));
+      .WillRepeatedly(DoAll(
+          AddRefAndSetArgPointee<1>(video_context_mock_.Get()), Return(S_OK)));
 
   ComPtr<D3D11BufferMock> staging_buffer1 = CreateD3D11Mock<D3D11BufferMock>();
   ComPtr<D3D11BufferMock> staging_buffer2 = CreateD3D11Mock<D3D11BufferMock>();
@@ -340,13 +344,16 @@ TEST_F(D3D11DecryptorTest, SubsampleCtrDecrypt) {
                   BufferDescHas(D3D11_USAGE_STAGING, 0u,
                                 D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE),
                   nullptr, _))
-      .WillOnce(DoAll(SetArgPointee<2>(staging_buffer1.Get()), Return(S_OK)))
-      .WillOnce(DoAll(SetArgPointee<2>(staging_buffer2.Get()), Return(S_OK)));
+      .WillOnce(
+          DoAll(AddRefAndSetArgPointee<2>(staging_buffer1.Get()), Return(S_OK)))
+      .WillOnce(DoAll(AddRefAndSetArgPointee<2>(staging_buffer2.Get()),
+                      Return(S_OK)));
   EXPECT_CALL(*device_mock_.Get(),
               CreateBuffer(BufferDescHas(D3D11_USAGE_DEFAULT,
                                          D3D11_BIND_RENDER_TARGET, 0u),
                            nullptr, _))
-      .WillOnce(DoAll(SetArgPointee<2>(gpu_buffer.Get()), Return(S_OK)));
+      .WillOnce(
+          DoAll(AddRefAndSetArgPointee<2>(gpu_buffer.Get()), Return(S_OK)));
 
   D3D11_MAPPED_SUBRESOURCE staging_buffer1_subresource = {};
   auto staging_buffer1_subresource_buffer = std::make_unique<uint8_t[]>(20000);
@@ -438,13 +445,16 @@ TEST_F(D3D11DecryptorTest, DecryptInputTooBig) {
                   BufferDescHas(D3D11_USAGE_STAGING, 0u,
                                 D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE),
                   nullptr, _))
-      .WillOnce(DoAll(SetArgPointee<2>(staging_buffer1.Get()), Return(S_OK)))
-      .WillOnce(DoAll(SetArgPointee<2>(staging_buffer2.Get()), Return(S_OK)));
+      .WillOnce(
+          DoAll(AddRefAndSetArgPointee<2>(staging_buffer1.Get()), Return(S_OK)))
+      .WillOnce(DoAll(AddRefAndSetArgPointee<2>(staging_buffer2.Get()),
+                      Return(S_OK)));
   EXPECT_CALL(*device_mock_.Get(),
               CreateBuffer(BufferDescHas(D3D11_USAGE_DEFAULT,
                                          D3D11_BIND_RENDER_TARGET, 0u),
                            nullptr, _))
-      .WillOnce(DoAll(SetArgPointee<2>(gpu_buffer.Get()), Return(S_OK)));
+      .WillOnce(
+          DoAll(AddRefAndSetArgPointee<2>(gpu_buffer.Get()), Return(S_OK)));
 
   CallbackMock callbacks;
   EXPECT_CALL(callbacks, DecryptCallback(Decryptor::kError, IsNull()));

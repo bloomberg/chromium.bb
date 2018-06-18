@@ -16,6 +16,7 @@
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AtLeast;
+using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Ne;
 using ::testing::Pointee;
@@ -84,38 +85,41 @@ class D3D11CdmProxyTest : public ::testing::Test {
   void Initialize(CdmProxy::InitializeCB callback) {
     EXPECT_CALL(create_device_mock_,
                 Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<7>(device_mock_.Get()),
-                        SetArgPointee<9>(device_context_mock_.Get()),
+        .WillOnce(DoAll(AddRefAndSetArgPointee<7>(device_mock_.Get()),
+                        AddRefAndSetArgPointee<9>(device_context_mock_.Get()),
                         Return(S_OK)));
 
     EXPECT_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
         .Times(AtLeast(1))
-        .WillRepeatedly(
-            DoAll(SetArgPointee<1>(video_device_mock_.Get()), Return(S_OK)));
+        .WillRepeatedly(DoAll(
+            AddRefAndSetArgPointee<1>(video_device_mock_.Get()), Return(S_OK)));
 
     EXPECT_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice1, _))
         .Times(AtLeast(1))
         .WillRepeatedly(
-            DoAll(SetArgPointee<1>(video_device1_mock_.Get()), Return(S_OK)));
+            DoAll(AddRefAndSetArgPointee<1>(video_device1_mock_.Get()),
+                  Return(S_OK)));
 
     EXPECT_CALL(*device_context_mock_.Get(),
                 QueryInterface(IID_ID3D11VideoContext, _))
         .Times(AtLeast(1))
         .WillRepeatedly(
-            DoAll(SetArgPointee<1>(video_context_mock_.Get()), Return(S_OK)));
+            DoAll(AddRefAndSetArgPointee<1>(video_context_mock_.Get()),
+                  Return(S_OK)));
 
     EXPECT_CALL(*device_context_mock_.Get(),
                 QueryInterface(IID_ID3D11VideoContext1, _))
         .Times(AtLeast(1))
         .WillRepeatedly(
-            DoAll(SetArgPointee<1>(video_context1_mock_.Get()), Return(S_OK)));
+            DoAll(AddRefAndSetArgPointee<1>(video_context1_mock_.Get()),
+                  Return(S_OK)));
 
     EXPECT_CALL(
         *video_device_mock_.Get(),
         CreateCryptoSession(Pointee(CRYPTO_TYPE_GUID), _,
                             Pointee(D3D11_KEY_EXCHANGE_HW_PROTECTION), _))
-        .WillOnce(
-            DoAll(SetArgPointee<3>(crypto_session_mock_.Get()), Return(S_OK)));
+        .WillOnce(DoAll(AddRefAndSetArgPointee<3>(crypto_session_mock_.Get()),
+                        Return(S_OK)));
 
     EXPECT_CALL(
         *video_device1_mock_.Get(),
@@ -370,8 +374,9 @@ TEST_F(D3D11CdmProxyTest, CreateMediaCryptoSessionNoExtraData) {
   EXPECT_CALL(*video_device_mock_.Get(),
               CreateCryptoSession(Pointee(CRYPTO_TYPE_GUID), _,
                                   Pointee(CRYPTO_TYPE_GUID), _))
-      .WillOnce(DoAll(SetArgPointee<3>(media_crypto_session_mock.Get()),
-                      Return(S_OK)));
+      .WillOnce(
+          DoAll(AddRefAndSetArgPointee<3>(media_crypto_session_mock.Get()),
+                Return(S_OK)));
 
   EXPECT_CALL(*video_context1_mock_.Get(), GetDataForNewHardwareKey(_, _, _, _))
       .Times(0);
@@ -418,8 +423,9 @@ TEST_F(D3D11CdmProxyTest, CreateMediaCryptoSessionWithExtraData) {
   EXPECT_CALL(*video_device_mock_.Get(),
               CreateCryptoSession(Pointee(CRYPTO_TYPE_GUID), _,
                                   Pointee(CRYPTO_TYPE_GUID), _))
-      .WillOnce(DoAll(SetArgPointee<3>(media_crypto_session_mock.Get()),
-                      Return(S_OK)));
+      .WillOnce(
+          DoAll(AddRefAndSetArgPointee<3>(media_crypto_session_mock.Get()),
+                Return(S_OK)));
   // The size nor value here matter, so making non empty non zero vector.
   const std::vector<uint8_t> kAnyInput(16, 0xFF);
   const uint64_t kAnyOutputData = 23298u;

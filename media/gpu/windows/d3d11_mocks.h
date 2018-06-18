@@ -44,12 +44,22 @@
 
 namespace media {
 
+// Use this action when using SetArgPointee with COM pointers.
+// e.g.
+// EXPECT_CALL(*device_mock_.Get(), QueryInterface(IID_ID3D11VideoDevice, _))
+//  .WillRepeatedly(DoAll(
+//     AddRefAndSetArgPointee<1>(video_device_mock_.Get()), Return(S_OK)));
+ACTION_TEMPLATE(AddRefAndSetArgPointee,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_1_VALUE_PARAMS(p)) {
+  p->AddRef();
+  *std::get<k>(args) = p;
+}
+
 // Use this function to create a mock so that they are ref-counted correctly.
 template <typename Interface>
 Microsoft::WRL::ComPtr<Interface> CreateD3D11Mock() {
-  Interface* mock = new Interface();
-  mock->AddRef();
-  return mock;
+  return new Interface();
 }
 
 template <class Interface>
