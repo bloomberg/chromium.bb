@@ -17,7 +17,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -206,8 +205,7 @@ class RTCVideoEncoder::Impl
 
   // Return an encoded output buffer to WebRTC.
   void ReturnEncodedImage(const webrtc::EncodedImage& image,
-                          int32_t bitstream_buffer_id,
-                          uint16_t picture_id);
+                          int32_t bitstream_buffer_id);
 
   void SetStatus(int32_t status);
 
@@ -262,9 +260,6 @@ class RTCVideoEncoder::Impl
   // encoder.
   int output_buffers_free_count_;
 
-  // 15 bits running index of the VP8 frames. See VP8 RTP spec for details.
-  uint16_t picture_id_;
-
   // webrtc::VideoEncoder encode complete callback.
   webrtc::EncodedImageCallback* encoded_image_callback_;
 
@@ -297,8 +292,6 @@ RTCVideoEncoder::Impl::Impl(media::GpuVideoAcceleratorFactories* gpu_factories,
       video_codec_type_(video_codec_type),
       status_(WEBRTC_VIDEO_CODEC_UNINITIALIZED) {
   thread_checker_.DetachFromThread();
-  // Picture ID should start on a random number.
-  picture_id_ = static_cast<uint16_t>(base::RandInt(0, 0x7FFF));
 }
 
 void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
@@ -568,9 +561,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
       (key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta);
   image._completeFrame = true;
 
-  ReturnEncodedImage(image, bitstream_buffer_id, picture_id_);
-  // Picture ID must wrap after reaching the maximum.
-  picture_id_ = (picture_id_ + 1) & 0x7FFF;
+  ReturnEncodedImage(image, bitstream_buffer_id);
 }
 
 void RTCVideoEncoder::Impl::NotifyError(
@@ -759,11 +750,9 @@ void RTCVideoEncoder::Impl::RegisterEncodeCompleteCallback(
 
 void RTCVideoEncoder::Impl::ReturnEncodedImage(
     const webrtc::EncodedImage& image,
-    int32_t bitstream_buffer_id,
-    uint16_t picture_id) {
+    int32_t bitstream_buffer_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DVLOG(3) << __func__ << " bitstream_buffer_id=" << bitstream_buffer_id
-           << ", picture_id=" << picture_id;
+  DVLOG(3) << __func__ << " bitstream_buffer_id=" << bitstream_buffer_id;
 
   if (!encoded_image_callback_)
     return;
@@ -798,8 +787,6 @@ void RTCVideoEncoder::Impl::ReturnEncodedImage(
   info.codecType = video_codec_type_;
   info.codec_name = ImplementationName();
   if (video_codec_type_ == webrtc::kVideoCodecVP8) {
-    info.codecSpecific.VP8.pictureId = picture_id;
-    info.codecSpecific.VP8.tl0PicIdx = -1;
     info.codecSpecific.VP8.keyIdx = -1;
   }
 
