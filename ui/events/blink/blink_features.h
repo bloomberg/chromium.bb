@@ -11,6 +11,9 @@ namespace features {
 
 extern const base::Feature kVsyncAlignedInputEvents;
 
+// Enables resampling GestureScroll events on compositor thread.
+extern const base::Feature kResamplingScrollEvents;
+
 // This feature allows native ET_MOUSE_EXIT events to be passed
 // through to blink as mouse leave events. Traditionally these events were
 // converted to mouse move events due to a number of inconsistencies on

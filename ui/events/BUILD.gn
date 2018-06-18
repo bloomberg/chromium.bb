@@ -447,6 +447,7 @@ if (!is_ios) {
       "blink/input_handler_proxy_unittest.cc",
       "blink/input_scroll_elasticity_controller_unittest.cc",
       "blink/prediction/least_squares_predictor_unittest.cc",
+      "blink/scroll_predictor_unittest.cc",
       "blink/web_input_event_traits_unittest.cc",
       "blink/web_input_event_unittest.cc",
       "cocoa/events_mac_unittest.mm",

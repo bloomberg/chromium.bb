@@ -49,6 +49,7 @@ class EventWithCallback {
                     std::unique_ptr<DidOverscrollParams>);
 
   const blink::WebInputEvent& event() const { return *event_; }
+  blink::WebInputEvent* event_pointer() { return event_.get(); }
   const LatencyInfo latency_info() const { return latency_; }
   base::TimeTicks creation_timestamp() const { return creation_timestamp_; }
   base::TimeTicks last_coalesced_timestamp() const {

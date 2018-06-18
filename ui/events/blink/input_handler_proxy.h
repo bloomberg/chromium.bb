@@ -42,6 +42,7 @@ class EventWithCallback;
 class FlingBooster;
 class InputHandlerProxyClient;
 class InputScrollElasticityController;
+class ScrollPredictor;
 class SynchronousInputHandler;
 class SynchronousInputHandlerProxy;
 struct DidOverscrollParams;
@@ -276,6 +277,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   std::unique_ptr<FlingBooster> fling_booster_;
 
   std::unique_ptr<cc::SnapFlingController> snap_fling_controller_;
+
+  std::unique_ptr<ScrollPredictor> scroll_predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };

@@ -32,6 +32,7 @@
 #include "ui/events/blink/event_with_callback.h"
 #include "ui/events/blink/input_handler_proxy.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
+#include "ui/events/blink/scroll_predictor.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -515,6 +516,8 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
     if (input_handler_proxy_->compositor_event_queue_)
       input_handler_proxy_->compositor_event_queue_ =
           std::make_unique<CompositorThreadEventQueue>();
+    input_handler_proxy_->scroll_predictor_ =
+        std::make_unique<ScrollPredictor>();
   }
 
   void HandleGestureEvent(WebInputEvent::Type type,
@@ -556,6 +559,13 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
   void SetInputHandlerProxyTickClockForTesting(
       const base::TickClock* tick_clock) {
     input_handler_proxy_->SetTickClockForTesting(tick_clock);
+  }
+
+  bool GestureScrollEventPredictionAvailable(
+      ui::InputPredictor::InputData* result) {
+    return input_handler_proxy_->scroll_predictor_->predictor_
+        ->GeneratePrediction(WebInputEvent::GetStaticTimeStampForTests(),
+                             result);
   }
 
  protected:
@@ -2140,6 +2150,43 @@ TEST_P(InputHandlerProxyEventQueueTest, CoalescedEventSwitchToMainThread) {
   EXPECT_EQ(false, latency_info_recorder_[9].coalesced());
   EXPECT_EQ(InputHandlerProxy::DID_NOT_HANDLE,
             event_disposition_recorder_.back());
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+}
+
+TEST_P(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
+  cc::InputHandlerScrollResult scroll_result_did_scroll_;
+  scroll_result_did_scroll_.did_scroll = true;
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(1);
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillOnce(testing::Return(scroll_result_did_scroll_));
+
+  // No prediction when start with a GSB
+  ui::InputPredictor::InputData result;
+  HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
+  input_handler_proxy_->DeliverInputForBeginFrame();
+  EXPECT_FALSE(GestureScrollEventPredictionAvailable(&result));
+
+  // Test predictor returns last GSU delta.
+  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
+  HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -15);
+  input_handler_proxy_->DeliverInputForBeginFrame();
+  EXPECT_TRUE(GestureScrollEventPredictionAvailable(&result));
+  EXPECT_EQ(-35, result.pos_y);
+
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+
+  // Predictor has been reset after a new GSB.
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
+  input_handler_proxy_->DeliverInputForBeginFrame();
+  EXPECT_FALSE(GestureScrollEventPredictionAvailable(&result));
+
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
