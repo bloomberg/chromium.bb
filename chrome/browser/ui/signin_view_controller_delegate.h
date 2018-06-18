@@ -114,6 +114,11 @@ class SigninViewControllerDelegate
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
 
+  // Subclasses must override this method to correctly handle accelerators.
+  void HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
+
   // This will be called by this base class when the tab-modal window must be
   // closed. This should close the platform-specific window that is currently
   // showing the sign in flow or the sync confirmation dialog. Note that this

@@ -168,5 +168,6 @@ bool BrowserFrameMac::HandleKeyboardEvent(
   DCHECK([window.class conformsToProtocol:@protocol(CommandDispatchingWindow)]);
   NSObject<CommandDispatchingWindow>* command_dispatching_window =
       base::mac::ObjCCastStrict<NSObject<CommandDispatchingWindow>>(window);
-  return [command_dispatching_window redispatchKeyEvent:event.os_event];
+  return [[command_dispatching_window commandDispatcher]
+      redispatchKeyEvent:event.os_event];
 }

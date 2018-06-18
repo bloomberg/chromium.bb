@@ -103,9 +103,8 @@ UI_BASE_EXPORT
 // Retains |commandHandler|.
 -(void)setCommandHandler:(id<UserInterfaceItemCommandHandler>) commandHandler;
 
-// This can be implemented with -[CommandDispatcher redispatchKeyEvent:]. It's
-// so that callers can simply return events to the NSWindow.
-- (BOOL)redispatchKeyEvent:(NSEvent*)event;
+// Returns the associated CommandDispatcher.
+- (CommandDispatcher*)commandDispatcher;
 
 // Short-circuit to the default -[NSResponder performKeyEquivalent:] which
 // CommandDispatcher calls as part of its -performKeyEquivalent: flow.

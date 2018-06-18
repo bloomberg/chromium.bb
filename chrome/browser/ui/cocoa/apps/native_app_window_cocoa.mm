@@ -568,7 +568,7 @@ void NativeAppWindowCocoa::HandleKeyboardEvent(
       event.GetType() == content::NativeWebKeyboardEvent::kChar) {
     return;
   }
-  [window() redispatchKeyEvent:event.os_event];
+  [[window() commandDispatcher] redispatchKeyEvent:event.os_event];
 }
 
 void NativeAppWindowCocoa::UpdateDraggableRegionViews() {

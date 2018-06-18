@@ -13,8 +13,8 @@ namespace views {
 void UnhandledKeyboardEventHandler::HandleNativeKeyboardEvent(
     gfx::NativeEvent event,
     FocusManager* focus_manager) {
-  [base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>([event window])
-      redispatchKeyEvent:event];
+  [[base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>([event window])
+      commandDispatcher] redispatchKeyEvent:event];
 }
 
 }  // namespace views

@@ -614,7 +614,7 @@ void BrowserWindowCocoa::HandleKeyboardEvent(
 
   ChromeEventProcessingWindow* event_window =
       base::mac::ObjCCastStrict<ChromeEventProcessingWindow>(window());
-  [event_window redispatchKeyEvent:event.os_event];
+  [[event_window commandDispatcher] redispatchKeyEvent:event.os_event];
 }
 
 void BrowserWindowCocoa::CutCopyPaste(int command_id) {
