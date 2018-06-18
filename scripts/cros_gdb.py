@@ -451,7 +451,11 @@ To install the debug symbols for all available packages, run:
               'file %s' % os.path.join(sysroot_var,
                                        inferior_cmd.lstrip(os.sep)))
       else:
-        gdb_init_commands.append('file %s' % self.GetSimpleChromeBinary())
+        binary = self.GetSimpleChromeBinary()
+        gdb_init_commands += [
+            'set debug-file-directory %s' % os.path.dirname(binary),
+            'file %s' % binary
+        ]
 
       gdb_init_commands.append('target %s | %s' % (target_type, ssh_cmd))
     else:
