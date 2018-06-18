@@ -3,13 +3,6 @@ specific_include_rules = {
   "core_oobe_handler\.cc": [
     "+ash/shell.h",
   ],
-  "network_dropdown\.cc": [
-    "+ash/system/network/network_icon.h",
-    "+ash/system/network/network_icon_animation.h",
-  ],
-  "network_dropdown\.h": [
-    "+ash/system/network/network_icon_animation_observer.h",
-  ],
   "oobe_display_chooser\.cc": [
     "+ash/display/window_tree_host_manager.h",
     "+ash/shell.h",

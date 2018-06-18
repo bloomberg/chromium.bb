@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chromeos/login/auth/login_performer.h"
+#include "chromeos/network/network_connection_observer.h"
 
 namespace chromeos {
 
@@ -24,7 +25,9 @@ class CaptivePortalWindowProxy;
 class NetworkErrorView;
 
 // Controller for the error screen.
-class ErrorScreen : public BaseScreen, public LoginPerformer::Delegate {
+class ErrorScreen : public BaseScreen,
+                    public LoginPerformer::Delegate,
+                    public NetworkConnectionObserver {
  public:
   using ConnectRequestCallbackSubscription =
       std::unique_ptr<base::CallbackList<void()>::Subscription>;
@@ -37,7 +40,6 @@ class ErrorScreen : public BaseScreen, public LoginPerformer::Delegate {
   static const char kUserActionLocalStateErrorPowerwashButtonClicked[];
   static const char kUserActionRebootButtonClicked[];
   static const char kUserActionShowCaptivePortalClicked[];
-  static const char kUserActionConnectRequested[];
 
   ErrorScreen(BaseScreenDelegate* base_screen_delegate, NetworkErrorView* view);
   ~ErrorScreen() override;
@@ -109,6 +111,9 @@ class ErrorScreen : public BaseScreen, public LoginPerformer::Delegate {
   void PolicyLoadFailed() override;
   void SetAuthFlowOffline(bool offline) override;
 
+  // NetworkConnectionObserver overrides:
+  void ConnectToNetworkRequested(const std::string& service_path) override;
+
   // Default hide_closure for Hide().
   void DefaultHideCallback();
 
@@ -127,9 +132,6 @@ class ErrorScreen : public BaseScreen, public LoginPerformer::Delegate {
 
   // Handle uses action to reboot device.
   void OnRebootButtonClicked();
-
-  // The user indicated to make an attempt to connect to the network.
-  void OnConnectRequested();
 
   // Handles the response of an ownership check and starts the guest session if
   // applicable.

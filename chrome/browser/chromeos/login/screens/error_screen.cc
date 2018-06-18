@@ -33,6 +33,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/session_manager/core/session_manager.h"
@@ -77,8 +79,6 @@ constexpr const char
 constexpr const char ErrorScreen::kUserActionRebootButtonClicked[] = "reboot";
 constexpr const char ErrorScreen::kUserActionShowCaptivePortalClicked[] =
     "show-captive-portal";
-constexpr const char ErrorScreen::kUserActionConnectRequested[] =
-    "connect-requested";
 
 ErrorScreen::ErrorScreen(BaseScreenDelegate* base_screen_delegate,
                          NetworkErrorView* view)
@@ -87,11 +87,13 @@ ErrorScreen::ErrorScreen(BaseScreenDelegate* base_screen_delegate,
       weak_factory_(this) {
   network_state_informer_ = new NetworkStateInformer();
   network_state_informer_->Init();
+  NetworkHandler::Get()->network_connection_handler()->AddObserver(this);
   if (view_)
     view_->Bind(this);
 }
 
 ErrorScreen::~ErrorScreen() {
+  NetworkHandler::Get()->network_connection_handler()->RemoveObserver(this);
   if (view_)
     view_->Unbind();
 }
@@ -222,8 +224,6 @@ void ErrorScreen::OnUserAction(const std::string& action_id) {
     OnLocalStateErrorPowerwashButtonClicked();
   else if (action_id == kUserActionRebootButtonClicked)
     OnRebootButtonClicked();
-  else if (action_id == kUserActionConnectRequested)
-    OnConnectRequested();
   else
     BaseScreen::OnUserAction(action_id);
 }
@@ -319,7 +319,7 @@ void ErrorScreen::OnRebootButtonClicked() {
       power_manager::REQUEST_RESTART_FOR_USER, "login error screen");
 }
 
-void ErrorScreen::OnConnectRequested() {
+void ErrorScreen::ConnectToNetworkRequested(const std::string& service_path) {
   connect_request_callbacks_.Notify();
 }
 

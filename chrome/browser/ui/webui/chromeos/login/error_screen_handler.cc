@@ -121,11 +121,6 @@ void ErrorScreenHandler::Initialize() {
   }
 }
 
-void ErrorScreenHandler::OnConnectToNetworkRequested() {
-  if (showing_ && screen_)
-    screen_->OnUserAction(ErrorScreen::kUserActionConnectRequested);
-}
-
 void ErrorScreenHandler::HandleHideCaptivePortal() {
   if (screen_)
     screen_->HideCaptivePortal();

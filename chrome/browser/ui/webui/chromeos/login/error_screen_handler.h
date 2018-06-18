@@ -9,14 +9,11 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 
 namespace chromeos {
 
 // A class that handles the WebUI hooks in error screen.
-class ErrorScreenHandler : public BaseScreenHandler,
-                           public NetworkErrorView,
-                           public NetworkDropdownHandler::Observer {
+class ErrorScreenHandler : public BaseScreenHandler, public NetworkErrorView {
  public:
   ErrorScreenHandler();
   ~ErrorScreenHandler() override;
@@ -36,9 +33,6 @@ class ErrorScreenHandler : public BaseScreenHandler,
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
-
-  // NetworkDropdownHandler:
-  void OnConnectToNetworkRequested() override;
 
   // WebUI message handlers.
   void HandleHideCaptivePortal();

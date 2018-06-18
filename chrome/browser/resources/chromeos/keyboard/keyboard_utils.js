@@ -87,11 +87,6 @@ keyboard.onKeyDown_ = function(event) {
     return;
   }
 
-  // If we are in networks list dropdown container, let network_dropdown.js
-  // handle keyboard events.
-  if (document.activeElement.classList.contains('dropdown-container'))
-    return;
-
   // Do not map arrow key events to tab events if the user is currently
   // focusing an input element and hits the left or right.
   var needsLeftRightKey =

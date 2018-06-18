@@ -8,8 +8,6 @@
  * screen, added it to login_shared.js.
  */
 
-// <include src="network_dropdown.js">
-
 // <include src="oobe_screen_reset.js">
 // <include src="oobe_screen_autolaunch.js">
 // <include src="oobe_screen_enable_kiosk.js">

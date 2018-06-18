@@ -147,16 +147,11 @@ void NetworkScreenHandler::DeclareLocalizedValues(
     builder->Add("networkScreenGreeting", IDS_WELCOME_SCREEN_GREETING);
 
   builder->Add("networkScreenTitle", IDS_WELCOME_SCREEN_TITLE);
-  builder->Add("selectLanguage", IDS_LANGUAGE_SELECTION_SELECT);
-  builder->Add("selectKeyboard", IDS_KEYBOARD_SELECTION_SELECT);
-  builder->Add("selectNetwork", IDS_NETWORK_SELECTION_SELECT);
-  builder->Add("selectTimezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION);
-  builder->Add("timezoneDropdownLabel", IDS_TIMEZONE_DROPDOWN_LABEL);
-  builder->Add("proxySettings", IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON);
   builder->Add("continueButton", IDS_NETWORK_SELECTION_CONTINUE_BUTTON);
-  builder->Add("debuggingFeaturesLink", IDS_NETWORK_ENABLE_DEV_FEATURES_LINK);
 
-  // MD-OOBE
+  // MD-OOBE (oobe-welcome-md)
+  builder->Add("debuggingFeaturesLink", IDS_NETWORK_ENABLE_DEV_FEATURES_LINK);
+  builder->Add("timezoneDropdownLabel", IDS_TIMEZONE_DROPDOWN_LABEL);
   builder->Add("oobeOKButtonText", IDS_OOBE_OK_BUTTON_TEXT);
   builder->Add("welcomeNextButtonText", IDS_OOBE_WELCOME_NEXT_BUTTON_TEXT);
   builder->Add("languageButtonLabel", IDS_LANGUAGE_BUTTON_LABEL);

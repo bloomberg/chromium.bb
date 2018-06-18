@@ -1634,8 +1634,6 @@ source_set("chromeos") {
     "smb_client/smb_url.h",
     "smb_client/temp_file_manager.cc",
     "smb_client/temp_file_manager.h",
-    "status/network_menu.cc",
-    "status/network_menu.h",
     "system/automatic_reboot_manager.cc",
     "system/automatic_reboot_manager.h",
     "system/automatic_reboot_manager_observer.h",
