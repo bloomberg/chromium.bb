@@ -72,21 +72,22 @@ void PageOverlay::Update() {
     return;
 
   if (!layer_) {
+    GraphicsLayer* parent_layer =
+        frame->IsMainFrame()
+            ? frame->GetPage()->GetVisualViewport().ContainerLayer()
+            : frame_impl_->LocalRootFrameWidget()->RootGraphicsLayer();
+    if (!parent_layer)
+      return;
+
     layer_ = GraphicsLayer::Create(*this);
     layer_->SetDrawsContent(true);
+    parent_layer->AddChild(layer_.get());
 
     // This is required for contents of overlay to stay in sync with the page
     // while scrolling.
     cc::Layer* cc_layer = layer_->CcLayer();
     cc_layer->AddMainThreadScrollingReasons(
         MainThreadScrollingReason::kPageOverlay);
-    if (frame->IsMainFrame()) {
-      frame->GetPage()->GetVisualViewport().ContainerLayer()->AddChild(
-          layer_.get());
-    } else {
-      frame_impl_->LocalRootFrameWidget()->RootGraphicsLayer()->AddChild(
-          layer_.get());
-    }
 
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       layer_->SetLayerState(PropertyTreeState(PropertyTreeState::Root()),
