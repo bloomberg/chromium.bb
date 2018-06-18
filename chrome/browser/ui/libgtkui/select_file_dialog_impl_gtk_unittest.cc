@@ -91,19 +91,14 @@ class FilePicker : public ui::SelectFileDialog::Listener {
   DISALLOW_COPY_AND_ASSIGN(FilePicker);
 };
 
+// Note: The tests below were disabled for defined(ADDRESS_SANITIZER) with the
+// following reasoning:
 // Glib runs glib_init() when it is loaded by dl, and in the process
 // allocates some memory that is intentionally never freed.
 // Targeted suppression of the memory leak was not possible.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_SelectExistingFolder DISABLED_SelectExistingFolder
-#define MAYBE_SelectUploadFolder DISABLED_SelectUploadFolder
-#define MAYBE_SelectFolder DISABLED_SelectFolder
-#else
-#define MAYBE_SelectExistingFolder SelectExistingFolder
-#define MAYBE_SelectUploadFolder SelectUploadFolder
-#define MAYBE_SelectFolder SelectFolder
-#endif
-TEST_F(SelectFileDialogImplGtkTest, MAYBE_SelectExistingFolder) {
+
+// Flaky, see crbug.com/853079.
+TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectExistingFolder) {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
@@ -117,7 +112,8 @@ TEST_F(SelectFileDialogImplGtkTest, MAYBE_SelectExistingFolder) {
   RunLoop().RunUntilIdle();
 }
 
-TEST_F(SelectFileDialogImplGtkTest, MAYBE_SelectUploadFolder) {
+// Flaky, see crbug.com/853079.
+TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectUploadFolder) {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
@@ -131,7 +127,8 @@ TEST_F(SelectFileDialogImplGtkTest, MAYBE_SelectUploadFolder) {
   RunLoop().RunUntilIdle();
 }
 
-TEST_F(SelectFileDialogImplGtkTest, MAYBE_SelectFolder) {
+// Flaky, see crbug.com/853079.
+TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectFolder) {
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
