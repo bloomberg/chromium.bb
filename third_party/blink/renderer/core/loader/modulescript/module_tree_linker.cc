@@ -21,7 +21,6 @@ namespace blink {
 void ModuleTreeLinker::Fetch(
     const KURL& url,
     const FetchClientSettingsObjectSnapshot& fetch_client_settings_object,
-    const KURL& base_url,
     WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
     Modulator* modulator,
@@ -30,7 +29,7 @@ void ModuleTreeLinker::Fetch(
   ModuleTreeLinker* fetcher = new ModuleTreeLinker(
       fetch_client_settings_object, destination, modulator, registry, client);
   registry->AddFetcher(fetcher);
-  fetcher->FetchRoot(url, base_url, options);
+  fetcher->FetchRoot(url, options);
   DCHECK(fetcher->IsFetching());
 }
 
@@ -144,7 +143,6 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
 void ModuleTreeLinker::FetchRoot(const KURL& original_url,
-                                 const KURL& base_url,
                                  const ScriptFetchOptions& options) {
 #if DCHECK_IS_ON()
   original_url_ = original_url;
@@ -158,8 +156,10 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
   // href="https://github.com/drufball/layered-apis/blob/master/spec.md#fetch-a-module-script-graph"
   // step="1">Set url to the layered API fetching URL given url and the current
   // settings object's API base URL.</spec>
-  if (RuntimeEnabledFeatures::LayeredAPIEnabled())
-    url = blink::layered_api::ResolveFetchingURL(url, base_url);
+  if (RuntimeEnabledFeatures::LayeredAPIEnabled()) {
+    url = blink::layered_api::ResolveFetchingURL(
+        url, fetch_client_settings_object_.BaseURL());
+  }
 
 #if DCHECK_IS_ON()
   url_ = url;

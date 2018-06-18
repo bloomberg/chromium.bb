@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -34,11 +35,17 @@ class CORE_EXPORT FetchClientSettingsObjectSnapshot final {
  public:
   explicit FetchClientSettingsObjectSnapshot(ExecutionContext&);
   FetchClientSettingsObjectSnapshot(
+      const KURL& base_url,
       const scoped_refptr<const SecurityOrigin> security_origin,
       ReferrerPolicy referrer_policy,
       const String& outgoing_referrer);
 
   virtual ~FetchClientSettingsObjectSnapshot() = default;
+
+  // "A URL used by APIs called by scripts that use this environment settings
+  // object to parse URLs."
+  // https://html.spec.whatwg.org/multipage/webappapis.html#api-base-url
+  const KURL& BaseURL() const { return base_url_; }
 
   // "An origin used in security checks."
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-origin
@@ -58,12 +65,13 @@ class CORE_EXPORT FetchClientSettingsObjectSnapshot final {
   // Makes an copy of this instance. This is typically used for cross-thread
   // communication in CrossThreadCopier.
   FetchClientSettingsObjectSnapshot IsolatedCopy() const {
-    return FetchClientSettingsObjectSnapshot(security_origin_->IsolatedCopy(),
-                                             referrer_policy_,
-                                             outgoing_referrer_.IsolatedCopy());
+    return FetchClientSettingsObjectSnapshot(
+        base_url_.Copy(), security_origin_->IsolatedCopy(), referrer_policy_,
+        outgoing_referrer_.IsolatedCopy());
   }
 
  private:
+  const KURL base_url_;
   const scoped_refptr<const SecurityOrigin> security_origin_;
   const ReferrerPolicy referrer_policy_;
   const String outgoing_referrer_;
