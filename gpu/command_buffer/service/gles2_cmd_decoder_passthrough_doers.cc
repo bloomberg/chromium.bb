@@ -858,6 +858,11 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteBuffers(
     service_ids[ii] =
         resources_->buffer_id_map.GetServiceIDOrInvalid(client_id);
     resources_->buffer_id_map.RemoveClientID(client_id);
+
+    auto is_the_deleted_buffer = [client_id](const auto& update) {
+      return update.first == client_id;
+    };
+    base::EraseIf(buffer_shadow_updates_, is_the_deleted_buffer);
   }
   api()->glDeleteBuffersARBFn(n, service_ids.data());
 
@@ -3136,8 +3141,12 @@ error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
   pending_query.shm = std::move(active_query.shm);
   pending_query.sync = active_query.sync;
   pending_query.submit_count = submit_count;
+  if (target == GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM) {
+    pending_query.buffer_shadow_update_fence = gl::GLFence::Create();
+    pending_query.buffer_shadow_updates = std::move(buffer_shadow_updates_);
+    buffer_shadow_updates_.clear();
+  }
   pending_queries_.push_back(std::move(pending_query));
-
   return ProcessQueries(false);
 }
 
@@ -4768,8 +4777,22 @@ error::Error
 GLES2DecoderPassthroughImpl::DoSetReadbackBufferShadowAllocationINTERNAL(
     GLuint buffer_id,
     GLuint shm_id,
-    GLuint shm_offset) {
-  NOTIMPLEMENTED();
+    GLuint shm_offset,
+    GLuint size) {
+  BufferShadowUpdate update;
+  update.shm = GetSharedMemoryBuffer(shm_id);
+  update.shm_offset = shm_offset;
+  update.size = size;
+
+  if (!update.shm) {
+    return error::kInvalidArguments;
+  }
+  if (update.shm->GetRemainingSize(shm_offset) < size) {
+    return error::kOutOfBounds;
+  }
+
+  buffer_shadow_updates_.emplace(buffer_id, std::move(update));
+
   return error::kNoError;
 }
 
