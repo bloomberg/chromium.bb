@@ -140,7 +140,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       page_at_minimum_scale_(true),
       mouse_wheel_phase_handler_(this),
       is_loading_(false),
-      allow_pause_for_resize_or_repaint_(true),
       is_guest_view_hack_(is_guest_view_hack),
       gesture_provider_(ui::GetGestureProviderConfig(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
@@ -198,11 +197,13 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   // startup raciness and decrease latency.
   needs_begin_frames_ = needs_begin_frames;
   UpdateNeedsBeginFramesInternal();
-  ui::CATransactionCoordinator::Get().AddPreCommitObserver(this);
+  if (features::IsViewsBrowserCocoa())
+    ui::CATransactionCoordinator::Get().AddPreCommitObserver(this);
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
-  ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
+  if (features::IsViewsBrowserCocoa())
+    ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
@@ -230,7 +231,8 @@ void RenderWidgetHostViewMac::SetDelegate(
 }
 
 void RenderWidgetHostViewMac::SetAllowPauseForResizeOrRepaint(bool allow) {
-  allow_pause_for_resize_or_repaint_ = allow;
+  // TODO: Remove SetAllowPauseForResizeOrRepaint and SetAllowOtherViews, since
+  // they aren't used anymore.
 }
 
 ui::TextInputType RenderWidgetHostViewMac::GetTextInputType() {
@@ -332,7 +334,9 @@ void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
       LOG(ERROR) << "Failed to create display link.";
     }
   }
-  ui::CATransactionCoordinator::Get().Synchronize();
+
+  if (features::IsViewsBrowserCocoa())
+    ui::CATransactionCoordinator::Get().Synchronize();
 
   // During auto-resize it is the responsibility of the caller to ensure that
   // the NSView and RenderWidgetHostImpl are kept in sync.
@@ -368,7 +372,6 @@ void RenderWidgetHostViewMac::Show() {
   // If there is not a frame being currently drawn, kick one, so that the below
   // pause will have a frame to wait on.
   host()->RequestRepaintForTesting();
-  PauseForPendingResizeOrRepaintsAndDraw();
 }
 
 void RenderWidgetHostViewMac::Hide() {
@@ -553,7 +556,7 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
 }
 
 bool RenderWidgetHostViewMac::ShouldWaitInPreCommit() {
-  return ShouldContinueToPauseForFrame();
+  return browser_compositor_->ShouldContinueToPauseForFrame();
 }
 
 base::TimeDelta RenderWidgetHostViewMac::PreCommitTimeout() {
@@ -950,14 +953,6 @@ bool RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(
   return true;
 }
 
-bool RenderWidgetHostViewMac::ShouldContinueToPauseForFrame() {
-  // Only pause for frames when drawing through a separate ui::Compositor.
-  if (display_only_using_parent_ui_layer_)
-    return false;
-
-  return browser_compositor_->ShouldContinueToPauseForFrame();
-}
-
 void RenderWidgetHostViewMac::FocusedNodeChanged(
     bool is_editable_node,
     const gfx::Rect& node_bounds_in_screen) {
@@ -1299,24 +1294,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     password_input_enabler_.reset();
 }
 
-void RenderWidgetHostViewMac::PauseForPendingResizeOrRepaintsAndDraw() {
-  return;  // TODO(https://crbug.com/682825): Delete this during cleanup.
-
-  if (!host() || !browser_compositor_ || host()->is_hidden()) {
-    return;
-  }
-
-  // Pausing for one view prevents others from receiving frames.
-  // This may lead to large delays, causing overlaps. See crbug.com/352020.
-  if (!allow_pause_for_resize_or_repaint_)
-    return;
-
-  // Wait for a frame of the right size to come in.
-  browser_compositor_->BeginPauseForFrame(host()->auto_resize_enabled());
-  host()->PauseForPendingResizeOrRepaints();
-  browser_compositor_->EndPauseForFrame();
-}
-
 // static
 viz::FrameSinkId
 RenderWidgetHostViewMac::AllocateFrameSinkIdForGuestViewHack() {
@@ -1385,14 +1362,8 @@ void RenderWidgetHostViewMac::OnNSViewBoundsInWindowChanged(
     view_bounds_in_window_dip_.set_size(view_bounds_in_window_dip.size());
   }
 
-  if (view_size_changed) {
+  if (view_size_changed)
     UpdateNSViewAndDisplayProperties();
-    // Wait for the frame that WasResize might have requested. If the view is
-    // being made visible at a new size, then this call will have no effect
-    // because the view widget is still hidden, and the pause call in WasShown
-    // will have this effect for us.
-    PauseForPendingResizeOrRepaintsAndDraw();
-  }
 }
 
 void RenderWidgetHostViewMac::OnNSViewWindowFrameInScreenChanged(
