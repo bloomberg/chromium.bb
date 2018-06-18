@@ -37,15 +37,14 @@ std::unique_ptr<ConnectToDeviceOperation<BleInitiatorFailureType>>
 BleInitiatorOperation::Factory::BuildInstance(
     ConnectToDeviceOperation<BleInitiatorFailureType>::ConnectionSuccessCallback
         success_callback,
-    ConnectToDeviceOperation<BleInitiatorFailureType>::ConnectionFailedCallback
-        failure_callback,
+    const ConnectToDeviceOperation<
+        BleInitiatorFailureType>::ConnectionFailedCallback& failure_callback,
     const DeviceIdPair& device_id_pair,
     ConnectionPriority connection_priority,
-    base::OnceClosure destructor_callback,
     scoped_refptr<base::TaskRunner> task_runner) {
   return base::WrapUnique(new BleInitiatorOperation(
       std::move(success_callback), std::move(failure_callback), device_id_pair,
-      connection_priority, std::move(destructor_callback), task_runner));
+      connection_priority, task_runner));
 }
 
 BleInitiatorOperation::~BleInitiatorOperation() = default;
@@ -53,18 +52,16 @@ BleInitiatorOperation::~BleInitiatorOperation() = default;
 BleInitiatorOperation::BleInitiatorOperation(
     ConnectToDeviceOperation<BleInitiatorFailureType>::ConnectionSuccessCallback
         success_callback,
-    ConnectToDeviceOperation<BleInitiatorFailureType>::ConnectionFailedCallback
-        failure_callback,
+    const ConnectToDeviceOperation<
+        BleInitiatorFailureType>::ConnectionFailedCallback& failure_callback,
     const DeviceIdPair& device_id_pair,
     ConnectionPriority connection_priority,
-    base::OnceClosure destructor_callback,
     scoped_refptr<base::TaskRunner> task_runner)
     : ConnectToDeviceOperationBase<BleInitiatorFailureType>(
           std::move(success_callback),
           std::move(failure_callback),
           device_id_pair,
           connection_priority,
-          std::move(destructor_callback),
           task_runner) {}
 
 void BleInitiatorOperation::AttemptConnectionToDevice(

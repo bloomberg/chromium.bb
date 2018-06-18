@@ -58,6 +58,12 @@ class FakeConnectionAttempt : public ConnectionAttempt<FailureDetailType> {
     id_to_request_map_[request->GetRequestId()] = std::move(request);
   }
 
+  // PendingConnectionRequestDelegate:
+  void OnRequestFinishedWithoutConnection(
+      const base::UnguessableToken& request_id,
+      PendingConnectionRequestDelegate::FailedConnectionReason reason)
+      override {}
+
   std::vector<std::unique_ptr<ClientConnectionParameters>>
   ExtractClientConnectionParameters() override {
     return std::move(client_data_for_extraction_);

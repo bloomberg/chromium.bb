@@ -30,11 +30,10 @@ class BleInitiatorOperation
     virtual std::unique_ptr<ConnectToDeviceOperation<BleInitiatorFailureType>>
     BuildInstance(ConnectToDeviceOperation<BleInitiatorFailureType>::
                       ConnectionSuccessCallback success_callback,
-                  ConnectToDeviceOperation<BleInitiatorFailureType>::
-                      ConnectionFailedCallback failure_callback,
+                  const ConnectToDeviceOperation<BleInitiatorFailureType>::
+                      ConnectionFailedCallback& failure_callback,
                   const DeviceIdPair& device_id_pair,
                   ConnectionPriority connection_priority,
-                  base::OnceClosure destructor_callback,
                   scoped_refptr<base::TaskRunner> task_runner =
                       base::ThreadTaskRunnerHandle::Get());
 
@@ -48,11 +47,10 @@ class BleInitiatorOperation
   BleInitiatorOperation(
       ConnectToDeviceOperation<
           BleInitiatorFailureType>::ConnectionSuccessCallback success_callback,
-      ConnectToDeviceOperation<
-          BleInitiatorFailureType>::ConnectionFailedCallback failure_callback,
+      const ConnectToDeviceOperation<
+          BleInitiatorFailureType>::ConnectionFailedCallback& failure_callback,
       const DeviceIdPair& device_id_pair,
       ConnectionPriority connection_priority,
-      base::OnceClosure destructor_callback,
       scoped_refptr<base::TaskRunner> task_runner);
 
   // ConnectToDeviceOperationBase<BleInitiatorFailureType>:

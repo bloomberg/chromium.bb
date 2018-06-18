@@ -42,6 +42,10 @@ class FakeConnectToDeviceOperation
     destructor_callback_ = std::move(destructor_callback);
   }
 
+  void set_cancel_callback(base::OnceClosure cancel_callback) {
+    cancel_callback_ = std::move(cancel_callback);
+  }
+
   // Make On{Successful|Failed}ConnectionAttempt() public for testing.
   using ConnectToDeviceOperation<
       FailureDetailType>::OnSuccessfulConnectionAttempt;
@@ -49,7 +53,12 @@ class FakeConnectToDeviceOperation
 
  private:
   // ConnectToDeviceOperation<FailureDetailType>:
-  void PerformCancellation() override { canceled_ = true; }
+  void PerformCancellation() override {
+    canceled_ = true;
+
+    if (cancel_callback_)
+      std::move(cancel_callback_).Run();
+  }
 
   void PerformUpdateConnectionPriority(
       ConnectionPriority connection_priority) override {
@@ -59,6 +68,7 @@ class FakeConnectToDeviceOperation
   bool canceled_ = false;
   base::Optional<ConnectionPriority> updated_priority_;
   base::OnceClosure destructor_callback_;
+  base::OnceClosure cancel_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectToDeviceOperation);
 };

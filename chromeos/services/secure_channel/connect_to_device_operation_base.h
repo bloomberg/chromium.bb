@@ -34,14 +34,12 @@ class ConnectToDeviceOperationBase
           FailureDetailType>::ConnectionFailedCallback failure_callback,
       const DeviceIdPair& device_id_pair,
       ConnectionPriority connection_priority,
-      base::OnceClosure destructor_callback,
       scoped_refptr<base::TaskRunner> task_runner =
           base::ThreadTaskRunnerHandle::Get())
       : ConnectToDeviceOperation<FailureDetailType>(std::move(success_callback),
                                                     std::move(failure_callback),
                                                     connection_priority),
         device_id_pair_(device_id_pair),
-        destructor_callback_(std::move(destructor_callback)),
         task_runner_(task_runner),
         weak_ptr_factory_(this) {
     // Attempt a connection; however, post this as a task to be run after the
@@ -54,9 +52,7 @@ class ConnectToDeviceOperationBase
                        weak_ptr_factory_.GetWeakPtr(), connection_priority));
   }
 
-  ~ConnectToDeviceOperationBase() override {
-    std::move(destructor_callback_).Run();
-  }
+  ~ConnectToDeviceOperationBase() override = default;
 
   virtual void AttemptConnectionToDevice(
       ConnectionPriority connection_priority) = 0;
@@ -65,7 +61,6 @@ class ConnectToDeviceOperationBase
 
  private:
   const DeviceIdPair& device_id_pair_;
-  base::OnceClosure destructor_callback_;
   scoped_refptr<base::TaskRunner> task_runner_;
   base::WeakPtrFactory<ConnectToDeviceOperationBase> weak_ptr_factory_;
 

@@ -31,11 +31,10 @@ class BleListenerOperation
     BuildInstance(
         ConnectToDeviceOperation<
             BleListenerFailureType>::ConnectionSuccessCallback success_callback,
-        ConnectToDeviceOperation<
-            BleListenerFailureType>::ConnectionFailedCallback failure_callback,
+        const ConnectToDeviceOperation<
+            BleListenerFailureType>::ConnectionFailedCallback& failure_callback,
         const DeviceIdPair& device_id_pair,
         ConnectionPriority connection_priority,
-        base::OnceClosure destructor_callback,
         scoped_refptr<base::TaskRunner> task_runner =
             base::ThreadTaskRunnerHandle::Get());
 
@@ -49,11 +48,10 @@ class BleListenerOperation
   BleListenerOperation(
       ConnectToDeviceOperation<
           BleListenerFailureType>::ConnectionSuccessCallback success_callback,
-      ConnectToDeviceOperation<BleListenerFailureType>::ConnectionFailedCallback
-          failure_callback,
+      const ConnectToDeviceOperation<
+          BleListenerFailureType>::ConnectionFailedCallback& failure_callback,
       const DeviceIdPair& device_id_pair,
       ConnectionPriority connection_priority,
-      base::OnceClosure destructor_callback,
       scoped_refptr<base::TaskRunner> task_runner);
 
   // ConnectToDeviceOperationBase<BleListenerFailureType>:
