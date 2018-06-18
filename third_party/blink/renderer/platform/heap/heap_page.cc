@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 
 #include "base/auto_reset.h"
-#include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -1770,55 +1769,5 @@ bool LargeObjectPage::Contains(Address object) {
          object < RoundToBlinkPageEnd(GetAddress() + size());
 }
 #endif
-
-ALWAYS_INLINE uint32_t RotateLeft16(uint32_t x) {
-#if defined(COMPILER_MSVC)
-  return _lrotr(x, 16);
-#else
-  // http://blog.regehr.org/archives/1063
-  return (x << 16) | (x >> (-16 & 31));
-#endif
-}
-
-uint32_t ComputeRandomMagic() {
-// Ignore C4319: It is OK to 0-extend into the high-order bits of the uintptr_t
-// on 64-bit, in this case.
-#if defined(COMPILER_MSVC)
-#pragma warning(push)
-#pragma warning(disable : 4319)
-#endif
-
-  const uintptr_t random1 = ~(RotateLeft16(reinterpret_cast<uintptr_t>(
-      base::trace_event::MemoryAllocatorDump::kNameSize)));
-
-#if defined(OS_WIN)
-  const uintptr_t random2 =
-      ~(RotateLeft16(reinterpret_cast<uintptr_t>(::ReadFile)));
-#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
-  const uintptr_t random2 =
-      ~(RotateLeft16(reinterpret_cast<uintptr_t>(::read)));
-#endif
-
-#if defined(ARCH_CPU_64_BITS)
-  static_assert(sizeof(uintptr_t) == sizeof(uint64_t),
-                "uintptr_t is not uint64_t");
-  const uint32_t random = static_cast<uint32_t>(
-      (random1 & 0x0FFFFULL) | ((random2 >> 32) & 0x0FFFF0000ULL));
-#elif defined(ARCH_CPU_32_BITS)
-  // Although we don't use heap metadata canaries on 32-bit due to memory
-  // pressure, keep this code around just in case we do, someday.
-  static_assert(sizeof(uintptr_t) == sizeof(uint32_t),
-                "uintptr_t is not uint32_t");
-  const uint32_t random = (random1 & 0x0FFFFUL) | (random2 & 0xFFFF0000UL);
-#else
-#error architecture not supported
-#endif
-
-#if defined(COMPILER_MSVC)
-#pragma warning(pop)
-#endif
-
-  return random;
-}
 
 }  // namespace blink

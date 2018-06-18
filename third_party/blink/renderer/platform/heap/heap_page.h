@@ -33,6 +33,7 @@
 
 #include <stdint.h>
 #include "base/bits.h"
+#include "base/trace_event/memory_allocator_dump.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
@@ -45,12 +46,6 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-
-namespace base {
-namespace trace_event {
-class MemoryAllocatorDump;
-}  // namespace trace_event
-}  // namespace base
 
 namespace blink {
 
@@ -141,7 +136,7 @@ class BaseArena;
 // should be fast and small, and should have the benefit of requiring
 // attackers to discover and use 2 independent weak infoleak bugs, or 1
 // arbitrary infoleak bug (used twice).
-PLATFORM_EXPORT uint32_t ComputeRandomMagic();
+inline uint32_t GetRandomMagic();
 
 // HeapObjectHeader is a 64-bit (64-bit platforms) or 32-bit (32-bit platforms)
 // object that has the following layout:
@@ -252,10 +247,7 @@ class PLATFORM_EXPORT HeapObjectHeader {
 
 #if defined(ARCH_CPU_64_BITS)
   // Returns a random magic value.
-  uint32_t GetMagic() const {
-    static const uint32_t magic = ComputeRandomMagic() ^ 0x6e0b6ead;
-    return magic;
-  }
+  uint32_t GetMagic() const { return GetRandomMagic() ^ 0x6e0b6ead; }
   uint32_t magic_;
 #endif  // defined(ARCH_CPU_64_BITS)
 
@@ -426,10 +418,7 @@ class BasePage {
 
  private:
   // Returns a random magic value.
-  uint32_t GetMagic() const {
-    static const uint32_t magic = ComputeRandomMagic() ^ 0xba5e4a9e;
-    return magic;
-  }
+  uint32_t GetMagic() const { return GetRandomMagic() ^ 0xba5e4a9e; }
 
   uint32_t const magic_;
   PageMemory* const storage_;
@@ -960,6 +949,57 @@ inline HeapObjectHeader* HeapObjectHeader::FromPayload(const void* payload) {
 
 inline void HeapObjectHeader::CheckFromPayload(const void* payload) {
   (void)FromPayload(payload);
+}
+
+ALWAYS_INLINE uint32_t RotateLeft16(uint32_t x) {
+#if defined(COMPILER_MSVC)
+  return _lrotr(x, 16);
+#else
+  // http://blog.regehr.org/archives/1063
+  return (x << 16) | (x >> (-16 & 31));
+#endif
+}
+
+inline uint32_t GetRandomMagic() {
+// Ignore C4319: It is OK to 0-extend into the high-order bits of the uintptr_t
+// on 64-bit, in this case.
+#if defined(COMPILER_MSVC)
+#pragma warning(push)
+#pragma warning(disable : 4319)
+#endif
+
+  static const uintptr_t random1 = ~(RotateLeft16(reinterpret_cast<uintptr_t>(
+      base::trace_event::MemoryAllocatorDump::kNameSize)));
+
+#if defined(OS_WIN)
+  static const uintptr_t random2 =
+      ~(RotateLeft16(reinterpret_cast<uintptr_t>(::ReadFile)));
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  static const uintptr_t random2 =
+      ~(RotateLeft16(reinterpret_cast<uintptr_t>(::read)));
+#endif
+
+#if defined(ARCH_CPU_64_BITS)
+  static_assert(sizeof(uintptr_t) == sizeof(uint64_t),
+                "uintptr_t is not uint64_t");
+  static const uint32_t random = static_cast<uint32_t>(
+      (random1 & 0x0FFFFULL) | ((random2 >> 32) & 0x0FFFF0000ULL));
+#elif defined(ARCH_CPU_32_BITS)
+  // Although we don't use heap metadata canaries on 32-bit due to memory
+  // pressure, keep this code around just in case we do, someday.
+  static_assert(sizeof(uintptr_t) == sizeof(uint32_t),
+                "uintptr_t is not uint32_t");
+  static const uint32_t random =
+      (random1 & 0x0FFFFUL) | (random2 & 0xFFFF0000UL);
+#else
+#error architecture not supported
+#endif
+
+#if defined(COMPILER_MSVC)
+#pragma warning(pop)
+#endif
+
+  return random;
 }
 
 NO_SANITIZE_ADDRESS inline bool HeapObjectHeader::IsWrapperHeaderMarked()
