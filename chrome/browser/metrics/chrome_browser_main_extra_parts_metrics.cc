@@ -108,7 +108,9 @@ enum UMALinuxDistro {
   UMA_LINUX_DISTRO_OPENSUSE_OTHER = 150,
   UMA_LINUX_DISTRO_OPENSUSE_LEAP_42_2 = 151,
   UMA_LINUX_DISTRO_OPENSUSE_LEAP_42_3 = 152,
-  UMA_LINUX_DISTRO_OPENSUSE_LEAP_15 = 153,
+  UMA_LINUX_DISTRO_OPENSUSE_LEAP_15_0 = 153,
+  UMA_LINUX_DISTRO_OPENSUSE_LEAP_15_1 = 154,
+  UMA_LINUX_DISTRO_OPENSUSE_LEAP_15_2 = 155,
   // Ubuntu
   UMA_LINUX_DISTRO_UBUNTU_OTHER = 200,
   UMA_LINUX_DISTRO_UBUNTU_14_04 = 201,
@@ -278,8 +280,12 @@ void RecordLinuxDistro() {
           distro_result = UMA_LINUX_DISTRO_OPENSUSE_LEAP_42_2;
         } else if (distro_tokens[2] == "42.3") {
           distro_result = UMA_LINUX_DISTRO_OPENSUSE_LEAP_42_3;
-        } else if (distro_tokens[2] == "15") {
-          distro_result = UMA_LINUX_DISTRO_OPENSUSE_LEAP_15;
+        } else if (distro_tokens[2] == "15.0") {
+          distro_result = UMA_LINUX_DISTRO_OPENSUSE_LEAP_15_0;
+        } else if (distro_tokens[2] == "15.1") {
+          distro_result = UMA_LINUX_DISTRO_OPENSUSE_LEAP_15_1;
+        } else if (distro_tokens[2] == "15.2") {
+          distro_result = UMA_LINUX_DISTRO_OPENSUSE_LEAP_15_2;
         }
       }
     } else if (distro_tokens[0] == "Debian") {
