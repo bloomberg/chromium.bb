@@ -589,6 +589,7 @@ void PrintPreviewHandler::OnJavascriptDisallowed() {
   // Normally the handler and print preview will be destroyed together, but
   // this is necessary for refresh or navigation from the chrome://print page.
   weak_factory_.InvalidateWeakPtrs();
+  preview_callbacks_.clear();
   UnregisterForGaiaCookieChanges();
 }
 
