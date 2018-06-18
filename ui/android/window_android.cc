@@ -152,6 +152,7 @@ ScopedJavaLocalRef<jobject> WindowAndroid::GetJavaObject() {
 WindowAndroid::~WindowAndroid() {
   DCHECK(parent_ == nullptr) << "WindowAndroid must be a root view.";
   DCHECK(!compositor_);
+  RemoveAllChildren(true);
   Java_WindowAndroid_clearNativePointer(AttachCurrentThread(), GetJavaObject());
 }
 
