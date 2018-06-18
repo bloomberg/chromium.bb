@@ -148,6 +148,10 @@ ToolbarActionsBarUnitTest::ToolbarActionsBarUnitTest()
 ToolbarActionsBarUnitTest::~ToolbarActionsBarUnitTest() {}
 
 void ToolbarActionsBarUnitTest::SetUp() {
+  // Overriding MD state needs to be done before setting up the test window to
+  // maintain consistency throughout its lifetime.
+  material_design_state_ =
+      std::make_unique<ui::test::MaterialDesignControllerTestAPI>(GetParam());
   BrowserWithTestWindowTest::SetUp();
   extensions::LoadErrorReporter::Init(false);
 
@@ -164,8 +168,6 @@ void ToolbarActionsBarUnitTest::SetUp() {
       extensions::extension_action_test_util::CreateToolbarModelForProfile(
           profile());
 
-  material_design_state_.reset(
-      new ui::test::MaterialDesignControllerTestAPI(GetParam()));
   ToolbarActionsBar::disable_animations_for_testing_ = true;
   browser_action_test_util_ = BrowserActionTestUtil::Create(browser(), false);
 
@@ -179,8 +181,8 @@ void ToolbarActionsBarUnitTest::TearDown() {
   browser_action_test_util_.reset();
   overflow_browser_action_test_util_.reset();
   ToolbarActionsBar::disable_animations_for_testing_ = false;
-  material_design_state_.reset();
   BrowserWithTestWindowTest::TearDown();
+  material_design_state_.reset();
 }
 
 void ToolbarActionsBarUnitTest::ActivateTab(int index) {
