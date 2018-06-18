@@ -202,12 +202,6 @@
       'Chromium Mac 10.13', # https://crbug.com/828031
       'Out of Process Profiling Mac', # https://crbug.com/828031
       'mac-views-rel', # https://crbug.com/828031
-      # chromium.mac
-      'Mac10.10 Tests', # https://crbug.com/828031
-      'Mac10.11 Tests', # https://crbug.com/828031
-      'Mac10.12 Tests', # https://crbug.com/828031
-      'Mac10.13 Tests', # https://crbug.com/828031
-      'Mac10.13 Tests (dbg)', # https://crbug.com/828031
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/368525
       'Mac ASan 64 Tests (1)', # https://crbug.com/828031
@@ -236,6 +230,83 @@
       'Out of Process Profiling Linux': {
         'swarming': {
           'shards': 5,
+        },
+      },
+      # chromium.mac
+      'Mac10.10 Tests': {
+        # A subset of tests seem to cause WindowServer deaths on VMs.
+        # crbug.com/828031 et al.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+          '--gtest_shuffle',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'Chrome-quarantine',
+            },
+          ],
+        },
+      },
+      'Mac10.11 Tests': {
+        # A subset of tests seem to cause WindowServer deaths on VMs.
+        # crbug.com/828031 et al.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+          '--gtest_shuffle',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'Chrome-quarantine',
+            },
+          ],
+        },
+      },
+      'Mac10.12 Tests': {
+        # A subset of tests seem to cause WindowServer deaths on VMs.
+        # crbug.com/828031 et al.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+          '--gtest_shuffle',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'Chrome-quarantine',
+            },
+          ],
+        },
+      },
+      'Mac10.13 Tests': {
+        # A subset of tests seem to cause WindowServer deaths on VMs.
+        # crbug.com/828031 et al.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+          '--gtest_shuffle',
+        ],
+        'experiment_percentage': 100,
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'Chrome-quarantine',
+            },
+          ],
+        },
+      },
+      'Mac10.13 Tests (dbg)': {
+        # A subset of tests seem to cause WindowServer deaths on VMs.
+        # crbug.com/828031 et al.
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
+          '--gtest_shuffle',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'pool': 'Chrome-quarantine',
+            },
+          ],
         },
       },
       # chromium.memory
