@@ -466,7 +466,6 @@ crbug.com/591099 fast/css/sticky/sticky-top-overflow-scroll-by-fragment.html [ F
 crbug.com/591099 fast/css/text-overflow-ellipsis-vertical-hittest.html [ Failure ]
 crbug.com/591099 fast/css/text-overflow-ellipsis-vertical-select.html [ Failure ]
 crbug.com/591099 fast/css/transform-inline-style-remove.html [ Failure ]
-crbug.com/591099 fast/css/vertical-align-lengths.html [ Failure ]
 crbug.com/591099 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-auto.html [ Failure ]
 crbug.com/591099 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-under.html [ Failure ]
 crbug.com/591099 fast/css3-text/css3-text-indent/negative-text-indent-leading-out-of-flow-text-align-left-and-right.html [ Failure ]
