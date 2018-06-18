@@ -36,7 +36,6 @@
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/dns_probe_service.h"
-#include "chrome/browser/net/failing_url_request_interceptor.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
@@ -458,33 +457,10 @@ void IOThread::SetUpProxyService(
 }
 
 void IOThread::ConstructSystemRequestContext() {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    globals_->deprecated_network_quality_estimator =
-        std::make_unique<net::NetworkQualityEstimator>(
-            std::make_unique<net::NetworkQualityEstimatorParams>(
-                std::map<std::string, std::string>()),
-            net_log_);
-    net::URLRequestContextBuilder builder;
-    std::vector<std::unique_ptr<net::URLRequestInterceptor>>
-        url_request_interceptors;
-    url_request_interceptors.emplace_back(
-        std::make_unique<FailingURLRequestInterceptor>());
-    builder.SetInterceptors(std::move(url_request_interceptors));
-    builder.set_network_quality_estimator(
-        globals_->deprecated_network_quality_estimator.get());
-    builder.SetCertVerifier(
-        std::make_unique<WrappedCertVerifierForIOThreadTesting>());
-    builder.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateDirect());
-    globals_->system_request_context_owner =
-        network::URLRequestContextOwner(nullptr, builder.Build());
-    globals_->system_request_context =
-        globals_->system_request_context_owner.url_request_context.get();
-    network_context_params_.reset();
-  } else {
-    std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
-        std::make_unique<network::URLRequestContextBuilderMojo>();
+  std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
+      std::make_unique<network::URLRequestContextBuilderMojo>();
 
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     auto chrome_network_delegate = std::make_unique<ChromeNetworkDelegate>(
         extension_event_router_forwarder(), &system_enable_referrers_);
     // By default, data usage is considered off the record.
@@ -494,39 +470,56 @@ void IOThread::ConstructSystemRequestContext() {
     builder->set_network_delegate(
         globals_->data_use_ascriber->CreateNetworkDelegate(
             std::move(chrome_network_delegate), GetMetricsDataUseForwarder()));
+  }
+  std::unique_ptr<net::HostResolver> host_resolver(
+      CreateGlobalHostResolver(net_log_));
 
-    std::unique_ptr<net::CertVerifier> cert_verifier;
-    if (g_cert_verifier_for_io_thread_testing) {
-      cert_verifier = std::make_unique<WrappedCertVerifierForIOThreadTesting>();
-    } else {
+  std::unique_ptr<net::CertVerifier> cert_verifier;
+  if (g_cert_verifier_for_io_thread_testing) {
+    cert_verifier = std::make_unique<WrappedCertVerifierForIOThreadTesting>();
+  } else {
 #if defined(OS_CHROMEOS)
-      // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<net::MultiThreadedCertVerifier>(
-              base::MakeRefCounted<chromeos::CertVerifyProcChromeOS>()));
+    // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
+    cert_verifier = std::make_unique<net::CachingCertVerifier>(
+        std::make_unique<net::MultiThreadedCertVerifier>(
+            base::MakeRefCounted<chromeos::CertVerifyProcChromeOS>()));
 #else
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<net::MultiThreadedCertVerifier>(
-              net::CertVerifyProc::CreateDefault()));
+    cert_verifier = std::make_unique<net::CachingCertVerifier>(
+        std::make_unique<net::MultiThreadedCertVerifier>(
+            net::CertVerifyProc::CreateDefault()));
 #endif
-    }
-    const base::CommandLine& command_line =
-        *base::CommandLine::ForCurrentProcess();
-    builder->SetCertVerifier(
-        network::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
-            command_line, switches::kUserDataDir, std::move(cert_verifier)));
-    UMA_HISTOGRAM_BOOLEAN(
-        "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
-        command_line.HasSwitch(
-            network::switches::kIgnoreCertificateErrorsSPKIList));
+  }
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  builder->SetCertVerifier(
+      network::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
+          command_line, switches::kUserDataDir, std::move(cert_verifier)));
+  UMA_HISTOGRAM_BOOLEAN(
+      "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
+      command_line.HasSwitch(
+          network::switches::kIgnoreCertificateErrorsSPKIList));
 
-    SetUpProxyService(builder.get());
+  SetUpProxyService(builder.get());
 
-    if (!is_quic_allowed_on_init_)
-      globals_->quic_disabled = true;
+  if (!is_quic_allowed_on_init_)
+    globals_->quic_disabled = true;
 
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    globals_->deprecated_network_quality_estimator =
+        std::make_unique<net::NetworkQualityEstimator>(
+            std::make_unique<net::NetworkQualityEstimatorParams>(
+                std::map<std::string, std::string>()),
+            net_log_);
+    globals_->deprecated_host_resolver = std::move(host_resolver);
+    globals_->system_request_context_owner = std::move(builder)->Create(
+        std::move(network_context_params_).get(), !is_quic_allowed_on_init_,
+        net_log_, globals_->deprecated_host_resolver.get(),
+        globals_->deprecated_network_quality_estimator.get());
+    globals_->system_request_context =
+        globals_->system_request_context_owner.url_request_context.get();
+  } else {
     network::NetworkService* network_service = content::GetNetworkServiceImpl();
-    network_service->SetHostResolver(CreateGlobalHostResolver(net_log_));
+    network_service->SetHostResolver(std::move(host_resolver));
 
     // These must be done after the SetHostResolver call.
     network_service->SetUpHttpAuth(std::move(http_auth_static_params_));

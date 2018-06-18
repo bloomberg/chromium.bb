@@ -34,7 +34,6 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
-#include "chrome/browser/net/failing_url_request_interceptor.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/policy/cloud/policy_header_service_factory.h"
@@ -529,8 +528,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   network_prediction_options_.MoveToThread(io_task_runner);
 
 #if defined(OS_CHROMEOS)
-  if (!g_cert_verifier_for_profile_io_data_testing &&
-      !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+  if (!g_cert_verifier_for_profile_io_data_testing) {
     profile_params_->policy_cert_verifier =
         policy::PolicyCertServiceFactory::CreateForProfile(profile);
   }
@@ -1034,6 +1032,57 @@ void ProfileIOData::Init(
   extensions_request_context_.reset(new net::URLRequestContext());
   extensions_request_context_->set_name("extensions");
 
+  // Create the main request context.
+  std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
+      std::make_unique<network::URLRequestContextBuilderMojo>();
+
+  ChromeNetworkDelegate* chrome_network_delegate_unowned = nullptr;
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
+        new ChromeNetworkDelegate(
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+            io_thread_globals->extension_event_router_forwarder.get(),
+#else
+            NULL,
+#endif
+            &enable_referrers_));
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    chrome_network_delegate->set_extension_info_map(
+        profile_params_->extension_info_map.get());
+    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableExtensionsHttpThrottling)) {
+      extension_throttle_manager_.reset(
+          new extensions::ExtensionThrottleManager());
+    }
+#endif
+
+    chrome_network_delegate->set_profile(profile_params_->profile);
+    chrome_network_delegate->set_profile_path(profile_params_->path);
+    chrome_network_delegate->set_cookie_settings(
+        profile_params_->cookie_settings.get());
+    chrome_network_delegate->set_force_google_safe_search(
+        &force_google_safesearch_);
+    chrome_network_delegate->set_force_youtube_restrict(
+        &force_youtube_restrict_);
+    chrome_network_delegate->set_allowed_domains_for_apps(
+        &allowed_domains_for_apps_);
+    chrome_network_delegate->set_data_use_aggregator(
+        io_thread_globals->data_use_aggregator.get(), IsOffTheRecord());
+
+    chrome_network_delegate_unowned = chrome_network_delegate.get();
+
+    std::unique_ptr<net::NetworkDelegate> network_delegate =
+        ConfigureNetworkDelegate(profile_params_->io_thread,
+                                 std::move(chrome_network_delegate));
+
+    builder->set_network_delegate(std::move(network_delegate));
+  }
+
+  builder->set_shared_http_auth_handler_factory(
+      io_thread_globals->system_request_context->http_auth_handler_factory());
+
+  io_thread->SetUpProxyService(builder.get());
+
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
@@ -1057,163 +1106,101 @@ void ProfileIOData::Init(
   certificate_provider_ = std::move(profile_params_->certificate_provider);
 #endif
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    net::URLRequestContextBuilder builder;
-    std::vector<std::unique_ptr<net::URLRequestInterceptor>>
-        url_request_interceptors;
-    url_request_interceptors.emplace_back(
-        std::make_unique<FailingURLRequestInterceptor>());
-    builder.SetInterceptors(std::move(url_request_interceptors));
-    builder.set_network_quality_estimator(
-        io_thread_globals->deprecated_network_quality_estimator.get());
-    builder.set_proxy_resolution_service(
-        net::ProxyResolutionService::CreateDirect());
-    builder.SetCertVerifier(
+  if (g_cert_verifier_for_profile_io_data_testing) {
+    builder->SetCertVerifier(
         std::make_unique<WrappedCertVerifierForProfileIODataTesting>());
-    main_request_context_owner_ =
-        network::URLRequestContextOwner(nullptr, builder.Build());
+  } else {
+    std::unique_ptr<net::CertVerifier> cert_verifier;
+#if defined(OS_CHROMEOS)
+    crypto::ScopedPK11Slot public_slot =
+        crypto::GetPublicSlotForChromeOSUser(username_hash_);
+    // The private slot won't be ready by this point. It shouldn't be necessary
+    // for cert trust purposes anyway.
+    scoped_refptr<net::CertVerifyProc> verify_proc(
+        new chromeos::CertVerifyProcChromeOS(std::move(public_slot)));
+    if (profile_params_->policy_cert_verifier) {
+      profile_params_->policy_cert_verifier->InitializeOnIOThread(verify_proc);
+      cert_verifier = std::move(profile_params_->policy_cert_verifier);
+    } else {
+      cert_verifier = std::make_unique<net::CachingCertVerifier>(
+          std::make_unique<net::MultiThreadedCertVerifier>(verify_proc.get()));
+    }
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
+    cert_verifier = std::make_unique<net::CachingCertVerifier>(
+        std::make_unique<TrialComparisonCertVerifier>(
+            profile_params_->profile, net::CertVerifyProc::CreateDefault(),
+            net::CreateCertVerifyProcBuiltin()));
+#else
+    cert_verifier = std::make_unique<net::CachingCertVerifier>(
+        std::make_unique<net::MultiThreadedCertVerifier>(
+            net::CertVerifyProc::CreateDefault()));
+#endif
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+    cert_verifier = network::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
+        command_line, switches::kUserDataDir, std::move(cert_verifier));
+    builder->SetCertVerifier(std::move(cert_verifier));
+  }
+
+  // Install the New Tab Page Interceptor.
+  if (profile_params_->new_tab_page_interceptor.get()) {
+    request_interceptors.push_back(
+        std::move(profile_params_->new_tab_page_interceptor));
+  }
+
+  if (data_reduction_proxy_io_data_.get()) {
+    builder->set_shared_proxy_delegate(
+        data_reduction_proxy_io_data_->proxy_delegate());
+  }
+
+  InitializeInternal(builder.get(), profile_params_.get(), protocol_handlers,
+                     std::move(request_interceptors));
+
+  builder->SetCreateHttpTransactionFactoryCallback(
+      base::BindOnce(&content::CreateDevToolsNetworkTransactionFactory));
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    main_request_context_owner_ = std::move(builder)->Create(
+        std::move(profile_params_->main_network_context_params).get(),
+        io_thread_globals->quic_disabled, io_thread->net_log(),
+        io_thread_globals->deprecated_host_resolver.get(),
+        io_thread_globals->deprecated_network_quality_estimator.get());
     main_request_context_ =
         main_request_context_owner_.url_request_context.get();
   } else {
-    // Create the main request context.
-    std::unique_ptr<network::URLRequestContextBuilderMojo> builder =
-        std::make_unique<network::URLRequestContextBuilderMojo>();
-
-    ChromeNetworkDelegate* chrome_network_delegate_unowned = nullptr;
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
-          new ChromeNetworkDelegate(
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-              io_thread_globals->extension_event_router_forwarder.get(),
-#else
-              NULL,
-#endif
-              &enable_referrers_));
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      chrome_network_delegate->set_extension_info_map(
-          profile_params_->extension_info_map.get());
-      if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableExtensionsHttpThrottling)) {
-        extension_throttle_manager_.reset(
-            new extensions::ExtensionThrottleManager());
-      }
-#endif
-
-      chrome_network_delegate->set_profile(profile_params_->profile);
-      chrome_network_delegate->set_profile_path(profile_params_->path);
-      chrome_network_delegate->set_cookie_settings(
-          profile_params_->cookie_settings.get());
-      chrome_network_delegate->set_force_google_safe_search(
-          &force_google_safesearch_);
-      chrome_network_delegate->set_force_youtube_restrict(
-          &force_youtube_restrict_);
-      chrome_network_delegate->set_allowed_domains_for_apps(
-          &allowed_domains_for_apps_);
-      chrome_network_delegate->set_data_use_aggregator(
-          io_thread_globals->data_use_aggregator.get(), IsOffTheRecord());
-
-      chrome_network_delegate_unowned = chrome_network_delegate.get();
-
-      std::unique_ptr<net::NetworkDelegate> network_delegate =
-          ConfigureNetworkDelegate(profile_params_->io_thread,
-                                   std::move(chrome_network_delegate));
-
-      builder->set_network_delegate(std::move(network_delegate));
-    }
-
-    builder->set_shared_http_auth_handler_factory(
-        io_thread_globals->system_request_context->http_auth_handler_factory());
-
-    io_thread->SetUpProxyService(builder.get());
-
-    if (g_cert_verifier_for_profile_io_data_testing) {
-      builder->SetCertVerifier(
-          std::make_unique<WrappedCertVerifierForProfileIODataTesting>());
-    } else {
-      std::unique_ptr<net::CertVerifier> cert_verifier;
-#if defined(OS_CHROMEOS)
-      crypto::ScopedPK11Slot public_slot =
-          crypto::GetPublicSlotForChromeOSUser(username_hash_);
-      // The private slot won't be ready by this point. It shouldn't be
-      // necessary for cert trust purposes anyway.
-      scoped_refptr<net::CertVerifyProc> verify_proc(
-          new chromeos::CertVerifyProcChromeOS(std::move(public_slot)));
-      if (profile_params_->policy_cert_verifier) {
-        profile_params_->policy_cert_verifier->InitializeOnIOThread(
-            verify_proc);
-        cert_verifier = std::move(profile_params_->policy_cert_verifier);
-      } else {
-        cert_verifier = std::make_unique<net::CachingCertVerifier>(
-            std::make_unique<net::MultiThreadedCertVerifier>(
-                verify_proc.get()));
-      }
-#elif defined(OS_LINUX) || defined(OS_MACOSX)
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<TrialComparisonCertVerifier>(
-              profile_params_->profile, net::CertVerifyProc::CreateDefault(),
-              net::CreateCertVerifyProcBuiltin()));
-#else
-      cert_verifier = std::make_unique<net::CachingCertVerifier>(
-          std::make_unique<net::MultiThreadedCertVerifier>(
-              net::CertVerifyProc::CreateDefault()));
-#endif
-      const base::CommandLine& command_line =
-          *base::CommandLine::ForCurrentProcess();
-      cert_verifier = network::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
-          command_line, switches::kUserDataDir, std::move(cert_verifier));
-      builder->SetCertVerifier(std::move(cert_verifier));
-    }
-
-    // Install the New Tab Page Interceptor.
-    if (profile_params_->new_tab_page_interceptor.get()) {
-      request_interceptors.push_back(
-          std::move(profile_params_->new_tab_page_interceptor));
-    }
-
-    if (data_reduction_proxy_io_data_.get()) {
-      builder->set_shared_proxy_delegate(
-          data_reduction_proxy_io_data_->proxy_delegate());
-    }
-
-    InitializeInternal(builder.get(), profile_params_.get(), protocol_handlers,
-                       std::move(request_interceptors));
-
-    builder->SetCreateHttpTransactionFactoryCallback(
-        base::BindOnce(&content::CreateDevToolsNetworkTransactionFactory));
-
     main_network_context_ =
         content::GetNetworkServiceImpl()->CreateNetworkContextWithBuilder(
             std::move(profile_params_->main_network_context_request),
             std::move(profile_params_->main_network_context_params),
             std::move(builder), &main_request_context_);
-
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-        chrome_network_delegate_unowned->domain_reliability_monitor()) {
-      // Save a pointer to shut down Domain Reliability cleanly before the
-      // URLRequestContext is dismantled.
-      domain_reliability_monitor_unowned_ =
-          chrome_network_delegate_unowned->domain_reliability_monitor();
-
-      domain_reliability_monitor_unowned_->InitURLRequestContext(
-          main_request_context_);
-      domain_reliability_monitor_unowned_->AddBakedInConfigs();
-      domain_reliability_monitor_unowned_->SetDiscardUploads(
-          !GetMetricsEnabledStateOnIOThread());
-    }
-
-    // Attach some things to the URLRequestContextBuilder's
-    // TransportSecurityState.  Since no requests have been made yet, safe to do
-    // this even after the call to Build().
-
-    expect_ct_reporter_.reset(new ChromeExpectCTReporter(
-        main_request_context_, base::Closure(), base::Closure()));
-    main_request_context_->transport_security_state()->SetExpectCTReporter(
-        expect_ct_reporter_.get());
-
-    resource_context_->host_resolver_ =
-        io_thread_globals->system_request_context->host_resolver();
-    resource_context_->request_context_ = main_request_context_;
   }
+
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) &&
+      chrome_network_delegate_unowned->domain_reliability_monitor()) {
+    // Save a pointer to shut down Domain Reliability cleanly before the
+    // URLRequestContext is dismantled.
+    domain_reliability_monitor_unowned_ =
+        chrome_network_delegate_unowned->domain_reliability_monitor();
+
+    domain_reliability_monitor_unowned_->InitURLRequestContext(
+        main_request_context_);
+    domain_reliability_monitor_unowned_->AddBakedInConfigs();
+    domain_reliability_monitor_unowned_->SetDiscardUploads(
+        !GetMetricsEnabledStateOnIOThread());
+  }
+
+  // Attach some things to the URLRequestContextBuilder's
+  // TransportSecurityState.  Since no requests have been made yet, safe to do
+  // this even after the call to Build().
+
+  expect_ct_reporter_.reset(new ChromeExpectCTReporter(
+      main_request_context_, base::Closure(), base::Closure()));
+  main_request_context_->transport_security_state()->SetExpectCTReporter(
+      expect_ct_reporter_.get());
+
+  resource_context_->host_resolver_ =
+      io_thread_globals->system_request_context->host_resolver();
+  resource_context_->request_context_ = main_request_context_;
 
   OnMainRequestContextCreated(profile_params_.get());
 
