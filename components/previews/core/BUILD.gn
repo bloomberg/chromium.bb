@@ -4,6 +4,8 @@
 
 static_library("core") {
   sources = [
+    "blacklist_data.cc",
+    "blacklist_data.h",
     "previews_amp_converter.cc",
     "previews_amp_converter.h",
     "previews_black_list.cc",

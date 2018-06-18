@@ -19,6 +19,7 @@
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/content/previews_ui_service.h"
+#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_features.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,7 +43,9 @@ class TestPreviewsIOData : public previews::PreviewsIOData {
       base::WeakPtr<previews::PreviewsUIService> previews_ui_service,
       std::unique_ptr<previews::PreviewsOptOutStore> previews_opt_out_store,
       std::unique_ptr<previews::PreviewsOptimizationGuide> previews_opt_guide,
-      const previews::PreviewsIsEnabledCallback& is_enabled_callback) override {
+      const previews::PreviewsIsEnabledCallback& is_enabled_callback,
+      previews::BlacklistData::AllowedTypesAndVersions allowed_previews)
+      override {
     enabled_callback_ = is_enabled_callback;
   }
 

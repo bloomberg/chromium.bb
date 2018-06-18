@@ -20,9 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/previews/core/previews_black_list.h"
-#include "components/previews/core/previews_black_list_item.h"
-#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/blacklist_data.h"
 #include "sql/connection.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"
@@ -147,7 +145,7 @@ void InitDatabase(sql::Connection* db, base::FilePath path) {
 void AddPreviewNavigationToDataBase(sql::Connection* db,
                                     bool opt_out,
                                     const std::string& host_name,
-                                    PreviewsType type,
+                                    int type,
                                     base::Time now) {
   // Adds the new entry.
   const char kSqlInsert[] = "INSERT INTO " PREVIEWS_OPT_OUT_TABLE_NAME
@@ -160,7 +158,7 @@ void AddPreviewNavigationToDataBase(sql::Connection* db,
   statement_insert.BindString(0, host_name);
   statement_insert.BindInt64(1, now.ToInternalValue());
   statement_insert.BindBool(2, opt_out);
-  statement_insert.BindInt(3, static_cast<int>(type));
+  statement_insert.BindInt(3, type);
   statement_insert.Run();
 }
 
@@ -187,37 +185,35 @@ void MaybeEvictHostEntryFromDataBase(sql::Connection* db,
 }
 
 // Deletes every preview navigation/OptOut entry for |type|.
-void ClearBlacklistForTypeInDataBase(sql::Connection* db, PreviewsType type) {
+void ClearBlacklistForTypeInDataBase(sql::Connection* db, int type) {
   const char kSql[] =
       "DELETE FROM " PREVIEWS_OPT_OUT_TABLE_NAME " WHERE type == ?";
   sql::Statement statement(db->GetUniqueStatement(kSql));
-  statement.BindInt(0, static_cast<int>(type));
+  statement.BindInt(0, type);
   statement.Run();
 }
 
 // Retrieves the list of previously enabled previews types with their version
 // from the Enabled Previews table.
-std::unique_ptr<std::map<PreviewsType, int>> GetStoredPreviews(
-    sql::Connection* db) {
+BlacklistData::AllowedTypesAndVersions GetStoredPreviews(sql::Connection* db) {
   const char kSqlLoadEnabledPreviewsVersions[] =
       "SELECT type, version FROM " ENABLED_PREVIEWS_TABLE_NAME;
 
   sql::Statement statement(
       db->GetUniqueStatement(kSqlLoadEnabledPreviewsVersions));
 
-  std::unique_ptr<std::map<PreviewsType, int>> stored_previews(
-      new std::map<PreviewsType, int>());
+  BlacklistData::AllowedTypesAndVersions stored_previews;
   while (statement.Step()) {
-    PreviewsType type = static_cast<PreviewsType>(statement.ColumnInt(0));
+    int type = statement.ColumnInt(0);
     int version = statement.ColumnInt(1);
-    stored_previews->insert({type, version});
+    stored_previews.insert({type, version});
   }
   return stored_previews;
 }
 
 // Adds a newly enabled |type| with its |version| to the Enabled Previews table.
 void InsertEnabledPreviewInDataBase(sql::Connection* db,
-                                    PreviewsType type,
+                                    int type,
                                     int version) {
   const char kSqlInsert[] = "INSERT INTO " ENABLED_PREVIEWS_TABLE_NAME
                             " (type, version)"
@@ -225,7 +221,7 @@ void InsertEnabledPreviewInDataBase(sql::Connection* db,
                             " (?, ?)";
 
   sql::Statement statement_insert(db->GetUniqueStatement(kSqlInsert));
-  statement_insert.BindInt(0, static_cast<int>(type));
+  statement_insert.BindInt(0, type);
   statement_insert.BindInt(1, version);
   statement_insert.Run();
 }
@@ -233,7 +229,7 @@ void InsertEnabledPreviewInDataBase(sql::Connection* db,
 // Updates the |version| of an enabled previews |type| in the Enabled Previews
 // table.
 void UpdateEnabledPreviewInDataBase(sql::Connection* db,
-                                    PreviewsType type,
+                                    int type,
                                     int version) {
   const char kSqlUpdate[] = "UPDATE " ENABLED_PREVIEWS_TABLE_NAME
                             " SET version = ?"
@@ -242,17 +238,17 @@ void UpdateEnabledPreviewInDataBase(sql::Connection* db,
   sql::Statement statement_update(
       db->GetCachedStatement(SQL_FROM_HERE, kSqlUpdate));
   statement_update.BindInt(0, version);
-  statement_update.BindInt(1, static_cast<int>(type));
+  statement_update.BindInt(1, type);
   statement_update.Run();
 }
 
 // Deletes a previously enabled previews |type| from the Enabled Previews table.
-void DeleteEnabledPreviewInDataBase(sql::Connection* db, PreviewsType type) {
+void DeleteEnabledPreviewInDataBase(sql::Connection* db, int type) {
   const char kSqlDelete[] =
       "DELETE FROM " ENABLED_PREVIEWS_TABLE_NAME " WHERE type == ?";
 
   sql::Statement statement_delete(db->GetUniqueStatement(kSqlDelete));
-  statement_delete.BindInt(0, static_cast<int>(type));
+  statement_delete.BindInt(0, type);
   statement_delete.Run();
 }
 
@@ -261,16 +257,15 @@ void DeleteEnabledPreviewInDataBase(sql::Connection* db, PreviewsType type) {
 // any associated blacklist entries.
 void CheckAndReconcileEnabledPreviewsWithDataBase(
     sql::Connection* db,
-    PreviewsTypeList* enabled_previews) {
-  std::unique_ptr<std::map<PreviewsType, int>> stored_previews(
-      GetStoredPreviews(db));
+    const BlacklistData::AllowedTypesAndVersions& allowed_types) {
+  BlacklistData::AllowedTypesAndVersions stored_previews =
+      GetStoredPreviews(db);
 
-  for (auto enabled_it = enabled_previews->begin();
-       enabled_it != enabled_previews->end(); ++enabled_it) {
-    PreviewsType type = enabled_it->first;
-    int current_version = enabled_it->second;
-    auto stored_it = stored_previews->find(type);
-    if (stored_it == stored_previews->end()) {
+  for (auto enabled_it : allowed_types) {
+    int type = enabled_it.first;
+    int current_version = enabled_it.second;
+    auto stored_it = stored_previews.find(type);
+    if (stored_it == stored_previews.end()) {
       InsertEnabledPreviewInDataBase(db, type, current_version);
     } else {
       if (stored_it->second != current_version) {
@@ -279,14 +274,13 @@ void CheckAndReconcileEnabledPreviewsWithDataBase(
         UpdateEnabledPreviewInDataBase(db, type, current_version);
       }
       // Erase entry from the local map to detect any newly disabled types.
-      stored_previews->erase(stored_it);
+      stored_previews.erase(stored_it);
     }
   }
 
   // Now check for any types that are no longer enabled.
-  for (auto stored_it = stored_previews->begin();
-       stored_it != stored_previews->end(); ++stored_it) {
-    PreviewsType type = stored_it->first;
+  for (auto stored_it : stored_previews) {
+    int type = stored_it.first;
     ClearBlacklistForTypeInDataBase(db, type);
     DeleteEnabledPreviewInDataBase(db, type);
   }
@@ -294,46 +288,30 @@ void CheckAndReconcileEnabledPreviewsWithDataBase(
 
 void LoadBlackListFromDataBase(
     sql::Connection* db,
-    PreviewsTypeList* enabled_previews,
+    std::unique_ptr<BlacklistData> blacklist_data,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     LoadBlackListCallback callback) {
   // First handle any update needed wrt enabled previews and their versions.
-  CheckAndReconcileEnabledPreviewsWithDataBase(db, enabled_previews);
+  CheckAndReconcileEnabledPreviewsWithDataBase(db,
+                                               blacklist_data->allowed_types());
 
   // Gets the table sorted by host and time. Limits the number of hosts using
   // most recent opt_out time as the limiting function. Sorting is free due to
   // the table structure, and it improves performance in the loop below.
   const char kSql[] =
-      "SELECT host_name, time, opt_out"
+      "SELECT host_name, time, opt_out, type"
       " FROM " PREVIEWS_OPT_OUT_TABLE_NAME " ORDER BY host_name, time DESC";
 
   sql::Statement statement(db->GetUniqueStatement(kSql));
 
-  std::unique_ptr<BlackListItemMap> black_list_item_map(new BlackListItemMap());
-  std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item =
-      PreviewsBlackList::CreateHostIndifferentBlackListItem();
   int count = 0;
-  // Add the host name, the visit time, and opt out history to
-  // |black_list_item_map|.
   while (statement.Step()) {
     ++count;
-    std::string host_name = statement.ColumnString(0);
-    PreviewsBlackListItem* black_list_item =
-        PreviewsBlackList::GetOrCreateBlackListItemForMap(
-            black_list_item_map.get(), host_name);
-    DCHECK_LE(black_list_item_map->size(),
-              params::MaxInMemoryHostsInBlackList());
-    // Allows the internal logic of PreviewsBlackListItem to determine how to
-    // evict entries when there are more than
-    // |StoredHistoryLengthForBlackList()| for the host.
-    black_list_item->AddPreviewNavigation(
-        statement.ColumnBool(2),
-        base::Time::FromInternalValue(statement.ColumnInt64(1)));
-    // Allows the internal logic of PreviewsBlackListItem to determine what
-    // items to evict.
-    host_indifferent_black_list_item->AddPreviewNavigation(
-        statement.ColumnBool(2),
-        base::Time::FromInternalValue(statement.ColumnInt64(1)));
+    blacklist_data->AddEntry(statement.ColumnString(0), statement.ColumnBool(2),
+                             statement.ColumnInt64(3),
+                             base::Time() + base::TimeDelta::FromMicroseconds(
+                                                statement.ColumnInt64(1)),
+                             true);
   }
 
   if (count > MaxRowsInOptOutDB()) {
@@ -352,22 +330,22 @@ void LoadBlackListFromDataBase(
     statement_delete.Run();
   }
 
-  runner->PostTask(FROM_HERE,
-                   base::BindOnce(callback, std::move(black_list_item_map),
-                                  std::move(host_indifferent_black_list_item)));
+  runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback),
+                                             std::move(blacklist_data)));
 }
 
 // Synchronous implementations, these are run on the background thread
 // and actually do the work to access the SQL data base.
 void LoadBlackListSync(sql::Connection* db,
                        const base::FilePath& path,
-                       std::unique_ptr<PreviewsTypeList> enabled_previews,
+                       std::unique_ptr<BlacklistData> blacklist_data,
                        scoped_refptr<base::SingleThreadTaskRunner> runner,
                        LoadBlackListCallback callback) {
   if (!db->is_open())
     InitDatabase(db, path);
 
-  LoadBlackListFromDataBase(db, enabled_previews.get(), runner, callback);
+  LoadBlackListFromDataBase(db, std::move(blacklist_data), runner,
+                            std::move(callback));
 }
 
 // Deletes every row in the table that has entry time between |begin_time| and
@@ -379,16 +357,16 @@ void ClearBlackListSync(sql::Connection* db,
                       " WHERE time >= ? and time <= ?";
 
   sql::Statement statement(db->GetUniqueStatement(kSql));
-  statement.BindInt64(0, begin_time.ToInternalValue());
-  statement.BindInt64(1, end_time.ToInternalValue());
+  statement.BindInt64(0, (begin_time - base::Time()).InMicroseconds());
+  statement.BindInt64(1, (end_time - base::Time()).InMicroseconds());
   statement.Run();
 }
 
-void AddPreviewNavigationSync(bool opt_out,
-                              const std::string& host_name,
-                              PreviewsType type,
-                              base::Time now,
-                              sql::Connection* db) {
+void AddEntrySync(bool opt_out,
+                  const std::string& host_name,
+                  int type,
+                  base::Time now,
+                  sql::Connection* db) {
   sql::Transaction transaction(db);
   if (!transaction.Begin())
     return;
@@ -402,14 +380,10 @@ void AddPreviewNavigationSync(bool opt_out,
 PreviewsOptOutStoreSQL::PreviewsOptOutStoreSQL(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-    const base::FilePath& path,
-    std::unique_ptr<PreviewsTypeList> enabled_previews)
+    const base::FilePath& path)
     : io_task_runner_(io_task_runner),
       background_task_runner_(background_task_runner),
-      db_file_path_(path),
-      enabled_previews_(std::move(enabled_previews)) {
-  DCHECK(enabled_previews_);
-}
+      db_file_path_(path) {}
 
 PreviewsOptOutStoreSQL::~PreviewsOptOutStoreSQL() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -418,15 +392,15 @@ PreviewsOptOutStoreSQL::~PreviewsOptOutStoreSQL() {
   }
 }
 
-void PreviewsOptOutStoreSQL::AddPreviewNavigation(bool opt_out,
-                                                  const std::string& host_name,
-                                                  PreviewsType type,
-                                                  base::Time now) {
+void PreviewsOptOutStoreSQL::AddEntry(bool opt_out,
+                                      const std::string& host_name,
+                                      int type,
+                                      base::Time now) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(db_);
   background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&AddPreviewNavigationSync, opt_out, host_name, type,
-                            now, db_.get()));
+      FROM_HERE,
+      base::BindOnce(&AddEntrySync, opt_out, host_name, type, now, db_.get()));
 }
 
 void PreviewsOptOutStoreSQL::ClearBlackList(base::Time begin_time,
@@ -438,16 +412,17 @@ void PreviewsOptOutStoreSQL::ClearBlackList(base::Time begin_time,
       base::Bind(&ClearBlackListSync, db_.get(), begin_time, end_time));
 }
 
-void PreviewsOptOutStoreSQL::LoadBlackList(LoadBlackListCallback callback) {
+void PreviewsOptOutStoreSQL::LoadBlackList(
+    std::unique_ptr<BlacklistData> blacklist_data,
+    LoadBlackListCallback callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   if (!db_)
     db_ = std::make_unique<sql::Connection>();
-  std::unique_ptr<PreviewsTypeList> enabled_previews =
-      std::make_unique<PreviewsTypeList>(*enabled_previews_);
   background_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&LoadBlackListSync, db_.get(), db_file_path_,
-                                std::move(enabled_previews),
-                                base::ThreadTaskRunnerHandle::Get(), callback));
+      FROM_HERE,
+      base::BindOnce(&LoadBlackListSync, db_.get(), db_file_path_,
+                     std::move(blacklist_data),
+                     base::ThreadTaskRunnerHandle::Get(), std::move(callback)));
 }
 
 }  // namespace previews

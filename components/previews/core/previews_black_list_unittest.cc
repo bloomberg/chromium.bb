@@ -35,14 +35,6 @@ namespace previews {
 
 namespace {
 
-void RunLoadCallback(
-    LoadBlackListCallback callback,
-    std::unique_ptr<BlackListItemMap> black_list_item_map,
-    std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item) {
-  callback.Run(std::move(black_list_item_map),
-               std::move(host_indifferent_black_list_item));
-}
-
 // Mock class to test that PreviewsBlackList notifies the delegate with correct
 // events (e.g. New host blacklisted, user blacklisted, and blacklist cleared).
 class TestPreviewsBlacklistDelegate : public PreviewsBlacklistDelegate {
@@ -99,39 +91,23 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
 
   int clear_blacklist_count() { return clear_blacklist_count_; }
 
-  // Set |host_indifferent_black_list_item_| to test behavior of
-  // PreviewsBlackList on certain PreviewsOptOutStore states.
-  void SetHostIndifferentBlacklistItem(
-      std::unique_ptr<PreviewsBlackListItem> item) {
-    host_indifferent_black_list_item_ = std::move(item);
-  }
-
-  // Set |black_list_item_map_| to test behavior of
-  // PreviewsBlackList on certain PreviewsOptOutStore states.
-  void SetBlacklistItemMap(std::unique_ptr<BlackListItemMap> item_map) {
-    black_list_item_map_ = std::move(item_map);
+  void SetBlacklistData(std::unique_ptr<BlacklistData> data) {
+    data_ = std::move(data);
   }
 
  private:
   // PreviewsOptOutStore implementation:
-  void AddPreviewNavigation(bool opt_out,
-                            const std::string& host_name,
-                            PreviewsType type,
-                            base::Time now) override {}
+  void AddEntry(bool opt_out,
+                const std::string& host_name,
+                int type,
+                base::Time now) override {}
 
-  void LoadBlackList(LoadBlackListCallback callback) override {
-    if (!black_list_item_map_) {
-      black_list_item_map_ = std::make_unique<BlackListItemMap>();
-    }
-    if (!host_indifferent_black_list_item_) {
-      host_indifferent_black_list_item_ =
-          PreviewsBlackList::CreateHostIndifferentBlackListItem();
-    }
+  void LoadBlackList(std::unique_ptr<BlacklistData> blacklist_data,
+                     LoadBlackListCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&RunLoadCallback, callback,
-                       std::move(black_list_item_map_),
-                       std::move(host_indifferent_black_list_item_)));
+        base::BindOnce(std::move(callback),
+                       data_ ? std::move(data_) : std::move(blacklist_data)));
   }
 
   void ClearBlackList(base::Time begin_time, base::Time end_time) override {
@@ -139,8 +115,8 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
   }
 
   int clear_blacklist_count_;
-  std::unique_ptr<BlackListItemMap> black_list_item_map_;
-  std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item_;
+
+  std::unique_ptr<BlacklistData> data_;
 };
 
 class PreviewsBlackListTest : public testing::Test {
@@ -161,8 +137,12 @@ class PreviewsBlackListTest : public testing::Test {
     std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
         null_opt_out ? nullptr : std::make_unique<TestPreviewsOptOutStore>();
     opt_out_store_ = opt_out_store.get();
+
+    BlacklistData::AllowedTypesAndVersions allowed_types;
+    allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
     black_list_ = std::make_unique<PreviewsBlackList>(
-        std::move(opt_out_store), &test_clock_, &blacklist_delegate_);
+        std::move(opt_out_store), &test_clock_, &blacklist_delegate_,
+        std::move(allowed_types));
     start_ = test_clock_.Now();
 
     passed_reasons_ = {};
@@ -206,7 +186,7 @@ class PreviewsBlackListTest : public testing::Test {
   // Adds an opt out and either clears the black list for a time either longer
   // or shorter than the single opt out duration parameter depending on
   // |short_time|.
-  void RunClearingBlackListTest(const GURL& url, bool short_time) {
+  void RunClearingBlackListTest(const GURL& url) {
     const size_t host_indifferent_history = 1;
     const int single_opt_out_duration = 5;
     SetHostDurationParam(365);
@@ -215,9 +195,6 @@ class PreviewsBlackListTest : public testing::Test {
     SetSingleOptOutDurationParam(single_opt_out_duration);
 
     StartTest(false /* null_opt_out */);
-    if (!short_time)
-      test_clock_.Advance(
-          base::TimeDelta::FromSeconds(single_opt_out_duration));
 
     black_list_->AddPreviewNavigation(url, true /* opt_out */,
                                       PreviewsType::OFFLINE);
@@ -720,25 +697,12 @@ TEST_F(PreviewsBlackListTest, AddPreviewUMA) {
                                      1);
 }
 
-TEST_F(PreviewsBlackListTest, ClearShortTime) {
-  // Tests that clearing the black list for a short amount of time (relative to
-  // "SetSingleOptOutDurationParam") does not reset the blacklist's recent
-  // opt out rule.
-
-  const GURL url("http://www.url.com");
-  RunClearingBlackListTest(url, true /* short_time */);
-  EXPECT_EQ(PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT,
-            black_list_->IsLoadedAndAllowed(url, PreviewsType::OFFLINE, false,
-                                            &passed_reasons_));
-}
-
 TEST_F(PreviewsBlackListTest, ClearingBlackListClearsRecentNavigation) {
   // Tests that clearing the black list for a long amount of time (relative to
   // "single_opt_out_duration_in_seconds") resets the blacklist's recent opt out
   // rule.
-
   const GURL url("http://www.url.com");
-  RunClearingBlackListTest(url, false /* short_time */);
+  RunClearingBlackListTest(url);
 
   EXPECT_EQ(PreviewsEligibilityReason::ALLOWED,
             black_list_->IsLoadedAndAllowed(url, PreviewsType::OFFLINE, false,
@@ -863,23 +827,31 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedWhenLoadBlacklistDone) {
 
   StartTest(false /* null_opt_out */);
 
-  std::unique_ptr<PreviewsBlackListItem> host_indifferent_item =
-      PreviewsBlackList::CreateHostIndifferentBlackListItem();
+  BlacklistData::AllowedTypesAndVersions allowed_types;
+  allowed_types[0] = 0;
+  std::unique_ptr<BlacklistData> data = std::make_unique<BlacklistData>(
+      nullptr,
+      std::make_unique<BlacklistData::Policy>(base::TimeDelta::FromSeconds(365),
+                                              host_indifferent_history,
+                                              host_indifferent_threshold),
+      nullptr, nullptr, 0, std::move(allowed_types));
   base::SimpleTestClock test_clock;
 
   for (size_t i = 0; i < host_indifferent_threshold; ++i) {
     test_clock.Advance(base::TimeDelta::FromSeconds(1));
-    host_indifferent_item->AddPreviewNavigation(true, test_clock.Now());
+    data->AddEntry("blah", true, 0, test_clock.Now(), true);
   }
 
   std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
       std::make_unique<TestPreviewsOptOutStore>();
-  opt_out_store->SetHostIndifferentBlacklistItem(
-      std::move(host_indifferent_item));
+  opt_out_store->SetBlacklistData(std::move(data));
 
   EXPECT_FALSE(blacklist_delegate_.user_blacklisted());
-  auto black_list = std::make_unique<PreviewsBlackList>(
-      std::move(opt_out_store), &test_clock, &blacklist_delegate_);
+  allowed_types.clear();
+  allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
+  auto black_list =
+      std::make_unique<PreviewsBlackList>(std::move(opt_out_store), &test_clock,
+                                          &blacklist_delegate_, allowed_types);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(blacklist_delegate_.user_blacklisted());
 }
@@ -904,40 +876,45 @@ TEST_F(PreviewsBlackListTest, ObserverIsNotifiedOfHistoricalBlacklistedHosts) {
 
   base::SimpleTestClock test_clock;
 
-  PreviewsBlackListItem* item_a = new PreviewsBlackListItem(
-      params::MaxStoredHistoryLengthForPerHostBlackList(),
-      params::PerHostBlackListOptOutThreshold(),
-      params::PerHostBlackListDuration());
-  PreviewsBlackListItem* item_b = new PreviewsBlackListItem(
-      params::MaxStoredHistoryLengthForPerHostBlackList(),
-      params::PerHostBlackListOptOutThreshold(),
-      params::PerHostBlackListDuration());
+  BlacklistData::AllowedTypesAndVersions allowed_types;
+  allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
+  std::unique_ptr<BlacklistData> data = std::make_unique<BlacklistData>(
+      nullptr, nullptr,
+      std::make_unique<BlacklistData::Policy>(
+          params::PerHostBlackListDuration(),
+          params::MaxStoredHistoryLengthForPerHostBlackList(),
+          params::PerHostBlackListOptOutThreshold()),
+      nullptr, params::MaxInMemoryHostsInBlackList(), std::move(allowed_types));
 
-  // Host |url_a| is blacklisted.
   test_clock.Advance(base::TimeDelta::FromSeconds(1));
-  item_a->AddPreviewNavigation(true, test_clock.Now());
+  data->AddEntry(url_a.host(), true, static_cast<int>(PreviewsType::OFFLINE),
+                 test_clock.Now(), true);
   test_clock.Advance(base::TimeDelta::FromSeconds(1));
-  item_a->AddPreviewNavigation(true, test_clock.Now());
+  data->AddEntry(url_a.host(), true, static_cast<int>(PreviewsType::OFFLINE),
+                 test_clock.Now(), true);
   base::Time blacklisted_time = test_clock.Now();
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(item_a->IsBlackListed(test_clock.Now()));
+  std::vector<BlacklistReason> reasons;
+  EXPECT_NE(
+      BlacklistReason::kAllowed,
+      data->IsAllowed(url_a.host(), static_cast<int>(PreviewsType::OFFLINE),
+                      false, test_clock.Now(), &reasons));
 
   // Host |url_b| is not blacklisted.
   test_clock.Advance(base::TimeDelta::FromSeconds(1));
-  item_b->AddPreviewNavigation(true, test_clock.Now());
-
-  std::unique_ptr<BlackListItemMap> item_map =
-      std::make_unique<BlackListItemMap>();
-  item_map->emplace(url_a.host(), base::WrapUnique(item_a));
-  item_map->emplace(url_b.host(), base::WrapUnique(item_b));
+  data->AddEntry(url_b.host(), true, static_cast<int>(PreviewsType::OFFLINE),
+                 test_clock.Now(), true);
 
   std::unique_ptr<TestPreviewsOptOutStore> opt_out_store =
       std::make_unique<TestPreviewsOptOutStore>();
-  opt_out_store->SetBlacklistItemMap(std::move(item_map));
+  opt_out_store->SetBlacklistData(std::move(data));
 
+  allowed_types.clear();
+  allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
   auto black_list = std::make_unique<PreviewsBlackList>(
-      std::move(opt_out_store), &test_clock, &blacklist_delegate_);
+      std::move(opt_out_store), &test_clock, &blacklist_delegate_,
+      std::move(allowed_types));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_THAT(blacklist_delegate_.blacklisted_hosts(), ::testing::SizeIs(1));

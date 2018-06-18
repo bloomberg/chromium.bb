@@ -40,8 +40,7 @@ PreviewsBlackListItem::PreviewsBlackListItem(
 
 PreviewsBlackListItem::~PreviewsBlackListItem() {}
 
-void PreviewsBlackListItem::AddPreviewNavigation(bool opt_out,
-                                                 base::Time entry_time) {
+void PreviewsBlackListItem::AddEntry(bool opt_out, base::Time entry_time) {
   DCHECK_LE(opt_out_records_.size(), max_stored_history_length_);
 
   opt_out_records_.emplace(entry_time, opt_out);

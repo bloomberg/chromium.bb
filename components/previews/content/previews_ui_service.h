@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/content/previews_optimization_guide.h"
+#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
@@ -38,7 +39,8 @@ class PreviewsUIService {
       std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
-      std::unique_ptr<PreviewsLogger> logger);
+      std::unique_ptr<PreviewsLogger> logger,
+      BlacklistData::AllowedTypesAndVersions allowed_previews);
   virtual ~PreviewsUIService();
 
   // Sets |io_data_| to |io_data| to allow calls from the UI thread to the IO
