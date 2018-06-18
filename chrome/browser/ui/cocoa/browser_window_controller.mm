@@ -1874,7 +1874,7 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (void)setBrowserWindowTouchBar:(BrowserWindowTouchBar*)touchBar {
-  touchBar_.reset(touchBar);
+  touchBar_.reset([touchBar retain]);
 }
 
 - (void)executeExtensionCommand:(const std::string&)extension_id

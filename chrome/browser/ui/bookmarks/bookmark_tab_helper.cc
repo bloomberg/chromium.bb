@@ -80,6 +80,10 @@ void BookmarkTabHelper::RemoveObserver(BookmarkTabHelperObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool BookmarkTabHelper::HasObserver(BookmarkTabHelperObserver* observer) const {
+  return observers_.HasObserver(observer);
+}
+
 BookmarkTabHelper::BookmarkTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       is_starred_(false),

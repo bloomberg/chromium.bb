@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -27,17 +29,21 @@ class BrowserWindowTouchBarTest : public InProcessBrowserTest {
   BrowserWindowTouchBarTest() : InProcessBrowserTest() {}
 
   void SetUpOnMainThread() override {
-    // Ownership is passed to BrowserWindowController in
-    // -setBrowserWindowTouchBar:
-    browser_touch_bar_ = [[BrowserWindowTouchBar alloc]
+    browser_touch_bar_.reset([[BrowserWindowTouchBar alloc]
         initWithBrowser:browser()
-                 window:[browser_window_controller() window]];
-    [browser_window_controller() setBrowserWindowTouchBar:browser_touch_bar_];
+                 window:[browser_window_controller() window]]);
+    [browser_window_controller()
+        setBrowserWindowTouchBar:browser_touch_bar_.get()];
   }
 
   void TearDownOnMainThread() override {
-    [browser_window_controller() setBrowserWindowTouchBar:nil];
+    DestroyBrowserWindowTouchBar();
     InProcessBrowserTest::TearDownOnMainThread();
+  }
+
+  void DestroyBrowserWindowTouchBar() {
+    [browser_window_controller() setBrowserWindowTouchBar:nil];
+    browser_touch_bar_.reset();
   }
 
   BrowserWindowController* browser_window_controller() {
@@ -52,7 +58,7 @@ class BrowserWindowTouchBarTest : public InProcessBrowserTest {
   }
 
  private:
-  BrowserWindowTouchBar* browser_touch_bar_;
+  base::scoped_nsobject<BrowserWindowTouchBar> browser_touch_bar_;
 
   test::ScopedMacViewsBrowserMode cocoa_browser_mode_{false};
 
@@ -97,5 +103,26 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowTouchBarTest, SearchEngineChanges) {
 
     // The window should have a new touch bar.
     EXPECT_NE(touch_bar, [window touchBar]);
+  }
+}
+
+// Tests to see if the touch bar's bookmark tab helper observer gets removed
+// when the touch bar is destroyed.
+IN_PROC_BROWSER_TEST_F(BrowserWindowTouchBarTest, DestroyNotificationBridge) {
+  if (@available(macOS 10.12.2, *)) {
+    BookmarkTabHelperObserver* observer =
+        [browser_touch_bar() bookmarkTabObserver];
+    std::unique_ptr<content::WebContents> contents =
+        content::WebContents::Create(
+            content::WebContents::CreateParams(browser()->profile()));
+    browser()->tab_strip_model()->AppendWebContents(std::move(contents), true);
+
+    BookmarkTabHelper* tab_helper = BookmarkTabHelper::FromWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents());
+    DCHECK(tab_helper);
+    EXPECT_TRUE(tab_helper->HasObserver(observer));
+
+    DestroyBrowserWindowTouchBar();
+    EXPECT_FALSE(tab_helper->HasObserver(observer));
   }
 }
