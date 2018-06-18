@@ -41,6 +41,7 @@ source_set("unit_tests") {
   deps = [
     ":sync_bookmarks",
     "//base",
+    "//base/test:test_support",
     "//components/bookmarks/browser",
     "//components/bookmarks/test",
     "//components/history/core/browser",

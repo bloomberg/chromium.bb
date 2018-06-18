@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_callback.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/sync/driver/fake_sync_client.h"
@@ -15,6 +16,7 @@
 
 using base::ASCIIToUTF16;
 using testing::Eq;
+using testing::NiceMock;
 using testing::NotNull;
 
 namespace sync_bookmarks {
@@ -25,6 +27,7 @@ namespace {
 // referred to as top level enities.
 const char kRootParentTag[] = "0";
 const char kBookmarkBarTag[] = "bookmark_bar";
+const char kBookmarkBarId[] = "bookmark_bar_id";
 const char kBookmarksRootId[] = "32904_google_chrome_bookmarks";
 
 struct BookmarkInfo {
@@ -74,7 +77,7 @@ void AssertState(const BookmarkModelTypeProcessor* processor,
     ASSERT_THAT(node->url(), Eq(GURL(bookmark.url)));
     const SyncedBookmarkTracker::Entity* parent_entity =
         tracker->GetEntityForSyncId(bookmark.parent_id);
-    ASSERT_THAT(node->parent(), parent_entity->bookmark_node());
+    ASSERT_THAT(node->parent(), Eq(parent_entity->bookmark_node()));
   }
 }
 
@@ -86,7 +89,7 @@ void InitWithSyncedBookmarks(const std::vector<BookmarkInfo>& bookmarks,
   syncer::UpdateResponseDataList updates;
   // Add update for the permanent folder "Bookmarks bar".
   updates.push_back(
-      CreateUpdateData({"bookmark_bar", std::string(), std::string(),
+      CreateUpdateData({kBookmarkBarId, std::string(), std::string(),
                         kBookmarksRootId, kBookmarkBarTag}));
   for (BookmarkInfo bookmark : bookmarks) {
     updates.push_back(CreateUpdateData(bookmark));
@@ -129,17 +132,27 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
  public:
   BookmarkModelTypeProcessorTest()
       : bookmark_model_(bookmarks::TestBookmarkClient::CreateModel()),
-        sync_client_(bookmark_model_.get()) {}
+        sync_client_(bookmark_model_.get()),
+        processor_(sync_client()->GetBookmarkUndoServiceIfExists()) {
+    processor_.DecodeSyncMetadata(std::string(), schedule_save_closure_.Get(),
+                                  bookmark_model_.get());
+  }
 
   TestSyncClient* sync_client() { return &sync_client_; }
   bookmarks::BookmarkModel* bookmark_model() { return bookmark_model_.get(); }
+  BookmarkModelTypeProcessor* processor() { return &processor_; }
+  base::MockCallback<base::RepeatingClosure>* schedule_save_closure() {
+    return &schedule_save_closure_;
+  }
 
  private:
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
   TestSyncClient sync_client_;
+  NiceMock<base::MockCallback<base::RepeatingClosure>> schedule_save_closure_;
+  BookmarkModelTypeProcessor processor_;
 };
 
-TEST_F(BookmarkModelTypeProcessorTest, ReorderUpdatesShouldIgnoreRootNodes) {
+TEST(BookmarkModelTypeProcessorReorderUpdatesTest, ShouldIgnoreRootNodes) {
   syncer::UpdateResponseDataList updates;
   updates.push_back(CreateBookmarkRootUpdateData());
   std::vector<const syncer::UpdateResponseData*> ordered_updates =
@@ -151,8 +164,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ReorderUpdatesShouldIgnoreRootNodes) {
 // TODO(crbug.com/516866): This should change to cover the general case of
 // parents before children for non-deletions, and another test should be added
 // for children before parents for deletions.
-TEST_F(BookmarkModelTypeProcessorTest,
-       ReorderUpdatesShouldPlacePermanentNodesFirstForNonDeletions) {
+TEST(BookmarkModelTypeProcessorReorderUpdatesTest,
+     ShouldPlacePermanentNodesFirstForNonDeletions) {
   const std::string kNode1Id = "node1";
   const std::string kNode2Id = "node2";
   syncer::UpdateResponseDataList updates;
@@ -172,28 +185,27 @@ TEST_F(BookmarkModelTypeProcessorTest,
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
-  BookmarkModelTypeProcessor processor(
-      sync_client()->GetBookmarkModel(),
-      sync_client()->GetBookmarkUndoServiceIfExists());
-
   syncer::UpdateResponseDataList updates;
   // Add update for the permanent folder "Bookmarks bar".
   updates.push_back(
-      CreateUpdateData({"bookmark_bar", std::string(), std::string(),
+      CreateUpdateData({kBookmarkBarId, std::string(), std::string(),
                         kBookmarksRootId, kBookmarkBarTag}));
 
   // Add update for another node under the bookmarks bar.
   const std::string kNodeId = "node_id";
   const std::string kTitle = "title";
   const std::string kUrl = "http://www.url.com";
-  updates.push_back(CreateUpdateData({kNodeId, kTitle, kUrl, kBookmarkBarTag,
+  updates.push_back(CreateUpdateData({kNodeId, kTitle, kUrl, kBookmarkBarId,
                                       /*server_tag=*/std::string()}));
 
   const bookmarks::BookmarkNode* bookmarkbar =
       bookmark_model()->bookmark_bar_node();
   EXPECT_TRUE(bookmarkbar->empty());
 
-  processor.OnUpdateReceived(sync_pb::ModelTypeState(), updates);
+  // Save will be scheduled in the model upon model change. No save should be
+  // scheduled from the processor.
+  EXPECT_CALL(*schedule_save_closure(), Run()).Times(0);
+  processor()->OnUpdateReceived(sync_pb::ModelTypeState(), updates);
 
   ASSERT_THAT(bookmarkbar->GetChild(0), NotNull());
   EXPECT_THAT(bookmarkbar->GetChild(0)->GetTitle(), Eq(ASCIIToUTF16(kTitle)));
@@ -201,18 +213,14 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
-  BookmarkModelTypeProcessor processor(
-      sync_client()->GetBookmarkModel(),
-      sync_client()->GetBookmarkUndoServiceIfExists());
-
   const std::string kNodeId = "node_id";
   const std::string kTitle = "title";
   const std::string kUrl = "http://www.url.com";
 
   std::vector<BookmarkInfo> bookmarks = {
-      {kNodeId, kTitle, kUrl, kBookmarkBarTag, /*server_tag=*/std::string()}};
+      {kNodeId, kTitle, kUrl, kBookmarkBarId, /*server_tag=*/std::string()}};
 
-  InitWithSyncedBookmarks(bookmarks, &processor);
+  InitWithSyncedBookmarks(bookmarks, processor());
 
   // Make sure original bookmark exists.
   const bookmarks::BookmarkNode* bookmark_bar =
@@ -227,9 +235,13 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   const std::string kNewUrl = "http://www.new-url.com";
   syncer::UpdateResponseDataList updates;
   updates.push_back(
-      CreateUpdateData({kNodeId, kNewTitle, kNewUrl, kBookmarkBarTag,
+      CreateUpdateData({kNodeId, kNewTitle, kNewUrl, kBookmarkBarId,
                         /*server_tag=*/std::string()}));
-  processor.OnUpdateReceived(sync_pb::ModelTypeState(), updates);
+
+  // Save will be scheduled in the model upon model change. No save should be
+  // scheduled from the processor.
+  EXPECT_CALL(*schedule_save_closure(), Run()).Times(0);
+  processor()->OnUpdateReceived(sync_pb::ModelTypeState(), updates);
 
   // Check if the bookmark has been updated properly.
   EXPECT_THAT(bookmark_bar->GetChild(0), Eq(bookmark_node));
@@ -237,10 +249,34 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   EXPECT_THAT(bookmark_node->url(), Eq(GURL(kNewUrl)));
 }
 
+TEST_F(BookmarkModelTypeProcessorTest,
+       ShouldScheduleSaveAfterRemoteUpdateWithOnlyMetadataChange) {
+  const std::string kNodeId = "node_id";
+  const std::string kTitle = "title";
+  const std::string kUrl = "http://www.url.com";
+
+  std::vector<BookmarkInfo> bookmarks = {
+      {kNodeId, kTitle, kUrl, kBookmarkBarId, /*server_tag=*/std::string()}};
+
+  InitWithSyncedBookmarks(bookmarks, processor());
+
+  // Make sure original bookmark exists.
+  const bookmarks::BookmarkNode* bookmark_bar =
+      bookmark_model()->bookmark_bar_node();
+  const bookmarks::BookmarkNode* bookmark_node = bookmark_bar->GetChild(0);
+  ASSERT_THAT(bookmark_node, NotNull());
+
+  // Process an update for the same bookmark with the same data.
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateUpdateData({kNodeId, kTitle, kUrl, kBookmarkBarId,
+                                      /*server_tag=*/std::string()}));
+  updates[0].response_version++;
+
+  EXPECT_CALL(*schedule_save_closure(), Run());
+  processor()->OnUpdateReceived(sync_pb::ModelTypeState(), updates);
+}
+
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteDelete) {
-  BookmarkModelTypeProcessor processor(
-      sync_client()->GetBookmarkModel(),
-      sync_client()->GetBookmarkUndoServiceIfExists());
   // Build this structure
   // bookmark_bar
   //  |- folder1
@@ -266,16 +302,16 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteDelete) {
   const std::string kUrl = "http://www.url.com";
 
   std::vector<BookmarkInfo> bookmarks = {
-      {kFolder1Id, kFolder1, /*url=*/std::string(), kBookmarkBarTag,
+      {kFolder1Id, kFolder1, /*url=*/std::string(), kBookmarkBarId,
        /*server_tag=*/std::string()},
       {kTitle1Id, kTitle1, kUrl, kFolder1Id, /*server_tag=*/std::string()},
       {kTitle2Id, kTitle2, kUrl, kFolder1Id, /*server_tag=*/std::string()},
-      {kFolder2Id, kFolder2, /*url=*/std::string(), kBookmarkBarTag,
+      {kFolder2Id, kFolder2, /*url=*/std::string(), kBookmarkBarId,
        /*server_tag=*/std::string()},
       {kTitle3Id, kTitle3, kUrl, kFolder2Id, /*server_tag=*/std::string()},
   };
 
-  InitWithSyncedBookmarks(bookmarks, &processor);
+  InitWithSyncedBookmarks(bookmarks, processor());
 
   const bookmarks::BookmarkNode* bookmarkbar =
       bookmark_model()->bookmark_bar_node();
@@ -295,7 +331,10 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteDelete) {
   updates.push_back(CreateTombstone(kFolder1Id));
 
   const sync_pb::ModelTypeState model_type_state;
-  processor.OnUpdateReceived(model_type_state, updates);
+  // Save will be scheduled in the model upon model change. No save should be
+  // scheduled from the processor.
+  EXPECT_CALL(*schedule_save_closure(), Run()).Times(0);
+  processor()->OnUpdateReceived(model_type_state, updates);
 
   // The structure should be
   // bookmark_bar
@@ -306,6 +345,155 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteDelete) {
   EXPECT_THAT(bookmarkbar->GetChild(0)->child_count(), Eq(1));
   EXPECT_THAT(bookmarkbar->GetChild(0)->GetChild(0)->GetTitle(),
               Eq(ASCIIToUTF16(kTitle3)));
+}
+
+TEST_F(BookmarkModelTypeProcessorTest, ShouldEncodeSyncMetadata) {
+  const std::string kNodeId1 = "node_id1";
+  const std::string kTitle1 = "title1";
+  const std::string kUrl1 = "http://www.url1.com";
+
+  const std::string kNodeId2 = "node_id2";
+  const std::string kTitle2 = "title2";
+  const std::string kUrl2 = "http://www.url2.com";
+
+  std::vector<BookmarkInfo> bookmarks = {
+      {kNodeId1, kTitle1, kUrl1, kBookmarkBarId, /*server_tag=*/std::string()},
+      {kNodeId2, kTitle2, kUrl2, kBookmarkBarId,
+       /*server_tag=*/std::string()}};
+
+  InitWithSyncedBookmarks(bookmarks, processor());
+
+  // Make sure original bookmark exists.
+  const bookmarks::BookmarkNode* bookmark_bar =
+      bookmark_model()->bookmark_bar_node();
+  const bookmarks::BookmarkNode* bookmark_node1 = bookmark_bar->GetChild(0);
+  const bookmarks::BookmarkNode* bookmark_node2 = bookmark_bar->GetChild(1);
+  ASSERT_THAT(bookmark_node1, NotNull());
+  ASSERT_THAT(bookmark_node2, NotNull());
+
+  std::string metadata_str = processor()->EncodeSyncMetadata();
+  sync_pb::BookmarkModelMetadata model_metadata;
+  EXPECT_TRUE(model_metadata.ParseFromString(metadata_str));
+  // There should be 3 entries now, one for the bookmark bar, and the other 2
+  // nodes.
+  ASSERT_THAT(model_metadata.bookmarks_metadata().size(), Eq(3));
+
+  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(0).id(),
+              Eq(bookmark_bar->id()));
+  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(0).metadata().server_id(),
+              Eq(kBookmarkBarId));
+  EXPECT_THAT(
+      model_metadata.bookmarks_metadata().Get(0).metadata().is_deleted(),
+      Eq(false));
+
+  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(1).id(),
+              Eq(bookmark_node1->id()));
+  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(1).metadata().server_id(),
+              Eq(kNodeId1));
+  EXPECT_THAT(
+      model_metadata.bookmarks_metadata().Get(1).metadata().is_deleted(),
+      Eq(false));
+
+  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(2).id(),
+              Eq(bookmark_node2->id()));
+  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(2).metadata().server_id(),
+              Eq(kNodeId2));
+  EXPECT_THAT(
+      model_metadata.bookmarks_metadata().Get(2).metadata().is_deleted(),
+      Eq(false));
+
+  // Process a remote delete for the first node.
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateTombstone(kNodeId1));
+
+  const sync_pb::ModelTypeState model_type_state;
+  processor()->OnUpdateReceived(model_type_state, updates);
+
+  metadata_str = processor()->EncodeSyncMetadata();
+  model_metadata.ParseFromString(metadata_str);
+  // There should be 3 entries now, one for the bookmark bar, and the remaning
+  // bookmark node.
+  ASSERT_THAT(model_metadata.bookmarks_metadata().size(), Eq(2));
+
+  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(1).id(),
+              Eq(bookmark_node2->id()));
+  EXPECT_THAT(model_metadata.bookmarks_metadata().Get(1).metadata().server_id(),
+              Eq(kNodeId2));
+  EXPECT_THAT(
+      model_metadata.bookmarks_metadata().Get(1).metadata().is_deleted(),
+      Eq(false));
+}
+
+TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeSyncMetadata) {
+  const std::string kNodeId = "node_id1";
+  const std::string kTitle = "title1";
+  const std::string kUrl = "http://www.url1.com";
+
+  std::vector<BookmarkInfo> bookmarks = {
+      {kNodeId, kTitle, kUrl, kBookmarkBarId, /*server_tag=*/std::string()}};
+
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  const bookmarks::BookmarkNode* bookmarknode = bookmark_model()->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(kTitle),
+      GURL(kUrl));
+
+  // TODO(crbug.com/516866): Remove this after initial sync done is properly set
+  // within the processor.
+  sync_pb::BookmarkModelMetadata model_metadata;
+  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
+  // Add an entry for bookmark bar.
+  sync_pb::BookmarkMetadata* bookmark_metadata =
+      model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(bookmark_bar_node->id());
+  bookmark_metadata->mutable_metadata()->set_server_id(kBookmarkBarId);
+  // Add an entry for the bookmark node.
+  bookmark_metadata = model_metadata.add_bookmarks_metadata();
+  bookmark_metadata->set_id(bookmarknode->id());
+  bookmark_metadata->mutable_metadata()->set_server_id(kNodeId);
+
+  // Create a new processor and init it with the metadata str.
+  BookmarkModelTypeProcessor new_processor(
+      sync_client()->GetBookmarkUndoServiceIfExists());
+  std::string metadata_str;
+  model_metadata.SerializeToString(&metadata_str);
+  new_processor.DecodeSyncMetadata(metadata_str, base::DoNothing(),
+                                   bookmark_model());
+
+  AssertState(&new_processor, bookmarks);
+}
+
+TEST_F(BookmarkModelTypeProcessorTest, ShouldDecodeEncodedSyncMetadata) {
+  const std::string kNodeId1 = "node_id1";
+  const std::string kTitle1 = "title1";
+  const std::string kUrl1 = "http://www.url1.com";
+
+  const std::string kNodeId2 = "node_id2";
+  const std::string kTitle2 = "title2";
+  const std::string kUrl2 = "http://www.url2.com";
+
+  std::vector<BookmarkInfo> bookmarks = {
+      {kNodeId1, kTitle1, kUrl1, kBookmarkBarId, /*server_tag=*/std::string()},
+      {kNodeId2, kTitle2, kUrl2, kBookmarkBarId,
+       /*server_tag=*/std::string()}};
+
+  InitWithSyncedBookmarks(bookmarks, processor());
+
+  std::string metadata_str = processor()->EncodeSyncMetadata();
+  // TODO(crbug.com/516866): Remove this after initial sync done is properly set
+  // within the processor.
+  sync_pb::BookmarkModelMetadata model_metadata;
+  model_metadata.ParseFromString(metadata_str);
+  model_metadata.mutable_model_type_state()->set_initial_sync_done(true);
+
+  // Create a new processor and init it with the same metadata str.
+  BookmarkModelTypeProcessor new_processor(
+      sync_client()->GetBookmarkUndoServiceIfExists());
+  model_metadata.SerializeToString(&metadata_str);
+  new_processor.DecodeSyncMetadata(metadata_str, base::DoNothing(),
+                                   bookmark_model());
+
+  AssertState(&new_processor, bookmarks);
 }
 
 }  // namespace
