@@ -35,7 +35,8 @@ class CORE_EXPORT FetchClientSettingsObjectSnapshot final {
   explicit FetchClientSettingsObjectSnapshot(ExecutionContext&);
   FetchClientSettingsObjectSnapshot(
       const scoped_refptr<const SecurityOrigin> security_origin,
-      ReferrerPolicy referrer_policy);
+      ReferrerPolicy referrer_policy,
+      const String& outgoing_referrer);
 
   virtual ~FetchClientSettingsObjectSnapshot() = default;
 
@@ -50,16 +51,22 @@ class CORE_EXPORT FetchClientSettingsObjectSnapshot final {
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-referrer-policy
   ReferrerPolicy GetReferrerPolicy() const { return referrer_policy_; }
 
+  // "referrerURL" used in the "Determine request's Referrer" algorithm:
+  // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
+  const String& GetOutgoingReferrer() const { return outgoing_referrer_; }
+
   // Makes an copy of this instance. This is typically used for cross-thread
   // communication in CrossThreadCopier.
   FetchClientSettingsObjectSnapshot IsolatedCopy() const {
     return FetchClientSettingsObjectSnapshot(security_origin_->IsolatedCopy(),
-                                             referrer_policy_);
+                                             referrer_policy_,
+                                             outgoing_referrer_.IsolatedCopy());
   }
 
  private:
   const scoped_refptr<const SecurityOrigin> security_origin_;
   const ReferrerPolicy referrer_policy_;
+  const String outgoing_referrer_;
 };
 
 template <>

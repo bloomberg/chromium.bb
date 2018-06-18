@@ -125,7 +125,7 @@ void ModuleScriptLoader::FetchInternal(
 
   if (level == ModuleGraphLevel::kDependentModuleFetch) {
     options.initiator_info.imported_module_referrer =
-        module_request.GetReferrer();
+        module_request.GetReferrer().referrer;
     options.initiator_info.position = module_request.GetReferrerPosition();
   }
 
@@ -150,12 +150,8 @@ void ModuleScriptLoader::FetchInternal(
       options_.CredentialsMode());
 
   // Step 5. "... referrer is referrer, ..." [spec text]
-  if (!module_request.GetReferrer().IsNull()) {
-    fetch_params.MutableResourceRequest().SetHTTPReferrer(
-        SecurityPolicy::GenerateReferrer(module_request.GetReferrerPolicy(),
-                                         module_request.Url(),
-                                         module_request.GetReferrer()));
-  }
+  fetch_params.MutableResourceRequest().SetHTTPReferrer(
+      module_request.GetReferrer());
 
   // Step 5. "... and client is fetch client settings object." [spec text]
   // -> set by ResourceFetcher
