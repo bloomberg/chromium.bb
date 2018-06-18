@@ -5,9 +5,8 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_OUTPUT_STREAM_FUCHSIA_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_OUTPUT_STREAM_FUCHSIA_H_
 
-#include <fuchsia/media/cpp/fidl.h>
+#include <media/audio.h>
 
-#include "base/memory/shared_memory.h"
 #include "base/time/time.h"
 #include "chromecast/public/media/mixer_output_stream.h"
 
@@ -32,36 +31,21 @@ class MixerOutputStreamFuchsia : public MixerOutputStream {
   void Stop() override;
 
  private:
-  size_t GetMinBufferSize();
-  bool InitializePayloadBuffer();
-
+  bool UpdatePresentationDelay();
   base::TimeTicks GetCurrentStreamTime();
 
-  // Event handlers for |audio_renderer_|.
-  void OnRendererError();
-  void OnMinLeadTimeChanged(int64_t min_lead_time);
+  fuchsia_audio_manager* manager_ = nullptr;
+  fuchsia_audio_output_stream* stream_ = nullptr;
 
   int sample_rate_ = 0;
   int channels_ = 0;
 
-  // Value returned by OptimalWriteFramesCount().
-  int target_packet_size_ = 0;
-
-  // Audio renderer connection.
-  fuchsia::media::AudioRenderer2Ptr audio_renderer_;
-
-  base::SharedMemory payload_buffer_;
-  size_t payload_buffer_pos_ = 0;
-
-  // Set only while stream is playing.
-  base::TimeTicks reference_time_;
-
+  base::TimeTicks started_time_;
   int64_t stream_position_samples_ = 0;
 
-  // Current min lead time for the stream. This value is updated by
-  // AudioRenderer::OnMinLeadTimeChanged event. Assume 50ms until we get the
-  // first OnMinLeadTimeChanged event.
-  base::TimeDelta min_lead_time_ = base::TimeDelta::FromMilliseconds(50);
+  // Total presentation delay for the stream. This value is returned by
+  // fuchsia_audio_output_stream_get_min_delay()
+  zx_duration_t presentation_delay_ns_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MixerOutputStreamFuchsia);
 };

@@ -224,10 +224,6 @@ StreamMixer::StreamMixer(
   if (mixer_thread_) {
     base::Thread::Options options;
     options.priority = base::ThreadPriority::REALTIME_AUDIO;
-#if defined(OS_FUCHSIA)
-    // MixerOutputStreamFuchsia uses FIDL, which works only on IO threads.
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
-#endif
     mixer_thread_->StartWithOptions(options);
     mixer_task_runner_ = mixer_thread_->task_runner();
     mixer_task_runner_->PostTask(FROM_HERE, base::BindOnce(&UseHighPriority));
