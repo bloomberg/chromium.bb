@@ -269,7 +269,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
   is_old_style_answer_ = !!match.answer;
   is_rich_suggestion_ =
       (OmniboxFieldTrial::IsNewAnswerLayoutEnabled() && !!match.answer) ||
-      (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) &&
+      (OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() &&
        !match.image_url.empty());
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
   has_tab_match_ = match.has_tab_match;

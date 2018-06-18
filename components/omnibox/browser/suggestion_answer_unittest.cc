@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -265,7 +266,7 @@ TEST(SuggestionAnswerTest, AddImageURLsTo) {
 
   {
     base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(omnibox::kOmniboxNewAnswerLayout);
+    feature_list.InitAndEnableFeature(features::kExperimentalUi);
     json =
         "{ \"i\": { \"d\": \"https://gstatic.com/foo.png\", \"t\": 3 },"
         "  \"l\" : ["
