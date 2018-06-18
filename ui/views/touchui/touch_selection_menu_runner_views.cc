@@ -131,6 +131,11 @@ TouchSelectionMenuRunnerViews::Menu::Menu(TouchSelectionMenuRunnerViews* owner,
     bounds.AdjustToFit(work_area);
     widget->SetBounds(bounds);
   }
+  // Using BubbleDialogDelegateView engages its CreateBubbleWidget() which
+  // invokes widget->StackAbove(context). That causes the bubble to stack
+  // _immediately_ above |context|; below any already-existing bubbles. That
+  // doesn't make sense for a menu, so put it back on top.
+  widget->StackAtTop();
   widget->Show();
 }
 
