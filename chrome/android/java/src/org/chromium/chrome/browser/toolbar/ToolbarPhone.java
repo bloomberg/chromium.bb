@@ -2561,6 +2561,7 @@ public class ToolbarPhone extends ToolbarLayout
         // Refresh the toolbar texture.
         if ((mVisualState == VisualState.BRAND_COLOR || visualStateChanged)
                 && mLayoutUpdateHost != null) {
+            setUseLightDrawablesForTextureCapture();
             mLayoutUpdateHost.requestUpdate();
         }
         updateShadowVisibility();
