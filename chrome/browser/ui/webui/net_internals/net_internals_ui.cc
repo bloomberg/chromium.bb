@@ -38,7 +38,6 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/net_export_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/chrome_expect_ct_reporter.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -73,6 +72,7 @@
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/expect_ct_reporter.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
@@ -364,7 +364,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   // local variable so that it lives long enough to receive the result of
   // sending a report, which is delivered to the JavaScript via a JavaScript
   // command.
-  std::unique_ptr<ChromeExpectCTReporter> expect_ct_reporter_;
+  std::unique_ptr<network::ExpectCTReporter> expect_ct_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThreadImpl);
 };
@@ -899,7 +899,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnExpectCTTestReport(
         std::make_unique<base::Value>("success");
     std::unique_ptr<base::Value> failure =
         std::make_unique<base::Value>("failure");
-    expect_ct_reporter_ = std::make_unique<ChromeExpectCTReporter>(
+    expect_ct_reporter_ = std::make_unique<network::ExpectCTReporter>(
         GetMainContext(),
         base::Bind(
             &NetInternalsMessageHandler::IOThreadImpl::SendJavascriptCommand,

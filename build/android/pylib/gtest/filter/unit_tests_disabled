@@ -76,8 +76,5 @@ SyncSearchEngineDataTypeControllerTest.*
 # crbug.com/256259
 DiagnosticsModelTest.RunAll
 
-# crbug.com/758996
-ChromeExpectCTReporterTest.*
-
 # Death tests are not supported with apks.
 *DeathTest*

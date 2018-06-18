@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,8 +19,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 
 namespace {
 
@@ -78,6 +76,18 @@ class ExpectCTBrowserTest : public CertVerifierBrowserTest {
     return http_response;
   }
 
+  std::unique_ptr<net::test_server::HttpResponse> TestRequestHandler(
+      const GURL& report_url,
+      const net::test_server::HttpRequest& request) {
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse());
+    http_response->set_code(net::HTTP_OK);
+    std::string header_value = "report-uri=\"";
+    header_value += report_url.spec() + "\", enforce, max-age=3600";
+    http_response->AddCustomHeader("Expect-CT", header_value);
+    return http_response;
+  }
+
  protected:
   void WaitForReport() { run_loop_->Run(); }
 
@@ -94,32 +104,26 @@ class ExpectCTBrowserTest : public CertVerifierBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ExpectCTBrowserTest);
 };
 
-void AddExpectCTHeaderOnIO(net::URLRequestContextGetter* getter,
-                           const std::string& host,
-                           const GURL& report_uri) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::URLRequestContext* context = getter->GetURLRequestContext();
-  context->transport_security_state()->AddExpectCT(
-      host, base::Time::Now() + base::TimeDelta::FromSeconds(1000), true,
-      report_uri);
-}
-
 // Tests that an Expect-CT reporter is properly set up and used for violations
 // of Expect-CT HTTP headers.
 IN_PROC_BROWSER_TEST_F(ExpectCTBrowserTest, TestDynamicExpectCTReporting) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kExpectCTReporting,
+      {network::features::kExpectCTReporting,
        net::TransportSecurityState::kDynamicExpectCTFeature},
       {});
-
-  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  ASSERT_TRUE(test_server.Start());
 
   net::EmbeddedTestServer report_server;
   report_server.RegisterRequestHandler(base::Bind(
       &ExpectCTBrowserTest::ReportRequestHandler, base::Unretained(this)));
   ASSERT_TRUE(report_server.Start());
+  GURL report_url = report_server.GetURL("/");
+
+  net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  test_server.RegisterRequestHandler(
+      base::Bind(&ExpectCTBrowserTest::TestRequestHandler,
+                 base::Unretained(this), report_url));
+  ASSERT_TRUE(test_server.Start());
 
   // Set up the mock cert verifier to accept |test_server|'s certificate as
   // valid and as if it is issued by a known root. (CT checks are skipped for
@@ -131,15 +135,8 @@ IN_PROC_BROWSER_TEST_F(ExpectCTBrowserTest, TestDynamicExpectCTReporting) {
   verify_result.cert_status = 0;
   mock_cert_verifier()->AddResultForCert(cert, verify_result, net::OK);
 
-  // Fire off a task to simulate as if a previous request to |test_server| had
-  // set a valid Expect-CT header.
-  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
-      browser()->profile()->GetRequestContext();
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &AddExpectCTHeaderOnIO, base::RetainedRef(url_request_context_getter),
-          test_server.GetURL("/").host(), report_server.GetURL("/")));
+  // Fire off a request so that |test_server| sets a valid Expect-CT header.
+  ui_test_utils::NavigateToURL(browser(), test_server.GetURL("/"));
 
   // Navigate to a test server URL, which should trigger an Expect-CT report
   // because the test server doesn't serve SCTs.
@@ -155,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ExpectCTBrowserTest,
                        TestDynamicExpectCTHeaderProcessing) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kExpectCTReporting,
+      {network::features::kExpectCTReporting,
        net::TransportSecurityState::kDynamicExpectCTFeature},
       {});
 

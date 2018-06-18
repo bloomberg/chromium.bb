@@ -50,6 +50,7 @@ class STHReporter;
 }  // namespace certificate_transparency
 
 namespace network {
+class ExpectCTReporter;
 class NetworkService;
 class ResourceScheduler;
 class ResourceSchedulerClient;
@@ -224,6 +225,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>*
           out_require_ct_delegate,
       std::unique_ptr<net::ReportSender>* out_certificate_report_sender,
+      std::unique_ptr<ExpectCTReporter>* out_expect_ct_reporter,
       net::StaticHttpUserAgentSettings** out_http_user_agent_settings);
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
@@ -291,6 +293,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // Pointed to by the TransportSecurityState (owned by the
   // URLRequestContext), and must be disconnected from it before it's destroyed.
   std::unique_ptr<net::ReportSender> certificate_report_sender_;
+
+  std::unique_ptr<ExpectCTReporter> expect_ct_reporter_;
 
   std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>
       require_ct_delegate_;

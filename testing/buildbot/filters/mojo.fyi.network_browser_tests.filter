@@ -209,11 +209,6 @@
 -NetInternalsTest.netInternalsTimelineViewZoomOut
 -NetInternalsTest.netInternalsTourTabs
 
-# Move ChromeExpectCTReporter to services/network
-# https://crbug.com/844032
--ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
--ExpectCTBrowserTest.TestDynamicExpectCTReporting
-
 # https://crbug.com/721398
 -WebViewTest.ClearDataCache
 

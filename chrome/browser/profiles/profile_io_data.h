@@ -41,7 +41,6 @@
 
 class ChromeNetworkDelegate;
 class ChromeURLRequestContextGetter;
-class ChromeExpectCTReporter;
 class HostContentSettingsMap;
 class ProtocolHandlerRegistry;
 
@@ -592,7 +591,6 @@ class ProfileIOData {
   mutable std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
       data_reduction_proxy_io_data_;
 
-  mutable std::unique_ptr<ChromeExpectCTReporter> expect_ct_reporter_;
 #if defined(OS_CHROMEOS)
   mutable std::string username_hash_;
   mutable SystemKeySlotUseType system_key_slot_use_type_;

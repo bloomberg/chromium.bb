@@ -56,6 +56,7 @@
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/expect_ct_reporter.h"
 #include "services/network/http_server_properties_pref_delegate.h"
 #include "services/network/ignore_errors_cert_verifier.h"
 #include "services/network/mojo_net_log.h"
@@ -258,7 +259,7 @@ NetworkContext::NetworkContext(
       network_service->network_quality_estimator(),
       network_service_->GetHttpAuthHandlerFactory(),
       network_service_->sth_reporter(), &ct_tree_tracker_,
-      &require_ct_delegate_, &certificate_report_sender_,
+      &require_ct_delegate_, &certificate_report_sender_, &expect_ct_reporter_,
       &user_agent_settings_);
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
@@ -314,6 +315,12 @@ NetworkContext::~NetworkContext() {
       url_request_context_->transport_security_state()->SetReportSender(
           nullptr);
       certificate_report_sender_.reset();
+    }
+
+    if (expect_ct_reporter_) {
+      url_request_context_->transport_security_state()->SetExpectCTReporter(
+          nullptr);
+      expect_ct_reporter_.reset();
     }
 
     if (require_ct_delegate_) {
@@ -680,6 +687,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>*
         out_require_ct_delegate,
     std::unique_ptr<net::ReportSender>* out_certificate_report_sender,
+    std::unique_ptr<ExpectCTReporter>* out_expect_ct_reporter,
     net::StaticHttpUserAgentSettings** out_http_user_agent_settings) {
   if (net_log)
     builder->set_net_log(net_log);
@@ -842,6 +850,10 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   auto result =
       URLRequestContextOwner(std::move(pref_service), builder->Build());
 
+  // Attach some things to the URLRequestContextBuilder's
+  // TransportSecurityState.  Since no requests have been made yet, safe to do
+  // this even after the call to Build().
+
   if (network_context_params->enable_certificate_reporting) {
     net::NetworkTrafficAnnotationTag traffic_annotation =
         net::DefineNetworkTrafficAnnotation("domain_security_policy", R"(
@@ -875,6 +887,14 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
         result.url_request_context.get(), traffic_annotation);
     result.url_request_context->transport_security_state()->SetReportSender(
         (*out_certificate_report_sender).get());
+  }
+
+  if (network_context_params->enable_expect_ct_reporting &&
+      out_expect_ct_reporter) {
+    *out_expect_ct_reporter = std::make_unique<ExpectCTReporter>(
+        result.url_request_context.get(), base::Closure(), base::Closure());
+    result.url_request_context->transport_security_state()->SetExpectCTReporter(
+        (*out_expect_ct_reporter).get());
   }
 
 #if !defined(OS_IOS)
@@ -1020,7 +1040,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
                        : nullptr,
       network_service_ ? network_service_->sth_reporter() : nullptr,
       &ct_tree_tracker_, &require_ct_delegate_, &certificate_report_sender_,
-      &user_agent_settings_);
+      &expect_ct_reporter_, &user_agent_settings_);
 
   return result;
 }

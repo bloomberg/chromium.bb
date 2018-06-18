@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/chrome_expect_ct_reporter.h"
+#include "services/network/expect_ct_reporter.h"
 
 #include <set>
 #include <string>
@@ -19,13 +19,14 @@
 #include "base/time/time.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/values.h"
-#include "chrome/common/chrome_features.h"
 #include "net/base/load_flags.h"
 #include "net/cert/ct_serialization.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request_context.h"
+#include "services/network/public/cpp/features.h"
 
+namespace network {
 namespace {
 
 // Returns true if |request| contains any of the |allowed_values| in a response
@@ -107,9 +108,8 @@ void AddSCT(const net::SignedCertificateTimestampAndStatus& sct,
   list->Append(std::move(list_item));
 }
 
-constexpr net::NetworkTrafficAnnotationTag
-    kChromeExpectCtReporterTrafficAnnotation =
-        net::DefineNetworkTrafficAnnotation("chrome_expect_ct_reporter", R"(
+constexpr net::NetworkTrafficAnnotationTag kExpectCTReporterTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("expect_ct_reporter", R"(
         semantics {
           sender: "Expect-CT reporting for Certificate Transparency reporting"
           description:
@@ -135,20 +135,18 @@ constexpr net::NetworkTrafficAnnotationTag
 
 }  // namespace
 
-ChromeExpectCTReporter::ChromeExpectCTReporter(
-    net::URLRequestContext* request_context,
-    const base::Closure& success_callback,
-    const base::Closure& failure_callback)
-    : report_sender_(
-          new net::ReportSender(request_context,
-                                kChromeExpectCtReporterTrafficAnnotation)),
+ExpectCTReporter::ExpectCTReporter(net::URLRequestContext* request_context,
+                                   const base::Closure& success_callback,
+                                   const base::Closure& failure_callback)
+    : report_sender_(new net::ReportSender(request_context,
+                                           kExpectCTReporterTrafficAnnotation)),
       request_context_(request_context),
       success_callback_(success_callback),
       failure_callback_(failure_callback) {}
 
-ChromeExpectCTReporter::~ChromeExpectCTReporter() {}
+ExpectCTReporter::~ExpectCTReporter() {}
 
-void ChromeExpectCTReporter::OnExpectCTFailed(
+void ExpectCTReporter::OnExpectCTFailed(
     const net::HostPortPair& host_port_pair,
     const GURL& report_uri,
     base::Time expiration,
@@ -192,8 +190,8 @@ void ChromeExpectCTReporter::OnExpectCTFailed(
   SendPreflight(report_uri, serialized_report);
 }
 
-void ChromeExpectCTReporter::OnResponseStarted(net::URLRequest* request,
-                                               int net_error) {
+void ExpectCTReporter::OnResponseStarted(net::URLRequest* request,
+                                         int net_error) {
   auto preflight_it = inflight_preflights_.find(request);
   DCHECK(inflight_preflights_.end() != inflight_preflights_.find(request));
   PreflightInProgress* preflight = preflight_it->second.get();
@@ -226,23 +224,22 @@ void ChromeExpectCTReporter::OnResponseStarted(net::URLRequest* request,
     return;
   }
 
-  report_sender_->Send(preflight->report_uri,
-                       "application/expect-ct-report+json; charset=utf-8",
-                       preflight->serialized_report, success_callback_,
-                       // Since |this| owns the |report_sender_|, it's safe to
-                       // use base::Unretained here: |report_sender_| will be
-                       // destroyed before |this|.
-                       base::Bind(&ChromeExpectCTReporter::OnReportFailure,
-                                  base::Unretained(this)));
+  report_sender_->Send(
+      preflight->report_uri, "application/expect-ct-report+json; charset=utf-8",
+      preflight->serialized_report, success_callback_,
+      // Since |this| owns the |report_sender_|, it's safe to
+      // use base::Unretained here: |report_sender_| will be
+      // destroyed before |this|.
+      base::Bind(&ExpectCTReporter::OnReportFailure, base::Unretained(this)));
   inflight_preflights_.erase(request);
 }
 
-void ChromeExpectCTReporter::OnReadCompleted(net::URLRequest* request,
-                                             int bytes_read) {
+void ExpectCTReporter::OnReadCompleted(net::URLRequest* request,
+                                       int bytes_read) {
   NOTREACHED();
 }
 
-ChromeExpectCTReporter::PreflightInProgress::PreflightInProgress(
+ExpectCTReporter::PreflightInProgress::PreflightInProgress(
     std::unique_ptr<net::URLRequest> request,
     const std::string& serialized_report,
     const GURL& report_uri)
@@ -250,14 +247,13 @@ ChromeExpectCTReporter::PreflightInProgress::PreflightInProgress(
       serialized_report(serialized_report),
       report_uri(report_uri) {}
 
-ChromeExpectCTReporter::PreflightInProgress::~PreflightInProgress() {}
+ExpectCTReporter::PreflightInProgress::~PreflightInProgress() {}
 
-void ChromeExpectCTReporter::SendPreflight(
-    const GURL& report_uri,
-    const std::string& serialized_report) {
+void ExpectCTReporter::SendPreflight(const GURL& report_uri,
+                                     const std::string& serialized_report) {
   std::unique_ptr<net::URLRequest> url_request =
       request_context_->CreateRequest(report_uri, net::DEFAULT_PRIORITY, this,
-                                      kChromeExpectCtReporterTrafficAnnotation);
+                                      kExpectCTReporterTrafficAnnotation);
   url_request->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
                             net::LOAD_DO_NOT_SEND_AUTH_DATA |
                             net::LOAD_DO_NOT_SEND_COOKIES |
@@ -276,10 +272,12 @@ void ChromeExpectCTReporter::SendPreflight(
   raw_request->Start();
 }
 
-void ChromeExpectCTReporter::OnReportFailure(const GURL& report_uri,
-                                             int net_error,
-                                             int http_response_code) {
+void ExpectCTReporter::OnReportFailure(const GURL& report_uri,
+                                       int net_error,
+                                       int http_response_code) {
   base::UmaHistogramSparse("SSL.ExpectCTReportFailure2", -net_error);
   if (!failure_callback_.is_null())
     failure_callback_.Run();
 }
+
+}  // namespace network
