@@ -817,7 +817,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Fail_NoProvider) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
+                       DISABLED_Fail_NoProvider) {
   SetTestData(FILE_PATH_LITERAL("no_provider.json"));
   WebContents* web_contents = StartSessionWithTestPageAndChooseSink();
   CheckStartFailed(web_contents, "UnknownError",
