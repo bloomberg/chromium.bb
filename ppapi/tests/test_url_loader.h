@@ -41,14 +41,17 @@ class TestURLLoader : public TestCase {
                              std::string* message);
   std::string GetReachableAbsoluteURL(const std::string& file_name);
   std::string GetReachableCrossOriginURL(const std::string& file_name);
-  int32_t OpenUntrusted(const pp::URLRequestInfo& request);
-  int32_t OpenTrusted(const pp::URLRequestInfo& request);
+  int32_t OpenUntrusted(const pp::URLRequestInfo& request,
+                        std::string* response_body);
+  int32_t OpenTrusted(const pp::URLRequestInfo& request,
+                      std::string* response_body);
   int32_t OpenUntrusted(const std::string& method,
                         const std::string& header);
   int32_t OpenTrusted(const std::string& method,
                       const std::string& header);
   int32_t Open(const pp::URLRequestInfo& request,
-               bool with_universal_access);
+               bool with_universal_access,
+               std::string* response_body);
   int32_t OpenWithPrefetchBufferThreshold(int32_t lower, int32_t upper);
 
   std::string TestBasicGET();
@@ -65,6 +68,8 @@ class TestURLLoader : public TestCase {
   std::string TestTrustedSameOriginRestriction();
   std::string TestUntrustedCrossOriginRequest();
   std::string TestTrustedCrossOriginRequest();
+  std::string TestUntrustedCorbEligibleRequest();
+  std::string TestTrustedCorbEligibleRequest();
   std::string TestUntrustedJavascriptURLRestriction();
   std::string TestTrustedJavascriptURLRestriction();
   std::string TestUntrustedHttpRequests();
