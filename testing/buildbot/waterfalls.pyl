@@ -2876,6 +2876,14 @@
         },
       },
       'Mac10.12 Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '8086:0a2e',
+              'os': 'Mac-10.12.6',
+            },
+          ],
+        },
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
           'isolated_scripts': 'chromium_rel_isolated_scripts',
