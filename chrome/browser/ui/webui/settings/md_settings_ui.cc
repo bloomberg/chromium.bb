@@ -99,10 +99,10 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
 #else  // !defined(OS_CHROMEOS)
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_manage_profile_handler.h"
 #include "chrome/browser/ui/webui/settings/system_handler.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_NSS_CERTS)
@@ -315,8 +315,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
         profile->GetPrefs()));
   }
 #else   // !defined(OS_CHROMEOS)
-  html_source->AddBoolean("diceEnabled",
-                          signin::IsDiceEnabledForProfile(profile->GetPrefs()));
+  html_source->AddBoolean(
+      "diceEnabled",
+      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile));
 #endif  // defined(OS_CHROMEOS)
 
   html_source->AddBoolean("unifiedConsentEnabled",

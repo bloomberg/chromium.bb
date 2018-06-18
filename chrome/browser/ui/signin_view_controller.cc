@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -66,12 +67,14 @@ void SigninViewController::ShowSignin(
 #if defined(OS_CHROMEOS)
   ShowModalSigninDialog(mode, browser, access_point);
 #else   // defined(OS_CHROMEOS)
-  if (signin::IsDicePrepareMigrationEnabled()) {
+  Profile* profile = browser->profile();
+  if (signin::DiceMethodGreaterOrEqual(
+          AccountConsistencyModeManager::GetMethodForProfile(profile),
+          signin::AccountConsistencyMethod::kDicePrepareMigration)) {
     std::string email;
     if (GetSigninReasonFromMode(mode) ==
         signin_metrics::Reason::REASON_REAUTHENTICATION) {
-      SigninManagerBase* manager =
-          SigninManagerFactory::GetForProfile(browser->profile());
+      SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile);
       email = manager->GetAuthenticatedAccountInfo().email;
     }
     ShowDiceSigninTab(mode, browser, access_point,

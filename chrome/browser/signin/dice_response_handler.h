@@ -80,8 +80,7 @@ class DiceResponseHandler : public KeyedService {
                      SigninClient* signin_client,
                      AccountReconcilor* account_reconcilor,
                      std::unique_ptr<ProcessDiceHeaderDelegate> delegate,
-                     DiceResponseHandler* dice_response_handler,
-                     signin::AccountConsistencyMethod account_consistency);
+                     DiceResponseHandler* dice_response_handler);
     ~DiceTokenFetcher() override;
 
     const std::string& gaia_id() const { return gaia_id_; }

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/welcome_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/browser_resources.h"
@@ -14,7 +15,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,7 +47,8 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
 
-  bool is_dice = signin::IsDiceEnabledForProfile(profile->GetPrefs());
+  bool is_dice =
+      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile);
 
   // There are multiple possible configurations that affects the layout, but
   // first add resources that are shared across all layouts.
