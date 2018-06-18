@@ -3,15 +3,21 @@
     <script src="../../resources/js-test.js"></script>
     <script>
         var newWindow;
-        
+
         if (window.testRunner) {
             testRunner.dumpAsText();
             testRunner.setCanOpenWindows();
             testRunner.waitUntilDone();
             testRunner.setPopupBlockingEnabled(true);
         }
-    
+
         function clickHandler() {
+            if (internals.runtimeFlags.userActivationV2Enabled) {
+                if (window.testRunner)
+                    testRunner.notifyDone();
+                return;
+            }
+
             setTimeout(function() {
                 newWindow = window.open("about:blank");
                 self.focus();
@@ -24,7 +30,7 @@
             if (window.eventSender)
                 eventSender.leapForward(1001);
         }
-        
+
         function clickButton() {
             var button = document.getElementById("test");
             var buttonX = button.offsetLeft + button.offsetWidth / 2;
@@ -34,7 +40,7 @@
                 eventSender.mouseDown();
                 eventSender.mouseUp();
             }
-        }        
+        }
     </script>
 </head>
 <body onload="clickButton()">

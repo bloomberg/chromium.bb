@@ -3,27 +3,32 @@
     <script src="../../resources/js-test.js"></script>
     <script>
         var newWindow;
-        
+
         if (window.testRunner) {
             testRunner.dumpAsText();
             testRunner.setCanOpenWindows();
             testRunner.waitUntilDone();
             testRunner.setPopupBlockingEnabled(true);
         }
-    
+
         function clickHandler() {
             setTimeout(function() {
                 setTimeout(function() {
                     newWindow = window.open("about:blank");
                     self.focus();
-                    debug("Test calling window.open() in a nested call to setTimeout(). A popup should not be allowed.")
-                    shouldBeNull("newWindow");
+                    if (!internals.runtimeFlags.userActivationV2Enabled) {
+                        debug("Test calling window.open() in a nested call to setTimeout(). A popup should not be allowed.")
+                        shouldBeNull("newWindow");
+                    } else {
+                        debug("Test calling window.open() in a nested call to setTimeout(). A popup should be allowed.")
+                        shouldBeNonNull("newWindow");
+                    }
                     if (window.testRunner)
                         testRunner.notifyDone();
                 }, 0);
             }, 300);
         }
-        
+
         function clickButton() {
             var button = document.getElementById("test");
             var buttonX = button.offsetLeft + button.offsetWidth / 2;
@@ -33,7 +38,7 @@
                 eventSender.mouseDown();
                 eventSender.mouseUp();
             }
-        }        
+        }
     </script>
 </head>
 <body onload="clickButton()">
