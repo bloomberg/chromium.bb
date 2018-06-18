@@ -187,7 +187,7 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
   DCHECK(!request->dump_in_progress);
   request->dump_in_progress = true;
 
-  request->start_time = base::Time::Now();
+  request->start_time = base::TimeTicks::Now();
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN2(
       base::trace_event::MemoryDumpManager::kTraceCategory, "GlobalMemoryDump",
@@ -439,6 +439,7 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
 
   // Build up the global dump by iterating on the |valid| process dumps.
   mojom::GlobalMemoryDumpPtr global_dump(mojom::GlobalMemoryDump::New());
+  global_dump->start_time = request->start_time;
   global_dump->process_dumps.reserve(request->responses.size());
   for (const auto& response : request->responses) {
     base::ProcessId pid = response.second.process_id;
@@ -552,7 +553,7 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
   std::move(callback).Run(global_success, request->dump_guid,
                           std::move(global_dump));
   UMA_HISTOGRAM_MEDIUM_TIMES("Memory.Experimental.Debug.GlobalDumpDuration",
-                             base::Time::Now() - request->start_time);
+                             base::TimeTicks::Now() - request->start_time);
   UMA_HISTOGRAM_COUNTS_1000(
       "Memory.Experimental.Debug.FailedProcessDumpsPerGlobalDump",
       request->failed_memory_dump_count);

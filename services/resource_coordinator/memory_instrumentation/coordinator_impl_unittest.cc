@@ -8,6 +8,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/trace_event_analyzer.h"
+#include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -296,6 +298,52 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
   EXPECT_CALL(callback, OnCall(true, NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(callback.Get());
+  run_loop.Run();
+}
+
+// Issuing two requests will cause the second one to be queued.
+TEST_F(CoordinatorImplTest, QueuedRequest) {
+  base::RunLoop run_loop;
+
+  NiceMock<MockClientProcess> client_process_1(this, 1,
+                                               mojom::ProcessType::BROWSER);
+  NiceMock<MockClientProcess> client_process_2(this);
+
+  // Each request will invoke on both processes.
+  EXPECT_CALL(client_process_1, RequestChromeMemoryDumpMock(_, _)).Times(2);
+  EXPECT_CALL(client_process_2, RequestChromeMemoryDumpMock(_, _))
+      .Times(2)
+      .WillRepeatedly(Invoke(
+          [](const MemoryDumpRequestArgs& args,
+             MockClientProcess::RequestChromeMemoryDumpCallback& callback) {
+            // Delay the response here to make sure the start times are strictly
+            // increasing.
+            base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+            MemoryDumpArgs dump_args{MemoryDumpLevelOfDetail::DETAILED};
+            auto pmd = std::make_unique<ProcessMemoryDump>(dump_args);
+            std::move(callback).Run(true, args.dump_guid, std::move(pmd));
+          }));
+
+  MockGlobalMemoryDumpCallback callback1;
+  MockGlobalMemoryDumpCallback callback2;
+
+  // Verify that the start time of subsequent dumps is monotonically
+  // increasing.
+  base::TimeTicks before = base::TimeTicks::Now();
+  base::TimeTicks first_dump_time;
+  EXPECT_CALL(callback1, OnCall(true, NotNull()))
+      .WillOnce(Invoke([&](bool success, GlobalMemoryDump* global_dump) {
+        EXPECT_LT(before, global_dump->start_time);
+        first_dump_time = global_dump->start_time;
+      }));
+  EXPECT_CALL(callback2, OnCall(true, NotNull()))
+      .WillOnce(Invoke([&](bool success, GlobalMemoryDump* global_dump) {
+        EXPECT_LT(before, global_dump->start_time);
+        EXPECT_LT(first_dump_time, global_dump->start_time);
+        run_loop.Quit();
+      }));
+  RequestGlobalMemoryDump(callback1.Get());
+  RequestGlobalMemoryDump(callback2.Get());
   run_loop.Run();
 }
 

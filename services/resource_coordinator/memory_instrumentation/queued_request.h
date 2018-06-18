@@ -109,7 +109,7 @@ struct QueuedRequest {
 
   // The time we started handling the request (does not including queuing
   // time).
-  base::Time start_time;
+  base::TimeTicks start_time;
 };
 
 // Holds data for pending requests enqueued via GetVmRegionsForHeapProfiler().
