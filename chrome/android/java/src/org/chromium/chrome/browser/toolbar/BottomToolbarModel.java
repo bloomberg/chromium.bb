@@ -17,8 +17,8 @@ public class BottomToolbarModel extends PropertyModel {
     /** The Y offset of the view in px. */
     public static final IntPropertyKey Y_OFFSET = new IntPropertyKey();
 
-    /** The visibility of the Android view version of the toolbar. */
-    public static final IntPropertyKey ANDROID_VIEW_VISIBILITY = new IntPropertyKey();
+    /** Whether the Android view version of the toolbar is visible. */
+    public static final BooleanPropertyKey ANDROID_VIEW_VISIBLE = new BooleanPropertyKey();
 
     /** The click listener for the search accelerator. */
     public static final ObjectPropertyKey<OnClickListener> SEARCH_ACCELERATOR_LISTENER =
@@ -40,7 +40,7 @@ public class BottomToolbarModel extends PropertyModel {
 
     /** Default constructor. */
     public BottomToolbarModel() {
-        super(Y_OFFSET, ANDROID_VIEW_VISIBILITY, SEARCH_ACCELERATOR_LISTENER, HOME_BUTTON_LISTENER,
+        super(Y_OFFSET, ANDROID_VIEW_VISIBLE, SEARCH_ACCELERATOR_LISTENER, HOME_BUTTON_LISTENER,
                 MENU_BUTTON_LISTENER, LAYOUT_MANAGER, SEARCH_ACCELERATOR_VISIBLE);
     }
 }
