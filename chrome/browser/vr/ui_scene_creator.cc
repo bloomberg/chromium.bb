@@ -903,6 +903,7 @@ std::unique_ptr<Grid> CreateGrid(Model* model, UiElementName name) {
   grid->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   grid->set_gridline_count(kFloorGridlineCount);
   grid->SetGridColor(model->color_scheme().floor_grid);
+  grid->set_hit_testable(true);
   grid->set_focusable(false);
   return grid;
 }
