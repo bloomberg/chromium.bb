@@ -664,6 +664,11 @@ void AXTreeSourceArc::PopulateAXRole(AXNodeInfoData* node,
     return;
   }
 
+  if (GetProperty(node, AXBooleanProperty::HEADING)) {
+    out_data->role = ax::mojom::Role::kHeading;
+    return;
+  }
+
   if (HasCoveringSpan(node, AXStringProperty::TEXT, mojom::SpanType::URL) ||
       HasCoveringSpan(node, AXStringProperty::CONTENT_DESCRIPTION,
                       mojom::SpanType::URL)) {

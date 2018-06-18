@@ -106,7 +106,10 @@ enum AccessibilityBooleanProperty {
   MULTI_LINE,
   CONTENT_INVALID,
   CONTEXT_CLICKABLE,
-  IMPORTANCE
+  IMPORTANCE,
+  SCREEN_READER_FOCUSABLE,
+  SHOWING_HINT_TEXT,
+  HEADING
 };
 
 // These fields are taken from string instance members of
