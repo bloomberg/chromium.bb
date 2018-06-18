@@ -20,6 +20,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.provider.Browser;
 import android.util.SparseArray;
 import android.view.Gravity;
@@ -44,7 +45,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -187,6 +190,22 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
                 return false;
             }
         });
+
+        StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                .detectAll()
+                .penaltyLog()
+                .penaltyDeath()
+                .build());
+        // Conspicuously omitted: detectCleartextNetwork() and detectFileUriExposure() to permit
+        // http:// and file:// origins.
+        StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                .detectActivityLeaks()
+                .detectLeakedClosableObjects()
+                .detectLeakedRegistrationObjects()
+                .detectLeakedSqlLiteObjects()
+                .penaltyLog()
+                .penaltyDeath()
+                .build());
 
         createAndInitializeWebView();
 
@@ -468,11 +487,18 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
     // but we still use it because we support api level 19 and up.
     @SuppressWarnings("deprecation")
     private void initializeSettings(WebSettings settings) {
+        File appcache = null;
+        File geolocation = null;
+        try (StrictModeContext ctx = StrictModeContext.allowDiskWrites()) {
+            appcache = getDir("appcache", 0);
+            geolocation = getDir("geolocation", 0);
+        }
+
         settings.setJavaScriptEnabled(true);
 
         // configure local storage apis and their database paths.
-        settings.setAppCachePath(getDir("appcache", 0).getPath());
-        settings.setGeolocationDatabasePath(getDir("geolocation", 0).getPath());
+        settings.setAppCachePath(appcache.getPath());
+        settings.setGeolocationDatabasePath(geolocation.getPath());
 
         settings.setAppCacheEnabled(true);
         settings.setGeolocationEnabled(true);
