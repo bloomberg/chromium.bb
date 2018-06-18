@@ -810,6 +810,7 @@
 <translation id="6891596781022320156">No se admite el nivel de la política.</translation>
 <translation id="6895330447102777224">Tu tarjeta se ha confirmado</translation>
 <translation id="6897140037006041989">Agente de usuario</translation>
+<translation id="6903319715792422884">Ayuda a mejorar la Navegación Segura enviando <ph name="BEGIN_WHITEPAPER_LINK" />datos del sistema y contenido de las páginas<ph name="END_WHITEPAPER_LINK" /> a Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="6915804003454593391">Usuario:</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
 <translation id="6948701128805548767">Selecciona una dirección para ver los métodos de recogida y los requisitos</translation>
@@ -1014,6 +1015,7 @@
 <translation id="8308427013383895095">Se ha producido un error de traducción debido a un problema con la conexión de red.</translation>
 <translation id="8311129316111205805">Cargar sesión</translation>
 <translation id="8332188693563227489">Se ha denegado el acceso a <ph name="HOST_NAME" /></translation>
+<translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="834457929814110454">Si entiendes los riesgos para tu seguridad, puedes <ph name="BEGIN_LINK" />acceder a este sitio<ph name="END_LINK" /> antes de que se hayan eliminado los programas dañinos.</translation>
 <translation id="8349305172487531364">Barra de marcadores</translation>
 <translation id="8363502534493474904">Desactivar el modo avión</translation>
@@ -1042,6 +1044,7 @@
 <translation id="8571890674111243710">Traduciendo página a <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Añade un teléfono</translation>
 <translation id="859285277496340001">El certificado no especifica ningún mecanismo para comprobar si se ha revocado.</translation>
+<translation id="860043288473659153">Nombre del titular de la tarjeta</translation>
 <translation id="8620436878122366504">Tus padres aún no lo han aprobado</translation>
 <translation id="8625384913736129811">Guardar esta tarjeta en el dispositivo</translation>
 <translation id="8639963783467694461">Configuración de Autocompletar</translation>

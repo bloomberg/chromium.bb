@@ -146,6 +146,7 @@
 <translation id="2416512023405990736">અનચેક કરેલ ચેકબોક્સ</translation>
 <translation id="2417569100218200841">સામગ્રી માહિતી</translation>
 <translation id="2417948780551741035">અંતિમ નોંધ</translation>
+<translation id="2421113964388408478">ડિલીટ</translation>
 <translation id="2422937916923936891">મેનૂ આઇટમ ચેક બૉક્સ</translation>
 <translation id="2428534162001909979">આદેશ મેનૂઝ</translation>
 <translation id="2429669115401274487">PM</translation>
@@ -179,6 +180,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">ઑડિઓ</translation>
 <translation id="2732718972699418926">AM</translation>
+<translation id="2737520612859577214">સુપરસ્ક્રિપ્ટ સમાપ્ત કરો</translation>
 <translation id="2749275490991666823">તપાસેલું</translation>
 <translation id="27527859628328957">આગલી ફોકસ કરવા યોગ્ય આઇટમ પર જમ્પ કરો</translation>
 <translation id="276402504937943375">અનુક્રમણિકા</translation>
@@ -203,6 +205,7 @@
 <translation id="288178314850623291">ચોક્કસ પ્રકારના ઘટકો પર જવા માટે જમ્પ આદેશોનો ઉપયોગ કરો. મથાળામાં આગળ જવા માટે, શોધ + H દબાવો અથવા પાછળ જવા માટે, શોધ + Shift + H દબાવો.</translation>
 <translation id="2894654529758326923">માહિતી</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{ડાબો છગડિયો કૌંસ}one{# ડાબા છગડિયા કૌંસ}other{# ડાબા છગડિયા કૌંસ}}</translation>
+<translation id="2909478709401302630">સુપરસ્ક્રિપ્ટ શરૂ કરો</translation>
 <translation id="2911433807131383493">ChromeVox ટ્યૂટોરિયલ ખોલો</translation>
 <translation id="2932083475399492303">માળખાકીય અથવા લેઆઉટ વચ્ચે રેખા પ્રકાર ટોગલ કરો</translation>
 <translation id="2944762337049891859">પૃષ્ઠ લોડ થઈ જાય તે પછી આપમેળે પૃષ્ઠને વાંચો.</translation>
@@ -384,6 +387,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{જમણો છગડિયો કૌંસ}one{# જમણા છગડિયા કૌંસ}other{# જમણા છગડિયા કૌંસ}}</translation>
 <translation id="4158704014418536539">કેસ સંવેદી.</translation>
 <translation id="4161663686871496107">ChromeVox બોલાયેલ પ્રતિસાદ તૈયાર છે</translation>
+<translation id="4166192625054637755">સબસ્ક્રિપ્ટ સમાપ્ત કરો</translation>
 <translation id="4173994908659439270">આગલી સંપાદનયોગ્ય ટેક્સ્ટ ફીલ્ડ નથી</translation>
 <translation id="4176463684765177261">અક્ષમ કરેલું</translation>
 <translation id="4188530942454211480">પહેલાનું વાક્ય</translation>
@@ -423,6 +427,7 @@
 <translation id="4476183483923481720">નવી લાઇન</translation>
 <translation id="4482330759234983253">અગાઉનું કોષ્ટક</translation>
 <translation id="4491109536499578614">છબી</translation>
+<translation id="4505167975768625962">સમ્મિલન</translation>
 <translation id="4517854969512651305">મૂલ્ય વધારો</translation>
 <translation id="4529987814483543472">ક્લાસિક કીમૅપ</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{સ્લેશ}one{# સ્લેશ}other{# સ્લેશ}}</translation>
@@ -527,6 +532,7 @@
 <translation id="5330443287809544590"><ph name="NAME" />, લિંક</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">બૅક લિંક</translation>
+<translation id="5350654862897073517">સબસ્ક્રિપ્ટ શરૂ કરો</translation>
 <translation id="536031132345979795">સતત વાંચન દરમિયાન પાછળ જાઓ</translation>
 <translation id="5368000168321181111">ઇઅરકોન્સ બંધ છે</translation>
 <translation id="5374320867641260420">આગલું બટન નથી.</translation>

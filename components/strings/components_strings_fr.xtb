@@ -1042,6 +1042,7 @@
 <translation id="8571890674111243710">Traduction de la page en <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Saisir num tél</translation>
 <translation id="859285277496340001">Le certificat n'indique aucun mécanisme permettant de vérifier s'il a été révoqué.</translation>
+<translation id="860043288473659153">Nom du titulaire de la carte</translation>
 <translation id="8620436878122366504">Tes parents ne l'ont pas encore autorisé</translation>
 <translation id="8625384913736129811">Enregistrer cette carte sur cet appareil</translation>
 <translation id="8639963783467694461">Paramètres de saisie automatique</translation>
@@ -1111,6 +1112,7 @@
 <translation id="9148507642005240123">&amp;Annuler la modification</translation>
 <translation id="9154194610265714752">Mis à jour</translation>
 <translation id="9157595877708044936">Configuration en cours...</translation>
+<translation id="9168814207360376865">Autoriser les sites à vérifier si vous avez enregistré des modes de paiement</translation>
 <translation id="9169664750068251925">Toujours bloquer sur ce site</translation>
 <translation id="9170848237812810038">Ann&amp;uler</translation>
 <translation id="9171296965991013597">Quitter l'application ?</translation>

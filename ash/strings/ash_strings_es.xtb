@@ -20,6 +20,7 @@
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1467432559032391204">Izquierda</translation>
+<translation id="1479743070547893297">Dibuja con el lápiz óptico para seleccionar contenido</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Menú de aplicaciones</translation>
 <translation id="1525508553941733066">IGNORAR</translation>
@@ -50,8 +51,10 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">Elegir el idioma</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
+<translation id="1993072747612765854">Consulta más información sobre la última actualización de <ph name="SYSTEM_APP_NAME" /></translation>
 <translation id="1995660704900986789">Apagar</translation>
 <translation id="2012624427112548395">Ctrl + Tecla de búsqueda + H</translation>
+<translation id="2016340657076538683">Escribe un mensaje</translation>
 <translation id="2049639323467105390">Este dispositivo está gestionado por <ph name="DOMAIN" /></translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brillo del teclado</translation>
@@ -75,6 +78,7 @@
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2365393535144473978">La conexión Bluetooth se activará al habilitar los datos móviles.</translation>
 <translation id="2391579633712104609">180°</translation>
+<translation id="2412593942846481727">Actualización disponible</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse. Antes de aceptar, comprueba que la clave de contraseña <ph name="PASSKEY" /> aparezca en el dispositivo</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2484513351006226581">Pulsa <ph name="KEYBOARD_SHORTCUT" /> para cambiar el diseño del teclado.</translation>
@@ -82,6 +86,7 @@
 <translation id="2509468283778169019">Bloqueo de mayúsculas activado</translation>
 <translation id="2532589005999780174">Modo de contraste alto</translation>
 <translation id="2575685495496069081">Se ha inhabilitado el inicio de sesión múltiple</translation>
+<translation id="2582112259361606227">Reiniciar para actualizar</translation>
 <translation id="2597972630681408282">Luz nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La tarjeta SIM está bloqueada</translation>
 <translation id="2653659639078652383">Enviar</translation>
@@ -103,6 +108,7 @@
 <translation id="2911940648265863620">Estás compartiendo tu pantalla</translation>
 <translation id="2942516765047364088">Posición de la estantería</translation>
 <translation id="2946119680249604491">Añadir conexión</translation>
+<translation id="2961963223658824723">Se ha producido un error. Vuelve a intentarlo en unos segundos.</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> es una sesión pública administrada por <ph name="DOMAIN" />.</translation>
 <translation id="3000461861112256445">Audio en mono</translation>
@@ -148,6 +154,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Bloquear</translation>
 <translation id="3798670284305777884">Altavoz (interno)</translation>
+<translation id="380165613292957338">Hola, ¿cómo puedo ayudarte?</translation>
 <translation id="3846575436967432996">No hay información de red disponible.</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3891340733213178823">Pulsa Ctrl+Mayús+Q dos veces para cerrar sesión.</translation>
@@ -160,6 +167,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="3995138139523574647">Dispositivo USB tipo C (puerto trasero derecho)</translation>
 <translation id="4017989525502048489">Puntero láser</translation>
 <translation id="4072264167173457037">Señal media</translation>
+<translation id="4200057768455216496">Has pulsado la combinación de teclas de la lupa fijada. ¿Quieres activarla?</translation>
 <translation id="4217571870635786043">Dictado</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -258,6 +266,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6452181791372256707">Rechazar</translation>
 <translation id="6453179446719226835">Se ha cambiado el idioma</translation>
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME" /></translation>
+<translation id="6482559668224714696">Aumento de pantalla completa</translation>
 <translation id="6490471652906364588">Dispositivo USB-C (puerto derecho)</translation>
 <translation id="6501401484702599040">Enviando la pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Escritura a mano</translation>
@@ -282,12 +291,14 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6820676911989879663">Haz una pausa</translation>
 <translation id="683971173229319003">Buscar+L</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
+<translation id="6910714959251846841">Esta actualización le hará un Powerwash a tu dispositivo. Consulta más información sobre la última actualización de <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Conectarse a otra red...</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="698231206551913481">Una vez que se haya quitado este usuario, todos los archivos y datos asociados a él se eliminarán de forma permanente.</translation>
 <translation id="7015766095477679451">Hora a la que puedes volver: <ph name="COME_BACK_TIME" /></translation>
 <translation id="7029814467594812963">Cerrar sesión</translation>
 <translation id="7034339000180558234">Enviando <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
+<translation id="7037152028959403492">Has pulsado la combinación de teclas de contraste alto. ¿Quieres activarlo?</translation>
 <translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
 <translation id="7076293881109082629">Iniciando sesión</translation>
@@ -338,6 +349,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142699993796781067">Red privada</translation>
+<translation id="8152119955266188852">Has pulsado la combinación de teclas del aumento de pantalla completa. ¿Quieres activarla?</translation>
 <translation id="8180896103888046100">Dejar de enviar contenido a un receptor desconocido</translation>
 <translation id="8190698733819146287">Personalizar idiomas...</translation>
 <translation id="8261506727792406068">Eliminar</translation>
@@ -374,6 +386,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8940956008527784070">Poca batería (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Inicio rápido</translation>
 <translation id="8995603266996330174">Administrado por <ph name="DOMAIN" /></translation>
+<translation id="9029474291399787231">Actualización de Adobe Flash Player disponible</translation>
 <translation id="9033907480196064950">Estás enviando <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
@@ -386,6 +399,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="9194617393863864469">Iniciar sesión de otro usuario...</translation>
 <translation id="9201131092683066720">La batería está al <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Saliendo del modo de escritorio unificado</translation>
+<translation id="921331154633982721"><ph name="LABEL" /> <ph name="SUBLABEL" /></translation>
 <translation id="9215934040295798075">Establecer fondo de pantalla</translation>
 <translation id="923686485342484400">Pulsa Control Mayús Q dos veces para cerrar sesión.</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
