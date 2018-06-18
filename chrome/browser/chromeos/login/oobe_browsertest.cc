@@ -8,10 +8,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
+#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -53,8 +55,9 @@ class OobeTest : public OobeBaseTest {
     OobeBaseTest::TearDownOnMainThread();
   }
 
-  LoginDisplay* GetLoginDisplay() {
-    return LoginDisplayHost::default_host()->GetLoginDisplay();
+  LoginDisplayWebUI* GetLoginDisplay() {
+    return static_cast<LoginDisplayWebUI*>(
+        ExistingUserController::current_controller()->login_display());
   }
 
   views::Widget* GetLoginWindowWidget() {

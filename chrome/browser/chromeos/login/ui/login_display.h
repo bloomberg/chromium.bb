@@ -79,7 +79,7 @@ class LoginDisplay {
     virtual ~Delegate();
   };
 
-  LoginDisplay();
+  explicit LoginDisplay(Delegate* delegate);
   virtual ~LoginDisplay();
 
   // Clears and enables fields on user pod or GAIA frame.

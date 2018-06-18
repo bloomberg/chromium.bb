@@ -29,7 +29,8 @@ FakeLoginDisplayHost::FakeLoginDisplayHost()
 
 FakeLoginDisplayHost::~FakeLoginDisplayHost() = default;
 
-LoginDisplay* FakeLoginDisplayHost::GetLoginDisplay() {
+LoginDisplay* FakeLoginDisplayHost::CreateLoginDisplay(
+    LoginDisplay::Delegate* delegate) {
   return nullptr;
 }
 
