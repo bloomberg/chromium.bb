@@ -323,6 +323,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("genericTaskIsNotExecuted"),
                       TestCase("genericTaskAndNonGenericTask")));
 
+// TODO(crbug.com/851988): Times out on ASan.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_FilesAppBrowserTest DISABLED_FilesAppBrowserTest
+#else
+#define MAYBE_FilesAppBrowserTest FilesAppBrowserTest
+#endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FolderShortcuts, /* folder_shortcuts.js */
     FilesAppBrowserTest,
