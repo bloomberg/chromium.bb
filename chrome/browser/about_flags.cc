@@ -3932,6 +3932,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableBlinkHeapIncrementalMarkingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBlinkHeapIncrementalMarking)},
 
+#if defined(OS_ANDROID)
+    {"enable-media-controls-expand-gesture",
+     flag_descriptions::kEnableMediaControlsExpandGestureName,
+     flag_descriptions::kEnableMediaControlsExpandGestureDescription,
+     kOsAndroid, FEATURE_VALUE_TYPE(media::kMediaControlsExpandGesture)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

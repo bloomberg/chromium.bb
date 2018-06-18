@@ -1308,6 +1308,9 @@ extern const char kEnableCustomFeedbackUiDescription[];
 extern const char kEnableDataReductionProxyMainMenuName[];
 extern const char kEnableDataReductionProxyMainMenuDescription[];
 
+extern const char kEnableMediaControlsExpandGestureName[];
+extern const char kEnableMediaControlsExpandGestureDescription[];
+
 extern const char kEnableOmniboxClipboardProviderName[];
 extern const char kEnableOmniboxClipboardProviderDescription[];
 

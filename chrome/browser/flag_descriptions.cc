@@ -2146,6 +2146,12 @@ const char kEnableDataReductionProxyMainMenuName[] =
 const char kEnableDataReductionProxyMainMenuDescription[] =
     "Enables the Data Saver menu item in the main menu";
 
+const char kEnableMediaControlsExpandGestureName[] =
+    "Enable Media Controls Expand Gesture";
+const char kEnableMediaControlsExpandGestureDescription[] =
+    "Enables a gesture to be used on the media controls to extend the video "
+    "into the Display Cutout area.";
+
 const char kEnableOmniboxClipboardProviderName[] =
     "Omnibox clipboard URL suggestions";
 const char kEnableOmniboxClipboardProviderDescription[] =
