@@ -10,6 +10,7 @@
 
 #include <assert.h>
 
+#include "chrome/install_static/install_util.h"
 #include "chrome_elf/third_party_dlls/hook.h"
 #include "chrome_elf/third_party_dlls/imes.h"
 #include "chrome_elf/third_party_dlls/logs.h"
@@ -31,6 +32,11 @@ bool IsThirdPartyInitialized() {
 bool Init() {
   // Debug check: Init should not be called more than once.
   assert(!g_third_party_initialized);
+
+  // Sanity check: third_party_dlls should only be enabled in the browser
+  // process at this time.
+  if (install_static::IsNonBrowserProcess())
+    return false;
 
   // Zero tolerance for unsupported versions of Windows.  Third-party control
   // is too entwined with the operating system.

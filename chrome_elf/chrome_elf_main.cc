@@ -13,6 +13,7 @@
 #include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/crash/crash_helper.h"
+#include "chrome_elf/third_party_dlls/main.h"
 
 // This function is a temporary workaround for https://crbug.com/655788. We
 // need to come up with a better way to initialize crash reporting that can
@@ -56,8 +57,16 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
 
     install_static::InitializeProcessType();
 
+    // If this is not the browser process, all done.
+    if (install_static::IsNonBrowserProcess())
+      return TRUE;
+
     __try {
+      // Initialize blacklist before initializing third_party_dlls.
+      // Note: "blacklist" is deprecated in favor of "third_party_dlls", but
+      //       beacon management temporarily remains in the blacklist project.
       blacklist::Initialize(false);  // Don't force, abort if beacon is present.
+      third_party_dlls::Init();
     } __except (elf_crash::GenerateCrashDump(GetExceptionInformation())) {
     }
   } else if (reason == DLL_PROCESS_DETACH) {
