@@ -442,6 +442,9 @@ void CreateWindowForRequest(const FrameLoadRequest& request,
   // TODO(japhet): Form submissions on RemoteFrames don't work yet.
   FrameLoadRequest new_request(nullptr, request.GetResourceRequest());
   new_request.SetForm(request.Form());
+  auto blob_url_token = request.GetBlobURLToken();
+  if (blob_url_token)
+    new_request.SetBlobURLToken(std::move(blob_url_token));
   if (new_frame->IsLocalFrame())
     ToLocalFrame(new_frame)->Loader().StartNavigation(new_request);
 }
