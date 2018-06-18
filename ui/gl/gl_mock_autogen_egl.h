@@ -65,6 +65,8 @@ MOCK_METHOD4(CreateWindowSurface,
                         EGLConfig config,
                         EGLNativeWindowType win,
                         const EGLint* attrib_list));
+MOCK_METHOD2(DebugMessageControlKHR,
+             EGLint(EGLDEBUGPROCKHR callback, const EGLAttrib* attrib_list));
 MOCK_METHOD2(DestroyContext, EGLBoolean(EGLDisplay dpy, EGLContext ctx));
 MOCK_METHOD2(DestroyImageKHR, EGLBoolean(EGLDisplay dpy, EGLImageKHR image));
 MOCK_METHOD2(DestroyStreamKHR, EGLBoolean(EGLDisplay dpy, EGLStreamKHR stream));
@@ -144,6 +146,11 @@ MOCK_METHOD3(ImageFlushExternalEXT,
                         const EGLAttrib* attrib_list));
 MOCK_METHOD3(Initialize,
              EGLBoolean(EGLDisplay dpy, EGLint* major, EGLint* minor));
+MOCK_METHOD4(LabelObjectKHR,
+             EGLint(EGLDisplay display,
+                    EGLenum objectType,
+                    EGLObjectKHR object,
+                    EGLLabelKHR label));
 MOCK_METHOD4(MakeCurrent,
              EGLBoolean(EGLDisplay dpy,
                         EGLSurface draw,
@@ -179,6 +186,7 @@ MOCK_METHOD4(QueryContext,
                         EGLContext ctx,
                         EGLint attribute,
                         EGLint* value));
+MOCK_METHOD2(QueryDebugKHR, EGLBoolean(EGLint attribute, EGLAttrib* value));
 MOCK_METHOD4(QueryStreamKHR,
              EGLBoolean(EGLDisplay dpy,
                         EGLStreamKHR stream,

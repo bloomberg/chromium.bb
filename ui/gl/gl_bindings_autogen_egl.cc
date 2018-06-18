@@ -117,11 +117,28 @@ void DriverEGL::InitializeClientExtensionBindings() {
 
   ext.b_EGL_EXT_platform_base =
       HasExtension(extensions, "EGL_EXT_platform_base");
+  ext.b_EGL_KHR_debug = HasExtension(extensions, "EGL_KHR_debug");
+
+  if (ext.b_EGL_KHR_debug) {
+    fn.eglDebugMessageControlKHRFn =
+        reinterpret_cast<eglDebugMessageControlKHRProc>(
+            GetGLProcAddress("eglDebugMessageControlKHR"));
+  }
 
   if (ext.b_EGL_EXT_platform_base) {
     fn.eglGetPlatformDisplayEXTFn =
         reinterpret_cast<eglGetPlatformDisplayEXTProc>(
             GetGLProcAddress("eglGetPlatformDisplayEXT"));
+  }
+
+  if (ext.b_EGL_KHR_debug) {
+    fn.eglLabelObjectKHRFn = reinterpret_cast<eglLabelObjectKHRProc>(
+        GetGLProcAddress("eglLabelObjectKHR"));
+  }
+
+  if (ext.b_EGL_KHR_debug) {
+    fn.eglQueryDebugKHRFn = reinterpret_cast<eglQueryDebugKHRProc>(
+        GetGLProcAddress("eglQueryDebugKHR"));
   }
 }
 
@@ -452,6 +469,11 @@ EGLSurface EGLApiBase::eglCreateWindowSurfaceFn(EGLDisplay dpy,
   return driver_->fn.eglCreateWindowSurfaceFn(dpy, config, win, attrib_list);
 }
 
+EGLint EGLApiBase::eglDebugMessageControlKHRFn(EGLDEBUGPROCKHR callback,
+                                               const EGLAttrib* attrib_list) {
+  return driver_->fn.eglDebugMessageControlKHRFn(callback, attrib_list);
+}
+
 EGLBoolean EGLApiBase::eglDestroyContextFn(EGLDisplay dpy, EGLContext ctx) {
   return driver_->fn.eglDestroyContextFn(dpy, ctx);
 }
@@ -618,6 +640,13 @@ EGLBoolean EGLApiBase::eglInitializeFn(EGLDisplay dpy,
   return driver_->fn.eglInitializeFn(dpy, major, minor);
 }
 
+EGLint EGLApiBase::eglLabelObjectKHRFn(EGLDisplay display,
+                                       EGLenum objectType,
+                                       EGLObjectKHR object,
+                                       EGLLabelKHR label) {
+  return driver_->fn.eglLabelObjectKHRFn(display, objectType, object, label);
+}
+
 EGLBoolean EGLApiBase::eglMakeCurrentFn(EGLDisplay dpy,
                                         EGLSurface draw,
                                         EGLSurface read,
@@ -673,6 +702,10 @@ EGLBoolean EGLApiBase::eglQueryContextFn(EGLDisplay dpy,
                                          EGLint attribute,
                                          EGLint* value) {
   return driver_->fn.eglQueryContextFn(dpy, ctx, attribute, value);
+}
+
+EGLBoolean EGLApiBase::eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) {
+  return driver_->fn.eglQueryDebugKHRFn(attribute, value);
 }
 
 EGLBoolean EGLApiBase::eglQueryStreamKHRFn(EGLDisplay dpy,
@@ -915,6 +948,12 @@ EGLSurface TraceEGLApi::eglCreateWindowSurfaceFn(EGLDisplay dpy,
   return egl_api_->eglCreateWindowSurfaceFn(dpy, config, win, attrib_list);
 }
 
+EGLint TraceEGLApi::eglDebugMessageControlKHRFn(EGLDEBUGPROCKHR callback,
+                                                const EGLAttrib* attrib_list) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglDebugMessageControlKHR")
+  return egl_api_->eglDebugMessageControlKHRFn(callback, attrib_list);
+}
+
 EGLBoolean TraceEGLApi::eglDestroyContextFn(EGLDisplay dpy, EGLContext ctx) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglDestroyContext")
   return egl_api_->eglDestroyContextFn(dpy, ctx);
@@ -1117,6 +1156,14 @@ EGLBoolean TraceEGLApi::eglInitializeFn(EGLDisplay dpy,
   return egl_api_->eglInitializeFn(dpy, major, minor);
 }
 
+EGLint TraceEGLApi::eglLabelObjectKHRFn(EGLDisplay display,
+                                        EGLenum objectType,
+                                        EGLObjectKHR object,
+                                        EGLLabelKHR label) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglLabelObjectKHR")
+  return egl_api_->eglLabelObjectKHRFn(display, objectType, object, label);
+}
+
 EGLBoolean TraceEGLApi::eglMakeCurrentFn(EGLDisplay dpy,
                                          EGLSurface draw,
                                          EGLSurface read,
@@ -1182,6 +1229,11 @@ EGLBoolean TraceEGLApi::eglQueryContextFn(EGLDisplay dpy,
                                           EGLint* value) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglQueryContext")
   return egl_api_->eglQueryContextFn(dpy, ctx, attribute, value);
+}
+
+EGLBoolean TraceEGLApi::eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglQueryDebugKHR")
+  return egl_api_->eglQueryDebugKHRFn(attribute, value);
 }
 
 EGLBoolean TraceEGLApi::eglQueryStreamKHRFn(EGLDisplay dpy,
@@ -1512,6 +1564,16 @@ EGLSurface DebugEGLApi::eglCreateWindowSurfaceFn(EGLDisplay dpy,
   return result;
 }
 
+EGLint DebugEGLApi::eglDebugMessageControlKHRFn(EGLDEBUGPROCKHR callback,
+                                                const EGLAttrib* attrib_list) {
+  GL_SERVICE_LOG("eglDebugMessageControlKHR"
+                 << "(" << reinterpret_cast<void*>(callback) << ", "
+                 << static_cast<const void*>(attrib_list) << ")");
+  EGLint result = egl_api_->eglDebugMessageControlKHRFn(callback, attrib_list);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
 EGLBoolean DebugEGLApi::eglDestroyContextFn(EGLDisplay dpy, EGLContext ctx) {
   GL_SERVICE_LOG("eglDestroyContext"
                  << "(" << dpy << ", " << ctx << ")");
@@ -1825,6 +1887,19 @@ EGLBoolean DebugEGLApi::eglInitializeFn(EGLDisplay dpy,
   return result;
 }
 
+EGLint DebugEGLApi::eglLabelObjectKHRFn(EGLDisplay display,
+                                        EGLenum objectType,
+                                        EGLObjectKHR object,
+                                        EGLLabelKHR label) {
+  GL_SERVICE_LOG("eglLabelObjectKHR"
+                 << "(" << display << ", " << objectType << ", " << object
+                 << ", " << label << ")");
+  EGLint result =
+      egl_api_->eglLabelObjectKHRFn(display, objectType, object, label);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
 EGLBoolean DebugEGLApi::eglMakeCurrentFn(EGLDisplay dpy,
                                          EGLSurface draw,
                                          EGLSurface read,
@@ -1917,6 +1992,15 @@ EGLBoolean DebugEGLApi::eglQueryContextFn(EGLDisplay dpy,
                  << "(" << dpy << ", " << ctx << ", " << attribute << ", "
                  << static_cast<const void*>(value) << ")");
   EGLBoolean result = egl_api_->eglQueryContextFn(dpy, ctx, attribute, value);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLBoolean DebugEGLApi::eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) {
+  GL_SERVICE_LOG("eglQueryDebugKHR"
+                 << "(" << attribute << ", " << static_cast<const void*>(value)
+                 << ")");
+  EGLBoolean result = egl_api_->eglQueryDebugKHRFn(attribute, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }

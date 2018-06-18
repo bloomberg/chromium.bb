@@ -59,6 +59,8 @@ EGLSurface eglCreateWindowSurfaceFn(EGLDisplay dpy,
                                     EGLConfig config,
                                     EGLNativeWindowType win,
                                     const EGLint* attrib_list) override;
+EGLint eglDebugMessageControlKHRFn(EGLDEBUGPROCKHR callback,
+                                   const EGLAttrib* attrib_list) override;
 EGLBoolean eglDestroyContextFn(EGLDisplay dpy, EGLContext ctx) override;
 EGLBoolean eglDestroyImageKHRFn(EGLDisplay dpy, EGLImageKHR image) override;
 EGLBoolean eglDestroyStreamKHRFn(EGLDisplay dpy, EGLStreamKHR stream) override;
@@ -130,6 +132,10 @@ EGLBoolean eglImageFlushExternalEXTFn(EGLDisplay dpy,
 EGLBoolean eglInitializeFn(EGLDisplay dpy,
                            EGLint* major,
                            EGLint* minor) override;
+EGLint eglLabelObjectKHRFn(EGLDisplay display,
+                           EGLenum objectType,
+                           EGLObjectKHR object,
+                           EGLLabelKHR label) override;
 EGLBoolean eglMakeCurrentFn(EGLDisplay dpy,
                             EGLSurface draw,
                             EGLSurface read,
@@ -160,6 +166,7 @@ EGLBoolean eglQueryContextFn(EGLDisplay dpy,
                              EGLContext ctx,
                              EGLint attribute,
                              EGLint* value) override;
+EGLBoolean eglQueryDebugKHRFn(EGLint attribute, EGLAttrib* value) override;
 EGLBoolean eglQueryStreamKHRFn(EGLDisplay dpy,
                                EGLStreamKHR stream,
                                EGLenum attribute,

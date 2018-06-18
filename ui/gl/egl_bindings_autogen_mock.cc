@@ -146,6 +146,13 @@ MockEGLInterface::Mock_eglCreateWindowSurface(EGLDisplay dpy,
   return interface_->CreateWindowSurface(dpy, config, win, attrib_list);
 }
 
+EGLint GL_BINDING_CALL
+MockEGLInterface::Mock_eglDebugMessageControlKHR(EGLDEBUGPROCKHR callback,
+                                                 const EGLAttrib* attrib_list) {
+  MakeFunctionUnique("eglDebugMessageControlKHR");
+  return interface_->DebugMessageControlKHR(callback, attrib_list);
+}
+
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglDestroyContext(EGLDisplay dpy, EGLContext ctx) {
   MakeFunctionUnique("eglDestroyContext");
@@ -355,6 +362,15 @@ EGLBoolean GL_BINDING_CALL MockEGLInterface::Mock_eglInitialize(EGLDisplay dpy,
   return interface_->Initialize(dpy, major, minor);
 }
 
+EGLint GL_BINDING_CALL
+MockEGLInterface::Mock_eglLabelObjectKHR(EGLDisplay display,
+                                         EGLenum objectType,
+                                         EGLObjectKHR object,
+                                         EGLLabelKHR label) {
+  MakeFunctionUnique("eglLabelObjectKHR");
+  return interface_->LabelObjectKHR(display, objectType, object, label);
+}
+
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglMakeCurrent(EGLDisplay dpy,
                                       EGLSurface draw,
@@ -424,6 +440,12 @@ MockEGLInterface::Mock_eglQueryContext(EGLDisplay dpy,
                                        EGLint* value) {
   MakeFunctionUnique("eglQueryContext");
   return interface_->QueryContext(dpy, ctx, attribute, value);
+}
+
+EGLBoolean GL_BINDING_CALL
+MockEGLInterface::Mock_eglQueryDebugKHR(EGLint attribute, EGLAttrib* value) {
+  MakeFunctionUnique("eglQueryDebugKHR");
+  return interface_->QueryDebugKHR(attribute, value);
 }
 
 EGLBoolean GL_BINDING_CALL
@@ -626,6 +648,9 @@ MockEGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglCreateSyncKHR);
   if (strcmp(name, "eglCreateWindowSurface") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglCreateWindowSurface);
+  if (strcmp(name, "eglDebugMessageControlKHR") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_eglDebugMessageControlKHR);
   if (strcmp(name, "eglDestroyContext") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglDestroyContext);
   if (strcmp(name, "eglDestroyImageKHR") == 0)
@@ -692,6 +717,8 @@ MockEGLInterface::GetGLProcAddress(const char* name) {
         Mock_eglImageFlushExternalEXT);
   if (strcmp(name, "eglInitialize") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglInitialize);
+  if (strcmp(name, "eglLabelObjectKHR") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_eglLabelObjectKHR);
   if (strcmp(name, "eglMakeCurrent") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglMakeCurrent);
   if (strcmp(name, "eglPostSubBufferNV") == 0)
@@ -712,6 +739,8 @@ MockEGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglQueryAPI);
   if (strcmp(name, "eglQueryContext") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglQueryContext);
+  if (strcmp(name, "eglQueryDebugKHR") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_eglQueryDebugKHR);
   if (strcmp(name, "eglQueryStreamKHR") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglQueryStreamKHR);
   if (strcmp(name, "eglQueryStreamu64KHR") == 0)
