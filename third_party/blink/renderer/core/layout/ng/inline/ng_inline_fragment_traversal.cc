@@ -153,9 +153,10 @@ class LayoutInlineCollector final : public NGPhysicalFragmentCollectorBase {
  private:
   void Visit() final {
     if (!GetFragment().IsLineBox() &&
-        inclusive_descendants_.Contains(GetFragment().GetLayoutObject()))
+        inclusive_descendants_.Contains(GetFragment().GetLayoutObject())) {
       Emit();
-    // TODO(xiaochengh): Don't visit children after emitting current fragment.
+      return;
+    }
     VisitChildren();
   }
 

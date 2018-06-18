@@ -106,10 +106,7 @@ TEST_F(NGInlineFragmentTraversalTest, SelfFragmentsOf) {
 
   // <b> generates two box fragments since its content is in two lines.
   EXPECT_NEXT_BOX(iter, "filter");
-  EXPECT_NEXT_TEXT(iter, "bar");
-  EXPECT_NEXT_TEXT(iter, "\n");
   EXPECT_NEXT_BOX(iter, "filter");
-  EXPECT_NEXT_TEXT(iter, "baz");
   EXPECT_EQ(iter, descendants.end());
 }
 
