@@ -17,6 +17,29 @@ namespace {
 
 void Increment(int* i) { ++*i; }
 
+// |*did_delete_instance| will be set to true upon its destruction.
+class RefCountedClass : public base::RefCounted<RefCountedClass> {
+ public:
+  explicit RefCountedClass(bool* did_delete_instance)
+      : did_delete_instance_(did_delete_instance) {
+    DCHECK(!*did_delete_instance_);
+  }
+
+  void PerformTask() { did_perform_task_ = true; }
+  bool did_perform_task() const { return did_perform_task_; }
+
+ private:
+  friend class base::RefCounted<RefCountedClass>;
+
+  ~RefCountedClass() { *did_delete_instance_ = true; }
+
+  bool* const did_delete_instance_;  // Not owned.
+
+  bool did_perform_task_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(RefCountedClass);
+};
+
 TEST(OneShotEventTest, RecordsSignal) {
   OneShotEvent event;
   EXPECT_FALSE(event.is_signaled());
@@ -122,6 +145,30 @@ TEST(OneShotEventTest, IsSignaledAndPostsFromCallbackWork) {
   // Increment has run.
   EXPECT_EQ(0U, runner->NumPendingTasks());
   EXPECT_EQ(1, i);
+}
+
+// Tests that OneShotEvent does not keep references to tasks once OneShotEvent
+// Signal()s.
+TEST(OneShotEventTest, DropsCallbackRefUponSignalled) {
+  auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+  bool did_delete_instance = false;
+  OneShotEvent event;
+
+  {
+    auto ref_counted_class =
+        base::MakeRefCounted<RefCountedClass>(&did_delete_instance);
+    event.Post(
+        FROM_HERE,
+        base::BindRepeating(&RefCountedClass::PerformTask, ref_counted_class),
+        runner);
+    event.Signal();
+    runner->RunPendingTasks();
+    EXPECT_TRUE(ref_counted_class->did_perform_task());
+  }
+
+  // Once OneShotEvent doesn't have any queued events, it should have dropped
+  // all the references to the callbacks it received through Post().
+  EXPECT_TRUE(did_delete_instance);
 }
 
 }  // namespace
