@@ -6354,9 +6354,8 @@ static void setup_buffer_ref_mvs_inter(
 
   // Gets an initial list of candidate vectors from neighbours and orders them
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                   mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs,
-                   mbmi_ext->global_mvs, mi_row, mi_col,
-                   mbmi_ext->mode_context);
+                   mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
+                   mi_col, mbmi_ext->mode_context);
 
   // Further refinement that is encode side only to test the top few candidates
   // in full and choose the best as the centre point for subsequent searches.
@@ -8702,9 +8701,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   MV_REFERENCE_FRAME ref_frame = INTRA_FRAME;
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                   mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs,
-                   mbmi_ext->global_mvs, mi_row, mi_col,
-                   mbmi_ext->mode_context);
+                   mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
+                   mi_col, mbmi_ext->mode_context);
 
   int_mv nearestmv, nearmv;
   av1_find_best_ref_mvs_from_stack(0, mbmi_ext, ref_frame, &nearestmv, &nearmv,
@@ -9305,9 +9303,8 @@ static void set_params_rd_pick_inter_mode(
   for (; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
     x->mbmi_ext->mode_context[ref_frame] = 0;
     av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                     mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs,
-                     mbmi_ext->global_mvs, mi_row, mi_col,
-                     mbmi_ext->mode_context);
+                     mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
+                     mi_col, mbmi_ext->mode_context);
   }
 
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
@@ -10049,48 +10046,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 
     } else {
-      int_mv backup_ref_mv[2];
-
-      backup_ref_mv[0] = mbmi_ext->ref_mvs[ref_frame][0];
-      if (comp_pred) backup_ref_mv[1] = mbmi_ext->ref_mvs[second_ref_frame][0];
       mbmi->angle_delta[PLANE_TYPE_Y] = 0;
       mbmi->angle_delta[PLANE_TYPE_UV] = 0;
       mbmi->filter_intra_mode_info.use_filter_intra = 0;
       mbmi->ref_mv_idx = 0;
       ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-
-      if (comp_pred) {
-        if (mbmi_ext->ref_mv_count[ref_frame_type] > 1) {
-          int ref_mv_idx = 0;
-          // Special case: NEAR_NEWMV and NEW_NEARMV modes use
-          // 1 + mbmi->ref_mv_idx (like NEARMV) instead of
-          // mbmi->ref_mv_idx (like NEWMV)
-          if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV)
-            ref_mv_idx = 1;
-
-          if (compound_ref0_mode(mbmi->mode) == NEWMV) {
-            int_mv this_mv =
-                mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
-            mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
-          }
-          if (compound_ref1_mode(mbmi->mode) == NEWMV) {
-            int_mv this_mv =
-                mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
-            mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
-          }
-        }
-      } else {
-        if (mbmi->mode == NEWMV && mbmi_ext->ref_mv_count[ref_frame_type] > 1) {
-          int ref;
-          for (ref = 0; ref < 1 + comp_pred; ++ref) {
-            int_mv this_mv =
-                (ref == 0) ? mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv
-                           : mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv;
-            mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0] = this_mv;
-          }
-        }
-      }
-
       int64_t ref_best_rd = search_state.best_rd;
       {
         RD_STATS rd_stats, rd_stats_y, rd_stats_uv;
@@ -10171,41 +10131,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             }
           }
 
-          if (comp_pred) {
-            int ref_mv_idx = mbmi->ref_mv_idx;
-            // Special case: NEAR_NEWMV and NEW_NEARMV modes use
-            // 1 + mbmi->ref_mv_idx (like NEARMV) instead of
-            // mbmi->ref_mv_idx (like NEWMV)
-            if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV)
-              ref_mv_idx = 1 + mbmi->ref_mv_idx;
-
-            if (compound_ref0_mode(mbmi->mode) == NEWMV) {
-              int_mv this_mv =
-                  mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
-              mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
-            } else if (compound_ref0_mode(mbmi->mode) == NEARESTMV) {
-              int_mv this_mv =
-                  mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv;
-              mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
-            }
-
-            if (compound_ref1_mode(mbmi->mode) == NEWMV) {
-              int_mv this_mv =
-                  mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
-              mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
-            } else if (compound_ref1_mode(mbmi->mode) == NEARESTMV) {
-              int_mv this_mv =
-                  mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv;
-              mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
-            }
-          } else {
-            int_mv this_mv = mbmi_ext
-                                 ->ref_mv_stack[ref_frame_type]
-                                               [mbmi->ref_mv_idx + idx_offset]
-                                 .this_mv;
-            mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
-          }
-
           cur_mv =
               mbmi_ext->ref_mv_stack[ref_frame][mbmi->ref_mv_idx + idx_offset]
                   .this_mv;
@@ -10261,9 +10186,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         memcpy(x->blk_skip, x->blk_skip_drl,
                sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
       }
-      mbmi_ext->ref_mvs[ref_frame][0] = backup_ref_mv[0];
-      if (comp_pred) mbmi_ext->ref_mvs[second_ref_frame][0] = backup_ref_mv[1];
-
       if (this_rd == INT64_MAX) continue;
 
       this_skip2 = mbmi->skip;

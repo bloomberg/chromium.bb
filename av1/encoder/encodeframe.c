@@ -348,39 +348,6 @@ static void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
   x->skip = 0;
 }
 
-static void set_ref_and_pred_mvs(MACROBLOCK *const x, int8_t rf_type) {
-  MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = xd->mi[0];
-
-  int ref_mv_idx = mbmi->ref_mv_idx;
-  MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
-  CANDIDATE_MV *const curr_ref_mv_stack = mbmi_ext->ref_mv_stack[rf_type];
-
-  if (has_second_ref(mbmi)) {
-    // Special case: NEAR_NEWMV and NEW_NEARMV modes use 1 + mbmi->ref_mv_idx
-    // (like NEARMV) instead
-    if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV) ref_mv_idx += 1;
-
-    if (compound_ref0_mode(mbmi->mode) == NEWMV) {
-      int_mv this_mv = curr_ref_mv_stack[ref_mv_idx].this_mv;
-      mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
-    }
-    if (compound_ref1_mode(mbmi->mode) == NEWMV) {
-      int_mv this_mv = curr_ref_mv_stack[ref_mv_idx].comp_mv;
-      mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
-    }
-  } else {
-    if (mbmi->mode == NEWMV) {
-      int i;
-      for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
-        int_mv this_mv = (i == 0) ? curr_ref_mv_stack[ref_mv_idx].this_mv
-                                  : curr_ref_mv_stack[ref_mv_idx].comp_mv;
-        mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
-      }
-    }
-  }
-}
-
 static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                          ThreadData *td, PICK_MODE_CONTEXT *ctx, int mi_row,
                          int mi_col, BLOCK_SIZE bsize, RUN_TYPE dry_run) {
@@ -400,7 +367,6 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   const int mis = cm->mi_stride;
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
-  int8_t rf_type;
 
   assert(mi->sb_type == bsize);
 
@@ -408,11 +374,6 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   *x->mbmi_ext = ctx->mbmi_ext;
 
   reset_intmv_filter_type(mi_addr);
-
-  rf_type = av1_ref_frame_type(mi_addr->ref_frame);
-  if (x->mbmi_ext->ref_mv_count[rf_type] > 1) {
-    set_ref_and_pred_mvs(x, rf_type);
-  }
 
   memcpy(x->blk_skip, ctx->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
 

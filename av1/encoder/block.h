@@ -74,7 +74,6 @@ typedef struct {
 } CB_COEFF_BUFFER;
 
 typedef struct {
-  int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
   int16_t mode_context[MODE_CTX_REF_FRAMES];
   // TODO(angiebird): Reduce the buffer size according to sb_type
   tran_low_t *tcoeff[MAX_MB_PLANE];
