@@ -270,6 +270,8 @@ cr.define('settings_main_page', function() {
           .then(function() {
             const whenHidden =
                 test_util.whenAttributeIs(advancedPage, 'hidden', '');
+            test_util.eventToPromise('scroll-to-bottom', basicPage)
+                .then(event => event.detail.callback());
 
             const advancedToggle =
                 getToggleContainer().querySelector('#advancedToggle');
