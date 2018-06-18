@@ -42,12 +42,13 @@ class FakeExternalProtocolHandlerWorker
 class FakeExternalProtocolHandlerDelegate
     : public ExternalProtocolHandler::Delegate {
  public:
-  FakeExternalProtocolHandlerDelegate()
+  explicit FakeExternalProtocolHandlerDelegate(base::OnceClosure on_complete)
       : block_state_(ExternalProtocolHandler::BLOCK),
         os_state_(shell_integration::UNKNOWN_DEFAULT),
         has_launched_(false),
         has_prompted_(false),
-        has_blocked_(false) {}
+        has_blocked_(false),
+        on_complete_(std::move(on_complete)) {}
 
   scoped_refptr<shell_integration::DefaultProtocolClientWorker>
   CreateShellWorker(
@@ -65,6 +66,8 @@ class FakeExternalProtocolHandlerDelegate
     EXPECT_TRUE(block_state_ == ExternalProtocolHandler::BLOCK ||
                 os_state_ == shell_integration::IS_DEFAULT);
     has_blocked_ = true;
+    if (on_complete_)
+      std::move(on_complete_).Run();
   }
 
   void RunExternalProtocolDialog(const GURL& url,
@@ -88,7 +91,8 @@ class FakeExternalProtocolHandlerDelegate
   }
 
   void FinishedProcessingCheck() override {
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    if (on_complete_)
+      std::move(on_complete_).Run();
   }
 
   void set_os_state(shell_integration::DefaultWebClientState value) {
@@ -114,11 +118,12 @@ class FakeExternalProtocolHandlerDelegate
   bool has_prompted_;
   bool has_blocked_;
   GURL launch_or_prompt_url_;
+  base::OnceClosure on_complete_;
 };
 
 class ExternalProtocolHandlerTest : public testing::Test {
  protected:
-  ExternalProtocolHandlerTest() {}
+  ExternalProtocolHandlerTest() : delegate_(run_loop_.QuitClosure()) {}
 
   void SetUp() override {
     profile_.reset(new TestingProfile());
@@ -151,7 +156,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
     delegate_.set_os_state(os_state);
     ExternalProtocolHandler::LaunchUrl(url, 0, 0, ui::PAGE_TRANSITION_LINK,
                                        true);
-    content::RunAllTasksUntilIdle();
+    run_loop_.Run();
     ExternalProtocolHandler::SetDelegateForTesting(nullptr);
 
     EXPECT_EQ(expected_action == Action::PROMPT, delegate_.has_prompted());
@@ -161,6 +166,7 @@ class ExternalProtocolHandlerTest : public testing::Test {
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
+  base::RunLoop run_loop_;
   FakeExternalProtocolHandlerDelegate delegate_;
 
   std::unique_ptr<TestingProfile> profile_;

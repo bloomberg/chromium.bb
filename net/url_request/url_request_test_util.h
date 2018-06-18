@@ -149,29 +149,19 @@ class TestDelegate : public URLRequest::Delegate {
   TestDelegate();
   ~TestDelegate() override;
 
-  // Helper to create a RunLoop, set |on_complete_| from it, then Run() it.
+  // Helpers to create a RunLoop, set |on_<event>| from it, then Run() it.
   void RunUntilComplete();
-
-  // Sets the closures to be run when the specified events occur, for tests
-  // which need more fine-grained control than RunUntilComplete().
-  void set_on_complete(base::RepeatingClosure on_complete) {
-    on_complete_ = std::move(on_complete);
-  }
-  void set_on_redirect(base::RepeatingClosure on_redirect) {
-    on_redirect_ = std::move(on_redirect);
-  }
-  void set_on_auth_required(base::RepeatingClosure on_auth_required) {
-    on_auth_required_ = std::move(on_auth_required);
-  }
-
-  // Deprecated quit-on-event flags. If no on-event closures are configured
-  // then TestDelegate will post QuitCurrent*Deprecated() when a flagged event
-  // occurs.
-  void set_quit_on_complete(bool val);
-  void set_quit_on_redirect(bool val);
+  void RunUntilRedirect();
   // Enables quitting the message loop in response to auth requests, as opposed
   // to returning credentials or cancelling the request.
-  void set_quit_on_auth_required(bool val);
+  void RunUntilAuthRequired();
+
+  // Sets the closure to be run on completion, for tests which need more fine-
+  // grained control than RunUntilComplete().
+  void set_on_complete(base::OnceClosure on_complete) {
+    legacy_on_complete_.Reset();
+    on_complete_ = std::move(on_complete);
+  }
 
   void set_cancel_in_received_redirect(bool val) { cancel_in_rr_ = val; }
   void set_cancel_in_response_started(bool val) { cancel_in_rs_ = val; }
@@ -232,34 +222,39 @@ class TestDelegate : public URLRequest::Delegate {
   virtual void OnResponseCompleted(URLRequest* request);
 
   // options for controlling behavior
-  bool cancel_in_rr_;
-  bool cancel_in_rs_;
-  bool cancel_in_rd_;
-  bool cancel_in_rd_pending_;
-  bool allow_certificate_errors_;
+  bool cancel_in_rr_ = false;
+  bool cancel_in_rs_ = false;
+  bool cancel_in_rd_ = false;
+  bool cancel_in_rd_pending_ = false;
+  bool allow_certificate_errors_ = false;
   AuthCredentials credentials_;
 
-  // Options for quitting test's RunLoops on particular events.
-  base::RepeatingClosure on_complete_;
-  base::RepeatingClosure on_redirect_;
-  base::RepeatingClosure on_auth_required_;
+  // Holds the legacy on-complete behaviour, or is null if one or more of the
+  // Until*() APIs has been used. This holds QuitCurrentWhenIdleDeprecated() by
+  // default, unless one of the Until*() APIs is used.
+  base::RepeatingClosure legacy_on_complete_;
+
+  // Used to register RunLoop quit closures, to implement the Until*() closures.
+  base::OnceClosure on_complete_;
+  base::OnceClosure on_redirect_;
+  base::OnceClosure on_auth_required_;
 
   // tracks status of callbacks
-  int response_started_count_;
-  int received_bytes_count_;
-  int received_redirect_count_;
-  bool received_data_before_response_;
-  bool request_failed_;
-  bool have_certificate_errors_;
-  bool certificate_errors_are_fatal_;
-  bool auth_required_;
+  int response_started_count_ = 0;
+  int received_bytes_count_ = 0;
+  int received_redirect_count_ = 0;
+  bool received_data_before_response_ = false;
+  bool request_failed_ = false;
+  bool have_certificate_errors_ = false;
+  bool certificate_errors_are_fatal_ = false;
+  bool auth_required_ = false;
   std::string data_received_;
-  bool have_full_request_headers_;
+  bool have_full_request_headers_ = false;
   HttpRequestHeaders full_request_headers_;
-  bool response_completed_;
+  bool response_completed_ = false;
 
   // tracks status of request
-  int request_status_;
+  int request_status_ = ERR_IO_PENDING;
 
   // our read buffer
   scoped_refptr<IOBuffer> buf_;

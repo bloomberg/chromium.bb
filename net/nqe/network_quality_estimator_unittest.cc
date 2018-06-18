@@ -223,6 +223,9 @@ TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   request->Start();
   test_delegate.RunUntilComplete();
 
+  // Pump message loop to allow estimator tasks to be processed.
+  base::RunLoop().RunUntilIdle();
+
   // Both RTT and downstream throughput should be updated.
   base::TimeDelta http_rtt;
   EXPECT_TRUE(estimator.GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP,
@@ -593,6 +596,10 @@ TEST_F(NetworkQualityEstimatorTest, StoreObservations) {
                               &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
     request->Start();
     test_delegate.RunUntilComplete();
+
+    // Pump the message loop to process estimator tasks.
+    base::RunLoop().RunUntilIdle();
+
     EXPECT_TRUE(estimator.GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP,
                                        base::TimeTicks(), &rtt, nullptr));
     EXPECT_TRUE(
@@ -1238,6 +1245,9 @@ TEST_F(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
     request->Start();
     test_delegate.RunUntilComplete();
 
+    // Pump message loop to allow estimator tasks to be processed.
+    base::RunLoop().RunUntilIdle();
+
     EXPECT_EQ(test.allow_small_localhost_requests,
               estimator.GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_HTTP,
                                      base::TimeTicks(), &rtt, nullptr));
@@ -1686,6 +1696,9 @@ TEST_F(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
   request2->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
   request2->Start();
   test_delegate.RunUntilComplete();
+
+  // Pump message loop to allow estimator tasks to be processed.
+  base::RunLoop().RunUntilIdle();
 
   // Both RTT and downstream throughput should be updated.
   base::TimeDelta rtt;
@@ -2285,6 +2298,9 @@ TEST_F(NetworkQualityEstimatorTest,
     request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME_DEPRECATED);
     request->Start();
     test_delegate.RunUntilComplete();
+
+    // Pump message loop to allow estimator tasks to be processed.
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(i, estimator.GetEffectiveConnectionType());
 

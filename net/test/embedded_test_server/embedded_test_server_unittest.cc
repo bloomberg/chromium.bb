@@ -147,7 +147,7 @@ class EmbeddedTestServerTest
   void OnURLFetchComplete(const URLFetcher* source) override {
     ++num_responses_received_;
     if (num_responses_received_ == num_responses_expected_)
-      base::RunLoop::QuitCurrentWhenIdleDeprecated();
+      std::move(quit_run_loop_).Run();
   }
 
   // Waits until the specified number of responses are received.
@@ -155,7 +155,9 @@ class EmbeddedTestServerTest
     num_responses_received_ = 0;
     num_responses_expected_ = num_responses;
     // Will be terminated in OnURLFetchComplete().
-    base::RunLoop().Run();
+    base::RunLoop run_loop;
+    quit_run_loop_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
   // Handles |request| sent to |path| and returns the response per |content|,
@@ -188,6 +190,7 @@ class EmbeddedTestServerTest
   scoped_refptr<TestURLRequestContextGetter> request_context_getter_;
   TestConnectionListener connection_listener_;
   std::unique_ptr<EmbeddedTestServer> server_;
+  base::OnceClosure quit_run_loop_;
 };
 
 TEST_P(EmbeddedTestServerTest, GetBaseURL) {
@@ -388,7 +391,7 @@ namespace {
 
 class CancelRequestDelegate : public TestDelegate {
  public:
-  CancelRequestDelegate() = default;
+  CancelRequestDelegate() { set_on_complete(base::DoNothing()); }
   ~CancelRequestDelegate() override = default;
 
   void OnResponseStarted(URLRequest* request, int net_error) override {
@@ -543,8 +546,10 @@ class EmbeddedTestServerThreadingTestDelegate
                            TRAFFIC_ANNOTATION_FOR_TESTS);
     fetcher->SetRequestContext(
         new TestURLRequestContextGetter(loop->task_runner()));
+    base::RunLoop run_loop;
+    quit_run_loop_ = run_loop.QuitClosure();
     fetcher->Start();
-    base::RunLoop().Run();
+    run_loop.Run();
     fetcher.reset();
 
     // Shut down.
@@ -556,13 +561,15 @@ class EmbeddedTestServerThreadingTestDelegate
 
   // URLFetcherDelegate override.
   void OnURLFetchComplete(const URLFetcher* source) override {
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    std::move(quit_run_loop_).Run();
   }
 
  private:
   const bool message_loop_present_on_initialize_;
   const bool message_loop_present_on_shutdown_;
   const EmbeddedTestServer::Type type_;
+
+  base::OnceClosure quit_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServerThreadingTestDelegate);
 };

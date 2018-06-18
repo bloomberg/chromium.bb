@@ -375,7 +375,9 @@ class AppCacheStorageImplTest : public testing::Test {
 
   // Test harness --------------------------------------------------
 
-  AppCacheStorageImplTest() { request_delegate_.set_quit_on_complete(false); }
+  AppCacheStorageImplTest() {
+    request_delegate_.set_on_complete(base::DoNothing());
+  }
 
   template <class Method>
   void RunTestOnIOThread(Method method) {

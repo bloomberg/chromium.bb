@@ -302,14 +302,13 @@ TEST_F(ExternalFileURLRequestJobTest, RegularFile) {
 
 TEST_F(ExternalFileURLRequestJobTest, HostedDocument) {
   // Open a gdoc file.
-  test_delegate_->set_quit_on_redirect(true);
   std::unique_ptr<net::URLRequest> request(url_request_context_->CreateRequest(
       GURL("externalfile:drive-test-user-hash/root/Document 1 "
            "excludeDir-test.gdoc"),
       net::DEFAULT_PRIORITY, test_delegate_.get()));
   request->Start();
 
-  base::RunLoop().Run();
+  test_delegate_->RunUntilRedirect();
 
   // Make sure that a hosted document triggers redirection.
   EXPECT_TRUE(request->is_redirecting());

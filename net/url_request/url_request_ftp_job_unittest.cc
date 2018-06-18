@@ -599,14 +599,12 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAndServerAuth) {
                       ASCIIToUTF16("passworddonotuse")));
 
   TestDelegate request_delegate;
-  request_delegate.set_quit_on_auth_required(true);
   std::unique_ptr<URLRequest> url_request(request_context()->CreateRequest(
       url, DEFAULT_PRIORITY, &request_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
   url_request->Start();
   ASSERT_TRUE(url_request->is_pending());
 
-  // Run until proxy auth is requested.
-  base::RunLoop().Run();
+  request_delegate.RunUntilAuthRequired();
 
   ASSERT_TRUE(request_delegate.auth_required_called());
   EXPECT_EQ(0, network_delegate()->completed_requests());
@@ -615,15 +613,14 @@ TEST_F(URLRequestFtpJobTest, FtpProxyRequestNeedProxyAndServerAuth) {
       AuthCredentials(ASCIIToUTF16("proxyuser"), ASCIIToUTF16("proxypass")));
 
   // Run until server auth is requested.
-  base::RunLoop().Run();
+  request_delegate.RunUntilAuthRequired();
 
   EXPECT_EQ(0, network_delegate()->completed_requests());
   EXPECT_EQ(0, network_delegate()->error_count());
   url_request->SetAuth(
       AuthCredentials(ASCIIToUTF16("myuser"), ASCIIToUTF16("mypass")));
 
-  // The TestDelegate will by default quit the message loop on completion.
-  base::RunLoop().Run();
+  request_delegate.RunUntilComplete();
 
   EXPECT_THAT(request_delegate.request_status(), IsOk());
   EXPECT_EQ(1, network_delegate()->completed_requests());

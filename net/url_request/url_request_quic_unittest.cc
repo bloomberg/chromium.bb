@@ -496,14 +496,14 @@ TEST_F(URLRequestQuicTest, TestTwoRequests) {
   SetNetworkDelegate(&network_delegate);
   Init();
   CheckLoadTimingDelegate delegate(false);
-  delegate.set_quit_on_complete(false);
+  delegate.set_on_complete(base::DoNothing());
   std::string url =
       base::StringPrintf("https://%s%s", kTestServerHost, kHelloPath);
   std::unique_ptr<URLRequest> request =
       CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate);
 
   CheckLoadTimingDelegate delegate2(true);
-  delegate2.set_quit_on_complete(false);
+  delegate2.set_on_complete(base::DoNothing());
   std::unique_ptr<URLRequest> request2 =
       CreateRequest(GURL(url), DEFAULT_PRIORITY, &delegate2);
   request->Start();

@@ -4608,9 +4608,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequest) {
         original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     // Quit after hitting the redirect, so can check the headers.
-    d.set_quit_on_redirect(true);
     r->Start();
-    d.RunUntilComplete();
+    d.RunUntilRedirect();
 
     // Check headers from URLRequestJob.
     EXPECT_EQ(307, r->GetResponseCode());
@@ -4663,9 +4662,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestSynchronously) {
         original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     // Quit after hitting the redirect, so can check the headers.
-    d.set_quit_on_redirect(true);
     r->Start();
-    d.RunUntilComplete();
+    d.RunUntilRedirect();
 
     // Check headers from URLRequestJob.
     EXPECT_EQ(307, r->GetResponseCode());
@@ -4727,9 +4725,8 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestPost) {
     r->SetExtraRequestHeaders(headers);
 
     // Quit after hitting the redirect, so can check the headers.
-    d.set_quit_on_redirect(true);
     r->Start();
-    d.RunUntilComplete();
+    d.RunUntilRedirect();
 
     // Check headers from URLRequestJob.
     EXPECT_EQ(307, r->GetResponseCode());
@@ -6468,7 +6465,7 @@ TEST_F(URLRequestTestHTTP, CancelByDestroyingAfterStart) {
     // this test doesn't actually have a message loop. The quit message would
     // get put on this thread's message queue and the next test would exit
     // early, causing problems.
-    d.set_quit_on_complete(false);
+    d.set_on_complete(base::DoNothing());
   }
   // expect things to just cleanup properly.
 
@@ -7995,11 +7992,10 @@ TEST_F(URLRequestTestHTTP, CacheRedirect) {
 
   {
     TestDelegate d;
-    d.set_quit_on_redirect(true);
     std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
         redirect_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
-    d.RunUntilComplete();
+    d.RunUntilRedirect();
 
     EXPECT_EQ(1, d.received_redirect_count());
     EXPECT_EQ(0, d.response_started_count());
@@ -8295,13 +8291,12 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect) {
 
   TestDelegate d;
   {
-    d.set_quit_on_redirect(true);
     GURL test_url(http_test_server()->GetURL("/redirect-test.html"));
     std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
         test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
     req->Start();
-    d.RunUntilComplete();
+    d.RunUntilRedirect();
 
     EXPECT_EQ(1, d.received_redirect_count());
     EXPECT_TRUE(d.have_full_request_headers());
@@ -8331,7 +8326,6 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_GetFullRequestHeaders) {
 
   TestDelegate d;
   {
-    d.set_quit_on_redirect(true);
     GURL test_url(http_test_server()->GetURL("/redirect-test.html"));
     std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
         test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -8339,7 +8333,7 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_GetFullRequestHeaders) {
     EXPECT_FALSE(d.have_full_request_headers());
 
     req->Start();
-    d.RunUntilComplete();
+    d.RunUntilRedirect();
 
     EXPECT_EQ(1, d.received_redirect_count());
 
@@ -8369,7 +8363,6 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_ModifiedRequestHeaders) {
 
   TestDelegate d;
   {
-    d.set_quit_on_redirect(true);
     GURL test_url(http_test_server()->GetURL("/redirect-test.html"));
     std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
         test_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -8379,7 +8372,7 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_ModifiedRequestHeaders) {
     req->SetExtraRequestHeaderByName("Header2", "Value2", true /* overwrite */);
 
     req->Start();
-    d.RunUntilComplete();
+    d.RunUntilRedirect();
 
     // Initial request should only have initial headers.
     EXPECT_EQ(1, d.received_redirect_count());
@@ -8422,12 +8415,11 @@ TEST_F(URLRequestTestHTTP, CancelDeferredRedirect) {
 
   TestDelegate d;
   {
-    d.set_quit_on_redirect(true);
     std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
         http_test_server()->GetURL("/redirect-test.html"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->Start();
-    d.RunUntilComplete();
+    d.RunUntilRedirect();
 
     EXPECT_EQ(1, d.received_redirect_count());
 
@@ -10157,8 +10149,6 @@ TEST_F(HTTPSRequestTest, HSTSCrossOriginAddHeaders) {
   GURL hsts_https_url = hsts_http_url.ReplaceComponents(replacements);
 
   TestDelegate d;
-  // Quit on redirect to allow response header inspection upon redirect.
-  d.set_quit_on_redirect(true);
 
   std::unique_ptr<URLRequest> req(context.CreateRequest(
       hsts_http_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -10168,7 +10158,7 @@ TEST_F(HTTPSRequestTest, HSTSCrossOriginAddHeaders) {
   req->SetExtraRequestHeaders(request_headers);
 
   req->Start();
-  d.RunUntilComplete();
+  d.RunUntilRedirect();
 
   EXPECT_EQ(1, d.received_redirect_count());
 
@@ -10188,17 +10178,24 @@ namespace {
 class SSLClientAuthTestDelegate : public TestDelegate {
  public:
   SSLClientAuthTestDelegate() : on_certificate_requested_count_(0) {
+    set_on_complete(base::DoNothing());
   }
   void OnCertificateRequested(URLRequest* request,
                               SSLCertRequestInfo* cert_request_info) override {
     on_certificate_requested_count_++;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+    std::move(on_certificate_requested_).Run();
+  }
+  void RunUntilCertificateRequested() {
+    base::RunLoop run_loop;
+    on_certificate_requested_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
   int on_certificate_requested_count() {
     return on_certificate_requested_count_;
   }
  private:
   int on_certificate_requested_count_;
+  base::OnceClosure on_certificate_requested_;
 };
 
 class TestSSLPrivateKey : public SSLPrivateKey {
@@ -10259,7 +10256,8 @@ TEST_F(HTTPSRequestTest, ClientAuthNoCertificate) {
     r->Start();
     EXPECT_TRUE(r->is_pending());
 
-    d.RunUntilComplete();
+    d.RunUntilCertificateRequested();
+    EXPECT_TRUE(r->is_pending());
 
     EXPECT_EQ(1, d.on_certificate_requested_count());
     EXPECT_FALSE(d.received_data_before_response());
@@ -10305,7 +10303,8 @@ TEST_F(HTTPSRequestTest, ClientAuth) {
     r->Start();
     EXPECT_TRUE(r->is_pending());
 
-    d.RunUntilComplete();
+    d.RunUntilCertificateRequested();
+    EXPECT_TRUE(r->is_pending());
 
     EXPECT_EQ(1, d.on_certificate_requested_count());
     EXPECT_FALSE(d.received_data_before_response());
@@ -10383,7 +10382,9 @@ TEST_F(HTTPSRequestTest, ClientAuthFailSigning) {
 
     r->Start();
     EXPECT_TRUE(r->is_pending());
-    d.RunUntilComplete();
+
+    d.RunUntilCertificateRequested();
+    EXPECT_TRUE(r->is_pending());
 
     EXPECT_EQ(1, d.on_certificate_requested_count());
     EXPECT_FALSE(d.received_data_before_response());
@@ -10420,7 +10421,8 @@ TEST_F(HTTPSRequestTest, ClientAuthFailSigning) {
     r->Start();
     EXPECT_TRUE(r->is_pending());
 
-    d.RunUntilComplete();
+    d.RunUntilCertificateRequested();
+    EXPECT_TRUE(r->is_pending());
 
     EXPECT_EQ(1, d.on_certificate_requested_count());
     EXPECT_FALSE(d.received_data_before_response());
@@ -10461,7 +10463,8 @@ TEST_F(HTTPSRequestTest, ClientAuthFailSigningRetry) {
     r->Start();
     EXPECT_TRUE(r->is_pending());
 
-    d.RunUntilComplete();
+    d.RunUntilCertificateRequested();
+    EXPECT_TRUE(r->is_pending());
 
     EXPECT_EQ(1, d.on_certificate_requested_count());
     EXPECT_FALSE(d.received_data_before_response());
@@ -10499,7 +10502,8 @@ TEST_F(HTTPSRequestTest, ClientAuthFailSigningRetry) {
     r->Start();
     EXPECT_TRUE(r->is_pending());
 
-    d.RunUntilComplete();
+    d.RunUntilCertificateRequested();
+    EXPECT_TRUE(r->is_pending());
 
     // There was an additional signing call on the private key (the one which
     // failed).
@@ -12620,7 +12624,6 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacksWithRedirect) {
   TestDelegate delegate;
   HttpRequestHeaders extra_headers;
   extra_headers.SetHeader("X-Foo", "bar");
-  delegate.set_quit_on_redirect(true);
   GURL url(http_test_server()->GetURL("/redirect-test.html"));
   std::unique_ptr<URLRequest> r(default_context_.CreateRequest(
       url, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -12632,7 +12635,7 @@ TEST_F(URLRequestTestHTTP, HeadersCallbacksWithRedirect) {
          scoped_refptr<const HttpResponseHeaders> right) { *left = right; },
       base::Unretained(&raw_resp_headers)));
   r->Start();
-  delegate.RunUntilComplete();
+  delegate.RunUntilRedirect();
 
   ASSERT_EQ(1, delegate.received_redirect_count());
   std::string value;
@@ -12777,9 +12780,8 @@ TEST_F(URLRequestTest, UpgradeIfInsecureFlagSet) {
   std::unique_ptr<URLRequest> r(context.CreateRequest(
       kOriginalUrl, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
   r->set_upgrade_if_insecure(true);
-  d.set_quit_on_redirect(true);
   r->Start();
-  base::RunLoop().Run();
+  d.RunUntilRedirect();
   GURL::Replacements replacements;
   // Check that the redirect URL was upgraded to HTTPS since upgrade_if_insecure
   // was set.
@@ -12802,9 +12804,8 @@ TEST_F(URLRequestTest, UpgradeIfInsecureFlagSetExplicitPort80) {
   std::unique_ptr<URLRequest> r(context.CreateRequest(
       kOriginalUrl, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
   r->set_upgrade_if_insecure(true);
-  d.set_quit_on_redirect(true);
   r->Start();
-  base::RunLoop().Run();
+  d.RunUntilRedirect();
   GURL::Replacements replacements;
   // The URL host should have not been changed.
   EXPECT_EQ(d.redirect_info().new_url.host(), kRedirectUrl.host());
@@ -12827,9 +12828,8 @@ TEST_F(URLRequestTest, UpgradeIfInsecureFlagSetNonStandardPort) {
   std::unique_ptr<URLRequest> r(context.CreateRequest(
       kOriginalUrl, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
   r->set_upgrade_if_insecure(true);
-  d.set_quit_on_redirect(true);
   r->Start();
-  base::RunLoop().Run();
+  d.RunUntilRedirect();
   GURL::Replacements replacements;
   // Check that the redirect URL was upgraded to HTTPS since upgrade_if_insecure
   // was set, nonstandard port should not have been modified.
@@ -12851,9 +12851,8 @@ TEST_F(URLRequestTest, UpgradeIfInsecureFlagNotSet) {
   std::unique_ptr<URLRequest> r(context.CreateRequest(
       kOriginalUrl, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
   r->set_upgrade_if_insecure(false);
-  d.set_quit_on_redirect(true);
   r->Start();
-  base::RunLoop().Run();
+  d.RunUntilRedirect();
   // The redirect URL should not be changed if the upgrade_if_insecure flag is
   // not set.
   EXPECT_EQ(kRedirectUrl, d.redirect_info().new_url);
