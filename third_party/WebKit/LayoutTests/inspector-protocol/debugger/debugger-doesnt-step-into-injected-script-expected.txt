@@ -10,7 +10,7 @@ boo:0:48
 
 Perform stepInto
 Stack trace:
-:0:51
+:0:52
 
 Perform stepInto
 Stack trace:

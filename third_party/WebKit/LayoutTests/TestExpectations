@@ -2714,6 +2714,14 @@ crbug.com/694525 external/wpt/content-security-policy/style-src/inline-style-all
 crbug.com/694525 external/wpt/content-security-policy/style-src/style-blocked.sub.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/unsafe-eval/eval-blocked-in-about-blank-iframe.sub.html [ Skip ]
 
+crbug.com/v8/7858 http/tests/devtools/persistence/persistence-external-change-breakpoints.js [ Skip ]
+crbug.com/v8/7858 http/tests/devtools/sources/debugger-step/debugger-step-into-document-write.js [ Skip ]
+crbug.com/v8/7858 http/tests/devtools/sources/debugger-step/debugger-step-into-inlined-scripts.js [ Skip ]
+crbug.com/v8/7858 http/tests/devtools/sources/debugger-step/debugger-step-out-document-write.js [ Skip ]
+crbug.com/v8/7858 http/tests/devtools/sources/debugger-step/debugger-step-over-document-write.js [ Skip ]
+crbug.com/v8/7858 http/tests/devtools/sources/debugger-step/debugger-step-over-inlined-scripts.js [ Skip ]
+crbug.com/v8/7858 inspector-protocol/debugger/debugger-doesnt-step-into-injected-script.js [ Skip ]
+
 # These tests will be added back soon:
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-cross-origin-aux-frame-navigation.sub.html [ Skip ]
 crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-cross-origin-main-frame-navigation.sub.html [ Skip ]

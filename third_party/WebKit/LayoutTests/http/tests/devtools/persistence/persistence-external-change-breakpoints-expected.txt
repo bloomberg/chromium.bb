@@ -8,7 +8,6 @@ breakpoint at 2
   inline breakpoint at (2, 0)
   inline breakpoint at (2, 17) disabled
   inline breakpoint at (2, 22) disabled
-  inline breakpoint at (2, 23) disabled
 
 Running: addCommitToFilesystemUISourceCode
 breakpoint at 2
