@@ -35,7 +35,8 @@
     [CEReactions, Reflect=aria_owns] attribute DOMString? ariaOwns;
     [CEReactions, Reflect=aria_placeholder] attribute DOMString? ariaPlaceholder;
     [CEReactions, Reflect=aria_posinset] attribute DOMString? ariaPosInSet;
-    [CEReactions, Reflect=aria_readonly] attribute DOMString? ariaPressed;
+    [CEReactions, Reflect=aria_pressed] attribute DOMString? ariaPressed;
+    [CEReactions, Reflect=aria_readonly] attribute DOMString? ariaReadOnly;
     [CEReactions, Reflect=aria_relevant] attribute DOMString? ariaRelevant;
     [CEReactions, Reflect=aria_required] attribute DOMString? ariaRequired;
     [CEReactions, Reflect=aria_roledescription] attribute DOMString? ariaRoleDescription;

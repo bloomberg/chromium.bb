@@ -1859,6 +1859,7 @@ interface Element : Node
     getter ariaPlaceholder
     getter ariaPosInSet
     getter ariaPressed
+    getter ariaReadOnly
     getter ariaRelevant
     getter ariaRequired
     getter ariaRoleDescription
@@ -1995,6 +1996,7 @@ interface Element : Node
     setter ariaPlaceholder
     setter ariaPosInSet
     setter ariaPressed
+    setter ariaReadOnly
     setter ariaRelevant
     setter ariaRequired
     setter ariaRoleDescription
