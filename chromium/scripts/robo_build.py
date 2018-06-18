@@ -57,10 +57,7 @@ def BuildAndImportAllFFmpegConfigs(robo_configuration):
     robo_configuration: RoboConfiguration.
   """
   if robo_configuration.host_operating_system() == "linux":
-    ConfigureAndBuildFFmpeg(robo_configuration, "linux", None)
-    ConfigureAndBuildFFmpeg(robo_configuration, "android", None)
-    ConfigureAndBuildFFmpeg(robo_configuration, "win", None)
-    ConfigureAndBuildFFmpeg(robo_configuration, "mac", None)
+    ConfigureAndBuildFFmpeg(robo_configuration, "all", None)
   else:
     raise Exception("I don't know how to build ffmpeg for host type %s" %
             robo_configuration.host_operating_system())
@@ -141,4 +138,3 @@ def RunTests(robo_configuration):
   # chrome works, if you want to do some manual testing.
   #  BuildAndRunChromeTargetASAN(robo_configuration, "chrome",
   #          host_operating_system, host_architecture)
-

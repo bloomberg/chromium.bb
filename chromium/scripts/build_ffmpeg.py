@@ -264,14 +264,14 @@ def SetupWindowsCrossCompileToolchain(target_arch):
   ])
 
   flags = gn_helpers.FromGNArgs(output)
-  cwd = os.getcwd():
+  cwd = os.getcwd()
   for cflag in flags['include_flags_imsvc'].split(' '):
     # Apparently setup_toolchain prefers relative include paths, which
     # may work for chrome, but it does not work for ffmpeg, so let's make
     # them asbolute again.
     cflag = cflag.strip('"')
-     if cflag.startswith("-imsvc"):
-       cflag = "-imsvc" + os.path.join(cwd, cflag[6:])
+    if cflag.startswith("-imsvc"):
+      cflag = "-imsvc" + os.path.join(cwd, cflag[6:])
     new_args += ['--extra-cflags=' + cflag]
 
   # TODO(dalecurtis): Why isn't the ucrt path printed?
@@ -369,6 +369,14 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
          r'#define HAVE_BCRYPT 0')
     ]
 
+  # Sanitizers can't compile the h264 code when EBP is used.
+  # Pre-make as ffmpeg fails to compile otherwise.
+  if target_arch == 'ia32':
+    pre_make_rewrites += [
+        (r'(#define HAVE_EBP_AVAILABLE [01])',
+         r'/* \1 -- ebp selection is done by the chrome build */')
+    ]
+
   RewriteFile(os.path.join(config_dir, 'config.h'), pre_make_rewrites)
 
   # Windows linking resolves external symbols. Since generate_gn.py does not
@@ -417,13 +425,6 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
       (r'(#define FFMPEG_CONFIGURATION .*)',
        r'/* \1 -- elide long configuration string from binary */')
   ]
-
-  # Sanitizers can't compile the h264 code when EBP is used.
-  if target_arch == 'ia32':
-    post_make_rewrites += [
-        (r'(#define HAVE_EBP_AVAILABLE [01])',
-         r'/* \1 -- ebp selection is done by the chrome build */')
-    ]
 
   if target_arch in ('arm', 'arm-neon', 'arm64'):
     post_make_rewrites += [

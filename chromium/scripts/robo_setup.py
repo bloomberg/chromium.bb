@@ -151,10 +151,18 @@ def EnsureLLVMSymlinks(robo_configuration):
   # For mac.
   EnsureSymlink("lld", "ld64.lld")
 
+def EnsureSysroots(robo_configuration):
+  """Install arm/arm64/mips/mips64 sysroots."""
+  robo_configuration.chdir_to_chrome_src()
+  for arch in ["arm", "arm64", "mips", "mips64el"]:
+    if call(["build/linux/sysroot_scripts/install-sysroot.py",
+             "--arch=" + arch]):
+      raise Exception("Failed to install sysroot for " + arch);
+
 def EnsureToolchains(robo_configuration):
   """Make sure that we have all the toolchains for cross-compilation"""
   EnsureGClientTargets(robo_configuration)
   FetchAdditionalWindowsBinaries(robo_configuration)
   FetchMacSDK(robo_configuration)
   EnsureLLVMSymlinks(robo_configuration)
-
+  EnsureSysroots(robo_configuration)
