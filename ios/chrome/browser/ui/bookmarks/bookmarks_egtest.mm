@@ -3748,8 +3748,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // certain configurations.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
-      performAction:grey_scrollToContentEdgeWithStartPoint(
-                        kGREYContentEdgeBottom, 0.5, 0.5)];
+      performAction:grey_scrollToContentEdgeWithStartPoint(kGREYContentEdgeTop,
+                                                           0.5, 0.5)];
 }
 
 // Scroll the bookmarks to bottom.
