@@ -1199,9 +1199,7 @@
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
       # chromium.memory
-      'Linux Chromium OS ASan LSan Tests (1)',
-      'Linux TSan Tests',
-      'Mac ASan 64 Tests (1)',
+      'Mac ASan 64 Tests (1)',  # https://crbug.com/853172
       # chromium.win
       'Win10 Tests x64 (dbg)',
     ],
