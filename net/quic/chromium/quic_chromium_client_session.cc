@@ -2329,6 +2329,12 @@ void QuicChromiumClientSession::TryMigrateBackToDefaultNetwork(
 void QuicChromiumClientSession::MaybeRetryMigrateBackToDefaultNetwork() {
   base::TimeDelta retry_migrate_back_timeout =
       base::TimeDelta::FromSeconds(UINT64_C(1) << retry_migrate_back_count_);
+  if (default_network_ == GetDefaultSocket()->GetBoundNetwork()) {
+    // If session has been back on the default already by other direct
+    // migration attempt, cancel migrate back now.
+    CancelMigrateBackToDefaultNetworkTimer();
+    return;
+  }
   if (retry_migrate_back_timeout > max_time_on_non_default_network_) {
     // Mark session as going away to accept no more streams.
     NotifyFactoryOfSessionGoingAway();
