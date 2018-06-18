@@ -834,10 +834,11 @@ void BrowserMainLoop::CreateStartupTasks() {
   DCHECK(!startup_task_runner_);
 #if defined(OS_ANDROID)
   startup_task_runner_ = std::make_unique<StartupTaskRunner>(
-      base::Bind(&BrowserStartupComplete), base::ThreadTaskRunnerHandle::Get());
+      base::BindOnce(&BrowserStartupComplete),
+      base::ThreadTaskRunnerHandle::Get());
 #else
   startup_task_runner_ = std::make_unique<StartupTaskRunner>(
-      base::Callback<void(int)>(), base::ThreadTaskRunnerHandle::Get());
+      base::OnceCallback<void(int)>(), base::ThreadTaskRunnerHandle::Get());
 #endif
   StartupTask pre_create_threads =
       base::Bind(&BrowserMainLoop::PreCreateThreads, base::Unretained(this));
