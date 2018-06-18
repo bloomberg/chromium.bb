@@ -99,6 +99,10 @@ class AutofillPopupLayoutModel {
 
   bool is_credit_card_popup() const { return is_credit_card_popup_; }
 
+  // Allows the provision of another implementation of view_common, for use in
+  // unit tests where using the real thing could cause crashes.
+  void SetUpForTesting(std::unique_ptr<PopupViewCommon> view_common);
+
  private:
   // Returns the enclosing rectangle for the element_bounds.
   const gfx::Rect RoundedElementBounds() const;
@@ -116,7 +120,7 @@ class AutofillPopupLayoutModel {
   // The bounds of the Autofill popup.
   gfx::Rect popup_bounds_;
 
-  PopupViewCommon view_common_;
+  std::unique_ptr<PopupViewCommon> view_common_;
 
   AutofillPopupViewDelegate* delegate_;  // Weak reference.
 
