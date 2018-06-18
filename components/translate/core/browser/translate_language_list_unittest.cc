@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_task_environment.h"
@@ -102,14 +103,12 @@ TEST(TranslateLanguageListTest, GetSupportedLanguages) {
   // Check there are a lot of default languages.
   EXPECT_GE(languages.size(), 100ul);
   // Check that some very common languages are there.
-  const auto begin = languages.begin();
-  const auto end = languages.end();
-  EXPECT_NE(end, std::find(begin, end, "en"));
-  EXPECT_NE(end, std::find(begin, end, "es"));
-  EXPECT_NE(end, std::find(begin, end, "fr"));
-  EXPECT_NE(end, std::find(begin, end, "ru"));
-  EXPECT_NE(end, std::find(begin, end, "zh-CN"));
-  EXPECT_NE(end, std::find(begin, end, "zh-TW"));
+  EXPECT_TRUE(base::ContainsValue(languages, "en"));
+  EXPECT_TRUE(base::ContainsValue(languages, "es"));
+  EXPECT_TRUE(base::ContainsValue(languages, "fr"));
+  EXPECT_TRUE(base::ContainsValue(languages, "ru"));
+  EXPECT_TRUE(base::ContainsValue(languages, "zh-CN"));
+  EXPECT_TRUE(base::ContainsValue(languages, "zh-TW"));
 }
 
 // Check that we contact the translate server to update the supported language
