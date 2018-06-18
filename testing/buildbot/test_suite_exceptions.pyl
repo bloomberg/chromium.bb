@@ -2437,6 +2437,12 @@
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
+      # chromium.chromiumos
+      'linux-chromeos-dbg': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
       # chromium.clang
       'ToTWin(dbg)': {
         'swarming': {
@@ -2455,6 +2461,11 @@
         'swarming': {
           'shards': 20,
         },
+      },
+      'Linux Chromium OS ASan LSan Tests (1)': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/browser_tests_cros_asan.filter',
+        ],
       },
     },
   },
