@@ -41,11 +41,6 @@ bool IsDiscardedOrPendingDiscard(LifecycleUnitState state) {
          state == LifecycleUnitState::PENDING_DISCARD;
 }
 
-bool IsFrozenOrPendingFreeze(LifecycleUnitState state) {
-  return state == LifecycleUnitState::FROZEN ||
-         state == LifecycleUnitState::PENDING_FREEZE;
-}
-
 // Returns true if it is valid to transition from |from| to |to| for |reason|.
 bool IsValidStateChange(LifecycleUnitState from,
                         LifecycleUnitState to,
@@ -680,22 +675,11 @@ void TabLifecycleUnitSource::TabLifecycleUnit::ReloadBloatedTab() {
   }
 }
 
-bool TabLifecycleUnitSource::TabLifecycleUnit::FreezeTab() {
-  return Freeze();
-}
-
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsDiscarded() const {
   // External code does not need to know about the intermediary PENDING_DISCARD
   // state. To external callers, the tab is discarded while in the
   // PENDING_DISCARD state.
   return IsDiscardedOrPendingDiscard(GetState());
-}
-
-bool TabLifecycleUnitSource::TabLifecycleUnit::IsFrozen() const {
-  // External code does not need to know about the intermediary PENDING_FREEZE
-  // state. To external callers, the tab is frozen while in the PENDING_FREEZE
-  // state.
-  return IsFrozenOrPendingFreeze(GetState());
 }
 
 int TabLifecycleUnitSource::TabLifecycleUnit::GetDiscardCount() const {
