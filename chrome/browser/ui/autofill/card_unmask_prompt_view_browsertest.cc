@@ -88,11 +88,10 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
     // success is shown.
     base::string16 verification_message;
     if (expected_failure_temporary_) {
-      verification_message = base::ASCIIToUTF16("This is a temporary error.");
+      verification_message = base::ASCIIToUTF16("Check your CVC and try again");
     } else if (expected_failure_permanent_) {
-      verification_message = base::ASCIIToUTF16(
-          "Chrome was unable to confirm your card at this time. Please try "
-          "again later.");
+      verification_message =
+          base::ASCIIToUTF16("This card can't be verified right now.");
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
