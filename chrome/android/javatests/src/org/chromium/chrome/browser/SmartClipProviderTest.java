@@ -28,6 +28,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -35,6 +36,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Coordinates;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeoutException;
@@ -186,6 +188,8 @@ public class SmartClipProviderTest implements Handler.Callback {
         return null;
     }
 
+    // Disable test on tablet since it fails consistently on M tablet. See https://crbug.com/853816
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Test
     @MediumTest
     @Feature({"SmartClip"})
