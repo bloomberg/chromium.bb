@@ -180,8 +180,8 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
 
 TopShortcutsView::~TopShortcutsView() = default;
 
-void TopShortcutsView::SetExpanded(bool expanded) {
-  collapse_button_->UpdateIcon(expanded);
+void TopShortcutsView::SetExpandedAmount(double expanded_amount) {
+  collapse_button_->SetExpandedAmount(expanded_amount);
 }
 
 void TopShortcutsView::RequestInitFocus() {

@@ -153,6 +153,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 
   detailed_view_container_->SetVisible(false);
   AddChildView(detailed_view_container_);
+
+  top_shortcuts_view_->SetExpandedAmount(initially_expanded ? 1.0 : 0.0);
 }
 
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
@@ -205,8 +207,7 @@ void UnifiedSystemTrayView::RequestInitFocus() {
 
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
   DCHECK(0.0 <= expanded_amount && expanded_amount <= 1.0);
-  if (expanded_amount == 1.0 || expanded_amount == 0.0)
-    top_shortcuts_view_->SetExpanded(expanded_amount == 1.0);
+  top_shortcuts_view_->SetExpandedAmount(expanded_amount);
   feature_pods_container_->SetExpandedAmount(expanded_amount);
   sliders_container_->SetExpandedAmount(expanded_amount);
   PreferredSizeChanged();
