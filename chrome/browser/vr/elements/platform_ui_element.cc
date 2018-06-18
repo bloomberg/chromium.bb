@@ -51,11 +51,6 @@ void PlatformUiElement::OnButtonUp(const gfx::PointF& position) {
     delegate_->OnButtonUp(position);
 }
 
-void PlatformUiElement::OnTouchMove(const gfx::PointF& position) {
-  if (delegate_)
-    delegate_->OnTouchMove(position);
-}
-
 void PlatformUiElement::OnFlingCancel(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {

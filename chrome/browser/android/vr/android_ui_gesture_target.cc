@@ -10,7 +10,6 @@
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -33,12 +32,9 @@ AndroidUiGestureTarget::~AndroidUiGestureTarget() = default;
 void AndroidUiGestureTarget::DispatchWebInputEvent(
     std::unique_ptr<blink::WebInputEvent> event) {
   blink::WebMouseEvent* mouse;
-  blink::WebTouchEvent* touch;
   blink::WebGestureEvent* gesture;
   if (blink::WebInputEvent::IsMouseEventType(event->GetType())) {
     mouse = static_cast<blink::WebMouseEvent*>(event.get());
-  } else if (blink::WebInputEvent::IsTouchEventType(event->GetType())) {
-    touch = static_cast<blink::WebTouchEvent*>(event.get());
   } else {
     gesture = static_cast<blink::WebGestureEvent*>(event.get());
   }
@@ -98,28 +94,22 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
       break;
     case blink::WebMouseEvent::kMouseMove:
     case blink::WebMouseEvent::kMouseLeave:
-      // The platform ignores HOVER_EXIT, so we instead send a fixed
-      // out-of-bounds point (http://crbug.com/715114).
+      // We don't need to inject MOTION_EVENT_ACTION_HOVER_EXIT as the platform
+      // will generate it for us if the pointer is out of bounds.
       SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
       Inject(content::MOTION_EVENT_ACTION_HOVER_MOVE, event_time_ms);
       break;
-    case blink::WebTouchEvent::kTouchStart:
+    case blink::WebMouseEvent::kMouseDown:
       // Mouse down events are translated into touch events on Android anyways,
       // so we can just send touch events.
-      SetPointer(touch->touches[0].PositionInWidget().x,
-                 touch->touches[0].PositionInWidget().y);
+      // We intentionally don't support long press or drags/swipes with mouse
+      // input as this could trigger long press and open 2D popups.
+      SetPointer(mouse->PositionInWidget().x, mouse->PositionInWidget().y);
       Inject(content::MOTION_EVENT_ACTION_START, event_time_ms);
-      break;
-    case blink::WebTouchEvent::kTouchEnd:
-      SetPointer(touch->touches[0].PositionInWidget().x,
-                 touch->touches[0].PositionInWidget().y);
       Inject(content::MOTION_EVENT_ACTION_END, event_time_ms);
       break;
-    case blink::WebTouchEvent::kTouchMove:
-      DCHECK_EQ(touch->touches_length, 1u);
-      SetPointer(touch->touches[0].PositionInWidget().x,
-                 touch->touches[0].PositionInWidget().y);
-      Inject(content::MOTION_EVENT_ACTION_MOVE, event_time_ms);
+    case blink::WebMouseEvent::kMouseUp:
+      // No need to do anything for mouseUp as mouseDown already handled up.
       break;
     default:
       NOTREACHED() << "Unsupported event type sent to Android UI.";

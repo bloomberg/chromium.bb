@@ -77,7 +77,6 @@ bool VrTabHelper::IsUiSuppressedInVr(content::WebContents* contents,
     // and permission request dialog are supported in VR before we disable this
     // suppression.
     case UiSuppressedElement::kFileAccessPermission:
-    case UiSuppressedElement::kContextMenu:
       suppress = true;
       break;
     // The following are not suppressed if kVrBrowsingNativeAndroidUi is

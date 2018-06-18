@@ -15,7 +15,6 @@
 #include "chrome/browser/android/download/download_controller_base.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "content/public/browser/render_frame_host.h"
@@ -108,12 +107,6 @@ ContextMenuHelper::~ContextMenuHelper() {
 void ContextMenuHelper::ShowContextMenu(
     content::RenderFrameHost* render_frame_host,
     const content::ContextMenuParams& params) {
-  // TODO(crbug.com/851495): support context menu in VR.
-  if (vr::VrTabHelper::IsUiSuppressedInVr(
-          web_contents_, vr::UiSuppressedElement::kContextMenu)) {
-    web_contents_->NotifyContextMenuClosed(params.custom_context);
-    return;
-  }
   JNIEnv* env = base::android::AttachCurrentThread();
   context_menu_params_ = params;
   render_frame_id_ = render_frame_host->GetRoutingID();
