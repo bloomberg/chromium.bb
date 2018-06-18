@@ -9,14 +9,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 
 namespace content {
 
 CATransactionGPUCoordinator::CATransactionGPUCoordinator(GpuProcessHost* host)
     : host_(host) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  ui::WindowResizeHelperMac::Get()->task_runner()->PostTask(
+      FROM_HERE,
       base::BindOnce(&ui::CATransactionCoordinator::AddPostCommitObserver,
                      base::Unretained(&ui::CATransactionCoordinator::Get()),
                      base::RetainedRef(this)));
@@ -28,8 +29,8 @@ CATransactionGPUCoordinator::~CATransactionGPUCoordinator() {
 
 void CATransactionGPUCoordinator::HostWillBeDestroyed() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  ui::WindowResizeHelperMac::Get()->task_runner()->PostTask(
+      FROM_HERE,
       base::BindOnce(&ui::CATransactionCoordinator::RemovePostCommitObserver,
                      base::Unretained(&ui::CATransactionCoordinator::Get()),
                      base::RetainedRef(this)));
@@ -78,8 +79,8 @@ void CATransactionGPUCoordinator::OnEnterPostCommitOnIO() {
 
 void CATransactionGPUCoordinator::OnCommitCompletedOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
+  ui::WindowResizeHelperMac::Get()->task_runner()->PostTask(
+      FROM_HERE,
       base::BindOnce(&CATransactionGPUCoordinator::OnCommitCompletedOnUI,
                      this));
 }

@@ -33,6 +33,10 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/base/ui_base_features.h"
 
+#if defined(OS_MACOSX)
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
+#endif
+
 namespace content {
 
 #if defined(OS_ANDROID)
@@ -108,7 +112,13 @@ BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
       gpu_client_id_(gpu_client_id),
       gpu_client_tracing_id_(gpu_client_tracing_id),
       finished_(false),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+#if defined(OS_MACOSX)
+      main_task_runner_(ui::WindowResizeHelperMac::Get()->task_runner())
+#else
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get())
+#endif
+{
+}
 
 void BrowserGpuChannelHostFactory::EstablishRequest::RestartTimeout() {
   BrowserGpuChannelHostFactory* factory =
