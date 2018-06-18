@@ -10,6 +10,7 @@ sync_protocol_sources = [
   "//components/sync/protocol/arc_package_specifics.proto",
   "//components/sync/protocol/article_specifics.proto",
   "//components/sync/protocol/autofill_specifics.proto",
+  "//components/sync/protocol/bookmark_model_metadata.proto",
   "//components/sync/protocol/bookmark_specifics.proto",
   "//components/sync/protocol/client_commands.proto",
   "//components/sync/protocol/client_debug_info.proto",
