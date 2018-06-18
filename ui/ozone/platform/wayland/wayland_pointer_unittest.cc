@@ -51,7 +51,7 @@ TEST_P(WaylandPointerTest, Leave) {
   PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(0, 0, 10, 10);
   properties.type = PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW;
-  ASSERT_TRUE(other_window.Initialize(properties));
+  ASSERT_TRUE(other_window.Initialize(std::move(properties)));
   ASSERT_NE(other_widget, gfx::kNullAcceleratedWidget);
 
   Sync();

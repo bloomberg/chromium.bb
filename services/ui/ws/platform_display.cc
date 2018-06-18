@@ -63,8 +63,8 @@ std::unique_ptr<PlatformWindow> PlatformDisplay::CreatePlatformWindow(
 #elif defined(USE_OZONE)
   ui::PlatformWindowInitProperties properties;
   properties.bounds = bounds;
-  platform_window =
-      OzonePlatform::GetInstance()->CreatePlatformWindow(delegate, properties);
+  platform_window = OzonePlatform::GetInstance()->CreatePlatformWindow(
+      delegate, std::move(properties));
 #else
   NOTREACHED() << "Unsupported platform";
 #endif

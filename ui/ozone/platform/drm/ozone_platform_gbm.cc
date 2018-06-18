@@ -160,7 +160,7 @@ class OzonePlatformGbm : public OzonePlatform {
 
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const PlatformWindowInitProperties& properties) override {
+      PlatformWindowInitProperties properties) override {
     GpuThreadAdapter* adapter = gpu_platform_support_host_.get();
     if (using_mojo_) {
       adapter = host_drm_device_.get();

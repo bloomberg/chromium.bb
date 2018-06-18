@@ -24,8 +24,8 @@ DemoWindow::DemoWindow(WindowManager* window_manager,
       weak_ptr_factory_(this) {
   PlatformWindowInitProperties properties;
   properties.bounds = bounds;
-  platform_window_ =
-      OzonePlatform::GetInstance()->CreatePlatformWindow(this, properties);
+  platform_window_ = OzonePlatform::GetInstance()->CreatePlatformWindow(
+      this, std::move(properties));
   platform_window_->Show();
 }
 

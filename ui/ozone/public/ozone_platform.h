@@ -124,7 +124,7 @@ class OZONE_EXPORT OzonePlatform {
   virtual std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() = 0;
   virtual std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
-      const PlatformWindowInitProperties& properties) = 0;
+      PlatformWindowInitProperties properties) = 0;
   virtual std::unique_ptr<display::NativeDisplayDelegate>
   CreateNativeDisplayDelegate() = 0;
 

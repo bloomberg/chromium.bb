@@ -21,32 +21,30 @@ namespace views {
 
 namespace {
 
-void ConvertWidgetInitParamsToInitProperties(
-    const Widget::InitParams& params,
-    ui::PlatformWindowInitProperties* properties) {
-  DCHECK(properties);
+ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
+    const Widget::InitParams& params) {
+  ui::PlatformWindowInitProperties properties;
 
-  ui::PlatformWindowType type;
   switch (params.type) {
-    case Widget::InitParams::TYPE_POPUP:
-      type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_POPUP;
-      break;
-    case Widget::InitParams::TYPE_MENU:
-      type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU;
-      break;
     case Widget::InitParams::TYPE_WINDOW:
+      properties.type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW;
+      break;
+
+    case Widget::InitParams::TYPE_MENU:
+      properties.type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU;
+      break;
+
     default:
-      type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW;
+      properties.type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_POPUP;
       break;
   }
-  properties->type = type;
 
-  properties->bounds = params.bounds;
+  properties.bounds = params.bounds;
 
-  if (params.parent && params.parent->GetHost()) {
-    properties->parent_widget =
-        params.parent->GetHost()->GetAcceleratedWidget();
-  }
+  if (params.parent && params.parent->GetHost())
+    properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
+
+  return properties;
 }
 
 }  // namespace
@@ -74,8 +72,8 @@ void DesktopWindowTreeHostPlatform::SetBoundsInDIP(
 }
 
 void DesktopWindowTreeHostPlatform::Init(const Widget::InitParams& params) {
-  ui::PlatformWindowInitProperties properties;
-  ConvertWidgetInitParamsToInitProperties(params, &properties);
+  ui::PlatformWindowInitProperties properties =
+      ConvertWidgetInitParamsToInitProperties(params);
 
   CreateAndSetPlatformWindow(properties);
   CreateCompositor(viz::FrameSinkId(), params.force_software_compositing);

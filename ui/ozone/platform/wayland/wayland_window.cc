@@ -94,7 +94,7 @@ WaylandWindow* WaylandWindow::FromSurface(wl_surface* surface) {
       wl_proxy_get_user_data(reinterpret_cast<wl_proxy*>(surface)));
 }
 
-bool WaylandWindow::Initialize(const PlatformWindowInitProperties& properties) {
+bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   DCHECK(xdg_shell_objects_factory_);
 
   bounds_ = properties.bounds;
