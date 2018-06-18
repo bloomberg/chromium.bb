@@ -17,8 +17,15 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
   AuthenticatorDialogTest() = default;
 
   // DialogBrowserTest:
-  void ShowUi(const std::string& unused_name) override {
+  void ShowUi(const std::string& name) override {
     auto model = std::make_unique<AuthenticatorRequestDialogModel>();
+
+    // The dialog should immediately close as soon as it is displayed.
+    if (name == "completed") {
+      model->set_current_step(
+          AuthenticatorRequestDialogModel::Step::kCompleted);
+    }
+
     ShowAuthenticatorRequestDialog(
         browser()->tab_strip_model()->GetActiveWebContents(), std::move(model));
   }
@@ -31,5 +38,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
 //   --gtest_filter=BrowserUiTest.Invoke --test-launcher-interactive \
 //   --ui=AuthenticatorDialogTest.InvokeUi_default
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_default) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_completed) {
   ShowAndVerifyUi();
 }

@@ -2996,7 +2996,11 @@ split_static_library("ui") {
       "views/webauthn/authenticator_request_dialog_view.h",
       "views/webauthn/authenticator_request_sheet_view.cc",
       "views/webauthn/authenticator_request_sheet_view.h",
+      "views/webauthn/sheet_view_factory.cc",
+      "views/webauthn/sheet_view_factory.h",
       "webauthn/authenticator_request_sheet_model.h",
+      "webauthn/sheet_models.cc",
+      "webauthn/sheet_models.h",
     ]
     deps += [
       "//chrome/browser/ui/views",

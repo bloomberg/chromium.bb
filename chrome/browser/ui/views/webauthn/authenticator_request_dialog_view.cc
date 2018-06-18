@@ -8,6 +8,8 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
+#include "chrome/browser/ui/views/webauthn/sheet_view_factory.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -16,46 +18,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/fill_layout.h"
-
-namespace {
-
-// Defines a static sheet with no additional step-specific content and no button
-// enabled other than `Cancel`.
-class SimpleStaticSheetModel : public AuthenticatorRequestSheetModel {
- public:
-  SimpleStaticSheetModel() = default;
-
- private:
-  // AuthenticatorRequestSheetModel:
-  bool IsBackButtonVisible() const override { return false; }
-
-  bool IsCancelButtonVisible() const override { return true; }
-  base::string16 GetCancelButtonLabel() const override {
-    return l10n_util::GetStringUTF16(IDS_CANCEL);
-  }
-
-  bool IsAcceptButtonVisible() const override { return false; }
-  bool IsAcceptButtonEnabled() const override { return false; }
-  base::string16 GetAcceptButtonLabel() const override {
-    return base::string16();
-  }
-
-  base::string16 GetStepTitle() const override {
-    return l10n_util::GetStringUTF16(IDS_WEBAUTHN_DIALOG_TITLE);
-  }
-
-  base::string16 GetStepDescription() const override {
-    return l10n_util::GetStringUTF16(IDS_WEBAUTHN_DIALOG_DESCRIPTION);
-  }
-
-  void OnBack() override { NOTREACHED(); }
-  void OnAccept() override { NOTREACHED(); }
-  void OnCancel() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleStaticSheetModel);
-};
-
-}  // namespace
 
 // static
 void ShowAuthenticatorRequestDialog(
@@ -82,11 +44,12 @@ void ShowAuthenticatorRequestDialog(
   constrained_window::ShowWebModalDialogViews(dialog.release(), web_contents);
 }
 
-// TODO(engedy): Create the sheet based on the model here.
 AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
     content::WebContents* web_contents,
     std::unique_ptr<AuthenticatorRequestDialogModel> model)
-    : content::WebContentsObserver(web_contents), model_(std::move(model)) {
+    : content::WebContentsObserver(web_contents),
+      model_(std::move(model)),
+      sheet_(nullptr) {
   model_->AddObserver(this);
 
   // Currently, all sheets have a label on top and controls at the bottom.
@@ -95,12 +58,7 @@ AuthenticatorRequestDialogView::AuthenticatorRequestDialogView(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
           views::TEXT, views::CONTROL)));
   SetLayoutManager(std::make_unique<views::FillLayout>());
-
-  auto sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
-      std::make_unique<SimpleStaticSheetModel>());
-  sheet_view->InitChildViews();
-  sheet_ = sheet_view.get();
-  AddChildView(sheet_view.release());
+  OnStepTransition();
 }
 
 AuthenticatorRequestDialogView::~AuthenticatorRequestDialogView() {
@@ -199,6 +157,8 @@ void AuthenticatorRequestDialogView::OnModelDestroyed() {
 }
 
 void AuthenticatorRequestDialogView::OnStepTransition() {
+  ReplaceCurrentSheetWith(CreateSheetViewForCurrentStepOf(model_.get()));
+
   if (model_->current_step() ==
       AuthenticatorRequestDialogModel::Step::kCompleted) {
     if (!GetWidget())
@@ -209,6 +169,8 @@ void AuthenticatorRequestDialogView::OnStepTransition() {
 
 void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(
     std::unique_ptr<AuthenticatorRequestSheetView> new_sheet) {
+  DCHECK(new_sheet);
+
   delete sheet_;
   DCHECK(!has_children());
 
