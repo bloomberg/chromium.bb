@@ -146,11 +146,6 @@ void LoginScreenClient::RequestPublicSessionKeyboardLayouts(
       locale);
 }
 
-void LoginScreenClient::ShowFeedback() {
-  if (chromeos::LoginDisplayHost::default_host())
-    chromeos::LoginDisplayHost::default_host()->ShowFeedback();
-}
-
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {
   WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
 }

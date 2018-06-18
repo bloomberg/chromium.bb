@@ -24,10 +24,7 @@
 namespace chromeos {
 
 namespace {
-
 constexpr char kLoginDisplay[] = "login";
-constexpr char kAccelSendFeedback[] = "send_feedback";
-
 }  // namespace
 
 LoginDisplayHostMojo::LoginDisplayHostMojo()
@@ -246,12 +243,6 @@ void LoginDisplayHostMojo::UpdateGaiaDialogSize(int width, int height) {
 
 const user_manager::UserList LoginDisplayHostMojo::GetUsers() {
   return users_;
-}
-
-void LoginDisplayHostMojo::ShowFeedback() {
-  DCHECK(GetOobeUI());
-  GetOobeUI()->web_ui()->CallJavascriptFunctionUnsafe(
-      "cr.ui.Oobe.handleAccelerator", base::Value(kAccelSendFeedback));
 }
 
 void LoginDisplayHostMojo::CancelPasswordChangedFlow() {
