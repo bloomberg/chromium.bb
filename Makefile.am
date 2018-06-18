@@ -19,6 +19,7 @@ unstable_protocols =								\
 	unstable/keyboard-shortcuts-inhibit/keyboard-shortcuts-inhibit-unstable-v1.xml \
 	unstable/xdg-output/xdg-output-unstable-v1.xml				\
 	unstable/input-timestamps/input-timestamps-unstable-v1.xml	\
+	unstable/xdg-decoration/xdg-decoration-unstable-v1.xml	\
 	$(NULL)
 
 stable_protocols =								\
