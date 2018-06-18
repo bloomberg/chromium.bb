@@ -322,7 +322,6 @@ int AwPermissionManager::RequestPermissions(
       case PermissionType::NOTIFICATIONS:
       case PermissionType::DURABLE_STORAGE:
       case PermissionType::BACKGROUND_SYNC:
-      case PermissionType::SENSORS:
       case PermissionType::FLASH:
       case PermissionType::ACCESSIBILITY_EVENTS:
       case PermissionType::CLIPBOARD_READ:
@@ -334,6 +333,11 @@ int AwPermissionManager::RequestPermissions(
                                                  PermissionStatus::DENIED);
         break;
       case PermissionType::MIDI:
+      case PermissionType::SENSORS:
+        // PermissionType::SENSORS requests are always granted so that access
+        // to device motion and device orientation data (and underlying
+        // sensors) works in the WebView. SensorProviderImpl::GetSensor()
+        // filters requests for other types of sensors.
         pending_request_raw->SetPermissionStatus(permissions[i],
                                                  PermissionStatus::GRANTED);
         break;
@@ -509,7 +513,6 @@ void AwPermissionManager::CancelPermissionRequest(int request_id) {
       case PermissionType::AUDIO_CAPTURE:
       case PermissionType::VIDEO_CAPTURE:
       case PermissionType::BACKGROUND_SYNC:
-      case PermissionType::SENSORS:
       case PermissionType::FLASH:
       case PermissionType::ACCESSIBILITY_EVENTS:
       case PermissionType::CLIPBOARD_READ:
@@ -519,6 +522,7 @@ void AwPermissionManager::CancelPermissionRequest(int request_id) {
                          << static_cast<int>(permission);
         break;
       case PermissionType::MIDI:
+      case PermissionType::SENSORS:
         // There is nothing to cancel so this is simply ignored.
         break;
       case PermissionType::NUM:
