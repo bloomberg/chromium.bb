@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_GAMEPAD_PUBLIC_MOJOM_GAMEPAD_MOJOM_TRAITS_H_
-#define DEVICE_GAMEPAD_PUBLIC_MOJOM_GAMEPAD_MOJOM_TRAITS_H_
+#ifndef DEVICE_GAMEPAD_PUBLIC_CPP_GAMEPAD_MOJOM_TRAITS_H_
+#define DEVICE_GAMEPAD_PUBLIC_CPP_GAMEPAD_MOJOM_TRAITS_H_
 
 #include <stddef.h>
 
+#include "base/component_export.h"
 #include "base/containers/span.h"
 #include "device/gamepad/public/cpp/gamepad.h"
-#include "device/gamepad/public/mojom/gamepad.mojom.h"
+#include "device/gamepad/public/mojom/gamepad.mojom-shared.h"
 #include "mojo/public/cpp/bindings/array_traits_span.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<device::mojom::GamepadQuaternionDataView,
-                    device::GamepadQuaternion> {
+struct COMPONENT_EXPORT(GAMEPAD_SHARED_TRAITS)
+    StructTraits<device::mojom::GamepadQuaternionDataView,
+                 device::GamepadQuaternion> {
   static bool IsNull(const device::GamepadQuaternion& r) { return !r.not_null; }
   static void SetToNull(device::GamepadQuaternion* out);
   static float x(const device::GamepadQuaternion& r) { return r.x; }
@@ -29,8 +31,8 @@ struct StructTraits<device::mojom::GamepadQuaternionDataView,
 };
 
 template <>
-struct StructTraits<device::mojom::GamepadVectorDataView,
-                    device::GamepadVector> {
+struct COMPONENT_EXPORT(GAMEPAD_SHARED_TRAITS)
+    StructTraits<device::mojom::GamepadVectorDataView, device::GamepadVector> {
   static bool IsNull(const device::GamepadVector& r) { return !r.not_null; }
   static void SetToNull(device::GamepadVector* out);
   static float x(const device::GamepadVector& r) { return r.x; }
@@ -41,8 +43,8 @@ struct StructTraits<device::mojom::GamepadVectorDataView,
 };
 
 template <>
-struct StructTraits<device::mojom::GamepadButtonDataView,
-                    device::GamepadButton> {
+struct COMPONENT_EXPORT(GAMEPAD_SHARED_TRAITS)
+    StructTraits<device::mojom::GamepadButtonDataView, device::GamepadButton> {
   static bool pressed(const device::GamepadButton& r) { return r.pressed; }
   static bool touched(const device::GamepadButton& r) { return r.touched; }
   static double value(const device::GamepadButton& r) { return r.value; }
@@ -51,8 +53,9 @@ struct StructTraits<device::mojom::GamepadButtonDataView,
 };
 
 template <>
-struct EnumTraits<device::mojom::GamepadHapticActuatorType,
-                  device::GamepadHapticActuatorType> {
+struct COMPONENT_EXPORT(GAMEPAD_SHARED_TRAITS)
+    EnumTraits<device::mojom::GamepadHapticActuatorType,
+               device::GamepadHapticActuatorType> {
   static device::mojom::GamepadHapticActuatorType ToMojom(
       device::GamepadHapticActuatorType input);
   static bool FromMojom(device::mojom::GamepadHapticActuatorType input,
@@ -60,8 +63,9 @@ struct EnumTraits<device::mojom::GamepadHapticActuatorType,
 };
 
 template <>
-struct StructTraits<device::mojom::GamepadHapticActuatorDataView,
-                    device::GamepadHapticActuator> {
+struct COMPONENT_EXPORT(GAMEPAD_SHARED_TRAITS)
+    StructTraits<device::mojom::GamepadHapticActuatorDataView,
+                 device::GamepadHapticActuator> {
   static bool IsNull(const device::GamepadHapticActuator& r) {
     return !r.not_null;
   }
@@ -75,7 +79,8 @@ struct StructTraits<device::mojom::GamepadHapticActuatorDataView,
 };
 
 template <>
-struct StructTraits<device::mojom::GamepadPoseDataView, device::GamepadPose> {
+struct COMPONENT_EXPORT(GAMEPAD_SHARED_TRAITS)
+    StructTraits<device::mojom::GamepadPoseDataView, device::GamepadPose> {
   static bool IsNull(const device::GamepadPose& r) { return !r.not_null; }
   static void SetToNull(device::GamepadPose* out);
   static const device::GamepadQuaternion& orientation(
@@ -106,14 +111,16 @@ struct StructTraits<device::mojom::GamepadPoseDataView, device::GamepadPose> {
 };
 
 template <>
-struct EnumTraits<device::mojom::GamepadHand, device::GamepadHand> {
+struct COMPONENT_EXPORT(GAMEPAD_SHARED_TRAITS)
+    EnumTraits<device::mojom::GamepadHand, device::GamepadHand> {
   static device::mojom::GamepadHand ToMojom(device::GamepadHand input);
   static bool FromMojom(device::mojom::GamepadHand input,
                         device::GamepadHand* output);
 };
 
 template <>
-struct StructTraits<device::mojom::GamepadDataView, device::Gamepad> {
+struct COMPONENT_EXPORT(GAMEPAD_SHARED_TRAITS)
+    StructTraits<device::mojom::GamepadDataView, device::Gamepad> {
   static bool connected(const device::Gamepad& r) { return r.connected; }
   static int64_t timestamp(const device::Gamepad& r) { return r.timestamp; }
   static base::span<const double> axes(const device::Gamepad& r) {
@@ -142,4 +149,4 @@ struct StructTraits<device::mojom::GamepadDataView, device::Gamepad> {
 
 }  // namespace mojo
 
-#endif  // DEVICE_GAMEPAD_PUBLIC_MOJOM_GAMEPAD_MOJOM_TRAITS_H_
+#endif  // DEVICE_GAMEPAD_PUBLIC_CPP_GAMEPAD_MOJOM_TRAITS_H_

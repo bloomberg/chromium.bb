@@ -4,10 +4,13 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("mojom") {
+mojom_component("mojom") {
   sources = [
     "gamepad.mojom",
   ]
+
+  output_prefix = "gamepad_mojom"
+  macro_prefix = "GAMEPAD_MOJOM"
 }
 
 mojom("gamepad_mojom_traits_test") {

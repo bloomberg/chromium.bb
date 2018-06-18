@@ -21,3 +21,23 @@ source_set("shared_with_blink") {
   ]
   # Do not add deps here per the above comment.
 }
+
+# Normally typemap traits sources should be build directly into mojom targets
+# via the typemap file. This target is for typemapped types whose
+# traits are shared between chromium and blink variants.
+component("shared_typemap_traits") {
+  output_name = "gamepad_shared_typemap_traits"
+
+  sources = [
+    "gamepad_mojom_traits.cc",
+    "gamepad_mojom_traits.h",
+  ]
+
+  defines = [ "IS_GAMEPAD_SHARED_TRAITS_IMPL" ]
+
+  public_deps = [
+    ":shared_with_blink",
+    "//base",
+    "//device/gamepad/public/mojom:mojom_shared",
+  ]
+}

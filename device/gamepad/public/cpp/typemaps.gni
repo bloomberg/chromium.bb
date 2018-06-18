@@ -2,4 +2,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//device/gamepad/public/mojom/gamepad.typemap" ]
+typemaps = [ "//device/gamepad/public/cpp/gamepad.typemap" ]

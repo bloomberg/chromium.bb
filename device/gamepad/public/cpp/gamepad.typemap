@@ -4,14 +4,15 @@
 
 mojom = "//device/gamepad/public/mojom/gamepad.mojom"
 public_headers = [ "//device/gamepad/public/cpp/gamepad.h" ]
-traits_headers = [ "//device/gamepad/public/mojom/gamepad_mojom_traits.h" ]
-sources = [
-  "//device/gamepad/public/mojom/gamepad_mojom_traits.cc",
-]
+traits_headers = [ "//device/gamepad/public/cpp/gamepad_mojom_traits.h" ]
 deps = [
   "//device/gamepad/public/cpp:shared_with_blink",
   "//mojo/public/cpp/bindings",
   "//third_party/blink/public:blink_headers",
+]
+
+public_deps = [
+  "//device/gamepad/public/cpp:shared_typemap_traits",
 ]
 
 # Use typemaps for device::Gamepad and its member types. Gamepad data is
