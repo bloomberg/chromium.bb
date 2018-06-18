@@ -11,7 +11,6 @@
 #include "base/memory/scoped_refptr.h"
 #endif
 #include <cstring>
-#include "third_party/blink/renderer/platform/wtf/string_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
@@ -74,8 +73,7 @@ class WTF_EXPORT StringView {
       : StringView(reinterpret_cast<const LChar*>(chars), length) {}
   StringView(const LChar* chars)
       : StringView(chars,
-                   chars ? strlen_unsigned(reinterpret_cast<const char*>(chars))
-                         : 0) {}
+                   chars ? strlen(reinterpret_cast<const char*>(chars)) : 0) {}
   StringView(const char* chars)
       : StringView(reinterpret_cast<const LChar*>(chars)) {}
 

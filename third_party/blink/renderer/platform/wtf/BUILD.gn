@@ -127,7 +127,6 @@ jumbo_component("wtf") {
     "stack_util.h",
     "static_constructors.h",
     "std_lib_extras.h",
-    "string_extras.cc",
     "string_extras.h",
     "string_hasher.h",
     "terminated_array.h",
