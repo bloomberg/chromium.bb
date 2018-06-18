@@ -72,15 +72,19 @@ void OneShotEvent::Signal() {
   // could proceed immediately, but the fact that this object is
   // single-threaded prevents that from being relevant.
 
-  // We could randomize tasks_ in debug mode in order to check that
+  // Move tasks to a temporary to ensure no new ones are added.
+  std::vector<TaskInfo> moved_tasks;
+  std::swap(moved_tasks, tasks_);
+
+  // We could randomize tasks in debug mode in order to check that
   // the order doesn't matter...
-  for (size_t i = 0; i < tasks_.size(); ++i) {
-    const TaskInfo& task = tasks_[i];
+  for (const TaskInfo& task : moved_tasks) {
     if (task.delay.is_zero())
       task.runner->PostTask(task.from_here, task.task);
     else
       task.runner->PostDelayedTask(task.from_here, task.task, task.delay);
   }
+  DCHECK(tasks_.empty()) << "No new tasks should be added during task running!";
 }
 
 void OneShotEvent::PostImpl(const base::Location& from_here,
