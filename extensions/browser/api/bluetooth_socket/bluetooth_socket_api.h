@@ -294,6 +294,7 @@ class BluetoothSocketSendFunction : public BluetoothSocketAsyncApiFunction {
   void OnError(BluetoothApiSocket::ErrorReason reason,
                const std::string& message);
 
+  std::unique_ptr<bluetooth_socket::Send::Params> params_;
   scoped_refptr<net::IOBuffer> io_buffer_;
   size_t io_buffer_size_;
 
