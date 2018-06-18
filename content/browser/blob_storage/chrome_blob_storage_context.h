@@ -70,6 +70,10 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   URLLoaderFactoryForToken(BrowserContext* browser_context,
                            blink::mojom::BlobURLTokenPtr token);
 
+  // Must be called on the UI thread.
+  static blink::mojom::BlobPtr GetBlobPtr(BrowserContext* browser_context,
+                                          const std::string& uuid);
+
  protected:
   virtual ~ChromeBlobStorageContext();
 
