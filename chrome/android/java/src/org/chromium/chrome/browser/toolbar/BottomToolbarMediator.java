@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.res.Resources;
-import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnTouchListener;
 
@@ -65,9 +64,9 @@ class BottomToolbarMediator implements FullscreenListener, OverviewModeObserver 
     public void onControlsOffsetChanged(float topOffset, float bottomOffset, boolean needsAnimate) {
         mModel.setValue(BottomToolbarModel.Y_OFFSET, (int) bottomOffset);
         if (bottomOffset > 0) {
-            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBILITY, View.INVISIBLE);
+            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, false);
         } else {
-            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBILITY, View.VISIBLE);
+            mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
         }
     }
 

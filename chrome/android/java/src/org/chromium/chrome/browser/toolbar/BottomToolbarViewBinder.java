@@ -50,9 +50,10 @@ public class BottomToolbarViewBinder
         if (BottomToolbarModel.Y_OFFSET == propertyKey) {
             assert view.sceneLayer != null;
             view.sceneLayer.setYOffset(model.getValue(BottomToolbarModel.Y_OFFSET));
-        } else if (BottomToolbarModel.ANDROID_VIEW_VISIBILITY == propertyKey) {
-            view.toolbarRoot.setVisibility(
-                    model.getValue(BottomToolbarModel.ANDROID_VIEW_VISIBILITY));
+        } else if (BottomToolbarModel.ANDROID_VIEW_VISIBLE == propertyKey) {
+            view.toolbarRoot.setVisibility(model.getValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE)
+                            ? View.VISIBLE
+                            : View.INVISIBLE);
         } else if (BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER == propertyKey) {
             view.toolbarRoot.findViewById(R.id.search_button)
                     .setOnClickListener(
