@@ -53,6 +53,12 @@ constexpr int kBubbleMargin = 8;
 // Elevation used for the bubble shadow effect (tiny).
 constexpr int kBubbleShadowElevation = 2;
 
+bool IsSecondaryUser() {
+  SessionController* session_controller = Shell::Get()->session_controller();
+  return session_controller->IsActiveUserSessionStarted() &&
+         !session_controller->IsUserPrimary();
+}
+
 }  // namespace
 
 // A bubble which displays network info.
@@ -235,8 +241,7 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
   bool can_connect = network && !network->IsConnectingOrConnected();
   if (network->IsDefaultCellular())
     can_connect = false;  // Default Cellular network is not connectable.
-  if (!network->connectable() &&
-      !Shell::Get()->session_controller()->IsUserPrimary()) {
+  if (!network->connectable() && IsSecondaryUser()) {
     // Secondary users can only connect to fully configured networks.
     can_connect = false;
   }
