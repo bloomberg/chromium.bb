@@ -79,9 +79,6 @@ class LayoutSVGContainer : public LayoutSVGModelObject {
   void AddChild(LayoutObject* child,
                 LayoutObject* before_child = nullptr) final;
   void RemoveChild(LayoutObject*) final;
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
-                       IncludeBlockVisualOverflowOrNot) const final;
 
   FloatRect StrokeBoundingBox() const final { return stroke_bounding_box_; }
 

@@ -87,6 +87,15 @@ void LayoutSVGModelObject::AbsoluteQuads(Vector<FloatQuad>& quads,
   quads.push_back(LocalToAbsoluteQuad(StrokeBoundingBox(), mode));
 }
 
+// This method is called from inside PaintOutline(), and since we call
+// PaintOutline() while transformed to our coord system, return local coords.
+void LayoutSVGModelObject::AddOutlineRects(
+    Vector<LayoutRect>& rects,
+    const LayoutPoint&,
+    IncludeBlockVisualOverflowOrNot) const {
+  rects.push_back(LayoutRect(VisualRectInLocalSVGCoordinates()));
+}
+
 FloatRect LayoutSVGModelObject::LocalBoundingBoxRectForAccessibility() const {
   return StrokeBoundingBox();
 }
