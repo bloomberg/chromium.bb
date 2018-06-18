@@ -60,17 +60,22 @@ class AccountReconcilorDelegate {
       const std::vector<gaia::ListedAccount>& gaia_accounts);
 
   // Called when reconcile is finished.
+  // |OnReconcileFinished| is always called at the end of reconciliation, even
+  // when there is an error (except in cases where reconciliation times out
+  // before finishing, see |GetReconcileTimeout|).
   virtual void OnReconcileFinished(const std::string& first_account,
                                    bool reconcile_is_noop) {}
 
   // Returns the desired timeout for account reconciliation. If reconciliation
   // does not happen within this time, it is aborted and |this| delegate is
-  // informed via |OnReconcileError|, with an error state of
-  // GoogleServiceAuthError::CONNECTION_FAILED. If a delegate does not wish to
-  // set a timeout for account reconciliation, it should not override this
-  // method. Default: |base::TimeDelta::Max()|.
+  // informed via |OnReconcileError|, with the 'most severe' error that occurred
+  // during this time (see |AccountReconcilor::error_during_last_reconcile_|).
+  // If a delegate does not wish to set a timeout for account reconciliation, it
+  // should not override this method. Default: |base::TimeDelta::Max()|.
   virtual base::TimeDelta GetReconcileTimeout() const;
 
+  // Called when account reconciliation ends in an error.
+  // |OnReconcileError| is called before |OnReconcileFinished|.
   virtual void OnReconcileError(const GoogleServiceAuthError& error);
 
   void set_reconcilor(AccountReconcilor* reconcilor) {
