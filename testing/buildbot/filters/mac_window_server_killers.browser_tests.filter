@@ -2,3 +2,16 @@
 
 # Suites implicated in window_server deaths.
 -ConstrainedWebDialogBrowserTest.*
+
+# Investigation, round 2.
+-AutofillRendererTest.*
+-ChromeLocatorTest.*
+-ContentSettingBubbleModelMixedScriptTest.*
+-FormAutocompleteTest.*
+-FormAutofillTest.*
+-LocalNTPVoiceSearchSmokeTest.*
+-NewTabPageNavigationThrottleTest.*
+-PagePasswordsAnalyserTest.*
+-PasswordAutofillAgentTest.*
+-PasswordGenerationAgentTest.*
+-TranslateScriptBrowserTest.*
