@@ -409,6 +409,7 @@ public class NonOverlappingStack extends Stack {
         }
 
         mSwitchedAway = false;
+        mSuppressScrollClamping = true;
 
         CompositorAnimationHandler handler = mLayout.getAnimationHandler();
         Collection<Animator> animationList = new ArrayList<>();
