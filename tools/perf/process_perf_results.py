@@ -9,6 +9,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 import uuid
 
 from core import oauth_api
@@ -104,6 +105,7 @@ def _merge_json_output(output_json, jsons_to_merge, extra_links):
     extra_links: a (key, value) map in which keys are the human-readable strings
       which describe the data, and value is logdog url that contain the data.
   """
+  begin_time = time.time()
   merged_results = results_merger.merge_test_results(jsons_to_merge)
 
   # Only append the perf results links if present
@@ -113,11 +115,14 @@ def _merge_json_output(output_json, jsons_to_merge, extra_links):
   with open(output_json, 'w') as f:
     json.dump(merged_results, f)
 
+  end_time = time.time()
+  print_duration('Merging json test results', begin_time, end_time)
   return 0
 
 
 def _handle_perf_json_test_results(
     benchmark_directory_map, test_results_list):
+  begin_time = time.time()
   benchmark_enabled_map = {}
   for benchmark_name, directories in benchmark_directory_map.iteritems():
     for directory in directories:
@@ -148,6 +153,8 @@ def _handle_perf_json_test_results(
         print 'Benchmark %s disabled' % benchmark_name
       benchmark_enabled_map[benchmark_name] = enabled
 
+  end_time = time.time()
+  print_duration('Analyzing perf json test results', begin_time, end_time)
   return benchmark_enabled_map
 
 
@@ -157,7 +164,7 @@ def _generate_unique_logdog_filename(name_prefix):
 
 def _handle_perf_logs(benchmark_directory_map, extra_links):
   """ Upload benchmark logs to logdog and add a page entry for them. """
-
+  begin_time = time.time()
   benchmark_logs_links = {}
 
   for benchmark_name, directories in benchmark_directory_map.iteritems():
@@ -177,9 +184,12 @@ def _handle_perf_logs(benchmark_directory_map, extra_links):
                                    indent=4, separators=(',', ': ')),
       content_type=JSON_CONTENT_TYPE)
   extra_links['Benchmarks logs'] = logdog_stream
+  end_time = time.time()
+  print_duration('Generating perf log streams', begin_time, end_time)
 
 
 def _handle_benchmarks_shard_map(benchmarks_shard_map_file, extra_links):
+  begin_time = time.time()
   with open(benchmarks_shard_map_file) as f:
     benchmarks_shard_data = json.load(f)
     logdog_file_name = _generate_unique_logdog_filename('Benchmarks_Shard_Map')
@@ -188,11 +198,12 @@ def _handle_benchmarks_shard_map(benchmarks_shard_map_file, extra_links):
                                      indent=4, separators=(',', ': ')),
         content_type=JSON_CONTENT_TYPE)
     extra_links['Benchmarks shard map'] = logdog_stream
+  end_time = time.time()
+  print_duration('Generating benchmark shard map stream', begin_time, end_time)
 
 
 def _get_benchmark_name(directory):
   return basename(directory).replace(" benchmark", "")
-
 
 def _process_perf_results(output_json, configuration_name,
                           service_account_file,
@@ -210,6 +221,7 @@ def _process_perf_results(output_json, configuration_name,
   or dashboard json format and an output.json file containing the json test
   results for the benchmark.
   """
+  begin_time = time.time()
   return_code = 0
   directory_list = [
       f for f in listdir(task_output_dir)
@@ -266,6 +278,8 @@ def _process_perf_results(output_json, configuration_name,
   # Finally, merge all test results json, add the extra links and write out to
   # output location
   _merge_json_output(output_json, test_results_list, extra_links)
+  end_time = time.time()
+  print_duration('Total process_perf_results', begin_time, end_time)
   return return_code
 
 def _merge_chartjson_results(chartjson_dicts):
@@ -315,6 +329,7 @@ def _handle_perf_results(
     Returns:
       0 if this upload to perf dashboard succesfully, 1 otherwise.
   """
+  begin_time = time.time()
   tmpfile_dir = tempfile.mkdtemp('resultscache')
   try:
     # Upload all eligible benchmarks to the perf dashboard
@@ -360,6 +375,8 @@ def _handle_perf_results(
     return 0
   finally:
     shutil.rmtree(tmpfile_dir)
+  end_time = time.time()
+  print_duration('Uploading results to perf dashboard', begin_time, end_time)
 
 
 def _upload_and_write_perf_data_to_logfile(benchmark_name, results_file,
@@ -403,6 +420,8 @@ def _upload_and_write_perf_data_to_logfile(benchmark_name, results_file,
 
   return upload_failure
 
+def print_duration(step, start, end):
+  print 'Duration of %s: %d seconds' % (step, end-start)
 
 def main():
   """ See collect_task.collect_task for more on the merge script API. """
