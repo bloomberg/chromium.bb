@@ -43,15 +43,23 @@ class PaginationModel;
 class SearchBoxView;
 class SearchModel;
 
-namespace test {
-class AppListViewTestApi;
-}
-
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
 class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
                                     public display::DisplayObserver {
  public:
+  class TestApi {
+   public:
+    explicit TestApi(AppListView* view);
+    ~TestApi();
+
+    AppsGridView* GetRootAppsGridView();
+
+   private:
+    AppListView* const view_;
+    DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
   // Number of the size of shelf. Used to determine the opacity of items in the
   // app list during dragging.
   static constexpr float kNumOfShelfSize = 2.0;
@@ -239,7 +247,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // TODO(newcomer): Merge this class into AppListView once the old app list
   // view code is removed.
   class FullscreenWidgetObserver;
-  friend class test::AppListViewTestApi;
 
   void InitContents(int initial_apps_page);
 
