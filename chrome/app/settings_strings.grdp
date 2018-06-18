@@ -4113,10 +4113,25 @@
       Better Together (Beta)
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY" desc="Description of the idea that the user can get a better experience on their Chromebook by connecting it to their phone." translateable="false">
-      Your Chromebook works better with your phone. (Beta)
+      Your Chromebook works better with your phone. (Beta) &lt;a target="_blank" href="<ph name="URL">$1<ex>https://google.com/</ex></ph>"&gt;Learn more.&lt;/a&gt;
+    </message>
+    <message name="IDS_SETTINGS_MULTIDEVICE_VERIFICATION_TEXT" desc="Text to tell user that their Chromebook needs to verify that it can connect with their phone." translateable="false">
+      Waiting for verification. (Beta) &lt;a target="_blank" href="<ph name="URL">$1<ex>https://google.com/</ex></ph>"&gt;Learn more.&lt;/a&gt;
+    </message>
+    <message name="IDS_SETTINGS_MULTIDEVICE_COULD_NOT_CONNECT" desc="Text to tell user that their Chromebook could not connect to their phone while it was trying to set up multidevice features." translateable="false">
+      Could not connect to phone. (Beta) &lt;a target="_blank" href="<ph name="URL">$1<ex>https://google.com/</ex></ph>"&gt;Learn more.&lt;/a&gt;
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON" desc="Label of the button that opens a menu to the user that allows them to set up a connection between the user's phone and their Chromebook to give them access to special features.">
       Set up
+    </message>
+    <message name="IDS_SETTINGS_MULTIDEVICE_VERIFY_BUTTON" desc="Label for the button to get the Chromebook to verify that it can connect with their phone." translateable="false">
+      Verify
+    </message>
+    <message name="IDS_SETTINGS_MULTIDEVICE_ENABLED" desc="Text to tell user multidevice features are enabled">
+      Enabled
+    </message>
+    <message name="IDS_SETTINGS_MULTIDEVICE_DISABLED" desc="Text to tell user multidevice features are disabled">
+      Disabled
     </message>
     <message name="IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT" desc="Name of a feature. This feature lets the user read and reply to text messages from their Chromebook. New text messages will appear as notifications.">
       SMS Connect

@@ -2468,9 +2468,11 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"multidevicePageTitle", IDS_SETTINGS_MULTIDEVICE},
       {"multideviceSetupButton", IDS_SETTINGS_MULTIDEVICE_SETUP_BUTTON},
+      {"multideviceVerifyButton", IDS_SETTINGS_MULTIDEVICE_VERIFY_BUTTON},
       {"multideviceSetupItemHeading",
        IDS_SETTINGS_MULTIDEVICE_SETUP_ITEM_HEADING},
-      {"multideviceSetupSummary", IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY},
+      {"multideviceEnabled", IDS_SETTINGS_MULTIDEVICE_ENABLED},
+      {"multideviceDisabled", IDS_SETTINGS_MULTIDEVICE_DISABLED},
       {"smsConnect", IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT},
       {"smsConnectSummary", IDS_SETTINGS_MULTIDEVICE_SMS_CONNECT_SUMMARY},
   };
@@ -2481,6 +2483,21 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
       "enableMultideviceSettings",
       base::FeatureList::IsEnabled(
           chromeos::features::kEnableUnifiedMultiDeviceSettings));
+  html_source->AddString(
+      "multideviceVerificationText",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_MULTIDEVICE_VERIFICATION_TEXT,
+          GetHelpUrlWithBoard(chrome::kMultiDeviceLearnMoreURL)));
+  html_source->AddString(
+      "multideviceCouldNotConnect",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_MULTIDEVICE_COULD_NOT_CONNECT,
+          GetHelpUrlWithBoard(chrome::kMultiDeviceLearnMoreURL)));
+  html_source->AddString(
+      "multideviceSetupSummary",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_MULTIDEVICE_SETUP_SUMMARY,
+          GetHelpUrlWithBoard(chrome::kMultiDeviceLearnMoreURL)));
 }
 #endif
 
