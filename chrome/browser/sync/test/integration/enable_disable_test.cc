@@ -53,6 +53,7 @@ ModelTypeSet UnifiedSyncServiceTypes() {
   ModelTypeSet set;
   set.Put(syncer::AUTOFILL);
   set.Put(syncer::DEVICE_INFO);
+  set.Put(syncer::SESSIONS);
   set.Put(syncer::TYPED_URLS);
   // PRINTERS was the first USS type, and should precede all other USS types.
   // All new types should be USS. This logic is fragile to reordering ModelType.

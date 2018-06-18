@@ -12,7 +12,9 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/time.h"
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
@@ -145,10 +147,11 @@ void FakeServerHelperAndroid::InjectUniqueClientEntity(
   DeserializeEntitySpecifics(env, serialized_entity_specifics,
                              &entity_specifics);
 
+  int64_t now = syncer::TimeToProtoTime(base::Time::Now());
   fake_server_ptr->InjectEntity(
       syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
           base::android::ConvertJavaStringToUTF8(env, name), entity_specifics,
-          12345, 12345));
+          /*creation_time=*/now, /*last_modified_time=*/now));
 }
 
 void FakeServerHelperAndroid::ModifyEntitySpecifics(

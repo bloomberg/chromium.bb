@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/sessions/sessions_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
@@ -28,11 +29,12 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browser_sync/profile_sync_service_mock.h"
+#include "components/sync/base/hash_util.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
-#include "components/sync/model/fake_sync_change_processor.h"
-#include "components/sync/model/sync_error_factory_mock.h"
-#include "components/sync_sessions/sessions_sync_manager.h"
+#include "components/sync/engine/data_type_activation_request.h"
+#include "components/sync/test/engine/mock_model_type_worker.h"
+#include "components/sync_sessions/session_store.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/common/extension_builder.h"
 
@@ -74,10 +76,11 @@ void BuildWindowSpecifics(int window_id,
 }
 
 void BuildTabSpecifics(const std::string& tag,
-                       int tab_id,
+                       SessionID::id_type tab_id,
+                       int tab_node_id,
                        sync_pb::SessionSpecifics* tab_base) {
   tab_base->set_session_tag(tag);
-  tab_base->set_tab_node_id(0);
+  tab_base->set_tab_node_id(tab_node_id);
   sync_pb::SessionTab* tab = tab_base->mutable_tab();
   tab->set_tab_id(tab_id);
   tab->set_tab_visual_index(1);
@@ -139,6 +142,11 @@ testing::AssertionResult CheckSessionModels(const base::ListValue& devices,
     }
   }
   return testing::AssertionSuccess();
+}
+
+std::string TagHashFromSpecifics(const sync_pb::SessionSpecifics& specifics) {
+  return syncer::GenerateSyncableHash(
+      syncer::SESSIONS, sync_sessions::SessionStore::GetClientTag(specifics));
 }
 
 }  // namespace
@@ -249,42 +257,56 @@ void ExtensionSessionsTest::CreateTestExtension() {
 }
 
 void ExtensionSessionsTest::CreateSessionModels() {
+  syncer::DataTypeActivationRequest request;
+  request.error_handler = base::DoNothing();
+  request.cache_guid = "TestCacheGuid";
+  request.authenticated_account_id = "SomeAccountId";
+
+  std::unique_ptr<syncer::DataTypeActivationResponse> activation_response;
+  base::RunLoop loop;
+  ProfileSyncServiceFactory::GetForProfile(browser_->profile())
+      ->GetSessionSyncControllerDelegateOnUIThread()
+      ->OnSyncStarting(
+          request, base::BindLambdaForTesting(
+                       [&](std::unique_ptr<syncer::DataTypeActivationResponse>
+                               response) {
+                         activation_response = std::move(response);
+                         loop.Quit();
+                       }));
+  loop.Run();
+
+  syncer::MockModelTypeWorker worker(sync_pb::ModelTypeState(),
+                                     activation_response->type_processor.get());
+
   syncer::SyncDataList initial_data;
   for (size_t index = 0; index < arraysize(kSessionTags); ++index) {
     // Fill an instance of session specifics with a foreign session's data.
-    sync_pb::SessionSpecifics meta;
-    BuildSessionSpecifics(kSessionTags[index], &meta);
+    sync_pb::EntitySpecifics header_entity;
+    BuildSessionSpecifics(kSessionTags[index], header_entity.mutable_session());
     std::vector<SessionID::id_type> tab_list(kTabIDs,
                                              kTabIDs + arraysize(kTabIDs));
-    BuildWindowSpecifics(index, tab_list, &meta);
+    BuildWindowSpecifics(index, tab_list, header_entity.mutable_session());
     std::vector<sync_pb::SessionSpecifics> tabs(tab_list.size());
     for (size_t i = 0; i < tab_list.size(); ++i) {
-      BuildTabSpecifics(kSessionTags[index], tab_list[i], &tabs[i]);
+      BuildTabSpecifics(kSessionTags[index], tab_list[i], /*tab_node_id=*/i,
+                        &tabs[i]);
     }
 
-    sync_pb::EntitySpecifics entity;
-    entity.mutable_session()->CopyFrom(meta);
-    initial_data.push_back(syncer::SyncData::CreateRemoteData(
-        1, entity, base::Time(),
-        sync_sessions::SessionsSyncManager::TagHashFromSpecifics(
-            entity.session())));
+    worker.UpdateFromServer(TagHashFromSpecifics(header_entity.session()),
+                            header_entity);
+
     for (size_t i = 0; i < tabs.size(); i++) {
-      sync_pb::EntitySpecifics entity;
-      entity.mutable_session()->CopyFrom(tabs[i]);
-      initial_data.push_back(syncer::SyncData::CreateRemoteData(
-          i + 2, entity, base::Time(),
-          sync_sessions::SessionsSyncManager::TagHashFromSpecifics(
-              entity.session())));
+      sync_pb::EntitySpecifics tab_entity;
+      *tab_entity.mutable_session() = tabs[i];
+      worker.UpdateFromServer(TagHashFromSpecifics(tab_entity.session()),
+                              tab_entity);
     }
   }
 
-  ProfileSyncServiceFactory::GetForProfile(browser_->profile())
-      ->GetSessionsSyncableService()
-      ->MergeDataAndStartSyncing(syncer::SESSIONS, initial_data,
-                                 std::unique_ptr<syncer::SyncChangeProcessor>(
-                                     new syncer::FakeSyncChangeProcessor()),
-                                 std::unique_ptr<syncer::SyncErrorFactory>(
-                                     new syncer::SyncErrorFactoryMock()));
+  // Let the processor receive and honor all updates, which requires running
+  // the runloop because there is a ModelTypeProcessorProxy in between, posting
+  // tasks.
+  base::RunLoop().RunUntilIdle();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevices) {
