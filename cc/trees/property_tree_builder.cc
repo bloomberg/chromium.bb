@@ -60,6 +60,7 @@ class PropertyTreeBuilderContext {
                              const gfx::Vector2dF& elastic_overscroll,
                              float page_scale_factor,
                              const gfx::Transform& device_transform,
+                             MutatorHost* mutator_host,
                              PropertyTrees* property_trees)
       : root_layer_(root_layer),
         page_scale_layer_(page_scale_layer),
@@ -69,6 +70,7 @@ class PropertyTreeBuilderContext {
         elastic_overscroll_(elastic_overscroll),
         page_scale_factor_(page_scale_factor),
         device_transform_(device_transform),
+        mutator_host_(*mutator_host),
         property_trees_(*property_trees),
         transform_tree_(property_trees->transform_tree),
         clip_tree_(property_trees->clip_tree),
@@ -118,6 +120,7 @@ class PropertyTreeBuilderContext {
   const gfx::Vector2dF elastic_overscroll_;
   float page_scale_factor_;
   const gfx::Transform& device_transform_;
+  MutatorHost& mutator_host_;
   PropertyTrees& property_trees_;
   TransformTree& transform_tree_;
   ClipTree& clip_tree_;
@@ -201,58 +204,61 @@ static const gfx::Transform& Transform(LayerImpl* layer) {
 
 // Methods to query state from the AnimationHost ----------------------
 template <typename LayerType>
-bool OpacityIsAnimating(LayerType* layer) {
-  return layer->GetMutatorHost()->IsAnimatingOpacityProperty(
+bool OpacityIsAnimating(const MutatorHost& host, LayerType* layer) {
+  return host.IsAnimatingOpacityProperty(layer->element_id(),
+                                         layer->GetElementTypeForAnimation());
+}
+
+template <typename LayerType>
+bool HasPotentiallyRunningOpacityAnimation(const MutatorHost& host,
+                                           LayerType* layer) {
+  return host.HasPotentiallyRunningOpacityAnimation(
       layer->element_id(), layer->GetElementTypeForAnimation());
 }
 
 template <typename LayerType>
-bool HasPotentiallyRunningOpacityAnimation(LayerType* layer) {
-  return layer->GetMutatorHost()->HasPotentiallyRunningOpacityAnimation(
+bool FilterIsAnimating(const MutatorHost& host, LayerType* layer) {
+  return host.IsAnimatingFilterProperty(layer->element_id(),
+                                        layer->GetElementTypeForAnimation());
+}
+
+template <typename LayerType>
+bool HasPotentiallyRunningFilterAnimation(const MutatorHost& host,
+                                          LayerType* layer) {
+  return host.HasPotentiallyRunningFilterAnimation(
       layer->element_id(), layer->GetElementTypeForAnimation());
 }
 
 template <typename LayerType>
-bool FilterIsAnimating(LayerType* layer) {
-  return layer->GetMutatorHost()->IsAnimatingFilterProperty(
+bool TransformIsAnimating(const MutatorHost& host, LayerType* layer) {
+  return host.IsAnimatingTransformProperty(layer->element_id(),
+                                           layer->GetElementTypeForAnimation());
+}
+
+template <typename LayerType>
+bool HasPotentiallyRunningTransformAnimation(const MutatorHost& host,
+                                             LayerType* layer) {
+  return host.HasPotentiallyRunningTransformAnimation(
       layer->element_id(), layer->GetElementTypeForAnimation());
 }
 
 template <typename LayerType>
-bool HasPotentiallyRunningFilterAnimation(LayerType* layer) {
-  return layer->GetMutatorHost()->HasPotentiallyRunningFilterAnimation(
-      layer->element_id(), layer->GetElementTypeForAnimation());
+bool HasOnlyTranslationTransforms(const MutatorHost& host, LayerType* layer) {
+  return host.HasOnlyTranslationTransforms(layer->element_id(),
+                                           layer->GetElementTypeForAnimation());
 }
 
 template <typename LayerType>
-bool TransformIsAnimating(LayerType* layer) {
-  return layer->GetMutatorHost()->IsAnimatingTransformProperty(
-      layer->element_id(), layer->GetElementTypeForAnimation());
+bool AnimationsPreserveAxisAlignment(const MutatorHost& host,
+                                     LayerType* layer) {
+  return host.AnimationsPreserveAxisAlignment(layer->element_id());
 }
 
 template <typename LayerType>
-bool HasPotentiallyRunningTransformAnimation(LayerType* layer) {
-  return layer->GetMutatorHost()->HasPotentiallyRunningTransformAnimation(
-      layer->element_id(), layer->GetElementTypeForAnimation());
-}
-
-template <typename LayerType>
-bool HasOnlyTranslationTransforms(LayerType* layer) {
-  return layer->GetMutatorHost()->HasOnlyTranslationTransforms(
-      layer->element_id(), layer->GetElementTypeForAnimation());
-}
-
-template <typename LayerType>
-bool AnimationsPreserveAxisAlignment(LayerType* layer) {
-  return layer->GetMutatorHost()->AnimationsPreserveAxisAlignment(
-      layer->element_id());
-}
-
-template <typename LayerType>
-bool HasAnyAnimationTargetingProperty(LayerType* layer,
+bool HasAnyAnimationTargetingProperty(const MutatorHost& host,
+                                      LayerType* layer,
                                       TargetProperty::Type property) {
-  return layer->GetMutatorHost()->HasAnyAnimationTargetingProperty(
-      layer->element_id(), property);
+  return host.HasAnyAnimationTargetingProperty(layer->element_id(), property);
 }
 
 // -------------------------------------------------------------------
@@ -404,14 +410,14 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
       !Transform(layer).IsIdentityOr2DTranslation();
 
   const bool has_potentially_animated_transform =
-      HasPotentiallyRunningTransformAnimation(layer);
+      HasPotentiallyRunningTransformAnimation(mutator_host_, layer);
 
   // A transform node is needed even for a finished animation, since differences
   // in the timing of animation state updates can mean that an animation that's
   // in the Finished state at tree-building time on the main thread is still in
   // the Running state right after commit on the compositor thread.
-  const bool has_any_transform_animation =
-      HasAnyAnimationTargetingProperty(layer, TargetProperty::TRANSFORM);
+  const bool has_any_transform_animation = HasAnyAnimationTargetingProperty(
+      mutator_host_, layer, TargetProperty::TRANSFORM);
 
   const bool has_surface = created_render_surface;
 
@@ -511,10 +517,10 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
       ShouldFlattenTransform(layer) || has_surface;
 
   node->has_potential_animation = has_potentially_animated_transform;
-  node->is_currently_animating = TransformIsAnimating(layer);
+  node->is_currently_animating = TransformIsAnimating(mutator_host_, layer);
   if (has_potentially_animated_transform) {
     node->has_only_translation_animations =
-        HasOnlyTranslationTransforms(layer);
+        HasOnlyTranslationTransforms(mutator_host_, layer);
   }
 
   float post_local_scale_factor = 1.0f;
@@ -616,13 +622,15 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   return true;
 }
 
-static inline bool HasPotentialOpacityAnimation(Layer* layer) {
-  return HasPotentiallyRunningOpacityAnimation(layer) ||
+static inline bool HasPotentialOpacityAnimation(const MutatorHost& host,
+                                                Layer* layer) {
+  return HasPotentiallyRunningOpacityAnimation(host, layer) ||
          layer->OpacityCanAnimateOnImplThread();
 }
 
-static inline bool HasPotentialOpacityAnimation(LayerImpl* layer) {
-  return HasPotentiallyRunningOpacityAnimation(layer) ||
+static inline bool HasPotentialOpacityAnimation(const MutatorHost& host,
+                                                LayerImpl* layer) {
+  return HasPotentiallyRunningOpacityAnimation(host, layer) ||
          layer->test_properties()->opacity_can_animate;
 }
 
@@ -764,7 +772,8 @@ static inline bool PropertyChanged(LayerImpl* layer) {
 }
 
 template <typename LayerType>
-bool ShouldCreateRenderSurface(LayerType* layer,
+bool ShouldCreateRenderSurface(const MutatorHost& mutator_host,
+                               LayerType* layer,
                                gfx::Transform current_transform,
                                bool animation_axis_aligned) {
   const bool preserves_2d_axis_alignment =
@@ -790,7 +799,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
 
   // If the layer will use a CSS filter.  In this case, the animation
   // will start and add a filter to this layer, so it needs a surface.
-  if (HasPotentiallyRunningFilterAnimation(layer)) {
+  if (HasPotentiallyRunningFilterAnimation(mutator_host, layer)) {
     return true;
   }
 
@@ -836,8 +845,9 @@ bool ShouldCreateRenderSurface(LayerType* layer,
       num_descendants_that_draw_content > 0 &&
       (layer->DrawsContent() || num_descendants_that_draw_content > 1);
 
-  bool may_have_transparency = EffectiveOpacity(layer) != 1.f ||
-                               HasPotentiallyRunningOpacityAnimation(layer);
+  bool may_have_transparency =
+      EffectiveOpacity(layer) != 1.f ||
+      HasPotentiallyRunningOpacityAnimation(mutator_host, layer);
   if (may_have_transparency && ShouldFlattenTransform(layer) &&
       at_least_two_layers_in_subtree_draw_content) {
     TRACE_EVENT_INSTANT0(
@@ -927,21 +937,22 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   const bool is_root = !LayerParent(layer);
   const bool has_transparency = EffectiveOpacity(layer) != 1.f;
   const bool has_potential_opacity_animation =
-      HasPotentialOpacityAnimation(layer);
+      HasPotentialOpacityAnimation(mutator_host_, layer);
   const bool has_potential_filter_animation =
-      HasPotentiallyRunningFilterAnimation(layer);
+      HasPotentiallyRunningFilterAnimation(mutator_host_, layer);
 
   data_for_children->animation_axis_aligned_since_render_target &=
-      AnimationsPreserveAxisAlignment(layer);
+      AnimationsPreserveAxisAlignment(mutator_host_, layer);
   data_for_children->compound_transform_since_render_target *= Transform(layer);
   const bool should_create_render_surface = ShouldCreateRenderSurface(
-      layer, data_for_children->compound_transform_since_render_target,
+      mutator_host_, layer,
+      data_for_children->compound_transform_since_render_target,
       data_for_children->animation_axis_aligned_since_render_target);
 
   bool not_axis_aligned_since_last_clip =
       data_from_ancestor.not_axis_aligned_since_last_clip
           ? true
-          : !AnimationsPreserveAxisAlignment(layer) ||
+          : !AnimationsPreserveAxisAlignment(mutator_host_, layer) ||
                 !Transform(layer).Preserves2dAxisAlignment();
   // A non-axis aligned clip may need a render surface. So, we create an effect
   // node.
@@ -978,8 +989,9 @@ bool PropertyTreeBuilderContext<LayerType>::AddEffectNodeIfNeeded(
   node->has_potential_filter_animation = has_potential_filter_animation;
   node->double_sided = DoubleSided(layer);
   node->subtree_hidden = HideLayerAndSubtree(layer);
-  node->is_currently_animating_opacity = OpacityIsAnimating(layer);
-  node->is_currently_animating_filter = FilterIsAnimating(layer);
+  node->is_currently_animating_opacity =
+      OpacityIsAnimating(mutator_host_, layer);
+  node->is_currently_animating_filter = FilterIsAnimating(mutator_host_, layer);
   node->effect_changed = PropertyChanged(layer);
   node->subtree_has_copy_request = SubtreeHasCopyRequest(layer);
   node->closest_ancestor_with_cached_render_surface_id =
@@ -1215,7 +1227,6 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
   bool created_render_surface =
       AddEffectNodeIfNeeded(data_from_parent, layer, &data_for_children);
 
-
   bool created_transform_node = AddTransformNodeIfNeeded(
       data_from_parent, layer, created_render_surface, &data_for_children);
   SetHasTransformNode(layer, created_transform_node);
@@ -1230,7 +1241,7 @@ void PropertyTreeBuilderContext<LayerType>::BuildPropertyTreesInternal(
   bool not_axis_aligned_since_last_clip =
       data_from_parent.not_axis_aligned_since_last_clip
           ? true
-          : !AnimationsPreserveAxisAlignment(layer) ||
+          : !AnimationsPreserveAxisAlignment(mutator_host_, layer) ||
                 !Transform(layer).Preserves2dAxisAlignment();
   bool has_non_axis_aligned_clip =
       not_axis_aligned_since_last_clip && LayerClipsSubtree(layer);
@@ -1432,7 +1443,8 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   PropertyTreeBuilderContext<Layer>(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
-      elastic_overscroll, page_scale_factor, device_transform, property_trees)
+      elastic_overscroll, page_scale_factor, device_transform,
+      root_layer->layer_tree_host()->mutator_host(), property_trees)
       .BuildPropertyTrees(device_scale_factor, viewport, color);
 #if DCHECK_IS_ON()
   for (auto* layer : AllLayerRange(root_layer))
@@ -1471,7 +1483,8 @@ void PropertyTreeBuilder::BuildPropertyTrees(
   PropertyTreeBuilderContext<LayerImpl>(
       root_layer, page_scale_layer, inner_viewport_scroll_layer,
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
-      elastic_overscroll, page_scale_factor, device_transform, property_trees)
+      elastic_overscroll, page_scale_factor, device_transform,
+      root_layer->layer_tree_impl()->mutator_host(), property_trees)
       .BuildPropertyTrees(device_scale_factor, viewport, color);
   property_trees->effect_tree.CreateOrReuseRenderSurfaces(
       &render_surfaces, root_layer->layer_tree_impl());

@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/mutator_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
@@ -3264,10 +3266,14 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
   Compositor* compositor_1 = host_1->GetCompositor();
   Layer root_1;
   compositor_1->SetRootLayer(&root_1);
+  cc::MutatorHost* mutator_host_1 =
+      root_1.cc_layer_for_testing()->layer_tree_host()->mutator_host();
 
   Compositor* compositor_2 = host_2->GetCompositor();
   Layer root_2;
   compositor_2->SetRootLayer(&root_2);
+  cc::MutatorHost* mutator_host_2 =
+      root_2.cc_layer_for_testing()->layer_tree_host()->mutator_host();
 
   // Verify that neither compositor has active animators.
   EXPECT_FALSE(compositor_1->layer_animator_collection()->HasActiveAnimators());
@@ -3276,9 +3282,12 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
   Layer layer;
   layer.SetOpacity(0.5f);
   root_1.Add(&layer);
-  LayerAnimator* animator = layer.GetAnimator();
-  EXPECT_FALSE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
+  EXPECT_FALSE(
+      mutator_host_1->HasTickingKeyframeModelForTesting(layer.element_id()));
+  EXPECT_FALSE(
+      mutator_host_2->HasTickingKeyframeModelForTesting(layer.element_id()));
 
+  LayerAnimator* animator = layer.GetAnimator();
   double target_opacity = 1.0;
   base::TimeDelta time_delta = base::TimeDelta::FromSeconds(1);
 
@@ -3286,12 +3295,18 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
       LayerAnimationElement::CreateOpacityElement(target_opacity, time_delta)));
   EXPECT_TRUE(compositor_1->layer_animator_collection()->HasActiveAnimators());
   EXPECT_FALSE(compositor_2->layer_animator_collection()->HasActiveAnimators());
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
+  EXPECT_TRUE(
+      mutator_host_1->HasTickingKeyframeModelForTesting(layer.element_id()));
+  EXPECT_FALSE(
+      mutator_host_2->HasTickingKeyframeModelForTesting(layer.element_id()));
 
   root_2.Add(&layer);
   EXPECT_FALSE(compositor_1->layer_animator_collection()->HasActiveAnimators());
   EXPECT_TRUE(compositor_2->layer_animator_collection()->HasActiveAnimators());
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
+  EXPECT_FALSE(
+      mutator_host_1->HasTickingKeyframeModelForTesting(layer.element_id()));
+  EXPECT_TRUE(
+      mutator_host_2->HasTickingKeyframeModelForTesting(layer.element_id()));
 
   host_2.reset();
   host_1.reset();
@@ -3324,13 +3339,17 @@ TEST(LayerAnimatorTest, ThreadedAnimationSurvivesIfLayerRemovedAdded) {
 
   animator->ScheduleAnimation(new LayerAnimationSequence(
       LayerAnimationElement::CreateOpacityElement(target_opacity, time_delta)));
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
+
+  cc::MutatorHost* mutator =
+      layer.cc_layer_for_testing()->layer_tree_host()->mutator_host();
+  EXPECT_TRUE(mutator->HasTickingKeyframeModelForTesting(layer.element_id()));
 
   root.Remove(&layer);
-  EXPECT_FALSE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
 
   root.Add(&layer);
-  EXPECT_TRUE(layer.cc_layer_for_testing()->HasTickingAnimationForTesting());
+
+  mutator = layer.cc_layer_for_testing()->layer_tree_host()->mutator_host();
+  EXPECT_TRUE(mutator->HasTickingKeyframeModelForTesting(layer.element_id()));
 
   host.reset();
   TerminateContextFactoryForTests();

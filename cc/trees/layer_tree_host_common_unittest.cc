@@ -2178,12 +2178,14 @@ TEST_F(LayerTreeHostCommonTest, LargeTransforms) {
 }
 
 static bool TransformIsAnimating(LayerImpl* layer) {
-  return layer->GetMutatorHost()->IsAnimatingTransformProperty(
+  MutatorHost* host = layer->layer_tree_impl()->mutator_host();
+  return host->IsAnimatingTransformProperty(
       layer->element_id(), layer->GetElementTypeForAnimation());
 }
 
 static bool HasPotentiallyRunningTransformAnimation(LayerImpl* layer) {
-  return layer->GetMutatorHost()->HasPotentiallyRunningTransformAnimation(
+  MutatorHost* host = layer->layer_tree_impl()->mutator_host();
+  return host->HasPotentiallyRunningTransformAnimation(
       layer->element_id(), layer->GetElementTypeForAnimation());
 }
 
@@ -8314,8 +8316,9 @@ TEST_F(LayerTreeHostCommonTest, AnimatedOpacityCreatesRenderSurface) {
 }
 
 static bool FilterIsAnimating(LayerImpl* layer) {
-  return layer->GetMutatorHost()->IsAnimatingFilterProperty(
-      layer->element_id(), layer->GetElementTypeForAnimation());
+  MutatorHost* host = layer->layer_tree_impl()->mutator_host();
+  return host->IsAnimatingFilterProperty(layer->element_id(),
+                                         layer->GetElementTypeForAnimation());
 }
 
 // Verify that having an animated filter (but no current filter, as these
@@ -8347,7 +8350,8 @@ TEST_F(LayerTreeHostCommonTest, AnimatedFilterCreatesRenderSurface) {
 }
 
 bool HasPotentiallyRunningFilterAnimation(const LayerImpl& layer) {
-  return layer.GetMutatorHost()->HasPotentiallyRunningFilterAnimation(
+  MutatorHost* host = layer.layer_tree_impl()->mutator_host();
+  return host->HasPotentiallyRunningFilterAnimation(
       layer.element_id(), layer.GetElementTypeForAnimation());
 }
 

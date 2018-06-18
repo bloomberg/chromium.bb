@@ -29,7 +29,6 @@
 #include "cc/paint/filter_operations.h"
 #include "cc/paint/paint_record.h"
 #include "cc/trees/element_id.h"
-#include "cc/trees/mutator_host_client.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/target_property.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -56,7 +55,6 @@ class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostCommon;
 class LayerTreeImpl;
-class MutatorHost;
 class PictureLayer;
 
 // Base class for composited layers. Special layer types are derived from
@@ -554,8 +552,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetElementId(ElementId id);
   ElementId element_id() const { return inputs_.element_id; }
 
-  bool HasTickingAnimationForTesting() const;
-
   void SetHasWillChangeTransformHint(bool has_will_change);
   bool has_will_change_transform_hint() const {
     return inputs_.has_will_change_transform_hint;
@@ -563,8 +559,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetTrilinearFiltering(bool trilinear_filtering);
   bool trilinear_filtering() const { return inputs_.trilinear_filtering; }
-
-  MutatorHost* GetMutatorHost() const;
 
   ElementListType GetElementTypeForAnimation() const;
 
@@ -706,8 +700,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void OnFilterAnimated(const FilterOperations& filters);
   void OnOpacityAnimated(float opacity);
   void OnTransformAnimated(const gfx::Transform& transform);
-
-  bool ScrollOffsetAnimationWasInterrupted() const;
 
   void AddClipChild(Layer* child);
   void RemoveClipChild(Layer* child);

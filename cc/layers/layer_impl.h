@@ -33,7 +33,6 @@
 #include "cc/layers/touch_action_region.h"
 #include "cc/tiles/tile_priority.h"
 #include "cc/trees/element_id.h"
-#include "cc/trees/mutator_host_client.h"
 #include "cc/trees/target_property.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -60,7 +59,6 @@ namespace cc {
 class AppendQuadsData;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
-class MutatorHost;
 class PrioritizedTile;
 class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
@@ -433,8 +431,6 @@ class CC_EXPORT LayerImpl {
 
   void SetTrilinearFiltering(bool trilinear_filtering);
   bool trilinear_filtering() const { return trilinear_filtering_; }
-
-  MutatorHost* GetMutatorHost() const;
 
   ElementListType GetElementTypeForAnimation() const;
 
