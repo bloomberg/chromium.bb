@@ -114,6 +114,11 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void SendLocationChanges();
 
  private:
+  struct DirtyObject {
+    blink::WebAXObject obj;
+    ax::mojom::EventFrom event_from;
+  };
+
   // RenderFrameObserver implementation.
   void OnDestruct() override;
 
