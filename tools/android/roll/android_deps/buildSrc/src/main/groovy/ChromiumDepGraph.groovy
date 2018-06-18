@@ -123,7 +123,7 @@ class ChromiumDepGraph {
                 licenseUrl: licenseUrl,
                 fileName: artifact.file.name,
                 description: description,
-                url: pomContent.url?.text() ?: FALLBACK_PROPERTIES.get(id)?.url,
+                url: pomContent.url?.text(),
                 displayName: pomContent.name?.text()
         )
     }
