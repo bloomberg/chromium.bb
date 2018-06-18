@@ -348,7 +348,8 @@ const char* OmniboxMatchCellView::GetClassName() const {
 void OmniboxMatchCellView::Layout() {
   // Update the margins.
   gfx::Insets insets = GetMarginInsets(
-      content()->GetLineHeight(), is_rich_suggestion_ || is_old_style_answer_);
+      content()->GetLineHeight(),
+      is_rich_suggestion_ || has_tab_match_ || is_old_style_answer_);
   SetBorder(views::CreateEmptyBorder(insets.top(), insets.left(),
                                      insets.bottom(), insets.right()));
   // Layout children *after* updating the margins.
@@ -401,10 +402,10 @@ void OmniboxMatchCellView::LayoutNewStyleTwoLineSuggestion() {
   int x = child_area.x();
   int y = child_area.y();
   views::ImageView* image_view;
-  if (has_tab_match_) {
-    image_view = icon_view_;
-  } else {
+  if (is_rich_suggestion_) {
     image_view = image_view_;
+  } else {
+    image_view = icon_view_;
   }
   image_view->SetBounds(x, y, kRefreshImageBoxSize, child_area.height());
   const int text_width = child_area.width() - kTextIndent;
