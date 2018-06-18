@@ -89,6 +89,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void UpdateGaiaDialogSize(int width, int height) override;
   const user_manager::UserList GetUsers() override;
   void CancelPasswordChangedFlow() override;
+  void ShowFeedback() override;
 
   // LoginScreenClient::Delegate:
   void HandleAuthenticateUser(const AccountId& account_id,
