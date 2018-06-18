@@ -88,7 +88,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 14
+          "shards": 15
         },
         "test": "chrome_public_test_apk"
       },
@@ -407,7 +407,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 14
+          "shards": 15
         },
         "test": "chrome_public_test_apk"
       },

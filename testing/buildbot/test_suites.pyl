@@ -480,7 +480,7 @@
     'content_browsertests': {
       'android_swarming': {
         'hard_timeout': 1500,
-        'shards': 8,
+        'shards': 9,
       },
     },
     'content_unittests': {
@@ -632,7 +632,7 @@
     'base_unittests': {},
     'chrome_public_test_apk': {
       'swarming': {
-        'shards': 14,
+        'shards': 15,
        },
     },
     'content_browsertests': {
@@ -1744,7 +1744,7 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter',
       ],
       'swarming': {
-        'shards': 10,
+        'shards': 15,
       },
       'test': 'browser_tests',
     },
@@ -1759,6 +1759,9 @@
         '--enable-features=NetworkService',
         '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
       ],
+      'swarming': {
+        'shards': 2,
+      },
       'test': 'content_browsertests',
     },
     'network_service_extensions_browsertests': {
@@ -1772,7 +1775,7 @@
         '--enable-features=NetworkService'
       ],
       'swarming': {
-        'shards': 2,
+        'shards': 3,
       },
       'test': 'interactive_ui_tests',
     },
@@ -1907,7 +1910,7 @@
     'extensions_unittests': {},
     'interactive_ui_tests': {
       'swarming': {
-        'shards': 2,
+        'shards': 3,
       },
     },
     'message_center_unittests': {},
