@@ -455,6 +455,7 @@ const char kTypeDHCP6[] = "dhcp6";
 const char kTypePPP[] = "ppp";
 
 // Flimflam error options.
+const char kError4WayTimeout[] = "4way-handshake-timeout";
 const char kErrorAaaFailed[] = "aaa-failed";
 const char kErrorActivationFailed[] = "activation-failed";
 const char kErrorBadPassphrase[] = "bad-passphrase";
@@ -470,10 +471,13 @@ const char kErrorIpsecPskAuthFailed[] = "ipsec-psk-auth-failed";
 const char kErrorNeedEvdo[] = "need-evdo";
 const char kErrorNeedHomeNetwork[] = "need-home-network";
 const char kErrorNoFailure[] = "no-failure";
+const char kErrorNotAssociated[] = "not-associated";
+const char kErrorNotAuthenticated[] = "not-authenticated";
 const char kErrorOtaspFailed[] = "otasp-failed";
 const char kErrorOutOfRange[] = "out-of-range";
 const char kErrorPinMissing[] = "pin-missing";
 const char kErrorPppAuthFailed[] = "ppp-auth-failed";
+const char kErrorTooManySTAs[] = "too-many-stas";
 const char kErrorUnknownFailure[] = "unknown-failure";
 
 // Flimflam error result codes.
