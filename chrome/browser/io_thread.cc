@@ -17,9 +17,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
@@ -109,11 +106,6 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/network/dhcp_pac_file_fetcher_factory_chromeos.h"
 #include "chromeos/network/host_resolver_impl_chromeos.h"
-#endif
-
-#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-#include "crypto/openssl_util.h"
-#include "third_party/boringssl/src/include/openssl/cpu.h"
 #endif
 
 using content::BrowserThread;
@@ -398,16 +390,6 @@ void IOThread::Init() {
                           base::Bind(&ObserveKeychainEvents));
 #endif
 
-#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
-  crypto::EnsureOpenSSLInit();
-  // Measure CPUs with broken NEON units. See https://crbug.com/341598.
-  UMA_HISTOGRAM_BOOLEAN("Net.HasBrokenNEON", CRYPTO_has_broken_NEON());
-  // Measure Android kernels with missing AT_HWCAP2 auxv fields. See
-  // https://crbug.com/boringssl/46.
-  UMA_HISTOGRAM_BOOLEAN("Net.NeedsHWCAP2Workaround",
-                        CRYPTO_needs_hwcap2_workaround());
-#endif
-
   ConstructSystemRequestContext();
 }
 
@@ -515,10 +497,6 @@ void IOThread::ConstructSystemRequestContext() {
     builder->SetCertVerifier(
         network::IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
             command_line, switches::kUserDataDir, std::move(cert_verifier)));
-    UMA_HISTOGRAM_BOOLEAN(
-        "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
-        command_line.HasSwitch(
-            network::switches::kIgnoreCertificateErrorsSPKIList));
 
     SetUpProxyService(builder.get());
 

@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -35,6 +36,11 @@
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/url_request_context_builder_mojo.h"
+
+#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
+#include "crypto/openssl_util.h"
+#include "third_party/boringssl/src/include/openssl/cpu.h"
+#endif
 
 namespace network {
 
@@ -101,10 +107,30 @@ NetworkService::NetworkService(
     Bind(std::move(request));
   }
 
+#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
+  // Make sure OpenSSL is initialized before using it to histogram data.
+  crypto::EnsureOpenSSLInit();
+
+  // Measure CPUs with broken NEON units. See https://crbug.com/341598.
+  UMA_HISTOGRAM_BOOLEAN("Net.HasBrokenNEON", CRYPTO_has_broken_NEON());
+  // Measure Android kernels with missing AT_HWCAP2 auxv fields. See
+  // https://crbug.com/boringssl/46.
+  UMA_HISTOGRAM_BOOLEAN("Net.NeedsHWCAP2Workaround",
+                        CRYPTO_needs_hwcap2_workaround());
+#endif
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  // Record this once per session, though the switch is appled on a
+  // per-NetworkContext basis.
+  UMA_HISTOGRAM_BOOLEAN(
+      "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
+      command_line->HasSwitch(
+          network::switches::kIgnoreCertificateErrorsSPKIList));
+
   network_change_manager_ = std::make_unique<NetworkChangeManager>(
       CreateNetworkChangeNotifierIfNeeded());
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (net_log) {
     net_log_ = net_log;
   } else {
