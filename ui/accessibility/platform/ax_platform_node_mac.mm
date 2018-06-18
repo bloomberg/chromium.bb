@@ -959,6 +959,13 @@ void AXPlatformNodeMac::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
         return;
       }
       break;
+    case ax::mojom::Event::kSelection:
+      // On Mac, map menu item selection to a focus event.
+      if (GetData().role == ax::mojom::Role::kMenuItem) {
+        NotifyMacEvent(native_node_, ax::mojom::Event::kFocus);
+        return;
+      }
+      break;
     default:
       break;
   }

@@ -28,6 +28,9 @@ AXMode AXPlatformNode::ax_mode_;
 bool AXPlatformNode::has_input_suggestions_ = false;
 
 // static
+gfx::NativeViewAccessible AXPlatformNode::popup_focus_override_ = nullptr;
+
+// static
 AXPlatformNode* AXPlatformNode::FromNativeWindow(
     gfx::NativeWindow native_window) {
   if (native_window_handler_.Get())
@@ -92,6 +95,17 @@ void AXPlatformNode::OnInputSuggestionsUnavailable() {
 // static
 bool AXPlatformNode::HasInputSuggestions() {
   return has_input_suggestions_;
+}
+
+// static
+void AXPlatformNode::SetPopupFocusOverride(
+    gfx::NativeViewAccessible popup_focus_override) {
+  popup_focus_override_ = popup_focus_override;
+}
+
+// static
+gfx::NativeViewAccessible AXPlatformNode::GetPopupFocusOverride() {
+  return popup_focus_override_;
 }
 
 }  // namespace ui

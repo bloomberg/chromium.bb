@@ -100,7 +100,6 @@ void FlushQueue() {
 
 // static
 int NativeViewAccessibilityBase::menu_depth_ = 0;
-int32_t NativeViewAccessibilityBase::fake_focus_view_id_ = 0;
 
 NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
     : ViewAccessibility(view) {
@@ -118,6 +117,9 @@ NativeViewAccessibilityBase::NativeViewAccessibilityBase(View* view)
 }
 
 NativeViewAccessibilityBase::~NativeViewAccessibilityBase() {
+  if (ui::AXPlatformNode::GetPopupFocusOverride() == GetNativeObject())
+    ui::AXPlatformNode::SetPopupFocusOverride(nullptr);
+
   g_unique_id_to_ax_platform_node.Get().erase(GetUniqueId().Get());
   ax_node_->Destroy();
 }
@@ -166,7 +168,8 @@ void NativeViewAccessibilityBase::OnMenuItemActive() {
   // When a native menu is shown and has an item selected, treat it and the
   // currently selected item as focused, even though the actual focus is in the
   // browser's currently focused textfield.
-  fake_focus_view_id_ = GetUniqueId().Get();
+  ui::AXPlatformNode::SetPopupFocusOverride(
+      ax_node_->GetNativeViewAccessible());
 }
 
 void NativeViewAccessibilityBase::OnMenuStart() {
@@ -179,7 +182,7 @@ void NativeViewAccessibilityBase::OnMenuEnd() {
   DCHECK_GE(menu_depth_, 1);
   --menu_depth_;
   if (menu_depth_ == 0)
-    fake_focus_view_id_ = 0;
+    ui::AXPlatformNode::SetPopupFocusOverride(nullptr);
 }
 
 // ui::AXPlatformNodeDelegate
@@ -319,14 +322,15 @@ gfx::NativeViewAccessible NativeViewAccessibilityBase::HitTestSync(int x,
 }
 
 gfx::NativeViewAccessible NativeViewAccessibilityBase::GetFocus() {
+  gfx::NativeViewAccessible focus_override =
+      ui::AXPlatformNode::GetPopupFocusOverride();
+  if (focus_override)
+    return focus_override;
+
   FocusManager* focus_manager = view()->GetFocusManager();
   View* focused_view =
       focus_manager ? focus_manager->GetFocusedView() : nullptr;
-  if (fake_focus_view_id_) {
-    ui::AXPlatformNode* ax_node = PlatformNodeFromNodeID(fake_focus_view_id_);
-    if (ax_node)
-      return ax_node->GetNativeViewAccessible();
-  }
+
   return focused_view ? focused_view->GetNativeViewAccessible() : nullptr;
 }
 
