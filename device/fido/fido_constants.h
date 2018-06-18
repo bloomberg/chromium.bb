@@ -351,6 +351,10 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 extern const char kCableAuthenticatorHelloMessage[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCableClientHelloMessage[];
 
+// TODO(hongjunchoi): Add url to the official spec once it's standardized.
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCtap2Version[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kU2fVersion[];
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FIDO_CONSTANTS_H_

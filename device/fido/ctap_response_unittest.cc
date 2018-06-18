@@ -20,6 +20,122 @@ namespace device {
 
 namespace {
 
+constexpr uint8_t kTestAuthenticatorGetInfoResponseWithNoVersion[] = {
+    // Success status byte
+    0x00,
+    // Map of 6 elements
+    0xA6,
+    // Key(01) - versions
+    0x01,
+    // Array(0)
+    0x80,
+    // Key(02) - extensions
+    0x02,
+    // Array(2)
+    0x82,
+    // "uvm"
+    0x63, 0x75, 0x76, 0x6D,
+    // "hmac-secret"
+    0x6B, 0x68, 0x6D, 0x61, 0x63, 0x2D, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74,
+    // Key(03) - AAGUID
+    0x03,
+    // Bytes(16)
+    0x50, 0xF8, 0xA0, 0x11, 0xF3, 0x8C, 0x0A, 0x4D, 0x15, 0x80, 0x06, 0x17,
+    0x11, 0x1F, 0x9E, 0xDC, 0x7D,
+    // Key(04) - options
+    0x04,
+    // Map(05)
+    0xA5,
+    // Key - "rk"
+    0x62, 0x72, 0x6B,
+    // true
+    0xF5,
+    // Key - "up"
+    0x62, 0x75, 0x70,
+    // true
+    0xF5,
+    // Key - "uv"
+    0x62, 0x75, 0x76,
+    // true
+    0xF5,
+    // Key - "plat"
+    0x64, 0x70, 0x6C, 0x61, 0x74,
+    // true
+    0xF5,
+    // Key - "clientPin"
+    0x69, 0x63, 0x6C, 0x69, 0x65, 0x6E, 0x74, 0x50, 0x69, 0x6E,
+    // false
+    0xF4,
+    // Key(05) - Max message size
+    0x05,
+    // 1200
+    0x19, 0x04, 0xB0,
+    // Key(06) - Pin protocols
+    0x06,
+    // Array[1]
+    0x81, 0x01,
+};
+
+constexpr uint8_t kTestAuthenticatorGetInfoResponseWithDuplicateVersion[] = {
+    // Success status byte
+    0x00,
+    // Map of 6 elements
+    0xA6,
+    // Key(01) - versions
+    0x01,
+    // Array(02)
+    0x82,
+    // "U2F_V2"
+    0x66, 0x55, 0x32, 0x46, 0x5F, 0x56, 0x32,
+    // "U2F_V2"
+    0x66, 0x55, 0x32, 0x46, 0x5F, 0x56, 0x32,
+    // Key(02) - extensions
+    0x02,
+    // Array(2)
+    0x82,
+    // "uvm"
+    0x63, 0x75, 0x76, 0x6D,
+    // "hmac-secret"
+    0x6B, 0x68, 0x6D, 0x61, 0x63, 0x2D, 0x73, 0x65, 0x63, 0x72, 0x65, 0x74,
+    // Key(03) - AAGUID
+    0x03,
+    // Bytes(16)
+    0x50, 0xF8, 0xA0, 0x11, 0xF3, 0x8C, 0x0A, 0x4D, 0x15, 0x80, 0x06, 0x17,
+    0x11, 0x1F, 0x9E, 0xDC, 0x7D,
+    // Key(04) - options
+    0x04,
+    // Map(05)
+    0xA5,
+    // Key - "rk"
+    0x62, 0x72, 0x6B,
+    // true
+    0xF5,
+    // Key - "up"
+    0x62, 0x75, 0x70,
+    // true
+    0xF5,
+    // Key - "uv"
+    0x62, 0x75, 0x76,
+    // true
+    0xF5,
+    // Key - "plat"
+    0x64, 0x70, 0x6C, 0x61, 0x74,
+    // true
+    0xF5,
+    // Key - "clientPin"
+    0x69, 0x63, 0x6C, 0x69, 0x65, 0x6E, 0x74, 0x50, 0x69, 0x6E,
+    // false
+    0xF4,
+    // Key(05) - Max message size
+    0x05,
+    // 1200
+    0x19, 0x04, 0xB0,
+    // Key(06) - Pin protocols
+    0x06,
+    // Array[1]
+    0x81, 0x01,
+};
+
 // The attested credential data, excluding the public key bytes. Append
 // with kTestECPublicKeyCOSE to get the complete attestation data.
 constexpr uint8_t kTestAttestedCredentialDataPrefix[] = {
@@ -359,6 +475,34 @@ TEST(CTAPResponseTest, TestParseU2fSignWithNullCorruptedSignature) {
       test_data::kApplicationParameter, GetTestCorruptedSignResponse(5),
       GetTestCredentialRawIdBytes());
   EXPECT_FALSE(response);
+}
+
+TEST(CTAPResponseTest, TestReadGetInfoResponse) {
+  auto get_info_response =
+      ReadCTAPGetInfoResponse(test_data::kTestAuthenticatorGetInfoResponse);
+  ASSERT_TRUE(get_info_response);
+  ASSERT_TRUE(get_info_response->max_msg_size());
+  EXPECT_EQ(*get_info_response->max_msg_size(), 1200u);
+  EXPECT_TRUE(
+      base::ContainsKey(get_info_response->versions(), ProtocolVersion::kCtap));
+  EXPECT_TRUE(
+      base::ContainsKey(get_info_response->versions(), ProtocolVersion::kU2f));
+  EXPECT_TRUE(get_info_response->options().is_platform_device());
+  EXPECT_TRUE(get_info_response->options().supports_resident_key());
+  EXPECT_TRUE(get_info_response->options().user_presence_required());
+  EXPECT_EQ(AuthenticatorSupportedOptions::UserVerificationAvailability::
+                kSupportedAndConfigured,
+            get_info_response->options().user_verification_availability());
+  EXPECT_EQ(AuthenticatorSupportedOptions::ClientPinAvailability::
+                kSupportedButPinNotSet,
+            get_info_response->options().client_pin_availability());
+}
+
+TEST(CTAPResponseTest, TestReadGetInfoResponseWithIncorrectVersionFormat) {
+  EXPECT_FALSE(
+      ReadCTAPGetInfoResponse(kTestAuthenticatorGetInfoResponseWithNoVersion));
+  EXPECT_FALSE(ReadCTAPGetInfoResponse(
+      kTestAuthenticatorGetInfoResponseWithDuplicateVersion));
 }
 
 }  // namespace device
