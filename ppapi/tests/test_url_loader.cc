@@ -147,9 +147,11 @@ void TestURLLoader::RunTests(const std::string& filter) {
   // These tests connect to localhost with privacy mode enabled:
   RUN_CALLBACK_TEST(TestURLLoader, UntrustedSameOriginRestriction, filter);
   RUN_CALLBACK_TEST(TestURLLoader, UntrustedCrossOriginRequest, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, UntrustedCorbEligibleRequest, filter);
   // These tests connect to localhost with privacy mode disabled:
   RUN_CALLBACK_TEST(TestURLLoader, TrustedSameOriginRestriction, filter);
   RUN_CALLBACK_TEST(TestURLLoader, TrustedCrossOriginRequest, filter);
+  RUN_CALLBACK_TEST(TestURLLoader, TrustedCorbEligibleRequest, filter);
 }
 
 std::string TestURLLoader::ReadEntireFile(pp::FileIO* file_io,
@@ -302,7 +304,7 @@ int32_t TestURLLoader::OpenUntrusted(const std::string& method,
   request.SetMethod(method);
   request.SetHeaders(header);
 
-  return OpenUntrusted(request);
+  return OpenUntrusted(request, NULL);
 }
 
 int32_t TestURLLoader::OpenTrusted(const std::string& method,
@@ -312,25 +314,50 @@ int32_t TestURLLoader::OpenTrusted(const std::string& method,
   request.SetMethod(method);
   request.SetHeaders(header);
 
-  return OpenTrusted(request);
+  return OpenTrusted(request, NULL);
 }
 
-int32_t TestURLLoader::OpenUntrusted(const pp::URLRequestInfo& request) {
-  return Open(request, false);
+int32_t TestURLLoader::OpenUntrusted(const pp::URLRequestInfo& request,
+                                     std::string* response_body) {
+  return Open(request, false, response_body);
 }
 
-int32_t TestURLLoader::OpenTrusted(const pp::URLRequestInfo& request) {
-  return Open(request, true);
+int32_t TestURLLoader::OpenTrusted(const pp::URLRequestInfo& request,
+                                   std::string* response_body) {
+  return Open(request, true, response_body);
 }
 
 int32_t TestURLLoader::Open(const pp::URLRequestInfo& request,
-                            bool trusted) {
+                            bool trusted,
+                            std::string* response_body) {
   pp::URLLoader loader(instance_);
   if (trusted)
     url_loader_trusted_interface_->GrantUniversalAccess(loader.pp_resource());
-  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  callback.WaitForResult(loader.Open(request, callback.GetCallback()));
-  return callback.result();
+
+  {
+    TestCompletionCallback open_callback(instance_->pp_instance(),
+                                         callback_type());
+    open_callback.WaitForResult(
+        loader.Open(request, open_callback.GetCallback()));
+    if (open_callback.result() != PP_OK)
+      return open_callback.result();
+  }
+
+  int32_t bytes_read = 0;
+  do {
+    char buffer[1024];
+    TestCompletionCallback read_callback(instance_->pp_instance(),
+                                         callback_type());
+    read_callback.WaitForResult(loader.ReadResponseBody(
+        &buffer, sizeof(buffer), read_callback.GetCallback()));
+    bytes_read = read_callback.result();
+    if (bytes_read < 0)
+      return bytes_read;
+    if (response_body)
+      response_body->append(std::string(buffer, bytes_read));
+  } while (bytes_read > 0);
+
+  return PP_OK;
 }
 
 std::string TestURLLoader::TestBasicGET() {
@@ -442,7 +469,7 @@ std::string TestURLLoader::TestFailsBogusContentLength() {
                            static_cast<uint32_t>(postdata.length()));
 
   int32_t rv;
-  rv = OpenUntrusted(request);
+  rv = OpenUntrusted(request, NULL);
   if (rv != PP_ERROR_NOACCESS)
     return ReportError(
         "Untrusted request with bogus Content-Length restriction", rv);
@@ -485,7 +512,7 @@ std::string TestURLLoader::TestUntrustedSameOriginRestriction() {
   std::string cross_origin_url = GetReachableCrossOriginURL("test_case.html");
   request.SetURL(cross_origin_url);
 
-  int32_t rv = OpenUntrusted(request);
+  int32_t rv = OpenUntrusted(request, NULL);
   if (rv != PP_ERROR_NOACCESS)
     return ReportError(
         "Untrusted, unintended cross-origin request restriction", rv);
@@ -499,7 +526,7 @@ std::string TestURLLoader::TestTrustedSameOriginRestriction() {
   std::string cross_origin_url = GetReachableCrossOriginURL("test_case.html");
   request.SetURL(cross_origin_url);
 
-  int32_t rv = OpenTrusted(request);
+  int32_t rv = OpenTrusted(request, NULL);
   if (rv != PP_OK)
     return ReportError("Trusted cross-origin request failed", rv);
 
@@ -513,7 +540,7 @@ std::string TestURLLoader::TestUntrustedCrossOriginRequest() {
   request.SetURL(cross_origin_url);
   request.SetAllowCrossOriginRequests(true);
 
-  int32_t rv = OpenUntrusted(request);
+  int32_t rv = OpenUntrusted(request, NULL);
   if (rv != PP_OK)
     return ReportError(
         "Untrusted, intended cross-origin request failed", rv);
@@ -528,10 +555,62 @@ std::string TestURLLoader::TestTrustedCrossOriginRequest() {
   request.SetURL(cross_origin_url);
   request.SetAllowCrossOriginRequests(true);
 
-  int32_t rv = OpenTrusted(request);
+  int32_t rv = OpenTrusted(request, NULL);
   if (rv != PP_OK)
     return ReportError("Trusted cross-origin request failed", rv);
 
+  PASS();
+}
+
+// CORB (Cross-Origin Read Blocking) should apply to plugins without universal
+// access.  This test is very similar to TestUntrustedSameOriginRestriction, but
+// explicitly uses a CORB-eligible response (test/json + nosniff).
+std::string TestURLLoader::TestUntrustedCorbEligibleRequest() {
+  // It is important to use a CORB-eligible response here: text/json + nosniff.
+  std::string cross_origin_url =
+      GetReachableCrossOriginURL("corb_eligible_resource.json");
+
+  pp::URLRequestInfo request(instance_);
+  request.SetURL(cross_origin_url);
+  request.SetAllowCrossOriginRequests(true);
+
+  std::string response_body;
+  int32_t rv = OpenUntrusted(request, &response_body);
+
+  // Main verification - the response should be blocked.  Ideally the blocking
+  // should be done before the data leaves the browser and/or network-service
+  // process (the test doesn't verify this though).
+  if (rv != PP_ERROR_NOACCESS) {
+    return ReportError("Untrusted Javascript URL request restriction failed",
+                       rv);
+  }
+  ASSERT_EQ("", response_body);
+  PASS();
+}
+
+// CORB (Cross-Origin Read Blocking) shouldn't apply to plugins with universal
+// access (see PepperURLLoaderHost::has_universal_access_) - such plugins may
+// have their own CORS-like mechanisms - e.g. crossdomain.xml in Flash).
+// This test is quite similar to TestTrustedSameOriginRestriction, but it
+// explicitly uses a CORB-eligible response (test/json + nosniff) and also
+// explicitly verifies that the response body was not blocked.
+std::string TestURLLoader::TestTrustedCorbEligibleRequest() {
+  // It is important to use a CORB-eligible response here: text/json + nosniff.
+  std::string cross_origin_url =
+      GetReachableCrossOriginURL("corb_eligible_resource.json");
+
+  pp::URLRequestInfo request(instance_);
+  request.SetURL(cross_origin_url);
+  request.SetAllowCrossOriginRequests(true);
+
+  std::string response_body;
+  int32_t rv = OpenTrusted(request, &response_body);
+  if (rv != PP_OK)
+    return ReportError("Trusted CORB-eligible request failed", rv);
+
+  // Main verification - if CORB blocked the response, then |response_body|
+  // would be empty.
+  ASSERT_EQ("{ \"foo\": \"bar\" }\n", response_body);
   PASS();
 }
 
@@ -540,7 +619,7 @@ std::string TestURLLoader::TestUntrustedJavascriptURLRestriction() {
   pp::URLRequestInfo request(instance_);
   request.SetURL("javascript:foo = bar");
 
-  int32_t rv = OpenUntrusted(request);
+  int32_t rv = OpenUntrusted(request, NULL);
   if (rv != PP_ERROR_NOACCESS)
     return ReportError(
         "Untrusted Javascript URL request restriction failed", rv);
@@ -553,7 +632,7 @@ std::string TestURLLoader::TestTrustedJavascriptURLRestriction() {
   pp::URLRequestInfo request(instance_);
   request.SetURL("javascript:foo = bar");
 
-  int32_t rv = OpenTrusted(request);
+  int32_t rv = OpenTrusted(request, NULL);
   if (rv == PP_ERROR_NOACCESS)
   return ReportError(
       "Trusted Javascript URL request", rv);
@@ -604,7 +683,7 @@ std::string TestURLLoader::TestUntrustedHttpRequests() {
     pp::URLRequestInfo request(instance_);
     request.SetCustomReferrerURL("http://www.google.com/");
 
-    int32_t rv = OpenUntrusted(request);
+    int32_t rv = OpenUntrusted(request, NULL);
     if (rv != PP_ERROR_NOACCESS)
       return ReportError(
           "Untrusted request with custom referrer restriction", rv);
@@ -614,7 +693,7 @@ std::string TestURLLoader::TestUntrustedHttpRequests() {
     pp::URLRequestInfo request(instance_);
     request.SetCustomContentTransferEncoding("foo");
 
-    int32_t rv = OpenUntrusted(request);
+    int32_t rv = OpenUntrusted(request, NULL);
     if (rv != PP_ERROR_NOACCESS)
       return ReportError(
           "Untrusted request with content-transfer-encoding restriction", rv);
@@ -660,7 +739,7 @@ std::string TestURLLoader::TestTrustedHttpRequests() {
     pp::URLRequestInfo request(instance_);
     request.SetCustomReferrerURL("http://www.google.com/");
 
-    int32_t rv = OpenTrusted(request);
+    int32_t rv = OpenTrusted(request, NULL);
     if (rv != PP_OK)
       return ReportError("Trusted request with custom referrer", rv);
   }
@@ -669,7 +748,7 @@ std::string TestURLLoader::TestTrustedHttpRequests() {
     pp::URLRequestInfo request(instance_);
     request.SetCustomContentTransferEncoding("foo");
 
-    int32_t rv = OpenTrusted(request);
+    int32_t rv = OpenTrusted(request, NULL);
     if (rv != PP_OK)
       return ReportError(
           "Trusted request with content-transfer-encoding failed", rv);
@@ -824,7 +903,7 @@ int32_t TestURLLoader::OpenWithPrefetchBufferThreshold(int32_t lower,
   request.SetPrefetchBufferLowerThreshold(lower);
   request.SetPrefetchBufferUpperThreshold(upper);
 
-  return OpenUntrusted(request);
+  return OpenUntrusted(request, NULL);
 }
 
 std::string TestURLLoader::TestPrefetchBufferThreshold() {

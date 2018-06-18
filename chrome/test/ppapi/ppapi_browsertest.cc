@@ -420,6 +420,7 @@ TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
   RunTestViaHTTP( \
       LIST_TEST(URLLoader_UntrustedSameOriginRestriction) \
       LIST_TEST(URLLoader_UntrustedCrossOriginRequest) \
+      LIST_TEST(URLLoader_UntrustedCorbEligibleRequest) \
       LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction) \
       LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction) \
   )
@@ -428,6 +429,7 @@ TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
   RunTestViaHTTP( \
       LIST_TEST(URLLoader_UntrustedSameOriginRestriction) \
       LIST_TEST(URLLoader_UntrustedCrossOriginRequest) \
+      LIST_TEST(URLLoader_UntrustedCorbEligibleRequest) \
       LIST_TEST(URLLoader_UntrustedJavascriptURLRestriction) \
       LIST_TEST(DISABLED_URLLoader_TrustedJavascriptURLRestriction) \
   )
@@ -449,6 +451,7 @@ TEST_PPAPI_NACL(HostResolverPrivate_ResolveIPv4)
   RunTestViaHTTP( \
       LIST_TEST(URLLoader_TrustedSameOriginRestriction) \
       LIST_TEST(URLLoader_TrustedCrossOriginRequest) \
+      LIST_TEST(URLLoader_TrustedCorbEligibleRequest) \
       LIST_TEST(URLLoader_TrustedHttpRequests) \
       LIST_TEST(URLLoader_XRequestedWithHeader) \
   )

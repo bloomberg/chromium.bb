@@ -149,7 +149,11 @@ test_common_source_files = [
 copy("copy_test_files") {
   visibility = [ ":*" ]
   sources = [
-    # Keep "test_case.html.mock-http-headers" with "test_case.html".
+    # Keep "test_case.html.mock-http-headers" with "test_case.html"
+    # and "corb_eligible_resource.json.mock-http-headers" with
+    # "corb_eligible_resource.json".
+    "tests/corb_eligible_resource.json",
+    "tests/corb_eligible_resource.json.mock-http-headers",
     "tests/test_case.html",
     "tests/test_case.html.mock-http-headers",
     "tests/test_page.css",

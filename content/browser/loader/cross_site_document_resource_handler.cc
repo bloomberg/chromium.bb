@@ -578,6 +578,11 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   // header.  Other plugin requests (e.g., NaCl) are made using CORS and have an
   // Origin request header.  If they fail the CORS check above, they should be
   // blocked.
+  // TODO(lukasza): Only disable CORB for plugins with universal access (see
+  // PepperURLLoaderHost::has_universal_access_), because only such plugins may
+  // have their own CORS-like mechanisms - e.g. crossdomain.xml in Flash).  We
+  // should still enforce CORB for other kinds of plugins (i.e. ones without
+  // universal access).
   if (info->GetResourceType() == RESOURCE_TYPE_PLUGIN_RESOURCE &&
       is_nocors_plugin_request_) {
     return false;
