@@ -28,6 +28,7 @@
 #include "base/time/time.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/previews/content/previews_ui_service.h"
+#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_black_list_delegate.h"
 #include "components/previews/core/previews_black_list_item.h"
@@ -86,7 +87,8 @@ class TestPreviewsBlackList : public PreviewsBlackList {
                         PreviewsBlacklistDelegate* blacklist_delegate)
       : PreviewsBlackList(nullptr,
                           base::DefaultClock::GetInstance(),
-                          blacklist_delegate),
+                          blacklist_delegate,
+                          {}),
         status_(status) {}
   ~TestPreviewsBlackList() override {}
 
@@ -145,13 +147,15 @@ class TestPreviewsUIService : public PreviewsUIService {
       std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
       std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
       const PreviewsIsEnabledCallback& is_enabled_callback,
-      std::unique_ptr<PreviewsLogger> logger)
+      std::unique_ptr<PreviewsLogger> logger,
+      BlacklistData::AllowedTypesAndVersions allowed_types)
       : PreviewsUIService(previews_io_data,
                           io_task_runner,
                           std::move(previews_opt_out_store),
                           std::move(previews_opt_guide),
                           is_enabled_callback,
-                          std::move(logger)),
+                          std::move(logger),
+                          std::move(allowed_types)),
         user_blacklisted_(false),
         blacklist_ignored_(false) {}
 
@@ -285,21 +289,20 @@ class TestPreviewsIOData : public PreviewsIOData {
  private:
   // Set |initialized_| to true and use base class functionality.
   void InitializeOnIOThread(
-      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store) override {
+      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+      BlacklistData::AllowedTypesAndVersions allowed_previews) override {
     initialized_ = true;
-    PreviewsIOData::InitializeOnIOThread(std::move(previews_opt_out_store));
+    PreviewsIOData::InitializeOnIOThread(std::move(previews_opt_out_store),
+                                         std::move(allowed_previews));
   }
 
   // Whether Initialize was called.
   bool initialized_;
 };
 
-void RunLoadCallback(
-    LoadBlackListCallback callback,
-    std::unique_ptr<BlackListItemMap> black_list_item_map,
-    std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item) {
-  callback.Run(std::move(black_list_item_map),
-               std::move(host_indifferent_black_list_item));
+void RunLoadCallback(LoadBlackListCallback callback,
+                     std::unique_ptr<BlacklistData> data) {
+  std::move(callback).Run(std::move(data));
 }
 
 class TestPreviewsOptOutStore : public PreviewsOptOutStore {
@@ -309,20 +312,16 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
 
  private:
   // PreviewsOptOutStore implementation:
-  void AddPreviewNavigation(bool opt_out,
-                            const std::string& host_name,
-                            PreviewsType type,
-                            base::Time now) override {}
+  void AddEntry(bool opt_out,
+                const std::string& host_name,
+                int type,
+                base::Time now) override {}
 
-  void LoadBlackList(LoadBlackListCallback callback) override {
-    std::unique_ptr<BlackListItemMap> black_list_item_map(
-        new BlackListItemMap());
-    std::unique_ptr<PreviewsBlackListItem> host_indifferent_black_list_item =
-        PreviewsBlackList::CreateHostIndifferentBlackListItem();
+  void LoadBlackList(std::unique_ptr<BlacklistData> data,
+                     LoadBlackListCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&RunLoadCallback, callback,
-                                  std::move(black_list_item_map),
-                                  std::move(host_indifferent_black_list_item)));
+        FROM_HERE,
+        base::BindOnce(&RunLoadCallback, std::move(callback), std::move(data)));
   }
 
   void ClearBlackList(base::Time begin_time, base::Time end_time) override {}
@@ -358,6 +357,12 @@ class PreviewsIODataTest : public testing::Test {
   }
 
   void InitializeUIServiceWithoutWaitingForBlackList() {
+    BlacklistData::AllowedTypesAndVersions allowed_types;
+    allowed_types[static_cast<int>(PreviewsType::OFFLINE)] = 0;
+    allowed_types[static_cast<int>(PreviewsType::LOFI)] = 0;
+    allowed_types[static_cast<int>(PreviewsType::LITE_PAGE)] = 0;
+    allowed_types[static_cast<int>(PreviewsType::NOSCRIPT)] = 0;
+    allowed_types[static_cast<int>(PreviewsType::AMP_REDIRECTION)] = 0;
     ui_service_.reset(new TestPreviewsUIService(
         io_data_.get(), scoped_task_environment_.GetMainThreadTaskRunner(),
         std::make_unique<TestPreviewsOptOutStore>(),
@@ -365,7 +370,7 @@ class PreviewsIODataTest : public testing::Test {
             &optimization_guide_service_,
             scoped_task_environment_.GetMainThreadTaskRunner()),
         base::Bind(&IsPreviewFieldTrialEnabled),
-        std::make_unique<PreviewsLogger>()));
+        std::make_unique<PreviewsLogger>(), std::move(allowed_types)));
   }
 
   void InitializeUIService() {

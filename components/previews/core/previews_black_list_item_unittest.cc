@@ -36,10 +36,10 @@ TEST_F(PreviewsBlackListItemTest, BlackListState) {
   EXPECT_FALSE(black_list_item.IsBlackListed(later));
 
   EXPECT_FALSE(black_list_item.most_recent_opt_out_time());
-  black_list_item.AddPreviewNavigation(false, now);
+  black_list_item.AddEntry(false, now);
   EXPECT_FALSE(black_list_item.most_recent_opt_out_time());
 
-  black_list_item.AddPreviewNavigation(true, now);
+  black_list_item.AddEntry(true, now);
   EXPECT_TRUE(black_list_item.most_recent_opt_out_time());
   EXPECT_EQ(now, black_list_item.most_recent_opt_out_time().value());
   // Black list item of size less that |threshold| should report that the host
@@ -47,42 +47,33 @@ TEST_F(PreviewsBlackListItemTest, BlackListState) {
   EXPECT_FALSE(black_list_item.IsBlackListed(now));
   EXPECT_FALSE(black_list_item.IsBlackListed(later));
 
-  black_list_item.AddPreviewNavigation(true, now + delay_between_entries);
+  black_list_item.AddEntry(true, now + delay_between_entries);
   // Black list item with |threshold| fresh entries should report the host as
   // disallowed.
   EXPECT_TRUE(black_list_item.IsBlackListed(now));
   // Black list item with only entries from longer than |duration| ago should
   // report the host is allowed.
   EXPECT_FALSE(black_list_item.IsBlackListed(later));
-  black_list_item.AddPreviewNavigation(true,
-                                       later - (delay_between_entries * 2));
+  black_list_item.AddEntry(true, later - (delay_between_entries * 2));
   // Black list item with a fresh opt out and total number of opt outs larger
   // than |threshold| should report the host is disallowed.
   EXPECT_TRUE(black_list_item.IsBlackListed(later));
 
   // The black list item should maintain entries based on time, so adding
   // |history| entries should not push out newer entries.
-  black_list_item.AddPreviewNavigation(true, later - delay_between_entries * 2);
-  black_list_item.AddPreviewNavigation(false,
-                                       later - delay_between_entries * 3);
-  black_list_item.AddPreviewNavigation(false,
-                                       later - delay_between_entries * 3);
-  black_list_item.AddPreviewNavigation(false,
-                                       later - delay_between_entries * 3);
-  black_list_item.AddPreviewNavigation(false,
-                                       later - delay_between_entries * 3);
+  black_list_item.AddEntry(true, later - delay_between_entries * 2);
+  black_list_item.AddEntry(false, later - delay_between_entries * 3);
+  black_list_item.AddEntry(false, later - delay_between_entries * 3);
+  black_list_item.AddEntry(false, later - delay_between_entries * 3);
+  black_list_item.AddEntry(false, later - delay_between_entries * 3);
   EXPECT_TRUE(black_list_item.IsBlackListed(later));
 
   // The black list item should maintain entries based on time, so adding
   // |history| newer entries should push out older entries.
-  black_list_item.AddPreviewNavigation(false,
-                                       later - delay_between_entries * 1);
-  black_list_item.AddPreviewNavigation(false,
-                                       later - delay_between_entries * 1);
-  black_list_item.AddPreviewNavigation(false,
-                                       later - delay_between_entries * 1);
-  black_list_item.AddPreviewNavigation(false,
-                                       later - delay_between_entries * 1);
+  black_list_item.AddEntry(false, later - delay_between_entries * 1);
+  black_list_item.AddEntry(false, later - delay_between_entries * 1);
+  black_list_item.AddEntry(false, later - delay_between_entries * 1);
+  black_list_item.AddEntry(false, later - delay_between_entries * 1);
   EXPECT_FALSE(black_list_item.IsBlackListed(later));
 }
 

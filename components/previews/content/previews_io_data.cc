@@ -103,7 +103,8 @@ void PreviewsIOData::Initialize(
     base::WeakPtr<PreviewsUIService> previews_ui_service,
     std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
     std::unique_ptr<PreviewsOptimizationGuide> previews_opt_guide,
-    const PreviewsIsEnabledCallback& is_enabled_callback) {
+    const PreviewsIsEnabledCallback& is_enabled_callback,
+    BlacklistData::AllowedTypesAndVersions allowed_previews) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   is_enabled_callback_ = is_enabled_callback;
   previews_ui_service_ = previews_ui_service;
@@ -111,9 +112,10 @@ void PreviewsIOData::Initialize(
 
   // Set up the IO thread portion of |this|.
   io_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&PreviewsIOData::InitializeOnIOThread,
-                                base::Unretained(this),
-                                std::move(previews_opt_out_store)));
+      FROM_HERE,
+      base::BindOnce(&PreviewsIOData::InitializeOnIOThread,
+                     base::Unretained(this), std::move(previews_opt_out_store),
+                     std::move(allowed_previews)));
 }
 
 void PreviewsIOData::OnNewBlacklistedHost(const std::string& host,
@@ -139,11 +141,12 @@ void PreviewsIOData::OnBlacklistCleared(base::Time time) {
 }
 
 void PreviewsIOData::InitializeOnIOThread(
-    std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store) {
+    std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store,
+    BlacklistData::AllowedTypesAndVersions allowed_previews) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  previews_black_list_.reset(
-      new PreviewsBlackList(std::move(previews_opt_out_store),
-                            base::DefaultClock::GetInstance(), this));
+  previews_black_list_.reset(new PreviewsBlackList(
+      std::move(previews_opt_out_store), base::DefaultClock::GetInstance(),
+      this, std::move(allowed_previews)));
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PreviewsUIService::SetIOData, previews_ui_service_,
                             weak_factory_.GetWeakPtr()));

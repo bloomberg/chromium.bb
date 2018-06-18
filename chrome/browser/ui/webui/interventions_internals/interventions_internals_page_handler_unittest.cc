@@ -31,6 +31,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/content/previews_ui_service.h"
+#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_logger_observer.h"
@@ -220,7 +221,8 @@ class TestPreviewsIOData : public previews::PreviewsIOData {
       base::WeakPtr<previews::PreviewsUIService> previews_ui_service,
       std::unique_ptr<previews::PreviewsOptOutStore> opt_out_store,
       std::unique_ptr<previews::PreviewsOptimizationGuide> previews_opt_guide,
-      const previews::PreviewsIsEnabledCallback& is_enabled_callback) override {
+      const previews::PreviewsIsEnabledCallback& is_enabled_callback,
+      previews::BlacklistData::AllowedTypesAndVersions allowed_types) override {
     // Do nothing.
   }
 };
@@ -235,7 +237,8 @@ class TestPreviewsUIService : public previews::PreviewsUIService {
                           nullptr, /* previews_opt_out_store */
                           nullptr, /* previews_opt_guide */
                           base::Bind(&MockedPreviewsIsEnabled),
-                          std::move(logger)),
+                          std::move(logger),
+                          previews::BlacklistData::AllowedTypesAndVersions()),
         blacklist_ignored_(false) {}
   ~TestPreviewsUIService() override {}
 

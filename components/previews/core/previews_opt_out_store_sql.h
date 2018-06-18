@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_opt_out_store.h"
 
 namespace base {
@@ -36,17 +35,17 @@ class PreviewsOptOutStoreSQL : public PreviewsOptOutStore {
   PreviewsOptOutStoreSQL(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner,
-      const base::FilePath& database_dir,
-      std::unique_ptr<PreviewsTypeList> enabled_previews);
+      const base::FilePath& database_dir);
   ~PreviewsOptOutStoreSQL() override;
 
   // PreviewsOptOutStore implementation:
-  void AddPreviewNavigation(bool opt_out,
-                            const std::string& host_name,
-                            PreviewsType type,
-                            base::Time now) override;
+  void AddEntry(bool opt_out,
+                const std::string& host_name,
+                int type,
+                base::Time now) override;
   void ClearBlackList(base::Time begin_time, base::Time end_time) override;
-  void LoadBlackList(LoadBlackListCallback callback) override;
+  void LoadBlackList(std::unique_ptr<BlacklistData> blacklist_data,
+                     LoadBlackListCallback callback) override;
 
  private:
   // Thread this object is accessed on.
@@ -60,9 +59,6 @@ class PreviewsOptOutStoreSQL : public PreviewsOptOutStore {
 
   // SQL connection to the SQLite database.
   std::unique_ptr<sql::Connection> db_;
-
-  // All enabled previews and versions.
-  const std::unique_ptr<PreviewsTypeList> enabled_previews_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsOptOutStoreSQL);
 };

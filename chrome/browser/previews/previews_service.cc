@@ -15,6 +15,7 @@
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/content/previews_ui_service.h"
+#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
 #include "components/previews/core/previews_opt_out_store.h"
@@ -75,16 +76,15 @@ int GetPreviewsTypeVersion(previews::PreviewsType type) {
 }
 
 // Returns the enabled PreviewsTypes with their version.
-std::unique_ptr<previews::PreviewsTypeList> GetEnabledPreviews() {
-  std::unique_ptr<previews::PreviewsTypeList> enabled_previews(
-      new previews::PreviewsTypeList());
+previews::BlacklistData::AllowedTypesAndVersions GetAllowedPreviews() {
+  previews::BlacklistData::AllowedTypesAndVersions enabled_previews;
 
   // Loop across all previews types (relies on sequential enum values).
   for (int i = static_cast<int>(previews::PreviewsType::NONE) + 1;
        i < static_cast<int>(previews::PreviewsType::LAST); ++i) {
     previews::PreviewsType type = static_cast<previews::PreviewsType>(i);
     if (IsPreviewsTypeEnabled(type))
-      enabled_previews->push_back({type, GetPreviewsTypeVersion(type)});
+      enabled_previews.insert({i, GetPreviewsTypeVersion(type)});
   }
   return enabled_previews;
 }
@@ -115,12 +115,11 @@ void PreviewsService::Initialize(
       previews_io_data, io_task_runner,
       std::make_unique<previews::PreviewsOptOutStoreSQL>(
           io_task_runner, background_task_runner,
-          profile_path.Append(chrome::kPreviewsOptOutDBFilename),
-          GetEnabledPreviews()),
+          profile_path.Append(chrome::kPreviewsOptOutDBFilename)),
       optimization_guide_service
           ? std::make_unique<previews::PreviewsOptimizationGuide>(
                 optimization_guide_service, io_task_runner)
           : nullptr,
       base::Bind(&IsPreviewsTypeEnabled),
-      std::make_unique<previews::PreviewsLogger>());
+      std::make_unique<previews::PreviewsLogger>(), GetAllowedPreviews());
 }

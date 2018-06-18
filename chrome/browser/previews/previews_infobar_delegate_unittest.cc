@@ -44,6 +44,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/previews/content/previews_io_data.h"
 #include "components/previews/content/previews_ui_service.h"
+#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_logger.h"
@@ -201,7 +202,8 @@ class PreviewsInfoBarDelegateUnitTest
     previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(
         previews_io_data_.get(), base::MessageLoopCurrent::Get()->task_runner(),
         nullptr /* previews_opt_out_store */, nullptr /* previews_opt_guide */,
-        base::Bind(&IsPreviewsEnabled), std::move(previews_logger));
+        base::BindRepeating(&IsPreviewsEnabled), std::move(previews_logger),
+        previews::BlacklistData::AllowedTypesAndVersions());
     base::RunLoop().RunUntilIdle();
   }
 

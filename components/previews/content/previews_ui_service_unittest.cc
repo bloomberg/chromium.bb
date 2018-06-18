@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/previews/content/previews_io_data.h"
+#include "components/previews/core/blacklist_data.h"
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
@@ -33,7 +34,8 @@ class TestPreviewsUIService : public PreviewsUIService {
                           std::move(previews_opt_out_store),
                           std::move(previews_opt_guide),
                           PreviewsIsEnabledCallback(),
-                          std::move(logger)),
+                          std::move(logger),
+                          BlacklistData::AllowedTypesAndVersions()),
         io_data_set_(false) {}
   ~TestPreviewsUIService() override {}
 
