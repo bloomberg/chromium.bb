@@ -167,13 +167,6 @@ void LayoutSVGContainer::Paint(const PaintInfo& paint_info,
   SVGContainerPainter(*this).Paint(paint_info);
 }
 
-void LayoutSVGContainer::AddOutlineRects(
-    Vector<LayoutRect>& rects,
-    const LayoutPoint&,
-    IncludeBlockVisualOverflowOrNot) const {
-  rects.push_back(LayoutRect(VisualRectInLocalSVGCoordinates()));
-}
-
 void LayoutSVGContainer::UpdateCachedBoundaries() {
   SVGLayoutSupport::ComputeContainerBoundingBoxes(
       this, object_bounding_box_, object_bounding_box_valid_,

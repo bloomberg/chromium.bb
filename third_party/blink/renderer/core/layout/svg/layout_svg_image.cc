@@ -196,12 +196,4 @@ void LayoutSVGImage::ImageChanged(WrappedImagePtr,
   SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kImage);
 }
 
-void LayoutSVGImage::AddOutlineRects(Vector<LayoutRect>& rects,
-                                     const LayoutPoint&,
-                                     IncludeBlockVisualOverflowOrNot) const {
-  // this is called from paint() after the localTransform has already been
-  // applied
-  rects.push_back(LayoutRect(VisualRectInLocalSVGCoordinates()));
-}
-
 }  // namespace blink

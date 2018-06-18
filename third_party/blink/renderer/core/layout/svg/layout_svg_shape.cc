@@ -347,14 +347,6 @@ void LayoutSVGShape::Paint(const PaintInfo& paint_info,
   SVGShapePainter(*this).Paint(paint_info);
 }
 
-// This method is called from inside paintOutline() since we call paintOutline()
-// while transformed to our coord system, return local coords
-void LayoutSVGShape::AddOutlineRects(Vector<LayoutRect>& rects,
-                                     const LayoutPoint&,
-                                     IncludeBlockVisualOverflowOrNot) const {
-  rects.push_back(LayoutRect(VisualRectInLocalSVGCoordinates()));
-}
-
 bool LayoutSVGShape::NodeAtFloatPoint(HitTestResult& result,
                                       const FloatPoint& point_in_parent,
                                       HitTestAction hit_test_action) {

@@ -156,9 +156,6 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   }
   void UpdateLayout() final;
   void Paint(const PaintInfo&, const LayoutPoint&) const final;
-  void AddOutlineRects(Vector<LayoutRect>&,
-                       const LayoutPoint& additional_offset,
-                       IncludeBlockVisualOverflowOrNot) const final;
 
   bool NodeAtFloatPoint(HitTestResult&,
                         const FloatPoint& point_in_parent,
