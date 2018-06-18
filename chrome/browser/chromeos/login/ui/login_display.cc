@@ -8,7 +8,7 @@ namespace chromeos {
 
 LoginDisplay::Delegate::~Delegate() = default;
 
-LoginDisplay::LoginDisplay(Delegate* delegate) : delegate_(delegate) {}
+LoginDisplay::LoginDisplay() = default;
 
 LoginDisplay::~LoginDisplay() = default;
 
