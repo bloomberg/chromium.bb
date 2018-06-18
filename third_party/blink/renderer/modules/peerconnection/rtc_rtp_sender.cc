@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
+
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -12,6 +13,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_script_promise_resolver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 
 namespace blink {
@@ -32,7 +34,12 @@ class ReplaceTrackRequest : public RTCVoidRequest {
   }
 
   void RequestFailed(const webrtc::RTCError& error) override {
-    resolver_->Reject(CreateDOMExceptionFromRTCError(error));
+    ScriptState::Scope scope(resolver_->GetScriptState());
+    ExceptionState exception_state(resolver_->GetScriptState()->GetIsolate(),
+                                   ExceptionState::kExecutionContext,
+                                   "RTCRtpSender", "replaceTrack");
+    ThrowExceptionFromRTCError(error, exception_state);
+    resolver_->Reject(exception_state);
   }
 
   void Trace(blink::Visitor* visitor) override {
@@ -51,7 +58,10 @@ class ReplaceTrackRequest : public RTCVoidRequest {
 class SetParametersRequest : public RTCVoidRequestScriptPromiseResolverImpl {
  public:
   SetParametersRequest(ScriptPromiseResolver* resolver, RTCRtpSender* sender)
-      : RTCVoidRequestScriptPromiseResolverImpl(resolver), sender_(sender) {}
+      : RTCVoidRequestScriptPromiseResolverImpl(resolver,
+                                                "RTCRtpSender",
+                                                "setParameters"),
+        sender_(sender) {}
 
   void RequestSucceeded() override {
     sender_->ClearLastReturnedParameters();

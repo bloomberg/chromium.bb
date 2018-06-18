@@ -11,8 +11,11 @@
 namespace blink {
 
 class DOMException;
+class ExceptionState;
 
 DOMException* CreateDOMExceptionFromRTCError(const webrtc::RTCError&);
+
+void ThrowExceptionFromRTCError(const webrtc::RTCError&, ExceptionState&);
 
 }  // namespace blink
 

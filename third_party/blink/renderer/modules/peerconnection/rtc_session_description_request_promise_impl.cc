@@ -14,16 +14,23 @@
 namespace blink {
 
 RTCSessionDescriptionRequestPromiseImpl*
-RTCSessionDescriptionRequestPromiseImpl::Create(
-    RTCPeerConnection* requester,
-    ScriptPromiseResolver* resolver) {
-  return new RTCSessionDescriptionRequestPromiseImpl(requester, resolver);
+RTCSessionDescriptionRequestPromiseImpl::Create(RTCPeerConnection* requester,
+                                                ScriptPromiseResolver* resolver,
+                                                const char* interface_name,
+                                                const char* property_name) {
+  return new RTCSessionDescriptionRequestPromiseImpl(
+      requester, resolver, interface_name, property_name);
 }
 
 RTCSessionDescriptionRequestPromiseImpl::
     RTCSessionDescriptionRequestPromiseImpl(RTCPeerConnection* requester,
-                                            ScriptPromiseResolver* resolver)
-    : requester_(requester), resolver_(resolver) {
+                                            ScriptPromiseResolver* resolver,
+                                            const char* interface_name,
+                                            const char* property_name)
+    : requester_(requester),
+      resolver_(resolver),
+      interface_name_(interface_name),
+      property_name_(property_name) {
   DCHECK(requester_);
   DCHECK(resolver_);
 }
@@ -49,7 +56,12 @@ void RTCSessionDescriptionRequestPromiseImpl::RequestSucceeded(
 void RTCSessionDescriptionRequestPromiseImpl::RequestFailed(
     const webrtc::RTCError& error) {
   if (requester_ && requester_->ShouldFireDefaultCallbacks()) {
-    resolver_->Reject(CreateDOMExceptionFromRTCError(error));
+    ScriptState::Scope scope(resolver_->GetScriptState());
+    ExceptionState exception_state(resolver_->GetScriptState()->GetIsolate(),
+                                   ExceptionState::kExecutionContext,
+                                   interface_name_, property_name_);
+    ThrowExceptionFromRTCError(error, exception_state);
+    resolver_->Reject(exception_state);
   } else {
     // This is needed to have the resolver release its internal resources
     // while leaving the associated promise pending as specified.

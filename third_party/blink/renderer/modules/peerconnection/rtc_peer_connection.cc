@@ -623,7 +623,8 @@ ScriptPromise RTCPeerConnection::createOffer(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCSessionDescriptionRequest* request =
-      RTCSessionDescriptionRequestPromiseImpl::Create(this, resolver);
+      RTCSessionDescriptionRequestPromiseImpl::Create(
+          this, resolver, "RTCPeerConnection", "createOffer");
   if (options.hasOfferToReceiveAudio() || options.hasOfferToReceiveVideo()) {
     ExecutionContext* context = ExecutionContext::From(script_state);
     UseCounter::Count(
@@ -708,7 +709,8 @@ ScriptPromise RTCPeerConnection::createAnswer(ScriptState* script_state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   RTCSessionDescriptionRequest* request =
-      RTCSessionDescriptionRequestPromiseImpl::Create(this, resolver);
+      RTCSessionDescriptionRequestPromiseImpl::Create(
+          this, resolver, "RTCPeerConnection", "createAnswer");
   peer_handler_->CreateAnswer(request, ConvertToWebRTCAnswerOptions(options));
   return promise;
 }
@@ -808,7 +810,8 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
   }
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(this, resolver);
+  RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
+      this, resolver, "RTCPeerConnection", "setLocalDescription");
   peer_handler_->SetLocalDescription(
       request, WebRTCSessionDescription(session_description_init.type(), sdp));
   return promise;
@@ -875,7 +878,8 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(this, resolver);
+  RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
+      this, resolver, "RTCPeerConnection", "setRemoteDescription");
   peer_handler_->SetRemoteDescription(
       request, WebRTCSessionDescription(session_description_init.type(),
                                         session_description_init.sdp()));
@@ -1107,7 +1111,8 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
-  RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(this, resolver);
+  RTCVoidRequest* request = RTCVoidRequestPromiseImpl::Create(
+      this, resolver, "RTCPeerConnection", "addIceCandidate");
   scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
       ExecutionContext::From(script_state), candidate);
   bool implemented =
