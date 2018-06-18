@@ -5,6 +5,7 @@
 module memory_instrumentation.mojom;
 
 import "mojo/public/mojom/base/process_id.mojom";
+import "mojo/public/mojom/base/time.mojom";
 
 // Common structs:
 
@@ -189,6 +190,10 @@ struct ProcessMemoryDump {
 // This struct is returned by the public-facing API
 // Coordinator::RequestGlobalMemoryDump().
 struct GlobalMemoryDump {
+  // This time stamp precedes any of the data captured in |process_dumps|. Since
+  // dumps are queued, and since at most one dump is captured at a time, the
+  // start time of a global dump may lag the request time substantially.
+  mojo_base.mojom.TimeTicks start_time;
   array<ProcessMemoryDump> process_dumps;
 };
 
