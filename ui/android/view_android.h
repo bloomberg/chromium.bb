@@ -179,6 +179,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
   ViewAndroid* parent() const { return parent_; }
 
  protected:
+  void RemoveAllChildren(bool attached_to_window);
+
   ViewAndroid* parent_;
 
  private:
@@ -204,7 +206,6 @@ class UI_ANDROID_EXPORT ViewAndroid {
   bool ScrollTo(float x, float y);
 
   void RemoveChild(ViewAndroid* child);
-  void RemoveAllChildren();
 
   void OnAttachedToWindow();
   void OnDetachedFromWindow();

@@ -88,7 +88,7 @@ ViewAndroid::ViewAndroid(LayoutType layout_type)
 ViewAndroid::ViewAndroid() : ViewAndroid(LayoutType::NORMAL) {}
 
 ViewAndroid::~ViewAndroid() {
-  RemoveAllChildren();
+  RemoveAllChildren(GetWindowAndroid() != nullptr);
   observer_list_.Clear();
   RemoveFromParent();
 }
@@ -252,11 +252,10 @@ gfx::PointF ViewAndroid::GetLocationOnScreen(float x, float y) {
   return gfx::PointF(x + loc_x, y + loc_y);
 }
 
-void ViewAndroid::RemoveAllChildren() {
-  bool has_window = GetWindowAndroid();
+void ViewAndroid::RemoveAllChildren(bool attached_to_window) {
   auto it = children_.begin();
   while (it != children_.end()) {
-    if (has_window)
+    if (attached_to_window)
       (*it)->OnDetachedFromWindow();
     (*it)->parent_ = nullptr;
     // erase returns a new iterator for the element following the ereased one.
