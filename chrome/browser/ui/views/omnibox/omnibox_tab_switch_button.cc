@@ -14,6 +14,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -34,7 +35,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
   SetImage(STATE_NORMAL,
            gfx::CreateVectorIcon(omnibox::kSwitchIcon,
                                  GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                                 SK_ColorBLACK));
+                                 gfx::kChromeIconGrey));
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   if (!calculated_widths_) {
     icon_only_width_ = MdTextButton::CalculatePreferredSize().width();
