@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
+#include "chrome/browser/resource_coordinator/tab_helper.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/test_lifecycle_unit.h"
@@ -247,6 +248,8 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
     EXPECT_EQ(LifecycleUnitState::DISCARDED, lifecycle_unit->GetState());
   }
 
+  void DiscardAndAttachTabHelpers(LifecycleUnit* lifecycle_unit) {}
+
   void DetachWebContentsTest(DiscardReason reason) {
     LifecycleUnit* first_lifecycle_unit = nullptr;
     LifecycleUnit* second_lifecycle_unit = nullptr;
@@ -454,6 +457,9 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<content::WebContents> CreateAndNavigateWebContents() {
     std::unique_ptr<content::WebContents> web_contents =
         CreateTestWebContents();
+    // Attach the RC tab helper. In production code the browser
+    // WebContentsDelegate takes care of this.
+    ResourceCoordinatorTabHelper::CreateForWebContents(web_contents.get());
     // Commit an URL to allow discarding.
     content::WebContentsTester::For(web_contents.get())
         ->NavigateAndCommit(GURL("https://www.example.com"));
@@ -649,6 +655,8 @@ TEST_F(TabLifecycleUnitSourceTest, CannotFreezeADiscardedTab) {
   background_lifecycle_unit->Discard(DiscardReason::kUrgent);
 
   testing::Mock::VerifyAndClear(&tab_observer_);
+  TransitionFromPendingDiscardToDiscardedIfNeeded(DiscardReason::kUrgent,
+                                                  background_lifecycle_unit);
   EXPECT_EQ(LifecycleUnitState::DISCARDED,
             background_lifecycle_unit->GetState());
   EXPECT_NE(initial_web_contents, tab_strip_model_->GetWebContentsAt(0));
@@ -707,7 +715,8 @@ TEST_F(TabLifecycleUnitSourceTest, TabProactiveDiscardedByFrozenTimeout) {
   background_lifecycle_unit->Discard(DiscardReason::kProactive);
   EXPECT_EQ(LifecycleUnitState::PENDING_DISCARD,
             background_lifecycle_unit->GetState());
-  task_runner_->FastForwardBy(kProactiveDiscardFreezeTimeout);
+  TransitionFromPendingDiscardToDiscardedIfNeeded(DiscardReason::kProactive,
+                                                  background_lifecycle_unit);
 
   EXPECT_EQ(LifecycleUnitState::DISCARDED,
             background_lifecycle_unit->GetState());

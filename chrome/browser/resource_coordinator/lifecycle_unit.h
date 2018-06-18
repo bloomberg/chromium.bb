@@ -21,6 +21,7 @@
 
 namespace resource_coordinator {
 
+using ::mojom::LifecycleUnitLoadingState;
 using ::mojom::LifecycleUnitState;
 
 class DecisionDetails;
@@ -91,6 +92,9 @@ class LifecycleUnit {
   // base::TimeTicks::Max() if the LifecycleUnit is currently visible.
   virtual base::TimeTicks GetLastVisibleTime() const = 0;
 
+  // Returns the loading state associated with a LifecycleUnit.
+  virtual LifecycleUnitLoadingState GetLoadingState() const = 0;
+
   // Returns the process hosting this LifecycleUnit. Used to distribute OOM
   // scores.
   //
@@ -111,6 +115,10 @@ class LifecycleUnit {
 
   // Returns the current state of this LifecycleUnit.
   virtual LifecycleUnitState GetState() const = 0;
+
+  // Request that the LifecycleUnit be loaded, return true if the request is
+  // successful.
+  virtual bool Load() = 0;
 
   // Request that the LifecycleUnit be frozen, return true if the request is
   // successfully sent.

@@ -16,10 +16,31 @@ table th {
 table th {
   -webkit-padding-end: 16px;
   background: rgb(224, 236, 255);
-  cursor: pointer;
   padding-bottom: 4px;
   padding-top: 4px;
   white-space: nowrap;
+}
+
+table th[data-sort-key] {
+  cursor: pointer;
+}
+
+table th div.header-cell-container {
+  align-items: center;
+  display: flex;
+  justify-content: flex-start;
+  /* Make sure mouse events pass through to the underlying <th>. */
+  pointer-events: none;
+}
+
+table th div.header-cell-container div {
+  /* Make sure mouse events pass through to the underlying <th>. */
+  pointer-events: none;
+}
+
+table th div.header-cell-container div div {
+  /* Make sure mouse events pass through to the underlying <th>. */
+  pointer-events: none;
 }
 
 table td.title-cell {
@@ -51,13 +72,28 @@ table td.tab-url-cell {
   white-space: nowrap;
 }
 
+table td.visibility-cell {
+  width: 6em;
+}
+
+table td.loading-state-cell {
+  width: 6em;
+}
+
+table td.state-cell {
+  width: 10em;
+}
+
 table td.boolean-cell,
-table td.discard-count-cell {
+table td.discard-count-cell,
+table td.reactivation-score-cell,
+table td.site-engagement-score-cell,
+table td.utility-rank-cell {
   text-align: center;
 }
 
 table td div.is-auto-discardable-link,
-table td.discard-links-cell {
+table td.actions-cell {
   font-size: 0.6rem;
 }
 
@@ -65,12 +101,17 @@ table tr:hover {
   background: rgb(255, 255, 187);
 }
 
-th.sort-column::after {
+th div.header-cell-container::after {
   content: '▲';
-  position: absolute;
+  opacity: 0;
 }
 
-th[data-sort-reverse].sort-column::after {
+th.sort-column div.header-cell-container::after {
+  content: '▲';
+  opacity: 1;
+}
+
+th[data-sort-reverse].sort-column div.header-cell-container::after {
   content: '▼';
-  position: absolute;
+  opacity: 1;
 }

@@ -44,6 +44,14 @@ content::Visibility TestLifecycleUnit::GetVisibility() const {
   return content::Visibility::VISIBLE;
 }
 
+::mojom::LifecycleUnitLoadingState TestLifecycleUnit::GetLoadingState() const {
+  return ::mojom::LifecycleUnitLoadingState::LOADED;
+}
+
+bool TestLifecycleUnit::Load() {
+  return false;
+}
+
 bool TestLifecycleUnit::Freeze() {
   return false;
 }

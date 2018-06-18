@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
@@ -22,6 +23,8 @@
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -61,6 +64,21 @@ resource_coordinator::LifecycleUnit* GetLifecycleUnitById(int32_t id) {
   return nullptr;
 }
 
+double GetSiteEngagementScore(content::WebContents* contents) {
+  // Get the active navigation entry. Restored tabs should always have one.
+  auto& controller = contents->GetController();
+  auto* nav_entry =
+      controller.GetEntryAtIndex(controller.GetCurrentEntryIndex());
+  DCHECK(nav_entry);
+
+  auto* engagement_svc = SiteEngagementService::Get(
+      Profile::FromBrowserContext(contents->GetBrowserContext()));
+  double engagement =
+      engagement_svc->GetDetails(nav_entry->GetURL()).total_score;
+
+  return engagement;
+}
+
 class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
  public:
   // This instance is deleted when the supplied pipe is destroyed.
@@ -97,6 +115,7 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       info->title = base::UTF16ToUTF8(lifecycle_unit->GetTitle());
       info->visibility =
           GetLifecycleUnitVisibility(lifecycle_unit->GetVisibility());
+      info->loading_state = lifecycle_unit->GetLoadingState();
       info->state = lifecycle_unit->GetState();
       info->is_media = tab_lifecycle_unit_external->IsMediaTab();
       info->discard_count = tab_lifecycle_unit_external->GetDiscardCount();
@@ -117,6 +136,7 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       info->has_reactivation_score = reactivation_score.has_value();
       if (info->has_reactivation_score)
         info->reactivation_score = reactivation_score.value();
+      info->site_engagement_score = GetSiteEngagementScore(contents);
 
       infos.push_back(std::move(info));
     }
@@ -150,6 +170,12 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
     auto* lifecycle_unit = GetLifecycleUnitById(id);
     if (lifecycle_unit)
       lifecycle_unit->Freeze();
+  }
+
+  void LoadById(int32_t id) override {
+    auto* lifecycle_unit = GetLifecycleUnitById(id);
+    if (lifecycle_unit)
+      lifecycle_unit->Load();
   }
 
   void Discard(bool urgent, DiscardCallback callback) override {

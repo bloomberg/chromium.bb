@@ -193,12 +193,8 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
       // Reload the tab.
       SetState(LifecycleUnitState::ACTIVE,
                StateChangeReason::BROWSER_INITIATED);
-      // See comment in Discard() for an explanation of why "needs reload" is
-      // false when a tab is discarded.
-      // TODO(fdoray): Remove NavigationControllerImpl::needs_reload_ once
-      // session restore is handled by LifecycleManager.
-      GetWebContents()->GetController().SetNeedsReload();
-      GetWebContents()->GetController().LoadIfNecessary();
+      bool loaded = Load();
+      DCHECK(loaded);
       break;
     }
 
@@ -309,6 +305,27 @@ LifecycleUnit::SortKey TabLifecycleUnitSource::TabLifecycleUnit::GetSortKey()
 content::Visibility TabLifecycleUnitSource::TabLifecycleUnit::GetVisibility()
     const {
   return GetWebContents()->GetVisibility();
+}
+
+LifecycleUnitLoadingState
+TabLifecycleUnitSource::TabLifecycleUnit::GetLoadingState() const {
+  return TabLoadTracker::Get()->GetLoadingState(GetWebContents());
+}
+
+bool TabLifecycleUnitSource::TabLifecycleUnit::Load() {
+  if (GetLoadingState() != LifecycleUnitLoadingState::UNLOADED)
+    return false;
+
+  // TODO(chrisha): Make this work more elegantly in the case of background tab
+  // loading as well, which uses a NavigationThrottle that can be released.
+
+  // See comment in Discard() for an explanation of why "needs reload" is
+  // false when a tab is discarded.
+  // TODO(fdoray): Remove NavigationControllerImpl::needs_reload_ once
+  // session restore is handled by LifecycleManager.
+  GetWebContents()->GetController().SetNeedsReload();
+  GetWebContents()->GetController().LoadIfNecessary();
+  return true;
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
@@ -543,6 +560,13 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
   std::unique_ptr<content::WebContents> null_contents =
       content::WebContents::Create(create_params);
   content::WebContents* raw_null_contents = null_contents.get();
+
+  // Attach the ResourceCoordinatorTabHelper. In production code this has
+  // already been attached by now due to AttachTabHelpers, but there's a long
+  // tail of tests that don't add these helpers. This ensures that the various
+  // DCHECKs in the state transition machinery don't fail.
+  ResourceCoordinatorTabHelper::CreateForWebContents(raw_null_contents);
+
   // Copy over the state from the navigation controller to preserve the
   // back/forward history and to continue to display the correct title/favicon.
   //
@@ -599,6 +623,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
   SetState(LifecycleUnitState::DISCARDED,
            DiscardReasonToStateChangeReason(discard_reason));
   ++discard_count_;
+  DCHECK_EQ(GetLoadingState(), LifecycleUnitLoadingState::UNLOADED);
 }
 
 content::WebContents* TabLifecycleUnitSource::TabLifecycleUnit::GetWebContents()

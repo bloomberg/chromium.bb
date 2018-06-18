@@ -31,6 +31,8 @@ class TestLifecycleUnit : public LifecycleUnitBase {
   base::ProcessHandle GetProcessHandle() const override;
   SortKey GetSortKey() const override;
   content::Visibility GetVisibility() const override;
+  LifecycleUnitLoadingState GetLoadingState() const override;
+  bool Load() override;
   bool Freeze() override;
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
   bool CanPurge() const override;
