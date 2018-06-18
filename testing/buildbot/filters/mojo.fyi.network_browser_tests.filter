@@ -363,6 +363,8 @@
 # http://crbug.com/841309
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromSubresourceRequest
+-VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext
+-VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext
 
 # Fails because of missing support to navigate to filesystem: URLs.
 # https://crbug.com/797292
