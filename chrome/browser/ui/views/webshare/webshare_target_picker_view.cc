@@ -22,9 +22,8 @@
 
 namespace {
 
-int kDialogWidth = 500;
-int kDialogHeight = 400;
-
+int kWebShareTargetPickerDialogWidth = 500;
+int kWebShareTargetPickerDialogHeight = 400;
 }
 
 // Supplies data to the table view.
@@ -122,7 +121,8 @@ WebShareTargetPickerView::~WebShareTargetPickerView() {
 }
 
 gfx::Size WebShareTargetPickerView::CalculatePreferredSize() const {
-  return gfx::Size(kDialogWidth, kDialogHeight);
+  return gfx::Size(kWebShareTargetPickerDialogWidth,
+                   kWebShareTargetPickerDialogHeight);
 }
 
 ui::ModalType WebShareTargetPickerView::GetModalType() const {
