@@ -478,11 +478,11 @@ const char kEnableHDRDescription[] =
 
 const char kEnableHeavyPageCappingName[] = "Heavy Page Capping";
 const char kEnableHeavyPageCappingDescription[] =
-    "Enable showing an infobar on data heavy pages that allows the user to "
-    "pause sub resource request loading on the page. Subesource load pausing "
-    "functionality currently requires 'Renderer side ResourceScheduler' and "
-    "'Experimental Web Platform features' to be enabled. Using the 'Low' "
-    "option will reduce the triggering threshold to 1MB.";
+    "Enable showing an InfoBar on data heavy pages that allows the user to "
+    "pause sub-resource request loading on the page. Sub-resource load pausing "
+    "functionality currently requires 'Experimental Web Platform features' to "
+    "be enabled. Using the 'Low' option will reduce the triggering threshold "
+    " 1MB.";
 
 const char kEnableHttpFormWarningName[] =
     "Show in-form warnings for sensitive fields when the top-level page is not "
