@@ -204,7 +204,9 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
     devtools_proxy_->CertificateResponseReceived(*cert_request_id_,
                                                  resource_request_->url, head);
   }
-  if (head.headers->response_code() != net::HTTP_OK) {
+
+  // |headers| is null when loading data URL.
+  if (head.headers && head.headers->response_code() != net::HTTP_OK) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_, base::StringPrintf("Invalid reponse code: %d",
                                             head.headers->response_code()));
@@ -215,15 +217,13 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cert-chain-format
   // "The resource at a signature's cert-url MUST have the
   // application/cert-chain+cbor content type" [spec text]
-  std::string mime_type;
-  if (!head.headers->GetMimeType(&mime_type) ||
-      mime_type != "application/cert-chain+cbor") {
+  if (head.mime_type != "application/cert-chain+cbor") {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_,
         base::StringPrintf(
             "Content type of cert-url must be application/cert-chain+cbor. "
             "Actual content type: %s",
-            mime_type.c_str()));
+            head.mime_type.c_str()));
     Abort();
     return;
   }
