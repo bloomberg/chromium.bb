@@ -911,6 +911,14 @@ void LayerTreeHost::UpdateBrowserControlsState(
 }
 
 void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
+  // We do not need to animate on the main thread in this case because all
+  // relevant changes will be processed on the compositor thread, or proxy,
+  // and propagated back to the correct trees.
+  // TODO(majidvp): We should be able to eliminate this in the non-
+  // slimming path and will do so in a follow up. (762717)
+  if (IsUsingLayerLists())
+    return;
+
   std::unique_ptr<MutatorEvents> events = mutator_host_->CreateEvents();
 
   if (mutator_host_->TickAnimations(monotonic_time,
