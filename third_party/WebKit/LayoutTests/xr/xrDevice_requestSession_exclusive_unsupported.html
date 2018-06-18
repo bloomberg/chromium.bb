@@ -18,7 +18,7 @@ promise_test( (t) => {
       runWithUserGesture( () => {
         resolve(promise_rejects(
           t,
-          "NotSupportedError",
+          "NotAllowedError",
           magicWindowOnlyDevice.requestSession({ exclusive: true })
         ))
       });

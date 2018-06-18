@@ -87,9 +87,10 @@ class XRDevice final : public EventTargetWithInlineData,
 
   const char* checkSessionSupport(const XRSessionCreationOptions&) const;
 
-  void OnRequestSessionReturned(ScriptPromiseResolver* resolver,
-                                const XRSessionCreationOptions& options,
-                                bool success);
+  void OnRequestSessionReturned(
+      ScriptPromiseResolver* resolver,
+      const XRSessionCreationOptions& options,
+      device::mojom::blink::XRPresentationConnectionPtr connection);
   void OnSupportsSessionReturned(ScriptPromiseResolver* resolver,
                                  bool supports_session);
 

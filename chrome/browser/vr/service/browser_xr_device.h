@@ -33,12 +33,10 @@ class BrowserXrDevice : public device::VRDeviceEventListener {
   void OnDisplayHostAdded(VRDisplayHost* display);
   void OnDisplayHostRemoved(VRDisplayHost* display);
   void ExitPresent(VRDisplayHost* display);
-  void RequestPresent(
+  void RequestSession(
       VRDisplayHost* display,
-      device::mojom::VRSubmitFrameClientPtr submit_client,
-      device::mojom::VRPresentationProviderRequest request,
-      device::mojom::VRRequestPresentOptionsPtr present_options,
-      device::mojom::VRDisplayHost::RequestPresentCallback callback);
+      const device::XRDeviceRuntimeSessionOptions& options,
+      device::mojom::VRDisplayHost::RequestSessionCallback callback);
   VRDisplayHost* GetPresentingDisplayHost() { return presenting_display_host_; }
   void UpdateListeningForActivate(VRDisplayHost* display);
   device::mojom::VRDisplayInfoPtr GetVRDisplayInfo() {
@@ -51,11 +49,11 @@ class BrowserXrDevice : public device::VRDeviceEventListener {
  private:
   void StopExclusiveSession();
   void OnListeningForActivate(bool is_listening);
-  void OnRequestPresentResult(
+  void OnRequestSessionResult(
       VRDisplayHost* display,
-      device::mojom::VRDisplayHost::RequestPresentCallback callback,
-      bool result,
-      device::mojom::VRDisplayFrameTransportOptionsPtr transport_options,
+      const device::XRDeviceRuntimeSessionOptions& options,
+      device::mojom::VRDisplayHost::RequestSessionCallback callback,
+      device::mojom::XRPresentationConnectionPtr connection,
       device::XrSessionController* exclusive_session_controller);
 
   // Not owned by this class, but valid while BrowserXrDevice is alive.

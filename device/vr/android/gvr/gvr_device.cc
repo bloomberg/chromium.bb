@@ -167,33 +167,41 @@ GvrDevice::~GvrDevice() {
   Java_NonPresentingGvrContext_shutdown(env, non_presenting_context_);
 }
 
-void GvrDevice::RequestPresent(
-    mojom::VRSubmitFrameClientPtr submit_client,
-    mojom::VRPresentationProviderRequest request,
-    mojom::VRRequestPresentOptionsPtr present_options,
-    RequestExclusiveSessionCallback callback) {
+void GvrDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
+                               VRDeviceRequestSessionCallback callback) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider) {
-    std::move(callback).Run(false, nullptr, nullptr);
+    std::move(callback).Run(nullptr, nullptr);
     return;
   }
 
-  // RequestWebVRPresent is async as we may trigger a DON (Device ON) flow that
-  // pauses Chrome.
-  delegate_provider->RequestWebVRPresent(
-      std::move(submit_client), std::move(request), GetVRDisplayInfo(),
-      std::move(present_options),
-      base::BindOnce(&GvrDevice::OnRequestPresentResult,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  if (options.exclusive) {
+    // StartWebXRPresentation is async as we may trigger a DON (Device ON) flow
+    // that pauses Chrome.
+    delegate_provider->StartWebXRPresentation(
+        GetVRDisplayInfo(), options,
+        base::BindOnce(&GvrDevice::OnRequestSessionResult,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  } else {
+    // TODO(https://crbug.com/695937): This should be NOTREACHED() once
+    // orientation device handles non-exclusive VR sessions.
+    // TODO(https://crbug.com/842025): Handle this when RequestSession is called
+    // for non-exclusive sessions.
+    NOTREACHED();
+  }
 }
 
-void GvrDevice::OnRequestPresentResult(
-    RequestExclusiveSessionCallback callback,
-    bool result,
-    mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
-  if (result)
-    OnStartPresenting();
-  std::move(callback).Run(result, std::move(transport_options), this);
+void GvrDevice::OnRequestSessionResult(
+    VRDeviceRequestSessionCallback callback,
+    mojom::XRPresentationConnectionPtr connection) {
+  if (!connection) {
+    std::move(callback).Run(nullptr, nullptr);
+    return;
+  }
+
+  OnStartPresenting();
+
+  std::move(callback).Run(std::move(connection), this);
 }
 
 // XrSessionController
