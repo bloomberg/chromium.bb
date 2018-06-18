@@ -49,11 +49,11 @@ class AuthenticatorRequestSheetView : public views::View,
       std::unique_ptr<AuthenticatorRequestSheetModel> model);
   ~AuthenticatorRequestSheetView() override;
 
-  AuthenticatorRequestSheetModel* model() { return model_.get(); }
-
   // Creates the standard child views on this sheet, potentially including
   // step-specific content if any.
   void InitChildViews();
+
+  AuthenticatorRequestSheetModel* model() { return model_.get(); }
 
  protected:
   // Returns the step-specific view the derived sheet wishes to provide, if any.

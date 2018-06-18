@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -20,6 +20,8 @@ class WebContents;
 namespace test {
 class AuthenticatorRequestDialogViewTestApi;
 }
+
+class AuthenticatorRequestSheetView;
 
 // A tab-modal dialog shown while a Web Authentication API request is active.
 //
@@ -39,12 +41,16 @@ class AuthenticatorRequestDialogView
 
  protected:
   // Replaces the |sheet_| currently being shown in the dialog with |new_sheet|,
-  // destroying the old sheet. Also triggers updating the dialog buttons, window
-  // title (using the data provided by the new sheet), and size/position.
+  // destroying the old sheet. Also triggers updating the state of the buttons
+  // on the dialog, the accessibility window title (using the data provided by
+  // the new sheet), and the dialog size and position.
   void ReplaceCurrentSheetWith(
       std::unique_ptr<AuthenticatorRequestSheetView> new_sheet);
 
-  AuthenticatorRequestSheetView* sheet() const { return sheet_; }
+  AuthenticatorRequestSheetView* sheet() const {
+    DCHECK(sheet_);
+    return sheet_;
+  }
 
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
