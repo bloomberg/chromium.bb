@@ -11,6 +11,9 @@ RGBAColor::RGBAColor()
       a(0) {
 }
 
+RGBAColor::RGBAColor(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+    : r(r), g(g), b(b), a(a) {}
+
 RGBAColor::~RGBAColor() {
 }
 
