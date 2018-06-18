@@ -44,6 +44,8 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -64,6 +66,7 @@ class BrowserControlsTest : public testing::Test {
     RegisterMockedHttpURLLoad("percent-height.html");
     RegisterMockedHttpURLLoad("vh-height.html");
     RegisterMockedHttpURLLoad("vh-height-width-800.html");
+    RegisterMockedHttpURLLoad("95-vh.html");
     RegisterMockedHttpURLLoad("vh-height-width-800-extra-wide.html");
   }
 
@@ -1154,5 +1157,37 @@ TEST_F(BrowserControlsTest, MAYBE(GrowingHeightKeepsTopControlsHidden)) {
   EXPECT_EQ(0.f, web_view->GetBrowserControls().ContentOffset());
 }
 
+TEST_F(BrowserControlsTest,
+       MAYBE(HidingBrowserControlsInvalidatesGraphicsLayer)) {
+  // Initialize with the browser controls showing.
+  WebViewImpl* web_view = Initialize("95-vh.html");
+  web_view->ResizeWithBrowserControls(WebSize(412, 604), 56.f, 0, true);
+  web_view->GetBrowserControls().SetShownRatio(1);
+  web_view->UpdateAllLifecyclePhases();
+
+  GetFrame()->GetDocument()->View()->SetTracksPaintInvalidations(true);
+
+  // Hide the browser controls.
+  VerticalScroll(-100.f);
+  web_view->ResizeWithBrowserControls(WebSize(412, 660), 56.f, 0, false);
+  web_view->UpdateAllLifecyclePhases();
+
+  // Ensure there is a raster invalidation of the bottom of the layer.
+  const auto& raster_invalidations = GetFrame()
+                                         ->View()
+                                         ->Layer()
+                                         ->GetCompositedLayerMapping()
+                                         ->ScrollingContentsLayer()
+                                         ->GetRasterInvalidationTracking()
+                                         ->Invalidations();
+  EXPECT_EQ(1u, raster_invalidations.size());
+  EXPECT_EQ(IntRect(0, 643, 412, 17), raster_invalidations[0].rect);
+  EXPECT_EQ(PaintInvalidationReason::kIncremental,
+            raster_invalidations[0].reason);
+
+  GetFrame()->GetDocument()->View()->SetTracksPaintInvalidations(false);
+}
+
 #undef MAYBE
+
 }  // namespace blink
