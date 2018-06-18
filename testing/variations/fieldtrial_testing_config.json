@@ -1843,6 +1843,21 @@
             ]
         }
     ],
+    "IncreaseInputAudioBufferSize": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "IncreaseInputAudioBufferSize"
+                    ]
+                }
+            ]
+        }
+    ],
     "InstanceID": [
         {
             "platforms": [
