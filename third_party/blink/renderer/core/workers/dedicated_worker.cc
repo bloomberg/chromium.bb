@@ -300,7 +300,8 @@ DedicatedWorker::CreateGlobalScopeCreationParams() {
       nullptr /* worklet_module_responses_map */,
       ConnectToWorkerInterfaceProvider(GetExecutionContext(),
                                        SecurityOrigin::Create(script_url_)),
-      CreateBeginFrameProviderParams());
+      CreateBeginFrameProviderParams(),
+      GetExecutionContext()->GetSecurityContext().GetFeaturePolicy());
 }
 
 const AtomicString& DedicatedWorker::InterfaceName() const {

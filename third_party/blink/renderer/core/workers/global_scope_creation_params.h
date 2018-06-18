@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -51,7 +52,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       V8CacheOptions,
       WorkletModuleResponsesMap*,
       service_manager::mojom::blink::InterfaceProviderPtrInfo = {},
-      BeginFrameProviderParams begin_frame_provider_params = {});
+      BeginFrameProviderParams begin_frame_provider_params = {},
+      const FeaturePolicy* parent_feature_policy = nullptr);
 
   ~GlobalScopeCreationParams() = default;
 
@@ -117,6 +119,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   service_manager::mojom::blink::InterfaceProviderPtrInfo interface_provider;
 
   BeginFrameProviderParams begin_frame_provider_params;
+
+  std::unique_ptr<FeaturePolicy> worker_feature_policy;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalScopeCreationParams);
 };
