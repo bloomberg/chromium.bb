@@ -342,6 +342,11 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
 
   if (theme_info.using_default_theme &&
       !theme_info.custom_background_url.is_empty()) {
+    builder.Set("alternateLogo", true);
+    RGBAColor whiteTextRgba = RGBAColor{255, 255, 255, 255};
+    builder.Set("textColorRgba",
+                internal::RGBAColorToArray(isolate, whiteTextRgba));
+    builder.Set("customBackgroundConfigured", true);
     builder.Set("imageUrl",
                 "url('" + theme_info.custom_background_url.spec() + "')");
     builder.Set("imageTiling", std::string(kCSSBackgroundRepeatNo));
