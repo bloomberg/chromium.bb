@@ -30,8 +30,6 @@ public class BoundedLinearLayout extends LinearLayout {
 
     private static final int NOT_SPECIFIED = -1;
 
-    // TODO(xingliu): Get rid of mMaxWidth.
-    private final int mMaxWidth;
     private TypedValue mMaxWidthLandscape = new TypedValue();
     private TypedValue mMaxWidthPortrait = new TypedValue();
 
@@ -44,19 +42,13 @@ public class BoundedLinearLayout extends LinearLayout {
         super(context, attrs);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BoundedView);
-        int maxWidth = a.getDimensionPixelSize(R.styleable.BoundedView_maxWidth, NOT_SPECIFIED);
         int maxHeight = a.getDimensionPixelSize(R.styleable.BoundedView_maxHeight, NOT_SPECIFIED);
-
-        assert(maxWidth == NOT_SPECIFIED
-                || (mMaxWidthLandscape.type == TypedValue.TYPE_NULL
-                           && mMaxWidthPortrait.type == TypedValue.TYPE_NULL));
 
         a.getValue(R.styleable.BoundedView_maxWidthLandscape, mMaxWidthLandscape);
         a.getValue(R.styleable.BoundedView_maxWidthPortrait, mMaxWidthPortrait);
 
         a.recycle();
 
-        mMaxWidth = maxWidth <= 0 ? NOT_SPECIFIED : maxWidth;
         mMaxHeight = maxHeight <= 0 ? NOT_SPECIFIED : maxHeight;
     }
 
@@ -65,26 +57,19 @@ public class BoundedLinearLayout extends LinearLayout {
         final DisplayMetrics metrics = getContext().getResources().getDisplayMetrics();
         final boolean isPortrait = metrics.widthPixels < metrics.heightPixels;
 
-        // Limit the width with fixed value.
+        // Limit the width.
         int widthSize = MeasureSpec.getSize(widthMeasureSpec);
-        if (mMaxWidth != NOT_SPECIFIED && widthSize > mMaxWidth) {
-            widthMeasureSpec = makeMeasureSpec(widthMeasureSpec, mMaxWidth);
-        }
+        final TypedValue tv = isPortrait ? mMaxWidthPortrait : mMaxWidthLandscape;
+        if (tv.type != TypedValue.TYPE_NULL) {
+            int maxWidthPixel = NOT_SPECIFIED;
+            if (tv.type == TypedValue.TYPE_DIMENSION) {
+                maxWidthPixel = (int) tv.getDimension(metrics);
+            } else if (tv.type == TypedValue.TYPE_FRACTION) {
+                maxWidthPixel = (int) tv.getFraction(metrics.widthPixels, metrics.widthPixels);
+            }
 
-        // Limit the width with fraction of the screen if fixed width value is not specified.
-        if (mMaxWidth == NOT_SPECIFIED) {
-            final TypedValue tv = isPortrait ? mMaxWidthPortrait : mMaxWidthLandscape;
-            if (tv.type != TypedValue.TYPE_NULL) {
-                int maxWidthPixel = NOT_SPECIFIED;
-                if (tv.type == TypedValue.TYPE_DIMENSION) {
-                    maxWidthPixel = (int) tv.getDimension(metrics);
-                } else if (tv.type == TypedValue.TYPE_FRACTION) {
-                    maxWidthPixel = (int) tv.getFraction(metrics.widthPixels, metrics.widthPixels);
-                }
-
-                if (widthSize > maxWidthPixel && maxWidthPixel != NOT_SPECIFIED) {
-                    widthMeasureSpec = makeMeasureSpec(widthMeasureSpec, maxWidthPixel);
-                }
+            if (widthSize > maxWidthPixel && maxWidthPixel > 0) {
+                widthMeasureSpec = makeMeasureSpec(widthMeasureSpec, maxWidthPixel);
             }
         }
 
