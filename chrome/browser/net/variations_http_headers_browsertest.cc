@@ -9,21 +9,28 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/simple_url_loader_test_helper.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -258,6 +265,72 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
   GURL url = server()->GetURL("/simple_page.html");
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(FetchResource(GetGoogleRedirectUrl1()));
+  EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));
+  EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl2(), "X-Client-Data"));
+  EXPECT_TRUE(HasReceivedHeader(GetExampleUrl(), "Host"));
+  EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    VariationsHttpHeadersBrowserTest,
+    TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext) {
+  GURL url = GetGoogleRedirectUrl1();
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  variations::AppendVariationHeaders(url, variations::InIncognito::kNo,
+                                     variations::SignedIn::kNo,
+                                     &resource_request->headers);
+
+  std::unique_ptr<network::SimpleURLLoader> loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  content::StoragePartition* partition =
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
+  network::SharedURLLoaderFactory* loader_factory =
+      partition->GetURLLoaderFactoryForBrowserProcess().get();
+  content::SimpleURLLoaderTestHelper loader_helper;
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory, loader_helper.GetCallback());
+
+  // Wait for the response to complete.
+  loader_helper.WaitForCallback();
+  EXPECT_TRUE(loader_helper.response_body());
+
+  EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));
+  EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl2(), "X-Client-Data"));
+  EXPECT_TRUE(HasReceivedHeader(GetExampleUrl(), "Host"));
+  EXPECT_FALSE(HasReceivedHeader(GetExampleUrl(), "X-Client-Data"));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    VariationsHttpHeadersBrowserTest,
+    TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext) {
+  GURL url = GetGoogleRedirectUrl1();
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  variations::AppendVariationHeaders(url, variations::InIncognito::kNo,
+                                     variations::SignedIn::kNo,
+                                     &resource_request->headers);
+
+  std::unique_ptr<network::SimpleURLLoader> loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  network::SharedURLLoaderFactory* loader_factory =
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory()
+          .get();
+  content::SimpleURLLoaderTestHelper loader_helper;
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory, loader_helper.GetCallback());
+
+  // Wait for the response to complete.
+  loader_helper.WaitForCallback();
+  EXPECT_TRUE(loader_helper.response_body());
+
   EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl1(), "X-Client-Data"));
   EXPECT_TRUE(HasReceivedHeader(GetGoogleRedirectUrl2(), "X-Client-Data"));
   EXPECT_TRUE(HasReceivedHeader(GetExampleUrl(), "Host"));
