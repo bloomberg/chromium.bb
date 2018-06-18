@@ -34,7 +34,9 @@ class CastWindowManager {
     VOLUME,
     MEDIA_INFO,
     SETTINGS,
-    TOP = MEDIA_INFO
+    CORNERS_OVERLAY,
+    BOOT_ANIMATION_OVERLAY,
+    TOP = BOOT_ANIMATION_OVERLAY
   };
 
   virtual ~CastWindowManager() {}
