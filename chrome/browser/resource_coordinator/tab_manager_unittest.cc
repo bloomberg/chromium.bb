@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
+#include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/tab_manager_resource_coordinator_signal_observer.h"
@@ -108,14 +109,6 @@ enum TestIndicies {
   kOldButPinned,
   kInternalPage,
 };
-
-bool IsTabDiscarded(content::WebContents* web_contents) {
-  return TabLifecycleUnitExternal::FromWebContents(web_contents)->IsDiscarded();
-}
-
-bool IsTabFrozen(content::WebContents* web_contents) {
-  return TabLifecycleUnitExternal::FromWebContents(web_contents)->IsFrozen();
-}
 
 }  // namespace
 
@@ -209,6 +202,19 @@ class TabManagerTest : public ChromeRenderViewHostTestHarness {
         tab_manager->MaybeThrottleNavigation(throttle3_.get());
 
     CheckThrottleResults(result1, result2, result3, loading_slots);
+  }
+
+  bool IsTabDiscarded(content::WebContents* content) {
+    return TabLifecycleUnitExternal::FromWebContents(content)->IsDiscarded();
+  }
+
+  bool IsTabFrozen(content::WebContents* content) {
+    const LifecycleUnitState state =
+        static_cast<TabLifecycleUnitSource::TabLifecycleUnit*>(
+            TabLifecycleUnitExternal::FromWebContents(content))
+            ->GetState();
+    return state == LifecycleUnitState::PENDING_FREEZE ||
+           state == LifecycleUnitState::FROZEN;
   }
 
   virtual void CheckThrottleResults(
