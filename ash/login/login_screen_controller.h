@@ -77,7 +77,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                            const std::string& input_method);
   void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
                                            const std::string& locale);
-  void ShowFeedback();
 
   // Add or remove an observer.
   void AddObserver(LoginScreenControllerObserver* observer);

@@ -82,7 +82,6 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
                            const std::string& input_method) override;
   void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
                                            const std::string& locale) override;
-  void ShowFeedback() override;
 
  private:
   void SetPublicSessionKeyboardLayout(

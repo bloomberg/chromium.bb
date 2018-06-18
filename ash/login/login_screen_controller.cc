@@ -219,12 +219,6 @@ void LoginScreenController::RequestPublicSessionKeyboardLayouts(
   login_screen_client_->RequestPublicSessionKeyboardLayouts(account_id, locale);
 }
 
-void LoginScreenController::ShowFeedback() {
-  if (!login_screen_client_)
-    return;
-  login_screen_client_->ShowFeedback();
-}
-
 void LoginScreenController::AddObserver(
     LoginScreenControllerObserver* observer) {
   observers_.AddObserver(observer);

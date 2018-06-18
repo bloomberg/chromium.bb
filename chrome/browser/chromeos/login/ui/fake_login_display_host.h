@@ -62,7 +62,6 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void CancelPasswordChangedFlow() override;
   void MigrateUserData(const std::string& old_password) override;
   void ResyncUserData() override;
-  void ShowFeedback() override;
 
  private:
   class FakeBaseScreen;
