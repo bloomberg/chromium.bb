@@ -25,7 +25,7 @@ functionality.
 
 Also, we are trying to eliminate duplicated functionalities between WTF and
 [base]. Historically, WTF was developed as a stand-alone library, so there
-are still many overlaps. We want to eventually delegate sharable implementation
+are still many overlaps. We want to eventually delegate shareable implementation
 to [base] as much as possible.
 
 If you find a missing functionality in WTF, regardless of whether it is

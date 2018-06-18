@@ -493,7 +493,7 @@ static bool ParseLong(const char* string,
   return true;
 }
 
-// Odd case where 'exec' is allowed to be 0, to accomodate a caller in WebCore.
+// Odd case where 'exec' is allowed to be 0, to accommodate a caller in WebCore.
 static double ParseDateFromNullTerminatedCharacters(const char* date_string,
                                                     bool& have_tz,
                                                     int& offset) {
@@ -646,7 +646,7 @@ static double ParseDateFromNullTerminatedCharacters(const char* date_string,
 
     ParseLong(date_string, &new_pos_str, 10, &hour);
     // Do not check for errno here since we want to continue
-    // even if errno was set becasue we are still looking
+    // even if errno was set because we are still looking
     // for the timezone!
 
     // Read a number? If not, this might be a timezone name.

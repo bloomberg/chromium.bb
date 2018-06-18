@@ -342,7 +342,7 @@ class WTF_EXPORT String {
   PRINTF_FORMAT(1, 2) static String Format(const char* format, ...);
 
   // Returns a version suitable for gtest and base/logging.*.  It prepends and
-  // appends double-quotes, and escapes chracters other than ASCII printables.
+  // appends double-quotes, and escapes characters other than ASCII printables.
   String EncodeForDebugging() const;
 
   // Returns an uninitialized string. The characters needs to be written
@@ -644,7 +644,7 @@ WTF_EXPORT extern const String& g_empty_string16_bit;
 WTF_EXPORT extern const String& g_xmlns_with_colon;
 
 // Pretty printer for gtest and base/logging.*.  It prepends and appends
-// double-quotes, and escapes chracters other than ASCII printables.
+// double-quotes, and escapes characters other than ASCII printables.
 WTF_EXPORT std::ostream& operator<<(std::ostream&, const String&);
 
 inline StringView::StringView(const String& string,

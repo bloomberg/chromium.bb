@@ -64,7 +64,6 @@ static inline const char* FormatStringTruncatingTrailingZerosIfNeeded(
       break;
   }
 
-  // No decimal seperator found, early exit.
   if (decimal_point_position == length)
     return builder.Finalize();
 

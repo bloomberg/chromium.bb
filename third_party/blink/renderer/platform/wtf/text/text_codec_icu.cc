@@ -458,7 +458,7 @@ static UChar FallbackForGBK(UChar32 character) {
 }
 #endif
 
-// Generic helper for writing escaped entities using the specfied
+// Generic helper for writing escaped entities using the specified
 // UnencodableHandling.
 static void FormatEscapedEntityCallback(const void* context,
                                         UConverterFromUnicodeArgs* from_u_args,
