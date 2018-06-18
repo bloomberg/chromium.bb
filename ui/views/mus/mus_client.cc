@@ -172,6 +172,16 @@ bool MusClient::ShouldCreateDesktopNativeWidgetAura(
 }
 
 // static
+bool MusClient::ShouldMakeWidgetWindowsTranslucent(
+    const Widget::InitParams& params) {
+  // |TYPE_WINDOW| and |TYPE_PANEL| are forced to translucent so that the
+  // window manager can draw the client decorations.
+  return params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW ||
+         params.type == Widget::InitParams::TYPE_WINDOW ||
+         params.type == Widget::InitParams::TYPE_PANEL;
+}
+
+// static
 std::map<std::string, std::vector<uint8_t>>
 MusClient::ConfigurePropertiesFromParams(
     const Widget::InitParams& init_params) {
@@ -189,8 +199,8 @@ MusClient::ConfigurePropertiesFromParams(
       mojo::ConvertTo<TransportType>(init_params.CanActivate());
 
   properties[WindowManager::kTranslucent_InitProperty] =
-      mojo::ConvertTo<TransportType>(init_params.opacity ==
-                                     Widget::InitParams::TRANSLUCENT_WINDOW);
+      mojo::ConvertTo<TransportType>(
+          ShouldMakeWidgetWindowsTranslucent(init_params));
 
   if (!init_params.bounds.IsEmpty()) {
     properties[WindowManager::kBounds_InitProperty] =
