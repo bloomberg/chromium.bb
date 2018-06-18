@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/parse_number.h"
@@ -257,7 +258,7 @@ int FtpNetworkTransaction::Stop(int error) {
 
 int FtpNetworkTransaction::Start(
     const FtpRequestInfo* request_info,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetLogWithSource& net_log,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   net_log_ = net_log;
@@ -281,12 +282,12 @@ int FtpNetworkTransaction::Start(
   next_state_ = STATE_CTRL_RESOLVE_HOST;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
-    user_callback_ = callback;
+    user_callback_ = std::move(callback);
   return rv;
 }
 
 int FtpNetworkTransaction::RestartWithAuth(const AuthCredentials& credentials,
-                                           const CompletionCallback& callback) {
+                                           CompletionOnceCallback callback) {
   ResetStateForRestart();
 
   credentials_ = credentials;
@@ -294,13 +295,13 @@ int FtpNetworkTransaction::RestartWithAuth(const AuthCredentials& credentials,
   next_state_ = STATE_CTRL_RESOLVE_HOST;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
-    user_callback_ = callback;
+    user_callback_ = std::move(callback);
   return rv;
 }
 
 int FtpNetworkTransaction::Read(IOBuffer* buf,
                                 int buf_len,
-                                const CompletionCallback& callback) {
+                                CompletionOnceCallback callback) {
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
 
@@ -310,7 +311,7 @@ int FtpNetworkTransaction::Read(IOBuffer* buf,
   next_state_ = STATE_DATA_READ;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
-    user_callback_ = callback;
+    user_callback_ = std::move(callback);
   return rv;
 }
 
@@ -372,10 +373,8 @@ void FtpNetworkTransaction::EstablishDataConnection(State state_after_connect) {
 
 void FtpNetworkTransaction::DoCallback(int rv) {
   DCHECK(rv != ERR_IO_PENDING);
-  DCHECK(!user_callback_.is_null());
 
-  // Since Run may result in Read being called, clear callback_ up front.
-  base::ResetAndReturn(&user_callback_).Run(rv);
+  std::move(user_callback_).Run(rv);
 }
 
 void FtpNetworkTransaction::OnIOComplete(int result) {
