@@ -54,8 +54,8 @@ void LeastSquaresPredictor::Update(const InputData& cur_input) {
           max_interval_millisecond)
     Reset();
 
-  x_queue_.push_back(cur_input.pos_x);
-  y_queue_.push_back(cur_input.pos_y);
+  x_queue_.push_back(cur_input.pos.x());
+  y_queue_.push_back(cur_input.pos.y());
   time_.push_back(cur_input.time_stamp);
   if (time_.size() > kSize) {
     x_queue_.pop_front();
@@ -90,8 +90,8 @@ bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks frame_time,
         SolveLeastSquares(time_matrix, y_queue_, b2)) {
       gfx::Vector3dF prediction_time(1, dt, dt * dt);
 
-      result->pos_x = gfx::DotProduct(prediction_time, b1);
-      result->pos_y = gfx::DotProduct(prediction_time, b2);
+      result->pos.set_x(gfx::DotProduct(prediction_time, b1));
+      result->pos.set_y(gfx::DotProduct(prediction_time, b2));
       return true;
     }
   }

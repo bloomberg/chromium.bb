@@ -2175,7 +2175,7 @@ TEST_P(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -15);
   input_handler_proxy_->DeliverInputForBeginFrame();
   EXPECT_TRUE(GestureScrollEventPredictionAvailable(&result));
-  EXPECT_EQ(-35, result.pos_y);
+  EXPECT_EQ(-35, result.pos.y());
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 

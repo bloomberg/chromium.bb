@@ -23,7 +23,8 @@ namespace {
 
 constexpr char kPredictor[] = "predictor";
 constexpr char kInputEventPredictorTypeLsq[] = "lsq";
-}
+
+}  // namespace
 
 InputEventPrediction::InputEventPrediction() {
   std::string predictor_type_ = GetFieldTrialParamValueByFeature(
@@ -128,8 +129,7 @@ void InputEventPrediction::ResetPredictor(const WebInputEvent& event) {
 void InputEventPrediction::UpdateSinglePointer(
     const WebPointerProperties& event,
     base::TimeTicks event_time) {
-  ui::InputPredictor::InputData data = {event.PositionInWidget().x,
-                                        event.PositionInWidget().y, event_time};
+  ui::InputPredictor::InputData data = {event.PositionInWidget(), event_time};
   if (event.pointer_type == WebPointerProperties::PointerType::kMouse)
     mouse_predictor_->Update(data);
   else {
@@ -152,7 +152,7 @@ bool InputEventPrediction::ResampleSinglePointer(base::TimeTicks frame_time,
   if (event->pointer_type == WebPointerProperties::PointerType::kMouse) {
     if (mouse_predictor_->HasPrediction() &&
         mouse_predictor_->GeneratePrediction(frame_time, &predict_result)) {
-      event->SetPositionInWidget(predict_result.pos_x, predict_result.pos_y);
+      event->SetPositionInWidget(predict_result.pos);
       return true;
     }
   } else {
@@ -163,7 +163,7 @@ bool InputEventPrediction::ResampleSinglePointer(base::TimeTicks frame_time,
     if (predictor != pointer_id_predictor_map_.end() &&
         predictor->second->HasPrediction() &&
         predictor->second->GeneratePrediction(frame_time, &predict_result)) {
-      event->SetPositionInWidget(predict_result.pos_x, predict_result.pos_y);
+      event->SetPositionInWidget(predict_result.pos);
       return true;
     }
   }
