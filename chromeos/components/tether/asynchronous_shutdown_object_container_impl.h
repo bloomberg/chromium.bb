@@ -41,6 +41,10 @@ class DeviceSyncClient;
 }  // namespace device_sync
 
 namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
+namespace secure_channel {
 class BleServiceDataHelper;
 }  // namespace secure_channel
 
@@ -65,7 +69,8 @@ class AsynchronousShutdownObjectContainerImpl
     static std::unique_ptr<AsynchronousShutdownObjectContainer> NewInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::CryptAuthService* cryptauth_service,
-        chromeos::device_sync::DeviceSyncClient* device_sync_client,
+        device_sync::DeviceSyncClient* device_sync_client,
+        secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*
@@ -78,7 +83,8 @@ class AsynchronousShutdownObjectContainerImpl
     virtual std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
         scoped_refptr<device::BluetoothAdapter> adapter,
         cryptauth::CryptAuthService* cryptauth_service,
-        chromeos::device_sync::DeviceSyncClient* device_sync_client,
+        device_sync::DeviceSyncClient* device_sync_client,
+        secure_channel::SecureChannelClient* secure_channel_client,
         TetherHostFetcher* tether_host_fetcher,
         NetworkStateHandler* network_state_handler,
         ManagedNetworkConfigurationHandler*
@@ -106,7 +112,8 @@ class AsynchronousShutdownObjectContainerImpl
   AsynchronousShutdownObjectContainerImpl(
       scoped_refptr<device::BluetoothAdapter> adapter,
       cryptauth::CryptAuthService* cryptauth_service,
-      chromeos::device_sync::DeviceSyncClient* device_sync_client,
+      device_sync::DeviceSyncClient* device_sync_client,
+      secure_channel::SecureChannelClient* secure_channel_client,
       TetherHostFetcher* tether_host_fetcher,
       NetworkStateHandler* network_state_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,

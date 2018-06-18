@@ -15,6 +15,7 @@
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
 #include "chromeos/components/tether/tether_component_impl.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "components/cryptauth/fake_cryptauth_service.h"
 #include "components/cryptauth/fake_remote_device_provider.h"
 #include "components/cryptauth/remote_device_provider_impl.h"
@@ -74,7 +75,9 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
     fake_cryptauth_service_ =
         std::make_unique<cryptauth::FakeCryptAuthService>();
     fake_device_sync_client_ =
-        std::make_unique<chromeos::device_sync::FakeDeviceSyncClient>();
+        std::make_unique<device_sync::FakeDeviceSyncClient>();
+    fake_secure_channel_client_ =
+        std::make_unique<secure_channel::FakeSecureChannelClient>();
     fake_tether_host_fetcher_ = std::make_unique<FakeTetherHostFetcher>();
 
     test_pref_service_ =
@@ -86,7 +89,7 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
     // of objects created by the container.
     container_ = base::WrapUnique(new AsynchronousShutdownObjectContainerImpl(
         mock_adapter_, fake_cryptauth_service_.get(),
-        fake_device_sync_client_.get(),
+        fake_device_sync_client_.get(), fake_secure_channel_client_.get(),
         fake_tether_host_fetcher_.get() /* tether_host_fetcher */,
         nullptr /* network_state_handler */,
         nullptr /* managed_network_configuration_handler */,
@@ -121,8 +124,9 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
 
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
-  std::unique_ptr<chromeos::device_sync::FakeDeviceSyncClient>
-      fake_device_sync_client_;
+  std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
+  std::unique_ptr<secure_channel::FakeSecureChannelClient>
+      fake_secure_channel_client_;
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
       test_pref_service_;

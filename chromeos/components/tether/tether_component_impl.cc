@@ -20,6 +20,7 @@
 #include "chromeos/components/tether/tether_session_completion_logger.h"
 #include "chromeos/components/tether/wifi_hotspot_disconnector_impl.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 namespace chromeos {
@@ -70,7 +71,8 @@ TetherComponentImpl::Factory* TetherComponentImpl::Factory::factory_instance_ =
 // static
 std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::NewInstance(
     cryptauth::CryptAuthService* cryptauth_service,
-    chromeos::device_sync::DeviceSyncClient* device_sync_client,
+    device_sync::DeviceSyncClient* device_sync_client,
+    secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostFetcher* tether_host_fetcher,
     NotificationPresenter* notification_presenter,
     GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker,
@@ -85,9 +87,9 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::NewInstance(
     factory_instance_ = new Factory();
 
   return factory_instance_->BuildInstance(
-      cryptauth_service, device_sync_client, tether_host_fetcher,
-      notification_presenter, gms_core_notifications_state_tracker,
-      pref_service, network_state_handler,
+      cryptauth_service, device_sync_client, secure_channel_client,
+      tether_host_fetcher, notification_presenter,
+      gms_core_notifications_state_tracker, pref_service, network_state_handler,
       managed_network_configuration_handler, network_connect,
       network_connection_handler, adapter, session_manager);
 }
@@ -108,7 +110,8 @@ void TetherComponentImpl::RegisterProfilePrefs(
 
 std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::BuildInstance(
     cryptauth::CryptAuthService* cryptauth_service,
-    chromeos::device_sync::DeviceSyncClient* device_sync_client,
+    device_sync::DeviceSyncClient* device_sync_client,
+    secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostFetcher* tether_host_fetcher,
     NotificationPresenter* notification_presenter,
     GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker,
@@ -120,16 +123,17 @@ std::unique_ptr<TetherComponent> TetherComponentImpl::Factory::BuildInstance(
     scoped_refptr<device::BluetoothAdapter> adapter,
     session_manager::SessionManager* session_manager) {
   return base::WrapUnique(new TetherComponentImpl(
-      cryptauth_service, device_sync_client, tether_host_fetcher,
-      notification_presenter, gms_core_notifications_state_tracker,
-      pref_service, network_state_handler,
+      cryptauth_service, device_sync_client, secure_channel_client,
+      tether_host_fetcher, notification_presenter,
+      gms_core_notifications_state_tracker, pref_service, network_state_handler,
       managed_network_configuration_handler, network_connect,
       network_connection_handler, adapter, session_manager));
 }
 
 TetherComponentImpl::TetherComponentImpl(
     cryptauth::CryptAuthService* cryptauth_service,
-    chromeos::device_sync::DeviceSyncClient* device_sync_client,
+    device_sync::DeviceSyncClient* device_sync_client,
+    secure_channel::SecureChannelClient* secure_channel_client,
     TetherHostFetcher* tether_host_fetcher,
     NotificationPresenter* notification_presenter,
     GmsCoreNotificationsStateTrackerImpl* gms_core_notifications_state_tracker,
@@ -145,6 +149,7 @@ TetherComponentImpl::TetherComponentImpl(
               adapter,
               cryptauth_service,
               device_sync_client,
+              secure_channel_client,
               tether_host_fetcher,
               network_state_handler,
               managed_network_configuration_handler,
@@ -159,7 +164,8 @@ TetherComponentImpl::TetherComponentImpl(
               network_state_handler,
               network_connect,
               network_connection_handler,
-              session_manager)),
+              session_manager,
+              secure_channel_client)),
       crash_recovery_manager_(CrashRecoveryManagerImpl::Factory::NewInstance(
           network_state_handler,
           synchronous_shutdown_object_container_->active_host(),

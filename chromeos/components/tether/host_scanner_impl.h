@@ -27,6 +27,10 @@ class SessionManager;
 
 namespace chromeos {
 
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 namespace tether {
 
 class BleConnectionManager;
@@ -53,6 +57,7 @@ class HostScannerImpl : public HostScanner,
   };
 
   HostScannerImpl(
+      secure_channel::SecureChannelClient* secure_channel_client,
       NetworkStateHandler* network_state_handler,
       session_manager::SessionManager* session_manager,
       TetherHostFetcher* tether_host_fetcher,
@@ -107,6 +112,7 @@ class HostScannerImpl : public HostScanner,
   bool IsPotentialHotspotNotificationShowing();
   bool CanAvailableHostNotificationBeShown();
 
+  secure_channel::SecureChannelClient* secure_channel_client_;
   NetworkStateHandler* network_state_handler_;
   session_manager::SessionManager* session_manager_;
   TetherHostFetcher* tether_host_fetcher_;

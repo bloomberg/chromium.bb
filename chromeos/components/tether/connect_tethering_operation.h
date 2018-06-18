@@ -18,6 +18,10 @@
 
 namespace chromeos {
 
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 namespace tether {
 
 class MessageWrapper;
@@ -46,6 +50,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
    public:
     static std::unique_ptr<ConnectTetheringOperation> NewInstance(
         cryptauth::RemoteDeviceRef device_to_connect,
+        secure_channel::SecureChannelClient* secure_channel_client,
         BleConnectionManager* connection_manager,
         TetherHostResponseRecorder* tether_host_response_recorder,
         bool setup_required);
@@ -55,6 +60,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
    protected:
     virtual std::unique_ptr<ConnectTetheringOperation> BuildInstance(
         cryptauth::RemoteDeviceRef devices_to_connect,
+        secure_channel::SecureChannelClient* secure_channel_client,
         BleConnectionManager* connection_manager,
         TetherHostResponseRecorder* tether_host_response_recorder,
         bool setup_required);
@@ -84,6 +90,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
  protected:
   ConnectTetheringOperation(
       cryptauth::RemoteDeviceRef device_to_connect,
+      secure_channel::SecureChannelClient* secure_channel_client,
       BleConnectionManager* connection_manager,
       TetherHostResponseRecorder* tether_host_response_recorder,
       bool setup_required);
@@ -118,6 +125,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   static const uint32_t kSetupRequiredResponseTimeoutSeconds;
 
   cryptauth::RemoteDeviceRef remote_device_;
+  secure_channel::SecureChannelClient* secure_channel_client_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
   base::Clock* clock_;
   int connect_message_sequence_number_ = -1;

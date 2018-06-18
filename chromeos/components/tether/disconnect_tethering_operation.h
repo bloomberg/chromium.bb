@@ -11,6 +11,10 @@
 
 namespace chromeos {
 
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 namespace tether {
 
 class BleConnectionManager;
@@ -22,6 +26,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
    public:
     static std::unique_ptr<DisconnectTetheringOperation> NewInstance(
         cryptauth::RemoteDeviceRef device_to_connect,
+        secure_channel::SecureChannelClient* secure_channel_client,
         BleConnectionManager* connection_manager);
 
     static void SetInstanceForTesting(Factory* factory);
@@ -29,6 +34,7 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
    protected:
     virtual std::unique_ptr<DisconnectTetheringOperation> BuildInstance(
         cryptauth::RemoteDeviceRef device_to_connect,
+        secure_channel::SecureChannelClient* secure_channel_client,
         BleConnectionManager* connection_manager);
 
    private:
@@ -50,8 +56,10 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
   void RemoveObserver(Observer* observer);
 
  protected:
-  DisconnectTetheringOperation(cryptauth::RemoteDeviceRef device_to_connect,
-                               BleConnectionManager* connection_manager);
+  DisconnectTetheringOperation(
+      cryptauth::RemoteDeviceRef device_to_connect,
+      secure_channel::SecureChannelClient* secure_channel_client,
+      BleConnectionManager* connection_manager);
 
   void NotifyObserversOperationFinished(bool success);
 

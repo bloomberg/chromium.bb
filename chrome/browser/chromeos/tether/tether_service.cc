@@ -202,8 +202,8 @@ void TetherService::StartTetherIfPossible() {
   PA_LOG(INFO) << "Starting up TetherComponent.";
   tether_component_ =
       chromeos::tether::TetherComponentImpl::Factory::NewInstance(
-          cryptauth_service_, device_sync_client_, tether_host_fetcher_.get(),
-          notification_presenter_.get(),
+          cryptauth_service_, device_sync_client_, secure_channel_client_,
+          tether_host_fetcher_.get(), notification_presenter_.get(),
           gms_core_notifications_state_tracker_.get(), profile_->GetPrefs(),
           network_state_handler_,
           chromeos::NetworkHandler::Get()

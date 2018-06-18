@@ -17,6 +17,10 @@
 
 namespace chromeos {
 
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 namespace tether {
 
 class ConnectionPreserver;
@@ -35,6 +39,7 @@ class HostScannerOperation : public MessageTransferOperation {
    public:
     static std::unique_ptr<HostScannerOperation> NewInstance(
         const cryptauth::RemoteDeviceRefList& devices_to_connect,
+        secure_channel::SecureChannelClient* secure_channel_client,
         BleConnectionManager* connection_manager,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
         TetherHostResponseRecorder* tether_host_response_recorder,
@@ -45,6 +50,7 @@ class HostScannerOperation : public MessageTransferOperation {
    protected:
     virtual std::unique_ptr<HostScannerOperation> BuildInstance(
         const cryptauth::RemoteDeviceRefList& devices_to_connect,
+        secure_channel::SecureChannelClient* secure_channel_client,
         BleConnectionManager* connection_manager,
         HostScanDevicePrioritizer* host_scan_device_prioritizer,
         TetherHostResponseRecorder* tether_host_response_recorder,
@@ -89,6 +95,7 @@ class HostScannerOperation : public MessageTransferOperation {
  protected:
   HostScannerOperation(
       const cryptauth::RemoteDeviceRefList& devices_to_connect,
+      secure_channel::SecureChannelClient* secure_channel_client,
       BleConnectionManager* connection_manager,
       HostScanDevicePrioritizer* host_scan_device_prioritizer,
       TetherHostResponseRecorder* tether_host_response_recorder,

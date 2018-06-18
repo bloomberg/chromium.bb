@@ -25,6 +25,7 @@ namespace chromeos {
 namespace tether {
 
 HostScannerImpl::HostScannerImpl(
+    secure_channel::SecureChannelClient* secure_channel_client,
     NetworkStateHandler* network_state_handler,
     session_manager::SessionManager* session_manager,
     TetherHostFetcher* tether_host_fetcher,
@@ -37,7 +38,8 @@ HostScannerImpl::HostScannerImpl(
     HostScanCache* host_scan_cache,
     ConnectionPreserver* connection_preserver,
     base::Clock* clock)
-    : network_state_handler_(network_state_handler),
+    : secure_channel_client_(secure_channel_client),
+      network_state_handler_(network_state_handler),
       session_manager_(session_manager),
       tether_host_fetcher_(tether_host_fetcher),
       connection_manager_(connection_manager),
@@ -101,8 +103,9 @@ void HostScannerImpl::OnTetherHostsFetched(
       host_scan_cache_->GetTetherGuidsInCache();
 
   host_scanner_operation_ = HostScannerOperation::Factory::NewInstance(
-      tether_hosts, connection_manager_, host_scan_device_prioritizer_,
-      tether_host_response_recorder_, connection_preserver_);
+      tether_hosts, secure_channel_client_, connection_manager_,
+      host_scan_device_prioritizer_, tether_host_response_recorder_,
+      connection_preserver_);
   // Add |gms_core_notifications_state_tracker_| as the first observer. When the
   // final change event is emitted, this class will destroy
   // |host_scanner_operation_|, so |gms_core_notifications_state_tracker_| must

@@ -38,15 +38,16 @@ ConnectTetheringOperation::Factory*
 std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::NewInstance(
     cryptauth::RemoteDeviceRef device_to_connect,
+    secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
-  return factory_instance_->BuildInstance(device_to_connect, connection_manager,
-                                          tether_host_response_recorder,
-                                          setup_required);
+  return factory_instance_->BuildInstance(
+      device_to_connect, secure_channel_client, connection_manager,
+      tether_host_response_recorder, setup_required);
 }
 
 // static
@@ -58,22 +59,25 @@ void ConnectTetheringOperation::Factory::SetInstanceForTesting(
 std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::BuildInstance(
     cryptauth::RemoteDeviceRef device_to_connect,
+    secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required) {
   return base::WrapUnique(new ConnectTetheringOperation(
-      device_to_connect, connection_manager, tether_host_response_recorder,
-      setup_required));
+      device_to_connect, secure_channel_client, connection_manager,
+      tether_host_response_recorder, setup_required));
 }
 
 ConnectTetheringOperation::ConnectTetheringOperation(
     cryptauth::RemoteDeviceRef device_to_connect,
+    secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* connection_manager,
     TetherHostResponseRecorder* tether_host_response_recorder,
     bool setup_required)
     : MessageTransferOperation(
           cryptauth::RemoteDeviceRefList{device_to_connect},
           secure_channel::ConnectionPriority::kHigh,
+          secure_channel_client,
           connection_manager),
       remote_device_(device_to_connect),
       tether_host_response_recorder_(tether_host_response_recorder),
