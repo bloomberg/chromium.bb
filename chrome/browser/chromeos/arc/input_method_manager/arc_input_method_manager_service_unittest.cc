@@ -37,6 +37,14 @@ class TestInputMethodManager : public im::MockInputMethodManager {
       return active_input_method_ids_;
     }
 
+    im::InputMethodDescriptor GetCurrentInputMethod() const override {
+      im::InputMethodDescriptor descriptor(
+          active_ime_id_, "", "", std::vector<std::string>(),
+          std::vector<std::string>(), false /* is_login_keyboard */, GURL(),
+          GURL());
+      return descriptor;
+    }
+
     void AddActiveInputMethodId(const std::string& ime_id) {
       if (!std::count(active_input_method_ids_.begin(),
                       active_input_method_ids_.end(), ime_id)) {
@@ -50,12 +58,17 @@ class TestInputMethodManager : public im::MockInputMethodManager {
           [&ime_id](const std::string& id) { return id == ime_id; }));
     }
 
+    void SetActiveInputMethod(const std::string& ime_id) {
+      active_ime_id_ = ime_id;
+    }
+
    protected:
     friend base::RefCounted<InputMethodManager::State>;
     ~TestState() override = default;
 
    private:
     std::vector<std::string> active_input_method_ids_;
+    std::string active_ime_id_ = "";
   };
 
   TestInputMethodManager() {
@@ -88,10 +101,12 @@ class TestInputMethodManagerBridge : public ArcInputMethodManagerBridge {
   }
   void SendSwitchImeTo(const std::string& ime_id,
                        SwitchImeToCallback callback) override {
+    switch_ime_to_calls_.push_back(ime_id);
     std::move(callback).Run(true);
   }
 
   std::vector<std::tuple<std::string, bool>> enable_ime_calls_;
+  std::vector<std::string> switch_ime_to_calls_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestInputMethodManagerBridge);
@@ -100,11 +115,8 @@ class TestInputMethodManagerBridge : public ArcInputMethodManagerBridge {
 class ArcInputMethodManagerServiceTest : public testing::Test {
  protected:
   ArcInputMethodManagerServiceTest()
-      : arc_service_manager_(std::make_unique<ArcServiceManager>()),
-        context_(std::make_unique<TestBrowserContext>()),
-        service_(ArcInputMethodManagerService::GetForBrowserContextForTesting(
-            context_.get())) {}
-  ~ArcInputMethodManagerServiceTest() override { service_->Shutdown(); }
+      : arc_service_manager_(std::make_unique<ArcServiceManager>()) {}
+  ~ArcInputMethodManagerServiceTest() override {}
 
   ArcInputMethodManagerService* service() { return service_; }
 
@@ -116,6 +128,12 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
     input_method_manager_ = new TestInputMethodManager();
     chromeos::input_method::InputMethodManager::Initialize(
         input_method_manager_);
+
+    context_ = std::make_unique<TestBrowserContext>();
+
+    service_ = ArcInputMethodManagerService::GetForBrowserContextForTesting(
+        context_.get());
+
     test_bridge_ = new TestInputMethodManagerBridge();
     service_->SetInputMethodManagerBridgeForTesting(
         base::WrapUnique(test_bridge_));
@@ -123,6 +141,10 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
 
   void TearDown() override {
     test_bridge_ = nullptr;
+    service_->Shutdown();
+
+    context_.reset(nullptr);
+
     chromeos::input_method::InputMethodManager::Shutdown();
   }
 
@@ -133,7 +155,7 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
   TestInputMethodManager* input_method_manager_ = nullptr;
   TestInputMethodManagerBridge* test_bridge_ = nullptr;  // Owned by |service_|
 
-  ArcInputMethodManagerService* const service_ = nullptr;
+  ArcInputMethodManagerService* service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ArcInputMethodManagerServiceTest);
 };
@@ -193,6 +215,46 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
   imm()->state()->RemoveActiveInputMethodId(extension_ime_id);
   service()->ImeMenuListChanged();
   EXPECT_EQ(2u, bridge()->enable_ime_calls_.size());
+}
+
+TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
+  using namespace chromeos::extension_ime_util;
+  using crx_file::id_util::GenerateId;
+
+  const std::string arc_ime_service_id =
+      "org.chromium.arc.ime/.ArcInputMethodService";
+
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(kEnableInputMethodFeature);
+
+  ASSERT_EQ(0u, bridge()->switch_ime_to_calls_.size());
+
+  const std::string extension_ime_id =
+      GetInputMethodID(GenerateId("test.extension.ime"), "us");
+  const std::string component_extension_ime_id = GetComponentInputMethodID(
+      GenerateId("test.component.extension.ime"), "us");
+  const std::string arc_ime_id = GetArcInputMethodID(GenerateId("test.arc.ime"),
+                                                     "ime.id.in.arc.container");
+
+  // Set active input method to the extension ime.
+  imm()->state()->SetActiveInputMethod(extension_ime_id);
+  service()->InputMethodChanged(imm(), nullptr, false /* show_message */);
+  // ArcImeService should be selected.
+  ASSERT_EQ(1u, bridge()->switch_ime_to_calls_.size());
+  EXPECT_EQ(arc_ime_service_id, bridge()->switch_ime_to_calls_[0]);
+
+  // Set active input method to the component extension ime.
+  imm()->state()->SetActiveInputMethod(component_extension_ime_id);
+  service()->InputMethodChanged(imm(), nullptr, false /* show_message */);
+  // ArcImeService should be selected.
+  ASSERT_EQ(2u, bridge()->switch_ime_to_calls_.size());
+  EXPECT_EQ(arc_ime_service_id, bridge()->switch_ime_to_calls_[1]);
+
+  // Set active input method to the arc ime.
+  imm()->state()->SetActiveInputMethod(arc_ime_id);
+  service()->InputMethodChanged(imm(), nullptr, false /* show_message */);
+  ASSERT_EQ(3u, bridge()->switch_ime_to_calls_.size());
+  EXPECT_EQ("ime.id.in.arc.container", bridge()->switch_ime_to_calls_[2]);
 }
 
 }  // namespace arc
