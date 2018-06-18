@@ -32,16 +32,90 @@ general use and is not localized.
     <table id="tab-discard-info-table">
       <thead>
         <tr id="tab-discards-info-table-header">
-          <th data-sort-key="utilityRank" class="sort-column">Utility Rank</th>
-          <th data-sort-key="reactivationScore">Reactivation Score</th>
-          <th data-sort-key="title">Tab Title</th>
-          <th data-sort-key="tabUrl">Tab URL</th>
-          <th data-sort-key="visibility">Visibility</th>
-          <th data-sort-key="state">State</th>
-          <th data-sort-key="isMedia">Media</th>
-          <th data-sort-key="discardCount">Discard Count</th>
-          <th data-sort-key="isAutoDiscardable">Auto Discardable</th>
-          <th data-sort-key="lastActiveSeconds">Last Active</th>
+          <th data-sort-key="utilityRank" class="sort-column">
+            <div class="header-cell-container">
+              <div>
+                <div>Utility</div>
+                <div>Rank<div>
+              </div>
+            </div>
+          </th>
+          <th data-sort-key="reactivationScore">
+            <div class="header-cell-container">
+              <div>
+                <div>Reactivation</div>
+                <div>Score</div>
+              </div>
+            </div>
+          </th>
+          <th data-sort-key="siteEngagementScore">
+            <div class="header-cell-container">
+              <div>
+                <div>Site</div>
+                <div>Engagement</div>
+                <div>Score</div>
+              </div>
+            </div>
+          </th>
+          <th data-sort-key="title">
+            <div class="header-cell-container">
+              Tab Title
+            </div>
+          </th>
+          <th data-sort-key="tabUrl">
+            <div class="header-cell-container">
+              Tab URL
+            </div>
+          </th>
+          <th data-sort-key="visibility">
+            <div class="header-cell-container">
+              Visibility
+            </div>
+          </th>
+          <th data-sort-key="loadingState">
+            <div class="header-cell-container">
+              Loading State
+            </div>
+          </th>
+          <th data-sort-key="state">
+            <div class="header-cell-container">
+              <div>
+                <div>Lifecycle</div>
+                <div>State</div>
+              </div>
+            </div>
+          </th>
+          <th data-sort-key="isMedia">
+            <div class="header-cell-container">
+              Media
+            </div>
+          </th>
+          <th data-sort-key="discardCount">
+            <div class="header-cell-container">
+              <div>
+                <div>Discard</div>
+                <div>Count</div>
+              </div>
+            </div>
+          </div></th>
+          <th data-sort-key="isAutoDiscardable">
+            <div class="header-cell-container">
+              <div>
+                <div>Auto</div>
+                <div>Discardable</div>
+              </div>
+            </div>
+          </th>
+          <th data-sort-key="lastActiveSeconds">
+            <div class="header-cell-container">
+              Last Active
+            </div>
+          </th>
+          <th>
+            <div class="header-cell-container">
+              Actions
+            </div>
+          </th>
         </tr>
       </thead>
       <tbody id="tab-discards-info-table-body">
@@ -51,6 +125,7 @@ general use and is not localized.
       <tr>
         <td class="utility-rank-cell"></td>
         <td class="reactivation-score-cell"></td>
+        <td class="site-engagement-score-cell"></td>
         <td class="title-cell">
           <div class="title-cell-container">
             <div class="favicon-div"></div>
@@ -59,22 +134,24 @@ general use and is not localized.
         </td>
         <td class="tab-url-cell"></td>
         <td class="visibility-cell"></td>
+        <td class="loading-state-cell"></td>
         <td class="state-cell"></td>
         <td class="is-media-cell boolean-cell"></td>
         <td class="discard-count-cell"></td>
         <td class="is-auto-discardable-cell boolean-cell">
           <div class="is-auto-discardable-div"></div>
           <div is="action-link" class="is-auto-discardable-link">
-            Toggle
+            [Toggle]
           </div>
         </td>
         <td class="last-active-cell"></td>
-        <td class="discard-links-cell">
+        <td class="actions-cell">
+          <div is="action-link" class="load-link">[Load]</div>
+          <div is="action-link" class="freeze-link">[Freeze]</div>
           <div is="action-link" class="discard-link">[Discard]</div>
           <div is="action-link" class="discard-urgent-link">
             [Urgent Discard]
           </div>
-          <div is="action-link" class="freeze-link">[Freeze]</div>
         </td>
       </tr>
     </template>

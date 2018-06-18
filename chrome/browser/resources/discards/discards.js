@@ -71,14 +71,17 @@ cr.define('discards', function() {
     }
 
     // Compares numeric fields.
-    // Note: Visibility and state are represented as a numeric value.
+    // NOTE: visibility, loadingState and state are represented as a numeric
+    // value.
     if ([
           'visibility',
+          'loadingState',
           'state',
           'discardCount',
           'utilityRank',
           'reactivationScore',
           'lastActiveSeconds',
+          'siteEngagementScore',
         ].includes(sortKey)) {
       return val1 - val2;
     }
@@ -203,6 +206,24 @@ cr.define('discards', function() {
     assertNotReached('Unsupported visibility: ' + visibility);
   }
 
+  /**
+   * Returns a string representation of a loading state enum value for display
+   * in a table.
+   * @param {int} loadingState A value in LifecycleUnitLoadingState enum.
+   * @return {string} A string representation of the loading state.
+   */
+  function loadingStateToString(loadingState) {
+    switch (loadingState) {
+      case 0:
+        return 'unloaded';
+      case 1:
+        return 'loading';
+      case 2:
+        return 'loaded';
+    }
+    assertNotReached('Unsupport loadingState: ' + loadingState);
+  }
+
   function lifecycleStateToString(state) {
     switch (state) {
       case mojom.LifecycleUnitState.ACTIVE:
@@ -253,6 +274,26 @@ cr.define('discards', function() {
           .then(stableUpdateTabDiscardsInfoTable());
     });
 
+    // Set up the listeners for load links.
+    let loadListener = function(e) {
+      // Get the info backing this row.
+      let info = infos[getRowIndex(e.target)];
+      // Perform the action.
+      uiHandler.loadById(info.id);
+    };
+    let loadLink = row.querySelector('.load-link');
+    loadLink.addEventListener('click', loadListener);
+
+    // Set up the listeners for freeze links.
+    let freezeListener = function(e) {
+      // Get the info backing this row.
+      let info = infos[getRowIndex(e.target)];
+      // Perform the action.
+      uiHandler.freezeById(info.id);
+    };
+    let freezeLink = row.querySelector('.freeze-link');
+    freezeLink.addEventListener('click', freezeListener);
+
     // Set up the listeners for discard links.
     let discardListener = function(e) {
       // Get the info backing this row.
@@ -272,19 +313,17 @@ cr.define('discards', function() {
     discardLink.addEventListener('click', discardListener);
     discardUrgentLink.addEventListener('click', discardListener);
 
-
-    // Set up the listeners for freeze links.
-    let lifecycleListener = function(e) {
-      // Get the info backing this row.
-      let info = infos[getRowIndex(e.target)];
-      // Perform the action.
-      uiHandler.freezeById(info.id);
-    };
-
-    let freezeLink = row.querySelector('.freeze-link');
-    freezeLink.addEventListener('click', lifecycleListener);
-
     return row;
+  }
+
+  /**
+   * Given an "action-link" element, enables or disables it.
+   */
+  function setActionLinkEnabled(element, enabled) {
+    if (enabled)
+      element.removeAttribute('disabled');
+    else
+      element.setAttribute('disabled', '');
   }
 
   /**
@@ -297,16 +336,23 @@ cr.define('discards', function() {
         info.utilityRank.toString();
     row.querySelector('.reactivation-score-cell').textContent =
         info.hasReactivationScore ? info.reactivationScore.toFixed(4) : 'N/A';
+    row.querySelector('.site-engagement-score-cell').textContent =
+        info.siteEngagementScore.toFixed(1);
     row.querySelector('.favicon-div').style.backgroundImage =
         cr.icon.getFavicon(info.tabUrl);
     row.querySelector('.title-div').textContent = info.title;
     row.querySelector('.tab-url-cell').textContent = info.tabUrl;
     row.querySelector('.visibility-cell').textContent =
         visibilityToString(info.visibility);
+    row.querySelector('.loading-state-cell').textContent =
+        loadingStateToString(info.loadingState);
     row.querySelector('.is-media-cell').textContent =
         boolToString(info.isMedia);
+    // The lifecycle state is meaningless for 'unloaded' tabs.
     row.querySelector('.state-cell').textContent =
-        lifecycleStateToString(info.state);
+        (info.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED) ?
+        lifecycleStateToString(info.state) :
+        '';
     row.querySelector('.discard-count-cell').textContent =
         info.discardCount.toString();
     row.querySelector('.is-auto-discardable-div').textContent =
@@ -314,31 +360,45 @@ cr.define('discards', function() {
     row.querySelector('.last-active-cell').textContent =
         lastActiveToString(info.lastActiveSeconds);
 
-    // Enable/disable action links as appropriate.
     row.querySelector('.is-auto-discardable-link').removeAttribute('disabled');
+    let loadLink = row.querySelector('.load-link');
+    let freezeLink = row.querySelector('.freeze-link');
     let discardLink = row.querySelector('.discard-link');
     let discardUrgentLink = row.querySelector('.discard-urgent-link');
-    let freezeLink = row.querySelector('.freeze-link');
-    switch (info.state) {
-      case mojom.LifecycleUnitState.ACTIVE:
-        discardLink.removeAttribute('disabled');
-        discardUrgentLink.removeAttribute('disabled');
-        freezeLink.removeAttribute('disabled');
-        break;
-      case mojom.LifecycleUnitState.THROTTLED:
-      case mojom.LifecycleUnitState.PENDING_FREEZE:
-      case mojom.LifecycleUnitState.FROZEN:
-        discardLink.removeAttribute('disabled');
-        discardUrgentLink.removeAttribute('disabled');
-        freezeLink.setAttribute('disabled', '');
-        break;
-      case mojom.LifecycleUnitState.PENDING_DISCARD:
-      case mojom.LifecycleUnitState.DISCARDED:
-        discardLink.setAttribute('disabled', '');
-        discardUrgentLink.setAttribute('disabled', '');
-        freezeLink.setAttribute('disabled', '');
-        break;
+
+    // Determine which action links should be enabled/disabled.
+    let loadEnabled = false;
+    let freezeEnabled = false;
+    let discardEnabled = false;
+    let discardUrgentEnabled = false;
+    if (info.loadingState == mojom.LifecycleUnitLoadingState.UNLOADED) {
+      loadEnabled = true;
+    } else {
+      freezeEnabled = true;
+      discardEnabled = true;
+      discardUrgentEnabled = true;
+      switch (info.state) {
+        case mojom.LifecycleUnitState.DISCARDED:
+        case mojom.LifecycleUnitState.PENDING_DISCARD:
+          discardUrgentEnabled = false;
+          discardEnabled = false;
+        // Deliberately fall through.
+
+        case mojom.LifecycleUnitState.FROZEN:
+        case mojom.LifecycleUnitState.PENDING_FREEZE:
+          freezeEnabled = false;
+        // Deliberately fall through.
+
+        case mojom.LifecycleUnitState.THROTTLED:
+        case mojom.LifecycleUnitState.ACTIVE:
+          // Everything stays enabled,
+      }
     }
+
+    setActionLinkEnabled(loadLink, loadEnabled);
+    setActionLinkEnabled(freezeLink, freezeEnabled);
+    setActionLinkEnabled(discardLink, discardEnabled);
+    setActionLinkEnabled(discardUrgentLink, discardUrgentEnabled);
   }
 
   /**

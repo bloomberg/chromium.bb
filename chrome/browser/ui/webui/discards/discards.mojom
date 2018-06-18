@@ -22,6 +22,8 @@ struct TabDiscardsInfo {
   string title;
   // The visibility of the LifecycleUnit.
   LifecycleUnitVisibility visibility;
+  // The loading state of the LifecycleUnit.
+  LifecycleUnitLoadingState loading_state;
   // The state of the LifecycleUnit.
   LifecycleUnitState state;
   // If the tab is currently using media functionality (casting, WebRTC, playing
@@ -47,6 +49,8 @@ struct TabDiscardsInfo {
   bool has_reactivation_score;
   // Tab Ranker reactivation score, if |has_reactivation_score| is true.
   double reactivation_score;
+  // Site engagement score.
+  double site_engagement_score;
 };
 
 // Interface for providing information about discards. Lives in the browser
@@ -69,6 +73,9 @@ interface DiscardsDetailsProvider {
 
   // Freezes a tab given its |tab_id|.
   FreezeById(int32 tab_id);
+
+  // Loads a tab given its |tab_id|.
+  LoadById(int32 tab_id);
 
   // Discards the least important tab. If |urgent| is specified the unload
   // handlers will not be run, and the tab will be unloaded with prejudice.
