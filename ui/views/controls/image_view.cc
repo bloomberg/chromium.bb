@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/paint_flags.h"
+#include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
@@ -43,6 +44,7 @@ void ImageView::SetImage(const gfx::ImageSkia& img) {
   last_painted_bitmap_pixels_ = nullptr;
   gfx::Size pref_size(GetPreferredSize());
   image_ = img;
+  scaled_image_ = gfx::ImageSkia();
   if (pref_size != GetPreferredSize())
     PreferredSizeChanged();
   SchedulePaint();
@@ -207,25 +209,50 @@ void ImageView::OnPaintImage(gfx::Canvas* canvas) {
   last_paint_scale_ = canvas->image_scale();
   last_painted_bitmap_pixels_ = nullptr;
 
-  if (image_.isNull())
+  gfx::ImageSkia image = GetPaintImage(last_paint_scale_);
+  if (image.isNull())
     return;
 
   gfx::Rect image_bounds(GetImageBounds());
   if (image_bounds.IsEmpty())
     return;
 
-  if (image_bounds.size() != gfx::Size(image_.width(), image_.height())) {
+  if (image_bounds.size() != gfx::Size(image.width(), image.height())) {
     // Resize case
     cc::PaintFlags flags;
     flags.setFilterQuality(kLow_SkFilterQuality);
-    canvas->DrawImageInt(image_, 0, 0, image_.width(), image_.height(),
+    canvas->DrawImageInt(image, 0, 0, image.width(), image.height(),
                          image_bounds.x(), image_bounds.y(),
                          image_bounds.width(), image_bounds.height(), true,
                          flags);
   } else {
-    canvas->DrawImageInt(image_, image_bounds.x(), image_bounds.y());
+    canvas->DrawImageInt(image, image_bounds.x(), image_bounds.y());
   }
-  last_painted_bitmap_pixels_ = GetBitmapPixels(image_, last_paint_scale_);
+  last_painted_bitmap_pixels_ = GetBitmapPixels(image, last_paint_scale_);
+}
+
+gfx::ImageSkia ImageView::GetPaintImage(float scale) {
+  if (image_.isNull())
+    return image_;
+
+  const gfx::ImageSkiaRep& rep = image_.GetRepresentation(scale);
+  if (rep.scale() == scale)
+    return image_;
+
+  if (scaled_image_.HasRepresentation(scale))
+    return scaled_image_;
+
+  // Only caches one image rep for the current scale.
+  scaled_image_ = gfx::ImageSkia();
+
+  gfx::Size scaled_size =
+      gfx::ScaleToCeiledSize(rep.pixel_size(), scale / rep.scale());
+  scaled_image_.AddRepresentation(gfx::ImageSkiaRep(
+      skia::ImageOperations::Resize(rep.sk_bitmap(),
+                                    skia::ImageOperations::RESIZE_BEST,
+                                    scaled_size.width(), scaled_size.height()),
+      scale));
+  return scaled_image_;
 }
 
 }  // namespace views
