@@ -42,7 +42,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/ssl/chrome_expect_ct_reporter.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -704,15 +703,6 @@ ProfileIOData::~ProfileIOData() {
   if (domain_reliability_monitor_unowned_)
     domain_reliability_monitor_unowned_->Shutdown();
 
-  if (main_request_context_) {
-    main_request_context_->transport_security_state()->SetExpectCTReporter(
-        nullptr);
-    expect_ct_reporter_.reset();
-
-    main_request_context_->transport_security_state()->SetRequireCTDelegate(
-        nullptr);
-  }
-
   // TODO(ajwong): These AssertNoURLRequests() calls are unnecessary since they
   // are already done in the URLRequestContext destructor.
   if (extensions_request_context_)
@@ -1200,15 +1190,6 @@ void ProfileIOData::Init(
       domain_reliability_monitor_unowned_->SetDiscardUploads(
           !GetMetricsEnabledStateOnIOThread());
     }
-
-    // Attach some things to the URLRequestContextBuilder's
-    // TransportSecurityState.  Since no requests have been made yet, safe to do
-    // this even after the call to Build().
-
-    expect_ct_reporter_.reset(new ChromeExpectCTReporter(
-        main_request_context_, base::Closure(), base::Closure()));
-    main_request_context_->transport_security_state()->SetExpectCTReporter(
-        expect_ct_reporter_.get());
 
     resource_context_->host_resolver_ =
         io_thread_globals->system_request_context->host_resolver();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/chrome_expect_ct_reporter.h"
+#include "services/network/expect_ct_reporter.h"
 
 #include <string>
 
@@ -12,9 +12,8 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "chrome/common/chrome_features.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/test/cert_test_util.h"
@@ -27,9 +26,11 @@
 #include "net/url_request/report_sender.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+namespace network {
 namespace {
 
 const char kSendHistogramName[] = "SSL.ExpectCTReportSendingAttempt";
@@ -279,10 +280,11 @@ class TestExpectCTNetworkDelegate : public net::NetworkDelegateImpl {
 
 // A test fixture that allows tests to send a report and wait until the
 // net::URLRequest that sent the report is destroyed.
-class ChromeExpectCTReporterWaitTest : public ::testing::Test {
+class ExpectCTReporterWaitTest : public ::testing::Test {
  public:
-  ChromeExpectCTReporterWaitTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+  ExpectCTReporterWaitTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
   void SetUp() override {
     // Initializes URLRequestContext after the thread is set up.
@@ -299,7 +301,7 @@ class ChromeExpectCTReporterWaitTest : public ::testing::Test {
   net::TestURLRequestContext* context() { return context_.get(); }
 
  protected:
-  void SendReport(ChromeExpectCTReporter* reporter,
+  void SendReport(ExpectCTReporter* reporter,
                   const net::HostPortPair& host_port,
                   const GURL& report_uri,
                   base::Time expiration,
@@ -316,23 +318,23 @@ class ChromeExpectCTReporterWaitTest : public ::testing::Test {
  private:
   TestExpectCTNetworkDelegate network_delegate_;
   std::unique_ptr<net::TestURLRequestContext> context_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeExpectCTReporterWaitTest);
+  DISALLOW_COPY_AND_ASSIGN(ExpectCTReporterWaitTest);
 };
 
 // A test fixture that responds properly to CORS preflights so that reports can
 // be successfully sent to test_server().
-class ChromeExpectCTReporterTest : public ::testing::Test {
+class ExpectCTReporterTest : public ::testing::Test {
  public:
-  ChromeExpectCTReporterTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-  ~ChromeExpectCTReporterTest() override {}
+  ExpectCTReporterTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+  ~ExpectCTReporterTest() override {}
 
   void SetUp() override {
-    report_server_.RegisterRequestHandler(
-        base::Bind(&ChromeExpectCTReporterTest::HandleReportPreflight,
-                   base::Unretained(this)));
+    report_server_.RegisterRequestHandler(base::Bind(
+        &ExpectCTReporterTest::HandleReportPreflight, base::Unretained(this)));
     ASSERT_TRUE(report_server_.Start());
   }
 
@@ -376,7 +378,7 @@ class ChromeExpectCTReporterTest : public ::testing::Test {
   // |preflight_header_bad_value|, and that reports are successfully sent when
   // it has value given by |preflight_header_good_value|.
   void TestForReportPreflightFailure(
-      ChromeExpectCTReporter* reporter,
+      ExpectCTReporter* reporter,
       TestCertificateReportSender* sender,
       const net::HostPortPair& host_port,
       const net::SSLInfo& ssl_info,
@@ -410,7 +412,7 @@ class ChromeExpectCTReporterTest : public ::testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   net::EmbeddedTestServer report_server_;
   // Set to true when HandleReportPreflight() has been called. Used by
   // WaitForReportPreflight() to determine when to just return immediately
@@ -426,13 +428,13 @@ class ChromeExpectCTReporterTest : public ::testing::Test {
 }  // namespace
 
 // Test that no report is sent when the feature is not enabled.
-TEST_F(ChromeExpectCTReporterTest, FeatureDisabled) {
+TEST_F(ExpectCTReporterTest, FeatureDisabled) {
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kSendHistogramName, 0);
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
+  ExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -476,13 +478,13 @@ TEST_F(ChromeExpectCTReporterTest, FeatureDisabled) {
 }
 
 // Test that no report is sent if the report URI is empty.
-TEST_F(ChromeExpectCTReporterTest, EmptyReportURI) {
+TEST_F(ExpectCTReporterTest, EmptyReportURI) {
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kSendHistogramName, 0);
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
+  ExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -497,12 +499,12 @@ TEST_F(ChromeExpectCTReporterTest, EmptyReportURI) {
 }
 
 // Test that if a report fails to send, the UMA metric is recorded.
-TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailure) {
+TEST_F(ExpectCTReporterWaitTest, SendReportFailure) {
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kFailureHistogramName, 0);
   histograms.ExpectTotalCount(kSendHistogramName, 0);
 
-  ChromeExpectCTReporter reporter(context(), base::Closure(), base::Closure());
+  ExpectCTReporter reporter(context(), base::Closure(), base::Closure());
 
   net::SSLInfo ssl_info;
   ssl_info.cert =
@@ -524,10 +526,9 @@ TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailure) {
 }
 
 // Test that if a report fails to send, the failure callback is called.
-TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailureCallback) {
+TEST_F(ExpectCTReporterWaitTest, SendReportFailureCallback) {
   base::RunLoop run_loop;
-  ChromeExpectCTReporter reporter(context(), base::Closure(),
-                                  run_loop.QuitClosure());
+  ExpectCTReporter reporter(context(), base::Closure(), run_loop.QuitClosure());
 
   net::SSLInfo ssl_info;
   ssl_info.cert =
@@ -546,14 +547,14 @@ TEST_F(ChromeExpectCTReporterWaitTest, SendReportFailureCallback) {
 }
 
 // Test that a sent report has the right format.
-TEST_F(ChromeExpectCTReporterTest, SendReport) {
+TEST_F(ExpectCTReporterTest, SendReport) {
   base::HistogramTester histograms;
   histograms.ExpectTotalCount(kFailureHistogramName, 0);
   histograms.ExpectTotalCount(kSendHistogramName, 0);
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
+  ExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -645,12 +646,11 @@ TEST_F(ChromeExpectCTReporterTest, SendReport) {
 }
 
 // Test that the success callback is called when a report is successfully sent.
-TEST_F(ChromeExpectCTReporterTest, SendReportSuccessCallback) {
+TEST_F(ExpectCTReporterTest, SendReportSuccessCallback) {
   base::RunLoop run_loop;
 
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context, run_loop.QuitClosure(),
-                                  base::Closure());
+  ExpectCTReporter reporter(&context, run_loop.QuitClosure(), base::Closure());
 
   net::SSLInfo ssl_info;
   ssl_info.cert =
@@ -687,12 +687,12 @@ TEST_F(ChromeExpectCTReporterTest, SendReportSuccessCallback) {
 }
 
 // Test that report preflight responses can contain whitespace.
-TEST_F(ChromeExpectCTReporterTest, PreflightContainsWhitespace) {
+TEST_F(ExpectCTReporterTest, PreflightContainsWhitespace) {
   SetCORSHeaderWithWhitespace();
 
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
+  ExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -719,10 +719,10 @@ TEST_F(ChromeExpectCTReporterTest, PreflightContainsWhitespace) {
 
 // Test that no report is sent when the CORS preflight returns an invalid
 // Access-Control-Allow-Origin.
-TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseOrigin) {
+TEST_F(ExpectCTReporterTest, BadCORSPreflightResponseOrigin) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
+  ExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -743,10 +743,10 @@ TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseOrigin) {
 
 // Test that no report is sent when the CORS preflight returns an invalid
 // Access-Control-Allow-Methods.
-TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseMethods) {
+TEST_F(ExpectCTReporterTest, BadCORSPreflightResponseMethods) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
+  ExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -767,10 +767,10 @@ TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseMethods) {
 
 // Test that no report is sent when the CORS preflight returns an invalid
 // Access-Control-Allow-Headers.
-TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseHeaders) {
+TEST_F(ExpectCTReporterTest, BadCORSPreflightResponseHeaders) {
   TestCertificateReportSender* sender = new TestCertificateReportSender();
   net::TestURLRequestContext context;
-  ChromeExpectCTReporter reporter(&context, base::Closure(), base::Closure());
+  ExpectCTReporter reporter(&context, base::Closure(), base::Closure());
   reporter.report_sender_.reset(sender);
   EXPECT_TRUE(sender->latest_report_uri().is_empty());
   EXPECT_TRUE(sender->latest_serialized_report().empty());
@@ -788,3 +788,5 @@ TEST_F(ChromeExpectCTReporterTest, BadCORSPreflightResponseHeaders) {
       &reporter, sender, net::HostPortPair("example.test", 443), ssl_info,
       "Access-Control-Allow-Headers", "Not-Content-Type", "Content-Type"));
 }
+
+}  // namespace network

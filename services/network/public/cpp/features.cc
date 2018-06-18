@@ -7,6 +7,11 @@
 namespace network {
 namespace features {
 
+// Enables Expect CT reporting, which sends reports for opted-in sites
+// that don't serve sufficient Certificate Transparency information.
+const base::Feature kExpectCTReporting{"ExpectCTReporting",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kNetworkErrorLogging{"NetworkErrorLogging",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables the network service.

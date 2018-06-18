@@ -1408,8 +1408,6 @@ jumbo_split_static_library("browser") {
     "ssl/certificate_error_report.h",
     "ssl/certificate_error_reporter.cc",
     "ssl/certificate_error_reporter.h",
-    "ssl/chrome_expect_ct_reporter.cc",
-    "ssl/chrome_expect_ct_reporter.h",
     "ssl/chrome_ssl_host_state_delegate.cc",
     "ssl/chrome_ssl_host_state_delegate.h",
     "ssl/chrome_ssl_host_state_delegate_factory.cc",

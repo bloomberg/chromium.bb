@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_CHROME_EXPECT_CT_REPORTER_H_
-#define CHROME_BROWSER_SSL_CHROME_EXPECT_CT_REPORTER_H_
+#ifndef SERVICES_NETWORK_EXPECT_CT_REPORTER_H_
+#define SERVICES_NETWORK_EXPECT_CT_REPORTER_H_
 
 #include <map>
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "net/http/transport_security_state.h"
 #include "net/url_request/url_request.h"
@@ -16,6 +17,8 @@ namespace net {
 class ReportSender;
 class URLRequestContext;
 }  // namespace net
+
+namespace network {
 
 // This class monitors for violations of CT policy and sends reports
 // about failures for sites that have opted in. Must be deleted before
@@ -26,17 +29,17 @@ class URLRequestContext;
 // sends CORS preflight requests before sending reports. Expect-CT is not
 // evaluated with a particular frame or request as context, so the preflight
 // request contains an `Origin: null` header instead of a particular origin.
-class ChromeExpectCTReporter
+class COMPONENT_EXPORT(NETWORK_SERVICE) ExpectCTReporter
     : public net::TransportSecurityState::ExpectCTReporter,
       net::URLRequest::Delegate {
  public:
-  // Constructs a ChromeExpectCTReporter that sends reports with the given
+  // Constructs a ExpectCTReporter that sends reports with the given
   // |request_context|. |success_callback| is called whenever a report sends
   // successfully, and |failure_callback| whenever a report fails to send.
-  ChromeExpectCTReporter(net::URLRequestContext* request_context,
-                         const base::Closure& success_callback,
-                         const base::Closure& failure_callback);
-  ~ChromeExpectCTReporter() override;
+  ExpectCTReporter(net::URLRequestContext* request_context,
+                   const base::Closure& success_callback,
+                   const base::Closure& failure_callback);
+  ~ExpectCTReporter() override;
 
   // net::ExpectCTReporter:
   void OnExpectCTFailed(const net::HostPortPair& host_port_pair,
@@ -68,16 +71,15 @@ class ChromeExpectCTReporter
     const GURL report_uri;
   };
 
-  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, FeatureDisabled);
-  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, EmptyReportURI);
-  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, SendReport);
-  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest,
-                           PreflightContainsWhitespace);
-  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest,
+  FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest, FeatureDisabled);
+  FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest, EmptyReportURI);
+  FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest, SendReport);
+  FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest, PreflightContainsWhitespace);
+  FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest,
                            BadCORSPreflightResponseOrigin);
-  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest,
+  FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest,
                            BadCORSPreflightResponseMethods);
-  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest,
+  FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest,
                            BadCORSPreflightResponseHeaders);
 
   // Starts a CORS preflight request to obtain permission from the server to
@@ -106,7 +108,9 @@ class ChromeExpectCTReporter
   std::map<net::URLRequest*, std::unique_ptr<PreflightInProgress>>
       inflight_preflights_;
 
-  DISALLOW_COPY_AND_ASSIGN(ChromeExpectCTReporter);
+  DISALLOW_COPY_AND_ASSIGN(ExpectCTReporter);
 };
 
-#endif  // CHROME_BROWSER_SSL_CHROME_EXPECT_CT_REPORTER_H_
+}  // namespace network
+
+#endif  // SERVICES_NETWORK_EXPECT_CT_REPORTER_H_

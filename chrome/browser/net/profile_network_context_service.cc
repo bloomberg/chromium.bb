@@ -216,6 +216,7 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 
   network_context_params->enable_certificate_reporting = true;
+  network_context_params->enable_expect_ct_reporting = true;
 
   return network_context_params;
 }
