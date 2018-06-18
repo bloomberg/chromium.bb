@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "components/version_info/version_info.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
 #include "components/webrtc_logging/browser/log_list.h"
@@ -27,7 +28,9 @@
 #include "net/base/mime_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "third_party/zlib/zlib.h"
 
 using content::BrowserThread;
@@ -88,7 +91,7 @@ WebRtcLogUploader::WebRtcLogUploader()
 
 WebRtcLogUploader::~WebRtcLogUploader() {
   DCHECK_CALLED_ON_VALID_THREAD(create_thread_checker_);
-  DCHECK(upload_done_data_.empty());
+  DCHECK(pending_uploads_.empty());
   DCHECK(shutting_down_);
 }
 
@@ -292,38 +295,36 @@ void WebRtcLogUploader::StartShutdown() {
                                          base::Unretained(this)));
 }
 
-void WebRtcLogUploader::OnURLFetchComplete(const net::URLFetcher* source) {
+void WebRtcLogUploader::OnSimpleLoaderComplete(
+    SimpleURLLoaderList::iterator it,
+    WebRtcLogUploadDoneData upload_done_data,
+    std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(upload_done_data_.find(source) != upload_done_data_.end());
   DCHECK(!shutting_down_);
-  int response_code = source->GetResponseCode();
-  UploadDoneDataMap::iterator it = upload_done_data_.find(source);
-  if (it != upload_done_data_.end()) {
-    // The log path can be empty here if we failed getting it before. We still
-    // upload the log if that's the case.
-    std::string report_id;
-    if (response_code == net::HTTP_OK &&
-        source->GetResponseAsString(&report_id) &&
-        !it->second.log_path.empty()) {
-      // TODO(jiayl): Add the RTP dump records to chrome://webrtc-logs.
-      base::FilePath log_list_path =
-          webrtc_logging::LogList::GetWebRtcLogListFileForDirectory(
-              it->second.log_path);
-      background_task_runner_->PostTask(
-          FROM_HERE,
-          base::BindOnce(&WebRtcLogUploader::AddUploadedLogInfoToUploadListFile,
-                         log_list_path, it->second.local_log_id, report_id));
-    }
-    NotifyUploadDone(response_code, report_id, it->second);
-    upload_done_data_.erase(it);
+  network::SimpleURLLoader* loader = it->get();
+  int response_code = -1;
+  if (loader->ResponseInfo() && loader->ResponseInfo()->headers) {
+    response_code = loader->ResponseInfo()->headers->response_code();
   }
-
-  delete source;
+  pending_uploads_.erase(it);
+  std::string report_id;
+  if (response_body)
+    report_id = std::move(*response_body);
+  // The log path can be empty here if we failed getting it before. We still
+  // upload the log if that's the case.
+  if (!upload_done_data.log_path.empty()) {
+    // TODO(jiayl): Add the RTP dump records to chrome://webrtc-logs.
+    base::FilePath log_list_path =
+        webrtc_logging::LogList::GetWebRtcLogListFileForDirectory(
+            upload_done_data.log_path);
+    background_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WebRtcLogUploader::AddUploadedLogInfoToUploadListFile,
+                       log_list_path, upload_done_data.local_log_id,
+                       report_id));
+  }
+  NotifyUploadDone(response_code, report_id, upload_done_data);
 }
-
-void WebRtcLogUploader::OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                                 int64_t current,
-                                                 int64_t total) {}
 
 void WebRtcLogUploader::SetupMultipart(
     std::string* post_data,
@@ -474,35 +475,24 @@ void WebRtcLogUploader::UploadCompressedLog(
         })");
 
   constexpr char kUploadURL[] = "https://clients2.google.com/cr/report";
-  std::unique_ptr<net::URLFetcher> url_fetcher(net::URLFetcher::Create(
-      GURL(kUploadURL), net::URLFetcher::POST, this, traffic_annotation));
-  url_fetcher->SetUploadData(content_type, *post_data);
-  url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                            net::LOAD_DO_NOT_SAVE_COOKIES);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&WebRtcLogUploader::SetRequestContextOnUIThread,
-                     base::Unretained(this), std::move(url_fetcher),
-                     upload_done_data));
-}
-
-void WebRtcLogUploader::SetRequestContextOnUIThread(
-    std::unique_ptr<net::URLFetcher> url_fetcher,
-    const WebRtcLogUploadDoneData& data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  url_fetcher->SetRequestContext(g_browser_process->system_request_context());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&WebRtcLogUploader::StartAndTrackRequestContext,
-                     base::Unretained(this), std::move(url_fetcher), data));
-}
-
-void WebRtcLogUploader::StartAndTrackRequestContext(
-    std::unique_ptr<net::URLFetcher> url_fetcher,
-    const WebRtcLogUploadDoneData& data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  url_fetcher->Start();
-  upload_done_data_[url_fetcher.release()] = data;
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(kUploadURL);
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->method = "POST";
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       traffic_annotation);
+  simple_url_loader->AttachStringForUpload(*post_data, content_type);
+  auto it = pending_uploads_.insert(pending_uploads_.begin(),
+                                    std::move(simple_url_loader));
+  network::SimpleURLLoader* raw_loader = it->get();
+  raw_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory()
+          .get(),
+      base::BindOnce(&WebRtcLogUploader::OnSimpleLoaderComplete,
+                     base::Unretained(this), std::move(it), upload_done_data));
 }
 
 void WebRtcLogUploader::DecreaseLogCount() {
@@ -514,11 +504,8 @@ void WebRtcLogUploader::ShutdownOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!shutting_down_);
 
-  // Delete all URLFetchers first and clear the upload done map.
-  for (const auto& it : upload_done_data_)
-    delete it.first;
-
-  upload_done_data_.clear();
+  // Clear the pending uploads list, which will reset all URL loaders.
+  pending_uploads_.clear();
   shutting_down_ = true;
 }
 
