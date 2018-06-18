@@ -8,7 +8,16 @@
 #include "device/gamepad/gamepad_data_fetcher_manager.h"
 #include "device/vr/openvr/openvr_device.h"
 #include "device/vr/openvr/openvr_gamepad_data_fetcher.h"
+#include "device/vr/openvr/test/test_hook.h"
 #include "third_party/openvr/src/headers/openvr.h"
+
+#include "base/command_line.h"
+
+namespace {
+// Use the pattern established in content_switches.h, but don't add a content
+// dependency -- device shouldn't have one.
+constexpr char kTestType[] = "test-type";
+}  // namespace
 
 namespace device {
 
@@ -33,7 +42,13 @@ OpenVRDeviceProvider::~OpenVRDeviceProvider() {
     device_ = nullptr;
   }
 
+  if (test_hook_registration_s) {
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(kTestType));
+    test_hook_registration_s->SetTestHook(nullptr);
+  }
+
   vr::VR_Shutdown();
+  test_hook_registration_s = nullptr;
 }
 
 void OpenVRDeviceProvider::Initialize(
@@ -47,6 +62,17 @@ void OpenVRDeviceProvider::Initialize(
   std::move(initialization_complete).Run();
 }
 
+void OpenVRDeviceProvider::SetTestHook(OpenVRTestHook* test_hook) {
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(kTestType));
+  test_hook_s = test_hook;
+  if (test_hook_registration_s) {
+    test_hook_registration_s->SetTestHook(test_hook_s);
+  }
+}
+
+OpenVRTestHook* OpenVRDeviceProvider::test_hook_s = nullptr;
+TestHookRegistration* OpenVRDeviceProvider::test_hook_registration_s = nullptr;
+
 void OpenVRDeviceProvider::CreateDevice() {
   if (!vr::VR_IsRuntimeInstalled() || !vr::VR_IsHmdPresent())
     return;
@@ -54,6 +80,16 @@ void OpenVRDeviceProvider::CreateDevice() {
   vr::EVRInitError init_error = vr::VRInitError_None;
   vr::IVRSystem* vr_system =
       vr::VR_Init(&init_error, vr::EVRApplicationType::VRApplication_Scene);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kTestType)) {
+    // Allow our mock implementation of OpenVR to be controlled by tests.
+    vr::EVRInitError eError;
+    test_hook_registration_s = reinterpret_cast<TestHookRegistration*>(
+        vr::VR_GetGenericInterface(kChromeOpenVRTestHookAPI, &eError));
+    if (test_hook_registration_s) {
+      test_hook_registration_s->SetTestHook(test_hook_s);
+    }
+  }
 
   if (init_error != vr::VRInitError_None) {
     LOG(ERROR) << vr::VR_GetVRInitErrorAsEnglishDescription(init_error);

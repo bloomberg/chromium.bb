@@ -4,32 +4,53 @@
 
 #include "base/environment.h"
 #include "base/files/file.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/vr/test/mock_openvr_device_hook_base.h"
 #include "chrome/browser/vr/test/vr_browser_test.h"
 #include "chrome/browser/vr/test/vr_xr_browser_test.h"
 #include "chrome/browser/vr/test/xr_browser_test.h"
-#include "device/vr/openvr/test/fake_openvr_log.h"
 
 #include <memory>
 
 namespace vr {
 
+class MyOpenVRMock : public MockOpenVRBase {
+ public:
+  void OnFrameSubmitted(device::SubmittedFrameData frame_data) final;
+
+  void WaitForFrame() {
+    DCHECK(!wait_loop_);
+    if (num_submitted_frames_ > 0)
+      return;
+
+    wait_loop_ = new base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed);
+    wait_loop_->Run();
+    delete wait_loop_;
+    wait_loop_ = nullptr;
+  }
+
+  device::Color last_submitted_color_ = {};
+  unsigned int num_submitted_frames_ = 0;
+
+ private:
+  base::RunLoop* wait_loop_ = nullptr;
+};
+
+void MyOpenVRMock::OnFrameSubmitted(device::SubmittedFrameData frame_data) {
+  last_submitted_color_ = frame_data.color;
+  num_submitted_frames_++;
+
+  if (wait_loop_) {
+    wait_loop_->Quit();
+  }
+}
+
 // Pixel test for WebVR/WebXR - start presentation, submit frames, get data back
 // out. Validates that a pixel was rendered with the expected color.
 void TestPresentationPixelsImpl(VrXrBrowserTestBase* t, std::string filename) {
-  // Set up environment variable to tell mock device to save pixel logs.
-  std::unique_ptr<base::Environment> env = base::Environment::Create();
-  base::ScopedTempDir temp_dir;
-  base::FilePath log_path;
-
-  {
-    base::ScopedAllowBlockingForTesting allow_files;
-    EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
-    log_path = temp_dir.GetPath().Append(FILE_PATH_LITERAL("VRPixelTest.Log"));
-    EXPECT_TRUE(log_path.MaybeAsASCII() != "") << "Temp dir is non-ascii";
-    env->SetVar(GetVrPixelLogEnvVarName(), log_path.MaybeAsASCII());
-  }
+  MyOpenVRMock my_mock;
 
   // Load the test page, and enter presentation.
   t->LoadUrlAndAwaitInitialization(t->GetHtmlTestFile(filename));
@@ -44,38 +65,13 @@ void TestPresentationPixelsImpl(VrXrBrowserTestBase* t, std::string filename) {
   t->ExecuteStepAndWait("finishTest()", t->GetFirstTabWebContents());
   t->EndTest(t->GetFirstTabWebContents());
 
-  // Try to open the log file.
-  {
-    base::ScopedAllowBlockingForTesting allow_files;
-    std::unique_ptr<base::File> file;
-    base::Time start = base::Time::Now();
-    while (!file) {
-      file = std::make_unique<base::File>(
-          log_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
-                        base::File::FLAG_DELETE_ON_CLOSE);
-      if (!file->IsValid()) {
-        file = nullptr;
-      }
+  my_mock.WaitForFrame();
 
-      if (base::Time::Now() - start > t->kPollTimeoutLong)
-        break;
-    }
-    EXPECT_TRUE(file);
-
-    // Now parse the log to validate that we ran correctly.
-    VRSubmittedFrameEvent event;
-    int read =
-        file->ReadAtCurrentPos(reinterpret_cast<char*>(&event), sizeof(event));
-    EXPECT_EQ(read, static_cast<int>(sizeof(event)));
-    VRSubmittedFrameEvent::Color expected = {0, 0, 255, 255};
-    EXPECT_EQ(expected.r, event.color.r);
-    EXPECT_EQ(expected.g, event.color.g);
-    EXPECT_EQ(expected.b, event.color.b);
-    EXPECT_EQ(expected.a, event.color.a);
-
-    file = nullptr;  // Make sure we destroy this before allow_files.
-    EXPECT_TRUE(temp_dir.Delete());
-  }
+  device::Color expected = {0, 0, 255, 255};
+  EXPECT_EQ(expected.r, my_mock.last_submitted_color_.r);
+  EXPECT_EQ(expected.g, my_mock.last_submitted_color_.g);
+  EXPECT_EQ(expected.b, my_mock.last_submitted_color_.b);
+  EXPECT_EQ(expected.a, my_mock.last_submitted_color_.a);
 }
 
 IN_PROC_BROWSER_TEST_F(VrBrowserTestStandard,
