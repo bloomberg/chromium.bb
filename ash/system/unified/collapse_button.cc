@@ -13,6 +13,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -67,13 +68,7 @@ CustomShapeButton::CustomShapeButton(views::ButtonListener* listener)
 CustomShapeButton::~CustomShapeButton() = default;
 
 void CustomShapeButton::PaintButtonContents(gfx::Canvas* canvas) {
-  cc::PaintFlags flags;
-  flags.setAntiAlias(true);
-  flags.setColor(kUnifiedMenuButtonColor);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-
-  canvas->DrawPath(CreateCustomShapePath(GetLocalBounds()), flags);
-
+  PaintCustomShapePath(canvas);
   views::ImageButton::PaintButtonContents(canvas);
 }
 
@@ -99,26 +94,28 @@ std::unique_ptr<views::InkDropMask> CustomShapeButton::CreateInkDropMask()
   return std::make_unique<CustomShapeInkDropMask>(size(), this);
 }
 
+void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
+  cc::PaintFlags flags;
+  flags.setAntiAlias(true);
+  flags.setColor(kUnifiedMenuButtonColor);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
+
+  canvas->DrawPath(CreateCustomShapePath(GetLocalBounds()), flags);
+}
+
 CollapseButton::CollapseButton(views::ButtonListener* listener)
     : CustomShapeButton(listener) {
-  UpdateIcon(true /* expanded */);
-  SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
-                    VerticalAlignment::ALIGN_BOTTOM);
+  SetImage(views::Button::STATE_NORMAL,
+           gfx::CreateVectorIcon(kNotificationCenterCollapseIcon,
+                                 kCollapseIconSize, kUnifiedMenuIconColor));
   SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_COLLAPSE));
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets((kTrayItemSize - kCollapseIconSize) / 2)));
 }
 
 CollapseButton::~CollapseButton() = default;
 
-void CollapseButton::UpdateIcon(bool expanded) {
-  gfx::ImageSkia icon =
-      gfx::CreateVectorIcon(kNotificationCenterCollapseIcon, kCollapseIconSize,
-                            kUnifiedMenuIconColor);
-  if (!expanded)
-    icon = gfx::ImageSkiaOperations::CreateRotatedImage(
-        icon, SkBitmapOperations::ROTATION_180_CW);
-  SetImage(views::Button::STATE_NORMAL, icon);
+void CollapseButton::SetExpandedAmount(double expanded_amount) {
+  expanded_amount_ = expanded_amount;
+  SchedulePaint();
 }
 
 gfx::Size CollapseButton::CalculatePreferredSize() const {
@@ -132,6 +129,16 @@ SkPath CollapseButton::CreateCustomShapePath(const gfx::Rect& bounds) const {
       0, 0, 0, 0, bottom_radius, bottom_radius, bottom_radius, bottom_radius};
   path.addRoundRect(gfx::RectToSkRect(bounds), radii);
   return path;
+}
+
+void CollapseButton::PaintButtonContents(gfx::Canvas* canvas) {
+  PaintCustomShapePath(canvas);
+
+  gfx::ScopedCanvas scoped(canvas);
+  canvas->Translate(gfx::Vector2d(size().width() / 2, size().height() * 2 / 3));
+  canvas->sk_canvas()->rotate(expanded_amount_ * 180. + 180.);
+  canvas->DrawImageInt(GetImageToPaint(), -kCollapseIconSize / 2,
+                       -kCollapseIconSize / 2);
 }
 
 }  // namespace ash

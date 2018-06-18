@@ -45,8 +45,8 @@ class ASH_EXPORT TopShortcutsView : public views::View,
   explicit TopShortcutsView(UnifiedSystemTrayController* controller);
   ~TopShortcutsView() override;
 
-  // Change the expanded state. CollapseButton icon will change.
-  void SetExpanded(bool expanded);
+  // Change the expanded state. CollapseButton icon will rotate.
+  void SetExpandedAmount(double expanded_amount);
 
   // Request focus of the element that should initially have focus after opening
   // the bubble.

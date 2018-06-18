@@ -27,6 +27,9 @@ class CustomShapeButton : public views::ImageButton {
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
+ protected:
+  void PaintCustomShapePath(gfx::Canvas* canvas);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CustomShapeButton);
 };
@@ -40,14 +43,17 @@ class CollapseButton : public CustomShapeButton {
   explicit CollapseButton(views::ButtonListener* listener);
   ~CollapseButton() override;
 
-  // Change the icon for the |expanded| state.
-  void UpdateIcon(bool expanded);
+  // Change the expanded state. The icon will change.
+  void SetExpandedAmount(double expanded_amount);
 
   // CustomShapeButton:
   gfx::Size CalculatePreferredSize() const override;
   SkPath CreateCustomShapePath(const gfx::Rect& bounds) const override;
+  void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
+  double expanded_amount_ = 1.0;
+
   DISALLOW_COPY_AND_ASSIGN(CollapseButton);
 };
 
