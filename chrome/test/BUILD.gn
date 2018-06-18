@@ -1934,6 +1934,8 @@ test("browser_tests") {
         "../browser/ui/views/accessibility/invert_bubble_view_browsertest.cc",
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
+        "../browser/vr/test/mock_openvr_device_hook_base.cc",
+        "../browser/vr/test/mock_openvr_device_hook_base.h",
         "../browser/vr/test/vr_browser_test.cc",
         "../browser/vr/test/vr_browser_test.h",
         "../browser/vr/test/vr_xr_browser_test.cc",
@@ -1948,6 +1950,7 @@ test("browser_tests") {
       deps += [
         "//chrome:other_version",
         "//chrome/app:command_ids",
+        "//device/vr",
         "//third_party/wtl",
         "//ui/resources",
       ]
