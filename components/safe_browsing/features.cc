@@ -64,8 +64,9 @@ constexpr struct {
     {&kAdSamplerTriggerFeature, false},
     {&kCheckByURLLoaderThrottle, true},
     {&kEnterprisePasswordProtectionV1, true},
-    {&kForceEnableResetPasswordWebUI, false},
+    {&kForceEnableResetPasswordWebUI, true},
     {&kInspectDownloadedRarFiles, true},
+    {&kSuspiciousSiteTriggerQuotaFeature, false},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
 };
