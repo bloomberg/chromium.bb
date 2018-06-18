@@ -22,7 +22,7 @@ class LoginDisplayMojo : public LoginDisplay,
                          public SigninScreenHandlerDelegate,
                          public user_manager::UserManager::Observer {
  public:
-  explicit LoginDisplayMojo(LoginDisplayHostMojo* host);
+  LoginDisplayMojo(Delegate* delegate, LoginDisplayHostMojo* host);
   ~LoginDisplayMojo() override;
 
   // LoginDisplay:

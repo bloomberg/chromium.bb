@@ -39,6 +39,7 @@ class UserSelectionScreen
   explicit UserSelectionScreen(const std::string& display_type);
   ~UserSelectionScreen() override;
 
+  void SetLoginDisplayDelegate(LoginDisplay::Delegate* login_display_delegate);
   void SetHandler(LoginDisplayWebUIHandler* handler);
   void SetView(UserBoardView* view);
 
@@ -151,6 +152,7 @@ class UserSelectionScreen
                            TokenHandleUtil::TokenHandleStatus status);
 
   LoginDisplayWebUIHandler* handler_ = nullptr;
+  LoginDisplay::Delegate* login_display_delegate_ = nullptr;
 
   // Purpose of the screen (see constants in OobeUI).
   const std::string display_type_;
