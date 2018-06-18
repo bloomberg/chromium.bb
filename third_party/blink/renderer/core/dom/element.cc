@@ -2205,8 +2205,9 @@ void Element::RecalcStyle(StyleRecalcChange change) {
     // checks as we don't know if they effected the first letter or not.
     // This can be seen when a child transitions from floating to
     // non-floating we have to take it into account for the first letter.
-    UpdatePseudoElement(kPseudoIdFirstLetter,
-                        ChildNeedsStyleRecalc() ? kForce : change);
+    UpdatePseudoElement(
+        kPseudoIdFirstLetter,
+        change < kForce && ChildNeedsStyleRecalc() ? kForce : change);
 
     ClearChildNeedsStyleRecalc();
   }
