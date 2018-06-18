@@ -87,3 +87,74 @@ def EnsureASANDirWorks(robo_configuration):
     if call(["gn", "gen", robo_configuration.local_asan_directory()]):
       raise Exception("Unable to gn gen %s" %
               robo_configuration.local_asan_directory())
+
+def EnsureGClientTargets(robo_configuration):
+  """Make sure that we've got the right sdks if we're on a linux host."""
+  if not robo_configuration.host_operating_system() == "linux":
+    log("Not changing gclient target_os list on a non-linux host")
+    return
+  log("Checking gclient target_os list")
+  gclient_filename = os.path.join(robo_configuration.chrome_src(), "..",
+    ".gclient")
+  # Ensure that we've got our target_os line
+  for line in open(gclient_filename, "r"):
+    if "target_os" in line:
+      if (not "'android'" in line) or (not "'win'" in line):
+        log("Missing 'android' and/or 'win' in target_os, which goes at the")
+        log("end of .gclient, OUTSIDE of the solutions = [] section")
+        log("Example line:")
+        log("target_os = [ 'android', 'win' ]")
+        raise Exception("Please add 'android' and 'win' to target_os in %s" %
+            gclient_filename)
+      break
+
+  # Sync regardless of whether we changed the config.
+  log("Running gclient sync")
+  robo_configuration.chdir_to_chrome_src()
+  if call(["gclient", "sync"]):
+    raise Exception("gclient sync failed")
+
+def FetchAdditionalWindowsBinaries(robo_configuration):
+  """Download some additional binaries needed by ffmpeg.  gclient sync can
+  sometimes remove these.  Re-run this if you're missing llvm-nm or llvm-ar."""
+  robo_configuration.chdir_to_chrome_src()
+  log("Downloading some additional compiler tools")
+  if call(["tools/clang/scripts/download_objdump.py"]):
+    raise Exception("download_objdump.py failed")
+
+def FetchMacSDK(robo_configuration):
+  """Download the 10.10 MacOSX sdk."""
+  log("Installing Mac OSX sdk")
+  robo_configuration.chdir_to_chrome_src()
+  sdk_base="build/win_files/Xcode.app"
+  if not os.path.exists(sdk_base):
+    os.mkdirs(sdk_base)
+  os.chdir(sdk_base)
+  if call(
+      "gsutil.py cat gs://chrome-mac-sdk/toolchain-8E2002-3.tgz | tar xzvf -",
+      shell=True):
+    raise Exception("Cannot download and extract Mac SDK")
+
+def EnsureLLVMSymlinks(robo_configuration):
+  """Create some symlinks to clang and friends, since that changes their
+  behavior somewhat."""
+  log("Creating symlinks to compiler tools if needed")
+  os.chdir(os.path.join(robo_configuration.chrome_src(), "third_party", "llvm-build", "Release+Asserts", "bin"))
+  def EnsureSymlink(source, link_name):
+    if not os.path.exists(link_name):
+      os.symlink(source, link_name)
+  # For windows.
+  EnsureSymlink("clang", "clang-cl")
+  EnsureSymlink("clang", "clang++")
+  EnsureSymlink("lld", "ld.lld")
+  EnsureSymlink("lld", "lld-link")
+  # For mac.
+  EnsureSymlink("lld", "ld64.lld")
+
+def EnsureToolchains(robo_configuration):
+  """Make sure that we have all the toolchains for cross-compilation"""
+  EnsureGClientTargets(robo_configuration)
+  FetchAdditionalWindowsBinaries(robo_configuration)
+  FetchMacSDK(robo_configuration)
+  EnsureLLVMSymlinks(robo_configuration)
+
