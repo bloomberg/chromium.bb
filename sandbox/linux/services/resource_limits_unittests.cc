@@ -29,7 +29,7 @@ namespace {
 // all ASAN builds.
 SANDBOX_TEST(ResourceLimits, MAYBE_NoFork) {
   // Make sure that fork will fail with EAGAIN.
-  SANDBOX_ASSERT(ResourceLimits::Lower(RLIMIT_NPROC, 0));
+  SANDBOX_ASSERT(ResourceLimits::Lower(RLIMIT_NPROC, 0) == 0);
   errno = 0;
   pid_t pid = fork();
   // Reap any child if fork succeeded.

@@ -388,12 +388,19 @@ bool SandboxLinux::InitializeSandbox(SandboxType sandbox_type,
   if (options.engage_namespace_sandbox)
     EngageNamespaceSandbox(false /* from_zygote */);
 
-  DCHECK(!HasOpenDirectories())
+  CHECK(!HasOpenDirectories())
       << "InitializeSandbox() called after unexpected directories have been "
       << "opened. This breaks the security of the setuid sandbox.";
 
   // Attempt to limit the future size of the address space of the process.
-  LimitAddressSpace(process_type, options);
+  int error = 0;
+  const bool limited_as = LimitAddressSpace(&error);
+  if (error) {
+    // Restore errno. Internally to |LimitAddressSpace|, the errno due to
+    // setrlimit may be lost.
+    errno = error;
+    PCHECK(limited_as);
+  }
 
   return StartSeccompBPF(sandbox_type, std::move(hook), options);
 }
@@ -413,8 +420,7 @@ bool SandboxLinux::seccomp_bpf_with_tsync_supported() const {
   return seccomp_bpf_with_tsync_supported_;
 }
 
-bool SandboxLinux::LimitAddressSpace(const std::string& process_type,
-                                     const Options& options) {
+bool SandboxLinux::LimitAddressSpace(int* error) {
 #if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
     !defined(THREAD_SANITIZER) && !defined(LEAK_SANITIZER)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -422,39 +428,11 @@ bool SandboxLinux::LimitAddressSpace(const std::string& process_type,
     return false;
   }
 
-  // Limit the address space to 4 GiB. This is a hard-to-quantify, last-ditch
-  // defense against exploits that have the precondition of allocating large
-  // amounts of memory. (For an example, see
-  // https://bugs.chromium.org/p/project-zero/issues/detail?id=1541, which
-  // exploits integer overflow but requires allocating an amount of memory which
-  // would overflow a 32-bit integer.)
-  rlim_t rlimit_as_soft = std::numeric_limits<uint32_t>::max();
-  rlim_t rlimit_as_hard = std::numeric_limits<uint32_t>::max();
-
-  if (sizeof(rlim_t) == 8) {
-    // On 64-bit platforms, V8 and possibly others will reserve massive memory
-    // ranges and rely on on-demand paging for allocation. (Unfortunately, even
-    // MADV_DONTNEED ranges count towards RLIMIT_AS, which complicates our
-    // ability to set tight limits while still enabling V8's strategy.) See
-    // https://crbug.com/169327.
-    //
-    // In the GPU process, irrespective of V8, we can exhaust a 4 GiB address
-    // space under normal usage. See https://crbug.com/271119.
-    if (process_type == switches::kRendererProcess ||
-        process_type == switches::kGpuProcess) {
-      // For now, set the limit to 16 GiB for renderer, worker, and GPU
-      // processes to accomodate. It may be necessary to raise this limit even
-      // further; see https://crbug.com/800348.
-      rlimit_as_soft = 1ULL << 34;
-
-      // WebAssembly memory objects use a large amount of address space for
-      // guard regions. To accomodate this, we allow the address space limit to
-      // adjust dynamically up to a certain limit. The limit is currently 4 TiB,
-      // which should allow enough address space for any reasonable page. See
-      // https://crbug.com/750378.
-      rlimit_as_hard = 1ULL << 42;
-    }
-  }
+  // Unfortunately, it does not appear possible to set RLIMIT_AS such that it
+  // will both (a) be high enough to support V8's and WebAssembly's address
+  // space requirements while also (b) being low enough to mitigate exploits
+  // using integer overflows that require large allocations, heap spray, or
+  // other memory-hungry attack modes.
 
   // By default, add a limit to the VmData memory area that would prevent
   // allocations that can't be indexed by an int.
@@ -469,14 +447,12 @@ bool SandboxLinux::LimitAddressSpace(const std::string& process_type,
     rlimit_data = 1ULL << 33;
   }
 
-  bool limited_as = sandbox::ResourceLimits::LowerSoftAndHardLimits(
-      RLIMIT_AS, rlimit_as_soft, rlimit_as_hard);
-  bool limited_data = sandbox::ResourceLimits::Lower(RLIMIT_DATA, rlimit_data);
+  *error = sandbox::ResourceLimits::Lower(RLIMIT_DATA, rlimit_data);
 
   // Cache the resource limit before turning on the sandbox.
   base::SysInfo::AmountOfVirtualMemory();
 
-  return limited_as && limited_data;
+  return *error == 0;
 #else
   base::SysInfo::AmountOfVirtualMemory();
   return false;
