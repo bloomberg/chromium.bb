@@ -149,7 +149,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     inputs_.mask_layer->SetLayerTreeHost(host);
 
   if (host && !host->IsUsingLayerLists() &&
-      GetMutatorHost()->IsElementAnimating(element_id())) {
+      host->mutator_host()->IsElementAnimating(element_id())) {
     host->SetNeedsCommit();
   }
 }
@@ -722,10 +722,6 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   SetNeedsCommit();
 }
 
-bool Layer::ScrollOffsetAnimationWasInterrupted() const {
-  return GetMutatorHost()->ScrollOffsetAnimationWasInterrupted(element_id());
-}
-
 void Layer::SetScrollParent(Layer* parent) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.scroll_parent == parent)
@@ -1215,10 +1211,11 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // the pending tree will clobber any impl-side scrolling occuring on the
   // active tree. To do so, avoid scrolling the pending tree along with it
   // instead of trying to undo that scrolling later.
-  if (ScrollOffsetAnimationWasInterrupted())
-    layer->layer_tree_impl()
-        ->property_trees()
-        ->scroll_tree.SetScrollOffsetClobberActiveValue(layer->element_id());
+  if (layer_tree_host_->mutator_host()->ScrollOffsetAnimationWasInterrupted(
+          element_id())) {
+    PropertyTrees* trees = layer->layer_tree_impl()->property_trees();
+    trees->scroll_tree.SetScrollOffsetClobberActiveValue(layer->element_id());
+  }
 
   if (needs_show_scrollbars_)
     layer->set_needs_show_scrollbars(true);
@@ -1355,12 +1352,6 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   inputs_.transform = transform;
 }
 
-bool Layer::HasTickingAnimationForTesting() const {
-  return layer_tree_host_
-             ? GetMutatorHost()->HasTickingKeyframeModelForTesting(element_id())
-             : false;
-}
-
 void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
   if (inputs_.has_will_change_transform_hint == has_will_change)
     return;
@@ -1373,10 +1364,6 @@ void Layer::SetTrilinearFiltering(bool trilinear_filtering) {
     return;
   inputs_.trilinear_filtering = trilinear_filtering;
   SetNeedsCommit();
-}
-
-MutatorHost* Layer::GetMutatorHost() const {
-  return layer_tree_host_ ? layer_tree_host_->mutator_host() : nullptr;
 }
 
 ElementListType Layer::GetElementTypeForAnimation() const {

@@ -105,10 +105,6 @@ void LayerImpl::SetTrilinearFiltering(bool trilinear_filtering) {
   trilinear_filtering_ = trilinear_filtering;
 }
 
-MutatorHost* LayerImpl::GetMutatorHost() const {
-  return layer_tree_impl_ ? layer_tree_impl_->mutator_host() : nullptr;
-}
-
 ElementListType LayerImpl::GetElementTypeForAnimation() const {
   return IsActive() ? ElementListType::ACTIVE : ElementListType::PENDING;
 }

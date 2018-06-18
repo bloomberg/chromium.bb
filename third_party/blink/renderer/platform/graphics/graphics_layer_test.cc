@@ -29,6 +29,8 @@
 #include <utility>
 
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/mutator_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
@@ -112,6 +114,10 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
     return layer.paint_controller_.get();
   }
 
+  cc::LayerTreeHost* layer_tree_host() {
+    return layer_tree_view_->GetLayerTreeHost();
+  }
+
   cc::Layer* cc_layer_;
   std::unique_ptr<FakeGraphicsLayer> graphics_layer_;
   std::unique_ptr<FakeGraphicsLayer> page_scale_layer_;
@@ -148,7 +154,9 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     return;
 
-  ASSERT_FALSE(cc_layer_->HasTickingAnimationForTesting());
+  cc::MutatorHost* mutator = layer_tree_host()->mutator_host();
+  EXPECT_FALSE(
+      mutator->HasTickingKeyframeModelForTesting(cc_layer_->element_id()));
 
   std::unique_ptr<CompositorFloatAnimationCurve> curve =
       CompositorFloatAnimationCurve::Create();
@@ -178,23 +186,27 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   animation.GetCompositorAnimation()->AddKeyframeModel(
       std::move(float_keyframe_model));
 
-  ASSERT_TRUE(cc_layer_->HasTickingAnimationForTesting());
+  EXPECT_TRUE(
+      mutator->HasTickingKeyframeModelForTesting(cc_layer_->element_id()));
 
   graphics_layer_->SetShouldFlattenTransform(false);
 
   cc_layer_ = graphics_layer_->CcLayer();
   ASSERT_TRUE(cc_layer_);
 
-  ASSERT_TRUE(cc_layer_->HasTickingAnimationForTesting());
+  EXPECT_TRUE(
+      mutator->HasTickingKeyframeModelForTesting(cc_layer_->element_id()));
   animation.GetCompositorAnimation()->RemoveKeyframeModel(keyframe_model_id);
-  ASSERT_FALSE(cc_layer_->HasTickingAnimationForTesting());
+  EXPECT_FALSE(
+      mutator->HasTickingKeyframeModelForTesting(cc_layer_->element_id()));
 
   graphics_layer_->SetShouldFlattenTransform(true);
 
   cc_layer_ = graphics_layer_->CcLayer();
   ASSERT_TRUE(cc_layer_);
 
-  ASSERT_FALSE(cc_layer_->HasTickingAnimationForTesting());
+  EXPECT_FALSE(
+      mutator->HasTickingKeyframeModelForTesting(cc_layer_->element_id()));
 
   animation.GetCompositorAnimation()->DetachElement();
   ASSERT_FALSE(animation.GetCompositorAnimation()->IsElementAttached());
