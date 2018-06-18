@@ -69,7 +69,10 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
   // When no images are used, just draw a color, with the animation |alpha|
   // applied.
   if (frame_image.isNull() && frame_overlay_image.isNull()) {
-    canvas->DrawColor(SkColorSetA(opaque_background_color, alpha));
+    // We use kPlus blending mode so that between the active and inactive
+    // background colors, the result is 255 alpha (i.e. opaque).
+    canvas->DrawColor(SkColorSetA(opaque_background_color, alpha),
+                      SkBlendMode::kPlus);
     return;
   }
 
