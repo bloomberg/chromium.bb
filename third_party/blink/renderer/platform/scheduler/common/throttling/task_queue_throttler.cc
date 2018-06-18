@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/time/tick_clock.h"
-#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/throttled_time_domain.h"

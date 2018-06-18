@@ -131,7 +131,7 @@ void TaskQueueManagerImpl::UnregisterTimeDomain(TimeDomain* time_domain) {
   main_thread_only().time_domains.erase(time_domain);
 }
 
-RealTimeDomain* TaskQueueManagerImpl::GetRealTimeDomain() const {
+TimeDomain* TaskQueueManagerImpl::GetRealTimeDomain() const {
   return main_thread_only().real_time_domain.get();
 }
 

@@ -292,7 +292,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   const base::TickClock* tick_clock() const;
 
-  base::sequence_manager::RealTimeDomain* real_time_domain() const {
+  base::sequence_manager::TimeDomain* real_time_domain() const {
     return helper_.real_time_domain();
   }
 

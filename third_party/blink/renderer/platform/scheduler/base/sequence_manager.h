@@ -12,7 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/task_time_observer.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
 
@@ -53,8 +52,7 @@ class PLATFORM_EXPORT SequenceManager {
   virtual void RegisterTimeDomain(TimeDomain* time_domain) = 0;
   virtual void UnregisterTimeDomain(TimeDomain* time_domain) = 0;
 
-  // TODO(kraynov): Upcast to TimeDomain.
-  virtual RealTimeDomain* GetRealTimeDomain() const = 0;
+  virtual TimeDomain* GetRealTimeDomain() const = 0;
   virtual const TickClock* GetTickClock() const = 0;
   virtual TimeTicks NowTicks() const = 0;
 

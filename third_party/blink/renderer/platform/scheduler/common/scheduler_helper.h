@@ -87,7 +87,7 @@ class PLATFORM_EXPORT SchedulerHelper
   void SweepCanceledDelayedTasks();
 
   // Accessor methods.
-  base::sequence_manager::RealTimeDomain* real_time_domain() const;
+  base::sequence_manager::TimeDomain* real_time_domain() const;
   void RegisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
   void UnregisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
   bool GetAndClearSystemIsQuiescentBit();
