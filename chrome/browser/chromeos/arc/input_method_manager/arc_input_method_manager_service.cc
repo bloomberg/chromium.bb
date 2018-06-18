@@ -14,6 +14,12 @@ namespace arc {
 
 namespace {
 
+// The Android IME id of the pre-installed IME to proxy Chrome OS IME's actions
+// to inside the container.
+// Please refer to ArcImeService for the implementation details.
+constexpr char kChromeOSIMEIdInArcContainer[] =
+    "org.chromium.arc.ime/.ArcInputMethodService";
+
 // Singleton factory for ArcInputMethodManagerService
 class ArcInputMethodManagerServiceFactory
     : public internal::ArcBrowserContextKeyedServiceFactoryBase<
@@ -55,9 +61,17 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
     ArcBridgeService* bridge_service)
     : imm_bridge_(
           std::make_unique<ArcInputMethodManagerBridgeImpl>(this,
-                                                            bridge_service)) {}
+                                                            bridge_service)) {
+  auto* imm = chromeos::input_method::InputMethodManager::Get();
+  imm->AddObserver(this);
+  imm->AddImeMenuObserver(this);
+}
 
-ArcInputMethodManagerService::~ArcInputMethodManagerService() = default;
+ArcInputMethodManagerService::~ArcInputMethodManagerService() {
+  auto* imm = chromeos::input_method::InputMethodManager::Get();
+  imm->RemoveImeMenuObserver(this);
+  imm->RemoveObserver(this);
+}
 
 void ArcInputMethodManagerService::SetInputMethodManagerBridgeForTesting(
     std::unique_ptr<ArcInputMethodManagerBridge> test_bridge) {
@@ -104,6 +118,16 @@ void ArcInputMethodManagerService::ImeMenuListChanged() {
   active_arc_ime_ids_.swap(new_arc_active_ime_ids);
 }
 
+void ArcInputMethodManagerService::InputMethodChanged(
+    chromeos::input_method::InputMethodManager* manager,
+    Profile* profile,
+    bool /* show_message */) {
+  auto state = manager->GetActiveIMEState();
+  if (!state)
+    return;
+  SwitchImeTo(state->GetCurrentInputMethod().id());
+}
+
 void ArcInputMethodManagerService::EnableIme(const std::string& ime_id,
                                              bool enable) {
   auto component_id =
@@ -120,6 +144,25 @@ void ArcInputMethodManagerService::EnableIme(const std::string& ime_id,
             }
           },
           ime_id, enable));
+}
+
+void ArcInputMethodManagerService::SwitchImeTo(const std::string& ime_id) {
+  using namespace chromeos::extension_ime_util;
+
+  std::string component_id = GetComponentIDByInputMethodID(ime_id);
+  if (!IsArcIME(ime_id))
+    component_id = kChromeOSIMEIdInArcContainer;
+  imm_bridge_->SendSwitchImeTo(
+      component_id, base::BindOnce(
+                        [](const std::string& ime_id,
+                           const std::string& component_id, bool success) {
+                          if (!success) {
+                            LOG(ERROR) << "Switch the active IME to \""
+                                       << ime_id << "\"(component_id=\""
+                                       << component_id << "\") failed";
+                          }
+                        },
+                        ime_id, component_id));
 }
 
 }  // namespace arc

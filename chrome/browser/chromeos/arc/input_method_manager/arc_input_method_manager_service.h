@@ -25,7 +25,8 @@ class ArcBridgeService;
 class ArcInputMethodManagerService
     : public KeyedService,
       public ArcInputMethodManagerBridge::Delegate,
-      public chromeos::input_method::InputMethodManager::ImeMenuObserver {
+      public chromeos::input_method::InputMethodManager::ImeMenuObserver,
+      public chromeos::input_method::InputMethodManager::Observer {
  public:
   // Returns the instance for the given BrowserContext, or nullptr if the
   // browser |context| is not allowed to use ARC.
@@ -55,8 +56,14 @@ class ArcInputMethodManagerService
       const std::vector<chromeos::input_method::InputMethodManager::MenuItem>&
           items) override {}
 
+  // chromeos::input_method::InputMethodManager::Observer overrides:
+  void InputMethodChanged(chromeos::input_method::InputMethodManager* manager,
+                          Profile* profile,
+                          bool show_message) override;
+
  private:
   void EnableIme(const std::string& ime_id, bool enable);
+  void SwitchImeTo(const std::string& ime_id);
 
   std::unique_ptr<ArcInputMethodManagerBridge> imm_bridge_;
   std::set<std::string> active_arc_ime_ids_;
