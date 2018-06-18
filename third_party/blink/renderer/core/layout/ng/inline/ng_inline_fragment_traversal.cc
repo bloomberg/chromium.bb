@@ -14,70 +14,152 @@ namespace {
 
 using Result = NGPhysicalFragmentWithOffset;
 
-// Traverse the subtree of |container|, and collect the fragments satisfying
-// |filter| into the |results| vector. Guarantees to call |filter.AddOnEnter()|
-// for all fragments in preorder, and call |filter.RemoveOnExit()| on all
-// fragments in postorder. A fragment is collected if |AddOnEnter()| returns
-// true and |RemoveOnExit()| returns false on it.
-template <typename Filter, size_t inline_capacity>
-void CollectInlineFragments(const NGPhysicalContainerFragment& container,
-                            NGPhysicalOffset offset_to_container_box,
-                            Filter& filter,
-                            Vector<Result, inline_capacity>* results) {
-  DCHECK(container.IsInline() || container.IsLineBox() ||
-         (container.IsBlockFlow() &&
-          ToNGPhysicalBoxFragment(container).ChildrenInline()));
-  for (const auto& child : container.Children()) {
-    NGPhysicalOffset child_offset = child->Offset() + offset_to_container_box;
+class NGPhysicalFragmentCollectorBase {
+  STACK_ALLOCATED();
 
-    if (filter.AddOnEnter(child.get())) {
-      results->push_back(
-          NGPhysicalFragmentWithOffset{child.get(), child_offset});
-    }
+ public:
+  virtual Vector<Result> CollectFrom(const NGPhysicalFragment&) = 0;
+
+ protected:
+  explicit NGPhysicalFragmentCollectorBase() = default;
+
+  virtual void Visit() = 0;
+
+  const NGPhysicalFragment& GetFragment() const { return *current_fragment_; }
+  void SetShouldStopTraversing() { should_stop_traversing_ = true; }
+  bool HasStoppedTraversing() const { return should_stop_traversing_; }
+
+  void Emit() {
+    results_.push_back(Result{current_fragment_, current_offset_to_root_});
+  }
+
+  // Visits and collets fragments in the subtree rooted at |fragment|.
+  // |fragment| itself is not visited.
+  Vector<Result> CollectExclusivelyFrom(const NGPhysicalFragment& fragment) {
+    current_fragment_ = &fragment;
+    root_fragment_ = &fragment;
+    VisitChildren();
+    return std::move(results_);
+  }
+
+  // Visits and collets fragments in the subtree rooted at |fragment|.
+  // |fragment| itself is visited.
+  Vector<Result> CollectInclusivelyFrom(const NGPhysicalFragment& fragment) {
+    current_fragment_ = &fragment;
+    root_fragment_ = &fragment;
+    Visit();
+    return std::move(results_);
+  }
+
+  void VisitChildren() {
+    if (should_stop_traversing_)
+      return;
+
+    const NGPhysicalFragment& fragment = *current_fragment_;
+    if (!fragment.IsContainer())
+      return;
 
     // Traverse descendants unless the fragment is laid out separately from the
     // inline layout algorithm.
-    if (child->IsContainer() && !child->IsBlockLayoutRoot()) {
-      CollectInlineFragments(ToNGPhysicalContainerFragment(*child),
-                             child_offset, filter, results);
-    }
+    if (&fragment != root_fragment_ && fragment.IsBlockLayoutRoot())
+      return;
 
-    if (filter.RemoveOnExit(child.get())) {
-      DCHECK(results->size());
-      DCHECK_EQ(results->back().fragment, child.get());
-      results->pop_back();
+    DCHECK(fragment.IsContainer());
+    DCHECK(fragment.IsInline() || fragment.IsLineBox() ||
+           (fragment.IsBlockFlow() &&
+            ToNGPhysicalBoxFragment(fragment).ChildrenInline()));
+
+    for (const auto& child :
+         ToNGPhysicalContainerFragment(fragment).Children()) {
+      base::AutoReset<NGPhysicalOffset> offset_resetter(
+          &current_offset_to_root_, current_offset_to_root_ + child->Offset());
+      base::AutoReset<const NGPhysicalFragment*> fragment_resetter(
+          &current_fragment_, child.get());
+      Visit();
+
+      if (should_stop_traversing_)
+        return;
     }
   }
-}
 
-// The filter for CollectInlineFragments() collecting all fragments traversed.
-class AddAllFilter {
- public:
-  bool AddOnEnter(const NGPhysicalFragment*) const { return true; }
-  bool RemoveOnExit(const NGPhysicalFragment*) const { return false; }
+ private:
+  const NGPhysicalFragment* root_fragment_ = nullptr;
+  const NGPhysicalFragment* current_fragment_ = nullptr;
+  NGPhysicalOffset current_offset_to_root_;
+  Vector<Result> results_;
+  bool should_stop_traversing_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(NGPhysicalFragmentCollectorBase);
 };
 
-// The filter for CollectInlineFragments() collecting fragments generated from
-// the given LayoutInline with supporting culled inline.
+// The visitor emitting all visited fragments.
+class DescendantCollector final : public NGPhysicalFragmentCollectorBase {
+  STACK_ALLOCATED();
+
+ public:
+  DescendantCollector() = default;
+
+  Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
+    return CollectExclusivelyFrom(fragment);
+  }
+
+ private:
+  void Visit() final {
+    Emit();
+    VisitChildren();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DescendantCollector);
+};
+
+// The visitor emitting all visited fragments.
+class InclusiveDescendantCollector final
+    : public NGPhysicalFragmentCollectorBase {
+  STACK_ALLOCATED();
+
+ public:
+  InclusiveDescendantCollector() = default;
+
+  Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
+    return CollectInclusivelyFrom(fragment);
+  }
+
+ private:
+  void Visit() final {
+    Emit();
+    VisitChildren();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(InclusiveDescendantCollector);
+};
+
+// The visitor emitting fragments generated from the given LayoutInline,
+// supporting culled inline.
 // Note: Since we apply culled inline per line, we have a fragment for
 // LayoutInline in second line but not in first line in
 // "t0803-c5502-imrgn-r-01-b-ag.html".
-class LayoutInlineFilter {
+class LayoutInlineCollector final : public NGPhysicalFragmentCollectorBase {
+  STACK_ALLOCATED();
+
  public:
-  explicit LayoutInlineFilter(const LayoutInline& container) {
-    CollectInclusiveDescendnats(container);
+  explicit LayoutInlineCollector(const LayoutInline& container) {
+    CollectInclusiveDescendants(container);
   }
 
-  bool AddOnEnter(const NGPhysicalFragment* fragment) {
-    if (fragment->IsLineBox())
-      return false;
-    return inclusive_descendants_.Contains(fragment->GetLayoutObject());
+  Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
+    return CollectExclusivelyFrom(fragment);
   }
-
-  bool RemoveOnExit(const NGPhysicalFragment*) const { return false; }
 
  private:
-  void CollectInclusiveDescendnats(const LayoutInline& container) {
+  void Visit() final {
+    if (!GetFragment().IsLineBox() &&
+        inclusive_descendants_.Contains(GetFragment().GetLayoutObject()))
+      Emit();
+    // TODO(xiaochengh): Don't visit children after emitting current fragment.
+    VisitChildren();
+  }
+
+  void CollectInclusiveDescendants(const LayoutInline& container) {
     inclusive_descendants_.insert(&container);
     for (const LayoutObject* node = container.FirstChild(); node;
          node = node->NextSibling()) {
@@ -89,127 +171,136 @@ class LayoutInlineFilter {
       }
       if (!node->IsLayoutInline())
         continue;
-      CollectInclusiveDescendnats(ToLayoutInline(*node));
+      CollectInclusiveDescendants(ToLayoutInline(*node));
     }
   }
 
   HashSet<const LayoutObject*> inclusive_descendants_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayoutInlineCollector);
 };
 
-// The filter for CollectInlineFragments() collecting fragments generated from
-// the given LayoutObject.
-class LayoutObjectFilter {
- public:
-  explicit LayoutObjectFilter(const LayoutObject* layout_object)
-      : layout_object_(layout_object) {
-    DCHECK(layout_object);
-  }
+// The visitor emitting all fragments generated from the given LayoutObject.
+class LayoutObjectCollector final : public NGPhysicalFragmentCollectorBase {
+  STACK_ALLOCATED();
 
-  bool AddOnEnter(const NGPhysicalFragment* fragment) const {
-    return fragment->GetLayoutObject() == layout_object_;
+ public:
+  explicit LayoutObjectCollector(const LayoutObject* layout_object)
+      : target_(layout_object) {}
+
+  Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
+    return CollectExclusivelyFrom(fragment);
   }
-  bool RemoveOnExit(const NGPhysicalFragment*) const { return false; }
 
  private:
-  const LayoutObject* layout_object_;
-};
-
-// The filter for CollectInlineFragments() collecting inclusive ancestors of the
-// given fragment with the algorithm that, |fragment| is an ancestor of |target|
-// if and only if both of the following are true:
-// - |fragment| precedes |target| in preorder traversal
-// - |fragment| succeeds |target| in postorder traversal
-class InclusiveAncestorFilter {
- public:
-  explicit InclusiveAncestorFilter(const NGPhysicalFragment& target)
-      : target_(&target) {}
-
-  bool AddOnEnter(const NGPhysicalFragment* fragment) {
-    if (fragment == target_)
-      has_entered_target_ = true;
-    ancestors_precede_in_preorder_.push_back(!has_entered_target_);
-    return true;
+  void Visit() final {
+    if (GetFragment().GetLayoutObject() == target_)
+      Emit();
+    VisitChildren();
   }
 
-  bool RemoveOnExit(const NGPhysicalFragment* fragment) {
-    if (fragment != target_) {
-      const bool precedes_in_preorder = ancestors_precede_in_preorder_.back();
-      ancestors_precede_in_preorder_.pop_back();
-      return !precedes_in_preorder || !has_exited_target_;
+  const LayoutObject* target_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayoutObjectCollector);
+};
+
+// The visitor emitting ancestors of the given fragment in bottom-up order.
+class AncestorCollector : public NGPhysicalFragmentCollectorBase {
+  STACK_ALLOCATED();
+
+ public:
+  explicit AncestorCollector(const NGPhysicalFragment& target)
+      : target_(target) {}
+
+  Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
+    // TODO(xiaochengh): Change this into CollectInclusivlyFrom() to include
+    // subtree root to align with NodeTraversal::AncestorsOf().
+    return CollectExclusivelyFrom(fragment);
+  }
+
+ private:
+  void Visit() final {
+    if (&GetFragment() == &target_) {
+      SetShouldStopTraversing();
+      return;
     }
-    has_exited_target_ = true;
-    ancestors_precede_in_preorder_.pop_back();
-    return false;
+
+    VisitChildren();
+    if (HasStoppedTraversing())
+      Emit();
+  }
+
+  const NGPhysicalFragment& target_;
+};
+
+// The visitor emitting inclusive ancestors of the given fragment in bottom-up
+// order.
+class InclusiveAncestorCollector : public NGPhysicalFragmentCollectorBase {
+  STACK_ALLOCATED();
+
+ public:
+  explicit InclusiveAncestorCollector(const NGPhysicalFragment& target)
+      : target_(target) {}
+
+  Vector<Result> CollectFrom(const NGPhysicalFragment& fragment) final {
+    // TODO(xiaochengh): Change this into CollectInclusivlyFrom() to include
+    // subtree root to align with NodeTraversal::InclusiveAncestorsOf().
+    return CollectExclusivelyFrom(fragment);
   }
 
  private:
-  const NGPhysicalFragment* target_;
+  void Visit() final {
+    if (&GetFragment() == &target_) {
+      SetShouldStopTraversing();
+      Emit();
+      return;
+    }
 
-  bool has_entered_target_ = false;
-  bool has_exited_target_ = false;
+    VisitChildren();
+    if (HasStoppedTraversing())
+      Emit();
+  }
 
-  // For each currently entered but not-yet-exited fragment, stores a boolean of
-  // whether it precedes |target_| in preorder.
-  Vector<bool> ancestors_precede_in_preorder_;
+  const NGPhysicalFragment& target_;
 };
 
 }  // namespace
 
 // static
-Vector<Result, 1> NGInlineFragmentTraversal::SelfFragmentsOf(
+Vector<Result> NGInlineFragmentTraversal::SelfFragmentsOf(
     const NGPhysicalContainerFragment& container,
     const LayoutObject* layout_object) {
   if (layout_object->IsLayoutInline()) {
-    LayoutInlineFilter filter(*ToLayoutInline(layout_object));
-    Vector<Result, 1> results;
-    CollectInlineFragments(container, {}, filter, &results);
-    return results;
+    return LayoutInlineCollector(ToLayoutInline(*layout_object))
+        .CollectFrom(container);
   }
-  LayoutObjectFilter filter(layout_object);
-  Vector<Result, 1> results;
-  CollectInlineFragments(container, {}, filter, &results);
-  return results;
+  return LayoutObjectCollector(layout_object).CollectFrom(container);
 }
 
 // static
 Vector<Result> NGInlineFragmentTraversal::DescendantsOf(
     const NGPhysicalContainerFragment& container) {
-  AddAllFilter add_all;
-  Vector<Result> results;
-  CollectInlineFragments(container, {}, add_all, &results);
-  return results;
+  return DescendantCollector().CollectFrom(container);
 }
 
 // static
 Vector<Result> NGInlineFragmentTraversal::InclusiveDescendantsOf(
     const NGPhysicalFragment& root) {
-  Vector<Result> results =
-      root.IsContainer() ? DescendantsOf(ToNGPhysicalContainerFragment(root))
-                         : Vector<Result>();
-  results.push_front(Result{&root, {}});
-  return results;
+  return InclusiveDescendantCollector().CollectFrom(root);
 }
 
 // static
 Vector<Result> NGInlineFragmentTraversal::InclusiveAncestorsOf(
     const NGPhysicalContainerFragment& container,
     const NGPhysicalFragment& target) {
-  InclusiveAncestorFilter inclusive_ancestors_of(target);
-  Vector<Result> results;
-  CollectInlineFragments(container, {}, inclusive_ancestors_of, &results);
-  std::reverse(results.begin(), results.end());
-  return results;
+  return InclusiveAncestorCollector(target).CollectFrom(container);
 }
 
 // static
 Vector<Result> NGInlineFragmentTraversal::AncestorsOf(
     const NGPhysicalContainerFragment& container,
     const NGPhysicalFragment& target) {
-  Vector<Result> results = InclusiveAncestorsOf(container, target);
-  DCHECK(results.size());
-  DCHECK_EQ(results.front().fragment, &target);
-  results.erase(results.begin());
-  return results;
+  return AncestorCollector(target).CollectFrom(container);
 }
 
 }  // namespace blink
