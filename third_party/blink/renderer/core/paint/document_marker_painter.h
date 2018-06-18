@@ -15,6 +15,7 @@ class FloatRect;
 class GraphicsContext;
 class LayoutPoint;
 class StyleableMarker;
+struct TextPaintStyle;
 
 // Document marker painter for both LayoutNG and legacy layout.
 // This paints text decorations for spell/grammer check, find-in-page, and
@@ -34,6 +35,9 @@ class DocumentMarkerPainter {
                                   const ComputedStyle& style,
                                   DocumentMarker::MarkerType marker_type,
                                   const LayoutRect& local_rect);
+  static TextPaintStyle ComputeTextPaintStyleFrom(
+      const ComputedStyle& style,
+      const TextMatchMarker& marker);
 };
 
 }  // namespace blink

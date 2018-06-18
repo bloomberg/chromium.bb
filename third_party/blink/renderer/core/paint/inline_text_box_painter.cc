@@ -1084,6 +1084,23 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
       width);
 }
 
+// TODO(yoichio): Move this to document_marker_controller.cc
+TextPaintStyle DocumentMarkerPainter::ComputeTextPaintStyleFrom(
+    const ComputedStyle& style,
+    const TextMatchMarker& marker) {
+  const Color text_color =
+      LayoutTheme::GetTheme().PlatformTextSearchColor(marker.IsActiveMatch());
+  if (style.VisitedDependentColor(GetCSSPropertyColor()) == text_color)
+    return {};
+
+  TextPaintStyle text_style;
+  text_style.current_color = text_style.fill_color = text_style.stroke_color =
+      text_style.emphasis_mark_color = text_color;
+  text_style.stroke_width = style.TextStrokeWidth();
+  text_style.shadow = nullptr;
+  return text_style;
+}
+
 void InlineTextBoxPainter::PaintTextMatchMarkerForeground(
     const PaintInfo& paint_info,
     const LayoutPoint& box_origin,
@@ -1100,21 +1117,15 @@ void InlineTextBoxPainter::PaintTextMatchMarkerForeground(
       GetTextMatchMarkerPaintOffsets(marker, inline_text_box_);
   TextRun run = inline_text_box_.ConstructTextRun(style);
 
-  Color text_color =
-      LayoutTheme::GetTheme().PlatformTextSearchColor(marker.IsActiveMatch());
-  if (style.VisitedDependentColor(GetCSSPropertyColor()) == text_color)
-    return;
-
   const SimpleFontData* font_data = font.PrimaryFont();
   DCHECK(font_data);
   if (!font_data)
     return;
 
-  TextPaintStyle text_style;
-  text_style.current_color = text_style.fill_color = text_style.stroke_color =
-      text_style.emphasis_mark_color = text_color;
-  text_style.stroke_width = style.TextStrokeWidth();
-  text_style.shadow = nullptr;
+  const TextPaintStyle text_style =
+      DocumentMarkerPainter::ComputeTextPaintStyleFrom(style, marker);
+  if (text_style.current_color == Color::kTransparent)
+    return;
 
   LayoutRect box_rect(box_origin, LayoutSize(inline_text_box_.LogicalWidth(),
                                              inline_text_box_.LogicalHeight()));
