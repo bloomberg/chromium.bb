@@ -198,7 +198,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
 }
 
-#pragma mark - Tests
+#pragma mark - BookmarksTestCase Tests
 
 // Verifies that adding a bookmark and removing a bookmark via the UI properly
 // updates the BookmarkModel.
@@ -349,132 +349,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   [BookmarksTestCase assertBookmarksWithTitle:@"my bookmark" expectedCount:1];
 }
 
-// Test the creation of a bookmark and new folder (by tapping on the star).
-- (void)testAddBookmarkInNewFolder {
-  const GURL bookmarkedURL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/pony.html");
-  std::string expectedURLContent = bookmarkedURL.GetContent();
-
-  [ChromeEarlGrey loadURL:bookmarkedURL];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          expectedURLContent)]
-      assertWithMatcher:grey_notNil()];
-
-  [BookmarksTestCase starCurrentTab];
-
-  // Verify the snackbar title.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Bookmarked")]
-      assertWithMatcher:grey_notNil()];
-
-  // Tap on the snackbar.
-  NSString* snackbarLabel =
-      l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON);
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
-      performAction:grey_tap()];
-
-  // Verify that the newly-created bookmark is in the BookmarkModel.
-  [BookmarksTestCase
-      assertBookmarksWithTitle:base::SysUTF8ToNSString(expectedURLContent)
-                 expectedCount:1];
-
-  // Verify that the editor is present.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkEditViewContainerIdentifier)]
-      assertWithMatcher:grey_notNil()];
-
-  [BookmarksTestCase assertFolderName:@"Mobile Bookmarks"];
-
-  // Tap the Folder button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
-
-  // Create a new folder with default name.
-  [BookmarksTestCase addFolderWithName:nil];
-
-  // Verify that the editor is present.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkEditViewContainerIdentifier)]
-      assertWithMatcher:grey_notNil()];
-
-  [BookmarksTestCase assertFolderExists:@"New Folder"];
-}
-
-// Tests that the default folder bookmarks are saved in is updated to the last
-// used folder.
-- (void)testStickyDefaultFolder {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Invoke Edit through long press.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
-      performAction:grey_longPress()];
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
-      performAction:grey_tap()];
-
-  // Tap the Folder button.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
-
-  // Create a new folder.
-  [BookmarksTestCase addFolderWithName:@"Sticky Folder"];
-
-  // Verify that the editor is present.  Uses notNil() instead of
-  // sufficientlyVisible() because the large title in the navigation bar causes
-  // less than 75% of the table view to be visible.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkEditViewContainerIdentifier)]
-      assertWithMatcher:grey_notNil()];
-
-  // Tap the Done button.
-  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditDoneButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkEditViewContainerIdentifier)]
-      assertWithMatcher:grey_notVisible()];
-
-  // Close bookmarks
-  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
-      performAction:grey_tap()];
-
-  // Second, bookmark a page.
-
-  // Verify that the bookmark that is going to be added is not in the
-  // BookmarkModel.
-  const GURL bookmarkedURL = web::test::HttpServer::MakeUrl(
-      "http://ios/testing/data/http_server_files/fullscreen.html");
-  NSString* const bookmarkedURLString =
-      base::SysUTF8ToNSString(bookmarkedURL.spec());
-  [BookmarksTestCase assertBookmarksWithTitle:bookmarkedURLString
-                                expectedCount:0];
-  // Open the page.
-  std::string expectedURLContent = bookmarkedURL.GetContent();
-  [ChromeEarlGrey loadURL:bookmarkedURL];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          expectedURLContent)]
-      assertWithMatcher:grey_notNil()];
-
-  // Verify that the folder has only one element.
-  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Sticky Folder"];
-
-  // Bookmark the page.
-  [BookmarksTestCase starCurrentTab];
-
-  // Verify the snackbar title.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
-                                          @"Bookmarked to Sticky Folder")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Verify that the newly-created bookmark is in the BookmarkModel.
-  [BookmarksTestCase assertBookmarksWithTitle:bookmarkedURLString
-                                expectedCount:1];
-
-  // Verify that the folder has now two elements.
-  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Sticky Folder"];
-}
-
 // Tests that changes to the parent folder from the Single Bookmark Editor
 // are saved to the bookmark only when saving the results.
 - (void)testMoveDoesSaveOnSave {
@@ -523,115 +397,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Check that the new folder still contains the bookmark.
   [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"New Folder"];
-}
-
-// Tests moving bookmarks into a new folder created in the moving process.
-- (void)testCreateNewFolderWhileMovingBookmarks {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URLs.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  // Tap on Move.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      performAction:grey_tap()];
-
-  // Choose to move the bookmark into a new folder.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkCreateNewFolderCellIdentifier)]
-      performAction:grey_tap()];
-
-  // Enter custom new folder name.
-  [BookmarksTestCase
-      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
-
-  // Verify current parent folder (Change Folder) is Bookmarks folder.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
-                                   nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Choose new parent folder (Change Folder).
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
-
-  // Verify folder picker UI is displayed.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Verify Folder 2 only has one item.
-  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
-
-  // Select Folder 2 as new Change Folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
-      performAction:grey_tap()];
-
-  // Verify folder picker is dismissed and folder creator is now visible.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
-      assertWithMatcher:grey_notVisible()];
-
-  // Verify picked parent folder (Change Folder) is Folder 2.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(@"Folder 2"), nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Tap Done to close bookmark move flow.
-  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
-      performAction:grey_tap()];
-
-  // Verify all folder flow UI is now closed.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
-      assertWithMatcher:grey_notVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
-      assertWithMatcher:grey_notVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkFolderEditViewContainerIdentifier)]
-      assertWithMatcher:grey_notVisible()];
-
-  // Verify new folder has been created under Folder 2.
-  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Folder 2"];
-
-  // Verify new folder has two bookmarks.
-  [BookmarksTestCase assertChildCount:2
-                     ofFolderWithName:@"Title For New Folder"];
 }
 
 // Tests that keyboard commands are registered when a bookmark is added as it
@@ -721,121 +486,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Check we navigated back to the Mobile Bookmarks.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Mobile Bookmarks")]
       assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-- (void)testUndoDeleteBookmarkFromSwipe {
-  // TODO(crbug.com/851227): On UIRefresh non Compact Width on iOS11, the
-  // bookmark cell is being deleted by grey_swipeFastInDirection.
-  // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
-  // fail on devices. Disabling this test under these conditions on the
-  // meantime.
-  if (@available(iOS 11, *)) {
-    if (experimental_flags::IsBookmarksUIRebootEnabled() && !IsCompactWidth()) {
-      EARL_GREY_TEST_SKIPPED(@"Test disabled on UIRefresh iPad on iOS11.");
-    }
-  }
-
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Swipe action on the URL.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
-
-  // Verify context bar does not change when "Delete" shows up.
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-  // Delete it.
-  [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      performAction:grey_tap()];
-
-  // Wait until it's gone.
-  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
-
-  // Press undo
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
-      performAction:grey_tap()];
-
-  // Verify it's back.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      assertWithMatcher:grey_notNil()];
-
-  // Verify context bar remains in default state.
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-}
-
-// TODO(crbug.com/781445): Re-enable this test on 32-bit.
-#if defined(ARCH_CPU_64_BITS)
-#define MAYBE_testSwipeToDeleteDisabledInEditMode \
-  testSwipeToDeleteDisabledInEditMode
-#else
-#define MAYBE_testSwipeToDeleteDisabledInEditMode \
-  FLAKY_testSwipeToDeleteDisabledInEditMode
-#endif
-- (void)testSwipeToDeleteDisabledInEditMode {
-  // TODO(crbug.com/851227): On UIRefresh non Compact Width on iOS11, the
-  // bookmark cell is being deleted by grey_swipeFastInDirection.
-  // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
-  // fail on devices. Disabling this test under these conditions on the
-  // meantime.
-  if (@available(iOS 11, *)) {
-    if (experimental_flags::IsBookmarksUIRebootEnabled() && !IsCompactWidth()) {
-      EARL_GREY_TEST_SKIPPED(@"Test disabled on UIRefresh iPad on iOS11.");
-    }
-  }
-
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Swipe action on the URL.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
-      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
-
-  // Verify the delete confirmation button shows up.
-  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
-      assertWithMatcher:grey_notNil()];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Verify the delete confirmation button is gone after entering edit mode.
-  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
-      assertWithMatcher:grey_nil()];
-
-  // Swipe action on "Second URL".  This should not bring out delete
-  // confirmation button as swipe-to-delete is disabled in edit mode.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
-
-  // Verify the delete confirmation button doesn't appear.
-  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
-      assertWithMatcher:grey_nil()];
-
-  // Cancel edit mode
-  [BookmarksTestCase closeContextBarEditMode];
-
-  // Swipe action on the URL.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"French URL")]
-      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
-
-  // Verify the delete confirmation button shows up. (swipe-to-delete is
-  // re-enabled).
-  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
-      assertWithMatcher:grey_notNil()];
 }
 
 // Tests that the bookmark context bar is shown in MobileBookmarks.
@@ -1080,1559 +730,8 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Cancel edit mode
   [BookmarksTestCase closeContextBarEditMode];
 
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-}
-
-- (void)testContextMenuForSingleURLSelection {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URL.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  [self verifyContextMenuForSingleURL];
-}
-
-// Verify Edit functionality on single URL selection.
-- (void)testEditFunctionalityOnSingleURL {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // 1. Edit the bookmark title at edit page.
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      performAction:grey_tap()];
-
-  // Modify the title.
-  [BookmarksTestCase
-      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                  openEditor:kBookmarkEditViewContainerIdentifier
-             modifyTextField:@"Title Field_textField"
-                          to:@"n5"
-                 dismissWith:kBookmarkEditNavigationBarDoneButtonIdentifier];
-
-  // Verify that the bookmark was updated.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"n5")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Press undo and verify old URL is back.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-
-  // 2. Edit the bookmark url at edit page.
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
-      performAction:grey_tap()];
-
-  // Modify the url.
-  [BookmarksTestCase
-      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                  openEditor:kBookmarkEditViewContainerIdentifier
-             modifyTextField:@"URL Field_textField"
-                          to:@"www.b.fr"
-                 dismissWith:kBookmarkEditNavigationBarDoneButtonIdentifier];
-
-  // Verify that the bookmark was updated.
-  [BookmarksTestCase assertExistenceOfBookmarkWithURL:@"http://www.b.fr/"
-                                                 name:@"French URL"];
-
-  // Press undo and verify the edit is undone.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
-      performAction:grey_tap()];
-  [BookmarksTestCase assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
-
-  // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-
-  // 3. Move a single url at edit page.
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select single url.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-
-  // Move the "Second URL" to "Folder 1.1".
-  [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                                 openEditor:kBookmarkEditViewContainerIdentifier
-                          setParentFolderTo:@"Folder 1.1"
-                                       from:@"Mobile Bookmarks"];
-
-  // Verify edit mode is stayed.
-  [self verifyContextBarInEditMode];
-
-  // Close edit mode.
-  [BookmarksTestCase closeContextBarEditMode];
-
-  // Navigate to "Folder 1.1" and verify "Second URL" is under it.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // 4. Test the cancel button at edit page.
-
-  // Come back to the Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
-      performAction:grey_tap()];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
-      performAction:grey_tap()];
-
-  // Tap cancel after modifying the url.
-  [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
-                                 openEditor:kBookmarkEditViewContainerIdentifier
-                            modifyTextField:@"URL Field_textField"
-                                         to:@"www.b.fr"
-                                dismissWith:@"Cancel"];
-
-  // Verify that the bookmark was not updated.
-  [BookmarksTestCase assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
-
-  // Verify edit mode is stayed.
-  [self verifyContextBarInEditMode];
-}
-
-// Verify Copy URL functionality on single URL selection.
-- (void)testCopyFunctionalityOnSingleURL {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URL.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
-      performAction:grey_tap()];
-
-  // Invoke Copy through context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  // Select Copy URL.
-  [[EarlGrey selectElementWithMatcher:ContextMenuCopyButton()]
-      performAction:grey_tap()];
-
-  // Verify general pasteboard has the URL copied.
-  ConditionBlock condition = ^{
-    return !![[UIPasteboard generalPasteboard].string
-        containsString:@"www.a.fr"];
-  };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
-             @"Waiting for URL to be copied to pasteboard.");
-
-  // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-}
-
-- (void)testContextMenuForMultipleURLSelection {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URLs.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  // Verify it shows the context menu.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Verify options on context menu.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-// Verify the Open All functionality on multiple url selection.
-// TODO(crbug.com/816699): Re-enable this test on simulators.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuForMultipleURLOpenAll \
-  testContextMenuForMultipleURLOpenAll
-#else
-#define MAYBE_testContextMenuForMultipleURLOpenAll \
-  FLAKY_testContextMenuForMultipleURLOpenAll
-#endif
-- (void)MAYBE_testContextMenuForMultipleURLOpenAll {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Open 3 normal tabs from a normal session.
-  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
-
-  // Verify there are 3 normal tabs.
-  [ChromeEarlGrey waitForMainTabCount:3];
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 0,
-                 @"Incognito tab count should be 0");
-
-  // Verify the order of open tabs.
-  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
-
-  // Switch to Incognito mode by adding a new incognito tab.
-  chrome_test_util::OpenNewIncognitoTab();
-
-  [BookmarksTestCase openBookmarks];
-
-  // Open 3 normal tabs from a incognito session.
-  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
-
-  // Verify there are 6 normal tabs and no new incognito tabs.
-  [ChromeEarlGrey waitForMainTabCount:6];
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
-                 @"Incognito tab count should be 1");
-
-  // Close the incognito tab to go back to normal mode.
-  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
-
-  // The following verifies the selected bookmarks are open in the same order as
-  // in folder.
-
-  // Verify the order of open tabs.
-  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:3];
-}
-
-// Verify the Open All in Incognito functionality on multiple url selection.
-// TODO(crbug.com/816699): Re-enable this test on simulators.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_testContextMenuForMultipleURLOpenAllInIncognito \
-  testContextMenuForMultipleURLOpenAllInIncognito
-#else
-#define MAYBE_testContextMenuForMultipleURLOpenAllInIncognito \
-  FLAKY_testContextMenuForMultipleURLOpenAllInIncognito
-#endif
-- (void)MAYBE_testContextMenuForMultipleURLOpenAllInIncognito {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Open 3 incognito tabs from a normal session.
-  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
-
-  // Verify there are 3 incognito tabs and no new normal tab.
-  [ChromeEarlGrey waitForIncognitoTabCount:3];
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
-                 @"Main tab count should be 1");
-
-  // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to switch to incognito mode");
-
-  // Verify the order of open tabs.
-  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
-
-  [BookmarksTestCase openBookmarks];
-
-  // Open 3 incognito tabs from a incognito session.
-  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
-                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
-
-  // The 3rd tab will be re-used to open one of the selected bookmarks.  So
-  // there will be 2 new tabs only.
-
-  // Verify there are 5 incognito tabs and no new normal tab.
-  [ChromeEarlGrey waitForIncognitoTabCount:5];
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
-                 @"Main tab count should be 1");
-
-  // Verify the order of open tabs.
-  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:2];
-}
-
-// Verify the Open and Open in Incognito functionality on single url.
-- (void)testOpenSingleBookmarkInNormalAndIncognitoTab {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Open a bookmark in current tab in a normal session.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
-      performAction:grey_tap()];
-
-  // Verify "First URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFirstURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  [BookmarksTestCase openBookmarks];
-
-  // Open a bookmark in new tab from a normal session (through a long press).
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      performAction:grey_longPress()];
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
-      performAction:grey_tap()];
-
-  // Verify there is 1 new normal tab created and no new incognito tab created.
-  [ChromeEarlGrey waitForMainTabCount:2];
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 0,
-                 @"Incognito tab count should be 0");
-
-  // Verify "Second URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getSecondURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  [BookmarksTestCase openBookmarks];
-
-  // Open a bookmark in an incognito tab from a normal session (through a long
-  // press).
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
-      performAction:grey_longPress()];
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
-      performAction:grey_tap()];
-
-  // Verify there is 1 incognito tab created and no new normal tab created.
-  [ChromeEarlGrey waitForIncognitoTabCount:1];
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
-                 @"Main tab count should be 2");
-
-  // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to switch to incognito mode");
-
-  // Verify "French URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFrenchURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  [BookmarksTestCase openBookmarks];
-
-  // Open a bookmark in current tab from a incognito session.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
-      performAction:grey_tap()];
-
-  // Verify "First URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFirstURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to staying at incognito mode");
-
-  // Verify no new tabs created.
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
-                 @"Incognito tab count should be 1");
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
-                 @"Main tab count should be 2");
-
-  [BookmarksTestCase openBookmarks];
-
-  // Open a bookmark in new incognito tab from a incognito session (through a
-  // long press).
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      performAction:grey_longPress()];
-  [[EarlGrey selectElementWithMatcher:
-                 ButtonWithAccessibilityLabelId(
-                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
-      performAction:grey_tap()];
-
-  // Verify a new incognito tab is created.
-  [ChromeEarlGrey waitForIncognitoTabCount:2];
-  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
-                 @"Main tab count should be 2");
-
-  // Verify the current tab is an incognito tab.
-  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
-                 @"Failed to staying at incognito mode");
-
-  // Verify "Second URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getSecondURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  [BookmarksTestCase openBookmarks];
-
-  // Open a bookmark in a new normal tab from a incognito session (through a
-  // long press).
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
-      performAction:grey_longPress()];
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
-      performAction:grey_tap()];
-
-  // Verify a new normal tab is created and no incognito tab is created.
-  [ChromeEarlGrey waitForMainTabCount:3];
-  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 2,
-                 @"Incognito tab count should be 2");
-
-  // Verify the current tab is a normal tab.
-  GREYAssertFalse(chrome_test_util::IsIncognitoMode(),
-                  @"Failed to switch to normal mode");
-
-  // Verify "French URL" appears in the omnibox.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          getFrenchURL().GetContent())]
-      assertWithMatcher:grey_notNil()];
-}
-
-- (void)testContextBarForSingleFolderSelection {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select Folder.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  // Tap Edit Folder.
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
-      performAction:grey_tap()];
-
-  // Verify it shows edit view controller.  Uses notNil() instead of
-  // sufficientlyVisible() because the large title in the navigation bar causes
-  // less than 75% of the table view to be visible.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkFolderEditViewContainerIdentifier)]
-      assertWithMatcher:grey_notNil()];
-}
-
-- (void)testContextMenuForMultipleFolderSelection {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select Folders.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  [self verifyContextMenuForMultiAndMixedSelection];
-}
-
-- (void)testContextMenuForMixedSelection {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URL and folder.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  [self verifyContextMenuForMultiAndMixedSelection];
-}
-
-- (void)testLongPressOnSingleURL {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_longPress()];
-
-  // Verify context menu.
-  [self verifyContextMenuForSingleURL];
-}
-
-- (void)testLongPressOnSingleFolder {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_longPress()];
-
-  // Verify it shows the context menu.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Verify options on context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Dismiss the context menu. On non compact width tap the Bookmarks TableView
-  // to dismiss, since there might not be a cancel button.
-  if (IsCompactWidth()) {
-    [[EarlGrey
-        selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
-        performAction:grey_tap()];
-  } else {
-    [[EarlGrey
-        selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
-        performAction:grey_tap()];
-  }
-
-  // Come back to the root.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
-      performAction:grey_tap()];
-
-  // Long press on Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
-                                          @"Mobile Bookmarks")]
-      performAction:grey_longPress()];
-
-  // Verify it doesn't show the context menu. (long press is disabled on
-  // permanent node.)
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
-      assertWithMatcher:grey_nil()];
-}
-
-// Verify Edit functionality for single folder selection.
-- (void)testEditFunctionalityOnSingleFolder {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // 1. Edit the folder title at edit page.
-
-  // Invoke Edit through long press.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_longPress()];
-
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
-      performAction:grey_tap()];
-
-  // Verify that the editor is present.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkFolderEditViewContainerIdentifier)]
-      assertWithMatcher:grey_notNil()];
-  NSString* existingFolderTitle = @"Folder 1";
-  NSString* newFolderTitle = @"New Folder Title";
-  [BookmarksTestCase renameBookmarkFolderWithFolderTitle:newFolderTitle];
-
-  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
-      performAction:grey_tap()];
-
-  // Verify that the change has been made.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(existingFolderTitle)]
-      assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
-      assertWithMatcher:grey_notNil()];
-
-  // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-
-  // 2. Move a single folder at edit page.
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select single folder.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(newFolderTitle)]
-      performAction:grey_tap()];
-
-  // Move the "New Folder Title" to "Folder 1.1".
-  [BookmarksTestCase
-      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER
-                  openEditor:kBookmarkFolderEditViewContainerIdentifier
-           setParentFolderTo:@"Folder 1.1"
-                        from:@"Mobile Bookmarks"];
-
-  // Verify edit mode remains.
-  [self verifyContextBarInEditMode];
-
-  // Close edit mode.
-  [BookmarksTestCase closeContextBarEditMode];
-
-  // Navigate to "Folder 1.1" and verify "New Folder Title" is under it.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // 3. Test the cancel button at edit page.
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select single folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
-      performAction:grey_tap()];
-
-  // Tap cancel after modifying the title.
-  [BookmarksTestCase
-      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER
-                  openEditor:kBookmarkFolderEditViewContainerIdentifier
-             modifyTextField:@"Title_textField"
-                          to:@"Dummy"
-                 dismissWith:@"Cancel"];
-
-  // Verify that the bookmark was not updated.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Verify edit mode is stayed.
-  [self verifyContextBarInEditMode];
-
-  // 4. Test the delete button at edit page.
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
-      performAction:grey_tap()];
-
-  // Verify that the editor is present.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkFolderEditViewContainerIdentifier)]
-      assertWithMatcher:grey_notNil()];
-
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkFolderEditorDeleteButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Wait for Undo toast to go away from screen.
-  [BookmarksTestCase waitForUndoToastToGoAway];
-
-  // Verify that the folder is deleted.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
-      assertWithMatcher:grey_notVisible()];
-
-  // 5. Verify that when adding a new folder, edit mode will not mistakenly come
-  // back (crbug.com/781783).
-
-  // Create a new folder.
-  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                pressReturn:YES];
-
-  // Tap on the new folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
-      performAction:grey_tap()];
-
-  // Verify we enter the new folder. (instead of selecting it in edit mode).
-  [self verifyEmptyBackgroundAppears];
-}
-
-// Verify Move functionality on single folder through long press.
-- (void)testMoveFunctionalityOnSingleFolder {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Invoke Move through long press.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
-      performAction:grey_longPress()];
-
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      performAction:grey_tap()];
-
-  // Choose to move the bookmark folder - "Folder 1" into a new folder.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkCreateNewFolderCellIdentifier)]
-      performAction:grey_tap()];
-
-  // Enter custom new folder name.
-  [BookmarksTestCase
-      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
-
-  // Verify current parent folder for "Title For New Folder" folder is "Mobile
-  // Bookmarks" folder.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
-                                   nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Choose new parent folder for "Title For New Folder" folder.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
-      performAction:grey_tap()];
-
-  // Verify folder picker UI is displayed.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Verify Folder 2 only has one item.
-  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
-
-  // Select Folder 2 as new parent folder for "Title For New Folder".
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
-      performAction:grey_tap()];
-
-  // Verify folder picker is dismissed and folder creator is now visible.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
-      assertWithMatcher:grey_notVisible()];
-
-  // Verify picked parent folder is Folder 2.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(@"Folder 2"), nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Tap Done to close bookmark move flow.
-  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
-      performAction:grey_tap()];
-
-  // Verify all folder flow UI is now closed.
-  [self verifyFolderFlowIsClosed];
-
-  // Verify new folder "Title For New Folder" has been created under Folder 2.
-  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Folder 2"];
-
-  // Verify new folder "Title For New Folder" has one bookmark folder.
-  [BookmarksTestCase assertChildCount:1
-                     ofFolderWithName:@"Title For New Folder"];
-
-  // Drill down to where "Folder 1.1" has been moved and assert it's presence.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
-                                          @"Title For New Folder")]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-// Verify Move functionality on multiple folder selection.
-- (void)testMoveFunctionalityOnMultipleFolder {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode, using context menu.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select multiple folders.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      performAction:grey_tap()];
-
-  // Choose to move into a new folder. By tapping on the New Folder Cell.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkCreateNewFolderCellIdentifier)]
-      performAction:grey_tap()];
-
-  // Enter custom new folder name.
-  [BookmarksTestCase
-      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
-
-  // Verify current parent folder for "Title For New Folder" folder is "Mobile
-  // Bookmarks" folder.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
-                                   nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Tap Done to close bookmark move flow.
-  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
-      performAction:grey_tap()];
-
-  // Verify all folder flow UI is now closed.
-  [self verifyFolderFlowIsClosed];
-
-  // Wait for Undo toast to go away from screen.
-  [BookmarksTestCase waitForUndoToastToGoAway];
-
-  // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-
-  // Verify new folder "Title For New Folder" has two bookmark folder.
-  [BookmarksTestCase assertChildCount:2
-                     ofFolderWithName:@"Title For New Folder"];
-
-  // Drill down to where "Folder 1.1" and "Folder 1" have been moved and assert
-  // it's presence.
-  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
-                                          @"Title For New Folder")]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-// Verify Move functionality on mixed folder / url selection.
-- (void)testMoveFunctionalityOnMixedSelection {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode, using context menu.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URL and folder.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  // Tap on move, from context menu.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      performAction:grey_tap()];
-
-  // Verify folder picker appeared.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
-      assertWithMatcher:grey_notNil()];
-
-  // Delete the First URL programmatically in background.  Folder picker will
-  // not close as the selected nodes "Second URL" and "Folder 1" still exist.
-  [BookmarksTestCase removeBookmarkWithTitle:@"First URL"];
-
-  // Choose to move into a new folder.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkCreateNewFolderCellIdentifier)]
-      performAction:grey_tap()];
-
-  // Enter custom new folder name.
-  [BookmarksTestCase
-      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
-
-  // Verify current parent folder for "Title For New Folder" folder is "Mobile
-  // Bookmarks" folder.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"Change Folder"),
-                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
-                                   nil)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-
-  // Tap Done to close bookmark move flow.
-  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
-      performAction:grey_tap()];
-
-  // Verify all folder flow UI is now closed.
-  [self verifyFolderFlowIsClosed];
-
-  // Wait for Undo toast to go away from screen.
-  [BookmarksTestCase waitForUndoToastToGoAway];
-
-  // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-
-  // Verify new folder "Title For New Folder" has two bookmark nodes.
-  [BookmarksTestCase assertChildCount:2
-                     ofFolderWithName:@"Title For New Folder"];
-
-  // Drill down to where "Second URL" and "Folder 1" have been moved and assert
-  // it's presence.
-  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
-                                          @"Title For New Folder")]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-// Verify Move functionality on multiple url selection.
-- (void)testMoveFunctionalityOnMultipleUrlSelection {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode, using context menu.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URL and folder.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  // Tap on move, from context menu.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      performAction:grey_tap()];
-
-  // Choose to move into Folder 1. Use grey_ancestor since
-  // BookmarksHomeTableView might be visible on the background on non-compact
-  // widthts, and there might be a "Folder1" node there as well.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(TappableBookmarkNodeWithLabel(@"Folder 1"),
-                            grey_ancestor(grey_accessibilityID(
-                                kBookmarkFolderPickerViewContainerIdentifier)),
-                            nil)] performAction:grey_tap()];
-
-  // Verify all folder flow UI is now closed.
-  [self verifyFolderFlowIsClosed];
-
-  // Wait for Undo toast to go away from screen.
-  [BookmarksTestCase waitForUndoToastToGoAway];
-
-  // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-
-  // Verify Folder 1 has three bookmark nodes.
-  [BookmarksTestCase assertChildCount:3 ofFolderWithName:@"Folder 1"];
-
-  // Drill down to where "Second URL" and "First URL" have been moved and assert
-  // it's presence.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-// Verify Move is cancelled when all selected folder/url are deleted in
-// background.
-- (void)testMoveCancelledWhenAllSelectionDeleted {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode, using context menu.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select URL and folder.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  // Tap on move, from context menu.
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      performAction:grey_tap()];
-
-  // Verify folder picker appeared.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
-      assertWithMatcher:grey_notNil()];
-
-  // Delete the selected URL and folder programmatically.
-  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 1"];
-  [BookmarksTestCase removeBookmarkWithTitle:@"Second URL"];
-
-  // Verify folder picker is exited.
-  [self verifyFolderFlowIsClosed];
-}
-
-// Try deleting a bookmark from the edit screen, then undoing that delete.
-- (void)testUndoDeleteBookmarkFromEditScreen {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select Folder.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-
-  // Tap context menu.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
-                                   [BookmarksTestCase contextBarMoreString])]
-      performAction:grey_tap()];
-
-  // Tap Edit Folder.
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
-      performAction:grey_tap()];
-
-  // Delete it.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkFolderEditorDeleteButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Wait until it's gone.
-  ConditionBlock condition = ^{
-    NSError* error = nil;
-    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
-        assertWithMatcher:grey_notVisible()
-                    error:&error];
-    return error == nil;
-  };
-  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
-             @"Waiting for bookmark to go away");
-
-  // Press undo
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
-      performAction:grey_tap()];
-
-  // Verify it's back.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
-      assertWithMatcher:grey_notNil()];
-
-  // Verify Delete is disabled (with visible Delete, it also means edit mode is
-  // stayed).
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                   [BookmarksTestCase contextBarDeleteString])]
-      assertWithMatcher:grey_allOf(grey_notNil(),
-                                   grey_accessibilityTrait(
-                                       UIAccessibilityTraitNotEnabled),
-                                   nil)];
-}
-
-- (void)testDeleteSingleURLNode {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select single URL.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-
-  // Delete it.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                   [BookmarksTestCase contextBarDeleteString])]
-      performAction:grey_tap()];
-
-  // Wait until it's gone.
-  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
-
-  // Press undo
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
-      performAction:grey_tap()];
-
-  // Verify it's back.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      assertWithMatcher:grey_notNil()];
-
-  // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-}
-
-- (void)testDeleteSingleFolderNode {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select single URL.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-
-  // Delete it.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                   [BookmarksTestCase contextBarDeleteString])]
-      performAction:grey_tap()];
-
-  // Wait until it's gone.
-  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
-
-  // Press undo
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
-      performAction:grey_tap()];
-
-  // Verify it's back.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
-      assertWithMatcher:grey_notNil()];
-
-  // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-}
-
-- (void)testDeleteMultipleNodes {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select Folder and URL.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_tap()];
-
-  // Delete it.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                   [BookmarksTestCase contextBarDeleteString])]
-      performAction:grey_tap()];
-
-  // Wait until it's gone.
-  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
-  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
-
-  // Press undo
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
-      performAction:grey_tap()];
-
-  // Verify it's back.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
-      assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
-      assertWithMatcher:grey_notNil()];
-
-  // Verify edit mode is closed (context bar back to default state).
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
-}
-
-// Tests that the promo view is only seen at root level and not in any of the
-// child nodes.
-- (void)testPromoViewIsSeenOnlyInRootNode {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-
-  // We are going to set the PromoAlreadySeen preference. Set a teardown handler
-  // to reset it.
-  [self setTearDownHandler:^{
-    [BookmarksTestCase setPromoAlreadySeen:NO];
-  }];
-  // Check that sign-in promo view is visible.
-  [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
-
-  // Go to child node.
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Wait until promo is gone.
-  [SigninEarlGreyUtils checkSigninPromoNotVisible];
-
-  // Check that the promo already seen state is not updated.
-  [BookmarksTestCase verifyPromoAlreadySeen:NO];
-
-  // Come back to root node, and the promo view should appear.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
-      performAction:grey_tap()];
-
-  // Check promo view is still visible.
-  [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
-      assertWithMatcher:grey_sufficientlyVisible()];
-}
-
-// Tests that tapping No thanks on the promo make it disappear.
-- (void)testPromoNoThanksMakeItDisappear {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-
-  // We are going to set the PromoAlreadySeen preference. Set a teardown handler
-  // to reset it.
-  [self setTearDownHandler:^{
-    [BookmarksTestCase setPromoAlreadySeen:NO];
-  }];
-  // Check that sign-in promo view is visible.
-  [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
-
-  // Tap the dismiss button.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kSigninPromoCloseButtonId)]
-      performAction:grey_tap()];
-
-  // Wait until promo is gone.
-  [SigninEarlGreyUtils checkSigninPromoNotVisible];
-
-  // Check that the promo already seen state is updated.
-  [BookmarksTestCase verifyPromoAlreadySeen:YES];
-}
-
-// Tests the tapping on the primary button of sign-in promo view in a cold
-// state makes the sign-in sheet appear, and the promo still appears after
-// dismissing the sheet.
-- (void)testSignInPromoWithColdStateUsingPrimaryButton {
-  [BookmarksTestCase openBookmarks];
-
-  // Check that sign-in promo view are visible.
-  [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
-
-  // Tap the primary button.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
-                                          grey_sufficientlyVisible(), nil)]
-      performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"Cancel"),
-                                          grey_sufficientlyVisible(), nil)]
-      performAction:grey_tap()];
-
-  // Check that the bookmarks UI reappeared and the cell is still here.
-  [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
-}
-
-// Tests the tapping on the primary button of sign-in promo view in a warm
-// state makes the confirmaiton sheet appear, and the promo still appears after
-// dismissing the sheet.
-- (void)testSignInPromoWithWarmStateUsingPrimaryButton {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-
-  // Set up a fake identity.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
-
-  // Check that promo is visible.
-  [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
-
-  // Tap the Sign in button.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
-                                              kSigninPromoSecondaryButtonId),
-                                          grey_sufficientlyVisible(), nil)]
-      performAction:grey_tap()];
-
-  // Tap the CANCEL button.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_buttonTitle([l10n_util::GetNSString(
-                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                     uppercaseString])] performAction:grey_tap()];
-
-  // Check that the bookmarks UI reappeared and the cell is still here.
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
-
-  [BookmarksTestCase verifyPromoAlreadySeen:NO];
-}
-
-// Tests the tapping on the secondary button of sign-in promo view in a warm
-// state makes the sign-in sheet appear, and the promo still appears after
-// dismissing the sheet.
-- (void)testSignInPromoWithWarmStateUsingSecondaryButton {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  // Set up a fake identity.
-  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
-  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
-      identity);
-
-  // Check that sign-in promo view are visible.
-  [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
-
-  // Tap the secondary button.
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
-                                          grey_sufficientlyVisible(), nil)]
-      performAction:grey_tap()];
-
-  // Tap the CANCEL button.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_buttonTitle([l10n_util::GetNSString(
-                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                     uppercaseString])] performAction:grey_tap()];
-
-  // Check that the bookmarks UI reappeared and the cell is still here.
-  [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
-}
-
-// Tests that the sign-in promo should not be shown after been shown 19 times.
-- (void)testAutomaticSigninPromoDismiss {
-  ios::ChromeBrowserState* browser_state =
-      chrome_test_util::GetOriginalBrowserState();
-  PrefService* prefs = browser_state->GetPrefs();
-  prefs->SetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount, 19);
-  [BookmarksTestCase openBookmarks];
-  // Check the sign-in promo view is visible.
-  [SigninEarlGreyUtils
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
-  // Check the sign-in promo already-seen state didn't change.
-  [BookmarksTestCase verifyPromoAlreadySeen:NO];
-  GREYAssertEqual(
-      20, prefs->GetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount),
-      @"Should have incremented the display count");
-  // Close the bookmark view and open it again.
-  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
-      performAction:grey_tap()];
-  [BookmarksTestCase openBookmarks];
-  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
-  // Check that the sign-in promo is not visible anymore.
-  [SigninEarlGreyUtils checkSigninPromoNotVisible];
-}
-
-// Tests the creation of new folders by tapping on 'New Folder' button of the
-// context bar.
-- (void)testCreateNewFolderWithContextBar {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Create a new folder and name it "New Folder 1".
-  NSString* newFolderTitle = @"New Folder 1";
-  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                pressReturn:YES];
-
-  // Verify "New Folder 1" is created.
-  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
-
-  // Create a new folder and name it "New Folder 2".
-  newFolderTitle = @"New Folder 2";
-  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                pressReturn:YES];
-
-  // Verify "New Folder 2" is created.
-  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
-
-  // Verify context bar does not change after editing folder name.
-  [self verifyContextBarInDefaultStateWithSelectEnabled:YES
-                                       newFolderEnabled:YES];
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
 }
 
 // Tests when total height of bookmarks exceeds screen height.
@@ -2655,74 +754,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   NSString* newFolderTitle = @"New Folder 1";
   [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
                                                 pressReturn:YES];
-  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
-}
-
-// Tests the new folder name is committed when name editing is interrupted by
-// navigating away.
-- (void)testNewFolderNameCommittedOnNavigatingAway {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Create a new folder and type "New Folder 1" without pressing return.
-  NSString* newFolderTitle = @"New Folder 1";
-  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                pressReturn:NO];
-
-  // Interrupt the folder name editing by tapping on back.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
-      performAction:grey_tap()];
-
-  // Come back to Mobile Bookmarks.
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Verify folder name "New Folder 1" was committed.
-  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
-
-  // Create a new folder and type "New Folder 2" without pressing return.
-  newFolderTitle = @"New Folder 2";
-  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                pressReturn:NO];
-
-  // Interrupt the folder name editing by tapping on done.
-  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
-      performAction:grey_tap()];
-  // Reopen bookmarks.
-  [BookmarksTestCase openBookmarks];
-
-  // Verify folder name "New Folder 2" was committed.
-  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
-
-  // Create a new folder and type "New Folder 3" without pressing return.
-  newFolderTitle = @"New Folder 3";
-  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                pressReturn:NO];
-
-  // Interrupt the folder name editing by entering Folder 1
-  [BookmarksTestCase scrollToTop];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
-      performAction:grey_tap()];
-  // Come back to Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
-      performAction:grey_tap()];
-
-  // Verify folder name "New Folder 3" was committed.
-  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
-
-  // Create a new folder and type "New Folder 4" without pressing return.
-  newFolderTitle = @"New Folder 4";
-  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                pressReturn:NO];
-
-  // Interrupt the folder name editing by tapping on First URL.
-  [BookmarksTestCase scrollToTop];
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
-      performAction:grey_tap()];
-  // Reopen bookmarks.
-  [BookmarksTestCase openBookmarks];
-
-  // Verify folder name "New Folder 4" was committed.
   [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
 }
 
@@ -2754,7 +785,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
   // Verify the empty background appears. (If "New Folder 1" is commited,
   // tapping on it will enter it and see a empty background.  Instead of
   // re-editing it (crbug.com/794155)).
-  [self verifyEmptyBackgroundAppears];
+  [BookmarksTestCase verifyEmptyBackgroundAppears];
 }
 
 - (void)testEmptyBackgroundAndSelectButton {
@@ -2767,7 +798,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       performAction:grey_tap()];
 
   // Verify the empty background appears.
-  [self verifyEmptyBackgroundAppears];
+  [BookmarksTestCase verifyEmptyBackgroundAppears];
 
   // Come back to Mobile Bookmarks.
   [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
@@ -2802,62 +833,11 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Verify edit mode is close automatically (context bar switched back to
   // default state) and select button is disabled.
-  [self verifyContextBarInDefaultStateWithSelectEnabled:NO
-                                       newFolderEnabled:YES];
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:NO
+                                                    newFolderEnabled:YES];
 
   // Verify the empty background appears.
-  [self verifyEmptyBackgroundAppears];
-}
-
-// Test when current navigating folder is deleted in background, empty
-// background should be shown with context bar buttons disabled.
-- (void)testWhenCurrentFolderDeletedInBackground {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Enter Folder 1
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
-      performAction:grey_tap()];
-
-  // Enter Folder 2
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
-      performAction:grey_tap()];
-
-  // Change to edit mode, using context menu.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Delete the Folder 1 and Folder 2 programmatically in background.
-  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 2"];
-  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 1"];
-
-  // Verify edit mode is close automatically (context bar switched back to
-  // default state) and both select and new folder button are disabled.
-  [self verifyContextBarInDefaultStateWithSelectEnabled:NO newFolderEnabled:NO];
-
-  // Verify the empty background appears.
-  [self verifyEmptyBackgroundAppears];
-
-  // Come back to Folder 1 (which is also deleted).
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Folder 1")]
-      performAction:grey_tap()];
-
-  // Verify both select and new folder button are disabled.
-  [self verifyContextBarInDefaultStateWithSelectEnabled:NO newFolderEnabled:NO];
-
-  // Verify the empty background appears.
-  [self verifyEmptyBackgroundAppears];
-
-  // Come back to Mobile Bookmarks.
-  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
-      performAction:grey_tap()];
-
-  // Ensure Folder 1.1 is seen, that means it successfully comes back to Mobile
-  // Bookmarks.
-  [BookmarksTestCase verifyBookmarkFolderIsSeen:@"Folder 1.1"];
+  [BookmarksTestCase verifyEmptyBackgroundAppears];
 }
 
 - (void)testCachePositionIsRecreated {
@@ -2981,172 +961,6 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 
   // Ensure we are at Folder 1, by verifying folders at this level.
   [BookmarksTestCase verifyBookmarkFolderIsSeen:@"Folder 2"];
-}
-
-- (void)testCantDeleteCellBeingEdited {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Create a new folder and type "New Folder 1" without pressing return.
-  NSString* newFolderTitle = @"New Folder";
-  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
-                                                pressReturn:NO];
-
-  // Swipe action to try to delete the newly created folder while its name its
-  // being edited.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"New Folder")]
-      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
-
-  // Verify the delete confirmation button doesn't show up.
-  [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
-      assertWithMatcher:grey_nil()];
-}
-
-// Tests that all elements on the bookmarks landing page are accessible.
-- (void)testAccessibilityOnBookmarksLandingPage {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-}
-
-// Tests that all elements on mobile bookmarks are accessible.
-- (void)testAccessibilityOnMobileBookmarks {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-}
-
-// Tests that all elements on the bookmarks folder Edit page are accessible.
-- (void)testAccessibilityOnBookmarksFolderEditPage {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Invoke Edit through long press.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_longPress()];
-
-  [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
-      performAction:grey_tap()];
-
-  // Verify that the editor is present.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkFolderEditViewContainerIdentifier)]
-      assertWithMatcher:grey_notNil()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-}
-
-// Tests that all elements on the bookmarks Edit page are accessible.
-- (void)testAccessibilityOnBookmarksEditPage {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Invoke Edit through long press.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_longPress()];
-
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
-      performAction:grey_tap()];
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-}
-
-// Tests that all elements on the bookmarks Move page are accessible.
-- (void)testAccessibilityOnBookmarksMovePage {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Invoke Move through long press.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_longPress()];
-
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      performAction:grey_tap()];
-
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-}
-
-// Tests that all elements on the bookmarks Move to New Folder page are
-// accessible.
-- (void)testAccessibilityOnBookmarksMoveToNewFolderPage {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Invoke Move through long press.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
-      performAction:grey_longPress()];
-
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
-      performAction:grey_tap()];
-
-  // Tap on "Create New Folder."
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkCreateNewFolderCellIdentifier)]
-      performAction:grey_tap()];
-
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-}
-
-// Tests that all elements on bookmarks Delete and Undo are accessible.
-- (void)testAccessibilityOnBookmarksDeleteUndo {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  // Select single URL.
-  [[EarlGrey
-      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
-      performAction:grey_tap()];
-
-  // Delete it.
-  [[EarlGrey
-      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
-                                   [BookmarksTestCase contextBarDeleteString])]
-      performAction:grey_tap()];
-
-  // Wait until it's gone.
-  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
-
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
-}
-
-// Tests that all elements on the bookmarks Select page are accessible.
-- (void)testAccessibilityOnBookmarksSelect {
-  [BookmarksTestCase setupStandardBookmarks];
-  [BookmarksTestCase openBookmarks];
-  [BookmarksTestCase openMobileBookmarks];
-
-  // Change to edit mode
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
-      performAction:grey_tap()];
-
-  chrome_test_util::VerifyAccessibilityForCurrentScreen();
 }
 
 // Tests that chrome://bookmarks is disabled.
@@ -3580,7 +1394,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       folder->child_count(), count);
 }
 
-- (void)verifyContextMenuForSingleURL {
++ (void)verifyContextMenuForSingleURL {
   // Verify it shows the context menu.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
@@ -3605,7 +1419,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-- (void)verifyContextMenuForMultiAndMixedSelection {
++ (void)verifyContextMenuForMultiAndMixedSelection {
   // Verify it shows the context menu.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
@@ -3617,7 +1431,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-- (void)verifyContextBarInDefaultStateWithSelectEnabled:(BOOL)selectEnabled
++ (void)verifyContextBarInDefaultStateWithSelectEnabled:(BOOL)selectEnabled
                                        newFolderEnabled:(BOOL)newFolderEnabled {
   // Verify the context bar is shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -3649,7 +1463,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
                                    nil)];
 }
 
-- (void)verifyContextBarInEditMode {
++ (void)verifyContextBarInEditMode {
   // Verify the context bar is shown.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kBookmarkHomeUIToolbarIdentifier)]
@@ -3661,7 +1475,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_notNil()];
 }
 
-- (void)verifyFolderFlowIsClosed {
++ (void)verifyFolderFlowIsClosed {
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
@@ -3676,7 +1490,7 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
       assertWithMatcher:grey_notVisible()];
 }
 
-- (void)verifyEmptyBackgroundAppears {
++ (void)verifyEmptyBackgroundAppears {
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID(kBookmarkEmptyStateExplanatoryLabelIdentifier)]
@@ -3933,5 +1747,2317 @@ id<GREYMatcher> TappableBookmarkNodeWithLabel(NSString* label) {
 // 2. Reorder bookmarks. (make sure it won't clear the row selection on table)
 // 3. Test new folder name is committed when name editing is interrupted by
 //    tapping context bar buttons.
+
+@end
+
+// Bookmark entries integration tests for Chrome.
+@interface BookmarksTestCaseEntries : ChromeTestCase
+@end
+
+@implementation BookmarksTestCaseEntries
+
+- (void)setUp {
+  [super setUp];
+
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  GREYAssert(chrome_test_util::ClearBookmarks(),
+             @"Not all bookmarks were removed.");
+}
+
+// Tear down called once per test.
+- (void)tearDown {
+  [super tearDown];
+  GREYAssert(chrome_test_util::ClearBookmarks(),
+             @"Not all bookmarks were removed.");
+  // Clear position cache so that Bookmarks starts at the root folder in next
+  // test.
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  [BookmarkPathCache
+      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
+}
+
+#pragma mark - BookmarksTestCaseEntries Tests
+
+- (void)testUndoDeleteBookmarkFromSwipe {
+  // TODO(crbug.com/851227): On UIRefresh non Compact Width on iOS11, the
+  // bookmark cell is being deleted by grey_swipeFastInDirection.
+  // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
+  // fail on devices. Disabling this test under these conditions on the
+  // meantime.
+  if (@available(iOS 11, *)) {
+    if (experimental_flags::IsBookmarksUIRebootEnabled() && !IsCompactWidth()) {
+      EARL_GREY_TEST_SKIPPED(@"Test disabled on UIRefresh iPad on iOS11.");
+    }
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Swipe action on the URL.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Verify context bar does not change when "Delete" shows up.
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+  // Delete it.
+  [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify context bar remains in default state.
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+}
+
+// TODO(crbug.com/781445): Re-enable this test on 32-bit.
+#if defined(ARCH_CPU_64_BITS)
+#define MAYBE_testSwipeToDeleteDisabledInEditMode \
+  testSwipeToDeleteDisabledInEditMode
+#else
+#define MAYBE_testSwipeToDeleteDisabledInEditMode \
+  FLAKY_testSwipeToDeleteDisabledInEditMode
+#endif
+- (void)testSwipeToDeleteDisabledInEditMode {
+  // TODO(crbug.com/851227): On UIRefresh non Compact Width on iOS11, the
+  // bookmark cell is being deleted by grey_swipeFastInDirection.
+  // grey_swipeFastInDirectionWithStartPoint doesn't work either and it might
+  // fail on devices. Disabling this test under these conditions on the
+  // meantime.
+  if (@available(iOS 11, *)) {
+    if (experimental_flags::IsBookmarksUIRebootEnabled() && !IsCompactWidth()) {
+      EARL_GREY_TEST_SKIPPED(@"Test disabled on UIRefresh iPad on iOS11.");
+    }
+  }
+
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Swipe action on the URL.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Verify the delete confirmation button shows up.
+  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      assertWithMatcher:grey_notNil()];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Verify the delete confirmation button is gone after entering edit mode.
+  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      assertWithMatcher:grey_nil()];
+
+  // Swipe action on "Second URL".  This should not bring out delete
+  // confirmation button as swipe-to-delete is disabled in edit mode.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Verify the delete confirmation button doesn't appear.
+  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      assertWithMatcher:grey_nil()];
+
+  // Cancel edit mode
+  [BookmarksTestCase closeContextBarEditMode];
+
+  // Swipe action on the URL.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"French URL")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Verify the delete confirmation button shows up. (swipe-to-delete is
+  // re-enabled).
+  [[[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      inRoot:grey_kindOfClass(NSClassFromString(@"UITableView"))]
+      assertWithMatcher:grey_notNil()];
+}
+
+- (void)testContextMenuForSingleURLSelection {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  [BookmarksTestCase verifyContextMenuForSingleURL];
+}
+
+// Verify Edit functionality on single URL selection.
+- (void)testEditFunctionalityOnSingleURL {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // 1. Edit the bookmark title at edit page.
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Modify the title.
+  [BookmarksTestCase
+      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                  openEditor:kBookmarkEditViewContainerIdentifier
+             modifyTextField:@"Title Field_textField"
+                          to:@"n5"
+                 dismissWith:kBookmarkEditNavigationBarDoneButtonIdentifier];
+
+  // Verify that the bookmark was updated.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"n5")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Press undo and verify old URL is back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+
+  // 2. Edit the bookmark url at edit page.
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
+      performAction:grey_tap()];
+
+  // Modify the url.
+  [BookmarksTestCase
+      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                  openEditor:kBookmarkEditViewContainerIdentifier
+             modifyTextField:@"URL Field_textField"
+                          to:@"www.b.fr"
+                 dismissWith:kBookmarkEditNavigationBarDoneButtonIdentifier];
+
+  // Verify that the bookmark was updated.
+  [BookmarksTestCase assertExistenceOfBookmarkWithURL:@"http://www.b.fr/"
+                                                 name:@"French URL"];
+
+  // Press undo and verify the edit is undone.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+  [BookmarksTestCase assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+
+  // 3. Move a single url at edit page.
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select single url.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Move the "Second URL" to "Folder 1.1".
+  [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                                 openEditor:kBookmarkEditViewContainerIdentifier
+                          setParentFolderTo:@"Folder 1.1"
+                                       from:@"Mobile Bookmarks"];
+
+  // Verify edit mode is stayed.
+  [BookmarksTestCase verifyContextBarInEditMode];
+
+  // Close edit mode.
+  [BookmarksTestCase closeContextBarEditMode];
+
+  // Navigate to "Folder 1.1" and verify "Second URL" is under it.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // 4. Test the cancel button at edit page.
+
+  // Come back to the Mobile Bookmarks.
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
+      performAction:grey_tap()];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
+      performAction:grey_tap()];
+
+  // Tap cancel after modifying the url.
+  [BookmarksTestCase tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT
+                                 openEditor:kBookmarkEditViewContainerIdentifier
+                            modifyTextField:@"URL Field_textField"
+                                         to:@"www.b.fr"
+                                dismissWith:@"Cancel"];
+
+  // Verify that the bookmark was not updated.
+  [BookmarksTestCase assertAbsenceOfBookmarkWithURL:@"http://www.b.fr/"];
+
+  // Verify edit mode is stayed.
+  [BookmarksTestCase verifyContextBarInEditMode];
+}
+
+// Verify Copy URL functionality on single URL selection.
+- (void)testCopyFunctionalityOnSingleURL {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
+      performAction:grey_tap()];
+
+  // Invoke Copy through context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Select Copy URL.
+  [[EarlGrey selectElementWithMatcher:ContextMenuCopyButton()]
+      performAction:grey_tap()];
+
+  // Verify general pasteboard has the URL copied.
+  ConditionBlock condition = ^{
+    return !![[UIPasteboard generalPasteboard].string
+        containsString:@"www.a.fr"];
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
+             @"Waiting for URL to be copied to pasteboard.");
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+}
+
+- (void)testContextMenuForMultipleURLSelection {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URLs.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Verify it shows the context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify options on context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verify the Open All functionality on multiple url selection.
+// TODO(crbug.com/816699): Re-enable this test on simulators.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuForMultipleURLOpenAll \
+  testContextMenuForMultipleURLOpenAll
+#else
+#define MAYBE_testContextMenuForMultipleURLOpenAll \
+  FLAKY_testContextMenuForMultipleURLOpenAll
+#endif
+- (void)MAYBE_testContextMenuForMultipleURLOpenAll {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Open 3 normal tabs from a normal session.
+  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
+                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
+
+  // Verify there are 3 normal tabs.
+  [ChromeEarlGrey waitForMainTabCount:3];
+  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 0,
+                 @"Incognito tab count should be 0");
+
+  // Verify the order of open tabs.
+  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
+
+  // Switch to Incognito mode by adding a new incognito tab.
+  chrome_test_util::OpenNewIncognitoTab();
+
+  [BookmarksTestCase openBookmarks];
+
+  // Open 3 normal tabs from a incognito session.
+  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
+                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN];
+
+  // Verify there are 6 normal tabs and no new incognito tabs.
+  [ChromeEarlGrey waitForMainTabCount:6];
+  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
+                 @"Incognito tab count should be 1");
+
+  // Close the incognito tab to go back to normal mode.
+  GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
+
+  // The following verifies the selected bookmarks are open in the same order as
+  // in folder.
+
+  // Verify the order of open tabs.
+  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:3];
+}
+
+// Verify the Open All in Incognito functionality on multiple url selection.
+// TODO(crbug.com/816699): Re-enable this test on simulators.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuForMultipleURLOpenAllInIncognito \
+  testContextMenuForMultipleURLOpenAllInIncognito
+#else
+#define MAYBE_testContextMenuForMultipleURLOpenAllInIncognito \
+  FLAKY_testContextMenuForMultipleURLOpenAllInIncognito
+#endif
+- (void)MAYBE_testContextMenuForMultipleURLOpenAllInIncognito {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Open 3 incognito tabs from a normal session.
+  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
+                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
+
+  // Verify there are 3 incognito tabs and no new normal tab.
+  [ChromeEarlGrey waitForIncognitoTabCount:3];
+  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
+                 @"Main tab count should be 1");
+
+  // Verify the current tab is an incognito tab.
+  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+                 @"Failed to switch to incognito mode");
+
+  // Verify the order of open tabs.
+  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:0];
+
+  [BookmarksTestCase openBookmarks];
+
+  // Open 3 incognito tabs from a incognito session.
+  [BookmarksTestCase selectUrlsAndTapOnContextBarButtonWithLabelId:
+                         IDS_IOS_BOOKMARK_CONTEXT_MENU_OPEN_INCOGNITO];
+
+  // The 3rd tab will be re-used to open one of the selected bookmarks.  So
+  // there will be 2 new tabs only.
+
+  // Verify there are 5 incognito tabs and no new normal tab.
+  [ChromeEarlGrey waitForIncognitoTabCount:5];
+  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 1,
+                 @"Main tab count should be 1");
+
+  // Verify the order of open tabs.
+  [BookmarksTestCase verifyOrderOfTabsWithCurrentTabIndex:2];
+}
+
+// Verify the Open and Open in Incognito functionality on single url.
+- (void)testOpenSingleBookmarkInNormalAndIncognitoTab {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Open a bookmark in current tab in a normal session.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+      performAction:grey_tap()];
+
+  // Verify "First URL" appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getFirstURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  [BookmarksTestCase openBookmarks];
+
+  // Open a bookmark in new tab from a normal session (through a long press).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      performAction:grey_longPress()];
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
+      performAction:grey_tap()];
+
+  // Verify there is 1 new normal tab created and no new incognito tab created.
+  [ChromeEarlGrey waitForMainTabCount:2];
+  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 0,
+                 @"Incognito tab count should be 0");
+
+  // Verify "Second URL" appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getSecondURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  [BookmarksTestCase openBookmarks];
+
+  // Open a bookmark in an incognito tab from a normal session (through a long
+  // press).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
+      performAction:grey_longPress()];
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
+      performAction:grey_tap()];
+
+  // Verify there is 1 incognito tab created and no new normal tab created.
+  [ChromeEarlGrey waitForIncognitoTabCount:1];
+  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
+                 @"Main tab count should be 2");
+
+  // Verify the current tab is an incognito tab.
+  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+                 @"Failed to switch to incognito mode");
+
+  // Verify "French URL" appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getFrenchURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  [BookmarksTestCase openBookmarks];
+
+  // Open a bookmark in current tab from a incognito session.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+      performAction:grey_tap()];
+
+  // Verify "First URL" appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getFirstURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify the current tab is an incognito tab.
+  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+                 @"Failed to staying at incognito mode");
+
+  // Verify no new tabs created.
+  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 1,
+                 @"Incognito tab count should be 1");
+  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
+                 @"Main tab count should be 2");
+
+  [BookmarksTestCase openBookmarks];
+
+  // Open a bookmark in new incognito tab from a incognito session (through a
+  // long press).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      performAction:grey_longPress()];
+  [[EarlGrey selectElementWithMatcher:
+                 ButtonWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)]
+      performAction:grey_tap()];
+
+  // Verify a new incognito tab is created.
+  [ChromeEarlGrey waitForIncognitoTabCount:2];
+  GREYAssertTrue(chrome_test_util::GetMainTabCount() == 2,
+                 @"Main tab count should be 2");
+
+  // Verify the current tab is an incognito tab.
+  GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
+                 @"Failed to staying at incognito mode");
+
+  // Verify "Second URL" appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getSecondURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  [BookmarksTestCase openBookmarks];
+
+  // Open a bookmark in a new normal tab from a incognito session (through a
+  // long press).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]
+      performAction:grey_longPress()];
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
+      performAction:grey_tap()];
+
+  // Verify a new normal tab is created and no incognito tab is created.
+  [ChromeEarlGrey waitForMainTabCount:3];
+  GREYAssertTrue(chrome_test_util::GetIncognitoTabCount() == 2,
+                 @"Incognito tab count should be 2");
+
+  // Verify the current tab is a normal tab.
+  GREYAssertFalse(chrome_test_util::IsIncognitoMode(),
+                  @"Failed to switch to normal mode");
+
+  // Verify "French URL" appears in the omnibox.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          getFrenchURL().GetContent())]
+      assertWithMatcher:grey_notNil()];
+}
+
+- (void)testContextMenuForMixedSelection {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL and folder.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  [BookmarksTestCase verifyContextMenuForMultiAndMixedSelection];
+}
+
+- (void)testLongPressOnSingleURL {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_longPress()];
+
+  // Verify context menu.
+  [BookmarksTestCase verifyContextMenuForSingleURL];
+}
+
+// Verify Move functionality on mixed folder / url selection.
+- (void)testMoveFunctionalityOnMixedSelection {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL and folder.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap on move, from context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Verify folder picker appeared.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Delete the First URL programmatically in background.  Folder picker will
+  // not close as the selected nodes "Second URL" and "Folder 1" still exist.
+  [BookmarksTestCase removeBookmarkWithTitle:@"First URL"];
+
+  // Choose to move into a new folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
+      performAction:grey_tap()];
+
+  // Enter custom new folder name.
+  [BookmarksTestCase
+      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
+
+  // Verify current parent folder for "Title For New Folder" folder is "Mobile
+  // Bookmarks" folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(@"Change Folder"),
+                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
+                                   nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap Done to close bookmark move flow.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
+      performAction:grey_tap()];
+
+  // Verify all folder flow UI is now closed.
+  [BookmarksTestCase verifyFolderFlowIsClosed];
+
+  // Wait for Undo toast to go away from screen.
+  [BookmarksTestCase waitForUndoToastToGoAway];
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+
+  // Verify new folder "Title For New Folder" has two bookmark nodes.
+  [BookmarksTestCase assertChildCount:2
+                     ofFolderWithName:@"Title For New Folder"];
+
+  // Drill down to where "Second URL" and "Folder 1" have been moved and assert
+  // it's presence.
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"Title For New Folder")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verify Move functionality on multiple url selection.
+- (void)testMoveFunctionalityOnMultipleUrlSelection {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL and folder.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap on move, from context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Choose to move into Folder 1. Use grey_ancestor since
+  // BookmarksHomeTableView might be visible on the background on non-compact
+  // widthts, and there might be a "Folder1" node there as well.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(TappableBookmarkNodeWithLabel(@"Folder 1"),
+                            grey_ancestor(grey_accessibilityID(
+                                kBookmarkFolderPickerViewContainerIdentifier)),
+                            nil)] performAction:grey_tap()];
+
+  // Verify all folder flow UI is now closed.
+  [BookmarksTestCase verifyFolderFlowIsClosed];
+
+  // Wait for Undo toast to go away from screen.
+  [BookmarksTestCase waitForUndoToastToGoAway];
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+
+  // Verify Folder 1 has three bookmark nodes.
+  [BookmarksTestCase assertChildCount:3 ofFolderWithName:@"Folder 1"];
+
+  // Drill down to where "Second URL" and "First URL" have been moved and assert
+  // it's presence.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verify Move is cancelled when all selected folder/url are deleted in
+// background.
+- (void)testMoveCancelledWhenAllSelectionDeleted {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URL and folder.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap on move, from context menu.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Verify folder picker appeared.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Delete the selected URL and folder programmatically.
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 1"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Second URL"];
+
+  // Verify folder picker is exited.
+  [BookmarksTestCase verifyFolderFlowIsClosed];
+}
+
+// Try deleting a bookmark from the edit screen, then undoing that delete.
+- (void)testUndoDeleteBookmarkFromEditScreen {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select Folder.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap Edit Folder.
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
+      performAction:grey_tap()];
+
+  // Delete it.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditorDeleteButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+        assertWithMatcher:grey_notVisible()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
+             @"Waiting for bookmark to go away");
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify Delete is disabled (with visible Delete, it also means edit mode is
+  // stayed).
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
+      assertWithMatcher:grey_allOf(grey_notNil(),
+                                   grey_accessibilityTrait(
+                                       UIAccessibilityTraitNotEnabled),
+                                   nil)];
+}
+
+- (void)testDeleteSingleURLNode {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select single URL.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Delete it.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+}
+
+- (void)testDeleteMultipleNodes {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select Folder and URL.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Delete it.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+}
+
+@end
+
+// Bookmark promo integration tests for Chrome.
+@interface BookmarksTestCasePromo : ChromeTestCase
+@end
+
+@implementation BookmarksTestCasePromo
+
+- (void)setUp {
+  [super setUp];
+
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  GREYAssert(chrome_test_util::ClearBookmarks(),
+             @"Not all bookmarks were removed.");
+}
+
+// Tear down called once per test.
+- (void)tearDown {
+  [super tearDown];
+  GREYAssert(chrome_test_util::ClearBookmarks(),
+             @"Not all bookmarks were removed.");
+  // Clear position cache so that Bookmarks starts at the root folder in next
+  // test.
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  [BookmarkPathCache
+      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
+}
+
+#pragma mark - BookmarksTestCasePromo Tests
+
+// Tests that the promo view is only seen at root level and not in any of the
+// child nodes.
+- (void)testPromoViewIsSeenOnlyInRootNode {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+
+  // We are going to set the PromoAlreadySeen preference. Set a teardown handler
+  // to reset it.
+  [self setTearDownHandler:^{
+    [BookmarksTestCase setPromoAlreadySeen:NO];
+  }];
+  // Check that sign-in promo view is visible.
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+
+  // Go to child node.
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Wait until promo is gone.
+  [SigninEarlGreyUtils checkSigninPromoNotVisible];
+
+  // Check that the promo already seen state is not updated.
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
+
+  // Come back to root node, and the promo view should appear.
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
+      performAction:grey_tap()];
+
+  // Check promo view is still visible.
+  [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that tapping No thanks on the promo make it disappear.
+- (void)testPromoNoThanksMakeItDisappear {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+
+  // We are going to set the PromoAlreadySeen preference. Set a teardown handler
+  // to reset it.
+  [self setTearDownHandler:^{
+    [BookmarksTestCase setPromoAlreadySeen:NO];
+  }];
+  // Check that sign-in promo view is visible.
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+
+  // Tap the dismiss button.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(kSigninPromoCloseButtonId)]
+      performAction:grey_tap()];
+
+  // Wait until promo is gone.
+  [SigninEarlGreyUtils checkSigninPromoNotVisible];
+
+  // Check that the promo already seen state is updated.
+  [BookmarksTestCase verifyPromoAlreadySeen:YES];
+}
+
+// Tests the tapping on the primary button of sign-in promo view in a cold
+// state makes the sign-in sheet appear, and the promo still appears after
+// dismissing the sheet.
+- (void)testSignInPromoWithColdStateUsingPrimaryButton {
+  [BookmarksTestCase openBookmarks];
+
+  // Check that sign-in promo view are visible.
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+
+  // Tap the primary button.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(PrimarySignInButton(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"Cancel"),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+
+  // Check that the bookmarks UI reappeared and the cell is still here.
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+}
+
+// Tests the tapping on the primary button of sign-in promo view in a warm
+// state makes the confirmaiton sheet appear, and the promo still appears after
+// dismissing the sheet.
+- (void)testSignInPromoWithWarmStateUsingPrimaryButton {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+
+  // Set up a fake identity.
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      identity);
+
+  // Check that promo is visible.
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
+
+  // Tap the Sign in button.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kSigninPromoSecondaryButtonId),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+
+  // Tap the CANCEL button.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_buttonTitle([l10n_util::GetNSString(
+                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
+                     uppercaseString])] performAction:grey_tap()];
+
+  // Check that the bookmarks UI reappeared and the cell is still here.
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
+
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
+}
+
+// Tests the tapping on the secondary button of sign-in promo view in a warm
+// state makes the sign-in sheet appear, and the promo still appears after
+// dismissing the sheet.
+- (void)testSignInPromoWithWarmStateUsingSecondaryButton {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  // Set up a fake identity.
+  ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
+  ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
+      identity);
+
+  // Check that sign-in promo view are visible.
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
+
+  // Tap the secondary button.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
+                                          grey_sufficientlyVisible(), nil)]
+      performAction:grey_tap()];
+
+  // Tap the CANCEL button.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_buttonTitle([l10n_util::GetNSString(
+                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
+                     uppercaseString])] performAction:grey_tap()];
+
+  // Check that the bookmarks UI reappeared and the cell is still here.
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
+}
+
+// Tests that the sign-in promo should not be shown after been shown 19 times.
+- (void)testAutomaticSigninPromoDismiss {
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  PrefService* prefs = browser_state->GetPrefs();
+  prefs->SetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount, 19);
+  [BookmarksTestCase openBookmarks];
+  // Check the sign-in promo view is visible.
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+  // Check the sign-in promo already-seen state didn't change.
+  [BookmarksTestCase verifyPromoAlreadySeen:NO];
+  GREYAssertEqual(
+      20, prefs->GetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount),
+      @"Should have incremented the display count");
+  // Close the bookmark view and open it again.
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
+      performAction:grey_tap()];
+  [BookmarksTestCase openBookmarks];
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+  // Check that the sign-in promo is not visible anymore.
+  [SigninEarlGreyUtils checkSigninPromoNotVisible];
+}
+
+@end
+
+// Bookmark accessibility tests for Chrome.
+@interface BookmarksTestCaseAccessibility : ChromeTestCase
+@end
+
+@implementation BookmarksTestCaseAccessibility
+
+- (void)setUp {
+  [super setUp];
+
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  GREYAssert(chrome_test_util::ClearBookmarks(),
+             @"Not all bookmarks were removed.");
+}
+
+// Tear down called once per test.
+- (void)tearDown {
+  [super tearDown];
+  GREYAssert(chrome_test_util::ClearBookmarks(),
+             @"Not all bookmarks were removed.");
+  // Clear position cache so that Bookmarks starts at the root folder in next
+  // test.
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  [BookmarkPathCache
+      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
+}
+
+#pragma mark - BookmarksTestCaseAccessibility Tests
+
+// Tests that all elements on the bookmarks landing page are accessible.
+- (void)testAccessibilityOnBookmarksLandingPage {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+// Tests that all elements on mobile bookmarks are accessible.
+- (void)testAccessibilityOnMobileBookmarks {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+// Tests that all elements on the bookmarks folder Edit page are accessible.
+- (void)testAccessibilityOnBookmarksFolderEditPage {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Invoke Edit through long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_longPress()];
+
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
+      performAction:grey_tap()];
+
+  // Verify that the editor is present.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+// Tests that all elements on the bookmarks Edit page are accessible.
+- (void)testAccessibilityOnBookmarksEditPage {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Invoke Edit through long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_longPress()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
+      performAction:grey_tap()];
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+// Tests that all elements on the bookmarks Move page are accessible.
+- (void)testAccessibilityOnBookmarksMovePage {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Invoke Move through long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_longPress()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+// Tests that all elements on the bookmarks Move to New Folder page are
+// accessible.
+- (void)testAccessibilityOnBookmarksMoveToNewFolderPage {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Invoke Move through long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_longPress()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Tap on "Create New Folder."
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
+      performAction:grey_tap()];
+
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+// Tests that all elements on bookmarks Delete and Undo are accessible.
+- (void)testAccessibilityOnBookmarksDeleteUndo {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select single URL.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+
+  // Delete it.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
+
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+// Tests that all elements on the bookmarks Select page are accessible.
+- (void)testAccessibilityOnBookmarksSelect {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  chrome_test_util::VerifyAccessibilityForCurrentScreen();
+}
+
+@end
+
+// Bookmark folders integration tests for Chrome.
+@interface BookmarksTestCaseFolders : ChromeTestCase
+@end
+
+@implementation BookmarksTestCaseFolders
+
+- (void)setUp {
+  [super setUp];
+
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  GREYAssert(chrome_test_util::ClearBookmarks(),
+             @"Not all bookmarks were removed.");
+}
+
+// Tear down called once per test.
+- (void)tearDown {
+  [super tearDown];
+  GREYAssert(chrome_test_util::ClearBookmarks(),
+             @"Not all bookmarks were removed.");
+  // Clear position cache so that Bookmarks starts at the root folder in next
+  // test.
+  ios::ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  [BookmarkPathCache
+      clearBookmarkUIPositionCacheWithPrefService:browser_state->GetPrefs()];
+}
+
+#pragma mark - BookmarksTestFolders Tests
+
+// Tests moving bookmarks into a new folder created in the moving process.
+- (void)testCreateNewFolderWhileMovingBookmarks {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select URLs.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Second URL")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap on Move.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Choose to move the bookmark into a new folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
+      performAction:grey_tap()];
+
+  // Enter custom new folder name.
+  [BookmarksTestCase
+      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
+
+  // Verify current parent folder (Change Folder) is Bookmarks folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(@"Change Folder"),
+                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
+                                   nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Choose new parent folder (Change Folder).
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
+      performAction:grey_tap()];
+
+  // Verify folder picker UI is displayed.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify Folder 2 only has one item.
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
+
+  // Select Folder 2 as new Change Folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
+      performAction:grey_tap()];
+
+  // Verify folder picker is dismissed and folder creator is now visible.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_notVisible()];
+
+  // Verify picked parent folder (Change Folder) is Folder 2.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(@"Change Folder"),
+                                   grey_accessibilityLabel(@"Folder 2"), nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap Done to close bookmark move flow.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
+      performAction:grey_tap()];
+
+  // Verify all folder flow UI is now closed.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
+      assertWithMatcher:grey_notVisible()];
+
+  // Verify new folder has been created under Folder 2.
+  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Folder 2"];
+
+  // Verify new folder has two bookmarks.
+  [BookmarksTestCase assertChildCount:2
+                     ofFolderWithName:@"Title For New Folder"];
+}
+
+- (void)testCantDeleteFolderBeingEdited {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Create a new folder and type "New Folder 1" without pressing return.
+  NSString* newFolderTitle = @"New Folder";
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
+
+  // Swipe action to try to delete the newly created folder while its name its
+  // being edited.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"New Folder")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Verify the delete confirmation button doesn't show up.
+  [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      assertWithMatcher:grey_nil()];
+}
+
+- (void)testDeleteSingleFolderNode {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select single URL.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Delete it.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarLeadingButtonWithLabel(
+                                   [BookmarksTestCase contextBarDeleteString])]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Folder 1"];
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+}
+
+// Test when current navigating folder is deleted in background, empty
+// background should be shown with context bar buttons disabled.
+- (void)testWhenCurrentFolderDeletedInBackground {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Enter Folder 1
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Enter Folder 2
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 2")]
+      performAction:grey_tap()];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Delete the Folder 1 and Folder 2 programmatically in background.
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 2"];
+  [BookmarksTestCase removeBookmarkWithTitle:@"Folder 1"];
+
+  // Verify edit mode is close automatically (context bar switched back to
+  // default state) and both select and new folder button are disabled.
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:NO
+                                                    newFolderEnabled:NO];
+
+  // Verify the empty background appears.
+  [BookmarksTestCase verifyEmptyBackgroundAppears];
+
+  // Come back to Folder 1 (which is also deleted).
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Verify both select and new folder button are disabled.
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:NO
+                                                    newFolderEnabled:NO];
+
+  // Verify the empty background appears.
+  [BookmarksTestCase verifyEmptyBackgroundAppears];
+
+  // Come back to Mobile Bookmarks.
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
+      performAction:grey_tap()];
+
+  // Ensure Folder 1.1 is seen, that means it successfully comes back to Mobile
+  // Bookmarks.
+  [BookmarksTestCase verifyBookmarkFolderIsSeen:@"Folder 1.1"];
+}
+
+- (void)testLongPressOnSingleFolder {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_longPress()];
+
+  // Verify it shows the context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify options on context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Dismiss the context menu. On non compact width tap the Bookmarks TableView
+  // to dismiss, since there might not be a cancel button.
+  if (IsCompactWidth()) {
+    [[EarlGrey
+        selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
+        performAction:grey_tap()];
+  } else {
+    [[EarlGrey
+        selectElementWithMatcher:grey_accessibilityID(@"bookmarksTableView")]
+        performAction:grey_tap()];
+  }
+
+  // Come back to the root.
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
+      performAction:grey_tap()];
+
+  // Long press on Mobile Bookmarks.
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"Mobile Bookmarks")]
+      performAction:grey_longPress()];
+
+  // Verify it doesn't show the context menu. (long press is disabled on
+  // permanent node.)
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(@"bookmark_context_menu")]
+      assertWithMatcher:grey_nil()];
+}
+
+// Verify Edit functionality for single folder selection.
+- (void)testEditFunctionalityOnSingleFolder {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // 1. Edit the folder title at edit page.
+
+  // Invoke Edit through long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_longPress()];
+
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
+      performAction:grey_tap()];
+
+  // Verify that the editor is present.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+  NSString* existingFolderTitle = @"Folder 1";
+  NSString* newFolderTitle = @"New Folder Title";
+  [BookmarksTestCase renameBookmarkFolderWithFolderTitle:newFolderTitle];
+
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
+      performAction:grey_tap()];
+
+  // Verify that the change has been made.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(existingFolderTitle)]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+
+  // 2. Move a single folder at edit page.
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select single folder.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(newFolderTitle)]
+      performAction:grey_tap()];
+
+  // Move the "New Folder Title" to "Folder 1.1".
+  [BookmarksTestCase
+      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER
+                  openEditor:kBookmarkFolderEditViewContainerIdentifier
+           setParentFolderTo:@"Folder 1.1"
+                        from:@"Mobile Bookmarks"];
+
+  // Verify edit mode remains.
+  [BookmarksTestCase verifyContextBarInEditMode];
+
+  // Close edit mode.
+  [BookmarksTestCase closeContextBarEditMode];
+
+  // Navigate to "Folder 1.1" and verify "New Folder Title" is under it.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // 3. Test the cancel button at edit page.
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select single folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
+      performAction:grey_tap()];
+
+  // Tap cancel after modifying the title.
+  [BookmarksTestCase
+      tapOnContextMenuButton:IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER
+                  openEditor:kBookmarkFolderEditViewContainerIdentifier
+             modifyTextField:@"Title_textField"
+                          to:@"Dummy"
+                 dismissWith:@"Cancel"];
+
+  // Verify that the bookmark was not updated.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify edit mode is stayed.
+  [BookmarksTestCase verifyContextBarInEditMode];
+
+  // 4. Test the delete button at edit page.
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
+      performAction:grey_tap()];
+
+  // Verify that the editor is present.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditorDeleteButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Wait for Undo toast to go away from screen.
+  [BookmarksTestCase waitForUndoToastToGoAway];
+
+  // Verify that the folder is deleted.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
+      assertWithMatcher:grey_notVisible()];
+
+  // 5. Verify that when adding a new folder, edit mode will not mistakenly come
+  // back (crbug.com/781783).
+
+  // Create a new folder.
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:YES];
+
+  // Tap on the new folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(newFolderTitle)]
+      performAction:grey_tap()];
+
+  // Verify we enter the new folder. (instead of selecting it in edit mode).
+  [BookmarksTestCase verifyEmptyBackgroundAppears];
+}
+
+// Verify Move functionality on single folder through long press.
+- (void)testMoveFunctionalityOnSingleFolder {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Invoke Move through long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
+      performAction:grey_longPress()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Choose to move the bookmark folder - "Folder 1" into a new folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
+      performAction:grey_tap()];
+
+  // Enter custom new folder name.
+  [BookmarksTestCase
+      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
+
+  // Verify current parent folder for "Title For New Folder" folder is "Mobile
+  // Bookmarks" folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(@"Change Folder"),
+                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
+                                   nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Choose new parent folder for "Title For New Folder" folder.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
+      performAction:grey_tap()];
+
+  // Verify folder picker UI is displayed.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify Folder 2 only has one item.
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Folder 2"];
+
+  // Select Folder 2 as new parent folder for "Title For New Folder".
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
+      performAction:grey_tap()];
+
+  // Verify folder picker is dismissed and folder creator is now visible.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderCreateViewContainerIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(kBookmarkFolderPickerViewContainerIdentifier)]
+      assertWithMatcher:grey_notVisible()];
+
+  // Verify picked parent folder is Folder 2.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(@"Change Folder"),
+                                   grey_accessibilityLabel(@"Folder 2"), nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap Done to close bookmark move flow.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
+      performAction:grey_tap()];
+
+  // Verify all folder flow UI is now closed.
+  [BookmarksTestCase verifyFolderFlowIsClosed];
+
+  // Verify new folder "Title For New Folder" has been created under Folder 2.
+  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Folder 2"];
+
+  // Verify new folder "Title For New Folder" has one bookmark folder.
+  [BookmarksTestCase assertChildCount:1
+                     ofFolderWithName:@"Title For New Folder"];
+
+  // Drill down to where "Folder 1.1" has been moved and assert it's presence.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 2")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"Title For New Folder")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verify Move functionality on multiple folder selection.
+- (void)testMoveFunctionalityOnMultipleFolder {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode, using context menu.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select multiple folders.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_MOVE)]
+      performAction:grey_tap()];
+
+  // Choose to move into a new folder. By tapping on the New Folder Cell.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkCreateNewFolderCellIdentifier)]
+      performAction:grey_tap()];
+
+  // Enter custom new folder name.
+  [BookmarksTestCase
+      renameBookmarkFolderWithFolderTitle:@"Title For New Folder"];
+
+  // Verify current parent folder for "Title For New Folder" folder is "Mobile
+  // Bookmarks" folder.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(@"Change Folder"),
+                                   grey_accessibilityLabel(@"Mobile Bookmarks"),
+                                   nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap Done to close bookmark move flow.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditFolderButton()]
+      performAction:grey_tap()];
+
+  // Verify all folder flow UI is now closed.
+  [BookmarksTestCase verifyFolderFlowIsClosed];
+
+  // Wait for Undo toast to go away from screen.
+  [BookmarksTestCase waitForUndoToastToGoAway];
+
+  // Verify edit mode is closed (context bar back to default state).
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+
+  // Verify new folder "Title For New Folder" has two bookmark folder.
+  [BookmarksTestCase assertChildCount:2
+                     ofFolderWithName:@"Title For New Folder"];
+
+  // Drill down to where "Folder 1.1" and "Folder 1" have been moved and assert
+  // it's presence.
+  [[EarlGrey selectElementWithMatcher:TappableBookmarkNodeWithLabel(
+                                          @"Title For New Folder")]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1.1")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+- (void)testContextBarForSingleFolderSelection {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select Folder.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  // Tap Edit Folder.
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT_FOLDER)]
+      performAction:grey_tap()];
+
+  // Verify it shows edit view controller.  Uses notNil() instead of
+  // sufficientlyVisible() because the large title in the navigation bar causes
+  // less than 75% of the table view to be visible.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkFolderEditViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+}
+
+- (void)testContextMenuForMultipleFolderSelection {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Change to edit mode
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBookmarkHomeTrailingButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Select Folders.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1")]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"Folder 1.1")]
+      performAction:grey_tap()];
+
+  // Tap context menu.
+  [[EarlGrey
+      selectElementWithMatcher:ContextBarCenterButtonWithLabel(
+                                   [BookmarksTestCase contextBarMoreString])]
+      performAction:grey_tap()];
+
+  [BookmarksTestCase verifyContextMenuForMultiAndMixedSelection];
+}
+
+// Tests that the default folder bookmarks are saved in is updated to the last
+// used folder.
+- (void)testStickyDefaultFolder {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Invoke Edit through long press.
+  [[EarlGrey
+      selectElementWithMatcher:TappableBookmarkNodeWithLabel(@"First URL")]
+      performAction:grey_longPress()];
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                          IDS_IOS_BOOKMARK_CONTEXT_MENU_EDIT)]
+      performAction:grey_tap()];
+
+  // Tap the Folder button.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
+      performAction:grey_tap()];
+
+  // Create a new folder.
+  [BookmarksTestCase addFolderWithName:@"Sticky Folder"];
+
+  // Verify that the editor is present.  Uses notNil() instead of
+  // sufficientlyVisible() because the large title in the navigation bar causes
+  // less than 75% of the table view to be visible.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  // Tap the Done button.
+  [[EarlGrey selectElementWithMatcher:BookmarksSaveEditDoneButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
+      assertWithMatcher:grey_notVisible()];
+
+  // Close bookmarks
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
+      performAction:grey_tap()];
+
+  // Second, bookmark a page.
+
+  // Verify that the bookmark that is going to be added is not in the
+  // BookmarkModel.
+  const GURL bookmarkedURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/fullscreen.html");
+  NSString* const bookmarkedURLString =
+      base::SysUTF8ToNSString(bookmarkedURL.spec());
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkedURLString
+                                expectedCount:0];
+  // Open the page.
+  std::string expectedURLContent = bookmarkedURL.GetContent();
+  [ChromeEarlGrey loadURL:bookmarkedURL];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          expectedURLContent)]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify that the folder has only one element.
+  [BookmarksTestCase assertChildCount:1 ofFolderWithName:@"Sticky Folder"];
+
+  // Bookmark the page.
+  [BookmarksTestCase starCurrentTab];
+
+  // Verify the snackbar title.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          @"Bookmarked to Sticky Folder")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Verify that the newly-created bookmark is in the BookmarkModel.
+  [BookmarksTestCase assertBookmarksWithTitle:bookmarkedURLString
+                                expectedCount:1];
+
+  // Verify that the folder has now two elements.
+  [BookmarksTestCase assertChildCount:2 ofFolderWithName:@"Sticky Folder"];
+}
+
+// Tests the new folder name is committed when name editing is interrupted by
+// navigating away.
+- (void)testNewFolderNameCommittedOnNavigatingAway {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Create a new folder and type "New Folder 1" without pressing return.
+  NSString* newFolderTitle = @"New Folder 1";
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
+
+  // Interrupt the folder name editing by tapping on back.
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Bookmarks")]
+      performAction:grey_tap()];
+
+  // Come back to Mobile Bookmarks.
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Verify folder name "New Folder 1" was committed.
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+
+  // Create a new folder and type "New Folder 2" without pressing return.
+  newFolderTitle = @"New Folder 2";
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
+
+  // Interrupt the folder name editing by tapping on done.
+  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
+      performAction:grey_tap()];
+  // Reopen bookmarks.
+  [BookmarksTestCase openBookmarks];
+
+  // Verify folder name "New Folder 2" was committed.
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+
+  // Create a new folder and type "New Folder 3" without pressing return.
+  newFolderTitle = @"New Folder 3";
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
+
+  // Interrupt the folder name editing by entering Folder 1
+  [BookmarksTestCase scrollToTop];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
+      performAction:grey_tap()];
+  // Come back to Mobile Bookmarks.
+  [[EarlGrey selectElementWithMatcher:NavigateBackButtonTo(@"Mobile Bookmarks")]
+      performAction:grey_tap()];
+
+  // Verify folder name "New Folder 3" was committed.
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+
+  // Create a new folder and type "New Folder 4" without pressing return.
+  newFolderTitle = @"New Folder 4";
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:NO];
+
+  // Interrupt the folder name editing by tapping on First URL.
+  [BookmarksTestCase scrollToTop];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"First URL")]
+      performAction:grey_tap()];
+  // Reopen bookmarks.
+  [BookmarksTestCase openBookmarks];
+
+  // Verify folder name "New Folder 4" was committed.
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+}
+
+// Tests the creation of new folders by tapping on 'New Folder' button of the
+// context bar.
+- (void)testCreateNewFolderWithContextBar {
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Create a new folder and name it "New Folder 1".
+  NSString* newFolderTitle = @"New Folder 1";
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:YES];
+
+  // Verify "New Folder 1" is created.
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+
+  // Create a new folder and name it "New Folder 2".
+  newFolderTitle = @"New Folder 2";
+  [BookmarksTestCase createNewBookmarkFolderWithFolderTitle:newFolderTitle
+                                                pressReturn:YES];
+
+  // Verify "New Folder 2" is created.
+  [BookmarksTestCase verifyFolderCreatedWithTitle:newFolderTitle];
+
+  // Verify context bar does not change after editing folder name.
+  [BookmarksTestCase verifyContextBarInDefaultStateWithSelectEnabled:YES
+                                                    newFolderEnabled:YES];
+}
+
+// Test the creation of a bookmark and new folder (by tapping on the star).
+- (void)testAddBookmarkInNewFolder {
+  const GURL bookmarkedURL = web::test::HttpServer::MakeUrl(
+      "http://ios/testing/data/http_server_files/pony.html");
+  std::string expectedURLContent = bookmarkedURL.GetContent();
+
+  [ChromeEarlGrey loadURL:bookmarkedURL];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
+                                          expectedURLContent)]
+      assertWithMatcher:grey_notNil()];
+
+  [BookmarksTestCase starCurrentTab];
+
+  // Verify the snackbar title.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Bookmarked")]
+      assertWithMatcher:grey_notNil()];
+
+  // Tap on the snackbar.
+  NSString* snackbarLabel =
+      l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON);
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(snackbarLabel)]
+      performAction:grey_tap()];
+
+  // Verify that the newly-created bookmark is in the BookmarkModel.
+  [BookmarksTestCase
+      assertBookmarksWithTitle:base::SysUTF8ToNSString(expectedURLContent)
+                 expectedCount:1];
+
+  // Verify that the editor is present.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  [BookmarksTestCase assertFolderName:@"Mobile Bookmarks"];
+
+  // Tap the Folder button.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Change Folder")]
+      performAction:grey_tap()];
+
+  // Create a new folder with default name.
+  [BookmarksTestCase addFolderWithName:nil];
+
+  // Verify that the editor is present.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kBookmarkEditViewContainerIdentifier)]
+      assertWithMatcher:grey_notNil()];
+
+  [BookmarksTestCase assertFolderExists:@"New Folder"];
+}
 
 @end
