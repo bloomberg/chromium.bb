@@ -6,6 +6,7 @@
 #include "base/strings/pattern.h"
 #include "build/build_config.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -20,7 +21,8 @@
 namespace content {
 
 // Tests of the blob: URL scheme.
-class BlobUrlBrowserTest : public ContentBrowserTest {
+class BlobUrlBrowserTest : public ContentBrowserTest,
+                           public testing::WithParamInterface<bool> {
  public:
   BlobUrlBrowserTest() {}
 
@@ -30,11 +32,20 @@ class BlobUrlBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    if (GetParam()) {
+      command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                      "MojoBlobURLs");
+    }
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BlobUrlBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToUniqueOriginBlob) {
+INSTANTIATE_TEST_CASE_P(_, BlobUrlBrowserTest, ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(BlobUrlBrowserTest, LinkToUniqueOriginBlob) {
   // Use a data URL to obtain a test page in a unique origin. The page
   // contains a link to a "blob:null/SOME-GUID-STRING" URL.
   NavigateToURL(
@@ -68,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToUniqueOriginBlob) {
   EXPECT_EQ("null potato", page_content);
 }
 
-IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToSameOriginBlob) {
+IN_PROC_BROWSER_TEST_P(BlobUrlBrowserTest, LinkToSameOriginBlob) {
   // Using an http page, click a link that opens a popup to a same-origin blob.
   GURL url = embedded_test_server()->GetURL("chromium.org", "/title1.html");
   url::Origin origin = url::Origin::Create(url);
@@ -100,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToSameOriginBlob) {
 }
 
 // Regression test for https://crbug.com/646278
-IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToSameOriginBlobWithAuthority) {
+IN_PROC_BROWSER_TEST_P(BlobUrlBrowserTest, LinkToSameOriginBlobWithAuthority) {
   // Using an http page, click a link that opens a popup to a same-origin blob
   // that has a spoofy authority section applied. This should be blocked.
   GURL url = embedded_test_server()->GetURL("chromium.org", "/title1.html");
@@ -138,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToSameOriginBlobWithAuthority) {
 }
 
 // Regression test for https://crbug.com/646278
-IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, ReplaceStateToAddAuthorityToBlob) {
+IN_PROC_BROWSER_TEST_P(BlobUrlBrowserTest, ReplaceStateToAddAuthorityToBlob) {
   // history.replaceState from a validly loaded blob URL shouldn't allow adding
   // an authority to the inner URL, which would be spoofy.
   GURL url = embedded_test_server()->GetURL("chromium.org", "/title1.html");
