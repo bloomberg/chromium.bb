@@ -139,8 +139,6 @@ config("skia_library_config") {
     "//third_party/skia/third_party/gif",
   ]
 
-  defines += [ "SK_IGNORE_WIN_EMOJI_FIX" ]
-
   if (is_mac || is_ios) {
     include_dirs += [ "//third_party/skia/include/utils/mac" ]
   }
