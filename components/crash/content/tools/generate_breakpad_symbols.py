@@ -109,7 +109,15 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
   """Return absolute paths to all shared library dependecies of the binary.
 
   This implementation assumes that we're running on a Mac system."""
-  loader_path = os.path.dirname(binary)
+  # realpath() serves two purposes:
+  # 1. If an executable is linked against a framework, it links against
+  #    Framework.framework/Framework, which is a symlink to
+  #    Framework.framework/Framework/Versions/A/Framework. rpaths are relative
+  #    to the real location, so resolving the symlink is important.
+  # 2. It converts binary to an absolute path. If binary is just
+  #    "foo.dylib" in the current directory, dirname() would return an empty
+  #    string, causing "@loader_path/foo" to incorrectly expand to "/foo".
+  loader_path = os.path.dirname(os.path.realpath(binary))
   env = os.environ.copy()
   developer_dir = GetDeveloperDirMac()
   if developer_dir:
