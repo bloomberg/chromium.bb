@@ -1,48 +1,50 @@
-CONSOLE WARNING: line 371: Delay.delayTime.value -1 outside nominal range [0, 1.5]; value will be clamped.
-CONSOLE WARNING: line 371: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1.5]; value will be clamped.
-CONSOLE WARNING: line 383: Delay.delayTime.value 4 outside nominal range [0, 1.5]; value will be clamped.
-CONSOLE WARNING: line 383: Delay.delayTime.setValueAtTime value 4 outside nominal range [0, 1.5]; value will be clamped.
-CONSOLE WARNING: line 371: StereoPanner.pan.value -3 outside nominal range [-1, 1]; value will be clamped.
-CONSOLE WARNING: line 371: StereoPanner.pan.setValueAtTime value -3 outside nominal range [-1, 1]; value will be clamped.
-CONSOLE WARNING: line 383: StereoPanner.pan.value 3 outside nominal range [-1, 1]; value will be clamped.
-CONSOLE WARNING: line 383: StereoPanner.pan.setValueAtTime value 3 outside nominal range [-1, 1]; value will be clamped.
-CONSOLE WARNING: line 371: DynamicsCompressor.threshold.value -201 outside nominal range [-100, 0]; value will be clamped.
-CONSOLE WARNING: line 371: DynamicsCompressor.threshold.setValueAtTime value -201 outside nominal range [-100, 0]; value will be clamped.
-CONSOLE WARNING: line 383: DynamicsCompressor.threshold.value 1 outside nominal range [-100, 0]; value will be clamped.
-CONSOLE WARNING: line 383: DynamicsCompressor.threshold.setValueAtTime value 1 outside nominal range [-100, 0]; value will be clamped.
-CONSOLE WARNING: line 371: DynamicsCompressor.knee.value -1 outside nominal range [0, 40]; value will be clamped.
-CONSOLE WARNING: line 371: DynamicsCompressor.knee.setValueAtTime value -1 outside nominal range [0, 40]; value will be clamped.
-CONSOLE WARNING: line 383: DynamicsCompressor.knee.value 81 outside nominal range [0, 40]; value will be clamped.
-CONSOLE WARNING: line 383: DynamicsCompressor.knee.setValueAtTime value 81 outside nominal range [0, 40]; value will be clamped.
-CONSOLE WARNING: line 383: DynamicsCompressor.ratio.value 41 outside nominal range [1, 20]; value will be clamped.
-CONSOLE WARNING: line 383: DynamicsCompressor.ratio.setValueAtTime value 41 outside nominal range [1, 20]; value will be clamped.
-CONSOLE WARNING: line 371: DynamicsCompressor.attack.value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 371: DynamicsCompressor.attack.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 383: DynamicsCompressor.attack.value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 383: DynamicsCompressor.attack.setValueAtTime value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 371: DynamicsCompressor.release.value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 371: DynamicsCompressor.release.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 383: DynamicsCompressor.release.value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 383: DynamicsCompressor.release.setValueAtTime value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 371: BiquadFilter.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
-CONSOLE WARNING: line 371: BiquadFilter.frequency.setValueAtTime value -1 outside nominal range [0, 24000]; value will be clamped.
-CONSOLE WARNING: line 383: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
-CONSOLE WARNING: line 383: BiquadFilter.frequency.setValueAtTime value 48001 outside nominal range [0, 24000]; value will be clamped.
-CONSOLE WARNING: line 371: Oscillator.frequency.value -48001 outside nominal range [-24000, 24000]; value will be clamped.
-CONSOLE WARNING: line 371: Oscillator.frequency.setValueAtTime value -48001 outside nominal range [-24000, 24000]; value will be clamped.
-CONSOLE WARNING: line 383: Oscillator.frequency.value 48001 outside nominal range [-24000, 24000]; value will be clamped.
-CONSOLE WARNING: line 383: Oscillator.frequency.setValueAtTime value 48001 outside nominal range [-24000, 24000]; value will be clamped.
-CONSOLE WARNING: line 302: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 303: Delay.delayTime.linearRampToValueAtTime value 2 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 304: Delay.delayTime.exponentialRampToValue value 3 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 305: Delay.delayTime.setTargetAtTime value -1 outside nominal range [0, 1]; value will be clamped.
-CONSOLE WARNING: line 306: Delay.delayTime.setValueCurveAtTime value 1.5 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 209: The Web Audio autoplay policy will be re-enabled in Chrome 70 (October 2018). Please check that your website is compatible with it. https://goo.gl/7K7WLu
+CONSOLE WARNING: line 392: Delay.delayTime.value -1 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: line 392: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: line 404: Delay.delayTime.value 4 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: line 404: Delay.delayTime.setValueAtTime value 4 outside nominal range [0, 1.5]; value will be clamped.
+CONSOLE WARNING: line 392: StereoPanner.pan.value -3 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: line 392: StereoPanner.pan.setValueAtTime value -3 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: line 404: StereoPanner.pan.value 3 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: line 404: StereoPanner.pan.setValueAtTime value 3 outside nominal range [-1, 1]; value will be clamped.
+CONSOLE WARNING: line 392: DynamicsCompressor.threshold.value -201 outside nominal range [-100, 0]; value will be clamped.
+CONSOLE WARNING: line 392: DynamicsCompressor.threshold.setValueAtTime value -201 outside nominal range [-100, 0]; value will be clamped.
+CONSOLE WARNING: line 404: DynamicsCompressor.threshold.value 1 outside nominal range [-100, 0]; value will be clamped.
+CONSOLE WARNING: line 404: DynamicsCompressor.threshold.setValueAtTime value 1 outside nominal range [-100, 0]; value will be clamped.
+CONSOLE WARNING: line 392: DynamicsCompressor.knee.value -1 outside nominal range [0, 40]; value will be clamped.
+CONSOLE WARNING: line 392: DynamicsCompressor.knee.setValueAtTime value -1 outside nominal range [0, 40]; value will be clamped.
+CONSOLE WARNING: line 404: DynamicsCompressor.knee.value 81 outside nominal range [0, 40]; value will be clamped.
+CONSOLE WARNING: line 404: DynamicsCompressor.knee.setValueAtTime value 81 outside nominal range [0, 40]; value will be clamped.
+CONSOLE WARNING: line 404: DynamicsCompressor.ratio.value 41 outside nominal range [1, 20]; value will be clamped.
+CONSOLE WARNING: line 404: DynamicsCompressor.ratio.setValueAtTime value 41 outside nominal range [1, 20]; value will be clamped.
+CONSOLE WARNING: line 392: DynamicsCompressor.attack.value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 392: DynamicsCompressor.attack.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 404: DynamicsCompressor.attack.value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 404: DynamicsCompressor.attack.setValueAtTime value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 392: DynamicsCompressor.release.value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 392: DynamicsCompressor.release.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 404: DynamicsCompressor.release.value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 404: DynamicsCompressor.release.setValueAtTime value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 392: BiquadFilter.frequency.value -1 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 392: BiquadFilter.frequency.setValueAtTime value -1 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 404: BiquadFilter.frequency.value 48001 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 404: BiquadFilter.frequency.setValueAtTime value 48001 outside nominal range [0, 24000]; value will be clamped.
+CONSOLE WARNING: line 392: Oscillator.frequency.value -48001 outside nominal range [-24000, 24000]; value will be clamped.
+CONSOLE WARNING: line 392: Oscillator.frequency.setValueAtTime value -48001 outside nominal range [-24000, 24000]; value will be clamped.
+CONSOLE WARNING: line 404: Oscillator.frequency.value 48001 outside nominal range [-24000, 24000]; value will be clamped.
+CONSOLE WARNING: line 404: Oscillator.frequency.setValueAtTime value 48001 outside nominal range [-24000, 24000]; value will be clamped.
+CONSOLE WARNING: line 323: Delay.delayTime.setValueAtTime value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 324: Delay.delayTime.linearRampToValueAtTime value 2 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 325: Delay.delayTime.exponentialRampToValue value 3 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 326: Delay.delayTime.setTargetAtTime value -1 outside nominal range [0, 1]; value will be clamped.
+CONSOLE WARNING: line 327: Delay.delayTime.setValueCurveAtTime value 1.5 outside nominal range [0, 1]; value will be clamped.
 This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED.
 PASS > [initialize] 
-PASS   Create context for tests did not throw an exception.
-PASS < [initialize] All assertions passed. (total 1 assertions)
-PASS > [createGain] 
+PASS   Create offline context for tests did not throw an exception.
+PASS   Create online context for tests did not throw an exception.
+PASS < [initialize] All assertions passed. (total 2 assertions)
+PASS > [Offline createGain] 
 PASS   GainNode.gain.minValue is equal to -3.4028234663852886e+38.
 PASS   GainNode.gain.maxValue is equal to 3.4028234663852886e+38.
 PASS   GainNode.gain.minValue = Math.PI is not equal to 3.141592653589793.
@@ -50,8 +52,8 @@ PASS   GainNode.gain.minValue is read-only is equal to true.
 PASS   GainNode.gain.maxValue = Math.PI is not equal to 3.141592653589793.
 PASS   GainNode.gain.maxValue is read-only is equal to true.
 PASS   Nominal ranges for AudioParam(s) of GainNode are correct
-PASS < [createGain] All assertions passed. (total 7 assertions)
-PASS > [createDelay] 
+PASS < [Offline createGain] All assertions passed. (total 7 assertions)
+PASS > [Offline createDelay] 
 PASS   DelayNode.delayTime.minValue is equal to 0.
 PASS   DelayNode.delayTime.maxValue is equal to 1.5.
 PASS   DelayNode.delayTime.minValue = Math.PI is not equal to 3.141592653589793.
@@ -62,8 +64,8 @@ PASS   Set DelayNode.delayTime.value = -1 is equal to 0.
 PASS   Set DelayNode.delayTime.value = 4 is equal to 1.5.
 PASS   DelayNode.delayTimewas clipped to lie within the nominal range is equal to true.
 PASS   Nominal ranges for AudioParam(s) of DelayNode are correct
-PASS < [createDelay] All assertions passed. (total 10 assertions)
-PASS > [createBufferSource] 
+PASS < [Offline createDelay] All assertions passed. (total 10 assertions)
+PASS > [Offline createBufferSource] 
 PASS   AudioBufferSourceNode.playbackRate.minValue is equal to -3.4028234663852886e+38.
 PASS   AudioBufferSourceNode.playbackRate.maxValue is equal to 3.4028234663852886e+38.
 PASS   AudioBufferSourceNode.playbackRate.minValue = Math.PI is not equal to 3.141592653589793.
@@ -77,8 +79,8 @@ PASS   AudioBufferSourceNode.detune.minValue is read-only is equal to true.
 PASS   AudioBufferSourceNode.detune.maxValue = Math.PI is not equal to 3.141592653589793.
 PASS   AudioBufferSourceNode.detune.maxValue is read-only is equal to true.
 PASS   Nominal ranges for AudioParam(s) of AudioBufferSourceNode are correct
-PASS < [createBufferSource] All assertions passed. (total 13 assertions)
-PASS > [createStereoPanner] 
+PASS < [Offline createBufferSource] All assertions passed. (total 13 assertions)
+PASS > [Offline createStereoPanner] 
 PASS   StereoPannerNode.pan.minValue is equal to -1.
 PASS   StereoPannerNode.pan.maxValue is equal to 1.
 PASS   StereoPannerNode.pan.minValue = Math.PI is not equal to 3.141592653589793.
@@ -89,8 +91,8 @@ PASS   Set StereoPannerNode.pan.value = -3 is equal to -1.
 PASS   Set StereoPannerNode.pan.value = 3 is equal to 1.
 PASS   StereoPannerNode.panwas clipped to lie within the nominal range is equal to true.
 PASS   Nominal ranges for AudioParam(s) of StereoPannerNode are correct
-PASS < [createStereoPanner] All assertions passed. (total 10 assertions)
-PASS > [createDynamicsCompressor] 
+PASS < [Offline createStereoPanner] All assertions passed. (total 10 assertions)
+PASS > [Offline createDynamicsCompressor] 
 PASS   DynamicsCompressorNode.threshold.minValue is equal to -100.
 PASS   DynamicsCompressorNode.threshold.maxValue is equal to 0.
 PASS   DynamicsCompressorNode.threshold.minValue = Math.PI is not equal to 3.141592653589793.
@@ -137,8 +139,8 @@ PASS   Set DynamicsCompressorNode.release.value = -1 is equal to 0.
 PASS   Set DynamicsCompressorNode.release.value = 3 is equal to 1.
 PASS   DynamicsCompressorNode.releasewas clipped to lie within the nominal range is equal to true.
 PASS   Nominal ranges for AudioParam(s) of DynamicsCompressorNode are correct
-PASS < [createDynamicsCompressor] All assertions passed. (total 46 assertions)
-PASS > [createBiquadFilter] 
+PASS < [Offline createDynamicsCompressor] All assertions passed. (total 46 assertions)
+PASS > [Offline createBiquadFilter] 
 PASS   BiquadFilterNode.frequency.minValue is equal to 0.
 PASS   BiquadFilterNode.frequency.maxValue is equal to 24000.
 PASS   BiquadFilterNode.frequency.minValue = Math.PI is not equal to 3.141592653589793.
@@ -167,8 +169,8 @@ PASS   BiquadFilterNode.gain.minValue is read-only is equal to true.
 PASS   BiquadFilterNode.gain.maxValue = Math.PI is not equal to 3.141592653589793.
 PASS   BiquadFilterNode.gain.maxValue is read-only is equal to true.
 PASS   Nominal ranges for AudioParam(s) of BiquadFilterNode are correct
-PASS < [createBiquadFilter] All assertions passed. (total 28 assertions)
-PASS > [createOscillator] 
+PASS < [Offline createBiquadFilter] All assertions passed. (total 28 assertions)
+PASS > [Offline createOscillator] 
 PASS   OscillatorNode.frequency.minValue is equal to -24000.
 PASS   OscillatorNode.frequency.maxValue is equal to 24000.
 PASS   OscillatorNode.frequency.minValue = Math.PI is not equal to 3.141592653589793.
@@ -185,8 +187,8 @@ PASS   OscillatorNode.detune.minValue is read-only is equal to true.
 PASS   OscillatorNode.detune.maxValue = Math.PI is not equal to 3.141592653589793.
 PASS   OscillatorNode.detune.maxValue is read-only is equal to true.
 PASS   Nominal ranges for AudioParam(s) of OscillatorNode are correct
-PASS < [createOscillator] All assertions passed. (total 16 assertions)
-PASS > [createPanner] 
+PASS < [Offline createOscillator] All assertions passed. (total 16 assertions)
+PASS > [Offline createPanner] 
 PASS   PannerNode.positionX.minValue is equal to -3.4028234663852886e+38.
 PASS   PannerNode.positionX.maxValue is equal to 3.4028234663852886e+38.
 PASS   PannerNode.positionX.minValue = Math.PI is not equal to 3.141592653589793.
@@ -224,8 +226,8 @@ PASS   PannerNode.orientationZ.minValue is read-only is equal to true.
 PASS   PannerNode.orientationZ.maxValue = Math.PI is not equal to 3.141592653589793.
 PASS   PannerNode.orientationZ.maxValue is read-only is equal to true.
 PASS   Nominal ranges for AudioParam(s) of PannerNode are correct
-PASS < [createPanner] All assertions passed. (total 37 assertions)
-PASS > [createConstantSource] 
+PASS < [Offline createPanner] All assertions passed. (total 37 assertions)
+PASS > [Offline createConstantSource] 
 PASS   ConstantSourceNode.offset.minValue is equal to -3.4028234663852886e+38.
 PASS   ConstantSourceNode.offset.maxValue is equal to 3.4028234663852886e+38.
 PASS   ConstantSourceNode.offset.minValue = Math.PI is not equal to 3.141592653589793.
@@ -233,40 +235,40 @@ PASS   ConstantSourceNode.offset.minValue is read-only is equal to true.
 PASS   ConstantSourceNode.offset.maxValue = Math.PI is not equal to 3.141592653589793.
 PASS   ConstantSourceNode.offset.maxValue is read-only is equal to true.
 PASS   Nominal ranges for AudioParam(s) of ConstantSourceNode are correct
-PASS < [createConstantSource] All assertions passed. (total 7 assertions)
-PASS > [createBuffer] 
+PASS < [Offline createConstantSource] All assertions passed. (total 7 assertions)
+PASS > [Offline createBuffer] 
 PASS   AudioBuffer has no AudioParams as expected
-PASS < [createBuffer] All assertions passed. (total 1 assertions)
-PASS > [createIIRFilter] 
+PASS < [Offline createBuffer] All assertions passed. (total 1 assertions)
+PASS > [Offline createIIRFilter] 
 PASS   IIRFilterNode has no AudioParams as expected
-PASS < [createIIRFilter] All assertions passed. (total 1 assertions)
-PASS > [createWaveShaper] 
+PASS < [Offline createIIRFilter] All assertions passed. (total 1 assertions)
+PASS > [Offline createWaveShaper] 
 PASS   WaveShaperNode has no AudioParams as expected
-PASS < [createWaveShaper] All assertions passed. (total 1 assertions)
-PASS > [createConvolver] 
+PASS < [Offline createWaveShaper] All assertions passed. (total 1 assertions)
+PASS > [Offline createConvolver] 
 PASS   ConvolverNode has no AudioParams as expected
-PASS < [createConvolver] All assertions passed. (total 1 assertions)
-PASS > [createAnalyser] 
+PASS < [Offline createConvolver] All assertions passed. (total 1 assertions)
+PASS > [Offline createAnalyser] 
 PASS   AnalyserNode has no AudioParams as expected
-PASS < [createAnalyser] All assertions passed. (total 1 assertions)
-PASS > [createScriptProcessor] 
+PASS < [Offline createAnalyser] All assertions passed. (total 1 assertions)
+PASS > [Offline createScriptProcessor] 
 PASS   ScriptProcessorNode has no AudioParams as expected
-PASS < [createScriptProcessor] All assertions passed. (total 1 assertions)
-PASS > [createPeriodicWave] 
+PASS < [Offline createScriptProcessor] All assertions passed. (total 1 assertions)
+PASS > [Offline createPeriodicWave] 
 PASS   PeriodicWave has no AudioParams as expected
-PASS < [createPeriodicWave] All assertions passed. (total 1 assertions)
-PASS > [createChannelSplitter] 
+PASS < [Offline createPeriodicWave] All assertions passed. (total 1 assertions)
+PASS > [Offline createChannelSplitter] 
 PASS   ChannelSplitterNode has no AudioParams as expected
-PASS < [createChannelSplitter] All assertions passed. (total 1 assertions)
-PASS > [createChannelMerger] 
+PASS < [Offline createChannelSplitter] All assertions passed. (total 1 assertions)
+PASS > [Offline createChannelMerger] 
 PASS   ChannelMergerNode has no AudioParams as expected
-PASS < [createChannelMerger] All assertions passed. (total 1 assertions)
-PASS > [createMediaElementSource] 
+PASS < [Offline createChannelMerger] All assertions passed. (total 1 assertions)
+PASS > [Online createMediaElementSource] 
 PASS   MediaElementAudioSourceNode has no AudioParams as expected
-PASS < [createMediaElementSource] All assertions passed. (total 1 assertions)
-PASS > [createMediaStreamDestination] 
+PASS < [Online createMediaElementSource] All assertions passed. (total 1 assertions)
+PASS > [Online createMediaStreamDestination] 
 PASS   MediaStreamAudioDestinationNode has no AudioParams as expected
-PASS < [createMediaStreamDestination] All assertions passed. (total 1 assertions)
+PASS < [Online createMediaStreamDestination] All assertions passed. (total 1 assertions)
 PASS > [AudioListener] 
 PASS   AudioListener.positionX.minValue is equal to -3.4028234663852886e+38.
 PASS   AudioListener.positionX.maxValue is equal to 3.4028234663852886e+38.

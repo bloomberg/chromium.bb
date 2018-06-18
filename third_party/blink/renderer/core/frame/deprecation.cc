@@ -567,6 +567,25 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               WillBeRemoved("Anonymous named getter of HTMLFrameSetElement",
                             kM70, "5235521668251648")};
 
+    case WebFeature::kMediaElementSourceOnOfflineContext:
+      return {"MediaElementAudioSourceNode", kM70,
+              WillBeRemoved("Creating a MediaElementAudioSourceNode on an "
+                            "OfflineAudioContext",
+                            kM70, "5258622686724096")};
+
+    case WebFeature::kMediaStreamDestinationOnOfflineContext:
+      return {"MediaStreamAudioDestinationNode", kM70,
+              WillBeRemoved("Creating a MediaStreamAudioDestinationNode on an "
+                            "OfflineAudioContext",
+                            kM70, "5258622686724096")};
+
+    case WebFeature::kMediaStreamSourceOnOfflineContext:
+      return {
+          "MediaStreamAudioSourceNode", kM70,
+          WillBeRemoved(
+              "Creating a MediaStreamAudioSourceNode on an OfflineAudioContext",
+              kM70, "5258622686724096")};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};

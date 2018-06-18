@@ -14,8 +14,9 @@
       // Some arbitrary sample rate for the offline context.
       let sampleRate = 48000;
 
-      // The actual offline context
-      let context;
+      // The actual contexts to use
+      let offlineContext;
+      let onlineContext;
 
       // The set of all methods that we've tested for verifying that we tested
       // all of the necessary objects.
@@ -31,8 +32,11 @@
 
       let audit = Audit.createTaskRunner();
 
-      // Array describing the tests that should be run.
-      let testConfigs = [
+      // Array describing the tests that should be run.  |testOfflineConfigs| is
+      // for tests that can use an offline context. |testOnlineConfigs| is for
+      // tests that need to use an online context.  Offline contexts are
+      // preferred when possible.
+      let testOfflineConfigs = [
         {
           // The name of the method to create the particular node to be tested.
           creator: 'createGain',
@@ -186,27 +190,44 @@
           creator: 'createChannelMerger',
           args: [],
         },
+      ];
+
+      let testOnlineConfigs = [
         {creator: 'createMediaElementSource', args: [new Audio()]},
         {creator: 'createMediaStreamDestination', args: []}
         // Can't currently test MediaStreamSource because we're using an offline
         // context.
       ];
 
-      // Create the context so we can use it in the following test.
+      // Create the contexts so we can use it in the following test.
       audit.define('initialize', (task, should) => {
         // Just any context so that we can create the nodes.
         should(() => {
-          context = new OfflineAudioContext(1, 1, sampleRate);
-        }, 'Create context for tests').notThrow();
+          offlineContext = new OfflineAudioContext(1, 1, sampleRate);
+        }, 'Create offline context for tests').notThrow();
+        should(() => {
+          onlineContext = new AudioContext();
+        }, 'Create online context for tests').notThrow();
         task.done();
       });
 
-      // Create a task for each entry in testConfigs
-      for (let test in testConfigs) {
-        let config = testConfigs[test]
-        audit.define(config.creator, (function(c) {
+      // Create a task for each entry in testOfflineConfigs
+      for (let test in testOfflineConfigs) {
+        let config = testOfflineConfigs[test]
+        audit.define('Offline ' + config.creator, (function(c) {
                        return (task, should) => {
-                         let node = context[c.creator](...c.args);
+                         let node = offlineContext[c.creator](...c.args);
+                         testLimits(should, c.creator, node, c.limits);
+                         task.done();
+                       };
+                     })(config));
+      }
+
+      for (let test in testOnlineConfigs) {
+        let config = testOnlineConfigs[test]
+        audit.define('Online ' + config.creator, (function(c) {
+                       return (task, should) => {
+                         let node = onlineContext[c.creator](...c.args);
                          testLimits(should, c.creator, node, c.limits);
                          task.done();
                        };
@@ -215,7 +236,7 @@
 
       // Test the AudioListener params that were added for the automated Panner
       audit.define('AudioListener', (task, should) => {
-        testLimits(should, '', context.listener, {
+        testLimits(should, '', offlineContext.listener, {
           positionX: {
             minValue: -mostPositiveFloat,
             maxValue: mostPositiveFloat,
@@ -261,8 +282,8 @@
       audit.define('verifyTests', (task, should) => {
         let allNodes = new Set();
         // Create the set of all "create" methods from the context.
-        for (let method in context) {
-          if (typeof context[method] === 'function' &&
+        for (let method in offlineContext) {
+          if (typeof offlineContext[method] === 'function' &&
               method.substring(0, 6) === 'create') {
             allNodes.add(method);
           }
@@ -295,7 +316,7 @@
         // Just use a DelayNode for testing because the audio param has finite
         // limits.
         should(() => {
-          let d = context.createDelay();
+          let d = offlineContext.createDelay();
 
           // The console output should have the warnings that we're interested
           // in.
