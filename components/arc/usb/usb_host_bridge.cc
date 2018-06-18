@@ -218,8 +218,8 @@ void ArcUsbHostBridge::OnDeviceRemoved(
     return;
   }
 
-  usb_host_instance->OnDeviceRemoved(
-      device.get()->guid(), GetEventReceiverPackages(device.get()->guid()));
+  usb_host_instance->OnDeviceRemoved(device.get()->guid(),
+                                     GetEventReceiverPackages(device));
 
   if (ui_delegate_)
     ui_delegate_->DeviceRemoved(device.get()->guid());
@@ -255,10 +255,9 @@ void ArcUsbHostBridge::SetUiDelegate(ArcUsbHostUiDelegate* ui_delegate) {
 }
 
 std::vector<std::string> ArcUsbHostBridge::GetEventReceiverPackages(
-    const std::string& guid) {
-  scoped_refptr<device::UsbDevice> device = usb_service_->GetDevice(guid);
-  if (!device.get()) {
-    LOG(WARNING) << "Unknown USB device " << guid;
+    scoped_refptr<device::UsbDevice> device) {
+  if (!device) {
+    LOG(WARNING) << "Unknown USB device.";
     return std::vector<std::string>();
   }
 
@@ -266,7 +265,8 @@ std::vector<std::string> ArcUsbHostBridge::GetEventReceiverPackages(
     return std::vector<std::string>();
 
   std::unordered_set<std::string> receivers = ui_delegate_->GetEventPackageList(
-      guid, device->serial_number(), device->vendor_id(), device->product_id());
+      device->guid(), device->serial_number(), device->vendor_id(),
+      device->product_id());
 
   return std::vector<std::string>(receivers.begin(), receivers.end());
 }
@@ -283,10 +283,11 @@ void ArcUsbHostBridge::OnDeviceChecked(const std::string& guid, bool allowed) {
   mojom::UsbHostInstance* usb_host_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->usb_host(), OnDeviceAdded);
 
-  if (!usb_host_instance)
+  if (!usb_host_instance || !usb_service_)
     return;
 
-  usb_host_instance->OnDeviceAdded(guid, GetEventReceiverPackages(guid));
+  usb_host_instance->OnDeviceAdded(
+      guid, GetEventReceiverPackages(usb_service_->GetDevice(guid)));
 }
 
 void ArcUsbHostBridge::DoRequestUserAuthorization(
