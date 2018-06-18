@@ -217,6 +217,15 @@ GLES2DecoderPassthroughImpl::PendingReadPixels&
 GLES2DecoderPassthroughImpl::PendingReadPixels::operator=(PendingReadPixels&&) =
     default;
 
+GLES2DecoderPassthroughImpl::BufferShadowUpdate::BufferShadowUpdate() = default;
+GLES2DecoderPassthroughImpl::BufferShadowUpdate::~BufferShadowUpdate() =
+    default;
+GLES2DecoderPassthroughImpl::BufferShadowUpdate::BufferShadowUpdate(
+    BufferShadowUpdate&&) = default;
+GLES2DecoderPassthroughImpl::BufferShadowUpdate&
+GLES2DecoderPassthroughImpl::BufferShadowUpdate::operator=(
+    BufferShadowUpdate&&) = default;
+
 GLES2DecoderPassthroughImpl::EmulatedColorBuffer::EmulatedColorBuffer(
     gl::GLApi* api,
     const EmulatedDefaultFramebufferFormat& format_in)
@@ -1231,8 +1240,7 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
   caps.texture_target_exception_list =
       group_->gpu_preferences().texture_target_exception_list;
-  // TODO(crbug.com/828135): implement and enable this cap on passthrough
-  caps.chromium_nonblocking_readback = false;
+  caps.chromium_nonblocking_readback = true;
 
   return caps;
 }
@@ -1844,8 +1852,6 @@ bool GLES2DecoderPassthroughImpl::IsRobustnessSupported() {
 bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
   // GL_COMMANDS_COMPLETED_CHROMIUM is implemented in ANGLE
   switch (target) {
-    // TODO(crbug.com/828135): implement
-    // READBACK_SHADOW_COPIES_UPDATED_CHROMIUM in ANGLE somehow
     case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
     case GL_COMMANDS_ISSUED_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
@@ -1864,13 +1870,6 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
     GLuint result_available = GL_FALSE;
     GLuint64 result = 0;
     switch (query.target) {
-      // TODO(crbug.com/828135): implement
-      // READBACK_SHADOW_COPIES_UPDATED_CHROMIUM in ANGLE somehow
-      case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
-        result_available = GL_TRUE;
-        result = 0;
-        break;
-
       case GL_COMMANDS_ISSUED_CHROMIUM:
         result_available = GL_TRUE;
         result = GL_TRUE;
@@ -1896,6 +1895,15 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
             result = GL_FALSE;
             break;
           }
+        }
+        break;
+
+      case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
+        DCHECK(query.buffer_shadow_update_fence);
+        if (query.buffer_shadow_update_fence->HasCompleted()) {
+          ReadBackBuffersIntoShadowCopies(query.buffer_shadow_updates);
+          result_available = GL_TRUE;
+          result = 0;
         }
         break;
 
@@ -1957,6 +1965,52 @@ void GLES2DecoderPassthroughImpl::RemovePendingQuery(GLuint service_id) {
 
     pending_queries_.erase(pending_iter);
   }
+}
+
+void GLES2DecoderPassthroughImpl::ReadBackBuffersIntoShadowCopies(
+    const BufferShadowUpdateMap& updates) {
+  for (const auto& u : updates) {
+    GLuint service_id = u.first;
+    const auto& update = u.second;
+
+    void* shadow = update.shm->GetDataAddress(update.shm_offset, update.size);
+    DCHECK(shadow);
+
+    api()->glBindBufferFn(GL_ARRAY_BUFFER, service_id);
+    GLint already_mapped = GL_TRUE;
+    api()->glGetBufferParameterivFn(GL_ARRAY_BUFFER, GL_BUFFER_MAPPED,
+                                    &already_mapped);
+    if (already_mapped) {
+      // The buffer is already mapped by the client. It's okay that the shadow
+      // copy will be out-of-date, because the client will never read it:
+      // * Client issues READBACK_SHADOW_COPIES_UPDATED_CHROMIUM query
+      // * Client maps buffer
+      // * Client receives signal that the query completed
+      // * Client unmaps buffer - invalidating the shadow copy
+      // * Client maps buffer to read back - hits the round-trip path
+      continue;
+    }
+
+    void* mapped = api()->glMapBufferRangeFn(GL_ARRAY_BUFFER, 0, update.size,
+                                             GL_MAP_READ_BIT);
+    if (!mapped) {
+      DLOG(ERROR) << "glMapBufferRange unexpectedly returned NULL";
+      MarkContextLost(error::kOutOfMemory);
+      group_->LoseContexts(error::kUnknown);
+      return;
+    }
+    memcpy(shadow, mapped, update.size);
+    bool unmap_ok = api()->glUnmapBufferFn(GL_ARRAY_BUFFER);
+    if (unmap_ok == GL_FALSE) {
+      DLOG(ERROR) << "glUnmapBuffer unexpectedly returned GL_FALSE";
+      MarkContextLost(error::kUnknown);
+      group_->LoseContexts(error::kUnknown);
+      return;
+    }
+  }
+
+  // Restore original GL_ARRAY_BUFFER binding
+  api()->glBindBufferFn(GL_ARRAY_BUFFER, bound_buffers_[GL_ARRAY_BUFFER]);
 }
 
 error::Error GLES2DecoderPassthroughImpl::ProcessReadPixels(bool did_finish) {

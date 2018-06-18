@@ -5518,13 +5518,6 @@ void GLES2Implementation::BeginQueryEXT(GLenum target, GLuint id) {
                      << GLES2Util::GetStringQueryTarget(target) << ", " << id
                      << ")");
 
-  // TODO(crbug.com/828135): remove this block when ANGLE/passthrough
-  // implements READBACK_SHADOW_COPIES_UPDATED_CHROMIUM.
-  if (target == GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM &&
-      !capabilities_.chromium_nonblocking_readback) {
-    target = GL_COMMANDS_COMPLETED_CHROMIUM;
-  }
-
   switch (target) {
     case GL_COMMANDS_ISSUED_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
@@ -5616,7 +5609,7 @@ void GLES2Implementation::AllocateShadowCopiesForReadback() {
     int32_t shm_id = 0;
     uint32_t shm_offset = 0;
     bool already_allocated = false;
-    buffer->Alloc(&shm_id, &shm_offset, &already_allocated);
+    uint32_t size = buffer->Alloc(&shm_id, &shm_offset, &already_allocated);
     if (already_allocated) {
       SendErrorMessage(
           "performance warning: READ-usage buffer was written, then "
@@ -5625,7 +5618,7 @@ void GLES2Implementation::AllocateShadowCopiesForReadback() {
           0);
     }
     helper_->SetReadbackBufferShadowAllocationINTERNAL(buffer->id(), shm_id,
-                                                       shm_offset);
+                                                       shm_offset, size);
   }
 }
 
@@ -5640,13 +5633,6 @@ void GLES2Implementation::BufferShadowWrittenCallback(
 }
 
 void GLES2Implementation::EndQueryEXT(GLenum target) {
-  // TODO(crbug.com/828135): remove this block when ANGLE/passthrough
-  // implements READBACK_SHADOW_COPIES_UPDATED_CHROMIUM.
-  if (target == GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM &&
-      !capabilities_.chromium_nonblocking_readback) {
-    target = GL_COMMANDS_COMPLETED_CHROMIUM;
-  }
-
   QueryTracker::Query* query = nullptr;
   {
     GPU_CLIENT_SINGLE_THREAD_CHECK();
@@ -5728,13 +5714,6 @@ void GLES2Implementation::GetQueryivEXT(
                  << GLES2Util::GetStringQueryTarget(target) << ", "
                  << GLES2Util::GetStringQueryParameter(pname) << ", "
                  << static_cast<const void*>(params) << ")");
-  // TODO(crbug.com/828135): remove this block when ANGLE/passthrough
-  // implements READBACK_SHADOW_COPIES_UPDATED_CHROMIUM.
-  if (target == GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM &&
-      !capabilities_.chromium_nonblocking_readback) {
-    target = GL_COMMANDS_COMPLETED_CHROMIUM;
-  }
-
   if (pname == GL_QUERY_COUNTER_BITS_EXT) {
     switch (target) {
       case GL_TIMESTAMP_EXT:

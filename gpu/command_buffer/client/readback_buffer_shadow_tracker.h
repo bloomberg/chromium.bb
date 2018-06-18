@@ -25,7 +25,9 @@ class ReadbackBufferShadowTracker {
     explicit Buffer(GLuint buffer_id, ReadbackBufferShadowTracker* tracker);
     ~Buffer();
 
-    void Alloc(int32_t* shm_id, uint32_t* shm_offset, bool* already_allocated);
+    uint32_t Alloc(int32_t* shm_id,
+                   uint32_t* shm_offset,
+                   bool* already_allocated);
     void Free();
     void FreePendingToken(int32_t token);
 

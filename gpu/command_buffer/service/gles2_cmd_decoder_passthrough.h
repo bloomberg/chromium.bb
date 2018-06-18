@@ -399,6 +399,11 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   error::Error ProcessQueries(bool did_finish);
   void RemovePendingQuery(GLuint service_id);
 
+  struct BufferShadowUpdate;
+  // BufferShadowUpdateMap's key is a buffer client id.
+  using BufferShadowUpdateMap = base::flat_map<GLuint, BufferShadowUpdate>;
+  void ReadBackBuffersIntoShadowCopies(const BufferShadowUpdateMap& updates);
+
   error::Error ProcessReadPixels(bool did_finish);
 
   void UpdateTextureBinding(GLenum target,
@@ -592,6 +597,8 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     base::subtle::Atomic32 submit_count = 0;
 
     std::vector<base::OnceClosure> callbacks;
+    std::unique_ptr<gl::GLFence> buffer_shadow_update_fence = nullptr;
+    BufferShadowUpdateMap buffer_shadow_updates;
   };
   base::circular_deque<PendingQuery> pending_queries_;
 
@@ -632,6 +639,19 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
     DISALLOW_COPY_AND_ASSIGN(PendingReadPixels);
   };
   base::circular_deque<PendingReadPixels> pending_read_pixels_;
+
+  struct BufferShadowUpdate {
+    BufferShadowUpdate();
+    ~BufferShadowUpdate();
+    BufferShadowUpdate(BufferShadowUpdate&&);
+    BufferShadowUpdate& operator=(BufferShadowUpdate&&);
+
+    scoped_refptr<gpu::Buffer> shm;
+    GLuint shm_offset = 0;
+    GLuint size = 0;
+    DISALLOW_COPY_AND_ASSIGN(BufferShadowUpdate);
+  };
+  BufferShadowUpdateMap buffer_shadow_updates_;
 
   // Error state
   std::set<GLenum> errors_;
