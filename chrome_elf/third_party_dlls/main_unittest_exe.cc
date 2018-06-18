@@ -12,6 +12,7 @@
 #include "base/files/file.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/install_static/product_install_details.h"
 #include "chrome_elf/third_party_dlls/logging_api.h"
 #include "chrome_elf/third_party_dlls/main.h"
@@ -68,6 +69,7 @@ int main() {
     return kThirdPartyAlreadyInitialized;
 
   install_static::InitializeProductDetailsForPrimaryModule();
+  install_static::InitializeProcessType();
 
   // Get the required arguments, path to blacklist file and test id to run.
   if (argument_count < 3)

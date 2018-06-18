@@ -152,7 +152,7 @@ TEST_F(ELFImportsTest, DISABLED_ChromeElfLoadSanityTestImpl) {
   ASSERT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
 
   HMODULE chrome_elf_module_handle = ::LoadLibrary(dll.value().c_str());
-  EXPECT_TRUE(chrome_elf_module_handle != nullptr);
+  ASSERT_TRUE(chrome_elf_module_handle != nullptr);
   // Loading chrome_elf.dll should not load user32.dll
   EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
   EXPECT_TRUE(!!::FreeLibrary(chrome_elf_module_handle));

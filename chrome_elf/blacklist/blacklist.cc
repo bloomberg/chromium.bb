@@ -7,21 +7,37 @@
 #include <assert.h>
 #include <string.h>
 
-#include <vector>
-
 #include "chrome/install_static/install_util.h"
-#include "chrome_elf/blacklist/blacklist_interceptions.h"
 #include "chrome_elf/chrome_elf_constants.h"
-#include "chrome_elf/hook_util/hook_util.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
-#include "sandbox/win/src/interception_internal.h"
-#include "sandbox/win/src/internal_types.h"
-#include "sandbox/win/src/service_resolver.h"
-
-// http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace blacklist {
+namespace {
+
+// Record if the blacklist was successfully initialized so processes can easily
+// determine if the blacklist is enabled for them.
+bool g_blacklist_initialized = false;
+
+// Utility function for converting UTF-8 to UTF-16.
+bool UTF8ToUTF16(const std::string& utf8, std::wstring* utf16) {
+  assert(utf16);
+
+  if (utf8.empty()) {
+    utf16->clear();
+    return true;
+  }
+
+  int size_needed_chars = ::MultiByteToWideChar(
+      CP_UTF8, 0, utf8.c_str(), static_cast<int>(utf8.size()), nullptr, 0);
+  if (!size_needed_chars)
+    return false;
+
+  utf16->resize(size_needed_chars);
+  return ::MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(),
+                               static_cast<int>(utf8.size()), &(*utf16)[0],
+                               size_needed_chars);
+}
+}  // namespace
 
 // The DLLs listed here are known (or under strong suspicion) of causing crashes
 // when they are loaded in the browser. DLLs should only be added to this list
@@ -75,50 +91,6 @@ const wchar_t* g_troublesome_dlls[kTroublesomeDllsMaxCount] = {
 
 bool g_blocked_dlls[kTroublesomeDllsMaxCount] = {};
 int g_num_blocked_dlls = 0;
-
-}  // namespace blacklist
-
-// Allocate storage for thunks in a page of this module to save on doing
-// an extra allocation at run time.
-#pragma section(".crthunk", read, execute)
-__declspec(allocate(".crthunk")) sandbox::ThunkData g_thunk_storage;
-
-namespace {
-
-// Record if the blacklist was successfully initialized so processes can easily
-// determine if the blacklist is enabled for them.
-bool g_blacklist_initialized = false;
-
-// Utility function for converting UTF-8 to UTF-16.
-bool UTF8ToUTF16(const std::string& utf8, std::wstring* utf16) {
-  assert(utf16);
-
-  if (utf8.empty()) {
-    utf16->clear();
-    return true;
-  }
-
-  int size_needed_chars = ::MultiByteToWideChar(
-      CP_UTF8, 0, utf8.c_str(), static_cast<int>(utf8.size()), nullptr, 0);
-  if (!size_needed_chars)
-    return false;
-
-  utf16->resize(size_needed_chars);
-  return ::MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(),
-                               static_cast<int>(utf8.size()), &(*utf16)[0],
-                               size_needed_chars);
-}
-
-}  // namespace
-
-namespace blacklist {
-
-#if defined(_WIN64)
-// Allocate storage for the pointer to the old NtMapViewOfSectionFunction.
-#pragma section(".oldntmap", write, read)
-__declspec(allocate(".oldntmap"))
-    NtMapViewOfSectionFunction g_nt_map_view_of_section_func = NULL;
-#endif
 
 bool LeaveSetupBeacon() {
   HANDLE key_handle = INVALID_HANDLE_VALUE;
@@ -313,10 +285,6 @@ bool DllMatch(const std::string& module_name) {
 }
 
 bool Initialize(bool force) {
-  // Check to see that we found the functions we need in ntdll.
-  if (!InitializeInterceptImports())
-    return false;
-
   // Check to see if this is a non-browser process, abort if so.
   if (install_static::IsNonBrowserProcess())
     return false;
@@ -326,68 +294,7 @@ bool Initialize(bool force) {
   if (!force && !LeaveSetupBeacon())
     return false;
 
-  // It is possible for other dlls to have already patched code by now and
-  // attempting to patch their code might result in crashes.
-  const bool kRelaxed = false;
-
-  // Create a thunk via the appropriate ServiceResolver instance.
-  sandbox::ServiceResolverThunk* thunk = elf_hook::HookSystemService(kRelaxed);
-
-  // Don't try blacklisting on unsupported OS versions.
-  if (!thunk)
-    return false;
-
-  BYTE* thunk_storage = reinterpret_cast<BYTE*>(&g_thunk_storage);
-
-  // Mark the thunk storage as readable and writeable, since we
-  // ready to write to it.
-  DWORD old_protect = 0;
-  if (!VirtualProtect(&g_thunk_storage, sizeof(g_thunk_storage),
-                      PAGE_EXECUTE_READWRITE, &old_protect)) {
-    return false;
-  }
-
-  thunk->AllowLocalPatches();
-
-  // We declare this early so it can be used in the 64-bit block below and
-  // still work on 32-bit build when referenced at the end of the function.
-  BOOL page_executable = false;
-
-// Replace the default NtMapViewOfSection with our patched version.
-#if defined(_WIN64)
-  NTSTATUS ret = thunk->Setup(
-      ::GetModuleHandle(sandbox::kNtdllName),
-      reinterpret_cast<void*>(&__ImageBase), "NtMapViewOfSection", NULL,
-      reinterpret_cast<void*>(&blacklist::BlNtMapViewOfSection64),
-      thunk_storage, sizeof(sandbox::ThunkData), NULL);
-
-  // Keep a pointer to the original code, we don't have enough space to
-  // add it directly to the call.
-  g_nt_map_view_of_section_func =
-      reinterpret_cast<NtMapViewOfSectionFunction>(thunk_storage);
-
-  // Ensure that the pointer to the old function can't be changed.
-  page_executable = VirtualProtect(&g_nt_map_view_of_section_func,
-                                   sizeof(g_nt_map_view_of_section_func),
-                                   PAGE_EXECUTE_READ, &old_protect);
-#else
-  NTSTATUS ret = thunk->Setup(
-      ::GetModuleHandle(sandbox::kNtdllName),
-      reinterpret_cast<void*>(&__ImageBase), "NtMapViewOfSection", NULL,
-      reinterpret_cast<void*>(&blacklist::BlNtMapViewOfSection), thunk_storage,
-      sizeof(sandbox::ThunkData), NULL);
-#endif
-  delete thunk;
-
-  // Record if we have initialized the blacklist.
-  g_blacklist_initialized = NT_SUCCESS(ret);
-
-  // Mark the thunk storage as executable and prevent any future writes to it.
-  page_executable = page_executable &&
-                    VirtualProtect(&g_thunk_storage, sizeof(g_thunk_storage),
-                                   PAGE_EXECUTE_READ, &old_protect);
-
-  return NT_SUCCESS(ret) && page_executable;
+  return true;
 }
 
 }  // namespace blacklist
