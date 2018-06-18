@@ -110,8 +110,12 @@
                   <div class="separator"></div>
                   <div id="pinPasswordSecondaryActionDiv"
                       class="secondary-action">
+                    <!-- Use stop-keyboard-event-propagation to prevent
+                         triggering this when focused after closing the
+                         dialog. -->
                     <paper-button id="setupPinButton" class="secondary-button"
-                        on-click="onConfigurePin_">
+                        on-click="onConfigurePin_"
+                        stop-keyboard-event-propagation>
                       [[getSetupPinText_(hasPin)]]
                     </paper-button>
                   </div>
