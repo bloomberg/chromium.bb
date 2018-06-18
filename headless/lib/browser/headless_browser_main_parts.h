@@ -22,15 +22,19 @@ class HeadlessBrowserMainParts : public content::BrowserMainParts {
 
   // content::BrowserMainParts implementation:
   void PreMainMessageLoopRun() override;
+  void PreDefaultMainMessageLoopRun(base::OnceClosure quit_closure) override;
   void PostMainMessageLoopRun() override;
 #if defined(OS_MACOSX)
   void PreMainMessageLoopStart() override;
 #endif
 
+  void QuitMainMessageLoop();
+
  private:
   HeadlessBrowserImpl* browser_;  // Not owned.
 
-  bool devtools_http_handler_started_;
+  bool devtools_http_handler_started_ = false;
+  base::OnceClosure quit_main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserMainParts);
 };

@@ -115,8 +115,7 @@ void HeadlessBrowserImpl::Shutdown() {
     browser_contexts_.clear();
   }
 
-  BrowserMainThread()->PostTask(
-      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+  browser_main_parts_->QuitMainMessageLoop();
 }
 
 std::vector<HeadlessBrowserContext*>
