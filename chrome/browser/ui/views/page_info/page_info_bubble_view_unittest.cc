@@ -248,13 +248,8 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfo) {
   // practice. In practice, every setting in PermissionSelectorRow starts off
   // "set", so there is always one option checked in the resulting MenuModel.
   // This test creates settings that are left at their defaults, leading to zero
-  // checked options, and checks that the text on the MenuButtons is right. On
-  // Mac, the behavior matches, but only when SecondaryUiMd is enabled.
-  const bool is_md = base::FeatureList::IsEnabled(features::kSecondaryUiMd);
-#if defined(OS_MACOSX)
-  if (!is_md)
-    return;
-#endif
+  // checked options, and checks that the text on the MenuButtons is right.
+  const bool is_md = ui::MaterialDesignController::IsSecondaryUiMaterial();
 
   PermissionInfoList list(1);
   list.back().type = CONTENT_SETTINGS_TYPE_GEOLOCATION;
@@ -367,13 +362,8 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoForUsbGuard) {
   // practice. In practice, every setting in PermissionSelectorRow starts off
   // "set", so there is always one option checked in the resulting MenuModel.
   // This test creates settings that are left at their defaults, leading to zero
-  // checked options, and checks that the text on the MenuButtons is right. On
-  // Mac, the behavior matches, but only when SecondaryUiMd is enabled.
-  const bool is_md = base::FeatureList::IsEnabled(features::kSecondaryUiMd);
-#if defined(OS_MACOSX)
-  if (!is_md)
-    return;
-#endif
+  // checked options, and checks that the text on the MenuButtons is right.
+  const bool is_md = ui::MaterialDesignController::IsSecondaryUiMaterial();
 
   PermissionInfoList list(1);
   list.back().type = CONTENT_SETTINGS_TYPE_USB_GUARD;
