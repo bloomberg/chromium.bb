@@ -75,6 +75,7 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitor;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitorDelegate;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.feed.FeedEventReporter;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -679,10 +680,16 @@ public class ChromeTabbedActivity
         mLocaleManager.setSnackbarManager(getSnackbarManager());
         mLocaleManager.startObservingPhoneChanges();
 
-        if (isWarmOnResume()) {
-            SuggestionsEventReporterBridge.onActivityWarmResumed();
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
+            FeedEventReporter.onBrowserForegrounded();
         } else {
-            SuggestionsEventReporterBridge.onColdStart();
+            if (isWarmOnResume()) {
+                SuggestionsEventReporterBridge.onActivityWarmResumed();
+            } else {
+                SuggestionsEventReporterBridge.onColdStart();
+            }
+        }
+        if (!isWarmOnResume()) {
             SuggestionsMetrics.recordArticlesListVisible();
         }
 
