@@ -37,6 +37,15 @@ Polymer({
       type: Number,
       value: settings.MultiDeviceSettingsMode.NO_HOST_SET,
     },
+
+    // TODO(jordynass): Set this variable once the information is retrieved from
+    // multidevice setup service.
+    /**
+     * @type {boolean|undefined}
+     * If a host has been verified, this is true if that host is and enabled and
+     * false if it is disabled. Otherwise it is undefined.
+     */
+    hostEnabled: Boolean,
   },
 
   /**
@@ -51,22 +60,20 @@ Polymer({
   },
 
   /**
-   * @return {string} Translated sublabel.
+   * @return {string} Translated sublabel with a "learn more" link.
    * @private
    */
-  getSubLabelText_: function() {
+  getSubLabelInnerHtml_: function() {
     switch (this.mode) {
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
-        return this.i18n('multideviceSetupSummary');
+        return this.i18nAdvanced('multideviceSetupSummary');
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER:
-        // TODO(jordynass): Replace this with the real "Retry" string
-        return 'Retry Placeholder';
+        return this.i18nAdvanced('multideviceCouldNotConnect');
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
-        // TODO(jordynass): Replace this with the real "Verify" string
-        return 'Verification Placeholder';
+        return this.i18nAdvanced('multideviceVerificationText');
       default:
-        // TODO(jordynass): Replace this with the i18n versions
-        return 'Enabled/Disabled';
+        return this.hostEnabled ? this.i18n('multideviceEnabled') :
+                                  this.i18n('multideviceDisabled');
     }
   },
 
@@ -79,22 +86,12 @@ Polymer({
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
         return this.i18n('multideviceSetupButton');
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER:
-        // TODO(jordynass): Replace this with the real "Retry" string
-        return 'Retry Placeholder';
+        return this.i18n('retry');
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
-        // TODO(jordynass): Replace this with the real "Verify" string
-        return 'Verification Placeholder';
+        return this.i18n('multideviceVerifyButton');
       default:
         return null;
     }
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  shouldShowLearnMoreLink_: function() {
-    return this.mode != settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },
 
   /**

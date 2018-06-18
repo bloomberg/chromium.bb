@@ -13,14 +13,8 @@
     <div class="settings-box two-line first">
       <div class="start">
         [[getLabelText_(mode)]]
-        <div class="secondary" id="multideviceSummary">
-          [[getSubLabelText_(mode)]]
-          <template is="dom-if"
-              if="[[shouldShowLearnMoreLink_(mode)]]" restamp>
-            <a href="chrome://foo-bar-multidevice-help-page" target="_blank">
-              $i18n{learnMore}.
-            </a>
-          </template>
+        <div class="secondary" id="multideviceSummary"
+            inner-h-t-m-l="[[getSubLabelInnerHtml_(mode)]]">
         </div>
       </div>
       <div class="separator"></div>

@@ -265,6 +265,9 @@ const char kGoogleNameserversLearnMoreURL[] =
 const char kInstantTetheringLearnMoreURL[] =
     "https://support.google.com/chromebook?p=instant_tethering";
 
+const char kMultiDeviceLearnMoreURL[] =
+    "https://support.google.com/chromebook?p=multidevice-placeholder";
+
 const char kLanguageSettingsLearnMoreUrl[] =
     "https://support.google.com/chromebook/answer/1059490";
 
