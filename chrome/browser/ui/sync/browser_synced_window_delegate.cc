@@ -8,7 +8,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
+#include "chrome/browser/ui/sync/browser_synced_tab_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 
 BrowserSyncedWindowDelegate::BrowserSyncedWindowDelegate(Browser* browser)
@@ -30,7 +30,7 @@ bool BrowserSyncedWindowDelegate::IsTabPinned(
 
 sync_sessions::SyncedTabDelegate* BrowserSyncedWindowDelegate::GetTabAt(
     int index) const {
-  return TabContentsSyncedTabDelegate::FromWebContents(
+  return BrowserSyncedTabDelegate::FromWebContents(
       browser_->tab_strip_model()->GetWebContentsAt(index));
 }
 
