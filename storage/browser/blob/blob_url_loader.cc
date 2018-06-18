@@ -98,9 +98,6 @@ void BlobURLLoader::FollowRedirect(
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
   NOTREACHED();
 }
-void BlobURLLoader::ProceedWithResponse() {
-  NOTREACHED();
-}
 
 mojo::ScopedDataPipeProducerHandle BlobURLLoader::PassDataPipe() {
   mojo::DataPipe data_pipe(kDefaultAllocationSize);
