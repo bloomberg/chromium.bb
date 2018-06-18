@@ -48,19 +48,6 @@ cr.define('settings', function() {
   ]);
 
   /**
-   * Finds all previous highlighted nodes under |node| (both within self and
-   * children's Shadow DOM) and replaces the highlights (yellow rectangle and
-   * search bubbles) with the original text node.
-   * TODO(dpapad): Consider making this a private method of TopLevelSearchTask.
-   * @param {!Node} node
-   * @private
-   */
-  function findAndRemoveHighlights_(node) {
-    cr.search_highlight_utils.findAndRemoveHighlights(node);
-    cr.search_highlight_utils.findAndRemoveBubbles(node);
-  }
-
-  /**
    * Traverses the entire DOM (including Shadow DOM), finds text nodes that
    * match the given regular expression and applies the highlight UI. It also
    * ensures that <settings-section> instances become visible if any matches
@@ -72,6 +59,8 @@ cr.define('settings', function() {
    */
   function findAndHighlightMatches_(request, root) {
     let foundMatches = false;
+    let highlights = [];
+    let bubbles = [];
     function doSearch(node) {
       if (node.nodeName == 'TEMPLATE' && node.hasAttribute('route-path') &&
           !node.if && !node.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE)) {
@@ -97,7 +86,9 @@ cr.define('settings', function() {
 
         if (request.regExp.test(textContent)) {
           foundMatches = true;
-          revealParentSection_(node, request.rawQuery_);
+          let bubble = revealParentSection_(node, request.rawQuery_);
+          if (bubble)
+            bubbles.push(bubble);
 
           // Don't highlight <select> nodes, yellow rectangles can't be
           // displayed within an <option>.
@@ -105,8 +96,8 @@ cr.define('settings', function() {
           // instead.
           if (node.parentNode.nodeName != 'OPTION') {
             request.addTextObserver(node);
-            cr.search_highlight_utils.highlight(
-                node, textContent.split(request.regExp));
+            highlights.push(cr.search_highlight_utils.highlight(
+                node, textContent.split(request.regExp)));
           }
         }
         // Returning early since TEXT_NODE nodes never have children.
@@ -128,6 +119,7 @@ cr.define('settings', function() {
     }
 
     doSearch(root);
+    request.addHighlightsAndBubbles(highlights, bubbles);
     return foundMatches;
   }
 
@@ -135,6 +127,8 @@ cr.define('settings', function() {
    * Finds and makes visible the <settings-section> parent of |node|.
    * @param {!Node} node
    * @param {string} rawQuery
+   * @return {?Node} The search bubble created while revealing the section, if
+   *     any.
    * @private
    */
   function revealParentSection_(node, rawQuery) {
@@ -159,9 +153,10 @@ cr.define('settings', function() {
     // Need to add the search bubble after the parent SETTINGS-SECTION has
     // become visible, otherwise |offsetWidth| returns zero.
     if (associatedControl) {
-      cr.search_highlight_utils.highlightControlWithBubble(
+      return cr.search_highlight_utils.highlightControlWithBubble(
           associatedControl, rawQuery);
     }
+    return null;
   }
 
   /** @abstract */
@@ -251,8 +246,6 @@ cr.define('settings', function() {
 
     /** @override */
     exec() {
-      findAndRemoveHighlights_(this.node);
-
       const shouldSearch = this.request.regExp !== null;
       this.setSectionsVisibility_(!shouldSearch);
       if (shouldSearch) {
@@ -403,6 +396,21 @@ cr.define('settings', function() {
 
       /** @private {!Set<!MutationObserver>} */
       this.textObservers_ = new Set();
+
+      /** @private {!Array<!Node>} */
+      this.highlights_ = [];
+
+      /** @private {!Array<!Node>} */
+      this.bubbles_ = [];
+    }
+
+    /**
+     * @param {!Array<!Node>} highlights The highlight wrappers to add
+     * @param {!Array<!Node>} bubbles The search bubbles to add.
+     */
+    addHighlightsAndBubbles(highlights, bubbles) {
+      this.highlights_.push.apply(this.highlights_, highlights);
+      this.bubbles_.push.apply(this.bubbles_, bubbles);
     }
 
     removeAllTextObservers() {
@@ -410,6 +418,14 @@ cr.define('settings', function() {
         observer.disconnect();
       });
       this.textObservers_.clear();
+    }
+
+    removeAllHighlightsAndBubbles() {
+      cr.search_highlight_utils.removeHighlights(this.highlights_);
+      for (let bubble of this.bubbles_)
+        bubble.remove();
+      this.highlights_ = [];
+      this.bubbles_ = [];
     }
 
     /** @param {!Node} textNode */
@@ -510,12 +526,14 @@ cr.define('settings', function() {
       if (text != this.lastSearchedText_) {
         this.activeRequests_.forEach(function(request) {
           request.removeAllTextObservers();
+          request.removeAllHighlightsAndBubbles();
           request.canceled = true;
           request.resolver.resolve(request);
         });
         this.activeRequests_.clear();
         this.completedRequests_.forEach(request => {
           request.removeAllTextObservers();
+          request.removeAllHighlightsAndBubbles();
         });
         this.completedRequests_.clear();
       }

@@ -56,9 +56,6 @@ Polymer({
         'destination.isExtension)',
   ],
 
-  /** @private {boolean} */
-  highlighted_: false,
-
   /** @private */
   onDestinationPropertiesChange_: function() {
     this.title = this.destination.displayName;
@@ -113,9 +110,13 @@ Polymer({
   },
   // </if>
 
+  /**
+   * @return {!print_preview.HighlightResults} The highlight wrappers and
+   *     search bubbles that were created.
+   */
   update: function() {
     this.updateSearchHint_();
-    this.updateHighlighting_();
+    return this.updateHighlighting_();
   },
 
   /** @private */
@@ -127,9 +128,12 @@ Polymer({
             .join(' ');
   },
 
-  /** @private */
+  /**
+   * @return {!print_preview.HighlightResults} The highlight wrappers and
+   *     search bubbles that were created.
+   * @private
+   */
   updateHighlighting_: function() {
-    this.highlighted_ = print_preview.updateHighlights(
-        this, this.searchQuery, this.highlighted_);
+    return print_preview.updateHighlights(this, this.searchQuery);
   },
 });

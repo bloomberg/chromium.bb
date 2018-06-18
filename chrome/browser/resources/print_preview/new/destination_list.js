@@ -60,6 +60,9 @@ Polymer({
   /** @private {boolean} */
   newDestinations_: false,
 
+  /** @private {!Array<!Node>} */
+  highlights_: [],
+
   /**
    * @param {!Array<!print_preview.Destination>} current
    * @param {?Array<!print_preview.Destination>} previous
@@ -86,6 +89,9 @@ Polymer({
     if (!this.destinations)
       return;
 
+    cr.search_highlight_utils.removeHighlights(this.highlights_);
+    this.highlights_ = [];
+
     const listItems =
         this.shadowRoot.querySelectorAll('print-preview-destination-list-item');
 
@@ -95,7 +101,7 @@ Polymer({
           !!this.searchQuery && !item.destination.matches(this.searchQuery);
       if (!item.hidden) {
         matchCount++;
-        item.update();
+        this.highlights_.push.apply(this.highlights_, item.update().highlights);
       }
     });
 
