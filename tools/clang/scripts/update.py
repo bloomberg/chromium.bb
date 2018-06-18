@@ -204,7 +204,8 @@ def RunCommand(command, msvc_arch=None, env=None, fail_hard=True):
      shell with the msvc tools for that architecture."""
 
   if msvc_arch and sys.platform == 'win32':
-    command = GetVSVersion().SetupScript(msvc_arch) + ['&&'] + command
+    command = [os.path.join(GetWinSDKDir(), 'bin', 'SetEnv.cmd'),
+               "/" + msvc_arch, '&&'] + command
 
   # https://docs.python.org/2/library/subprocess.html:
   # "On Unix with shell=True [...] if args is a sequence, the first item
@@ -370,31 +371,31 @@ def AddGnuWinToPath():
   os.environ['PATH'] = gnuwin_dir + os.pathsep + os.environ.get('PATH', '')
 
 
-vs_version = None
-def GetVSVersion():
-  global vs_version
-  if vs_version:
-    return vs_version
+win_sdk_dir = None
+msvs_version = None
+def GetWinSDKDir():
+  """Get the location of the current SDK. Sets msvs_version as a side-effect."""
+  global win_sdk_dir
+  global msvs_version
+  if win_sdk_dir:
+    return win_sdk_dir
 
-  # Try using the toolchain in depot_tools.
-  # This sets environment variables used by SelectVisualStudioVersion below.
+  # Don't let vs_toolchain overwrite our environment.
+  environ_bak = os.environ
+
   sys.path.append(os.path.join(CHROMIUM_DIR, 'build'))
   import vs_toolchain
-  vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
+  win_sdk_dir = vs_toolchain.SetEnvironmentAndGetSDKDir()
+  msvs_version = vs_toolchain.GetVisualStudioVersion()
 
-  # Use gyp to find the MSVS installation, either in depot_tools as per above,
-  # or a system-wide installation otherwise.
-  sys.path.append(os.path.join(CHROMIUM_DIR, 'tools', 'gyp', 'pylib'))
-  import gyp.MSVSVersion
-  vs_version = gyp.MSVSVersion.SelectVisualStudioVersion(
-      vs_toolchain.GetVisualStudioVersion())
-  return vs_version
+  os.environ = environ_bak
+  return win_sdk_dir
 
 
 def CopyDiaDllTo(target_dir):
   # This script always wants to use the 64-bit msdia*.dll.
-  dia_path = os.path.join(GetVSVersion().Path(), 'DIA SDK', 'bin', 'amd64')
-  dia_dll = os.path.join(dia_path, DIA_DLL[GetVSVersion().ShortName()])
+  dia_path = os.path.join(GetWinSDKDir(), '..', 'DIA SDK', 'bin', 'amd64')
+  dia_dll = os.path.join(dia_path, DIA_DLL[msvs_version])
   CopyFile(dia_dll, target_dir)
 
 
