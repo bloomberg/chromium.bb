@@ -20,6 +20,7 @@
 
 namespace vr {
 
+class PlatformController;
 class PlatformInputHandler;
 
 // This class is responsible for processing all events and gestures for
@@ -47,6 +48,10 @@ class VR_EXPORT ContentInputDelegate : public PlatformUiInputDelegate {
       int compositon_end,
       base::OnceCallback<void(const TextInputInfo&)> callback);
 
+  void OnPlatformControllerInitialized(PlatformController* controller) {
+    controller_ = controller;
+  }
+
   void OnWebInputTextChangedForTest(const base::string16& text) {
     OnWebInputTextChanged(text);
   }
@@ -56,6 +61,9 @@ class VR_EXPORT ContentInputDelegate : public PlatformUiInputDelegate {
  protected:
   void SendGestureToTarget(
       std::unique_ptr<blink::WebInputEvent> event) override;
+  std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(
+      blink::WebInputEvent::Type type,
+      const gfx::PointF& normalized_web_content_location) override;
 
  private:
   enum TextRequestState {
@@ -68,6 +76,8 @@ class VR_EXPORT ContentInputDelegate : public PlatformUiInputDelegate {
 
   int content_id_ = 0;
   int locked_content_id_ = 0;
+
+  PlatformController* controller_ = nullptr;
 
   EditedText last_keyboard_edit_;
   TextRequestState pending_text_request_state_ = kNoPendingRequest;

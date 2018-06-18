@@ -146,4 +146,44 @@ void ContentInputDelegate::OnWebInputTextChanged(const base::string16& text) {
   base::ResetAndReturn(&update_state_callback).Run(pending_text_input_info_);
 }
 
+std::unique_ptr<blink::WebMouseEvent> ContentInputDelegate::MakeMouseEvent(
+    blink::WebInputEvent::Type type,
+    const gfx::PointF& normalized_web_content_location) {
+  if (!controller_)
+    return nullptr;
+
+  gfx::Point location(size().width() * normalized_web_content_location.x(),
+                      size().height() * normalized_web_content_location.y());
+  blink::WebInputEvent::Modifiers modifiers =
+      controller_->IsButtonDown(PlatformController::kButtonSelect)
+          ? blink::WebInputEvent::kLeftButtonDown
+          : blink::WebInputEvent::kNoModifiers;
+
+  base::TimeTicks timestamp;
+  switch (type) {
+    case blink::WebInputEvent::kMouseUp:
+    case blink::WebInputEvent::kMouseDown:
+      timestamp = controller_->GetLastButtonTimestamp();
+      break;
+    case blink::WebInputEvent::kMouseMove:
+    case blink::WebInputEvent::kMouseEnter:
+    case blink::WebInputEvent::kMouseLeave:
+      timestamp = controller_->GetLastOrientationTimestamp();
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  auto mouse_event =
+      std::make_unique<blink::WebMouseEvent>(type, modifiers, timestamp);
+  mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
+  mouse_event->button = blink::WebPointerProperties::Button::kLeft;
+  mouse_event->SetPositionInWidget(location.x(), location.y());
+  // TODO(mthiesse): Should we support double-clicks for input? What should the
+  // timeout be?
+  mouse_event->click_count = 1;
+
+  return mouse_event;
+}
+
 }  // namespace vr

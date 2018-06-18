@@ -10,7 +10,6 @@
 #include "chrome/browser/vr/platform_input_handler.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
-#include "third_party/blink/public/platform/web_touch_event.h"
 
 namespace vr {
 
@@ -53,19 +52,13 @@ void PlatformUiInputDelegate::OnHoverMove(
 void PlatformUiInputDelegate::OnButtonDown(
     const gfx::PointF& normalized_hit_point) {
   SendGestureToTarget(
-      MakeTouchEvent(blink::WebInputEvent::kTouchStart, normalized_hit_point));
+      MakeMouseEvent(blink::WebInputEvent::kMouseDown, normalized_hit_point));
 }
 
 void PlatformUiInputDelegate::OnButtonUp(
     const gfx::PointF& normalized_hit_point) {
   SendGestureToTarget(
-      MakeTouchEvent(blink::WebInputEvent::kTouchEnd, normalized_hit_point));
-}
-
-void PlatformUiInputDelegate::OnTouchMove(
-    const gfx::PointF& normalized_hit_point) {
-  SendGestureToTarget(
-      MakeTouchEvent(blink::WebInputEvent::kTouchMove, normalized_hit_point));
+      MakeMouseEvent(blink::WebInputEvent::kMouseUp, normalized_hit_point));
 }
 
 void PlatformUiInputDelegate::OnFlingCancel(
@@ -113,80 +106,19 @@ void PlatformUiInputDelegate::SendGestureToTarget(
 
 std::unique_ptr<blink::WebMouseEvent> PlatformUiInputDelegate::MakeMouseEvent(
     blink::WebInputEvent::Type type,
-    const gfx::PointF& normalized_web_content_location) const {
-  // TODO(acondor): Remove dependency on platform controller.
-  if (!controller_)
-    return nullptr;
-
-  gfx::Point location = CalculateLocation(normalized_web_content_location);
+    const gfx::PointF& normalized_web_content_location) {
+  gfx::Point location(size_.width() * normalized_web_content_location.x(),
+                      size_.height() * normalized_web_content_location.y());
   blink::WebInputEvent::Modifiers modifiers =
-      controller_->IsButtonDown(PlatformController::kButtonSelect)
-          ? blink::WebInputEvent::kLeftButtonDown
-          : blink::WebInputEvent::kNoModifiers;
+      blink::WebInputEvent::kNoModifiers;
 
-  base::TimeTicks timestamp;
-  switch (type) {
-    case blink::WebInputEvent::kMouseMove:
-    case blink::WebInputEvent::kMouseEnter:
-    case blink::WebInputEvent::kMouseLeave:
-      timestamp = controller_->GetLastOrientationTimestamp();
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  auto mouse_event =
-      std::make_unique<blink::WebMouseEvent>(type, modifiers, timestamp);
+  auto mouse_event = std::make_unique<blink::WebMouseEvent>(
+      type, modifiers, base::TimeTicks::Now());
   mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
   mouse_event->button = blink::WebPointerProperties::Button::kLeft;
   mouse_event->SetPositionInWidget(location.x(), location.y());
   mouse_event->click_count = 1;
   return mouse_event;
-}
-
-std::unique_ptr<blink::WebTouchEvent> PlatformUiInputDelegate::MakeTouchEvent(
-    blink::WebInputEvent::Type type,
-    const gfx::PointF& normalized_web_content_location) const {
-  // TODO(acondor): Remove dependency on platform controller.
-  if (!controller_)
-    return nullptr;
-
-  gfx::Point location = CalculateLocation(normalized_web_content_location);
-  blink::WebInputEvent::Modifiers modifiers =
-      blink::WebInputEvent::kNoModifiers;
-
-  base::TimeTicks timestamp;
-  blink::WebTouchPoint::State touch_state =
-      blink::WebTouchPoint::kStateUndefined;
-  switch (type) {
-    case blink::WebInputEvent::kTouchStart:
-      touch_state = blink::WebTouchPoint::kStatePressed;
-      timestamp = controller_->GetLastButtonTimestamp();
-      break;
-    case blink::WebInputEvent::kTouchEnd:
-      touch_state = blink::WebTouchPoint::kStateReleased;
-      timestamp = controller_->GetLastButtonTimestamp();
-      break;
-    case blink::WebInputEvent::kTouchMove:
-      touch_state = blink::WebTouchPoint::kStateMoved;
-      timestamp = controller_->GetLastOrientationTimestamp();
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  auto touch_event =
-      std::make_unique<blink::WebTouchEvent>(type, modifiers, timestamp);
-  touch_event->touches_length = 1;
-  touch_event->touches[0].state = touch_state;
-  touch_event->touches[0].SetPositionInWidget(location.x(), location.y());
-  return touch_event;
-}
-
-gfx::Point PlatformUiInputDelegate::CalculateLocation(
-    const gfx::PointF& normalized_web_content_location) const {
-  return gfx::Point(size_.width() * normalized_web_content_location.x(),
-                    size_.height() * normalized_web_content_location.y());
 }
 
 }  // namespace vr

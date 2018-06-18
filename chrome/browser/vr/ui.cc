@@ -438,7 +438,7 @@ void Ui::OnContentBoundsChanged(int width, int height) {
 }
 
 void Ui::OnPlatformControllerInitialized(PlatformController* controller) {
-  content_input_delegate_->SetPlatformController(controller);
+  content_input_delegate_->OnPlatformControllerInitialized(controller);
 }
 
 bool Ui::IsControllerVisible() const {
