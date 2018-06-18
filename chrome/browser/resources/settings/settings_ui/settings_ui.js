@@ -169,6 +169,22 @@ Polymer({
     // Preload bold Roboto so it doesn't load and flicker the first time used.
     document.fonts.load('bold 12px Roboto');
     settings.setGlobalScrollTarget(this.$.container);
+    this.addEventListener('scroll-to-top', event => {
+      this.$.container.scrollTo({top: event.detail, behavior: 'smooth'});
+    });
+    this.addEventListener('scroll-to-bottom', event => {
+      this.$.container.scrollTo({
+        top: event.detail.bottom - this.$.container.clientHeight,
+        behavior: 'smooth'
+      });
+      const onScroll = () => {
+        this.debounce('scrollEnd', () => {
+          event.detail.callback();
+          this.$.container.removeEventListener('scroll', onScroll);
+        }, 75);
+      };
+      this.$.container.addEventListener('scroll', onScroll);
+    });
   },
 
   /** @override */
