@@ -32,9 +32,7 @@ class MockSwapPromise : public SwapPromise {
   void DidActivate() override {}
   void WillSwap(viz::CompositorFrameMetadata* metadata) override {}
   void DidSwap() override {}
-  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
-    return DidNotSwapAction::BREAK_PROMISE;
-  }
+  void DidNotSwap(DidNotSwapReason reason) override {}
   MOCK_METHOD0(OnCommit, void());
   int64_t TraceId() const override { return 0; }
 };

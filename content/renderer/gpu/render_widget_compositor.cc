@@ -104,7 +104,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   void DidActivate() override {}
   void WillSwap(viz::CompositorFrameMetadata* metadata) override;
   void DidSwap() override;
-  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override;
+  void DidNotSwap(DidNotSwapReason reason) override;
   int64_t TraceId() const override;
 
  private:
@@ -143,7 +143,7 @@ void ReportTimeSwapPromise::DidSwap() {
   // presentation feedback is received.
 }
 
-cc::SwapPromise::DidNotSwapAction ReportTimeSwapPromise::DidNotSwap(
+void ReportTimeSwapPromise::DidNotSwap(
     cc::SwapPromise::DidNotSwapReason reason) {
   blink::WebLayerTreeView::SwapResult result;
   switch (reason) {
@@ -162,7 +162,6 @@ cc::SwapPromise::DidNotSwapAction ReportTimeSwapPromise::DidNotSwap(
   }
   task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback_), result,
                                                    base::TimeTicks::Now()));
-  return cc::SwapPromise::DidNotSwapAction::BREAK_PROMISE;
 }
 
 int64_t ReportTimeSwapPromise::TraceId() const {

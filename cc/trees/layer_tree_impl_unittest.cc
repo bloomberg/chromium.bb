@@ -2277,39 +2277,16 @@ TEST_F(LayerTreeImplTest, HitTestingCorrectLayerWheelListener) {
 
 namespace {
 
-class PersistentSwapPromise
-    : public SwapPromise,
-      public base::SupportsWeakPtr<PersistentSwapPromise> {
+class StubSwapPromise : public SwapPromise,
+                        public base::SupportsWeakPtr<StubSwapPromise> {
  public:
-  PersistentSwapPromise() = default;
-  ~PersistentSwapPromise() override = default;
-
-  void DidActivate() override {}
-  MOCK_METHOD1(WillSwap, void(viz::CompositorFrameMetadata* metadata));
-  MOCK_METHOD0(DidSwap, void());
-
-  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
-    return DidNotSwapAction::KEEP_ACTIVE;
-  }
-
-  void OnCommit() override {}
-  int64_t TraceId() const override { return 0; }
-};
-
-class NotPersistentSwapPromise
-    : public SwapPromise,
-      public base::SupportsWeakPtr<NotPersistentSwapPromise> {
- public:
-  NotPersistentSwapPromise() = default;
-  ~NotPersistentSwapPromise() override = default;
+  StubSwapPromise() = default;
+  ~StubSwapPromise() override = default;
 
   void DidActivate() override {}
   void WillSwap(viz::CompositorFrameMetadata* metadata) override {}
   void DidSwap() override {}
-
-  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
-    return DidNotSwapAction::BREAK_PROMISE;
-  }
+  void DidNotSwap(DidNotSwapReason reason) override {}
 
   void OnCommit() override {}
   int64_t TraceId() const override { return 0; }
@@ -2317,64 +2294,31 @@ class NotPersistentSwapPromise
 
 }  // namespace
 
-TEST_F(LayerTreeImplTest, PersistentSwapPromisesAreKeptAlive) {
+TEST_F(LayerTreeImplTest, StubSwapPromisesAreDroppedWhenSwapFails) {
   const size_t promises_count = 2;
 
-  std::vector<base::WeakPtr<PersistentSwapPromise>> persistent_promises;
-  std::vector<std::unique_ptr<PersistentSwapPromise>>
-      persistent_promises_to_pass;
+  std::vector<base::WeakPtr<StubSwapPromise>> weak_swap_promises;
+  std::vector<std::unique_ptr<StubSwapPromise>> swap_promises_to_pass;
   for (size_t i = 0; i < promises_count; ++i) {
-    persistent_promises_to_pass.push_back(
-        std::make_unique<PersistentSwapPromise>());
+    swap_promises_to_pass.push_back(std::make_unique<StubSwapPromise>());
   }
 
-  for (auto& promise : persistent_promises_to_pass) {
-    persistent_promises.push_back(promise->AsWeakPtr());
-    host_impl().active_tree()->QueueSwapPromise(std::move(promise));
-  }
-
-  std::vector<std::unique_ptr<SwapPromise>> promises;
-  host_impl().active_tree()->PassSwapPromises(std::move(promises));
-  host_impl().active_tree()->BreakSwapPromises(
-      SwapPromise::DidNotSwapReason::SWAP_FAILS);
-
-  ASSERT_EQ(promises_count, persistent_promises.size());
-  for (size_t i = 0; i < persistent_promises.size(); ++i) {
-    SCOPED_TRACE(testing::Message() << "While checking case #" << i);
-    ASSERT_TRUE(persistent_promises[i]);
-    EXPECT_CALL(*persistent_promises[i], WillSwap(testing::_));
-  }
-  host_impl().active_tree()->FinishSwapPromises(nullptr);
-}
-
-TEST_F(LayerTreeImplTest, NotPersistentSwapPromisesAreDroppedWhenSwapFails) {
-  const size_t promises_count = 2;
-
-  std::vector<base::WeakPtr<NotPersistentSwapPromise>> not_persistent_promises;
-  std::vector<std::unique_ptr<NotPersistentSwapPromise>>
-      not_persistent_promises_to_pass;
-  for (size_t i = 0; i < promises_count; ++i) {
-    not_persistent_promises_to_pass.push_back(
-        std::make_unique<NotPersistentSwapPromise>());
-  }
-
-  for (auto& promise : not_persistent_promises_to_pass) {
-    not_persistent_promises.push_back(promise->AsWeakPtr());
+  for (auto& promise : swap_promises_to_pass) {
+    weak_swap_promises.push_back(promise->AsWeakPtr());
     host_impl().active_tree()->QueueSwapPromise(std::move(promise));
   }
   std::vector<std::unique_ptr<SwapPromise>> promises;
   host_impl().active_tree()->PassSwapPromises(std::move(promises));
 
-  ASSERT_EQ(promises_count, not_persistent_promises.size());
-  for (size_t i = 0; i < not_persistent_promises.size(); ++i) {
-    EXPECT_FALSE(not_persistent_promises[i]) << "While checking case #" << i;
+  ASSERT_EQ(promises_count, weak_swap_promises.size());
+  for (size_t i = 0; i < weak_swap_promises.size(); ++i) {
+    EXPECT_FALSE(weak_swap_promises[i]) << "While checking case #" << i;
   }
 
-  // Finally, check that not persistent promise doesn't survive
+  // Finally, check that the promises do not survive
   // |LayerTreeImpl::BreakSwapPromises|.
   {
-    std::unique_ptr<NotPersistentSwapPromise> promise(
-        new NotPersistentSwapPromise());
+    std::unique_ptr<StubSwapPromise> promise(new StubSwapPromise());
     auto weak_promise = promise->AsWeakPtr();
     host_impl().active_tree()->QueueSwapPromise(std::move(promise));
     host_impl().active_tree()->BreakSwapPromises(
