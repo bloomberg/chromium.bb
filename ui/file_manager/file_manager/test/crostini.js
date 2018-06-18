@@ -6,9 +6,9 @@ const crostini = {};
 
 crostini.testCrostiniNotEnabled = (done) => {
   chrome.fileManagerPrivate.crostiniEnabled_ = false;
-  fileManager.setupCrostini_();
   test.setupAndWaitUntilReady()
       .then(() => {
+        fileManager.setupCrostini_();
         return test.waitForElementLost(
             '#directory-tree .tree-item [root-type-icon="crostini"]');
       })
@@ -24,9 +24,9 @@ crostini.testCrostiniSuccess = (done) => {
   chrome.fileManagerPrivate.mountCrostiniContainer = (callback) => {
     mountCallback = callback;
   };
-  fileManager.setupCrostini_();
   test.setupAndWaitUntilReady()
       .then(() => {
+        fileManager.setupCrostini_();
         // Linux Files fake root is shown.
         return test.waitForElement(
             '#directory-tree .tree-item [root-type-icon="crostini"]');
@@ -84,9 +84,9 @@ crostini.testCrostiniError = (done) => {
     callback();
     chrome.runtime.lastError = null;
   };
-  fileManager.setupCrostini_();
   test.setupAndWaitUntilReady()
       .then(() => {
+        fileManager.setupCrostini_();
         return test.waitForElement(
             '#directory-tree .tree-item [root-type-icon="crostini"]');
       })
@@ -111,9 +111,9 @@ crostini.testCrostiniError = (done) => {
 crostini.testCrostiniMountOnDrag = (done) => {
   chrome.fileManagerPrivate.crostiniEnabled_ = true;
   chrome.fileManagerPrivate.mountCrostiniContainerDelay_ = 0;
-  fileManager.setupCrostini_();
   test.setupAndWaitUntilReady()
       .then(() => {
+        fileManager.setupCrostini_();
         return test.waitForElement(
             '#directory-tree .tree-item [root-type-icon="crostini"]');
       })

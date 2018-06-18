@@ -428,12 +428,6 @@ test.addEntries = function(downloads, drive, crostini) {
       str('LINUX_FILES_ROOT_LABEL'));
   crostiniVolumeInfo.fileSystem.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(crostini, '/'), true);
-
-  // Send onDirectoryChanged events.
-  chrome.fileManagerPrivate.onDirectoryChanged.dispatchEvent(
-      {eventType: 'changed', entry: fsDownloads.root});
-  chrome.fileManagerPrivate.onDirectoryChanged.dispatchEvent(
-      {eventType: 'changed', entry: fsDrive.entries['/root']});
 };
 
 /**
@@ -528,9 +522,12 @@ test.setupAndWaitUntilReady = function(resolve) {
         return test.waitForElement(
             '#directory-tree [volume-type-icon="downloads"]');
       })
-      .then(() => {
+      .then((downloadsIcon) => {
+        // Click Downloads, or refresh button if already on Downloads.
         assertTrue(test.fakeMouseClick(
-            '#directory-tree [volume-type-icon="downloads"]'));
+            downloadsIcon.parentElement.hasAttribute('selected') ?
+                '#refresh-button' :
+                '#directory-tree [volume-type-icon="downloads"]'));
         return test.waitForFiles(
             test.TestEntryInfo.getExpectedRows(test.BASIC_LOCAL_ENTRY_SET));
       });
