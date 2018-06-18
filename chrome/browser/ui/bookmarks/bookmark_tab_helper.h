@@ -56,6 +56,7 @@ class BookmarkTabHelper
 
   void AddObserver(BookmarkTabHelperObserver* observer);
   void RemoveObserver(BookmarkTabHelperObserver* observer);
+  bool HasObserver(BookmarkTabHelperObserver* observer) const;
 
  private:
   friend class content::WebContentsUserData<BookmarkTabHelper>;

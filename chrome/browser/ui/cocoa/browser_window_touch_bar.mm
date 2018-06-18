@@ -616,4 +616,8 @@ class BrowserTouchBarNotificationBridge : public CommandObserver,
   return backForwardControl_.get();
 }
 
+- (BookmarkTabHelperObserver*)bookmarkTabObserver {
+  return notificationBridge_.get();
+}
+
 @end

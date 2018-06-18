@@ -10,6 +10,7 @@
 #include "base/mac/availability.h"
 #import "ui/base/cocoa/touch_bar_forward_declarations.h"
 
+class BookmarkTabHelperObserver;
 class Browser;
 @class BrowserWindowController;
 
@@ -52,6 +53,10 @@ class Browser;
 // Returns the back/forward segmented control on the touch bar. Creates it if
 // it's null.
 - (NSSegmentedControl*)backForwardControl;
+
+// Returns the bridge object that BrowserWindowTouchBar uses to receive
+// notifications.
+- (BookmarkTabHelperObserver*)bookmarkTabObserver;
 
 @end
 
