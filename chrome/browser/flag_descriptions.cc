@@ -2516,16 +2516,22 @@ const char kOmniboxRichEntitySuggestionsName[] =
     "Omnibox rich entity suggestions";
 const char kOmniboxRichEntitySuggestionsDescription[] =
     "Display entity suggestions using images and an enhanced layout; showing "
-    "more context and descriptive text about the entity";
+    "more context and descriptive text about the entity. Has no effect unless "
+    "either the #upcoming-ui-features flag is Enabled or the #top-chrome-md "
+    "flag is set to Refresh or Touchable Refresh.";
 
 const char kOmniboxNewAnswerLayoutName[] = "Omnibox new answer layout";
 const char kOmniboxNewAnswerLayoutDescription[] =
-    "Display answers using an enhanced layout with larger images";
+    "Display answers using an enhanced layout with larger images. Has no "
+    "effect unless either the #upcoming-ui-features flag is Enabled or the "
+    "#top-chrome-md flag is set to Refresh or Touchable Refresh.";
 
 const char kOmniboxTabSwitchSuggestionsName[] =
     "Omnibox tab switch suggestions";
 const char kOmniboxTabSwitchSuggestionsDescription[] =
-    "Enable suggestions for switching to open tabs within the Omnibox.";
+    "Enable suggestions for switching to open tabs within the Omnibox. "
+    "Has no effect unless either the #upcoming-ui-features flag is Enabled or "
+    "the #top-chrome-md flag is set to Refresh or Touchable Refresh.";
 
 const char kOmniboxTailSuggestionsName[] = "Omnibox tail suggestions";
 const char kOmniboxTailSuggestionsDescription[] =

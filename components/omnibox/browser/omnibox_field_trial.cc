@@ -679,13 +679,23 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
   return static_cast<EmphasizeTitlesCondition>(value);
 }
 
+bool OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() {
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) &&
+         ui::MaterialDesignController::is_mode_initialized() &&
+         ui::MaterialDesignController::IsRefreshUi();
+}
+
 bool OmniboxFieldTrial::IsNewAnswerLayoutEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) ||
+  return (base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout) &&
+          ui::MaterialDesignController::is_mode_initialized() &&
+          ui::MaterialDesignController::IsRefreshUi()) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 
 bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions) ||
+  return (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions) &&
+          ui::MaterialDesignController::is_mode_initialized() &&
+          ui::MaterialDesignController::IsRefreshUi()) ||
          base::FeatureList::IsEnabled(features::kExperimentalUi);
 }
 

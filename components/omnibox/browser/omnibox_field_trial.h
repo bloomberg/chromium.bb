@@ -408,12 +408,15 @@ class OmniboxFieldTrial {
   // ---------------------------------------------------------
   // For tab switch suggestions related experiments.
 
-  // Returns true if either the new answer layout flag or the
-  // #upcoming-ui-features flag is enabled.
+  // Returns true if the rich entities flag and the refresh UI is enabled.
+  static bool IsRichEntitySuggestionsEnabled();
+
+  // Returns true if either (the new answer layout flag and the refresh UI) or
+  // the #upcoming-ui-features flag is enabled.
   static bool IsNewAnswerLayoutEnabled();
 
-  // Returns true if either the tab switch suggestions flag or the
-  // #upcoming-ui-features flag is enabled.
+  // Returns true if either (the tab switch suggestions flag and the refresh UI)
+  // or the #upcoming-ui-features flag is enabled.
   static bool IsTabSwitchSuggestionsEnabled();
 
   // Returns true if either the steady-state elision flag or the
