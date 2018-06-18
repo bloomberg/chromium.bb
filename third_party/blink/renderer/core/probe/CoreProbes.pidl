@@ -163,4 +163,8 @@ interface CoreProbes {
   void consoleTimeStamp(ExecutionContext*, const String& title);
   void lifecycleEvent([Keep] LocalFrame*, DocumentLoader*, const char* name, double timestamp);
   void paintTiming([Keep] Document*, const char* name, double timestamp);
+  void didCreateAudioContext(Document*);
+  void didCloseAudioContext(Document*);
+  void didResumeAudioContext(Document*);
+  void didSuspendAudioContext(Document*);
 }

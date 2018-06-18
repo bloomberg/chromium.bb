@@ -71,6 +71,10 @@ static const char kWebglWarningFiredEventName[] = "webglWarningFired";
 static const char kWebglErrorNameProperty[] = "webglErrorName";
 static const char kScriptBlockedByCSPEventName[] = "scriptBlockedByCSP";
 static const char kCanvasContextCreatedEventName[] = "canvasContextCreated";
+static const char kAudioContextCreatedEventName[] = "audioContextCreated";
+static const char kAudioContextClosedEventName[] = "audioContextClosed";
+static const char kAudioContextResumedEventName[] = "audioContextResumed";
+static const char kAudioContextSuspendedEventName[] = "audioContextSuspended";
 
 namespace DOMDebuggerAgentState {
 static const char kEventListenerBreakpoints[] = "eventListenerBreakpoints";
@@ -821,6 +825,30 @@ void InspectorDOMDebuggerAgent::SetEnabled(bool enabled) {
 
 void InspectorDOMDebuggerAgent::DidCommitLoadForLocalFrame(LocalFrame*) {
   dom_breakpoints_.clear();
+}
+
+void InspectorDOMDebuggerAgent::DidCreateAudioContext() {
+  PauseOnNativeEventIfNeeded(
+      PreparePauseOnNativeEventData(kAudioContextCreatedEventName, nullptr),
+      true);
+}
+
+void InspectorDOMDebuggerAgent::DidCloseAudioContext() {
+  PauseOnNativeEventIfNeeded(
+      PreparePauseOnNativeEventData(kAudioContextClosedEventName, nullptr),
+      true);
+}
+
+void InspectorDOMDebuggerAgent::DidResumeAudioContext() {
+  PauseOnNativeEventIfNeeded(
+      PreparePauseOnNativeEventData(kAudioContextResumedEventName, nullptr),
+      true);
+}
+
+void InspectorDOMDebuggerAgent::DidSuspendAudioContext() {
+  PauseOnNativeEventIfNeeded(
+      PreparePauseOnNativeEventData(kAudioContextSuspendedEventName, nullptr),
+      true);
 }
 
 }  // namespace blink

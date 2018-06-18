@@ -110,6 +110,10 @@ class CORE_EXPORT InspectorDOMDebuggerAgent final
   void Will(const probe::UserCallback&);
   void Did(const probe::UserCallback&);
   void BreakableLocation(const char* name);
+  void DidCreateAudioContext();
+  void DidCloseAudioContext();
+  void DidResumeAudioContext();
+  void DidSuspendAudioContext();
 
   protocol::Response disable() override;
   void Restore() override;
