@@ -269,14 +269,21 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
 
   // cmd-z on dvorak qwerty layout (so that the key produces ';', but 'z' if
   // cmd is down)
+  SetIsInputSourceDvorakQwertyForTesting(true);
   key = KeyEvent(0x100108, @"z", @";", 6);
   ExpectKeyFiresItem(key, MenuItem(@"z", 0x100000), false);
   ExpectKeyDoesntFireItem(key, MenuItem(@";", 0x100000), false);
+  SetIsInputSourceDvorakQwertyForTesting(false);
 
   // cmd-shift-z on dvorak layout (so that we get a ':')
   key = KeyEvent(0x12010a, @";", @":", 6);
   ExpectKeyFiresItem(key, MenuItem(@":", 0x100000));
   ExpectKeyDoesntFireItem(key, MenuItem(@";", 0x100000));
+
+  // On PT layout, caps lock should not affect the keyEquivalent.
+  key = KeyEvent(0x110108, @"T", @"t", 17);
+  ExpectKeyFiresItem(key, MenuItem(@"t", 0x100000));
+  ExpectKeyDoesntFireItem(key, MenuItem(@"T", 0x100000));
 
   // cmd-s with a serbian layout (just "s" produces something that looks a lot
   // like "c" in some fonts, but is actually \u0441. cmd-s activates a menu item
@@ -334,6 +341,17 @@ TEST(NSMenuItemAdditionsTest, TestMOnDifferentLayouts) {
       keyCode = 0x16;
     } else if ([layoutId isEqualToString:@"com.apple.keylayout.Dvorak-Right"]) {
       keyCode = 0x1a;
+    } else if ([layoutId
+                   isEqualToString:@"com.apple.keylayout.Tibetan-Wylie"]) {
+      // In Tibetan-Wylie, the only way to type the "m" character is with cmd +
+      // key_code=0x2e. As such, it doesn't make sense for this same combination
+      // to trigger a keyEquivalent, since then it won't be possible to type
+      // "m".
+      continue;
+    }
+
+    if ([layoutId isEqualToString:@"com.apple.keylayout.DVORAK-QWERTYCMD"]) {
+      SetIsInputSourceDvorakQwertyForTesting(true);
     }
 
     EventModifiers modifiers = cmdKey >> 8;
@@ -341,6 +359,10 @@ TEST(NSMenuItemAdditionsTest, TestMOnDifferentLayouts) {
     NSString* charsIgnoringMods = keyCodeToCharacter(keyCode, 0, ref);
     NSEvent* key = KeyEvent(0x100000, chars, charsIgnoringMods, keyCode);
     ExpectKeyFiresItem(key, item, false);
+
+    if ([layoutId isEqualToString:@"com.apple.keylayout.DVORAK-QWERTYCMD"]) {
+      SetIsInputSourceDvorakQwertyForTesting(false);
+    }
   }
   CFRelease(list);
 }
