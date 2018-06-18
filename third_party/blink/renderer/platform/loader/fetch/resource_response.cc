@@ -404,6 +404,15 @@ double ResourceResponse::CacheControlMaxAge() const {
   return cache_control_header_.max_age;
 }
 
+double ResourceResponse::CacheControlStaleWhileRevalidate() const {
+  if (!cache_control_header_.parsed) {
+    cache_control_header_ = ParseCacheControlDirectives(
+        http_header_fields_.Get(kCacheControlHeader),
+        http_header_fields_.Get(kPragmaHeader));
+  }
+  return cache_control_header_.stale_while_revalidate;
+}
+
 static double ParseDateValueInHeader(const HTTPHeaderMap& headers,
                                      const AtomicString& header_name) {
   const AtomicString& header_value = headers.Get(header_name);
