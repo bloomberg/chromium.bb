@@ -1939,6 +1939,9 @@ enum WebFeature {
   kTextToSpeech_SpeakCrossOrigin = 2472,
   kTextToSpeech_SpeakDisallowedByAutoplay = 2473,
   kStaleWhileRevalidateEnabled = 2474,
+  kMediaElementSourceOnOfflineContext = 2475,
+  kMediaStreamDestinationOnOfflineContext = 2476,
+  kMediaStreamSourceOnOfflineContext = 2477,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

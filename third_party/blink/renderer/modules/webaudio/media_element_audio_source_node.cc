@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_node.h"
 
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
@@ -249,6 +250,11 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
     media_element.SetAudioSourceNode(node);
     // context keeps reference until node is disconnected
     context.NotifySourceNodeStartedProcessing(node);
+    if (!context.HasRealtimeConstraint()) {
+      Deprecation::CountDeprecation(
+          node->GetExecutionContext(),
+          WebFeature::kMediaElementSourceOnOfflineContext);
+    }
   }
 
   return node;
