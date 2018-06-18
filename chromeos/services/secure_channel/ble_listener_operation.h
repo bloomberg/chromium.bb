@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/services/secure_channel/ble_listener_failure_type.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
@@ -17,6 +18,8 @@
 namespace chromeos {
 
 namespace secure_channel {
+
+class BleConnectionManager;
 
 // Attempts to connect to a remote device over BLE via the listener role.
 class BleListenerOperation
@@ -29,6 +32,7 @@ class BleListenerOperation
     virtual ~Factory();
     virtual std::unique_ptr<ConnectToDeviceOperation<BleListenerFailureType>>
     BuildInstance(
+        BleConnectionManager* ble_connection_manager,
         ConnectToDeviceOperation<
             BleListenerFailureType>::ConnectionSuccessCallback success_callback,
         const ConnectToDeviceOperation<
@@ -46,6 +50,7 @@ class BleListenerOperation
 
  private:
   BleListenerOperation(
+      BleConnectionManager* ble_connection_manager,
       ConnectToDeviceOperation<
           BleListenerFailureType>::ConnectionSuccessCallback success_callback,
       const ConnectToDeviceOperation<
@@ -60,6 +65,15 @@ class BleListenerOperation
   void PerformCancellation() override;
   void PerformUpdateConnectionPriority(
       ConnectionPriority connection_priority) override;
+
+  void OnSuccessfulConnection(
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel);
+  void OnConnectionFailure(BleListenerFailureType failure_type);
+
+  BleConnectionManager* ble_connection_manager_;
+
+  bool is_attempt_active_ = false;
+  base::WeakPtrFactory<BleListenerOperation> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BleListenerOperation);
 };

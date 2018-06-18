@@ -4,9 +4,12 @@
 
 #include "chromeos/services/secure_channel/ble_listener_operation.h"
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "chromeos/services/secure_channel/ble_connection_manager.h"
+#include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
 
 namespace chromeos {
 
@@ -35,6 +38,7 @@ BleListenerOperation::Factory::~Factory() = default;
 
 std::unique_ptr<ConnectToDeviceOperation<BleListenerFailureType>>
 BleListenerOperation::Factory::BuildInstance(
+    BleConnectionManager* ble_connection_manager,
     ConnectToDeviceOperation<BleListenerFailureType>::ConnectionSuccessCallback
         success_callback,
     const ConnectToDeviceOperation<
@@ -43,13 +47,13 @@ BleListenerOperation::Factory::BuildInstance(
     ConnectionPriority connection_priority,
     scoped_refptr<base::TaskRunner> task_runner) {
   return base::WrapUnique(new BleListenerOperation(
-      std::move(success_callback), std::move(failure_callback), device_id_pair,
-      connection_priority, task_runner));
+      ble_connection_manager, std::move(success_callback),
+      std::move(failure_callback), device_id_pair, connection_priority,
+      task_runner));
 }
 
-BleListenerOperation::~BleListenerOperation() = default;
-
 BleListenerOperation::BleListenerOperation(
+    BleConnectionManager* ble_connection_manager,
     ConnectToDeviceOperation<BleListenerFailureType>::ConnectionSuccessCallback
         success_callback,
     const ConnectToDeviceOperation<
@@ -62,23 +66,43 @@ BleListenerOperation::BleListenerOperation(
           std::move(failure_callback),
           device_id_pair,
           connection_priority,
-          task_runner) {}
+          task_runner),
+      ble_connection_manager_(ble_connection_manager),
+      weak_ptr_factory_(this) {}
+
+BleListenerOperation::~BleListenerOperation() = default;
 
 void BleListenerOperation::AttemptConnectionToDevice(
     ConnectionPriority connection_priority) {
-  // TODO(khorimoto): Implement.
-  NOTIMPLEMENTED();
+  is_attempt_active_ = true;
+  ble_connection_manager_->AttemptBleListenerConnection(
+      device_id_pair(), connection_priority,
+      base::BindOnce(&BleListenerOperation::OnSuccessfulConnection,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindRepeating(&BleListenerOperation::OnConnectionFailure,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BleListenerOperation::PerformCancellation() {
-  // TODO(khorimoto): Implement.
-  NOTIMPLEMENTED();
+  is_attempt_active_ = false;
+  ble_connection_manager_->CancelBleListenerConnectionAttempt(device_id_pair());
 }
 
 void BleListenerOperation::PerformUpdateConnectionPriority(
     ConnectionPriority connection_priority) {
-  // TODO(khorimoto): Implement.
-  NOTIMPLEMENTED();
+  ble_connection_manager_->UpdateBleListenerConnectionPriority(
+      device_id_pair(), connection_priority);
+}
+
+void BleListenerOperation::OnSuccessfulConnection(
+    std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
+  is_attempt_active_ = false;
+  OnSuccessfulConnectionAttempt(std::move(authenticated_channel));
+}
+
+void BleListenerOperation::OnConnectionFailure(
+    BleListenerFailureType failure_type) {
+  OnFailedConnectionAttempt(failure_type);
 }
 
 }  // namespace secure_channel
