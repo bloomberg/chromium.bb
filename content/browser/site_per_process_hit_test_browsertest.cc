@@ -3463,6 +3463,12 @@ class TestPageScaleObserver : public WebContentsObserver {
 // the main frame (given that the child did not consume the wheel).
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        TouchpadPinchOverOOPIF) {
+  // TODO(crbug.com/853761): Flaky with viz hit testing
+  if (features::IsVizHitTestingEnabled()) {
+    LOG(INFO) << "Skipping test due to https://crbug.com/853761";
+    return;
+  }
+
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
