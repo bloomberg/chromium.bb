@@ -95,12 +95,13 @@ void SensorProxyImpl::Resume() {
 
 void SensorProxyImpl::UpdateSensorReading() {
   DCHECK(ShouldProcessReadings());
+  DCHECK(shared_buffer_handle_->is_valid());
+
+  // Try to read the latest value from shared memory. Failure should not be
+  // fatal because we only retry a finite number of times.
   device::SensorReading reading_data;
-  if (!shared_buffer_handle_->is_valid() ||
-      !shared_buffer_reader_->GetReading(&reading_data)) {
-    HandleSensorError();
+  if (!shared_buffer_reader_->GetReading(&reading_data))
     return;
-  }
 
   double latest_timestamp = reading_data.timestamp();
   if (reading_.timestamp() != latest_timestamp &&
@@ -191,8 +192,10 @@ void SensorProxyImpl::OnSensorCreated(SensorCreationResult result,
 
   const auto* buffer = static_cast<const device::SensorReadingSharedBuffer*>(
       shared_buffer_.get());
-  shared_buffer_reader_.reset(
-      new device::SensorReadingSharedBufferReader(buffer));
+  shared_buffer_reader_ =
+      std::make_unique<device::SensorReadingSharedBufferReader>(buffer);
+  shared_buffer_reader_->GetReading(&reading_);
+
   frequency_limits_.first = params->minimum_frequency;
   frequency_limits_.second = params->maximum_frequency;
 
