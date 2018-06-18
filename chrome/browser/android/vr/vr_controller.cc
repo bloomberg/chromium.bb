@@ -343,7 +343,8 @@ std::unique_ptr<GestureList> VrController::DetectGestures() {
 
   UpdateCurrentTouchInfo();
   return gesture_detector_->DetectGestures(
-      touch_info_, ButtonState(gvr::kControllerButtonClick));
+      touch_info_, base::TimeTicks::Now(),
+      ButtonState(gvr::kControllerButtonClick));
 }
 
 void VrController::UpdateCurrentTouchInfo() {

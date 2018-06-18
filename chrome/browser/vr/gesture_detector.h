@@ -38,6 +38,7 @@ class VR_EXPORT GestureDetector {
   virtual ~GestureDetector();
 
   std::unique_ptr<GestureList> DetectGestures(const TouchInfo& touch_info,
+                                              base::TimeTicks current_timestamp,
                                               bool force_cancel);
 
  private:
@@ -81,7 +82,8 @@ class VR_EXPORT GestureDetector {
   // before, update the touch point and return true. Otherwise, return false.
   bool UpdateCurrentTouchPoint(const TouchInfo& touch_info);
 
-  void ExtrapolateTouchInfo(TouchInfo* touch_info);
+  void ExtrapolateTouchInfo(TouchInfo* touch_info,
+                            base::TimeTicks current_timestamp);
 
   void UpdateOverallVelocity(const TouchInfo& touch_info);
 
