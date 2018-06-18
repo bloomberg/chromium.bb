@@ -2994,6 +2994,9 @@ split_static_library("ui") {
       "views/update_recommended_message_box.h",
       "views/webauthn/authenticator_request_dialog_view.cc",
       "views/webauthn/authenticator_request_dialog_view.h",
+      "views/webauthn/authenticator_request_sheet_view.cc",
+      "views/webauthn/authenticator_request_sheet_view.h",
+      "webauthn/authenticator_request_sheet_model.h",
     ]
     deps += [
       "//chrome/browser/ui/views",
@@ -4004,7 +4007,10 @@ static_library("test_support") {
   ]
 
   if (toolkit_views) {
-    deps += [ "//ui/views:test_support" ]
+    deps += [
+      "//components/constrained_window:constrained_window",
+      "//ui/views:test_support",
+    ]
     sources += [
       "../../test/views/scoped_macviews_browser_mode.cc",
       "../../test/views/scoped_macviews_browser_mode.h",
@@ -4012,6 +4018,8 @@ static_library("test_support") {
       "views/payments/test_chrome_payment_request_delegate.cc",
       "views/payments/test_chrome_payment_request_delegate.h",
       "views/toolbar/browser_action_test_util_views_mac.mm",
+      "views/webauthn/authenticator_request_dialog_view_test_api.cc",
+      "views/webauthn/authenticator_request_dialog_view_test_api.h",
     ]
     if (is_mac) {
       sources += [

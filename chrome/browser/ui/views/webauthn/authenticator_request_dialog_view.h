@@ -8,8 +8,18 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/views/window/dialog_delegate.h"
+
+namespace content {
+class WebContents;
+}
+
+namespace test {
+class AuthenticatorRequestDialogViewTestApi;
+}
 
 // A tab-modal dialog shown while a Web Authentication API request is active.
 //
@@ -19,26 +29,46 @@
 // selecting transport protocol, and finally shows success/failure indications.
 class AuthenticatorRequestDialogView
     : public views::DialogDelegateView,
-      public AuthenticatorRequestDialogModel::Observer {
+      public AuthenticatorRequestDialogModel::Observer,
+      public content::WebContentsObserver {
  public:
   AuthenticatorRequestDialogView(
+      content::WebContents* web_contents,
       std::unique_ptr<AuthenticatorRequestDialogModel> model);
   ~AuthenticatorRequestDialogView() override;
 
  protected:
-  void CreateContents();
+  // Replaces the |sheet_| currently being shown in the dialog with |new_sheet|,
+  // destroying the old sheet. Also triggers updating the dialog buttons, window
+  // title (using the data provided by the new sheet), and size/position.
+  void ReplaceCurrentSheetWith(
+      std::unique_ptr<AuthenticatorRequestSheetView> new_sheet);
+
+  AuthenticatorRequestSheetView* sheet() const { return sheet_; }
 
   // views::DialogDelegateView:
+  gfx::Size CalculatePreferredSize() const override;
+  bool Accept() override;
+  bool Cancel() override;
+  bool Close() override;
   int GetDialogButtons() const override;
+  int GetDefaultDialogButton() const override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
+  bool ShouldShowWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
 
   // AuthenticatorRequestDialogModel::Observer:
   void OnModelDestroyed() override;
   void OnRequestComplete() override;
 
  private:
+  friend class test::AuthenticatorRequestDialogViewTestApi;
+
   std::unique_ptr<AuthenticatorRequestDialogModel> model_;
+  AuthenticatorRequestSheetView* sheet_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogView);
 };
