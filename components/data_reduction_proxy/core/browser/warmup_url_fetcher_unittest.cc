@@ -525,7 +525,7 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
 
 TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
   // Must remain in sync with warmup_url_fetcher.cc.
-  constexpr base::TimeDelta kMinTimeout = base::TimeDelta::FromSeconds(8);
+  constexpr base::TimeDelta kMinTimeout = base::TimeDelta::FromSeconds(10);
   constexpr base::TimeDelta kMaxTimeout = base::TimeDelta::FromSeconds(60);
 
   base::HistogramTester histogram_tester;
@@ -549,20 +549,20 @@ TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasing) {
 
   base::TimeDelta http_rtt = base::TimeDelta::FromSeconds(2);
   estimator.SetStartTimeNullHttpRtt(http_rtt);
-  EXPECT_EQ(http_rtt * 5, warmup_url_fetcher.GetFetchTimeout());
+  EXPECT_EQ(http_rtt * 12, warmup_url_fetcher.GetFetchTimeout());
 
   warmup_url_fetcher.FetchWarmupURL(1);
-  EXPECT_EQ(http_rtt * 10, warmup_url_fetcher.GetFetchTimeout());
+  EXPECT_EQ(http_rtt * 24, warmup_url_fetcher.GetFetchTimeout());
 
   warmup_url_fetcher.FetchWarmupURL(2);
-  EXPECT_EQ(http_rtt * 20, warmup_url_fetcher.GetFetchTimeout());
+  EXPECT_EQ(kMaxTimeout, warmup_url_fetcher.GetFetchTimeout());
 
   http_rtt = base::TimeDelta::FromSeconds(5);
   estimator.SetStartTimeNullHttpRtt(http_rtt);
   EXPECT_EQ(kMaxTimeout, warmup_url_fetcher.GetFetchTimeout());
 
   warmup_url_fetcher.FetchWarmupURL(0);
-  EXPECT_EQ(http_rtt * 5, warmup_url_fetcher.GetFetchTimeout());
+  EXPECT_EQ(http_rtt * 12, warmup_url_fetcher.GetFetchTimeout());
 }
 
 TEST(WarmupURLFetcherTest, TestFetchTimeoutIncreasingWithFieldTrial) {
