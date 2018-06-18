@@ -112,8 +112,9 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
 
   // Support for a pull-model where draws are requested by the implementation of
   // LayerTreeFrameSink. This is called by the compositor to notify that there's
-  // new content.
-  virtual void Invalidate() {}
+  // new content. Can be called when nothing needs to be drawn if tile
+  // priorities should be updated.
+  virtual void Invalidate(bool needs_draw) {}
 
   // For successful swaps, the implementation must call
   // DidReceiveCompositorFrameAck() asynchronously when the frame has been

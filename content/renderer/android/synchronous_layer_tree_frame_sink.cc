@@ -364,10 +364,10 @@ void SynchronousLayerTreeFrameSink::FallbackTickFired() {
   frame_swap_message_queue_->NotifyFramesAreDiscarded(false);
 }
 
-void SynchronousLayerTreeFrameSink::Invalidate() {
+void SynchronousLayerTreeFrameSink::Invalidate(bool needs_draw) {
   DCHECK(CalledOnValidThread());
   if (sync_client_)
-    sync_client_->Invalidate();
+    sync_client_->Invalidate(needs_draw);
 
   if (!fallback_tick_pending_) {
     fallback_tick_.Reset(
@@ -416,6 +416,12 @@ void SynchronousLayerTreeFrameSink::DemandDrawSw(SkCanvas* canvas) {
   InvokeComposite(transform, viewport);
 }
 
+void SynchronousLayerTreeFrameSink::WillSkipDraw() {
+  CancelFallbackTick();
+  client_->OnDraw(gfx::Transform(), gfx::Rect(), in_software_draw_,
+                  true /*skip_draw*/);
+}
+
 void SynchronousLayerTreeFrameSink::InvokeComposite(
     const gfx::Transform& transform,
     const gfx::Rect& viewport) {
@@ -428,7 +434,8 @@ void SynchronousLayerTreeFrameSink::InvokeComposite(
   // SetExternalTilePriorityConstraints), surely this could be more clear?
   gfx::Transform adjusted_transform = transform;
   adjusted_transform.matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
-  client_->OnDraw(adjusted_transform, viewport, in_software_draw_);
+  client_->OnDraw(adjusted_transform, viewport, in_software_draw_,
+                  false /*skip_draw*/);
 
   if (did_submit_frame_) {
     // This must happen after unwinding the stack and leaving the compositor.

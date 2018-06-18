@@ -72,7 +72,8 @@ class CC_EXPORT LayerTreeFrameSinkClient {
   // a new CompositorFrame synchronously.
   virtual void OnDraw(const gfx::Transform& transform,
                       const gfx::Rect& viewport,
-                      bool resourceless_software_draw) = 0;
+                      bool resourceless_software_draw,
+                      bool skip_draw) = 0;
 
   // For SynchronousCompositor (WebView) to set how much memory the compositor
   // can use without changing visibility.

@@ -246,13 +246,18 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates production should be skipped to recover latency.
   void SetSkipNextBeginMainFrameToReduceLatency(bool skip);
 
-  // Resourceless software draws are allowed even when invisible.
+  // For Android WebView, resourceless software draws are allowed even when
+  // invisible.
   void SetResourcelessSoftwareDraw(bool resourceless_draw);
 
   // Indicates whether drawing would, at this time, make sense.
   // CanDraw can be used to suppress flashes or checkerboarding
   // when such behavior would be undesirable.
   void SetCanDraw(bool can);
+
+  // For Android WebView, indicates that the draw should be skipped because the
+  // frame sink is not ready to receive frames.
+  void SetSkipDraw(bool skip);
 
   // Indicates that scheduled BeginMainFrame is started.
   void NotifyBeginMainFrameStarted();
@@ -386,6 +391,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool begin_frame_source_paused_ = false;
   bool resourceless_draw_ = false;
   bool can_draw_ = false;
+  bool skip_draw_ = false;
   bool has_pending_tree_ = false;
   bool pending_tree_is_ready_for_activation_ = false;
   bool active_tree_needs_first_draw_ = false;

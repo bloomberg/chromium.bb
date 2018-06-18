@@ -57,6 +57,10 @@ interface SynchronousCompositor {
        uint32 metadata_version,
        viz.mojom.CompositorFrameMetadata? meta_data);
 
+  // Instead of drawing, allow the compositor to finish the frame and update
+  // tiles if needed.
+  WillSkipDraw();
+
   // Zero out the shared memory. This is necessary since most of the time,
   // viewport size doesn't change between draws, it's cheaper to zero out
   // and reuse the shared memory, instead of allocating and mapping a new

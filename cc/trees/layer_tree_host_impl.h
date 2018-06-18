@@ -137,7 +137,8 @@ class LayerTreeHostImplClient {
   virtual void DidCompletePageScaleAnimationOnImplThread() = 0;
 
   // Called when output surface asks for a draw.
-  virtual void OnDrawForLayerTreeFrameSink(bool resourceless_software_draw) = 0;
+  virtual void OnDrawForLayerTreeFrameSink(bool resourceless_software_draw,
+                                           bool skip_draw) = 0;
 
   virtual void NeedsImplSideInvalidation(
       bool needs_first_draw_on_activation) = 0;
@@ -319,7 +320,7 @@ class CC_EXPORT LayerTreeHostImpl
   // add impl-side invalidations to it.
   // virtual for testing.
   virtual void InvalidateContentOnImplSide();
-  virtual void InvalidateLayerTreeFrameSink();
+  virtual void InvalidateLayerTreeFrameSink(bool needs_redraw);
 
   void SetTreeLayerScrollOffsetMutated(ElementId element_id,
                                        LayerTreeImpl* tree,
@@ -440,7 +441,8 @@ class CC_EXPORT LayerTreeHostImpl
   void SetTreeActivationCallback(const base::Closure& callback) override;
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
-              bool resourceless_software_draw) override;
+              bool resourceless_software_draw,
+              bool skip_draw) override;
 
   // Called from LayerTreeImpl.
   void OnCanDrawStateChangedForTree();

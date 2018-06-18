@@ -50,7 +50,7 @@ class SynchronousCompositorRegistry;
 class SynchronousLayerTreeFrameSinkClient {
  public:
   virtual void DidActivatePendingTree() = 0;
-  virtual void Invalidate() = 0;
+  virtual void Invalidate(bool needs_draw) = 0;
   virtual void SubmitCompositorFrame(uint32_t layer_tree_frame_sink_id,
                                      viz::CompositorFrame frame) = 0;
   virtual void SetNeedsBeginFrames(bool needs_begin_frames) = 0;
@@ -96,13 +96,14 @@ class SynchronousLayerTreeFrameSink
   void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
                                const viz::SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
-  void Invalidate() override;
+  void Invalidate(bool needs_draw) override;
 
   // Partial SynchronousCompositor API implementation.
   void DemandDrawHw(const gfx::Size& viewport_size,
                     const gfx::Rect& viewport_rect_for_tile_priority,
                     const gfx::Transform& transform_for_tile_priority);
   void DemandDrawSw(SkCanvas* canvas);
+  void WillSkipDraw();
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(

@@ -52,6 +52,7 @@ class FakeSchedulerClient : public SchedulerClient,
     states_.clear();
     will_begin_impl_frame_causes_redraw_ = false;
     will_begin_impl_frame_requests_one_begin_impl_frame_ = false;
+    invalidate_needs_redraw_ = true;
     draw_will_happen_ = true;
     swap_will_happen_if_draw_happens_ = true;
     num_draws_ = 0;
@@ -63,6 +64,7 @@ class FakeSchedulerClient : public SchedulerClient,
 
   bool needs_begin_frames() { return scheduler_->begin_frames_expected(); }
   int num_draws() const { return num_draws_; }
+  bool invalidate_needs_redraw() const { return invalidate_needs_redraw_; }
   const std::vector<std::string> Actions() const {
     return std::vector<std::string>(actions_.begin(), actions_.end());
   }
@@ -85,6 +87,9 @@ class FakeSchedulerClient : public SchedulerClient,
   }
   void SetWillBeginImplFrameCausesRedraw(bool causes_redraw) {
     will_begin_impl_frame_causes_redraw_ = causes_redraw;
+  }
+  void SetInvalidateNeedsRedraw(bool needs_redraw) {
+    invalidate_needs_redraw_ = needs_redraw;
   }
   void SetDrawWillHappen(bool draw_will_happen) {
     draw_will_happen_ = draw_will_happen;
@@ -187,9 +192,10 @@ class FakeSchedulerClient : public SchedulerClient,
     scheduler_->WillPrepareTiles();
     scheduler_->DidPrepareTiles();
   }
-  void ScheduledActionInvalidateLayerTreeFrameSink() override {
+  void ScheduledActionInvalidateLayerTreeFrameSink(bool needs_redraw) override {
     EXPECT_FALSE(inside_action_);
     base::AutoReset<bool> mark_inside(&inside_action_, true);
+    invalidate_needs_redraw_ = needs_redraw;
     actions_.push_back("ScheduledActionInvalidateLayerTreeFrameSink");
     states_.push_back(scheduler_->AsValue());
   }
@@ -256,6 +262,7 @@ class FakeSchedulerClient : public SchedulerClient,
   bool inside_begin_impl_frame_ = false;
   bool will_begin_impl_frame_causes_redraw_;
   bool will_begin_impl_frame_requests_one_begin_impl_frame_;
+  bool invalidate_needs_redraw_ = true;
   bool draw_will_happen_;
   bool swap_will_happen_if_draw_happens_;
   bool automatic_ack_ = true;
@@ -398,7 +405,9 @@ class SchedulerTest : public testing::Test {
       if (scheduler_settings_.using_synchronous_renderer_compositor) {
         scheduler_->SetNeedsRedraw();
         bool resourceless_software_draw = false;
-        scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
+        bool skip_draw = false;
+        scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                                skip_draw);
       } else {
         // Run the posted deadline task.
         EXPECT_TRUE(client_->IsInsideBeginImplFrame());
@@ -2879,7 +2888,9 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
   // Android onDraw. This doesn't consume the single begin frame request.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
+  bool skip_draw = false;
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -2897,7 +2908,8 @@ TEST_F(SchedulerTest, SynchronousCompositorAnimation) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -2915,7 +2927,9 @@ TEST_F(SchedulerTest, SynchronousCompositorOnDrawDuringIdle) {
 
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
+  bool skip_draw = false;
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
   EXPECT_ACTIONS("AddObserver(this)", "ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -2990,6 +3004,52 @@ TEST_F(SchedulerTest, AbortEarlyIfNoDamage) {
   EXPECT_EQ(0, client_->num_draws());
 }
 
+TEST_F(SchedulerTest, SkipDraw) {
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  SetUpScheduler(EXTERNAL_BFS);
+
+  scheduler_->SetNeedsOneBeginImplFrame();
+  EXPECT_ACTIONS("AddObserver(this)");
+  client_->Reset();
+
+  client_->SetWillBeginImplFrameCausesRedraw(true);
+
+  // Next vsync.
+  AdvanceFrame();
+  EXPECT_ACTIONS("WillBeginImplFrame",
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
+  EXPECT_TRUE(client_->invalidate_needs_redraw());
+  client_->Reset();
+
+  // Android onDraw. This doesn't consume the single begin frame request.
+  scheduler_->SetNeedsPrepareTiles();
+  bool resourceless_software_draw = false;
+  bool skip_draw = false;
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
+  EXPECT_ACTIONS("ScheduledActionDrawIfPossible",
+                 "ScheduledActionPrepareTiles");
+  client_->Reset();
+
+  // Next vsync.
+  scheduler_->SetNeedsPrepareTiles();
+  AdvanceFrame();
+  EXPECT_ACTIONS("WillBeginImplFrame",
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
+  EXPECT_FALSE(client_->invalidate_needs_redraw());
+  client_->Reset();
+
+  // Android onDraw.
+  scheduler_->SetNeedsRedraw();
+  scheduler_->SetNeedsPrepareTiles();
+  client_->SetInvalidateNeedsRedraw(false);
+  skip_draw = true;
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
+  EXPECT_ACTIONS("ScheduledActionPrepareTiles");
+  client_->Reset();
+}
+
 TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   scheduler_settings_.using_synchronous_renderer_compositor = true;
   SetUpScheduler(EXTERNAL_BFS);
@@ -3050,7 +3110,9 @@ TEST_F(SchedulerTest, SynchronousCompositorCommitAndVerifyBeginFrameAcks) {
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
+  bool skip_draw = false;
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   client_->Reset();
@@ -3098,7 +3160,9 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
+  bool skip_draw = false;
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible",
                  "ScheduledActionPrepareTiles");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3107,7 +3171,8 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible",
                  "ScheduledActionPrepareTiles");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
@@ -3160,7 +3225,9 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = false;
-  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
+  bool skip_draw = false;
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -3188,7 +3255,8 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
 
   // Android onDraw.
   scheduler_->SetNeedsRedraw();
-  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());
   EXPECT_FALSE(scheduler_->PrepareTilesPending());
@@ -3208,7 +3276,9 @@ TEST_F(SchedulerTest, SynchronousCompositorResourcelessOnDrawWhenInvisible) {
 
   scheduler_->SetNeedsRedraw();
   bool resourceless_software_draw = true;
-  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw);
+  bool skip_draw = false;
+  scheduler_->OnDrawForLayerTreeFrameSink(resourceless_software_draw,
+                                          skip_draw);
   // SynchronousCompositor has to draw regardless of visibility.
   EXPECT_ACTIONS("ScheduledActionDrawIfPossible");
   EXPECT_FALSE(client_->IsInsideBeginImplFrame());

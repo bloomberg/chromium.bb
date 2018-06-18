@@ -1280,6 +1280,100 @@ class LayerTreeHostTestEarlyDamageCheckStops : public LayerTreeHostTest {
 // multi-threaded compositor.
 MULTI_THREAD_TEST_F(LayerTreeHostTestEarlyDamageCheckStops);
 
+// When settings->enable_early_damage_check is true, verifies that PrepareTiles
+// need not cause a draw when there is no visible damage. Here, a child layer is
+// translated outside of the viewport. After two draws, the early damage check
+// should prevent further draws, but preventing further draws should not prevent
+// PrepareTiles.
+class LayerTreeHostTestPrepareTilesWithoutDraw : public LayerTreeHostTest {
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->using_synchronous_renderer_compositor = true;
+    settings->enable_early_damage_check = true;
+  }
+
+ protected:
+  void SetupTree() override {
+    LayerTreeHostTest::SetupTree();
+    child_layer_ = Layer::Create();
+    layer_tree_host()->root_layer()->AddChild(child_layer_);
+
+    layer_tree_host()->SetViewportSizeAndScale(gfx::Size(10, 10), 1.f,
+                                               viz::LocalSurfaceId());
+
+    layer_tree_host()->root_layer()->SetBounds(gfx::Size(50, 50));
+    child_layer_->SetBounds(gfx::Size(50, 50));
+
+    // Translate the child layer past the viewport.
+    gfx::Transform translation;
+    translation.Translate(100, 100);
+    child_layer_->SetTransform(translation);
+    child_layer_->SetBounds(gfx::Size(50, 50));
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    int frame_number = layer_tree_host()->SourceFrameNumber();
+    if (frame_number > 3) {
+      EndTest();
+      return;
+    }
+
+    // Modify the child layer each frame.
+    float new_opacity = 0.9f / (frame_number + 1);
+    child_layer_->SetOpacity(new_opacity);
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void WillPrepareTilesOnThread(LayerTreeHostImpl* impl) override {
+    if (impl->active_tree()->source_frame_number() >= 0)
+      prepare_tiles_count_++;
+
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_EQ(1, prepare_tiles_count_);
+        break;
+      case 1:
+        EXPECT_EQ(2, prepare_tiles_count_);
+        break;
+      case 2:
+        EXPECT_EQ(3, prepare_tiles_count_);
+        break;
+    }
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    draw_count_++;
+
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        // There is actual damage as the layers are set up.
+        EXPECT_EQ(1, draw_count_);
+        break;
+      case 1:
+        // There is no damage, but draw because the early damage check
+        // didn't occur.
+        EXPECT_EQ(2, draw_count_);
+        break;
+      default:
+        // After the first two draws, the early damage check should kick
+        // in and prevent further draws.
+        ADD_FAILURE();
+    }
+  }
+
+  void AfterTest() override { EXPECT_EQ(2, draw_count_); }
+
+ private:
+  scoped_refptr<Layer> child_layer_;
+  int prepare_tiles_count_ = 0;
+  int draw_count_ = 0;
+};
+
+// This behavior is specific to Android WebView, which only uses
+// multi-threaded compositor.
+MULTI_THREAD_TEST_F(LayerTreeHostTestPrepareTilesWithoutDraw);
+
 // Verify CanDraw() is false until first commit.
 class LayerTreeHostTestCantDrawBeforeCommit : public LayerTreeHostTest {
  protected:
@@ -3839,12 +3933,12 @@ class OnDrawLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
         invalidate_callback_(std::move(invalidate_callback)) {}
 
   // TestLayerTreeFrameSink overrides.
-  void Invalidate() override { invalidate_callback_.Run(); }
+  void Invalidate(bool needs_draw) override { invalidate_callback_.Run(); }
 
   void OnDraw(bool resourceless_software_draw) {
     gfx::Transform identity;
     gfx::Rect empty_rect;
-    client_->OnDraw(identity, empty_rect, resourceless_software_draw);
+    client_->OnDraw(identity, empty_rect, resourceless_software_draw, false);
   }
 
  private:

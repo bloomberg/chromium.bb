@@ -78,7 +78,7 @@ class SynchronousLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
     weak_factory_.InvalidateWeakPtrs();
     viz::TestLayerTreeFrameSink::DetachFromClient();
   }
-  void Invalidate() override {
+  void Invalidate(bool needs_draw) override {
     if (frame_request_pending_)
       return;
     frame_request_pending_ = true;
@@ -108,7 +108,7 @@ class SynchronousLayerTreeFrameSink : public viz::TestLayerTreeFrameSink {
   void DispatchInvalidation() {
     frame_request_pending_ = false;
     client_->OnDraw(gfx::Transform(SkMatrix::I()), viewport_,
-                    use_software_renderer_);
+                    use_software_renderer_, false);
   }
 
   bool frame_request_pending_ = false;
@@ -362,8 +362,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidInvalidateContentOnImplSide(this);
   }
 
-  void InvalidateLayerTreeFrameSink() override {
-    LayerTreeHostImpl::InvalidateLayerTreeFrameSink();
+  void InvalidateLayerTreeFrameSink(bool needs_redraw) override {
+    LayerTreeHostImpl::InvalidateLayerTreeFrameSink(needs_redraw);
     test_hooks_->DidInvalidateLayerTreeFrameSink(this);
   }
 

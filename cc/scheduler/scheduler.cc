@@ -318,13 +318,15 @@ void Scheduler::SetVideoNeedsBeginFrames(bool video_needs_begin_frames) {
   ProcessScheduledActions();
 }
 
-void Scheduler::OnDrawForLayerTreeFrameSink(bool resourceless_software_draw) {
+void Scheduler::OnDrawForLayerTreeFrameSink(bool resourceless_software_draw,
+                                            bool skip_draw) {
   DCHECK(settings_.using_synchronous_renderer_compositor);
   DCHECK_EQ(state_machine_.begin_impl_frame_state(),
             SchedulerStateMachine::BeginImplFrameState::IDLE);
   DCHECK(begin_impl_frame_deadline_task_.IsCancelled());
 
   state_machine_.SetResourcelessSoftwareDraw(resourceless_software_draw);
+  state_machine_.SetSkipDraw(skip_draw);
   state_machine_.OnBeginImplFrameDeadline();
   ProcessScheduledActions();
 
@@ -774,7 +776,8 @@ void Scheduler::ProcessScheduledActions() {
         break;
       case SchedulerStateMachine::Action::INVALIDATE_LAYER_TREE_FRAME_SINK: {
         state_machine_.WillInvalidateLayerTreeFrameSink();
-        client_->ScheduledActionInvalidateLayerTreeFrameSink();
+        client_->ScheduledActionInvalidateLayerTreeFrameSink(
+            state_machine_.RedrawPending());
         break;
       }
     }

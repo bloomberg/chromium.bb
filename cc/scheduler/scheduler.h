@@ -44,7 +44,8 @@ class SchedulerClient {
   virtual void ScheduledActionActivateSyncTree() = 0;
   virtual void ScheduledActionBeginLayerTreeFrameSinkCreation() = 0;
   virtual void ScheduledActionPrepareTiles() = 0;
-  virtual void ScheduledActionInvalidateLayerTreeFrameSink() = 0;
+  virtual void ScheduledActionInvalidateLayerTreeFrameSink(
+      bool needs_redraw) = 0;
   virtual void ScheduledActionPerformImplSideInvalidation() = 0;
   virtual void DidFinishImplFrame() = 0;
   virtual void DidNotProduceFrame(const viz::BeginFrameAck& ack) = 0;
@@ -79,7 +80,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   void OnBeginFrameSourcePausedChanged(bool paused) override;
   bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
 
-  void OnDrawForLayerTreeFrameSink(bool resourceless_software_draw);
+  void OnDrawForLayerTreeFrameSink(bool resourceless_software_draw,
+                                   bool skip_draw);
 
   const SchedulerSettings& settings() const { return settings_; }
 

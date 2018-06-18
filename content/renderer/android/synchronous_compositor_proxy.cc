@@ -32,6 +32,7 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       max_page_scale_factor_(0.f),
       need_animate_scroll_(false),
       need_invalidate_count_(0u),
+      invalidate_needs_draw_(false),
       did_activate_pending_tree_count_(0u) {
   DCHECK(input_handler_proxy_);
 }
@@ -67,7 +68,7 @@ void SynchronousCompositorProxy::SetNeedsSynchronousAnimateInput() {
     SendSetNeedsBeginFramesIfNeeded();
   } else {
     need_animate_scroll_ = true;
-    Invalidate();
+    Invalidate(true);
   }
 }
 
@@ -95,8 +96,9 @@ void SynchronousCompositorProxy::UpdateRootLayerState(
   }
 }
 
-void SynchronousCompositorProxy::Invalidate() {
+void SynchronousCompositorProxy::Invalidate(bool needs_draw) {
   ++need_invalidate_count_;
+  invalidate_needs_draw_ |= needs_draw;
   SendAsyncRendererStateIfNeeded();
 }
 
@@ -115,6 +117,7 @@ void SynchronousCompositorProxy::PopulateCommonParams(
   params->min_page_scale_factor = min_page_scale_factor_;
   params->max_page_scale_factor = max_page_scale_factor_;
   params->need_invalidate_count = need_invalidate_count_;
+  params->invalidate_needs_draw = invalidate_needs_draw_;
   params->did_activate_pending_tree_count = did_activate_pending_tree_count_;
   if (!compute_scroll_called_via_ipc_)
     params->need_animate_scroll = need_animate_scroll_;
@@ -131,6 +134,7 @@ void SynchronousCompositorProxy::DemandDrawHwAsync(
 void SynchronousCompositorProxy::DemandDrawHw(
     const SyncCompositorDemandDrawHwParams& params,
     DemandDrawHwCallback callback) {
+  invalidate_needs_draw_ = false;
   hardware_draw_reply_ = std::move(callback);
 
   if (layer_tree_frame_sink_) {
@@ -148,6 +152,10 @@ void SynchronousCompositorProxy::DemandDrawHw(
     std::move(hardware_draw_reply_)
         .Run(common_renderer_params, 0u, 0u, base::nullopt);
   }
+}
+
+void SynchronousCompositorProxy::WillSkipDraw() {
+  layer_tree_frame_sink_->WillSkipDraw();
 }
 
 struct SynchronousCompositorProxy::SharedMemoryWithSize {
@@ -173,6 +181,7 @@ void SynchronousCompositorProxy::ZeroSharedMemory() {
 void SynchronousCompositorProxy::DemandDrawSw(
     const SyncCompositorDemandDrawSwParams& params,
     DemandDrawSwCallback callback) {
+  invalidate_needs_draw_ = false;
   software_draw_reply_ = std::move(callback);
   if (layer_tree_frame_sink_) {
     SkCanvas* sk_canvas_for_draw = SynchronousCompositorGetSkCanvas();
