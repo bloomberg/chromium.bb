@@ -37,11 +37,10 @@ class ResumeDelegate : public PageLoadCappingInfoBarDelegate {
   base::string16 GetMessageText() const override {
     return l10n_util::GetStringUTF16(IDS_PAGE_CAPPING_STOPPED_TITLE);
   }
-  base::string16 GetButtonLabel(InfoBarButton button) const override {
-    DCHECK_EQ(ConfirmInfoBarDelegate::BUTTON_OK, button);
+  base::string16 GetLinkText() const override {
     return l10n_util::GetStringUTF16(IDS_PAGE_CAPPING_CONTINUE_MESSAGE);
   }
-  bool Accept() override {
+  bool LinkClicked(WindowOpenDisposition disposition) override {
     RecordInteractionUMA(InfoBarInteraction::kResumedPage);
     if (pause_callback_.is_null())
       return true;
@@ -61,8 +60,8 @@ class ResumeDelegate : public PageLoadCappingInfoBarDelegate {
 class PauseDelegate : public PageLoadCappingInfoBarDelegate {
  public:
   // This object is destroyed wqhen the page is terminated, and methods related
-  // to functionality of the infobar (E.g., Accept()), are not called from page
-  // destructors. This object is also destroyed on all non-same page
+  // to functionality of the infobar (E.g., LinkClicked()), are not called from
+  // page destructors. This object is also destroyed on all non-same page
   // navigations.
   // |pause_callback| is a callback that will pause subresource loading on the
   // page.
@@ -78,12 +77,11 @@ class PauseDelegate : public PageLoadCappingInfoBarDelegate {
         static_cast<int>(bytes_threshold_ / 1024 / 1024));
   }
 
-  base::string16 GetButtonLabel(InfoBarButton button) const override {
-    DCHECK_EQ(ConfirmInfoBarDelegate::BUTTON_OK, button);
+  base::string16 GetLinkText() const override {
     return l10n_util::GetStringUTF16(IDS_PAGE_CAPPING_STOP_MESSAGE);
   }
 
-  bool Accept() override {
+  bool LinkClicked(WindowOpenDisposition disposition) override {
     RecordInteractionUMA(InfoBarInteraction::kPausedPage);
     if (!pause_callback_.is_null()) {
       // Pause subresouce loading on the page.
@@ -149,5 +147,5 @@ bool PageLoadCappingInfoBarDelegate::ShouldExpire(
 }
 
 int PageLoadCappingInfoBarDelegate::GetButtons() const {
-  return ConfirmInfoBarDelegate::BUTTON_OK;
+  return BUTTON_NONE;
 }

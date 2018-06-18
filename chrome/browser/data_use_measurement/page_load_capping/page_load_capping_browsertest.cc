@@ -13,7 +13,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
-#include "chrome/browser/infobars/infobar_responder.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -132,11 +131,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingBlocksLoads) {
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  InfoBarResponder infobar_responder(InfoBarService::FromWebContents(contents),
-                                     InfoBarResponder::ACCEPT);
   // Load a mostly empty page.
   ui_test_utils::NavigateToURL(
       browser(), https_test_server_->GetURL("/page_capping.html"));
+  // Pause sub-resource loading.
+  InfoBarService::FromWebContents(contents)
+      ->infobar_at(0)
+      ->delegate()
+      ->AsConfirmInfoBarDelegate()
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
 
   // Adds images to the page. They should not be allowed to load.
   // Running this 20 times makes 20 round trips to the renderer, making it very
@@ -171,11 +174,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  InfoBarResponder infobar_responder(InfoBarService::FromWebContents(contents),
-                                     InfoBarResponder::ACCEPT);
   // Load a mostly empty page.
   ui_test_utils::NavigateToURL(
       browser(), https_test_server_->GetURL("/page_capping.html"));
+  // Pause sub-resource loading.
+  InfoBarService::FromWebContents(contents)
+      ->infobar_at(0)
+      ->delegate()
+      ->AsConfirmInfoBarDelegate()
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
 
   // Adds an image to the page. It should not be allowed to load at first.
   // PageLoadCappingBlocksLoads tests that it is not loaded more robustly
@@ -192,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
       ->infobar_at(0)
       ->delegate()
       ->AsConfirmInfoBarDelegate()
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
 
   // An image should be fetched because subresource loading was paused then
   // resumed.
@@ -212,8 +219,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingAllowLoads) {
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  InfoBarResponder infobar_responder(InfoBarService::FromWebContents(contents),
-                                     InfoBarResponder::DISMISS);
   // Load a mostly empty page.
   ui_test_utils::NavigateToURL(
       browser(), https_test_server_->GetURL("/page_capping.html"));
@@ -245,11 +250,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  InfoBarResponder infobar_responder(InfoBarService::FromWebContents(contents),
-                                     InfoBarResponder::ACCEPT);
   // Load a mostly empty page.
   ui_test_utils::NavigateToURL(
       browser(), https_test_server_->GetURL("/page_capping.html"));
+  // Pause sub-resource loading.
+  InfoBarService::FromWebContents(contents)
+      ->infobar_at(0)
+      ->delegate()
+      ->AsConfirmInfoBarDelegate()
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
   content::TestNavigationObserver load_observer(contents);
 
   // Adds an image to the page. It should be allowed to load.
@@ -298,11 +307,15 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  InfoBarResponder infobar_responder(InfoBarService::FromWebContents(contents),
-                                     InfoBarResponder::ACCEPT);
   // Load a mostly empty page.
   ui_test_utils::NavigateToURL(
       browser(), https_test_server_->GetURL("/page_capping.html"));
+  // Pause sub-resource loading.
+  InfoBarService::FromWebContents(contents)
+      ->infobar_at(0)
+      ->delegate()
+      ->AsConfirmInfoBarDelegate()
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
   content::TestNavigationObserver load_observer(contents);
 
   // Adds an image to the page. It should be allowed to load.
@@ -339,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
       ->infobar_at(0)
       ->delegate()
       ->AsConfirmInfoBarDelegate()
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
 
   // An image should be fetched because subresource loading was resumed.
   if (images_attempted() < 1u)
