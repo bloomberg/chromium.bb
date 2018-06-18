@@ -26,7 +26,7 @@ class URLLoaderFactoryGetter;
 //      of net::URLRequestFailedJob
 //   -requests by the browser
 //
-// Prefer not to use this class. In order of easy of use & simplicity:
+// Prefer not to use this class. In order of ease of use & simplicity:
 //  -if you need to serve static data, use net::test::EmbeddedTestServer and
 //   serve data from the source tree (e.g. in content/test/data)
 //  -if you need to control the response data at runtime, then use
@@ -38,8 +38,6 @@ class URLLoaderFactoryGetter;
 //   this helper class
 //
 // Notes:
-//  -intercepting frame requests doesn't work yet for non network-service case
-//   (will work once http://crbug.com/747130 is fixed)
 //  -the callback is called on the UI or IO threads depending on the factory
 //   that was hooked
 //    -this is done to avoid changing message order
