@@ -311,11 +311,23 @@ class HidApiTest : public ShellApiTest {
   std::unique_ptr<FakeHidManager> fake_hid_manager_;
 };
 
-IN_PROC_BROWSER_TEST_F(HidApiTest, HidApp) {
+// Flaky in tsan builds. http://crbug.com/853915
+#ifdef THREAD_SANITIZER
+#define MAYBE_HidApp DISABLED_HidApp
+#else
+#define MAYBE_HidApp HidApp
+#endif
+IN_PROC_BROWSER_TEST_F(HidApiTest, MAYBE_HidApp) {
   ASSERT_TRUE(RunAppTest("api_test/hid/api")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceAdded) {
+// Flaky in tsan builds. http://crbug.com/853915
+#ifdef THREAD_SANITIZER
+#define MAYBE_OnDeviceAdded DISABLED_OnDeviceAdded
+#else
+#define MAYBE_OnDeviceAdded OnDeviceAdded
+#endif
+IN_PROC_BROWSER_TEST_F(HidApiTest, MAYBE_OnDeviceAdded) {
   ExtensionTestMessageListener load_listener("loaded", false);
   ExtensionTestMessageListener result_listener("success", false);
   result_listener.set_failure_message("failure");
@@ -331,7 +343,13 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceAdded) {
   EXPECT_EQ("success", result_listener.message());
 }
 
-IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceRemoved) {
+// Flaky in tsan builds. http://crbug.com/853915
+#ifdef THREAD_SANITIZER
+#define MAYBE_OnDeviceRemoved DISABLED_OnDeviceRemoved
+#else
+#define MAYBE_OnDeviceRemoved OnDeviceRemoved
+#endif
+IN_PROC_BROWSER_TEST_F(HidApiTest, MAYBE_OnDeviceRemoved) {
   ExtensionTestMessageListener load_listener("loaded", false);
   ExtensionTestMessageListener result_listener("success", false);
   result_listener.set_failure_message("failure");
@@ -348,7 +366,13 @@ IN_PROC_BROWSER_TEST_F(HidApiTest, OnDeviceRemoved) {
   EXPECT_EQ("success", result_listener.message());
 }
 
-IN_PROC_BROWSER_TEST_F(HidApiTest, GetUserSelectedDevices) {
+// Flaky in tsan builds. http://crbug.com/853907
+#ifdef THREAD_SANITIZER
+#define MAYBE_GetUserSelectedDevices DISABLED_GetUserSelectedDevices
+#else
+#define MAYBE_GetUserSelectedDevices GetUserSelectedDevices
+#endif
+IN_PROC_BROWSER_TEST_F(HidApiTest, MAYBE_GetUserSelectedDevices) {
   ExtensionTestMessageListener open_listener("opened_device", false);
 
   TestExtensionsAPIClient test_api_client;
