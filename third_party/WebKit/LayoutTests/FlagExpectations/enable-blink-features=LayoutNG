@@ -412,7 +412,6 @@ crbug.com/591099 fast/css-generated-content/first-letter-next-sibling-crash.html
 crbug.com/591099 fast/css-generated-content/float-first-letter-siblings-convert-to-inline.html [ Crash ]
 crbug.com/591099 fast/css-grid-layout/flex-and-minmax-content-resolution-columns.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/grid-align-baseline-vertical.html [ Failure ]
-crbug.com/591099 fast/css-grid-layout/grid-self-baseline-01.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/grid-self-baseline-02-b.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/grid-self-baseline-02.html [ Failure ]
 crbug.com/591099 fast/css-grid-layout/grid-self-baseline-05.html [ Failure ]
