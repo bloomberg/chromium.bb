@@ -18,6 +18,7 @@
 namespace chromeos {
 
 class ExistingUserController;
+class LoginDisplayMojo;
 class OobeUIDialogDelegate;
 class UserBoardViewMojo;
 class UserSelectionScreen;
@@ -64,7 +65,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   }
 
   // LoginDisplayHost:
-  LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate) override;
+  LoginDisplay* GetLoginDisplay() override;
   gfx::NativeWindow GetNativeWindow() const override;
   OobeUI* GetOobeUI() const override;
   WebUILoginView* GetWebUILoginView() const override;
@@ -115,6 +116,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // Callback that should be executed the authentication result is available.
   AuthenticateUserCallback on_authenticated_;
+
+  std::unique_ptr<LoginDisplayMojo> login_display_;
 
   std::unique_ptr<UserBoardViewMojo> user_board_view_mojo_;
   std::unique_ptr<UserSelectionScreen> user_selection_screen_;

@@ -27,7 +27,7 @@ class LoginDisplayWebUI : public LoginDisplay,
                           public SigninScreenHandlerDelegate,
                           public ui::UserActivityObserver {
  public:
-  explicit LoginDisplayWebUI(LoginDisplay::Delegate* delegate);
+  LoginDisplayWebUI();
   ~LoginDisplayWebUI() override;
 
   // LoginDisplay implementation:

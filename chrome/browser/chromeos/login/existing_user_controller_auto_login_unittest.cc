@@ -51,9 +51,8 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
     mock_login_display_ = new MockLoginDisplay();
     arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
 
-    EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
-        .Times(1)
-        .WillOnce(Return(mock_login_display_));
+    ON_CALL(*mock_login_display_host_, GetLoginDisplay())
+        .WillByDefault(Return(mock_login_display_));
 
     EXPECT_CALL(*mock_user_manager_, Shutdown()).Times(AnyNumber());
     EXPECT_CALL(*mock_user_manager_, FindUser(_)).WillRepeatedly(ReturnNull());

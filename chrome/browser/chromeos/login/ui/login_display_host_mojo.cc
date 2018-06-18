@@ -28,7 +28,8 @@ constexpr char kLoginDisplay[] = "login";
 }  // namespace
 
 LoginDisplayHostMojo::LoginDisplayHostMojo()
-    : user_board_view_mojo_(std::make_unique<UserBoardViewMojo>()),
+    : login_display_(std::make_unique<LoginDisplayMojo>(this)),
+      user_board_view_mojo_(std::make_unique<UserBoardViewMojo>()),
       user_selection_screen_(
           std::make_unique<ChromeUserSelectionScreen>(kLoginDisplay)),
       weak_factory_(this) {
@@ -90,13 +91,8 @@ void LoginDisplayHostMojo::ShowSigninUI(const std::string& email) {
   dialog_->Show(true /*closable_by_esc*/);
 }
 
-LoginDisplay* LoginDisplayHostMojo::CreateLoginDisplay(
-    LoginDisplay::Delegate* delegate) {
-  user_selection_screen_->SetLoginDisplayDelegate(delegate);
-  LoginDisplayMojo* login_display = new LoginDisplayMojo(delegate, this);
-  if (GetOobeUI())
-    GetOobeUI()->signin_screen_handler()->SetDelegate(login_display);
-  return login_display;
+LoginDisplay* LoginDisplayHostMojo::GetLoginDisplay() {
+  return login_display_.get();
 }
 
 gfx::NativeWindow LoginDisplayHostMojo::GetNativeWindow() const {
@@ -170,6 +166,7 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
   // There can only be one |ExistingUserController| instance at a time.
   existing_user_controller_.reset();
   existing_user_controller_ = std::make_unique<ExistingUserController>(this);
+  login_display_->set_delegate(existing_user_controller_.get());
 
   // We need auth attempt results to notify views-based lock screen.
   existing_user_controller_->set_login_status_consumer(this);

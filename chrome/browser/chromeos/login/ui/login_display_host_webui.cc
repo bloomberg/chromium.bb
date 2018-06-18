@@ -490,6 +490,8 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   manager->Initialize(SOUND_STARTUP,
                       bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
+
+  login_display_ = std::make_unique<LoginDisplayWebUI>();
 }
 
 LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
@@ -528,10 +530,8 @@ LoginDisplayHostWebUI::~LoginDisplayHostWebUI() {
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, LoginDisplayHost:
 
-LoginDisplay* LoginDisplayHostWebUI::CreateLoginDisplay(
-    LoginDisplay::Delegate* delegate) {
-  login_display_ = new LoginDisplayWebUI(delegate);
-  return login_display_;
+LoginDisplay* LoginDisplayHostWebUI::GetLoginDisplay() {
+  return login_display_.get();
 }
 
 gfx::NativeWindow LoginDisplayHostWebUI::GetNativeWindow() const {
@@ -651,8 +651,7 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   existing_user_controller_.reset(new ExistingUserController(this));
 
   if (!signin_screen_controller_.get()) {
-    signin_screen_controller_.reset(
-        new SignInScreenController(GetOobeUI(), login_display_->delegate()));
+    signin_screen_controller_.reset(new SignInScreenController(GetOobeUI()));
   }
 
   SetOobeProgressBarVisible(oobe_progress_bar_visible_ = false);
@@ -660,8 +659,8 @@ void LoginDisplayHostWebUI::OnStartUserAdding() {
   existing_user_controller_->Init(
       user_manager::UserManager::Get()->GetUsersAllowedForMultiProfile());
   CHECK(login_display_);
-  GetOobeUI()->ShowSigninScreen(LoginScreenContext(), login_display_,
-                                login_display_);
+  GetOobeUI()->ShowSigninScreen(LoginScreenContext(), login_display_.get(),
+                                login_display_.get());
 }
 
 void LoginDisplayHostWebUI::CancelUserAdding() {
@@ -701,10 +700,10 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
   DVLOG(1) << "Starting sign in screen";
   existing_user_controller_.reset();  // Only one controller in a time.
   existing_user_controller_.reset(new ExistingUserController(this));
+  login_display_->set_delegate(existing_user_controller_.get());
 
   if (!signin_screen_controller_.get()) {
-    signin_screen_controller_.reset(
-        new SignInScreenController(GetOobeUI(), login_display_->delegate()));
+    signin_screen_controller_.reset(new SignInScreenController(GetOobeUI()));
   }
 
   // TODO(crbug.com/784495): This is always false, since
@@ -714,7 +713,8 @@ void LoginDisplayHostWebUI::OnStartSignInScreen(
   existing_user_controller_->Init(user_manager::UserManager::Get()->GetUsers());
 
   CHECK(login_display_);
-  GetOobeUI()->ShowSigninScreen(context, login_display_, login_display_);
+  GetOobeUI()->ShowSigninScreen(context, login_display_.get(),
+                                login_display_.get());
   TRACE_EVENT_ASYNC_STEP_INTO0("ui", "ShowLoginWebUI", kShowLoginWebUIid,
                                "WaitForScreenStateInitialize");
 
@@ -1135,7 +1135,7 @@ void LoginDisplayHostWebUI::OnLoginPromptVisible() {
 
 // static
 void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
-  static_cast<LoginDisplayHostWebUI*>(default_host())
+  default_host()
       ->GetOobeUI()
       ->GetGaiaScreenView()
       ->DisableRestrictiveProxyCheckForTest();

@@ -204,22 +204,21 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
 
     DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
 
-    mock_login_display_host_.reset(new MockLoginDisplayHost());
-    mock_login_display_ = new MockLoginDisplay();
+    mock_login_display_host_ = std::make_unique<MockLoginDisplayHost>();
+    mock_login_display_ = std::make_unique<MockLoginDisplay>();
     SetUpLoginDisplay();
   }
 
   virtual void SetUpSessionManager() {}
 
   virtual void SetUpLoginDisplay() {
-    EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
-        .Times(1)
-        .WillOnce(Return(mock_login_display_));
-    EXPECT_CALL(*mock_login_display_host_.get(), GetNativeWindow())
+    EXPECT_CALL(*mock_login_display_host_, GetLoginDisplay())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(mock_login_display_.get()));
+    EXPECT_CALL(*mock_login_display_host_, GetNativeWindow())
         .Times(1)
         .WillOnce(ReturnNull());
-    EXPECT_CALL(*mock_login_display_host_.get(), OnPreferencesChanged())
-        .Times(1);
+    EXPECT_CALL(*mock_login_display_host_, OnPreferencesChanged()).Times(1);
     EXPECT_CALL(*mock_login_display_, Init(_, false, true, true)).Times(1);
   }
 
@@ -289,9 +288,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
 
   std::unique_ptr<ExistingUserController> existing_user_controller_;
 
-  // |mock_login_display_| is owned by the ExistingUserController, which calls
-  // CreateLoginDisplay() on the |mock_login_display_host_| to get it.
-  MockLoginDisplay* mock_login_display_ = nullptr;
+  std::unique_ptr<MockLoginDisplay> mock_login_display_;
   std::unique_ptr<MockLoginDisplayHost> mock_login_display_host_;
 
   // Mock URLFetcher.
@@ -481,9 +478,9 @@ class ExistingUserControllerPublicSessionTest
   }
 
   void SetUpLoginDisplay() override {
-    EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
-        .Times(1)
-        .WillOnce(Return(mock_login_display_));
+    EXPECT_CALL(*mock_login_display_host_, GetLoginDisplay())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(mock_login_display_.get()));
     EXPECT_CALL(*mock_login_display_host_.get(), GetNativeWindow())
         .Times(AnyNumber())
         .WillRepeatedly(ReturnNull());
@@ -955,14 +952,13 @@ class ExistingUserControllerActiveDirectoryUserWhitelistTest
   }
 
   void SetUpLoginDisplay() override {
-    EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
-        .Times(1)
-        .WillOnce(Return(mock_login_display_));
-    EXPECT_CALL(*mock_login_display_host_.get(), GetNativeWindow())
+    EXPECT_CALL(*mock_login_display_host_, GetLoginDisplay())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(mock_login_display_.get()));
+    EXPECT_CALL(*mock_login_display_host_, GetNativeWindow())
         .Times(1)
         .WillOnce(ReturnNull());
-    EXPECT_CALL(*mock_login_display_host_.get(), OnPreferencesChanged())
-        .Times(1);
+    EXPECT_CALL(*mock_login_display_host_, OnPreferencesChanged()).Times(1);
     EXPECT_CALL(*mock_login_display_, Init(_, false, true, false)).Times(1);
   }
 };

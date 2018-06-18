@@ -156,10 +156,10 @@ void WebUIScreenLocker::LockScreen() {
   LoadURL(GURL(kLoginURL));
   OnLockWindowReady();
 
-  signin_screen_controller_.reset(
-      new SignInScreenController(GetOobeUI(), this));
+  signin_screen_controller_.reset(new SignInScreenController(GetOobeUI()));
 
-  login_display_.reset(new LoginDisplayWebUI(this));
+  login_display_.reset(new LoginDisplayWebUI());
+  login_display_->set_delegate(this);
   login_display_->set_parent_window(GetNativeWindow());
   login_display_->Init(screen_locker_->users(), false, true, false);
 

@@ -24,17 +24,14 @@
 
 namespace chromeos {
 
-LoginDisplayMojo::LoginDisplayMojo(Delegate* delegate,
-                                   LoginDisplayHostMojo* host)
-    : LoginDisplay(delegate), host_(host) {
+LoginDisplayMojo::LoginDisplayMojo(LoginDisplayHostMojo* host) : host_(host) {
   user_manager::UserManager::Get()->AddObserver(this);
+  if (host_->GetOobeUI())
+    host_->GetOobeUI()->signin_screen_handler()->SetDelegate(this);
 }
 
 LoginDisplayMojo::~LoginDisplayMojo() {
   user_manager::UserManager::Get()->RemoveObserver(this);
-
-  // Make sure SigninScreenHandler does not hold a reference to LoginDisplayMojo
-  // after it is deleted.
   if (host_->GetOobeUI())
     host_->GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
 }

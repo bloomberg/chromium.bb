@@ -52,10 +52,8 @@ class LoginDisplayHost {
   // Returns the default LoginDisplayHost instance if it has been created.
   static LoginDisplayHost* default_host() { return default_host_; }
 
-  // Creates UI implementation specific login display instance (views/WebUI).
-  // The caller takes ownership of the returned value.
-  virtual LoginDisplay* CreateLoginDisplay(
-      LoginDisplay::Delegate* delegate) = 0;
+  // Returns an unowned pointer to the LoginDisplay* instance.
+  virtual LoginDisplay* GetLoginDisplay() = 0;
 
   // Returns corresponding native window.
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
