@@ -28,9 +28,19 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 
 }  // namespace
 
+@interface FormSuggestionView ()
+
+// Creates and adds subviews.
+- (void)setupSubviews;
+
+@end
+
 @implementation FormSuggestionView {
   // The FormSuggestions that are displayed by this view.
   NSArray* _suggestions;
+
+  // Handles user interactions.
+  id<FormSuggestionViewClient> _client;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -38,62 +48,74 @@ const CGFloat kSuggestionHorizontalMargin = 6;
                   suggestions:(NSArray*)suggestions {
   self = [super initWithFrame:frame];
   if (self) {
+    _client = client;
     _suggestions = [suggestions copy];
-
-    self.showsVerticalScrollIndicator = NO;
-    self.showsHorizontalScrollIndicator = NO;
-    self.bounces = NO;
-    self.canCancelContentTouches = YES;
-
-    UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
-    stackView.axis = UILayoutConstraintAxisHorizontal;
-    stackView.layoutMarginsRelativeArrangement = YES;
-    stackView.layoutMargins = UIEdgeInsetsMake(
-        kSuggestionVerticalMargin, kSuggestionHorizontalMargin,
-        kSuggestionVerticalMargin, kSuggestionHorizontalMargin);
-    stackView.spacing = kSuggestionHorizontalMargin;
-    stackView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:stackView];
-
-    void (^setupBlock)(FormSuggestion* suggestion, NSUInteger idx, BOOL* stop) =
-        ^(FormSuggestion* suggestion, NSUInteger idx, BOOL* stop) {
-          BOOL userInteractionEnabled =
-              suggestion.identifier !=
-              autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
-          UIView* label = [[FormSuggestionLabel alloc]
-                  initWithSuggestion:suggestion
-                               index:idx
-              userInteractionEnabled:userInteractionEnabled
-                      numSuggestions:[_suggestions count]
-                              client:client];
-          [stackView addArrangedSubview:label];
-        };
-    [_suggestions enumerateObjectsUsingBlock:setupBlock];
-    AddSameConstraints(stackView, self);
-    [stackView.heightAnchor constraintEqualToAnchor:self.heightAnchor].active =
-        true;
   }
   return self;
 }
 
+#pragma mark - UIView
+
 - (void)willMoveToSuperview:(UIView*)newSuperview {
-  FormSuggestion* firstSuggestion = [_suggestions firstObject];
-  if (firstSuggestion.identifier ==
-      autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING) {
-    UIView* firstLabel = [self.subviews firstObject];
-    DCHECK(firstLabel);
-    const CGFloat firstLabelWidth =
-        CGRectGetWidth([firstLabel frame]) + kSuggestionHorizontalMargin;
-    dispatch_time_t popTime =
-        dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC);
-    __weak FormSuggestionView* weakSelf = self;
-    dispatch_after(popTime, dispatch_get_main_queue(), ^{
-      [weakSelf setContentOffset:CGPointMake(firstLabelWidth,
-                                             weakSelf.contentOffset.y)
-                        animated:YES];
-    });
+  // Create and add subviews the first time this moves to a superview.
+  if (newSuperview && self.subviews.count == 0) {
+    [self setupSubviews];
   }
   [super willMoveToSuperview:newSuperview];
+}
+
+#pragma mark - Helper methods
+
+- (void)setupSubviews {
+  self.showsVerticalScrollIndicator = NO;
+  self.showsHorizontalScrollIndicator = NO;
+  self.bounces = NO;
+  self.canCancelContentTouches = YES;
+
+  UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
+  stackView.axis = UILayoutConstraintAxisHorizontal;
+  stackView.layoutMarginsRelativeArrangement = YES;
+  stackView.layoutMargins =
+      UIEdgeInsetsMake(kSuggestionVerticalMargin, kSuggestionHorizontalMargin,
+                       kSuggestionVerticalMargin, kSuggestionHorizontalMargin);
+  stackView.spacing = kSuggestionHorizontalMargin;
+  stackView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:stackView];
+  AddSameConstraints(stackView, self);
+  [stackView.heightAnchor constraintEqualToAnchor:self.heightAnchor].active =
+      true;
+
+  auto setupBlock = ^(FormSuggestion* suggestion, NSUInteger idx, BOOL* stop) {
+    // Disable user interaction with suggestion if it is Google Pay logo.
+    BOOL userInteractionEnabled =
+        suggestion.identifier != autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
+
+    UIView* label =
+        [[FormSuggestionLabel alloc] initWithSuggestion:suggestion
+                                                  index:idx
+                                 userInteractionEnabled:userInteractionEnabled
+                                         numSuggestions:[_suggestions count]
+                                                 client:_client];
+    [stackView addArrangedSubview:label];
+
+    // If first suggestion is Google Pay logo animate it below the fold.
+    if (idx == 0U &&
+        suggestion.identifier == autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING) {
+      const CGFloat firstLabelWidth =
+          [label systemLayoutSizeFittingSize:UILayoutFittingCompressedSize]
+              .width +
+          kSuggestionHorizontalMargin;
+      dispatch_time_t popTime =
+          dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC);
+      __weak FormSuggestionView* weakSelf = self;
+      dispatch_after(popTime, dispatch_get_main_queue(), ^{
+        [weakSelf setContentOffset:CGPointMake(firstLabelWidth,
+                                               weakSelf.contentOffset.y)
+                          animated:YES];
+      });
+    }
+  };
+  [_suggestions enumerateObjectsUsingBlock:setupBlock];
 }
 
 - (NSArray*)suggestions {
