@@ -252,6 +252,11 @@ void PaintOpWriter::Write(const DrawImage& draw_image,
 }
 
 void PaintOpWriter::WriteImage(uint32_t transfer_cache_entry_id) {
+  if (transfer_cache_entry_id == kInvalidImageTransferCacheEntryId) {
+    Write(static_cast<uint8_t>(PaintOp::SerializedImageType::kNoImage));
+    return;
+  }
+
   Write(
       static_cast<uint8_t>(PaintOp::SerializedImageType::kTransferCacheEntry));
   Write(transfer_cache_entry_id);
