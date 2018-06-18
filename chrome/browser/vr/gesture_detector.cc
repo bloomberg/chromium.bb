@@ -41,10 +41,11 @@ GestureDetector::~GestureDetector() = default;
 
 std::unique_ptr<GestureList> GestureDetector::DetectGestures(
     const TouchInfo& input_touch_info,
+    base::TimeTicks current_timestamp,
     bool force_cancel) {
   touch_position_changed_ = UpdateCurrentTouchPoint(input_touch_info);
   TouchInfo touch_info = input_touch_info;
-  ExtrapolateTouchInfo(&touch_info);
+  ExtrapolateTouchInfo(&touch_info, current_timestamp);
   if (touch_position_changed_)
     UpdateOverallVelocity(touch_info);
 
@@ -184,8 +185,8 @@ bool GestureDetector::UpdateCurrentTouchPoint(const TouchInfo& touch_info) {
   return false;
 }
 
-void GestureDetector::ExtrapolateTouchInfo(TouchInfo* touch_info) {
-  base::TimeTicks current_timestamp = base::TimeTicks::Now();
+void GestureDetector::ExtrapolateTouchInfo(TouchInfo* touch_info,
+                                           base::TimeTicks current_timestamp) {
   const bool effectively_scrolling =
       state_->label == SCROLLING || state_->label == POST_SCROLL;
   if (effectively_scrolling && extrapolated_touch_ < kMaxNumOfExtrapolations &&
