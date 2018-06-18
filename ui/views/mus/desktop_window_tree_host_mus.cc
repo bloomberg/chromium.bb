@@ -294,15 +294,10 @@ bool DesktopWindowTreeHostMus::ShouldSendClientAreaToServer() const {
 }
 
 void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
-  // |TYPE_WINDOW| and |TYPE_PANEL| are forced to transparent as otherwise the
-  // window is opaque and the client decorations drawn by the window manager
-  // would not be seen.
-  const bool transparent =
-      params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW ||
-      params.type == Widget::InitParams::TYPE_WINDOW ||
-      params.type == Widget::InitParams::TYPE_PANEL;
-  content_window()->SetTransparent(transparent);
-  window()->SetTransparent(transparent);
+  const bool translucent =
+      MusClient::ShouldMakeWidgetWindowsTranslucent(params);
+  content_window()->SetTransparent(translucent);
+  window()->SetTransparent(translucent);
 
   window()->SetProperty(aura::client::kShowStateKey, params.show_state);
 

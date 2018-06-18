@@ -103,6 +103,10 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   static bool ShouldCreateDesktopNativeWidgetAura(
       const Widget::InitParams& init_params);
 
+  // Returns true if the windows backing the Widget should be made translucent.
+  static bool ShouldMakeWidgetWindowsTranslucent(
+      const Widget::InitParams& params);
+
   // Returns the properties to supply to mus when creating a window.
   static std::map<std::string, std::vector<uint8_t>>
   ConfigurePropertiesFromParams(const Widget::InitParams& init_params);
