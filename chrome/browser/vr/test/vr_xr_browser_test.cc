@@ -54,7 +54,7 @@ VrXrBrowserTestBase::~VrXrBrowserTestBase() = default;
 #endif
 
 void VrXrBrowserTestBase::SetUp() {
-  // Set the environment variable to use the mock OpenVR client.
+  // Set the environment variable to use the mock OpenVR client
   EXPECT_TRUE(env_->SetVar(kVrOverrideEnvVar, MAKE_ABSOLUTE(kVrOverrideVal)));
   EXPECT_TRUE(
       env_->SetVar(kVrConfigPathEnvVar, MAKE_ABSOLUTE(kVrConfigPathVal)));
