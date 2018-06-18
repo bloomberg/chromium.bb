@@ -12,12 +12,6 @@
 
 namespace {
 
-Profile* ProfileForWebContents(content::WebContents* web_contents) {
-  if (!web_contents)
-    return nullptr;
-  return Profile::FromBrowserContext(web_contents->GetBrowserContext());
-}
-
 gfx::NativeWindow NativeWindowForWebContents(content::WebContents* contents) {
   if (!contents)
     return nullptr;
@@ -49,7 +43,9 @@ class ExtensionInstallPromptShowParams::WebContentsDestructionObserver
 
 ExtensionInstallPromptShowParams::ExtensionInstallPromptShowParams(
     content::WebContents* contents)
-    : profile_(ProfileForWebContents(contents)),
+    : profile_(contents
+                   ? Profile::FromBrowserContext(contents->GetBrowserContext())
+                   : nullptr),
       parent_web_contents_(contents),
       parent_web_contents_destroyed_(false),
       parent_window_(NativeWindowForWebContents(contents)) {
