@@ -8,7 +8,6 @@ namespace base {
 
 std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
-    AnnotateCallback annotator,
     NativeStackSamplerTestDelegate* test_delegate) {
   return std::unique_ptr<NativeStackSampler>();
 }

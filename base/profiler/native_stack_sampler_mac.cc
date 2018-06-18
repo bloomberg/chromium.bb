@@ -468,27 +468,28 @@ class ScopedSuspendThread {
 class NativeStackSamplerMac : public NativeStackSampler {
  public:
   NativeStackSamplerMac(mach_port_t thread_port,
-                        AnnotateCallback annotator,
                         NativeStackSamplerTestDelegate* test_delegate);
   ~NativeStackSamplerMac() override;
 
   // StackSamplingProfiler::NativeStackSampler:
   void ProfileRecordingStarting(
       std::vector<StackSamplingProfiler::Module>* modules) override;
-  void RecordStackSample(StackBuffer* stack_buffer,
-                         StackSamplingProfiler::Sample* sample) override;
+  std::vector<StackSamplingProfiler::Frame> RecordStackFrames(
+      StackBuffer* stack_buffer,
+      StackSamplingProfiler::SamplingProfileBuilder* profile_builder) override;
   void ProfileRecordingStopped() override;
 
  private:
   // Suspends the thread with |thread_port_|, copies its stack and resumes the
-  // thread, then records the stack frames and associated modules into |sample|.
-  void SuspendThreadAndRecordStack(StackBuffer* stack_buffer,
-                                   StackSamplingProfiler::Sample* sample);
+  // thread.
+  // Returns a vector of frames which record the information of the stack frames
+  // and associated modules.
+  std::vector<StackSamplingProfiler::Frame> SuspendThreadAndRecordStack(
+      StackBuffer* stack_buffer,
+      StackSamplingProfiler::SamplingProfileBuilder* profile_builder);
 
   // Weak reference: Mach port for thread being profiled.
   mach_port_t thread_port_;
-
-  const AnnotateCallback annotator_;
 
   NativeStackSamplerTestDelegate* const test_delegate_;
 
@@ -512,15 +513,11 @@ class NativeStackSamplerMac : public NativeStackSampler {
 
 NativeStackSamplerMac::NativeStackSamplerMac(
     mach_port_t thread_port,
-    AnnotateCallback annotator,
     NativeStackSamplerTestDelegate* test_delegate)
     : thread_port_(thread_port),
-      annotator_(annotator),
       test_delegate_(test_delegate),
       thread_stack_base_address_(
           pthread_get_stackaddr_np(pthread_from_mach_thread_np(thread_port))) {
-  DCHECK(annotator_);
-
   GetSigtrampRange(&sigtramp_start_, &sigtramp_end_);
   // This class suspends threads, and those threads might be suspended in dyld.
   // Therefore, for all the system functions that might be linked in dynamically
@@ -538,22 +535,26 @@ void NativeStackSamplerMac::ProfileRecordingStarting(
   profile_module_index_.clear();
 }
 
-void NativeStackSamplerMac::RecordStackSample(
+std::vector<StackSamplingProfiler::Frame>
+NativeStackSamplerMac::RecordStackFrames(
     StackBuffer* stack_buffer,
-    StackSamplingProfiler::Sample* sample) {
+    StackSamplingProfiler::SamplingProfileBuilder* profile_builder) {
   DCHECK(current_modules_);
 
-  SuspendThreadAndRecordStack(stack_buffer, sample);
+  return SuspendThreadAndRecordStack(stack_buffer, profile_builder);
 }
 
 void NativeStackSamplerMac::ProfileRecordingStopped() {
   current_modules_ = nullptr;
 }
 
-void NativeStackSamplerMac::SuspendThreadAndRecordStack(
+std::vector<StackSamplingProfiler::Frame>
+NativeStackSamplerMac::SuspendThreadAndRecordStack(
     StackBuffer* stack_buffer,
-    StackSamplingProfiler::Sample* sample) {
+    StackSamplingProfiler::SamplingProfileBuilder* profile_builder) {
   x86_thread_state64_t thread_state;
+
+  std::vector<StackSamplingProfiler::Frame> frames;
 
   // Copy the stack.
 
@@ -565,20 +566,21 @@ void NativeStackSamplerMac::SuspendThreadAndRecordStack(
     // default heap acquired by the target thread before it was suspended.
     ScopedSuspendThread suspend_thread(thread_port_);
     if (!suspend_thread.was_successful())
-      return;
+      return frames;
 
     if (!GetThreadState(thread_port_, &thread_state))
-      return;
+      return frames;
+
     auto stack_top = reinterpret_cast<uintptr_t>(thread_stack_base_address_);
     uintptr_t stack_bottom = thread_state.__rsp;
     if (stack_bottom >= stack_top)
-      return;
+      return frames;
+
     uintptr_t stack_size = stack_top - stack_bottom;
-
     if (stack_size > stack_buffer->size())
-      return;
+      return frames;
 
-    (*annotator_)(sample);
+    profile_builder->RecordAnnotations();
 
     CopyStackAndRewritePointers(
         reinterpret_cast<uintptr_t*>(stack_buffer->buffer()),
@@ -596,7 +598,7 @@ void NativeStackSamplerMac::SuspendThreadAndRecordStack(
 
   // Reserve enough memory for most stacks, to avoid repeated allocations.
   // Approximately 99.9% of recorded stacks are 128 frames or fewer.
-  sample->frames.reserve(128);
+  frames.reserve(128);
 
   auto* current_modules = current_modules_;
   auto* profile_module_index = &profile_module_index_;
@@ -606,9 +608,9 @@ void NativeStackSamplerMac::SuspendThreadAndRecordStack(
   // and bail. See MayTriggerUnwInitLocalCrash for details.
   uintptr_t rip = thread_state.__rip;
   if (MayTriggerUnwInitLocalCrash(rip)) {
-    sample->frames.emplace_back(
+    frames.emplace_back(
         rip, GetModuleIndex(rip, current_modules, profile_module_index));
-    return;
+    return frames;
   }
 
   const auto continue_predicate = [this,
@@ -628,21 +630,21 @@ void NativeStackSamplerMac::SuspendThreadAndRecordStack(
   };
 
   WalkStack(thread_state, current_modules, profile_module_index,
-            [sample, current_modules, profile_module_index](
+            [&frames, current_modules, profile_module_index](
                 uintptr_t frame_ip, size_t module_index) {
-              sample->frames.emplace_back(frame_ip, module_index);
+              frames.emplace_back(frame_ip, module_index);
             },
             continue_predicate);
+
+  return frames;
 }
 
 }  // namespace
 
 std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
-    AnnotateCallback annotator,
     NativeStackSamplerTestDelegate* test_delegate) {
-  return std::make_unique<NativeStackSamplerMac>(thread_id, annotator,
-                                                 test_delegate);
+  return std::make_unique<NativeStackSamplerMac>(thread_id, test_delegate);
 }
 
 size_t NativeStackSampler::GetStackBufferSize() {

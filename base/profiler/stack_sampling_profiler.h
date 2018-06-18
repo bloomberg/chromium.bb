@@ -213,6 +213,43 @@ class BASE_EXPORT StackSamplingProfiler {
   // thread-safe callback implementation.
   using CompletedCallback = Callback<void(CallStackProfile)>;
 
+  // SamplingProfileBuilder receives the sampling data from NativeSampler and
+  // builds a CallStackProfile.
+  class BASE_EXPORT SamplingProfileBuilder {
+   public:
+    SamplingProfileBuilder(const CompletedCallback& callback);
+
+    ~SamplingProfileBuilder();
+
+    // Records metadata associated with sample_.
+    void RecordAnnotations();
+
+    // Finishes the construction of profile_ with |profile_duration| and
+    // |sampling_period|. Runs callback_ to pass profile_. Invoked when sampling
+    // a Profile completes.
+    void OnProfileCompleted(TimeDelta profile_duration,
+                            TimeDelta sampling_period);
+
+    // Records a new set of frames to sample_. Invoked when sampling a Sample
+    // completes.
+    void OnSampleCompleted(std::vector<Frame> frames);
+
+    // Returns the address of modules in profile_.
+    std::vector<Module>* modules() { return &profile_.modules; }
+
+   private:
+    // The collected stack samples.
+    CallStackProfile profile_;
+
+    // The current sample being recorded.
+    Sample sample_;
+
+    // Callback made when sampling a profile completes.
+    const CompletedCallback callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(SamplingProfileBuilder);
+  };
+
   // Creates a profiler for the CURRENT thread that sends a completed profile
   // to |callback|. An optional |test_delegate| can be supplied by tests.
   // The caller must ensure that this object gets destroyed before the current
@@ -266,9 +303,6 @@ class BASE_EXPORT StackSamplingProfiler {
   // the target thread.
   class SamplingThread;
 
-  // Adds annotations to a Sample.
-  static void RecordAnnotations(Sample* sample);
-
   // This global variables holds the current system state and is recorded with
   // every captured sample, done on a separate thread which is why updates to
   // this must be atomic. A PostTask to move the the updates to that thread
@@ -293,6 +327,11 @@ class BASE_EXPORT StackSamplingProfiler {
 
   // Stored until it can be passed to the NativeStackSampler created in Start().
   NativeStackSamplerTestDelegate* const test_delegate_;
+
+  // Receives the sampling data and builds a CallStackProfile. The ownership of
+  // this object will be transferred to the sampling thread when thread sampling
+  // starts.
+  std::unique_ptr<SamplingProfileBuilder> profile_builder_;
 
   DISALLOW_COPY_AND_ASSIGN(StackSamplingProfiler);
 };

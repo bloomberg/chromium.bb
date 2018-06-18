@@ -17,8 +17,8 @@ namespace base {
 class NativeStackSamplerTestDelegate;
 
 // NativeStackSampler is an implementation detail of StackSamplingProfiler. It
-// abstracts the native implementation required to record a stack sample for a
-// given thread.
+// abstracts the native implementation required to record a set of stack frames
+// for a given thread.
 class NativeStackSampler {
  public:
   // This class contains a buffer for stack copies that can be shared across
@@ -41,22 +41,12 @@ class NativeStackSampler {
     DISALLOW_COPY_AND_ASSIGN(StackBuffer);
   };
 
-  // The callback type used to add annotations to a sample during collection.
-  // This is passed to the native sampler to be applied at the most appropriate
-  // time. It is a simple function-pointer because the generated code must be
-  // completely predictable and do nothing that could acquire a mutex; a
-  // Callback object is code outside the control of this object and could,
-  // for example, acquire a mutex as part of allocating memory for a LOG
-  // message.
-  using AnnotateCallback = void (*)(StackSamplingProfiler::Sample*);
-
   virtual ~NativeStackSampler();
 
   // Creates a stack sampler that records samples for thread with |thread_id|.
   // Returns null if this platform does not support stack sampling.
   static std::unique_ptr<NativeStackSampler> Create(
       PlatformThreadId thread_id,
-      AnnotateCallback annotator,
       NativeStackSamplerTestDelegate* test_delegate);
 
   // Gets the required size of the stack buffer.
@@ -74,9 +64,10 @@ class NativeStackSampler {
   virtual void ProfileRecordingStarting(
       std::vector<StackSamplingProfiler::Module>* modules) = 0;
 
-  // Records a stack sample to |sample|.
-  virtual void RecordStackSample(StackBuffer* stackbuffer,
-                                 StackSamplingProfiler::Sample* sample) = 0;
+  // Records a set of stack frames and returns them.
+  virtual std::vector<StackSamplingProfiler::Frame> RecordStackFrames(
+      StackBuffer* stackbuffer,
+      StackSamplingProfiler::SamplingProfileBuilder* profile_builder) = 0;
 
   // Notifies the sampler that we've stopped recording the current profile.
   virtual void ProfileRecordingStopped() = 0;

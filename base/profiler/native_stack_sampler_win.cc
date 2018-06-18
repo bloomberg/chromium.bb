@@ -334,8 +334,7 @@ void SuspendThreadAndRecordStack(
     void* stack_copy_buffer,
     size_t stack_copy_buffer_size,
     std::vector<RecordedFrame>* stack,
-    NativeStackSampler::AnnotateCallback annotator,
-    StackSamplingProfiler::Sample* sample,
+    StackSamplingProfiler::SamplingProfileBuilder* profile_builder,
     NativeStackSamplerTestDelegate* test_delegate) {
   DCHECK(stack->empty());
 
@@ -370,7 +369,7 @@ void SuspendThreadAndRecordStack(
     if (PointsToGuardPage(bottom))
       return;
 
-    (*annotator)(sample);
+    profile_builder->RecordAnnotations();
 
     CopyMemoryFromStack(stack_copy_buffer,
                         reinterpret_cast<const void*>(bottom), top - bottom);
@@ -389,15 +388,15 @@ void SuspendThreadAndRecordStack(
 class NativeStackSamplerWin : public NativeStackSampler {
  public:
   NativeStackSamplerWin(win::ScopedHandle thread_handle,
-                        AnnotateCallback annotator,
                         NativeStackSamplerTestDelegate* test_delegate);
   ~NativeStackSamplerWin() override;
 
   // StackSamplingProfiler::NativeStackSampler:
   void ProfileRecordingStarting(
       std::vector<StackSamplingProfiler::Module>* modules) override;
-  void RecordStackSample(StackBuffer* stack_buffer,
-                         StackSamplingProfiler::Sample* sample) override;
+  std::vector<StackSamplingProfiler::Frame> RecordStackFrames(
+      StackBuffer* stack_buffer,
+      StackSamplingProfiler::SamplingProfileBuilder* profile_builder) override;
   void ProfileRecordingStopped() override;
 
  private:
@@ -413,14 +412,13 @@ class NativeStackSamplerWin : public NativeStackSampler {
   size_t GetModuleIndex(HMODULE module_handle,
                         std::vector<StackSamplingProfiler::Module>* modules);
 
-  // Copies the information represented by |stack| into |sample| and |modules|.
-  void CopyToSample(const std::vector<RecordedFrame>& stack,
-                    StackSamplingProfiler::Sample* sample,
-                    std::vector<StackSamplingProfiler::Module>* modules);
+  // Creates a set of frames with the information represented by |stack| and
+  // |modules|.
+  std::vector<StackSamplingProfiler::Frame> CreateFrames(
+      const std::vector<RecordedFrame>& stack,
+      std::vector<StackSamplingProfiler::Module>* modules);
 
   win::ScopedHandle thread_handle_;
-
-  const AnnotateCallback annotator_;
 
   NativeStackSamplerTestDelegate* const test_delegate_;
 
@@ -440,15 +438,11 @@ class NativeStackSamplerWin : public NativeStackSampler {
 
 NativeStackSamplerWin::NativeStackSamplerWin(
     win::ScopedHandle thread_handle,
-    AnnotateCallback annotator,
     NativeStackSamplerTestDelegate* test_delegate)
     : thread_handle_(thread_handle.Take()),
-      annotator_(annotator),
       test_delegate_(test_delegate),
       thread_stack_base_address_(
-          GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase) {
-  DCHECK(annotator_);
-}
+          GetThreadEnvironmentBlock(thread_handle_.Get())->Tib.StackBase) {}
 
 NativeStackSamplerWin::~NativeStackSamplerWin() {
 }
@@ -459,17 +453,19 @@ void NativeStackSamplerWin::ProfileRecordingStarting(
   profile_module_index_.clear();
 }
 
-void NativeStackSamplerWin::RecordStackSample(
+std::vector<StackSamplingProfiler::Frame>
+NativeStackSamplerWin::RecordStackFrames(
     StackBuffer* stack_buffer,
-    StackSamplingProfiler::Sample* sample) {
+    StackSamplingProfiler::SamplingProfileBuilder* profile_builder) {
   DCHECK(stack_buffer);
   DCHECK(current_modules_);
 
   std::vector<RecordedFrame> stack;
   SuspendThreadAndRecordStack(thread_handle_.Get(), thread_stack_base_address_,
                               stack_buffer->buffer(), stack_buffer->size(),
-                              &stack, annotator_, sample, test_delegate_);
-  CopyToSample(stack, sample, current_modules_);
+                              &stack, profile_builder, test_delegate_);
+
+  return CreateFrames(stack, current_modules_);
 }
 
 void NativeStackSamplerWin::ProfileRecordingStopped() {
@@ -511,25 +507,24 @@ size_t NativeStackSamplerWin::GetModuleIndex(
   return loc->second;
 }
 
-void NativeStackSamplerWin::CopyToSample(
+std::vector<StackSamplingProfiler::Frame> NativeStackSamplerWin::CreateFrames(
     const std::vector<RecordedFrame>& stack,
-    StackSamplingProfiler::Sample* sample,
     std::vector<StackSamplingProfiler::Module>* modules) {
-  sample->frames.clear();
-  sample->frames.reserve(stack.size());
+  std::vector<StackSamplingProfiler::Frame> frames;
+  frames.reserve(stack.size());
 
   for (const auto& frame : stack) {
-    sample->frames.emplace_back(
-        reinterpret_cast<uintptr_t>(frame.instruction_pointer),
-        GetModuleIndex(frame.module.Get(), modules));
+    frames.emplace_back(reinterpret_cast<uintptr_t>(frame.instruction_pointer),
+                        GetModuleIndex(frame.module.Get(), modules));
   }
+
+  return frames;
 }
 
 }  // namespace
 
 std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
     PlatformThreadId thread_id,
-    AnnotateCallback annotator,
     NativeStackSamplerTestDelegate* test_delegate) {
 #if _WIN64
   // Get the thread's handle.
@@ -540,7 +535,7 @@ std::unique_ptr<NativeStackSampler> NativeStackSampler::Create(
 
   if (thread_handle) {
     return std::unique_ptr<NativeStackSampler>(new NativeStackSamplerWin(
-        win::ScopedHandle(thread_handle), annotator, test_delegate));
+        win::ScopedHandle(thread_handle), test_delegate));
   }
 #endif
   return std::unique_ptr<NativeStackSampler>();
