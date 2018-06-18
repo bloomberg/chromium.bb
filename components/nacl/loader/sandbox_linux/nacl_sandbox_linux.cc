@@ -78,7 +78,8 @@ void RestrictAddressSpaceUsage() {
   // This could almost certainly be set to zero. GLibc's allocator and others
   // would fall-back to mmap if brk() fails.
   const rlim_t kNewDataSegmentMaxSize = std::numeric_limits<int>::max();
-  CHECK(sandbox::ResourceLimits::Lower(RLIMIT_DATA, kNewDataSegmentMaxSize));
+  CHECK_EQ(0,
+           sandbox::ResourceLimits::Lower(RLIMIT_DATA, kNewDataSegmentMaxSize));
 
 #if defined(ARCH_CPU_64_BITS)
   // NaCl's x86-64 sandbox allocated 88GB address of space during startup:
@@ -94,7 +95,7 @@ void RestrictAddressSpaceUsage() {
   // bits when running under 64 bits kernels. Set a limit in case this happens.
   const rlim_t kNewAddressSpaceLimit = std::numeric_limits<uint32_t>::max();
 #endif
-  CHECK(sandbox::ResourceLimits::Lower(RLIMIT_AS, kNewAddressSpaceLimit));
+  CHECK_EQ(0, sandbox::ResourceLimits::Lower(RLIMIT_AS, kNewAddressSpaceLimit));
 }
 
 }  // namespace
