@@ -310,8 +310,10 @@ TEST_F(FileProxyTest, WriteAndFlush) {
   }
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
 // Flaky on Android, see http://crbug.com/489602
+// TODO(crbug.com/851734): Implementation depends on stat, which is not
+// implemented on Fuchsia
 #define MAYBE_SetTimes DISABLED_SetTimes
 #else
 #define MAYBE_SetTimes SetTimes

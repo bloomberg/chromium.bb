@@ -1171,7 +1171,14 @@ TEST(FieldTrialDeathTest, OneTimeRandomizedTrialWithoutFieldTrialList) {
       "");
 }
 
-TEST(FieldTrialListTest, TestCopyFieldTrialStateToFlags) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/752368): This is flaky on Fuchsia.
+#define MAYBE_TestCopyFieldTrialStateToFlags \
+  DISABLED_TestCopyFieldTrialStateToFlags
+#else
+#define MAYBE_TestCopyFieldTrialStateToFlags TestCopyFieldTrialStateToFlags
+#endif
+TEST(FieldTrialListTest, MAYBE_TestCopyFieldTrialStateToFlags) {
   constexpr char kFieldTrialHandleSwitch[] = "test-field-trial-handle";
   constexpr char kEnableFeaturesSwitch[] = "test-enable-features";
   constexpr char kDisableFeaturesSwitch[] = "test-disable-features";
@@ -1320,7 +1327,13 @@ TEST(FieldTrialListTest, AssociateFieldTrialParams) {
   EXPECT_EQ(2U, new_params.size());
 }
 
-TEST(FieldTrialListTest, ClearParamsFromSharedMemory) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/752368): This is flaky on Fuchsia.
+#define MAYBE_ClearParamsFromSharedMemory DISABLED_ClearParamsFromSharedMemory
+#else
+#define MAYBE_ClearParamsFromSharedMemory ClearParamsFromSharedMemory
+#endif
+TEST(FieldTrialListTest, MAYBE_ClearParamsFromSharedMemory) {
   std::string trial_name("Trial1");
   std::string group_name("Group1");
 

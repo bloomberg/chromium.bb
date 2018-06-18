@@ -65,14 +65,28 @@ TEST_F(SysInfoTest, MAYBE_AmountOfAvailablePhysicalMemory) {
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-TEST_F(SysInfoTest, AmountOfFreeDiskSpace) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/851734): Implementation depends on statvfs, which is not
+// implemented on Fuchsia
+#define MAYBE_AmountOfFreeDiskSpace DISABLED_AmountOfFreeDiskSpace
+#else
+#define MAYBE_AmountOfFreeDiskSpace AmountOfFreeDiskSpace
+#endif
+TEST_F(SysInfoTest, MAYBE_AmountOfFreeDiskSpace) {
   // We aren't actually testing that it's correct, just that it's sane.
   FilePath tmp_path;
   ASSERT_TRUE(GetTempDir(&tmp_path));
   EXPECT_GE(SysInfo::AmountOfFreeDiskSpace(tmp_path), 0) << tmp_path.value();
 }
 
-TEST_F(SysInfoTest, AmountOfTotalDiskSpace) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/851734): Implementation depends on statvfs, which is not
+// implemented on Fuchsia
+#define MAYBE_AmountOfTotalDiskSpace DISABLED_AmountOfTotalDiskSpace
+#else
+#define MAYBE_AmountOfTotalDiskSpace AmountOfTotalDiskSpace
+#endif
+TEST_F(SysInfoTest, MAYBE_AmountOfTotalDiskSpace) {
   // We aren't actually testing that it's correct, just that it's sane.
   FilePath tmp_path;
   ASSERT_TRUE(GetTempDir(&tmp_path));

@@ -2422,7 +2422,14 @@ TEST_F(FileUtilTest, CreateAndOpenTemporaryFileTest) {
   }
 }
 
-TEST_F(FileUtilTest, FileToFILE) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/851747): Re-enable when the Fuchsia-side fix for fdopen has
+// been rolled into Chromium.
+#define MAYBE_FileToFILE DISABLED_FileToFILE
+#else
+#define MAYBE_FileToFILE FileToFILE
+#endif
+TEST_F(FileUtilTest, MAYBE_FileToFILE) {
   File file;
   FILE* stream = FileToFILE(std::move(file), "w");
   EXPECT_FALSE(stream);
@@ -3643,7 +3650,13 @@ TEST_F(FileUtilTest, NonExistentContentUriTest) {
 // Test that temp files obtained racily are all unique (no interference between
 // threads). Mimics file operations in DoLaunchChildTestProcess() to rule out
 // thread-safety issues @ https://crbug.com/826408#c17.
-TEST(FileUtilMultiThreadedTest, MultiThreadedTempFiles) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/844416): Too slow to run on infra due to QEMU overloads.
+#define MAYBE_MultiThreadedTempFiles DISABLED_MultiThreadedTempFiles
+#else
+#define MAYBE_MultiThreadedTempFiles MultiThreadedTempFiles
+#endif
+TEST(FileUtilMultiThreadedTest, MAYBE_MultiThreadedTempFiles) {
   constexpr int kNumThreads = 64;
   constexpr int kNumWritesPerThread = 32;
 

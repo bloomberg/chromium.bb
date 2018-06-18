@@ -551,7 +551,9 @@ MULTIPROCESS_TEST_MAIN(CrashingChildProcess) {
 
 // This test intentionally crashes, so we don't need to run it under
 // AddressSanitizer.
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(OS_FUCHSIA)
+// TODO(crbug.com/753490): Access to the process termination reason is not
+// implemented in Fuchsia.
 #define MAYBE_GetTerminationStatusCrash DISABLED_GetTerminationStatusCrash
 #else
 #define MAYBE_GetTerminationStatusCrash GetTerminationStatusCrash
@@ -611,7 +613,14 @@ MULTIPROCESS_TEST_MAIN(TerminatedChildProcess) {
 }
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
-TEST_F(ProcessUtilTest, GetTerminationStatusSigKill) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/753490): Access to the process termination reason is not
+// implemented in Fuchsia.
+#define MAYBE_GetTerminationStatusSigKill DISABLED_GetTerminationStatusSigKill
+#else
+#define MAYBE_GetTerminationStatusSigKill GetTerminationStatusSigKill
+#endif
+TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusSigKill) {
   const std::string signal_file =
     ProcessUtilTest::GetSignalFilePath(kSignalFileKill);
   remove(signal_file.c_str());
@@ -644,7 +653,10 @@ TEST_F(ProcessUtilTest, GetTerminationStatusSigKill) {
   remove(signal_file.c_str());
 }
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+#if defined(OS_POSIX)
+// TODO(crbug.com/753490): Access to the process termination reason is not
+// implemented in Fuchsia. Unix signals are not implemented in Fuchsia so this
+// test might not be relevant anyway.
 TEST_F(ProcessUtilTest, GetTerminationStatusSigTerm) {
   const std::string signal_file =
     ProcessUtilTest::GetSignalFilePath(kSignalFileTerm);
@@ -669,7 +681,7 @@ TEST_F(ProcessUtilTest, GetTerminationStatusSigTerm) {
   EXPECT_EQ(SIGTERM, signal);
   remove(signal_file.c_str());
 }
-#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
+#endif  // defined(OS_POSIX)
 
 TEST_F(ProcessUtilTest, EnsureTerminationUndying) {
   test::ScopedTaskEnvironment task_environment;

@@ -1651,7 +1651,13 @@ TEST_P(MessageLoopTypedTest, RunLoopQuitOrderAfter) {
 // On Linux, the pipe buffer size is 64KiB by default. The bug caused one
 // byte accumulated in the pipe per two posts, so we should repeat 128K
 // times to reproduce the bug.
-TEST_P(MessageLoopTypedTest, RecursivePosts) {
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/810077): This is flaky on Fuchsia.
+#define MAYBE_RecursivePosts DISABLED_RecursivePosts
+#else
+#define MAYBE_RecursivePosts RecursivePosts
+#endif
+TEST_P(MessageLoopTypedTest, MAYBE_RecursivePosts) {
   const int kNumTimes = 1 << 17;
   MessageLoop loop(GetMessageLoopType());
   loop.task_runner()->PostTask(FROM_HERE,
