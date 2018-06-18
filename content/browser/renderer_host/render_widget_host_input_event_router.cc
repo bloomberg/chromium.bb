@@ -138,12 +138,31 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
     // When a child iframe is destroyed, consider its parent to be to be the
     // most recent target, if possible. In some cases the parent might already
     // have been destroyed, in which case the last target is cleared.
-    if (view != last_mouse_move_root_view_)
+    if (view != last_mouse_move_root_view_) {
+      // TODO(851958): Remove crash keys once we understand why the following
+      // attempt to get the parent can crash.
+      static auto* target_key = base::debug::AllocateCrashKeyString(
+          "failed-parent-lookup-target", base::debug::CrashKeySize::Size32);
+      base::debug::ScopedCrashKeyString target_key_value(
+          target_key, base::StringPrintf("%p", last_mouse_move_target_));
+      static auto* root_key = base::debug::AllocateCrashKeyString(
+          "failed-parent-lookup-root", base::debug::CrashKeySize::Size32);
+      base::debug::ScopedCrashKeyString root_key_value(
+          root_key, base::StringPrintf("%p", last_mouse_move_root_view_));
+      static auto* target_is_child_key = base::debug::AllocateCrashKeyString(
+          "failed-parent-lookup-target-is-child",
+          base::debug::CrashKeySize::Size32);
+      base::debug::ScopedCrashKeyString target_is_child_key_value(
+          target_is_child_key,
+          std::to_string(
+              last_mouse_move_target_->IsRenderWidgetHostViewChildFrame()));
+
       last_mouse_move_target_ =
           static_cast<RenderWidgetHostViewChildFrame*>(last_mouse_move_target_)
               ->GetParentView();
-    else
+    } else {
       last_mouse_move_target_ = nullptr;
+    }
 
     if (!last_mouse_move_target_ || view == last_mouse_move_root_view_)
       last_mouse_move_root_view_ = nullptr;
