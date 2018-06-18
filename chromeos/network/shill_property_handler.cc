@@ -233,7 +233,7 @@ void ShillPropertyHandler::SetWakeOnLanEnabled(bool enabled) {
 void ShillPropertyHandler::SetHostname(const std::string& hostname) {
   base::Value value(hostname);
   shill_manager_->SetProperty(
-      shill::kHostNameProperty, value, base::DoNothing(),
+      shill::kDhcpPropertyHostnameProperty, value, base::DoNothing(),
       base::BindRepeating(&network_handler::ShillErrorCallbackFunction,
                           "SetHostname Failed", "Manager",
                           network_handler::ErrorCallback()));
