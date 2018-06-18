@@ -33,13 +33,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # A regex matching an argument corresponding to the output filename passed to
 # link.exe.
 _LINK_EXE_OUT_ARG = re.compile('/OUT:(?P<out>.+)$', re.IGNORECASE)
-_LINK_PDB_OUT_ARG = re.compile('/PDB:(?P<out>.+)$', re.IGNORECASE)
-_LINK_ERROR = re.compile('.* error LNK(\d+):')
-
-# Retry links when this error is hit, to try to deal with crbug.com/782660
-_LINKER_RETRY_ERRORS = 1201
-# Maximum number of linker retries.
-_LINKER_RETRIES = 3
 
 def main(args):
   exit_code = WinTool().Dispatch(args)
@@ -148,37 +141,21 @@ class WinTool(object):
     #   Popen(['/bin/sh', '-c', args[0], args[1], ...])"
     # For that reason, since going through the shell doesn't seem necessary on
     # non-Windows don't do that there.
-    pdb_name = None
     pe_name = None
     for arg in args:
-      m = _LINK_PDB_OUT_ARG.match(arg)
-      if m:
-        pdb_name = m.group('out')
       m = _LINK_EXE_OUT_ARG.match(arg)
       if m:
         pe_name = m.group('out')
-    for retry_count in range(_LINKER_RETRIES):
-      retry = False
-      link = subprocess.Popen(args, shell=sys.platform == 'win32', env=env,
-                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-      # Read output one line at a time as it shows up to avoid OOM failures when
-      # GBs of output is produced.
-      for line in link.stdout:
-        if (not line.startswith('   Creating library ') and
-            not line.startswith('Generating code') and
-            not line.startswith('Finished generating code')):
-          m = _LINK_ERROR.match(line)
-          if m:
-            error_code = int(m.groups()[0])
-            if error_code == _LINKER_RETRY_ERRORS:
-              print 'Retrying link due to error %d' % error_code
-              if pdb_name:
-                shutil.copyfile(pdb_name, pdb_name + 'failure_backup')
-              retry = True
-          print line,
-      result = link.wait()
-      if not retry:
-        break
+    link = subprocess.Popen(args, shell=sys.platform == 'win32', env=env,
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # Read output one line at a time as it shows up to avoid OOM failures when
+    # GBs of output is produced.
+    for line in link.stdout:
+      if (not line.startswith('   Creating library ') and
+          not line.startswith('Generating code') and
+          not line.startswith('Finished generating code')):
+        print line,
+    result = link.wait()
     if result == 0 and sys.platform == 'win32':
       # Flush the file buffers to try to work around a Windows 10 kernel bug,
       # https://crbug.com/644525
