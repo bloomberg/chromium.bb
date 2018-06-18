@@ -49,6 +49,11 @@ cr.define('downloads', function() {
         value: false,
       },
 
+      pauseOrResumeClass_: {
+        computed: 'computePauseOrResumeClass_(isInProgress_, data.resume)',
+        type: String,
+      },
+
       pauseOrResumeText_: {
         computed: 'computePauseOrResumeText_(isInProgress_, data.resume)',
         type: String,
@@ -193,6 +198,14 @@ cr.define('downloads', function() {
            this.data.danger_type == downloads.DangerType.DANGEROUS_HOST ||
            this.data.danger_type == downloads.DangerType.DANGEROUS_URL ||
            this.data.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED);
+    },
+
+    /**
+     * @return {string} 'action-button' for a resume button, empty otherwise.
+     * @private
+     */
+    computePauseOrResumeClass_: function() {
+      return !this.isInProgress_ && this.data.resume ? 'action-button' : '';
     },
 
     /** @private */
