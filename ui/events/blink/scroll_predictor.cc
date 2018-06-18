@@ -60,8 +60,7 @@ void ScrollPredictor::UpdatePrediction(const WebScopedInputEvent& event) {
       static_cast<const WebGestureEvent&>(*event);
   current_accumulated_delta_.Offset(gesture_event.data.scroll_update.delta_x,
                                     gesture_event.data.scroll_update.delta_y);
-  InputPredictor::InputData data = {current_accumulated_delta_.x(),
-                                    current_accumulated_delta_.y(),
+  InputPredictor::InputData data = {current_accumulated_delta_,
                                     gesture_event.TimeStamp()};
   predictor_->Update(data);
 }
@@ -74,8 +73,7 @@ void ScrollPredictor::ResampleEvent(base::TimeTicks time_stamp,
   InputPredictor::InputData result;
   if (predictor_->HasPrediction() &&
       predictor_->GeneratePrediction(time_stamp, &result)) {
-    gfx::PointF predicted_accumulated_delta_ =
-        gfx::PointF(result.pos_x, result.pos_y);
+    gfx::PointF predicted_accumulated_delta_ = result.pos;
     gesture_event->data.scroll_update.delta_x =
         predicted_accumulated_delta_.x() - last_accumulated_delta_.x();
     gesture_event->data.scroll_update.delta_y =

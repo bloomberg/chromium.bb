@@ -69,8 +69,8 @@ TEST_F(InputEventPredictionTest, MouseEvent) {
   HandleEvents(mouse_move);
   EXPECT_EQ(GetPredictorMapSize(), 0);
   EXPECT_TRUE(GetPrediction(mouse_move, &last_point));
-  EXPECT_EQ(last_point.pos_x, 10);
-  EXPECT_EQ(last_point.pos_y, 10);
+  EXPECT_EQ(last_point.pos.x(), 10);
+  EXPECT_EQ(last_point.pos.y(), 10);
 
   WebMouseEvent mouse_down = SyntheticWebMouseEventBuilder::Build(
       WebInputEvent::kMouseDown, 10, 10, 0);
@@ -93,8 +93,8 @@ TEST_F(InputEventPredictionTest, SingleTouchPoint) {
   HandleEvents(touch_event);
   EXPECT_EQ(GetPredictorMapSize(), 1);
   EXPECT_TRUE(GetPrediction(touch_event.touches[0], &last_point));
-  EXPECT_EQ(last_point.pos_x, 11);
-  EXPECT_EQ(last_point.pos_y, 12);
+  EXPECT_EQ(last_point.pos.x(), 11);
+  EXPECT_EQ(last_point.pos.y(), 12);
 
   touch_event.ReleasePoint(0);
   HandleEvents(touch_event);
@@ -111,8 +111,8 @@ TEST_F(InputEventPredictionTest, MouseEventTypePen) {
   HandleEvents(pen_move);
   EXPECT_EQ(GetPredictorMapSize(), 1);
   EXPECT_TRUE(GetPrediction(pen_move, &last_point));
-  EXPECT_EQ(last_point.pos_x, 10);
-  EXPECT_EQ(last_point.pos_y, 10);
+  EXPECT_EQ(last_point.pos.x(), 10);
+  EXPECT_EQ(last_point.pos.y(), 10);
 
   WebMouseEvent pen_leave = SyntheticWebMouseEventBuilder::Build(
       WebInputEvent::kMouseLeave, 10, 10, 0,
@@ -145,12 +145,12 @@ TEST_F(InputEventPredictionTest, MultipleTouchPoint) {
 
   ui::InputPredictor::InputData last_point;
   EXPECT_TRUE(GetPrediction(touch_event.touches[0], &last_point));
-  EXPECT_EQ(last_point.pos_x, 11);
-  EXPECT_EQ(last_point.pos_y, 12);
+  EXPECT_EQ(last_point.pos.x(), 11);
+  EXPECT_EQ(last_point.pos.y(), 12);
 
   EXPECT_TRUE(GetPrediction(touch_event.touches[1], &last_point));
-  EXPECT_EQ(last_point.pos_x, 25);
-  EXPECT_EQ(last_point.pos_y, 25);
+  EXPECT_EQ(last_point.pos.x(), 25);
+  EXPECT_EQ(last_point.pos.y(), 25);
 
   touch_event.ReleasePoint(0);
   HandleEvents(touch_event);
