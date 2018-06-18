@@ -146,6 +146,8 @@ def _is_ignored(server):
   """Return True if the server should be ignored for test infra prod alerts."""
   if server.hostname.startswith('chromeos1-'):
     return True
+  if server.hostname.startswith('chromeos3-'):
+    return True
   if server.hostname.startswith('chromeos15-'):
     return True
   return False
