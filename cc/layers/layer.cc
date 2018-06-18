@@ -85,7 +85,7 @@ Layer::Layer()
       clip_tree_index_(ClipTree::kInvalidNodeId),
       scroll_tree_index_(ScrollTree::kInvalidNodeId),
       property_tree_sequence_number_(-1),
-      should_flatten_transform_from_property_tree_(false),
+      should_flatten_screen_space_transform_from_property_tree_(false),
       draws_content_(false),
       should_check_backface_visibility_(false),
       cache_render_surface_(false),
@@ -1195,8 +1195,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTouchActionRegion(inputs_.touch_action_region);
   layer->SetContentsOpaque(inputs_.contents_opaque);
   layer->SetPosition(inputs_.position);
-  layer->SetShouldFlattenTransformFromPropertyTree(
-      should_flatten_transform_from_property_tree_);
+  layer->SetShouldFlattenScreenSpaceTransformFromPropertyTree(
+      should_flatten_screen_space_transform_from_property_tree_);
   layer->SetUseParentBackfaceVisibility(inputs_.use_parent_backface_visibility);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
 
@@ -1317,10 +1317,12 @@ void Layer::SetSubtreePropertyChanged() {
   SetNeedsPushProperties();
 }
 
-void Layer::SetShouldFlattenTransformFromPropertyTree(bool should_flatten) {
-  if (should_flatten_transform_from_property_tree_ == should_flatten)
+void Layer::SetShouldFlattenScreenSpaceTransformFromPropertyTree(
+    bool should_flatten) {
+  if (should_flatten_screen_space_transform_from_property_tree_ ==
+      should_flatten)
     return;
-  should_flatten_transform_from_property_tree_ = should_flatten;
+  should_flatten_screen_space_transform_from_property_tree_ = should_flatten;
   SetNeedsPushProperties();
 }
 

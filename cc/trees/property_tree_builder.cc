@@ -482,7 +482,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
     }
     layer->SetOffsetToTransformParent(source_offset + source_to_parent +
                                       local_offset);
-    layer->SetShouldFlattenTransformFromPropertyTree(
+    layer->SetShouldFlattenScreenSpaceTransformFromPropertyTree(
         data_from_ancestor.should_flatten);
     layer->SetTransformTreeIndex(parent_index);
     return false;
@@ -617,7 +617,7 @@ bool PropertyTreeBuilderContext<LayerType>::AddTransformNodeIfNeeded(
   layer->SetOffsetToTransformParent(gfx::Vector2dF());
 
   // Flattening (if needed) will be handled by |node|.
-  layer->SetShouldFlattenTransformFromPropertyTree(false);
+  layer->SetShouldFlattenScreenSpaceTransformFromPropertyTree(false);
 
   return true;
 }
@@ -1145,7 +1145,8 @@ void PropertyTreeBuilderContext<LayerType>::AddScrollNodeIfNeeded(
     node.bounds = layer->bounds();
     node.container_bounds = layer->scroll_container_bounds();
     node.offset_to_transform_parent = layer->offset_to_transform_parent();
-    node.should_flatten = layer->should_flatten_transform_from_property_tree();
+    node.should_flatten =
+        layer->should_flatten_screen_space_transform_from_property_tree();
     node.user_scrollable_horizontal = UserScrollableHorizontal(layer);
     node.user_scrollable_vertical = UserScrollableVertical(layer);
     node.element_id = layer->element_id();
