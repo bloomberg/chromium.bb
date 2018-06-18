@@ -135,7 +135,7 @@ void FakeDB<T>::UpdateEntriesWithRemoveFilter(
   auto it = db_->begin();
   while (it != db_->end()) {
     if (!delete_key_filter.is_null() && delete_key_filter.Run(it->first))
-      db_->erase(it->first);
+      db_->erase(it++);
     else
       ++it;
   }
