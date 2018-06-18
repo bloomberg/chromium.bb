@@ -201,6 +201,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
+      const GURL& url,
       bool force_fetch) {
     SignedExchangeCertFetcher::CertificateCallback callback = base::BindOnce(
         &ForwardCertificateCallback, base::Unretained(&callback_called_),
@@ -209,7 +210,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
     return SignedExchangeCertFetcher::CreateAndStart(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &mock_loader_factory_),
-        std::move(throttles_), url_, request_initiator_, force_fetch,
+        std::move(throttles_), url, request_initiator_, force_fetch,
         SignedExchangeVersion::kB1, std::move(callback),
         nullptr /* devtools_proxy */);
   }
@@ -220,6 +221,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
     resource_response.headers->AddHeader(
         "Content-Type: application/cert-chain+cbor");
+    resource_response.mime_type = "application/cert-chain+cbor";
     mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
   }
 
@@ -251,7 +253,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
 
 TEST_F(SignedExchangeCertFetcherTest, Simple) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
 
   ASSERT_TRUE(mock_loader_factory_.client_ptr());
   ASSERT_TRUE(mock_loader_factory_.url_request());
@@ -278,7 +280,7 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
 
 TEST_F(SignedExchangeCertFetcherTest, MultipleChunked) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   scoped_refptr<net::X509Certificate> certificate = ImportTestCert();
   const std::string message =
@@ -304,7 +306,7 @@ TEST_F(SignedExchangeCertFetcherTest, MultipleChunked) {
 
 TEST_F(SignedExchangeCertFetcherTest, ForceFetchAndFail) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(true /* force_fetch */);
+      CreateFetcherAndStart(url_, true /* force_fetch */);
   CallOnReceiveResponse();
 
   ASSERT_TRUE(mock_loader_factory_.url_request());
@@ -332,7 +334,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_Exceeds) {
       SignedExchangeCertFetcher::SetMaxCertSizeForTest(message.size() - 1);
 
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   mojo::DataPipe data_pipe(message.size());
   CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
@@ -355,7 +357,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_SameSize) {
       SignedExchangeCertFetcher::SetMaxCertSizeForTest(message.size());
 
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   mojo::DataPipe data_pipe(message.size());
   CHECK(mojo::BlockingCopyFromString(message, data_pipe.producer_handle));
@@ -378,7 +380,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_MultipleChunked) {
       SignedExchangeCertFetcher::SetMaxCertSizeForTest(message.size() - 1);
 
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   mojo::DataPipe data_pipe(message.size() / 2 + 1);
   ASSERT_TRUE(mojo::BlockingCopyFromString(
@@ -405,7 +407,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_ContentLengthCheck) {
       SignedExchangeCertFetcher::SetMaxCertSizeForTest(message.size() - 1);
 
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   network::ResourceResponseHead resource_response;
   resource_response.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
@@ -426,7 +428,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_ContentLengthCheck) {
 
 TEST_F(SignedExchangeCertFetcherTest, Abort_Redirect) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   network::ResourceResponseHead response_head;
   net::RedirectInfo redirect_info;
   mock_loader_factory_.client_ptr()->OnReceiveRedirect(redirect_info,
@@ -439,7 +441,7 @@ TEST_F(SignedExchangeCertFetcherTest, Abort_Redirect) {
 
 TEST_F(SignedExchangeCertFetcherTest, Abort_404) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   network::ResourceResponseHead resource_response;
   resource_response.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 404 Not Found");
@@ -450,14 +452,15 @@ TEST_F(SignedExchangeCertFetcherTest, Abort_404) {
   EXPECT_FALSE(cert_result_);
 }
 
-TEST_F(SignedExchangeCertFetcherTest, WrongContentType) {
+TEST_F(SignedExchangeCertFetcherTest, WrongMimeType) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   network::ResourceResponseHead resource_response;
   resource_response.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
   resource_response.headers->AddHeader(
       "Content-Type: application/octet-stream");
+  resource_response.mime_type = "application/octet-stream";
   mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
   RunUntilIdle();
 
@@ -467,7 +470,7 @@ TEST_F(SignedExchangeCertFetcherTest, WrongContentType) {
 
 TEST_F(SignedExchangeCertFetcherTest, Invalid_CertData) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   const std::string message = CreateCertMessage("Invalid Cert Data");
   mojo::DataPipe data_pipe(message.size());
@@ -485,7 +488,7 @@ TEST_F(SignedExchangeCertFetcherTest, Invalid_CertData) {
 
 TEST_F(SignedExchangeCertFetcherTest, Invalid_CertMessage) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
 
   const std::string message = "Invalid cert message";
@@ -507,7 +510,7 @@ TEST_F(SignedExchangeCertFetcherTest, Invalid_CertMessage) {
 TEST_F(SignedExchangeCertFetcherTest, Throttle_Simple) {
   DeferringURLLoaderThrottle* throttle = InitializeDeferringURLLoaderThrottle();
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   RunUntilIdle();
 
   EXPECT_TRUE(throttle->will_start_request_called());
@@ -544,7 +547,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_Simple) {
 TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnRequest) {
   DeferringURLLoaderThrottle* throttle = InitializeDeferringURLLoaderThrottle();
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   RunUntilIdle();
 
   throttle->delegate()->CancelWithError(net::ERR_INVALID_SIGNED_EXCHANGE);
@@ -558,7 +561,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnRequest) {
 TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnRedirect) {
   DeferringURLLoaderThrottle* throttle = InitializeDeferringURLLoaderThrottle();
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   RunUntilIdle();
 
   throttle->delegate()->Resume();
@@ -584,7 +587,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnRedirect) {
 TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnResponse) {
   DeferringURLLoaderThrottle* throttle = InitializeDeferringURLLoaderThrottle();
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   RunUntilIdle();
 
   throttle->delegate()->Resume();
@@ -615,7 +618,7 @@ TEST_F(SignedExchangeCertFetcherTest, Throttle_AbortsOnResponse) {
 
 TEST_F(SignedExchangeCertFetcherTest, DeleteFetcher_BeforeReceiveResponse) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   RunUntilIdle();
   fetcher.reset();
   RunUntilIdle();
@@ -626,7 +629,7 @@ TEST_F(SignedExchangeCertFetcherTest, DeleteFetcher_BeforeReceiveResponse) {
 
 TEST_F(SignedExchangeCertFetcherTest, DeleteFetcher_BeforeResponseBody) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   RunUntilIdle();
   fetcher.reset();
@@ -638,7 +641,7 @@ TEST_F(SignedExchangeCertFetcherTest, DeleteFetcher_BeforeResponseBody) {
 
 TEST_F(SignedExchangeCertFetcherTest, DeleteFetcher_WhileReceivingBody) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   scoped_refptr<net::X509Certificate> certificate = ImportTestCert();
   const std::string message =
@@ -661,7 +664,7 @@ TEST_F(SignedExchangeCertFetcherTest, DeleteFetcher_WhileReceivingBody) {
 
 TEST_F(SignedExchangeCertFetcherTest, DeleteFetcher_AfterReceivingBody) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   scoped_refptr<net::X509Certificate> certificate = ImportTestCert();
   const std::string message =
@@ -683,7 +686,7 @@ TEST_F(SignedExchangeCertFetcherTest, DeleteFetcher_AfterReceivingBody) {
 
 TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_BeforeReceiveResponse) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   RunUntilIdle();
   CloseClientPipe();
   RunUntilIdle();
@@ -694,7 +697,7 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_BeforeReceiveResponse) {
 
 TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_BeforeResponseBody) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   RunUntilIdle();
   CloseClientPipe();
@@ -706,7 +709,7 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_BeforeResponseBody) {
 
 TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_WhileReceivingBody) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   scoped_refptr<net::X509Certificate> certificate = ImportTestCert();
   const std::string message =
@@ -727,7 +730,7 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_WhileReceivingBody) {
 
 TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_AfterReceivingBody) {
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
-      CreateFetcherAndStart(false /* force_fetch */);
+      CreateFetcherAndStart(url_, false /* force_fetch */);
   CallOnReceiveResponse();
   scoped_refptr<net::X509Certificate> certificate = ImportTestCert();
   const std::string message =
@@ -746,6 +749,41 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_AfterReceivingBody) {
   ASSERT_TRUE(cert_result_);
   EXPECT_EQ(certificate->CalculateChainFingerprint256(),
             cert_result_->cert()->CalculateChainFingerprint256());
+}
+
+TEST_F(SignedExchangeCertFetcherTest, DataURL) {
+  const GURL data_url = GURL("data:application/cert-chain+cbor,foobar");
+  std::unique_ptr<SignedExchangeCertFetcher> fetcher =
+      CreateFetcherAndStart(data_url, false /* force_fetch */);
+  EXPECT_EQ(data_url, mock_loader_factory_.url_request()->url);
+
+  network::ResourceResponseHead resource_response;
+  resource_response.mime_type = "application/cert-chain+cbor";
+  mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
+
+  mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
+      CreateTestDataFilledDataPipe());
+  mock_loader_factory_.client_ptr()->OnComplete(
+      network::URLLoaderCompletionStatus(net::OK));
+  RunUntilIdle();
+  EXPECT_TRUE(callback_called_);
+  ASSERT_TRUE(cert_result_);
+  EXPECT_EQ(GetTestDataCertFingerprint256(),
+            cert_result_->cert()->CalculateChainFingerprint256());
+}
+
+TEST_F(SignedExchangeCertFetcherTest, DataURLWithWrongMimeType) {
+  const GURL data_url = GURL("data:application/octet-stream,foobar");
+  std::unique_ptr<SignedExchangeCertFetcher> fetcher =
+      CreateFetcherAndStart(data_url, false /* force_fetch */);
+  EXPECT_EQ(data_url, mock_loader_factory_.url_request()->url);
+
+  network::ResourceResponseHead resource_response;
+  resource_response.mime_type = "application/octet-stream";
+  mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
+  RunUntilIdle();
+
+  EXPECT_TRUE(callback_called_);
 }
 
 }  // namespace content
