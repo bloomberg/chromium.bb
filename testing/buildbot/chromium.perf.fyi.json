@@ -479,6 +479,34 @@
           "ignore_task_failure": false,
           "io_timeout": 3600
         }
+      },
+      {
+        "args": [
+          "rendering.oopd.desktop",
+          "-v",
+          "--upload-results",
+          "--output-format=chartjson",
+          "--browser=release"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rendering.oopd.desktop",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:1cb3",
+              "id": "build186-b7",
+              "pool": "chrome.tests.perf-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 10800,
+          "ignore_task_failure": false,
+          "io_timeout": 3600
+        }
       }
     ]
   },
