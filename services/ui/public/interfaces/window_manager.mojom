@@ -11,12 +11,12 @@ import "services/ui/public/interfaces/window_manager_constants.mojom";
 import "services/ui/public/interfaces/window_tree_constants.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
-import "skia/public/interfaces/bitmap.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/display/mojo/display.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/events/mojo/event_constants.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/image/mojo/image.mojom";
 import "ui/display/mojo/display.mojom";
 
 // WindowManager is used when a WindowTreeClient attempts to modify
@@ -224,11 +224,8 @@ interface WindowManager {
 
   // Asks the WindowManager to create a drag representation window: a window
   // which contains a single image representation.
-  //
-  // TODO(erg): SkBitmap is the wrong data type for the drag image; we should
-  // be passing ImageSkias once http://crbug.com/655874 is implemented.
   WmBuildDragImage(gfx.mojom.Point screen_location,
-                   skia.mojom.Bitmap? drag_image,
+                   gfx.mojom.ImageSkia? drag_image,
                    gfx.mojom.Vector2d drag_image_offset,
                    PointerKind source);
 

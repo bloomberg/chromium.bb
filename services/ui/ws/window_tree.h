@@ -568,7 +568,7 @@ class WindowTree : public mojom::WindowTree,
       Id source_window_id,
       const gfx::Point& screen_location,
       const base::flat_map<std::string, std::vector<uint8_t>>& drag_data,
-      const SkBitmap& drag_image,
+      const gfx::ImageSkia& drag_image,
       const gfx::Vector2d& drag_image_offset,
       uint32_t drag_operation,
       ui::mojom::PointerKind source) override;

@@ -133,7 +133,7 @@ class AuraTestBase : public testing::Test,
   void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
                                   bool janky) override;
   void OnWmBuildDragImage(const gfx::Point& cursor_location,
-                          const SkBitmap& drag_image,
+                          const gfx::ImageSkia& drag_image,
                           const gfx::Vector2d& drag_image_offset,
                           ui::mojom::PointerKind source) override {}
   void OnWmMoveDragImage(const gfx::Point& cursor_location) override {}
