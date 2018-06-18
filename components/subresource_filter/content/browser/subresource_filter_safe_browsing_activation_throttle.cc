@@ -261,35 +261,57 @@ SubresourceFilterSafeBrowsingActivationThrottle::
 
 ActivationDecision
 SubresourceFilterSafeBrowsingActivationThrottle::GetActivationDecision(
-    const std::vector<ConfigResult>& configurations,
+    const std::vector<ConfigResult>& configs,
     ConfigResult* selected_config) {
-  auto selected_itr = configurations.begin();
-  for (auto current_itr = configurations.begin();
-       current_itr != configurations.end(); current_itr++) {
+  size_t selected_index = 0;
+  for (size_t current_index = 0; current_index < configs.size();
+       current_index++) {
     // Prefer later configs when there's a tie.
     // Rank no matching config slightly below priority zero.
-    const auto selected_priority =
-        selected_itr->matched_valid_configuration
-            ? selected_itr->config.activation_conditions.priority
+    const int selected_priority =
+        configs[selected_index].matched_valid_configuration
+            ? configs[selected_index].config.activation_conditions.priority
             : -1;
-    const auto current_priority =
-        current_itr->matched_valid_configuration
-            ? current_itr->config.activation_conditions.priority
+    const int current_priority =
+        configs[current_index].matched_valid_configuration
+            ? configs[current_index].config.activation_conditions.priority
             : -1;
     if (current_priority >= selected_priority) {
-      selected_itr = current_itr;
+      selected_index = current_index;
     }
   }
   // Ensure that the list was not empty, and assign the configuration.
-  DCHECK(selected_itr != configurations.end());
-  *selected_config = *selected_itr;
+  DCHECK(selected_index != configs.size());
+  *selected_config = configs[selected_index];
 
-  if (!selected_itr->matched_valid_configuration) {
+  if (!selected_config->matched_valid_configuration) {
     return ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
   }
 
+  // Get the activation level for the matching configuration.
   auto activation_level =
       selected_config->config.activation_options.activation_level;
+
+  // If there is an activation triggered by the activation list (not a dry run),
+  // report where in the redirect chain it was triggered.
+  if (selected_config->config.activation_conditions.activation_scope ==
+          ActivationScope::ACTIVATION_LIST &&
+      activation_level == ActivationLevel::ENABLED) {
+    ActivationPosition position;
+    if (configs.size() == 1) {
+      position = ActivationPosition::kOnly;
+    } else if (selected_index == 0) {
+      position = ActivationPosition::kFirst;
+    } else if (selected_index == configs.size() - 1) {
+      position = ActivationPosition::kLast;
+    } else {
+      position = ActivationPosition::kMiddle;
+    }
+    UMA_HISTOGRAM_ENUMERATION(
+        "SubresourceFilter.PageLoad.Activation.RedirectPosition", position);
+  }
+
+  // Compute and return the activation decision.
   return activation_level == ActivationLevel::DISABLED
              ? ActivationDecision::ACTIVATION_DISABLED
              : ActivationDecision::ACTIVATED;
