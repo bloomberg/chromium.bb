@@ -6,12 +6,14 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "extensions/browser/computed_hashes.h"
 #include "extensions/browser/content_verifier/test_utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -19,7 +21,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/file_util.h"
-#include "net/url_request/test_url_request_interceptor.h"
+#include "services/network/public/cpp/features.h"
 
 namespace extensions {
 
@@ -68,6 +70,11 @@ class ContentVerifierHashTest
   void TearDown() override {
     ExtensionBrowserTest::TearDown();
     ChromeContentVerifierDelegate::SetDefaultModeForTesting(base::nullopt);
+  }
+
+  void TearDownOnMainThread() override {
+    url_loader_interceptor_.reset();
+    ExtensionBrowserTest::TearDownOnMainThread();
   }
 
   bool uses_enforce_strict_mode() {
@@ -190,12 +197,6 @@ class ContentVerifierHashTest
           Result::SUCCESS);
     }
 
-    if (interceptor_) {
-      EXPECT_EQ(0, interceptor_->GetHitCount()) << "Interceptor should not "
-                                                   "have seen any requests "
-                                                   "before enabling extension.";
-    }
-
     TestExtensionRegistryObserver registry_observer(
         ExtensionRegistry::Get(profile()), id());
     VerifierObserver verifier_observer;
@@ -316,37 +317,14 @@ class ContentVerifierHashTest
     return true;
   }
 
-  bool AddInterceptor() {
-    if (interceptor_) {
-      ADD_FAILURE() << "Already created interceptor.";
-      return false;
-    }
-
-    // Use stored copy of verified_contents.json as hash fetch response.
-    base::FilePath copied_verified_contents_path;
-    if (!CopyVerifiedContents(&copied_verified_contents_path)) {
-      ADD_FAILURE() << "Could not copy verified_contents.json.";
-      return false;
-    }
-
-    ExtensionSystem* system = ExtensionSystem::Get(profile());
-    GURL fetch_url = system->content_verifier()->GetSignatureFetchUrlForTest(
-        id(), info_->version);
-
-    // Mock serving |copied_verified_contents_path| for content hash, so that
-    // hash fetch succeeds.
-    interceptor_ = std::make_unique<net::TestURLRequestInterceptor>(
-        fetch_url.scheme(), fetch_url.host(),
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::IO),
-        GetExtensionFileTaskRunner());
-    interceptor_->SetResponse(fetch_url, copied_verified_contents_path);
-    return true;
-  }
-
   // Installs test extension that is copied from the webstore with actual
   // signatures.
   testing::AssertionResult InstallExtension(ExtensionType type) {
+    // Install the interceptor at the very beginning of the tests' execution
+    // flow, so that it catches all URLLoaderFactory creations.
+    if (!hash_fetching_disabled_ && !InstallInterceptor())
+      return testing::AssertionFailure() << "Failed to install interceptor.";
+
     // This observer will make sure content hash read and computed_hashes.json
     // writing is complete before we proceed.
     VerifierObserver verifier_observer;
@@ -370,15 +348,59 @@ class ContentVerifierHashTest
 
     info_ = std::make_unique<ExtensionInfo>(extension, type);
 
-    // Interceptor.
-    if (!hash_fetching_disabled_ && !AddInterceptor())
+    // Set up the data needed by the interceptor functor.
+    if (!hash_fetching_disabled_ && !SetUpInterceptorData())
       return testing::AssertionFailure() << "Failed to install interceptor.";
 
     return testing::AssertionSuccess();
   }
 
-  std::unique_ptr<net::TestURLRequestInterceptor> interceptor_;
+  bool InstallInterceptor() {
+    if (url_loader_interceptor_) {
+      testing::AssertionFailure() << "Already created interceptor.";
+      return false;
+    }
+
+    auto interceptor_function =
+        [](GURL* fetch_url, base::FilePath* file_path,
+           content::URLLoaderInterceptor::RequestParams* params) {
+          GURL url = params->url_request.url;
+          if (url == *fetch_url) {
+            base::ScopedAllowBlockingForTesting allow_io;
+            std::string contents;
+            CHECK(base::ReadFileToString(*file_path, &contents));
+
+            content::URLLoaderInterceptor::WriteResponse(
+                std::string(), contents, params->client.get());
+            return true;
+          }
+          return false;
+        };
+    url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
+        base::BindRepeating(interceptor_function, &fetch_url_,
+                            &copied_verified_contents_path_));
+    return true;
+  }
+
+  bool SetUpInterceptorData() {
+    // Use stored copy of verified_contents.json as hash fetch response.
+    if (!CopyVerifiedContents(&copied_verified_contents_path_)) {
+      ADD_FAILURE() << "Could not copy verified_contents.json.";
+      return false;
+    }
+
+    ExtensionSystem* system = ExtensionSystem::Get(profile());
+    fetch_url_ = system->content_verifier()->GetSignatureFetchUrlForTest(
+        id(), info_->version);
+
+    return true;
+  }
+
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
   base::ScopedTempDir temp_dir_;
+
+  base::FilePath copied_verified_contents_path_;
+  GURL fetch_url_;
 
   // Information about the loaded extension.
   std::unique_ptr<ExtensionInfo> info_;

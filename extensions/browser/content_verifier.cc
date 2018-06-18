@@ -27,6 +27,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace extensions {
 
@@ -364,9 +365,6 @@ ContentVerifier::ContentVerifier(
     std::unique_ptr<ContentVerifierDelegate> delegate)
     : context_(context),
       delegate_(std::move(delegate)),
-      request_context_getter_(
-          content::BrowserContext::GetDefaultStoragePartition(context)
-              ->GetURLRequestContext()),
       observer_(this),
       io_data_(new ContentVerifierIOData) {}
 
@@ -579,9 +577,35 @@ void ContentVerifier::OnFetchComplete(
 ContentHash::FetchParams ContentVerifier::GetFetchParams(
     const ExtensionId& extension_id,
     const base::Version& extension_version) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // Create a new mojo pipe. It's safe to pass this around and use immediately,
+  // even though it needs to finish initialization on the UI thread.
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_ptr;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&ContentVerifier::BindURLLoaderFactoryRequestOnUIThread,
+                     this, mojo::MakeRequest(&url_loader_factory_ptr)));
+  network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_info =
+      url_loader_factory_ptr.PassInterface();
   return ContentHash::FetchParams(
-      request_context_getter_,
+      std::move(url_loader_factory_info),
       delegate_->GetSignatureFetchUrl(extension_id, extension_version));
+}
+
+void ContentVerifier::BindURLLoaderFactoryRequestOnUIThread(
+    network::mojom::URLLoaderFactoryRequest url_loader_factory_request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (shutdown_on_ui_)
+    return;
+
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
+  content::BrowserContext::GetDefaultStoragePartition(context_)
+      ->GetURLLoaderFactoryForBrowserProcess()
+      ->Clone(std::move(url_loader_factory_request));
 }
 
 bool ContentVerifier::ShouldVerifyAnyPaths(

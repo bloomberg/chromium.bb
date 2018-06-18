@@ -15,11 +15,8 @@
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/gurl.h"
-
-namespace net {
-class URLRequestContextGetter;
-}
 
 namespace extensions {
 
@@ -71,13 +68,14 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
 
   // Parameters to fetch verified_contents.json.
   struct FetchParams {
-    FetchParams(net::URLRequestContextGetter* request_context,
-                const GURL& fetch_url);
+    FetchParams(
+        network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info,
+        const GURL& fetch_url);
     ~FetchParams();
     FetchParams(FetchParams&&);
     FetchParams& operator=(FetchParams&&);
 
-    net::URLRequestContextGetter* request_context;
+    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
     GURL fetch_url;
   };
 

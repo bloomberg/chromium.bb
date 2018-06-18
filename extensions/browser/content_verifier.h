@@ -19,6 +19,7 @@
 #include "extensions/browser/content_verifier_io_data.h"
 #include "extensions/browser/content_verify_job.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace base {
 class FilePath;
@@ -26,10 +27,6 @@ class FilePath;
 
 namespace content {
 class BrowserContext;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 namespace extensions {
@@ -120,6 +117,10 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
       const ExtensionId& extension_id,
       const base::Version& extension_version);
 
+  // Binds an URLLoaderFactoryRequest on the UI thread.
+  void BindURLLoaderFactoryRequestOnUIThread(
+      network::mojom::URLLoaderFactoryRequest url_loader_factory_request);
+
   // Performs IO thread operations after extension load.
   void OnExtensionLoadedOnIO(
       const ExtensionId& extension_id,
@@ -162,9 +163,6 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
       hash_helper_;
 
   std::unique_ptr<ContentVerifierDelegate> delegate_;
-
-  // Used by ContentHashFetcher.
-  net::URLRequestContextGetter* request_context_getter_;
 
   // For observing the ExtensionRegistry.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
