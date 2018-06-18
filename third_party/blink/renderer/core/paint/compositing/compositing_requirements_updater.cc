@@ -297,9 +297,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   direct_reasons |= direct_from_paint_layer;
 
   if (layer->GetScrollableArea() &&
-      layer->GetScrollableArea()->NeedsCompositedScrolling()) {
+      layer->GetScrollableArea()->NeedsCompositedScrolling())
     direct_reasons |= CompositingReason::kOverflowScrollingTouch;
-  }
 
   bool can_be_composited = compositor->CanBeComposited(layer);
   if (can_be_composited)
@@ -401,7 +400,27 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   bool any_descendant_has3d_transform = false;
   bool will_have_foreground_layer = false;
 
-  if (layer->StackingNode()->IsStackingContext()) {
+  bool needs_recursion_for_composited_scrolling_plus_fixed_or_sticky =
+      layer->HasDescendantWithStickyOrFixed() &&
+      (has_non_root_composited_scrolling_ancestor ||
+       (layer->GetScrollableArea() &&
+        layer->GetScrollableArea()->NeedsCompositedScrolling()));
+
+  bool needs_recursion_for_out_of_flow_descendant =
+      layer->HasNonContainedAbsolutePositionDescendant();
+
+  // Skip recursion if there are no descendants which:
+  //  * may have their own reason for compositing,
+  //  * have compositing already from the previous frame, or
+  //  * may escape |layer|'s clip.
+  bool skip_children =
+      !layer->DescendantHasDirectOrScrollingCompositingReason() &&
+      !needs_recursion_for_composited_scrolling_plus_fixed_or_sticky &&
+      !needs_recursion_for_out_of_flow_descendant &&
+      layer->GetLayoutObject().HasOverflowClip() &&
+      !layer->HasCompositingDescendant();
+
+  if (!skip_children && layer->StackingNode()->IsStackingContext()) {
     PaintLayerStackingNodeIterator iterator(*layer->StackingNode(),
                                             kNegativeZOrderChildren);
     while (PaintLayerStackingNode* cur_node = iterator.Next()) {
@@ -453,16 +472,18 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     child_recursion_data.testing_overlap_ = true;
   }
 
-  PaintLayerStackingNodeIterator iterator(
-      *layer->StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
-  while (PaintLayerStackingNode* cur_node = iterator.Next()) {
-    IntRect absolute_child_descendant_bounding_box;
-    UpdateRecursive(layer, cur_node->Layer(), overlap_map, child_recursion_data,
-                    any_descendant_has3d_transform, unclipped_descendants,
-                    absolute_child_descendant_bounding_box,
-                    compositing_reasons_stats);
-    absolute_descendant_bounding_box.Unite(
-        absolute_child_descendant_bounding_box);
+  if (!skip_children) {
+    PaintLayerStackingNodeIterator iterator(
+        *layer->StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
+    while (PaintLayerStackingNode* cur_node = iterator.Next()) {
+      IntRect absolute_child_descendant_bounding_box;
+      UpdateRecursive(
+          layer, cur_node->Layer(), overlap_map, child_recursion_data,
+          any_descendant_has3d_transform, unclipped_descendants,
+          absolute_child_descendant_bounding_box, compositing_reasons_stats);
+      absolute_descendant_bounding_box.Unite(
+          absolute_child_descendant_bounding_box);
+    }
   }
 
   // Now that the subtree has been traversed, we can check for compositing

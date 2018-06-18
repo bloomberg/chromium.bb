@@ -104,6 +104,9 @@ static CompositingQueryMode g_compositing_query_mode =
 
 struct SameSizeAsPaintLayer : DisplayItemClient {
   int bit_fields;
+#if DCHECK_IS_ON()
+  int bit_fields2;
+#endif
   void* pointers[11];
   LayoutUnit layout_units[4];
   IntSize size;
@@ -161,10 +164,12 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       previous_paint_phase_descendant_block_backgrounds_was_empty_(false),
       has_descendant_with_clip_path_(false),
       has_non_isolated_descendant_with_blend_mode_(false),
+      has_descendant_with_sticky_or_fixed_(false),
+      has_non_contained_absolute_position_descendant_(false),
       self_painting_status_changed_(false),
       filter_on_effect_node_dirty_(false),
       is_under_svg_hidden_container_(false),
-      descendant_has_direct_compositing_reason_(false),
+      descendant_has_direct_or_scrolling_compositing_reason_(false),
       needs_compositing_reasons_update_(true),
       layout_object_(layout_object),
       parent_(nullptr),
@@ -749,6 +754,11 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     has_visible_descendant_ = false;
     has_non_isolated_descendant_with_blend_mode_ = false;
     has_descendant_with_clip_path_ = false;
+    has_descendant_with_sticky_or_fixed_ = false;
+    has_non_contained_absolute_position_descendant_ = false;
+
+    bool can_contain_abs =
+        GetLayoutObject().CanContainAbsolutePositionObjects();
 
     for (PaintLayer* child = FirstChild(); child;
          child = child->NextSibling()) {
@@ -764,6 +774,19 @@ void PaintLayer::UpdateDescendantDependentFlags() {
 
       has_descendant_with_clip_path_ |= child->HasDescendantWithClipPath() ||
                                         child->GetLayoutObject().HasClipPath();
+
+      has_descendant_with_sticky_or_fixed_ |=
+          child->HasDescendantWithStickyOrFixed() ||
+          child->GetLayoutObject().Style()->GetPosition() ==
+              EPosition::kSticky ||
+          child->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed;
+
+      if (!can_contain_abs) {
+        has_non_contained_absolute_position_descendant_ |=
+            (child->HasNonContainedAbsolutePositionDescendant() ||
+             child->GetLayoutObject().Style()->GetPosition() ==
+                 EPosition::kAbsolute);
+      }
     }
 
     if (old_has_non_isolated_descendant_with_blend_mode !=
@@ -1128,6 +1151,7 @@ void PaintLayer::ClearChildNeedsCompositingInputsUpdate() {
 }
 
 bool PaintLayer::HasNonIsolatedDescendantWithBlendMode() const {
+  DCHECK(!needs_descendant_dependent_flags_update_);
   if (has_non_isolated_descendant_with_blend_mode_)
     return true;
   if (GetLayoutObject().IsSVGRoot())
