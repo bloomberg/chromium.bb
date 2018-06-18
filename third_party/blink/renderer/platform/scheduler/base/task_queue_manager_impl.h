@@ -92,7 +92,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
   void RegisterTimeDomain(TimeDomain* time_domain) override;
   void UnregisterTimeDomain(TimeDomain* time_domain) override;
-  RealTimeDomain* GetRealTimeDomain() const override;
+  TimeDomain* GetRealTimeDomain() const override;
   const TickClock* GetTickClock() const override;
   TimeTicks NowTicks() const override;
   void SetDefaultTaskRunner(

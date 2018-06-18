@@ -15,7 +15,6 @@
 namespace blink {
 namespace scheduler {
 
-using base::sequence_manager::RealTimeDomain;
 using base::sequence_manager::TaskQueue;
 using base::sequence_manager::SequenceManager;
 using base::sequence_manager::TaskTimeObserver;
@@ -101,7 +100,7 @@ void SchedulerHelper::SweepCanceledDelayedTasks() {
   task_queue_manager_->SweepCanceledDelayedTasks();
 }
 
-RealTimeDomain* SchedulerHelper::real_time_domain() const {
+TimeDomain* SchedulerHelper::real_time_domain() const {
   CheckOnValidThread();
   DCHECK(task_queue_manager_);
   return task_queue_manager_->GetRealTimeDomain();
