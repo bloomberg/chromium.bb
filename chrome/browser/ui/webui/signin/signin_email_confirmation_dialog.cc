@@ -22,17 +22,17 @@
 namespace {
 
 // Dialog size.
-const int kDialogWidth = 512;
-const int kDialogMinHeight = 200;
-const int kDialogMaxHeight = 700;
+const int kSigninEmailConfirmationDialogWidth = 512;
+const int kSigninEmailConfirmationDialogMinHeight = 200;
+const int kSigninEmailConfirmationDialogMaxHeight = 700;
 
 // Dialog action key;
-const char kActionKey[] = "action";
+const char kSigninEmailConfirmationActionKey[] = "action";
 
 // Dialog action values.
-const char kActionCancel[] = "cancel";
-const char kActionCreateNewUser[] = "createNewUser";
-const char kActionStartSync[] = "startSync";
+const char kSigninEmailConfirmationActionCancel[] = "cancel";
+const char kSigninEmailConfirmationActionCreateNewUser[] = "createNewUser";
+const char kSigninEmailConfirmationActionStartSync[] = "startSync";
 
 }  // namespace
 
@@ -92,8 +92,10 @@ void SigninEmailConfirmationDialog::AskForConfirmation(
 }
 
 void SigninEmailConfirmationDialog::ShowDialog() {
-  gfx::Size min_size(kDialogWidth, kDialogMinHeight);
-  gfx::Size max_size(kDialogWidth, kDialogMaxHeight);
+  gfx::Size min_size(kSigninEmailConfirmationDialogWidth,
+                     kSigninEmailConfirmationDialogMinHeight);
+  gfx::Size max_size(kSigninEmailConfirmationDialogWidth,
+                     kSigninEmailConfirmationDialogMaxHeight);
   ConstrainedWebDialogDelegate* dialog_delegate =
       ShowConstrainedWebDialogWithAutoResize(profile_, this, web_contents_,
                                              min_size, max_size);
@@ -157,7 +159,7 @@ void SigninEmailConfirmationDialog::GetDialogSize(gfx::Size* size) const {
   // horizontally when it appears. Avoid setting a dialog height in here as
   // this dialog auto-resizes.
   if (size->IsEmpty())
-    size->set_width(kDialogWidth);
+    size->set_width(kSigninEmailConfirmationDialogWidth);
 }
 
 std::string SigninEmailConfirmationDialog::GetDialogArgs() const {
@@ -176,12 +178,13 @@ void SigninEmailConfirmationDialog::OnDialogClosed(
       base::DictionaryValue::From(base::JSONReader::Read(json_retval)));
   if (ret_value) {
     std::string action_string;
-    if (ret_value->GetString(kActionKey, &action_string)) {
-      if (action_string == kActionCancel) {
+    if (ret_value->GetString(kSigninEmailConfirmationActionKey,
+                             &action_string)) {
+      if (action_string == kSigninEmailConfirmationActionCancel) {
         action = CLOSE;
-      } else if (action_string == kActionCreateNewUser) {
+      } else if (action_string == kSigninEmailConfirmationActionCreateNewUser) {
         action = CREATE_NEW_USER;
-      } else if (action_string == kActionStartSync) {
+      } else if (action_string == kSigninEmailConfirmationActionStartSync) {
         action = START_SYNC;
       } else {
         NOTREACHED() << "Unexpected action value [" << action_string << "]";
