@@ -12,7 +12,7 @@ Call stack:
 
 Executing StepOver...
 Call stack:
-    0)  (debugger-step-over-inlined-scripts.html:9)
+    0)  (debugger-step-over-inlined-scripts.html:10)
 
 Executing StepOver...
 Call stack:
@@ -20,7 +20,7 @@ Call stack:
 
 Executing StepOver...
 Call stack:
-    0)  (debugger-step-over-inlined-scripts.html:17)
+    0)  (debugger-step-over-inlined-scripts.html:18)
 
 Executing Resume...
 Page reloaded.

@@ -19,7 +19,7 @@ Call stack:
 
 Executing StepOut...
 Call stack:
-    0)  (debugger-step-out-document-write.html:14)
+    0)  (debugger-step-out-document-write.html:15)
 
 Executing StepOut...
 Call stack:
