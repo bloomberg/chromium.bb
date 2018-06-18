@@ -32,8 +32,7 @@ def main(argv):
   for opt, arg in parsed:
     if opt == "--setup":
       robo_setup.InstallPrereqs(robo_configuration)
-      # TODO: create symlinks for llvm
-      # TODO: make sure that we have 'win' and 'darwin' in .gclient
+      robo_setup.EnsureToolchains(robo_configuration)
       robo_setup.EnsureASANDirWorks(robo_configuration)
     elif opt == "--test":
       robo_build.BuildAndImportFFmpegConfigForHost(robo_configuration)
