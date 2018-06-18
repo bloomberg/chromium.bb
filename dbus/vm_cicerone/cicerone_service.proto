@@ -79,8 +79,7 @@ message IsContainerRunningResponse {
   bool container_running = 1;
 }
 
-// Message used in the signal for when a container has started up or failed to
-// start.
+// Message used in the signal for when a container has started up.
 message ContainerStartedSignal {
   // Name of the VM the container is in.
   string vm_name = 1;
