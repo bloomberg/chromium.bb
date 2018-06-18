@@ -16,11 +16,6 @@
 # The goal is to drive the number of exceptions to zero, to make all
 # the bots behave similarly.
 {
-  'accessibility_unittests': {
-    'remove_from': [
-      'Mac ASan 64 Tests (1)',
-    ],
-  },
   'android_webview_unittests': {
     'remove_from': [
       # On chromium.android, these do not need to run prior to M.
