@@ -302,7 +302,7 @@ void ServiceWorkerProviderContext::SetController(
     for (const auto& worker : state->worker_clients) {
       // This is a Mojo interface call to the (dedicated or shared) worker
       // thread.
-      worker->SetControllerServiceWorker(state->controller->version_id);
+      worker->OnControllerChanged();
     }
   }
   for (blink::mojom::WebFeature feature : used_features)
