@@ -77,7 +77,6 @@ std::unique_ptr<net::URLRequest> RequestURL(
       response_mock_reads, base::span<net::MockWrite>());
   socket_factory->AddSocketDataProvider(&response_socket_data_provider);
   net::TestDelegate test_delegate;
-  test_delegate.set_quit_on_complete(true);
   std::unique_ptr<net::URLRequest> request(
       context->CreateRequest(GURL("http://example.com"), net::DEFAULT_PRIORITY,
                              &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
@@ -87,7 +86,7 @@ std::unique_ptr<net::URLRequest> RequestURL(
       true, true, true, content::PREVIEWS_OFF, nullptr);
 
   request->Start();
-  base::RunLoop().RunUntilIdle();
+  test_delegate.RunUntilComplete();
   return request;
 }
 

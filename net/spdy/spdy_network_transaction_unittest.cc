@@ -2581,22 +2581,24 @@ TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
   spdy_url_request_context.socket_factory().AddSocketDataProvider(&data1);
 
   TestDelegate delegate;
-  delegate.set_quit_on_redirect(true);
 
   std::unique_ptr<URLRequest> request = spdy_url_request_context.CreateRequest(
       default_url_, DEFAULT_PRIORITY, &delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
   request->Start();
-  base::RunLoop().Run();
+  delegate.RunUntilRedirect();
 
   EXPECT_EQ(1, delegate.received_redirect_count());
 
   request->FollowDeferredRedirect(base::nullopt /* modified_request_headers */);
-  base::RunLoop().Run();
+  delegate.RunUntilComplete();
 
   EXPECT_EQ(1, delegate.response_started_count());
   EXPECT_FALSE(delegate.received_data_before_response());
   EXPECT_THAT(delegate.request_status(), IsOk());
   EXPECT_EQ("hello!", delegate.data_received());
+
+  // Pump the message loop to allow read data to be consumed.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(data0.AllReadDataConsumed());
   EXPECT_TRUE(data0.AllWriteDataConsumed());
@@ -2668,7 +2670,7 @@ TEST_F(SpdyNetworkTransactionTest, RedirectServerPush) {
       default_url_, DEFAULT_PRIORITY, &delegate0, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   request->Start();
-  base::RunLoop().Run();
+  delegate0.RunUntilComplete();
 
   EXPECT_EQ(0, delegate0.received_redirect_count());
   EXPECT_EQ("hello!", delegate0.data_received());
@@ -2678,18 +2680,20 @@ TEST_F(SpdyNetworkTransactionTest, RedirectServerPush) {
       GURL(kPushedUrl), DEFAULT_PRIORITY, &delegate1,
       TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  delegate1.set_quit_on_redirect(true);
   request1->Start();
-  base::RunLoop().Run();
+  delegate1.RunUntilRedirect();
   EXPECT_EQ(1, delegate1.received_redirect_count());
 
   request1->FollowDeferredRedirect(
       base::nullopt /* modified_request_headers */);
-  base::RunLoop().Run();
+  delegate1.RunUntilComplete();
   EXPECT_EQ(1, delegate1.response_started_count());
   EXPECT_FALSE(delegate1.received_data_before_response());
   EXPECT_EQ(OK, delegate1.request_status());
   EXPECT_EQ("hello!", delegate1.data_received());
+
+  // Pump the message loop to allow read data to be consumed.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(data0.AllReadDataConsumed());
   EXPECT_TRUE(data0.AllWriteDataConsumed());

@@ -173,7 +173,7 @@ class NetworkErrorLoggingEndToEndTest : public TestWithScopedTaskEnvironment {
 #endif
 TEST_F(NetworkErrorLoggingEndToEndTest, MAYBE_ReportNetworkError) {
   TestDelegate configure_delegate;
-  configure_delegate.set_quit_on_complete(false);
+  configure_delegate.set_on_complete(base::DoNothing());
   auto configure_request = url_request_context_->CreateRequest(
       GetConfigureURL(), DEFAULT_PRIORITY, &configure_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -181,7 +181,7 @@ TEST_F(NetworkErrorLoggingEndToEndTest, MAYBE_ReportNetworkError) {
   configure_request->Start();
 
   TestDelegate fail_delegate;
-  fail_delegate.set_quit_on_complete(false);
+  fail_delegate.set_on_complete(base::DoNothing());
   auto fail_request = url_request_context_->CreateRequest(
       GetFailURL(), DEFAULT_PRIORITY, &fail_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -221,7 +221,7 @@ TEST_F(NetworkErrorLoggingEndToEndTest, MAYBE_UploadAtShutdown) {
   upload_should_hang_ = true;
 
   TestDelegate configure_delegate;
-  configure_delegate.set_quit_on_complete(false);
+  configure_delegate.set_on_complete(base::DoNothing());
   auto configure_request = url_request_context_->CreateRequest(
       GetConfigureURL(), DEFAULT_PRIORITY, &configure_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -229,7 +229,7 @@ TEST_F(NetworkErrorLoggingEndToEndTest, MAYBE_UploadAtShutdown) {
   configure_request->Start();
 
   TestDelegate fail_delegate;
-  fail_delegate.set_quit_on_complete(false);
+  fail_delegate.set_on_complete(base::DoNothing());
   auto fail_request = url_request_context_->CreateRequest(
       GetFailURL(), DEFAULT_PRIORITY, &fail_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);

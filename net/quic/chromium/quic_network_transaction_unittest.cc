@@ -5776,6 +5776,10 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullRequest) {
             request->GetTotalReceivedBytes());
   EXPECT_EQ(static_cast<int>(expected_raw_header_response_size),
             request->raw_header_size());
+
+  // Pump the message loop to allow all data to be consumed.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
   EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
 }
@@ -5873,6 +5877,10 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
             request->GetTotalReceivedBytes());
   EXPECT_EQ(static_cast<int>(expected_raw_header_response_size),
             request->raw_header_size());
+
+  // Pump the message loop to allow all data to be consumed.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(mock_quic_data.AllReadDataConsumed());
   EXPECT_TRUE(mock_quic_data.AllWriteDataConsumed());
 }
@@ -6731,8 +6739,8 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyConnectSpdyServer) {
   EXPECT_TRUE(headers_handler.was_proxied());
   EXPECT_TRUE(trans.GetResponseInfo()->proxy_server.is_quic());
 
-  // Causes MockSSLClientSocket to disconnect, which causes the underlying QUIC
-  // proxy socket to disconnect.
+  // Causes MockSSLClientSocket to disconproxyconnecthttpnect, which causes the
+  // underlying QUIC proxy socket to disconnect.
   NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
 
   base::RunLoop().RunUntilIdle();

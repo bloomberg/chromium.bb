@@ -187,20 +187,22 @@ TEST_F(ThroughputAnalyzerTest, TestMinRequestsForThroughputSample) {
        ++num_requests) {
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
                                                &params, tick_clock);
-    TestDelegate test_delegate;
     TestURLRequestContext context;
     throughput_analyzer.AddIPAddressResolution(&context);
     std::vector<std::unique_ptr<URLRequest>> requests_not_local;
 
+    std::vector<TestDelegate> not_local_test_delegates(num_requests);
     for (size_t i = 0; i < num_requests; ++i) {
+      // We don't care about completion, except for the first one (see below).
+      not_local_test_delegates[i].set_on_complete(base::DoNothing());
       std::unique_ptr<URLRequest> request_not_local(context.CreateRequest(
           GURL("http://example.com/echo.html"), DEFAULT_PRIORITY,
-          &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+          &not_local_test_delegates[i], TRAFFIC_ANNOTATION_FOR_TESTS));
       request_not_local->Start();
       requests_not_local.push_back(std::move(request_not_local));
     }
 
-    test_delegate.RunUntilComplete();
+    not_local_test_delegates[0].RunUntilComplete();
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
@@ -299,20 +301,22 @@ TEST_F(ThroughputAnalyzerTest, TestHangingRequests) {
     const size_t num_requests = params.throughput_min_requests_in_flight();
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
                                                &params, tick_clock);
-    TestDelegate test_delegate;
     TestURLRequestContext context;
     throughput_analyzer.AddIPAddressResolution(&context);
     std::vector<std::unique_ptr<URLRequest>> requests_not_local;
 
+    std::vector<TestDelegate> not_local_test_delegates(num_requests);
     for (size_t i = 0; i < num_requests; ++i) {
+      // We don't care about completion, except for the first one (see below).
+      not_local_test_delegates[i].set_on_complete(base::DoNothing());
       std::unique_ptr<URLRequest> request_not_local(context.CreateRequest(
           GURL("http://example.com/echo.html"), DEFAULT_PRIORITY,
-          &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+          &not_local_test_delegates[i], TRAFFIC_ANNOTATION_FOR_TESTS));
       request_not_local->Start();
       requests_not_local.push_back(std::move(request_not_local));
     }
 
-    test_delegate.RunUntilComplete();
+    not_local_test_delegates[0].RunUntilComplete();
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
@@ -582,30 +586,34 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleRequestsOverlap) {
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
                                                &params, tick_clock);
 
-    TestDelegate test_delegate;
+    TestDelegate local_delegate;
+    local_delegate.set_on_complete(base::DoNothing());
     TestURLRequestContext context;
     throughput_analyzer.AddIPAddressResolution(&context);
-
     std::unique_ptr<URLRequest> request_local;
 
     std::vector<std::unique_ptr<URLRequest>> requests_not_local;
-
+    std::vector<TestDelegate> not_local_test_delegates(
+        params.throughput_min_requests_in_flight());
     for (size_t i = 0; i < params.throughput_min_requests_in_flight(); ++i) {
+      // We don't care about completion, except for the first one (see below).
+      not_local_test_delegates[i].set_on_complete(base::DoNothing());
       std::unique_ptr<URLRequest> request_not_local(context.CreateRequest(
           GURL("http://example.com/echo.html"), DEFAULT_PRIORITY,
-          &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+          &not_local_test_delegates[i], TRAFFIC_ANNOTATION_FOR_TESTS));
       request_not_local->Start();
       requests_not_local.push_back(std::move(request_not_local));
     }
 
     if (test.start_local_request) {
       request_local = context.CreateRequest(GURL("http://127.0.0.1/echo.html"),
-                                            DEFAULT_PRIORITY, &test_delegate,
+                                            DEFAULT_PRIORITY, &local_delegate,
                                             TRAFFIC_ANNOTATION_FOR_TESTS);
       request_local->Start();
     }
 
-    test_delegate.RunUntilComplete();
+    // Wait until the first not-local request completes.
+    not_local_test_delegates[0].RunUntilComplete();
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
@@ -636,6 +644,7 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleRequestsOverlap) {
     if (test.start_local_request && !test.local_request_completes_first)
       throughput_analyzer.NotifyRequestCompleted(*request_local);
 
+    // Pump the message loop to let analyzer tasks get processed.
     base::RunLoop().RunUntilIdle();
 
     int expected_throughput_observations =
@@ -690,23 +699,25 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
 
     TestThroughputAnalyzer throughput_analyzer(&network_quality_provider,
                                                &params, tick_clock);
-    TestDelegate test_delegate;
     TestURLRequestContext context;
     throughput_analyzer.AddIPAddressResolution(&context);
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
     std::vector<std::unique_ptr<URLRequest>> requests_in_flight;
-
+    std::vector<TestDelegate> in_flight_test_delegates(
+        test.number_requests_in_flight);
     for (size_t i = 0; i < test.number_requests_in_flight; ++i) {
+      // We don't care about completion, except for the first one (see below).
+      in_flight_test_delegates[i].set_on_complete(base::DoNothing());
       std::unique_ptr<URLRequest> request_network_1 = context.CreateRequest(
           GURL("http://example.com/echo.html"), DEFAULT_PRIORITY,
-          &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS);
+          &in_flight_test_delegates[i], TRAFFIC_ANNOTATION_FOR_TESTS);
       requests_in_flight.push_back(std::move(request_network_1));
       requests_in_flight.back()->Start();
     }
 
-    test_delegate.RunUntilComplete();
+    in_flight_test_delegates[0].RunUntilComplete();
 
     EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
@@ -776,7 +787,9 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
   request_3->Start();
   request_4->Start();
 
-  test_delegate.RunUntilComplete();
+  // We dispatched four requests, so wait for four completions.
+  for (int i = 0; i < 4; ++i)
+    test_delegate.RunUntilComplete();
 
   EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
@@ -791,6 +804,7 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
 
   throughput_analyzer.NotifyRequestCompleted(*(request_1.get()));
   base::RunLoop().RunUntilIdle();
+
   // No observation should be taken since only 1 request is in flight.
   EXPECT_EQ(0, throughput_analyzer.throughput_observations_received());
 
