@@ -29,7 +29,7 @@ class QueueMessageSwapPromise : public cc::SwapPromise {
   void DidActivate() override;
   void WillSwap(viz::CompositorFrameMetadata* metadata) override;
   void DidSwap() override;
-  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override;
+  void DidNotSwap(DidNotSwapReason reason) override;
 
   int64_t TraceId() const override;
 

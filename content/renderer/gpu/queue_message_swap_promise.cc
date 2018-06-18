@@ -73,8 +73,7 @@ void QueueMessageSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
 
 void QueueMessageSwapPromise::DidSwap() {}
 
-cc::SwapPromise::DidNotSwapAction QueueMessageSwapPromise::DidNotSwap(
-    DidNotSwapReason reason) {
+void QueueMessageSwapPromise::DidNotSwap(DidNotSwapReason reason) {
 #if DCHECK_IS_ON()
   DCHECK(!completed_);
 #endif
@@ -86,7 +85,6 @@ cc::SwapPromise::DidNotSwapAction QueueMessageSwapPromise::DidNotSwap(
     message_sender_->Send(msg.release());
   }
   PromiseCompleted();
-  return DidNotSwapAction::BREAK_PROMISE;
 }
 
 void QueueMessageSwapPromise::PromiseCompleted() {

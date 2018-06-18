@@ -1693,15 +1693,8 @@ void LayerTreeImpl::QueuePinnedSwapPromise(
 
 void LayerTreeImpl::PassSwapPromises(
     std::vector<std::unique_ptr<SwapPromise>> new_swap_promises) {
-  for (auto& swap_promise : swap_promise_list_) {
-    if (swap_promise->DidNotSwap(SwapPromise::SWAP_FAILS) ==
-        SwapPromise::DidNotSwapAction::KEEP_ACTIVE) {
-      // |swap_promise| must remain active, so place it in |new_swap_promises|
-      // in order to keep it alive and active.
-      new_swap_promises.push_back(std::move(swap_promise));
-    }
-  }
-  swap_promise_list_.clear();
+  for (auto& swap_promise : swap_promise_list_)
+    swap_promise->DidNotSwap(SwapPromise::SWAP_FAILS);
   swap_promise_list_.swap(new_swap_promises);
 }
 
@@ -1729,30 +1722,13 @@ void LayerTreeImpl::ClearSwapPromises() {
 }
 
 void LayerTreeImpl::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
-  {
-    std::vector<std::unique_ptr<SwapPromise>> persistent_swap_promises;
-    for (auto& swap_promise : swap_promise_list_) {
-      if (swap_promise->DidNotSwap(reason) ==
-          SwapPromise::DidNotSwapAction::KEEP_ACTIVE) {
-        persistent_swap_promises.push_back(std::move(swap_promise));
-      }
-    }
-    // |persistent_swap_promises| must remain active even when swap fails.
-    swap_promise_list_ = std::move(persistent_swap_promises);
-  }
+  for (auto& swap_promise : swap_promise_list_)
+    swap_promise->DidNotSwap(reason);
+  swap_promise_list_.clear();
 
-  {
-    std::vector<std::unique_ptr<SwapPromise>> persistent_swap_promises;
-    for (auto& swap_promise : pinned_swap_promise_list_) {
-      if (swap_promise->DidNotSwap(reason) ==
-          SwapPromise::DidNotSwapAction::KEEP_ACTIVE) {
-        persistent_swap_promises.push_back(std::move(swap_promise));
-      }
-    }
-
-    // |persistent_swap_promises| must remain active even when swap fails.
-    pinned_swap_promise_list_ = std::move(persistent_swap_promises);
-  }
+  for (auto& swap_promise : pinned_swap_promise_list_)
+    swap_promise->DidNotSwap(reason);
+  pinned_swap_promise_list_.clear();
 }
 
 void LayerTreeImpl::DidModifyTilePriorities() {
