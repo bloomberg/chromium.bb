@@ -10,6 +10,41 @@ AuthenticatorRequestDialogModel::~AuthenticatorRequestDialogModel() {
     observer.OnModelDestroyed();
 }
 
+void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
+    int transport) {
+  DCHECK_EQ(current_step(), Step::kTransportSelection);
+}
+
+void AuthenticatorRequestDialogModel::TryIfBleAdapterIsPowered() {
+  DCHECK_EQ(current_step(), Step::kBlePowerOnManual);
+}
+
+void AuthenticatorRequestDialogModel::PowerOnBleAdapter() {
+  DCHECK_EQ(current_step(), Step::kBlePowerOnAutomatic);
+}
+
+void AuthenticatorRequestDialogModel::StartBleDiscovery() {
+  DCHECK_EQ(current_step(), Step::kBlePairingBegin);
+}
+
+void AuthenticatorRequestDialogModel::InitiatePairingDevice(
+    const std::string& device_address) {
+  DCHECK_EQ(current_step(), Step::kBleDeviceSelection);
+}
+
+void AuthenticatorRequestDialogModel::FinishPairingWithPin(
+    const base::string16& pin) {
+  DCHECK_EQ(current_step(), Step::kBlePinEntry);
+}
+
+void AuthenticatorRequestDialogModel::TryUsbDevice() {
+  DCHECK_EQ(current_step(), Step::kUsbInsert);
+}
+
+void AuthenticatorRequestDialogModel::Cancel() {}
+
+void AuthenticatorRequestDialogModel::Back() {}
+
 void AuthenticatorRequestDialogModel::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -19,6 +54,11 @@ void AuthenticatorRequestDialogModel::RemoveObserver(Observer* observer) {
 }
 
 void AuthenticatorRequestDialogModel::OnRequestComplete() {
+  current_step_ = Step::kCompleted;
+  NotifyStepTransition();
+}
+
+void AuthenticatorRequestDialogModel::NotifyStepTransition() {
   for (auto& observer : observers_)
-    observer.OnRequestComplete();
+    observer.OnStepTransition();
 }

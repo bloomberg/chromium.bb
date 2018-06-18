@@ -198,10 +198,13 @@ void AuthenticatorRequestDialogView::OnModelDestroyed() {
   NOTREACHED();
 }
 
-void AuthenticatorRequestDialogView::OnRequestComplete() {
-  if (!GetWidget())
-    return;
-  GetWidget()->Close();
+void AuthenticatorRequestDialogView::OnStepTransition() {
+  if (model_->current_step() ==
+      AuthenticatorRequestDialogModel::Step::kCompleted) {
+    if (!GetWidget())
+      return;
+    GetWidget()->Close();
+  }
 }
 
 void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(
