@@ -286,8 +286,9 @@ def SetupWindowsCrossCompileToolchain(target_arch):
 def SetupMacCrossCompileToolchain():
   # First compute the various SDK paths.
   mac_min_ver = '10.10'
-  sdk_dir = os.path.join(CHROMIUM_ROOT_DIR, 'build', 'win_files',
-          'Xcode.app', 'Contents', 'Developer', 'Platforms', 'MacOSX.platform',
+  developer_dir =  os.path.join(CHROMIUM_ROOT_DIR, 'build', 'win_files',
+          'Xcode.app', 'Contents', 'Developer')
+  sdk_dir = os.path.join(developer_dir, 'Platforms', 'MacOSX.platform',
           'Developer', 'SDKs', 'MacOSX' + mac_min_ver + '.sdk')
 
   # We're guessing about the right sdk path, so warn if we don't find it.
@@ -313,6 +314,11 @@ def SetupMacCrossCompileToolchain():
 
   new_args += [
       '--extra-cflags=-fblocks',
+      '--extra-cflags=-nostdinc',
+      '--extra-cflags=-isystem%s/usr/include' % sdk_dir,
+      '--extra-cflags=-isystem%s/usr/include/c++/4.2.1' % sdk_dir,
+      '--extra-cflags=-isystem%s/Toolchains/XcodeDefault.xctoolchain'
+      '/usr/lib/clang/8.1.0/include/' % developer_dir,
       '--extra-ldflags=-syslibroot', '--extra-ldflags=' + sdk_dir,
       '--extra-ldflags=' + '-L' + libs_dir,
       '--extra-ldflags=-lSystem',
