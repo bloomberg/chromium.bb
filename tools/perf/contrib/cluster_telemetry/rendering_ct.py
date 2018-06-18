@@ -6,7 +6,7 @@ from contrib.cluster_telemetry import ct_benchmarks_util
 from contrib.cluster_telemetry import page_set
 
 from core import perf_benchmark
-from measurements import smoothness
+from measurements import rendering
 
 def ScrollToEndOfPage(action_runner):
   action_runner.Wait(1)
@@ -14,16 +14,16 @@ def ScrollToEndOfPage(action_runner):
     action_runner.ScrollPage()
 
 
-class SmoothnessCT(perf_benchmark.PerfBenchmark):
-  """Measures smoothness performance for Cluster Telemetry."""
+class RenderingCT(perf_benchmark.PerfBenchmark):
+  """Measures rendering performance for Cluster Telemetry."""
 
   options = {'upload_results': True}
 
-  test = smoothness.Smoothness
+  test = rendering.Rendering
 
   @classmethod
   def Name(cls):
-    return 'smoothness_ct'
+    return 'rendering.cluster_telemetry'
 
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
