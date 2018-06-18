@@ -107,7 +107,6 @@
 #include "third_party/blink/public/platform/web_file_info.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_media_stream_center.h"
-#include "third_party/blink/public/platform/web_plugin_list_builder.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -780,34 +779,6 @@ RendererBlinkPlatformImpl::CreateMIDIAccessor(
     return accessor;
 
   return std::make_unique<RendererWebMIDIAccessorImpl>(client);
-}
-
-void RendererBlinkPlatformImpl::GetPluginList(
-    bool refresh,
-    const blink::WebSecurityOrigin& mainFrameOrigin,
-    blink::WebPluginListBuilder* builder) {
-#if BUILDFLAG(ENABLE_PLUGINS)
-  std::vector<WebPluginInfo> plugins;
-  RenderThread::Get()->Send(
-      new FrameHostMsg_GetPlugins(refresh, mainFrameOrigin, &plugins));
-  for (const WebPluginInfo& plugin : plugins) {
-    builder->AddPlugin(WebString::FromUTF16(plugin.name),
-                       WebString::FromUTF16(plugin.desc),
-                       blink::FilePathToWebString(plugin.path.BaseName()),
-                       plugin.background_color);
-
-    for (const WebPluginMimeType& mime_type : plugin.mime_types) {
-      builder->AddMediaTypeToLastPlugin(
-          WebString::FromUTF8(mime_type.mime_type),
-          WebString::FromUTF16(mime_type.description));
-
-      for (const auto& extension : mime_type.file_extensions) {
-        builder->AddFileExtensionToLastMediaType(
-            WebString::FromUTF8(extension));
-      }
-    }
-  }
-#endif
 }
 
 //------------------------------------------------------------------------------

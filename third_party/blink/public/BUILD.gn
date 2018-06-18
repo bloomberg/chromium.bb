@@ -322,7 +322,6 @@ source_set("blink_headers") {
     "platform/web_network_state_notifier.h",
     "platform/web_platform_event_listener.h",
     "platform/web_platform_event_type.h",
-    "platform/web_plugin_list_builder.h",
     "platform/web_point.h",
     "platform/web_pointer_event.h",
     "platform/web_pointer_properties.h",

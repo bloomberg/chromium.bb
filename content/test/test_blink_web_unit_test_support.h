@@ -61,10 +61,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   blink::WebThread* CurrentThread() override;
 
-  void GetPluginList(bool refresh,
-                     const blink::WebSecurityOrigin& mainFrameOrigin,
-                     blink::WebPluginListBuilder* builder) override;
-
   std::unique_ptr<blink::WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator() override;
 

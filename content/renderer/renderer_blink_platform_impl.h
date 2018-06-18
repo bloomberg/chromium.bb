@@ -124,9 +124,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   viz::FrameSinkId GenerateFrameSinkId() override;
   bool IsLockedToSite() const override;
 
-  void GetPluginList(bool refresh,
-                     const blink::WebSecurityOrigin& mainFrameOrigin,
-                     blink::WebPluginListBuilder* builder) override;
   blink::WebPublicSuffixList* PublicSuffixList() override;
   blink::WebScrollbarBehavior* ScrollbarBehavior() override;
   blink::WebIDBFactory* IdbFactory() override;

@@ -111,7 +111,6 @@ class WebMediaRecorderHandler;
 class WebMediaStream;
 class WebMediaStreamCenter;
 class WebMediaStreamTrack;
-class WebPluginListBuilder;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
 class WebPushProvider;
@@ -367,15 +366,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       size_t data_size,
       const blink::WebSecurityOrigin& cache_storage_origin,
       const WebString& cache_storage_cache_name) {}
-
-  // Plugins -------------------------------------------------------------
-
-  // If refresh is true, then cached information should not be used to
-  // satisfy this call. mainFrameOrigin is used by the browser process to
-  // filter plugins from the plugin list based on content settings.
-  virtual void GetPluginList(bool refresh,
-                             const WebSecurityOrigin& main_frame_origin,
-                             WebPluginListBuilder*) {}
 
   // Public Suffix List --------------------------------------------------
 
