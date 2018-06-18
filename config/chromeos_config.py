@@ -1834,9 +1834,11 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       health_alert_recipients=['c-compiler-chrome@google.com'],
       health_threshold=1,
       afdo_use=False,
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       slave_configs=[],
+      # 3 PM UTC is 7 AM PST (no daylight savings)
+      schedule="0 15 * * *",
   )
 
   def toolchainSlaveHelper(name, board, *args, **kwargs):
@@ -1846,7 +1848,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
             site_config.templates.llvm_next_toolchain,
             *args,
             boards=[board],
-            active_waterfall=waterfall.WATERFALL_INTERNAL,
+            active_waterfall=waterfall.WATERFALL_SWARMING,
             hw_tests=hw_test_list.ToolchainTestMedium(
                 constants.HWTEST_MACH_POOL),
             hw_tests_override=hw_test_list.ToolchainTestMedium(
