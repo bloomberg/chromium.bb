@@ -91,3 +91,9 @@ void PrefRegistrySimple::RegisterTimePref(const std::string& path,
   RegisterInt64Pref(
       path, default_value.ToDeltaSinceWindowsEpoch().InMicroseconds(), flags);
 }
+
+void PrefRegistrySimple::RegisterTimeDeltaPref(const std::string& path,
+                                               base::TimeDelta default_value,
+                                               uint32_t flags) {
+  RegisterInt64Pref(path, default_value.InMicroseconds(), flags);
+}

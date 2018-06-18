@@ -259,6 +259,35 @@ TEST(PrefServiceTest, SetTimeValue_NullTime) {
   EXPECT_TRUE(prefs.GetTime(kPrefName).is_null());
 }
 
+TEST(PrefServiceTest, SetTimeDeltaValue_RegularTimeDelta) {
+  TestingPrefServiceSimple prefs;
+
+  // Register a zero time delta as the default.
+  prefs.registry()->RegisterTimeDeltaPref(kPrefName, base::TimeDelta());
+  EXPECT_TRUE(prefs.GetTimeDelta(kPrefName).is_zero());
+
+  // Set a time delta and make sure that we can read it without any loss of
+  // precision.
+  const base::TimeDelta delta = base::Time::Now() - base::Time();
+  prefs.SetTimeDelta(kPrefName, delta);
+  EXPECT_EQ(delta, prefs.GetTimeDelta(kPrefName));
+}
+
+TEST(PrefServiceTest, SetTimeDeltaValue_ZeroTimeDelta) {
+  TestingPrefServiceSimple prefs;
+
+  // Register a non-zero time delta as the default.
+  const base::TimeDelta default_delta =
+      base::TimeDelta::FromMicroseconds(12345);
+  prefs.registry()->RegisterTimeDeltaPref(kPrefName, default_delta);
+  EXPECT_FALSE(prefs.GetTimeDelta(kPrefName).is_zero());
+
+  // Set a zero time delta and make sure that it remains zero upon
+  // deserialization.
+  prefs.SetTimeDelta(kPrefName, base::TimeDelta());
+  EXPECT_TRUE(prefs.GetTimeDelta(kPrefName).is_zero());
+}
+
 // A PrefStore which just stores the last write flags that were used to write
 // values to it.
 class WriteFlagChecker : public TestingPrefStore {
