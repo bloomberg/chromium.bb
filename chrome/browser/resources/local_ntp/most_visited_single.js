@@ -636,7 +636,7 @@ function renderMaterialDesignTile(data) {
     });
     fi.addEventListener('error', function(ev) {
       mdFavicon.classList.add(CLASSES.FAILED_FAVICON);
-      thumb.removeChild(img);
+      mdFavicon.removeChild(fi);
       // Store the type for a potential later navigation.
       tileType = TileVisualType.ICON_DEFAULT;
       logMostVisitedImpression(
