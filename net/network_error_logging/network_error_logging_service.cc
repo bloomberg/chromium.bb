@@ -32,11 +32,11 @@ namespace {
 const int kMaxJsonSize = 16 * 1024;
 const int kMaxJsonDepth = 4;
 
-const char kReportToKey[] = "report-to";
-const char kMaxAgeKey[] = "max-age";
-const char kIncludeSubdomainsKey[] = "include-subdomains";
-const char kSuccessFractionKey[] = "success-fraction";
-const char kFailureFractionKey[] = "failure-fraction";
+const char kReportToKey[] = "report_to";
+const char kMaxAgeKey[] = "max_age";
+const char kIncludeSubdomainsKey[] = "include_subdomains";
+const char kSuccessFractionKey[] = "success_fraction";
+const char kFailureFractionKey[] = "failure_fraction";
 
 // Returns the superdomain of a given domain, or the empty string if the given
 // domain is just a single label. Note that this does not take into account
@@ -345,7 +345,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
   // Would be unordered_map, but url::Origin has no hash.
   using PolicyMap = std::map<url::Origin, OriginPolicy>;
 
-  // Wildcard policies are policies for which the include-subdomains flag is
+  // Wildcard policies are policies for which the include_subdomains flag is
   // set.
   //
   // Wildcard policies are accessed by domain name, not full origin, so there
@@ -398,17 +398,17 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     }
 
     bool include_subdomains = false;
-    // include-subdomains is optional and defaults to false, so it's okay if
+    // include_subdomains is optional and defaults to false, so it's okay if
     // GetBoolean fails.
     dict->GetBoolean(kIncludeSubdomainsKey, &include_subdomains);
 
     double success_fraction = 0.0;
-    // success-fraction is optional and defaults to 0.0, so it's okay if
+    // success_fraction is optional and defaults to 0.0, so it's okay if
     // GetDouble fails.
     dict->GetDouble(kSuccessFractionKey, &success_fraction);
 
     double failure_fraction = 1.0;
-    // failure-fraction is optional and defaults to 1.0, so it's okay if
+    // failure_fraction is optional and defaults to 1.0, so it's okay if
     // GetDouble fails.
     dict->GetDouble(kFailureFractionKey, &failure_fraction);
 
@@ -455,7 +455,7 @@ class NetworkErrorLoggingServiceImpl : public NetworkErrorLoggingService {
     // TODO(juliatuttle): Come up with a deterministic way to resolve these.
     if (it->second.size() > 1) {
       LOG(WARNING) << "Domain " << domain
-                   << " matches multiple origins with include-subdomains; "
+                   << " matches multiple origins with include_subdomains; "
                    << "choosing one arbitrarily.";
     }
 

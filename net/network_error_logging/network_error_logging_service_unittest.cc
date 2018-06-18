@@ -161,15 +161,15 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   const url::Origin kOriginDifferentHost_ =
       url::Origin::Create(kUrlDifferentHost_);
 
-  const std::string kHeader_ = "{\"report-to\":\"group\",\"max-age\":86400}";
+  const std::string kHeader_ = "{\"report_to\":\"group\",\"max_age\":86400}";
   const std::string kHeaderIncludeSubdomains_ =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"include-subdomains\":true}";
-  const std::string kHeaderMaxAge0_ = "{\"max-age\":0}";
+      "{\"report_to\":\"group\",\"max_age\":86400,\"include_subdomains\":true}";
+  const std::string kHeaderMaxAge0_ = "{\"max_age\":0}";
   const std::string kHeaderTooLong_ =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"junk\":\"" +
+      "{\"report_to\":\"group\",\"max_age\":86400,\"junk\":\"" +
       std::string(32 * 1024, 'a') + "\"}";
   const std::string kHeaderTooDeep_ =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"junk\":[[[[[[[[[[]]]]]]]]]]"
+      "{\"report_to\":\"group\",\"max_age\":86400,\"junk\":[[[[[[[[[[]]]]]]]]]]"
       "}";
 
   const std::string kGroup_ = "group";
@@ -240,7 +240,7 @@ TEST_F(NetworkErrorLoggingServiceTest, JsonTooDeep) {
 
 TEST_F(NetworkErrorLoggingServiceTest, SuccessReportQueued) {
   static const std::string kHeaderSuccessFraction1 =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"success-fraction\":1.0}";
+      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kHeaderSuccessFraction1);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, OK));
@@ -274,7 +274,7 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessReportQueued) {
 
 TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued) {
   static const std::string kHeaderFailureFraction1 =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"failure-fraction\":1.0}";
+      "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kHeaderFailureFraction1);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, ERR_CONNECTION_REFUSED));
@@ -308,7 +308,7 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureReportQueued) {
 
 TEST_F(NetworkErrorLoggingServiceTest, HttpErrorReportQueued) {
   static const std::string kHeaderFailureFraction1 =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"failure-fraction\":1.0}";
+      "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kHeaderFailureFraction1);
 
   service()->OnRequest(MakeRequestDetails(kUrl_, OK, 504));
@@ -352,7 +352,7 @@ TEST_F(NetworkErrorLoggingServiceTest, MaxAge0) {
 
 TEST_F(NetworkErrorLoggingServiceTest, SuccessFraction0) {
   static const std::string kHeaderSuccessFraction0 =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"success-fraction\":0.0}";
+      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":0.0}";
   service()->OnHeader(kOrigin_, kHeaderSuccessFraction0);
 
   // Each network error has a 0% chance of being reported.  Fire off several and
@@ -365,11 +365,11 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessFraction0) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, SuccessFractionHalf) {
-  // Include a different value for failure-fraction to ensure that we copy the
+  // Include a different value for failure_fraction to ensure that we copy the
   // right value into sampling-fraction.
   static const std::string kHeaderSuccessFractionHalf =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"success-fraction\":0.5,"
-      "\"failure-fraction\":0.25}";
+      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":0.5,"
+      "\"failure_fraction\":0.25}";
   service()->OnHeader(kOrigin_, kHeaderSuccessFractionHalf);
 
   // Each network error has a 50% chance of being reported.  Fire off several
@@ -391,7 +391,7 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessFractionHalf) {
   for (const auto& report : reports()) {
     const base::DictionaryValue* body;
     ASSERT_TRUE(report.body->GetAsDictionary(&body));
-    // Our header includes a different value for failure-fraction, so that this
+    // Our header includes a different value for failure_fraction, so that this
     // check verifies that we copy the correct fraction into sampling-fraction.
     ExpectDictDoubleValue(0.5, *body,
                           NetworkErrorLoggingService::kSamplingFractionKey);
@@ -400,7 +400,7 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessFractionHalf) {
 
 TEST_F(NetworkErrorLoggingServiceTest, FailureFraction0) {
   static const std::string kHeaderFailureFraction0 =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"failure-fraction\":0.0}";
+      "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":0.0}";
   service()->OnHeader(kOrigin_, kHeaderFailureFraction0);
 
   // Each network error has a 0% chance of being reported.  Fire off several and
@@ -413,11 +413,11 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureFraction0) {
 }
 
 TEST_F(NetworkErrorLoggingServiceTest, FailureFractionHalf) {
-  // Include a different value for success-fraction to ensure that we copy the
+  // Include a different value for success_fraction to ensure that we copy the
   // right value into sampling-fraction.
   static const std::string kHeaderFailureFractionHalf =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"failure-fraction\":0.5,"
-      "\"success-fraction\":0.25}";
+      "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":0.5,"
+      "\"success_fraction\":0.25}";
   service()->OnHeader(kOrigin_, kHeaderFailureFractionHalf);
 
   // Each network error has a 50% chance of being reported.  Fire off several
@@ -551,7 +551,7 @@ TEST_F(NetworkErrorLoggingServiceTest, StatusAsValue) {
   service()->SetTickClockForTesting(&clock);
 
   static const std::string kHeaderSuccessFraction1 =
-      "{\"report-to\":\"group\",\"max-age\":86400,\"success-fraction\":1.0}";
+      "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":1.0}";
   service()->OnHeader(kOrigin_, kHeaderSuccessFraction1);
   service()->OnHeader(kOriginDifferentHost_, kHeader_);
   service()->OnHeader(kOriginSubdomain_, kHeaderIncludeSubdomains_);

@@ -86,11 +86,11 @@ void RecordHeaderEndpointOutcome(HeaderEndpointOutcome outcome) {
 }
 
 const char kUrlKey[] = "url";
-const char kIncludeSubdomainsKey[] = "include-subdomains";
+const char kIncludeSubdomainsKey[] = "include_subdomains";
 const char kEndpointsKey[] = "endpoints";
 const char kGroupKey[] = "group";
 const char kGroupDefaultValue[] = "default";
-const char kMaxAgeKey[] = "max-age";
+const char kMaxAgeKey[] = "max_age";
 const char kPriorityKey[] = "priority";
 const char kWeightKey[] = "weight";
 
