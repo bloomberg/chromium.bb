@@ -237,11 +237,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
 
         HomepageManager.getInstance().addListener(mHomepageStateListener);
 
-        if (FeatureUtilities.isBottomToolbarEnabled()) {
-            mBottomToolbarController = new BottomToolbarController(
-                    mActivity.getFullscreenManager(), mActivity.findViewById(R.id.coordinator));
-        }
-
         mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
@@ -598,6 +593,16 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         };
 
         mLoadProgressSimulator = new LoadProgressSimulator(this);
+    }
+
+    /**
+     * Enable the bottom toolbar.
+     */
+    public void enableBottomToolbar() {
+        if (FeatureUtilities.isBottomToolbarEnabled()) {
+            mBottomToolbarController = new BottomToolbarController(
+                    mActivity.getFullscreenManager(), mActivity.findViewById(R.id.coordinator));
+        }
     }
 
     /**
