@@ -18,6 +18,7 @@
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/aura/window.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -100,7 +101,10 @@ TEST_F(AXTreeSourceAuraTest, Accessors) {
   ASSERT_EQ(cached_textfield, textfield);
   std::vector<AXAuraObjWrapper*> textfield_children;
   ax_tree.GetChildren(textfield, &textfield_children);
-  ASSERT_EQ(1U, textfield_children.size());
+  // The textfield has an extra child in Harmony, the focus ring.
+  const size_t expected_children =
+      ui::MaterialDesignController::IsSecondaryUiMaterial() ? 2 : 1;
+  ASSERT_EQ(expected_children, textfield_children.size());
 
   ASSERT_EQ(content, textfield->GetParent());
 
