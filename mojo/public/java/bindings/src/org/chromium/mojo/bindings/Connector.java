@@ -201,8 +201,16 @@ public class Connector implements MessageReceiver, HandleOwner<MessagePipeHandle
         ReadMessageResult readResult = result.getValue();
         assert readResult != null;
         if (receiver != null) {
-            boolean accepted = receiver.accept(
-                    new Message(ByteBuffer.wrap(readResult.mData), readResult.mHandles));
+            boolean accepted;
+            try {
+                accepted = receiver.accept(
+                        new Message(ByteBuffer.wrap(readResult.mData), readResult.mHandles));
+            } catch (RuntimeException e) {
+                // The DefaultExceptionHandler will decide whether any uncaught exception will
+                // close the connection or not.
+                accepted =
+                        ExceptionHandler.DefaultExceptionHandler.getInstance().handleException(e);
+            }
             return new ResultAnd<Boolean>(result.getMojoResult(), accepted);
         }
         return new ResultAnd<Boolean>(result.getMojoResult(), false);
