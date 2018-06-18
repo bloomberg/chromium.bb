@@ -65,10 +65,12 @@ Polymer({
       value: false,
     },
 
+    hasError: Boolean,
+
     /**
      * The password element the pin keyboard is associated with. If this is not
      * set, then a default input element is shown and used.
-     * @type {?Element}
+     * @type {?HTMLElement}
      * @private
      */
     passwordElement: Object,
@@ -395,7 +397,8 @@ Polymer({
   passwordElement_: function() {
     // |passwordElement| is null by default. It can be set to override the
     // input field that will be populated with the keypad.
-    return this.passwordElement || this.$.pinInput.inputElement.inputElement;
+    return this.passwordElement ||
+        (/** @type {CrInputElement} */ (this.$.pinInput)).inputElement;
   },
 });
 })();

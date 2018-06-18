@@ -26,6 +26,7 @@ js_library("control_bar") {
 js_library("create_profile") {
   deps = [
     ":profile_browser_proxy",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
     "//ui/webui/resources/cr_elements/cr_profile_avatar_selector:cr_profile_avatar_selector",
     "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:util",

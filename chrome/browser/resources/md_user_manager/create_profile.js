@@ -112,7 +112,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    // paper-input's focusable element isn't defined until after it's attached.
+    // cr-input's focusable element isn't defined until after it's attached.
     Polymer.RenderStatus.afterNextRender(this, () => this.$.nameInput.focus());
   },
 
@@ -243,9 +243,7 @@ Polymer({
    * @private
    */
   isSaveDisabled_: function(createInProgress, profileName) {
-    // TODO(mahmadi): Figure out a way to add 'paper-input-extracted' as a
-    // dependency and cast to PaperInputElement instead.
-    /** @type {{validate: function():boolean}} */
+    /** @type {CrInputElement} */
     const nameInput = this.$.nameInput;
     return createInProgress || !profileName || !nameInput.validate();
   },

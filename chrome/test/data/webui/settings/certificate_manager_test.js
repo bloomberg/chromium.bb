@@ -168,7 +168,7 @@ cr.define('certificate_manager', function() {
   /**
    * Triggers an 'input' event on the given text input field (which triggers
    * validation to occur for password fields being tested in this file).
-   * @param {!PaperInputElement} element
+   * @param {!CrInputElement} element
    */
   function triggerInputEvent(element) {
     // The actual key code is irrelevant for tests.

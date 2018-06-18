@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
@@ -11,7 +12,6 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="item_behavior.html">
 <link rel="import" href="kiosk_browser_proxy.html">
 
@@ -19,26 +19,16 @@
   <template>
     <style include="cr-shared-style paper-button-style cr-icons">
       #add-kiosk-app {
-        --paper-input-container-input: {
-          font-size: inherit;
-        };
-        align-items: center;
-        display: flex;
         margin-bottom: 10px;
         margin-top: 20px;
-        width: 350px;
       }
 
-      #add-kiosk-app paper-input {
-        flex: 1;
+      #add-kiosk-app cr-input {
+        width: 350px;
       }
 
       #add-kiosk-app paper-button {
         -webkit-margin-start: 10px;
-      }
-
-      paper-button {
-        color: var(--google-blue-500);
       }
 
       #kiosk-apps-list {
@@ -108,17 +98,16 @@
           </template>
         </div>
         <div id="add-kiosk-app">
-          <paper-input id="add-input" label="$i18n{kioskAddApp}"
+          <cr-input id="add-input" label="$i18n{kioskAddApp}"
               placeholder="$i18n{kioskAddAppHint}" value="{{addAppInput_}}"
-              always-float-label invalid="[[errorAppId_]]"
+              invalid="[[errorAppId_]]" on-keydown="clearInputInvalid_"
               error-message="[[getErrorMessage_(
-                  '$i18nPolymer{kioskInvalidApp}', errorAppId_)]]"
-              on-keydown="clearInputInvalid_">
-          </paper-input>
-          <paper-button id="add-button" on-click="onAddAppTap_"
-              disabled="[[!addAppInput_]]">
-            $i18n{add}
-          </paper-button>
+                  '$i18nPolymer{kioskInvalidApp}', errorAppId_)]]">
+            <paper-button id="add-button" on-click="onAddAppTap_"
+                disabled="[[!addAppInput_]]" slot="suffix">
+              $i18n{add}
+            </paper-button>
+          </cr-input>
         </div>
         <cr-checkbox disabled="[[!canEditBailout_]]" id="bailout"
             on-change="onBailoutChanged_" checked="[[bailoutDisabled_]]"
