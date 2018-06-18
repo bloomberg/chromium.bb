@@ -357,7 +357,8 @@ ResourceFetcher::ResourceFetcher(FetchContext* new_context)
       auto_load_images_(true),
       images_enabled_(true),
       allow_stale_resources_(false),
-      image_fetched_(false) {
+      image_fetched_(false),
+      stale_while_revalidate_enabled_(false) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
@@ -1714,6 +1715,10 @@ void ResourceFetcher::PrepareForLeakDetection() {
   // Stop loaders including keepalive ones that may persist after page
   // navigation and thus affect instance counters of leak detection.
   StopFetchingIncludingKeepaliveLoaders();
+}
+
+void ResourceFetcher::SetStaleWhileRevalidateEnabled(bool enabled) {
+  stale_while_revalidate_enabled_ = enabled;
 }
 
 void ResourceFetcher::StopFetchingInternal(StopFetchingTarget target) {

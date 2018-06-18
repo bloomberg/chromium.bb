@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -1115,6 +1116,14 @@ void DocumentLoader::InstallNewDocument(
     OriginTrialContext::AddTokensFromHeader(
         document, response_.HttpHeaderField(HTTPNames::Origin_Trial));
   }
+  bool stale_while_revalidate_enabled =
+      OriginTrials::staleWhileRevalidateEnabled(document);
+  fetcher_->SetStaleWhileRevalidateEnabled(stale_while_revalidate_enabled);
+
+  // If stale while revalidate is enabled via Origin Trials count it as such.
+  if (stale_while_revalidate_enabled &&
+      !RuntimeEnabledFeatures::StaleWhileRevalidateEnabledByRuntimeFlag())
+    UseCounter::Count(frame_, WebFeature::kStaleWhileRevalidateEnabled);
 
   parser_ = document->OpenForNavigation(parsing_policy, mime_type, encoding);
 

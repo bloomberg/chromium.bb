@@ -1191,6 +1191,11 @@
       status: "experimental",
     },
     {
+      name: "StaleWhileRevalidate",
+      origin_trial_feature_name: "StaleWhileRevalidate",
+      status: "test",
+    },
+    {
       name: "StopInBackground",
       status: "test",
     },
