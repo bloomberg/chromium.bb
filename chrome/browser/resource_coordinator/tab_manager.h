@@ -206,7 +206,7 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PauseAndResumeBackgroundTabOpening);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            ProactiveFastShutdownSharedTabProcess);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTestWithTwoTabs,
                            ProactiveFastShutdownSingleTabProcess);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            ProactiveFastShutdownWithBeforeunloadHandler);
@@ -229,7 +229,8 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            TrackingNumberOfLoadedLifecycleUnits);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownSharedTabProcess);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownSingleTabProcess);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTestWithTwoTabs,
+                           UrgentFastShutdownSingleTabProcess);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            UrgentFastShutdownWithBeforeunloadHandler);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownWithUnloadHandler);
