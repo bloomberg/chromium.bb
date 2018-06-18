@@ -8,12 +8,12 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
-#include "ui/display/manager/fake_display_delegate.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/events/ozone/layout/stub/stub_keyboard_layout_engine.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/system_input_injector.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
+#include "ui/ozone/platform/headless/headless_native_display_delegate.h"
 #include "ui/ozone/platform/headless/headless_surface_factory.h"
 #include "ui/ozone/platform/headless/headless_window.h"
 #include "ui/ozone/platform/headless/headless_window_manager.h"
@@ -74,7 +74,7 @@ class OzonePlatformHeadless : public OzonePlatform {
   }
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return std::make_unique<display::FakeDisplayDelegate>();
+    return std::make_unique<HeadlessNativeDisplayDelegate>();
   }
 
   void InitializeUI(const InitParams& params) override {
