@@ -288,19 +288,16 @@ bool USB::IsContextSupported() const {
 }
 
 bool USB::IsFeatureEnabled() const {
-  // At the moment, FeaturePolicy is not supported in workers, so we skip the
-  // check on workers.
-  // TODO(https://crbug.com/843780): Enable the FeaturePolicy check for the
-  // supported worker contexts once it is available for workers.
-  if (GetExecutionContext()->IsDocument()) {
-    FeaturePolicy* policy =
-        GetExecutionContext()->GetSecurityContext().GetFeaturePolicy();
+  ExecutionContext* context = GetExecutionContext();
+  FeaturePolicy* policy = context->GetSecurityContext().GetFeaturePolicy();
+  // Feature policy is not yet supported in all contexts.
+  if (policy)
     return policy->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb);
-  }
-  if (GetExecutionContext()->IsDedicatedWorkerGlobalScope() ||
-      GetExecutionContext()->IsSharedWorkerGlobalScope()) {
+
+  // TODO(https://crbug.com/843780): Enable this check for shared workers.
+  if (context->IsSharedWorkerGlobalScope())
     return true;
-  }
+
   return false;
 }
 

@@ -114,6 +114,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   }
 
   FeaturePolicy* GetFeaturePolicy() const { return feature_policy_.get(); }
+  void SetFeaturePolicy(std::unique_ptr<FeaturePolicy> feature_policy);
   void InitializeFeaturePolicy(const ParsedFeaturePolicy& parsed_header,
                                const ParsedFeaturePolicy& container_policy,
                                const FeaturePolicy* parent_feature_policy);

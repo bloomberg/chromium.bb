@@ -105,6 +105,13 @@ String SecurityContext::addressSpaceForBindings() const {
   return "public";
 }
 
+void SecurityContext::SetFeaturePolicy(
+    std::unique_ptr<FeaturePolicy> feature_policy) {
+  // This method should be called before a FeaturePolicy has been created.
+  DCHECK(!feature_policy_);
+  feature_policy_ = std::move(feature_policy);
+}
+
 void SecurityContext::InitializeFeaturePolicy(
     const ParsedFeaturePolicy& parsed_header,
     const ParsedFeaturePolicy& container_policy,
