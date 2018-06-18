@@ -23,6 +23,8 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace {
 
@@ -104,7 +106,7 @@ void PageCappingPageLoadMetricsObserver::OnLoadedResource(
 
 void PageCappingPageLoadMetricsObserver::MaybeCreate() {
   // If the infobar has already been shown for the page, don't show an infobar.
-  if (displayed_infobar_)
+  if (page_capping_state_ != PageCappingState::kInfoBarNotShown)
     return;
 
   // If the page has not committed, don't show an infobar.
@@ -117,11 +119,13 @@ void PageCappingPageLoadMetricsObserver::MaybeCreate() {
   if (!page_cap_ || (network_bytes_ - fuzzing_offset_) < page_cap_.value())
     return;
 
-  displayed_infobar_ = PageLoadCappingInfoBarDelegate::Create(
-      page_cap_.value(), web_contents_,
-      base::BindRepeating(
-          &PageCappingPageLoadMetricsObserver::PauseSubresourceLoading,
-          weak_factory_.GetWeakPtr()));
+  if (PageLoadCappingInfoBarDelegate::Create(
+          page_cap_.value(), web_contents_,
+          base::BindRepeating(
+              &PageCappingPageLoadMetricsObserver::PauseSubresourceLoading,
+              weak_factory_.GetWeakPtr()))) {
+    page_capping_state_ = PageCappingState::kInfoBarShown;
+  }
 }
 
 void PageCappingPageLoadMetricsObserver::MediaStartedPlaying(
@@ -133,8 +137,8 @@ void PageCappingPageLoadMetricsObserver::MediaStartedPlaying(
 
 void PageCappingPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
-  // If the page is not paused, we should not pause new frames.
-  if (!paused_)
+  // If the page is not paused, there is no need to pause new frames.
+  if (page_capping_state_ != PageCappingState::kPagePaused)
     return;
   // If the navigation is to the same page, is to an error page, the load hasn't
   // committed or render frame host is null, no need to pause the page.
@@ -149,9 +153,10 @@ void PageCappingPageLoadMetricsObserver::OnDidFinishSubFrameNavigation(
 }
 
 void PageCappingPageLoadMetricsObserver::PauseSubresourceLoading(bool pause) {
-  DCHECK_NE(pause, paused_);
-  DCHECK(displayed_infobar_);
-  paused_ = pause;
+  DCHECK((pause && page_capping_state_ == PageCappingState::kInfoBarShown) ||
+         (!pause && page_capping_state_ == PageCappingState::kPagePaused));
+  page_capping_state_ =
+      pause ? PageCappingState::kPagePaused : PageCappingState::kPageResumed;
   if (pause)
     handles_ = web_contents_->PauseSubresourceLoading();
   else
@@ -162,26 +167,51 @@ page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 PageCappingPageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordDataSavings();
+  RecordDataSavingsAndUKM(info);
+  return CONTINUE_OBSERVING;
+}
+
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+PageCappingPageLoadMetricsObserver::OnHidden(
+    const page_load_metrics::mojom::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RecordDataSavingsAndUKM(info);
   return CONTINUE_OBSERVING;
 }
 
 void PageCappingPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordDataSavings();
-  if (paused_) {
+  RecordDataSavingsAndUKM(info);
+  if (page_capping_state_ == PageCappingState::kPagePaused) {
     PAGE_BYTES_HISTOGRAM("HeavyPageCapping.RecordedDataSavings",
                          recorded_savings_);
   }
 }
 
-void PageCappingPageLoadMetricsObserver::RecordDataSavings() {
-  // Don't record anything when the feature is not enabled.
-  if (!page_cap_)
+void PageCappingPageLoadMetricsObserver::RecordDataSavingsAndUKM(
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  // If the InfoBar was never shown, don't report savings or UKM.
+  if (page_capping_state_ == PageCappingState::kInfoBarNotShown) {
+    DCHECK_EQ(0, recorded_savings_);
     return;
-  if (!paused_) {
-    // No need to undo savings if no savings were recorded.
+  }
+
+  if (!ukm_recorded_) {
+    ukm::builders::PageLoadCapping builder(info.source_id);
+    builder.SetFinalState(static_cast<int64_t>(page_capping_state_));
+    builder.Record(ukm::UkmRecorder::Get());
+    ukm_recorded_ = true;
+  }
+  // If the InfoBar was shown, but not acted upon, don't update savings.
+  if (page_capping_state_ == PageCappingState::kInfoBarShown) {
+    DCHECK_EQ(0, recorded_savings_);
+    return;
+  }
+
+  // If the user resumed, we may need to update the savings.
+  if (page_capping_state_ == PageCappingState::kPageResumed) {
+    // No need to undo savings if no savings were previously recorded.
     if (recorded_savings_ == 0)
       return;
     // Undo previous savings since the page was resumed.
@@ -189,6 +219,9 @@ void PageCappingPageLoadMetricsObserver::RecordDataSavings() {
     recorded_savings_ = 0;
     return;
   }
+
+  DCHECK_EQ(PageCappingState::kPagePaused, page_capping_state_);
+
   int64_t estimated_savings =
       GetEstimatedSavings(network_bytes_, page_cap_.value(), media_page_load_);
   // Record an update to the savings. |recorded_savings_| is generally larger
@@ -230,4 +263,8 @@ int64_t PageCappingPageLoadMetricsObserver::GetFuzzingOffset() const {
   int cap_bytes = cap_kib * 1024;
 
   return base::RandInt(0, cap_bytes);
+}
+
+bool PageCappingPageLoadMetricsObserver::IsPausedForTesting() const {
+  return page_capping_state_ == PageCappingState::kPagePaused;
 }
