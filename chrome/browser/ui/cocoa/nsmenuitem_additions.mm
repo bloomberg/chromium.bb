@@ -7,16 +7,59 @@
 #include <Carbon/Carbon.h>
 
 #include "base/logging.h"
+#include "base/mac/scoped_cftyperef.h"
+
+namespace {
+bool g_is_input_source_dvorak_qwerty = false;
+}  // namespace
+
+void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty) {
+  g_is_input_source_dvorak_qwerty = is_dvorak_qwerty;
+}
+
+@interface KeyboardInputSourceListener : NSObject
+@end
+
+@implementation KeyboardInputSourceListener
+
+- (instancetype)init {
+  if (self = [super init]) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(inputSourceDidChange:)
+               name:NSTextInputContextKeyboardSelectionDidChangeNotification
+             object:nil];
+    [self updateInputSource];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+- (void)updateInputSource {
+  base::ScopedCFTypeRef<TISInputSourceRef> inputSource(
+      TISCopyCurrentKeyboardInputSource());
+  NSString* inputSourceID = (NSString*)TISGetInputSourceProperty(
+      inputSource.get(), kTISPropertyInputSourceID);
+  g_is_input_source_dvorak_qwerty =
+      [inputSourceID isEqualToString:@"com.apple.keylayout.DVORAK-QWERTYCMD"];
+}
+
+- (void)inputSourceDidChange:(NSNotification*)notification {
+  [self updateInputSource];
+}
+
+@end
 
 @implementation NSMenuItem(ChromeAdditions)
 
 - (BOOL)cr_firesForKeyEvent:(NSEvent*)event {
   if (![self isEnabled])
     return NO;
-  return [self cr_firesForKeyEventIfEnabled:event];
-}
 
-- (BOOL)cr_firesForKeyEventIfEnabled:(NSEvent*)event {
   DCHECK([event type] == NSKeyDown);
   // In System Preferences->Keyboard->Keyboard Shortcuts, it is possible to add
   // arbitrary keyboard shortcuts to applications. It is not documented how this
@@ -77,19 +120,20 @@
       [[event characters] characterAtIndex:0] <= 0x7f)
     eventString = [event characters];
 
+  // We intentionally leak this object.
+  static __attribute__((unused)) KeyboardInputSourceListener* listener =
+      [[KeyboardInputSourceListener alloc] init];
+
   // We typically want to compare [NSMenuItem keyEquivalent] against [NSEvent
   // charactersIgnoringModifiers]. There is a special keyboard layout "Dvorak -
   // QWERTY" which uses QWERTY-style shortcuts when the Command key is held
   // down. In this case, we want to use [NSEvent characters] instead of [NSEvent
   // charactersIgnoringModifiers]. The problem is, this has the wrong behavior
-  // for every other keyboard layout when the "Shift" key is held down, since
-  // [NSEvent characters] does not reflect the effects of the "Shift" key.
+  // for every other keyboard layout.
   //
-  // When the "Shift" key is not held down, we use [NSEvent characters], since
-  // that has the right behavior for all keyboard layouts. When the "Shift" key
-  // is held down, we use [NSEvent charactersWithoutModifiers], which has the
-  // right behavior everywhere but "Dvorak - QWERTY".
-  if (!(eventModifiers & NSShiftKeyMask)) {
+  // The documentation for -[NSEvent charactersIgnoringModifiers] states that
+  // it is the appropriate method to use for implementing keyEquivalents.
+  if (g_is_input_source_dvorak_qwerty) {
     // When both |characters| and |charactersIgnoringModifiers| are ascii, we
     // want to use |characters| if it's a character and
     // |charactersIgnoringModifiers| else (on dvorak, cmd-shift-z should fire

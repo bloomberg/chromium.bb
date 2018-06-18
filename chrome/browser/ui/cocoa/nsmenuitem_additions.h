@@ -14,10 +14,10 @@
 // This method always returns NO if the menu item is not enabled.
 - (BOOL)cr_firesForKeyEvent:(NSEvent*)event;
 
-// Like above method, but this method matches the key equivalent regardless of
-// the menu item's enable state.
-- (BOOL)cr_firesForKeyEventIfEnabled:(NSEvent*)event;
-
 @end
+
+// Used by tests to set internal state without having to change global input
+// source.
+void SetIsInputSourceDvorakQwertyForTesting(bool is_dvorak_qwerty);
 
 #endif  // CHROME_BROWSER_UI_COCOA_NSMENUITEM_ADDITIONS_H_
