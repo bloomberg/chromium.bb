@@ -2863,8 +2863,7 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
       RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
 
   if (local_surface_id == last_local_surface_id_ &&
-      SurfacePropertiesMismatch(new_surface_properties,
-                                last_surface_properties_)) {
+      new_surface_properties != last_surface_properties_) {
     std::string error = base::StringPrintf(
         "[OOPIF? %d] %s\n", view_ && view_->IsRenderWidgetHostViewChildFrame(),
         new_surface_properties.ToDiffString(last_surface_properties_).c_str());
@@ -3071,36 +3070,6 @@ void RenderWidgetHostImpl::SetScreenOrientationForTesting(
   screen_orientation_angle_for_testing_ = angle;
   screen_orientation_type_for_testing_ = type;
   SynchronizeVisualProperties();
-}
-
-// TODO(ericrk): On Android, with surface synchronization enabled,  we need to
-// request a new surface ID when things like top/bottom control height or
-// selection handles change. This will be enabled by child surface id
-// generation. For now ignore these mismatches.  Remove this function when this
-// issue is resolved: https://crbug.com/789259 and https://crbug.com/801350
-bool RenderWidgetHostImpl::SurfacePropertiesMismatch(
-    const RenderWidgetSurfaceProperties& first,
-    const RenderWidgetSurfaceProperties& second) const {
-#ifdef OS_ANDROID
-  if (enable_surface_synchronization_) {
-    // To make this comparison resistant to changes in
-    // RenderWidgetSurfaceProperties, create new properties which are forced to
-    // match only for those categories we want to ignore.
-    RenderWidgetSurfaceProperties second_reduced = second;
-    second_reduced.top_controls_height = first.top_controls_height;
-    second_reduced.top_controls_shown_ratio = first.top_controls_shown_ratio;
-    second_reduced.bottom_controls_height = first.bottom_controls_height;
-    second_reduced.bottom_controls_shown_ratio =
-        first.bottom_controls_shown_ratio;
-    second_reduced.selection = first.selection;
-
-    return first != second_reduced;
-  }
-#endif
-
-  // For non-Android or when surface synchronization is not enabled, just use a
-  // basic comparison.
-  return first != second;
 }
 
 bool RenderWidgetHostImpl::LockKeyboard() {
