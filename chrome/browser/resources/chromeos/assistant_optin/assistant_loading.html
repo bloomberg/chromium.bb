@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="assistant_loading.css">
     <oobe-dialog id="loading-dialog" role="dialog" has-buttons hide-shadow
         no-footer-padding no-header android>
-      <div class = "footer">
+      <div slot="footer">
         <div id="error-container">
           <div class="title"
             i18n-content="assistantOptinLoadErrorTitle"></div>
@@ -26,7 +26,7 @@
           <paper-progress class="slow" indeterminate></paper-progress>
         </div>
       </div>
-      <div class="bottom-buttons flex layout horizontal">
+      <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
         <oobe-text-button id="retry-button" inverse android
             on-tap="onRetryTap_" disabled="[[buttonsDisabled]]">

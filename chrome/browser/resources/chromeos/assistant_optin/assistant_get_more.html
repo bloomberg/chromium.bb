@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="assistant_get_more.css">
     <oobe-dialog id="get-more-dialog" role="dialog" has-buttons hide-shadow
         no-footer-padding no-header android>
-      <div class = "footer">
+      <div slot="footer">
         <div id="main-container">
           <iron-icon src="assistant_logo.png">
           </iron-icon>
@@ -17,7 +17,7 @@
           <div id="insertion-point"></div>
         </div>
       </div>
-      <div class="bottom-buttons flex layout horizontal">
+      <div slot="bottom-buttons" class="flex layout horizontal">
         <div class="flex"></div>
         <oobe-text-button id="next-button" inverse android on-tap="onNextTap_"
             disabled="[[buttonsDisabled]]" hidden="[[moreContents]]">
