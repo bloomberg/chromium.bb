@@ -806,7 +806,7 @@ target(link_target_type, "renderer") {
     ]
   }
 
-  if (is_mac) {
+  if (is_mac || !use_aura) {
     sources -= [
       "webscrollbarbehavior_impl_aura.cc",
       "webscrollbarbehavior_impl_aura.h",
