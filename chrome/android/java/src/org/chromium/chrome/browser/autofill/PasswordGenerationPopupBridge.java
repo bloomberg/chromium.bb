@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.PopupWindow;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
@@ -29,7 +30,7 @@ import javax.annotation.Nullable;
 @JNINamespace("autofill")
 public class PasswordGenerationPopupBridge
         implements AdapterView.OnItemClickListener, PopupWindow.OnDismissListener,
-                   PasswordGenerationAdapter.Delegate, Action.Delegate {
+                   PasswordGenerationAdapter.Delegate {
     private final long mNativePasswordGenerationPopupViewAndroid;
     private final Context mContext;
     private final DropdownPopupWindow mPopup;
@@ -132,7 +133,7 @@ public class PasswordGenerationPopupBridge
             // If an action can be shown in the popup, provide the same in the accessory or sheet.
             if (providesGenerationAction() && mKeyboardAccessoryAction == null) {
                 // TODO(ioanap): Move these lines to a new native call or even a separate bridge.
-                createGeneratePasswordAction(suggestionTitle, this);
+                createGeneratePasswordAction(suggestionTitle, this::onActionTriggered);
                 mActionProvider.notifyObservers(new Action[] {mKeyboardAccessoryAction});
                 // Don't return for now. We want to have both mechanisms in place initially.
             }
@@ -166,8 +167,7 @@ public class PasswordGenerationPopupBridge
         if (mPopup != null) mPopup.dismiss();
     }
 
-    @Override
-    public void onActionTriggered(Action action) {
+    private void onActionTriggered(Action action) {
         assert action == mKeyboardAccessoryAction;
         nativePasswordSelected(mNativePasswordGenerationPopupViewAndroid);
         // TODO(ioanap): Create and use this call instead to start the ModalDialog flow:
@@ -180,18 +180,8 @@ public class PasswordGenerationPopupBridge
                            || ChromeFeatureList.isEnabled(ChromeFeatureList.EXPERIMENTAL_UI));
     }
 
-    private void createGeneratePasswordAction(String caption, Action.Delegate delegate) {
+    private void createGeneratePasswordAction(String caption, Callback<Action> delegate) {
         assert mKeyboardAccessoryAction == null : "Accessory Action should only be created once!";
-        mKeyboardAccessoryAction = new Action() {
-            @Override
-            public String getCaption() {
-                return caption;
-            }
-
-            @Override
-            public Delegate getDelegate() {
-                return delegate;
-            }
-        };
+        mKeyboardAccessoryAction = new Action(caption, delegate);
     }
 }

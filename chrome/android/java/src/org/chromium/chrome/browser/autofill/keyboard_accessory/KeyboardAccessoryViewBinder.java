@@ -51,7 +51,7 @@ class KeyboardAccessoryViewBinder
             final Action action = actions.get(position);
             holder.getActionView().setText(action.getCaption());
             holder.getActionView().setOnClickListener(
-                    view -> action.getDelegate().onActionTriggered(action));
+                    view -> action.getCallback().onResult(action));
         }
     }
 

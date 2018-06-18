@@ -53,19 +53,8 @@ public class KeyboardAccessoryControllerTest {
     @Mock
     private KeyboardAccessoryView mMockView;
 
-    @Mock
-    private KeyboardAccessoryData.Tab mMockTab;
-
-    private static class FakeAction implements KeyboardAccessoryData.Action {
-        @Override
-        public String getCaption() {
-            return null;
-        }
-        @Override
-        public Delegate getDelegate() {
-            return null;
-        }
-    }
+    private final KeyboardAccessoryData.Tab mTestTab =
+            new KeyboardAccessoryData.Tab(null, null, 0, null);
 
     private KeyboardAccessoryCoordinator mCoordinator;
     private KeyboardAccessoryModel mModel;
@@ -111,13 +100,13 @@ public class KeyboardAccessoryControllerTest {
         mModel.addTabListObserver(mMockTabListObserver);
 
         // Calling addTab on the coordinator should make model propagate that it has a new tab.
-        mCoordinator.addTab(mMockTab);
+        mCoordinator.addTab(mTestTab);
         verify(mMockTabListObserver).onItemRangeInserted(mModel.getTabList(), 0, 1);
         assertThat(mModel.getTabList().getItemCount(), is(1));
-        assertThat(mModel.getTabList().get(0), is(mMockTab));
+        assertThat(mModel.getTabList().get(0), is(mTestTab));
 
         // Calling hide on the coordinator should make model propagate that it's invisible.
-        mCoordinator.removeTab(mMockTab);
+        mCoordinator.removeTab(mTestTab);
         verify(mMockTabListObserver).onItemRangeRemoved(mModel.getTabList(), 0, 1);
         assertThat(mModel.getTabList().getItemCount(), is(0));
     }
@@ -125,7 +114,7 @@ public class KeyboardAccessoryControllerTest {
     @Test
     public void testModelNotifiesAboutActionsChangedByProvider() {
         final PropertyProvider<Action> testProvider = new PropertyProvider<>();
-        final FakeAction testAction = new FakeAction();
+        final Action testAction = new Action(null, null);
 
         mModel.addActionListObserver(mMockActionListObserver);
         mCoordinator.registerActionListProvider(testProvider);
@@ -210,7 +199,7 @@ public class KeyboardAccessoryControllerTest {
         assertThat(mModel.isVisible(), is(false));
 
         // Adding actions while the keyboard is visible triggers the accessory.
-        mModel.getActionList().add(new FakeAction());
+        mModel.getActionList().add(new Action(null, null));
         assertThat(mModel.isVisible(), is(true));
     }
 
@@ -222,7 +211,7 @@ public class KeyboardAccessoryControllerTest {
         assertThat(mModel.isVisible(), is(false));
 
         // Adding actions while the keyboard is visible triggers the accessory.
-        mCoordinator.addTab(mMockTab);
+        mCoordinator.addTab(mTestTab);
         assertThat(mModel.isVisible(), is(true));
     }
 }
