@@ -75,21 +75,23 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(notification_key_, data->key);
 
-  bool is_snooze_setting_shown =
-      (data->shown_contents ==
-       arc::mojom::ArcNotificationShownContents::SNOOZE_SHOWN);
+  bool is_setting_shown =
+      ((data->shown_contents ==
+        arc::mojom::ArcNotificationShownContents::SETTINGS_SHOWN) ||
+       (data->shown_contents ==
+        arc::mojom::ArcNotificationShownContents::SNOOZE_SHOWN));
 
   message_center::RichNotificationData rich_data;
   rich_data.pinned =
       (data->no_clear || data->ongoing_event)  // Unclosable notification
-      || is_snooze_setting_shown;              // Snooze setting is unclosable
+      || is_setting_shown;                     // Settings are unclosable
   rich_data.priority = ConvertAndroidPriority(data->priority);
   if (data->small_icon)
     rich_data.small_image = gfx::Image::CreateFrom1xBitmap(*data->small_icon);
 
   rich_data.accessible_name = base::UTF8ToUTF16(
       data->accessible_name.value_or(data->title + "\n" + data->message));
-  if (manager_->IsOpeningSettingsSupported() && !is_snooze_setting_shown) {
+  if (manager_->IsOpeningSettingsSupported() && !is_setting_shown) {
     rich_data.settings_button_handler =
         message_center::SettingsButtonHandler::DELEGATE;
   } else {
@@ -101,7 +103,7 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
       (data->flags && (data->flags->value &
                        arc::mojom::ArcNotificationFlags::SUPPORT_SNOOZE) != 0);
   rich_data.should_show_snooze_button =
-      is_snooze_supported && !is_snooze_setting_shown;
+      is_snooze_supported && !is_setting_shown;
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::ARC_APPLICATION,
