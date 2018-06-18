@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
@@ -151,11 +152,13 @@ std::unique_ptr<HttpResponse> HandleSigninURL(
 
   // Add the SIGNIN dice header.
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
-  http_response->AddCustomHeader(
-      kDiceResponseHeader,
-      base::StringPrintf(
-          "action=SIGNIN,authuser=1,id=%s,email=%s,authorization_code=%s",
-          kMainGaiaID, kMainEmail, kAuthorizationCode));
+  if (header_value != kNoDiceRequestHeader) {
+    http_response->AddCustomHeader(
+        kDiceResponseHeader,
+        base::StringPrintf(
+            "action=SIGNIN,authuser=1,id=%s,email=%s,authorization_code=%s",
+            kMainGaiaID, kMainEmail, kAuthorizationCode));
+  }
 
   // When hitting the Chrome Sync endpoint, redirect to kEnableSyncURL, which
   // adds the ENABLE_SYNC dice header.
@@ -392,7 +395,12 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   // Navigate to a Gaia URL setting the Google-Accounts-SignOut header.
   void SignOutWithDice(SignoutType signout_type) {
     NavigateToURL(base::StringPrintf("%s?%i", kSignoutURL, signout_type));
-    if (signin::IsDicePrepareMigrationEnabled()) {
+    signin::AccountConsistencyMethod account_consistency =
+        AccountConsistencyModeManager::GetMethodForProfile(
+            browser()->profile());
+    if (signin::DiceMethodGreaterOrEqual(
+            account_consistency,
+            signin::AccountConsistencyMethod::kDicePrepareMigration)) {
       EXPECT_EQ(1, reconcilor_blocked_count_);
       WaitForReconcilorUnblockedCount(1);
     } else {
@@ -474,7 +482,8 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
   // FakeGaia callbacks:
   void OnSigninRequest(const std::string& dice_request_header) {
-    EXPECT_EQ(signin::IsDicePrepareMigrationEnabled(), IsReconcilorBlocked());
+    EXPECT_EQ(dice_request_header != kNoDiceRequestHeader,
+              IsReconcilorBlocked());
     dice_request_header_ = dice_request_header;
   }
 
@@ -484,7 +493,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   }
 
   void OnEnableSyncRequest(base::OnceClosure unblock_response_closure) {
-    EXPECT_EQ(signin::IsDicePrepareMigrationEnabled(), IsReconcilorBlocked());
+    EXPECT_TRUE(IsReconcilorBlocked());
     enable_sync_requested_ = true;
     RunClosureIfValid(std::move(enable_sync_requested_quit_closure_));
     unblock_enable_sync_response_closure_ = std::move(unblock_response_closure);
@@ -493,7 +502,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   void OnTokenExchangeRequest(base::OnceClosure unblock_response_closure) {
     // The token must be exchanged only once.
     EXPECT_FALSE(token_requested_);
-    EXPECT_EQ(signin::IsDicePrepareMigrationEnabled(), IsReconcilorBlocked());
+    EXPECT_TRUE(IsReconcilorBlocked());
     token_requested_ = true;
     RunClosureIfValid(std::move(token_requested_quit_closure_));
     unblock_token_exchange_response_closure_ =
@@ -845,8 +854,8 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, SigninAccountMismatch) {
   EXPECT_FALSE(refresh_token_available_);
   EXPECT_EQ(GetSecondaryAccountID(),
             GetSigninManager()->GetAuthenticatedAccountId());
-  EXPECT_EQ(0, reconcilor_blocked_count_);
-  WaitForReconcilorUnblockedCount(0);
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  WaitForReconcilorUnblockedCount(1);
 }
 
 // Checks that signin on Gaia triggers the fetch for a refresh token when there
@@ -877,8 +886,8 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, ReauthFixAuthError) {
   // Old token must be revoked silently.
   EXPECT_EQ(0, token_revoked_notification_count_);
   WaitForTokenRevokedCount(1);
-  EXPECT_EQ(0, reconcilor_blocked_count_);
-  WaitForReconcilorUnblockedCount(0);
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  WaitForReconcilorUnblockedCount(1);
 }
 
 // Checks that the Dice signout flow is disabled.

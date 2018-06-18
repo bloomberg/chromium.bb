@@ -752,10 +752,9 @@ TEST_F(DiceResponseHandlerTest, FixAuthError) {
   // Check that the token has not been inserted in the token service.
   EXPECT_TRUE(token_service_.RefreshTokenIsAvailable(account_id));
   EXPECT_TRUE(token_service_observer->token_received());
-  // Check that the reconcilor was not blocked or unblocked when fixing auth
-  // errors.
-  EXPECT_EQ(0, reconcilor_blocked_count_);
-  EXPECT_EQ(0, reconcilor_unblocked_count_);
+  // Check that the reconcilor was blocked and unblocked.
+  EXPECT_EQ(1, reconcilor_blocked_count_);
+  EXPECT_EQ(1, reconcilor_unblocked_count_);
 }
 
 // Tests that the Dice Signout response is ignored when kDiceFixAuthErrors is

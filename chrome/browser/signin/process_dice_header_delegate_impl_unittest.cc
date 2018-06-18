@@ -16,7 +16,6 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/profile_management_switches.h"
-#include "components/signin/core/browser/scoped_account_consistency.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/web_contents.h"
@@ -61,9 +60,11 @@ class ProcessDiceHeaderDelegateImplTest
 
   // Creates a ProcessDiceHeaderDelegateImpl instance.
   std::unique_ptr<ProcessDiceHeaderDelegateImpl> CreateDelegate(
-      bool is_sync_signin_tab) {
+      bool is_sync_signin_tab,
+      signin::AccountConsistencyMethod account_consistency) {
     return std::make_unique<ProcessDiceHeaderDelegateImpl>(
-        web_contents(), &pref_service_, &signin_manager_, is_sync_signin_tab,
+        web_contents(), account_consistency, &signin_manager_,
+        is_sync_signin_tab,
         base::BindOnce(&ProcessDiceHeaderDelegateImplTest::StartSyncCallback,
                        base::Unretained(this)),
         base::BindOnce(
@@ -105,12 +106,11 @@ class ProcessDiceHeaderDelegateImplTest
 // Check that sync is enabled if the tab is closed during signin.
 TEST_F(ProcessDiceHeaderDelegateImplTest, CloseTabWhileStartingSync) {
   // Setup the test.
-  signin::ScopedAccountConsistencyDice account_consistency;
   GURL kSigninURL = GURL("https://accounts.google.com");
   NavigateAndCommit(kSigninURL);
   ASSERT_EQ(kSigninURL, web_contents()->GetVisibleURL());
   std::unique_ptr<ProcessDiceHeaderDelegateImpl> delegate =
-      CreateDelegate(true);
+      CreateDelegate(true, signin::AccountConsistencyMethod::kDice);
 
   // Close the tab.
   DeleteContents();
@@ -125,12 +125,11 @@ TEST_F(ProcessDiceHeaderDelegateImplTest, CloseTabWhileStartingSync) {
 // received.
 TEST_F(ProcessDiceHeaderDelegateImplTest, CloseTabWhileFailingSignin) {
   // Setup the test.
-  signin::ScopedAccountConsistencyDice account_consistency;
   GURL kSigninURL = GURL("https://accounts.google.com");
   NavigateAndCommit(kSigninURL);
   ASSERT_EQ(kSigninURL, web_contents()->GetVisibleURL());
   std::unique_ptr<ProcessDiceHeaderDelegateImpl> delegate =
-      CreateDelegate(true);
+      CreateDelegate(true, signin::AccountConsistencyMethod::kDice);
 
   // Close the tab.
   DeleteContents();
@@ -178,15 +177,13 @@ class ProcessDiceHeaderDelegateImplTestEnableSync
 // Test the EnableSync() method in all configurations.
 TEST_P(ProcessDiceHeaderDelegateImplTestEnableSync, EnableSync) {
   // Setup the test.
-  signin::ScopedAccountConsistency account_consistency(
-      GetParam().account_consistency);
   GURL kSigninURL = GURL("https://accounts.google.com");
   NavigateAndCommit(kSigninURL);
   ASSERT_EQ(kSigninURL, web_contents()->GetVisibleURL());
   if (GetParam().signed_in)
     signin_manager_.SignIn("gaia_id", "user", "pass");
   std::unique_ptr<ProcessDiceHeaderDelegateImpl> delegate =
-      CreateDelegate(GetParam().signin_tab);
+      CreateDelegate(GetParam().signin_tab, GetParam().account_consistency);
 
   // Check expectations.
   delegate->EnableSync(account_id_);
@@ -228,15 +225,13 @@ class ProcessDiceHeaderDelegateImplTestHandleTokenExchangeFailure
 TEST_P(ProcessDiceHeaderDelegateImplTestHandleTokenExchangeFailure,
        HandleTokenExchangeFailure) {
   // Setup the test.
-  signin::ScopedAccountConsistency account_consistency(
-      GetParam().account_consistency);
   GURL kSigninURL = GURL("https://accounts.google.com");
   NavigateAndCommit(kSigninURL);
   ASSERT_EQ(kSigninURL, web_contents()->GetVisibleURL());
   if (GetParam().signed_in)
     signin_manager_.SignIn("gaia_id", "user", "pass");
   std::unique_ptr<ProcessDiceHeaderDelegateImpl> delegate =
-      CreateDelegate(GetParam().signin_tab);
+      CreateDelegate(GetParam().signin_tab, GetParam().account_consistency);
 
   // Check expectations.
   delegate->HandleTokenExchangeFailure(email_, auth_error_);

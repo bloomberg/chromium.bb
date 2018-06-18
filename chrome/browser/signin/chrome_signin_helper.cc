@@ -117,9 +117,6 @@ class DiceURLRequestUserData : public base::SupportsUserData::Data {
   // Attaches a DiceURLRequestUserData to the request if it needs to block the
   // AccountReconcilor.
   static void AttachToRequest(net::URLRequest* request) {
-    if (!IsDicePrepareMigrationEnabled())
-      return;
-
     if (ShouldBlockReconcilorForRequest(request) &&
         !request->GetUserData(kDiceURLRequestUserDataKey)) {
       const content::ResourceRequestInfo* info =
@@ -165,7 +162,6 @@ class DiceURLRequestUserData : public base::SupportsUserData::Data {
   // * Main frame  requests.
   // * XHR requests having Gaia URL as referrer.
   static bool ShouldBlockReconcilorForRequest(net::URLRequest* request) {
-    DCHECK(IsDicePrepareMigrationEnabled());
     const content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request);
     content::ResourceType resource_type = info->GetResourceType();
@@ -296,7 +292,6 @@ void ProcessDiceHeaderUIThread(
     const content::ResourceRequestInfo::WebContentsGetter&
         web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(IsDiceFixAuthErrorsEnabled());
 
   content::WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents)
@@ -306,6 +301,14 @@ void ProcessDiceHeaderUIThread(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   DCHECK(!profile->IsOffTheRecord());
 
+  AccountConsistencyMethod account_consistency =
+      AccountConsistencyModeManager::GetMethodForProfile(profile);
+  if (account_consistency == AccountConsistencyMethod::kMirror ||
+      account_consistency == AccountConsistencyMethod::kDisabled) {
+    // Ignore Dice response headers if Dice is not enabled at all.
+    return;
+  }
+
   signin_metrics::AccessPoint access_point =
       signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
   signin_metrics::PromoAction promo_action =
@@ -314,7 +317,7 @@ void ProcessDiceHeaderUIThread(
 
   bool is_sync_signin_tab = false;
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
-  if (signin::IsDicePrepareMigrationEnabled() && tab_helper) {
+  if (tab_helper) {
     is_sync_signin_tab = true;
     access_point = tab_helper->signin_access_point();
     promo_action = tab_helper->signin_promo_action();
@@ -326,7 +329,7 @@ void ProcessDiceHeaderUIThread(
   dice_response_handler->ProcessDiceHeader(
       dice_params,
       std::make_unique<ProcessDiceHeaderDelegateImpl>(
-          web_contents, profile->GetPrefs(),
+          web_contents, account_consistency,
           SigninManagerFactory::GetForProfile(profile), is_sync_signin_tab,
           base::BindOnce(&CreateDiceTurnOnSyncHelper, base::Unretained(profile),
                          access_point, promo_action, reason),
@@ -385,15 +388,8 @@ void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
   if (is_off_the_record)
     return;
 
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-
   if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
     return;
-
-  if (!IsDiceFixAuthErrorsEnabled()) {
-    return;
-  }
 
   net::HttpResponseHeaders* response_headers = request->response_headers();
   if (!response_headers)
@@ -417,6 +413,8 @@ void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
   if (params.user_intention == DiceAction::NONE)
     return;
 
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(ProcessDiceHeaderUIThread, base::Passed(std::move(params)),

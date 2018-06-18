@@ -170,8 +170,7 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
     SigninClient* signin_client,
     AccountReconcilor* account_reconcilor,
     std::unique_ptr<ProcessDiceHeaderDelegate> delegate,
-    DiceResponseHandler* dice_response_handler,
-    signin::AccountConsistencyMethod account_consistency)
+    DiceResponseHandler* dice_response_handler)
     : gaia_id_(gaia_id),
       email_(email),
       authorization_code_(authorization_code),
@@ -182,12 +181,8 @@ DiceResponseHandler::DiceTokenFetcher::DiceTokenFetcher(
                      base::Unretained(this))),
       should_enable_sync_(false) {
   DCHECK(dice_response_handler_);
-  if (signin::DiceMethodGreaterOrEqual(
-          account_consistency,
-          signin::AccountConsistencyMethod::kDicePrepareMigration)) {
-    account_reconcilor_lock_ =
-        std::make_unique<AccountReconcilor::Lock>(account_reconcilor);
-  }
+  account_reconcilor_lock_ =
+      std::make_unique<AccountReconcilor::Lock>(account_reconcilor);
   gaia_auth_fetcher_ = signin_client->CreateGaiaAuthFetcher(
       this, GaiaConstants::kChromeSource,
       signin_client->GetURLRequestContext());
@@ -346,7 +341,7 @@ void DiceResponseHandler::ProcessDiceSigninHeader(
   }
   token_fetchers_.push_back(std::make_unique<DiceTokenFetcher>(
       gaia_id, email, authorization_code, signin_client_, account_reconcilor_,
-      std::move(delegate), this, account_consistency_));
+      std::move(delegate), this));
 }
 
 void DiceResponseHandler::ProcessEnableSyncHeader(
