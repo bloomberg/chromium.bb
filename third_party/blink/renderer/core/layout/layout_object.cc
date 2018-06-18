@@ -1298,15 +1298,6 @@ bool LayoutObject::GetLowerRightCorner(ExpandScrollMargin expand,
   return true;
 }
 
-IntRect LayoutObject::AbsoluteElementBoundingBoxRect() const {
-  Vector<LayoutRect> rects;
-  const LayoutBoxModelObject& container = EnclosingLayer()->GetLayoutObject();
-  AddElementVisualOverflowRects(
-      rects, LayoutPoint(LocalToAncestorPoint(FloatPoint(), &container)));
-  return container.LocalToAbsoluteQuad(FloatQuad(FloatRect(UnionRect(rects))))
-      .EnclosingBoundingBox();
-}
-
 FloatRect LayoutObject::AbsoluteBoundingBoxRectForRange(
     const EphemeralRange& range) {
   if (range.IsNull() || !range.StartPosition().ComputeContainerNode())

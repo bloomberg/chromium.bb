@@ -100,7 +100,6 @@ class LayoutSVGModelObject : public LayoutObject {
                    const HitTestLocation& location_in_container,
                    const LayoutPoint& accumulated_offset,
                    HitTestAction) final;
-  IntRect AbsoluteElementBoundingBoxRect() const final;
 
  protected:
   FloatRect local_visual_rect_;
