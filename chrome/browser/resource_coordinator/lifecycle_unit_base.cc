@@ -40,18 +40,20 @@ ukm::SourceId LifecycleUnitBase::GetUkmSourceId() const {
   return ukm::kInvalidSourceId;
 }
 
-void LifecycleUnitBase::SetState(LifecycleUnitState state) {
+void LifecycleUnitBase::SetState(LifecycleUnitState state,
+                                 LifecycleUnitStateChangeReason reason) {
   if (state == state_)
     return;
   LifecycleUnitState last_state = state_;
   state_ = state;
-  OnLifecycleUnitStateChanged(last_state);
+  OnLifecycleUnitStateChanged(last_state, reason);
   for (auto& observer : observers_)
     observer.OnLifecycleUnitStateChanged(this, last_state);
 }
 
 void LifecycleUnitBase::OnLifecycleUnitStateChanged(
-    LifecycleUnitState last_state) {}
+    LifecycleUnitState last_state,
+    LifecycleUnitStateChangeReason reason) {}
 
 void LifecycleUnitBase::OnLifecycleUnitVisibilityChanged(
     content::Visibility visibility) {

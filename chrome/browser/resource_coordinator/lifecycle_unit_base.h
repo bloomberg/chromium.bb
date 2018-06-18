@@ -13,6 +13,7 @@
 namespace resource_coordinator {
 
 using ::mojom::LifecycleUnitState;
+using ::mojom::LifecycleUnitStateChangeReason;
 
 // Base class for a LifecycleUnit.
 class LifecycleUnitBase : public LifecycleUnit {
@@ -30,12 +31,17 @@ class LifecycleUnitBase : public LifecycleUnit {
 
  protected:
   // Sets the state of this LifecycleUnit to |state| and notifies observers.
-  void SetState(LifecycleUnitState state);
+  // |reason| indicates what caused the state change.
+  void SetState(LifecycleUnitState state,
+                LifecycleUnitStateChangeReason reason);
 
   // Invoked when the state of the LifecycleUnit changes, before external
   // observers are notified. Derived classes can override to add their own
-  // logic. The default implementation is empty.
-  virtual void OnLifecycleUnitStateChanged(LifecycleUnitState last_state);
+  // logic. The default implementation is empty. |last_state| is the state
+  // before the change and |reason| indicates what caused the change.
+  virtual void OnLifecycleUnitStateChanged(
+      LifecycleUnitState last_state,
+      LifecycleUnitStateChangeReason reason);
 
   // Notifies observers that the visibility of the LifecycleUnit has changed.
   void OnLifecycleUnitVisibilityChanged(content::Visibility visibility);

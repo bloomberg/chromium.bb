@@ -143,8 +143,13 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // Returns the RenderProcessHost associated with this tab.
   content::RenderProcessHost* GetRenderProcessHost() const;
 
+  // Initializes |freeze_timeout_timer_| if not already initialized.
+  void EnsureFreezeTimeoutTimerInitialized();
+
   // LifecycleUnitBase:
-  void OnLifecycleUnitStateChanged(LifecycleUnitState last_state) override;
+  void OnLifecycleUnitStateChanged(
+      LifecycleUnitState last_state,
+      LifecycleUnitStateChangeReason reason) override;
 
   // content::WebContentsObserver:
   void DidStartLoading() override;

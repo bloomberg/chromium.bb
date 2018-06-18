@@ -59,11 +59,13 @@ TEST(LifecycleUnitBaseTest, SetStateNotifiesObservers) {
   // Observer is notified when the state changes.
   EXPECT_CALL(observer, OnLifecycleUnitStateChanged(&lifecycle_unit,
                                                     lifecycle_unit.GetState()));
-  lifecycle_unit.SetState(LifecycleUnitState::DISCARDED);
+  lifecycle_unit.SetState(LifecycleUnitState::DISCARDED,
+                          LifecycleUnitStateChangeReason::BROWSER_INITIATED);
   testing::Mock::VerifyAndClear(&observer);
 
   // Observer isn't notified when the state stays the same.
-  lifecycle_unit.SetState(LifecycleUnitState::DISCARDED);
+  lifecycle_unit.SetState(LifecycleUnitState::DISCARDED,
+                          LifecycleUnitStateChangeReason::BROWSER_INITIATED);
 
   lifecycle_unit.RemoveObserver(&observer);
 }
