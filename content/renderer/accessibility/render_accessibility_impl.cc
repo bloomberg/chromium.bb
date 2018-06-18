@@ -417,8 +417,13 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   // The serialized event bundle to send to the browser.
   AccessibilityHostMsg_EventBundleParams bundle;
 
+  // Keep track of nodes in the tree that need to be updated.
+  std::vector<DirtyObject> dirty_objects;
+
   // If there's a layout complete message, we need to send location changes.
   bool had_layout_complete_messages = false;
+
+  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
 
   // Loop over each event and generate an updated event message.
   for (size_t i = 0; i < src_events.size(); ++i) {
@@ -436,8 +441,6 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     while (!obj.IsDetached() && obj.AccessibilityIsIgnored())
       obj = obj.ParentObject();
 
-    ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
-
     // Make sure it's a descendant of our root node - exceptions include the
     // scroll area that's the parent of the main document (we ignore it), and
     // possibly nodes attached to a different document.
@@ -449,8 +452,22 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     VLOG(1) << "Accessibility event: " << ui::ToString(event.event_type)
             << " on node id " << event.id;
 
+    DirtyObject dirty_object;
+    dirty_object.obj = obj;
+    dirty_object.event_from = event.event_from;
+    dirty_objects.push_back(dirty_object);
+  }
+
+  // Now serialize all dirty objects. Keep track of IDs serialized
+  // so we don't have to serialize the same node twice.
+  std::set<int32_t> already_serialized_ids;
+  for (size_t i = 0; i < dirty_objects.size(); i++) {
+    auto obj = dirty_objects[i].obj;
+    if (already_serialized_ids.find(obj.AxID()) != already_serialized_ids.end())
+      continue;
+
     AXContentTreeUpdate update;
-    update.event_from = event.event_from;
+    update.event_from = dirty_objects[i].event_from;
     // If there's a plugin, force the tree data to be generated in every
     // message so the plugin can merge its own tree data changes.
     if (plugin_tree_source_)
@@ -475,6 +492,10 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       if (src.transform)
         dst.transform.reset(new gfx::Transform(*src.transform));
     }
+
+    for (size_t j = 0; j < update.nodes.size(); ++j)
+      already_serialized_ids.insert(update.nodes[j].id);
+
     bundle.updates.push_back(update);
 
     VLOG(1) << "Accessibility tree update:\n" << update.ToString();
@@ -494,7 +515,6 @@ void RenderAccessibilityImpl::SendLocationChanges() {
   std::vector<AccessibilityHostMsg_LocationChangeParams> messages;
 
   // Update layout on the root of the tree.
-  ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   WebAXObject root = tree_source_.GetRoot();
   if (!root.UpdateLayoutAndCheckValidity())
     return;
