@@ -93,7 +93,7 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   CreateWebSocketHandshakeThrottle() override;
 
   // mojom::ServiceWorkerWorkerClient implementation:
-  void SetControllerServiceWorker(int64_t controller_version_id) override;
+  void OnControllerChanged() override;
 
   // Sets the fetch context status copied from the frame; the parent frame for a
   // dedicated worker, the main frame of the shadow page for a shared worker.
@@ -164,10 +164,6 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   scoped_refptr<base::RefCountedData<blink::mojom::BlobRegistryPtr>>
       blob_registry_;
-
-  // Updated when mojom::ServiceWorkerWorkerClient::SetControllerServiceWorker()
-  // is called from the browser process via mojo IPC.
-  int controller_version_id_ = blink::mojom::kInvalidServiceWorkerVersionId;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   std::unique_ptr<blink::WebDocumentSubresourceFilter::Builder>

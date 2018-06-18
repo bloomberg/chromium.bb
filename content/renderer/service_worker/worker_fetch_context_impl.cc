@@ -260,9 +260,7 @@ void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {
 }
 
 bool WorkerFetchContextImpl::IsControlledByServiceWorker() const {
-  return is_controlled_by_service_worker_ ||
-         (controller_version_id_ !=
-          blink::mojom::kInvalidServiceWorkerVersionId);
+  return is_controlled_by_service_worker_;
 }
 
 void WorkerFetchContextImpl::SetIsOnSubframe(bool is_on_sub_frame) {
@@ -351,9 +349,11 @@ int WorkerFetchContextImpl::ApplicationCacheHostID() const {
   return appcache_host_id_;
 }
 
-void WorkerFetchContextImpl::SetControllerServiceWorker(
-    int64_t controller_version_id) {
-  controller_version_id_ = controller_version_id;
+void WorkerFetchContextImpl::OnControllerChanged() {
+  // This function is called if we transition from (no controller) to
+  // (controller), or if the controller changed.
+  set_is_controlled_by_service_worker(true);
+
   if (ServiceWorkerUtils::IsServicificationEnabled())
     ResetServiceWorkerURLLoaderFactory();
 }

@@ -58,17 +58,14 @@ struct ServiceWorkerProviderHostInfo {
 // ServiceWorkerWorkerClient represents a service worker client that is a worker
 // (i.e., a shared worker or dedicated worker). We use this interface to let the
 // WorkerFetchContextImpl in the worker thread know about the change of
-// controlling service worker by calling SetControllerServiceWorker() from the
+// controlling service worker by calling OnControllerChanged() from the
 // ServiceWorkerProviderContext in the main thread of the renderer process.
 //
 // TODO(horo): We should implement ServiceWorkerProvider in the worker thread
-// instead of using this interface to support WorkerNavigator.serviceWorker
-// when we can make the worker thread totally independent from the main thread.
-// Currently we handle synchronous resource loading such as importScripts() and
-// synchronous XHR in the main thread. So we need to know whether the worker is
-// controlled by a service worker or not both in the main thread and in the
-// worker thread.
+// instead of using this interface to support WorkerNavigator.serviceWorker.
 interface ServiceWorkerWorkerClient {
-  // Called when the worker is controlled by a new service worker.
-  SetControllerServiceWorker(int64 controller_version_id);
+  // Called when the worker is controlled by a new service worker. This is only
+  // used to let the worker know that we now have a service worker (while there
+  // may or may not have been one previously), but not the other way around.
+  OnControllerChanged();
 };
