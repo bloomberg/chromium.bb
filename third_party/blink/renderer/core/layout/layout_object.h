@@ -1707,11 +1707,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     AddOutlineRects(rects, additional_offset, kIncludeBlockVisualOverflow);
   }
 
-  // Returns the rect enclosing united visual overflow of the DOM subtree under
-  // this object. It includes continuations which may be not in the layout
-  // subtree of this object.
-  virtual IntRect AbsoluteElementBoundingBoxRect() const;
-
   // Compute a list of hit-test rectangles per layer rooted at this
   // layoutObject with at most the given touch action.
   virtual void ComputeLayerHitTestRects(LayerHitTestRects&, TouchAction) const;
