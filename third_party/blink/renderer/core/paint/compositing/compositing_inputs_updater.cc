@@ -219,21 +219,21 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
   bool should_recurse =
       layer->ChildNeedsCompositingInputsUpdate() || update_type == kForceUpdate;
 
-  layer->SetDescendantHasDirectCompositingReason(false);
+  layer->SetDescendantHasDirectOrScrollingCompositingReason(false);
   bool descendant_has_direct_compositing_reason = false;
   for (PaintLayer* child = layer->FirstChild(); child;
        child = child->NextSibling()) {
     if (should_recurse)
       UpdateRecursive(child, update_type, info);
     descendant_has_direct_compositing_reason |=
-        child->DescendantHasDirectCompositingReason() ||
-        child->DirectCompositingReasons();
+        child->DescendantHasDirectOrScrollingCompositingReason() ||
+        child->DirectCompositingReasons() || child->NeedsCompositedScrolling();
   }
-  layer->SetDescendantHasDirectCompositingReason(
+  layer->SetDescendantHasDirectOrScrollingCompositingReason(
       descendant_has_direct_compositing_reason);
 
   if (layer->IsRootLayer() && layer->ScrollsOverflow() &&
-      layer->DescendantHasDirectCompositingReason() &&
+      layer->DescendantHasDirectOrScrollingCompositingReason() &&
       !layer->NeedsCompositedScrolling())
     layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(true);
 

@@ -311,6 +311,105 @@ TEST_P(PaintLayerTest, HasNonIsolatedDescendantWithBlendMode) {
   EXPECT_TRUE(parent->HasVisibleDescendant());
 }
 
+TEST_P(PaintLayerTest, HasDescendantWithSticky) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='isolation: isolate'>
+      <div id='child' style='position: sticky'>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+  EXPECT_TRUE(parent->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(child->HasDescendantWithStickyOrFixed());
+
+  GetDocument().getElementById("child")->setAttribute(HTMLNames::styleAttr,
+                                                      "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(parent->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(child->HasDescendantWithStickyOrFixed());
+}
+
+TEST_P(PaintLayerTest, HasDescendantWithFixed) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='isolation: isolate'>
+      <div id='child' style='position: fixed'>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+  EXPECT_TRUE(parent->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(child->HasDescendantWithStickyOrFixed());
+
+  GetDocument().getElementById("child")->setAttribute(HTMLNames::styleAttr,
+                                                      "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(parent->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(child->HasDescendantWithStickyOrFixed());
+}
+
+TEST_P(PaintLayerTest, HasDescendantWithFixedAndSticky) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='isolation: isolate'>
+      <div id='child1' style='position: sticky'>
+      </div>
+      <div id='child2' style='position: fixed'>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child1 = GetPaintLayerByElementId("child1");
+  PaintLayer* child2 = GetPaintLayerByElementId("child2");
+  EXPECT_TRUE(parent->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(child1->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(child2->HasDescendantWithStickyOrFixed());
+
+  GetDocument().getElementById("child1")->setAttribute(HTMLNames::styleAttr,
+                                                       "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(parent->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(child1->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(child2->HasDescendantWithStickyOrFixed());
+
+  GetDocument().getElementById("child2")->setAttribute(HTMLNames::styleAttr,
+                                                       "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(parent->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(child1->HasDescendantWithStickyOrFixed());
+  EXPECT_FALSE(child2->HasDescendantWithStickyOrFixed());
+}
+
+TEST_P(PaintLayerTest, HasNonContainedAbsolutePositionDescendant) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='parent' style='isolation: isolate'>
+      <div id='child' style='position: relative'>
+      </div>
+    </div>
+  )HTML");
+  PaintLayer* parent = GetPaintLayerByElementId("parent");
+  PaintLayer* child = GetPaintLayerByElementId("child");
+  EXPECT_FALSE(parent->HasNonContainedAbsolutePositionDescendant());
+  EXPECT_FALSE(child->HasNonContainedAbsolutePositionDescendant());
+
+  GetDocument().getElementById("child")->setAttribute(HTMLNames::styleAttr,
+                                                      "position: absolute");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(parent->HasNonContainedAbsolutePositionDescendant());
+  EXPECT_FALSE(child->HasNonContainedAbsolutePositionDescendant());
+
+  GetDocument().getElementById("parent")->setAttribute(HTMLNames::styleAttr,
+                                                       "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(parent->HasNonContainedAbsolutePositionDescendant());
+  EXPECT_FALSE(child->HasNonContainedAbsolutePositionDescendant());
+}
+
 TEST_P(PaintLayerTest, SubsequenceCachingStackingContexts) {
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='position:relative'>

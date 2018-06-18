@@ -827,7 +827,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return GetAncestorDependentCompositingInputs().mask_ancestor;
   }
   bool HasDescendantWithClipPath() const {
+    DCHECK(!needs_descendant_dependent_flags_update_);
     return has_descendant_with_clip_path_;
+  }
+  bool HasDescendantWithStickyOrFixed() const {
+    DCHECK(!needs_descendant_dependent_flags_update_);
+    return has_descendant_with_sticky_or_fixed_;
+  }
+  bool HasNonContainedAbsolutePositionDescendant() const {
+    DCHECK(!needs_descendant_dependent_flags_update_);
+    return has_non_contained_absolute_position_descendant_;
   }
 
   // Returns true if there is a descendant with blend-mode that is
@@ -1013,11 +1022,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     previous_paint_phase_descendant_block_backgrounds_was_empty_ = is_empty;
   }
 
-  bool DescendantHasDirectCompositingReason() const {
-    return descendant_has_direct_compositing_reason_;
+  bool DescendantHasDirectOrScrollingCompositingReason() const {
+    return descendant_has_direct_or_scrolling_compositing_reason_;
   }
-  void SetDescendantHasDirectCompositingReason(bool value) {
-    descendant_has_direct_compositing_reason_ = value;
+  void SetDescendantHasDirectOrScrollingCompositingReason(bool value) {
+    descendant_has_direct_or_scrolling_compositing_reason_ = value;
   }
 
   ClipRectsCache* GetClipRectsCache() const { return clip_rects_cache_.get(); }
@@ -1273,6 +1282,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // inputs.
   unsigned has_descendant_with_clip_path_ : 1;
   unsigned has_non_isolated_descendant_with_blend_mode_ : 1;
+  unsigned has_descendant_with_sticky_or_fixed_ : 1;
+  unsigned has_non_contained_absolute_position_descendant_ : 1;
 
   unsigned self_painting_status_changed_ : 1;
 
@@ -1285,7 +1296,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // ancestor.
   unsigned is_under_svg_hidden_container_ : 1;
 
-  unsigned descendant_has_direct_compositing_reason_ : 1;
+  unsigned descendant_has_direct_or_scrolling_compositing_reason_ : 1;
   unsigned needs_compositing_reasons_update_ : 1;
 
   LayoutBoxModelObject& layout_object_;
