@@ -14,6 +14,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
+#include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -77,6 +78,11 @@ void AssistantController::SetAssistantImageDownloader(
 void AssistantController::SetWebContentsManager(
     mojom::WebContentsManagerPtr web_contents_manager) {
   web_contents_manager_ = std::move(web_contents_manager);
+}
+
+void AssistantController::SetAssistantSetup(
+    mojom::AssistantSetupPtr assistant_setup) {
+  assistant_setup_ = std::move(assistant_setup);
 }
 
 void AssistantController::RequestScreenshot(
@@ -164,6 +170,13 @@ void AssistantController::RemoveInteractionModelObserver(
 }
 
 void AssistantController::StartInteraction() {
+  if (!Shell::Get()->voice_interaction_controller()->setup_completed()) {
+    assistant_setup_->StartAssistantOptInFlow();
+    return;
+  }
+  if (!Shell::Get()->voice_interaction_controller()->settings_enabled())
+    return;
+
   if (!assistant_) {
     ShowToast(kUnboundServiceToastId, IDS_ASH_ASSISTANT_ERROR_GENERIC);
     return;

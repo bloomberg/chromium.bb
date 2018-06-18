@@ -15,6 +15,7 @@
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_image_downloader.mojom.h"
+#include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "ash/public/interfaces/web_contents_manager.mojom.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -121,12 +122,14 @@ class AssistantController
   void OnSpeechLevelUpdated(float speech_level) override;
 
   // mojom::AssistantController:
+  // TODO(updowndota): Refactor Set() calls to use a factory pattern.
   void SetAssistant(
       chromeos::assistant::mojom::AssistantPtr assistant) override;
   void SetAssistantImageDownloader(
       mojom::AssistantImageDownloaderPtr assistant_image_downloader) override;
   void SetWebContentsManager(
       mojom::WebContentsManagerPtr web_contents_manager) override;
+  void SetAssistantSetup(mojom::AssistantSetupPtr assistant_setup) override;
   void RequestScreenshot(const gfx::Rect& rect,
                          RequestScreenshotCallback callback) override;
 
@@ -157,6 +160,7 @@ class AssistantController
   chromeos::assistant::mojom::AssistantPtr assistant_;
   mojom::AssistantImageDownloaderPtr assistant_image_downloader_;
   mojom::WebContentsManagerPtr web_contents_manager_;
+  mojom::AssistantSetupPtr assistant_setup_;
 
   std::unique_ptr<AssistantBubbleController> assistant_bubble_controller_;
 
