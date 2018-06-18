@@ -38,9 +38,13 @@ public class BottomToolbarModel extends PropertyModel {
     /** Whether or not the search accelerator is visible. */
     public static final BooleanPropertyKey SEARCH_ACCELERATOR_VISIBLE = new BooleanPropertyKey();
 
+    /** Whether or not the update badge is visible. */
+    public static final BooleanPropertyKey UPDATE_BADGE_VISIBLE = new BooleanPropertyKey();
+
     /** Default constructor. */
     public BottomToolbarModel() {
         super(Y_OFFSET, ANDROID_VIEW_VISIBLE, SEARCH_ACCELERATOR_LISTENER, HOME_BUTTON_LISTENER,
-                MENU_BUTTON_LISTENER, LAYOUT_MANAGER, SEARCH_ACCELERATOR_VISIBLE);
+                MENU_BUTTON_LISTENER, LAYOUT_MANAGER, SEARCH_ACCELERATOR_VISIBLE,
+                UPDATE_BADGE_VISIBLE);
     }
 }

@@ -105,6 +105,27 @@ public class BottomToolbarController {
     }
 
     /**
+     * Show the update badge over the bottom toolbar's app menu.
+     */
+    public void showAppMenuUpdateBadge() {
+        mMediator.setUpdateBadgeVisibility(true);
+    }
+
+    /**
+     * Remove the update badge.
+     */
+    public void removeAppMenuUpdateBadge() {
+        mMediator.setUpdateBadgeVisibility(false);
+    }
+
+    /**
+     * @return Whether the update badge is showing.
+     */
+    public boolean isShowingAppMenuUpdateBadge() {
+        return mMediator.isShowingAppMenuUpdateBadge();
+    }
+
+    /**
      * Clean up any state when the bottom toolbar is destroyed.
      */
     public void destroy() {

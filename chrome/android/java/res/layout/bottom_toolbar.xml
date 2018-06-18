@@ -74,13 +74,7 @@
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
-            <org.chromium.chrome.browser.widget.TintedImageButton
-                android:id="@+id/menu_button"
-                style="@style/ToolbarMenuButtonPhone"
-                android:src="@drawable/ic_more_vert_black_24dp"
-                android:layout_gravity="center"
-                android:contentDescription="@string/accessibility_toolbar_btn_menu"
-                app:chrometint="@color/dark_mode_tint" />
+            <include layout="@layout/menu_button"/>
 
             <Space
                 android:layout_width="0dp"
