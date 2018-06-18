@@ -72,7 +72,7 @@ class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   inline unsigned ByteLength() const;
 
   // Creates a new ArrayBuffer object with copy of bytes in this object
-  // ranging from |begin| upto but not including |end|.
+  // ranging from |begin| up to but not including |end|.
   inline scoped_refptr<ArrayBuffer> Slice(int begin, int end) const;
   inline scoped_refptr<ArrayBuffer> Slice(int begin) const;
 

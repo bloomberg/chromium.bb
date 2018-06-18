@@ -33,7 +33,7 @@ TYPED_TEST_CASE_P(ContainerTypeOperationsTest);
 
 TYPED_TEST_P(ContainerTypeOperationsTest, Completeness) {
   using Ops = CompletedContainerTypeOperations<TypeParam>;
-  // Call all funcions in Ops and make sure they are callable.
+  // Call all functions in Ops and make sure they are callable.
 
   constexpr size_t SIZE = 4;
   // We need to initialize the content of |data| to let the compiler think

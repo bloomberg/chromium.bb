@@ -7,7 +7,7 @@ Don't use files in this directory without prior consent of the author.
 
 ## Experimental files policy
 
-The use of experimental files must be closely controled and monitored by
+The use of experimental files must be closely controlled and monitored by
 the author. If any anomalies caused by files in this directory are observed,
 please contact the author (essentially yutak@chromium.org) immediately.
 

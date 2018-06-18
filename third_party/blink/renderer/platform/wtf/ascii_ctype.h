@@ -155,7 +155,7 @@ inline char UpperNibbleToASCIIHexDigit(char c) {
 
 template <typename CharType>
 inline bool IsASCIIAlphaCaselessEqual(CharType css_character, char character) {
-  // This function compares a (preferrably) constant ASCII
+  // This function compares a (preferably) constant ASCII
   // lowercase letter to any input character.
   DCHECK_GE(character, 'a');
   DCHECK_LE(character, 'z');

@@ -12,7 +12,7 @@ namespace WTF {
 // for an object that does not need to be destructed. By doing so,
 // the clang compiler will have correct information about whether or not
 // the object has a trivial destructor.
-// Note: the derived object MUST release all its recources at the finalize()
+// Note: the derived object MUST release all its resources at the finalize()
 // method.
 template <typename Derived, bool noDestructor>
 class ConditionalDestructor {
