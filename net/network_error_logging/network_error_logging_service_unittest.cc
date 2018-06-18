@@ -366,7 +366,7 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessFraction0) {
 
 TEST_F(NetworkErrorLoggingServiceTest, SuccessFractionHalf) {
   // Include a different value for failure_fraction to ensure that we copy the
-  // right value into sampling-fraction.
+  // right value into sampling_fraction.
   static const std::string kHeaderSuccessFractionHalf =
       "{\"report_to\":\"group\",\"max_age\":86400,\"success_fraction\":0.5,"
       "\"failure_fraction\":0.25}";
@@ -392,7 +392,7 @@ TEST_F(NetworkErrorLoggingServiceTest, SuccessFractionHalf) {
     const base::DictionaryValue* body;
     ASSERT_TRUE(report.body->GetAsDictionary(&body));
     // Our header includes a different value for failure_fraction, so that this
-    // check verifies that we copy the correct fraction into sampling-fraction.
+    // check verifies that we copy the correct fraction into sampling_fraction.
     ExpectDictDoubleValue(0.5, *body,
                           NetworkErrorLoggingService::kSamplingFractionKey);
   }
@@ -414,7 +414,7 @@ TEST_F(NetworkErrorLoggingServiceTest, FailureFraction0) {
 
 TEST_F(NetworkErrorLoggingServiceTest, FailureFractionHalf) {
   // Include a different value for success_fraction to ensure that we copy the
-  // right value into sampling-fraction.
+  // right value into sampling_fraction.
   static const std::string kHeaderFailureFractionHalf =
       "{\"report_to\":\"group\",\"max_age\":86400,\"failure_fraction\":0.5,"
       "\"success_fraction\":0.25}";

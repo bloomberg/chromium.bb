@@ -164,9 +164,9 @@ var ReportingView = (function() {
     var body = ensureObject_(report.body);
     addTextNode(contentSections.summary, body.type);
     // Only show the status code if it's present and not 0.
-    if (body['status-code'])
+    if (body.status_code)
       addTextNode(
-          contentSections.summary, ' (' + report.body['status-code'] + ')');
+          contentSections.summary, ' (' + report.body.status_code + ')');
 
     addNodeWithText(
         contentSections.detail, 'pre', JSON.stringify(report, null, '  '));
