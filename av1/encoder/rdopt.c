@@ -604,8 +604,8 @@ void av1_inter_mode_data_fit(int rdmult) {
     double dist_mean = 0;
     const int train_num = data_num;
     for (int i = 0; i < train_num; ++i) {
-      const double sse = inter_mode_data_sse[block_idx][i];
-      const double dist = inter_mode_data_dist[block_idx][i];
+      const double sse = (double)inter_mode_data_sse[block_idx][i];
+      const double dist = (double)inter_mode_data_dist[block_idx][i];
       const double residue_cost = inter_mode_data_residue_cost[block_idx][i];
       const double ld = (sse - dist) / residue_cost;
       dist_mean += dist;

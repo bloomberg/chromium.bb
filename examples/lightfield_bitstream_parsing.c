@@ -183,8 +183,8 @@ int main(int argc, char **argv) {
     size_t obu_size_offset =
         (uint8_t *)frame_header_info.coded_tile_data - frame;
     size_t length_field_size = frame_header_info.coded_tile_data_size;
-    uint32_t frame_header_size =
-        frame_header_info.extra_size - 1;  // Remove ext-tile tile info.
+    // Remove ext-tile tile info.
+    uint32_t frame_header_size = (uint32_t)frame_header_info.extra_size - 1;
     size_t bytes_to_copy =
         obu_size_offset + length_field_size + frame_header_size;
 
