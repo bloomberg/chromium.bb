@@ -11,8 +11,10 @@
 #endif
 
 @implementation ChromeCoordinator
+
 @synthesize childCoordinators = _childCoordinators;
 @synthesize baseViewController = _baseViewController;
+@synthesize navigationController = _navigationController;
 @synthesize browserState = _browserState;
 
 - (nullable instancetype)initWithBaseViewController:

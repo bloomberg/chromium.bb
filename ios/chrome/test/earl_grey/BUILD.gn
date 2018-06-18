@@ -22,6 +22,7 @@ group("all_tests") {
     ":ios_chrome_smoke_egtests",
     ":ios_chrome_tab_grid_egtests",
     ":ios_chrome_ui_egtests",
+    ":ios_chrome_unified_consent_egtests",
     ":ios_chrome_web_egtests",
   ]
 }
@@ -202,6 +203,12 @@ chrome_ios_eg_test("ios_chrome_external_url_egtests") {
   deps = [
     "//ios/chrome/browser/metrics:external_url_eg_tests",
     "//ios/chrome/browser/translate:external_url_eg_tests",
+  ]
+}
+
+chrome_ios_eg_test("ios_chrome_unified_consent_egtests") {
+  deps = [
+    "//ios/chrome/browser/ui/settings:unified_consent_eg_tests",
   ]
 }
 

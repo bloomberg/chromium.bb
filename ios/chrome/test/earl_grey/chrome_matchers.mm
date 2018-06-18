@@ -358,6 +358,10 @@ id<GREYMatcher> ContentSettingsButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_CONTENT_SETTINGS_TITLE);
 }
 
+id<GREYMatcher> GoogleServicesSettingsButton() {
+  return ButtonWithAccessibilityLabelId(IDS_IOS_GOOGLE_SERVICES_SETTINGS_TITLE);
+}
+
 id<GREYMatcher> SettingsMenuBackButton() {
   return grey_allOf(grey_accessibilityID(@"ic_arrow_back"),
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);

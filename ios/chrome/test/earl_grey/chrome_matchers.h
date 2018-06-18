@@ -166,6 +166,10 @@ id<GREYMatcher> AccountsSyncButton();
 // Returns matcher for the Content Settings button on the main Settings screen.
 id<GREYMatcher> ContentSettingsButton();
 
+// Returns matcher for the Google Services Settings button on the main Settings
+// screen.
+id<GREYMatcher> GoogleServicesSettingsButton();
+
 // Returns matcher for the back button on a settings menu.
 id<GREYMatcher> SettingsMenuBackButton();
 
