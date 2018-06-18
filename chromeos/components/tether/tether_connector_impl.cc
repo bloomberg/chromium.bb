@@ -38,6 +38,7 @@ void OnDisconnectFromWifiFailure(const std::string& device_id,
 }  // namespace
 
 TetherConnectorImpl::TetherConnectorImpl(
+    secure_channel::SecureChannelClient* secure_channel_client,
     NetworkStateHandler* network_state_handler,
     WifiHotspotConnector* wifi_hotspot_connector,
     ActiveHost* active_host,
@@ -50,7 +51,8 @@ TetherConnectorImpl::TetherConnectorImpl(
     HostConnectionMetricsLogger* host_connection_metrics_logger,
     DisconnectTetheringRequestSender* disconnect_tethering_request_sender,
     WifiHotspotDisconnector* wifi_hotspot_disconnector)
-    : network_state_handler_(network_state_handler),
+    : secure_channel_client_(secure_channel_client),
+      network_state_handler_(network_state_handler),
       wifi_hotspot_connector_(wifi_hotspot_connector),
       active_host_(active_host),
       tether_host_fetcher_(tether_host_fetcher),
@@ -255,7 +257,7 @@ void TetherConnectorImpl::OnTetherHostToConnectFetched(
           device_id);
   connect_tethering_operation_ =
       ConnectTetheringOperation::Factory::NewInstance(
-          *tether_host_to_connect, connection_manager_,
+          *tether_host_to_connect, secure_channel_client_, connection_manager_,
           tether_host_response_recorder_,
           host_scan_cache_->DoesHostRequireSetup(tether_network_guid));
   connect_tethering_operation_->AddObserver(this);

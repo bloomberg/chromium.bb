@@ -44,8 +44,10 @@ const uint32_t MessageTransferOperation::kMaxGattConnectionAttemptsPerDevice =
 MessageTransferOperation::MessageTransferOperation(
     const cryptauth::RemoteDeviceRefList& devices_to_connect,
     secure_channel::ConnectionPriority connection_priority,
+    secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* connection_manager)
     : remote_devices_(RemoveDuplicatesFromVector(devices_to_connect)),
+      secure_channel_client_(secure_channel_client),
       connection_manager_(connection_manager),
       connection_priority_(connection_priority),
       request_id_(base::UnguessableToken::Create()),
@@ -85,6 +87,8 @@ void MessageTransferOperation::Initialize() {
 
   connection_manager_->AddObserver(this);
   OnOperationStarted();
+
+  // TODO(crbug.com/752273): Use |secure_channel_client_|.
 
   for (const auto& remote_device : remote_devices_) {
     connection_manager_->RegisterRemoteDevice(

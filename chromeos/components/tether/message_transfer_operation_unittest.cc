@@ -12,6 +12,7 @@
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/components/tether/timer_factory.h"
+#include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,9 +35,11 @@ const uint32_t kTestTimeoutSeconds = 5;
 class TestOperation : public MessageTransferOperation {
  public:
   TestOperation(const cryptauth::RemoteDeviceRefList& devices_to_connect,
+                secure_channel::SecureChannelClient* secure_channel_client,
                 BleConnectionManager* connection_manager)
       : MessageTransferOperation(devices_to_connect,
                                  secure_channel::ConnectionPriority::kLow,
+                                 secure_channel_client,
                                  connection_manager) {}
   ~TestOperation() override = default;
 
@@ -167,13 +170,16 @@ class MessageTransferOperationTest : public testing::Test {
   }
 
   void SetUp() override {
+    fake_secure_channel_client_ =
+        std::make_unique<secure_channel::FakeSecureChannelClient>();
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
   }
 
   void ConstructOperation(cryptauth::RemoteDeviceRefList remote_devices) {
     test_timer_factory_ = new TestTimerFactory();
     operation_ = base::WrapUnique(
-        new TestOperation(remote_devices, fake_ble_connection_manager_.get()));
+        new TestOperation(remote_devices, fake_secure_channel_client_.get(),
+                          fake_ble_connection_manager_.get()));
     operation_->SetTimerFactoryForTest(base::WrapUnique(test_timer_factory_));
     VerifyOperationStartedAndFinished(false /* has_started */,
                                       false /* has_finished */);
@@ -234,6 +240,8 @@ class MessageTransferOperationTest : public testing::Test {
 
   const cryptauth::RemoteDeviceRefList test_devices_;
 
+  std::unique_ptr<secure_channel::SecureChannelClient>
+      fake_secure_channel_client_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   TestTimerFactory* test_timer_factory_;
   std::unique_ptr<TestOperation> operation_;

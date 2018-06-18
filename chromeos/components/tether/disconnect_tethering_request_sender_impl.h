@@ -13,6 +13,10 @@
 
 namespace chromeos {
 
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 namespace tether {
 
 class BleConnectionManager;
@@ -25,6 +29,7 @@ class DisconnectTetheringRequestSenderImpl
   class Factory {
    public:
     static std::unique_ptr<DisconnectTetheringRequestSender> NewInstance(
+        secure_channel::SecureChannelClient* secure_channel_client,
         BleConnectionManager* ble_connection_manager,
         TetherHostFetcher* tether_host_fetcher);
 
@@ -32,6 +37,7 @@ class DisconnectTetheringRequestSenderImpl
 
    protected:
     virtual std::unique_ptr<DisconnectTetheringRequestSender> BuildInstance(
+        secure_channel::SecureChannelClient* secure_channel_client,
         BleConnectionManager* ble_connection_manager,
         TetherHostFetcher* tether_host_fetcher);
 
@@ -50,6 +56,7 @@ class DisconnectTetheringRequestSenderImpl
 
  protected:
   DisconnectTetheringRequestSenderImpl(
+      secure_channel::SecureChannelClient* secure_channel_client,
       BleConnectionManager* ble_connection_manager,
       TetherHostFetcher* tether_host_fetcher);
 
@@ -58,6 +65,7 @@ class DisconnectTetheringRequestSenderImpl
       const std::string& device_id,
       base::Optional<cryptauth::RemoteDeviceRef> tether_host);
 
+  secure_channel::SecureChannelClient* secure_channel_client_;
   BleConnectionManager* ble_connection_manager_;
   TetherHostFetcher* tether_host_fetcher_;
 

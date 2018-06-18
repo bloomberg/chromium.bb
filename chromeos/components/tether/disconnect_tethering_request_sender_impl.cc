@@ -22,13 +22,14 @@ DisconnectTetheringRequestSenderImpl::Factory*
 // static
 std::unique_ptr<DisconnectTetheringRequestSender>
 DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
+    secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* ble_connection_manager,
     TetherHostFetcher* tether_host_fetcher) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
 
-  return factory_instance_->BuildInstance(ble_connection_manager,
-                                          tether_host_fetcher);
+  return factory_instance_->BuildInstance(
+      secure_channel_client, ble_connection_manager, tether_host_fetcher);
 }
 
 // static
@@ -39,16 +40,19 @@ void DisconnectTetheringRequestSenderImpl::Factory::SetInstanceForTesting(
 
 std::unique_ptr<DisconnectTetheringRequestSender>
 DisconnectTetheringRequestSenderImpl::Factory::BuildInstance(
+    secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* ble_connection_manager,
     TetherHostFetcher* tether_host_fetcher) {
   return base::WrapUnique(new DisconnectTetheringRequestSenderImpl(
-      ble_connection_manager, tether_host_fetcher));
+      secure_channel_client, ble_connection_manager, tether_host_fetcher));
 }
 
 DisconnectTetheringRequestSenderImpl::DisconnectTetheringRequestSenderImpl(
+    secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* ble_connection_manager,
     TetherHostFetcher* tether_host_fetcher)
-    : ble_connection_manager_(ble_connection_manager),
+    : secure_channel_client_(secure_channel_client),
+      ble_connection_manager_(ble_connection_manager),
       tether_host_fetcher_(tether_host_fetcher),
       weak_ptr_factory_(this) {}
 
@@ -94,7 +98,7 @@ void DisconnectTetheringRequestSenderImpl::OnTetherHostFetched(
 
   std::unique_ptr<DisconnectTetheringOperation> disconnect_tethering_operation =
       DisconnectTetheringOperation::Factory::NewInstance(
-          *tether_host, ble_connection_manager_);
+          *tether_host, secure_channel_client_, ble_connection_manager_);
 
   // Add to the map.
   device_id_to_operation_map_.emplace(

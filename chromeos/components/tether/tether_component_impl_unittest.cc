@@ -52,7 +52,8 @@ class FakeAsynchronousShutdownObjectContainerFactory
   std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
       scoped_refptr<device::BluetoothAdapter> adapter,
       cryptauth::CryptAuthService* cryptauth_service,
-      chromeos::device_sync::DeviceSyncClient* device_sync_client,
+      device_sync::DeviceSyncClient* device_sync_client,
+      secure_channel::SecureChannelClient* secure_channel_client,
       TetherHostFetcher* tether_host_fetcher,
       NetworkStateHandler* network_state_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
@@ -84,7 +85,8 @@ class FakeSynchronousShutdownObjectContainerFactory
       NetworkStateHandler* network_state_handler,
       NetworkConnect* network_connect,
       NetworkConnectionHandler* network_connection_handler,
-      session_manager::SessionManager* session_manager) override {
+      session_manager::SessionManager* session_manager,
+      secure_channel::SecureChannelClient* secure_channel_client) override {
     return base::WrapUnique(fake_synchronous_container_);
   }
 
@@ -159,7 +161,8 @@ class TetherComponentImplTest : public testing::Test {
 
     component_ = TetherComponentImpl::Factory::NewInstance(
         nullptr /* cryptauth_service */, nullptr /* device_sync_client */,
-        nullptr /* tether_host_fetcher */, nullptr /* notification_presenter */,
+        nullptr /* secure_channel_client */, nullptr /* tether_host_fetcher */,
+        nullptr /* notification_presenter */,
         nullptr /* gms_core_notifications_state_tracker */,
         nullptr /* pref_service */, nullptr /* network_state_handler */,
         nullptr /* managed_network_configuration_handler */,

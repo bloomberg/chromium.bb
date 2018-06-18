@@ -17,6 +17,10 @@
 
 namespace chromeos {
 
+namespace secure_channel {
+class SecureChannelClient;
+}  // namespace secure_channel
+
 namespace tether {
 
 class HostScanCache;
@@ -30,6 +34,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
                            public KeepAliveOperation::Observer {
  public:
   KeepAliveScheduler(
+      secure_channel::SecureChannelClient* secure_channel_client,
       ActiveHost* active_host,
       BleConnectionManager* connection_manager,
       HostScanCache* host_scan_cache,
@@ -49,6 +54,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
   friend class KeepAliveSchedulerTest;
 
   KeepAliveScheduler(
+      secure_channel::SecureChannelClient* secure_channel_client,
       ActiveHost* active_host,
       BleConnectionManager* connection_manager,
       HostScanCache* host_scan_cache,
@@ -59,6 +65,7 @@ class KeepAliveScheduler : public ActiveHost::Observer,
 
   static const uint32_t kKeepAliveIntervalMinutes;
 
+  secure_channel::SecureChannelClient* secure_channel_client_;
   ActiveHost* active_host_;
   BleConnectionManager* connection_manager_;
   HostScanCache* host_scan_cache_;

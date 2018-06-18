@@ -13,6 +13,7 @@
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
+#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 
 namespace chromeos {
@@ -44,6 +45,7 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   MessageTransferOperation(
       const cryptauth::RemoteDeviceRefList& devices_to_connect,
       secure_channel::ConnectionPriority connection_priority,
+      secure_channel::SecureChannelClient* secure_channel_client,
       BleConnectionManager* connection_manager);
   virtual ~MessageTransferOperation();
 
@@ -132,6 +134,7 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
       std::unique_ptr<TimerFactory> timer_factory_for_test);
 
   cryptauth::RemoteDeviceRefList remote_devices_;
+  secure_channel::SecureChannelClient* secure_channel_client_;
   BleConnectionManager* connection_manager_;
   const secure_channel::ConnectionPriority connection_priority_;
   const base::UnguessableToken request_id_;
