@@ -5,9 +5,9 @@
 #include <memory>
 #include <string>
 
-#include "ash/ash_view_ids.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/system_tray_test_api.mojom.h"
 #include "ash/strings/grit/ash_strings.h"

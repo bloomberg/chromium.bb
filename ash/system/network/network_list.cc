@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "ash/ash_view_ids.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"

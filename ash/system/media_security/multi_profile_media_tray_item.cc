@@ -4,8 +4,8 @@
 
 #include "ash/system/media_security/multi_profile_media_tray_item.h"
 
-#include "ash/ash_view_ids.h"
 #include "ash/media_controller.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"

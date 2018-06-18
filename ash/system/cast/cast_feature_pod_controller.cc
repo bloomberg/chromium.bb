@@ -4,7 +4,7 @@
 
 #include "ash/system/cast/cast_feature_pod_controller.h"
 
-#include "ash/ash_view_ids.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"

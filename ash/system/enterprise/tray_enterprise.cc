@@ -4,8 +4,8 @@
 
 #include "ash/system/enterprise/tray_enterprise.h"
 
-#include "ash/ash_view_ids.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"

@@ -4,7 +4,7 @@
 
 #include "ash/system/unified/top_shortcuts_view.h"
 
-#include "ash/ash_view_ids.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"

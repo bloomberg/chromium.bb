@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/ash_view_ids.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/interfaces/cast_config.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
