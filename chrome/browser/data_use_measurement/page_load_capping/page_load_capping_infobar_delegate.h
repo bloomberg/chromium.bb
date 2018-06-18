@@ -64,8 +64,8 @@ class PageLoadCappingInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override = 0;
-  base::string16 GetButtonLabel(InfoBarButton button) const override = 0;
-  bool Accept() override = 0;
+  bool LinkClicked(WindowOpenDisposition disposition) override = 0;
+  base::string16 GetLinkText() const override = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadCappingInfoBarDelegate);
 };

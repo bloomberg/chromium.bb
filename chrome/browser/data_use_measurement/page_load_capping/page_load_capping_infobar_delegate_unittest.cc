@@ -76,9 +76,9 @@ TEST_F(PageLoadCappingInfoBarDelegateTest, ClickingCreatesNewInfobar) {
   EXPECT_TRUE(delegate);
   // Make sure this is pause delegate.
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_CAPPING_STOP_MESSAGE),
-            delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+            delegate->GetLinkText());
   // |delegate| and |infobar| will be deleted by this call.
-  EXPECT_FALSE(delegate->Accept());
+  EXPECT_FALSE(delegate->LinkClicked(WindowOpenDisposition::CURRENT_TAB));
   EXPECT_EQ(1u, InfoBarCount());
   EXPECT_EQ(1u, pause_subresource_loading_count_);
 
@@ -93,15 +93,15 @@ TEST_F(PageLoadCappingInfoBarDelegateTest, ClickingCreatesNewInfobar) {
     stopped_delegate = infobar->delegate()->AsConfirmInfoBarDelegate();
 
   // Make sure this is the resume delegate.
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_PAGE_CAPPING_CONTINUE_MESSAGE),
-      stopped_delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PAGE_CAPPING_CONTINUE_MESSAGE),
+            stopped_delegate->GetLinkText());
   EXPECT_TRUE(stopped_delegate);
   // Make sure that they are different infobar instances.
   EXPECT_NE(delegate, stopped_delegate);
 
   // If this is true, the infobar will be closed by the infobar manager.
-  EXPECT_TRUE(stopped_delegate->Accept());
+  EXPECT_TRUE(
+      stopped_delegate->LinkClicked(WindowOpenDisposition::CURRENT_TAB));
   EXPECT_EQ(2u, pause_subresource_loading_count_);
 
   histogram_tester.ExpectBucketCount(

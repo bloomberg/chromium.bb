@@ -379,7 +379,7 @@ TEST_F(PageCappingObserverTest, PageCappingTriggered) {
                    ->GetPauseSubresourceLoadingCalled());
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(content::WebContentsTester::For(web_contents())
                   ->GetPauseSubresourceLoadingCalled());
   EXPECT_EQ(1u, InfoBarCount());
@@ -392,7 +392,7 @@ TEST_F(PageCappingObserverTest, PageCappingTriggered) {
 
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(content::WebContentsTester::For(web_contents())
                    ->GetPauseSubresourceLoadingCalled());
   EXPECT_FALSE(observer_->IsPausedForTesting());
@@ -432,7 +432,7 @@ TEST_F(PageCappingObserverTest, DataSavingsDefault) {
                    ->GetPauseSubresourceLoadingCalled());
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(content::WebContentsTester::For(web_contents())
                   ->GetPauseSubresourceLoadingCalled());
   EXPECT_EQ(1u, InfoBarCount());
@@ -456,7 +456,7 @@ TEST_F(PageCappingObserverTest, DataSavingsDefault) {
 
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(content::WebContentsTester::For(web_contents())
                    ->GetPauseSubresourceLoadingCalled());
   EXPECT_FALSE(observer_->IsPausedForTesting());
@@ -502,7 +502,7 @@ TEST_F(PageCappingObserverTest, DataSavingsParam) {
                    ->GetPauseSubresourceLoadingCalled());
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(content::WebContentsTester::For(web_contents())
                   ->GetPauseSubresourceLoadingCalled());
   EXPECT_EQ(1u, InfoBarCount());
@@ -526,7 +526,7 @@ TEST_F(PageCappingObserverTest, DataSavingsParam) {
 
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(content::WebContentsTester::For(web_contents())
                    ->GetPauseSubresourceLoadingCalled());
   EXPECT_FALSE(observer_->IsPausedForTesting());
@@ -570,7 +570,7 @@ TEST_F(PageCappingObserverTest, DataSavingsHistogram) {
 
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
 
   // Savings is only recorded in OnComplete
   SimulateAppEnterBackground();
@@ -611,11 +611,11 @@ TEST_F(PageCappingObserverTest, DataSavingsHistogramWhenResumed) {
 
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
 
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
 
   NavigateToUntrackedUrl();
   histogram_tester.ExpectTotalCount("HeavyPageCapping.RecordedDataSavings", 0);
@@ -718,7 +718,7 @@ TEST_F(PageCappingObserverTest, UKMRecordedPaused) {
   // Pause the page.
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
 
   NavigateToUntrackedUrl();
   using UkmEntry = ukm::builders::PageLoadCapping;
@@ -769,11 +769,11 @@ TEST_F(PageCappingObserverTest, UKMRecordedResumed) {
   // Pause then resume.
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
 
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
-      ->Accept();
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
 
   NavigateToUntrackedUrl();
   using UkmEntry = ukm::builders::PageLoadCapping;
