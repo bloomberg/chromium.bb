@@ -19,6 +19,8 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/test/web_contents_tester.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
 namespace {
@@ -617,6 +619,178 @@ TEST_F(PageCappingObserverTest, DataSavingsHistogramWhenResumed) {
 
   NavigateToUntrackedUrl();
   histogram_tester.ExpectTotalCount("HeavyPageCapping.RecordedDataSavings", 0);
+}
+
+TEST_F(PageCappingObserverTest, UKMNotRecordedWhenNotTriggered) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+  base::HistogramTester histogram_tester;
+  NavigateToUntrackedUrl();
+
+  using UkmEntry = ukm::builders::PageLoadCapping;
+  auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
+
+  EXPECT_EQ(0u, entries.size());
+}
+
+TEST_F(PageCappingObserverTest, UKMRecordedInfoBarShown) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+  base::HistogramTester histogram_tester;
+
+  // A resource of 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should trigger an infobar as the non-media cap is met.
+  SimulateLoadedResource(resource);
+
+  NavigateToUntrackedUrl();
+
+  using UkmEntry = ukm::builders::PageLoadCapping;
+  auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
+
+  EXPECT_EQ(1u, entries.size());
+  test_ukm_recorder().ExpectEntrySourceHasUrl(entries[0], GURL(kTestURL));
+  EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(entries[0],
+                                                 UkmEntry::kFinalStateName));
+  EXPECT_EQ(static_cast<int64_t>(1),
+            *(test_ukm_recorder().GetEntryMetric(entries[0],
+                                                 UkmEntry::kFinalStateName)));
+  EXPECT_EQ(
+      static_cast<int64_t>(
+          PageCappingPageLoadMetricsObserver::PageCappingState::kInfoBarShown),
+      *(test_ukm_recorder().GetEntryMetric(entries[0],
+                                           UkmEntry::kFinalStateName)));
+}
+
+TEST_F(PageCappingObserverTest, UKMRecordedPaused) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+  base::HistogramTester histogram_tester;
+
+  // A resource of 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should trigger an infobar as the non-media cap is met.
+  SimulateLoadedResource(resource);
+
+  // Pause the page.
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+
+  NavigateToUntrackedUrl();
+  using UkmEntry = ukm::builders::PageLoadCapping;
+  auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
+
+  EXPECT_EQ(1u, entries.size());
+  test_ukm_recorder().ExpectEntrySourceHasUrl(entries[0], GURL(kTestURL));
+  EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(entries[0],
+                                                 UkmEntry::kFinalStateName));
+  EXPECT_EQ(static_cast<int64_t>(2),
+            *(test_ukm_recorder().GetEntryMetric(entries[0],
+                                                 UkmEntry::kFinalStateName)));
+  EXPECT_EQ(
+      static_cast<int64_t>(
+          PageCappingPageLoadMetricsObserver::PageCappingState::kPagePaused),
+      *(test_ukm_recorder().GetEntryMetric(entries[0],
+                                           UkmEntry::kFinalStateName)));
+}
+
+TEST_F(PageCappingObserverTest, UKMRecordedResumed) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+  base::HistogramTester histogram_tester;
+
+  // A resource of 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should trigger an infobar as the non-media cap is met.
+  SimulateLoadedResource(resource);
+
+  // Pause then resume.
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->Accept();
+
+  NavigateToUntrackedUrl();
+  using UkmEntry = ukm::builders::PageLoadCapping;
+  auto entries = test_ukm_recorder().GetEntriesByName(UkmEntry::kEntryName);
+
+  EXPECT_EQ(1u, entries.size());
+  test_ukm_recorder().ExpectEntrySourceHasUrl(entries[0], GURL(kTestURL));
+  EXPECT_TRUE(test_ukm_recorder().EntryHasMetric(entries[0],
+                                                 UkmEntry::kFinalStateName));
+  EXPECT_EQ(static_cast<int64_t>(3),
+            *(test_ukm_recorder().GetEntryMetric(entries[0],
+                                                 UkmEntry::kFinalStateName)));
+  EXPECT_EQ(
+      static_cast<int64_t>(
+          PageCappingPageLoadMetricsObserver::PageCappingState::kPageResumed),
+      *(test_ukm_recorder().GetEntryMetric(entries[0],
+                                           UkmEntry::kFinalStateName)));
 }
 
 TEST_F(PageCappingObserverTest, FuzzingOffset) {

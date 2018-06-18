@@ -34,7 +34,22 @@ class PageCappingPageLoadMetricsObserver
   ~PageCappingPageLoadMetricsObserver() override;
 
   // Returns whether the page's subresource loading is currently paused.
-  bool IsPausedForTesting() const { return paused_; }
+  bool IsPausedForTesting() const;
+
+  // The current state of the page.
+  // This class operates as a state machine going from each of the below states
+  // in order. This is recorded to UKM, so the enum should not be changed.
+  enum class PageCappingState {
+    // The initial state of the page. No InfoBar has been shown.
+    kInfoBarNotShown = 0,
+    // When the cap is met, an InfoBar will be shown.
+    kInfoBarShown = 1,
+    // If the user clicks pause on the InfoBar, the page will be paused.
+    kPagePaused = 2,
+    // If the user then clicks resume on the InfoBar the page is resumed. This
+    // is the final state.
+    kPageResumed = 3,
+  };
 
  protected:
   // Virtual for testing.
@@ -55,12 +70,16 @@ class PageCappingPageLoadMetricsObserver
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
+  ObservePolicy OnHidden(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
 
   // Records a new estimate of data savings based on data used and field trial
-  // params.
-  void RecordDataSavings();
+  // params. Also records the PageCappingState to UKM.
+  void RecordDataSavingsAndUKM(
+      const page_load_metrics::PageLoadExtraInfo& info);
 
   // Writes the amount of savings to the data saver feature. Virtual for
   // testing.
@@ -93,11 +112,11 @@ class PageCappingPageLoadMetricsObserver
   // The amount of bytes when the data savings was last recorded.
   int64_t recorded_savings_ = 0;
 
-  // Track if the infobar has already been shown from this observer.
-  bool displayed_infobar_ = false;
+  PageCappingState page_capping_state_ = PageCappingState::kInfoBarNotShown;
 
-  // Whether the page's subresource loading is paused.
-  bool paused_ = false;
+  // True once UKM has been recorded. This is recorded at the same time as
+  // PageLoad UKM (during hidden, complete, or app background).
+  bool ukm_recorded_ = false;
 
   // The randomly generated offset from the capping threshold.
   int64_t fuzzing_offset_ = 0;
