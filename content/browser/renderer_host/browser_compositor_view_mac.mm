@@ -536,19 +536,6 @@ void BrowserCompositorMac::OnFirstSurfaceActivation(
     return;
 
   recyclable_compositor_->Unsuspend();
-
-  // Disable screen updates until the frame of the new size appears (because the
-  // content is drawn in the GPU process, it may change before we want it to).
-  if (repaint_state_ == RepaintState::Paused) {
-    bool compositor_is_nsview_size =
-        recyclable_compositor_->pixel_size() == dfh_size_pixels_ &&
-        recyclable_compositor_->scale_factor() ==
-            dfh_display_.device_scale_factor();
-    if (compositor_is_nsview_size || repaint_auto_resize_enabled_) {
-      NSDisableScreenUpdates();
-      repaint_state_ = RepaintState::ScreenUpdatesDisabled;
-    }
-  }
 }
 
 void BrowserCompositorMac::OnBeginFrame(base::TimeTicks frame_time) {
@@ -576,17 +563,6 @@ void BrowserCompositorMac::DidNavigate() {
 
 void BrowserCompositorMac::DidReceiveFirstFrameAfterNavigation() {
   client_->DidReceiveFirstFrameAfterNavigation();
-}
-
-void BrowserCompositorMac::BeginPauseForFrame(bool auto_resize_enabled) {
-  repaint_auto_resize_enabled_ = auto_resize_enabled;
-  repaint_state_ = RepaintState::Paused;
-}
-
-void BrowserCompositorMac::EndPauseForFrame() {
-  if (repaint_state_ == RepaintState::ScreenUpdatesDisabled)
-    NSEnableScreenUpdates();
-  repaint_state_ = RepaintState::None;
 }
 
 bool BrowserCompositorMac::ShouldContinueToPauseForFrame() const {

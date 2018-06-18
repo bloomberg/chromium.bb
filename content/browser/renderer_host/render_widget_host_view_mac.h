@@ -155,7 +155,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
   base::Optional<SkColor> GetBackgroundColor() const override;
 
-  bool ShouldContinueToPauseForFrame() override;
   void SetParentUiLayer(ui::Layer* parent_ui_layer) override;
   gfx::Vector2d GetOffsetFromRootSurface() override;
   gfx::Rect GetBoundsInRootWindow() override;
@@ -298,8 +297,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // other properties of the NSView or its NSScreen. Propagate these to the
   // RenderWidgetHostImpl as well.
   void UpdateNSViewAndDisplayProperties();
-
-  void PauseForPendingResizeOrRepaintsAndDraw();
 
   // RenderWidgetHostNSViewClient implementation.
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
@@ -498,9 +495,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Indicates if the page is loading.
   bool is_loading_;
-
-  // Whether it's allowed to pause waiting for a new frame.
-  bool allow_pause_for_resize_or_repaint_;
 
   // True when this view acts as a platform view hack for a
   // RenderWidgetHostViewGuest.

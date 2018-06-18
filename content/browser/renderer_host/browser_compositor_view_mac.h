@@ -140,8 +140,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
 
   void DidNavigate();
 
-  void BeginPauseForFrame(bool auto_resize_enabled);
-  void EndPauseForFrame();
   bool ShouldContinueToPauseForFrame() const;
 
   bool ForceNewSurfaceForTesting();
@@ -222,18 +220,6 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient,
   gfx::Size dfh_size_dip_;
   display::Display dfh_display_;
 
-  // Used to disable screen updates while resizing (because frames are drawn in
-  // the GPU process, they can end up appearing on-screen before our window
-  // resizes).
-  enum class RepaintState {
-    // No repaint in progress.
-    None,
-    // Synchronously waiting for a new frame.
-    Paused,
-    // Screen updates are disabled while a new frame is swapped in.
-    ScreenUpdatesDisabled,
-  } repaint_state_ = RepaintState::None;
-  bool repaint_auto_resize_enabled_ = false;
   bool is_first_navigation_ = true;
 
   base::WeakPtrFactory<BrowserCompositorMac> weak_factory_;
