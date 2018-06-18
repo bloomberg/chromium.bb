@@ -323,6 +323,10 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (did_draw_)
     return false;
 
+  // Don't draw if an early check determined the frame does not have damage.
+  if (skip_draw_)
+    return false;
+
   // Don't draw if we are waiting on the first commit after a surface.
   if (layer_tree_frame_sink_state_ != LayerTreeFrameSinkState::ACTIVE)
     return false;
@@ -1199,6 +1203,10 @@ void SchedulerStateMachine::SetResourcelessSoftwareDraw(
 
 void SchedulerStateMachine::SetCanDraw(bool can_draw) {
   can_draw_ = can_draw;
+}
+
+void SchedulerStateMachine::SetSkipDraw(bool skip_draw) {
+  skip_draw_ = skip_draw;
 }
 
 void SchedulerStateMachine::SetNeedsRedraw() {

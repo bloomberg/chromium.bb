@@ -447,7 +447,8 @@ void SingleThreadProxy::DidReceiveCompositorFrameAckOnImplThread() {
 }
 
 void SingleThreadProxy::OnDrawForLayerTreeFrameSink(
-    bool resourceless_software_draw) {
+    bool resourceless_software_draw,
+    bool skip_draw) {
   NOTREACHED() << "Implemented by ThreadProxy for synchronous compositor.";
 }
 
@@ -833,7 +834,8 @@ void SingleThreadProxy::ScheduledActionPrepareTiles() {
   host_impl_->PrepareTiles();
 }
 
-void SingleThreadProxy::ScheduledActionInvalidateLayerTreeFrameSink() {
+void SingleThreadProxy::ScheduledActionInvalidateLayerTreeFrameSink(
+    bool needs_redraw) {
   // This is an Android WebView codepath, which only uses multi-thread
   // compositor. So this should not occur in single-thread mode.
   NOTREACHED() << "Android Webview use-case, so multi-thread only";

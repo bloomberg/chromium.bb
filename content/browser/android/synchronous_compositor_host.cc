@@ -119,6 +119,7 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       renderer_param_version_(0u),
       need_animate_scroll_(false),
       need_invalidate_count_(0u),
+      invalidate_needs_draw_(false),
       did_activate_pending_tree_count_(0u) {
   client_->DidInitializeCompositor(this, process_id_, routing_id_);
   bridge_ = new SynchronousCompositorSyncCallBridge(this);
@@ -158,6 +159,7 @@ SynchronousCompositorHost::DemandDrawHwAsync(
     const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
+  invalidate_needs_draw_ = false;
   scoped_refptr<FrameFuture> frame_future = new FrameFuture();
   if (compute_scroll_needs_synchronous_draw_ || !allow_async_draw_) {
     allow_async_draw_ = allow_async_draw_ || IsReadyForSynchronousCall();
@@ -258,6 +260,7 @@ bool SynchronousCompositorHost::DemandDrawSwInProc(SkCanvas* canvas) {
   ScopedSetSkCanvas set_sk_canvas(canvas);
   SyncCompositorDemandDrawSwParams params;  // Unused.
   uint32_t metadata_version = 0u;
+  invalidate_needs_draw_ = false;
   if (!IsReadyForSynchronousCall() ||
       !GetSynchronousCompositor()->DemandDrawSw(params, &common_renderer_params,
                                                 &metadata_version, &metadata))
@@ -501,10 +504,15 @@ void SynchronousCompositorHost::UpdateState(
   renderer_param_version_ = params.version;
   need_animate_scroll_ = params.need_animate_scroll;
   root_scroll_offset_ = params.total_scroll_offset;
+  invalidate_needs_draw_ |= params.invalidate_needs_draw;
 
   if (need_invalidate_count_ != params.need_invalidate_count) {
     need_invalidate_count_ = params.need_invalidate_count;
-    client_->PostInvalidate(this);
+    if (invalidate_needs_draw_) {
+      client_->PostInvalidate(this);
+    } else {
+      GetSynchronousCompositor()->WillSkipDraw();
+    }
   }
 
   if (did_activate_pending_tree_count_ !=

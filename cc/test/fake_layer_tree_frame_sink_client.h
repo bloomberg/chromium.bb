@@ -31,7 +31,8 @@ class FakeLayerTreeFrameSinkClient : public LayerTreeFrameSinkClient {
   void SetTreeActivationCallback(const base::Closure&) override {}
   void OnDraw(const gfx::Transform& transform,
               const gfx::Rect& viewport,
-              bool resourceless_software_draw) override {}
+              bool resourceless_software_draw,
+              bool skip_draw) override {}
 
   int ack_count() { return ack_count_; }
 

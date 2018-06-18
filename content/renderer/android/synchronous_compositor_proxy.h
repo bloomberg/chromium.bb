@@ -56,7 +56,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
 
   // SynchronousLayerTreeFrameSinkClient overrides.
   void DidActivatePendingTree() final;
-  void Invalidate() final;
+  void Invalidate(bool needs_draw) final;
   void SubmitCompositorFrame(uint32_t layer_tree_frame_sink_id,
                              viz::CompositorFrame frame) final;
   void SetNeedsBeginFrames(bool needs_begin_frames) final;
@@ -78,6 +78,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
                        SetSharedMemoryCallback callback) final;
   void DemandDrawSw(const SyncCompositorDemandDrawSwParams& params,
                     DemandDrawSwCallback callback) final;
+  void WillSkipDraw() final;
   void ZeroSharedMemory() final;
   void ZoomBy(float zoom_delta, const gfx::Point& anchor, ZoomByCallback) final;
   void SetMemoryPolicy(uint32_t bytes_limit) final;
@@ -137,6 +138,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   float max_page_scale_factor_;
   bool need_animate_scroll_;
   uint32_t need_invalidate_count_;
+  bool invalidate_needs_draw_;
   uint32_t did_activate_pending_tree_count_;
   uint32_t metadata_version_ = 0u;
 

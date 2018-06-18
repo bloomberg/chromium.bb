@@ -141,6 +141,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   uint32_t renderer_param_version_;
   bool need_animate_scroll_;
   uint32_t need_invalidate_count_;
+  bool invalidate_needs_draw_;
   uint32_t did_activate_pending_tree_count_;
   uint32_t frame_metadata_version_ = 0u;
 
