@@ -10,6 +10,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 
@@ -20,7 +21,9 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -335,6 +338,13 @@ public abstract class FirstRunFlowSequencer  {
 
         // Check if the user needs to go through First Run at all.
         if (!checkIfFirstRunIsNecessary(caller, intent, preferLightweightFre)) return false;
+
+        String intentUrl = IntentHandler.getUrlFromIntent(intent);
+        Uri uri = intentUrl != null ? Uri.parse(intentUrl) : null;
+        if (uri != null && UrlConstants.CONTENT_SCHEME.equals(uri.getScheme())) {
+            caller.grantUriPermission(
+                    caller.getPackageName(), uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
 
         Log.d(TAG, "Redirecting user through FRE.");
         if ((intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
