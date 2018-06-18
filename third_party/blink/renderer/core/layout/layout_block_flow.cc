@@ -3191,19 +3191,43 @@ void LayoutBlockFlow::RemoveChild(LayoutObject* old_child) {
     return;
   }
 
-  // If this child is a block, and if our previous and next siblings are
-  // both anonymous blocks with inline content, then we can go ahead and
-  // fold the inline content back together.
+  // If this child is a block, and if our previous and next siblings are both
+  // anonymous blocks with inline content, then we can go ahead and fold the
+  // inline content back together. If only one of the siblings is such an
+  // anonymous blocks, check if the other sibling (and any of *its* siblings)
+  // are floating or out-of-flow positioned. In that case, they should be moved
+  // into the anonymous block.
   LayoutObject* prev = old_child->PreviousSibling();
   LayoutObject* next = old_child->NextSibling();
   bool merged_anonymous_blocks = false;
   if (prev && next && !old_child->IsInline() &&
-      !old_child->VirtualContinuation() && prev->IsLayoutBlockFlow() &&
-      next->IsLayoutBlockFlow()) {
-    if (ToLayoutBlockFlow(prev)->MergeSiblingContiguousAnonymousBlock(
+      !old_child->VirtualContinuation()) {
+    if (prev->IsLayoutBlockFlow() && next->IsLayoutBlockFlow() &&
+        ToLayoutBlockFlow(prev)->MergeSiblingContiguousAnonymousBlock(
             ToLayoutBlockFlow(next))) {
       merged_anonymous_blocks = true;
       next = nullptr;
+    } else if (prev->IsLayoutBlockFlow() &&
+               IsMergeableAnonymousBlock(ToLayoutBlockFlow(prev))) {
+      // The previous sibling is anonymous. Scan the next siblings and reparent
+      // any floating or out-of-flow positioned objects into the end of the
+      // previous anonymous block.
+      while (next && next->IsFloatingOrOutOfFlowPositioned()) {
+        LayoutObject* sibling = next->NextSibling();
+        MoveChildTo(ToLayoutBlockFlow(prev), next, nullptr, false);
+        next = sibling;
+      }
+    } else if (next->IsLayoutBlockFlow() &&
+               IsMergeableAnonymousBlock(ToLayoutBlockFlow(next))) {
+      // The next sibling is anonymous. Scan the previous siblings and reparent
+      // any floating or out-of-flow positioned objects into the start of the
+      // next anonymous block.
+      while (prev && prev->IsFloatingOrOutOfFlowPositioned()) {
+        LayoutObject* sibling = prev->PreviousSibling();
+        MoveChildTo(ToLayoutBlockFlow(next), prev,
+                    ToLayoutBlockFlow(next)->FirstChild(), false);
+        prev = sibling;
+      }
     }
   }
 
@@ -3268,6 +3292,9 @@ void LayoutBlockFlow::MoveAllChildrenIncludingFloatsTo(
     LayoutBlock* to_block,
     bool full_remove_insert) {
   LayoutBlockFlow* to_block_flow = ToLayoutBlockFlow(to_block);
+
+  DCHECK(full_remove_insert ||
+         to_block_flow->ChildrenInline() == ChildrenInline());
 
   // When a portion of the layout tree is being detached, anonymous blocks
   // will be combined as their children are deleted. In this process, the
