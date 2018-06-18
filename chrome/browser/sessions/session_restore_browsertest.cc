@@ -584,7 +584,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreIndividualTabFromWindow) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(contents);
   const content::NavigationEntry* entry =
-      contents->GetController().GetActiveEntry();
+      contents->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(timestamp, entry->GetTimestamp());
   EXPECT_EQ(http_status_code, entry->GetHttpStatusCode());
@@ -833,11 +833,11 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   ASSERT_TRUE(web_contents_2->GetUserAgentOverride().empty());
 
   content::NavigationEntry* entry =
-      web_contents_1->GetController().GetActiveEntry();
+      web_contents_1->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry);
   ASSERT_FALSE(entry->GetIsOverridingUserAgent());
 
-  entry = web_contents_2->GetController().GetActiveEntry();
+  entry = web_contents_2->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry);
   ASSERT_FALSE(entry->GetIsOverridingUserAgent());
 }
