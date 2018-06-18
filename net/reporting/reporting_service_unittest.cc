@@ -66,7 +66,7 @@ TEST_F(ReportingServiceTest, ProcessHeader) {
                                       "\"group\":\"" +
                                       kGroup_ +
                                       "\","
-                                      "\"max-age\":86400}");
+                                      "\"max_age\":86400}");
 
   const ReportingClient* client =
       FindClientInCache(context()->cache(), kOrigin_, kEndpoint_);
@@ -86,7 +86,7 @@ TEST_F(ReportingServiceTest, ProcessHeader_TooLong) {
       "\"group\":\"" +
       kGroup_ +
       "\","
-      "\"max-age\":86400," +
+      "\"max_age\":86400," +
       "\"junk\":\"" + std::string(32 * 1024, 'a') + "\"}";
   service()->ProcessHeader(kUrl_, header_too_long);
 
@@ -102,7 +102,7 @@ TEST_F(ReportingServiceTest, ProcessHeader_TooDeep) {
                                       "\"group\":\"" +
                                       kGroup_ +
                                       "\","
-                                      "\"max-age\":86400," +
+                                      "\"max_age\":86400," +
                                       "\"junk\":[[[[[[[[[[]]]]]]]]]]}";
   service()->ProcessHeader(kUrl_, header_too_deep);
 

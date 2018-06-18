@@ -1492,7 +1492,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
 
   GURL domain("https://google.com");
   logging_service->OnHeader(url::Origin::Create(domain),
-                            "{\"report-to\":\"group\",\"max-age\":86400}");
+                            "{\"report_to\":\"group\",\"max_age\":86400}");
 
   ASSERT_EQ(1u, logging_service->GetPolicyOriginsForTesting().size());
 
@@ -1513,16 +1513,16 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
 
   GURL domain1("https://google.com");
   logging_service->OnHeader(url::Origin::Create(domain1),
-                            "{\"report-to\":\"group\",\"max-age\":86400}");
+                            "{\"report_to\":\"group\",\"max_age\":86400}");
   GURL domain2("https://host2.com");
   logging_service->OnHeader(url::Origin::Create(domain2),
-                            "{\"report-to\":\"group\",\"max-age\":86400}");
+                            "{\"report_to\":\"group\",\"max_age\":86400}");
   GURL domain3("https://host3.com");
   logging_service->OnHeader(url::Origin::Create(domain3),
-                            "{\"report-to\":\"group\",\"max-age\":86400}");
+                            "{\"report_to\":\"group\",\"max_age\":86400}");
   GURL domain4("https://host4.com");
   logging_service->OnHeader(url::Origin::Create(domain4),
-                            "{\"report-to\":\"group\",\"max-age\":86400}");
+                            "{\"report_to\":\"group\",\"max_age\":86400}");
 
   ASSERT_EQ(4u, logging_service->GetPolicyOriginsForTesting().size());
 

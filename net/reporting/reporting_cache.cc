@@ -390,7 +390,7 @@ class ReportingCacheImpl : public ReportingCache {
     }
 
     // If no clients were found, try successive superdomain suffixes until a
-    // client with include-subdomains is found or there are no more domain
+    // client with include_subdomains is found or there are no more domain
     // components left.
     std::string domain = origin.host();
     while (clients_out->empty() && !domain.empty()) {
@@ -629,7 +629,7 @@ class ReportingCacheImpl : public ReportingCache {
   std::map<url::Origin, std::map<GURL, std::unique_ptr<ReportingClient>>>
       clients_;
 
-  // References but does not own all clients with include-subdomains set, keyed
+  // References but does not own all clients with include_subdomains set, keyed
   // by domain name.
   std::unordered_map<std::string, std::unordered_set<const ReportingClient*>>
       wildcard_clients_;

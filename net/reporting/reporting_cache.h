@@ -152,7 +152,7 @@ class NET_EXPORT ReportingCache {
   // have been made to |SetClient| or |RemoveEndpoint| in between.
   //
   // If no origin match is found, the cache will return clients from the most
-  // specific superdomain which contains any clients with include-subdomains
+  // specific superdomain which contains any clients with include_subdomains
   // set.  For example, given the origin https://foo.bar.baz.com/, the cache
   // would prioritize returning each potential match below over the ones below
   // it:

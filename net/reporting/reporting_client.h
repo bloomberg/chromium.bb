@@ -47,7 +47,7 @@ struct NET_EXPORT ReportingClient {
   // The endpoint group to which this client belongs.
   std::string group = kDefaultGroup;
 
-  // When this client's max-age has expired.
+  // When this client's max_age has expired.
   base::TimeTicks expires;
 
   // Priority when multiple endpoints are configured for an origin; endpoints

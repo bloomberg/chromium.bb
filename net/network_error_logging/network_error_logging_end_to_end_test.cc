@@ -108,10 +108,10 @@ class NetworkErrorLoggingEndToEndTest : public TestWithScopedTaskEnvironment {
     response->AddCustomHeader(
         "Report-To",
         base::StringPrintf("{\"endpoints\":[{\"url\":\"%s\"}],\"group\":\"%s\","
-                           "\"max-age\":%d}",
+                           "\"max_age\":%d}",
                            endpoint_url.spec().c_str(), kGroup, kMaxAgeSec));
     response->AddCustomHeader(
-        "NEL", base::StringPrintf("{\"report-to\":\"%s\",\"max-age\":%d}",
+        "NEL", base::StringPrintf("{\"report_to\":\"%s\",\"max_age\":%d}",
                                   kGroup, kMaxAgeSec));
     response->set_content_type("text/plain");
     response->set_content("");
