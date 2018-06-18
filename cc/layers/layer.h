@@ -117,6 +117,12 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // The list of children of this layer.
   const LayerList& children() const { return inputs_.children; }
 
+  // Gets the LayerTreeHost that this layer is attached to, or null if not.
+  // A layer is attached to a LayerTreeHost if it or an ancestor layer is set as
+  // the root layer of a LayerTreeHost (while noting only a layer without a
+  // parent may be set as the root layer).
+  LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
+
   // This requests the layer and its subtree be rendered and given to the
   // callback. If the copy is unable to be produced (the layer is destroyed
   // first), then the callback is called with a nullptr/empty result. If the
@@ -409,18 +415,32 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.main_thread_scrolling_reasons;
   }
 
+  // Set or get an area of this layer within which initiating a scroll can not
+  // be done from the compositor thread. Within this area, if the user attempts
+  // to start a scroll, the events must be sent to the main thread and processed
+  // there.
   void SetNonFastScrollableRegion(const Region& non_fast_scrollable_region);
   const Region& non_fast_scrollable_region() const {
     return inputs_.non_fast_scrollable_region;
   }
 
+  // Set or get the set of touch actions allowed across each point of this
+  // layer. The |touch_action_region| can specify, for any number of areas,
+  // which touch actions are allowed in each area. The result is the
+  // intersection of overlapping areas. These allowed actions control if
+  // a touch event can initiate a scroll or zoom on the compositor thread.
   void SetTouchActionRegion(TouchActionRegion touch_action_region);
   const TouchActionRegion& touch_action_region() const {
     return inputs_.touch_action_region;
   }
 
+  // Sets a RepeatingCallback that is run during a main frame, before layers are
+  // asked to prepare content with Update(), if the scroll offset for the layer
+  // was changed by the InputHandlerClient, on the compositor thread (or on the
+  // main thread in single-thread mode). It may be set to a null callback, in
+  // which case nothing is called.
   void set_did_scroll_callback(
-      base::Callback<void(const gfx::ScrollOffset&, const ElementId&)>
+      base::RepeatingCallback<void(const gfx::ScrollOffset&, const ElementId&)>
           callback) {
     inputs_.did_scroll_callback = std::move(callback);
   }
@@ -457,25 +477,41 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // layer. If it is hidden because of its back face being visible, then its
   // subtree will be too (even if a subtree layer's front face would have been
   // visible).
+  //
+  // Note that should_check_backface_visibility() is the final computed value
+  // for back face visibility, which is only for internal use.
   void SetDoubleSided(bool double_sided);
   bool double_sided() const { return inputs_.double_sided; }
 
-  void SetShouldFlattenTransform(bool flatten);
-  bool should_flatten_transform() const {
-    return inputs_.should_flatten_transform;
-  }
-
+  // Set or get if SetDoubleSided() for this layer should be ignored and
+  // inherited directly from this layer's parent instead. Used to attach this
+  // layer's backface visibility to the value of its parent.
+  //
+  // Note that should_check_backface_visibility() is the final computed value
+  // for back face visibility, which is only for internal use.
   void SetUseParentBackfaceVisibility(bool use);
   bool use_parent_backface_visibility() const {
     return inputs_.use_parent_backface_visibility;
   }
 
-  void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility);
-  bool should_check_backface_visibility() const {
-    return should_check_backface_visibility_;
+  // Set or get if the subtree of this layer is composited in 3d-space, or if
+  // the layers are flattened into the plane of this layer. This supports the
+  // transform-style CSS property.
+  void SetShouldFlattenTransform(bool flatten);
+  bool should_flatten_transform() const {
+    return inputs_.should_flatten_transform;
   }
 
-  virtual void SetLayerTreeHost(LayerTreeHost* host);
+  // Set or get a 3d sorting context for this layer, where adjacent layers (in a
+  // pre-order traversal) with the same id are sorted as a group and may occlude
+  // each other based on their z-position, including intersecting each other and
+  // each occluding the other layer partially. Layers in different sorting
+  // contexts will be composited and occlude in tree order (children occlude
+  // ancestors and earlier siblings in the children list). If the |id| is 0,
+  // then the layer is not part of any sorting context, and is always composited
+  // in tree order.
+  void Set3dSortingContextId(int id);
+  int sorting_context_id() const { return inputs_.sorting_context_id; }
 
   // When true the layer may contribute to the compositor's output. When false,
   // it does not. This property does not apply to children of the layer, they
@@ -509,14 +545,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   virtual sk_sp<SkPicture> GetPicture() const;
 
-  // Mark the layer as needing to push its properties to the LayerImpl during
-  // commit.
-  void SetNeedsPushProperties();
-
   virtual void RunMicroBenchmark(MicroBenchmark* benchmark);
-
-  void Set3dSortingContextId(int id);
-  int sorting_context_id() const { return inputs_.sorting_context_id; }
 
   // The index of this layer's node in the various property trees. These are
   // only valid after a main frame, when Update() is called on the layer, and
@@ -538,20 +567,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return offset_to_transform_parent_;
   }
 
-  // TODO(enne): This needs a different name.  It is a calculated value
-  // from the property tree builder and not a synonym for "should
-  // flatten transform".
-  void SetShouldFlattenTransformFromPropertyTree(bool should_flatten);
-  bool should_flatten_transform_from_property_tree() const {
-    return should_flatten_transform_from_property_tree_;
-  }
-
   void SetMayContainVideo(bool yes);
 
   // Stable identifier for clients. See comment in cc/trees/element_id.h.
   void SetElementId(ElementId id);
   ElementId element_id() const { return inputs_.element_id; }
 
+  // Sets or gets a hint that the transform on this layer (including its
+  // position) may be changed often in the future. The layer may change its
+  // strategy for generating content as a result. PictureLayers will not attempt
+  // to raster crisply as the transform changes, allowing the client to trade
+  // off crisp content at each scale for a smoother visual and cheaper
+  // animation.
   void SetHasWillChangeTransformHint(bool has_will_change);
   bool has_will_change_transform_hint() const {
     return inputs_.has_will_change_transform_hint;
@@ -563,8 +590,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   ElementListType GetElementTypeForAnimation() const;
 
   void SetScrollbarsHiddenFromImplSide(bool hidden);
-
-  LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
   // Called on the scroll layer to trigger showing the overlay scrollbars.
   void ShowScrollbars() { needs_show_scrollbars_ = true; }
@@ -612,6 +637,25 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // default layers are not snapped.
   virtual bool IsSnappedToPixelGridInTarget();
 
+  // Internal method that is called when a Layer is attached to a LayerTreeHost.
+  // This would happen when
+  // a) the Layer is added to an existing Layer tree that is attached to a
+  // LayerTreeHost.
+  // b) the Layer is made the root layer of a LayerTreeHost.
+  // c) the Layer is part of a Layer tree, and an ancestor is attached to a
+  // LayerTreeHost via a) or b).
+  // The |host| is the new LayerTreeHost which the Layer is now attached to.
+  // Subclasses may override this if they have data or resources which are
+  // specific to a LayerTreeHost that should be updated or reset. After this
+  // returns the Layer will hold a pointer to the new LayerTreeHost.
+  virtual void SetLayerTreeHost(LayerTreeHost* host);
+
+  // Internal method to mark this layer as needing to push its state to the
+  // compositor thread during the next commit. The PushPropertiesTo() method
+  // will be called for this layer during the next commit only if this method
+  // was called before it.
+  void SetNeedsPushProperties();
+
   // Internal to property tree construction. A generation number for the
   // property trees, to verify the layer's indices are pointers into the trees
   // currently held by the LayerTreeHost. The number is updated when property
@@ -653,6 +697,23 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // this layer, moving them into |requests|.
   void TakeCopyRequests(
       std::vector<std::unique_ptr<viz::CopyOutputRequest>>* requests);
+
+  // Internal to property tree construction. Set if the layer should not be
+  // shown when its back face is visible to the user. This is a derived value
+  // from SetDoubleSided() and SetUseParentBackfaceVisibility().
+  void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility);
+  bool should_check_backface_visibility() const {
+    return should_check_backface_visibility_;
+  }
+
+  // Internal to property tree construction. The value here derives from
+  // should_flatten_transform() along with other state, and is for internal use
+  // in order to flatten the layer's ScreenSpaceTransform() in cases where the
+  // property tree did not handle it.
+  void SetShouldFlattenScreenSpaceTransformFromPropertyTree(bool should);
+  bool should_flatten_screen_space_transform_from_property_tree() const {
+    return should_flatten_screen_space_transform_from_property_tree_;
+  }
 
  protected:
   friend class LayerImpl;
@@ -827,7 +888,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     base::WeakPtr<LayerClient> client;
     std::unique_ptr<base::trace_event::TracedValue> debug_info;
 
-    base::Callback<void(const gfx::ScrollOffset&, const ElementId&)>
+    base::RepeatingCallback<void(const gfx::ScrollOffset&, const ElementId&)>
         did_scroll_callback;
     std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
 
@@ -852,7 +913,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   int scroll_tree_index_;
   int property_tree_sequence_number_;
   gfx::Vector2dF offset_to_transform_parent_;
-  bool should_flatten_transform_from_property_tree_ : 1;
+  bool should_flatten_screen_space_transform_from_property_tree_ : 1;
   bool draws_content_ : 1;
   bool should_check_backface_visibility_ : 1;
   // Force use of and cache render surface.

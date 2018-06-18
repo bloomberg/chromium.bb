@@ -52,7 +52,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
       scrollable_(false),
-      should_flatten_transform_from_property_tree_(false),
+      should_flatten_screen_space_transform_from_property_tree_(false),
       layer_property_changed_not_from_property_trees_(false),
       layer_property_changed_from_property_trees_(false),
       may_contain_video_(false),
@@ -305,8 +305,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->has_transform_node_ = has_transform_node_;
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
   layer->main_thread_scrolling_reasons_ = main_thread_scrolling_reasons_;
-  layer->should_flatten_transform_from_property_tree_ =
-      should_flatten_transform_from_property_tree_;
+  layer->should_flatten_screen_space_transform_from_property_tree_ =
+      should_flatten_screen_space_transform_from_property_tree_;
   layer->masks_to_bounds_ = masks_to_bounds_;
   layer->contents_opaque_ = contents_opaque_;
   layer->may_contain_video_ = may_contain_video_;
