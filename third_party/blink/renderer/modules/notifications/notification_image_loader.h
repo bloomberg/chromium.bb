@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
@@ -65,7 +66,7 @@ class MODULES_EXPORT NotificationImageLoader final
 
   Type type_;
   bool stopped_;
-  double start_time_;
+  TimeTicks start_time_;
   scoped_refptr<SharedBuffer> data_;
   ImageCallback image_callback_;
   Member<ThreadableLoader> threadable_loader_;

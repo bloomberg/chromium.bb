@@ -1176,10 +1176,10 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   if (!DrawingCanvas())
     return;
 
-  double start_time = 0;
+  TimeTicks start_time;
   base::Optional<CustomCountHistogram> timer;
   if (!IsPaint2D()) {
-    start_time = WTF::CurrentTimeTicksInSeconds();
+    start_time = WTF::CurrentTimeTicks();
     if (CanCreateCanvas2dResourceProvider() && IsAccelerated()) {
       if (image_source->IsVideoElement()) {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -1352,9 +1352,8 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   ValidateStateStack();
 
   if (!IsPaint2D()) {
-    DCHECK(start_time);
-    timer->Count((WTF::CurrentTimeTicksInSeconds() - start_time) *
-                 WTF::Time::kMicrosecondsPerSecond);
+    DCHECK(!start_time.is_null());
+    timer->Count((WTF::CurrentTimeTicks() - start_time).InMicroseconds());
   }
 }
 
