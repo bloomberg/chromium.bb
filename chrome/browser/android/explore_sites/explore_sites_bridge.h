@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_EXPLORE_SITES_EXPLORE_SITES_BRIDGE_H_
 #define CHROME_BROWSER_ANDROID_EXPLORE_SITES_EXPLORE_SITES_BRIDGE_H_
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -22,6 +24,13 @@ static void JNI_ExploreSitesBridge_GetNtpCategories(
     const base::android::JavaParamRef<jclass>& j_caller,
     const base::android::JavaParamRef<jobject>& j_profile,
     const base::android::JavaParamRef<jobject>& j_result_obj,
+    const base::android::JavaParamRef<jobject>& j_callback_obj);
+
+static void JNI_ExploreSitesBridge_GetIcon(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& j_caller,
+    const base::android::JavaParamRef<jobject>& j_profile,
+    const base::android::JavaParamRef<jstring>& j_url,
     const base::android::JavaParamRef<jobject>& j_callback_obj);
 
 }  // namespace explore_sites

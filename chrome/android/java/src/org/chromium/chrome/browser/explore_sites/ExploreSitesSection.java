@@ -61,7 +61,7 @@ public class ExploreSitesSection {
                             -> mNavigationDelegate.navigateToSuggestionUrl(
                                     WindowOpenDisposition.CURRENT_TAB, tile.getNavigationUrl()));
             ExploreSitesBridge.getIcon(
-                    tile.getIconUrl(), (Bitmap icon) -> onIconRetrieved(tileView, icon));
+                    mProfile, tile.getIconUrl(), (Bitmap icon) -> onIconRetrieved(tileView, icon));
         }
     }
 
