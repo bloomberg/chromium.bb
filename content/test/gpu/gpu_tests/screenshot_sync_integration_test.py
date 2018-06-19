@@ -131,7 +131,7 @@ class ScreenshotSyncIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     browser_arg = args[0]
     self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([browser_arg]))
     self._Navigate(test_path)
-    repetitions = 20
+    repetitions = 10
     for _ in range(0, repetitions):
       self._CheckScreenshot()
 
