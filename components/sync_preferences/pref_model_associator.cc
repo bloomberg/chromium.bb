@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/prefs/persistent_pref_store.h"
@@ -292,7 +293,7 @@ std::unique_ptr<base::Value> PrefModelAssociator::MergeListValues(
   base::Value result = to_value.Clone();
   base::Value::ListStorage& list = result.GetList();
   for (const auto& value : from_value.GetList()) {
-    if (std::find(list.begin(), list.end(), value) == list.end())
+    if (!base::ContainsValue(list, value))
       list.emplace_back(value.Clone());
   }
 
