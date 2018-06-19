@@ -115,7 +115,7 @@ ImageCaptureFrameGrabber::~ImageCaptureFrameGrabber() {
 
 void ImageCaptureFrameGrabber::GrabFrame(
     blink::WebMediaStreamTrack* track,
-    WebImageCaptureGrabFrameCallbacks* callbacks) {
+    std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks> callbacks) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!!callbacks);
 
@@ -128,8 +128,8 @@ void ImageCaptureFrameGrabber::GrabFrame(
     return;
   }
 
-  ScopedWebCallbacks<WebImageCaptureGrabFrameCallbacks> scoped_callbacks =
-      make_scoped_web_callbacks(callbacks, base::Bind(&OnError));
+  auto scoped_callbacks = blink::MakeScopedWebCallbacks(
+      std::move(callbacks), base::BindOnce(&OnError));
 
   // A SingleShotFrameHandler is bound and given to the Track to guarantee that
   // only one VideoFrame is converted and delivered to OnSkImage(), otherwise
@@ -149,7 +149,8 @@ void ImageCaptureFrameGrabber::GrabFrame(
 }
 
 void ImageCaptureFrameGrabber::OnSkImage(
-    ScopedWebCallbacks<blink::WebImageCaptureGrabFrameCallbacks> callbacks,
+    blink::ScopedWebCallbacks<blink::WebImageCaptureGrabFrameCallbacks>
+        callbacks,
     sk_sp<SkImage> image) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

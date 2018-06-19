@@ -22,6 +22,7 @@
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_video_configuration.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/scoped_web_callbacks.h"
 
 namespace media {
 
@@ -141,30 +142,21 @@ WebMediaCapabilitiesClientImpl::WebMediaCapabilitiesClientImpl() = default;
 WebMediaCapabilitiesClientImpl::~WebMediaCapabilitiesClientImpl() = default;
 
 namespace {
-// This structs wraps WebMediaCapabilitiesQueryCallbacks and makes sure
-// they are called even when the mojo response is not received
-// (connection error) as there is a pending promise waiting for the callback.
-// See https://crbug.com/847211
-struct CallbacksHolder {
-  std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks> callbacks;
-
-  CallbacksHolder(CallbacksHolder&&) = default;
-  ~CallbacksHolder() {
-    if (callbacks) {
-      callbacks->OnError();
-    }
-  }
-};
-
 void VideoPerfInfoCallback(
-    CallbacksHolder callbacks_holder,
+    blink::ScopedWebCallbacks<blink::WebMediaCapabilitiesQueryCallbacks>
+        scoped_callbacks,
     std::unique_ptr<blink::WebMediaCapabilitiesInfo> info,
     bool is_smooth,
     bool is_power_efficient) {
   DCHECK(info->supported);
   info->smooth = is_smooth;
   info->power_efficient = is_power_efficient;
-  std::move(callbacks_holder.callbacks)->OnSuccess(std::move(info));
+  scoped_callbacks.PassCallbacks()->OnSuccess(std::move(info));
+}
+
+void OnGetPerfInfoError(
+    std::unique_ptr<blink::WebMediaCapabilitiesQueryCallbacks> callbacks) {
+  callbacks->OnError();
 }
 }  // namespace
 
@@ -226,8 +218,11 @@ void WebMediaCapabilitiesClientImpl::DecodingInfo(
 
   decode_history_ptr_->GetPerfInfo(
       std::move(features),
-      base::BindOnce(&VideoPerfInfoCallback,
-                     CallbacksHolder{std::move(callbacks)}, std::move(info)));
+      base::BindOnce(
+          &VideoPerfInfoCallback,
+          blink::MakeScopedWebCallbacks(std::move(callbacks),
+                                        base::BindOnce(&OnGetPerfInfoError)),
+          std::move(info)));
 }
 
 void WebMediaCapabilitiesClientImpl::BindVideoDecodePerfHistoryForTests(
