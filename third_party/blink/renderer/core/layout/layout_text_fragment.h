@@ -102,7 +102,7 @@ class CORE_EXPORT LayoutTextFragment final : public LayoutText {
   LayoutBlock* BlockForAccompanyingFirstLetter() const;
   UChar PreviousCharacter() const override;
 
-  void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) override;
+  void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) const override;
 
   unsigned start_;
   unsigned fragment_length_;

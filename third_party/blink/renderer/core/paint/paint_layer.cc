@@ -1730,7 +1730,7 @@ void PaintLayer::CollectFragments(
   // create fragments when ShouldFragmentCompositedBounds() is false, e.g. for
   // fixed-position objects in paged media.
   bool offset_from_root_can_be_used =
-      !ShouldFragmentCompositedBounds(root_layer) &&
+      offset_from_root && !ShouldFragmentCompositedBounds(root_layer) &&
       !GetLayoutObject().FirstFragment().NextFragment();
   for (auto* fragment_data = &GetLayoutObject().FirstFragment(); fragment_data;
        fragment_data = fragment_data->NextFragment()) {
@@ -1944,7 +1944,8 @@ PaintLayer* PaintLayer::HitTestLayer(
     bool applied_transform,
     const HitTestingTransformState* transform_state,
     double* z_offset) {
-  DCHECK_GE(GetLayoutObject().GetDocument().Lifecycle().GetState(),
+  const LayoutObject& layout_object = GetLayoutObject();
+  DCHECK_GE(layout_object.GetDocument().Lifecycle().GetState(),
             DocumentLifecycle::kCompositingClean);
 
   if (!IsSelfPaintingLayer() && !HasSelfPaintingLayerDescendant())
@@ -1958,7 +1959,7 @@ PaintLayer* PaintLayer::HitTestLayer(
   // LayoutSVGForeignObject::NodeAtFloatPoint (because
   // IsReplacedNormalFlowStacking() true for LayoutSVGForeignObject),
   // where the hit_test_rect has already been transformed to local coordinates.
-  bool use_transform = Transform() && !GetLayoutObject().IsSVGForeignObject();
+  bool use_transform = Transform() && !layout_object.IsSVGForeignObject();
 
   // Apply a transform if we have one.
   if (use_transform && !applied_transform) {
@@ -1987,7 +1988,8 @@ PaintLayer* PaintLayer::HitTestLayer(
                                            transform_state, z_offset);
   }
 
-  if (HitTestClippedOutByClipPath(root_layer, hit_test_location))
+  if (layout_object.HasClipPath() &&
+      HitTestClippedOutByClipPath(root_layer, hit_test_location))
     return nullptr;
 
   // The natural thing would be to keep HitTestingTransformState on the stack,
@@ -2009,9 +2011,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   }
 
   // Check for hit test on backface if backface-visibility is 'hidden'
-  if (local_transform_state &&
-      GetLayoutObject().Style()->BackfaceVisibility() ==
-          EBackfaceVisibility::kHidden) {
+  if (local_transform_state && layout_object.StyleRef().BackfaceVisibility() ==
+                                   EBackfaceVisibility::kHidden) {
     TransformationMatrix inverted_matrix =
         local_transform_state->accumulated_transform_.Inverse();
     // If the z-vector of the matrix is negative, the back is facing towards the
@@ -2093,7 +2094,7 @@ PaintLayer* PaintLayer::HitTestLayer(
 
   if (scrollable_area_ && scrollable_area_->HitTestResizerInFragments(
                               layer_fragments, hit_test_location)) {
-    GetLayoutObject().UpdateHitTestResult(result, hit_test_location.Point());
+    layout_object.UpdateHitTestResult(result, hit_test_location.Point());
     return this;
   }
 
@@ -2394,8 +2395,7 @@ FloatRect PaintLayer::FilterReferenceBox(const FilterOperations& filter,
 bool PaintLayer::HitTestClippedOutByClipPath(
     PaintLayer* root_layer,
     const HitTestLocation& hit_test_location) const {
-  if (!GetLayoutObject().HasClipPath())
-    return false;
+  DCHECK(GetLayoutObject().HasClipPath());
   DCHECK(IsSelfPaintingLayer());
   DCHECK(root_layer);
 

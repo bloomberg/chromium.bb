@@ -790,9 +790,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // LayoutTextFragment are not LayoutBlocks and will return false.
     // See https://bugs.webkit.org/show_bug.cgi?id=56709.
     return IsAnonymous() &&
-           (Style()->Display() == EDisplay::kBlock ||
-            Style()->Display() == EDisplay::kWebkitBox) &&
-           Style()->StyleType() == kPseudoIdNone && IsLayoutBlock() &&
+           (StyleRef().Display() == EDisplay::kBlock ||
+            StyleRef().Display() == EDisplay::kWebkitBox) &&
+           StyleRef().StyleType() == kPseudoIdNone && IsLayoutBlock() &&
            !IsListMarker() && !IsLayoutFlowThread() &&
            !IsLayoutMultiColumnSet();
   }
@@ -820,11 +820,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsStickyPositioned() const { return bitfields_.IsStickyPositioned(); }
   bool IsFixedPositioned() const {
     return IsOutOfFlowPositioned() &&
-           Style()->GetPosition() == EPosition::kFixed;
+           StyleRef().GetPosition() == EPosition::kFixed;
   }
   bool IsAbsolutePositioned() const {
     return IsOutOfFlowPositioned() &&
-           Style()->GetPosition() == EPosition::kAbsolute;
+           StyleRef().GetPosition() == EPosition::kAbsolute;
   }
   bool IsPositioned() const { return bitfields_.IsPositioned(); }
 
@@ -836,7 +836,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.HorizontalWritingMode();
   }
   bool HasFlippedBlocksWritingMode() const {
-    return Style()->IsFlippedBlocksWritingMode();
+    return StyleRef().IsFlippedBlocksWritingMode();
   }
 
   bool HasLayer() const { return bitfields_.HasLayer(); }
@@ -892,7 +892,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // CSS clip only applies when position is absolute or fixed. Prefer this check
   // over !Style()->HasAutoClip().
   bool HasClip() const {
-    return IsOutOfFlowPositioned() && !Style()->HasAutoClip();
+    return IsOutOfFlowPositioned() && !StyleRef().HasAutoClip();
   }
   bool HasOverflowClip() const { return bitfields_.HasOverflowClip(); }
   bool ShouldClipOverflow() const { return bitfields_.ShouldClipOverflow(); }
@@ -902,25 +902,22 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.HasTransformRelatedProperty();
   }
   bool IsTransformApplicable() const { return IsBox() || IsSVG(); }
-  bool HasMask() const { return Style() && Style()->HasMask(); }
-  bool HasClipPath() const { return Style() && Style()->ClipPath(); }
+  bool HasMask() const { return StyleRef().HasMask(); }
+  bool HasClipPath() const { return StyleRef().ClipPath(); }
   bool HasHiddenBackface() const {
-    return Style() &&
-           Style()->BackfaceVisibility() == EBackfaceVisibility::kHidden;
+    return StyleRef().BackfaceVisibility() == EBackfaceVisibility::kHidden;
   }
-  bool HasBackdropFilter() const {
-    return Style() && Style()->HasBackdropFilter();
-  }
+  bool HasBackdropFilter() const { return StyleRef().HasBackdropFilter(); }
 
   // Returns |true| if any property that renders using filter operations is
   // used (including, but not limited to, 'filter' and 'box-reflect').
   // Not calling style()->hasFilterInducingProperty because some objects force
   // to ignore reflection style (e.g. LayoutInline).
   bool HasFilterInducingProperty() const {
-    return (Style() && Style()->HasFilter()) || HasReflection();
+    return StyleRef().HasFilter() || HasReflection();
   }
 
-  bool HasShapeOutside() const { return Style() && Style()->ShapeOutside(); }
+  bool HasShapeOutside() const { return StyleRef().ShapeOutside(); }
 
   // The pseudo element style can be cached or uncached.  Use the cached method
   // if the pseudo element doesn't respect any pseudo classes (and therefore
@@ -962,7 +959,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return nullptr;
   }
   bool IsColumnSpanAll() const {
-    return Style()->GetColumnSpan() == EColumnSpan::kAll &&
+    return StyleRef().GetColumnSpan() == EColumnSpan::kAll &&
            SpannerPlaceholder();
   }
 
@@ -976,7 +973,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // TODO(cbiesinger): Remove when buttons are implemented with align-items
   // instead of flex box. crbug.com/226252.
   bool BehavesLikeBlockContainer() const {
-    return (IsLayoutBlockFlow() && Style()->IsDisplayBlockContainer()) ||
+    return (IsLayoutBlockFlow() && StyleRef().IsDisplayBlockContainer()) ||
            IsLayoutButton();
   }
 
@@ -1209,7 +1206,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // continuations and some psuedo elements) and it is important that the
   // node be consistent between point- and list-based hit test results.
   virtual Node* NodeForHitTest() const;
-  virtual void UpdateHitTestResult(HitTestResult&, const LayoutPoint&);
+  virtual void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) const;
   virtual bool NodeAtPoint(HitTestResult&,
                            const HitTestLocation& location_in_container,
                            const LayoutPoint& accumulated_offset,
@@ -1441,7 +1438,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   inline Color ResolveColor(const CSSProperty& color_property) const {
-    return Style()->VisitedDependentColor(color_property);
+    return StyleRef().VisitedDependentColor(color_property);
   }
 
   virtual CursorDirective GetCursor(const LayoutPoint&, Cursor&) const;
@@ -1533,8 +1530,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return (IsFloating() || IsOutOfFlowPositioned());
   }
 
-  bool IsTransparent() const { return Style()->HasOpacity(); }
-  float Opacity() const { return Style()->Opacity(); }
+  bool IsTransparent() const { return StyleRef().HasOpacity(); }
+  float Opacity() const { return StyleRef().Opacity(); }
 
   bool HasReflection() const { return bitfields_.HasReflection(); }
 
@@ -1627,15 +1624,15 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   bool VisibleToHitTestRequest(const HitTestRequest& request) const {
-    return Style()->Visibility() == EVisibility::kVisible &&
+    return StyleRef().Visibility() == EVisibility::kVisible &&
            (request.IgnorePointerEventsNone() ||
-            Style()->PointerEvents() != EPointerEvents::kNone) &&
+            StyleRef().PointerEvents() != EPointerEvents::kNone) &&
            !IsInert();
   }
 
   // Warning: inertness can change without causing relayout.
   bool VisibleToHitTesting() const {
-    return Style()->VisibleToHitTesting() && !IsInert();
+    return StyleRef().VisibleToHitTesting() && !IsInert();
   }
 
   // Map points and quads through elements, potentially via 3d transforms. You
@@ -1671,7 +1668,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   bool CreatesGroup() const {
     return IsTransparent() || HasMask() || HasClipPath() ||
-           HasFilterInducingProperty() || Style()->HasBlendMode();
+           HasFilterInducingProperty() || StyleRef().HasBlendMode();
   }
 
   // Collects rectangles that the outline of this object would be drawing along
@@ -2769,7 +2766,7 @@ inline bool LayoutObject::DocumentBeingDestroyed() const {
 }
 
 inline bool LayoutObject::IsBeforeContent() const {
-  if (Style()->StyleType() != kPseudoIdBefore)
+  if (StyleRef().StyleType() != kPseudoIdBefore)
     return false;
   // Text nodes don't have their own styles, so ignore the style on a text node.
   if (IsText() && !IsBR())
@@ -2778,7 +2775,7 @@ inline bool LayoutObject::IsBeforeContent() const {
 }
 
 inline bool LayoutObject::IsAfterContent() const {
-  if (Style()->StyleType() != kPseudoIdAfter)
+  if (StyleRef().StyleType() != kPseudoIdAfter)
     return false;
   // Text nodes don't have their own styles, so ignore the style on a text node.
   if (IsText() && !IsBR())
