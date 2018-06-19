@@ -1259,12 +1259,6 @@ void RenderThreadImpl::InitializeWebKit(
   if (!command_line.HasSwitch(switches::kDisableThreadedCompositing))
     InitializeCompositorThread();
 
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_impl_side_task_runner;
-  if (compositor_task_runner_)
-    compositor_impl_side_task_runner = compositor_task_runner_;
-  else
-    compositor_impl_side_task_runner = base::ThreadTaskRunnerHandle::Get();
-
   RenderThreadImpl::RegisterSchemes();
 
   RenderMediaClient::Initialize();
