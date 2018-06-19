@@ -142,7 +142,6 @@ scripts += ['<script src="%s%s"></script>' % (ROOT, s) for s in [
 # into <script> tags in main.html.
 # Add polymer libs at start.
 # Define FILE_MANAGER_ROOT which is required to locate test data files.
-bg_scripts = read('background/js/background_scripts.js').split('\n')
 includes2scripts('foreground/js/main_scripts.js')
 includes2scripts('background/js/background_common_scripts.js')
 includes2scripts('background/js/background_scripts.js')
