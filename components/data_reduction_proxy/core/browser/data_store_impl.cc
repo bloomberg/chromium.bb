@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/data_reduction_proxy/proto/data_store.pb.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
@@ -146,8 +147,11 @@ DataStore::Status DataStoreImpl::OpenDB() {
 DataStore::Status DataStoreImpl::RecreateDB() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  db_.reset(nullptr);
-  base::DeleteFile(profile_path_.Append(kDBName), true);
+  db_.reset();
+  const base::FilePath db_path = profile_path_.Append(kDBName);
+  leveldb::Status s = leveldb_chrome::DeleteDB(db_path, leveldb::Options());
+  if (!s.ok())
+    return LevelDbToDRPStoreStatus(s);
 
   return OpenDB();
 }

@@ -13,6 +13,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "chrome/browser/android/history_report/delta_file_commons.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
@@ -99,8 +100,13 @@ bool DeltaFileBackend::Init() {
   std::string path = path_.value();
   leveldb::Status status = leveldb_env::OpenDB(options, path, &db_);
   if (status.IsCorruption()) {
-    LOG(WARNING) << "Deleting possibly-corrupt database";
-    base::DeleteFile(path_, true);
+    LOG(WARNING) << "Deleting corrupt database";
+    status = leveldb_chrome::DeleteDB(path_, options);
+    if (!status.ok()) {
+      LOG(ERROR) << "Unable to delete corrupt database " << path_
+                 << ", error: " << status.ToString();
+      return false;
+    }
     status = leveldb_env::OpenDB(options, path, &db_);
   }
   if (status.ok()) {
@@ -218,7 +224,7 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DeltaFileBackend::Query(
 void DeltaFileBackend::Clear() {
   if (!EnsureInitialized()) return;
   db_.reset();
-  base::DeleteFile(path_, true);
+  leveldb_chrome::DeleteDB(path_, leveldb_env::Options());
   Init();
 }
 

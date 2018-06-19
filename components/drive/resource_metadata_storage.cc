@@ -25,6 +25,7 @@
 #include "components/drive/drive_api_util.h"
 #include "components/drive/file_system_core_util.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -571,11 +572,21 @@ bool ResourceMetadataStorage::UpgradeOldDB(
   const base::FilePath preserved_resource_map_path =
       directory_path.Append(kPreservedResourceMapDBName);
 
+  leveldb_env::Options options;
+  options.max_open_files = 0;  // Use minimum.
+  options.create_if_missing = false;
+
   if (base::PathExists(preserved_resource_map_path)) {
     // Preserved DB is found. The previous attempt to create a new DB should not
     // be successful. Discard the imperfect new DB and restore the old DB.
-    if (!base::DeleteFile(resource_map_path, false /* recursive */) ||
-        !base::Move(preserved_resource_map_path, resource_map_path))
+    leveldb::Status status =
+        leveldb_chrome::DeleteDB(resource_map_path, options);
+    if (!status.ok()) {
+      LOG(ERROR) << "ERROR deleting " << resource_map_path
+                 << ", err:" << status.ToString();
+      return false;
+    }
+    if (!base::Move(preserved_resource_map_path, resource_map_path))
       return false;
   }
 
@@ -584,9 +595,6 @@ bool ResourceMetadataStorage::UpgradeOldDB(
 
   // Open DB.
   std::unique_ptr<leveldb::DB> resource_map;
-  leveldb_env::Options options;
-  options.max_open_files = 0;  // Use minimum.
-  options.create_if_missing = false;
   leveldb::Status status = leveldb_env::OpenDB(
       options, resource_map_path.AsUTF8Unsafe(), &resource_map);
   if (!status.ok())
@@ -661,18 +669,18 @@ bool ResourceMetadataStorage::Initialize() {
   const base::FilePath trashed_resource_map_path =
       directory_path_.Append(kTrashedResourceMapDBName);
 
+  leveldb_env::Options options;
+  options.max_open_files = 0;  // Use minimum.
+  options.create_if_missing = false;
+
   // Discard unneeded DBs.
-  if (!base::DeleteFile(preserved_resource_map_path, true /* recursive */) ||
-      !base::DeleteFile(trashed_resource_map_path, true /* recursive */)) {
+  if (!leveldb_chrome::DeleteDB(preserved_resource_map_path, options).ok() ||
+      !leveldb_chrome::DeleteDB(trashed_resource_map_path, options).ok()) {
     LOG(ERROR) << "Failed to remove unneeded DBs.";
     return false;
   }
 
   // Try to open the existing DB.
-  leveldb_env::Options options;
-  options.max_open_files = 0;  // Use minimum.
-  options.create_if_missing = false;
-
   DBInitStatus open_existing_result = DB_INIT_NOT_FOUND;
   leveldb::Status status;
   if (base::PathExists(resource_map_path)) {
