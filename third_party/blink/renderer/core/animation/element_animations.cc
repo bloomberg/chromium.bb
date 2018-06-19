@@ -30,6 +30,8 @@
 
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 
+#include "third_party/blink/renderer/core/css/css_property_equality.h"
+#include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -50,6 +52,29 @@ void UpdateAnimationFlagsForEffect(const KeyframeEffect& effect,
   if (effect.Affects(PropertyHandle(GetCSSPropertyBackdropFilter())))
     style.SetHasCurrentBackdropFilterAnimation(true);
 }
+
+#if DCHECK_IS_ON()
+// Under certain conditions ComputedStyle::operator==() may return false for
+// differences that are permitted during an animation.
+bool ShouldCheckComputedStyles(const ComputedStyle& base_computed_style,
+                               const ComputedStyle& computed_style) {
+  // The FontFaceCache version number may be increased without forcing a style
+  // recalc (see crbug.com/471079).
+  if (!base_computed_style.GetFont().IsFallbackValid())
+    return false;
+  // Images use instance equality rather than value equality (see
+  // crbug.com/781461).
+  for (CSSPropertyID id :
+       {CSSPropertyBackgroundImage, CSSPropertyWebkitMaskImage}) {
+    if (!CSSPropertyEquality::PropertiesEqual(
+            PropertyHandle(CSSProperty::Get(id)), base_computed_style,
+            computed_style)) {
+      return false;
+    }
+  }
+  return true;
+}
+#endif  // DCHECK_IS_ON()
 
 }  // namespace
 
@@ -136,27 +161,16 @@ void ElementAnimations::UpdateBaseComputedStyle(
   // internally. To ensure this we disable the optimization when DCHECKs are
   // enabled, but keep the internal base computed style and make sure the
   // equivalency holds here.
-  if (base_computed_style_ && computed_style)
+  if (base_computed_style_ && computed_style &&
+      ShouldCheckComputedStyles(*base_computed_style_, *computed_style)) {
     DCHECK(*base_computed_style_ == *computed_style);
+  }
 #endif
   base_computed_style_ = ComputedStyle::Clone(*computed_style);
 }
 
 void ElementAnimations::ClearBaseComputedStyle() {
   base_computed_style_ = nullptr;
-}
-
-bool ElementAnimations::IsAnimationStyleChange() const {
-  // TODO(futhark@chromium.org): The FontFaceCache version number may be
-  // increased without forcing a style recalc (see crbug.com/471079).
-  // ComputedStyle objects created with different cache versions will not be
-  // considered equal as Font::operator== will compare versions, hence
-  // ComputedStyle::operator== will return false. We avoid using
-  // base_computed_style (the check for IsFallbackValid()) in that case to avoid
-  // triggering the ComputedStyle comparison DCHECK in UpdateBaseComputedStyle.
-  return animation_style_change_ &&
-         (!base_computed_style_ ||
-          base_computed_style_->GetFont().IsFallbackValid());
 }
 
 }  // namespace blink

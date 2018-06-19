@@ -87,7 +87,7 @@ class CORE_EXPORT ElementAnimations
   void Trace(blink::Visitor*);
 
  private:
-  bool IsAnimationStyleChange() const;
+  bool IsAnimationStyleChange() const { return animation_style_change_; }
 
   EffectStack effect_stack_;
   CSSAnimations css_animations_;
