@@ -162,20 +162,6 @@ public class ActivityWindowAndroid
         return false;
     }
 
-    /**
-     * Responds to a pending permission result.
-     * @param requestCode The unique code for the permission request.
-     * @param permissions The list of permissions in the result.
-     * @param grantResults Whether the permissions were granted.
-     * @return Whether the permission request corresponding to a pending permission request.
-     */
-    public boolean onRequestPermissionsResult(int requestCode, String[] permissions,
-            int[] grantResults) {
-        getAndroidPermissionDelegate().onRequestPermissionsResult(
-                requestCode, permissions, grantResults);
-        return true;
-    }
-
     @Override
     public WeakReference<Activity> getActivity() {
         return new WeakReference<Activity>(activityFromContext(getContext().get()));

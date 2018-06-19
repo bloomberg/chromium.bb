@@ -109,6 +109,6 @@ public class DownloadActivity extends SnackbarActivity {
     @Override
     public void onRequestPermissionsResult(
             int requestCode, String[] permissions, int[] grantResults) {
-        mPermissionDelegate.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        mPermissionDelegate.handlePermissionResult(requestCode, permissions, grantResults);
     }
 }

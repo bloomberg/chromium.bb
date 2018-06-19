@@ -448,8 +448,10 @@ public class BluetoothChooserDialogTest {
         }
 
         @Override
-        public void onRequestPermissionsResult(
-                int requestCode, String[] permissions, int[] grantResults) {}
+        public boolean handlePermissionResult(
+                int requestCode, String[] permissions, int[] grantResults) {
+            return false;
+        }
     }
 
     private static class FakeLocationUtils extends LocationUtils {

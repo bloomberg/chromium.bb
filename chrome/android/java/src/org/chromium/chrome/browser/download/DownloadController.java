@@ -165,7 +165,7 @@ public class DownloadController {
         if (activity instanceof ChromeActivity) {
             WindowAndroid windowAndroid = ((ChromeActivity) activity).getWindowAndroid();
             if (windowAndroid != null) {
-                delegate = windowAndroid.getAndroidPermissionDelegate();
+                delegate = windowAndroid;
             }
         } else if (activity instanceof DownloadActivity) {
             delegate = ((DownloadActivity) activity).getAndroidPermissionDelegate();

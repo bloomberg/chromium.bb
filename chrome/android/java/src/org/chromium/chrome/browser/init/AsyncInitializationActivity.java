@@ -577,7 +577,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     public void onRequestPermissionsResult(
             int requestCode, String[] permissions, int[] grantResults) {
         if (mWindowAndroid != null) {
-            if (mWindowAndroid.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            if (mWindowAndroid.handlePermissionResult(requestCode, permissions, grantResults)) {
                 return;
             }
         }
