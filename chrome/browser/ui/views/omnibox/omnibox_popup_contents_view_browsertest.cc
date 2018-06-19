@@ -176,6 +176,7 @@ IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, PopupAlignment) {
     gfx::Rect alignment_rect = location_bar()->GetBoundsInScreen();
     alignment_rect.Inset(
         -RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets());
+    alignment_rect.Inset(-RoundedOmniboxResultsFrame::GetShadowInsets());
     // Top, left and right should align. Bottom depends on the results.
     gfx::Rect popup_rect = popup->GetRestoredBounds();
     EXPECT_EQ(popup_rect.y(), alignment_rect.y());

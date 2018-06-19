@@ -173,7 +173,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
     params.context = parent_widget->GetNativeWindow();
 
     if (LocationBarView::IsRounded())
-      RoundedOmniboxResultsFrame::OnBeforeWidgetInit(&params);
+      RoundedOmniboxResultsFrame::OnBeforeWidgetInit(&params, this);
     else
       animator_ = std::make_unique<WidgetShrinkAnimation>(this, bounds);
 
@@ -519,10 +519,12 @@ gfx::Rect OmniboxPopupContentsView::UpdateMarginsAndGetTargetBounds() {
   if (LocationBarView::IsRounded()) {
     // The rounded popup is always offset the same amount from the omnibox.
     gfx::Rect content_rect = location_bar_view_->GetBoundsInScreen();
-    gfx::Insets popup_insets =
-        -RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets();
-    content_rect.Inset(popup_insets);
+    content_rect.Inset(
+        -RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets());
     content_rect.set_height(CalculatePopupHeight());
+
+    // Finally, expand the widget to accomodate the custom-drawn shadows.
+    content_rect.Inset(-RoundedOmniboxResultsFrame::GetShadowInsets());
     return content_rect;
   }
 

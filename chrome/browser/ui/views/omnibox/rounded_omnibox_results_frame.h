@@ -20,13 +20,17 @@ class RoundedOmniboxResultsFrame : public views::View {
   ~RoundedOmniboxResultsFrame() override;
 
   // Hook to customize Widget initialization.
-  static void OnBeforeWidgetInit(views::Widget::InitParams* params);
+  static void OnBeforeWidgetInit(views::Widget::InitParams* params,
+                                 views::Widget* widget);
 
   // The height of the location bar view part of the omnibox popup.
   static int GetNonResultSectionHeight();
 
   // How the Widget is aligned relative to the location bar.
   static gfx::Insets GetLocationBarAlignmentInsets();
+
+  // Returns the blur region taken up by the Omnibox popup shadows.
+  static gfx::Insets GetShadowInsets();
 
   // views::View:
   const char* GetClassName() const override;
