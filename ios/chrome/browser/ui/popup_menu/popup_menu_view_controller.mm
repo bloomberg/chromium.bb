@@ -88,13 +88,11 @@ const CGFloat kBackgroundAlpha = 0.65;
   UIImageView* shadow =
       [[UIImageView alloc] initWithImage:StretchableImageNamed(@"menu_shadow")];
   [_contentContainer addSubview:shadow];
-  shadow.translatesAutoresizingMaskIntoConstraints = NO;
-  AddSameConstraintsToSidesWithInsets(
-      _contentContainer, shadow,
-      LayoutSides::kTop | LayoutSides::kBottom | LayoutSides::kLeading |
-          LayoutSides::kTrailing,
-      ChromeDirectionalEdgeInsetsMake(kImageMargin, kImageMargin, kImageMargin,
-                                      kImageMargin));
+  shadow.frame =
+      CGRectInset(_contentContainer.frame, -kImageMargin, -kImageMargin);
+  shadow.autoresizingMask =
+      UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+
   _contentContainer.layer.cornerRadius = kCornerRadius;
   _contentContainer.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_contentContainer];
