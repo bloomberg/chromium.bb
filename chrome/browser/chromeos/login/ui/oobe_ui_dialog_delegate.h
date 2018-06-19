@@ -43,6 +43,9 @@ class OobeUIDialogDelegate : public ui::WebDialogDelegate {
   // key.
   void Show(bool closable_by_esc);
 
+  // Show the dialog widget stretched to full screen.
+  void ShowFullScreen();
+
   // Close the widget, and it will delete this object.
   void Close();
 

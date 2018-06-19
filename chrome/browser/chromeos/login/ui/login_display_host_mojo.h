@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/login/ui/kiosk_app_menu_updater.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
@@ -133,6 +134,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
 
   // The account id of the user pod that's being focused.
   AccountId focused_pod_account_id_;
+
+  KioskAppMenuUpdater kiosk_updater_;
 
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 

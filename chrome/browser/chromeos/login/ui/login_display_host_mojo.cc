@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/ui/oobe_ui_dialog_delegate.h"
 #include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/login/auth/user_context.h"
@@ -181,6 +182,8 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
   existing_user_controller_->Init(user_manager::UserManager::Get()->GetUsers());
 
   user_selection_screen_->InitEasyUnlock();
+
+  kiosk_updater_.SendKioskApps();
 }
 
 void LoginDisplayHostMojo::OnPreferencesChanged() {
@@ -188,7 +191,7 @@ void LoginDisplayHostMojo::OnPreferencesChanged() {
 }
 
 void LoginDisplayHostMojo::OnStartAppLaunch() {
-  NOTIMPLEMENTED();
+  dialog_->ShowFullScreen();
 }
 
 void LoginDisplayHostMojo::OnStartArcKiosk() {

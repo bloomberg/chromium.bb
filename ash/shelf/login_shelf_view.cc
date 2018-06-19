@@ -31,12 +31,14 @@
 #include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/user_metrics.h"
+#include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -82,6 +84,9 @@ constexpr int kButtonMarginDp = 13;
 
 // The color of the button image and label.
 constexpr SkColor kButtonColor = SK_ColorWHITE;
+
+// The size of the icons in the apps menu.
+constexpr gfx::Size kAppIconSize(16, 16);
 
 class LoginShelfButton : public views::LabelButton {
  public:
@@ -166,16 +171,27 @@ class KioskAppsButton : public views::MenuButton,
   void SetApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) {
     kiosk_apps_ = std::move(kiosk_apps);
     Clear();
-    for (size_t i = 0; i < kiosk_apps_.size(); ++i)
-      AddItem(i, kiosk_apps_[i]->name);
+    for (size_t i = 0; i < kiosk_apps_.size(); ++i) {
+      gfx::ImageSkia icon = gfx::ImageSkiaOperations::CreateResizedImage(
+          kiosk_apps_[i]->icon, skia::ImageOperations::RESIZE_GOOD,
+          kAppIconSize);
+      AddItemWithIcon(i, kiosk_apps_[i]->name, icon);
+    }
   }
 
   bool HasApps() const { return !kiosk_apps_.empty(); }
+
+  void ResetState() {
+    is_launch_enabled_ = true;
+    SetVisible(true);
+  }
 
   // views::MenuButtonListener:
   void OnMenuButtonClicked(MenuButton* source,
                            const gfx::Point& point,
                            const ui::Event* event) override {
+    if (!is_launch_enabled_)
+      return;
     menu_runner_.reset(
         new views::MenuRunner(this, views::MenuRunner::HAS_MNEMONICS));
 
@@ -189,7 +205,14 @@ class KioskAppsButton : public views::MenuButton,
 
   // ui::MenuModel:
   void ExecuteCommand(int command_id, int event_flags) override {
-    // TODO(qnnguyen): implement kiosk app launch.
+    DCHECK(command_id >= 0 &&
+           base::checked_cast<size_t>(command_id) < kiosk_apps_.size());
+    // Once an app is clicked on, don't allow any additional clicks until
+    // the state is reset (when login screen reappears).
+    is_launch_enabled_ = false;
+
+    Shell::Get()->login_screen_controller()->LaunchKioskApp(
+        kiosk_apps_[command_id]->app_id);
   }
 
   bool IsCommandIdChecked(int command_id) const override { return false; }
@@ -215,6 +238,7 @@ class KioskAppsButton : public views::MenuButton,
   std::vector<mojom::KioskAppInfoPtr> kiosk_apps_;
   // Passed to set_menu_marker to remove menu marker
   gfx::ImageSkia empty_menu_marker_;
+  bool is_launch_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppsButton);
 };
@@ -411,12 +435,15 @@ void LoginShelfView::UpdateUi() {
                    is_lock_screen_note_in_foreground);
   GetViewByID(kCancel)->SetVisible(session_state ==
                                    SessionState::LOGIN_SECONDARY);
-  kiosk_apps_button_->SetVisible(kiosk_apps_button_->HasApps());
   // TODO(agawronska): Implement full list of conditions for buttons visibility,
   // when views based shelf if enabled during OOBE. https://crbug.com/798869
   bool is_login_primary = (session_state == SessionState::LOGIN_PRIMARY);
   GetViewByID(kBrowseAsGuest)->SetVisible(is_login_primary);
   GetViewByID(kAddUser)->SetVisible(is_login_primary);
+  if (kiosk_apps_button_->HasApps() && is_login_primary)
+    kiosk_apps_button_->ResetState();
+  else
+    kiosk_apps_button_->SetVisible(false);
   Layout();
 }
 

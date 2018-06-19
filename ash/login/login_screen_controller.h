@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/login/login_screen_controller_observer.h"
+#include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -78,6 +79,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   void RequestPublicSessionKeyboardLayouts(const AccountId& account_id,
                                            const std::string& locale);
   void ShowFeedback();
+  void LaunchKioskApp(const std::string& app_id);
 
   // Add or remove an observer.
   void AddObserver(LoginScreenControllerObserver* observer);
@@ -131,7 +133,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
       std::vector<mojom::InputMethodItemPtr> keyboard_layouts) override;
   void SetFingerprintUnlockState(const AccountId& account_id,
                                  mojom::FingerprintUnlockState state) override;
-
+  void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) override;
   // Flushes the mojo pipes - to be used in tests.
   void FlushForTesting();
 

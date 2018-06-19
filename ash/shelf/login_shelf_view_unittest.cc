@@ -258,17 +258,23 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterLockScreenNoteState) {
 }
 
 TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterKioskAppsLoaded) {
-  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
 
   std::vector<mojom::KioskAppInfoPtr> kiosk_apps;
   kiosk_apps.push_back(mojom::KioskAppInfo::New());
   kiosk_apps.push_back(mojom::KioskAppInfo::New());
   login_shelf_view_->SetKioskApps(std::move(kiosk_apps));
-  EXPECT_TRUE(
-      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kApps}));
+  EXPECT_TRUE(ShowsShelfButtons(
+      {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest,
+       LoginShelfView::kAddUser, LoginShelfView::kApps}));
 
   login_shelf_view_->SetKioskApps(std::vector<mojom::KioskAppInfoPtr>());
-  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
+  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
+                                 LoginShelfView::kBrowseAsGuest,
+                                 LoginShelfView::kAddUser}));
 }
 
 TEST_F(LoginShelfViewTest, ClickShutdownButton) {
