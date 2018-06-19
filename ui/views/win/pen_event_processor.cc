@@ -18,12 +18,6 @@ int GetFlagsFromPointerMessage(UINT message, const POINTER_INFO& pointer_info) {
   if (pointer_info.pointerFlags & POINTER_FLAG_SECONDBUTTON)
     flags |= ui::EF_RIGHT_MOUSE_BUTTON;
 
-  if (message == WM_POINTERUP) {
-    if (pointer_info.ButtonChangeType == POINTER_CHANGE_SECONDBUTTON_UP)
-      flags |= ui::EF_RIGHT_MOUSE_BUTTON;
-    else
-      flags |= ui::EF_LEFT_MOUSE_BUTTON;
-  }
   return flags;
 }
 
@@ -121,10 +115,13 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateMouseEvent(
       break;
     case WM_POINTERUP:
       event_type = ui::ET_MOUSE_RELEASED;
-      if (pointer_info.ButtonChangeType == POINTER_CHANGE_FIRSTBUTTON_UP)
+      if (pointer_info.ButtonChangeType == POINTER_CHANGE_FIRSTBUTTON_UP) {
+        flag |= ui::EF_LEFT_MOUSE_BUTTON;
         changed_flag = ui::EF_LEFT_MOUSE_BUTTON;
-      else
+      } else {
+        flag |= ui::EF_RIGHT_MOUSE_BUTTON;
         changed_flag = ui::EF_RIGHT_MOUSE_BUTTON;
+      }
       id_generator_->ReleaseNumber(pointer_id);
       click_count = 1;
       if (!sent_mouse_down_)
