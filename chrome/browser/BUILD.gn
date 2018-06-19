@@ -1557,6 +1557,8 @@ jumbo_split_static_library("browser") {
     "webauthn/authenticator_request_scheduler.h",
     "webauthn/chrome_authenticator_request_delegate.cc",
     "webauthn/chrome_authenticator_request_delegate.h",
+    "webauthn/transport_list_model.cc",
+    "webauthn/transport_list_model.h",
     "webshare/share_target_pref_helper.cc",
     "webshare/share_target_pref_helper.h",
     "webshare/webshare_target.cc",

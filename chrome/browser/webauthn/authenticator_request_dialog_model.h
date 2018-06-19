@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEBAUTHN_AUTHENTICATOR_REQUEST_DIALOG_MODEL_H_
 
 #include "base/observer_list.h"
+#include "chrome/browser/webauthn/transport_list_model.h"
 
 // Encapsulates the model behind the Web Authentication request dialog's UX
 // flow. This is essentially a state machine going through the states defined in
@@ -56,15 +57,16 @@ class AuthenticatorRequestDialogModel {
   AuthenticatorRequestDialogModel();
   ~AuthenticatorRequestDialogModel();
 
-  void set_current_step(Step step) { current_step_ = step; }
+  void SetCurrentStep(Step step);
   Step current_step() const { return current_step_; }
+
+  TransportListModel* transport_list_model() { return &transport_list_model_; }
 
   // Requests that the step-by-step wizard flow commence, guiding the user
   // through using the Secutity Key with the given |transport|.
   //
   // Valid action when at step: kTransportSelection.
-  // TODO(engedy): Use AuthenticatorTransport type when ready.
-  void StartGuidedFlowForTransport(int transport);
+  void StartGuidedFlowForTransport(AuthenticatorTransport transport);
 
   // Tries if the BLE adapter is now powered -- the user claims they turned it
   // on.
@@ -117,12 +119,10 @@ class AuthenticatorRequestDialogModel {
   void OnRequestComplete();
 
  private:
-  // Notifies observers when a step transition has occurred.
-  void NotifyStepTransition();
-
   // The current step of the request UX flow that is currently shown.
   Step current_step_ = Step::kInitial;
 
+  TransportListModel transport_list_model_;
   base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogModel);

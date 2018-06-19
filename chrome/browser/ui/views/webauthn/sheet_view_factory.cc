@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
+#include "chrome/browser/ui/views/webauthn/authenticator_transport_selector_sheet_view.h"
 #include "chrome/browser/ui/webauthn/sheet_models.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 
@@ -37,6 +38,10 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorInitialSheetModel>(dialog_model));
       break;
     case Step::kTransportSelection:
+      sheet_view = std::make_unique<AuthenticatorTransportSelectorSheetView>(
+          std::make_unique<AuthenticatorTransportSelectorSheetModel>(
+              dialog_model));
+      break;
     case Step::kErrorTimedOut:
     case Step::kCompleted:
     case Step::kUsbInsert:

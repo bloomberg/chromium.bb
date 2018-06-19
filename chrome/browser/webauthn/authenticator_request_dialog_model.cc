@@ -10,9 +10,16 @@ AuthenticatorRequestDialogModel::~AuthenticatorRequestDialogModel() {
     observer.OnModelDestroyed();
 }
 
+void AuthenticatorRequestDialogModel::SetCurrentStep(Step step) {
+  current_step_ = step;
+  for (auto& observer : observers_)
+    observer.OnStepTransition();
+}
+
 void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
-    int transport) {
+    AuthenticatorTransport transport) {
   DCHECK_EQ(current_step(), Step::kTransportSelection);
+  // TODO(engedy): Use transport here.
 }
 
 void AuthenticatorRequestDialogModel::TryIfBleAdapterIsPowered() {
@@ -54,11 +61,5 @@ void AuthenticatorRequestDialogModel::RemoveObserver(Observer* observer) {
 }
 
 void AuthenticatorRequestDialogModel::OnRequestComplete() {
-  current_step_ = Step::kCompleted;
-  NotifyStepTransition();
-}
-
-void AuthenticatorRequestDialogModel::NotifyStepTransition() {
-  for (auto& observer : observers_)
-    observer.OnStepTransition();
+  SetCurrentStep(Step::kCompleted);
 }

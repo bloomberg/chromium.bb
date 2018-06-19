@@ -78,3 +78,19 @@ base::string16 AuthenticatorInitialSheetModel::GetStepTitle() const {
 base::string16 AuthenticatorInitialSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_DIALOG_DESCRIPTION);
 }
+
+// AuthenticatorTransportSelectorSheetModel -----------------------------------
+
+base::string16 AuthenticatorTransportSelectorSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_DIALOG_TITLE);
+}
+
+base::string16 AuthenticatorTransportSelectorSheetModel::GetStepDescription()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_DIALOG_DESCRIPTION);
+}
+
+void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
+    AuthenticatorTransport transport) {
+  dialog_model()->StartGuidedFlowForTransport(transport);
+}
