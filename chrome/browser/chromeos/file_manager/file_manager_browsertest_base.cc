@@ -635,7 +635,7 @@ class DriveTestVolume : public TestVolume {
 
   // Sets the url base for the test server to be used to generate share urls
   // on the files and directories.
-  void ConfigureShareUrlBase(const GURL& share_url_base) {
+  virtual void ConfigureShareUrlBase(const GURL& share_url_base) {
     fake_drive_service_->set_share_url_base(share_url_base);
   }
 
@@ -711,6 +711,8 @@ class DriveFsTestVolume : public DriveTestVolume {
 
     ASSERT_TRUE(UpdateModifiedTime(entry));
   }
+
+  void ConfigureShareUrlBase(const GURL& share_url_base) override {}
 
  private:
   base::RepeatingCallback<

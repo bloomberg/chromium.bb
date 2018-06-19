@@ -236,14 +236,13 @@ bool IsDriveEnabledForProfile(Profile* profile) {
 }
 
 ConnectionStatusType GetDriveConnectionStatus(Profile* profile) {
-  drive::DriveServiceInterface* const drive_service =
-      drive::util::GetDriveServiceByProfile(profile);
-
-  if (!drive_service)
+  auto* drive_integration_service = GetIntegrationServiceByProfile(profile);
+  if (!drive_integration_service)
     return DRIVE_DISCONNECTED_NOSERVICE;
   if (net::NetworkChangeNotifier::IsOffline())
     return DRIVE_DISCONNECTED_NONETWORK;
-  if (!drive_service->CanSendRequest())
+  auto* drive_service = drive_integration_service->drive_service();
+  if (drive_service && !drive_service->CanSendRequest())
     return DRIVE_DISCONNECTED_NOTREADY;
 
   const bool is_connection_cellular =

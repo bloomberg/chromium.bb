@@ -138,8 +138,10 @@ void FakeDriveFs::Init(drivefs::mojom::DriveFsConfigurationPtr config,
 void FakeDriveFs::GetMetadata(const base::FilePath& path,
                               bool want_thumbnail,
                               GetMetadataCallback callback) {
+  base::FilePath absolute_path = mount_path_;
+  CHECK(base::FilePath("/").AppendRelativePath(path, &absolute_path));
   base::File::Info info;
-  if (!base::GetFileInfo(path, &info)) {
+  if (!base::GetFileInfo(absolute_path, &info)) {
     std::move(callback).Run(drive::FILE_ERROR_NOT_FOUND, nullptr);
     return;
   }

@@ -459,7 +459,8 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
   if (!volume.get())
     return false;
 
-  if (volume->type() == file_manager::VOLUME_TYPE_GOOGLE_DRIVE) {
+  if (volume->type() == file_manager::VOLUME_TYPE_GOOGLE_DRIVE &&
+      !base::FeatureList::IsEnabled(drive::kDriveFs)) {
     drive::FileSystemInterface* file_system =
         drive::util::GetFileSystemByProfile(GetProfile());
     if (!file_system) {

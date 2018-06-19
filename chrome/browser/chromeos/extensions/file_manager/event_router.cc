@@ -458,12 +458,13 @@ void EventRouter::Shutdown() {
   DriveIntegrationService* const integration_service =
       DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
-    integration_service->file_system()->RemoveObserver(this);
-    integration_service->drive_service()->RemoveObserver(this);
-    integration_service->job_list()->RemoveObserver(job_event_router_.get());
     if (integration_service->GetDriveFsHost()) {
       integration_service->GetDriveFsHost()->RemoveObserver(
           drivefs_event_router_.get());
+    } else {
+      integration_service->file_system()->RemoveObserver(this);
+      integration_service->drive_service()->RemoveObserver(this);
+      integration_service->job_list()->RemoveObserver(job_event_router_.get());
     }
   }
 
@@ -509,12 +510,13 @@ void EventRouter::ObserveEvents() {
   DriveIntegrationService* const integration_service =
       DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
-    integration_service->drive_service()->AddObserver(this);
-    integration_service->file_system()->AddObserver(this);
-    integration_service->job_list()->AddObserver(job_event_router_.get());
     if (integration_service->GetDriveFsHost()) {
       integration_service->GetDriveFsHost()->AddObserver(
           drivefs_event_router_.get());
+    } else {
+      integration_service->drive_service()->AddObserver(this);
+      integration_service->file_system()->AddObserver(this);
+      integration_service->job_list()->AddObserver(job_event_router_.get());
     }
   }
 
