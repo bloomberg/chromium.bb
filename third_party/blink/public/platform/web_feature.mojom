@@ -1942,6 +1942,8 @@ enum WebFeature {
   kMediaElementSourceOnOfflineContext = 2475,
   kMediaStreamDestinationOnOfflineContext = 2476,
   kMediaStreamSourceOnOfflineContext = 2477,
+  kRTCDataChannelInitMaxRetransmitTime = 2478,
+  kRTCPeerConnectionCreateDataChannelMaxPacketLifeTime = 2479,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
