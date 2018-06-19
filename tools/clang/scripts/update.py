@@ -80,12 +80,6 @@ LLVM_REPO_URL='https://llvm.org/svn/llvm-project'
 if 'LLVM_REPO_URL' in os.environ:
   LLVM_REPO_URL = os.environ['LLVM_REPO_URL']
 
-# Bump after VC updates.
-DIA_DLL = {
-  '2013': 'msdia120.dll',
-  '2015': 'msdia140.dll',
-  '2017': 'msdia140.dll',
-}
 
 
 def DownloadUrl(url, output_file):
@@ -372,13 +366,20 @@ def AddGnuWinToPath():
 
 
 win_sdk_dir = None
-msvs_version = None
+dia_dll = None
 def GetWinSDKDir():
-  """Get the location of the current SDK. Sets msvs_version as a side-effect."""
+  """Get the location of the current SDK. Sets dia_dll as a side-effect."""
   global win_sdk_dir
-  global msvs_version
+  global dia_dll
   if win_sdk_dir:
     return win_sdk_dir
+
+  # Bump after VC updates.
+  DIA_DLL = {
+    '2013': 'msdia120.dll',
+    '2015': 'msdia140.dll',
+    '2017': 'msdia140.dll',
+  }
 
   # Don't let vs_toolchain overwrite our environment.
   environ_bak = os.environ
@@ -388,14 +389,21 @@ def GetWinSDKDir():
   win_sdk_dir = vs_toolchain.SetEnvironmentAndGetSDKDir()
   msvs_version = vs_toolchain.GetVisualStudioVersion()
 
+  if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1'))):
+    dia_path = os.path.join(win_sdk_dir, '..', 'DIA SDK', 'bin', 'amd64')
+  else:
+    vs_path = vs_toolchain.DetectVisualStudioPath()
+    dia_path = os.path.join(vs_path, 'DIA SDK', 'bin', 'amd64')
+
+  dia_dll = os.path.join(dia_path, DIA_DLL[msvs_version])
+
   os.environ = environ_bak
   return win_sdk_dir
 
 
 def CopyDiaDllTo(target_dir):
   # This script always wants to use the 64-bit msdia*.dll.
-  dia_path = os.path.join(GetWinSDKDir(), '..', 'DIA SDK', 'bin', 'amd64')
-  dia_dll = os.path.join(dia_path, DIA_DLL[msvs_version])
+  GetWinSDKDir()
   CopyFile(dia_dll, target_dir)
 
 
