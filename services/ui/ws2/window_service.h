@@ -43,7 +43,7 @@ class WindowTreeClient;
 
 namespace ws2 {
 
-class GpuSupport;
+class GpuInterfaceProvider;
 class ScreenProvider;
 class ServerWindow;
 class WindowServiceDelegate;
@@ -57,7 +57,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
     : public service_manager::Service {
  public:
   WindowService(WindowServiceDelegate* delegate,
-                std::unique_ptr<GpuSupport> gpu_support,
+                std::unique_ptr<GpuInterfaceProvider> gpu_support,
                 aura::client::FocusClient* focus_client);
   ~WindowService() override;
 
@@ -108,8 +108,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   WindowServiceDelegate* delegate_;
 
-  // GpuSupport may be null in tests.
-  std::unique_ptr<GpuSupport> gpu_support_;
+  // GpuInterfaceProvider may be null in tests.
+  std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider_;
 
   std::unique_ptr<ScreenProvider> screen_provider_;
 

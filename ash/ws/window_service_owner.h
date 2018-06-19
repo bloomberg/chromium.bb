@@ -18,7 +18,7 @@ class ServiceContext;
 
 namespace ui {
 namespace ws2 {
-class GpuSupport;
+class GpuInterfaceProvider;
 class WindowService;
 }  // namespace ws2
 }  // namespace ui
@@ -32,7 +32,8 @@ class WindowServiceDelegateImpl;
 // BindWindowService() is called the WindowService is created.
 class ASH_EXPORT WindowServiceOwner {
  public:
-  explicit WindowServiceOwner(std::unique_ptr<ui::ws2::GpuSupport> gpu_support);
+  explicit WindowServiceOwner(
+      std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider);
   ~WindowServiceOwner();
 
   // Called from the ServiceManager when a request is made for the
@@ -47,7 +48,7 @@ class ASH_EXPORT WindowServiceOwner {
   friend class AshTestHelper;
 
   // Non-null until |service_context_| is created.
-  std::unique_ptr<ui::ws2::GpuSupport> gpu_support_;
+  std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider_;
 
   // The following state is created once BindWindowService() is called.
 

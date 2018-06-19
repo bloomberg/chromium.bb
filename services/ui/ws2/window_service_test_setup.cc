@@ -5,7 +5,7 @@
 #include "services/ui/ws2/window_service_test_setup.h"
 
 #include "services/ui/ws2/embedding.h"
-#include "services/ui/ws2/gpu_support.h"
+#include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_tree.h"
 #include "services/ui/ws2/window_tree_binding.h"

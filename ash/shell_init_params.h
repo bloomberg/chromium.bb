@@ -17,7 +17,7 @@ namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
 namespace ws2 {
-class GpuSupport;
+class GpuInterfaceProvider;
 }
 }
 
@@ -39,9 +39,9 @@ struct ASH_EXPORT ShellInitParams {
   // ShellObserver::OnLocalStatePrefServiceInitialized is called.
   std::unique_ptr<base::Value> initial_display_prefs;
 
-  // Allows gpu-support to be injected while avoiding direct content
+  // Allows gpu interfaces to be injected while avoiding direct content
   // dependencies.
-  std::unique_ptr<ui::ws2::GpuSupport> gpu_support;
+  std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider;
 };
 
 }  // namespace ash

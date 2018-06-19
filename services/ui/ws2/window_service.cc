@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
-#include "services/ui/ws2/gpu_support.h"
+#include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/screen_provider.h"
 #include "services/ui/ws2/server_window.h"
 #include "services/ui/ws2/window_service_delegate.h"
@@ -18,11 +18,12 @@
 namespace ui {
 namespace ws2 {
 
-WindowService::WindowService(WindowServiceDelegate* delegate,
-                             std::unique_ptr<GpuSupport> gpu_support,
-                             aura::client::FocusClient* focus_client)
+WindowService::WindowService(
+    WindowServiceDelegate* delegate,
+    std::unique_ptr<GpuInterfaceProvider> gpu_interface_provider,
+    aura::client::FocusClient* focus_client)
     : delegate_(delegate),
-      gpu_support_(std::move(gpu_support)),
+      gpu_interface_provider_(std::move(gpu_interface_provider)),
       screen_provider_(std::make_unique<ScreenProvider>()),
       focus_client_(focus_client),
       ime_registrar_(&ime_driver_) {
@@ -99,18 +100,9 @@ void WindowService::OnStart() {
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindWindowTreeFactoryRequest, base::Unretained(this)));
 
-  // |gpu_support_| may be null in tests.
-  if (gpu_support_) {
-    registry_.AddInterface(
-        base::BindRepeating(
-            &GpuSupport::BindDiscardableSharedMemoryManagerOnGpuTaskRunner,
-            base::Unretained(gpu_support_.get())),
-        gpu_support_->GetGpuTaskRunner());
-    registry_.AddInterface(
-        base::BindRepeating(&GpuSupport::BindGpuRequestOnGpuTaskRunner,
-                            base::Unretained(gpu_support_.get())),
-        gpu_support_->GetGpuTaskRunner());
-  }
+  // |gpu_interface_provider_| may be null in tests.
+  if (gpu_interface_provider_)
+    gpu_interface_provider_->RegisterGpuInterfaces(&registry_);
 }
 
 void WindowService::OnBindInterface(

@@ -10,7 +10,7 @@
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/shortcut_viewer/public/mojom/shortcut_viewer.mojom.h"
 #include "ash/components/tap_visualizer/public/mojom/constants.mojom.h"
-#include "ash/content/content_gpu_support.h"
+#include "ash/content/content_gpu_interface_provider.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_features.h"
@@ -97,7 +97,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.delegate = std::make_unique<ash::shell::ShellDelegateImpl>();
   init_params.context_factory = content::GetContextFactory();
   init_params.context_factory_private = content::GetContextFactoryPrivate();
-  init_params.gpu_support = std::make_unique<ContentGpuSupport>();
+  init_params.gpu_interface_provider =
+      std::make_unique<ContentGpuInterfaceProvider>();
   ash::Shell::CreateInstance(std::move(init_params));
 
   // Initialize session controller client and create fake user sessions. The
