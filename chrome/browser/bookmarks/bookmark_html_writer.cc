@@ -453,9 +453,10 @@ void BookmarkFaviconFetcher::ExecuteWriter() {
       FROM_HERE,
       base::BindOnce(
           &Writer::DoWrite,
-          new Writer(codec.Encode(
-                         BookmarkModelFactory::GetForBrowserContext(profile_)),
-                     path_, favicons_map_.release(), observer_)));
+          new Writer(
+              codec.Encode(BookmarkModelFactory::GetForBrowserContext(profile_),
+                           /*sync_metadata_str=*/std::string()),
+              path_, favicons_map_.release(), observer_)));
   if (g_fetcher) {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, g_fetcher);
     g_fetcher = nullptr;

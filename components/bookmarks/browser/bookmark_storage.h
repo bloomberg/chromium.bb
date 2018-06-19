@@ -104,6 +104,13 @@ class BookmarkLoadDetails {
   void set_ids_reassigned(bool value) { ids_reassigned_ = value; }
   bool ids_reassigned() const { return ids_reassigned_; }
 
+  // Returns the string blob representing the sync metadata in the json file.
+  // The string blob is set during decode time upon the call to Bookmark::Load.
+  void set_sync_metadata_str(std::string sync_metadata_str) {
+    sync_metadata_str_ = std::move(sync_metadata_str);
+  }
+  const std::string& sync_metadata_str() const { return sync_metadata_str_; }
+
   void CreateUrlIndex();
   UrlIndex* url_index() { return url_index_.get(); }
 
@@ -127,6 +134,8 @@ class BookmarkLoadDetails {
   std::string stored_checksum_;
   bool ids_reassigned_ = false;
   scoped_refptr<UrlIndex> url_index_;
+  // A string blob represetning the sync metadata stored in the json file.
+  std::string sync_metadata_str_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkLoadDetails);
 };

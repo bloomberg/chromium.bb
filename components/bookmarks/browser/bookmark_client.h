@@ -89,6 +89,19 @@ class BookmarkClient {
   // should give the client a means to temporarily disable those checks.
   // http://crbug.com/49598
   virtual bool CanBeEditedByUser(const BookmarkNode* node) = 0;
+
+  // Encodes the bookmark sync data into a string blob. It's used by the
+  // bookmark model to persist the sync metadata together with the bookmark
+  // model.
+  virtual std::string EncodeBookmarkSyncMetadata() = 0;
+
+  // Decodes a string represeting the sync metadata stored in |metadata_str|.
+  // The model calls this method after it has loaded the model data.
+  // |schedule_save_closure| is a repeating call back to trigger a model and
+  // metadata persistence process.
+  virtual void DecodeBookmarkSyncMetadata(
+      const std::string& metadata_str,
+      const base::RepeatingClosure& schedule_save_closure) = 0;
 };
 
 }  // namespace bookmarks

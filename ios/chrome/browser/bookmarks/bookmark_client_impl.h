@@ -15,8 +15,13 @@
 class GURL;
 
 namespace bookmarks {
+class BookmarkModel;
 class BookmarkNode;
 class BookmarkPermanentNode;
+}
+
+namespace sync_bookmarks {
+class BookmarkSyncService;
 }
 
 namespace ios {
@@ -25,10 +30,13 @@ class ChromeBrowserState;
 
 class BookmarkClientImpl : public bookmarks::BookmarkClient {
  public:
-  BookmarkClientImpl(ios::ChromeBrowserState* browser_state);
+  BookmarkClientImpl(
+      ios::ChromeBrowserState* browser_state,
+      sync_bookmarks::BookmarkSyncService* bookmark_sync_service);
   ~BookmarkClientImpl() override;
 
   // bookmarks::BookmarkClient:
+  void Init(bookmarks::BookmarkModel* model) override;
   bool PreferTouchIcon() override;
   base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,
@@ -45,11 +53,21 @@ class BookmarkClientImpl : public bookmarks::BookmarkClient {
       const bookmarks::BookmarkNode* permanent_node) override;
   bool CanSyncNode(const bookmarks::BookmarkNode* node) override;
   bool CanBeEditedByUser(const bookmarks::BookmarkNode* node) override;
+  std::string EncodeBookmarkSyncMetadata() override;
+  void DecodeBookmarkSyncMetadata(
+      const std::string& metadata_str,
+      const base::RepeatingClosure& schedule_save_closure) override;
 
  private:
   // Pointer to the associated ios::ChromeBrowserState. Must outlive
   // BookmarkClientImpl.
   ios::ChromeBrowserState* browser_state_;
+
+  bookmarks::BookmarkModel* model_;
+
+  // Pointer to the BookmarkSyncService responsible for encoding and decoding
+  // sync metadata persisted together with the bookmarks model.
+  sync_bookmarks::BookmarkSyncService* bookmark_sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkClientImpl);
 };

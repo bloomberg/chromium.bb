@@ -46,6 +46,7 @@
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
@@ -207,7 +208,8 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(
   Profile* profile = Profile::FromBrowserContext(context);
   std::unique_ptr<BookmarkModel> bookmark_model(
       new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
-          profile, ManagedBookmarkServiceFactory::GetForProfile(profile))));
+          profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
+          BookmarkSyncServiceFactory::GetForProfile(profile))));
   bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
                        profile->GetIOTaskRunner(),
                        content::BrowserThread::GetTaskRunnerForThread(

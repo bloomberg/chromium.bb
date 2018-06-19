@@ -814,6 +814,11 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
       details->model_sync_transaction_version());
 
   loaded_ = true;
+  client_->DecodeBookmarkSyncMetadata(
+      details->sync_metadata_str(),
+      store_ ? base::BindRepeating(&BookmarkStorage::ScheduleSave,
+                                   base::Unretained(store_.get()))
+             : base::DoNothing());
 
   // Notify our direct observers.
   for (BookmarkModelObserver& observer : observers_)

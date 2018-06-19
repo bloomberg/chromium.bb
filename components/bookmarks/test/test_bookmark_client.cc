@@ -95,6 +95,14 @@ bool TestBookmarkClient::CanBeEditedByUser(const BookmarkNode* node) {
   return !IsAnExtraNode(node);
 }
 
+std::string TestBookmarkClient::EncodeBookmarkSyncMetadata() {
+  return std::string();
+}
+
+void TestBookmarkClient::DecodeBookmarkSyncMetadata(
+    const std::string& metadata_str,
+    const base::RepeatingClosure& schedule_save_closure) {}
+
 // static
 BookmarkPermanentNodeList TestBookmarkClient::LoadExtraNodes(
     BookmarkPermanentNodeList extra_nodes,

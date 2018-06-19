@@ -14,6 +14,7 @@
 #include "chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,6 +23,7 @@
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -53,6 +55,7 @@ BookmarkModelFactory::BookmarkModelFactory()
   DependsOn(BookmarkUndoServiceFactory::GetInstance());
   DependsOn(ManagedBookmarkServiceFactory::GetInstance());
   DependsOn(StartupTaskRunnerServiceFactory::GetInstance());
+  DependsOn(BookmarkSyncServiceFactory::GetInstance());
 }
 
 BookmarkModelFactory::~BookmarkModelFactory() {
@@ -63,7 +66,8 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
   Profile* profile = Profile::FromBrowserContext(context);
   BookmarkModel* bookmark_model =
       new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
-          profile, ManagedBookmarkServiceFactory::GetForProfile(profile)));
+          profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
+          BookmarkSyncServiceFactory::GetForProfile(profile)));
   bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
                        StartupTaskRunnerServiceFactory::GetForProfile(profile)
                            ->GetBookmarkTaskRunner(),
