@@ -4,12 +4,12 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
@@ -138,6 +138,10 @@
         position: relative;
         text-align: center;
         width: 180px;
+
+        --paper-input-container-input: {
+          caret-color: var(--paper-input-container-focus-color);
+        }
       }
 
       #pinInput[has-content] {
@@ -146,6 +150,16 @@
 
       #pinInput[is-input-rtl] {
         direction: rtl;
+      }
+
+      #pinInput[type=number]::-webkit-inner-spin-button,
+      #pinInput[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+
+      :host([has-error]) #pinInput {
+        --paper-input-container-focus-color: var(--paper-red-500);
       }
 
       /* Ensure that all children of paper-button do not consume events. This
@@ -157,12 +171,13 @@
 
     <div id="root" on-contextmenu="onContextMenu_" on-tap="focusInput_">
       <div id="pinInputDiv" class="row">
-        <cr-input id="pinInput" type="password" value="{{value}}"
+        <paper-input id="pinInput" type="password" no-label-float
+            value="{{value}}"
             is-input-rtl$="[[isInputRtl_(value)]]"
-            has-content$="[[hasInput_(value)]]" invalid="[[hasError]]"
-            placeholder="[[getInputPlaceholder_(enablePassword)]]"
+            has-content$="[[hasInput_(value)]]"
+            label="[[getInputPlaceholder_(enablePassword)]]"
             on-keydown="onInputKeyDown_">
-        </cr-input>
+        </paper-input>
       </div>
       <slot select="[problem]"></slot>
       <div class="row">

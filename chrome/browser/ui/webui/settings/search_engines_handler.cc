@@ -34,8 +34,8 @@
 #include "extensions/common/extension.h"
 
 namespace {
-// The following strings need to match with the IDs of the text input elements
-// at settings/search_engines_page/search_engine_dialog.html.
+// The following strings need to match with the IDs of the paper-input elements
+// at settings/search_engines_page/add_search_engine_dialog.html.
 const char kSearchEngineField[] = "searchEngine";
 const char kKeywordField[] = "keyword";
 const char kQueryUrlField[] = "queryUrl";

@@ -10,7 +10,6 @@
  *   disabled
  *   incremental (only applicable when type="search")
  *   maxlength
- *   minlength
  *   pattern
  *   placeholder
  *   readonly
@@ -68,11 +67,6 @@ Polymer({
     },
 
     maxlength: {
-      type: Number,
-      reflectToAttribute: true,
-    },
-
-    minlength: {
       type: Number,
       reflectToAttribute: true,
     },
@@ -168,7 +162,7 @@ Polymer({
   /** @private */
   onValueChanged_: function() {
     if (this.autoValidate)
-      this.validate();
+      this.invalid = !this.inputElement.checkValidity();
   },
 
   /**
@@ -189,11 +183,5 @@ Polymer({
       this.setAttribute('focused_', '');
     else
       this.removeAttribute('focused_');
-  },
-
-  /** @return {boolean} */
-  validate: function() {
-    this.invalid = !this.inputElement.checkValidity();
-    return !this.invalid;
   },
 });
