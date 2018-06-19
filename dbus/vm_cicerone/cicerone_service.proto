@@ -119,6 +119,10 @@ message LaunchContainerApplicationRequest {
 
   // The owner of the vm and container.
   string owner_id = 4;
+
+  // Files to pass as arguments when launching the application, if any, given
+  // as absolute paths within the container's filesystem.
+  repeated string files = 5;
 }
 
 // Response sent back by vm_concierge when it receives a
