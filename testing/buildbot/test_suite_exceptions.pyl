@@ -1586,15 +1586,6 @@
       'Out of Process Profiling Mac',
     ],
   },
-  'mojo_core_unittests': {
-    'remove_from': [
-      # chromium.clang
-      'CFI Linux (icall)',  # https://crbug.com/850464
-      'CFI Linux ToT',  # https://crbug.com/850464
-      # chromium.memory
-      'Linux CFI',  # https://crbug.com/850464
-    ],
-  },
   'mojo_test_apk': {
     'modifications': {
       # chromium.clang
