@@ -38,6 +38,7 @@ ARC_EXPORT extern const char kEcryptfsMigrationStrategy[];
 ARC_EXPORT extern const char kSmsConnectEnabled[];
 ARC_EXPORT extern const char kVoiceInteractionEnabled[];
 ARC_EXPORT extern const char kVoiceInteractionContextEnabled[];
+ARC_EXPORT extern const char kVoiceInteractionHotwordEnabled[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
