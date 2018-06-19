@@ -103,6 +103,11 @@ Polymer({
         this, currentRoute);
     if (currentRoute == settings.routes.SITE_SETTINGS_SITE_DATA) {
       this.isLoading_ = true;
+      // Needed to fix iron-list rendering issue. The list will not render
+      // correctly until a scroll occurs.
+      // See https://crbug.com/853906.
+      const ironList = /** @type {!IronListElement} */ (this.$$('iron-list'));
+      ironList.scrollToIndex(0);
       this.browserProxy_.reloadCookies().then(this.updateSiteList_.bind(this));
     }
   },
