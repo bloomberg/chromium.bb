@@ -28,7 +28,7 @@ case $UNAME in
     PLAT=mac
     ;;
   *)
-    echo "UNKNOWN OS: $UNAME"
+    echo "cipd not supported on $UNAME"
     exit 1
 esac
 
