@@ -1540,7 +1540,8 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   if (!window_->GetRootWindow())
     return;
 
-  SyncSurfaceProperties(cc::DeadlinePolicy::UseDefaultDeadline());
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                              window_->GetLocalSurfaceId());
 
   device_scale_factor_ = new_device_scale_factor;
   const display::Display display =
@@ -2023,7 +2024,15 @@ bool RenderWidgetHostViewAura::SynchronizeVisualProperties(
   DCHECK(window_);
   window_->UpdateLocalSurfaceIdFromEmbeddedClient(
       child_allocated_local_surface_id);
-  return SyncSurfaceProperties(deadline_policy);
+  if (IsLocalSurfaceIdAllocationSuppressed())
+    return false;
+
+  if (delegated_frame_host_) {
+    delegated_frame_host_->EmbedSurface(window_->GetLocalSurfaceId(),
+                                        window_->bounds().size(),
+                                        deadline_policy);
+  }
+  return host()->SynchronizeVisualProperties();
 }
 
 ui::InputMethod* RenderWidgetHostViewAura::GetInputMethod() const {
@@ -2151,7 +2160,8 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   if (!in_bounds_changed_)
     window_->SetBounds(rect);
 
-  SyncSurfaceProperties(cc::DeadlinePolicy::UseDefaultDeadline());
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                              window_->GetLocalSurfaceId());
 
 #if defined(OS_WIN)
   UpdateLegacyWin();
@@ -2159,19 +2169,6 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   if (mouse_locked_)
     UpdateMouseLockRegion();
 #endif
-}
-
-bool RenderWidgetHostViewAura::SyncSurfaceProperties(
-    const cc::DeadlinePolicy& deadline_policy) {
-  if (IsLocalSurfaceIdAllocationSuppressed())
-    return false;
-
-  if (delegated_frame_host_) {
-    delegated_frame_host_->EmbedSurface(window_->GetLocalSurfaceId(),
-                                        window_->bounds().size(),
-                                        deadline_policy);
-  }
-  return host()->SynchronizeVisualProperties();
 }
 
 #if defined(OS_WIN)
@@ -2482,7 +2479,8 @@ void RenderWidgetHostViewAura::DidNavigate() {
   // The first navigation does not need a new LocalSurfaceID. The renderer can
   // use the ID that was already provided.
   if (is_first_navigation_) {
-    SyncSurfaceProperties(cc::DeadlinePolicy::UseExistingDeadline());
+    SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
+                                window_->GetLocalSurfaceId());
   } else {
     SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
                                 base::nullopt);
