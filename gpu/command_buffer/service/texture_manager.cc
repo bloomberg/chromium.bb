@@ -2643,12 +2643,6 @@ bool TextureManager::ValidateTexImage(
     }
   }
 
-  if (!memory_type_tracker_->EnsureGPUMemoryAvailable(args.pixels_size)) {
-    ERRORSTATE_SET_GL_ERROR(error_state, GL_OUT_OF_MEMORY, function_name,
-                            "out of memory");
-    return false;
-  }
-
   // Write the TextureReference since this is valid.
   *texture_ref = local_texture_ref;
   return true;
@@ -2682,12 +2676,6 @@ void TextureManager::DoCubeMapWorkaround(
                                &width, &height, nullptr)) {
       undefined_faces.push_back(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
     }
-  }
-  if (!memory_type_tracker_->EnsureGPUMemoryAvailable(
-          (undefined_faces.size() + 1) * args.pixels_size)) {
-    ERRORSTATE_SET_GL_ERROR(state->GetErrorState(), GL_OUT_OF_MEMORY,
-                            function_name, "out of memory");
-    return;
   }
   DoTexImageArguments new_args = args;
   std::unique_ptr<char[]> zero(new char[args.pixels_size]);

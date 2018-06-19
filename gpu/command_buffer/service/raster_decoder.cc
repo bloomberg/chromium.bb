@@ -452,14 +452,6 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   BufferManager* buffer_manager() { return group_->buffer_manager(); }
 
-  bool EnsureGPUMemoryAvailable(size_t estimated_size) {
-    MemoryTracker* tracker = memory_tracker();
-    if (tracker) {
-      return tracker->EnsureGPUMemoryAvailable(estimated_size);
-    }
-    return true;
-  }
-
   const TextureManager* texture_manager() const {
     return group_->texture_manager();
   }
@@ -2515,11 +2507,6 @@ void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
        (num_pixels >= 4096 * 4096))) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D",
                        "synthetic out of memory");
-    return;
-  }
-
-  if (!EnsureGPUMemoryAvailable(size)) {
-    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D", "out of memory");
     return;
   }
 

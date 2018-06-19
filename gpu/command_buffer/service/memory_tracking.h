@@ -24,9 +24,6 @@ class MemoryTracker : public base::RefCounted<MemoryTracker> {
    virtual void TrackMemoryAllocatedChange(size_t old_size,
                                            size_t new_size) = 0;
 
-   // Ensure a certain amount of GPU memory is free. Returns true on success.
-   virtual bool EnsureGPUMemoryAvailable(size_t size_needed) = 0;
-
    // Tracing id which identifies the GPU client for whom memory is being
    // allocated.
    virtual uint64_t ClientTracingId() const = 0;
@@ -76,14 +73,6 @@ class MemoryTypeTracker {
 
   size_t GetMemRepresented() const {
     return mem_represented_at_last_update_;
-  }
-
-  // Ensure a certain amount of GPU memory is free. Returns true on success.
-  bool EnsureGPUMemoryAvailable(size_t size_needed) {
-    if (memory_tracker_) {
-      return memory_tracker_->EnsureGPUMemoryAvailable(size_needed);
-    }
-    return true;
   }
 
  private:

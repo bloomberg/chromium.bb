@@ -129,10 +129,6 @@ class GpuCommandBufferMemoryTracker : public gles2::MemoryTracker {
     tracking_group_->TrackMemoryAllocatedChange(old_size, new_size);
   }
 
-  bool EnsureGPUMemoryAvailable(size_t size_needed) override {
-    return tracking_group_->EnsureGPUMemoryAvailable(size_needed);
-  }
-
   uint64_t ClientTracingId() const override { return client_tracing_id_; }
   int ClientId() const override { return client_id_; }
   uint64_t ShareGroupTracingGUID() const override {

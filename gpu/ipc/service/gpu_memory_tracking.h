@@ -21,7 +21,6 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryTrackingGroup {
  public:
   ~GpuMemoryTrackingGroup();
   void TrackMemoryAllocatedChange(uint64_t old_size, uint64_t new_size);
-  bool EnsureGPUMemoryAvailable(uint64_t size_needed);
   base::ProcessId GetPid() const {
     return pid_;
   }

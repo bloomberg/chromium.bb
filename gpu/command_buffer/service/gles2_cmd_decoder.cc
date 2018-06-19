@@ -875,14 +875,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
     return feature_info_->gl_version_info();
   }
 
-  bool EnsureGPUMemoryAvailable(size_t estimated_size) {
-    MemoryTracker* tracker = memory_tracker();
-    if (tracker) {
-      return tracker->EnsureGPUMemoryAvailable(estimated_size);
-    }
-    return true;
-  }
-
   bool IsOffscreenBufferMultisampled() const {
     return offscreen_target_samples_ > 0;
   }
@@ -2901,10 +2893,6 @@ bool BackTexture::AllocateStorage(
                                    GL_UNSIGNED_BYTE, 8, &image_size, nullptr,
                                    nullptr);
 
-  if (!memory_tracker_.EnsureGPUMemoryAvailable(image_size)) {
-    return false;
-  }
-
   bool success = false;
   size_ = size;
   if (decoder_->should_use_native_gmb_for_backbuffer_) {
@@ -3100,10 +3088,6 @@ bool BackRenderbuffer::AllocateStorage(const gfx::Size& size,
   uint32_t estimated_size = 0;
   if (!decoder_->renderbuffer_manager()->ComputeEstimatedRenderbufferSize(
           size.width(), size.height(), samples, format, &estimated_size)) {
-    return false;
-  }
-
-  if (!memory_tracker_.EnsureGPUMemoryAvailable(estimated_size)) {
     return false;
   }
 
@@ -8914,13 +8898,6 @@ bool GLES2DecoderImpl::ValidateRenderbufferStorageMultisample(
     return false;
   }
 
-  if (!EnsureGPUMemoryAvailable(estimated_size)) {
-    LOCAL_SET_GL_ERROR(
-        GL_OUT_OF_MEMORY,
-        "glRenderbufferStorageMultisample", "out of memory");
-    return false;
-  }
-
   return true;
 }
 
@@ -9136,12 +9113,6 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
            width, height, 1, internalformat, &estimated_size)) {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY, "glRenderbufferStorage", "dimensions too large");
-    return;
-  }
-
-  if (!EnsureGPUMemoryAvailable(estimated_size)) {
-    LOCAL_SET_GL_ERROR(
-        GL_OUT_OF_MEMORY, "glRenderbufferStorage", "out of memory");
     return;
   }
 
@@ -14181,11 +14152,6 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage(
     return error::kNoError;
   }
 
-  if (!EnsureGPUMemoryAvailable(image_size)) {
-    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "out of memory");
-    return error::kNoError;
-  }
-
   if (texture->IsAttachedToFramebuffer()) {
     framebuffer_state_.clear_state_dirty = true;
   }
@@ -14721,11 +14687,6 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
                                         state_.unpack_alignment, &pixels_size,
                                         nullptr, nullptr)) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "dimensions too large");
-    return;
-  }
-
-  if (!EnsureGPUMemoryAvailable(pixels_size)) {
-    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "out of memory");
     return;
   }
 
@@ -17922,8 +17883,7 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
       if (target == GL_TEXTURE_3D)
         level_depth = std::max(1, level_depth >> 1);
     }
-    if (!estimated_size.IsValid() ||
-        !EnsureGPUMemoryAvailable(estimated_size.ValueOrDefault(0))) {
+    if (!estimated_size.IsValid()) {
       LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, function_name, "out of memory");
       return;
     }
