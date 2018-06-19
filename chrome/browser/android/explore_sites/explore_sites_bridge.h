@@ -10,30 +10,19 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/android/explore_sites/ntp_json_fetcher.h"
 
 namespace explore_sites {
 
 /**
  * Bridge between C++ and Java for fetching and decoding URLs and images.
  */
-class ExploreSitesBridge {
- public:
-  explicit ExploreSitesBridge(const base::android::JavaRef<jobject>& j_profile);
-  void Destroy(JNIEnv*, const base::android::JavaParamRef<jobject>& obj);
-
-  void GetNtpCategories(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& url,
-      const base::android::JavaParamRef<jobject>& j_result_obj,
-      const base::android::JavaParamRef<jobject>& j_callback_obj);
-
- private:
-  virtual ~ExploreSitesBridge();
-
-  base::WeakPtrFactory<ExploreSitesBridge> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(ExploreSitesBridge);
-};
+static void JNI_ExploreSitesBridge_GetNtpCategories(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jclass>& j_caller,
+    const base::android::JavaParamRef<jobject>& j_profile,
+    const base::android::JavaParamRef<jobject>& j_result_obj,
+    const base::android::JavaParamRef<jobject>& j_callback_obj);
 
 }  // namespace explore_sites
 

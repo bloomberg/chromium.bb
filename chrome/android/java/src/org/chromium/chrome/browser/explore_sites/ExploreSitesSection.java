@@ -25,28 +25,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ExploreSitesSection {
     private static final int ICON_CORNER_RADIUS = 5;
 
-    private ExploreSitesBridge mBridge;
+    private Profile mProfile;
     private SuggestionsNavigationDelegate mNavigationDelegate;
     private View mExploreSection;
     private LinearLayout mCategorySection;
 
     private AtomicInteger mCategoryIconFetchesInFlight;
-
     public ExploreSitesSection(
             View view, Profile profile, SuggestionsNavigationDelegate navigationDelegate) {
-        mBridge = new ExploreSitesBridge(profile);
+        mProfile = profile;
         mExploreSection = view;
+        mNavigationDelegate = navigationDelegate;
         initialize();
     }
 
     private void initialize() {
         mCategorySection = mExploreSection.findViewById(R.id.explore_sites_tiles);
-        mBridge.getNtpCategories(this ::initializeTiles);
+        ExploreSitesBridge.getNtpCategories(mProfile, this::initializeTiles);
     }
 
     private void initializeTiles(List<ExploreSitesCategoryTile> tileList) {
         if (tileList.isEmpty()) {
-            mBridge.destroy();
             return;
         }
         mCategoryIconFetchesInFlight = new AtomicInteger(tileList.size());
@@ -61,15 +60,13 @@ public class ExploreSitesSection {
                     (View v)
                             -> mNavigationDelegate.navigateToSuggestionUrl(
                                     WindowOpenDisposition.CURRENT_TAB, tile.getNavigationUrl()));
-            mBridge.getIcon(tile.getIconUrl(), (Bitmap icon) -> onIconRetrieved(tileView, icon));
+            ExploreSitesBridge.getIcon(
+                    tile.getIconUrl(), (Bitmap icon) -> onIconRetrieved(tileView, icon));
         }
     }
 
     private void onIconRetrieved(ExploreSitesCategoryTileView tileView, Bitmap icon) {
         tileView.updateIcon(ViewUtils.createRoundedBitmapDrawable(icon, ICON_CORNER_RADIUS));
-        int curValue = mCategoryIconFetchesInFlight.decrementAndGet();
-        if (curValue == 0) {
-            mBridge.destroy();
-        }
+        mCategoryIconFetchesInFlight.decrementAndGet();
     }
 }

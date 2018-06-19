@@ -20,38 +20,22 @@ import java.util.List;
 public class ExploreSitesBridge {
     private static final String TAG = "ExploreSitesBridge";
 
-    private long mNativeExploreSitesBridge;
-
-    /**
-     * Creates an explore sites bridge for a given profile.
-     */
-    public ExploreSitesBridge(Profile profile) {
-        mNativeExploreSitesBridge = nativeInit(profile);
-    }
-
     /**
      * Fetches a JSON string from URL, returning the parsed JSONobject in a callback.
+     * This will cancel any pending JSON fetches.
      */
-    public void getNtpCategories(final Callback<List<ExploreSitesCategoryTile>> callback) {
+    public static void getNtpCategories(
+            Profile profile, final Callback<List<ExploreSitesCategoryTile>> callback) {
         List<ExploreSitesCategoryTile> result = new ArrayList<>();
-        nativeGetNtpCategories(mNativeExploreSitesBridge, "", result, callback);
+        nativeGetNtpCategories(profile, result, callback);
     }
 
     /**
      * Fetches an icon from a url and returns in a Bitmap image.
      */
-    public void getIcon(final String iconUrl, final Callback<Bitmap> callback) {}
+    public static void getIcon(final String iconUrl, final Callback<Bitmap> callback) {}
 
-    /**
-     * Destroys the native object. Call only when no longer needed.
-     */
-    public void destroy() {
-        nativeDestroy(mNativeExploreSitesBridge);
-    }
-
-    private native long nativeInit(Profile profile);
-    private native void nativeGetNtpCategories(long nativeExploreSitesBridge, String url,
+    private static native void nativeGetNtpCategories(Profile profile,
             List<ExploreSitesCategoryTile> result,
             Callback<List<ExploreSitesCategoryTile>> callback);
-    private native void nativeDestroy(long nativeExploreSitesBridge);
 }

@@ -6,10 +6,16 @@ package org.chromium.chrome.browser.explore_sites;
 
 import android.graphics.drawable.Drawable;
 
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+
+import java.util.List;
+
 /**
  * Class encapsulating data needed to render a category tile for explore sites section
  * on the NTP.
  */
+@JNINamespace("explore_sites")
 public class ExploreSitesCategoryTile {
     private String mNavigationUrl;
     private String mIconUrl;
@@ -46,5 +52,11 @@ public class ExploreSitesCategoryTile {
 
     public Drawable getIconDrawable() {
         return mIconDrawable;
+    }
+
+    @CalledByNative
+    private static void createInList(List<ExploreSitesCategoryTile> resultList,
+            String navigationUrl, String iconUrl, String categoryName) {
+        resultList.add(new ExploreSitesCategoryTile(categoryName, iconUrl, navigationUrl));
     }
 }
