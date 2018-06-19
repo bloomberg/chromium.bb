@@ -13,6 +13,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -126,6 +127,11 @@ TEST_F(SessionCleanupCookieStoreTest, TestPersistence) {
   cookies.clear();
 }
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#define MAYBE_TestDeleteSessionCookies DISABLED_TestDeleteSessionCookies
+#else
+#define MAYBE_TestDeleteSessionCookies TestDeleteSessionCookies
+#endif
 TEST_F(SessionCleanupCookieStoreTest, TestDeleteSessionCookies) {
   CanonicalCookieVector cookies = CreateAndLoad();
   ASSERT_EQ(0u, cookies.size());
