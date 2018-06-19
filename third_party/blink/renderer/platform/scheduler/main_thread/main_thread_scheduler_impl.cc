@@ -24,6 +24,8 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
+#include "third_party/blink/public/platform/web_mouse_wheel_event.h"
+#include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -235,6 +237,22 @@ const char* OptionalTaskPriorityToString(
 
 bool IsUnconditionalHighPriorityInputEnabled() {
   return base::FeatureList::IsEnabled(kHighPriorityInput);
+}
+
+bool IsBlockingEvent(const blink::WebInputEvent& web_input_event) {
+  blink::WebInputEvent::Type type = web_input_event.GetType();
+  DCHECK(type == blink::WebInputEvent::kTouchStart ||
+         type == blink::WebInputEvent::kMouseWheel);
+
+  if (type == blink::WebInputEvent::kTouchStart) {
+    const WebTouchEvent& touch_event =
+        static_cast<const WebTouchEvent&>(web_input_event);
+    return touch_event.dispatch_type == blink::WebInputEvent::kBlocking;
+  }
+
+  const WebMouseWheelEvent& mouse_event =
+      static_cast<const WebMouseWheelEvent&>(web_input_event);
+  return mouse_event.dispatch_type == blink::WebInputEvent::kBlocking;
 }
 
 }  // namespace
@@ -459,11 +477,12 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      touchstart_expected_soon(false,
-                               "Scheduler.TouchstartExpectedSoon",
-                               main_thread_scheduler_impl,
-                               &main_thread_scheduler_impl->tracing_controller_,
-                               YesNoStateToString),
+      blocking_input_expected_soon(
+          false,
+          "Scheduler.BlockingInputExpectedSoon",
+          main_thread_scheduler_impl,
+          &main_thread_scheduler_impl->tracing_controller_,
+          YesNoStateToString),
       have_seen_a_begin_main_frame(
           false,
           "Scheduler.HasSeenBeginMainFrame",
@@ -587,9 +606,9 @@ MainThreadSchedulerImpl::AnyThread::AnyThread(
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      have_seen_a_potentially_blocking_gesture(
+      have_seen_a_blocking_gesture(
           false,
-          "Scheduler.HaveSeenPotentiallyBlockingGesture",
+          "Scheduler.HaveSeenBlockingGesture",
           main_thread_scheduler_impl,
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
@@ -1060,6 +1079,12 @@ bool MainThreadSchedulerImpl::PolicyNeedsUpdateForTesting() {
   return policy_may_need_update_.IsSet();
 }
 
+void MainThreadSchedulerImpl::SetHaveSeenABlockingGestureForTesting(
+    bool status) {
+  base::AutoLock lock(any_thread_lock_);
+  any_thread().have_seen_a_blocking_gesture = status;
+}
+
 // static
 bool MainThreadSchedulerImpl::ShouldPrioritizeInputEvent(
     const blink::WebInputEvent& web_input_event) {
@@ -1092,7 +1117,7 @@ void MainThreadSchedulerImpl::DidHandleInputEventOnCompositorThread(
   if (!ShouldPrioritizeInputEvent(web_input_event))
     return;
 
-  UpdateForInputEventOnCompositorThread(web_input_event.GetType(), event_state);
+  UpdateForInputEventOnCompositorThread(web_input_event, event_state);
 }
 
 void MainThreadSchedulerImpl::DidAnimateForInputOnCompositorThread() {
@@ -1105,10 +1130,12 @@ void MainThreadSchedulerImpl::DidAnimateForInputOnCompositorThread() {
 }
 
 void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
-    blink::WebInputEvent::Type type,
+    const blink::WebInputEvent& web_input_event,
     InputEventState input_event_state) {
   base::AutoLock lock(any_thread_lock_);
   base::TimeTicks now = helper_.NowTicks();
+
+  blink::WebInputEvent::Type type = web_input_event.GetType();
 
   // TODO(alexclarke): Move WebInputEventTraits where we can access it from here
   // and record the name rather than the integer representation.
@@ -1136,12 +1163,13 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       // |last_gesture_was_compositor_driven| to the default. We don't know
       // yet where the gesture will run.
       any_thread().last_gesture_was_compositor_driven = false;
-      any_thread().have_seen_a_potentially_blocking_gesture = true;
       // Assume the default gesture is prevented until we see evidence
       // otherwise.
       any_thread().default_gesture_prevented = true;
-      break;
 
+      if (IsBlockingEvent(web_input_event))
+        any_thread().have_seen_a_blocking_gesture = true;
+      break;
     case blink::WebInputEvent::kTouchMove:
       // Observation of consecutive touchmoves is a strong signal that the
       // page is consuming the touch sequence, in which case touchstart
@@ -1194,13 +1222,13 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       any_thread().last_gesture_was_compositor_driven =
           input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR;
       any_thread().awaiting_touch_start_response = false;
-      any_thread().have_seen_a_potentially_blocking_gesture = true;
       // If the event was sent to the main thread, assume the default gesture is
       // prevented until we see evidence otherwise.
       any_thread().default_gesture_prevented =
           !any_thread().last_gesture_was_compositor_driven;
+      if (IsBlockingEvent(web_input_event))
+        any_thread().have_seen_a_blocking_gesture = true;
       break;
-
     case blink::WebInputEvent::kUndefined:
       break;
 
@@ -1252,7 +1280,7 @@ bool MainThreadSchedulerImpl::IsHighPriorityWorkAnticipated() {
   // The touchstart, synchronized gesture and main-thread gesture use cases
   // indicate a strong likelihood of high-priority work in the near future.
   UseCase use_case = main_thread_only().current_use_case;
-  return main_thread_only().touchstart_expected_soon ||
+  return main_thread_only().blocking_input_expected_soon ||
          use_case == UseCase::kTouchstart ||
          use_case == UseCase::kMainThreadGesture ||
          use_case == UseCase::kMainThreadCustomInputHandling ||
@@ -1273,13 +1301,13 @@ bool MainThreadSchedulerImpl::ShouldYieldForHighPriorityWork() {
   switch (main_thread_only().current_use_case) {
     case UseCase::kCompositorGesture:
     case UseCase::kNone:
-      return main_thread_only().touchstart_expected_soon;
+      return main_thread_only().blocking_input_expected_soon;
 
     case UseCase::kMainThreadGesture:
     case UseCase::kMainThreadCustomInputHandling:
     case UseCase::kSynchronizedGesture:
       return compositor_task_queue_->HasTaskToRunImmediately() ||
-             main_thread_only().touchstart_expected_soon;
+             main_thread_only().blocking_input_expected_soon;
 
     case UseCase::kTouchstart:
       return true;
@@ -1349,15 +1377,14 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   main_thread_only().current_use_case =
       ComputeCurrentUseCase(now, &expected_use_case_duration);
 
-  base::TimeDelta touchstart_expected_flag_valid_for_duration;
-  // TODO(skyostil): Consider handlers for all types of blocking gestures (e.g.,
-  // mouse wheel) instead of just touchstart.
-  bool touchstart_expected_soon = false;
-  if (main_thread_only().has_visible_render_widget_with_touch_handler) {
-    touchstart_expected_soon = any_thread().user_model.IsGestureExpectedSoon(
-        now, &touchstart_expected_flag_valid_for_duration);
+  base::TimeDelta gesture_expected_flag_valid_for_duration;
+
+  main_thread_only().blocking_input_expected_soon = false;
+  if (any_thread().have_seen_a_blocking_gesture) {
+    main_thread_only().blocking_input_expected_soon =
+        any_thread().user_model.IsGestureExpectedSoon(
+            now, &gesture_expected_flag_valid_for_duration);
   }
-  main_thread_only().touchstart_expected_soon = touchstart_expected_soon;
 
   base::TimeDelta longest_jank_free_task_duration =
       EstimateLongestJankFreeTaskDuration();
@@ -1381,13 +1408,13 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       loading_tasks_seem_expensive;
 
   // The |new_policy_duration| is the minimum of |expected_use_case_duration|
-  // and |touchstart_expected_flag_valid_for_duration| unless one is zero in
+  // and |gesture_expected_flag_valid_for_duration| unless one is zero in
   // which case we choose the other.
   base::TimeDelta new_policy_duration = expected_use_case_duration;
   if (new_policy_duration.is_zero() ||
-      (touchstart_expected_flag_valid_for_duration > base::TimeDelta() &&
-       new_policy_duration > touchstart_expected_flag_valid_for_duration)) {
-    new_policy_duration = touchstart_expected_flag_valid_for_duration;
+      (gesture_expected_flag_valid_for_duration > base::TimeDelta() &&
+       new_policy_duration > gesture_expected_flag_valid_for_duration)) {
+    new_policy_duration = gesture_expected_flag_valid_for_duration;
   }
 
   if (new_policy_duration > base::TimeDelta()) {
@@ -1414,7 +1441,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   switch (new_policy.use_case()) {
     case UseCase::kCompositorGesture:
-      if (touchstart_expected_soon) {
+      if (main_thread_only().blocking_input_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::kBlock;
         new_policy.compositor_priority() =
@@ -1433,7 +1460,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       new_policy.compositor_priority() = main_thread_compositing_is_fast
                                              ? TaskQueue::kHighestPriority
                                              : TaskQueue::kNormalPriority;
-      if (touchstart_expected_soon) {
+      if (main_thread_only().blocking_input_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::kBlock;
       } else {
@@ -1459,7 +1486,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // handling over other tasks.
       new_policy.compositor_priority() =
           TaskQueue::QueuePriority::kHighestPriority;
-      if (touchstart_expected_soon) {
+      if (main_thread_only().blocking_input_expected_soon) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::kBlock;
       } else {
@@ -1480,7 +1507,7 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     case UseCase::kNone:
       // It's only safe to block tasks that if we are expecting a compositor
       // driven gesture.
-      if (touchstart_expected_soon &&
+      if (main_thread_only().blocking_input_expected_soon &&
           any_thread().last_gesture_was_compositor_driven) {
         new_policy.rail_mode() = v8::PERFORMANCE_RESPONSE;
         expensive_task_policy = ExpensiveTaskPolicy::kBlock;
@@ -2023,8 +2050,8 @@ MainThreadSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->SetBoolean(
       "compositor_will_send_main_frame_not_expected",
       main_thread_only().compositor_will_send_main_frame_not_expected);
-  state->SetBoolean("touchstart_expected_soon",
-                    main_thread_only().touchstart_expected_soon);
+  state->SetBoolean("blocking_input_expected_soon",
+                    main_thread_only().blocking_input_expected_soon);
   state->SetString("idle_period_state",
                    IdleHelper::IdlePeriodStateToString(
                        idle_helper_.SchedulerIdlePeriodState()));
@@ -2273,7 +2300,7 @@ void MainThreadSchedulerImpl::ResetForNavigationLocked() {
   helper_.CheckOnValidThread();
   any_thread_lock_.AssertAcquired();
   any_thread().user_model.Reset(helper_.NowTicks());
-  any_thread().have_seen_a_potentially_blocking_gesture = false;
+  any_thread().have_seen_a_blocking_gesture = false;
   any_thread().waiting_for_meaningful_paint = true;
   any_thread().have_seen_input_since_navigation = false;
   main_thread_only().loading_task_cost_estimator.Clear();

@@ -343,6 +343,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     main_thread_only().current_use_case = use_case;
   }
 
+  void SetHaveSeenABlockingGestureForTesting(bool status);
+
  private:
   friend class WebRenderWidgetSchedulingState;
   friend class MainThreadMetricsHelper;
@@ -602,7 +604,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   std::unique_ptr<base::SingleSampleMetric> CreateMaxQueueingTimeMetric();
 
   // An input event of some sort happened, the policy may need updating.
-  void UpdateForInputEventOnCompositorThread(WebInputEvent::Type type,
+  void UpdateForInputEventOnCompositorThread(const WebInputEvent& event,
                                              InputEventState input_event_state);
 
   // The task cost estimators and the UserModel need to be reset upon page
@@ -763,7 +765,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
         timer_task_estimated_cost;
     TraceableState<bool, kTracingCategoryNameInfo> loading_tasks_seem_expensive;
     TraceableState<bool, kTracingCategoryNameInfo> timer_tasks_seem_expensive;
-    TraceableState<bool, kTracingCategoryNameDefault> touchstart_expected_soon;
+    TraceableState<bool, kTracingCategoryNameDefault>
+        blocking_input_expected_soon;
     TraceableState<bool, kTracingCategoryNameDebug>
         have_seen_a_begin_main_frame;
     TraceableState<bool, kTracingCategoryNameDebug>
@@ -837,8 +840,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     TraceableState<bool, kTracingCategoryNameInfo>
         last_gesture_was_compositor_driven;
     TraceableState<bool, kTracingCategoryNameInfo> default_gesture_prevented;
-    TraceableState<bool, kTracingCategoryNameInfo>
-        have_seen_a_potentially_blocking_gesture;
+    TraceableState<bool, kTracingCategoryNameInfo> have_seen_a_blocking_gesture;
     TraceableState<bool, kTracingCategoryNameInfo> waiting_for_meaningful_paint;
     TraceableState<bool, kTracingCategoryNameInfo>
         have_seen_input_since_navigation;
