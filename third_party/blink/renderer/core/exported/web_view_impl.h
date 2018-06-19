@@ -471,6 +471,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                            DivScrollIntoEditablePreservePageScaleTest);
   FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
                            DivScrollIntoEditableTestZoomToLegibleScaleDisabled);
+  FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
+                           DivScrollIntoEditableTestWithDeviceScaleFactor);
 
   void SetPageScaleFactorAndLocation(float, const FloatPoint&);
   void PropagateZoomFactorToLocalFrameRoots(Frame*, float);
