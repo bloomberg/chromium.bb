@@ -58,8 +58,8 @@ class FileDownloaderTest : public testing::Test {
   void Download(bool overwrite, FileDownloader::Result expected_result) {
     FileDownloader downloader(
         GURL(kURL), path_, overwrite, test_shared_loader_factory_,
-        base::Bind(&FileDownloaderTest::OnDownloadFinished,
-                   base::Unretained(this)),
+        base::BindOnce(&FileDownloaderTest::OnDownloadFinished,
+                       base::Unretained(this)),
         TRAFFIC_ANNOTATION_FOR_TESTS);
     EXPECT_CALL(*this, OnDownloadFinished(expected_result));
     // Wait for the FileExists check to happen if necessary.

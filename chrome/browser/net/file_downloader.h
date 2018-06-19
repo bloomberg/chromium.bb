@@ -34,7 +34,7 @@ class FileDownloader {
     // Downloading failed.
     FAILED
   };
-  using DownloadFinishedCallback = base::Callback<void(Result)>;
+  using DownloadFinishedCallback = base::OnceCallback<void(Result)>;
 
   // Directly starts the download (if necessary) and runs |callback| when done.
   // If the instance is destroyed before it is finished, |callback| is not run.
@@ -43,7 +43,7 @@ class FileDownloader {
       const base::FilePath& path,
       bool overwrite,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const DownloadFinishedCallback& callback,
+      DownloadFinishedCallback callback,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~FileDownloader();
 
