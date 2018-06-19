@@ -766,7 +766,7 @@ class LocalStorageContextMojoTestWithService
     run_loop.Run();
     EXPECT_TRUE(success);
     area.reset();
-    base::RunLoop().RunUntilIdle();
+    RunUntilIdle();
   }
 
   bool DoTestGet(LocalStorageContextMojo* context,
@@ -825,7 +825,7 @@ TEST_F(LocalStorageContextMojoTestWithService, InMemory) {
 
   context->ShutdownAndDelete();
   context = nullptr;
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   // Should not have created any files.
   EXPECT_TRUE(FirstEntryInDir().empty());
@@ -856,7 +856,7 @@ TEST_F(LocalStorageContextMojoTestWithService, InMemoryInvalidPath) {
 
   context->ShutdownAndDelete();
   context = nullptr;
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   // Should not have created any files.
   EXPECT_TRUE(FirstEntryInDir().empty());
@@ -877,7 +877,7 @@ TEST_F(LocalStorageContextMojoTestWithService, OnDisk) {
 
   context->ShutdownAndDelete();
   context = nullptr;
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   // Should have created files.
   EXPECT_EQ(test_path, FirstEntryInDir().BaseName());
@@ -891,13 +891,7 @@ TEST_F(LocalStorageContextMojoTestWithService, OnDisk) {
   context->ShutdownAndDelete();
 }
 
-// Flaky on Android. https://crbug.com/756550
-#if defined(OS_ANDROID)
-#define MAYBE_InvalidVersionOnDisk DISABLED_InvalidVersionOnDisk
-#else
-#define MAYBE_InvalidVersionOnDisk InvalidVersionOnDisk
-#endif
-TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InvalidVersionOnDisk) {
+TEST_F(LocalStorageContextMojoTestWithService, InvalidVersionOnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
 
   // Create context and add some data to it.
@@ -914,7 +908,7 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InvalidVersionOnDisk) {
 
   context->ShutdownAndDelete();
   context = nullptr;
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   {
     // Mess up version number in database.
@@ -939,7 +933,7 @@ TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InvalidVersionOnDisk) {
 
   context->ShutdownAndDelete();
   context = nullptr;
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   // Data should have been preserved now.
   context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
@@ -967,9 +961,7 @@ TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
 
   context->ShutdownAndDelete();
   context = nullptr;
-  base::RunLoop().RunUntilIdle();
-  // Also flush Task Scheduler tasks to make sure the leveldb is fully closed.
-  content::RunAllTasksUntilIdle();
+  RunUntilIdle();
 
   // Delete manifest files to mess up opening DB.
   base::FilePath db_path =
@@ -992,7 +984,7 @@ TEST_F(LocalStorageContextMojoTestWithService, CorruptionOnDisk) {
 
   context->ShutdownAndDelete();
   context = nullptr;
-  base::RunLoop().RunUntilIdle();
+  RunUntilIdle();
 
   // Data should have been preserved now.
   context = new LocalStorageContextMojo(base::ThreadTaskRunnerHandle::Get(),
