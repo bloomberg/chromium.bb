@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
 
-#import "ios/chrome/browser/ui/table_view/cells/table_view_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
+#import "ios/chrome/browser/ui/list_model/list_item.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,62 +22,71 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeFooBar = kItemTypeEnumZero,
 };
 
-class TableViewModelTest : public PlatformTest {
+class ListModelCollapseTest : public PlatformTest {
  protected:
-  TableViewModelTest() {
+  ListModelCollapseTest() {
     // Need to clean up NSUserDefaults before and after each test.
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:nil forKey:kTableViewModelCollapsedKey];
+    [defaults setObject:nil forKey:kListModelCollapsedKey];
 
-    model = [[TableViewModel alloc] init];
+    model = [[ListModel alloc] init];
 
     [model addSectionWithIdentifier:SectionIdentifierFoo];
     [model setSectionIdentifier:SectionIdentifierFoo collapsedKey:@"FooKey"];
-    TableViewHeaderFooterItem* header =
-        [[TableViewHeaderFooterItem alloc] initWithType:ItemTypeFooBar];
-    TableViewItem* item = [[TableViewItem alloc] initWithType:ItemTypeFooBar];
+    ListItem* header = [[ListItem alloc] initWithType:ItemTypeFooBar];
+    ListItem* item = [[ListItem alloc] initWithType:ItemTypeFooBar];
     [model setHeader:header forSectionWithIdentifier:SectionIdentifierFoo];
     [model addItem:item toSectionWithIdentifier:SectionIdentifierFoo];
 
     [model addSectionWithIdentifier:SectionIdentifierBar];
     [model setSectionIdentifier:SectionIdentifierBar collapsedKey:@"BarKey"];
-    header = [[TableViewHeaderFooterItem alloc] initWithType:ItemTypeFooBar];
-    item = [[TableViewItem alloc] initWithType:ItemTypeFooBar];
+    header = [[ListItem alloc] initWithType:ItemTypeFooBar];
     [model setHeader:header forSectionWithIdentifier:SectionIdentifierBar];
+    item = [[ListItem alloc] initWithType:ItemTypeFooBar];
+    [model addItem:item toSectionWithIdentifier:SectionIdentifierBar];
+    item = [[ListItem alloc] initWithType:ItemTypeFooBar];
     [model addItem:item toSectionWithIdentifier:SectionIdentifierBar];
   }
 
-  ~TableViewModelTest() override {
+  ~ListModelCollapseTest() override {
     NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:nil forKey:kTableViewModelCollapsedKey];
+    [defaults setObject:nil forKey:kListModelCollapsedKey];
   }
 
-  TableViewModel* model;
+  ListModel* model;
 };
 
 // Tests the default collapsed value is NO.
-TEST_F(TableViewModelTest, DefaultCollapsedSectionValue) {
+TEST_F(ListModelCollapseTest, DefaultCollapsedSectionValue) {
   EXPECT_FALSE([model sectionIsCollapsed:SectionIdentifierFoo]);
   EXPECT_FALSE([model sectionIsCollapsed:SectionIdentifierBar]);
 }
 
 // Collapses all sections.
-TEST_F(TableViewModelTest, SetAllCollapsed) {
+TEST_F(ListModelCollapseTest, SetAllCollapsed) {
   [model setSection:SectionIdentifierFoo collapsed:YES];
   [model setSection:SectionIdentifierBar collapsed:YES];
 
+  // SectionIdentifierFoo
+  EXPECT_EQ(0, [model numberOfItemsInSection:0]);
   EXPECT_TRUE([model sectionIsCollapsed:SectionIdentifierFoo]);
+  // SectionIdentifierBar
+  EXPECT_EQ(0, [model numberOfItemsInSection:1]);
   EXPECT_TRUE([model sectionIsCollapsed:SectionIdentifierBar]);
 
   [model setSection:SectionIdentifierFoo collapsed:NO];
   [model setSection:SectionIdentifierBar collapsed:NO];
 
+  // SectionIdentifierFoo
+  EXPECT_EQ(1, [model numberOfItemsInSection:0]);
   EXPECT_FALSE([model sectionIsCollapsed:SectionIdentifierFoo]);
+  // SectionIdentifierBar
+  EXPECT_EQ(2, [model numberOfItemsInSection:1]);
   EXPECT_FALSE([model sectionIsCollapsed:SectionIdentifierBar]);
 }
 
 // Collapses just one section at the time.
-TEST_F(TableViewModelTest, SetSomeCollapsed) {
+TEST_F(ListModelCollapseTest, SetSomeCollapsed) {
   [model setSection:SectionIdentifierFoo collapsed:NO];
   [model setSection:SectionIdentifierBar collapsed:YES];
 
@@ -93,7 +101,7 @@ TEST_F(TableViewModelTest, SetSomeCollapsed) {
 }
 
 // Removes a collapsed section.
-TEST_F(TableViewModelTest, RemoveCollapsedSection) {
+TEST_F(ListModelCollapseTest, RemoveCollapsedSection) {
   [model setSection:SectionIdentifierFoo collapsed:NO];
   [model setSection:SectionIdentifierBar collapsed:YES];
 
@@ -108,7 +116,7 @@ TEST_F(TableViewModelTest, RemoveCollapsedSection) {
 }
 
 // Removes a collapsed section, then re-adds it, it should still be collapsed.
-TEST_F(TableViewModelTest, RemoveReaddCollapsedSection) {
+TEST_F(ListModelCollapseTest, RemoveReaddCollapsedSection) {
   [model setSection:SectionIdentifierFoo collapsed:NO];
   [model setSection:SectionIdentifierBar collapsed:YES];
 
@@ -124,9 +132,8 @@ TEST_F(TableViewModelTest, RemoveReaddCollapsedSection) {
   [model addSectionWithIdentifier:SectionIdentifierBar];
   // Use the same Key as the previously removed section.
   [model setSectionIdentifier:SectionIdentifierBar collapsedKey:@"BarKey"];
-  TableViewHeaderFooterItem* header =
-      [[TableViewHeaderFooterItem alloc] initWithType:ItemTypeFooBar];
-  TableViewItem* item = [[TableViewItem alloc] initWithType:ItemTypeFooBar];
+  ListItem* header = [[ListItem alloc] initWithType:ItemTypeFooBar];
+  ListItem* item = [[ListItem alloc] initWithType:ItemTypeFooBar];
   [model setHeader:header forSectionWithIdentifier:SectionIdentifierBar];
   [model addItem:item toSectionWithIdentifier:SectionIdentifierBar];
 
@@ -136,29 +143,28 @@ TEST_F(TableViewModelTest, RemoveReaddCollapsedSection) {
 }
 
 // Test Collapsed persistance.
-TEST_F(TableViewModelTest, PersistCollapsedSections) {
+TEST_F(ListModelCollapseTest, PersistCollapsedSections) {
   [model setSection:SectionIdentifierFoo collapsed:NO];
   [model setSection:SectionIdentifierBar collapsed:YES];
 
   EXPECT_FALSE([model sectionIsCollapsed:SectionIdentifierFoo]);
   EXPECT_TRUE([model sectionIsCollapsed:SectionIdentifierBar]);
 
-  TableViewModel* anotherModel = [[TableViewModel alloc] init];
+  ListModel* anotherModel = [[ListModel alloc] init];
 
   [anotherModel addSectionWithIdentifier:SectionIdentifierFoo];
   [anotherModel setSectionIdentifier:SectionIdentifierFoo
                         collapsedKey:@"FooKey"];
-  TableViewHeaderFooterItem* header =
-      [[TableViewHeaderFooterItem alloc] initWithType:ItemTypeFooBar];
-  TableViewItem* item = [[TableViewItem alloc] initWithType:ItemTypeFooBar];
+  ListItem* header = [[ListItem alloc] initWithType:ItemTypeFooBar];
+  ListItem* item = [[ListItem alloc] initWithType:ItemTypeFooBar];
   [anotherModel setHeader:header forSectionWithIdentifier:SectionIdentifierFoo];
   [anotherModel addItem:item toSectionWithIdentifier:SectionIdentifierFoo];
 
   [anotherModel addSectionWithIdentifier:SectionIdentifierBar];
   [anotherModel setSectionIdentifier:SectionIdentifierBar
                         collapsedKey:@"BarKey"];
-  header = [[TableViewHeaderFooterItem alloc] initWithType:ItemTypeFooBar];
-  item = [[TableViewItem alloc] initWithType:ItemTypeFooBar];
+  header = [[ListItem alloc] initWithType:ItemTypeFooBar];
+  item = [[ListItem alloc] initWithType:ItemTypeFooBar];
   [anotherModel setHeader:header forSectionWithIdentifier:SectionIdentifierBar];
   [anotherModel addItem:item toSectionWithIdentifier:SectionIdentifierBar];
 

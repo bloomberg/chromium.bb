@@ -9,6 +9,9 @@
 
 @class ListItem;
 
+// Key for saving collapsed state in the NSUserDefaults.
+extern NSString* const kListModelCollapsedKey;
+
 // Use these as the starting value for section identifier and item type enums.
 // These are provided to help not mix between indexPath's section/item and the
 // model section identifier / item type.
@@ -183,6 +186,23 @@ const NSInteger kItemTypeEnumZero = 100;
 
 // Returns the number of items in the given section.
 - (NSInteger)numberOfItemsInSection:(NSInteger)section;
+
+#pragma mark Collapsing methods.
+
+// Sets an existing |sectionIdentifier| |collapsedKey| to be used when
+// collapsing or expanding a section. |collapsedKey| is a unique identifier for
+// each section that will be used for persisting information about the collapsed
+// state of a section. A |collapsedKey| its only needed when
+// collapsing/expanding sections. You can't collapse/expand any sections without
+// a |collapsedKey|.
+- (void)setSectionIdentifier:(NSInteger)sectionIdentifier
+                collapsedKey:(NSString*)collapsedKey;
+// Sets the state of an existing |sectionIdentifier| to |collapsed|. A
+// collapsedKey has to be previously set or this method will DCHECK().
+- (void)setSection:(NSInteger)sectionIdentifier collapsed:(BOOL)collapsed;
+// Returns YES if |sectionIdentifier| is collapsed. If not collapsedKey has been
+// set it will also return NO.
+- (BOOL)sectionIsCollapsed:(NSInteger)sectionIdentifier;
 
 @end
 
