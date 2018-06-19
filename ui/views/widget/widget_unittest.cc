@@ -2235,6 +2235,14 @@ TEST_F(WidgetTest, NoCrashOnWidgetDelete) {
   widget->Init(params);
 }
 
+TEST_F(WidgetTest, NoCrashOnResizeConstraintsWindowTitleOnPopup) {
+  std::unique_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(params);
+  widget->OnSizeConstraintsChanged();
+}
+
 // Tests that we do not crash when a Widget is destroyed before it finishes
 // processing of pending input events in the message loop.
 TEST_F(WidgetTest, NoCrashOnWidgetDeleteWithPendingEvents) {
