@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/virtual_keyboard_container_layout_manager.h"
+#include "ash/keyboard/virtual_keyboard_container_layout_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ui/aura/window.h"
 
