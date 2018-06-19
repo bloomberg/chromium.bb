@@ -419,31 +419,15 @@ public final class ChildProcessLauncherHelperImpl {
 
     // Called on client (UI or IO) thread.
     @CalledByNative
-    private int bindingStateCurrentOrWhenDied() {
+    private void getTerminationInfo(long terminationInfoPtr) {
         ChildProcessConnection connection = mLauncher.getConnection();
         // Here we are accessing the connection from a thread other than the launcher thread, but it
         // does not change once it's been set. So it is safe to test whether it's null here and
         // access it afterwards.
-        if (connection == null) {
-            return ChildBindingState.UNBOUND;
-        }
+        if (connection == null) return;
 
-        return connection.bindingStateCurrentOrWhenDied();
-    }
-
-    @CalledByNative
-    private boolean isKilledByUs() {
-        ChildProcessConnection connection = mLauncher.getConnection();
-        // Here we are accessing the connection from a thread other than the launcher thread, but it
-        // does not change once it's been set. So it is safe to test whether it's null here and
-        // access it afterwards.
-        if (connection == null) {
-            return false;
-        }
-
-        // We consider the process to be child protected if it has a strong or moderate binding and
-        // the app is in the foreground.
-        return connection.isKilledByUs();
+        nativeSetTerminationInfo(terminationInfoPtr, connection.bindingStateCurrentOrWhenDied(),
+                connection.isKilledByUs());
     }
 
     @CalledByNative
@@ -666,4 +650,7 @@ public final class ChildProcessLauncherHelperImpl {
     public static ChildProcessConnection getWarmUpConnectionForTesting() {
         return sSpareSandboxedConnection == null ? null : sSpareSandboxedConnection.getConnection();
     }
+
+    private static native void nativeSetTerminationInfo(
+            long termiantionInfoPtr, @ChildBindingState int bindingState, boolean killedByUs);
 }

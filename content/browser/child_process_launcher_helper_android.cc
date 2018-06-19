@@ -155,24 +155,17 @@ ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
     const ChildProcessLauncherHelper::Process& process,
     bool known_dead) {
   ChildProcessTerminationInfo info;
-  info.binding_state = base::android::ChildBindingState::UNBOUND;
-  if (java_peer_avaiable_on_client_thread_) {
-    int binding_state =
-        Java_ChildProcessLauncherHelperImpl_bindingStateCurrentOrWhenDied(
-            AttachCurrentThread(), java_peer_);
-    info.binding_state =
-        static_cast<base::android::ChildBindingState>(binding_state);
-  }
-  info.was_killed_intentionally_by_browser =
-      java_peer_avaiable_on_client_thread_ &&
-      Java_ChildProcessLauncherHelperImpl_isKilledByUs(AttachCurrentThread(),
-                                                       java_peer_);
+  if (!java_peer_avaiable_on_client_thread_)
+    return info;
+
+  Java_ChildProcessLauncherHelperImpl_getTerminationInfo(
+      AttachCurrentThread(), java_peer_, reinterpret_cast<intptr_t>(&info));
+
+  base::android::ApplicationState app_state =
+      base::android::ApplicationStatusListener::GetState();
   bool app_foreground =
-      java_peer_avaiable_on_client_thread_ &&
-      (base::android::ApplicationStatusListener::GetState() ==
-           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
-       base::android::ApplicationStatusListener::GetState() ==
-           base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
+      app_state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
+      app_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
 
   if (app_foreground &&
       (info.binding_state == base::android::ChildBindingState::MODERATE ||
@@ -184,6 +177,19 @@ ChildProcessTerminationInfo ChildProcessLauncherHelper::GetTerminationInfo(
     info.status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
   }
   return info;
+}
+
+static void JNI_ChildProcessLauncherHelperImpl_SetTerminationInfo(
+    JNIEnv* env,
+    const JavaParamRef<jclass>&,
+    jlong termination_info_ptr,
+    jint binding_state,
+    jboolean killed_by_us) {
+  ChildProcessTerminationInfo* info =
+      reinterpret_cast<ChildProcessTerminationInfo*>(termination_info_ptr);
+  info->binding_state =
+      static_cast<base::android::ChildBindingState>(binding_state);
+  info->was_killed_intentionally_by_browser = killed_by_us;
 }
 
 // static
