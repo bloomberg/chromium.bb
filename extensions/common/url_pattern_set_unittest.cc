@@ -458,6 +458,19 @@ TEST(URLPatternSetTest, AddOrigin) {
       URLPattern::SCHEME_HTTP, GURL("https://google.com/")));
 }
 
+TEST(URLPatternSet, AddOriginIPv6) {
+  {
+    URLPatternSet set;
+    EXPECT_TRUE(set.AddOrigin(URLPattern::SCHEME_HTTP,
+                              GURL("http://[2607:f8b0:4005:805::200e]/*")));
+  }
+  {
+    URLPatternSet set;
+    EXPECT_TRUE(set.AddOrigin(URLPattern::SCHEME_HTTP,
+                              GURL("http://[2607:f8b0:4005:805::200e]/")));
+  }
+}
+
 TEST(URLPatternSetTest, ToStringVector) {
   URLPatternSet set;
   AddPattern(&set, "https://google.com/");

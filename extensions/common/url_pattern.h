@@ -20,7 +20,8 @@ class GURL;
 // <url-pattern> := <scheme>://<host><port><path> | '<all_urls>'
 // <scheme> := '*' | 'http' | 'https' | 'file' | 'ftp' | 'chrome' |
 //             'chrome-extension' | 'filesystem'
-// <host> := '*' | '*.' <anychar except '/' and '*'>+
+// <host> := '*' | <IPv4 address> | [<IPv6 address>] |
+//           '*.' <anychar except '/' and '*'>+
 // <port> := [':' ('*' | <port number between 0 and 65535>)]
 // <path> := '/' <any chars>
 //
@@ -36,6 +37,7 @@ class GURL;
 // - https://*.google.com/foo*bar
 // - file://monkey*
 // - http://127.0.0.1/*
+// - http://[2607:f8b0:4005:805::200e]/*
 //
 // Examples of invalid patterns:
 // - http://* -- path not specified
