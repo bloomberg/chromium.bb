@@ -26,8 +26,9 @@ class RegWriter(template_writer.TemplateWriter):
 
   NEWLINE = '\r\n'
 
-  def _EscapeRegString(self, string):
-    return string.replace('\\', '\\\\').replace('\"', '\\\"')
+  def _QuoteAndEscapeString(self, string):
+    assert isinstance(string, str)
+    return json.dumps(string)
 
   def _StartBlock(self, key, suffix, list):
     key = 'HKEY_LOCAL_MACHINE\\' + key
@@ -58,22 +59,17 @@ class RegWriter(template_writer.TemplateWriter):
       self._StartBlock(key, policy['name'], list)
       i = 1
       for item in example_value:
-        escaped_str = self._EscapeRegString(item)
-        list.append('"%d"="%s"' % (i, escaped_str))
+        list.append('"%d"=%s' % (i, self._QuoteAndEscapeString(item)))
         i = i + 1
     else:
       self._StartBlock(key, None, list)
-      if policy['type'] in ('string', 'string-enum', 'dict', 'external'):
-        example_value_str = json.dumps(example_value, sort_keys=True)
-        if policy['type'] in ('dict', 'external'):
-          example_value_str = '"%s"' % example_value_str
-      elif policy['type'] == 'main':
-        if example_value == True:
-          example_value_str = 'dword:00000001'
-        else:
-          example_value_str = 'dword:00000000'
-      elif policy['type'] in ('int', 'int-enum'):
-        example_value_str = 'dword:%08x' % example_value
+      if policy['type'] in ('string', 'string-enum'):
+        example_value_str = self._QuoteAndEscapeString(example_value)
+      elif policy['type'] in ('dict', 'external'):
+        example_value_str = self._QuoteAndEscapeString(
+            json.dumps(example_value, sort_keys=True))
+      elif policy['type'] in ('main', 'int', 'int-enum'):
+        example_value_str = 'dword:%08x' % int(example_value)
       else:
         raise Exception('unknown policy type %s:' % policy['type'])
 
