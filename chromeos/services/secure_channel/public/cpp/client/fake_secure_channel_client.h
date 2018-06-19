@@ -42,14 +42,20 @@ class FakeSecureChannelClient : public SecureChannelClient {
   FakeSecureChannelClient();
   ~FakeSecureChannelClient() override;
 
-  void set_initiate_connection_connection_attempt(
+  void set_next_initiate_connection_attempt(
+      cryptauth::RemoteDeviceRef device_to_connect,
+      cryptauth::RemoteDeviceRef local_device,
       std::unique_ptr<ConnectionAttempt> attempt) {
-    next_initiate_connection_connection_attempt_ = std::move(attempt);
+    device_pair_to_next_initiate_connection_attempt_[std::make_pair(
+        device_to_connect, local_device)] = std::move(attempt);
   }
 
-  void set_listen_for_connection_connection_attempt(
+  void set_next_listen_connection_attempt(
+      cryptauth::RemoteDeviceRef device_to_connect,
+      cryptauth::RemoteDeviceRef local_device,
       std::unique_ptr<ConnectionAttempt> attempt) {
-    next_listen_for_connection_connection_attempt_ = std::move(attempt);
+    device_pair_to_next_listen_connection_attempt_[std::make_pair(
+        device_to_connect, local_device)] = std::move(attempt);
   }
 
   std::vector<ConnectionRequestArguments*>
@@ -85,10 +91,15 @@ class FakeSecureChannelClient : public SecureChannelClient {
       ConnectionPriority connection_priority) override;
 
  private:
-  std::unique_ptr<ConnectionAttempt>
-      next_initiate_connection_connection_attempt_;
-  std::unique_ptr<ConnectionAttempt>
-      next_listen_for_connection_connection_attempt_;
+  // First element of pair is remote device, second is local device.
+  base::flat_map<
+      std::pair<cryptauth::RemoteDeviceRef, cryptauth::RemoteDeviceRef>,
+      std::unique_ptr<ConnectionAttempt>>
+      device_pair_to_next_initiate_connection_attempt_;
+  base::flat_map<
+      std::pair<cryptauth::RemoteDeviceRef, cryptauth::RemoteDeviceRef>,
+      std::unique_ptr<ConnectionAttempt>>
+      device_pair_to_next_listen_connection_attempt_;
 
   std::vector<std::unique_ptr<ConnectionRequestArguments>>
       last_initiate_connection_request_arguments_list_;

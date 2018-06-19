@@ -14,8 +14,11 @@
 #include "base/unguessable_token.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
+#include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
+#include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
 namespace chromeos {
 
@@ -112,6 +115,47 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   friend class HostScannerOperationTest;
   friend class MessageTransferOperationTest;
 
+  class ConnectionAttemptDelegate
+      : public secure_channel::ConnectionAttempt::Delegate {
+   public:
+    ConnectionAttemptDelegate(
+        MessageTransferOperation* operation,
+        cryptauth::RemoteDeviceRef remote_device,
+        std::unique_ptr<secure_channel::ConnectionAttempt> connection_attempt);
+    ~ConnectionAttemptDelegate() override;
+
+    // secure_channel::ConnectionAttempt::Delegate:
+    void OnConnectionAttemptFailure(
+        secure_channel::mojom::ConnectionAttemptFailureReason reason) override;
+    void OnConnection(
+        std::unique_ptr<secure_channel::ClientChannel> channel) override;
+
+   private:
+    MessageTransferOperation* operation_;
+    cryptauth::RemoteDeviceRef remote_device_;
+    std::unique_ptr<secure_channel::ConnectionAttempt> connection_attempt_;
+  };
+
+  class ClientChannelObserver : public secure_channel::ClientChannel::Observer {
+   public:
+    ClientChannelObserver(
+        MessageTransferOperation* operation,
+        cryptauth::RemoteDeviceRef remote_device,
+        std::unique_ptr<secure_channel::ClientChannel> client_channel);
+    ~ClientChannelObserver() override;
+
+    // secure_channel::ClientChannel::Observer:
+    void OnDisconnected() override;
+    void OnMessageReceived(const std::string& payload) override;
+
+    secure_channel::ClientChannel* channel() { return client_channel_.get(); }
+
+   private:
+    MessageTransferOperation* operation_;
+    cryptauth::RemoteDeviceRef remote_device_;
+    std::unique_ptr<secure_channel::ClientChannel> client_channel_;
+  };
+
   // The default number of seconds an operation should wait before a timeout
   // occurs. Once this amount of time passes, the connection will be closed.
   // Classes deriving from MessageTransferOperation should override
@@ -122,6 +166,15 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
     uint32_t empty_scan_attempts = 0;
     uint32_t gatt_connection_attempts = 0;
   };
+
+  void OnConnectionAttemptFailure(
+      cryptauth::RemoteDeviceRef remote_device,
+      secure_channel::mojom::ConnectionAttemptFailureReason reason);
+  void OnConnection(cryptauth::RemoteDeviceRef remote_device,
+                    std::unique_ptr<secure_channel::ClientChannel> channel);
+  void OnDisconnected(cryptauth::RemoteDeviceRef remote_device);
+  void OnMessageReceived(cryptauth::RemoteDeviceRef remote_device,
+                         const std::string& payload);
 
   void HandleDeviceDisconnection(
       cryptauth::RemoteDeviceRef remote_device,
@@ -147,9 +200,18 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   bool initialized_ = false;
   bool shutting_down_ = false;
   MessageType message_type_for_connection_;
-  std::map<cryptauth::RemoteDeviceRef, ConnectAttemptCounts>
+
+  base::flat_map<cryptauth::RemoteDeviceRef,
+                 std::unique_ptr<ConnectionAttemptDelegate>>
+      remote_device_to_connection_attempt_delegate_map_;
+  base::flat_map<cryptauth::RemoteDeviceRef,
+                 std::unique_ptr<ClientChannelObserver>>
+      remote_device_to_client_channel_observer_map_;
+  int next_message_sequence_number_ = 0;
+
+  base::flat_map<cryptauth::RemoteDeviceRef, ConnectAttemptCounts>
       remote_device_to_attempts_map_;
-  std::map<cryptauth::RemoteDeviceRef, std::unique_ptr<base::Timer>>
+  base::flat_map<cryptauth::RemoteDeviceRef, std::unique_ptr<base::Timer>>
       remote_device_to_timer_map_;
   base::WeakPtrFactory<MessageTransferOperation> weak_ptr_factory_;
 

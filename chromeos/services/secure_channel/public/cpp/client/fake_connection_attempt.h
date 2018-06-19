@@ -20,6 +20,9 @@ class FakeConnectionAttempt : public ConnectionAttemptImpl {
   FakeConnectionAttempt();
   ~FakeConnectionAttempt() override;
 
+  using ConnectionAttempt::NotifyConnectionAttemptFailure;
+  using ConnectionAttempt::NotifyConnection;
+
   // ConnectionAttemptImpl:
   void OnConnectionAttemptFailure(
       mojom::ConnectionAttemptFailureReason reason) override;
