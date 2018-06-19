@@ -1649,7 +1649,7 @@ TEST_F(SchedulerTest, MainFrameNotSkippedWhenNoTimingHistory) {
   // have history from at least one frame.
   client_->Reset();
   scheduler_->SetNeedsBeginMainFrame();
-  scheduler_->ClearHistoryOnNavigation();
+  scheduler_->ClearHistory();
   EXPECT_SCOPED(AdvanceFrame());
   EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame");
 }
@@ -4036,7 +4036,7 @@ TEST_F(SchedulerTest, DontSkipMainFrameAfterClearingHistory) {
   // But during the commit, the history is cleared. So the main frame should not
   // be skipped.
   client_->Reset();
-  scheduler_->ClearHistoryOnNavigation();
+  scheduler_->ClearHistory();
   EXPECT_ACTIONS("ScheduledActionSendBeginMainFrame");
 }
 

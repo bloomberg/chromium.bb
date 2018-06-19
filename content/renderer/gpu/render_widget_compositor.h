@@ -118,6 +118,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void SetRasterColorSpace(const gfx::ColorSpace& color_space);
   void SetIsForOopif(bool is_for_oopif);
+  void ClearCachesOnNextCommit();
   void SetContentSourceId(uint32_t source_id);
   void SetViewportSizeAndScale(const gfx::Size& device_viewport_size,
                                float device_scale_factor,

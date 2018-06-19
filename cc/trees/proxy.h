@@ -80,7 +80,7 @@ class CC_EXPORT Proxy {
 
   virtual void SetURLForUkm(const GURL& url) = 0;
 
-  virtual void ClearHistoryOnNavigation() = 0;
+  virtual void ClearHistory() = 0;
 
   virtual void SetRenderFrameObserver(
       std::unique_ptr<RenderFrameMetadataObserver> observer) = 0;

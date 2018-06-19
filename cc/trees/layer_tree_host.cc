@@ -311,13 +311,10 @@ void LayerTreeHost::FinishCommitOnImplThread(
   if (needs_full_tree_sync_)
     TreeSynchronizer::SynchronizeTrees(root_layer(), sync_tree);
 
-  // Track the navigation state before pushing properties since it overwrites
-  // the |content_source_id_| on the sync tree.
-  bool did_navigate = content_source_id_ != sync_tree->content_source_id();
-  if (did_navigate) {
-    TRACE_EVENT0("cc,benchmark", "LayerTreeHost::DidNavigate");
-    proxy_->ClearHistoryOnNavigation();
-    host_impl->DidNavigate();
+  if (clear_caches_on_next_commit_) {
+    clear_caches_on_next_commit_ = false;
+    proxy_->ClearHistory();
+    host_impl->ClearCaches();
   }
 
   {
@@ -1186,6 +1183,10 @@ void LayerTreeHost::SetLocalSurfaceIdFromParent(
   has_pushed_local_surface_id_from_parent_ = false;
   UpdateDeferCommitsInternal();
   SetNeedsCommit();
+}
+
+void LayerTreeHost::ClearCachesOnNextCommit() {
+  clear_caches_on_next_commit_ = true;
 }
 
 void LayerTreeHost::RequestNewLocalSurfaceId() {

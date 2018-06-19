@@ -638,10 +638,10 @@ bool SingleThreadProxy::MainFrameWillHappenForTesting() {
   return scheduler_on_impl_thread_->MainFrameForTestingWillHappen();
 }
 
-void SingleThreadProxy::ClearHistoryOnNavigation() {
+void SingleThreadProxy::ClearHistory() {
   DCHECK(task_runner_provider_->IsImplThread());
   if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->ClearHistoryOnNavigation();
+    scheduler_on_impl_thread_->ClearHistory();
 }
 
 void SingleThreadProxy::SetRenderFrameObserver(

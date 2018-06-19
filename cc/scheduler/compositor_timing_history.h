@@ -93,7 +93,7 @@ class CC_EXPORT CompositorTimingHistory {
     return begin_main_frame_sent_time_;
   }
 
-  void ClearHistoryOnNavigation();
+  void ClearHistory();
   size_t begin_main_frame_start_to_ready_to_commit_sample_count() const {
     return begin_main_frame_start_to_ready_to_commit_duration_history_
         .sample_count();
@@ -126,7 +126,7 @@ class CC_EXPORT CompositorTimingHistory {
   base::TimeTicks draw_end_time_prev_;
 
   // If you add any history here, please remember to reset it in
-  // ClearHistoryOnNavigation.
+  // ClearHistory.
   RollingTimeDeltaHistory begin_main_frame_queue_duration_history_;
   RollingTimeDeltaHistory begin_main_frame_queue_duration_critical_history_;
   RollingTimeDeltaHistory begin_main_frame_queue_duration_not_critical_history_;
