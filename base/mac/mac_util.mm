@@ -422,7 +422,7 @@ int MacOSXMinorVersionInternal() {
   // immediate death.
   CHECK(darwin_major_version >= 6);
   int mac_os_x_minor_version = darwin_major_version - 4;
-  DLOG_IF(WARNING, darwin_major_version > 17)
+  DLOG_IF(WARNING, darwin_major_version > 18)
       << "Assuming Darwin " << base::IntToString(darwin_major_version)
       << " is macOS 10." << base::IntToString(mac_os_x_minor_version);
 
