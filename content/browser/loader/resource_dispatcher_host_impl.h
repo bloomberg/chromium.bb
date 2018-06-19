@@ -230,9 +230,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void FinishedWithResourcesForRequest(net::URLRequest* request);
 
   // PlzNavigate: Begins a request for NavigationURLLoader. |loader| is the
-  // loader to attach to the leaf resource handler.
-  // After calling this function, |global_request_id| will contains the
-  // request's global id.
+  // loader to attach to the leaf resource handler. |global_request_id| needs to
+  // be created by MakeGlobalRequestID() before calling this method.
   void BeginNavigationRequest(
       ResourceContext* resource_context,
       net::URLRequestContext* request_context,
@@ -244,7 +243,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ServiceWorkerNavigationHandleCore* service_worker_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       uint32_t url_loader_options,
-      GlobalRequestID* global_request_id);
+      const GlobalRequestID& global_request_id);
 
   int num_in_flight_requests_for_testing() const {
     return num_in_flight_requests_;
@@ -300,6 +299,11 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Creates a new request ID for browser initiated requests. See the comments
   // of |request_id_| for the details. Must be called on the IO thread.
   int MakeRequestID();
+
+  // Creates a new global request ID for browser initiated requests. The ID
+  // is consistent with the request id created by MakeRequestID(). Must be
+  // called on the IO thread.
+  GlobalRequestID MakeGlobalRequestID();
 
   // Cancels a request as requested by a renderer. This function is called when
   // a mojo connection is lost.
