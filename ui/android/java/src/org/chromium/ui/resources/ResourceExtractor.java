@@ -45,10 +45,6 @@ public class ResourceExtractor {
 
         private void doInBackgroundImpl() {
             final File outputDir = getOutputDir();
-            if (!outputDir.exists() && !outputDir.mkdirs()) {
-                throw new RuntimeException();
-            }
-
             // Use a suffix for extracted files in order to guarantee that the version of the file
             // on disk matches up with the version of the APK.
             String extractSuffix = BuildInfo.getInstance().extractedFileSuffix;
@@ -66,6 +62,12 @@ public class ResourceExtractor {
             }
             // A missing file means Chrome has updated. Delete stale files first.
             deleteFiles(existingFileNames);
+
+            outputDir.mkdirs();
+            if (!outputDir.exists()) {
+                // Return value of mkdirs() sometimes incorrect? https://crbug.com/849550
+                throw new RuntimeException();
+            }
 
             AssetManager assetManager = ContextUtils.getApplicationAssets();
             byte[] buffer = new byte[BUFFER_SIZE];
