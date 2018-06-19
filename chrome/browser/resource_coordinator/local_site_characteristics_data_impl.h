@@ -101,6 +101,8 @@ class LocalSiteCharacteristicsDataImpl
     return site_characteristics_;
   }
 
+  size_t loaded_tabs_count_for_testing() const { return loaded_tabs_count_; }
+
   size_t loaded_tabs_in_background_count_for_testing() const {
     return loaded_tabs_in_background_count_;
   }
