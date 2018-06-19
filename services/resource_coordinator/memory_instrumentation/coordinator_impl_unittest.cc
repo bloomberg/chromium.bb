@@ -10,6 +10,7 @@
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "base/time/time_override.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -305,6 +306,17 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
 TEST_F(CoordinatorImplTest, QueuedRequest) {
   base::RunLoop run_loop;
 
+  // Override TimeTicks::Now with a timer that has extra_time added.
+  // This variable to be static as the lambda below has to convert to a function
+  // pointer rather than a functor.
+  static base::TimeDelta extra_time;
+  base::subtle::ScopedTimeClockOverrides time_override(
+      nullptr,
+      []() {
+        return base::subtle::TimeTicksNowIgnoringOverride() + extra_time;
+      },
+      nullptr);
+
   NiceMock<MockClientProcess> client_process_1(this, 1,
                                                mojom::ProcessType::BROWSER);
   NiceMock<MockClientProcess> client_process_2(this);
@@ -316,9 +328,9 @@ TEST_F(CoordinatorImplTest, QueuedRequest) {
       .WillRepeatedly(Invoke(
           [](const MemoryDumpRequestArgs& args,
              MockClientProcess::RequestChromeMemoryDumpCallback& callback) {
-            // Delay the response here to make sure the start times are strictly
-            // increasing.
-            base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
+            // Skip the wall clock time-ticks forward to make sure start_time
+            // is strictly increasing.
+            extra_time += base::TimeDelta::FromMilliseconds(10);
             MemoryDumpArgs dump_args{MemoryDumpLevelOfDetail::DETAILED};
             auto pmd = std::make_unique<ProcessMemoryDump>(dump_args);
             std::move(callback).Run(true, args.dump_guid, std::move(pmd));
