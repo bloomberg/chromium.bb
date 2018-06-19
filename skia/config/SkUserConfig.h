@@ -184,9 +184,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 // Remove this and rebaseline affected layout tests.
 #define SK_DONT_DROP_UNNECESSARY_AA_IN_TEXTURE_OP
 
-#define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
-
-
 #ifndef SK_SUPPORT_LEGACY_THREADED_DAA_BUGS
 #define SK_SUPPORT_LEGACY_THREADED_DAA_BUGS
 #endif
