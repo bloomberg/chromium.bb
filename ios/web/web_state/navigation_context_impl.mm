@@ -42,11 +42,13 @@ NavigationContextImpl::CreateNavigationContext(
 
 #ifndef NDEBUG
 NSString* NavigationContextImpl::GetDescription() const {
-  return [NSString stringWithFormat:
-                       @"web::WebState: %ld, url: %s, "
-                        "is_same_document: %@, error: %@",
-                       reinterpret_cast<long>(web_state_), url_.spec().c_str(),
-                       is_same_document_ ? @"true" : @"false", error_];
+  return [NSString
+      stringWithFormat:
+          @"web::WebState: %ld, url: %s, "
+           "is_same_document: %@, error: %@ is_loading_error_page: %@",
+          reinterpret_cast<long>(web_state_), url_.spec().c_str(),
+          is_same_document_ ? @"true" : @"false", error_,
+          is_loading_error_page_ ? @"true" : @"false"];
 }
 #endif  // NDEBUG
 
