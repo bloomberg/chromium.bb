@@ -17,6 +17,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop_mask.h"
 
 bool OmniboxTabSwitchButton::calculated_widths_ = false;
 size_t OmniboxTabSwitchButton::icon_only_width_;
@@ -73,6 +74,12 @@ gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
 void OmniboxTabSwitchButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   MdTextButton::OnBoundsChanged(previous_bounds);
   focus_ring()->SetPath(GetFocusRingPath());
+}
+
+std::unique_ptr<views::InkDropMask> OmniboxTabSwitchButton::CreateInkDropMask()
+    const {
+  return std::make_unique<views::RoundRectInkDropMask>(
+      size(), gfx::Insets(), CalculatePreferredSize().height() / 2.f);
 }
 
 void OmniboxTabSwitchButton::AnimationProgressed(
@@ -159,9 +166,10 @@ SkColor OmniboxTabSwitchButton::GetBackgroundColor() const {
 }
 
 void OmniboxTabSwitchButton::SetPressed() {
-  SetBgColorOverride(GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND,
-                                     result_view_->GetTint(),
-                                     OmniboxPartState::NORMAL));
+  SetBgColorOverride(color_utils::AlphaBlend(
+      GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, result_view_->GetTint(),
+                      OmniboxPartState::SELECTED),
+      SK_ColorBLACK, 0.8 * 255));
 }
 
 size_t OmniboxTabSwitchButton::CalculateGoalWidth(size_t parent_width,
