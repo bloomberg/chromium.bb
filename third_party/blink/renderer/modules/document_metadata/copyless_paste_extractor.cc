@@ -295,9 +295,9 @@ WebPagePtr CopylessPasteExtractor::extract(const Document& document) {
   WebPagePtr page = WebPage::New();
 
   // Traverse the DOM tree and extract the metadata.
-  double start_time = CurrentTimeTicksInSeconds();
+  TimeTicks start_time = CurrentTimeTicks();
   ExtractionStatus status = extractMetadata(*html, page->entities);
-  double elapsed_time = CurrentTimeTicksInSeconds() - start_time;
+  TimeDelta elapsed_time = CurrentTimeTicks() - start_time;
 
   DEFINE_STATIC_LOCAL(EnumerationHistogram, status_histogram,
                       ("CopylessPaste.ExtractionStatus", kCount));
@@ -307,12 +307,12 @@ WebPagePtr CopylessPasteExtractor::extract(const Document& document) {
     DEFINE_STATIC_LOCAL(
         CustomCountHistogram, extractionHistogram,
         ("CopylessPaste.ExtractionFailedUs", 1, 1000 * 1000, 50));
-    extractionHistogram.Count(1e6 * elapsed_time);
+    extractionHistogram.Count(elapsed_time.InMicroseconds());
     return nullptr;
   }
   DEFINE_STATIC_LOCAL(CustomCountHistogram, extractionHistogram,
                       ("CopylessPaste.ExtractionUs", 1, 1000 * 1000, 50));
-  extractionHistogram.Count(1e6 * elapsed_time);
+  extractionHistogram.Count(elapsed_time.InMicroseconds());
 
   page->url = document.Url();
   page->title = document.title();
