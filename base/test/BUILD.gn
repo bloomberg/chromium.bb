@@ -26,6 +26,8 @@ static_library("test_config") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "../timer/mock_timer.cc",
+    "../timer/mock_timer.h",
     "../trace_event/trace_config_memory_test_util.h",
     "android/java_handler_thread_helpers.cc",
     "android/java_handler_thread_helpers.h",

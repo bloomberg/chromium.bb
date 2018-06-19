@@ -4,56 +4,32 @@
 
 #include "base/timer/mock_timer.h"
 
+#include "base/test/test_simple_task_runner.h"
+
 namespace base {
 
 MockTimer::MockTimer(bool retain_user_task, bool is_repeating)
-    : Timer(retain_user_task, is_repeating),
-      is_running_(false) {
+    : Timer(retain_user_task, is_repeating, &clock_),
+      test_task_runner_(MakeRefCounted<TestSimpleTaskRunner>()) {
+  Timer::SetTaskRunner(test_task_runner_);
 }
-
-MockTimer::MockTimer(const Location& posted_from,
-                     TimeDelta delay,
-                     const base::Closure& user_task,
-                     bool is_repeating)
-    : Timer(true, is_repeating), delay_(delay), is_running_(false) {}
 
 MockTimer::~MockTimer() = default;
 
-bool MockTimer::IsRunning() const {
-  return is_running_;
-}
-
-base::TimeDelta MockTimer::GetCurrentDelay() const {
-  return delay_;
-}
-
-void MockTimer::Start(const Location& posted_from,
-                      TimeDelta delay,
-                      const base::Closure& user_task) {
-  delay_ = delay;
-  user_task_ = user_task;
-  Reset();
-}
-
-void MockTimer::Stop() {
-  is_running_ = false;
-  if (!retain_user_task())
-    user_task_.Reset();
-}
-
-void MockTimer::Reset() {
-  DCHECK(!user_task_.is_null());
-  is_running_ = true;
+void MockTimer::SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) {
+  NOTREACHED() << "MockTimer doesn't support SetTaskRunner().";
 }
 
 void MockTimer::Fire() {
-  DCHECK(is_running_);
-  base::Closure old_task = user_task_;
-  if (is_repeating())
-    Reset();
-  else
-    Stop();
-  old_task.Run();
+  DCHECK(IsRunning());
+  clock_.Advance(std::max(TimeDelta(), desired_run_time() - clock_.NowTicks()));
+
+  // Do not use TestSimpleTaskRunner::RunPendingTasks() here. As RunPendingTasks
+  // overrides ThreadTaskRunnerHandle when it runs tasks, tasks posted by timer
+  // tasks to TTRH go to |test_task_runner_|, though they should be posted to
+  // the original task runner.
+  for (TestPendingTask& task : test_task_runner_->TakePendingTasks())
+    std::move(task.task).Run();
 }
 
 }  // namespace base
