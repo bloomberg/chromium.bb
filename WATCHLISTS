@@ -100,9 +100,6 @@
                   '|chrome/browser/ui/web_applications/'\
                   '|chrome/common/mac/'
     },
-    'appcache': {
-      'filepath': 'appcache/',
-    },
     'apps': {
       'filepath': '^apps/',
     },
@@ -1706,7 +1703,6 @@
     'app_list': ['tfarina@chromium.org'],
     'app_shortcuts': ['mgiuca+watch@chromium.org',
                       'tapted+watch@chromium.org'],
-    'appcache': ['michaeln@chromium.org'],
     'apps': ['chromium-apps-reviews@chromium.org',
              'tfarina@chromium.org'],
     'arc': ['elijahtaylor+arcwatch@chromium.org',
@@ -1827,8 +1823,7 @@
                       'tzik@chromium.org'],
     'blink_frames': ['blink-reviews-frames@chromium.org'],
     'blink_geolocation': ['timvolodine@chromium.org'],
-    'blink_heap': ['ager@chromium.org',
-                   'haraken@chromium.org',
+    'blink_heap': ['haraken@chromium.org',
                    'kouhei+heap@chromium.org',
                    'oilpan-reviews@chromium.org'],
     'blink_html': ['blink-reviews-html@chromium.org'],
@@ -1895,7 +1890,6 @@
                              'horo+watch@chromium.org',
                              'jsbell+serviceworker@chromium.org',
                              'kinuko+serviceworker@chromium.org',
-                             'michaeln@chromium.org',
                              'nhiroki@chromium.org',
                              'serviceworker-reviews@chromium.org',
                              'shimazu+serviceworker@chromium.org',
@@ -2279,7 +2273,6 @@
     'service_worker': ['horo+watch@chromium.org',
                        'jsbell+serviceworker@chromium.org',
                        'kinuko+serviceworker@chromium.org',
-                       'michaeln@chromium.org',
                        'nhiroki@chromium.org',
                        'serviceworker-reviews@chromium.org',
                        'shimazu+serviceworker@chromium.org',

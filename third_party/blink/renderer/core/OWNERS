@@ -2,7 +2,6 @@
 # For example, core/rendering/OWNERS for rendering changes.
 
 # Reviewers (comments indicate areas of expertise):
-ager@chromium.org
 # alancutter reviews changes in core/animation, core/css and core/style.
 alancutter@chromium.org
 alexis.menard@intel.com
