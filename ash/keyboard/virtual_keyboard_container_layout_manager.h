@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_VIRTUAL_KEYBOARD_CONTAINER_LAYOUT_MANAGER_H_
-#define ASH_VIRTUAL_KEYBOARD_CONTAINER_LAYOUT_MANAGER_H_
+#ifndef ASH_KEYBOARD_VIRTUAL_KEYBOARD_CONTAINER_LAYOUT_MANAGER_H_
+#define ASH_KEYBOARD_VIRTUAL_KEYBOARD_CONTAINER_LAYOUT_MANAGER_H_
 
 #include "base/macros.h"
 #include "ui/aura/layout_manager.h"
@@ -35,4 +35,4 @@ class VirtualKeyboardContainerLayoutManager : public aura::LayoutManager {
 
 }  // namespace ash
 
-#endif  // ASH_VIRTUAL_KEYBOARD_CONTAINER_LAYOUT_MANAGER_H_
+#endif  // ASH_KEYBOARD_VIRTUAL_KEYBOARD_CONTAINER_LAYOUT_MANAGER_H_

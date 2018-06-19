@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_VIRTUAL_KEYBOARD_CONTROLLER_H_
-#define ASH_VIRTUAL_KEYBOARD_CONTROLLER_H_
+#ifndef ASH_KEYBOARD_VIRTUAL_KEYBOARD_CONTROLLER_H_
+#define ASH_KEYBOARD_VIRTUAL_KEYBOARD_CONTROLLER_H_
 
 #include <stdint.h>
 
@@ -88,4 +88,4 @@ class ASH_EXPORT VirtualKeyboardController
 
 }  // namespace ash
 
-#endif  // ASH_VIRTUAL_KEYBOARD_CONTROLLER_H_
+#endif  // ASH_KEYBOARD_VIRTUAL_KEYBOARD_CONTROLLER_H_
