@@ -2704,6 +2704,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWebPaymentsSingleAppUiSkipDescription,
      kOsAndroid | kOsDesktop,
      FEATURE_VALUE_TYPE(payments::features::kWebPaymentsSingleAppUiSkip)},
+    {"just-in-time-service-worker-payment-app",
+     flag_descriptions::kJustInTimeServiceWorkerPaymentAppName,
+     flag_descriptions::kJustInTimeServiceWorkerPaymentAppDescription,
+     kOsAndroid | kOsDesktop,
+     FEATURE_VALUE_TYPE(payments::features::kWebPaymentsJustInTimePaymentApp)},
 #if defined(OS_ANDROID)
     {"enable-android-pay-integration-v1",
      flag_descriptions::kEnableAndroidPayIntegrationV1Name,
