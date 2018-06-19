@@ -29,8 +29,8 @@ result size: 5
 result: First
 Received exception, name: TypeError, message: Failed to execute 'readAsBinaryString' on 'FileReaderSync': parameter 1 is not of type 'Blob'.
 Test reading a blob containing single text as data URL
-result size: 21
-result: data:;base64,Rmlyc3Q=
+result size: 45
+result: data:application/octet-stream;base64,Rmlyc3Q=
 Received exception, name: TypeError, message: Failed to execute 'readAsDataURL' on 'FileReaderSync': parameter 1 is not of type 'Blob'.
 Test reading a blob containing single text as data URL (optional content type provided)
 result size: 29

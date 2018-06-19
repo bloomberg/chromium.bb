@@ -423,7 +423,13 @@ String FileReaderLoader::ConvertToDataURL() {
   if (!bytes_loaded_)
     return builder.ToString();
 
-  builder.Append(data_type_);
+  if (data_type_.IsEmpty()) {
+    // Match Firefox in defaulting to application/octet-stream when the MIME
+    // type is unknown. See https://crbug.com/48368.
+    builder.Append("application/octet-stream");
+  } else {
+    builder.Append(data_type_);
+  }
   builder.Append(";base64,");
 
   Vector<char> out;
