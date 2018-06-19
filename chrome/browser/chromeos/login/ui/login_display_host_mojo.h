@@ -23,6 +23,7 @@ class LoginDisplayMojo;
 class OobeUIDialogDelegate;
 class UserBoardViewMojo;
 class UserSelectionScreen;
+class MojoVersionInfoDispatcher;
 
 // A LoginDisplayHost instance that sends requests to the views-based signin
 // screen.
@@ -139,6 +140,9 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   AccountId focused_pod_account_id_;
 
   KioskAppMenuUpdater kiosk_updater_;
+
+  // Updates UI when version info is changed.
+  std::unique_ptr<MojoVersionInfoDispatcher> version_info_updater_;
 
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 

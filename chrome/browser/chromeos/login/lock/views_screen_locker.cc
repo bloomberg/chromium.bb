@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/lock_screen_utils.h"
+#include "chrome/browser/chromeos/login/mojo_version_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
@@ -26,17 +27,13 @@
 #include "chrome/browser/chromeos/system/system_clock.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/generated_resources.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
-#include "components/version_info/version_info.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -61,7 +58,7 @@ ash::mojom::FingerprintUnlockState ConvertFromFingerprintState(
 
 ViewsScreenLocker::ViewsScreenLocker(ScreenLocker* screen_locker)
     : screen_locker_(screen_locker),
-      version_info_updater_(this),
+      version_info_updater_(std::make_unique<MojoVersionInfoDispatcher>()),
       weak_factory_(this) {
   LoginScreenClient::Get()->SetDelegate(this);
   user_board_view_mojo_ = std::make_unique<UserBoardViewMojo>();
@@ -103,18 +100,8 @@ void ViewsScreenLocker::Init() {
     }
   }
 
-  version_info::Channel channel = chrome::GetChannel();
-  bool should_show_version = (channel == version_info::Channel::STABLE ||
-                              channel == version_info::Channel::BETA)
-                                 ? false
-                                 : true;
-  if (should_show_version) {
-#if defined(OFFICIAL_BUILD)
-    version_info_updater_.StartUpdate(true);
-#else
-    version_info_updater_.StartUpdate(false);
-#endif
-  }
+  // Start to request version info.
+  version_info_updater_->StartUpdate();
 }
 
 void ViewsScreenLocker::OnLockScreenReady() {
@@ -298,26 +285,6 @@ void ViewsScreenLocker::HandleLockScreenAppFocusOut(bool reverse) {
       reverse);
 }
 
-void ViewsScreenLocker::OnOSVersionLabelTextUpdated(
-    const std::string& os_version_label_text) {
-  os_version_label_text_ = os_version_label_text;
-  OnDevChannelInfoUpdated();
-}
-
-void ViewsScreenLocker::OnEnterpriseInfoUpdated(const std::string& message_text,
-                                                const std::string& asset_id) {
-  if (asset_id.empty())
-    return;
-  enterprise_info_text_ = l10n_util::GetStringFUTF8(
-      IDS_OOBE_ASSET_ID_LABEL, base::UTF8ToUTF16(asset_id));
-  OnDevChannelInfoUpdated();
-}
-
-void ViewsScreenLocker::OnDeviceInfoUpdated(const std::string& bluetooth_name) {
-  bluetooth_name_ = bluetooth_name;
-  OnDevChannelInfoUpdated();
-}
-
 void ViewsScreenLocker::UpdatePinKeyboardState(const AccountId& account_id) {
   quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
       account_id, base::BindOnce(&ViewsScreenLocker::OnPinCanAuthenticate,
@@ -335,11 +302,6 @@ void ViewsScreenLocker::OnAllowedInputMethodsChanged() {
   } else {
     lock_screen_utils::EnforcePolicyInputMethods(std::string());
   }
-}
-
-void ViewsScreenLocker::OnDevChannelInfoUpdated() {
-  LoginScreenClient::Get()->login_screen()->SetDevChannelInfo(
-      os_version_label_text_, enterprise_info_text_, bluetooth_name_);
 }
 
 void ViewsScreenLocker::OnPinCanAuthenticate(const AccountId& account_id,

@@ -9,6 +9,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/mojo_version_info_dispatcher.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -36,6 +37,7 @@ LoginDisplayHostMojo::LoginDisplayHostMojo()
       user_board_view_mojo_(std::make_unique<UserBoardViewMojo>()),
       user_selection_screen_(
           std::make_unique<ChromeUserSelectionScreen>(kLoginDisplay)),
+      version_info_updater_(std::make_unique<MojoVersionInfoDispatcher>()),
       weak_factory_(this) {
   user_selection_screen_->SetView(user_board_view_mojo_.get());
 
@@ -183,6 +185,9 @@ void LoginDisplayHostMojo::OnStartSignInScreen(
   user_selection_screen_->InitEasyUnlock();
 
   kiosk_updater_.SendKioskApps();
+
+  // Start to request version info.
+  version_info_updater_->StartUpdate();
 }
 
 void LoginDisplayHostMojo::OnPreferencesChanged() {
