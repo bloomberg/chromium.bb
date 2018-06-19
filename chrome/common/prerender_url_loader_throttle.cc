@@ -131,6 +131,7 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
 #endif  // OS_ANDROID
 
   if (mode_ == PREFETCH_ONLY) {
+    request->headers.SetHeader(kPurposeHeaderName, kPurposeHeaderValue);
     detached_timer_.Start(FROM_HERE,
                           base::TimeDelta::FromMilliseconds(
                               content::kDefaultDetachableCancelDelayMs),
