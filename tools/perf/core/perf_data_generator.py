@@ -1020,7 +1020,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         {
           'isolate': 'performance_webview_test_suite',
           'extra_args': [
-            '--test-shard-map-filename=mobile_7_shard_map.json',
+            '--test-shard-map-filename=pixel2_webview_7_shard_map.json',
           ],
           'num_shards': 7
         }
@@ -1042,7 +1042,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=mobile_7_shard_map.json',
+            '--test-shard-map-filename=pixel2_7_shard_map.json',
           ],
           'num_shards': 7
         }
@@ -1071,7 +1071,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=benchmark_desktop_bot_map.json',
+              '--test-shard-map-filename=mac_1012_low_end_26_shard_map.json',
           ],
         },
         {
@@ -1101,7 +1101,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
-              '--test-shard-map-filename=benchmark_desktop_bot_map.json',
+              '--test-shard-map-filename=linux_perf_shard_map.json',
           ],
         },
         {
@@ -1139,7 +1139,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=benchmark_desktop_bot_map.json',
+            '--test-shard-map-filename=mac_1013_high_end_26_shard_map.json',
           ],
           'num_shards': 26
         },
