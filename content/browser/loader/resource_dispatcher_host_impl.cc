@@ -111,6 +111,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom.h"
 #include "services/network/resource_scheduler.h"
+#include "services/network/throttling/scoped_throttling_token.h"
 #include "services/network/url_loader_factory.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -965,6 +966,11 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
 
   new_request->SetExtraRequestHeaders(headers);
 
+  std::unique_ptr<network::ScopedThrottlingToken> throttling_token =
+      network::ScopedThrottlingToken::MaybeCreate(
+          new_request->net_log().source().id,
+          request_data.throttling_profile_id);
+
   blob_context = GetBlobStorageContext(requester_info->blob_storage_context());
   // Resolve elements from request_body and prepare upload data.
   if (request_data.request_body.get()) {
@@ -1103,7 +1109,8 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
     const bool is_initiated_by_fetch_api =
         request_data.fetch_request_context_type == REQUEST_CONTEXT_TYPE_FETCH;
     BeginRequestInternal(std::move(new_request), std::move(handler),
-                         is_initiated_by_fetch_api);
+                         is_initiated_by_fetch_api,
+                         std::move(throttling_token));
   }
 }
 
@@ -1589,6 +1596,10 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
   }
 
+  std::unique_ptr<network::ScopedThrottlingToken> throttling_token =
+      network::ScopedThrottlingToken::MaybeCreate(
+          new_request->net_log().source().id, info.devtools_frame_token);
+
   Referrer::SetReferrerForRequest(new_request.get(),
                                   info.common_params.referrer);
 
@@ -1721,7 +1732,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   RecordFetchRequestMode(new_request->url(), new_request->method(),
                          network::mojom::FetchRequestMode::kNavigate);
   BeginRequestInternal(std::move(new_request), std::move(handler),
-                       false /* is_initiated_by_fetch_api */);
+                       false /* is_initiated_by_fetch_api */,
+                       std::move(throttling_token));
 }
 
 void ResourceDispatcherHostImpl::SetLoaderDelegate(
@@ -1779,7 +1791,8 @@ int ResourceDispatcherHostImpl::CalculateApproximateMemoryCost(
 void ResourceDispatcherHostImpl::BeginRequestInternal(
     std::unique_ptr<net::URLRequest> request,
     std::unique_ptr<ResourceHandler> handler,
-    bool is_initiated_by_fetch_api) {
+    bool is_initiated_by_fetch_api,
+    std::unique_ptr<network::ScopedThrottlingToken> throttling_token) {
   DCHECK(!request->is_pending());
   ResourceRequestInfoImpl* info =
       ResourceRequestInfoImpl::ForRequest(request.get());
@@ -1855,8 +1868,9 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
   }
 
   ResourceContext* resource_context = info->GetContext();
-  std::unique_ptr<ResourceLoader> loader(new ResourceLoader(
-      std::move(request), std::move(handler), this, resource_context));
+  std::unique_ptr<ResourceLoader> loader(
+      new ResourceLoader(std::move(request), std::move(handler), this,
+                         resource_context, std::move(throttling_token)));
 
   GlobalFrameRoutingId id(info->GetChildID(), info->GetRenderFrameID());
   BlockedLoadersMap::const_iterator iter = blocked_loaders_map_.find(id);
@@ -1926,7 +1940,8 @@ void ResourceDispatcherHostImpl::BeginURLRequest(
         true /* force_download */, true /* is_new_request */);
   }
   BeginRequestInternal(std::move(request), std::move(handler),
-                       false /* is_initiated_by_fetch_api */);
+                       false /* is_initiated_by_fetch_api */,
+                       nullptr /* throttling_token */);
 }
 
 int ResourceDispatcherHostImpl::MakeRequestID() {

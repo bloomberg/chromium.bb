@@ -11,6 +11,7 @@
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
@@ -203,6 +204,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // Whether or not this request (including redirects) should be upgraded to
   // HTTPS due to an Upgrade-Insecure-Requests requirement.
   bool upgrade_if_insecure = false;
+
+  // The profile ID of network conditions to throttle the network request.
+  base::Optional<base::UnguessableToken> throttling_profile_id;
 };
 
 }  // namespace network

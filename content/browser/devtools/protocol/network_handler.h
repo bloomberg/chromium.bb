@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
@@ -20,10 +21,6 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-
-namespace base {
-class UnguessableToken;
-};
 
 namespace net {
 class HttpRequestHeaders;
@@ -59,7 +56,9 @@ class BackgroundSyncRestorer;
 class NetworkHandler : public DevToolsDomainHandler,
                        public Network::Backend {
  public:
-  NetworkHandler(const std::string& host_id, DevToolsIOContext* io_context);
+  NetworkHandler(const std::string& host_id,
+                 const base::UnguessableToken& devtools_token,
+                 DevToolsIOContext* io_context);
   ~NetworkHandler() override;
 
   static std::vector<NetworkHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
@@ -200,7 +199,10 @@ class NetworkHandler : public DevToolsDomainHandler,
       mojo::ScopedDataPipeConsumerHandle pipe,
       const std::string& mime_type);
 
+  // TODO(dgozman): Remove this.
   const std::string host_id_;
+
+  const base::UnguessableToken devtools_token_;
   DevToolsIOContext* const io_context_;
 
   std::unique_ptr<Network::Frontend> frontend_;

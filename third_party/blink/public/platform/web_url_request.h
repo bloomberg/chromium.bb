@@ -34,6 +34,7 @@
 #include <memory>
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
@@ -357,6 +358,10 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT bool UpgradeIfInsecure() const;
 
   BLINK_PLATFORM_EXPORT bool SupportsAsyncRevalidation() const;
+
+  // Returns the DevTools ID to throttle the network request.
+  BLINK_PLATFORM_EXPORT const base::Optional<base::UnguessableToken>&
+  GetDevToolsToken() const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();

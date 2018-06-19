@@ -40,6 +40,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
+#include "services/network/throttling/throttling_controller.h"
 
 namespace content {
 
@@ -720,6 +721,9 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   request.is_main_frame = original_info->IsMainFrame();
   request.enable_load_timing = original_info->is_load_timing_enabled();
   request.report_raw_headers = original_info->ShouldReportRawHeaders();
+  request.throttling_profile_id =
+      network::ThrottlingController::GetProfileIDForNetLogSource(
+          original_request->net_log().source().id);
 
   DCHECK(net::HttpUtil::IsValidHeaderValue(
       version_->navigation_preload_state().header));

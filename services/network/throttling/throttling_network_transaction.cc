@@ -18,12 +18,6 @@
 
 namespace network {
 
-// Keep in sync with X_DevTools_Emulate_Network_Conditions_Client_Id defined in
-// HTTPNames.json5.
-const char
-    ThrottlingNetworkTransaction::kDevToolsEmulateNetworkConditionsClientId[] =
-        "X-DevTools-Emulate-Network-Conditions-Client-Id";
-
 ThrottlingNetworkTransaction::ThrottlingNetworkTransaction(
     std::unique_ptr<net::HttpTransaction> network_transaction)
     : throttled_byte_count_(0),
@@ -118,15 +112,11 @@ int ThrottlingNetworkTransaction::Start(const net::HttpRequestInfo* request,
   DCHECK(request);
   request_ = request;
 
-  std::string client_id;
-  bool has_devtools_client_id = request_->extra_headers.HasHeader(
-      kDevToolsEmulateNetworkConditionsClientId);
-  if (has_devtools_client_id) {
+  ThrottlingNetworkInterceptor* interceptor =
+      ThrottlingController::GetInterceptor(net_log.source().id);
+
+  if (interceptor) {
     custom_request_.reset(new net::HttpRequestInfo(*request_));
-    custom_request_->extra_headers.GetHeader(
-        kDevToolsEmulateNetworkConditionsClientId, &client_id);
-    custom_request_->extra_headers.RemoveHeader(
-        kDevToolsEmulateNetworkConditionsClientId);
 
     if (request_->upload_data_stream) {
       custom_upload_data_stream_.reset(
@@ -135,11 +125,7 @@ int ThrottlingNetworkTransaction::Start(const net::HttpRequestInfo* request,
     }
 
     request_ = custom_request_.get();
-  }
 
-  ThrottlingNetworkInterceptor* interceptor =
-      ThrottlingController::GetInterceptor(client_id);
-  if (interceptor) {
     interceptor_ = interceptor->GetWeakPtr();
     if (custom_upload_data_stream_)
       custom_upload_data_stream_->SetInterceptor(interceptor);

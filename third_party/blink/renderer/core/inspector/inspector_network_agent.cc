@@ -869,6 +869,8 @@ void InspectorNetworkAgent::WillSendRequest(
 
   request.SetReportRawHeaders(true);
 
+  request.SetDevToolsToken(devtools_token_);
+
   if (state_->booleanProperty(NetworkAgentState::kCacheDisabled, false)) {
     if (LoadsFromCacheOnly(request) &&
         request.GetRequestContext() != WebURLRequest::kRequestContextInternal) {
@@ -886,12 +888,6 @@ void InspectorNetworkAgent::WillSendRequest(
 
   WillSendRequestInternal(execution_context, identifier, loader, request,
                           redirect_response, initiator_info, type);
-
-  if (!conditions_token_.IsEmpty()) {
-    request.AddHTTPHeaderField(
-        HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id,
-        AtomicString(conditions_token_));
-  }
 }
 
 void InspectorNetworkAgent::MarkResourceAsCached(DocumentLoader* loader,
@@ -1676,6 +1672,9 @@ InspectorNetworkAgent::InspectorNetworkAgent(
       resources_data_(
           NetworkResourcesData::Create(g_maximum_total_buffer_size,
                                        g_maximum_resource_buffer_size)),
+      devtools_token_(worker_global_scope_
+                          ? worker_global_scope_->GetParentDevToolsToken()
+                          : inspected_frames->Root()->GetDevToolsFrameToken()),
       pending_request_(nullptr),
       remove_finished_replay_xhr_timer_(
           worker_global_scope_
@@ -1687,9 +1686,6 @@ InspectorNetworkAgent::InspectorNetworkAgent(
       max_post_data_size_(0) {
   DCHECK((IsMainThread() && !worker_global_scope_) ||
          (!IsMainThread() && worker_global_scope_));
-  conditions_token_ = IdentifiersFactory::IdFromToken(
-      worker_global_scope_ ? worker_global_scope_->GetParentDevToolsToken()
-                           : inspected_frames->Root()->GetDevToolsFrameToken());
 }
 
 void InspectorNetworkAgent::ShouldForceCORSPreflight(bool* result) {

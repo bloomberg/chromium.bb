@@ -573,7 +573,7 @@ void NetworkContext::ClearNetworkErrorLogging(
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 void NetworkContext::SetNetworkConditions(
-    const std::string& profile_id,
+    const base::UnguessableToken& throttling_profile_id,
     mojom::NetworkConditionsPtr conditions) {
   std::unique_ptr<NetworkConditions> network_conditions;
   if (conditions) {
@@ -581,7 +581,7 @@ void NetworkContext::SetNetworkConditions(
         conditions->offline, conditions->latency.InMillisecondsF(),
         conditions->download_throughput, conditions->upload_throughput));
   }
-  ThrottlingController::SetConditions(profile_id,
+  ThrottlingController::SetConditions(throttling_profile_id,
                                       std::move(network_conditions));
 }
 

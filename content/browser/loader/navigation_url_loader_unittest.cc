@@ -96,6 +96,7 @@ class NavigationURLLoaderTest : public testing::Test {
         new NavigationRequestInfo(common_params, std::move(begin_params), url,
                                   true, false, false, -1, false, false, false,
                                   false, nullptr,
+                                  base::UnguessableToken::Create(),
                                   base::UnguessableToken::Create()));
     return NavigationURLLoader::Create(
         browser_context_->GetResourceContext(),

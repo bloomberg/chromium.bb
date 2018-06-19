@@ -429,6 +429,11 @@ bool WebURLRequest::SupportsAsyncRevalidation() const {
   return resource_request_->AllowsStaleResponse();
 }
 
+const base::Optional<base::UnguessableToken>& WebURLRequest::GetDevToolsToken()
+    const {
+  return resource_request_->GetDevToolsToken();
+}
+
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {
   DCHECK(resource_request_);
   return *resource_request_;

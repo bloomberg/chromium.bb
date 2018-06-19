@@ -33,6 +33,10 @@
 #include "services/network/socket_factory.h"
 #include "services/network/url_request_context_owner.h"
 
+namespace base {
+class UnguessableToken;
+}  // namespace base
+
 namespace net {
 class CertVerifier;
 class ReportSender;
@@ -153,7 +157,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ClearNetworkErrorLogging(
       mojom::ClearDataFilterPtr filter,
       ClearNetworkErrorLoggingCallback callback) override;
-  void SetNetworkConditions(const std::string& profile_id,
+  void SetNetworkConditions(const base::UnguessableToken& throttling_profile_id,
                             mojom::NetworkConditionsPtr conditions) override;
   void SetAcceptLanguage(const std::string& new_accept_language) override;
   void SetEnableReferrers(bool enable_referrers) override;

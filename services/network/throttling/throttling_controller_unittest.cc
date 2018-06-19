@@ -17,8 +17,10 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
 #include "services/network/throttling/network_conditions.h"
+#include "services/network/throttling/scoped_throttling_token.h"
 #include "services/network/throttling/throttling_network_interceptor.h"
 #include "services/network/throttling/throttling_network_transaction.h"
 #include "services/network/throttling/throttling_upload_data_stream.h"
@@ -33,8 +35,6 @@ using net::MockNetworkLayer;
 using net::MockTransaction;
 using net::TEST_MODE_SYNC_NET_START;
 
-const char kClientId[] = "42";
-const char kAnotherClientId[] = "24";
 const char kUploadData[] = "upload_data";
 int64_t kUploadIdentifier = 17;
 
@@ -53,18 +53,21 @@ class TestCallback {
   int value_;
 };
 
-class ThrottlingControllerHelper {
+class ThrottlingControllerTestHelper {
  public:
-  ThrottlingControllerHelper()
+  ThrottlingControllerTestHelper()
       : task_runner_(base::MakeRefCounted<base::TestMockTimeTaskRunner>()),
         completion_callback_(
             base::Bind(&TestCallback::Run, base::Unretained(&callback_))),
         mock_transaction_(kSimpleGET_Transaction),
-        buffer_(new net::IOBuffer(64)) {
+        buffer_(new net::IOBuffer(64)),
+        net_log_(std::make_unique<net::NetLog>()),
+        net_log_with_source_(
+            net::NetLogWithSource::Make(net_log_.get(),
+                                        net::NetLogSourceType::URL_REQUEST)),
+        profile_id_(base::UnguessableToken::Create()) {
     mock_transaction_.test_mode = TEST_MODE_SYNC_NET_START;
     mock_transaction_.url = "http://dot.com";
-    mock_transaction_.request_headers =
-        "X-DevTools-Emulate-Network-Conditions-Client-Id: 42\r\n";
     AddMockTransaction(&mock_transaction_);
 
     std::unique_ptr<net::HttpTransaction> network_transaction;
@@ -78,10 +81,10 @@ class ThrottlingControllerHelper {
   void SetNetworkState(bool offline, double download, double upload) {
     std::unique_ptr<NetworkConditions> conditions(
         new NetworkConditions(offline, 0, download, upload));
-    ThrottlingController::SetConditions(kClientId, std::move(conditions));
+    ThrottlingController::SetConditions(profile_id_, std::move(conditions));
   }
 
-  void SetNetworkState(const std::string& id, bool offline) {
+  void SetNetworkState(const base::UnguessableToken& id, bool offline) {
     std::unique_ptr<NetworkConditions> conditions(
         new NetworkConditions(offline));
     ThrottlingController::SetConditions(id, std::move(conditions));
@@ -89,6 +92,8 @@ class ThrottlingControllerHelper {
 
   int Start(bool with_upload) {
     request_.reset(new MockHttpRequest(mock_transaction_));
+    throttling_token_ = ScopedThrottlingToken::MaybeCreate(
+        net_log_with_source_.source().id, profile_id_);
 
     if (with_upload) {
       upload_data_stream_.reset(
@@ -99,7 +104,7 @@ class ThrottlingControllerHelper {
     }
 
     int rv = transaction_->Start(request_.get(), completion_callback_,
-                                 net::NetLogWithSource());
+                                 net_log_with_source_);
     EXPECT_EQ(with_upload, !!transaction_->custom_upload_data_stream_);
     return rv;
   }
@@ -112,7 +117,7 @@ class ThrottlingControllerHelper {
     if (transaction_->interceptor_)
       return transaction_->interceptor_->IsOffline();
     ThrottlingNetworkInterceptor* interceptor =
-        ThrottlingController::GetInterceptor(kClientId);
+        ThrottlingController::GetInterceptor(net_log_with_source_.source().id);
     EXPECT_TRUE(!!interceptor);
     return interceptor->IsOffline();
   }
@@ -130,7 +135,9 @@ class ThrottlingControllerHelper {
                                                           completion_callback_);
   }
 
-  ~ThrottlingControllerHelper() { RemoveMockTransaction(&mock_transaction_); }
+  ~ThrottlingControllerTestHelper() {
+    RemoveMockTransaction(&mock_transaction_);
+  }
 
   TestCallback* callback() { return &callback_; }
   ThrottlingNetworkTransaction* transaction() { return transaction_.get(); }
@@ -150,10 +157,14 @@ class ThrottlingControllerHelper {
   scoped_refptr<net::IOBuffer> buffer_;
   std::unique_ptr<net::ChunkedUploadDataStream> upload_data_stream_;
   std::unique_ptr<MockHttpRequest> request_;
+  std::unique_ptr<net::NetLog> net_log_;
+  std::unique_ptr<network::ScopedThrottlingToken> throttling_token_;
+  const net::NetLogWithSource net_log_with_source_;
+  const base::UnguessableToken profile_id_;
 };
 
 TEST(ThrottlingControllerTest, SingleDisableEnable) {
-  ThrottlingControllerHelper helper;
+  ThrottlingControllerTestHelper helper;
   helper.SetNetworkState(false, 0, 0);
   helper.Start(false);
 
@@ -167,23 +178,25 @@ TEST(ThrottlingControllerTest, SingleDisableEnable) {
 }
 
 TEST(ThrottlingControllerTest, InterceptorIsolation) {
-  ThrottlingControllerHelper helper;
+  const base::UnguessableToken another_profile_id =
+      base::UnguessableToken::Create();
+  ThrottlingControllerTestHelper helper;
   helper.SetNetworkState(false, 0, 0);
   helper.Start(false);
 
   EXPECT_FALSE(helper.ShouldFail());
-  helper.SetNetworkState(kAnotherClientId, true);
+  helper.SetNetworkState(another_profile_id, true);
   EXPECT_FALSE(helper.ShouldFail());
   helper.SetNetworkState(true, 0, 0);
   EXPECT_TRUE(helper.ShouldFail());
 
-  helper.SetNetworkState(kAnotherClientId, false);
+  helper.SetNetworkState(another_profile_id, false);
   helper.SetNetworkState(false, 0, 0);
   base::RunLoop().RunUntilIdle();
 }
 
 TEST(ThrottlingControllerTest, FailOnStart) {
-  ThrottlingControllerHelper helper;
+  ThrottlingControllerTestHelper helper;
   helper.SetNetworkState(true, 0, 0);
 
   int rv = helper.Start(false);
@@ -194,7 +207,7 @@ TEST(ThrottlingControllerTest, FailOnStart) {
 }
 
 TEST(ThrottlingControllerTest, FailRunningTransaction) {
-  ThrottlingControllerHelper helper;
+  ThrottlingControllerTestHelper helper;
   helper.SetNetworkState(false, 0, 0);
   TestCallback* callback = helper.callback();
 
@@ -221,7 +234,7 @@ TEST(ThrottlingControllerTest, FailRunningTransaction) {
 }
 
 TEST(ThrottlingControllerTest, ReadAfterFail) {
-  ThrottlingControllerHelper helper;
+  ThrottlingControllerTestHelper helper;
   helper.SetNetworkState(false, 0, 0);
 
   int rv = helper.Start(false);
@@ -242,7 +255,7 @@ TEST(ThrottlingControllerTest, ReadAfterFail) {
 }
 
 TEST(ThrottlingControllerTest, CancelTransaction) {
-  ThrottlingControllerHelper helper;
+  ThrottlingControllerTestHelper helper;
   helper.SetNetworkState(false, 0, 0);
 
   int rv = helper.Start(false);
@@ -257,7 +270,7 @@ TEST(ThrottlingControllerTest, CancelTransaction) {
 }
 
 TEST(ThrottlingControllerTest, CancelFailedTransaction) {
-  ThrottlingControllerHelper helper;
+  ThrottlingControllerTestHelper helper;
   helper.SetNetworkState(true, 0, 0);
 
   int rv = helper.Start(false);
@@ -272,7 +285,7 @@ TEST(ThrottlingControllerTest, CancelFailedTransaction) {
 }
 
 TEST(ThrottlingControllerTest, UploadDoesNotFail) {
-  ThrottlingControllerHelper helper;
+  ThrottlingControllerTestHelper helper;
   helper.SetNetworkState(true, 0, 0);
   int rv = helper.Start(true);
   EXPECT_EQ(rv, net::ERR_INTERNET_DISCONNECTED);
@@ -281,7 +294,7 @@ TEST(ThrottlingControllerTest, UploadDoesNotFail) {
 }
 
 TEST(ThrottlingControllerTest, DownloadOnly) {
-  ThrottlingControllerHelper helper;
+  ThrottlingControllerTestHelper helper;
   TestCallback* callback = helper.callback();
 
   helper.SetNetworkState(false, 10000000, 0);
@@ -300,7 +313,7 @@ TEST(ThrottlingControllerTest, DownloadOnly) {
 }
 
 TEST(ThrottlingControllerTest, UploadOnly) {
-  ThrottlingControllerHelper helper;
+  ThrottlingControllerTestHelper helper;
   TestCallback* callback = helper.callback();
 
   helper.SetNetworkState(false, 0, 1000000);

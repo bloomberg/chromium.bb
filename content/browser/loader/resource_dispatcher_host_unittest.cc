@@ -819,6 +819,7 @@ class ResourceDispatcherHostTest : public testing::Test {
         new NavigationRequestInfo(common_params, std::move(begin_params), url,
                                   true, false, false, -1, false, false, false,
                                   false, nullptr,
+                                  base::UnguessableToken::Create(),
                                   base::UnguessableToken::Create()));
     std::unique_ptr<NavigationURLLoader> test_loader =
         NavigationURLLoader::Create(

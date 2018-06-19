@@ -126,8 +126,8 @@ bool ServiceWorkerDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     session->AttachToAgent(agent_ptr_);
   }
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
-  session->AddHandler(
-      base::WrapUnique(new protocol::NetworkHandler(GetId(), GetIOContext())));
+  session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(
+      GetId(), devtools_worker_token_, GetIOContext())));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
   return true;
 }

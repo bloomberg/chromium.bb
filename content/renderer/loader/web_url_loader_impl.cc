@@ -709,6 +709,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->report_raw_headers = request.ReportRawHeaders();
   resource_request->previews_state =
       static_cast<int>(request.GetPreviewsState());
+  resource_request->throttling_profile_id = request.GetDevToolsToken();
 
   // The network request has already been made by the browser. The renderer
   // should bind the URLLoaderClientEndpoints stored in |response_override| to

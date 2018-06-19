@@ -214,17 +214,4 @@ TEST_F(RawResourceTest, RemoveClientDuringCallback) {
   EXPECT_FALSE(raw->IsAlive());
 }
 
-TEST_F(RawResourceTest,
-       CanReuseDevToolsEmulateNetworkConditionsClientIdHeader) {
-  scoped_refptr<const SecurityOrigin> source_origin =
-      SecurityOrigin::CreateUniqueOpaque();
-  ResourceRequest request("data:text/html,");
-  request.SetHTTPHeaderField(
-      HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id, "Foo");
-  Resource* raw = RawResource::CreateForTest(request, Resource::kRaw);
-  raw->SetSourceOrigin(source_origin);
-  EXPECT_TRUE(raw->CanReuse(FetchParameters(ResourceRequest("data:text/html,")),
-                            source_origin));
-}
-
 }  // namespace blink

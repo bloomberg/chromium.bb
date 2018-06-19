@@ -43,6 +43,7 @@
 #include "net/url_request/url_request_status.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/throttling/scoped_throttling_token.h"
 #include "url/url_constants.h"
 
 using base::TimeDelta;
@@ -221,10 +222,12 @@ class ResourceLoader::ScopedDeferral {
   DISALLOW_COPY_AND_ASSIGN(ScopedDeferral);
 };
 
-ResourceLoader::ResourceLoader(std::unique_ptr<net::URLRequest> request,
-                               std::unique_ptr<ResourceHandler> handler,
-                               ResourceLoaderDelegate* delegate,
-                               ResourceContext* resource_context)
+ResourceLoader::ResourceLoader(
+    std::unique_ptr<net::URLRequest> request,
+    std::unique_ptr<ResourceHandler> handler,
+    ResourceLoaderDelegate* delegate,
+    ResourceContext* resource_context,
+    std::unique_ptr<network::ScopedThrottlingToken> throttling_token)
     : deferred_stage_(DEFERRED_NONE),
       request_(std::move(request)),
       handler_(std::move(handler)),
@@ -233,6 +236,7 @@ ResourceLoader::ResourceLoader(std::unique_ptr<net::URLRequest> request,
       started_request_(false),
       times_cancelled_after_request_start_(0),
       resource_context_(resource_context),
+      throttling_token_(std::move(throttling_token)),
       weak_ptr_factory_(this) {
   request_->set_delegate(this);
   handler_->SetDelegate(this);

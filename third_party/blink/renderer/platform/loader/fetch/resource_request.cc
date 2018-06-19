@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "base/unguessable_token.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
@@ -127,6 +128,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   is_ad_resource_ = data->is_ad_resource_;
   SetInitiatorCSP(data->navigation_csp_);
   upgrade_if_insecure_ = data->upgrade_if_insecure_;
+  devtools_token_ = data->devtools_token_;
 }
 
 ResourceRequest::ResourceRequest(const ResourceRequest&) = default;
@@ -224,6 +226,7 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->navigation_csp_ = initiator_csp_;
 
   data->upgrade_if_insecure_ = upgrade_if_insecure_;
+  data->devtools_token_ = devtools_token_;
   return data;
 }
 
