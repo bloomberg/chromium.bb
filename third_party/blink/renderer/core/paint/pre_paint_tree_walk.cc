@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -144,16 +145,29 @@ bool PrePaintTreeWalk::NeedsEffectiveWhitelistedTouchActionUpdate(
 }
 
 namespace {
-bool HasBlockingTouchEventHandler(const LayoutObject& object) {
-  auto* node = object.GetNode();
-  if (!node || !node->HasEventListeners())
+bool HasBlockingTouchEventHandler(const LocalFrame& frame,
+                                  EventTarget& target) {
+  if (!target.HasEventListeners())
     return false;
-  const auto& registry = object.GetFrame()->GetEventHandlerRegistry();
+  const auto& registry = frame.GetEventHandlerRegistry();
   const auto* blocking = registry.EventHandlerTargets(
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
   const auto* blocking_low_latency = registry.EventHandlerTargets(
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking);
-  return blocking->Contains(node) || blocking_low_latency->Contains(node);
+  return blocking->Contains(&target) || blocking_low_latency->Contains(&target);
+}
+
+bool HasBlockingTouchEventHandler(const LayoutObject& object) {
+  if (object.IsLayoutView()) {
+    auto* frame = object.GetFrame();
+    if (HasBlockingTouchEventHandler(*frame, *frame->DomWindow()))
+      return true;
+  }
+
+  auto* node = object.GetNode();
+  if (!node)
+    return false;
+  return HasBlockingTouchEventHandler(*object.GetFrame(), *node);
 }
 }  // namespace
 

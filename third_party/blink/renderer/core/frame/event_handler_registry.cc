@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 
@@ -293,6 +294,12 @@ void EventHandlerRegistry::NotifyHasHandlersChanged(
       if (auto* node = target->ToNode()) {
         if (auto* layout_object = node->GetLayoutObject())
           layout_object->MarkEffectiveWhitelistedTouchActionChanged();
+      } else if (auto* dom_window = target->ToLocalDOMWindow()) {
+        // This event handler is on a window. Ensure the layout view is
+        // invalidated because the layout view tracks the window's blocking
+        // touch event rects.
+        if (auto* layout_view = dom_window->GetFrame()->ContentLayoutObject())
+          layout_view->MarkEffectiveWhitelistedTouchActionChanged();
       }
     }
   }

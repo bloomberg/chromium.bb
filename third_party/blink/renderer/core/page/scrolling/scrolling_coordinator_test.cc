@@ -955,33 +955,34 @@ TEST_P(ScrollingCoordinatorTest, touchActionOnScrollingElement) {
 }
 
 TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
-  // TODO(pdr): Support window event handlers with PaintTouchActionRects.
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    return;
-
   LoadHTML(
       R"(<iframe style="width: 275px; height: 250px;"></iframe>)");
   WebLocalFrameImpl* child_frame =
       ToWebLocalFrameImpl(GetWebView()->MainFrameImpl()->FirstChild());
-  FrameTestHelpers::LoadHTMLString(child_frame,
-                                   R"(<body>
-                                   <p style="margin: 1000px"> Hello </p>
-        <script>
-          window.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-          }, {passive: false});
-        </script>
-      </body>)",
+  FrameTestHelpers::LoadHTMLString(child_frame, R"HTML(
+      <p style="margin: 1000px"> Hello </p>
+      <script>
+        window.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+        }, {passive: false});
+      </script>
+    )HTML",
                                    URLTestHelpers::ToKURL("about:blank"));
   ForceFullCompositingUpdate();
 
   PaintLayer* paint_layer_child_frame =
       child_frame->GetFrame()->GetDocument()->GetLayoutView()->Layer();
+  auto* child_mapping = paint_layer_child_frame->GetCompositedLayerMapping();
+  // With PaintTouchActionRects, touch action regions are stored on the layer
+  // that draws the background whereas without PaintTouchActionRects the main
+  // graphics layer is used.
+  auto* child_graphics_layer =
+      RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
+          ? child_mapping->ScrollingContentsLayer()
+          : child_mapping->MainGraphicsLayer();
+
   cc::Region region_child_frame =
-      paint_layer_child_frame
-          ->EnclosingLayerForPaintInvalidationCrossingFrameBoundaries()
-          ->GraphicsLayerBacking(&paint_layer_child_frame->GetLayoutObject())
-          ->CcLayer()
+      child_graphics_layer->CcLayer()
           ->touch_action_region()
           .GetRegionForTouchAction(TouchAction::kTouchActionNone);
   PaintLayer* paint_layer_main_frame = GetWebView()
@@ -1001,8 +1002,102 @@ TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
   EXPECT_FALSE(region_child_frame.bounds().IsEmpty());
   // We only check for the content size for verification as the offset is 0x0
   // due to child frame having its own composited layer.
-  EXPECT_EQ(child_frame->GetFrameView()->ContentsSize(),
-            IntRect(region_child_frame.bounds()).Size());
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
+    // Because PaintTouchActionRects is painting the touch action rects on the
+    // scrolling contents layer, the size of the rect should be equal to the
+    // entire scrolling contents area.
+    EXPECT_EQ(child_graphics_layer->Size(),
+              IntSize(region_child_frame.bounds().size()));
+  } else {
+    EXPECT_EQ(child_frame->GetFrameView()->ContentsSize(),
+              IntRect(region_child_frame.bounds()).Size());
+  }
+}
+
+TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandler) {
+  LoadHTML(R"HTML(
+    <style>
+      html { width: 200px; height: 200px; }
+      body { width: 100px; height: 100px; }
+    </style>
+    <script>
+      window.addEventListener('touchstart', function(event) {
+        event.preventDefault();
+      }, {passive: false} );
+    </script>
+  )HTML");
+  ForceFullCompositingUpdate();
+
+  auto* layout_view = GetFrame()->View()->GetLayoutView();
+  auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
+  // With PaintTouchActionRects, touch action regions are stored on the layer
+  // that draws the background whereas without PaintTouchActionRects the main
+  // graphics layer is used.
+  auto* graphics_layer = RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
+                             ? mapping->ScrollingContentsLayer()
+                             : mapping->MainGraphicsLayer();
+
+  // The touch action region should include the entire frame, even though the
+  // document is smaller than the frame.
+  cc::Region region =
+      graphics_layer->CcLayer()->touch_action_region().GetRegionForTouchAction(
+          TouchAction::kTouchActionNone);
+  EXPECT_EQ(region.bounds(), gfx::Rect(0, 0, 320, 240));
+}
+
+namespace {
+class ScrollingCoordinatorMockEventListener final : public EventListener {
+ public:
+  ScrollingCoordinatorMockEventListener()
+      : EventListener(kCPPEventListenerType) {}
+
+  bool operator==(const EventListener& other) const final {
+    return this == &other;
+  }
+
+  void handleEvent(ExecutionContext*, Event*) final {}
+};
+}  // namespace
+
+TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandlerInvalidation) {
+  LoadHTML("");
+  ForceFullCompositingUpdate();
+
+  auto* layout_view = GetFrame()->View()->GetLayoutView();
+  auto* mapping = layout_view->Layer()->GetCompositedLayerMapping();
+  // With PaintTouchActionRects, touch action regions are stored on the layer
+  // that draws the background whereas without PaintTouchActionRects the main
+  // graphics layer is used. Both approaches can implement correct behavior for
+  // window event handlers.
+  auto* graphics_layer = RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()
+                             ? mapping->ScrollingContentsLayer()
+                             : mapping->MainGraphicsLayer();
+  auto* cc_layer = graphics_layer->CcLayer();
+
+  // Initially there are no touch action regions.
+  auto region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_TRUE(region.IsEmpty());
+
+  // Adding a blocking window event handler should create a touch action region.
+  auto* listener = new ScrollingCoordinatorMockEventListener();
+  AddEventListenerOptions options;
+  options.setPassive(false);
+  AddEventListenerOptionsResolved resolved_options(options);
+  GetFrame()->DomWindow()->addEventListener(EventTypeNames::touchstart,
+                                            listener, resolved_options);
+  ForceFullCompositingUpdate();
+  region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_FALSE(region.IsEmpty());
+
+  // Removing the window event handler also removes the blocking touch action
+  // region.
+  GetFrame()->DomWindow()->RemoveAllEventListeners();
+  ForceFullCompositingUpdate();
+  region = cc_layer->touch_action_region().GetRegionForTouchAction(
+      TouchAction::kTouchActionNone);
+  EXPECT_TRUE(region.IsEmpty());
 }
 
 TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
