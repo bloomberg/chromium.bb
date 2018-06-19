@@ -30,6 +30,7 @@ OverlaySurfaceEmbedder::~OverlaySurfaceEmbedder() = default;
 
 void OverlaySurfaceEmbedder::SetPrimarySurfaceId(
     const viz::SurfaceId& surface_id) {
+  video_layer_ = window_->GetVideoLayer();
   // SurfaceInfo has information about the embedded surface.
   video_layer_->SetShowPrimarySurface(
       surface_id, window_->GetBounds().size(), SK_ColorBLACK,
@@ -39,13 +40,17 @@ void OverlaySurfaceEmbedder::SetPrimarySurfaceId(
 
 void OverlaySurfaceEmbedder::UpdateLayerBounds() {
   // Update the size and position of the video to stretch on the entire window.
+  video_layer_ = window_->GetVideoLayer();
   video_layer_->SetBounds(window_->GetVideoBounds());
   video_layer_->SetSurfaceSize(window_->GetVideoBounds().size());
 
   // Update the size and position of controls.
+  controls_background_layer_ = window_->GetControlsBackgroundLayer();
   controls_background_layer_->SetBounds(
       gfx::Rect(gfx::Point(0, 0), window_->GetBounds().size()));
+  close_controls_layer_ = window_->GetCloseControlsLayer();
   close_controls_layer_->SetBounds(window_->GetCloseControlsBounds());
+  play_pause_controls_layer_ = window_->GetPlayPauseControlsLayer();
   play_pause_controls_layer_->SetBounds(window_->GetPlayPauseControlsBounds());
 }
 
