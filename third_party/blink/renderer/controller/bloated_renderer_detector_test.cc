@@ -4,41 +4,38 @@
 
 #include "third_party/blink/renderer/controller/bloated_renderer_detector.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
 class BloatedRendererDetectorTest : public testing::Test {
  public:
-  static double GetMockLargeUptime() {
-    int large_uptime = BloatedRendererDetector::kMinimumUptimeInMinutes + 1;
-    return WTF::TimeTicksInSeconds(
-        WTF::TimeTicksFromSeconds(large_uptime * 60));
+  static TimeDelta GetMockLargeUptime() {
+    return TimeDelta::FromMinutes(
+        BloatedRendererDetector::kMinimumUptimeInMinutes + 1);
   }
 
-  static double GetMockSmallUptime() {
-    int small_uptime = BloatedRendererDetector::kMinimumUptimeInMinutes - 1;
-    return WTF::TimeTicksInSeconds(
-        WTF::TimeTicksFromSeconds(small_uptime * 60));
+  static TimeDelta GetMockSmallUptime() {
+    return TimeDelta::FromMinutes(
+        BloatedRendererDetector::kMinimumUptimeInMinutes - 1);
   }
 };
 
 TEST_F(BloatedRendererDetectorTest, ForwardToBrowser) {
-  BloatedRendererDetector detector(WTF::TimeTicksFromSeconds(0));
-  WTF::TimeFunction original_time_function =
-      WTF::SetTimeFunctionsForTesting(GetMockLargeUptime);
+  WTF::ScopedMockClock clock;
+  clock.Advance(GetMockLargeUptime());
+  BloatedRendererDetector detector(TimeTicks{});
   EXPECT_EQ(NearV8HeapLimitHandling::kForwardedToBrowser,
             detector.OnNearV8HeapLimitOnMainThreadImpl());
-  WTF::SetTimeFunctionsForTesting(original_time_function);
 }
 
 TEST_F(BloatedRendererDetectorTest, SmallUptime) {
-  BloatedRendererDetector detector(WTF::TimeTicksFromSeconds(0));
-  WTF::TimeFunction original_time_function =
-      SetTimeFunctionsForTesting(GetMockSmallUptime);
+  WTF::ScopedMockClock clock;
+  clock.Advance(GetMockSmallUptime());
+  BloatedRendererDetector detector(TimeTicks{});
   EXPECT_EQ(NearV8HeapLimitHandling::kIgnoredDueToSmallUptime,
             detector.OnNearV8HeapLimitOnMainThreadImpl());
-  WTF::SetTimeFunctionsForTesting(original_time_function);
 }
 
 }  // namespace blink

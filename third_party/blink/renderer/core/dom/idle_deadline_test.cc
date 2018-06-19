@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
+#include "third_party/blink/renderer/platform/testing/wtf/scoped_mock_clock.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
@@ -85,16 +86,10 @@ class MockIdleDeadlinePlatform : public TestingPlatformSupport {
 
 class IdleDeadlineTest : public testing::Test {
  public:
-  void SetUp() override {
-    original_time_function_ = SetTimeFunctionsForTesting([] { return 1.0; });
-  }
-
-  void TearDown() override {
-    SetTimeFunctionsForTesting(original_time_function_);
-  }
+  void SetUp() override { clock_.Advance(TimeDelta::FromSeconds(1)); }
 
  private:
-  TimeFunction original_time_function_;
+  WTF::ScopedMockClock clock_;
 };
 
 TEST_F(IdleDeadlineTest, deadlineInFuture) {
