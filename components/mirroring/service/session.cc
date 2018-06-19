@@ -17,9 +17,13 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/mirroring/service/captured_audio_input.h"
 #include "components/mirroring/service/udp_socket_client.h"
 #include "components/mirroring/service/video_capture_client.h"
 #include "crypto/random.h"
+#include "media/audio/audio_input_device.h"
+#include "media/base/audio_capturer_source.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/sender/audio_sender.h"
 #include "media/cast/sender/video_sender.h"
@@ -217,6 +221,54 @@ void AddStreamObject(int stream_index,
 
 }  // namespace
 
+class Session::AudioCapturingCallback final
+    : public media::AudioCapturerSource::CaptureCallback {
+ public:
+  using AudioDataCallback =
+      base::RepeatingCallback<void(std::unique_ptr<media::AudioBus> audio_bus,
+                                   const base::TimeTicks& recorded_time)>;
+  AudioCapturingCallback(AudioDataCallback audio_data_callback,
+                         base::OnceClosure error_callback)
+      : audio_data_callback_(std::move(audio_data_callback)),
+        error_callback_(std::move(error_callback)) {
+    DCHECK(!audio_data_callback_.is_null());
+  }
+
+  ~AudioCapturingCallback() override {}
+
+ private:
+  // media::AudioCapturerSource::CaptureCallback implementation.
+  void OnCaptureStarted() override {}
+
+  // Called on audio thread.
+  void Capture(const media::AudioBus* audio_bus,
+               int audio_delay_milliseconds,
+               double volume,
+               bool key_pressed) override {
+    // TODO(xjz): Don't copy the audio data. Instead, send |audio_bus| directly
+    // to the encoder.
+    std::unique_ptr<media::AudioBus> captured_audio =
+        media::AudioBus::Create(audio_bus->channels(), audio_bus->frames());
+    audio_bus->CopyTo(captured_audio.get());
+    const base::TimeTicks recorded_time =
+        base::TimeTicks::Now() -
+        base::TimeDelta::FromMilliseconds(audio_delay_milliseconds);
+    audio_data_callback_.Run(std::move(captured_audio), recorded_time);
+  }
+
+  void OnCaptureError(const std::string& message) override {
+    if (!error_callback_.is_null())
+      std::move(error_callback_).Run();
+  }
+
+  void OnCaptureMuted(bool is_muted) override {}
+
+  const AudioDataCallback audio_data_callback_;
+  base::OnceClosure error_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(AudioCapturingCallback);
+};
+
 Session::Session(int32_t session_id,
                  const CastSinkInfo& sink_info,
                  const gfx::Size& max_resolution,
@@ -281,6 +333,11 @@ void Session::StopSession() {
   session_monitor_->StopStreamingSession();
   session_monitor_.reset();
   weak_factory_.InvalidateWeakPtrs();
+  if (audio_input_device_) {
+    audio_input_device_->Stop();
+    audio_input_device_ = nullptr;
+  }
+  audio_capturing_callback_.reset();
   audio_encode_thread_ = nullptr;
   video_encode_thread_ = nullptr;
   video_capture_client_.reset();
@@ -489,8 +546,22 @@ void Session::OnAnswer(const std::string& cast_mode,
         cast_transport_.get());
     audio_stream_ = std::make_unique<AudioRtpStream>(
         std::move(audio_sender), weak_factory_.GetWeakPtr());
-    // TODO(xjz): Start audio capturing.
-    NOTIMPLEMENTED();
+    DCHECK(!audio_capturing_callback_);
+    // TODO(xjz): Elliminate the thread hops. The audio data is thread-hopped
+    // from the audio thread, and later thread-hopped again to the encoding
+    // thread.
+    audio_capturing_callback_ = std::make_unique<AudioCapturingCallback>(
+        media::BindToCurrentLoop(base::BindRepeating(
+            &AudioRtpStream::InsertAudio, audio_stream_->AsWeakPtr())),
+        base::BindOnce(&Session::ReportError, weak_factory_.GetWeakPtr(),
+                       SessionError::AUDIO_CAPTURE_ERROR));
+    audio_input_device_ = new media::AudioInputDevice(
+        std::make_unique<CapturedAudioInput>(base::BindRepeating(
+            &Session::CreateAudioStream, base::Unretained(this))),
+        base::ThreadPriority::NORMAL);
+    audio_input_device_->Initialize(mirror_settings_.GetAudioCaptureParams(),
+                                    audio_capturing_callback_.get());
+    audio_input_device_->Start();
   }
 
   if (has_video) {
@@ -531,6 +602,12 @@ void Session::OnAnswer(const std::string& cast_mode,
 
 void Session::OnResponseParsingError(const std::string& error_message) {
   // TODO(xjz): Log the |error_message| in the mirroring logs.
+}
+
+void Session::CreateAudioStream(AudioStreamCreatorClient* client,
+                                const media::AudioParameters& params,
+                                uint32_t shared_memory_count) {
+  resource_provider_->CreateAudioStream(client, params, shared_memory_count);
 }
 
 void Session::SetTargetPlayoutDelay(base::TimeDelta playout_delay) {

@@ -25,6 +25,8 @@ source_set("interface") {
 
 source_set("service") {
   sources = [
+    "captured_audio_input.cc",
+    "captured_audio_input.h",
     "message_dispatcher.cc",
     "message_dispatcher.h",
     "mirror_settings.cc",
@@ -64,6 +66,7 @@ source_set("service") {
     "//media/cast:net",
     "//media/cast:sender",
     "//media/mojo/common:common",
+    "//media/mojo/interfaces",
     "//media/mojo/interfaces:remoting",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
@@ -77,6 +80,7 @@ source_set("service") {
 source_set("unittests") {
   testonly = true
   sources = [
+    "captured_audio_input_unittest.cc",
     "fake_network_service.cc",
     "fake_network_service.h",
     "fake_video_capture_host.cc",
@@ -104,6 +108,7 @@ source_set("unittests") {
     "//media/cast:sender",
     "//media/cast:test_support",
     "//media/cast:test_support",
+    "//media/mojo/interfaces",
     "//media/mojo/interfaces:remoting",
     "//mojo/public/cpp/bindings",
     "//net",

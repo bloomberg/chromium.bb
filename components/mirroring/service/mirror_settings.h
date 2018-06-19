@@ -10,6 +10,10 @@
 #include "media/capture/video_capture_types.h"
 #include "media/cast/cast_config.h"
 
+namespace media {
+class AudioParameters;
+}  // namespace media
+
 namespace mirroring {
 
 // Holds the default settings for a mirroring session. This class provides the
@@ -36,6 +40,9 @@ class MirrorSettings {
 
   // Get video capture constraints with the current settings.
   media::VideoCaptureParams GetVideoCaptureParams();
+
+  // Get Audio capture constraints with the current settings.
+  media::AudioParameters GetAudioCaptureParams();
 
   int max_width() const { return max_width_; }
   int max_height() const { return max_height_; }

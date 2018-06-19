@@ -37,14 +37,13 @@ VideoRtpStream::VideoRtpStream(
     : video_sender_(std::move(video_sender)),
       client_(client),
       consecutive_refresh_count_(0),
-      expecting_a_refresh_frame_(false),
-      weak_factory_(this) {
+      expecting_a_refresh_frame_(false) {
   DCHECK(video_sender_);
   DCHECK(client);
 
   refresh_timer_.Start(FROM_HERE, kRefreshInterval,
                        base::BindRepeating(&VideoRtpStream::OnRefreshTimerFired,
-                                           weak_factory_.GetWeakPtr()));
+                                           this->AsWeakPtr()));
 }
 
 VideoRtpStream::~VideoRtpStream() {}
@@ -112,7 +111,7 @@ AudioRtpStream::AudioRtpStream(
 AudioRtpStream::~AudioRtpStream() {}
 
 void AudioRtpStream::InsertAudio(std::unique_ptr<media::AudioBus> audio_bus,
-                                 base::TimeTicks capture_time) {
+                                 const base::TimeTicks& capture_time) {
   audio_sender_->InsertAudio(std::move(audio_bus), capture_time);
 }
 
