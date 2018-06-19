@@ -14,6 +14,7 @@
 #include "base/values.h"
 
 namespace chromeos {
+namespace usage_time_limit {
 namespace internal {
 
 enum class Weekday {
@@ -27,11 +28,8 @@ enum class Weekday {
   kCount,
 };
 
-class TimeWindowLimitEntry {
- public:
+struct TimeWindowLimitEntry {
   TimeWindowLimitEntry();
-  TimeWindowLimitEntry(TimeWindowLimitEntry&&);
-  TimeWindowLimitEntry& operator=(TimeWindowLimitEntry&&);
 
   bool IsOvernight() const;
 
@@ -41,9 +39,6 @@ class TimeWindowLimitEntry {
   base::TimeDelta ends_at;
   // Last time this entry was updated.
   base::Time last_updated;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TimeWindowLimitEntry);
 };
 
 class TimeWindowLimit {
@@ -59,17 +54,11 @@ class TimeWindowLimit {
   DISALLOW_COPY_AND_ASSIGN(TimeWindowLimit);
 };
 
-class TimeUsageLimitEntry {
- public:
+struct TimeUsageLimitEntry {
   TimeUsageLimitEntry();
-  TimeUsageLimitEntry(TimeUsageLimitEntry&&);
-  TimeUsageLimitEntry& operator=(TimeUsageLimitEntry&&);
 
   base::TimeDelta usage_quota;
   base::Time last_updated;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TimeUsageLimitEntry);
 };
 
 class TimeUsageLimit {
@@ -80,7 +69,7 @@ class TimeUsageLimit {
   TimeUsageLimit& operator=(TimeUsageLimit&&);
 
   std::unordered_map<Weekday, base::Optional<TimeUsageLimitEntry>> entries;
-  base::TimeDelta reset_at;
+  base::TimeDelta resets_at;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TimeUsageLimit);
@@ -111,8 +100,6 @@ Weekday WeekdayShift(Weekday current_day, int shift);
 
 }  // namespace internal
 
-namespace usage_time_limit {
-
 enum class ActivePolicies {
   kNoActivePolicy,
   kOverride,
@@ -122,7 +109,7 @@ enum class ActivePolicies {
 
 struct State {
   // Whether the device is currently locked.
-  bool is_locked;
+  bool is_locked = false;
 
   // Which policy is responsible for the current state.
   // If it is locked, one of [ override, fixed_limit, usage_limit ]
@@ -130,11 +117,17 @@ struct State {
   ActivePolicies active_policy;
 
   // Whether time_usage_limit is currently active.
-  bool is_time_usage_limit_enabled;
+  bool is_time_usage_limit_enabled = false;
 
   // Remaining screen usage quota. Only available if
   // is_time_limit_enabled = true
   base::TimeDelta remaining_usage;
+
+  // When the time usage limit started being enforced. Only available when
+  // is_time_usage_limit_enabled = true and remaining_usage is 0, which means
+  // that the time usage limit is enforced, and therefore should have a start
+  // time.
+  base::Time time_usage_limit_started;
 
   // Next epoch time that time limit state could change. This could be the
   // start time of the next fixed window limit, the end time of the current
@@ -146,7 +139,7 @@ struct State {
   ActivePolicies next_state_active_policy;
 
   // Last time the state changed.
-  base::Time last_state_changed;
+  base::Time last_state_changed = base::Time();
 };
 
 // Returns the current state of the user session with the given usage time limit
