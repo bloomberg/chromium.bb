@@ -478,7 +478,7 @@ void EventRouter::Shutdown() {
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient();
   power_manager_client->RemoveObserver(device_event_router_.get());
 
-  profile_ = NULL;
+  profile_ = nullptr;
 }
 
 void EventRouter::ObserveEvents() {
@@ -575,7 +575,7 @@ void EventRouter::AddFileWatch(const base::FilePath& local_path,
           watch_path,
           base::Bind(&EventRouter::HandleFileWatchNotification,
                      weak_factory_.GetWeakPtr(),
-                     static_cast<drive::FileChange*>(NULL)),
+                     static_cast<drive::FileChange*>(nullptr)),
           callback);
     }
 
@@ -675,7 +675,7 @@ void EventRouter::OnWatcherManagerNotification(
   std::vector<std::string> extension_ids;
   extension_ids.push_back(extension_id);
 
-  DispatchDirectoryChangeEvent(file_system_url.virtual_path(), NULL,
+  DispatchDirectoryChangeEvent(file_system_url.virtual_path(), nullptr,
                                false /* error */, extension_ids);
 }
 
@@ -709,7 +709,7 @@ void EventRouter::OnFileManagerPrefsChanged() {
 }
 
 void EventRouter::OnDirectoryChanged(const base::FilePath& drive_path) {
-  HandleFileWatchNotification(NULL, drive_path, false);
+  HandleFileWatchNotification(nullptr, drive_path, false);
 }
 
 void EventRouter::OnFileChanged(const drive::FileChange& changed_files) {
@@ -837,7 +837,7 @@ void EventRouter::HandleFileWatchNotification(const drive::FileChange* list,
     // kDirectoryChangeEventMaxDetailInfoSize, since passing large list
     // and processing it may cause more itme.
     // This will be invoked full-refresh in the Files app.
-    list = NULL;
+    list = nullptr;
   }
 
   DispatchDirectoryChangeEvent(iter->second->virtual_path(),
