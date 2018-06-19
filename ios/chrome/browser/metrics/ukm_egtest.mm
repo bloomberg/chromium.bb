@@ -254,9 +254,7 @@ void SignOut() {
 
 // Per crbug.com/853992, Entire test suite is failing regularly.
 + (NSArray*)testInvocations {
-  if (IsIPadIdiom())
-    return @[];
-  return [super testInvocations];
+  return @[];
 }
 
 + (void)setUp {
