@@ -9,6 +9,15 @@
 
 @class ListItem;
 
+// Collapsable mode to use either the header cell or the first cell to collapse
+// sections in ListMode.
+typedef NS_ENUM(NSInteger, ListModelCollapsableMode) {
+  // When a section is collapsed, all items are hidden.
+  ListModelCollapsableModeHeader = 0,
+  // When a section is collapsed, all items except the first one are hidden.
+  ListModelCollapsableModeFirstCell,
+};
+
 // Key for saving collapsed state in the NSUserDefaults.
 extern NSString* const kListModelCollapsedKey;
 
@@ -188,6 +197,9 @@ const NSInteger kItemTypeEnumZero = 100;
 - (NSInteger)numberOfItemsInSection:(NSInteger)section;
 
 #pragma mark Collapsing methods.
+
+// The default value is ListModelCollapsableModeHeader.
+@property(nonatomic, assign) ListModelCollapsableMode collapsableMode;
 
 // Sets an existing |sectionIdentifier| |collapsedKey| to be used when
 // collapsing or expanding a section. |collapsedKey| is a unique identifier for
