@@ -787,7 +787,7 @@ TEST_F(DeviceInfoSyncBridgeTest, SendLocalData) {
   EXPECT_EQ(2, change_count());
 }
 
-TEST_F(DeviceInfoSyncBridgeTest, ApplyDisableSyncChanges) {
+TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChanges) {
   InitializeAndPump();
   EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
   EXPECT_EQ(1, change_count());
@@ -801,7 +801,7 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplyDisableSyncChanges) {
   EXPECT_EQ(2, change_count());
 
   // Should clear out all local data and notify observers.
-  bridge()->ApplyDisableSyncChanges({});
+  bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
   EXPECT_EQ(0u, bridge()->GetAllDeviceInfo().size());
   EXPECT_EQ(3, change_count());
 

@@ -24,7 +24,7 @@ class FakeModelTypeControllerDelegate : public ModelTypeControllerDelegate {
   // ModelTypeControllerDelegate overrides
   void OnSyncStarting(const DataTypeActivationRequest& request,
                       StartCallback callback) override;
-  void DisableSync() override;
+  void OnSyncStopping(SyncStopMetadataFate metadata_fate) override;
   void GetAllNodesForDebugging(AllNodesCallback callback) override;
   void GetStatusCountersForDebugging(StatusCountersCallback callback) override;
   void RecordMemoryUsageHistogram() override;

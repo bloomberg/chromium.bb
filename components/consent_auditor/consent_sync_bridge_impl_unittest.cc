@@ -185,8 +185,8 @@ TEST_F(ConsentSyncBridgeImplTest, ShouldNotDeleteConsentsWhenSyncIsDisabled) {
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
   EXPECT_THAT(
-      bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync));
+      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
+      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -315,8 +315,8 @@ TEST_F(ConsentSyncBridgeImplTest,
   // User disables sync, hovewer, the consent hasn't been submitted yet. It is
   // preserved to be submitted when sync is re-enabled.
   EXPECT_THAT(
-      bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync));
+      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
+      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -465,8 +465,8 @@ TEST_F(ConsentSyncBridgeImplTest,
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
   EXPECT_THAT(
-      bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync));
+      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
+      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -484,8 +484,8 @@ TEST_F(ConsentSyncBridgeImplTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(
-      bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync));
+      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
+      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
   base::RunLoop().RunUntilIdle();
 
   // The previous user signs in again and enables sync.

@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/sync_stop_metadata_fate.h"
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
@@ -84,7 +85,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // ModelTypeControllerDelegate implementation.
   void OnSyncStarting(const DataTypeActivationRequest& request,
                       StartCallback callback) override;
-  void DisableSync() override;
+  void OnSyncStopping(SyncStopMetadataFate metadata_fate) override;
   void GetAllNodesForDebugging(AllNodesCallback callback) override;
   void GetStatusCountersForDebugging(StatusCountersCallback callback) override;
   void RecordMemoryUsageHistogram() override;
@@ -208,7 +209,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // TODO(jkrcal): Replace the helper function by grouping the state naturally
   // into a few structs / nested classes so that the state can be reset by
   // resetting these structs.
-  void ResetState();
+  void ResetState(SyncStopMetadataFate metadata_fate);
 
   // Adds metadata to all data returned by the bridge.
   // TODO(jkrcal): Mark as const (together with functions it depends on such as
@@ -302,8 +303,14 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+  // WeakPtrFactory for this processor for ModelTypeController (only gets
+  // invalidated during destruction).
+  base::WeakPtrFactory<ModelTypeControllerDelegate>
+      weak_ptr_factory_for_controller_;
+
   // WeakPtrFactory for this processor which will be sent to sync thread.
-  base::WeakPtrFactory<ClientTagBasedModelTypeProcessor> weak_ptr_factory_;
+  base::WeakPtrFactory<ClientTagBasedModelTypeProcessor>
+      weak_ptr_factory_for_worker_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientTagBasedModelTypeProcessor);
 };

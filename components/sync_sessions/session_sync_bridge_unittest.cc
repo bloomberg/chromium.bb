@@ -1002,7 +1002,7 @@ TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
   ASSERT_THAT(GetAllData(), Not(IsEmpty()));
 
   EXPECT_CALL(mock_processor(), ModelReadyToSync(_)).Times(0);
-  real_processor()->DisableSync();
+  real_processor()->OnSyncStopping(syncer::CLEAR_METADATA);
 
   EXPECT_CALL(mock_processor(), ModelReadyToSync(IsEmptyMetadataBatch()));
   StartSyncing();

@@ -53,10 +53,10 @@ class TestModelTypeProcessor : public FakeModelTypeControllerDelegate,
                                public FakeModelTypeChangeProcessor,
                                public FakeModelTypeProcessor {
  public:
-  explicit TestModelTypeProcessor(int* disable_sync_call_count)
+  explicit TestModelTypeProcessor(int* cleared_metadata_count)
       : FakeModelTypeControllerDelegate(kTestModelType),
         FakeModelTypeChangeProcessor(GetWeakPtr()),
-        disable_sync_call_count_(disable_sync_call_count),
+        cleared_metadata_count_(cleared_metadata_count),
         weak_factory_(this) {}
 
   // ModelTypeChangeProcessor implementation.
@@ -71,7 +71,11 @@ class TestModelTypeProcessor : public FakeModelTypeControllerDelegate,
             weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
     std::move(callback).Run(std::move(activation_response));
   }
-  void DisableSync() override { (*disable_sync_call_count_)++; }
+  void OnSyncStopping(SyncStopMetadataFate metadata_fate) override {
+    if (metadata_fate == CLEAR_METADATA) {
+      (*cleared_metadata_count_)++;
+    }
+  }
 
   // ModelTypeProcessor implementation.
   void ConnectSync(std::unique_ptr<CommitQueue> commit_queue) override {
@@ -88,7 +92,7 @@ class TestModelTypeProcessor : public FakeModelTypeControllerDelegate,
  private:
   bool initial_sync_done_ = false;
   bool is_connected_ = false;
-  int* disable_sync_call_count_;
+  int* cleared_metadata_count_;
   base::WeakPtrFactory<TestModelTypeProcessor> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(TestModelTypeProcessor);
 };
@@ -254,7 +258,7 @@ class ModelTypeControllerTest : public testing::Test {
   SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
   DataTypeController* controller() { return controller_.get(); }
   int load_models_done_count() { return load_models_done_count_; }
-  int disable_sync_call_count() { return disable_sync_call_count_; }
+  int cleared_metadata_count() { return cleared_metadata_count_; }
   SyncError load_models_last_error() { return load_models_last_error_; }
 
  private:
@@ -276,7 +280,7 @@ class ModelTypeControllerTest : public testing::Test {
 
   std::unique_ptr<ModelTypeChangeProcessor> CreateProcessor() {
     std::unique_ptr<TestModelTypeProcessor> processor =
-        std::make_unique<TestModelTypeProcessor>(&disable_sync_call_count_);
+        std::make_unique<TestModelTypeProcessor>(&cleared_metadata_count_);
     processor_ = processor.get();
     return std::move(processor);
   }
@@ -306,7 +310,7 @@ class ModelTypeControllerTest : public testing::Test {
   }
 
   int load_models_done_count_ = 0;
-  int disable_sync_call_count_ = 0;
+  int cleared_metadata_count_ = 0;
   bool association_callback_called_ = false;
   SyncError load_models_last_error_;
 
@@ -396,7 +400,7 @@ TEST_F(ModelTypeControllerTest, StopWhenDatatypeEnabled) {
   RunAllTasks();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
   // Ensure that DisableSync is not called.
-  EXPECT_EQ(0, disable_sync_call_count());
+  EXPECT_EQ(0, cleared_metadata_count());
   ExpectProcessorConnected(false);
 }
 
@@ -419,7 +423,7 @@ TEST_F(ModelTypeControllerTest, StopWhenDatatypeDisabled) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
   // Ensure that DisableSync is called.
   PumpModelThread();
-  EXPECT_EQ(1, disable_sync_call_count());
+  EXPECT_EQ(1, cleared_metadata_count());
 }
 
 // Test emulates disabling sync by signing out. DisableSync should be called.
@@ -437,7 +441,7 @@ TEST_F(ModelTypeControllerTest, StopWithInitialSyncPrefs) {
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
   // Ensure that DisableSync is called.
   PumpModelThread();
-  EXPECT_EQ(1, disable_sync_call_count());
+  EXPECT_EQ(1, cleared_metadata_count());
 }
 
 // Test emulates disabling sync when datatype is not loaded yet. DisableSync
@@ -453,7 +457,7 @@ TEST_F(ModelTypeControllerTest, StopBeforeLoadModels) {
   controller()->Stop(KEEP_METADATA);
   EXPECT_EQ(DataTypeController::NOT_RUNNING, controller()->state());
   // Ensure that DisableSync is not called.
-  EXPECT_EQ(0, disable_sync_call_count());
+  EXPECT_EQ(0, cleared_metadata_count());
 }
 
 }  // namespace syncer

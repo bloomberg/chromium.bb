@@ -541,7 +541,8 @@ void BookmarkModelTypeProcessor::ConnectIfReady() {
   std::move(start_callback_).Run(std::move(activation_context));
 }
 
-void BookmarkModelTypeProcessor::DisableSync() {
+void BookmarkModelTypeProcessor::OnSyncStopping(
+    syncer::SyncStopMetadataFate metadata_fate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
 }

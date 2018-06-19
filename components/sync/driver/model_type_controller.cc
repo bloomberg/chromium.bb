@@ -54,9 +54,10 @@ void RecordMemoryUsageHistogramHelperOnModelThread(
   delegate->RecordMemoryUsageHistogram();
 }
 
-void DisableSyncHelperOnModelThread(
+void StopSyncHelperOnModelThread(
+    SyncStopMetadataFate metadata_fate,
     base::WeakPtr<ModelTypeControllerDelegate> delegate) {
-  delegate->DisableSync();
+  delegate->OnSyncStopping(metadata_fate);
 }
 
 void ReportError(ModelType model_type,
@@ -238,13 +239,21 @@ void ModelTypeController::Stop(SyncStopMetadataFate metadata_fate) {
     return;
 
   // Check preferences if datatype is not in preferred datatypes. Only call
-  // DisableSync if the delegate is ready to handle it (controller is in loaded
+  // StopSync() if the delegate is ready to handle it (controller is in loaded
   // state).
   ModelTypeSet preferred_types =
       sync_prefs_.GetPreferredDataTypes(ModelTypeSet(type()));
-  if ((state() == MODEL_LOADED || state() == RUNNING) &&
-      (!sync_prefs_.IsFirstSetupComplete() || !preferred_types.Has(type()))) {
-    PostModelTask(FROM_HERE, base::BindOnce(&DisableSyncHelperOnModelThread));
+
+  if (state() == MODEL_LOADED || state() == RUNNING) {
+    // TODO(lixan@yandex-team.ru): Migrate away from preference-based inferring
+    // of |reason| and instead consume |metadata_fate|.
+    if (sync_prefs_.IsFirstSetupComplete() && preferred_types.Has(type())) {
+      PostModelTask(FROM_HERE, base::BindOnce(&StopSyncHelperOnModelThread,
+                                              KEEP_METADATA));
+    } else {
+      PostModelTask(FROM_HERE, base::BindOnce(&StopSyncHelperOnModelThread,
+                                              CLEAR_METADATA));
+    }
   }
 
   state_ = NOT_RUNNING;

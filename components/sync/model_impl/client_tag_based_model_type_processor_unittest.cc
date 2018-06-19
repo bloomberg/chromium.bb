@@ -1208,11 +1208,11 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, Disconnect) {
   EXPECT_TRUE(worker()->HasPendingCommitForHash(kHash3));
 }
 
-// Test proper handling of disable and re-enable.
+// Test proper handling of stop (without disabling sync) and re-enable.
 //
-// Creates items in various states of commit and verifies they re-attempt to
+// Creates items in various states of commit and verifies they do NOT attempt to
 // commit on re-enable.
-TEST_F(ClientTagBasedModelTypeProcessorTest, Disable) {
+TEST_F(ClientTagBasedModelTypeProcessorTest, Stop) {
   InitializeToReadyState();
 
   // The first item is fully committed.
@@ -1222,7 +1222,35 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, Disable) {
   bridge()->WriteItem(kKey2, kValue2);
   EXPECT_TRUE(worker()->HasPendingCommitForHash(kHash2));
 
-  type_processor()->DisableSync();
+  type_processor()->OnSyncStopping(KEEP_METADATA);
+  EXPECT_TRUE(type_processor()->IsTrackingMetadata());
+
+  // The third item is added after disable.
+  bridge()->WriteItem(kKey3, kValue3);
+
+  // Now we re-enable.
+  OnSyncStarting();
+  worker()->UpdateFromServer();
+
+  // Once we're ready to commit, only the newest items should be committed.
+  worker()->VerifyPendingCommits({{kHash3}});
+}
+
+// Test proper handling of disable and re-enable.
+//
+// Creates items in various states of commit and verifies they re-attempt to
+// commit on re-enable.
+TEST_F(ClientTagBasedModelTypeProcessorTest, StopAndClearMetadata) {
+  InitializeToReadyState();
+
+  // The first item is fully committed.
+  WriteItemAndAck(kKey1, kValue1);
+
+  // The second item has a commit request in progress.
+  bridge()->WriteItem(kKey2, kValue2);
+  EXPECT_TRUE(worker()->HasPendingCommitForHash(kHash2));
+
+  type_processor()->OnSyncStopping(CLEAR_METADATA);
   EXPECT_FALSE(type_processor()->IsTrackingMetadata());
 
   // The third item is added after disable.

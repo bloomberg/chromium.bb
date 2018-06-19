@@ -236,20 +236,22 @@ std::string DeviceInfoSyncBridge::GetStorageKey(const EntityData& entity_data) {
   return entity_data.specifics.device_info().cache_guid();
 }
 
-ModelTypeSyncBridge::DisableSyncResponse
-DeviceInfoSyncBridge::ApplyDisableSyncChanges(
+ModelTypeSyncBridge::StopSyncResponse
+DeviceInfoSyncBridge::ApplyStopSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // TODO(skym, crbug.com/659263): Would it be reasonable to pulse_timer_.Stop()
   // or subscription_.reset() here?
 
   // Remove all local data, if sync is being disabled, the user has expressed
   // their desire to not have knowledge about other devices.
-  store_->DeleteAllDataAndMetadata(base::DoNothing());
-  if (!all_data_.empty()) {
-    all_data_.clear();
-    NotifyObservers();
+  if (delete_metadata_change_list) {
+    store_->DeleteAllDataAndMetadata(base::DoNothing());
+    if (!all_data_.empty()) {
+      all_data_.clear();
+      NotifyObservers();
+    }
   }
-  return DisableSyncResponse::kModelStillReadyToSync;
+  return StopSyncResponse::kModelStillReadyToSync;
 }
 
 bool DeviceInfoSyncBridge::IsSyncing() const {

@@ -193,21 +193,21 @@ TEST_F(UserEventSyncBridgeTest, SingleRecord) {
               ElementsAre(Pair(storage_key, MatchesUserEvent(specifics))));
 }
 
-TEST_F(UserEventSyncBridgeTest, ApplyDisableSyncChanges) {
+TEST_F(UserEventSyncBridgeTest, ApplyStopSyncChanges) {
   const UserEventSpecifics specifics(CreateSpecifics(1u, 2u, 3u));
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
   EXPECT_THAT(
-      bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync));
+      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
+      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(GetAllData(), IsEmpty());
 }
 
-TEST_F(UserEventSyncBridgeTest, ApplyDisableSyncChangesShouldKeepConsents) {
+TEST_F(UserEventSyncBridgeTest, ApplyStopSyncChangesShouldKeepConsents) {
   UserEventSpecifics user_event_specifics(CreateSpecifics(2u, 2u, 2u));
   auto* consent = user_event_specifics.mutable_user_consent();
   consent->set_feature(UserEventSpecifics::UserConsent::CHROME_SYNC);
@@ -217,8 +217,8 @@ TEST_F(UserEventSyncBridgeTest, ApplyDisableSyncChangesShouldKeepConsents) {
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
   EXPECT_THAT(
-      bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList()),
-      Eq(ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync));
+      bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList()),
+      Eq(ModelTypeSyncBridge::StopSyncResponse::kModelStillReadyToSync));
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -418,7 +418,7 @@ TEST_F(UserEventSyncBridgeTest,
 
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(consent));
 
-  bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList());
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -563,7 +563,7 @@ TEST_F(UserEventSyncBridgeTest, ShouldSubmitPersistedConsentOnlyIfSameAccount) {
       std::make_unique<UserEventSpecifics>(user_event_specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList());
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -581,7 +581,7 @@ TEST_F(UserEventSyncBridgeTest, ShouldSubmitPersistedConsentOnlyIfSameAccount) {
   bridge()->OnSyncStarting();
   base::RunLoop().RunUntilIdle();
 
-  bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList());
+  bridge()->ApplyStopSyncChanges(WriteBatch::CreateMetadataChangeList());
   base::RunLoop().RunUntilIdle();
 
   // The previous user signs in again and enables sync.
