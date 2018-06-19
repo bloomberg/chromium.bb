@@ -514,11 +514,6 @@ void RenderWidgetHostViewAndroid::OnTextSelectionChanged(
     RenderWidgetHostViewBase* updated_view) {
   DCHECK_EQ(text_input_manager_, text_input_manager);
 
-  // TODO(asimjour): remove the flag and fix text selection popup for
-  // virtual reality mode.
-  if (is_in_vr_)
-    return;
-
   if (!selection_popup_controller_)
     return;
 
@@ -1879,8 +1874,7 @@ void RenderWidgetHostViewAndroid::SetTextHandlesTemporarilyHidden(
       handles_hidden_by_selection_ui_ == hide_handles)
     return;
   handles_hidden_by_selection_ui_ = hide_handles;
-  touch_selection_controller_->SetTemporarilyHidden(
-      handles_hidden_by_selection_ui_ || handles_hidden_by_stylus_);
+  SetTextHandlesHiddenInternal();
 }
 
 base::Optional<SkColor> RenderWidgetHostViewAndroid::GetCachedBackgroundColor()
@@ -1889,14 +1883,11 @@ base::Optional<SkColor> RenderWidgetHostViewAndroid::GetCachedBackgroundColor()
 }
 
 void RenderWidgetHostViewAndroid::SetIsInVR(bool is_in_vr) {
+  if (is_in_vr_ == is_in_vr)
+    return;
   is_in_vr_ = is_in_vr;
-  // TODO(crbug.com/779126): support touch selection handles in VR.
-  if (is_in_vr) {
-    touch_selection_controller_.reset();
-  } else if (view_.parent()) {
-    touch_selection_controller_ = CreateSelectionController(
-        touch_selection_controller_client_manager_.get(), view_.parent());
-  }
+  // TODO(crbug.com/851054): support touch selection handles in VR.
+  SetTextHandlesHiddenInternal();
 
   if (is_in_vr_ && controls_initialized_) {
     // TODO(mthiesse, https://crbug.com/825765): See the TODO in
@@ -2227,8 +2218,16 @@ void RenderWidgetHostViewAndroid::SetTextHandlesHiddenForStylus(
   if (!touch_selection_controller_ || handles_hidden_by_stylus_ == hide_handles)
     return;
   handles_hidden_by_stylus_ = hide_handles;
+  SetTextHandlesHiddenInternal();
+}
+
+void RenderWidgetHostViewAndroid::SetTextHandlesHiddenInternal() {
+  if (!touch_selection_controller_)
+    return;
+  // TODO(crbug.com/851054): support touch selection handles in VR.
   touch_selection_controller_->SetTemporarilyHidden(
-      handles_hidden_by_stylus_ || handles_hidden_by_selection_ui_);
+      is_in_vr_ || handles_hidden_by_stylus_ ||
+      handles_hidden_by_selection_ui_);
 }
 
 void RenderWidgetHostViewAndroid::OnStylusSelectBegin(float x0,

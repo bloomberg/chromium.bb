@@ -863,6 +863,7 @@ void VrShellGl::EnableAlertDialog(PlatformInputHandler* input_handler,
   showing_vr_dialog_ = true;
   vr_dialog_input_delegate_.reset(new PlatformUiInputDelegate(input_handler));
   vr_dialog_input_delegate_->SetSize(width, height);
+  vr_dialog_input_delegate_->SetPlatformController(controller_.get());
   ui_->SetAlertDialogEnabled(true, vr_dialog_input_delegate_.get(),
                              width / content_tex_buffer_size_.width(),
                              height / content_tex_buffer_size_.width());
