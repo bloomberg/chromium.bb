@@ -31,6 +31,10 @@
 
 namespace base {
 
+using Frame = StackSamplingProfiler::Frame;
+using Module = StackSamplingProfiler::Module;
+using SamplingProfileBuilder = StackSamplingProfiler::SamplingProfileBuilder;
+
 // Stack recording functions --------------------------------------------------
 
 namespace {
@@ -334,7 +338,7 @@ void SuspendThreadAndRecordStack(
     void* stack_copy_buffer,
     size_t stack_copy_buffer_size,
     std::vector<RecordedFrame>* stack,
-    StackSamplingProfiler::SamplingProfileBuilder* profile_builder,
+    SamplingProfileBuilder* profile_builder,
     NativeStackSamplerTestDelegate* test_delegate) {
   DCHECK(stack->empty());
 
@@ -392,31 +396,27 @@ class NativeStackSamplerWin : public NativeStackSampler {
   ~NativeStackSamplerWin() override;
 
   // StackSamplingProfiler::NativeStackSampler:
-  void ProfileRecordingStarting(
-      std::vector<StackSamplingProfiler::Module>* modules) override;
-  std::vector<StackSamplingProfiler::Frame> RecordStackFrames(
+  void ProfileRecordingStarting(std::vector<Module>* modules) override;
+  std::vector<Frame> RecordStackFrames(
       StackBuffer* stack_buffer,
-      StackSamplingProfiler::SamplingProfileBuilder* profile_builder) override;
+      SamplingProfileBuilder* profile_builder) override;
   void ProfileRecordingStopped() override;
 
  private:
   // Attempts to query the module filename, base address, and id for
   // |module_handle|, and store them in |module|. Returns true if it succeeded.
-  static bool GetModuleForHandle(HMODULE module_handle,
-                                 StackSamplingProfiler::Module* module);
+  static bool GetModuleForHandle(HMODULE module_handle, Module* module);
 
   // Gets the index for the Module corresponding to |module_handle| in
   // |modules|, adding it if it's not already present. Returns
   // StackSamplingProfiler::Frame::kUnknownModuleIndex if no Module can be
   // determined for |module|.
-  size_t GetModuleIndex(HMODULE module_handle,
-                        std::vector<StackSamplingProfiler::Module>* modules);
+  size_t GetModuleIndex(HMODULE module_handle, std::vector<Module>* modules);
 
   // Creates a set of frames with the information represented by |stack| and
   // |modules|.
-  std::vector<StackSamplingProfiler::Frame> CreateFrames(
-      const std::vector<RecordedFrame>& stack,
-      std::vector<StackSamplingProfiler::Module>* modules);
+  std::vector<Frame> CreateFrames(const std::vector<RecordedFrame>& stack,
+                                  std::vector<Module>* modules);
 
   win::ScopedHandle thread_handle_;
 
@@ -427,7 +427,7 @@ class NativeStackSamplerWin : public NativeStackSampler {
 
   // Weak. Points to the modules associated with the profile being recorded
   // between ProfileRecordingStarting() and ProfileRecordingStopped().
-  std::vector<StackSamplingProfiler::Module>* current_modules_;
+  std::vector<Module>* current_modules_;
 
   // Maps a module handle to the corresponding Module's index within
   // current_modules_.
@@ -448,15 +448,14 @@ NativeStackSamplerWin::~NativeStackSamplerWin() {
 }
 
 void NativeStackSamplerWin::ProfileRecordingStarting(
-    std::vector<StackSamplingProfiler::Module>* modules) {
+    std::vector<Module>* modules) {
   current_modules_ = modules;
   profile_module_index_.clear();
 }
 
-std::vector<StackSamplingProfiler::Frame>
-NativeStackSamplerWin::RecordStackFrames(
+std::vector<Frame> NativeStackSamplerWin::RecordStackFrames(
     StackBuffer* stack_buffer,
-    StackSamplingProfiler::SamplingProfileBuilder* profile_builder) {
+    SamplingProfileBuilder* profile_builder) {
   DCHECK(stack_buffer);
   DCHECK(current_modules_);
 
@@ -473,9 +472,8 @@ void NativeStackSamplerWin::ProfileRecordingStopped() {
 }
 
 // static
-bool NativeStackSamplerWin::GetModuleForHandle(
-    HMODULE module_handle,
-    StackSamplingProfiler::Module* module) {
+bool NativeStackSamplerWin::GetModuleForHandle(HMODULE module_handle,
+                                               Module* module) {
   wchar_t module_name[MAX_PATH];
   DWORD result_length =
       ::GetModuleFileName(module_handle, module_name, size(module_name));
@@ -488,17 +486,16 @@ bool NativeStackSamplerWin::GetModuleForHandle(
   return !module->id.empty();
 }
 
-size_t NativeStackSamplerWin::GetModuleIndex(
-    HMODULE module_handle,
-    std::vector<StackSamplingProfiler::Module>* modules) {
+size_t NativeStackSamplerWin::GetModuleIndex(HMODULE module_handle,
+                                             std::vector<Module>* modules) {
   if (!module_handle)
-    return StackSamplingProfiler::Frame::kUnknownModuleIndex;
+    return Frame::kUnknownModuleIndex;
 
   auto loc = profile_module_index_.find(module_handle);
   if (loc == profile_module_index_.end()) {
-    StackSamplingProfiler::Module module;
+    Module module;
     if (!GetModuleForHandle(module_handle, &module))
-      return StackSamplingProfiler::Frame::kUnknownModuleIndex;
+      return Frame::kUnknownModuleIndex;
     modules->push_back(module);
     loc = profile_module_index_.insert(std::make_pair(
         module_handle, modules->size() - 1)).first;
@@ -507,10 +504,10 @@ size_t NativeStackSamplerWin::GetModuleIndex(
   return loc->second;
 }
 
-std::vector<StackSamplingProfiler::Frame> NativeStackSamplerWin::CreateFrames(
+std::vector<Frame> NativeStackSamplerWin::CreateFrames(
     const std::vector<RecordedFrame>& stack,
-    std::vector<StackSamplingProfiler::Module>* modules) {
-  std::vector<StackSamplingProfiler::Frame> frames;
+    std::vector<Module>* modules) {
+  std::vector<Frame> frames;
   frames.reserve(stack.size());
 
   for (const auto& frame : stack) {
