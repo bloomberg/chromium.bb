@@ -11,27 +11,6 @@ namespace ui {
 ScenicWindowManager::ScenicWindowManager() = default;
 ScenicWindowManager::~ScenicWindowManager() = default;
 
-fuchsia::ui::views_v1::ViewManager* ScenicWindowManager::GetViewManager() {
-  if (!view_manager_) {
-    view_manager_ =
-        base::fuchsia::ComponentContext::GetDefault()
-            ->ConnectToService<fuchsia::ui::views_v1::ViewManager>();
-    view_manager_.set_error_handler(
-        [this]() { LOG(FATAL) << "ViewManager connection failed."; });
-  }
-
-  return view_manager_.get();
-}
-
-fuchsia::ui::scenic::Scenic* ScenicWindowManager::GetScenic() {
-  if (!scenic_) {
-    GetViewManager()->GetScenic(scenic_.NewRequest());
-    scenic_.set_error_handler(
-        [this]() { LOG(FATAL) << "Scenic connection failed."; });
-  }
-  return scenic_.get();
-}
-
 int32_t ScenicWindowManager::AddWindow(ScenicWindow* window) {
   return windows_.Add(window);
 }
