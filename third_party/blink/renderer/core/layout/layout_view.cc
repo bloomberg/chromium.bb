@@ -789,7 +789,7 @@ void LayoutView::UpdateAfterLayout() {
 }
 
 void LayoutView::UpdateHitTestResult(HitTestResult& result,
-                                     const LayoutPoint& point) {
+                                     const LayoutPoint& point) const {
   if (result.InnerNode())
     return;
 

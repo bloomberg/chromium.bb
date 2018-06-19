@@ -330,7 +330,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void ChildBecameNonInline(LayoutObject* child) final;
 
-  void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) final;
+  void UpdateHitTestResult(HitTestResult&, const LayoutPoint&) const final;
 
   void ImageChanged(WrappedImagePtr,
                     CanDeferInvalidation,

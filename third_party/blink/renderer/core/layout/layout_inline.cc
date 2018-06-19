@@ -1372,7 +1372,7 @@ void LayoutInline::ChildBecameNonInline(LayoutObject* child) {
 }
 
 void LayoutInline::UpdateHitTestResult(HitTestResult& result,
-                                       const LayoutPoint& point) {
+                                       const LayoutPoint& point) const {
   if (result.InnerNode())
     return;
 
