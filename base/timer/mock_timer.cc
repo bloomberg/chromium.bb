@@ -8,6 +8,21 @@
 
 namespace base {
 
+namespace {
+
+void FlushPendingTasks(TestSimpleTaskRunner* task_runner) {
+  // Do not use TestSimpleTaskRunner::RunPendingTasks() here. As RunPendingTasks
+  // overrides ThreadTaskRunnerHandle when it runs tasks, tasks posted by timer
+  // tasks to TTRH go to |test_task_runner_|, though they should be posted to
+  // the original task runner.
+  // Do not use TestSimpleTaskRunner::RunPendingTasks(), as its overridden
+  // ThreadTaskRunnerHandle causes unexpected side effects.
+  for (TestPendingTask& task : task_runner->TakePendingTasks())
+    std::move(task.task).Run();
+}
+
+}  // namespace
+
 MockTimer::MockTimer(bool retain_user_task, bool is_repeating)
     : Timer(retain_user_task, is_repeating, &clock_),
       test_task_runner_(MakeRefCounted<TestSimpleTaskRunner>()) {
@@ -23,13 +38,45 @@ void MockTimer::SetTaskRunner(scoped_refptr<SequencedTaskRunner> task_runner) {
 void MockTimer::Fire() {
   DCHECK(IsRunning());
   clock_.Advance(std::max(TimeDelta(), desired_run_time() - clock_.NowTicks()));
+  FlushPendingTasks(test_task_runner_.get());
+}
 
-  // Do not use TestSimpleTaskRunner::RunPendingTasks() here. As RunPendingTasks
-  // overrides ThreadTaskRunnerHandle when it runs tasks, tasks posted by timer
-  // tasks to TTRH go to |test_task_runner_|, though they should be posted to
-  // the original task runner.
-  for (TestPendingTask& task : test_task_runner_->TakePendingTasks())
-    std::move(task.task).Run();
+MockOneShotTimer::MockOneShotTimer()
+    : OneShotTimer(&clock_),
+      test_task_runner_(MakeRefCounted<TestSimpleTaskRunner>()) {
+  OneShotTimer::SetTaskRunner(test_task_runner_);
+}
+
+MockOneShotTimer::~MockOneShotTimer() = default;
+
+void MockOneShotTimer::SetTaskRunner(
+    scoped_refptr<SequencedTaskRunner> task_runner) {
+  NOTREACHED() << "MockOneShotTimer doesn't support SetTaskRunner().";
+}
+
+void MockOneShotTimer::Fire() {
+  DCHECK(IsRunning());
+  clock_.Advance(std::max(TimeDelta(), desired_run_time() - clock_.NowTicks()));
+  FlushPendingTasks(test_task_runner_.get());
+}
+
+MockRepeatingTimer::MockRepeatingTimer()
+    : RepeatingTimer(&clock_),
+      test_task_runner_(MakeRefCounted<TestSimpleTaskRunner>()) {
+  RepeatingTimer::SetTaskRunner(test_task_runner_);
+}
+
+MockRepeatingTimer::~MockRepeatingTimer() = default;
+
+void MockRepeatingTimer::SetTaskRunner(
+    scoped_refptr<SequencedTaskRunner> task_runner) {
+  NOTREACHED() << "MockRepeatingTimer doesn't support SetTaskRunner().";
+}
+
+void MockRepeatingTimer::Fire() {
+  DCHECK(IsRunning());
+  clock_.Advance(std::max(TimeDelta(), desired_run_time() - clock_.NowTicks()));
+  FlushPendingTasks(test_task_runner_.get());
 }
 
 }  // namespace base
