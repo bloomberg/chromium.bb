@@ -375,6 +375,7 @@ class SecureChannelServiceTest : public testing::Test {
 
     auto connector = connector_factory_->CreateConnector();
     connector->BindInterface(mojom::kServiceName, &secure_channel_ptr_);
+    secure_channel_ptr_.FlushForTesting();
   }
 
   void TearDown() override {
@@ -571,15 +572,6 @@ class SecureChannelServiceTest : public testing::Test {
   void FinishInitialization() {
     // The PendingConnectionManager should not have yet been created.
     EXPECT_FALSE(fake_pending_connection_manager());
-
-    // The service is not expected to start up until at least one API call is
-    // made on its interface.
-    CallInitiateConnectionToDeviceAndVerifyInitializationNotComplete(
-        test_devices()[4], test_devices()[5], "feature",
-        ConnectionPriority::kLow);
-    CallListenForConnectionFromDeviceAndVerifyInitializationNotComplete(
-        test_devices()[4], test_devices()[5], "feature",
-        ConnectionPriority::kLow);
 
     EXPECT_TRUE(test_task_runner_->HasPendingTask());
     test_task_runner_->RunUntilIdle();
@@ -954,6 +946,16 @@ TEST_F(SecureChannelServiceTest, InitiateConnection_MissingLocalDevicePsk) {
   CallInitiateConnectionToDeviceAndVerifyRejection(
       test_devices()[0], local_device, "feature", ConnectionPriority::kLow,
       mojom::ConnectionAttemptFailureReason::LOCAL_DEVICE_INVALID_PSK);
+}
+
+TEST_F(SecureChannelServiceTest, CallsQueuedBeforeInitializationComplete) {
+  CallInitiateConnectionToDeviceAndVerifyInitializationNotComplete(
+      test_devices()[4], test_devices()[5], "feature",
+      ConnectionPriority::kLow);
+  CallListenForConnectionFromDeviceAndVerifyInitializationNotComplete(
+      test_devices()[4], test_devices()[5], "feature",
+      ConnectionPriority::kLow);
+  FinishInitialization();
 }
 
 TEST_F(SecureChannelServiceTest, ListenForConnection_OneDevice) {
