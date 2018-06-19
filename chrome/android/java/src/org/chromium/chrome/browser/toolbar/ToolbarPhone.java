@@ -142,8 +142,6 @@ public class ToolbarPhone extends ToolbarLayout
     private TextView mUrlBar;
     protected View mUrlActionContainer;
     protected ImageView mToolbarShadow;
-    // TODO(twellington): Make this final after modern is always enabled for Chrome Home.
-    protected boolean mToolbarShadowPermanentlyHidden;
 
     private final int mProgressBackBackgroundColorWhite;
 
@@ -1205,8 +1203,7 @@ public class ToolbarPhone extends ToolbarLayout
             if (mHomeButton != null) mHomeButton.setTranslationY(0);
         }
 
-        if (!mToolbarShadowPermanentlyHidden
-                && !(mLocationBar.useModernDesign() && mUrlFocusChangeInProgress)) {
+        if (!(mLocationBar.useModernDesign() && mUrlFocusChangeInProgress)) {
             mToolbarShadow.setAlpha(
                     mLocationBar.useModernDesign() && mUrlBar.hasFocus() ? 0.f : 1.f);
         }
@@ -1236,7 +1233,7 @@ public class ToolbarPhone extends ToolbarLayout
         boolean isExpanded = mUrlExpansionPercent > 0f;
         boolean useModern = mLocationBar.useModernDesign();
         setAncestorsShouldClipChildren(!isExpanded);
-        if (!mToolbarShadowPermanentlyHidden && !(useModern && mUrlFocusChangeInProgress)) {
+        if (!(useModern && mUrlFocusChangeInProgress)) {
             float alpha = 0.f;
             if (useModern && !mUrlBar.hasFocus() && mNtpSearchBoxScrollPercent == 1.f) {
                 alpha = 1.f;
@@ -1831,7 +1828,7 @@ public class ToolbarPhone extends ToolbarLayout
         assert mTextureCaptureMode != textureMode;
         mTextureCaptureMode = textureMode;
         if (mTextureCaptureMode) {
-            if (!mToolbarShadowPermanentlyHidden) mToolbarShadow.setVisibility(VISIBLE);
+            if (!hideShadowForIncognitoNtp()) mToolbarShadow.setVisibility(VISIBLE);
             mPreTextureCaptureAlpha = getAlpha();
             setAlpha(1);
         } else {
@@ -2449,8 +2446,6 @@ public class ToolbarPhone extends ToolbarLayout
      *                        See {@link TransitionDrawable#reverseTransition(int)}.
      */
     private void transitionShadowDrawable(boolean startTransition) {
-        if (mToolbarShadowPermanentlyHidden) return;
-
         // Modern does not use a transition drawable for the shadow.
         if (mLocationBar.useModernDesign()) return;
 
@@ -2471,8 +2466,6 @@ public class ToolbarPhone extends ToolbarLayout
      * Update the visibility of the toolbar shadow.
      */
     protected void updateShadowVisibility() {
-        if (mToolbarShadowPermanentlyHidden) return;
-
         boolean shouldDrawShadow = shouldDrawShadow();
         int shadowVisibility = shouldDrawShadow ? View.VISIBLE : View.INVISIBLE;
 
@@ -2485,7 +2478,14 @@ public class ToolbarPhone extends ToolbarLayout
      * @return Whether the toolbar shadow should be drawn.
      */
     protected boolean shouldDrawShadow() {
-        return mTabSwitcherState == STATIC_TAB;
+        // TODO(twellington): Move this shadow state information to ToolbarDataProvider and show
+        // shadow when incognito NTP is scrolled.
+        return mTabSwitcherState == STATIC_TAB && !hideShadowForIncognitoNtp();
+    }
+
+    private boolean hideShadowForIncognitoNtp() {
+        return mLocationBar.useModernDesign() && isIncognito()
+                && NewTabPage.isNTPUrl(getToolbarDataProvider().getCurrentUrl());
     }
 
     private VisualState computeVisualState(boolean isInTabSwitcherMode) {

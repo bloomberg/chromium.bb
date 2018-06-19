@@ -41,14 +41,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/new_tab_otr_title"
-                android:textColor="@color/incognito_header" />
+                android:textAppearance="@style/WhiteHeadlineIncognito" />
 
             <TextView
                 android:id="@+id/new_tab_incognito_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/new_tab_otr_subtitle"
-                android:textColor="@color/incognito_header"
+                android:textAppearance="@style/WhiteBodyIncognito"
                 android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
 
             <LinearLayout
@@ -62,14 +61,14 @@
                   android:id="@+id/new_tab_incognito_features"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:textColor="@color/incognito_text"
+                  android:textAppearance="@style/WhiteBodyIncognito"
                   android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
 
               <TextView
                   android:id="@+id/new_tab_incognito_warning"
                   android:layout_width="wrap_content"
                   android:layout_height="wrap_content"
-                  android:textColor="@color/incognito_text"
+                  android:textAppearance="@style/WhiteBodyIncognito"
                   android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
 
             </LinearLayout>
@@ -81,7 +80,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:text="@string/learn_more"
-                android:textColor="@color/google_blue_300"
+                android:textAppearance="@style/BlueButtonText1"
                 android:lineSpacingExtra="@dimen/md_incognito_ntp_line_spacing" />
 
         </LinearLayout>
