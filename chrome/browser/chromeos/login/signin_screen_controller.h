@@ -33,8 +33,7 @@ class SignInScreenController : public user_manager::RemoveUserDelegate,
                                public user_manager::UserManager::Observer,
                                public content::NotificationObserver {
  public:
-  SignInScreenController(OobeUI* oobe_ui,
-                         LoginDisplay::Delegate* login_display_delegate);
+  explicit SignInScreenController(OobeUI* oobe_ui);
   ~SignInScreenController() override;
 
   // Returns the default wizard controller if it has been created.

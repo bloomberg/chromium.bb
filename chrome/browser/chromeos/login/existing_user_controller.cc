@@ -317,7 +317,6 @@ ExistingUserController* ExistingUserController::current_controller_ = nullptr;
 
 ExistingUserController::ExistingUserController(LoginDisplayHost* host)
     : host_(host),
-      login_display_(host_->CreateLoginDisplay(this)),
       cros_settings_(CrosSettings::Get()),
       network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {
@@ -412,9 +411,9 @@ void ExistingUserController::UpdateLoginDisplay(
   show_guest &= !filtered_users.empty();
   bool allow_new_user = true;
   cros_settings_->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  login_display_->set_parent_window(GetNativeWindow());
-  login_display_->Init(filtered_users, show_guest, show_users_on_signin,
-                       allow_new_user);
+  GetLoginDisplay()->set_parent_window(GetNativeWindow());
+  GetLoginDisplay()->Init(filtered_users, show_guest, show_users_on_signin,
+                          allow_new_user);
   host_->OnPreferencesChanged();
 }
 
@@ -511,7 +510,6 @@ ExistingUserController::~ExistingUserController() {
   } else {
     NOTREACHED() << "More than one controller are alive.";
   }
-  DCHECK(login_display_.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -667,7 +665,7 @@ void ExistingUserController::ContinuePerformLoginWithoutMigration(
 void ExistingUserController::RestartLogin(const UserContext& user_context) {
   is_login_in_progress_ = false;
   login_performer_.reset();
-  login_display_->ShowSigninUI(user_context.GetAccountId().GetUserEmail());
+  GetLoginDisplay()->ShowSigninUI(user_context.GetAccountId().GetUserEmail());
 }
 
 void ExistingUserController::OnSigninScreenReady() {
@@ -802,8 +800,8 @@ void ExistingUserController::ShowEncryptionMigrationScreen(
 }
 
 void ExistingUserController::ShowTPMError() {
-  login_display_->SetUIEnabled(false);
-  login_display_->ShowErrorScreen(LoginDisplay::TPM_ERROR);
+  GetLoginDisplay()->SetUIEnabled(false);
+  GetLoginDisplay()->ShowErrorScreen(LoginDisplay::TPM_ERROR);
 }
 
 void ExistingUserController::ShowPasswordChangedDialog() {
@@ -821,8 +819,8 @@ void ExistingUserController::ShowPasswordChangedDialog() {
   // us to recover from a lost owner password/homedir.
   // TODO(gspencer): We shouldn't have to erase stateful data when
   // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
-  login_display_->ShowPasswordChangedDialog(show_invalid_old_password_error,
-                                            display_email_);
+  GetLoginDisplay()->ShowPasswordChangedDialog(show_invalid_old_password_error,
+                                               display_email_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -856,7 +854,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     ShowTPMError();
   } else if (last_login_attempt_account_id_ == user_manager::GuestAccountId()) {
     // Show no errors, just re-enable input.
-    login_display_->ClearAndEnablePassword();
+    GetLoginDisplay()->ClearAndEnablePassword();
     StartAutoLoginTimer();
   } else if (is_known_user &&
              failure.reason() == AuthFailure::MISSING_CRYPTOHOME) {
@@ -881,7 +879,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     if (auth_flow_offline_)
       UMA_HISTOGRAM_BOOLEAN("Login.OfflineFailure.IsKnownUser", is_known_user);
 
-    login_display_->ClearAndEnablePassword();
+    GetLoginDisplay()->ClearAndEnablePassword();
     StartAutoLoginTimer();
   }
 
@@ -898,7 +896,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
 
 void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   is_login_in_progress_ = false;
-  login_display_->set_signin_completed(true);
+  GetLoginDisplay()->set_signin_completed(true);
 
   // Login performer will be gone so cache this value to use
   // once profile is loaded.
@@ -970,7 +968,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
 void ExistingUserController::OnProfilePrepared(Profile* profile,
                                                bool browser_launched) {
   // Reenable clicking on other windows and status area.
-  login_display_->SetUIEnabled(true);
+  GetLoginDisplay()->SetUIEnabled(true);
 
   if (browser_launched)
     host_ = nullptr;
@@ -1188,13 +1186,13 @@ void ExistingUserController::ForceOnlineLoginForAccountId(
   // Start online sign-in UI for the user.
   is_login_in_progress_ = false;
   login_performer_.reset();
-  login_display_->ShowSigninUI(account_id.GetUserEmail());
+  GetLoginDisplay()->ShowSigninUI(account_id.GetUserEmail());
 }
 
 void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
   PerformLoginFinishedActions(true /* start auto login timer */);
 
-  login_display_->ShowWhitelistCheckFailedError();
+  GetLoginDisplay()->ShowWhitelistCheckFailedError();
 
   if (auth_status_consumer_) {
     auth_status_consumer_->OnAuthFailure(
@@ -1223,7 +1221,7 @@ void ExistingUserController::SetAuthFlowOffline(bool offline) {
 void ExistingUserController::DeviceSettingsChanged() {
   // If login was already completed, we should avoid any signin screen
   // transitions, see http://crbug.com/461604 for example.
-  if (host_ != nullptr && !login_display_->is_signin_completed()) {
+  if (host_ != nullptr && !GetLoginDisplay()->is_signin_completed()) {
     // Signed settings or user list changed. Notify views and update them.
     UpdateLoginDisplay(user_manager::UserManager::Get()->GetUsers());
     ConfigureAutoLogin();
@@ -1242,6 +1240,10 @@ bool ExistingUserController::password_changed() const {
     return login_performer_->password_changed();
 
   return password_changed_;
+}
+
+LoginDisplay* ExistingUserController::GetLoginDisplay() {
+  return host_->GetLoginDisplay();
 }
 
 void ExistingUserController::LoginAsGuest() {
@@ -1506,7 +1508,7 @@ void ExistingUserController::ShowError(int error_id,
     }
   }
 
-  login_display_->ShowError(error_id, num_login_attempts_, help_topic_id);
+  GetLoginDisplay()->ShowError(error_id, num_login_attempts_, help_topic_id);
 }
 
 void ExistingUserController::SendAccessibilityAlert(
@@ -1549,7 +1551,7 @@ void ExistingUserController::LoginAsPublicSessionInternal(
 void ExistingUserController::PerformPreLoginActions(
     const UserContext& user_context) {
   // Disable clicking on other windows and status tray.
-  login_display_->SetUIEnabled(false);
+  GetLoginDisplay()->SetUIEnabled(false);
 
   if (last_login_attempt_account_id_ != user_context.GetAccountId()) {
     last_login_attempt_account_id_ = user_context.GetAccountId();
@@ -1566,7 +1568,7 @@ void ExistingUserController::PerformLoginFinishedActions(
   is_login_in_progress_ = false;
 
   // Reenable clicking on other windows and status area.
-  login_display_->SetUIEnabled(true);
+  GetLoginDisplay()->SetUIEnabled(true);
 
   if (start_auto_login_timer)
     StartAutoLoginTimer();
@@ -1586,7 +1588,7 @@ void ExistingUserController::ContinueLoginWhenCryptohomeAvailable(
 void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
     const base::Closure& continuation) {
   // Disable clicking on other windows and status tray.
-  login_display_->SetUIEnabled(false);
+  GetLoginDisplay()->SetUIEnabled(false);
 
   // Stop the auto-login timer.
   StopAutoLoginTimer();
@@ -1603,13 +1605,13 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
   if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
     // If the |cros_settings_| are permanently untrusted, show an error message
     // and refuse to log in.
-    login_display_->ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, 1,
-                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    GetLoginDisplay()->ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, 1,
+                                 HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 
     // Re-enable clicking on other windows and the status area. Do not start the
     // auto-login timer though. Without trusted |cros_settings_|, no auto-login
     // can succeed.
-    login_display_->SetUIEnabled(true);
+    GetLoginDisplay()->SetUIEnabled(true);
     return;
   }
 
@@ -1619,7 +1621,7 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
 
     // Re-enable clicking on other windows and the status area. Do not start the
     // auto-login timer though. On a disabled device, no auto-login can succeed.
-    login_display_->SetUIEnabled(true);
+    GetLoginDisplay()->SetUIEnabled(true);
     return;
   }
 
@@ -1706,7 +1708,7 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
     // If credentials are missing, refuse to log in.
 
     // Reenable clicking on other windows and status area.
-    login_display_->SetUIEnabled(true);
+    GetLoginDisplay()->SetUIEnabled(true);
     // Restart the auto-login timer.
     StartAutoLoginTimer();
   }
@@ -1742,7 +1744,7 @@ void ExistingUserController::OnTokenHandleChecked(
   // permission to collect a feedback.
   RecordPasswordChangeFlow(LOGIN_PASSWORD_CHANGE_FLOW_CRYPTOHOME_FAILURE);
   VLOG(1) << "Show unrecoverable cryptohome error dialog.";
-  login_display_->ShowUnrecoverableCrypthomeErrorDialog();
+  GetLoginDisplay()->ShowUnrecoverableCrypthomeErrorDialog();
 }
 
 void ExistingUserController::ClearRecordedNames() {

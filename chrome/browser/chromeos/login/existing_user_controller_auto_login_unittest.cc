@@ -47,13 +47,12 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
         scoped_user_manager_(base::WrapUnique(mock_user_manager_)) {}
 
   void SetUp() override {
-    mock_login_display_host_.reset(new MockLoginDisplayHost);
-    mock_login_display_ = new MockLoginDisplay();
-    arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
+    mock_login_display_host_ = std::make_unique<MockLoginDisplayHost>();
+    mock_login_display_ = std::make_unique<MockLoginDisplay>();
+    arc_kiosk_app_manager_ = std::make_unique<ArcKioskAppManager>();
 
-    EXPECT_CALL(*mock_login_display_host_.get(), CreateLoginDisplay(_))
-        .Times(1)
-        .WillOnce(Return(mock_login_display_));
+    ON_CALL(*mock_login_display_host_, GetLoginDisplay())
+        .WillByDefault(Return(mock_login_display_.get()));
 
     EXPECT_CALL(*mock_user_manager_, Shutdown()).Times(AnyNumber());
     EXPECT_CALL(*mock_user_manager_, FindUser(_)).WillRepeatedly(ReturnNull());
@@ -136,11 +135,8 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
           policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION));
 
  private:
-  // |mock_login_display_| is owned by the ExistingUserController, which calls
-  // CreateLoginDisplay() on the |mock_login_display_host_| to get it.
-  MockLoginDisplay* mock_login_display_;
-
   std::unique_ptr<MockLoginDisplayHost> mock_login_display_host_;
+  std::unique_ptr<MockLoginDisplay> mock_login_display_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ScopedTestingLocalState local_state_;
 

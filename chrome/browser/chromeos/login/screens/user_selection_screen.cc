@@ -360,11 +360,6 @@ void UserSelectionScreen::InitEasyUnlock() {
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(this);
 }
 
-void UserSelectionScreen::SetLoginDisplayDelegate(
-    LoginDisplay::Delegate* login_display_delegate) {
-  login_display_delegate_ = login_display_delegate;
-}
-
 // static
 void UserSelectionScreen::FillUserDictionary(
     user_manager::User* user,
@@ -759,9 +754,11 @@ void UserSelectionScreen::AttemptEasySignin(const AccountId& account_id,
   user_context.SetKey(Key(secret));
   user_context.GetKey()->SetLabel(key_label);
 
-  // login display delegate not exist in views-based lock screen.
-  if (login_display_delegate_)
-    login_display_delegate_->Login(user_context, SigninSpecifics());
+  // LoginDisplayHost does not exist in views-based lock screen.
+  if (LoginDisplayHost::default_host()) {
+    LoginDisplayHost::default_host()->GetLoginDisplay()->delegate()->Login(
+        user_context, SigninSpecifics());
+  }
 }
 
 void UserSelectionScreen::Show() {}

@@ -41,8 +41,7 @@ LoginDisplayWebUI::~LoginDisplayWebUI() {
 
 // LoginDisplay implementation: ------------------------------------------------
 
-LoginDisplayWebUI::LoginDisplayWebUI(LoginDisplay::Delegate* delegate)
-    : LoginDisplay(delegate) {}
+LoginDisplayWebUI::LoginDisplayWebUI() = default;
 
 void LoginDisplayWebUI::ClearAndEnablePassword() {
   if (webui_handler_)

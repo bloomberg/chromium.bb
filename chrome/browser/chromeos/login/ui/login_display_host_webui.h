@@ -54,7 +54,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   ~LoginDisplayHostWebUI() override;
 
   // LoginDisplayHost:
-  LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate) override;
+  LoginDisplay* GetLoginDisplay() override;
   gfx::NativeWindow GetNativeWindow() const override;
   OobeUI* GetOobeUI() const override;
   WebUILoginView* GetWebUILoginView() const override;
@@ -197,7 +197,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   WebUILoginView* login_view_ = nullptr;
 
   // Login display we are using.
-  LoginDisplayWebUI* login_display_ = nullptr;
+  std::unique_ptr<LoginDisplayWebUI> login_display_;
 
   // True if the login display is the current screen.
   bool is_showing_login_ = false;
