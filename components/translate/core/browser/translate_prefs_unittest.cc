@@ -751,6 +751,25 @@ TEST_F(TranslatePrefsTest, RemoveFromLanguageListFeatureEnabled) {
   ExpectBlockedLanguageListContent({"en", "es"});
 }
 
+TEST_F(TranslatePrefsTest, RemoveFromLanguageListClearsRecentLanguage) {
+  std::vector<std::string> languages;
+
+  // Unblock last language of a family.
+  languages = {"en-US", "es-AR"};
+  translate_prefs_->UpdateLanguageList(languages);
+  translate_prefs_->SetRecentTargetLanguage("en-US");
+  EXPECT_EQ("en-US", translate_prefs_->GetRecentTargetLanguage());
+
+  translate_prefs_->RemoveFromLanguageList("es-AR");
+  EXPECT_EQ("en-US", translate_prefs_->GetRecentTargetLanguage());
+
+  translate_prefs_->UpdateLanguageList(languages);
+  EXPECT_EQ("en-US", translate_prefs_->GetRecentTargetLanguage());
+
+  translate_prefs_->RemoveFromLanguageList("en-US");
+  EXPECT_EQ("", translate_prefs_->GetRecentTargetLanguage());
+}
+
 TEST_F(TranslatePrefsTest, MoveLanguageToTheTop) {
   std::vector<std::string> languages;
   std::string enabled;

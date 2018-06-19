@@ -268,6 +268,12 @@ void TranslatePrefs::RemoveFromLanguageList(const std::string& input_language) {
   const auto& it =
       std::find(languages.begin(), languages.end(), chrome_language);
   if (it != languages.end()) {
+    // If the language being removed is the most recent language, erase that
+    // data so that Chrome won't try to translate to it next time Translate is
+    // triggered.
+    if (chrome_language == GetRecentTargetLanguage())
+      SetRecentTargetLanguage("");
+
     languages.erase(it);
     UpdateLanguageList(languages);
 
