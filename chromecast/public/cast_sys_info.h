@@ -48,6 +48,9 @@ class CastSysInfo {
   // This describes system version which may be different with
   // CAST_BUILD_NUMBER.
   virtual std::string GetSystemBuildNumber() = 0;
+  // Returns signing epoch time.
+  static CHROMECAST_EXPORT std::string GetSigningEpoch()
+      __attribute__((__weak__));
 
   // Returns default country and locale baked from the factory.
   virtual std::string GetFactoryCountry() = 0;
