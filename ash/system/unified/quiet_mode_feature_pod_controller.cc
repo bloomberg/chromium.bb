@@ -28,8 +28,8 @@ QuietModeFeaturePodController::~QuietModeFeaturePodController() {
 FeaturePodButton* QuietModeFeaturePodController::CreateButton() {
   DCHECK(!button_);
   button_ = new FeaturePodButton(this);
-  button_->SetLabel(l10n_util::GetStringUTF16(
-      IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
+  button_->SetLabel(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL));
   OnQuietModeChanged(MessageCenter::Get()->IsQuietMode());
   return button_;
 }
@@ -54,8 +54,8 @@ void QuietModeFeaturePodController::OnQuietModeChanged(bool in_quiet_mode) {
                              : kNotificationCenterDoNotDisturbOffIcon);
   button_->SetToggled(in_quiet_mode);
   button_->SetSubLabel(l10n_util::GetStringUTF16(
-      in_quiet_mode ? IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_ON_STATE
-                    : IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_OFF_STATE));
+      in_quiet_mode ? IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_SUBLABEL
+                    : IDS_ASH_STATUS_TRAY_NOTIFICATIONS_ON_SUBLABEL));
 }
 
 }  // namespace ash
