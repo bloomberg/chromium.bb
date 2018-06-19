@@ -22,17 +22,4 @@ TEST(TimeSerializationTest, TimeSerialization) {
   }
 }
 
-TEST(TimeSerializationTest, TimeDeltaSerialization) {
-  std::vector<base::TimeDelta> values_to_test = {
-      base::TimeDelta::Min(), base::TimeDelta::FromHours(-1),
-      base::TimeDelta::FromSeconds(0), base::TimeDelta::FromHours(1),
-      base::TimeDelta::Max()};
-  for (const base::TimeDelta& value : values_to_test) {
-    EXPECT_EQ(SerializeTimeDelta(value), value.ToInternalValue());
-    EXPECT_EQ(base::TimeDelta::FromInternalValue(SerializeTimeDelta(value)),
-              value);
-    EXPECT_EQ(DeserializeTimeDelta(SerializeTimeDelta(value)), value);
-  }
-}
-
 }  // namespace ntp_snippets

@@ -22,7 +22,6 @@
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/status.h"
-#include "components/ntp_snippets/time_serialization.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -481,16 +480,21 @@ RemoteSuggestionsSchedulerImpl::~RemoteSuggestionsSchedulerImpl() = default;
 // static
 void RemoteSuggestionsSchedulerImpl::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterInt64Pref(prefs::kSnippetPersistentFetchingIntervalWifi, 0);
-  registry->RegisterInt64Pref(prefs::kSnippetPersistentFetchingIntervalFallback,
-                              0);
-  registry->RegisterInt64Pref(prefs::kSnippetStartupFetchingIntervalWifi, 0);
-  registry->RegisterInt64Pref(prefs::kSnippetStartupFetchingIntervalFallback,
-                              0);
-  registry->RegisterInt64Pref(prefs::kSnippetShownFetchingIntervalWifi, 0);
-  registry->RegisterInt64Pref(prefs::kSnippetShownFetchingIntervalFallback, 0);
-  registry->RegisterInt64Pref(prefs::kSnippetLastFetchAttemptTime, 0);
-  registry->RegisterInt64Pref(prefs::kSnippetLastSuccessfulFetchTime, 0);
+  registry->RegisterTimeDeltaPref(prefs::kSnippetPersistentFetchingIntervalWifi,
+                                  base::TimeDelta());
+  registry->RegisterTimeDeltaPref(
+      prefs::kSnippetPersistentFetchingIntervalFallback, base::TimeDelta());
+  registry->RegisterTimeDeltaPref(prefs::kSnippetStartupFetchingIntervalWifi,
+                                  base::TimeDelta());
+  registry->RegisterTimeDeltaPref(
+      prefs::kSnippetStartupFetchingIntervalFallback, base::TimeDelta());
+  registry->RegisterTimeDeltaPref(prefs::kSnippetShownFetchingIntervalWifi,
+                                  base::TimeDelta());
+  registry->RegisterTimeDeltaPref(prefs::kSnippetShownFetchingIntervalFallback,
+                                  base::TimeDelta());
+  registry->RegisterTimePref(prefs::kSnippetLastFetchAttemptTime, base::Time());
+  registry->RegisterTimePref(prefs::kSnippetLastSuccessfulFetchTime,
+                             base::Time());
 }
 
 void RemoteSuggestionsSchedulerImpl::SetProvider(
@@ -644,38 +648,34 @@ RemoteSuggestionsSchedulerImpl::GetDesiredFetchingSchedule() const {
 }
 
 void RemoteSuggestionsSchedulerImpl::LoadLastFetchingSchedule() {
-  schedule_.interval_persistent_wifi = DeserializeTimeDelta(
-      profile_prefs_->GetInt64(prefs::kSnippetPersistentFetchingIntervalWifi));
-  schedule_.interval_persistent_fallback =
-      DeserializeTimeDelta(profile_prefs_->GetInt64(
-          prefs::kSnippetPersistentFetchingIntervalFallback));
-  schedule_.interval_startup_wifi = DeserializeTimeDelta(
-      profile_prefs_->GetInt64(prefs::kSnippetStartupFetchingIntervalWifi));
-  schedule_.interval_startup_fallback = DeserializeTimeDelta(
-      profile_prefs_->GetInt64(prefs::kSnippetStartupFetchingIntervalFallback));
-  schedule_.interval_shown_wifi = DeserializeTimeDelta(
-      profile_prefs_->GetInt64(prefs::kSnippetShownFetchingIntervalWifi));
-  schedule_.interval_shown_fallback = DeserializeTimeDelta(
-      profile_prefs_->GetInt64(prefs::kSnippetShownFetchingIntervalFallback));
+  schedule_.interval_persistent_wifi = profile_prefs_->GetTimeDelta(
+      prefs::kSnippetPersistentFetchingIntervalWifi);
+  schedule_.interval_persistent_fallback = profile_prefs_->GetTimeDelta(
+      prefs::kSnippetPersistentFetchingIntervalFallback);
+  schedule_.interval_startup_wifi =
+      profile_prefs_->GetTimeDelta(prefs::kSnippetStartupFetchingIntervalWifi);
+  schedule_.interval_startup_fallback = profile_prefs_->GetTimeDelta(
+      prefs::kSnippetStartupFetchingIntervalFallback);
+  schedule_.interval_shown_wifi =
+      profile_prefs_->GetTimeDelta(prefs::kSnippetShownFetchingIntervalWifi);
+  schedule_.interval_shown_fallback = profile_prefs_->GetTimeDelta(
+      prefs::kSnippetShownFetchingIntervalFallback);
 }
 
 void RemoteSuggestionsSchedulerImpl::StoreFetchingSchedule() {
-  profile_prefs_->SetInt64(
-      prefs::kSnippetPersistentFetchingIntervalWifi,
-      SerializeTimeDelta(schedule_.interval_persistent_wifi));
-  profile_prefs_->SetInt64(
+  profile_prefs_->SetTimeDelta(prefs::kSnippetPersistentFetchingIntervalWifi,
+                               schedule_.interval_persistent_wifi);
+  profile_prefs_->SetTimeDelta(
       prefs::kSnippetPersistentFetchingIntervalFallback,
-      SerializeTimeDelta(schedule_.interval_persistent_fallback));
-  profile_prefs_->SetInt64(prefs::kSnippetStartupFetchingIntervalWifi,
-                           SerializeTimeDelta(schedule_.interval_startup_wifi));
-  profile_prefs_->SetInt64(
-      prefs::kSnippetStartupFetchingIntervalFallback,
-      SerializeTimeDelta(schedule_.interval_startup_fallback));
-  profile_prefs_->SetInt64(prefs::kSnippetShownFetchingIntervalWifi,
-                           SerializeTimeDelta(schedule_.interval_shown_wifi));
-  profile_prefs_->SetInt64(
-      prefs::kSnippetShownFetchingIntervalFallback,
-      SerializeTimeDelta(schedule_.interval_shown_fallback));
+      schedule_.interval_persistent_fallback);
+  profile_prefs_->SetTimeDelta(prefs::kSnippetStartupFetchingIntervalWifi,
+                               schedule_.interval_startup_wifi);
+  profile_prefs_->SetTimeDelta(prefs::kSnippetStartupFetchingIntervalFallback,
+                               schedule_.interval_startup_fallback);
+  profile_prefs_->SetTimeDelta(prefs::kSnippetShownFetchingIntervalWifi,
+                               schedule_.interval_shown_wifi);
+  profile_prefs_->SetTimeDelta(prefs::kSnippetShownFetchingIntervalFallback,
+                               schedule_.interval_shown_fallback);
 }
 
 bool RemoteSuggestionsSchedulerImpl::IsLastSuccessfulFetchStale() const {
@@ -685,8 +685,8 @@ bool RemoteSuggestionsSchedulerImpl::IsLastSuccessfulFetchStale() const {
   if (!profile_prefs_->HasPrefPath(prefs::kSnippetLastSuccessfulFetchTime)) {
     return false;
   }
-  const base::Time last_successful_fetch_time = DeserializeTime(
-      profile_prefs_->GetInt64(prefs::kSnippetLastSuccessfulFetchTime));
+  const base::Time last_successful_fetch_time =
+      profile_prefs_->GetTime(prefs::kSnippetLastSuccessfulFetchTime);
 
   return clock_->Now() - last_successful_fetch_time >
          schedule_.GetStalenessInterval();
@@ -719,8 +719,8 @@ void RemoteSuggestionsSchedulerImpl::RefetchIfAppropriate(TriggerType trigger) {
     return;
   }
 
-  const base::Time last_fetch_attempt_time = base::Time::FromInternalValue(
-      profile_prefs_->GetInt64(prefs::kSnippetLastFetchAttemptTime));
+  const base::Time last_fetch_attempt_time =
+      profile_prefs_->GetTime(prefs::kSnippetLastFetchAttemptTime);
 
   if (trigger == TriggerType::SURFACE_OPENED &&
       !time_until_first_shown_trigger_reported_) {
@@ -866,8 +866,7 @@ void RemoteSuggestionsSchedulerImpl::RefetchFinished(Status fetch_status) {
 }
 
 void RemoteSuggestionsSchedulerImpl::OnFetchCompleted(Status fetch_status) {
-  profile_prefs_->SetInt64(prefs::kSnippetLastFetchAttemptTime,
-                           SerializeTime(clock_->Now()));
+  profile_prefs_->SetTime(prefs::kSnippetLastFetchAttemptTime, clock_->Now());
   time_until_first_shown_trigger_reported_ = false;
   time_until_first_startup_trigger_reported_ = false;
 
@@ -879,8 +878,8 @@ void RemoteSuggestionsSchedulerImpl::OnFetchCompleted(Status fetch_status) {
     return;
   }
 
-  profile_prefs_->SetInt64(prefs::kSnippetLastSuccessfulFetchTime,
-                           SerializeTime(clock_->Now()));
+  profile_prefs_->SetTime(prefs::kSnippetLastSuccessfulFetchTime,
+                          clock_->Now());
 
   ApplyPersistentFetchingSchedule();
 }
@@ -889,8 +888,7 @@ void RemoteSuggestionsSchedulerImpl::ClearLastFetchAttemptTime() {
   profile_prefs_->ClearPref(prefs::kSnippetLastFetchAttemptTime);
   // To mark the last fetch as stale, we need to keep the time in prefs, only
   // making sure it is long ago.
-  profile_prefs_->SetInt64(prefs::kSnippetLastSuccessfulFetchTime,
-                           SerializeTime(base::Time()));
+  profile_prefs_->SetTime(prefs::kSnippetLastSuccessfulFetchTime, base::Time());
 }
 
 std::set<RemoteSuggestionsSchedulerImpl::TriggerType>
