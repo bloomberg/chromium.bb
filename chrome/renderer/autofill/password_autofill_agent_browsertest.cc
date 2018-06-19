@@ -365,7 +365,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
   void SetManualFallbacksStandalone() {
     scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kEnableManualFallbacksFillingStandalone);
+        password_manager::features::kManualFallbacksFillingStandalone);
   }
 
   void EnableShowAutofillSignatures() {

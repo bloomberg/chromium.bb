@@ -30,9 +30,8 @@ const base::Feature kManualFallbacksFilling = {
 
 // Enable a standalone popup UI, which will allow the user to view all saved
 // passwords.
-const base::Feature kEnableManualFallbacksFillingStandalone = {
-    "EnableManualFallbacksFillingStandalone",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kManualFallbacksFillingStandalone = {
+    "ManualFallbacksFillingStandalone", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable a context menu item in the password field that allows the user
 // to manually enforce saving of their password.
