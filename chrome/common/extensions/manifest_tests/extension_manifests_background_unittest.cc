@@ -127,4 +127,24 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundPagePersistentInvalidKey) {
             warnings[0].message);
 }
 
+// Tests channel restriction on "background.service_worker_script" key.
+TEST_F(ExtensionManifestBackgroundTest, ServiceWorkerBasedBackgroundKey) {
+  // TODO(lazyboy): Add exhaustive tests here, e.g.
+  //   - specifying a non-existent file.
+  //   - specifying multiple files.
+  //   - specifying invalid type (non-string) values.
+  {
+    ScopedCurrentChannel beta(version_info::Channel::BETA);
+    scoped_refptr<Extension> extension = LoadAndExpectWarning(
+        "service_worker_based_background.json",
+        "'background.service_worker_script' requires trunk "
+        "channel or newer, but this is the beta channel.");
+  }
+  {
+    ScopedCurrentChannel beta(version_info::Channel::UNKNOWN);
+    scoped_refptr<Extension> extension =
+        LoadAndExpectSuccess("service_worker_based_background.json");
+  }
+}
+
 }  // namespace extensions

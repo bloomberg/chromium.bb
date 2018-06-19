@@ -239,6 +239,65 @@ class ServiceWorkerTest : public ExtensionApiTest,
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTest);
 };
 
+class ServiceWorkerBasedBackgroundTest : public ServiceWorkerTest {
+ public:
+  ServiceWorkerBasedBackgroundTest()
+      : ServiceWorkerTest(
+            // Extensions APIs from SW are only enabled on trunk.
+            // It is important to set the channel early so that this change is
+            // visible in renderers running with service workers (and no
+            // extension).
+            version_info::Channel::UNKNOWN) {}
+  ~ServiceWorkerBasedBackgroundTest() override {}
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+    ServiceWorkerTest::SetUpOnMainThread();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerBasedBackgroundTest);
+};
+
+// Tests that Service Worker based background pages can be loaded and they can
+// receive extension events.
+// The extension is installed and loaded during this step and it registers
+// an event listener for tabs.onCreated event. The step also verifies that tab
+// creation correctly fires the listener.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, PRE_Basic) {
+  ExtensionTestMessageListener newtab_listener("CREATED", false);
+  newtab_listener.set_failure_message("CREATE_FAILED");
+  ExtensionTestMessageListener worker_listener("WORKER_RUNNING", false);
+  worker_listener.set_failure_message("NON_WORKER_SCOPE");
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/basic"));
+  ASSERT_TRUE(extension);
+  const ExtensionId extension_id = extension->id();
+  EXPECT_TRUE(worker_listener.WaitUntilSatisfied());
+
+  const GURL url = embedded_test_server()->GetURL("/extensions/test_file.html");
+  content::WebContents* new_web_contents = AddTab(browser(), url);
+  EXPECT_TRUE(new_web_contents);
+  EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
+
+  // Service Worker extension does not have ExtensionHost.
+  EXPECT_FALSE(process_manager()->GetBackgroundHostForExtension(extension_id));
+}
+
+// After browser restarts, this test step ensures that opening a tab fires
+// tabs.onCreated event listener to the extension without explicitly loading the
+// extension. This is because the extension registered a listener before browser
+// restarted in PRE_Basic.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, Basic) {
+  ExtensionTestMessageListener newtab_listener("CREATED", false);
+  newtab_listener.set_failure_message("CREATE_FAILED");
+  const GURL url = embedded_test_server()->GetURL("/extensions/test_file.html");
+  content::WebContents* new_web_contents = AddTab(browser(), url);
+  EXPECT_TRUE(new_web_contents);
+  EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
+}
+
 class ServiceWorkerBackgroundSyncTest : public ServiceWorkerTest {
  public:
   ServiceWorkerBackgroundSyncTest() {}
@@ -1223,6 +1282,12 @@ INSTANTIATE_TEST_CASE_P(ServiceWorkerLazyBackgroundTestWithNativeBindings,
                         ::testing::Values(NATIVE_BINDINGS));
 INSTANTIATE_TEST_CASE_P(ServiceWorkerLazyBackgroundTestWithJSBindings,
                         ServiceWorkerLazyBackgroundTest,
+                        ::testing::Values(JAVASCRIPT_BINDINGS));
+INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithNativeBindings,
+                        ServiceWorkerBasedBackgroundTest,
+                        ::testing::Values(NATIVE_BINDINGS));
+INSTANTIATE_TEST_CASE_P(ServiceWorkerTestWithJSBindings,
+                        ServiceWorkerBasedBackgroundTest,
                         ::testing::Values(JAVASCRIPT_BINDINGS));
 
 }  // namespace extensions
