@@ -406,6 +406,11 @@ TEST(ProcessMitigationsTest, CheckWin81DynamicCodePolicySuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8_1)
     return;
 
+// TODO(crbug.com/805414): Windows ASan hotpatching requires dynamic code.
+#if defined(ADDRESS_SANITIZER)
+  return;
+#endif
+
   base::string16 test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_DYNAMICCODE);
 
@@ -486,6 +491,11 @@ TEST(ProcessMitigationsTest, CheckWin81DynamicCode_TestMitigation) {
 TEST(ProcessMitigationsTest, CheckWin10DynamicCodeOptOutPolicySuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return;
+
+// TODO(crbug.com/805414): Windows ASan hotpatching requires dynamic code.
+#if defined(ADDRESS_SANITIZER)
+  return;
+#endif
 
   base::string16 test_command = L"CheckPolicy ";
   test_command += std::to_wstring(TESTPOLICY_DYNAMICCODEOPTOUT);
