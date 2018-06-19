@@ -352,11 +352,11 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // Alert icon colors
     case NativeTheme::kColorId_AlertSeverityLow:
-      return gfx::kGoogleGreen700;
+      return gfx::kGoogleGreen600;
     case NativeTheme::kColorId_AlertSeverityMedium:
       return gfx::kGoogleYellow700;
     case NativeTheme::kColorId_AlertSeverityHigh:
-      return gfx::kGoogleRed700;
+      return gfx::kGoogleRed600;
 
     case NativeTheme::kColorId_NumColors:
       break;
