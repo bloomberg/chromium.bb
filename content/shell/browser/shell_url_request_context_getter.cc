@@ -187,7 +187,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 #if BUILDFLAG(ENABLE_REPORTING)
     if (base::FeatureList::IsEnabled(network::features::kReporting)) {
       std::unique_ptr<net::ReportingPolicy> reporting_policy =
-          std::make_unique<net::ReportingPolicy>();
+          net::ReportingPolicy::Create();
       if (command_line.HasSwitch(switches::kRunWebTests))
         reporting_policy->delivery_interval =
             base::TimeDelta::FromMilliseconds(100);

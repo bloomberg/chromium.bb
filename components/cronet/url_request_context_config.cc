@@ -520,7 +520,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
 
 #if BUILDFLAG(ENABLE_REPORTING)
   if (nel_enable) {
-    auto policy = std::make_unique<net::ReportingPolicy>();
+    auto policy = net::ReportingPolicy::Create();
 
     // Apps (like Cronet embedders) are generally allowed to run in the
     // background, even across network changes, so use more relaxed privacy

@@ -4,9 +4,31 @@
 
 #include "net/reporting/reporting_policy.h"
 
+#include "base/no_destructor.h"
 #include "base/time/time.h"
 
 namespace net {
+
+namespace {
+
+ReportingPolicy* policy_for_testing = nullptr;
+
+}  // namespace
+
+// static
+std::unique_ptr<ReportingPolicy> ReportingPolicy::Create() {
+  if (policy_for_testing != nullptr) {
+    return std::make_unique<ReportingPolicy>(*policy_for_testing);
+  }
+  return std::make_unique<ReportingPolicy>();
+}
+
+// static
+void ReportingPolicy::UsePolicyForTesting(const ReportingPolicy& policy) {
+  static base::NoDestructor<ReportingPolicy> owned_policy;
+  policy_for_testing = owned_policy.get();
+  *owned_policy = policy;
+}
 
 ReportingPolicy::ReportingPolicy()
     : max_report_count(100u),

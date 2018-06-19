@@ -60,7 +60,7 @@ class NetworkErrorLoggingEndToEndTest : public TestWithScopedTaskEnvironment {
         upload_should_hang_(false),
         upload_received_(false) {
     // Make report delivery happen instantly.
-    auto policy = std::make_unique<ReportingPolicy>();
+    auto policy = ReportingPolicy::Create();
     policy->delivery_interval = base::TimeDelta::FromSeconds(0);
 
     URLRequestContextBuilder builder;
