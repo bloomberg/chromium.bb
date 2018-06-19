@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -16,6 +17,7 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/fido/fido_ble_device.h"
 #include "device/fido/fido_ble_uuids.h"
+#include "device/fido/fido_cable_handshake_handler.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/mock_fido_discovery_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -47,7 +49,7 @@ constexpr FidoCableDiscovery::EidArray kInvalidAuthenticatorEid = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00}};
 
-constexpr FidoCableDiscovery::SessionKeyArray kTestSessionKey = {
+constexpr FidoCableDiscovery::SessionPreKeyArray kTestSessionPreKey = {
     {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}};
@@ -63,7 +65,7 @@ constexpr FidoCableDiscovery::EidArray kSecondaryAuthenticatorEid = {
     {0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee,
      0xee, 0xee, 0xee, 0xee}};
 
-constexpr FidoCableDiscovery::SessionKeyArray kSecondarySessionKey = {
+constexpr FidoCableDiscovery::SessionPreKeyArray kSecondarySessionPreKey = {
     {0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
      0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
      0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd}};
@@ -203,6 +205,44 @@ class CableMockAdapter : public MockBluetoothAdapter {
   ~CableMockAdapter() override = default;
 };
 
+class FakeHandshakeHandler : public FidoCableHandshakeHandler {
+ public:
+  FakeHandshakeHandler(FidoCableDevice* device,
+                       base::span<const uint8_t, 8> nonce,
+                       base::span<const uint8_t, 32> session_pre_key)
+      : FidoCableHandshakeHandler(device, nonce, session_pre_key) {}
+  ~FakeHandshakeHandler() override = default;
+
+  void InitiateCableHandshake(FidoDevice::DeviceCallback callback) override {
+    std::move(callback).Run(std::vector<uint8_t>());
+  }
+
+  bool ValidateAuthenticatorHandshakeMessage(
+      base::span<const uint8_t> response) override {
+    return true;
+  }
+};
+
+// Fake discovery that encapsulates exactly the same behavior as
+// FidoCableDiscovery except that it uses FakeHandshakeHandler instead of
+// FidoHandshakeHandler to conduct handshake with the authenticator.
+class FakeFidoCableDiscovery : public FidoCableDiscovery {
+ public:
+  explicit FakeFidoCableDiscovery(
+      std::vector<CableDiscoveryData> discovery_data)
+      : FidoCableDiscovery(std::move(discovery_data)) {}
+  ~FakeFidoCableDiscovery() override = default;
+
+ private:
+  std::unique_ptr<FidoCableHandshakeHandler> CreateHandshakeHandler(
+      FidoCableDevice* device,
+      base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
+      base::span<const uint8_t, 8> nonce) override {
+    return std::make_unique<FakeHandshakeHandler>(device, nonce,
+                                                  session_pre_key);
+  }
+};
+
 }  // namespace
 
 class FidoCableDiscoveryTest : public ::testing::Test {
@@ -210,8 +250,8 @@ class FidoCableDiscoveryTest : public ::testing::Test {
   std::unique_ptr<FidoCableDiscovery> CreateDiscovery() {
     std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
     discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
-                                kAuthenticatorEid, kTestSessionKey);
-    return std::make_unique<FidoCableDiscovery>(std::move(discovery_data));
+                                kAuthenticatorEid, kTestSessionPreKey);
+    return std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -273,11 +313,12 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
   std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
   discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
-                              kAuthenticatorEid, kTestSessionKey);
+                              kAuthenticatorEid, kTestSessionPreKey);
   discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
-                              kSecondaryAuthenticatorEid, kSecondarySessionKey);
+                              kSecondaryAuthenticatorEid,
+                              kSecondarySessionPreKey);
   auto cable_discovery =
-      std::make_unique<FidoCableDiscovery>(std::move(discovery_data));
+      std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
   EXPECT_CALL(mock_observer, DeviceAdded(_, _));
   cable_discovery->set_observer(&mock_observer);
@@ -308,11 +349,12 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
   std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
   discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
-                              kAuthenticatorEid, kTestSessionKey);
+                              kAuthenticatorEid, kTestSessionPreKey);
   discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
-                              kSecondaryAuthenticatorEid, kSecondarySessionKey);
+                              kSecondaryAuthenticatorEid,
+                              kSecondarySessionPreKey);
   auto cable_discovery =
-      std::make_unique<FidoCableDiscovery>(std::move(discovery_data));
+      std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
   EXPECT_CALL(mock_observer, DeviceAdded(_, _));
   cable_discovery->set_observer(&mock_observer);
@@ -341,11 +383,12 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
 TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
   std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
   discovery_data.emplace_back(kTestCableVersionNumber, kClientEid,
-                              kAuthenticatorEid, kTestSessionKey);
+                              kAuthenticatorEid, kTestSessionPreKey);
   discovery_data.emplace_back(kTestCableVersionNumber, kSecondaryClientEid,
-                              kSecondaryAuthenticatorEid, kSecondarySessionKey);
+                              kSecondaryAuthenticatorEid,
+                              kSecondarySessionPreKey);
   auto cable_discovery =
-      std::make_unique<FidoCableDiscovery>(std::move(discovery_data));
+      std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
 
   NiceMock<MockFidoDiscoveryObserver> mock_observer;
   EXPECT_CALL(mock_observer, DeviceAdded(_, _)).Times(0);

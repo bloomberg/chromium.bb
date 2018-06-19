@@ -9,11 +9,12 @@
 
 #include <array>
 #include <map>
-#include <set>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -21,16 +22,18 @@
 
 namespace device {
 
+class FidoCableDevice;
 class BluetoothDevice;
 class BluetoothAdvertisement;
+class FidoCableHandshakeHandler;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
     : public FidoBleDiscoveryBase {
  public:
   static constexpr size_t kEphemeralIdSize = 16;
-  static constexpr size_t kSessionKeySize = 32;
+  static constexpr size_t kSessionPreKeySize = 32;
   using EidArray = std::array<uint8_t, kEphemeralIdSize>;
-  using SessionKeyArray = std::array<uint8_t, kSessionKeySize>;
+  using SessionPreKeyArray = std::array<uint8_t, kSessionPreKeySize>;
 
   // Encapsulates information required to discover Cable device per single
   // credential. When multiple credentials are enrolled to a single account
@@ -43,7 +46,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
     CableDiscoveryData(uint8_t version,
                        const EidArray& client_eid,
                        const EidArray& authenticator_eid,
-                       const SessionKeyArray& session_key);
+                       const SessionPreKeyArray& session_pre_key);
     CableDiscoveryData(const CableDiscoveryData& data);
     CableDiscoveryData& operator=(const CableDiscoveryData& other);
     ~CableDiscoveryData();
@@ -51,11 +54,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
     uint8_t version;
     EidArray client_eid;
     EidArray authenticator_eid;
-    SessionKeyArray session_key;
+    SessionPreKeyArray session_pre_key;
   };
 
   FidoCableDiscovery(std::vector<CableDiscoveryData> discovery_data);
   ~FidoCableDiscovery() override;
+
+ protected:
+  virtual std::unique_ptr<FidoCableHandshakeHandler> CreateHandshakeHandler(
+      FidoCableDevice* device,
+      base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
+      base::span<const uint8_t, 8> nonce);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FidoCableDiscoveryTest,
@@ -83,6 +92,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // once all advertisements has been processed.
   void RecordAdvertisementResult(bool is_success);
   void CableDeviceFound(BluetoothAdapter* adapter, BluetoothDevice* device);
+  void ConductEncryptionHandshake(
+      std::unique_ptr<FidoCableDevice> device,
+      base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
+      base::span<const uint8_t, 8> nonce);
+  void ValidateAuthenticatorHandshakeMessage(
+      std::unique_ptr<FidoCableDevice> cable_device,
+      FidoCableHandshakeHandler* handshake_handler,
+      base::Optional<std::vector<uint8_t>> handshake_response);
+
   const CableDiscoveryData* GetFoundCableDiscoveryData(
       const BluetoothDevice* device) const;
 
@@ -90,6 +108,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   size_t advertisement_success_counter_ = 0;
   size_t advertisement_failure_counter_ = 0;
   std::map<EidArray, scoped_refptr<BluetoothAdvertisement>> advertisements_;
+  std::map<std::string, std::unique_ptr<FidoCableHandshakeHandler>>
+      cable_handshake_handlers_;
   base::WeakPtrFactory<FidoCableDiscovery> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FidoCableDiscovery);

@@ -149,11 +149,6 @@ class FidoCableDeviceTest : public Test {
     device()->Connect();
   }
 
-  void SetUpEncryptionSwitch() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        "enable-cable-encryption");
-  }
-
   FidoCableDevice* device() { return device_.get(); }
   MockFidoBleConnection* connection() { return connection_; }
   FakeCableAuthenticator* authenticator() { return &authenticator_; }
@@ -168,7 +163,6 @@ class FidoCableDeviceTest : public Test {
 };
 
 TEST_F(FidoCableDeviceTest, TestCaBleDeviceSendData) {
-  SetUpEncryptionSwitch();
   ConnectWithLength(kControlPointLength);
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
@@ -197,7 +191,6 @@ TEST_F(FidoCableDeviceTest, TestCaBleDeviceSendData) {
 // Test that FidoCableDevice properly updates counters when sending/receiving
 // multiple requests.
 TEST_F(FidoCableDeviceTest, TestCableDeviceSendMultipleRequests) {
-  SetUpEncryptionSwitch();
   ConnectWithLength(kControlPointLength);
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .Times(2)
@@ -241,7 +234,6 @@ TEST_F(FidoCableDeviceTest, TestCableDeviceSendMultipleRequests) {
 
 TEST_F(FidoCableDeviceTest, TestCableDeviceFailOnIncorrectSessionKey) {
   constexpr char kIncorrectSessionKey[] = "11111111111111111111111111111111";
-  SetUpEncryptionSwitch();
   ConnectWithLength(kControlPointLength);
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
@@ -271,7 +263,6 @@ TEST_F(FidoCableDeviceTest, TestCableDeviceFailOnIncorrectSessionKey) {
 
 TEST_F(FidoCableDeviceTest, TestCableDeviceFailOnUnexpectedCounter) {
   constexpr uint32_t kIncorrectAuthenticatorCounter = 1;
-  SetUpEncryptionSwitch();
   ConnectWithLength(kControlPointLength);
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
@@ -307,7 +298,6 @@ TEST_F(FidoCableDeviceTest, TestCableDeviceFailOnUnexpectedCounter) {
 // the expected counter value -- should return an error.
 TEST_F(FidoCableDeviceTest, TestCableDeviceErrorOnMaxCounter) {
   ConnectWithLength(kControlPointLength);
-  SetUpEncryptionSwitch();
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .WillOnce(Invoke([this](const auto& data, auto* cb) {
@@ -333,28 +323,6 @@ TEST_F(FidoCableDeviceTest, TestCableDeviceErrorOnMaxCounter) {
   callback_receiver.WaitForCallback();
   const auto& value = callback_receiver.value();
   EXPECT_FALSE(value);
-}
-
-TEST_F(FidoCableDeviceTest, TestEncryptionDisabledWithoutCommandLineSwitch) {
-  ConnectWithLength(kControlPointLength);
-
-  EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
-      .WillOnce(Invoke([this](const auto& data, auto* cb) {
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(std::move(*cb), true));
-
-        base::SequencedTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::BindOnce(connection()->read_callback(), data));
-      }));
-
-  TestDeviceCallbackReceiver callback_receiver;
-  device()->DeviceTransact(fido_parsing_utils::Materialize(kTestData),
-                           callback_receiver.callback());
-
-  callback_receiver.WaitForCallback();
-  const auto& value = callback_receiver.value();
-  ASSERT_TRUE(value);
-  EXPECT_THAT(*value, ::testing::ElementsAreArray(kTestData));
 }
 
 }  // namespace device

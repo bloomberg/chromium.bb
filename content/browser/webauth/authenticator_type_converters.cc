@@ -180,13 +180,13 @@ TypeConverter<std::vector<::device::FidoCableDiscovery::CableDiscoveryData>,
     std::copy(data->authenticator_eid.begin(), data->authenticator_eid.end(),
               authenticator_eid.begin());
 
-    ::device::FidoCableDiscovery::SessionKeyArray session_key;
-    DCHECK_EQ(session_key.size(), data->session_pre_key.size());
+    ::device::FidoCableDiscovery::SessionPreKeyArray session_pre_key;
+    DCHECK_EQ(session_pre_key.size(), data->session_pre_key.size());
     std::copy(data->session_pre_key.begin(), data->session_pre_key.end(),
-              session_key.begin());
+              session_pre_key.begin());
 
     discovery_data.push_back(::device::FidoCableDiscovery::CableDiscoveryData{
-        data->version, client_eid, authenticator_eid, session_key});
+        data->version, client_eid, authenticator_eid, session_pre_key});
   }
 
   return discovery_data;
