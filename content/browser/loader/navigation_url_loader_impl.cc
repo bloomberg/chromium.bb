@@ -402,7 +402,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           GetURLLoaderOptions(request_info->is_main_frame),
           request_info->frame_tree_node_id,
           request_info->devtools_navigation_token,
-          request_info->report_raw_headers,
+          request_info->devtools_frame_token, request_info->report_raw_headers,
           request_info->begin_params->load_flags,
           base::MakeRefCounted<
               SignedExchangeURLLoaderFactoryForNonNetworkService>(
@@ -615,7 +615,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           GetURLLoaderOptions(request_info->is_main_frame),
           request_info->frame_tree_node_id,
           request_info->devtools_navigation_token,
-          request_info->report_raw_headers,
+          request_info->devtools_frame_token, request_info->report_raw_headers,
           request_info->begin_params->load_flags,
           default_url_loader_factory_getter_->GetNetworkFactory(),
           base::BindRepeating(

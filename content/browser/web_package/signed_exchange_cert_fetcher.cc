@@ -72,14 +72,15 @@ SignedExchangeCertFetcher::CreateAndStart(
     bool force_fetch,
     SignedExchangeVersion version,
     CertificateCallback callback,
-    SignedExchangeDevToolsProxy* devtools_proxy) {
+    SignedExchangeDevToolsProxy* devtools_proxy,
+    const base::Optional<base::UnguessableToken>& throttling_profile_id) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::CreateAndStart");
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher(
       new SignedExchangeCertFetcher(
           std::move(shared_url_loader_factory), std::move(throttles), cert_url,
           std::move(request_initiator), force_fetch, version,
-          std::move(callback), devtools_proxy));
+          std::move(callback), devtools_proxy, throttling_profile_id));
   cert_fetcher->Start();
   return cert_fetcher;
 }
@@ -92,7 +93,8 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     bool force_fetch,
     SignedExchangeVersion version,
     CertificateCallback callback,
-    SignedExchangeDevToolsProxy* devtools_proxy)
+    SignedExchangeDevToolsProxy* devtools_proxy,
+    const base::Optional<base::UnguessableToken>& throttling_profile_id)
     : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
       throttles_(std::move(throttles)),
       resource_request_(std::make_unique<network::ResourceRequest>()),
@@ -117,6 +119,7 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     cert_request_id_ = base::UnguessableToken::Create();
     resource_request_->enable_load_timing = true;
   }
+  resource_request_->throttling_profile_id = throttling_profile_id;
 }
 
 SignedExchangeCertFetcher::~SignedExchangeCertFetcher() = default;

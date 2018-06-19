@@ -7,6 +7,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -39,6 +41,7 @@ class SignedExchangePrefetchHandler final
       base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
       bool report_raw_headers,
       int load_flags,
+      const base::Optional<base::UnguessableToken>& throttling_profile_id,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr network_loader,
       network::mojom::URLLoaderClientRequest network_client_request,

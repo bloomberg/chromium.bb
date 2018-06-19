@@ -212,7 +212,8 @@ class SignedExchangeCertFetcherTest : public testing::Test {
             &mock_loader_factory_),
         std::move(throttles_), url, request_initiator_, force_fetch,
         SignedExchangeVersion::kB1, std::move(callback),
-        nullptr /* devtools_proxy */);
+        nullptr /* devtools_proxy */,
+        base::nullopt /* throttling_profile_id */);
   }
 
   void CallOnReceiveResponse() {

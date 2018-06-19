@@ -53,6 +53,7 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
       url::Origin request_initiator,
       uint32_t url_loader_options,
       int load_flags,
+      const base::Optional<base::UnguessableToken>& throttling_profile_id,
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
@@ -136,6 +137,7 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   url::Origin request_initiator_;
   const uint32_t url_loader_options_;
   const int load_flags_;
+  const base::Optional<base::UnguessableToken> throttling_profile_id_;
   std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;

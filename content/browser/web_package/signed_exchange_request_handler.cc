@@ -35,6 +35,7 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
     uint32_t url_loader_options,
     int frame_tree_node_id,
     const base::UnguessableToken& devtools_navigation_token,
+    const base::Optional<base::UnguessableToken>& throttling_profile_id,
     bool report_raw_headers,
     int load_flags,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -45,6 +46,7 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
       url_loader_options_(url_loader_options),
       frame_tree_node_id_(frame_tree_node_id),
       devtools_navigation_token_(devtools_navigation_token),
+      throttling_profile_id_(throttling_profile_id),
       report_raw_headers_(report_raw_headers),
       load_flags_(load_flags),
       url_loader_factory_(url_loader_factory),
@@ -93,6 +95,7 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       url_, response, std::move(client), url_loader->Unbind(),
       std::move(request_initiator_), url_loader_options_, load_flags_,
+      throttling_profile_id_,
       std::make_unique<SignedExchangeDevToolsProxy>(
           url_, response,
           base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),

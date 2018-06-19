@@ -54,7 +54,8 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       bool force_fetch,
       SignedExchangeVersion version,
       CertificateCallback callback,
-      SignedExchangeDevToolsProxy* devtools_proxy);
+      SignedExchangeDevToolsProxy* devtools_proxy,
+      const base::Optional<base::UnguessableToken>& throttling_profile_id);
 
   ~SignedExchangeCertFetcher() override;
 
@@ -76,7 +77,8 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       bool force_fetch,
       SignedExchangeVersion version,
       CertificateCallback callback,
-      SignedExchangeDevToolsProxy* devtools_proxy);
+      SignedExchangeDevToolsProxy* devtools_proxy,
+      const base::Optional<base::UnguessableToken>& throttling_profile_id);
   void Start();
   void Abort();
   void OnHandleReady(MojoResult result);

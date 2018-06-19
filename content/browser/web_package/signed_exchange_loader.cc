@@ -87,6 +87,7 @@ SignedExchangeLoader::SignedExchangeLoader(
     url::Origin request_initiator,
     uint32_t url_loader_options,
     int load_flags,
+    const base::Optional<base::UnguessableToken>& throttling_profile_id,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
@@ -99,6 +100,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       request_initiator_(request_initiator),
       url_loader_options_(url_loader_options),
       load_flags_(load_flags),
+      throttling_profile_id_(throttling_profile_id),
       devtools_proxy_(std::move(devtools_proxy)),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
@@ -211,7 +213,7 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   auto cert_fetcher_factory = SignedExchangeCertFetcherFactory::Create(
       std::move(request_initiator_), std::move(url_loader_factory_),
-      std::move(url_loader_throttles_getter_));
+      std::move(url_loader_throttles_getter_), throttling_profile_id_);
 
   if (g_signed_exchange_factory_for_testing_) {
     signed_exchange_handler_ = g_signed_exchange_factory_for_testing_->Create(
