@@ -34,6 +34,10 @@ void _sigtramp(int, int, struct sigset*);
 
 namespace base {
 
+using Frame = StackSamplingProfiler::Frame;
+using Module = StackSamplingProfiler::Module;
+using SamplingProfileBuilder = StackSamplingProfiler::SamplingProfileBuilder;
+
 namespace {
 
 // Maps a module's address range (half-open) in memory to an index in a separate
@@ -115,7 +119,7 @@ size_t GetModuleTextSize(const void* module_addr) {
 // StackSamplingProfiler::Frame::kUnknownModuleIndex if no Module can be
 // determined for |module|.
 size_t GetModuleIndex(const uintptr_t instruction_pointer,
-                      std::vector<StackSamplingProfiler::Module>* modules,
+                      std::vector<Module>* modules,
                       std::vector<ModuleIndex>* profile_module_index) {
   // Check if |instruction_pointer| is in the address range of a module we've
   // already seen.
@@ -130,11 +134,10 @@ size_t GetModuleIndex(const uintptr_t instruction_pointer,
 
   Dl_info inf;
   if (!dladdr(reinterpret_cast<const void*>(instruction_pointer), &inf))
-    return StackSamplingProfiler::Frame::kUnknownModuleIndex;
+    return Frame::kUnknownModuleIndex;
 
-  StackSamplingProfiler::Module module(
-      reinterpret_cast<uintptr_t>(inf.dli_fbase), GetUniqueId(inf.dli_fbase),
-      FilePath(inf.dli_fname));
+  Module module(reinterpret_cast<uintptr_t>(inf.dli_fbase),
+                GetUniqueId(inf.dli_fbase), FilePath(inf.dli_fname));
   modules->push_back(module);
 
   auto base_module_address = reinterpret_cast<uintptr_t>(inf.dli_fbase);
@@ -298,13 +301,12 @@ bool HasValidRbp(unw_cursor_t* unwind_cursor, uintptr_t stack_top) {
 // lambda for each frame. Returns false if an error occurred, otherwise returns
 // true.
 template <typename StackFrameCallback, typename ContinueUnwindPredicate>
-bool WalkStackFromContext(
-    unw_context_t* unwind_context,
-    size_t* frame_count,
-    std::vector<StackSamplingProfiler::Module>* current_modules,
-    std::vector<ModuleIndex>* profile_module_index,
-    const StackFrameCallback& callback,
-    const ContinueUnwindPredicate& continue_unwind) {
+bool WalkStackFromContext(unw_context_t* unwind_context,
+                          size_t* frame_count,
+                          std::vector<Module>* current_modules,
+                          std::vector<ModuleIndex>* profile_module_index,
+                          const StackFrameCallback& callback,
+                          const ContinueUnwindPredicate& continue_unwind) {
   unw_cursor_t unwind_cursor;
   unw_init_local(&unwind_cursor, unwind_context);
 
@@ -328,7 +330,7 @@ bool WalkStackFromContext(
     // frame.
     size_t module_index =
         GetModuleIndex(rip, current_modules, profile_module_index);
-    if (module_index == StackSamplingProfiler::Frame::kUnknownModuleIndex)
+    if (module_index == Frame::kUnknownModuleIndex)
       return false;
 
     callback(static_cast<uintptr_t>(rip), module_index);
@@ -388,7 +390,7 @@ void GetSigtrampRange(uintptr_t* start, uintptr_t* end) {
 // lambda for each frame.
 template <typename StackFrameCallback, typename ContinueUnwindPredicate>
 void WalkStack(const x86_thread_state64_t& thread_state,
-               std::vector<StackSamplingProfiler::Module>* current_modules,
+               std::vector<Module>* current_modules,
                std::vector<ModuleIndex>* profile_module_index,
                const StackFrameCallback& callback,
                const ContinueUnwindPredicate& continue_unwind) {
@@ -470,11 +472,10 @@ class NativeStackSamplerMac : public NativeStackSampler {
   ~NativeStackSamplerMac() override;
 
   // StackSamplingProfiler::NativeStackSampler:
-  void ProfileRecordingStarting(
-      std::vector<StackSamplingProfiler::Module>* modules) override;
-  std::vector<StackSamplingProfiler::Frame> RecordStackFrames(
+  void ProfileRecordingStarting(std::vector<Module>* modules) override;
+  std::vector<Frame> RecordStackFrames(
       StackBuffer* stack_buffer,
-      StackSamplingProfiler::SamplingProfileBuilder* profile_builder) override;
+      SamplingProfileBuilder* profile_builder) override;
   void ProfileRecordingStopped() override;
 
  private:
@@ -482,9 +483,9 @@ class NativeStackSamplerMac : public NativeStackSampler {
   // thread.
   // Returns a vector of frames which record the information of the stack frames
   // and associated modules.
-  std::vector<StackSamplingProfiler::Frame> SuspendThreadAndRecordStack(
+  std::vector<Frame> SuspendThreadAndRecordStack(
       StackBuffer* stack_buffer,
-      StackSamplingProfiler::SamplingProfileBuilder* profile_builder);
+      SamplingProfileBuilder* profile_builder);
 
   // Weak reference: Mach port for thread being profiled.
   mach_port_t thread_port_;
@@ -496,7 +497,7 @@ class NativeStackSamplerMac : public NativeStackSampler {
 
   // Weak. Points to the modules associated with the profile being recorded
   // between ProfileRecordingStarting() and ProfileRecordingStopped().
-  std::vector<StackSamplingProfiler::Module>* current_modules_ = nullptr;
+  std::vector<Module>* current_modules_ = nullptr;
 
   // Maps a module's address range to the corresponding Module's index within
   // current_modules_.
@@ -528,15 +529,14 @@ NativeStackSamplerMac::NativeStackSamplerMac(
 NativeStackSamplerMac::~NativeStackSamplerMac() {}
 
 void NativeStackSamplerMac::ProfileRecordingStarting(
-    std::vector<StackSamplingProfiler::Module>* modules) {
+    std::vector<Module>* modules) {
   current_modules_ = modules;
   profile_module_index_.clear();
 }
 
-std::vector<StackSamplingProfiler::Frame>
-NativeStackSamplerMac::RecordStackFrames(
+std::vector<Frame> NativeStackSamplerMac::RecordStackFrames(
     StackBuffer* stack_buffer,
-    StackSamplingProfiler::SamplingProfileBuilder* profile_builder) {
+    SamplingProfileBuilder* profile_builder) {
   DCHECK(current_modules_);
 
   return SuspendThreadAndRecordStack(stack_buffer, profile_builder);
@@ -546,13 +546,12 @@ void NativeStackSamplerMac::ProfileRecordingStopped() {
   current_modules_ = nullptr;
 }
 
-std::vector<StackSamplingProfiler::Frame>
-NativeStackSamplerMac::SuspendThreadAndRecordStack(
+std::vector<Frame> NativeStackSamplerMac::SuspendThreadAndRecordStack(
     StackBuffer* stack_buffer,
-    StackSamplingProfiler::SamplingProfileBuilder* profile_builder) {
+    SamplingProfileBuilder* profile_builder) {
   x86_thread_state64_t thread_state;
 
-  std::vector<StackSamplingProfiler::Frame> frames;
+  std::vector<Frame> frames;
 
   // Copy the stack.
 
