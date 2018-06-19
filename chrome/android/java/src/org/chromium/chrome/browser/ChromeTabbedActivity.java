@@ -124,6 +124,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.tasks.TasksUma;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -1470,6 +1471,14 @@ public class ChromeTabbedActivity
                     // we're in incognito mode.
                     setStatusBarColor(null, Color.BLACK);
                 }
+            }
+
+            @Override
+            public void onTabStateInitialized() {
+                if (!mCreatedTabOnStartup) return;
+
+                TabModel model = mTabModelSelectorImpl.getModel(false);
+                TasksUma.recordTasksUma(model);
             }
         });
 
