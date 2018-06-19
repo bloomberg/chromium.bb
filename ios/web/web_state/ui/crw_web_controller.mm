@@ -1758,13 +1758,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
                          baseURL:net::NSURLWithGURL(currentURL)];
 
     auto loadHTMLContext = web::NavigationContextImpl::CreateNavigationContext(
-        _webStateImpl, GURL::EmptyGURL(),
+        _webStateImpl, currentURL,
         /*has_user_gesture=*/false, ui::PAGE_TRANSITION_FIRST,
         /*is_renderer_initiated=*/false);
     loadHTMLContext->SetLoadingErrorPage(true);
 
     [_navigationStates setContext:std::move(loadHTMLContext)
                     forNavigation:navigation];
+    [_navigationStates setState:web::WKNavigationState::REQUESTED
+                  forNavigation:navigation];
   }
 
   // If |context| has placeholder URL, this is the second part of a native error
@@ -3091,6 +3093,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
                    navigationItem:self.currentNavItem
                 navigationContext:navigationContext];
   }
+
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages) &&
+      !web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    self.navigationManagerImpl->CommitPendingItem();
+  }
+
   if ([_navigationStates stateForNavigation:navigation] ==
       web::WKNavigationState::PROVISIONALY_FAILED) {
     _webStateImpl->OnNavigationFinished(navigationContext);
@@ -4277,6 +4285,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
+  BOOL isMainFrameNavigationAction = [self isMainFrameNavigationAction:action];
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages) &&
+      isMainFrameNavigationAction) {
+    web::NavigationContextImpl* context =
+        [self contextForPendingMainFrameNavigationWithURL:requestURL];
+    if (context && context->IsLoadingErrorPage()) {
+      // loadHTMLString: navigation which loads error page into WKWebView.
+      decisionHandler(WKNavigationActionPolicyAllow);
+      return;
+    }
+  }
+
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // WKBasedNavigationManager doesn't use |loadCurrentURL| for reload or back/
     // forward navigation. So this is the first point where a form repost would
@@ -4320,7 +4340,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   ui::PageTransition transition =
       [self pageTransitionFromNavigationType:action.navigationType];
   web::WebStatePolicyDecider::RequestInfo requestInfo(
-      transition, [self isMainFrameNavigationAction:action]);
+      transition, isMainFrameNavigationAction);
   BOOL allowLoad =
       self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);
   if (!allowLoad && action.targetFrame.mainFrame) {

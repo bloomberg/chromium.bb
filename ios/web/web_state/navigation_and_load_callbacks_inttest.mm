@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #import "ios/testing/wait_util.h"
+#include "ios/web/public/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_native_content.h"
@@ -142,7 +143,11 @@ ACTION_P4(VerifyErrorFinishedContext, web_state, url, context, nav_id) {
   EXPECT_TRUE(error_code == NSURLErrorNetworkConnectionLost);
   EXPECT_FALSE((*context)->IsRendererInitiated());
   EXPECT_FALSE((*context)->GetResponseHeaders());
-  ASSERT_FALSE(web_state->IsLoading());
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    ASSERT_TRUE(web_state->IsLoading());
+  } else {
+    ASSERT_FALSE(web_state->IsLoading());
+  }
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
   NavigationItem* item = navigation_manager->GetLastCommittedItem();
   EXPECT_FALSE(item->GetTimestamp().is_null());
@@ -645,10 +650,20 @@ TEST_F(NavigationAndLoadCallbacksTest, FailedNavigation) {
       .WillOnce(VerifyPageStartedContext(
           web_state(), url, ui::PageTransition::PAGE_TRANSITION_TYPED, &context,
           &nav_id));
-  EXPECT_CALL(observer_, DidStopLoading(web_state()));
-  EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(
-          VerifyErrorFinishedContext(web_state(), url, &context, &nav_id));
+
+  if (base::FeatureList::IsEnabled(web::features::kWebErrorPages)) {
+    EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+        .WillOnce(
+            VerifyErrorFinishedContext(web_state(), url, &context, &nav_id));
+    EXPECT_CALL(observer_, DidStopLoading(web_state()));
+
+  } else {
+    EXPECT_CALL(observer_, DidStopLoading(web_state()));
+    EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
+        .WillOnce(
+            VerifyErrorFinishedContext(web_state(), url, &context, &nav_id));
+  }
+
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
   test::LoadUrl(web_state(), url);
