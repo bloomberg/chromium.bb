@@ -205,10 +205,10 @@
         <div class="flex">
 <if expr="not is_ios">
           <button class="experiment-restart-button" type="button" tabindex="9">
-<if expr="not is_chromeos">
+<if expr="not chromeos">
           Relaunch Now
 </if>
-<if expr="is_chromeos">
+<if expr="chromeos">
           Restart Now
 </if>
           </button>
