@@ -458,6 +458,7 @@ void CustomFrameViewAsh::SchedulePaintInRect(const gfx::Rect& r) {
 }
 
 void CustomFrameViewAsh::SetVisible(bool visible) {
+  overlay_view_->SetVisible(visible);
   views::View::SetVisible(visible);
   // We need to re-layout so that client view will occupy entire window.
   InvalidateLayout();
