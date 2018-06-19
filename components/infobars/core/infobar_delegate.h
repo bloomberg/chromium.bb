@@ -152,6 +152,7 @@ class InfoBarDelegate {
     PAGE_LOAD_CAPPING_INFOBAR_DELEGATE = 81,
     DOWNLOAD_PROGRESS_INFOBAR_ANDROID = 82,
     AR_CORE_UPGRADE_ANDROID = 83,
+    BLOATED_RENDERER_INFOBAR_DELEGATE = 84,
   };
 
   // Describes navigation events, used to decide whether infobars should be
