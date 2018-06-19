@@ -85,6 +85,13 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   [stackView.heightAnchor constraintEqualToAnchor:self.heightAnchor].active =
       true;
 
+  // Rotate the UIScrollView and its UIStackView subview 180 degrees so that the
+  // first suggestion actually shows up first.
+  if (base::i18n::IsRTL()) {
+    self.transform = CGAffineTransformMakeRotation(M_PI);
+    stackView.transform = CGAffineTransformMakeRotation(M_PI);
+  }
+
   auto setupBlock = ^(FormSuggestion* suggestion, NSUInteger idx, BOOL* stop) {
     // Disable user interaction with suggestion if it is Google Pay logo.
     BOOL userInteractionEnabled =
