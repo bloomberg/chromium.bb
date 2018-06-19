@@ -221,6 +221,11 @@
   return self.currentBVC.browserState;
 }
 
+- (void)haltAllTabs {
+  [self.mainTabModel haltAllTabs];
+  [self.otrTabModel haltAllTabs];
+}
+
 - (void)cleanDeviceSharingManager {
   [self.deviceSharingManager updateBrowserState:NULL];
 }
