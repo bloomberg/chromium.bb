@@ -464,7 +464,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
           this,
           &HTMLMediaElement::CheckViewportIntersectionTimerFired),
       played_time_ranges_(),
-      async_event_queue_(MediaElementEventQueue::Create(this)),
+      async_event_queue_(MediaElementEventQueue::Create(GetExecutionContext())),
       playback_rate_(1.0f),
       default_playback_rate_(1.0f),
       network_state_(kNetworkEmpty),
@@ -751,7 +751,9 @@ void HTMLMediaElement::ScheduleNextSourceChild() {
 }
 
 void HTMLMediaElement::ScheduleEvent(const AtomicString& event_name) {
-  ScheduleEvent(Event::CreateCancelable(event_name));
+  Event* event = Event::CreateCancelable(event_name);
+  event->SetTarget(this);
+  ScheduleEvent(event);
 }
 
 void HTMLMediaElement::ScheduleEvent(Event* event) {
