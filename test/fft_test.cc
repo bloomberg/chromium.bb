@@ -74,6 +74,11 @@ struct FFTTestArg {
       : n(n_in), fft(fft_in), flag(flag_in) {}
 };
 
+std::ostream &operator<<(std::ostream &os, const FFTTestArg &test_arg) {
+  return os << "fft_arg { n:" << test_arg.n << " fft:" << test_arg.fft
+            << " flag:" << test_arg.flag << "}";
+}
+
 class FFT2DTest : public ::testing::TestWithParam<FFTTestArg> {
  protected:
   void SetUp() {
@@ -162,6 +167,11 @@ struct IFFTTestArg {
   IFFTTestArg(int n_in, tform_fun_t ifft_in, int flag_in)
       : n(n_in), ifft(ifft_in), flag(flag_in) {}
 };
+
+std::ostream &operator<<(std::ostream &os, const IFFTTestArg &test_arg) {
+  return os << "ifft_arg { n:" << test_arg.n << " fft:" << test_arg.ifft
+            << " flag:" << test_arg.flag << "}";
+}
 
 class IFFT2DTest : public ::testing::TestWithParam<IFFTTestArg> {
  protected:
