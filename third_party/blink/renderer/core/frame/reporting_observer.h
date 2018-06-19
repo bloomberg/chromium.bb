@@ -7,6 +7,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_reporting_observer_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/frame/report.h"
+#include "third_party/blink/renderer/core/frame/reporting_observer_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -20,10 +22,21 @@ class CORE_EXPORT ReportingObserver final : public ScriptWrappable {
 
  public:
   static ReportingObserver* Create(ExecutionContext*,
-                                   V8ReportingObserverCallback*);
+                                   V8ReportingObserverCallback*,
+                                   ReportingObserverOptions);
 
-  // Call the callback with reports.
-  void ReportToCallback(const HeapVector<Member<Report>>& reports);
+  // Call the callback with all reports in |report_queue_|.
+  void ReportToCallback();
+
+  // Queues a report to be reported via callback soon (possibly in a batch).
+  void QueueReport(Report* report);
+
+  // Returns the state of the |buffered| option.
+  bool Buffered();
+
+  // Sets the |buffered| option to false. This should be called after queueing
+  // all buffered reports, so that they are not reported multiple times.
+  void ClearBuffered();
 
   void observe();
   void disconnect();
@@ -31,10 +44,14 @@ class CORE_EXPORT ReportingObserver final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit ReportingObserver(ExecutionContext*, V8ReportingObserverCallback*);
+  explicit ReportingObserver(ExecutionContext*,
+                             V8ReportingObserverCallback*,
+                             ReportingObserverOptions);
 
   Member<ExecutionContext> execution_context_;
   Member<V8ReportingObserverCallback> callback_;
+  ReportingObserverOptions options_;
+  HeapVector<Member<Report>> report_queue_;
 };
 
 }  // namespace blink

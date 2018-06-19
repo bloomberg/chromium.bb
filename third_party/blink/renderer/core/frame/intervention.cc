@@ -39,9 +39,7 @@ void Intervention::GenerateReport(const LocalFrame* frame,
       new Report("intervention", document->Url().GetString(), body);
 
   // Send the intervention report to any ReportingObservers.
-  ReportingContext* reporting_context = ReportingContext::From(document);
-  if (reporting_context->ObserverExists())
-    reporting_context->QueueReport(report);
+  ReportingContext::From(document)->QueueReport(report);
 
   // Send the intervention report to the Reporting API.
   mojom::blink::ReportingServiceProxyPtr service;

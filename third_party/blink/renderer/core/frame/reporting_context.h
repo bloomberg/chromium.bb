@@ -30,23 +30,17 @@ class CORE_EXPORT ReportingContext final
   // already exist for the given context, one is created.
   static ReportingContext* From(ExecutionContext*);
 
-  // Queues a report to be reported to all observers.
+  // Queues a report in all registered observers.
   void QueueReport(Report*);
-
-  // Sends all queued reports to all observers.
-  void SendReports();
 
   void RegisterObserver(ReportingObserver*);
   void UnregisterObserver(ReportingObserver*);
-
-  // Returns whether there is at least one active ReportingObserver.
-  bool ObserverExists();
 
   void Trace(blink::Visitor*) override;
 
  private:
   HeapListHashSet<Member<ReportingObserver>> observers_;
-  HeapVector<Member<Report>> reports_;
+  HeapListHashSet<Member<Report>> report_buffer_;
   Member<ExecutionContext> execution_context_;
 };
 

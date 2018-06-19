@@ -771,9 +771,7 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
   Report* report = new Report("deprecation", document->Url().GetString(), body);
 
   // Send the deprecation report to any ReportingObservers.
-  ReportingContext* reporting_context = ReportingContext::From(document);
-  if (reporting_context->ObserverExists())
-    reporting_context->QueueReport(report);
+  ReportingContext::From(document)->QueueReport(report);
 
   // Send the deprecation report to the Reporting API.
   mojom::blink::ReportingServiceProxyPtr service;
