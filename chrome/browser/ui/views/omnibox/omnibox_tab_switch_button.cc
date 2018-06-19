@@ -110,7 +110,7 @@ void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
     }
   }
   if (state() == STATE_HOVERED) {
-    if (!model_->IsButtonSelected() && old_state == STATE_NORMAL) {
+    if (old_state == STATE_NORMAL) {
       SetBgColorOverride(GetBackgroundColor());
     }
   }
@@ -121,10 +121,7 @@ void OmniboxTabSwitchButton::StateChanged(ButtonState old_state) {
 
 void OmniboxTabSwitchButton::UpdateBackground() {
   focus_ring()->SchedulePaint();
-  if (model_->IsButtonSelected())
-    SetPressed();
-  else
-    SetBgColorOverride(GetBackgroundColor());
+  SetBgColorOverride(GetBackgroundColor());
 }
 
 void OmniboxTabSwitchButton::ProvideWidthHint(size_t parent_width) {
