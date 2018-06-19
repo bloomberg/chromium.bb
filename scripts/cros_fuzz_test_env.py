@@ -15,27 +15,55 @@ from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
 
-def RunMountCommands(sysroot_path, unmount):
-  """Mount/Unmount the proc & dev paths.
+def SetupOrRemoveDevices(sysroot_path, remove):
+  """Setup or remove devices in |sysroot_path|/dev.
 
-  Checks to see if path is mounted befor attempting to
-  mount or unmount it.
+  If null, random and urandom don't already exist in |sysroot_path|/dev and
+  |remove| is False then they are created. If they do exist and |remove| is True
+  then they are removed.
   """
+  dev_path = os.path.join(sysroot_path, 'dev')
+  if not remove and not os.path.exists(dev_path):
+    cros_build_lib.SudoRunCommand(['mkdir', dev_path])
 
-  for point in ['proc', 'dev']:
-    mount_path = os.path.join(sysroot_path, point)
-    if unmount:
-      if osutils.IsMounted(mount_path):
-        osutils.UmountDir(mount_path, cleanup=False)
-    else:
-      if not osutils.IsMounted(mount_path):
-        # Not using osutils.Mount here, as not sure how to call
-        # it to get the correct flags, etc.
-        if point == 'proc':
-          command = ['mount', '-t', 'proc', 'none', mount_path]
-        else:
-          command = ['mount', '-o', 'bind', '/dev', mount_path]
-        cros_build_lib.SudoRunCommand(command)
+  def get_path(device):
+    return os.path.join(sysroot_path, 'dev', device)
+
+  DEVICE_TO_CMD = {
+      'null': ['mknod', '-m', '666', get_path('null'), 'c', '1', '3'],
+      'random': ['mknod', '-m', '444', get_path('random'), 'c', '1', '8'],
+      'urandom': ['mknod', '-m', '444', get_path('urandom'), 'c', '1', '9'],
+  }
+
+  for device in DEVICE_TO_CMD:
+    device_path = get_path(device)
+    if os.path.exists(device_path) and remove:
+      cros_build_lib.SudoRunCommand(['rm', device_path])
+    elif not os.path.exists(device_path) and not remove:
+      cros_build_lib.SudoRunCommand(DEVICE_TO_CMD[device])
+
+
+def MountOrUnmountProc(sysroot_path, unmount):
+  """Mount or unmount |sysroot_path|/proc.
+
+  Mounts |sysroot_path|/proc if |unmount| is False and it isn't already mounted.
+  If it is already mounted and |unmount| is True then it is unmounted.
+  """
+  proc_path = os.path.join(sysroot_path, 'proc')
+  if unmount:
+    if osutils.IsMounted(proc_path):
+      osutils.UmountDir(proc_path, cleanup=False)
+    return
+
+  if osutils.IsMounted(proc_path):
+    # Don't remount /proc if it is already mounted.
+    return
+
+  if not os.path.exists(proc_path):
+    cros_build_lib.SudoRunCommand(['mkdir', proc_path])
+
+  cmd = ['mount', '-t', 'proc', 'none', proc_path]
+  cros_build_lib.SudoRunCommand(cmd)
 
 
 def GetParser():
@@ -47,13 +75,17 @@ def GetParser():
   parser.add_argument('--cleanup',
                       action='store_true',
                       help='Use this option after the testing is finished.'
-                      ' It will undo the mount commands.')
+                      ' It will undo the setup commands.')
 
   return parser
 
 
 def main(argv):
-  """Parse arguments, calls RunMountCommands & copies files."""
+  """Parse arguments and handle setup or cleanup of fuzzing environment.
+
+  Parse arguments, call MountOrUnmountProc, SetupOrRemoveDevices, & copies
+  files.
+  """
 
   cros_build_lib.AssertOutsideChroot()
 
@@ -64,7 +96,8 @@ def main(argv):
   chroot_path = os.path.join(chromeos_root, 'chroot')
   sysroot_path = os.path.join(chroot_path, 'build', options.board)
 
-  RunMountCommands(sysroot_path, options.cleanup)
+  MountOrUnmountProc(sysroot_path, options.cleanup)
+  SetupOrRemoveDevices(sysroot_path, options.cleanup)
 
   # Do not copy the files if we are cleaning up.
   if not options.cleanup:
