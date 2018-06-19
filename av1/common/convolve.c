@@ -550,9 +550,7 @@ void av1_highbd_convolve_2d_copy_sr_c(
   (void)bd;
 
   for (int y = 0; y < h; ++y) {
-    for (int x = 0; x < w; ++x) {
-      dst[y * dst_stride + x] = src[y * src_stride + x];
-    }
+    memcpy(dst + y * dst_stride, src + y * src_stride, w * sizeof(src[0]));
   }
 }
 
