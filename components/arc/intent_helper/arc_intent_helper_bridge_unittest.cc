@@ -17,10 +17,12 @@ namespace arc {
 
 namespace {
 
+constexpr char kPackageName[] = "default.package.name";
+
 IntentFilter GetIntentFilter(const std::string& host) {
   std::vector<IntentFilter::AuthorityEntry> authorities;
   authorities.emplace_back(host, -1);
-  return IntentFilter(std::move(authorities),
+  return IntentFilter(kPackageName, std::move(authorities),
                       std::vector<IntentFilter::PatternMatcher>());
 }
 

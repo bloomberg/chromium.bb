@@ -18,6 +18,8 @@ namespace arc {
 
 namespace {
 
+constexpr char kPackageName[] = "default.package.name";
+
 class IntentFilterBuilder {
  public:
   IntentFilterBuilder() = default;
@@ -38,7 +40,8 @@ class IntentFilterBuilder {
   }
 
   operator IntentFilter() {
-    return IntentFilter(std::move(authorities_), std::move(paths_));
+    return IntentFilter(kPackageName, std::move(authorities_),
+                        std::move(paths_));
   }
 
  private:

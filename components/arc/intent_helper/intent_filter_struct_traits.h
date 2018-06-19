@@ -43,6 +43,10 @@ struct StructTraits<arc::mojom::IntentFilterDataView, arc::IntentFilter> {
     return base::span<arc::IntentFilter::PatternMatcher>();
   }
 
+  static const std::string& package_name(const arc::IntentFilter& r) {
+    return r.package_name();
+  }
+
   static bool Read(arc::mojom::IntentFilterDataView data,
                    arc::IntentFilter* out);
 };
