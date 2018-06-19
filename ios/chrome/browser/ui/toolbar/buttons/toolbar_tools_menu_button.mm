@@ -99,6 +99,8 @@ const CGFloat kStrokeEndAtApogee = 1;
                 forState:UIControlStateNormal];
       [self setTintColor:toolbar::HighlighButtonTint(style_)
                 forState:UIControlStateHighlighted];
+    } else {
+      [self configureSpotlightView];
     }
   }
   return self;
