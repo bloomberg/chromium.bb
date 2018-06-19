@@ -26,8 +26,10 @@ IB_VERSION_RE = \
     'version="([0-9]+)"/>'
 
 def _CheckXIBSystemAndXcodeVersions(input_api, output_api, error_type):
+  # Skip MainMenu.xib, which was updated to use 10.3.3, Xcode 8.3.2.
   affected_xibs = [x for x in input_api.AffectedFiles()
-      if x.LocalPath().endswith('.xib')]
+      if x.LocalPath().endswith('.xib')
+      and not x.LocalPath().endswith('MainMenu.xib')]
 
   incorrect_system_versions = []
   incorrect_ib_versions = []
