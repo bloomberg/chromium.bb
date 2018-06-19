@@ -174,4 +174,27 @@ TEST_F(ListModelCollapseTest, PersistCollapsedSections) {
   EXPECT_TRUE([model sectionIsCollapsed:SectionIdentifierBar]);
 }
 
+TEST_F(ListModelCollapseTest, CollapsedSectionMode) {
+  model.collapsableMode = ListModelCollapsableModeFirstCell;
+  [model setSection:SectionIdentifierFoo collapsed:YES];
+  [model setSection:SectionIdentifierBar collapsed:YES];
+
+  // SectionIdentifierFoo
+  EXPECT_EQ(1, [model numberOfItemsInSection:0]);
+  EXPECT_TRUE([model sectionIsCollapsed:SectionIdentifierFoo]);
+  // SectionIdentifierBar
+  EXPECT_EQ(1, [model numberOfItemsInSection:1]);
+  EXPECT_TRUE([model sectionIsCollapsed:SectionIdentifierBar]);
+
+  [model setSection:SectionIdentifierFoo collapsed:NO];
+  [model setSection:SectionIdentifierBar collapsed:NO];
+
+  // SectionIdentifierFoo
+  EXPECT_EQ(1, [model numberOfItemsInSection:0]);
+  EXPECT_FALSE([model sectionIsCollapsed:SectionIdentifierFoo]);
+  // SectionIdentifierBar
+  EXPECT_EQ(2, [model numberOfItemsInSection:1]);
+  EXPECT_FALSE([model sectionIsCollapsed:SectionIdentifierBar]);
+}
+
 }  // namespace

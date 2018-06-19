@@ -34,6 +34,8 @@ typedef NSMutableArray<ListItem*> SectionItems;
   NSMutableDictionary<NSNumber*, NSString*>* _collapsedKeys;
 }
 
+@synthesize collapsableMode = _collapsableMode;
+
 - (instancetype)init {
   if ((self = [super init])) {
     _sectionIdentifiers = [[NSMutableArray alloc] init];
@@ -293,9 +295,17 @@ typedef NSMutableArray<ListItem*> SectionItems;
 - (NSInteger)numberOfItemsInSection:(NSInteger)section {
   DCHECK_LT(base::checked_cast<NSUInteger>(section), [_sections count]);
   NSInteger sectionIdentifier = [self sectionIdentifierForSection:section];
-  if ([self sectionIsCollapsed:sectionIdentifier])
-    return 0;
   SectionItems* items = [_sections objectAtIndex:section];
+  if ([self sectionIsCollapsed:sectionIdentifier]) {
+    switch (self.collapsableMode) {
+      case ListModelCollapsableModeHeader:
+        return 0;
+      case ListModelCollapsableModeFirstCell:
+        DCHECK_LT(0ul, items.count);
+        return 1;
+    }
+    NOTREACHED();
+  }
   return items.count;
 }
 
