@@ -252,6 +252,13 @@ void SignOut() {
 
 @implementation UKMTestCase
 
+// Per crbug.com/853992, Entire test suite is failing regularly.
++ (NSArray*)testInvocations {
+  if (IsIPadIdiom())
+    return @[];
+  return [super testInvocations];
+}
+
 + (void)setUp {
   [super setUp];
   if (!base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
