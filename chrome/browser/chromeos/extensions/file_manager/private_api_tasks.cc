@@ -180,9 +180,9 @@ void FileManagerPrivateInternalGetFileTasksFunction::
         std::unique_ptr<std::set<base::FilePath>> directory_paths) {
   std::vector<EntryInfo> entries;
   for (size_t i = 0; i < local_paths_.size(); ++i) {
-    entries.push_back(EntryInfo(
+    entries.emplace_back(
         local_paths_[i], (*mime_types)[i],
-        directory_paths->find(local_paths_[i]) != directory_paths->end()));
+        directory_paths->find(local_paths_[i]) != directory_paths->end());
   }
 
   file_manager::file_tasks::FindAllTypesOfTasks(

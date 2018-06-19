@@ -61,7 +61,7 @@ bool FileManagerPrivateSelectFileFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   std::vector<GURL> file_paths;
-  file_paths.push_back(GURL(params->selected_path));
+  file_paths.emplace_back(params->selected_path);
 
   file_manager::util::GetSelectedFileInfoLocalPathOption option =
       file_manager::util::NO_LOCAL_PATH_RESOLUTION;
@@ -103,7 +103,7 @@ bool FileManagerPrivateSelectFilesFunction::RunAsync() {
 
   std::vector<GURL> file_urls;
   for (size_t i = 0; i < params->selected_paths.size(); ++i)
-    file_urls.push_back(GURL(params->selected_paths[i]));
+    file_urls.emplace_back(params->selected_paths[i]);
 
   file_manager::util::GetSelectedFileInfo(
       render_frame_host(),

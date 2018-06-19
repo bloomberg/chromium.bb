@@ -249,20 +249,14 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, EndToEnd) {
       GetFullPathOnTmpMountPoint(base::FilePath("test_file.txt"));
 
   std::vector<std::string> allowed_extensions;
-  allowed_extensions.push_back("txt");
-  allowed_extensions.push_back("html");
+  allowed_extensions.emplace_back("txt");
+  allowed_extensions.emplace_back("html");
 
   std::vector<TestCase> test_cases;
-  test_cases.push_back(
-      TestCase(base::FilePath("some_file_name.txt"),
-               allowed_extensions,
-               true,
-               selected_path));
-  test_cases.push_back(
-      TestCase(base::FilePath("fail"),
-               std::vector<std::string>(),
-               false,
-               base::FilePath()));
+  test_cases.emplace_back(base::FilePath("some_file_name.txt"),
+                          allowed_extensions, true, selected_path);
+  test_cases.emplace_back(base::FilePath("fail"), std::vector<std::string>(),
+                          false, base::FilePath());
 
   SetTestCases(&test_cases);
 
