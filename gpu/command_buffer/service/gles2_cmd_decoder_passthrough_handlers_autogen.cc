@@ -4618,9 +4618,8 @@ GLES2DecoderPassthroughImpl::HandleSetReadbackBufferShadowAllocationINTERNAL(
   GLuint buffer_id = c.buffer_id;
   GLint shm_id = static_cast<GLint>(c.shm_id);
   GLuint shm_offset = static_cast<GLuint>(c.shm_offset);
-  GLuint size = static_cast<GLuint>(c.size);
   error::Error error = DoSetReadbackBufferShadowAllocationINTERNAL(
-      buffer_id, shm_id, shm_offset, size);
+      buffer_id, shm_id, shm_offset);
   if (error != error::kNoError) {
     return error;
   }

@@ -23,9 +23,9 @@ ReadbackBufferShadowTracker::Buffer::~Buffer() {
   Free();
 }
 
-uint32_t ReadbackBufferShadowTracker::Buffer::Alloc(int32_t* shm_id,
-                                                    uint32_t* shm_offset,
-                                                    bool* already_allocated) {
+void ReadbackBufferShadowTracker::Buffer::Alloc(int32_t* shm_id,
+                                                uint32_t* shm_offset,
+                                                bool* already_allocated) {
   *already_allocated = readback_shm_address_ != nullptr;
   if (!readback_shm_address_) {
     readback_shm_address_ =
@@ -33,7 +33,6 @@ uint32_t ReadbackBufferShadowTracker::Buffer::Alloc(int32_t* shm_id,
   }
   *shm_id = shm_id_;
   *shm_offset = shm_offset_;
-  return size_;
 }
 
 void ReadbackBufferShadowTracker::Buffer::Free() {
