@@ -25,7 +25,6 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
         implements DownloadUiObserver {
     private Spinner mSpinner;
     private DownloadManagerUi mManager;
-    private StorageSummary mStorageSummary;
 
     private int mInfoMenuItemId;
 
@@ -50,9 +49,6 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
         mSpinner = findViewById(R.id.spinner);
         mSpinner.setAdapter(adapter);
         mSpinner.setOnItemSelectedListener(adapter);
-
-        // Initialize the storage summary.
-        mStorageSummary = new StorageSummary(findViewById(R.id.storage_summary));
     }
 
     /**

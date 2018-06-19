@@ -66,8 +66,10 @@ public class StorageSummary {
 
         // Set the storage summary to the view.
         Context context = mView.getContext();
+        long usedSpace = mDirectoryOption.totalSpace - mDirectoryOption.availableSpace;
+        if (usedSpace < 0) usedSpace = 0;
         String storageSummary = context.getString(R.string.download_manager_ui_space_using,
-                DownloadUtils.getStringForBytes(context, mDirectoryOption.availableSpace),
+                DownloadUtils.getStringForBytes(context, usedSpace),
                 DownloadUtils.getStringForBytes(context, mDirectoryOption.totalSpace));
         mView.setText(storageSummary);
     }
