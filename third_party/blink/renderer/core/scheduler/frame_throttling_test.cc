@@ -585,16 +585,16 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
   frame_element->contentDocument()->body()->setAttribute(styleAttr,
                                                          "background: green");
   // Change root frame's layout so that the next lifecycle update will call
-  // ScrollingCoordinator::UpdateAfterPrePaint().
+  // ScrollingCoordinator::UpdateAfterPaint().
   GetDocument().body()->setAttribute(styleAttr, "margin: 20px");
   EXPECT_EQ(DocumentLifecycle::kVisualUpdatePending,
             frame_element->contentDocument()->Lifecycle().GetState());
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       GetDocument().Lifecycle());
-  // This will call ScrollingCoordinator::UpdateAfterPrePaint()
-  // and should not cause assert failure about
-  // isAllowedToQueryCompositingState() in the throttled frame.
+  // This will call ScrollingCoordinator::UpdateAfterPaint() and should not
+  // cause assert failure about isAllowedToQueryCompositingState() in the
+  // throttled frame.
   GetDocument().View()->UpdateAllLifecyclePhases();
   test::RunPendingTasks();
   EXPECT_EQ(DocumentLifecycle::kVisualUpdatePending,
@@ -649,14 +649,14 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
   frame_element->contentDocument()->body()->setAttribute(styleAttr,
                                                          "background: green");
   // Change root frame's layout so that the next lifecycle update will call
-  // ScrollingCoordinator::UpdateAfterPrePaint().
+  // ScrollingCoordinator::UpdateAfterPaint().
   GetDocument().body()->setAttribute(styleAttr, "margin: 20px");
   EXPECT_EQ(DocumentLifecycle::kVisualUpdatePending,
             frame_element->contentDocument()->Lifecycle().GetState());
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       GetDocument().Lifecycle());
-  // This will call ScrollingCoordinator::UpdateAfterPrePaint() and should not
+  // This will call ScrollingCoordinator::UpdateAfterPaint() and should not
   // cause an assert failure about isAllowedToQueryCompositingState() in the
   // throttled frame.
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -691,14 +691,14 @@ TEST_P(FrameThrottlingTest,
   frame_element->contentDocument()->body()->setAttribute(styleAttr,
                                                          "background: green");
   // Change root frame's layout so that the next lifecycle update will call
-  // ScrollingCoordinator::UpdateAfterPrePaint().
+  // ScrollingCoordinator::UpdateAfterPaint().
   GetDocument().body()->setAttribute(styleAttr, "margin: 20px");
   EXPECT_EQ(DocumentLifecycle::kVisualUpdatePending,
             frame_element->contentDocument()->Lifecycle().GetState());
 
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       GetDocument().Lifecycle());
-  // This will call ScrollingCoordinator::UpdateAfterPrePaint() and should not
+  // This will call ScrollingCoordinator::UpdateAfterPaint() and should not
   // cause an assert failure about isAllowedToQueryCompositingState() in the
   // throttled frame.
   CompositeFrame();
