@@ -9,6 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -151,7 +152,7 @@ void ChromeAppListModelUpdater::ActivateChromeItem(const std::string& id,
   if (!item)
     return;
   DCHECK(!item->is_folder());
-  item->Activate(event_flags);
+  item->PerformActivate(event_flags);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -50,12 +50,6 @@ void CrostiniAppItem::Activate(int event_flags) {
   ChromeLauncherController::instance()->ActivateApp(
       id(), ash::LAUNCH_FROM_APP_LIST, event_flags,
       GetController()->GetAppListDisplayId());
-
-  // Launching Crostini apps can take a few seconds if the container is not
-  // currently running. We show a spinner in the shelf but it looks nicer to
-  // also dismiss the app list.
-  if (!GetController()->IsHomeLauncherEnabledInTabletMode())
-    GetController()->DismissView();
 }
 
 void CrostiniAppItem::GetContextMenuModel(GetMenuModelCallback callback) {

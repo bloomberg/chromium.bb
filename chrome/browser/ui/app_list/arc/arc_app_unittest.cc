@@ -912,9 +912,9 @@ TEST_P(ArcAppModelBuilderTest, LaunchApps) {
   ArcAppItem* item_last = FindArcItem(ArcAppTest::GetAppId(app_last));
   ASSERT_NE(nullptr, item_first);
   ASSERT_NE(nullptr, item_last);
-  item_first->Activate(0);
-  item_last->Activate(0);
-  item_first->Activate(0);
+  item_first->PerformActivate(0);
+  item_last->PerformActivate(0);
+  item_first->PerformActivate(0);
 
   const std::vector<std::unique_ptr<arc::FakeAppInstance::Request>>&
       launch_requests = app_instance()->launch_requests();
@@ -928,7 +928,7 @@ TEST_P(ArcAppModelBuilderTest, LaunchApps) {
   item_first = FindArcItem(ArcAppTest::GetAppId(app_first));
   ASSERT_NE(nullptr, item_first);
   size_t launch_request_count_before = app_instance()->launch_requests().size();
-  item_first->Activate(0);
+  item_first->PerformActivate(0);
   // Number of launch requests must not change.
   EXPECT_EQ(launch_request_count_before,
             app_instance()->launch_requests().size());
@@ -949,9 +949,9 @@ TEST_P(ArcAppModelBuilderTest, LaunchShortcuts) {
   ArcAppItem* item_last = FindArcItem(ArcAppTest::GetAppId(app_last));
   ASSERT_NE(nullptr, item_first);
   ASSERT_NE(nullptr, item_last);
-  item_first->Activate(0);
-  item_last->Activate(0);
-  item_first->Activate(0);
+  item_first->PerformActivate(0);
+  item_last->PerformActivate(0);
+  item_first->PerformActivate(0);
 
   const std::vector<std::string>& launch_intents =
       app_instance()->launch_intents();
@@ -965,7 +965,7 @@ TEST_P(ArcAppModelBuilderTest, LaunchShortcuts) {
   item_first = FindArcItem(ArcAppTest::GetAppId(app_first));
   ASSERT_NE(nullptr, item_first);
   size_t launch_request_count_before = app_instance()->launch_intents().size();
-  item_first->Activate(0);
+  item_first->PerformActivate(0);
   // Number of launch requests must not change.
   EXPECT_EQ(launch_request_count_before,
             app_instance()->launch_intents().size());
