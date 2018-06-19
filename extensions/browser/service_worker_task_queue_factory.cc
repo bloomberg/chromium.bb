@@ -5,6 +5,7 @@
 #include "extensions/browser/service_worker_task_queue_factory.h"
 
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/service_worker_task_queue.h"
 
@@ -26,7 +27,9 @@ ServiceWorkerTaskQueueFactory* ServiceWorkerTaskQueueFactory::GetInstance() {
 ServiceWorkerTaskQueueFactory::ServiceWorkerTaskQueueFactory()
     : BrowserContextKeyedServiceFactory(
           "ServiceWorkerTaskQueue",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ExtensionRegistryFactory::GetInstance());
+}
 
 ServiceWorkerTaskQueueFactory::~ServiceWorkerTaskQueueFactory() {}
 

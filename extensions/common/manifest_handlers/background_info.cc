@@ -67,6 +67,14 @@ GURL BackgroundInfo::GetBackgroundURL(const Extension* extension) {
 }
 
 // static
+const std::string& BackgroundInfo::GetBackgroundServiceWorkerScript(
+    const Extension* extension) {
+  const BackgroundInfo& info = GetBackgroundInfo(extension);
+  DCHECK(info.background_service_worker_script_.has_value());
+  return *info.background_service_worker_script_;
+}
+
+// static
 const std::vector<std::string>& BackgroundInfo::GetBackgroundScripts(
     const Extension* extension) {
   return GetBackgroundInfo(extension).background_scripts_;
@@ -98,18 +106,27 @@ bool BackgroundInfo::AllowJSAccess(const Extension* extension) {
   return GetBackgroundInfo(extension).allow_js_access_;
 }
 
+// static
+bool BackgroundInfo::IsServiceWorkerBased(const Extension* extension) {
+  return GetBackgroundInfo(extension)
+      .background_service_worker_script_.has_value();
+}
+
 bool BackgroundInfo::Parse(const Extension* extension, base::string16* error) {
   const std::string& bg_scripts_key = extension->is_platform_app() ?
       keys::kPlatformAppBackgroundScripts : keys::kBackgroundScripts;
   if (!LoadBackgroundScripts(extension, bg_scripts_key, error) ||
       !LoadBackgroundPage(extension, error) ||
+      !LoadBackgroundServiceWorkerScript(extension, error) ||
       !LoadBackgroundPersistent(extension, error) ||
       !LoadAllowJSAccess(extension, error)) {
     return false;
   }
 
-  int background_solution_sum = (background_url_.is_valid() ? 1 : 0) +
-                                (!background_scripts_.empty() ? 1 : 0);
+  int background_solution_sum =
+      (background_url_.is_valid() ? 1 : 0) +
+      (!background_scripts_.empty() ? 1 : 0) +
+      (background_service_worker_script_.has_value() ? 1 : 0);
   if (background_solution_sum > 1) {
     *error = ASCIIToUTF16(errors::kInvalidBackgroundCombination);
     return false;
@@ -183,6 +200,26 @@ bool BackgroundInfo::LoadBackgroundPage(const Extension* extension,
   } else {
     background_url_ = extension->GetResourceURL(background_str);
   }
+
+  return true;
+}
+
+bool BackgroundInfo::LoadBackgroundServiceWorkerScript(
+    const Extension* extension,
+    base::string16* error) {
+  const base::Value* scripts_value = nullptr;
+  if (!extension->manifest()->Get(keys::kBackgroundServiceWorkerScript,
+                                  &scripts_value)) {
+    return true;
+  }
+
+  DCHECK(scripts_value);
+  if (!scripts_value->is_string()) {
+    *error = ASCIIToUTF16(errors::kInvalidBackgroundServiceWorkerScript);
+    return false;
+  }
+
+  background_service_worker_script_ = scripts_value->GetString();
 
   return true;
 }
@@ -282,6 +319,20 @@ bool BackgroundManifestHandler::Validate(
     }
   }
 
+  if (BackgroundInfo::IsServiceWorkerBased(extension)) {
+    DCHECK(extension->is_extension());
+    const std::string& background_service_worker_script =
+        BackgroundInfo::GetBackgroundServiceWorkerScript(extension);
+    if (!base::PathExists(
+            extension->GetResource(background_service_worker_script)
+                .GetFilePath())) {
+      *error = l10n_util::GetStringFUTF8(
+          IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED,
+          base::UTF8ToUTF16(background_service_worker_script));
+      return false;
+    }
+  }
+
   // Validate background page location, except for hosted apps, which should use
   // an external URL. Background page for hosted apps are verified when the
   // extension is created (in Extension::InitFromValue)
@@ -327,9 +378,10 @@ bool BackgroundManifestHandler::AlwaysParseForType(Manifest::Type type) const {
 
 base::span<const char* const> BackgroundManifestHandler::Keys() const {
   static constexpr const char* kKeys[] = {
-      keys::kBackgroundAllowJsAccess,   keys::kBackgroundPage,
-      keys::kBackgroundPersistent,      keys::kBackgroundScripts,
-      keys::kPlatformAppBackgroundPage, keys::kPlatformAppBackgroundScripts};
+      keys::kBackgroundAllowJsAccess,       keys::kBackgroundPage,
+      keys::kBackgroundPersistent,          keys::kBackgroundScripts,
+      keys::kBackgroundServiceWorkerScript, keys::kPlatformAppBackgroundPage,
+      keys::kPlatformAppBackgroundScripts};
   return kKeys;
 }
 

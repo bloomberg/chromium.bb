@@ -21,6 +21,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/runtime_data.h"
+#include "extensions/browser/service_worker_task_queue.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 
 using content::DevToolsAgentHost;
@@ -436,6 +437,14 @@ void ExtensionRegistrar::ActivateExtension(const Extension* extension,
 
   renderer_helper_->OnExtensionLoaded(*extension);
 
+  // TODO(lazyboy): We should move all logic that is required to start up an
+  // extension to a separate class, instead of calling adhoc methods like
+  // service worker ones below.
+  if (BackgroundInfo::IsServiceWorkerBased(extension)) {
+    DCHECK(extension->is_extension());
+    ServiceWorkerTaskQueue::Get(browser_context_)->ActivateExtension(extension);
+  }
+
   // Tell subsystems that use the ExtensionRegistryObserver::OnExtensionLoaded
   // about the new extension.
   //
@@ -459,6 +468,10 @@ void ExtensionRegistrar::DeactivateExtension(const Extension* extension,
   renderer_helper_->OnExtensionUnloaded(*extension);
   extension_system_->UnregisterExtensionWithRequestContexts(extension->id(),
                                                             reason);
+  if (BackgroundInfo::IsServiceWorkerBased(extension)) {
+    ServiceWorkerTaskQueue::Get(browser_context_)
+        ->DeactivateExtension(extension);
+  }
   delegate_->PostDeactivateExtension(extension);
 }
 
