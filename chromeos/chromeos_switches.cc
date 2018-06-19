@@ -249,9 +249,6 @@ const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 const char kDisableNetworkPortalNotification[] =
     "disable-network-portal-notification";
 
-// Disables Settings based network configuration dialogs.
-const char kDisableNetworkSettingsConfig[] = "disable-network-settings-config";
-
 // Disables the new Korean IME in chrome://settings/languages.
 const char kDisableNewKoreanIme[] = "disable-new-korean-ime";
 
@@ -738,11 +735,6 @@ bool IsSigninFrameClientCertsEnabled() {
 bool IsSigninFrameClientCertUserSelectionEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableSigninFrameClientCertUserSelection);
-}
-
-bool IsNetworkSettingsConfigEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kDisableNetworkSettingsConfig);
 }
 
 bool AreExperimentalAccessibilityFeaturesEnabled() {

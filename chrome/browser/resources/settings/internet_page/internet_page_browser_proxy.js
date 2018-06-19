@@ -19,17 +19,18 @@ cr.define('settings', function() {
   /** @interface */
   class InternetPageBrowserProxy {
     /**
-     *  Shows configuration of connected external VPN network.
-     *  @param {string} guid
+     * Shows configuration for external VPNs. Includes ThirdParty (extension
+     * configured) VPNs, and Arc VPNs.
+     * @param {string} guid
      */
-    showNetworkConfigure(guid) {}
+    configureThirdPartyVpn(guid) {}
 
     /**
-     * Sends add VPN request to external VPN provider.
-     * @param {string} networkType
+     * Sends an add VPN request to the external VPN provider (ThirdParty VPN
+     * extension or Arc VPN provider app).
      * @param {string} appId
      */
-    addThirdPartyVpn(networkType, appId) {}
+    addThirdPartyVpn(appId) {}
 
     /**
      * Requests Chrome to send list of Arc VPN providers.
@@ -66,13 +67,13 @@ cr.define('settings', function() {
    */
   class InternetPageBrowserProxyImpl {
     /** @override */
-    showNetworkConfigure(guid) {
-      chrome.send('configureNetwork', [guid]);
+    configureThirdPartyVpn(guid) {
+      chrome.send('configureThirdPartyVpn', [guid]);
     }
 
     /** @override */
-    addThirdPartyVpn(networkType, appId) {
-      chrome.send('addNetwork', [networkType, appId]);
+    addThirdPartyVpn(appId) {
+      chrome.send('addThirdPartyVpn', [appId]);
     }
 
     /** @override */

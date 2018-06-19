@@ -24,8 +24,6 @@ class GmsCoreNotificationsStateTracker;
 namespace settings {
 
 // Chrome OS Internet settings page UI handler.
-// TODO(lgcheng/stevenjb): Rename this ThirdPartyVpnHandler once configuration
-// is handled in the Settings UI (crbug.com/380937
 class InternetHandler
     : public app_list::ArcVpnProviderManager::Observer,
       public chromeos::tether::GmsCoreNotificationsStateTracker::Observer,
@@ -55,8 +53,8 @@ class InternetHandler
   friend class InternetHandlerTest;
 
   // Settings JS handlers.
-  void AddNetwork(const base::ListValue* args);
-  void ConfigureNetwork(const base::ListValue* args);
+  void AddThirdPartyVpn(const base::ListValue* args);
+  void ConfigureThirdPartyVpn(const base::ListValue* args);
   void RequestArcVpnProviders(const base::ListValue* args);
   void RequestGmsCoreNotificationsDisabledDeviceNames(
       const base::ListValue* args);

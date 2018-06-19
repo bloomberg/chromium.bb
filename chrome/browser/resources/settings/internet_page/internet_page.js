@@ -332,12 +332,7 @@ Polymer({
    * @private
    */
   getAddNetworkClass_: function(type) {
-    if (loadTimeData.getBoolean('networkSettingsConfig')) {
-      if (type == CrOnc.Type.WI_FI)
-        return 'icon-add-wifi';
-      return 'icon-add-circle';
-    }
-    return 'icon-external';
+    return type == CrOnc.Type.WI_FI ? 'icon-add-wifi' : 'icon-add-circle';
   },
 
   /**
@@ -381,18 +376,12 @@ Polymer({
 
   /** @private */
   onAddWiFiTap_: function() {
-    if (loadTimeData.getBoolean('networkSettingsConfig'))
-      this.showConfig_(true /* configAndConnect */, CrOnc.Type.WI_FI);
-    else
-      chrome.send('addNetwork', [CrOnc.Type.WI_FI]);
+    this.showConfig_(true /* configAndConnect */, CrOnc.Type.WI_FI);
   },
 
   /** @private */
   onAddVPNTap_: function() {
-    if (loadTimeData.getBoolean('networkSettingsConfig'))
-      this.showConfig_(true /* configAndConnect */, CrOnc.Type.VPN);
-    else
-      chrome.send('addNetwork', [CrOnc.Type.VPN]);
+    this.showConfig_(true /* configAndConnect */, CrOnc.Type.VPN);
   },
 
   /**
@@ -403,7 +392,7 @@ Polymer({
    */
   onAddThirdPartyVpnTap_: function(event) {
     const provider = event.model.item;
-    this.browserProxy_.addThirdPartyVpn(CrOnc.Type.VPN, provider.ExtensionID);
+    this.browserProxy_.addThirdPartyVpn(provider.ExtensionID);
   },
 
   /** @private */

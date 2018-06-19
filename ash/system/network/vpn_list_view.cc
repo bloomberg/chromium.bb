@@ -27,6 +27,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_type_pattern.h"
+#include "components/onc/onc_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
@@ -117,7 +118,7 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
       Shell::Get()->system_tray_controller()->ShowNetworkCreate(
-          shill::kTypeVPN);
+          ::onc::network_type::kVPN);
     }
   }
 

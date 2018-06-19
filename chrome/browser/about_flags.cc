@@ -1453,11 +1453,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableCaptivePortalRandomUrl,
      flag_descriptions::kEnableCaptivePortalRandomUrlDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableCaptivePortalRandomUrl)},
-    {"disable-network-settings-config",
-     flag_descriptions::kDisableNetworkSettingsConfigName,
-     flag_descriptions::kDisableNetworkSettingsConfigDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(
-         chromeos::switches::kDisableNetworkSettingsConfig)},
 #endif  // OS_CHROMEOS
 #if BUILDFLAG(ENABLE_PLUGINS)
     {"allow-nacl-socket-api", flag_descriptions::kAllowNaclSocketApiName,

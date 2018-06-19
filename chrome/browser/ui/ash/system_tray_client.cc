@@ -15,7 +15,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
-#include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -41,6 +40,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
+#include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/network/tether_constants.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -63,8 +63,8 @@
 
 using chromeos::DBusThreadManager;
 using chromeos::UpdateEngineClient;
-using session_manager::SessionState;
 using session_manager::SessionManager;
+using session_manager::SessionState;
 using views::Widget;
 
 namespace {
@@ -339,31 +339,21 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
     return;
   }
 
-  if (chromeos::switches::IsNetworkSettingsConfigEnabled())
-    chromeos::InternetConfigDialog::ShowDialogForNetworkId(network_id);
-  else
-    chromeos::NetworkConfigView::ShowForNetworkId(network_id);
+  chromeos::InternetConfigDialog::ShowDialogForNetworkId(network_id);
 }
 
 void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
-  if (type == shill::kTypeCellular) {
+  if (type == ::onc::network_type::kCellular) {
     const chromeos::NetworkState* cellular =
         chromeos::NetworkHandler::Get()
             ->network_state_handler()
-            ->FirstNetworkByType(chromeos::NetworkTypePattern::Primitive(type));
+            ->FirstNetworkByType(
+                chromeos::onc::NetworkTypePatternFromOncType(type));
     std::string network_id = cellular ? cellular->guid() : "";
     ShowNetworkSettingsHelper(network_id, false /* show_configure */);
     return;
   }
-  if (chromeos::switches::IsNetworkSettingsConfigEnabled()) {
-    // TODO(stevenjb): Pass ONC type to ShowNetworkCreate once NetworkConfigView
-    // is deprecated.
-    std::string onc_type =
-        chromeos::network_util::TranslateShillTypeToONC(type);
-    chromeos::InternetConfigDialog::ShowDialogForNetworkType(onc_type);
-  } else {
-    chromeos::NetworkConfigView::ShowForType(type);
-  }
+  chromeos::InternetConfigDialog::ShowDialogForNetworkType(type);
 }
 
 void SystemTrayClient::ShowThirdPartyVpnCreate(

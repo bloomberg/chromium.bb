@@ -403,10 +403,7 @@ Polymer({
     assert(this.deviceState);
     const type = this.deviceState.Type;
     assert(type != CrOnc.Type.CELLULAR);
-    if (loadTimeData.getBoolean('networkSettingsConfig'))
-      this.fire('show-config', {GUID: '', Type: type});
-    else
-      chrome.send('addNetwork', [type]);
+    this.fire('show-config', {GUID: '', Type: type});
   },
 
   /**
@@ -417,19 +414,16 @@ Polymer({
    */
   onAddThirdPartyVpnTap_: function(event) {
     const provider = event.model.item;
-    this.browserProxy_.addThirdPartyVpn(CrOnc.Type.VPN, provider.ExtensionID);
+    this.browserProxy_.addThirdPartyVpn(provider.ExtensionID);
   },
 
   /**
-   * @param {!{model:
-   *              !{item: !settings.ArcVpnProvider},
-   *        }} event
+   * @param {!{model: !{item: !settings.ArcVpnProvider}}} event
    * @private
    */
   onAddArcVpnTap_: function(event) {
     const provider = event.model.item;
-    settings.InternetPageBrowserProxyImpl.getInstance().addThirdPartyVpn(
-        CrOnc.Type.VPN, provider.AppID);
+    this.browserProxy_.addThirdPartyVpn(provider.AppID);
   },
 
   /**
