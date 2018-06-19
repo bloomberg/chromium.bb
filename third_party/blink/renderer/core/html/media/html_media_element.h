@@ -427,7 +427,7 @@ class CORE_EXPORT HTMLMediaElement
   void OnBecamePersistentVideo(bool) override {}
   bool HasSelectedVideoTrack() final;
   WebMediaPlayer::TrackId GetSelectedVideoTrackId() final;
-  bool IsAutoplayingMuted() final;
+  bool WasAlwaysMuted() final;
   void ActivateViewportIntersectionMonitoring(bool) final;
   bool HasNativeControls() final;
   bool IsAudioElement() final;
@@ -662,6 +662,8 @@ class CORE_EXPORT HTMLMediaElement
   bool in_overlay_fullscreen_video_ : 1;
 
   bool mostly_filling_viewport_ : 1;
+
+  bool was_always_muted_ : 1;
 
   TraceWrapperMember<AudioTrackList> audio_tracks_;
   TraceWrapperMember<VideoTrackList> video_tracks_;

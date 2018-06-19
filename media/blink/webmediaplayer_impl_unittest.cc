@@ -161,7 +161,7 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD2(RemotePlaybackCompatibilityChanged,
                void(const blink::WebURL&, bool));
   MOCK_METHOD1(OnBecamePersistentVideo, void(bool));
-  MOCK_METHOD0(IsAutoplayingMuted, bool());
+  MOCK_METHOD0(WasAlwaysMuted, bool());
   MOCK_METHOD0(HasSelectedVideoTrack, bool());
   MOCK_METHOD0(GetSelectedVideoTrackId, blink::WebMediaPlayer::TrackId());
   MOCK_METHOD0(HasNativeControls, bool());
@@ -177,9 +177,9 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(RequestPlay, void());
   MOCK_METHOD0(RequestPause, void());
 
-  void set_is_autoplaying_muted(bool value) { is_autoplaying_muted_ = value; }
+  void set_was_always_muted(bool value) { was_always_muted_ = value; }
 
-  bool is_autoplaying_muted_ = false;
+  bool was_always_muted_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockWebMediaPlayerClient);
@@ -454,8 +454,8 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     EXPECT_CALL(client_, ReadyStateChanged());
     wmpi_->SetReadyState(blink::WebMediaPlayer::kReadyStateHaveMetadata);
-    EXPECT_CALL(client_, IsAutoplayingMuted())
-        .WillRepeatedly(Return(client_.is_autoplaying_muted_));
+    EXPECT_CALL(client_, WasAlwaysMuted())
+        .WillRepeatedly(Return(client_.was_always_muted_));
     wmpi_->pipeline_metadata_.has_audio = has_audio;
     wmpi_->pipeline_metadata_.has_video = has_video;
 
@@ -481,32 +481,32 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState() {
-    EXPECT_CALL(client_, IsAutoplayingMuted())
-        .WillRepeatedly(Return(client_.is_autoplaying_muted_));
+    EXPECT_CALL(client_, WasAlwaysMuted())
+        .WillRepeatedly(Return(client_.was_always_muted_));
     return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_FrameHidden() {
-    EXPECT_CALL(client_, IsAutoplayingMuted())
-        .WillRepeatedly(Return(client_.is_autoplaying_muted_));
+    EXPECT_CALL(client_, WasAlwaysMuted())
+        .WillRepeatedly(Return(client_.was_always_muted_));
     return wmpi_->UpdatePlayState_ComputePlayState(false, true, false, true);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_Suspended() {
-    EXPECT_CALL(client_, IsAutoplayingMuted())
-        .WillRepeatedly(Return(client_.is_autoplaying_muted_));
+    EXPECT_CALL(client_, WasAlwaysMuted())
+        .WillRepeatedly(Return(client_.was_always_muted_));
     return wmpi_->UpdatePlayState_ComputePlayState(false, true, true, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_Remote() {
-    EXPECT_CALL(client_, IsAutoplayingMuted())
-        .WillRepeatedly(Return(client_.is_autoplaying_muted_));
+    EXPECT_CALL(client_, WasAlwaysMuted())
+        .WillRepeatedly(Return(client_.was_always_muted_));
     return wmpi_->UpdatePlayState_ComputePlayState(true, true, false, false);
   }
 
   WebMediaPlayerImpl::PlayState ComputePlayState_BackgroundedStreaming() {
-    EXPECT_CALL(client_, IsAutoplayingMuted())
-        .WillRepeatedly(Return(client_.is_autoplaying_muted_));
+    EXPECT_CALL(client_, WasAlwaysMuted())
+        .WillRepeatedly(Return(client_.was_always_muted_));
     return wmpi_->UpdatePlayState_ComputePlayState(false, false, false, true);
   }
 
@@ -1110,17 +1110,17 @@ TEST_F(WebMediaPlayerImplTest, AutoplayMuted_StartsAndStops) {
   SetMetadata(true, true);
   SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
-  client_.set_is_autoplaying_muted(true);
+  client_.set_was_always_muted(true);
 
   EXPECT_CALL(delegate_, DidPlay(_, true, false, _));
-  EXPECT_CALL(client_, IsAutoplayingMuted())
-      .WillOnce(Return(client_.is_autoplaying_muted_));
+  EXPECT_CALL(client_, WasAlwaysMuted())
+      .WillOnce(Return(client_.was_always_muted_));
   SetDelegateState(WebMediaPlayerImpl::DelegateState::PLAYING);
 
-  client_.set_is_autoplaying_muted(false);
+  client_.set_was_always_muted(false);
   EXPECT_CALL(delegate_, DidPlay(_, true, true, _));
-  EXPECT_CALL(client_, IsAutoplayingMuted())
-      .WillOnce(Return(client_.is_autoplaying_muted_));
+  EXPECT_CALL(client_, WasAlwaysMuted())
+      .WillOnce(Return(client_.was_always_muted_));
   SetDelegateState(WebMediaPlayerImpl::DelegateState::PLAYING);
 }
 
@@ -1129,16 +1129,16 @@ TEST_F(WebMediaPlayerImplTest, AutoplayMuted_SetVolume) {
   SetMetadata(true, true);
   SetReadyState(blink::WebMediaPlayer::kReadyStateHaveFutureData);
   SetPaused(false);
-  client_.set_is_autoplaying_muted(true);
+  client_.set_was_always_muted(true);
 
   EXPECT_CALL(delegate_, DidPlay(_, true, false, _));
-  EXPECT_CALL(client_, IsAutoplayingMuted())
-      .WillOnce(Return(client_.is_autoplaying_muted_));
+  EXPECT_CALL(client_, WasAlwaysMuted())
+      .WillOnce(Return(client_.was_always_muted_));
   SetDelegateState(WebMediaPlayerImpl::DelegateState::PLAYING);
 
-  client_.set_is_autoplaying_muted(false);
-  EXPECT_CALL(client_, IsAutoplayingMuted())
-      .WillOnce(Return(client_.is_autoplaying_muted_));
+  client_.set_was_always_muted(false);
+  EXPECT_CALL(client_, WasAlwaysMuted())
+      .WillOnce(Return(client_.was_always_muted_));
   EXPECT_CALL(delegate_, DidPlay(_, true, true, _));
   wmpi_->SetVolume(1.0);
 }
@@ -1557,8 +1557,8 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
   // test back into a normal state.
   EXPECT_TRUE(IsDisableVideoTrackPending());
 
-  EXPECT_CALL(client_, IsAutoplayingMuted())
-      .WillRepeatedly(Return(client_.is_autoplaying_muted_));
+  EXPECT_CALL(client_, WasAlwaysMuted())
+      .WillRepeatedly(Return(client_.was_always_muted_));
   ForegroundPlayer();
   EXPECT_FALSE(IsVideoTrackDisabled());
   EXPECT_FALSE(IsDisableVideoTrackPending());

@@ -75,9 +75,6 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // only be called once per call of setMuted().
   bool RequestAutoplayUnmute();
 
-  // Indicates the media element is autoplaying because of being muted.
-  bool IsAutoplayingMuted() const;
-
   // Indicates the media element is or will autoplay because of being
   // muted.
   CORE_EXPORT bool IsOrWillBeAutoplayingMuted() const;

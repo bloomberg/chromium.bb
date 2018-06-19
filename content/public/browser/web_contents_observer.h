@@ -450,6 +450,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // and subsequently within a WebContents.  MediaStartedPlaying() will always
   // be followed by MediaStoppedPlaying() after player teardown.  Observers must
   // release all stored copies of |id| when MediaStoppedPlaying() is received.
+  // |has_video| and |has_audio| can both be false in cases where the media
+  // is playing muted and should be considered as inaudible for all intent and
+  // purposes.
   struct MediaPlayerInfo {
     MediaPlayerInfo(bool has_video, bool has_audio)
         : has_video(has_video), has_audio(has_audio) {}
