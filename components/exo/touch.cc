@@ -4,12 +4,15 @@
 
 #include "components/exo/touch.h"
 
+#include "components/exo/shell_surface_base.h"
 #include "components/exo/surface.h"
 #include "components/exo/touch_delegate.h"
 #include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/window_util.h"
 
 namespace exo {
 namespace {
@@ -190,9 +193,9 @@ void Touch::OnSurfaceDestroying(Surface* surface) {
 ////////////////////////////////////////////////////////////////////////////////
 // Touch, private:
 
-Surface* Touch::GetEffectiveTargetForEvent(ui::Event* event) const {
-  Surface* target =
-      Surface::AsSurface(static_cast<aura::Window*>(event->target()));
+Surface* Touch::GetEffectiveTargetForEvent(ui::LocatedEvent* event) const {
+  Surface* target = ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(event);
+
   if (!target)
     return nullptr;
 

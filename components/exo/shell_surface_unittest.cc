@@ -33,7 +33,10 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -55,6 +58,18 @@ uint32_t ConfigureFullscreen(uint32_t serial,
                              const gfx::Vector2d& origin_offset) {
   EXPECT_EQ(ash::mojom::WindowStateType::FULLSCREEN, state_type);
   return serial;
+}
+
+std::unique_ptr<ShellSurface> CreatePopupShellSurface(
+    Surface* popup_surface,
+    ShellSurface* parent,
+    const gfx::Point& origin) {
+  auto popup_shell_surface = std::make_unique<ShellSurface>(popup_surface);
+  popup_shell_surface->DisableMovement();
+  popup_shell_surface->SetPopup();
+  popup_shell_surface->SetParent(parent);
+  popup_shell_surface->SetOrigin(origin);
+  return popup_shell_surface;
 }
 
 TEST_F(ShellSurfaceTest, AcknowledgeConfigure) {
@@ -581,6 +596,87 @@ TEST_F(ShellSurfaceTest, CycleSnap) {
   // Commit shouldn't change widget bounds when snapped.
   EXPECT_EQ(CurrentContext()->bounds().width() / 2,
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
+}
+
+TEST_F(ShellSurfaceTest, Popup) {
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(0, 0, 256, 256));
+
+  std::unique_ptr<Buffer> popup_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> popup_surface(new Surface);
+  popup_surface->Attach(popup_buffer.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface(CreatePopupShellSurface(
+      popup_surface.get(), shell_surface.get(), gfx::Point(50, 50)));
+  popup_shell_surface->Grab();
+  popup_surface->Commit();
+  ASSERT_EQ(gfx::Rect(50, 50, 256, 256),
+            popup_shell_surface->GetWidget()->GetWindowBoundsInScreen());
+
+  // Verify that created shell surface is popup and has capture.
+  EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
+            popup_shell_surface->GetWidget()->GetNativeWindow()->type());
+  EXPECT_EQ(wm::CaptureController::Get()->GetCaptureWindow(),
+            popup_shell_surface->GetWidget()->GetNativeWindow());
+
+  // ShellSurface can capture the event even after it is craeted.
+  std::unique_ptr<Buffer> sub_popup_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> sub_popup_surface(new Surface);
+  sub_popup_surface->Attach(popup_buffer.get());
+  std::unique_ptr<ShellSurface> sub_popup_shell_surface(CreatePopupShellSurface(
+      sub_popup_surface.get(), popup_shell_surface.get(), gfx::Point(100, 50)));
+  sub_popup_shell_surface->Grab();
+  sub_popup_surface->Commit();
+  ASSERT_EQ(gfx::Rect(100, 50, 256, 256),
+            sub_popup_shell_surface->GetWidget()->GetWindowBoundsInScreen());
+
+  // The capture should be on sub_popup_shell_surface.
+  EXPECT_EQ(wm::CaptureController::Get()->GetCaptureWindow(),
+            sub_popup_shell_surface->GetWidget()->GetNativeWindow());
+  EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
+            sub_popup_shell_surface->GetWidget()->GetNativeWindow()->type());
+
+  {
+    // Mouse is on the top most popup.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+                         gfx::Point(100, 50), ui::EventTimeForNow(), 0, 0);
+    EXPECT_EQ(sub_popup_surface.get(),
+              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+  }
+  {
+    // Move the mouse to the parent popup.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, 0),
+                         gfx::Point(75, 50), ui::EventTimeForNow(), 0, 0);
+    EXPECT_EQ(popup_surface.get(),
+              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+  }
+  {
+    // Move the mouse to the main window.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, -25),
+                         gfx::Point(75, 25), ui::EventTimeForNow(), 0, 0);
+    EXPECT_EQ(surface.get(),
+              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+  }
+
+  // Removing top most popup moves the grab to parent popup.
+  sub_popup_shell_surface.reset();
+  EXPECT_EQ(wm::CaptureController::Get()->GetCaptureWindow(),
+            popup_shell_surface->GetWidget()->GetNativeWindow());
+  {
+    // Targetting should still work.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+                         gfx::Point(50, 50), ui::EventTimeForNow(), 0, 0);
+    EXPECT_EQ(popup_surface.get(),
+              ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(&event));
+  }
 }
 
 }  // namespace

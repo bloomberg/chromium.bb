@@ -1792,17 +1792,42 @@ const struct zxdg_toplevel_v6_interface xdg_toplevel_v6_implementation = {
 
 // Wrapper around shell surface that allows us to handle the case where the
 // xdg surface resource is destroyed before the popup resource.
-class WaylandPopup {
+class WaylandPopup : aura::WindowObserver {
  public:
   WaylandPopup(wl_resource* resource, wl_resource* surface_resource)
-      : resource_(resource), weak_ptr_factory_(this) {
-    ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(surface_resource);
-    shell_surface->set_close_callback(
+      : resource_(resource),
+        shell_surface_(GetUserDataAs<ShellSurface>(surface_resource)),
+        weak_ptr_factory_(this) {
+    shell_surface_->host_window()->AddObserver(this);
+    shell_surface_->set_close_callback(
         base::Bind(&WaylandPopup::OnClose, weak_ptr_factory_.GetWeakPtr()));
-    shell_surface->set_configure_callback(
+    shell_surface_->set_configure_callback(
         base::Bind(&HandleXdgSurfaceV6ConfigureCallback, surface_resource,
                    base::Bind(&WaylandPopup::OnConfigure,
                               weak_ptr_factory_.GetWeakPtr())));
+  }
+  ~WaylandPopup() override {
+    if (shell_surface_)
+      shell_surface_->host_window()->RemoveObserver(this);
+  }
+
+  void Grab() {
+    if (!shell_surface_) {
+      wl_resource_post_error(resource_, ZXDG_POPUP_V6_ERROR_INVALID_GRAB,
+                             "the surface has already been destroyed");
+      return;
+    }
+    if (shell_surface_->GetWidget()) {
+      wl_resource_post_error(resource_, ZXDG_POPUP_V6_ERROR_INVALID_GRAB,
+                             "grab must be called before construction");
+      return;
+    }
+    shell_surface_->Grab();
+  }
+
+  // Overridden from aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    shell_surface_ = nullptr;
   }
 
  private:
@@ -1819,6 +1844,7 @@ class WaylandPopup {
   }
 
   wl_resource* const resource_;
+  ShellSurface* shell_surface_;
   base::WeakPtrFactory<WaylandPopup> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandPopup);
@@ -1832,7 +1858,7 @@ void xdg_popup_v6_grab(wl_client* client,
                        wl_resource* resource,
                        wl_resource* seat,
                        uint32_t serial) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<WaylandPopup>(resource)->Grab();
 }
 
 const struct zxdg_popup_v6_interface xdg_popup_v6_implementation = {
@@ -1885,6 +1911,12 @@ void xdg_surface_v6_get_popup(wl_client* client,
     return;
   }
 
+  if (shell_surface->GetWidget()) {
+    wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_ALREADY_CONSTRUCTED,
+                           "get_popup is called after constructed");
+    return;
+  }
+
   gfx::Point position = GetUserDataAs<WaylandPositioner>(positioner_resource)
                             ->CalculatePosition();
   // |position| is relative to the parent's contents view origin, and |origin|
@@ -1897,6 +1929,8 @@ void xdg_surface_v6_get_popup(wl_client* client,
   shell_surface->DisableMovement();
   shell_surface->SetActivatable(false);
   shell_surface->SetCanMinimize(false);
+  shell_surface->SetParent(parent);
+  shell_surface->SetPopup();
   shell_surface->SetEnabled(true);
 
   wl_resource* xdg_popup_resource =
