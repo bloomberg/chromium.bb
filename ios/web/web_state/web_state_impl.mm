@@ -333,10 +333,15 @@ const base::string16& WebStateImpl::GetTitle() const {
   // match the WebContents implementation of this method.
   DCHECK(Configured());
   web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      !restored_title_.empty()) {
-    DCHECK(!item);
-    return restored_title_;
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    if (!restored_title_.empty()) {
+      DCHECK(!item);
+      return restored_title_;
+    }
+
+    // Display title for the visible item makes more sense. Only do this in
+    // WKBasedNavigationManager for now to limit impact.
+    item = navigation_manager_->GetVisibleItem();
   }
   return item ? item->GetTitleForDisplay() : empty_string16_;
 }

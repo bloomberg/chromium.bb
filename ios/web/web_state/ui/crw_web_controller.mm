@@ -543,6 +543,10 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Updates the WKBackForwardListItemHolder navigation item.
 - (void)updateCurrentBackForwardListItemHolder;
 
+// Presents native content using the native controller for |item| without
+// notifying WebStateObservers. This is used when loading native view for a new
+// navigation to avoid the delay introduced by placeholder navigation.
+- (void)presentNativeContentForNavigationItem:(web::NavigationItem*)item;
 // Presents native content using the native controller for |item| and notifies
 // WebStateObservers the completion of this navigation. This method does not
 // modify the underlying web view. It simply covers the web view with the native
@@ -1783,13 +1787,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self removeWebView];
     [self loadNativeContentForNavigationItem:self.currentNavItem];
   } else {
+    // Just present the native view now. Leave the rest of native content load
+    // until the placeholder navigation finishes.
+    [self presentNativeContentForNavigationItem:self.currentNavItem];
     [self loadPlaceholderInWebViewForURL:self.currentNavItem->GetVirtualURL()];
   }
 }
 
-- (void)loadNativeContentForNavigationItem:(web::NavigationItem*)item {
+- (void)presentNativeContentForNavigationItem:(web::NavigationItem*)item {
   const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
-  const web::Referrer referrer;
   id<CRWNativeContent> nativeContent =
       [_nativeProvider controllerForURL:targetURL webState:self.webState];
   // Unlike the WebView case, always create a new controller and view.
@@ -1799,6 +1805,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
     item->SetVirtualURL([nativeContent virtualURL]);
   }
 
+  NSString* title = [self.nativeController title];
+  if (title && item) {
+    base::string16 newTitle = base::SysNSStringToUTF16(title);
+    item->SetTitle(newTitle);
+  }
+}
+
+- (void)loadNativeContentForNavigationItem:(web::NavigationItem*)item {
+  [self presentNativeContentForNavigationItem:item];
+
+  const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
+  const web::Referrer referrer;
   std::unique_ptr<web::NavigationContextImpl> navigationContext =
       [self registerLoadRequestForURL:targetURL
                              referrer:referrer
@@ -4633,7 +4651,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
     webViewURL = currentWKItemURL;
   }
 
-  [self displayWebView];
+  // Don't show webview for placeholder navigation to avoid covering the native
+  // content, which may have already been shown.
+  if (!IsPlaceholderUrl(webViewURL))
+    [self displayWebView];
 
   // Record the navigation state.
   [_navigationStates setState:web::WKNavigationState::COMMITTED

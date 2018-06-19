@@ -119,6 +119,8 @@ const GURL& NavigationItemImpl::GetVirtualURL() const {
 }
 
 void NavigationItemImpl::SetTitle(const base::string16& title) {
+  if (title_ == title)
+    return;
   title_ = title;
   cached_display_title_.clear();
 }
