@@ -32,6 +32,7 @@
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using base::UTF16ToUTF8;
 using content::SocketPermissionRequest;
@@ -1057,6 +1058,197 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, PolicyHostRestrictions) {
             GetExtensionAccess(extension.get(), favicon_url));
   EXPECT_TRUE(extension->permissions_data()->HasHostPermission(favicon_url));
   EXPECT_EQ(DISALLOWED, GetExtensionAccess(extension.get(), settings_url));
+}
+
+class CaptureVisiblePageTest : public testing::Test {
+ public:
+  CaptureVisiblePageTest() = default;
+  ~CaptureVisiblePageTest() override = default;
+
+  bool CanCapture(const Extension& extension, const GURL& url) {
+    return extension.permissions_data()->CanCaptureVisiblePage(
+        url, kTabId, nullptr /*error*/);
+  }
+
+  void GrantActiveTab(const GURL& url) {
+    APIPermissionSet tab_api_permissions;
+    tab_api_permissions.insert(APIPermission::kTab);
+    URLPatternSet tab_hosts;
+    tab_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
+                        url::Origin::Create(url).GetURL());
+    PermissionSet tab_permissions(tab_api_permissions, ManifestPermissionSet(),
+                                  tab_hosts, tab_hosts);
+    active_tab_->permissions_data()->UpdateTabSpecificPermissions(
+        kTabId, tab_permissions);
+  }
+
+  void ClearActiveTab() {
+    active_tab_->permissions_data()->ClearTabSpecificPermissions(kTabId);
+  }
+
+  const Extension& all_urls() { return *all_urls_; }
+
+  const Extension& active_tab() { return *active_tab_; }
+
+  static constexpr int kTabId = 42;
+
+ private:
+  void SetUp() override {
+    all_urls_ = ExtensionBuilder("all urls")
+                    .AddPermission("<all_urls>")
+                    .SetID(std::string(32, 'a'))
+                    .Build();
+    active_tab_ = ExtensionBuilder("active tab")
+                      .AddPermission("activeTab")
+                      .SetID(std::string(32, 'b'))
+                      .Build();
+  }
+
+  void TearDown() override {
+    all_urls_ = nullptr;
+    active_tab_ = nullptr;
+  }
+
+  scoped_refptr<const Extension> all_urls_;
+  scoped_refptr<const Extension> active_tab_;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptureVisiblePageTest);
+};
+
+TEST_F(CaptureVisiblePageTest, URLsCapturableWithEitherActiveTabOrAllURLs) {
+  const GURL test_urls[] = {
+      // Normal web page.
+      GURL("https://example.com"),
+
+      // TODO(https://crbug.com/853064): IPv6 pages should behave like normal
+      // web pages.
+      // GURL("http://[2607:f8b0:4005:805::200e]"),
+
+      // filesystem: urls with web origins should behave like normal web pages.
+      // TODO(https://crbug.com/853392): filesystem: URLs don't work with
+      // activeTab.
+      // GURL("filesystem:http://example.com/foo"),
+
+      // blob: urls with web origins should behave like normal web pages.
+      // TODO(https://crbug.com/853392): blob: URLs don't work with activeTab.
+      // GURL("blob:http://example.com/bar"),
+  };
+
+  for (const GURL& url : test_urls) {
+    SCOPED_TRACE(url.spec());
+    EXPECT_TRUE(CanCapture(all_urls(), url));
+
+    EXPECT_FALSE(CanCapture(active_tab(), url));
+    GrantActiveTab(url);
+    EXPECT_TRUE(CanCapture(active_tab(), url));
+    ClearActiveTab();
+    EXPECT_FALSE(CanCapture(active_tab(), url));
+  }
+}
+
+TEST_F(CaptureVisiblePageTest, URLsCapturableOnlyWithActiveTab) {
+  // The following URLs are origins that extensions are able to capture only if
+  // they have activeTab granted. We require explicit user action for a higher
+  // bar, since normally these pages are completely restricted to extensions at
+  // all.
+  const GURL test_urls[] = {
+      // Another extension's URL.
+      GURL("chrome-extension://cccccccccccccccccccccccccccccccc/foo.html"),
+
+      // filesystem: urls behave like the underlying origin.
+      // https://crbug.com/853392: filesystem: URLs don't work with activeTab.
+      // GURL("filesystem:chrome-extension://cccccccccccccccccccccccccccccccc/foo"),
+
+      // blob: urls behave like the underlying origin.
+      // https://crbug.com/853392: blob: URLs don't work with activeTab.
+      // GURL("blob:chrome-extension://cccccccccccccccccccccccccccccccc/bar"),
+
+      // data: urls have no associated origin, so are more restricted.
+      GURL("data:text/html;charset=utf-8,<html>Hello!</html>"),
+
+      // A chrome:-scheme page.
+      GURL("chrome://settings"),
+
+      // The NTP.
+      GURL("chrome://newtab"),
+  };
+
+  for (const GURL& url : test_urls) {
+    SCOPED_TRACE(url.spec());
+    EXPECT_FALSE(CanCapture(all_urls(), url));
+
+    EXPECT_FALSE(CanCapture(active_tab(), url));
+    GrantActiveTab(url);
+    EXPECT_TRUE(CanCapture(active_tab(), url));
+    ClearActiveTab();
+    EXPECT_FALSE(CanCapture(active_tab(), url));
+  }
+}
+
+TEST_F(CaptureVisiblePageTest, SelfExtensionURLs) {
+  auto get_filesystem_url_for_extension = [](const Extension& extension) {
+    return GURL(base::StringPrintf("filesystem:chrome-extension://%s/foo",
+                                   extension.id().c_str()));
+  };
+  auto get_blob_url_for_extension = [](const Extension& extension) {
+    return GURL(base::StringPrintf("blob:chrome-extension://%s/foo",
+                                   extension.id().c_str()));
+  };
+
+  // Extensions should be allowed to capture their own pages with either
+  // activeTab or <all_urls>. We still require one of the two because there may
+  // be other web content within the extension page, so we can't auto-grant
+  // access.
+
+  {
+    EXPECT_TRUE(CanCapture(all_urls(), all_urls().GetResourceURL("foo.html")));
+    EXPECT_TRUE(
+        CanCapture(all_urls(), get_filesystem_url_for_extension(all_urls())));
+    EXPECT_TRUE(CanCapture(all_urls(), get_blob_url_for_extension(all_urls())));
+  }
+
+  const GURL active_tab_extension_urls[] = {
+      active_tab().GetResourceURL("foo.html"),
+      // https://crbug.com/853392: filesystem: URLs don't work with activeTab.
+      // get_filesystem_url_for_extension(active_tab()),
+      // https://crbug.com/853392: blob: URLs don't work with activeTab.
+      // get_blob_url_for_extension(active_tab()),
+  };
+
+  for (const GURL& url : active_tab_extension_urls) {
+    SCOPED_TRACE(url);
+
+    EXPECT_FALSE(CanCapture(active_tab(), url));
+    GrantActiveTab(url);
+    EXPECT_TRUE(CanCapture(active_tab(), url));
+    ClearActiveTab();
+    EXPECT_FALSE(CanCapture(active_tab(), url));
+  }
+}
+
+TEST_F(CaptureVisiblePageTest, PolicyBlockedURLs) {
+  {
+    URLPattern example_com(URLPattern::SCHEME_ALL, "https://example.com/*");
+    URLPattern chrome_settings(URLPattern::SCHEME_ALL, "chrome://settings/*");
+    URLPatternSet blocked_patterns({example_com, chrome_settings});
+    PermissionsData::SetDefaultPolicyHostRestrictions(blocked_patterns,
+                                                      URLPatternSet());
+  }
+
+  const GURL test_urls[] = {
+      GURL("https://example.com"), GURL("chrome://settings/"),
+  };
+
+  for (const GURL& url : test_urls) {
+    SCOPED_TRACE(url);
+    EXPECT_FALSE(CanCapture(all_urls(), url));
+
+    EXPECT_FALSE(CanCapture(active_tab(), url));
+    GrantActiveTab(url);
+    EXPECT_FALSE(CanCapture(active_tab(), url));
+    ClearActiveTab();
+    EXPECT_FALSE(CanCapture(active_tab(), url));
+  }
 }
 
 }  // namespace extensions

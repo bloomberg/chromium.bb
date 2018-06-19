@@ -19,6 +19,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 namespace extensions {
@@ -366,52 +367,100 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
                                             int tab_id,
                                             std::string* error) const {
   bool has_active_tab = false;
+  bool has_all_urls = false;
+  // Check the real origin, in order to account for filesystem:, blob:, etc.
+  // (url::Origin grabs the inner origin of these, whereas GURL::GetOrigin()
+  // does not.)
+  const GURL origin = url::Origin::Create(document_url).GetURL();
   {
     base::AutoLock auto_lock(runtime_lock_);
+    // Disallow capturing policy-blocked hosts. No exceptions.
+    // Note: This isn't foolproof, since an extension could embed a policy-
+    // blocked host in a different page and then capture that, but it's better
+    // than nothing (and policy hosts can set their x-frame options
+    // accordingly).
+    if (location_ != Manifest::COMPONENT && IsPolicyBlockedHostUnsafe(origin)) {
+      if (error)
+        *error = extension_misc::kPolicyBlockedScripting;
+      return false;
+    }
+
     const PermissionSet* tab_permissions = GetTabSpecificPermissions(tab_id);
     has_active_tab = tab_permissions &&
                      tab_permissions->HasAPIPermission(APIPermission::kTab);
+
+    const URLPattern all_urls(URLPattern::SCHEME_ALL,
+                              URLPattern::kAllUrlsPattern);
+    has_all_urls =
+        active_permissions_unsafe_->explicit_hosts().ContainsPattern(all_urls);
   }
-  // We check GetPageAccess() (in addition the the <all_urls> and activeTab
-  // checks below) for the case of URLs that can be conditionally granted (such
-  // as file:// URLs or chrome:// URLs for component extensions), and to respect
-  // policy restrictions, if any. If an extension has <all_urls>,
-  // GetPageAccess() will still (correctly) return false if, for instance, the
-  // URL is a file:// URL and the extension does not have file access.
-  // See https://crbug.com/810220.
-  if (GetPageAccess(document_url, tab_id, error) != PageAccess::kAllowed) {
-    if (!document_url.SchemeIs(content::kChromeUIScheme))
-      return false;
 
-    // Most extensions will not have (and cannot get) access to chrome:// URLs
-    // (which are restricted). However, allowing them to capture these URLs can
-    // be useful, such as in the case of capturing a screenshot. Allow
-    // extensions that have been explicitly invoked (and have the activeTab)
-    // permission to capture chrome:// URLs.
-    if (has_active_tab)
-      return true;
-
+  // At least one of activeTab or <all_urls> is always required; no exceptions.
+  if (!has_active_tab && !has_all_urls) {
     if (error)
-      *error = manifest_errors::kActiveTabPermissionNotGranted;
-
+      *error = manifest_errors::kAllURLOrActiveTabNeeded;
     return false;
   }
 
-  const URLPattern all_urls(URLPattern::SCHEME_ALL,
-                            URLPattern::kAllUrlsPattern);
-
-  base::AutoLock auto_lock(runtime_lock_);
-  if (active_permissions_unsafe_->explicit_hosts().ContainsPattern(all_urls))
+  // We check GetPageAccess() (in addition to the <all_urls> and activeTab
+  // checks below) for the case of URLs that can be conditionally granted (such
+  // as file:// URLs or chrome:// URLs for component extensions).
+  // If an extension has <all_urls>, GetPageAccess() will still (correctly)
+  // return false if, for instance, the URL is a file:// URL and the extension
+  // does not have file access.
+  // See https://crbug.com/810220.
+  // If the extension has page access (and has activeTab or <all_urls>, as
+  // checked above), allow the capture.
+  std::string access_error;
+  if (GetPageAccess(origin, tab_id, &access_error) == PageAccess::kAllowed)
     return true;
 
-  const PermissionSet* tab_permissions = GetTabSpecificPermissions(tab_id);
-  if (tab_permissions &&
-      tab_permissions->HasAPIPermission(APIPermission::kTab)) {
+  // The extension doesn't have explicit page access. However, there are a
+  // number of cases where tab capture may still be allowed.
+
+  // First special case: an extension's own pages.
+  // These aren't restricted URLs, but won't be matched by <all_urls> or
+  // activeTab (since the extension scheme is not included in the list of valid
+  // schemes for extension permissions).
+  // To capture an extension's own page, either activeTab or <all_urls> is
+  // needed (it's no higher privilege than a normal web page). At least one
+  // of these is still needed because the extension page may have embedded
+  // web content.
+  // TODO(devlin): Should activeTab/<all_urls> account for the extension's own
+  // domain?
+  if (origin.host() == extension_id_)
     return true;
+
+  // The following are special cases that require activeTab explicitly. Normal
+  // extensions will never have full access to these pages (i.e., can never
+  // inject scripts or otherwise modify the page), but capturing the page can
+  // still be useful for e.g. screenshots. We allow these pages only if the
+  // extension has been explicitly granted activeTab, which serves as a
+  // stronger guarantee that the user wants to run the extension on the site.
+  // These origins include:
+  // - chrome:-scheme pages.
+  // - Other extension's pages.
+  // - data: URLs (which don't have a defined underlying origin).
+  // TODO(devlin): Include the Webstore in this list?
+  bool allowed_with_active_tab =
+      origin.SchemeIs(content::kChromeUIScheme) ||
+      origin.SchemeIs(kExtensionScheme) ||
+      // Note: The origin of a data: url is empty, so check the url itself.
+      document_url.SchemeIs(url::kDataScheme);
+
+  if (!allowed_with_active_tab) {
+    if (error)
+      *error = access_error;
+    return false;
   }
 
+  // If the extension has activeTab, these origins are allowed.
+  if (has_active_tab)
+    return true;
+
+  // Otherwise, access is denied.
   if (error)
-    *error = manifest_errors::kAllURLOrActiveTabNeeded;
+    *error = manifest_errors::kActiveTabPermissionNotGranted;
   return false;
 }
 
