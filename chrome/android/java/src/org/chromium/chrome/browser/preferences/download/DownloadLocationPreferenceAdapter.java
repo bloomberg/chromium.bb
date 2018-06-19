@@ -71,8 +71,16 @@ public class DownloadLocationPreferenceAdapter
 
         TextView summaryText = (TextView) view.findViewById(R.id.description);
         if (isEnabled(position)) {
-            summaryText.setText(DownloadUtils.getStringForAvailableBytes(
-                    getContext(), directoryOption.availableSpace));
+            String summary = DownloadUtils.getStringForAvailableBytes(
+                    getContext(), directoryOption.availableSpace);
+            summaryText.setText(summary);
+
+            // Build description for accessibility.
+            StringBuilder accessibilityDescription = new StringBuilder();
+            accessibilityDescription.append(directoryOption.name);
+            accessibilityDescription.append(" ");
+            accessibilityDescription.append(summary);
+            radioButton.setContentDescription(accessibilityDescription);
         } else {
             radioButton.setEnabled(false);
             titleText.setEnabled(false);
