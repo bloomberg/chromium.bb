@@ -1013,4 +1013,19 @@ public class AwContentsClientShouldInterceptRequestTest {
         Assert.assertEquals(callCount + 1, mShouldInterceptRequestHelper.getCallCount());
         Assert.assertEquals(url, mShouldInterceptRequestHelper.getUrls().get(0));
     }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testNotCalledForHttpRedirect() throws Throwable {
+        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
+        final String redirectUrl = mWebServer.setRedirect("/302.html", aboutPageUrl);
+
+        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        mActivityTestRule.loadUrlSync(
+                mAwContents, mContentsClient.getOnPageFinishedHelper(), redirectUrl);
+        // This should only be called once, for the original URL, not the final URL.
+        Assert.assertEquals(callCount + 1, mShouldInterceptRequestHelper.getCallCount());
+        Assert.assertEquals(redirectUrl, mShouldInterceptRequestHelper.getUrls().get(0));
+    }
 }
