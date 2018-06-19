@@ -458,8 +458,6 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserDisableWebSecurityTest,
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, true /* allow_download */,
       false /* should_replace_current_entry */,
-      base::TimeTicks() /* ui_timestamp */,
-      FrameMsg_UILoadMetricsReportType::NO_REPORT,
       file_url, /* base_url_for_data_url */
       GURL() /* history_url_for_data_url */, PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now() /* navigation_start */, "GET",

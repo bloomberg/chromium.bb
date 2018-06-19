@@ -801,9 +801,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDetach();
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
-  void OnDocumentOnLoadCompleted(
-      FrameMsg_UILoadMetricsReportType::Value report_type,
-      base::TimeTicks ui_timestamp);
+  void OnDocumentOnLoadCompleted();
   void OnDidStartProvisionalLoad(
       const GURL& url,
       const std::vector<GURL>& redirect_chain,
@@ -1140,11 +1138,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // A return value of true means that the commit should proceed.
   bool ValidateDidCommitParams(
       FrameHostMsg_DidCommitProvisionalLoad_Params* validated_params);
-
-  // Utility function that does UMA reporting for link click or intent to
-  // commit timings depending on |report_type|.
-  void UMACommitReport(FrameMsg_UILoadMetricsReportType::Value report_type,
-                       const base::TimeTicks& ui_timestamp);
 
   // Updates the site url if the navigation was successful and the page is not
   // an interstitial.

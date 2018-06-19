@@ -61,20 +61,4 @@ struct FrameMsg_Navigate_Type {
   }
 };
 
-struct FrameMsg_UILoadMetricsReportType {
- public:
-  enum Value {
-    // Do not report metrics for this load.
-    NO_REPORT,
-
-    // Report metrics for this load, that originated from clicking on a link.
-    REPORT_LINK,
-
-    // Report metrics for this load, that originated from an Android OS intent.
-    REPORT_INTENT,
-
-    REPORT_TYPE_LAST = REPORT_INTENT,
-  };
-};
-
 #endif  // CONTENT_COMMON_FRAME_MESSAGE_ENUMS_H_

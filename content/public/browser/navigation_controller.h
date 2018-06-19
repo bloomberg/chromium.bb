@@ -175,13 +175,6 @@ class NavigationController {
     // navigated. This is currently only used in tests.
     std::string frame_name;
 
-#if defined(OS_ANDROID)
-    // On Android, for a load triggered by an intent, the time Chrome received
-    // the original intent that prompted the load (in milliseconds active time
-    // since boot).
-    int64_t intent_received_timestamp;
-#endif
-
     // Indicates that the navigation was triggered by a user gesture.
     bool has_user_gesture;
 

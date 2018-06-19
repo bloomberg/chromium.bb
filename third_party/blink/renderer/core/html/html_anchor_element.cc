@@ -346,10 +346,6 @@ void HTMLAnchorElement::HandleClick(Event* event) {
   SendPings(completed_url);
 
   ResourceRequest request(completed_url);
-  request.SetUIStartTime(
-      (event->PlatformTimeStamp() - TimeTicks()).InSecondsF());
-  request.SetInputPerfMetricReportPolicy(
-      InputToLoadPerfMetricReportPolicy::kReportLink);
 
   ReferrerPolicy policy;
   if (hasAttribute(referrerpolicyAttr) &&

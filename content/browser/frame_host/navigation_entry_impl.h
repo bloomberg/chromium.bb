@@ -399,17 +399,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   void set_ssl_error(bool error) { ssl_error_ = error; }
   bool ssl_error() const { return ssl_error_; }
 
-#if defined(OS_ANDROID)
-  base::TimeTicks intent_received_timestamp() const {
-    return intent_received_timestamp_;
-  }
-
-  void set_intent_received_timestamp(
-      const base::TimeTicks intent_received_timestamp) {
-    intent_received_timestamp_ = intent_received_timestamp;
-  }
-#endif
-
   bool has_user_gesture() const {
     return has_user_gesture_;
   }
@@ -524,12 +513,6 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
   // because we only use it while the navigation is pending.
   // TODO(creis): Move this to FrameNavigationEntry.
   int frame_tree_node_id_;
-
-#if defined(OS_ANDROID)
-  // The time at which Chrome received the Android Intent that triggered this
-  // URL load operation. Reset at commit and not persisted.
-  base::TimeTicks intent_received_timestamp_;
-#endif
 
   // Whether the URL load carries a user gesture.
   bool has_user_gesture_;

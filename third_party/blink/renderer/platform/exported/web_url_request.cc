@@ -368,14 +368,6 @@ void WebURLRequest::SetWasDiscarded(bool was_discarded) {
   resource_request_->SetWasDiscarded(was_discarded);
 }
 
-double WebURLRequest::UiStartTime() const {
-  return resource_request_->UiStartTime();
-}
-
-void WebURLRequest::SetUiStartTime(double time_seconds) {
-  resource_request_->SetUIStartTime(time_seconds);
-}
-
 bool WebURLRequest::IsExternalRequest() const {
   return resource_request_->IsExternalRequest();
 }
@@ -388,18 +380,6 @@ network::mojom::CORSPreflightPolicy WebURLRequest::GetCORSPreflightPolicy()
 void WebURLRequest::SetNavigationStartTime(
     base::TimeTicks navigation_start_seconds) {
   resource_request_->SetNavigationStartTime(navigation_start_seconds);
-}
-
-WebURLRequest::InputToLoadPerfMetricReportPolicy
-WebURLRequest::InputPerfMetricReportPolicy() const {
-  return static_cast<WebURLRequest::InputToLoadPerfMetricReportPolicy>(
-      resource_request_->InputPerfMetricReportPolicy());
-}
-
-void WebURLRequest::SetInputPerfMetricReportPolicy(
-    WebURLRequest::InputToLoadPerfMetricReportPolicy policy) {
-  resource_request_->SetInputPerfMetricReportPolicy(
-      static_cast<blink::InputToLoadPerfMetricReportPolicy>(policy));
 }
 
 base::Optional<WebString> WebURLRequest::GetSuggestedFilename() const {

@@ -111,15 +111,6 @@ class WebURLRequest {
     kRequestContextXSLT
   };
 
-  // Used to report performance metrics timed from the UI action that
-  // triggered them (as opposed to navigation start time used in the
-  // Navigation Timing API).
-  enum InputToLoadPerfMetricReportPolicy : uint8_t {
-    kNoReport,      // Don't report metrics for this WebURLRequest.
-    kReportLink,    // Report metrics with UI action link clicked.
-    kReportIntent,  // Report metrics with UI action displayed intent.
-  };
-
   typedef int PreviewsState;
 
   // The Previews types which determines whether to request a Preview version of
@@ -317,16 +308,6 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT bool WasDiscarded() const;
   BLINK_PLATFORM_EXPORT void SetWasDiscarded(bool);
-
-  // This is used to report navigation metrics starting from the UI action
-  // that triggered the navigation (which can be different from the navigation
-  // start time used in the Navigation Timing API).
-  BLINK_PLATFORM_EXPORT double UiStartTime() const;
-  BLINK_PLATFORM_EXPORT void SetUiStartTime(double);
-  BLINK_PLATFORM_EXPORT WebURLRequest::InputToLoadPerfMetricReportPolicy
-  InputPerfMetricReportPolicy() const;
-  BLINK_PLATFORM_EXPORT void SetInputPerfMetricReportPolicy(
-      WebURLRequest::InputToLoadPerfMetricReportPolicy);
 
   // https://wicg.github.io/cors-rfc1918/#external-request
   BLINK_PLATFORM_EXPORT bool IsExternalRequest() const;

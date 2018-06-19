@@ -20,9 +20,6 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
       post_data(nullptr),
       can_load_local_resources(false),
       should_replace_current_entry(false),
-#if defined(OS_ANDROID)
-      intent_received_timestamp(0),
-#endif
       has_user_gesture(false),
       should_clear_history_list(false),
       started_from_context_menu(false),

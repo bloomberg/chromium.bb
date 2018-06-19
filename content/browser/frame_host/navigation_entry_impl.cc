@@ -656,7 +656,6 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   // ResetForCommit: should_replace_entry_
   // ResetForCommit: should_clear_history_list_
   // ResetForCommit: frame_tree_node_id_
-  // ResetForCommit: intent_received_timestamp_
   copy->has_user_gesture_ = has_user_gesture_;
   // ResetForCommit: reload_type_
   copy->extra_data_ = extra_data_;
@@ -673,30 +672,11 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     FrameMsg_Navigate_Type::Value navigation_type,
     PreviewsState previews_state,
     const base::TimeTicks& navigation_start) const {
-  FrameMsg_UILoadMetricsReportType::Value report_type =
-      FrameMsg_UILoadMetricsReportType::NO_REPORT;
-  base::TimeTicks ui_timestamp = base::TimeTicks();
-
-#if defined(OS_ANDROID)
-  if (!intent_received_timestamp().is_null())
-    report_type = FrameMsg_UILoadMetricsReportType::REPORT_INTENT;
-  ui_timestamp = intent_received_timestamp();
-#endif
-
-  std::string method;
-
-  // TODO(clamy): Consult the FrameNavigationEntry in all modes that use
-  // subframe navigation entries.
-  if (IsBrowserSideNavigationEnabled())
-    method = frame_entry.method();
-  else
-    method = (post_body.get() || GetHasPostData()) ? "POST" : "GET";
-
   return CommonNavigationParams(
       dest_url, dest_referrer, GetTransitionType(), navigation_type,
-      !IsViewSourceMode(), should_replace_entry(), ui_timestamp, report_type,
-      GetBaseURLForDataURL(), GetHistoryURLForDataURL(), previews_state,
-      navigation_start, method, post_body ? post_body : post_data_,
+      !IsViewSourceMode(), should_replace_entry(), GetBaseURLForDataURL(),
+      GetHistoryURLForDataURL(), previews_state, navigation_start,
+      frame_entry.method(), post_body ? post_body : post_data_,
       base::Optional<SourceLocation>(),
       CSPDisposition::CHECK /* should_check_main_world_csp */,
       has_started_from_context_menu(), has_user_gesture(),
@@ -774,12 +754,6 @@ void NavigationEntryImpl::ResetForCommit(FrameNavigationEntry* frame_entry) {
     frame_entry->set_source_site_instance(nullptr);
     frame_entry->set_blob_url_loader_factory(nullptr);
   }
-
-#if defined(OS_ANDROID)
-  // Reset the time stamp so that the metrics are not reported if this entry is
-  // loaded again in the future.
-  set_intent_received_timestamp(base::TimeTicks());
-#endif
 }
 
 NavigationEntryImpl::TreeNode* NavigationEntryImpl::GetTreeNode(
