@@ -120,6 +120,17 @@ blacklisted.
   * [0f912fd7be760be25afbc56bdc09cd9e5dcc9c6f6a55a778aefcb6aa30e31554.pem](0f912fd7be760be25afbc56bdc09cd9e5dcc9c6f6a55a778aefcb6aa30e31554.pem)
   * [ec30c9c3065a06bb07dc5b1c6b497f370c1ca65c0f30c08e042ba6bcecc78f2c.pem](ec30c9c3065a06bb07dc5b1c6b497f370c1ca65c0f30c08e042ba6bcecc78f2c.pem)
 
+### Mitel
+
+For details, see <https://www.mitel.com/support/security-advisories/mitel-product-security-advisory-17-0001>
+
+Certain Mitel products shipped with extractable private keys, the public certs for which users were encouraged to install as anchors.
+
+  * [2a33f5b48176523fd3c0d854f20093417175bfd498ef354cc7f38b54adabaf1a.pem](2a33f5b48176523fd3c0d854f20093417175bfd498ef354cc7f38b54adabaf1a.pem)
+  * [2d11e736f0427fd6ba4b372755d34a0edd8d83f7e9e7f6c01b388c9b7afa850d.pem](2d11e736f0427fd6ba4b372755d34a0edd8d83f7e9e7f6c01b388c9b7afa850d.pem)
+  * [3ab0fcc7287454c405863e3aa204fea8eb0c50a524d2a7e15524a830cd4ab0fe.pem](3ab0fcc7287454c405863e3aa204fea8eb0c50a524d2a7e15524a830cd4ab0fe.pem)
+  * [60911c79835c3739432d08c45df64311e06985c5889dc5420ce3d142c8c7ef58.pem](60911c79835c3739432d08c45df64311e06985c5889dc5420ce3d142c8c7ef58.pem)
+
 ### sslip.io
 
 For details, see <https://blog.pivotal.io/labs/labs/sslip-io-a-valid-ssl-certificate-for-every-ip-address>
