@@ -46,15 +46,7 @@ const base::Feature kExperimentalUi{"ExperimentalUi",
 // Applies the material design mode to elements throughout Chrome (not just top
 // Chrome).
 const base::Feature kSecondaryUiMd = {"SecondaryUiMd",
-// Enabled by default on Windows, Mac and Desktop Linux.
-// http://crbug.com/775847.
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-                                      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-                                      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allows system keyboard event capture when |features::kKeyboardLockApi| is on.
 const base::Feature kSystemKeyboardLock{"SystemKeyboardLock",
