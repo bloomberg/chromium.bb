@@ -17,6 +17,8 @@
 -SecurityStateTabHelperTest.DefaultSecurityLevelOnFilesystemUrl/1
 -SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/0
 -SecurityStateTabHelperTest.DefaultSecurityLevelOnSecureFilesystemUrl/1
+-SSLUITest.TestBadHTTPSDownload/0
+-SSLUITest.TestBadHTTPSDownload/1
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
 -WebstoreInstallerBrowserTest.SimultaneousInstall
 -WebViewTest.WebViewInBackgroundPage
@@ -99,25 +101,6 @@
 -ServiceWorkerPaymentAppFactoryBrowserTest.SupportedOrigin
 -ServiceWorkerPaymentAppFactoryBrowserTest.TwoAppsDifferentMethods
 -ServiceWorkerPaymentAppFactoryBrowserTest.TwoAppsSameMethod
-
-# NetworkTime still uses URLFetcher.
-# https://crbug.com/844939
--NetworkTimePolicyTest.NetworkTimeQueriesDisabled/0
--NetworkTimePolicyTest.NetworkTimeQueriesDisabled/1
--SSLNetworkTimeBrowserTest.CloseTabBeforeNetworkFetchCompletes/0
--SSLNetworkTimeBrowserTest.CloseTabBeforeNetworkFetchCompletes/1
--SSLNetworkTimeBrowserTest.NavigateAwayBeforeTimeoutExpires/0
--SSLNetworkTimeBrowserTest.NavigateAwayBeforeTimeoutExpires/1
--SSLNetworkTimeBrowserTest.OnDemandFetchClockWrong/0
--SSLNetworkTimeBrowserTest.OnDemandFetchClockWrong/1
--SSLNetworkTimeBrowserTest.ReloadBeforeTimeoutExpires/0
--SSLNetworkTimeBrowserTest.ReloadBeforeTimeoutExpires/1
--SSLNetworkTimeBrowserTest.StopBeforeTimeoutExpires/0
--SSLNetworkTimeBrowserTest.StopBeforeTimeoutExpires/1
--SSLNetworkTimeBrowserTest.TimeoutExpiresBeforeFetchCompletes/0
--SSLNetworkTimeBrowserTest.TimeoutExpiresBeforeFetchCompletes/1
--SSLUITest.TestBadHTTPSDownload/0
--SSLUITest.TestBadHTTPSDownload/1
 
 # These try to resolver host names using ResourceContext, using the old
 # in-process HostResolver API. Neither works when the network service is

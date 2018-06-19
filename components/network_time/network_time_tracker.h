@@ -16,7 +16,6 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 class PrefRegistrySimple;
@@ -30,10 +29,10 @@ namespace client_update_protocol {
 class Ecdsa;
 }  // namespace client_update_protocol
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace network_time {
 
@@ -49,7 +48,7 @@ extern const base::Feature kNetworkTimeServiceQuerying;
 
 // A class that receives network time updates and can provide the network time
 // for a corresponding local time. This class is not thread safe.
-class NetworkTimeTracker : public net::URLFetcherDelegate {
+class NetworkTimeTracker {
  public:
   // Describes the result of a GetNetworkTime() call, describing whether
   // network time was available and if not, why not.
@@ -92,14 +91,15 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Constructor.  Arguments may be stubbed out for tests.  |getter|, if not
-  // null, will cause automatic queries to a time server.  Otherwise, time is
-  // available only if |UpdateNetworkTime| is called.
-  NetworkTimeTracker(std::unique_ptr<base::Clock> clock,
-                     std::unique_ptr<const base::TickClock> tick_clock,
-                     PrefService* pref_service,
-                     scoped_refptr<net::URLRequestContextGetter> getter);
-  ~NetworkTimeTracker() override;
+  // Constructor.  Arguments may be stubbed out for tests. |url_loader_factory|
+  // must be non-null unless the kNetworkTimeServiceQuerying is disabled.
+  // Otherwise, time is available only if |UpdateNetworkTime| is called.
+  NetworkTimeTracker(
+      std::unique_ptr<base::Clock> clock,
+      std::unique_ptr<const base::TickClock> tick_clock,
+      PrefService* pref_service,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  ~NetworkTimeTracker();
 
   // Sets |network_time| to an estimate of the true time.  Returns
   // NETWORK_TIME_AVAILABLE if time is available. If |uncertainty| is
@@ -163,11 +163,10 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
 
   // Updates network time from a time server response, returning true
   // if successful.
-  bool UpdateTimeFromResponse();
+  bool UpdateTimeFromResponse(std::unique_ptr<std::string> response_body);
 
-  // net::URLFetcherDelegate:
   // Called to process responses from the secure time service.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Sets the next time query to be run at the specified time.
   void QueueCheckTime(base::TimeDelta delay);
@@ -185,8 +184,8 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   // changing the delay of this timer, with the result that CheckTime() may
   // assume that if it runs, it is eligible to issue a time query.
   base::RepeatingTimer timer_;
-  scoped_refptr<net::URLRequestContextGetter> getter_;
-  std::unique_ptr<net::URLFetcher> time_fetcher_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  std::unique_ptr<network::SimpleURLLoader> time_fetcher_;
   base::TimeTicks fetch_started_;
   std::unique_ptr<client_update_protocol::Ecdsa> query_signer_;
 

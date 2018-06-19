@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/client_update_protocol/ecdsa.h"
@@ -22,8 +23,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network_time {
@@ -47,24 +47,25 @@ class NetworkTimeTrackerTest : public ::testing::Test {
   ~NetworkTimeTrackerTest() override {}
 
   NetworkTimeTrackerTest()
-      : io_thread_("IO thread"),
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
         field_trial_test_(new FieldTrialTest()),
         clock_(new base::SimpleTestClock),
         tick_clock_(new base::SimpleTestTickClock),
         test_server_(new net::EmbeddedTestServer) {
-    base::Thread::Options thread_options;
-    thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-    EXPECT_TRUE(io_thread_.StartWithOptions(thread_options));
     NetworkTimeTracker::RegisterPrefs(pref_service_.registry());
 
     field_trial_test_->SetNetworkQueriesWithVariationsService(
         true, 0.0 /* query probability */,
         NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
 
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
+
     tracker_.reset(new NetworkTimeTracker(
         std::unique_ptr<base::Clock>(clock_),
         std::unique_ptr<const base::TickClock>(tick_clock_), &pref_service_,
-        new net::TestURLRequestContextGetter(io_thread_.task_runner())));
+        shared_url_loader_factory_));
 
     // Do this to be sure that |is_null| returns false.
     clock_->Advance(base::TimeDelta::FromDays(111));
@@ -75,8 +76,6 @@ class NetworkTimeTrackerTest : public ::testing::Test {
     latency_ = base::TimeDelta::FromMilliseconds(50);
     adjustment_ = 7 * base::TimeDelta::FromMilliseconds(kTicksResolutionMs);
   }
-
-  void TearDown() override { io_thread_.Stop(); }
 
   // Replaces |tracker_| with a new object, while preserving the
   // testing clocks.
@@ -90,7 +89,7 @@ class NetworkTimeTrackerTest : public ::testing::Test {
     tracker_.reset(new NetworkTimeTracker(
         std::unique_ptr<base::Clock>(clock_),
         std::unique_ptr<const base::TickClock>(tick_clock_), &pref_service_,
-        new net::TestURLRequestContextGetter(io_thread_.task_runner())));
+        shared_url_loader_factory_));
   }
 
   // Good signature over invalid data, though made with a non-production key.
@@ -156,9 +155,8 @@ class NetworkTimeTrackerTest : public ::testing::Test {
   }
 
  protected:
-  base::Thread io_thread_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<FieldTrialTest> field_trial_test_;
-  base::MessageLoop message_loop_;
   base::TimeDelta resolution_;
   base::TimeDelta latency_;
   base::TimeDelta adjustment_;
@@ -167,6 +165,7 @@ class NetworkTimeTrackerTest : public ::testing::Test {
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<NetworkTimeTracker> tracker_;
   std::unique_ptr<net::EmbeddedTestServer> test_server_;
+  scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory_;
 };
 
 TEST_F(NetworkTimeTrackerTest, Uninitialized) {

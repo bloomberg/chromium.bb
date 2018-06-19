@@ -5,5 +5,7 @@ include_rules = [
   "+components/strings/grit/components_strings.h",
   "+components/url_formatter",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+ui/base"
 ]

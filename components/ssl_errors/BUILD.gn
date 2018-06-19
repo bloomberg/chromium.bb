@@ -34,6 +34,8 @@ source_set("unit_tests") {
     "//components/network_time:network_time_test_support",
     "//components/prefs:test_support",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp:cpp",
     "//testing/gtest",
   ]
 }

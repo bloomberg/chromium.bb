@@ -840,7 +840,7 @@ network_time::NetworkTimeTracker* BrowserProcessImpl::network_time_tracker() {
     network_time_tracker_ = std::make_unique<network_time::NetworkTimeTracker>(
         base::WrapUnique(new base::DefaultClock()),
         base::WrapUnique(new base::DefaultTickClock()), local_state(),
-        system_request_context());
+        system_network_context_manager()->GetSharedURLLoaderFactory());
   }
   return network_time_tracker_.get();
 }
@@ -1169,7 +1169,7 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
     network_time_tracker_ = std::make_unique<network_time::NetworkTimeTracker>(
         base::WrapUnique(new base::DefaultClock()),
         base::WrapUnique(new base::DefaultTickClock()), local_state(),
-        system_request_context());
+        system_network_context_manager()->GetSharedURLLoaderFactory());
   }
 }
 
