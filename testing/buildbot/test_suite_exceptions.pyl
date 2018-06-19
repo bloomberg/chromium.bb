@@ -303,11 +303,6 @@
           'shards': 30,
         },
       },
-      'Linux Chromium OS ASan LSan Tests (1)': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/browser_tests_cros_asan.filter',
-        ],
-      },
       'Mac ASan 64 Tests (1)': {
         'swarming': {
           'shards': 20,
@@ -2342,11 +2337,6 @@
           'shards': 4,
         },
       },
-      'Linux Chromium OS ASan LSan Tests (1)': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/unit_tests_cros_asan.filter',
-        ],
-      },
       'Linux TSan Tests': {
         'swarming': {
           'shards': 2,
@@ -2461,11 +2451,6 @@
         'swarming': {
           'shards': 20,
         },
-      },
-      'Linux Chromium OS ASan LSan Tests (1)': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/browser_tests_cros_asan.filter',
-        ],
       },
     },
   },
