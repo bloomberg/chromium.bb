@@ -11,6 +11,7 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AuthenticatorDescription;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -193,6 +194,8 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         RecordHistogram.recordTimesHistogram(histogramName, elapsedMs, TimeUnit.MILLISECONDS);
     }
 
+    // No permission is needed on 23+ and Chrome always has MANAGE_ACCOUNTS permission on lower APIs
+    @SuppressLint("MissingPermission")
     @Override
     public void createAddAccountIntent(Callback<Intent> callback) {
         AccountManagerCallback<Bundle> accountManagerCallback = accountManagerFuture -> {
@@ -208,6 +211,8 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
                 accountManagerCallback, null);
     }
 
+    // No permission is needed on 23+ and Chrome always has MANAGE_ACCOUNTS permission on lower APIs
+    @SuppressLint("MissingPermission")
     @Override
     public void updateCredentials(
             Account account, Activity activity, final Callback<Boolean> callback) {
