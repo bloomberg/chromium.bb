@@ -14,6 +14,7 @@
       <include name="IDR_AUTOMATION_NODE_JS" file="extensions\automation\automation_node.js" type="BINDATA" />
       <include name="IDR_TABS_CUSTOM_BINDINGS_JS" file="extensions\tabs_custom_bindings.js" type="BINDATA" />
       <include name="IDR_TTS_CUSTOM_BINDINGS_JS" file="extensions\tts_custom_bindings.js" type="BINDATA" />
+      <include name="IDR_SPEECH_SYNTHESIS_JS" file="extensions\speech_synthesis.js" type="BINDATA" />
     </includes>
   </release>
 </grit>
