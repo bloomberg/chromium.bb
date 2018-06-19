@@ -56,4 +56,12 @@ bool NetworkServiceNetworkDelegate::OnCanAccessFile(
   return true;
 }
 
+bool NetworkServiceNetworkDelegate::OnCanEnablePrivacyMode(
+    const GURL& url,
+    const GURL& site_for_cookies) const {
+  return !network_context_->cookie_manager()
+              ->cookie_settings()
+              .IsCookieAccessAllowed(url, site_for_cookies);
+}
+
 }  // namespace network
