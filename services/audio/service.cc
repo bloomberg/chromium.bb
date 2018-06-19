@@ -63,6 +63,9 @@ void Service::OnStart() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("audio", "audio::Service::OnStart")
 
+  // This will pre-create AudioManager if AudioManagerAccessor owns it.
+  CHECK(audio_manager_accessor_->GetAudioManager());
+
   metrics_ =
       std::make_unique<ServiceMetrics>(base::DefaultTickClock::GetInstance());
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(

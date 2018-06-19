@@ -36,6 +36,10 @@ const base::Feature kAsyncWheelEvents{"AsyncWheelEvents",
 const base::Feature kAudioServiceAudioStreams{
     "AudioServiceAudioStreams", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Launches the audio service on the browser startup.
+const base::Feature kAudioServiceLaunchOnStartup{
+    "AudioServiceLaunchOnStartup", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Runs the audio service in a separate process.
 const base::Feature kAudioServiceOutOfProcess{
     "AudioServiceOutOfProcess", base::FEATURE_DISABLED_BY_DEFAULT};
