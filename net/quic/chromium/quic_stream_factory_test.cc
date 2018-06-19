@@ -105,6 +105,7 @@ const char kServer3Url[] = "https://docs.example.org/";
 const char kServer4Url[] = "https://images.example.org/";
 const int kDefaultRTTMilliSecs = 300;
 const size_t kMinRetryTimeForDefaultNetworkSecs = 1;
+const size_t kWaitTimeForNewNetworkSecs = 10;
 
 // Run QuicStreamFactoryTest instances with all value combinations of version
 // and enable_connection_racting.
@@ -784,8 +785,6 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   void TestMigrationOnNetworkDisconnected(bool async_write_before);
   void OnNetworkMadeDefault(bool async_write_before);
   void TestMigrationOnWriteErrorPauseBeforeConnected(IoMode write_error_mode);
-  void OnNetworkDisconnectedWithNetworkList(
-      NetworkChangeNotifier::NetworkList network_list);
   void TestMigrationOnWriteErrorWithNetworkAddedBeforeNotification(
       IoMode write_error_mode,
       bool disconnected);
@@ -2278,23 +2277,21 @@ void QuicStreamFactoryTestBase::OnNetworkMadeDefault(bool async_write_before) {
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNoNetworks) {
-  NetworkChangeNotifier::NetworkList no_networks(0);
-  OnNetworkDisconnectedWithNetworkList(no_networks);
-}
-
-TEST_P(QuicStreamFactoryTest, OnNetworkDisconnectedNoNewNetwork) {
-  OnNetworkDisconnectedWithNetworkList({kDefaultNetworkForTests});
-}
-
-void QuicStreamFactoryTestBase::OnNetworkDisconnectedWithNetworkList(
-    NetworkChangeNotifier::NetworkList network_list) {
-  InitializeConnectionMigrationTest(network_list);
+// This test verifies that session times out connection migration attempt
+// with signals delivered in the following order (no alternate network is
+// available):
+// - default network disconnected is delivered: session attempts connection
+//   migration but found not alternate network. Session waits for a new network
+//   comes up in the next kWaitTimeForNewNetworkSecs seonds.
+// - no new network is connected, migration times out. Session is closed.
+TEST_P(QuicStreamFactoryTest, MigrationTimeoutWithNoNewNetwork) {
+  InitializeConnectionMigrationV2Test({kDefaultNetworkForTests});
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  // Use the test task runner, to force the migration alarm timeout later.
-  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
+  // Using a testing task runner so that we can control time.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
 
   MockQuicData socket_data;
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -2331,13 +2328,17 @@ void QuicStreamFactoryTestBase::OnNetworkDisconnectedWithNetworkList(
 
   // The migration will not fail until the migration alarm timeout.
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
-  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_EQ(1u, session->GetNumActiveStreams());
   EXPECT_EQ(ERR_IO_PENDING, stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_EQ(true, session->connection()->writer()->IsWriteBlocked());
 
-  // Force the migration alarm timeout to run.
-  RunTestLoopUntilIdle();
+  // Migration will be timed out after kWaitTimeForNewNetwokSecs.
+  EXPECT_EQ(1u, task_runner->GetPendingTaskCount());
+  base::TimeDelta next_task_delay = task_runner->NextPendingTaskDelay();
+  EXPECT_EQ(base::TimeDelta::FromSeconds(kWaitTimeForNewNetworkSecs),
+            next_task_delay);
+  task_runner->FastForwardBy(next_task_delay);
 
   // The connection should now be closed. A request for response
   // headers should fail.
