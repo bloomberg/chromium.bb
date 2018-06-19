@@ -41,6 +41,88 @@
       "os": "11.4",
       "host os": "Mac-10.13",
       "xcode build version": "9q1019a"
+    },
+    {
+      "include": "eg_tests.json",
+      "device type": "iPhone 6s Plus",
+      "os": "11.4",
+      "host os": "Mac-10.13",
+      "xcode build version": "9q1019a"
+    },
+    {
+      "include": "screen_size_dependent_tests.json",
+      "device type": "iPad Air 2",
+      "os": "12.0",
+      "dimensions": [
+        {
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
+          "pool": "Chrome"
+        }
+      ]
+    },
+    {
+      "include": "screen_size_dependent_tests.json",
+      "device type": "iPhone 5s",
+      "os": "12.0",
+      "dimensions": [
+        {
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
+          "pool": "Chrome"
+        }
+      ]
+    },
+    {
+      "include": "screen_size_dependent_tests.json",
+      "device type": "iPhone 6s",
+      "os": "12.0",
+      "dimensions": [
+        {
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
+          "pool": "Chrome"
+        }
+      ]
+    },
+    {
+      "include": "screen_size_dependent_tests.json",
+      "device type": "iPhone 6s Plus",
+      "os": "12.0",
+      "dimensions": [
+        {
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
+          "pool": "Chrome"
+        }
+      ]
+    },
+    {
+      "include": "screen_size_dependent_tests.json",
+      "device type": "iPhone X",
+      "os": "12.0",
+      "dimensions": [
+        {
+          "os": "Mac-10.13.4",
+          "pool": "Chrome"
+        },
+        {
+          "os": "Mac-10.13.5",
+          "pool": "Chrome"
+        }
+      ]
     }
   ]
 }
