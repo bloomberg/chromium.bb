@@ -9,6 +9,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -94,6 +96,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   const GURL url_;
   const bool report_raw_headers_;
   const int load_flags_;
+  const base::Optional<base::UnguessableToken> throttling_profile_id_;
 
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 

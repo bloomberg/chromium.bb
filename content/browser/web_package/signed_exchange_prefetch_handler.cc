@@ -22,6 +22,7 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
     bool report_raw_headers,
     int load_flags,
+    const base::Optional<base::UnguessableToken>& throttling_profile_id,
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr network_loader,
     network::mojom::URLLoaderClientRequest network_client_request,
@@ -50,7 +51,7 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       outer_request_url, response, std::move(client), std::move(endpoints),
       std::move(request_initiator), network::mojom::kURLLoadOptionNone,
-      load_flags,
+      load_flags, throttling_profile_id,
       std::make_unique<SignedExchangeDevToolsProxy>(
           outer_request_url, response, std::move(frame_tree_node_id_getter),
           base::nullopt /* devtools_navigation_token */, report_raw_headers),

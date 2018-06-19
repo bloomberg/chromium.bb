@@ -30,6 +30,7 @@ PrefetchURLLoader::PrefetchURLLoader(
       url_(resource_request.url),
       report_raw_headers_(resource_request.report_raw_headers),
       load_flags_(resource_request.load_flags),
+      throttling_profile_id_(resource_request.throttling_profile_id),
       network_loader_factory_(std::move(network_loader_factory)),
       client_binding_(this),
       forwarding_client_(std::move(client)),
@@ -96,10 +97,10 @@ void PrefetchURLLoader::OnReceiveResponse(
     signed_exchange_prefetch_handler_ =
         std::make_unique<SignedExchangePrefetchHandler>(
             frame_tree_node_id_getter_, report_raw_headers_, load_flags_,
-            response, std::move(loader_), client_binding_.Unbind(),
-            network_loader_factory_, request_initiator_, url_,
-            url_loader_throttles_getter_, resource_context_,
-            request_context_getter_, this);
+            throttling_profile_id_, response, std::move(loader_),
+            client_binding_.Unbind(), network_loader_factory_,
+            request_initiator_, url_, url_loader_throttles_getter_,
+            resource_context_, request_context_getter_, this);
     return;
   }
   forwarding_client_->OnReceiveResponse(response);

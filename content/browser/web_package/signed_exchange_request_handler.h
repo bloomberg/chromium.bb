@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_REQUEST_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/public/common/resource_type.h"
@@ -37,6 +38,7 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
       uint32_t url_loader_options,
       int frame_tree_node_id,
       const base::UnguessableToken& devtools_navigation_token,
+      const base::Optional<base::UnguessableToken>& throttling_profile_id,
       bool report_raw_headers,
       int load_flags,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -68,6 +70,7 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
   const uint32_t url_loader_options_;
   const int frame_tree_node_id_;
   base::Optional<const base::UnguessableToken> devtools_navigation_token_;
+  const base::Optional<base::UnguessableToken> throttling_profile_id_;
   const bool report_raw_headers_;
   const int load_flags_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
