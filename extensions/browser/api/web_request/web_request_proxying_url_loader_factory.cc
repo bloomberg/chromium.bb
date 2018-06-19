@@ -11,6 +11,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "net/http/http_util.h"
+#include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 
 namespace extensions {
 
@@ -75,13 +76,19 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::Restart() {
       base::BindRepeating(&InProgressRequest::ContinueToBeforeSendHeaders,
                           weak_factory_.GetWeakPtr());
   redirect_url_ = GURL();
+  bool should_collapse_initiator = false;
   int result = ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
       factory_->browser_context_, factory_->info_map_, &info_.value(),
-      continuation, &redirect_url_);
+      continuation, &redirect_url_, &should_collapse_initiator);
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
     // The request was cancelled synchronously. Dispatch an error notification
     // and terminate the request.
-    OnRequestError(network::URLLoaderCompletionStatus(result));
+    network::URLLoaderCompletionStatus status(result);
+    if (should_collapse_initiator) {
+      status.extended_error_code = static_cast<int>(
+          blink::ResourceRequestBlockedReason::kCollapsedByClient);
+    }
+    OnRequestError(status);
     return;
   }
 

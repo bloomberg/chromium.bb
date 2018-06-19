@@ -230,6 +230,12 @@ bool IsRequestPageAllowed(const WebRequestInfo& request,
          allowed_pages.MatchesURL(*request.frame_data->pending_main_frame_url);
 }
 
+bool ShouldCollapseResourceType(flat_rule::ElementType type) {
+  // TODO(crbug.com/848842): Add support for other element types like
+  // SUBDOCUMENT, OBJECT.
+  return type == flat_rule::ElementType_IMAGE;
+}
+
 }  // namespace
 
 RulesetManager::RulesetManager(const InfoMap* info_map) : info_map_(info_map) {
@@ -344,7 +350,8 @@ RulesetManager::Action RulesetManager::EvaluateRequest(
 
       if (ruleset_data->matcher->ShouldBlockRequest(
               url, first_party_origin, element_type, is_third_party)) {
-        return Action::BLOCK;
+        return ShouldCollapseResourceType(element_type) ? Action::COLLAPSE
+                                                        : Action::BLOCK;
       }
     }
   }

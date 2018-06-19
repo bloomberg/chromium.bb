@@ -1112,7 +1112,7 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
       // far, to minimize risk of breaking other usages.
       ResourceRequestInfoImpl* resource_request_info =
           ResourceRequestInfoImpl::ForRequest(request());
-      resource_request_info->set_resource_request_blocked_reason(
+      resource_request_info->SetResourceRequestBlockedReason(
           blink::ResourceRequestBlockedReason::kInspector);
     }
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,

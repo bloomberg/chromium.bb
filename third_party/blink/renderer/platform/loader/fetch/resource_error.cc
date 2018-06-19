@@ -55,7 +55,7 @@ ResourceError ResourceError::CancelledDueToAccessCheckError(
     ResourceRequestBlockedReason blocked_reason) {
   ResourceError error = CancelledError(url);
   error.is_access_check_ = true;
-  error.should_collapse_initiator_ =
+  error.blocked_by_subresource_filter_ =
       blocked_reason == ResourceRequestBlockedReason::kSubresourceFilter;
   return error;
 }
@@ -171,6 +171,12 @@ bool ResourceError::WasBlockedByResponse() const {
   return error_code_ == net::ERR_BLOCKED_BY_RESPONSE;
 }
 
+bool ResourceError::ShouldCollapseInitiator() const {
+  return blocked_by_subresource_filter_ ||
+         GetResourceRequestBlockedReason() ==
+             ResourceRequestBlockedReason::kCollapsedByClient;
+}
+
 base::Optional<ResourceRequestBlockedReason>
 ResourceError::GetResourceRequestBlockedReason() const {
   if (error_code_ != net::ERR_BLOCKED_BY_CLIENT &&
@@ -206,6 +212,9 @@ String DescriptionForBlockedByClientOrResponse(int error, int extended_error) {
       break;
     case ResourceRequestBlockedReason::kContentType:
       detail = "ContentType";
+      break;
+    case ResourceRequestBlockedReason::kCollapsedByClient:
+      detail = "Collapsed";
       break;
   }
   return WebString::FromASCII(net::ErrorToString(error) + "." + detail);

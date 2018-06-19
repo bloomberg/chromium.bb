@@ -195,9 +195,18 @@ int ChromeExtensionsNetworkDelegateImpl::OnBeforeURLRequest(
       &active_requests_[request];
   *web_request_info = std::make_unique<extensions::WebRequestInfo>(request);
 
-  return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
+  bool should_collapse_initiator = false;
+  int result = ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
       profile_, extension_info_map_.get(), web_request_info->get(),
-      std::move(callback), new_url);
+      std::move(callback), new_url, &should_collapse_initiator);
+  if (should_collapse_initiator) {
+    auto* info = ResourceRequestInfo::ForRequest(request);
+    DCHECK(info);
+    info->SetResourceRequestBlockedReason(
+        blink::ResourceRequestBlockedReason::kCollapsedByClient);
+  }
+
+  return result;
 }
 
 int ChromeExtensionsNetworkDelegateImpl::OnBeforeStartTransaction(

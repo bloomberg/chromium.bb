@@ -797,7 +797,10 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     const InfoMap* extension_info_map,
     WebRequestInfo* request,
     net::CompletionOnceCallback callback,
-    GURL* new_url) {
+    GURL* new_url,
+    bool* should_collapse_initiator) {
+  DCHECK(should_collapse_initiator);
+
   if (ShouldHideEvent(browser_context, extension_info_map, *request))
     return net::OK;
 
@@ -820,10 +823,17 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 
     Action action = extension_info_map->GetRulesetManager()->EvaluateRequest(
         *request, is_incognito_context, new_url);
-    if (action == Action::BLOCK)
-      return net::ERR_BLOCKED_BY_CLIENT;
-    if (action == Action::REDIRECT)
-      return net::OK;
+    switch (action) {
+      case Action::NONE:
+        break;
+      case Action::BLOCK:
+        return net::ERR_BLOCKED_BY_CLIENT;
+      case Action::COLLAPSE:
+        *should_collapse_initiator = true;
+        return net::ERR_BLOCKED_BY_CLIENT;
+      case Action::REDIRECT:
+        return net::OK;
+    }
   }
 
   // Whether to initialized |blocked_requests_|.

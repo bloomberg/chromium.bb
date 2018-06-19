@@ -36,6 +36,11 @@ const void* const kResourceRequestInfoImplKey = &kResourceRequestInfoImplKey;
 // ResourceRequestInfo
 
 // static
+ResourceRequestInfo* ResourceRequestInfo::ForRequest(net::URLRequest* request) {
+  return ResourceRequestInfoImpl::ForRequest(request);
+}
+
+// static
 const ResourceRequestInfo* ResourceRequestInfo::ForRequest(
     const net::URLRequest* request) {
   return ResourceRequestInfoImpl::ForRequest(request);
@@ -315,6 +320,11 @@ NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
 ResourceRequestInfo::DevToolsStatus ResourceRequestInfoImpl::GetDevToolsStatus()
     const {
   return devtools_status_;
+}
+
+void ResourceRequestInfoImpl::SetResourceRequestBlockedReason(
+    blink::ResourceRequestBlockedReason reason) {
+  resource_request_blocked_reason_ = reason;
 }
 
 base::Optional<blink::ResourceRequestBlockedReason>

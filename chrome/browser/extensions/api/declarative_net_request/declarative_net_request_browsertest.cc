@@ -1549,6 +1549,37 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       embedded_test_server()->GetURL("/pages_with_script/script.js")));
 }
 
+// Ensures that any <img> elements blocked by the API are collapsed.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, ImageCollapsed) {
+  // Loads a page with an image and returns whether the image was collapsed.
+  auto is_image_collapsed = [this]() {
+    ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("google.com", "/image.html"));
+    EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+    bool is_image_collapsed = false;
+    const std::string script =
+        "domAutomationController.send(!!window.imageCollapsed);";
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents(), script,
+                                                     &is_image_collapsed));
+    return is_image_collapsed;
+  };
+
+  // Initially the image shouldn't be collapsed.
+  EXPECT_FALSE(is_image_collapsed());
+
+  // Load an extension which blocks all images.
+  std::vector<TestRule> rules;
+  TestRule rule = CreateGenericRule();
+  rule.condition->url_filter = std::string("*");
+  rule.condition->resource_types = std::vector<std::string>({"image"});
+  rules.push_back(rule);
+  ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(rules));
+
+  // Now the image request should be blocked and the corresponding DOM element
+  // should be collapsed.
+  EXPECT_TRUE(is_image_collapsed());
+}
+
 // Test fixture to verify that host permissions for the request url and the
 // request initiator are properly checked. Loads an example.com url with four
 // sub-frames named frame_[1..4] from hosts frame_[1..4].com. The initiator for

@@ -1526,6 +1526,8 @@ String blockedReason(blink::ResourceRequestBlockedReason reason) {
       return protocol::Network::BlockedReasonEnum::ContentType;
     case blink::ResourceRequestBlockedReason::kOther:
       return protocol::Network::BlockedReasonEnum::Other;
+    case blink::ResourceRequestBlockedReason::kCollapsedByClient:
+      return protocol::Network::BlockedReasonEnum::CollapsedByClient;
   }
   NOTREACHED();
   return protocol::Network::BlockedReasonEnum::Other;

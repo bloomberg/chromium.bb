@@ -79,9 +79,14 @@ void WebRequestProxyingWebSocket::AddChannelRequest(
 
   // TODO(yhirano): Consider having throttling here (probably with aligned with
   // WebRequestProxyingURLLoaderFactory).
+  bool should_collapse_initiator = false;
   int result = ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
-      browser_context_, info_map_, &info_.value(), continuation,
-      &redirect_url_);
+      browser_context_, info_map_, &info_.value(), continuation, &redirect_url_,
+      &should_collapse_initiator);
+
+  // It doesn't make sense to collapse WebSocket requests since they won't be
+  // associated with a DOM element.
+  DCHECK(!should_collapse_initiator);
 
   if (result == net::ERR_BLOCKED_BY_CLIENT) {
     OnError(result);

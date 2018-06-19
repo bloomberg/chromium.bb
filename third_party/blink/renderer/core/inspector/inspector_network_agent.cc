@@ -362,6 +362,8 @@ String BuildBlockedReason(ResourceRequestBlockedReason reason) {
       return protocol::Network::BlockedReasonEnum::ContentType;
     case ResourceRequestBlockedReason::kOther:
       return protocol::Network::BlockedReasonEnum::Other;
+    case ResourceRequestBlockedReason::kCollapsedByClient:
+      return protocol::Network::BlockedReasonEnum::CollapsedByClient;
   }
   NOTREACHED();
   return protocol::Network::BlockedReasonEnum::Other;

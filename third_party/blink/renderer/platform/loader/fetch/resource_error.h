@@ -80,7 +80,7 @@ class PLATFORM_EXPORT ResourceError final {
   bool IsTimeout() const;
   bool IsCacheMiss() const;
   bool WasBlockedByResponse() const;
-  bool ShouldCollapseInitiator() const { return should_collapse_initiator_; }
+  bool ShouldCollapseInitiator() const;
   base::Optional<ResourceRequestBlockedReason> GetResourceRequestBlockedReason()
       const;
 
@@ -104,7 +104,7 @@ class PLATFORM_EXPORT ResourceError final {
   String localized_description_;
   bool is_access_check_ = false;
   bool has_copy_in_cache_ = false;
-  bool should_collapse_initiator_ = false;
+  bool blocked_by_subresource_filter_ = false;
   base::Optional<network::CORSErrorStatus> cors_error_status_;
 };
 

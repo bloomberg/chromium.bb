@@ -98,6 +98,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   PreviewsState GetPreviewsState() const override;
   NavigationUIData* GetNavigationUIData() const override;
   DevToolsStatus GetDevToolsStatus() const override;
+  void SetResourceRequestBlockedReason(
+      blink::ResourceRequestBlockedReason reason) override;
   base::Optional<blink::ResourceRequestBlockedReason>
   GetResourceRequestBlockedReason() const override;
   base::StringPiece GetCustomCancelReason() const override;
@@ -186,11 +188,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
 
   void set_devtools_status(DevToolsStatus devtools_status) {
     devtools_status_ = devtools_status;
-  }
-
-  void set_resource_request_blocked_reason(
-      base::Optional<blink::ResourceRequestBlockedReason> reason) {
-    resource_request_blocked_reason_ = reason;
   }
 
   void SetBlobHandles(BlobHandles blob_handles);

@@ -29,6 +29,8 @@ class WebContents;
 class ResourceRequestInfo {
  public:
   // Returns the ResourceRequestInfo associated with the given URLRequest.
+  CONTENT_EXPORT static ResourceRequestInfo* ForRequest(
+      net::URLRequest* request);
   CONTENT_EXPORT static const ResourceRequestInfo* ForRequest(
       const net::URLRequest* request);
 
@@ -187,8 +189,13 @@ class ResourceRequestInfo {
   // If and why this request was canceled by DevTools. TODO(johannes): Remove.
   virtual DevToolsStatus GetDevToolsStatus() const = 0;
 
-  // For net::ERR_BLOCKED_BY_CLIENT and net::ERR_BLOCKED_BY_RESPONSE
-  // errors, this will return the reason, otherwise base::nullopt.
+  // Used to annotate requests blocked using net::ERR_BLOCKED_BY_CLIENT and
+  // net::ERR_BLOCKED_BY_RESPONSE errors, with a ResourceRequestBlockedReason.
+  virtual void SetResourceRequestBlockedReason(
+      blink::ResourceRequestBlockedReason) = 0;
+
+  // Returns the ResourceRequestBlockedReason for this request, else
+  // base::nullopt.
   virtual base::Optional<blink::ResourceRequestBlockedReason>
   GetResourceRequestBlockedReason() const = 0;
 

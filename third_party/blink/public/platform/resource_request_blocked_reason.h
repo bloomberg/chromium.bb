@@ -16,6 +16,7 @@ enum class ResourceRequestBlockedReason {
   kInspector,
   kSubresourceFilter,
   kContentType,
+  kCollapsedByClient,
 };
 }  // namespace blink
 
