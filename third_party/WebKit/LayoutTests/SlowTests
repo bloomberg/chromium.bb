@@ -507,3 +507,9 @@ crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/asyn
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_010.htm [ Slow ]
 
 crbug.com/840792 [ Mac10.12 Mac10.13 ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Slow ]
+
+# These tests take 90 seconds on MSAN due to a large amount of JS execution.
+crbug.com/853977 [ Linux ] http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
+crbug.com/853977 [ Linux ] http/tests/fetch/chromium/release-handle-crash.html [ Slow ]
+crbug.com/838057 [ Linux ] virtual/outofblink-cors/http/tests/fetch/chromium/call-extra-crash-tee.html [ Slow ]
+crbug.com/838057 [ Linux ] virtual/outofblink-cors/http/tests/fetch/chromium/release-handle-crash.html [ Slow ]

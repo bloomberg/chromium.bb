@@ -22,6 +22,7 @@
 namespace blink {
 
 class BodyStreamBuffer;
+class ExceptionState;
 class FetchHeaderList;
 class SecurityOrigin;
 class ScriptState;
@@ -35,7 +36,7 @@ class FetchRequestData final
   static FetchRequestData* Create();
   static FetchRequestData* Create(ScriptState*, const WebServiceWorkerRequest&);
   // Call Request::refreshBody() after calling clone() or pass().
-  FetchRequestData* Clone(ScriptState*);
+  FetchRequestData* Clone(ScriptState*, ExceptionState&);
   FetchRequestData* Pass(ScriptState*);
   ~FetchRequestData();
 

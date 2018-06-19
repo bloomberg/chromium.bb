@@ -120,37 +120,49 @@ TEST(ReadableStreamOperationsTest, IsReadableStream) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
-      scope.GetScriptState(),
-      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate()))));
+                   scope.GetScriptState(),
+                   ScriptValue(scope.GetScriptState(),
+                               v8::Undefined(scope.GetIsolate())))
+                   .value_or(true));
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
-      scope.GetScriptState(), ScriptValue::CreateNull(scope.GetScriptState())));
+                   scope.GetScriptState(),
+                   ScriptValue::CreateNull(scope.GetScriptState()))
+                   .value_or(true));
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
-      scope.GetScriptState(),
-      ScriptValue(scope.GetScriptState(),
-                  v8::Object::New(scope.GetIsolate()))));
+                   scope.GetScriptState(),
+                   ScriptValue(scope.GetScriptState(),
+                               v8::Object::New(scope.GetIsolate())))
+                   .value_or(true));
   ScriptValue stream = EvalWithPrintingError(&scope, "new ReadableStream()");
   EXPECT_FALSE(stream.IsEmpty());
-  EXPECT_TRUE(ReadableStreamOperations::IsReadableStream(scope.GetScriptState(),
-                                                         stream));
+  EXPECT_TRUE(
+      ReadableStreamOperations::IsReadableStream(scope.GetScriptState(), stream)
+          .value_or(false));
 }
 
 TEST(ReadableStreamOperationsTest, IsReadableStreamDefaultReaderInvalid) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
-      scope.GetScriptState(),
-      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate()))));
+                   scope.GetScriptState(),
+                   ScriptValue(scope.GetScriptState(),
+                               v8::Undefined(scope.GetIsolate())))
+                   .value_or(true));
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
-      scope.GetScriptState(), ScriptValue::CreateNull(scope.GetScriptState())));
+                   scope.GetScriptState(),
+                   ScriptValue::CreateNull(scope.GetScriptState()))
+                   .value_or(true));
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
-      scope.GetScriptState(),
-      ScriptValue(scope.GetScriptState(),
-                  v8::Object::New(scope.GetIsolate()))));
+                   scope.GetScriptState(),
+                   ScriptValue(scope.GetScriptState(),
+                               v8::Object::New(scope.GetIsolate())))
+                   .value_or(true));
   ScriptValue stream = EvalWithPrintingError(&scope, "new ReadableStream()");
-  EXPECT_FALSE(stream.IsEmpty());
+  ASSERT_FALSE(stream.IsEmpty());
 
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
-      scope.GetScriptState(), stream));
+                   scope.GetScriptState(), stream)
+                   .value_or(true));
 }
 
 TEST(ReadableStreamOperationsTest, GetReader) {
@@ -160,31 +172,24 @@ TEST(ReadableStreamOperationsTest, GetReader) {
   EXPECT_FALSE(stream.IsEmpty());
 
   EXPECT_FALSE(
-      ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream));
+      ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream)
+          .value_or(true));
   ScriptValue reader;
-  {
-    DummyExceptionStateForTesting es;
-    reader =
-        ReadableStreamOperations::GetReader(scope.GetScriptState(), stream, es);
-    ASSERT_FALSE(es.HadException());
-  }
-  EXPECT_TRUE(
-      ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream));
+  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream);
+  EXPECT_TRUE(ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream)
+                  .value_or(false));
   ASSERT_FALSE(reader.IsEmpty());
 
-  EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
-      scope.GetScriptState(), reader));
+  EXPECT_FALSE(
+      ReadableStreamOperations::IsReadableStream(scope.GetScriptState(), reader)
+          .value_or(true));
   EXPECT_TRUE(ReadableStreamOperations::IsReadableStreamDefaultReader(
-      scope.GetScriptState(), reader));
+                  scope.GetScriptState(), reader)
+                  .value_or(false));
 
   // Already locked!
-  {
-    DummyExceptionStateForTesting es;
-    reader =
-        ReadableStreamOperations::GetReader(scope.GetScriptState(), stream, es);
-    ASSERT_TRUE(es.HadException());
-  }
-  ASSERT_TRUE(reader.IsEmpty());
+  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream);
+  EXPECT_TRUE(reader.IsEmpty());
 }
 
 TEST(ReadableStreamOperationsTest, IsDisturbed) {
@@ -195,12 +200,14 @@ TEST(ReadableStreamOperationsTest, IsDisturbed) {
   EXPECT_FALSE(stream.IsEmpty());
 
   EXPECT_FALSE(
-      ReadableStreamOperations::IsDisturbed(scope.GetScriptState(), stream));
+      ReadableStreamOperations::IsDisturbed(scope.GetScriptState(), stream)
+          .value_or(true));
 
   ASSERT_FALSE(EvalWithPrintingError(&scope, "stream.cancel()").IsEmpty());
 
   EXPECT_TRUE(
-      ReadableStreamOperations::IsDisturbed(scope.GetScriptState(), stream));
+      ReadableStreamOperations::IsDisturbed(scope.GetScriptState(), stream)
+          .value_or(false));
 }
 
 TEST(ReadableStreamOperationsTest, Read) {
@@ -213,7 +220,8 @@ TEST(ReadableStreamOperationsTest, Read) {
                             "new ReadableStream({start}).getReader()");
   EXPECT_FALSE(reader.IsEmpty());
   ASSERT_TRUE(ReadableStreamOperations::IsReadableStreamDefaultReader(
-      scope.GetScriptState(), reader));
+                  scope.GetScriptState(), reader)
+                  .value_or(false));
 
   Iteration* it1 = new Iteration();
   Iteration* it2 = new Iteration();
@@ -273,12 +281,7 @@ TEST(ReadableStreamOperationsTest,
   EXPECT_EQ(8, underlying_source->DesiredSize());
 
   ScriptValue reader;
-  {
-    DummyExceptionStateForTesting es;
-    reader =
-        ReadableStreamOperations::GetReader(scope.GetScriptState(), stream, es);
-    ASSERT_FALSE(es.HadException());
-  }
+  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream);
   ASSERT_FALSE(reader.IsEmpty());
 
   Iteration* it1 = new Iteration();
@@ -368,11 +371,14 @@ TEST(ReadableStreamOperationsTest, IsReadable) {
   ASSERT_FALSE(errored.IsEmpty());
 
   EXPECT_TRUE(
-      ReadableStreamOperations::IsReadable(scope.GetScriptState(), readable));
+      ReadableStreamOperations::IsReadable(scope.GetScriptState(), readable)
+          .value_or(false));
   EXPECT_FALSE(
-      ReadableStreamOperations::IsReadable(scope.GetScriptState(), closed));
+      ReadableStreamOperations::IsReadable(scope.GetScriptState(), closed)
+          .value_or(true));
   EXPECT_FALSE(
-      ReadableStreamOperations::IsReadable(scope.GetScriptState(), errored));
+      ReadableStreamOperations::IsReadable(scope.GetScriptState(), errored)
+          .value_or(true));
 }
 
 TEST(ReadableStreamOperationsTest, IsClosed) {
@@ -388,11 +394,13 @@ TEST(ReadableStreamOperationsTest, IsClosed) {
   ASSERT_FALSE(errored.IsEmpty());
 
   EXPECT_FALSE(
-      ReadableStreamOperations::IsClosed(scope.GetScriptState(), readable));
-  EXPECT_TRUE(
-      ReadableStreamOperations::IsClosed(scope.GetScriptState(), closed));
+      ReadableStreamOperations::IsClosed(scope.GetScriptState(), readable)
+          .value_or(true));
+  EXPECT_TRUE(ReadableStreamOperations::IsClosed(scope.GetScriptState(), closed)
+                  .value_or(false));
   EXPECT_FALSE(
-      ReadableStreamOperations::IsClosed(scope.GetScriptState(), errored));
+      ReadableStreamOperations::IsClosed(scope.GetScriptState(), errored)
+          .value_or(true));
 }
 
 TEST(ReadableStreamOperationsTest, IsErrored) {
@@ -408,29 +416,39 @@ TEST(ReadableStreamOperationsTest, IsErrored) {
   ASSERT_FALSE(errored.IsEmpty());
 
   EXPECT_FALSE(
-      ReadableStreamOperations::IsErrored(scope.GetScriptState(), readable));
+      ReadableStreamOperations::IsErrored(scope.GetScriptState(), readable)
+          .value_or(true));
   EXPECT_FALSE(
-      ReadableStreamOperations::IsErrored(scope.GetScriptState(), closed));
+      ReadableStreamOperations::IsErrored(scope.GetScriptState(), closed)
+          .value_or(true));
   EXPECT_TRUE(
-      ReadableStreamOperations::IsErrored(scope.GetScriptState(), errored));
+      ReadableStreamOperations::IsErrored(scope.GetScriptState(), errored)
+          .value_or(false));
 }
 
 TEST(ReadableStreamOperationsTest, Tee) {
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
+  NonThrowableExceptionState exception_state;
   ScriptValue original =
       EvalWithPrintingError(&scope,
                             "var controller;"
                             "new ReadableStream({start: c => controller = c})");
   ASSERT_FALSE(original.IsEmpty());
   ScriptValue new1, new2;
-  ReadableStreamOperations::Tee(scope.GetScriptState(), original, &new1, &new2);
+  ReadableStreamOperations::Tee(scope.GetScriptState(), original, &new1, &new2,
+                                exception_state);
 
-  NonThrowableExceptionState ec;
+  ASSERT_FALSE(new1.IsEmpty());
+  ASSERT_FALSE(new2.IsEmpty());
+
   ScriptValue reader1 =
-      ReadableStreamOperations::GetReader(scope.GetScriptState(), new1, ec);
+      ReadableStreamOperations::GetReader(scope.GetScriptState(), new1);
   ScriptValue reader2 =
-      ReadableStreamOperations::GetReader(scope.GetScriptState(), new2, ec);
+      ReadableStreamOperations::GetReader(scope.GetScriptState(), new2);
+
+  ASSERT_FALSE(reader1.IsEmpty());
+  ASSERT_FALSE(reader2.IsEmpty());
 
   Iteration* it1 = new Iteration();
   Iteration* it2 = new Iteration();

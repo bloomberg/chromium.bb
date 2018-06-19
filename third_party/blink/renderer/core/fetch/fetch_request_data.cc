@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/fetch/fetch_header_list.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
@@ -83,12 +84,15 @@ FetchRequestData* FetchRequestData::CloneExceptBody() {
   return request;
 }
 
-FetchRequestData* FetchRequestData::Clone(ScriptState* script_state) {
+FetchRequestData* FetchRequestData::Clone(ScriptState* script_state,
+                                          ExceptionState& exception_state) {
   FetchRequestData* request = FetchRequestData::CloneExceptBody();
   if (buffer_) {
     BodyStreamBuffer* new1 = nullptr;
     BodyStreamBuffer* new2 = nullptr;
-    buffer_->Tee(&new1, &new2);
+    buffer_->Tee(&new1, &new2, exception_state);
+    if (exception_state.HadException())
+      return nullptr;
     buffer_ = new1;
     request->buffer_ = new2;
   }
