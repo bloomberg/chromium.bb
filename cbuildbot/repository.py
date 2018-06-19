@@ -353,6 +353,7 @@ class RepoRepository(object):
     corruption. Only use this if you are sure that no other git process is
     accessing the repo (such as at the beginning of a fresh build).
     """
+    logging.info('Removing stale git locks from: %s', self.directory)
     for attrs in git.ManifestCheckout.Cached(self.directory).ListCheckouts():
       d = os.path.join(self.directory, attrs['path'])
       repo_git_store = self.CalculateGitRepoLocations(attrs['name'], d)[0]
@@ -387,6 +388,7 @@ class RepoRepository(object):
     Raises:
       A variety of exceptions if the buildroot is missing/corrupt.
     """
+    logging.info('Resetting all repo branches: %s', self.directory)
     lock_path = os.path.join(self.directory, '.clean_lock')
     deleted_objdirs = multiprocessing.Event()
 
