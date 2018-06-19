@@ -205,6 +205,7 @@ vs-chromium-project.txt
 /ios/third_party/ochamcrest/src
 /ios_internal
 /libassistant
+/libinteraction
 /llvm
 /media/cast/logging/cast_logging_proto_lib.xml
 /media/cdm/api
