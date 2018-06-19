@@ -14,9 +14,9 @@
 #include "chrome/browser/printing/cloud_print/cloud_print_printer_list.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
 #define CLOUD_PRINT_CONNECTOR_UI_AVAILABLE
@@ -43,7 +43,7 @@ class LocalDiscoveryUIHandler
       public cloud_print::PrivetRegisterOperation::Delegate,
       public cloud_print::PrivetDeviceLister::Delegate,
       public cloud_print::CloudPrintPrinterList::Delegate,
-      public SigninManagerBase::Observer {
+      public identity::IdentityManager::Observer {
  public:
   LocalDiscoveryUIHandler();
   ~LocalDiscoveryUIHandler() override;
@@ -78,11 +78,10 @@ class LocalDiscoveryUIHandler
       const cloud_print::CloudPrintPrinterList::DeviceList& devices) override;
   void OnDeviceListUnavailable() override;
 
-  // SigninManagerBase::Observer implementation.
-  void GoogleSigninSucceeded(const std::string& account_id,
-                             const std::string& username) override;
-  void GoogleSignedOut(const std::string& account_id,
-                       const std::string& username) override;
+  // identity::IdentityManager::Observer implementation.
+  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
+  void OnPrimaryAccountCleared(
+      const AccountInfo& previous_primary_account_info) override;
 
  private:
   using DeviceDescriptionMap =

@@ -12,16 +12,18 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
+namespace identity {
+class PrimaryAccountAccessTokenFetcher;
+}
+class GoogleServiceAuthError;
+
 namespace cloud_print {
 
-class GCDApiFlowImpl : public GCDApiFlow,
-                       public net::URLFetcherDelegate,
-                       public OAuth2TokenService::Consumer {
+class GCDApiFlowImpl : public GCDApiFlow, public net::URLFetcherDelegate {
  public:
   // Create an OAuth2-based confirmation.
   GCDApiFlowImpl(net::URLRequestContextGetter* request_context,
-                 OAuth2TokenService* token_service,
-                 const std::string& account_id);
+                 identity::IdentityManager* identity_manager);
   ~GCDApiFlowImpl() override;
 
   // GCDApiFlow implementation:
@@ -30,21 +32,16 @@ class GCDApiFlowImpl : public GCDApiFlow,
   // net::URLFetcherDelegate implementation:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // OAuth2TokenService::Consumer implementation:
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
-  void OnGetTokenFailure(const OAuth2TokenService::Request* request,
-                         const GoogleServiceAuthError& error) override;
+  void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
+                                  std::string access_token);
 
  private:
   void CreateRequest();
 
   std::unique_ptr<net::URLFetcher> url_fetcher_;
-  std::unique_ptr<OAuth2TokenService::Request> oauth_request_;
+  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
-  OAuth2TokenService* token_service_;
-  std::string account_id_;
+  identity::IdentityManager* identity_manager_;
   std::unique_ptr<Request> request_;
 
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlowImpl);
