@@ -7,9 +7,7 @@ cr.define('downloads', function() {
     is: 'downloads-item',
 
     properties: {
-      data: {
-        type: Object,
-      },
+      data: Object,
 
       completelyOnDisk_: {
         computed: 'computeCompletelyOnDisk_(' +
@@ -205,11 +203,17 @@ cr.define('downloads', function() {
      * @private
      */
     computePauseOrResumeClass_: function() {
+      if (this.data === undefined)
+        return '';
+
       return !this.isInProgress_ && this.data.resume ? 'action-button' : '';
     },
 
     /** @private */
     computePauseOrResumeText_: function() {
+      if (this.data === undefined)
+        return '';
+
       if (this.isInProgress_)
         return loadTimeData.getString('controlPause');
       if (this.data.resume)
