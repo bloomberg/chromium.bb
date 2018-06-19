@@ -69,6 +69,8 @@ using device::BluetoothUUID;
 
 namespace {
 
+constexpr int32_t DEFAULT_RSSI = -127;
+
 // https://android.googlesource.com/platform/system/bt/+/master/stack/include/gatt_api.h
 constexpr int32_t GATT_CHAR_PROP_BIT_BROADCAST = (1 << 0);
 constexpr int32_t GATT_CHAR_PROP_BIT_READ = (1 << 1);
@@ -514,7 +516,8 @@ void ArcBluetoothBridge::OnConnectionClosed() {
   is_bluetooth_instance_up_ = false;
 }
 
-void ArcBluetoothBridge::SendDevice(const BluetoothDevice* device) const {
+void ArcBluetoothBridge::SendDevice(const BluetoothDevice* device,
+                                    bool include_cached_device) const {
   auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->bluetooth(), OnDeviceFound);
   if (!bluetooth_instance)
@@ -531,21 +534,23 @@ void ArcBluetoothBridge::SendDevice(const BluetoothDevice* device) const {
   base::Optional<int8_t> rssi = device->GetInquiryRSSI();
   mojom::BluetoothAddressPtr addr;
 
-  // We only want to send updated advertise data to Android only when we are
-  // scanning which is checked by the validity of rssi. Here are the 2 cases
-  // that we don't want to send updated advertise data to Android.
-  // 1) Cached found device and 2) rssi became invalid when we stop scanning.
-  if (rssi.has_value()) {
-    auto* btle_instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc_bridge_service_->bluetooth(), OnLEDeviceFound);
-    if (!btle_instance)
-      return;
-    std::vector<mojom::BluetoothAdvertisingDataPtr> adv_data =
-        GetAdvertisingData(device);
-    addr = mojom::BluetoothAddress::From(device->GetAddress());
-    btle_instance->OnLEDeviceFound(std::move(addr), rssi.value(),
-                                   std::move(adv_data));
-  }
+  // There are two cases where we send advertise data to Android:
+  // 1) Cached found devices are sent when applications start scanning.
+  //    In this case, |include_cached_device| is true.
+  // 2) Updated devices are sent during scanning. In this case, rssi is valid.
+  if (!rssi.has_value() && !include_cached_device)
+    return;
+
+  auto* btle_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->bluetooth(), OnLEDeviceFound);
+  if (!btle_instance)
+    return;
+
+  std::vector<mojom::BluetoothAdvertisingDataPtr> adv_data =
+      GetAdvertisingData(device);
+  addr = mojom::BluetoothAddress::From(device->GetAddress());
+  btle_instance->OnLEDeviceFound(std::move(addr), rssi.value_or(DEFAULT_RSSI),
+                                 std::move(adv_data));
 }
 
 device::BluetoothDevice::PairingDelegate* ArcBluetoothBridge::ShowPairingDialog(
@@ -584,7 +589,7 @@ void ArcBluetoothBridge::DeviceChanged(BluetoothAdapter* adapter,
   if (!IsInstanceUp())
     return;
 
-  SendDevice(device);
+  SendDevice(device, /* include_cached_device = */ false);
 
   if (!(device->GetType() & device::BLUETOOTH_TRANSPORT_LE))
     return;
@@ -2820,15 +2825,8 @@ ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
 
 void ArcBluetoothBridge::SendCachedDevicesFound() const {
   DCHECK(bluetooth_adapter_);
-
-  // Send devices that have already been discovered, but aren't connected.
-  BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
-  for (auto* device : devices) {
-    if (device->IsPaired())
-      continue;
-
-    SendDevice(device);
-  }
+  for (auto* device : bluetooth_adapter_->GetDevices())
+    SendDevice(device, /* include_cached_device = */ true);
 }
 
 void ArcBluetoothBridge::SendCachedPairedDevices() const {
@@ -2839,7 +2837,7 @@ void ArcBluetoothBridge::SendCachedPairedDevices() const {
     if (!device->IsPaired())
       continue;
 
-    SendDevice(device);
+    SendDevice(device, /* include_cached_device = */ true);
 
     // OnBondStateChanged must be called with mojom::BluetoothBondState::BONDING
     // to make sure the bond state machine on Android is ready to take the
