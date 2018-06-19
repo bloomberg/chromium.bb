@@ -274,13 +274,16 @@ void AudioManagerPulse::InputDevicesInfoCallback(pa_context* context,
   if (info->monitor_of_sink != PA_INVALID_INDEX)
     return;
 
-  // Exclude devices that don't have an available active port (i.e it's
-  // unplugged). Such devices won't be picked (by pulseaudio) as default device,
-  // and if we have no available devices we don't want to add a default device
-  // to enumerations either.
-  if (!info->active_port ||
-      info->active_port->available == PA_PORT_AVAILABLE_NO)
-    return;
+  // If the device has ports, but none of them are available, skip it.
+  if (info->n_ports > 0) {
+    uint32_t port = 0;
+    for (; port != info->n_ports; ++port) {
+      if (info->ports[port]->available != PA_PORT_AVAILABLE_NO)
+        break;
+    }
+    if (port == info->n_ports)
+      return;
+  }
 
   manager->devices_->push_back(AudioDeviceName(info->description, info->name));
 }
