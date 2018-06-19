@@ -21,7 +21,7 @@
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
 #include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "chromeos/services/secure_channel/secure_channel_impl.h"
+#include "chromeos/services/secure_channel/secure_channel_initializer.h"
 #include "chromeos/services/secure_channel/secure_channel_service.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -35,16 +35,18 @@ namespace {
 
 const size_t kNumTestDevices = 5u;
 
-class FakeSecureChannelImplFactory : public SecureChannelImpl::Factory {
+class FakeSecureChannelInitializerFactory
+    : public SecureChannelInitializer::Factory {
  public:
-  explicit FakeSecureChannelImplFactory(
+  explicit FakeSecureChannelInitializerFactory(
       std::unique_ptr<FakeSecureChannel> fake_secure_channel)
       : fake_secure_channel_(std::move(fake_secure_channel)) {}
 
-  ~FakeSecureChannelImplFactory() override = default;
+  ~FakeSecureChannelInitializerFactory() override = default;
 
-  // SecureChannelImpl::Factory:
-  std::unique_ptr<SecureChannelBase> BuildInstance() override {
+  // SecureChannelInitializer::Factory:
+  std::unique_ptr<SecureChannelBase> BuildInstance(
+      scoped_refptr<base::TaskRunner> task_runner) override {
     EXPECT_TRUE(fake_secure_channel_);
     return std::move(fake_secure_channel_);
   }
@@ -126,11 +128,11 @@ class SecureChannelClientImplTest : public testing::Test {
   void SetUp() override {
     auto fake_secure_channel = std::make_unique<FakeSecureChannel>();
     fake_secure_channel_ = fake_secure_channel.get();
-    fake_secure_channel_impl_factory_ =
-        std::make_unique<FakeSecureChannelImplFactory>(
+    fake_secure_channel_initializer_factory_ =
+        std::make_unique<FakeSecureChannelInitializerFactory>(
             std::move(fake_secure_channel));
-    SecureChannelImpl::Factory::SetFactoryForTesting(
-        fake_secure_channel_impl_factory_.get());
+    SecureChannelInitializer::Factory::SetFactoryForTesting(
+        fake_secure_channel_initializer_factory_.get());
 
     fake_connection_attempt_factory_ =
         std::make_unique<FakeConnectionAttemptFactory>();
@@ -158,7 +160,7 @@ class SecureChannelClientImplTest : public testing::Test {
   }
 
   void TearDown() override {
-    SecureChannelImpl::Factory::SetFactoryForTesting(nullptr);
+    SecureChannelInitializer::Factory::SetFactoryForTesting(nullptr);
   }
 
   std::unique_ptr<FakeConnectionAttempt> CallListenForConnectionFromDevice(
@@ -206,8 +208,8 @@ class SecureChannelClientImplTest : public testing::Test {
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   FakeSecureChannel* fake_secure_channel_;
-  std::unique_ptr<FakeSecureChannelImplFactory>
-      fake_secure_channel_impl_factory_;
+  std::unique_ptr<FakeSecureChannelInitializerFactory>
+      fake_secure_channel_initializer_factory_;
   std::unique_ptr<FakeConnectionAttemptFactory>
       fake_connection_attempt_factory_;
   std::unique_ptr<FakeClientChannelImplFactory>

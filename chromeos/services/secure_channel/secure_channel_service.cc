@@ -5,7 +5,7 @@
 #include "chromeos/services/secure_channel/secure_channel_service.h"
 
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "chromeos/services/secure_channel/secure_channel_impl.h"
+#include "chromeos/services/secure_channel/secure_channel_initializer.h"
 
 namespace chromeos {
 
@@ -24,7 +24,7 @@ SecureChannelService::~SecureChannelService() = default;
 void SecureChannelService::OnStart() {
   PA_LOG(INFO) << "SecureChannelService::OnStart()";
 
-  secure_channel_ = SecureChannelImpl::Factory::Get()->BuildInstance();
+  secure_channel_ = SecureChannelInitializer::Factory::Get()->BuildInstance();
 
   registry_.AddInterface(
       base::BindRepeating(&SecureChannelBase::BindRequest,
