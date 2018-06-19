@@ -19,6 +19,7 @@
     "unlimitedStorage",
     "idle",
     "chromeosInfoPrivate",
+    "fileManagerPrivate",
     "fileSystem.requestDownloads",
     {"fileSystem": ["write", "directory"]}
   ],

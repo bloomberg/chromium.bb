@@ -78,6 +78,20 @@ camera.views.Album = function(context, router) {
       'click', this.router.back.bind(this.router));
 };
 
+/**
+ * Task ID of Gallery app
+ * @type {string}
+ * @const
+ */
+camera.views.Album.GALLERY_APP = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
+
+/**
+ * Task ID of Video Player app.
+ * @type {string}
+ * @const
+ */
+camera.views.Album.VIDEO_PLAYER_APP = 'jcgeabjmjgoblfofpppfkcoakmfobdko|app|video';
+
 camera.views.Album.prototype = {
   __proto__: camera.views.GalleryBase.prototype
 };
@@ -187,20 +201,31 @@ camera.views.Album.prototype.updateButtons_ = function() {
 };
 
 /**
- * Opens the picture in the browser view.
+ * Opens the picture to browse.
  * @param {camera.models.Gallery.Picture} picture Picture to be opened.
  * @private
  */
-camera.views.Album.prototype.openPictureInBrowser_ = function(picture) {
-  this.router.navigate(
-      camera.Router.ViewIdentifier.BROWSER, {
-        picture: picture,
-        selectionChanged: function(picture) {
-          this.setSelectedIndex(picture ? this.pictureIndex(picture) : null);
-      }.bind(this)}, function() {
-        if (this.entered && !this.pictures.length)
-          this.router.back();
-      }.bind(this));
+camera.views.Album.prototype.openPicture_ = function(picture) {
+  if (camera.models.FileSystem.externalFs && chrome.fileManagerPrivate) {
+    var id = picture.pictureType == camera.models.Gallery.PictureType.MOTION ?
+        camera.views.Album.VIDEO_PLAYER_APP : camera.views.Album.GALLERY_APP;
+    chrome.fileManagerPrivate.executeTask(
+        id, [picture.pictureEntry], function(result) {
+      if (result != 'opened' && result != 'message_sent') {
+        console.warn('Unable to open picture by platform apps.');
+      }
+    });
+  } else {
+    this.router.navigate(
+        camera.Router.ViewIdentifier.BROWSER, {
+          picture: picture,
+          selectionChanged: function(picture) {
+            this.setSelectedIndex(picture ? this.pictureIndex(picture) : null);
+        }.bind(this)}, function() {
+          if (this.entered && !this.pictures.length)
+            this.router.back();
+        }.bind(this));
+  }
 };
 
 /**
@@ -347,7 +372,7 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
         return;
       }
       if (selectedIndexes.length == 1)
-        this.openPictureInBrowser_(this.lastSelectedPicture().picture);
+        this.openPicture_(this.lastSelectedPicture().picture);
       event.preventDefault();
       return;
   }
@@ -512,7 +537,7 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
   }.bind(this));
 
   wrapper.addEventListener('dblclick', function() {
-    this.openPictureInBrowser_(picture);
+    this.openPicture_(picture);
   }.bind(this));
 };
 
