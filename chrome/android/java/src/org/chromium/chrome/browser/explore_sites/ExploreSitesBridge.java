@@ -31,11 +31,17 @@ public class ExploreSitesBridge {
     }
 
     /**
-     * Fetches an icon from a url and returns in a Bitmap image.
+     * Fetches an icon from a url and returns in a Bitmap image. The callback argument will be null
+     * if the operation fails.
      */
-    public static void getIcon(final String iconUrl, final Callback<Bitmap> callback) {}
+    public static void getIcon(
+            Profile profile, final String iconUrl, final Callback<Bitmap> callback) {
+        nativeGetIcon(profile, iconUrl, callback);
+    }
 
     private static native void nativeGetNtpCategories(Profile profile,
             List<ExploreSitesCategoryTile> result,
             Callback<List<ExploreSitesCategoryTile>> callback);
+    private static native void nativeGetIcon(
+            Profile profile, String iconUrl, Callback<Bitmap> callback);
 }
