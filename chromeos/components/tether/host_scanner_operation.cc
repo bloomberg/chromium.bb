@@ -83,6 +83,7 @@ HostScannerOperation::Factory*
 std::unique_ptr<HostScannerOperation>
 HostScannerOperation::Factory::NewInstance(
     const cryptauth::RemoteDeviceRefList& devices_to_connect,
+    device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -92,9 +93,9 @@ HostScannerOperation::Factory::NewInstance(
     factory_instance_ = new Factory();
   }
   return factory_instance_->BuildInstance(
-      devices_to_connect, secure_channel_client, connection_manager,
-      host_scan_device_prioritizer, tether_host_response_recorder,
-      connection_preserver);
+      devices_to_connect, device_sync_client, secure_channel_client,
+      connection_manager, host_scan_device_prioritizer,
+      tether_host_response_recorder, connection_preserver);
 }
 
 // static
@@ -105,15 +106,16 @@ void HostScannerOperation::Factory::SetInstanceForTesting(Factory* factory) {
 std::unique_ptr<HostScannerOperation>
 HostScannerOperation::Factory::BuildInstance(
     const cryptauth::RemoteDeviceRefList& devices_to_connect,
+    device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
     TetherHostResponseRecorder* tether_host_response_recorder,
     ConnectionPreserver* connection_preserver) {
   return base::WrapUnique(new HostScannerOperation(
-      devices_to_connect, secure_channel_client, connection_manager,
-      host_scan_device_prioritizer, tether_host_response_recorder,
-      connection_preserver));
+      devices_to_connect, device_sync_client, secure_channel_client,
+      connection_manager, host_scan_device_prioritizer,
+      tether_host_response_recorder, connection_preserver));
 }
 
 HostScannerOperation::ScannedDeviceInfo::ScannedDeviceInfo(
@@ -136,6 +138,7 @@ bool operator==(const HostScannerOperation::ScannedDeviceInfo& first,
 
 HostScannerOperation::HostScannerOperation(
     const cryptauth::RemoteDeviceRefList& devices_to_connect,
+    device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     BleConnectionManager* connection_manager,
     HostScanDevicePrioritizer* host_scan_device_prioritizer,
@@ -144,6 +147,7 @@ HostScannerOperation::HostScannerOperation(
     : MessageTransferOperation(
           PrioritizeDevices(devices_to_connect, host_scan_device_prioritizer),
           secure_channel::ConnectionPriority::kLow,
+          device_sync_client,
           secure_channel_client,
           connection_manager),
       tether_host_response_recorder_(tether_host_response_recorder),

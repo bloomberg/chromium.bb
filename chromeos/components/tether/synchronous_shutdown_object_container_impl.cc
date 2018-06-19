@@ -32,7 +32,6 @@
 #include "chromeos/components/tether/tether_session_completion_logger.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "chromeos/components/tether/wifi_hotspot_connector.h"
-#include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 
 namespace chromeos {
 
@@ -54,6 +53,7 @@ SynchronousShutdownObjectContainerImpl::Factory::NewInstance(
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler,
     session_manager::SessionManager* session_manager,
+    device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client) {
   if (!factory_instance_)
     factory_instance_ = new Factory();
@@ -62,7 +62,7 @@ SynchronousShutdownObjectContainerImpl::Factory::NewInstance(
       asychronous_container, notification_presenter,
       gms_core_notifications_state_tracker, pref_service, network_state_handler,
       network_connect, network_connection_handler, session_manager,
-      secure_channel_client);
+      device_sync_client, secure_channel_client);
 }
 
 // static
@@ -83,12 +83,13 @@ SynchronousShutdownObjectContainerImpl::Factory::BuildInstance(
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler,
     session_manager::SessionManager* session_manager,
+    device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client) {
   return base::WrapUnique(new SynchronousShutdownObjectContainerImpl(
       asychronous_container, notification_presenter,
       gms_core_notifications_state_tracker, pref_service, network_state_handler,
       network_connect, network_connection_handler, session_manager,
-      secure_channel_client));
+      device_sync_client, secure_channel_client));
 }
 
 SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
@@ -100,6 +101,7 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
     NetworkConnect* network_connect,
     NetworkConnectionHandler* network_connection_handler,
     session_manager::SessionManager* session_manager,
+    device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client)
     : network_state_handler_(network_state_handler),
       network_list_sorter_(std::make_unique<NetworkListSorter>()),
@@ -139,6 +141,7 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
                                                 master_host_scan_cache_.get(),
                                                 active_host_.get())),
       keep_alive_scheduler_(std::make_unique<KeepAliveScheduler>(
+          device_sync_client,
           secure_channel_client,
           active_host_.get(),
           asychronous_container->ble_connection_manager(),
@@ -154,6 +157,7 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           active_host_.get(),
           tether_host_response_recorder_.get())),
       host_scanner_(std::make_unique<HostScannerImpl>(
+          device_sync_client,
           secure_channel_client,
           network_state_handler_,
           session_manager,
@@ -176,6 +180,7 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
               asychronous_container->ble_connection_manager(),
               active_host_.get())),
       tether_connector_(std::make_unique<TetherConnectorImpl>(
+          device_sync_client,
           secure_channel_client,
           network_state_handler_,
           wifi_hotspot_connector_.get(),

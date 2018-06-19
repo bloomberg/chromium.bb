@@ -121,6 +121,7 @@ AsynchronousShutdownObjectContainerImpl::
           std::make_unique<BleConnectionMetricsLogger>()),
       disconnect_tethering_request_sender_(
           DisconnectTetheringRequestSenderImpl::Factory::NewInstance(
+              device_sync_client,
               secure_channel_client,
               ble_connection_manager_.get(),
               tether_host_fetcher_)),

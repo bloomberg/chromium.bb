@@ -17,6 +17,10 @@ class SessionManager;
 
 namespace chromeos {
 
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
+
 namespace secure_channel {
 class SecureChannelClient;
 }  // namespace secure_channel
@@ -69,6 +73,7 @@ class SynchronousShutdownObjectContainerImpl
         NetworkConnect* network_connect,
         NetworkConnectionHandler* network_connection_handler,
         session_manager::SessionManager* session_manager,
+        device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client);
     static void SetInstanceForTesting(Factory* factory);
 
@@ -83,6 +88,7 @@ class SynchronousShutdownObjectContainerImpl
         NetworkConnect* network_connect,
         NetworkConnectionHandler* network_connection_handler,
         session_manager::SessionManager* session_manager,
+        device_sync::DeviceSyncClient* device_sync_client,
         secure_channel::SecureChannelClient* secure_channel_client);
     virtual ~Factory();
 
@@ -109,6 +115,7 @@ class SynchronousShutdownObjectContainerImpl
       NetworkConnect* network_connect,
       NetworkConnectionHandler* network_connection_handler,
       session_manager::SessionManager* session_manager,
+      device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client);
 
  private:

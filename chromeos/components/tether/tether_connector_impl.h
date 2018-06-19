@@ -17,6 +17,10 @@ namespace chromeos {
 
 class NetworkStateHandler;
 
+namespace device_sync {
+class DeviceSyncClient;
+}  // namespace device_sync
+
 namespace secure_channel {
 class SecureChannelClient;
 }  // namespace secure_channel
@@ -43,6 +47,7 @@ class TetherConnectorImpl : public TetherConnector,
                             public ConnectTetheringOperation::Observer {
  public:
   TetherConnectorImpl(
+      device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       NetworkStateHandler* network_state_handler,
       WifiHotspotConnector* wifi_hotspot_connector,
@@ -96,6 +101,7 @@ class TetherConnectorImpl : public TetherConnector,
       const std::string& device_id,
       ConnectTetheringOperation::HostResponseErrorCode error_code);
 
+  device_sync::DeviceSyncClient* device_sync_client_;
   secure_channel::SecureChannelClient* secure_channel_client_;
   NetworkConnectionHandler* network_connection_handler_;
   NetworkStateHandler* network_state_handler_;

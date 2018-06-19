@@ -27,6 +27,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test.h"
+#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -63,11 +64,13 @@ class FakeConnectTetheringOperation : public ConnectTetheringOperation {
  public:
   FakeConnectTetheringOperation(
       cryptauth::RemoteDeviceRef device_to_connect,
+      device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       BleConnectionManager* connection_manager,
       TetherHostResponseRecorder* tether_host_response_recorder,
       bool setup_required)
       : ConnectTetheringOperation(device_to_connect,
+                                  device_sync_client,
                                   secure_channel_client,
                                   connection_manager,
                                   tether_host_response_recorder,
@@ -115,14 +118,15 @@ class FakeConnectTetheringOperationFactory
   // ConnectTetheringOperation::Factory:
   std::unique_ptr<ConnectTetheringOperation> BuildInstance(
       cryptauth::RemoteDeviceRef device_to_connect,
+      device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client,
       BleConnectionManager* connection_manager,
       TetherHostResponseRecorder* tether_host_response_recorder,
       bool setup_required) override {
     FakeConnectTetheringOperation* operation =
         new FakeConnectTetheringOperation(
-            device_to_connect, secure_channel_client, connection_manager,
-            tether_host_response_recorder, setup_required);
+            device_to_connect, device_sync_client, secure_channel_client,
+            connection_manager, tether_host_response_recorder, setup_required);
     created_operations_.push_back(operation);
     return base::WrapUnique(operation);
   }
@@ -150,6 +154,8 @@ class TetherConnectorImplTest : public NetworkStateTest {
     ConnectTetheringOperation::Factory::SetInstanceForTesting(
         fake_operation_factory_.get());
 
+    fake_device_sync_client_ =
+        std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
     fake_wifi_hotspot_connector_ =
@@ -176,9 +182,10 @@ class TetherConnectorImplTest : public NetworkStateTest {
     result_.clear();
 
     tether_connector_ = base::WrapUnique(new TetherConnectorImpl(
-        fake_secure_channel_client_.get(), network_state_handler(),
-        fake_wifi_hotspot_connector_.get(), fake_active_host_.get(),
-        fake_tether_host_fetcher_.get(), fake_ble_connection_manager_.get(),
+        fake_device_sync_client_.get(), fake_secure_channel_client_.get(),
+        network_state_handler(), fake_wifi_hotspot_connector_.get(),
+        fake_active_host_.get(), fake_tether_host_fetcher_.get(),
+        fake_ble_connection_manager_.get(),
         mock_tether_host_response_recorder_.get(),
         device_id_tether_network_guid_map_.get(), fake_host_scan_cache_.get(),
         fake_notification_presenter_.get(),
@@ -324,6 +331,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
   std::unique_ptr<FakeWifiHotspotConnector> fake_wifi_hotspot_connector_;
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<FakeTetherHostFetcher> fake_tether_host_fetcher_;
+  std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>
       fake_secure_channel_client_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;

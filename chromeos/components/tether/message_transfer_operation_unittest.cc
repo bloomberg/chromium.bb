@@ -12,6 +12,7 @@
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto_test_util.h"
 #include "chromeos/components/tether/timer_factory.h"
+#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,19 +36,20 @@ const uint32_t kTestTimeoutSeconds = 5;
 class TestOperation : public MessageTransferOperation {
  public:
   TestOperation(const cryptauth::RemoteDeviceRefList& devices_to_connect,
+                device_sync::DeviceSyncClient* device_sync_client,
                 secure_channel::SecureChannelClient* secure_channel_client,
                 BleConnectionManager* connection_manager)
       : MessageTransferOperation(devices_to_connect,
                                  secure_channel::ConnectionPriority::kLow,
+                                 device_sync_client,
                                  secure_channel_client,
                                  connection_manager) {}
   ~TestOperation() override = default;
 
   bool HasDeviceAuthenticated(cryptauth::RemoteDeviceRef remote_device) {
     const auto iter = device_map_.find(remote_device);
-    if (iter == device_map_.end()) {
+    if (iter == device_map_.end())
       return false;
-    }
 
     return iter->second.has_device_authenticated;
   }
@@ -55,9 +57,8 @@ class TestOperation : public MessageTransferOperation {
   std::vector<std::shared_ptr<MessageWrapper>> GetReceivedMessages(
       cryptauth::RemoteDeviceRef remote_device) {
     const auto iter = device_map_.find(remote_device);
-    if (iter == device_map_.end()) {
+    if (iter == device_map_.end())
       return std::vector<std::shared_ptr<MessageWrapper>>();
-    }
 
     return iter->second.received_messages;
   }
@@ -170,6 +171,8 @@ class MessageTransferOperationTest : public testing::Test {
   }
 
   void SetUp() override {
+    fake_device_sync_client_ =
+        std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
@@ -177,9 +180,9 @@ class MessageTransferOperationTest : public testing::Test {
 
   void ConstructOperation(cryptauth::RemoteDeviceRefList remote_devices) {
     test_timer_factory_ = new TestTimerFactory();
-    operation_ = base::WrapUnique(
-        new TestOperation(remote_devices, fake_secure_channel_client_.get(),
-                          fake_ble_connection_manager_.get()));
+    operation_ = base::WrapUnique(new TestOperation(
+        remote_devices, fake_device_sync_client_.get(),
+        fake_secure_channel_client_.get(), fake_ble_connection_manager_.get()));
     operation_->SetTimerFactoryForTest(base::WrapUnique(test_timer_factory_));
     VerifyOperationStartedAndFinished(false /* has_started */,
                                       false /* has_finished */);
@@ -240,6 +243,7 @@ class MessageTransferOperationTest : public testing::Test {
 
   const cryptauth::RemoteDeviceRefList test_devices_;
 
+  std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<secure_channel::SecureChannelClient>
       fake_secure_channel_client_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;

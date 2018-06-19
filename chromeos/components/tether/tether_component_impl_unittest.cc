@@ -86,6 +86,7 @@ class FakeSynchronousShutdownObjectContainerFactory
       NetworkConnect* network_connect,
       NetworkConnectionHandler* network_connection_handler,
       session_manager::SessionManager* session_manager,
+      device_sync::DeviceSyncClient* device_sync_client,
       secure_channel::SecureChannelClient* secure_channel_client) override {
     return base::WrapUnique(fake_synchronous_container_);
   }
