@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -81,7 +82,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_AfterLoad) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 }
 
@@ -98,7 +99,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Change) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 }
 
@@ -112,7 +113,7 @@ TEST_F(StyleEnvironmentVariablesTest,
   // Check that the element has the background color provided by the global
   // variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kAltTestColor, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kAltTestColor, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 
   // Change the variable value on the document after we have loaded the page.
@@ -124,7 +125,7 @@ TEST_F(StyleEnvironmentVariablesTest,
 
   // Check that the element has the background color provided by the document
   // variable.
-  EXPECT_EQ(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 
   // Remove the document variable.
@@ -136,7 +137,7 @@ TEST_F(StyleEnvironmentVariablesTest,
 
   // Check that the element has the background color provided by the global
   // variable.
-  EXPECT_EQ(kAltTestColor, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kAltTestColor, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 }
 
@@ -149,7 +150,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Override_RemoveGlobal) {
   // Check that the element has the background color provided by the global
   // variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kAltTestColor, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kAltTestColor, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 
   // Change the variable value on the document after we have loaded the page.
@@ -161,7 +162,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Override_RemoveGlobal) {
 
   // Check that the element has the background color provided by the document
   // variable.
-  EXPECT_EQ(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 
   // Remove the global variable.
@@ -177,7 +178,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Preset) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 }
 
@@ -187,7 +188,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Remove) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 
   // Change the variable value after we have loaded the page.
@@ -198,7 +199,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Remove) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Check that the element does not have the background color any more.
-  EXPECT_NE(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_NE(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 }
 
@@ -248,7 +249,7 @@ TEST_F(StyleEnvironmentVariablesTest, NavigateToClear) {
 
   // Check that the element has no background color.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kNoColor, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kNoColor, target->ComputedStyleRef().VisitedDependentColor(
                           GetCSSPropertyBackgroundColor()));
 }
 
@@ -263,7 +264,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_AfterLoad) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 }
 
@@ -282,7 +283,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Change) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 }
 
@@ -293,7 +294,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Preset) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 }
 
@@ -304,7 +305,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Remove) {
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
-  EXPECT_EQ(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_EQ(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 
   // Change the variable value after we have loaded the page.
@@ -315,7 +316,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Remove) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Check that the element does not have the background color any more.
-  EXPECT_NE(kTestColorRed, target->EnsureComputedStyle()->VisitedDependentColor(
+  EXPECT_NE(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
 }
 
