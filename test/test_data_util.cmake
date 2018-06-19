@@ -31,7 +31,7 @@ list(APPEND AOM_TEST_DATA_FILE_NAMES
             "niklas_640_480_30.yuv"
             "vase10x10.yuv")
 
-if(CONFIG_DECODE_PERF_TESTS AND CONFIG_AV1_ENCODER)
+if(ENABLE_DECODE_PERF_TESTS AND CONFIG_AV1_ENCODER)
   list(APPEND AOM_TEST_DATA_FILE_NAMES "niklas_1280_720_30.yuv")
 endif()
 
@@ -367,7 +367,7 @@ if(CONFIG_AV1_DECODER)
               "av1-1-b8-01-size-66x66.ivf.md5")
 endif()
 
-if(CONFIG_ENCODE_PERF_TESTS AND CONFIG_AV1_ENCODER)
+if(ENABLE_ENCODE_PERF_TESTS AND CONFIG_AV1_ENCODER)
   list(APPEND AOM_TEST_DATA_FILE_NAMES "desktop_640_360_30.yuv"
               "kirland_640_480_30.yuv" "macmarcomoving_640_480_30.yuv"
               "macmarcostationary_640_480_30.yuv" "niklas_1280_720_30.yuv"
