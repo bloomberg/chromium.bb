@@ -252,20 +252,31 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
     std::vector<FlushParams> flush_list = std::get<0>(std::move(params));
 
     for (auto& flush_info : flush_list) {
-      GpuCommandBufferMsg_AsyncFlush flush_message(
-          flush_info.route_id, flush_info.put_offset, flush_info.flush_id);
-
       auto it = route_sequences_.find(flush_info.route_id);
       if (it == route_sequences_.end()) {
         DLOG(ERROR) << "Invalid route id in flush list";
         continue;
       }
 
-      tasks.emplace_back(
-          it->second /* sequence_id */,
-          base::BindOnce(&GpuChannel::HandleMessage, gpu_channel_->AsWeakPtr(),
-                         flush_message),
-          std::move(flush_info.sync_token_fences));
+      if (flush_info.transfer_buffer_id_to_destroy) {
+        tasks.emplace_back(
+            it->second /* sequence_id */,
+            base::BindOnce(&GpuChannel::HandleMessage,
+                           gpu_channel_->AsWeakPtr(),
+                           GpuCommandBufferMsg_DestroyTransferBuffer(
+                               flush_info.route_id,
+                               flush_info.transfer_buffer_id_to_destroy)),
+            std::move(flush_info.sync_token_fences));
+      } else {
+        GpuCommandBufferMsg_AsyncFlush flush_message(
+            flush_info.route_id, flush_info.put_offset, flush_info.flush_id);
+
+        tasks.emplace_back(
+            it->second /* sequence_id */,
+            base::BindOnce(&GpuChannel::HandleMessage,
+                           gpu_channel_->AsWeakPtr(), flush_message),
+            std::move(flush_info.sync_token_fences));
+      }
     }
 
     scheduler_->ScheduleTasks(std::move(tasks));
