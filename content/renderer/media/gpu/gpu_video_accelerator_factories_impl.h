@@ -90,9 +90,19 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   unsigned ImageTextureTarget(gfx::BufferFormat format) override;
   OutputFormat VideoFrameOutputFormat(size_t bit_depth) override;
 
+  // Called on the media thread. Returns the GLES2Interface unless the
+  // ContextProvider has been lost, in which case it returns null.
   gpu::gles2::GLES2Interface* ContextGL() override;
   void BindContextToTaskRunner();
+  // Called on the media thread. Verifies if the ContextProvider is lost and
+  // notifies the main thread of loss if it has occured, which can be seen later
+  // from CheckContextProviderLost().
   bool CheckContextLost();
+  // Called on the media thread. Destroys the ContextProvider held in this
+  // class. Should only be called if the ContextProvider was previously lost,
+  // and this class will no longer be used, as it assumes a ContextProvider is
+  // present otherwise.
+  void DestroyContext();
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
@@ -106,7 +116,10 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
 
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 
-  bool CheckContextProviderLost();
+  // Called on the main thread. Returns whether the media thread has seen the
+  // ContextProvider become lost, in which case this class should be replaced
+  // with a new ContextProvider.
+  bool CheckContextProviderLostOnMainThread();
 
   ~GpuVideoAcceleratorFactoriesImpl() override;
 
@@ -125,8 +138,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   void BindVideoEncodeAcceleratorProviderOnTaskRunner(
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
 
-  void ReleaseContextProvider();
   void SetContextProviderLost();
+  void SetContextProviderLostOnMainThread();
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -136,8 +149,11 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // thread, but all subsequent access and destruction should happen only on the
   // media thread.
   scoped_refptr<ui::ContextProviderCommandBuffer> context_provider_;
-  // Signals if |context_provider_| is alive on the media thread.
-  bool context_provider_lost_;
+  // Signals if |context_provider_| is alive on the media thread. For use on the
+  // main thread.
+  bool context_provider_lost_ = false;
+  // A shadow of |context_provider_lost_| for the media thread.
+  bool context_provider_lost_on_media_thread_ = false;
 
   base::UnguessableToken channel_token_;
 
