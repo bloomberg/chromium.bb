@@ -16,11 +16,10 @@ class Value;
 }  // namespace base
 
 namespace cc {
-
-class Layer;
 class LayerTreeHost;
 class PictureLayer;
 class MicroBenchmarkImpl;
+
 class CC_EXPORT MicroBenchmark {
  public:
   using DoneCallback = base::OnceCallback<void(std::unique_ptr<base::Value>)>;
@@ -33,7 +32,6 @@ class CC_EXPORT MicroBenchmark {
   int id() const { return id_; }
   void set_id(int id) { id_ = id; }
 
-  virtual void RunOnLayer(Layer* layer);
   virtual void RunOnLayer(PictureLayer* layer);
 
   virtual bool ProcessMessage(std::unique_ptr<base::Value> value);

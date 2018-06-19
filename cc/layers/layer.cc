@@ -1394,9 +1394,7 @@ void Layer::AddDrawableDescendants(int num) {
     parent()->AddDrawableDescendants(num);
 }
 
-void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {
-  benchmark->RunOnLayer(this);
-}
+void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {}
 
 void Layer::SetElementId(ElementId id) {
   DCHECK(IsPropertyChangeAllowed());

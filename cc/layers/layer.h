@@ -82,7 +82,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     SINGLE_TEXTURE_MASK,
   };
 
+  // Factory to create a new Layer, with a unique id.
   static scoped_refptr<Layer> Create();
+
+  // Sets an optional client on this layer, that will be called when relevant
+  // events happen. The client is a WeakPtr so it can be destroyed without
+  // unsetting itself as the client.
+  void SetLayerClient(base::WeakPtr<LayerClient> client);
+  LayerClient* GetLayerClientForTesting() const { return inputs_.client.get(); }
 
   // A unique and stable id for the Layer. Ids are always positive.
   int id() const { return inputs_.layer_id; }
@@ -540,13 +547,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void UpdateDebugInfo();
 
-  void SetLayerClient(base::WeakPtr<LayerClient> client);
-  LayerClient* GetLayerClientForTesting() const { return inputs_.client.get(); }
-
-  virtual sk_sp<SkPicture> GetPicture() const;
-
-  virtual void RunMicroBenchmark(MicroBenchmark* benchmark);
-
   // The index of this layer's node in the various property trees. These are
   // only valid after a main frame, when Update() is called on the layer, and
   // remain valid and in in the same state until the next main frame, or until
@@ -561,11 +561,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // indicates whether the transform tree node was created for this layer.
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
   bool has_transform_node() { return has_transform_node_; }
-
-  void SetOffsetToTransformParent(gfx::Vector2dF offset);
-  gfx::Vector2dF offset_to_transform_parent() const {
-    return offset_to_transform_parent_;
-  }
 
   void SetMayContainVideo(bool yes);
 
@@ -593,6 +588,19 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   // Called on the scroll layer to trigger showing the overlay scrollbars.
   void ShowScrollbars() { needs_show_scrollbars_ = true; }
+
+  // For tracing. Gets a recorded rasterization of this layer's contents that
+  // can be displayed inside representations of this layer. May return null, in
+  // which case the layer won't be shown with any content in the tracing
+  // display.
+  virtual sk_sp<SkPicture> GetPicture() const;
+
+  // For telemetry testing. Runs a given test behaviour implemented in
+  // |benchmark| for this layer. The base class does nothing as benchmarks
+  // only exist for subclass layer types. For each subclass that the
+  // MicroBenchmark supports, the class should override this method and run the
+  // |benchmark| against this layer.
+  virtual void RunMicroBenchmark(MicroBenchmark* benchmark);
 
   // Internal method to create the compositor thread type for this Layer.
   // Subclasses should override this method if they want to return their own
@@ -673,6 +681,15 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetClipTreeIndex(int index);
   void SetEffectTreeIndex(int index);
   void SetScrollTreeIndex(int index);
+
+  // Internal to property tree construction. Set or get the position of this
+  // layer relative to the origin after transforming according to this layer's
+  // index into the transform tree. This translation is appended to the
+  // transform that comes from the transform tree for this layer.
+  void SetOffsetToTransformParent(gfx::Vector2dF offset);
+  gfx::Vector2dF offset_to_transform_parent() const {
+    return offset_to_transform_parent_;
+  }
 
   // Internal to property tree construction. Indicates that a property changed
   // on this layer that may affect the position or content of all layers in this
