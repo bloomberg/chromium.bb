@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 
 #include <stddef.h>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -177,12 +178,12 @@ void FillIconSet(file_manager_private::IconSet* output,
   DCHECK(output);
   using chromeos::file_system_provider::IconSet;
   if (input.HasIcon(IconSet::IconSize::SIZE_16x16)) {
-    output->icon16x16_url.reset(
-        new std::string(input.GetIcon(IconSet::IconSize::SIZE_16x16).spec()));
+    output->icon16x16_url = std::make_unique<std::string>(
+        input.GetIcon(IconSet::IconSize::SIZE_16x16).spec());
   }
   if (input.HasIcon(IconSet::IconSize::SIZE_32x32)) {
-    output->icon32x32_url.reset(
-        new std::string(input.GetIcon(IconSet::IconSize::SIZE_32x32).spec()));
+    output->icon32x32_url = std::make_unique<std::string>(
+        input.GetIcon(IconSet::IconSize::SIZE_32x32).spec());
   }
 }
 
@@ -200,8 +201,8 @@ void VolumeToVolumeMetadata(
   volume_metadata->profile.is_current_profile = true;
 
   if (!volume.source_path().empty()) {
-    volume_metadata->source_path.reset(
-        new std::string(volume.source_path().AsUTF8Unsafe()));
+    volume_metadata->source_path =
+        std::make_unique<std::string>(volume.source_path().AsUTF8Unsafe());
   }
 
   switch (volume.source()) {
@@ -227,17 +228,18 @@ void VolumeToVolumeMetadata(
   volume_metadata->watchable = volume.watchable();
 
   if (volume.type() == VOLUME_TYPE_PROVIDED) {
-    volume_metadata->provider_id.reset(
-        new std::string(volume.provider_id().ToString()));
-    volume_metadata->file_system_id.reset(
-        new std::string(volume.file_system_id()));
+    volume_metadata->provider_id =
+        std::make_unique<std::string>(volume.provider_id().ToString());
+    volume_metadata->file_system_id =
+        std::make_unique<std::string>(volume.file_system_id());
   }
 
   FillIconSet(&volume_metadata->icon_set, volume.icon_set());
 
-  volume_metadata->volume_label.reset(new std::string(volume.volume_label()));
-  volume_metadata->disk_file_system_type.reset(
-      new std::string(volume.file_system_type()));
+  volume_metadata->volume_label =
+      std::make_unique<std::string>(volume.volume_label());
+  volume_metadata->disk_file_system_type =
+      std::make_unique<std::string>(volume.file_system_type());
 
   switch (volume.type()) {
     case VOLUME_TYPE_GOOGLE_DRIVE:
@@ -303,9 +305,10 @@ void VolumeToVolumeMetadata(
         volume_metadata->device_type = file_manager_private::DEVICE_TYPE_MOBILE;
         break;
     }
-    volume_metadata->device_path.reset(
-        new std::string(volume.system_path_prefix().AsUTF8Unsafe()));
-    volume_metadata->is_parent_device.reset(new bool(volume.is_parent()));
+    volume_metadata->device_path = std::make_unique<std::string>(
+        volume.system_path_prefix().AsUTF8Unsafe());
+    volume_metadata->is_parent_device =
+        std::make_unique<bool>(volume.is_parent());
   } else {
     volume_metadata->device_type =
         file_manager_private::DEVICE_TYPE_NONE;

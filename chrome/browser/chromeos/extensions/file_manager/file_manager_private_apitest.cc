@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/base64.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -187,8 +189,9 @@ class FileManagerPrivateApiTest : public extensions::ExtensionApiTest {
   void SetUpOnMainThread() override {
     extensions::ExtensionApiTest::SetUpOnMainThread();
 
-    testing_profile_.reset(new TestingProfile());
-    event_router_.reset(new file_manager::EventRouter(testing_profile_.get()));
+    testing_profile_ = std::make_unique<TestingProfile>();
+    event_router_ =
+        std::make_unique<file_manager::EventRouter>(testing_profile_.get());
   }
 
   void TearDownOnMainThread() override {

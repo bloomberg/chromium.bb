@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -61,7 +63,9 @@ class JobEventRouterImpl : public JobEventRouter {
 
 class JobEventRouterTest : public testing::Test {
  protected:
-  void SetUp() override { job_event_router.reset(new JobEventRouterImpl()); }
+  void SetUp() override {
+    job_event_router = std::make_unique<JobEventRouterImpl>();
+  }
 
   drive::JobInfo CreateJobInfo(drive::JobID id,
                                int64_t num_completed_bytes,

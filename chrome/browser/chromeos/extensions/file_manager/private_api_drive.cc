@@ -102,21 +102,21 @@ std::unique_ptr<std::string> GetShareUrlFromAlternateUrl(
 void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
                                       bool shared_with_me,
                                       EntryProperties* properties) {
-  properties->shared_with_me.reset(new bool(shared_with_me));
-  properties->shared.reset(new bool(entry_proto.shared()));
-  properties->starred.reset(new bool(entry_proto.starred()));
+  properties->shared_with_me = std::make_unique<bool>(shared_with_me);
+  properties->shared = std::make_unique<bool>(entry_proto.shared());
+  properties->starred = std::make_unique<bool>(entry_proto.starred());
 
   const drive::PlatformFileInfoProto& file_info = entry_proto.file_info();
-  properties->size.reset(new double(file_info.size()));
-  properties->modification_time.reset(new double(
-      base::Time::FromInternalValue(file_info.last_modified()).ToJsTime()));
-  properties->modification_by_me_time.reset(new double(
+  properties->size = std::make_unique<double>(file_info.size());
+  properties->modification_time = std::make_unique<double>(
+      base::Time::FromInternalValue(file_info.last_modified()).ToJsTime());
+  properties->modification_by_me_time = std::make_unique<double>(
       base::Time::FromInternalValue(entry_proto.last_modified_by_me())
-          .ToJsTime()));
+          .ToJsTime());
 
   if (entry_proto.has_alternate_url()) {
-    properties->alternate_url.reset(
-        new std::string(entry_proto.alternate_url()));
+    properties->alternate_url =
+        std::make_unique<std::string>(entry_proto.alternate_url());
     properties->share_url =
         GetShareUrlFromAlternateUrl(GURL(entry_proto.alternate_url()));
   }
@@ -131,59 +131,61 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
           (GURL(google_apis::DriveApiUrlGenerator::
                     kBaseThumbnailUrlForProduction)),
           google_apis::GetTeamDrivesIntegrationSwitch());
-      properties->thumbnail_url.reset(new std::string(
+      properties->thumbnail_url = std::make_unique<std::string>(
           url_generator
               .GetThumbnailUrl(entry_proto.resource_id(), 500 /* width */,
                                500 /* height */, false /* not cropped */)
-              .spec()));
-      properties->cropped_thumbnail_url.reset(new std::string(
+              .spec());
+      properties->cropped_thumbnail_url = std::make_unique<std::string>(
           url_generator
               .GetThumbnailUrl(
                   entry_proto.resource_id(),
                   kFileManagerMaximumThumbnailDimension /* width */,
                   kFileManagerMaximumThumbnailDimension /* height */,
                   true /* cropped */)
-              .spec()));
+              .spec());
     }
     if (file_specific_info.has_image_width()) {
-      properties->image_width.reset(new int(file_specific_info.image_width()));
+      properties->image_width =
+          std::make_unique<int>(file_specific_info.image_width());
     }
     if (file_specific_info.has_image_height()) {
-      properties->image_height.reset(
-          new int(file_specific_info.image_height()));
+      properties->image_height =
+          std::make_unique<int>(file_specific_info.image_height());
     }
     if (file_specific_info.has_image_rotation()) {
-      properties->image_rotation.reset(
-          new int(file_specific_info.image_rotation()));
+      properties->image_rotation =
+          std::make_unique<int>(file_specific_info.image_rotation());
     }
-    properties->hosted.reset(new bool(file_specific_info.is_hosted_document()));
-    properties->content_mime_type.reset(
-        new std::string(file_specific_info.content_mime_type()));
-    properties->pinned.reset(
-        new bool(file_specific_info.cache_state().is_pinned()));
-    properties->dirty.reset(
-        new bool(file_specific_info.cache_state().is_dirty()));
-    properties->present.reset(
-        new bool(file_specific_info.cache_state().is_present()));
+    properties->hosted =
+        std::make_unique<bool>(file_specific_info.is_hosted_document());
+    properties->content_mime_type =
+        std::make_unique<std::string>(file_specific_info.content_mime_type());
+    properties->pinned =
+        std::make_unique<bool>(file_specific_info.cache_state().is_pinned());
+    properties->dirty =
+        std::make_unique<bool>(file_specific_info.cache_state().is_dirty());
+    properties->present =
+        std::make_unique<bool>(file_specific_info.cache_state().is_present());
 
     if (file_specific_info.cache_state().is_present()) {
-      properties->available_offline.reset(new bool(true));
+      properties->available_offline = std::make_unique<bool>(true);
     } else if (file_specific_info.is_hosted_document() &&
                file_specific_info.has_document_extension()) {
       const std::string file_extension =
           file_specific_info.document_extension();
       // What's available offline? See the 'Web' column at:
       // https://support.google.com/drive/answer/1628467
-      properties->available_offline.reset(new bool(
+      properties->available_offline = std::make_unique<bool>(
           file_extension == ".gdoc" || file_extension == ".gdraw" ||
-          file_extension == ".gsheet" || file_extension == ".gslides"));
+          file_extension == ".gsheet" || file_extension == ".gslides");
     } else {
-      properties->available_offline.reset(new bool(false));
+      properties->available_offline = std::make_unique<bool>(false);
     }
 
-    properties->available_when_metered.reset(
-        new bool(file_specific_info.cache_state().is_present() ||
-                 file_specific_info.is_hosted_document()));
+    properties->available_when_metered =
+        std::make_unique<bool>(file_specific_info.cache_state().is_present() ||
+                               file_specific_info.is_hosted_document());
   }
 
   if (entry_proto.has_capabilities_info()) {
@@ -198,24 +200,24 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
         capabilities_info.has_can_copy()) {
       can_copy = capabilities_info.can_copy();
     }
-    properties->can_copy.reset(new bool(can_copy));
+    properties->can_copy = std::make_unique<bool>(can_copy);
 
-    properties->can_delete.reset(new bool(capabilities_info.has_can_delete()
-                                              ? capabilities_info.can_delete()
-                                              : true));
-    properties->can_rename.reset(new bool(capabilities_info.has_can_rename()
-                                              ? capabilities_info.can_rename()
-                                              : true));
+    properties->can_delete = std::make_unique<bool>(
+        capabilities_info.has_can_delete() ? capabilities_info.can_delete()
+                                           : true);
+    properties->can_rename = std::make_unique<bool>(
+        capabilities_info.has_can_rename() ? capabilities_info.can_rename()
+                                           : true);
 
     // |can_add_children| defaults to true for directories, and false for files.
-    properties->can_add_children.reset(
-        new bool(capabilities_info.has_can_add_children()
-                     ? capabilities_info.can_add_children()
-                     : file_info.is_directory()));
+    properties->can_add_children =
+        std::make_unique<bool>(capabilities_info.has_can_add_children()
+                                   ? capabilities_info.can_add_children()
+                                   : file_info.is_directory());
 
-    properties->can_share.reset(new bool(capabilities_info.has_can_share()
-                                             ? capabilities_info.can_share()
-                                             : true));
+    properties->can_share = std::make_unique<bool>(
+        capabilities_info.has_can_share() ? capabilities_info.can_share()
+                                          : true);
   }
 }
 
@@ -427,7 +429,8 @@ class SingleEntryPropertiesGetterForDrive {
           // icon.
           const GURL doc_icon = drive::util::FindPreferredIcon(
               app_info.document_icons, drive::util::kPreferredIconSize);
-          properties_->custom_icon_url.reset(new std::string(doc_icon.spec()));
+          properties_->custom_icon_url =
+              std::make_unique<std::string>(doc_icon.spec());
         }
       }
     }
@@ -543,29 +546,30 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
 
     if (names_.find(api::file_manager_private::ENTRY_PROPERTY_NAME_SIZE) !=
         names_.end()) {
-      properties_->size.reset(new double(*metadata->size.get()));
+      properties_->size = std::make_unique<double>(*metadata->size.get());
     }
 
     if (names_.find(
             api::file_manager_private::ENTRY_PROPERTY_NAME_MODIFICATIONTIME) !=
         names_.end()) {
-      properties_->modification_time.reset(
-          new double(metadata->modification_time->ToJsTime()));
+      properties_->modification_time =
+          std::make_unique<double>(metadata->modification_time->ToJsTime());
     }
 
     if (names_.find(
             api::file_manager_private::ENTRY_PROPERTY_NAME_CONTENTMIMETYPE) !=
             names_.end() &&
         metadata->mime_type.get()) {
-      properties_->content_mime_type.reset(
-          new std::string(*metadata->mime_type));
+      properties_->content_mime_type =
+          std::make_unique<std::string>(*metadata->mime_type);
     }
 
     if (names_.find(
             api::file_manager_private::ENTRY_PROPERTY_NAME_THUMBNAILURL) !=
             names_.end() &&
         metadata->thumbnail.get()) {
-      properties_->thumbnail_url.reset(new std::string(*metadata->thumbnail));
+      properties_->thumbnail_url =
+          std::make_unique<std::string>(*metadata->thumbnail);
     }
 
     CompleteGetEntryProperties(base::File::FILE_OK);
@@ -690,8 +694,8 @@ class SingleEntryPropertiesGetterForDriveFs {
           metadata->modification_by_me_time.ToJsTime());
     }
     if (!metadata->content_mime_type.empty()) {
-      properties_->content_mime_type.reset(
-          new std::string(metadata->content_mime_type));
+      properties_->content_mime_type =
+          std::make_unique<std::string>(metadata->content_mime_type);
     }
     if (!metadata->custom_icon_url.empty()) {
       properties_->custom_icon_url =
@@ -848,8 +852,8 @@ void FileManagerPrivateInternalGetEntryPropertiesFunction::
   DCHECK(0 <= processed_count_ && processed_count_ < properties_list_.size());
 
   if (error == base::File::FILE_OK) {
-    properties->external_file_url.reset(
-        new std::string(chromeos::FileSystemURLToExternalFileURL(url).spec()));
+    properties->external_file_url = std::make_unique<std::string>(
+        chromeos::FileSystemURLToExternalFileURL(url).spec());
   }
   properties_list_[index] = std::move(*properties);
 
@@ -1244,15 +1248,18 @@ FileManagerPrivateGetDriveConnectionStateFunction::Run() {
       Profile::FromBrowserContext(browser_context()))) {
     case drive::util::DRIVE_DISCONNECTED_NOSERVICE:
       result.type = kDriveConnectionTypeOffline;
-      result.reason.reset(new std::string(kDriveConnectionReasonNoService));
+      result.reason =
+          std::make_unique<std::string>(kDriveConnectionReasonNoService);
       break;
     case drive::util::DRIVE_DISCONNECTED_NONETWORK:
       result.type = kDriveConnectionTypeOffline;
-      result.reason.reset(new std::string(kDriveConnectionReasonNoNetwork));
+      result.reason =
+          std::make_unique<std::string>(kDriveConnectionReasonNoNetwork);
       break;
     case drive::util::DRIVE_DISCONNECTED_NOTREADY:
       result.type = kDriveConnectionTypeOffline;
-      result.reason.reset(new std::string(kDriveConnectionReasonNotReady));
+      result.reason =
+          std::make_unique<std::string>(kDriveConnectionReasonNotReady);
       break;
     case drive::util::DRIVE_CONNECTED_METERED:
       result.type = kDriveConnectionTypeMetered;
@@ -1499,11 +1506,9 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
   std::vector<std::string> scopes;
   scopes.push_back("https://www.googleapis.com/auth/drive.readonly");
 
-  auth_service_.reset(
-      new google_apis::AuthService(oauth2_token_service,
-                                   account_id,
-                                   GetProfile()->GetRequestContext(),
-                                   scopes));
+  auth_service_ = std::make_unique<google_apis::AuthService>(
+      oauth2_token_service, account_id, GetProfile()->GetRequestContext(),
+      scopes);
   auth_service_->StartAuthentication(base::Bind(
       &FileManagerPrivateInternalGetDownloadUrlFunction::OnTokenFetched, this));
 }
