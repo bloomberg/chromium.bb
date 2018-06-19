@@ -860,8 +860,7 @@ FileManagerPrivateInternalComputeChecksumFunction::
 }
 
 FileManagerPrivateInternalComputeChecksumFunction::
-    ~FileManagerPrivateInternalComputeChecksumFunction() {
-}
+    ~FileManagerPrivateInternalComputeChecksumFunction() = default;
 
 bool FileManagerPrivateInternalComputeChecksumFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::ComputeChecksum::Params;

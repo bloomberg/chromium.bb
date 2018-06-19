@@ -32,7 +32,7 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
   DeviceEventRouterImpl()
       : DeviceEventRouter(base::TimeDelta::FromSeconds(0)),
         external_storage_disabled(false) {}
-  ~DeviceEventRouterImpl() override {}
+  ~DeviceEventRouterImpl() override = default;
 
   // DeviceEventRouter overrides.
   void OnDeviceEvent(file_manager_private::DeviceEventType type,

@@ -33,7 +33,7 @@ struct EntryDefinition;
 // it should delete itself once it's done.
 class FileSelector {
  public:
-  virtual ~FileSelector() {}
+  virtual ~FileSelector() = default;
 
   // Starts the file selection. It should prompt user to select a file path.
   // Once the selection is made it should asynchronously call
@@ -63,7 +63,7 @@ class FileSelector {
 // create a FileSelector it can use to select a file path.
 class FileSelectorFactory {
  public:
-  virtual ~FileSelectorFactory() {}
+  virtual ~FileSelectorFactory() = default;
 
   // Creates a FileSelector instance for the
   // FileBrowserHandlerInternalSelectFileFunction.

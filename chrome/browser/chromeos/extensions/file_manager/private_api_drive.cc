@@ -265,7 +265,7 @@ class SingleEntryPropertiesGetterForDrive {
     // The instance will be destroyed by itself.
   }
 
-  virtual ~SingleEntryPropertiesGetterForDrive() {}
+  virtual ~SingleEntryPropertiesGetterForDrive() = default;
 
  private:
   SingleEntryPropertiesGetterForDrive(
@@ -478,7 +478,7 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
     // The instance will be destroyed by itself.
   }
 
-  virtual ~SingleEntryPropertiesGetterForFileSystemProvider() {}
+  virtual ~SingleEntryPropertiesGetterForFileSystemProvider() = default;
 
  private:
   SingleEntryPropertiesGetterForFileSystemProvider(
@@ -780,8 +780,7 @@ FileManagerPrivateInternalGetEntryPropertiesFunction::
 }
 
 FileManagerPrivateInternalGetEntryPropertiesFunction::
-    ~FileManagerPrivateInternalGetEntryPropertiesFunction() {
-}
+    ~FileManagerPrivateInternalGetEntryPropertiesFunction() = default;
 
 bool FileManagerPrivateInternalGetEntryPropertiesFunction::RunAsync() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1407,10 +1406,10 @@ void FileManagerPrivateInternalRequestDriveShareFunction::OnAddPermission(
 }
 
 FileManagerPrivateInternalGetDownloadUrlFunction::
-    FileManagerPrivateInternalGetDownloadUrlFunction() {}
+    FileManagerPrivateInternalGetDownloadUrlFunction() = default;
 
 FileManagerPrivateInternalGetDownloadUrlFunction::
-    ~FileManagerPrivateInternalGetDownloadUrlFunction() {}
+    ~FileManagerPrivateInternalGetDownloadUrlFunction() = default;
 
 bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::GetShareUrl::Params;

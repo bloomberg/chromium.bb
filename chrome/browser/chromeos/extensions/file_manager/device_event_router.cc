@@ -30,8 +30,7 @@ DeviceEventRouter::DeviceEventRouter(base::TimeDelta overriding_time_delta)
       weak_factory_(this) {
 }
 
-DeviceEventRouter::~DeviceEventRouter() {
-}
+DeviceEventRouter::~DeviceEventRouter() = default;
 
 void DeviceEventRouter::Startup() {
   is_starting_up_ = true;

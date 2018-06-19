@@ -34,7 +34,7 @@ class FileManagerPrivateInternalExecuteTaskFunction
                              FILEMANAGERPRIVATEINTERNAL_EXECUTETASK)
 
  protected:
-  ~FileManagerPrivateInternalExecuteTaskFunction() override {}
+  ~FileManagerPrivateInternalExecuteTaskFunction() override = default;
 
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -87,7 +87,7 @@ class FileManagerPrivateInternalSetDefaultTaskFunction
                              FILEMANAGERPRIVATEINTERNAL_SETDEFAULTTASK)
 
  protected:
-  ~FileManagerPrivateInternalSetDefaultTaskFunction() override {}
+  ~FileManagerPrivateInternalSetDefaultTaskFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;

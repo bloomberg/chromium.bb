@@ -161,7 +161,7 @@ class FileSelectorImpl : public FileSelector,
   DISALLOW_COPY_AND_ASSIGN(FileSelectorImpl);
 };
 
-FileSelectorImpl::FileSelectorImpl() {}
+FileSelectorImpl::FileSelectorImpl() = default;
 
 FileSelectorImpl::~FileSelectorImpl() {
   if (dialog_.get())
@@ -256,8 +256,8 @@ void FileSelectorImpl::SendResponse(bool success,
 // FileSelectorFactory implementation.
 class FileSelectorFactoryImpl : public FileSelectorFactory {
  public:
-  FileSelectorFactoryImpl() {}
-  ~FileSelectorFactoryImpl() override {}
+  FileSelectorFactoryImpl() = default;
+  ~FileSelectorFactoryImpl() override = default;
 
   // FileSelectorFactory implementation.
   // Creates new FileSelectorImplementation for the function.
@@ -287,7 +287,7 @@ FileBrowserHandlerInternalSelectFileFunction::
 }
 
 FileBrowserHandlerInternalSelectFileFunction::
-    ~FileBrowserHandlerInternalSelectFileFunction() {}
+    ~FileBrowserHandlerInternalSelectFileFunction() = default;
 
 bool FileBrowserHandlerInternalSelectFileFunction::RunAsync() {
   std::unique_ptr<SelectFile::Params> params(

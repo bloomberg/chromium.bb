@@ -49,7 +49,7 @@ struct TestCase {
         success(success),
         selected_path(selected_path) {
   }
-  ~TestCase() {}
+  ~TestCase() = default;
 
   // Path that we expect to be suggested to the file selector.
   base::FilePath suggested_name;
@@ -84,7 +84,7 @@ class MockFileSelector : public file_manager::FileSelector {
         success_(success),
         selected_path_(selected_path) {
   }
-  ~MockFileSelector() override {}
+  ~MockFileSelector() override = default;
 
   // file_manager::FileSelector implementation.
   // |browser| is not used.
@@ -139,7 +139,7 @@ class MockFileSelectorFactory : public file_manager::FileSelectorFactory {
         success_(test_case.success),
         selected_path_(test_case.selected_path) {
   }
-  ~MockFileSelectorFactory() override {}
+  ~MockFileSelectorFactory() override = default;
 
   // file_manager::FileSelectorFactory implementation.
   file_manager::FileSelector* CreateFileSelector() const override {

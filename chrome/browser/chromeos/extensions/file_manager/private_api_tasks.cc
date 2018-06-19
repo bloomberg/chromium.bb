@@ -123,10 +123,10 @@ void FileManagerPrivateInternalExecuteTaskFunction::OnTaskExecuted(
 }
 
 FileManagerPrivateInternalGetFileTasksFunction::
-    FileManagerPrivateInternalGetFileTasksFunction() {}
+    FileManagerPrivateInternalGetFileTasksFunction() = default;
 
 FileManagerPrivateInternalGetFileTasksFunction::
-    ~FileManagerPrivateInternalGetFileTasksFunction() {}
+    ~FileManagerPrivateInternalGetFileTasksFunction() = default;
 
 bool FileManagerPrivateInternalGetFileTasksFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::GetFileTasks::Params;

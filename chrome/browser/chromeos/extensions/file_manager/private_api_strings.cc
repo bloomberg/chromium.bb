@@ -408,11 +408,11 @@ void AddStringsForZipArchiver(base::DictionaryValue* dict) {
 
 namespace extensions {
 
-FileManagerPrivateGetStringsFunction::FileManagerPrivateGetStringsFunction() {
-}
+FileManagerPrivateGetStringsFunction::FileManagerPrivateGetStringsFunction() =
+    default;
 
-FileManagerPrivateGetStringsFunction::~FileManagerPrivateGetStringsFunction() {
-}
+FileManagerPrivateGetStringsFunction::~FileManagerPrivateGetStringsFunction() =
+    default;
 
 ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());

@@ -22,7 +22,7 @@ const int kMd5DigestBufferSize = 512 * 1024;  // 512 kB.
 FileStreamMd5Digester::FileStreamMd5Digester()
     : buffer_(new net::IOBuffer(kMd5DigestBufferSize)) {}
 
-FileStreamMd5Digester::~FileStreamMd5Digester() {}
+FileStreamMd5Digester::~FileStreamMd5Digester() = default;
 
 void FileStreamMd5Digester::GetMd5Digest(
     std::unique_ptr<storage::FileStreamReader> stream_reader,
