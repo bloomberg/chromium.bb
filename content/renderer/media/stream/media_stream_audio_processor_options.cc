@@ -271,8 +271,7 @@ void EnableAutomaticGainControl(AudioProcessing* audio_processing) {
 void GetAudioProcessingStats(
     AudioProcessing* audio_processing,
     webrtc::AudioProcessorInterface::AudioProcessorStats* stats) {
-  // TODO(ivoc): Change the APM stats to use rtc::Optional instead of default
-  //             values.
+  // TODO(ivoc): Change the APM stats to use optional instead of default values.
   auto apm_stats = audio_processing->GetStatistics();
   stats->echo_return_loss = apm_stats.echo_return_loss.instant();
   stats->echo_return_loss_enhancement =

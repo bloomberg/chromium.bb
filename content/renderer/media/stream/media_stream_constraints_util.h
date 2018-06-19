@@ -16,7 +16,6 @@
 #include "third_party/blink/public/platform/modules/mediastream/media_devices.mojom.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/webrtc/api/optional.h"
 
 namespace content {
 
@@ -286,10 +285,6 @@ bool CONTENT_EXPORT GetConstraintValueAsString(
     const blink::WebMediaConstraints& constraints,
     const blink::StringConstraint blink::WebMediaTrackConstraintSet::*picker,
     std::string* value);
-
-rtc::Optional<bool> ConstraintToOptional(
-    const blink::WebMediaConstraints& constraints,
-    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker);
 
 template <typename ConstraintType>
 bool ConstraintHasMax(const ConstraintType& constraint) {
