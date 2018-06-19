@@ -236,7 +236,7 @@ camera.Camera.prototype.start = function() {
     var promptMigrate = function() {
       this.router_.navigate(camera.Router.ViewIdentifier.DIALOG, {
         type: camera.views.Dialog.Type.ALERT,
-        message: 'Start migration'
+        message: chrome.i18n.getMessage('migratePicturesMsg')
       }, function(result) {
         if (!result.isPositive) {
           chrome.app.window.current().close();
