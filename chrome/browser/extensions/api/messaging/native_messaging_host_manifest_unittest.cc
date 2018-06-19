@@ -82,7 +82,7 @@ TEST_F(NativeMessagingHostManifestTest, LoadValid) {
 
   EXPECT_EQ(manifest->name(), "com.chrome.test.native_host");
   EXPECT_EQ(manifest->description(), "Native Messaging Test");
-  EXPECT_EQ(manifest->interface(),
+  EXPECT_EQ(manifest->host_interface(),
             NativeMessagingHostManifest::HOST_INTERFACE_STDIO);
   EXPECT_EQ(manifest->path(), base::FilePath::FromUTF8Unsafe(kTestHostPath));
   EXPECT_TRUE(manifest->allowed_origins().MatchesSecurityOrigin(
