@@ -295,12 +295,13 @@ camera.Camera.prototype.navigateById_ = function(
  * @private
  */
 camera.Camera.prototype.updateWindowSize_ = function() {
-  var appWindow = chrome.app.window.current();
-  if (appWindow.isMaximized() || appWindow.isFullscreen()) {
+  // Don't update window size if it's maximized or fullscreen.
+  if (camera.util.isWindowFullSize()) {
     return;
   }
 
   // Keep the width fixed and calculate the height by the aspect ratio.
+  var appWindow = chrome.app.window.current();
   var inner = appWindow.innerBounds;
   var innerW = inner.minWidth;
   var innerH = Math.round(innerW / appWindow.aspectRatio);
