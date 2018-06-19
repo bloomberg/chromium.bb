@@ -461,7 +461,7 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
     YV12_BUFFER_CONFIG *cur_frame = get_frame_new_buffer(cm);
     const int mi_row = pbi->dec_tile_row * cm->tile_height;
     const int mi_col = pbi->dec_tile_col * cm->tile_width;
-    const int is_hbd = cur_frame->flags & YV12_FLAG_HIGHBITDEPTH;
+    const int is_hbd = (cur_frame->flags & YV12_FLAG_HIGHBITDEPTH) ? 1 : 0;
     uint8_t *bufs[MAX_MB_PLANE] = { NULL, NULL, NULL };
     int strides[MAX_MB_PLANE] = { 0, 0, 0 };
     int plane;
