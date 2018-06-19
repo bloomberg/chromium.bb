@@ -430,9 +430,6 @@ class CC_EXPORT LayerImpl {
     return has_will_change_transform_hint_;
   }
 
-  void SetTrilinearFiltering(bool trilinear_filtering);
-  bool trilinear_filtering() const { return trilinear_filtering_; }
-
   ElementListType GetElementTypeForAnimation() const;
 
   void set_needs_show_scrollbars(bool yes) { needs_show_scrollbars_ = yes; }
@@ -567,7 +564,6 @@ class CC_EXPORT LayerImpl {
   base::trace_event::TracedValue* debug_info_;
 
   bool has_will_change_transform_hint_ : 1;
-  bool trilinear_filtering_ : 1;
   bool needs_push_properties_ : 1;
   bool scrollbars_hidden_ : 1;
 

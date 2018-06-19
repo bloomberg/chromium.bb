@@ -1230,8 +1230,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
   layer->SetNeedsPushProperties();
 
-  layer->SetTrilinearFiltering(trilinear_filtering());
-
   // Reset any state that should be cleared for the next update.
   needs_show_scrollbars_ = false;
   subtree_property_changed_ = false;
@@ -1365,6 +1363,11 @@ void Layer::SetTrilinearFiltering(bool trilinear_filtering) {
   if (inputs_.trilinear_filtering == trilinear_filtering)
     return;
   inputs_.trilinear_filtering = trilinear_filtering;
+  // When true, makes a RenderSurface which makes an effect node.
+  SetPropertyTreesNeedRebuild();
+  // Adding a RenderSurface may change how things in the subtree appear, since
+  // it flattens transforms.
+  SetSubtreePropertyChanged();
   SetNeedsCommit();
 }
 

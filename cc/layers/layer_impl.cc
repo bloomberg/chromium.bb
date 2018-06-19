@@ -74,7 +74,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       current_draw_mode_(DRAW_MODE_NONE),
       debug_info_(nullptr),
       has_will_change_transform_hint_(false),
-      trilinear_filtering_(false),
       needs_push_properties_(false),
       scrollbars_hidden_(false),
       needs_show_scrollbars_(false),
@@ -99,10 +98,6 @@ LayerImpl::~LayerImpl() {
 
 void LayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {
   has_will_change_transform_hint_ = has_will_change;
-}
-
-void LayerImpl::SetTrilinearFiltering(bool trilinear_filtering) {
-  trilinear_filtering_ = trilinear_filtering;
 }
 
 ElementListType LayerImpl::GetElementTypeForAnimation() const {
@@ -325,7 +320,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->clip_tree_index_ = clip_tree_index_;
   layer->scroll_tree_index_ = scroll_tree_index_;
   layer->has_will_change_transform_hint_ = has_will_change_transform_hint_;
-  layer->trilinear_filtering_ = trilinear_filtering_;
   layer->scrollbars_hidden_ = scrollbars_hidden_;
   if (needs_show_scrollbars_)
     layer->needs_show_scrollbars_ = needs_show_scrollbars_;
@@ -760,8 +754,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->SetBoolean("has_will_change_transform_hint",
                     has_will_change_transform_hint());
-
-  state->SetBoolean("trilinear_filtering", trilinear_filtering());
 
   MainThreadScrollingReason::AddToTracedValue(main_thread_scrolling_reasons_,
                                               *state);
