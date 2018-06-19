@@ -98,7 +98,7 @@ Polymer({
    * @private
    */
   validateUrl_: function() {
-    const urlInput = /** @type {PaperInputElement} */ (this.$.url);
+    const urlInput = /** @type {CrInputElement} */ (this.$.url);
     const originalValue = this.urlValue_;
 
     if (urlInput.validate())

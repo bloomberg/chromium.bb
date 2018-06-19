@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/paper_button_style_css.html">
 <link rel="import" href="chrome://resources/html/cr.html">
@@ -8,7 +9,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 
 <dom-module id="bluetooth-dialog">
   <template>
@@ -17,7 +17,7 @@
         margin-bottom: 10px;
       }
 
-      #pairing paper-input {
+      #pairing cr-input {
         text-align: center;
       }
 
@@ -91,14 +91,14 @@
                 [[getMessage_(pairingDevice, pairingEvent_)]]
               </div>
               <div hidden$="[[!showEnterPincode_(pairingEvent_)]]">
-                <paper-input id="pincode" minlength="1" maxlength="16"
+                <cr-input id="pincode" minlength="1" maxlength="16"
                     type="text" auto-validate value="{{pinOrPass_}}">
-                </paper-input>
+                </cr-input>
               </div>
               <div hidden$="[[!showEnterPasskey_(pairingEvent_)]]">
-                <paper-input id="passkey" minlength="6" maxlength="6"
+                <cr-input id="passkey" minlength="6" maxlength="6"
                     type="text" auto-validate value="{{pinOrPass_}}">
-                </paper-input>
+                </cr-input>
               </div>
               <div id="pinDiv" class="layout horizontal center center-justified"
                   hidden="[[!showDisplayPassOrPin_(pairingEvent_)]]">
