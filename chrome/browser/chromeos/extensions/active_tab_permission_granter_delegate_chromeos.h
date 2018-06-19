@@ -31,8 +31,9 @@ class ActiveTabPermissionGranterDelegateChromeOS
       permission_helper::RequestResolvedCallback* callback);
 
   // ActiveTabPermissionGranter::Delegate
-  bool ShouldGrantActiveTab(const Extension* extension,
-                            content::WebContents* web_contents) override;
+  bool ShouldGrantActiveTabOrPrompt(
+      const Extension* extension,
+      content::WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ActiveTabPermissionGranterDelegateChromeOS);

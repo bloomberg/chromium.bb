@@ -100,8 +100,9 @@ class ActiveTabPermissionGranterTestDelegate
   ~ActiveTabPermissionGranterTestDelegate() override {}
 
   // ActiveTabPermissionGranterTestDelegate::Delegate
-  bool ShouldGrantActiveTab(const Extension* extension,
-                            content::WebContents* contents) override {
+  bool ShouldGrantActiveTabOrPrompt(const Extension* extension,
+                                    content::WebContents* contents) override {
+    should_grant_call_count_++;
     return should_grant_;
   }
 
@@ -109,8 +110,11 @@ class ActiveTabPermissionGranterTestDelegate
     should_grant_ = should_grant;
   }
 
+  int should_grant_call_count() { return should_grant_call_count_; }
+
  private:
   bool should_grant_ = false;
+  int should_grant_call_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveTabPermissionGranterTestDelegate);
 };
@@ -426,12 +430,23 @@ TEST_F(ActiveTabTest, ChromeUrlGrants) {
       tab_id() + 1, APIPermission::kTabCaptureForTab));
 }
 
-// Test that the custom platform delegate works as expected.
-TEST_F(ActiveTabTest, Delegate) {
-  auto test_delegate =
-      std::make_unique<ActiveTabPermissionGranterTestDelegate>();
-  ActiveTabPermissionGranter::SetPlatformDelegate(test_delegate.get());
+class ActiveTabDelegateTest : public ActiveTabTest {
+ protected:
+  ActiveTabDelegateTest()
+      : test_delegate_(
+            std::make_unique<ActiveTabPermissionGranterTestDelegate>()) {
+    ActiveTabPermissionGranter::SetPlatformDelegate(test_delegate_.get());
+  }
 
+  ~ActiveTabDelegateTest() override {
+    ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
+  }
+
+  std::unique_ptr<ActiveTabPermissionGranterTestDelegate> test_delegate_;
+};
+
+// Test that the custom platform delegate works as expected.
+TEST_F(ActiveTabDelegateTest, Delegate) {
   GURL google("http://www.google.com");
   NavigateAndCommit(google);
 
@@ -440,12 +455,17 @@ TEST_F(ActiveTabTest, Delegate) {
   EXPECT_TRUE(IsBlocked(extension, google));
 
   // This time it's granted because the delegate allows it.
-  test_delegate->SetShouldGrant(true);
+  test_delegate_->SetShouldGrant(true);
   active_tab_permission_granter()->GrantIfRequested(extension.get());
   EXPECT_TRUE(IsAllowed(extension, google));
+}
 
-  // Cleanup :).
-  ActiveTabPermissionGranter::SetPlatformDelegate(nullptr);
+// Regression test for crbug.com/833188.
+TEST_F(ActiveTabDelegateTest, DelegateUsedOnlyWhenNeeded) {
+  active_tab_permission_granter()->GrantIfRequested(
+      extension_without_active_tab.get());
+
+  EXPECT_EQ(0, test_delegate_->should_grant_call_count());
 }
 
 #if defined(OS_CHROMEOS)

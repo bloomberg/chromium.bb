@@ -37,8 +37,9 @@ class ActiveTabPermissionGranter
    public:
     virtual ~Delegate() {}
     // Platform specific check whether the activeTab permission is allowed.
-    virtual bool ShouldGrantActiveTab(
-        const Extension* extension, content::WebContents* web_contents) = 0;
+    virtual bool ShouldGrantActiveTabOrPrompt(
+        const Extension* extension,
+        content::WebContents* web_contents) = 0;
   };
 
   ActiveTabPermissionGranter(content::WebContents* web_contents,
