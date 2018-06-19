@@ -843,6 +843,8 @@ void WebContentsViewAura::SetPageTitle(const base::string16& title) {
 void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
 }
 
+void WebContentsViewAura::RenderViewReady() {}
+
 void WebContentsViewAura::RenderViewSwappedIn(RenderViewHost* host) {
 }
 

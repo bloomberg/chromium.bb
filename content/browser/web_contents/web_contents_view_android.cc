@@ -57,22 +57,6 @@ bool ShouldRequestUnbufferedDispatch() {
       !content::GetContentClient()->UsingSynchronousCompositing();
   return should_request_unbuffered_dispatch;
 }
-
-RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid(
-    WebContents* web_contents) {
-  RenderWidgetHostView* rwhv = NULL;
-  if (web_contents) {
-    rwhv = web_contents->GetRenderWidgetHostView();
-    if (web_contents->ShowingInterstitialPage()) {
-      rwhv = web_contents->GetInterstitialPage()
-                 ->GetMainFrame()
-                 ->GetRenderViewHost()
-                 ->GetWidget()
-                 ->GetView();
-    }
-  }
-  return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
-}
 }
 
 // static
@@ -131,19 +115,22 @@ void WebContentsViewAndroid::SetSelectPopup(
 void WebContentsViewAndroid::SetOverscrollRefreshHandler(
     std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler) {
   overscroll_refresh_handler_ = std::move(overscroll_refresh_handler);
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->OnOverscrollRefreshHandlerAvailable();
+  auto* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv) {
+    static_cast<RenderWidgetHostViewAndroid*>(rwhv)
+        ->OnOverscrollRefreshHandlerAvailable();
+  }
 
   if (web_contents_->ShowingInterstitialPage()) {
-    rwhv = static_cast<RenderWidgetHostViewAndroid*>(
-        web_contents_->GetInterstitialPage()
-            ->GetMainFrame()
-            ->GetRenderViewHost()
-            ->GetWidget()
-            ->GetView());
-    if (rwhv)
-      rwhv->OnOverscrollRefreshHandlerAvailable();
+    rwhv = web_contents_->GetInterstitialPage()
+               ->GetMainFrame()
+               ->GetRenderViewHost()
+               ->GetWidget()
+               ->GetView();
+    if (rwhv) {
+      static_cast<RenderWidgetHostViewAndroid*>(rwhv)
+          ->OnOverscrollRefreshHandlerAvailable();
+    }
   }
 }
 
@@ -167,8 +154,16 @@ gfx::NativeView WebContentsViewAndroid::GetContentNativeView() const {
 
 RenderWidgetHostViewAndroid*
 WebContentsViewAndroid::GetRenderWidgetHostViewAndroid() {
-  return static_cast<RenderWidgetHostViewAndroid*>(
-      web_contents_->GetRenderWidgetHostView());
+  RenderWidgetHostView* rwhv = nullptr;
+  rwhv = web_contents_->GetRenderWidgetHostView();
+  if (web_contents_->ShowingInterstitialPage()) {
+    rwhv = web_contents_->GetInterstitialPage()
+               ->GetMainFrame()
+               ->GetRenderViewHost()
+               ->GetWidget()
+               ->GetView();
+  }
+  return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
 
 gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
@@ -191,11 +186,13 @@ void WebContentsViewAndroid::SizeContents(const gfx::Size& size) {
 }
 
 void WebContentsViewAndroid::Focus() {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (web_contents_->ShowingInterstitialPage()) {
     web_contents_->GetInterstitialPage()->Focus();
-  } else if (rwhv) {
-    rwhv->Focus();
+  } else {
+    auto* rwhv = web_contents_->GetRenderWidgetHostView();
+    if (rwhv) {
+      static_cast<RenderWidgetHostViewAndroid*>(rwhv)->Focus();
+    }
   }
 }
 
@@ -273,7 +270,45 @@ RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForPopupWidget(
 void WebContentsViewAndroid::RenderViewCreated(RenderViewHost* host) {
 }
 
+void WebContentsViewAndroid::RenderViewReady() {
+  render_view_host_ = web_contents_->GetRenderViewHost();
+  if (device_orientation_ == 0)
+    return;
+  auto* rwhva = GetRenderWidgetHostViewAndroid();
+  if (rwhva)
+    rwhva->UpdateScreenInfo(web_contents_->GetView()->GetNativeView());
+
+  web_contents_->OnScreenOrientationChange();
+}
+
 void WebContentsViewAndroid::RenderViewSwappedIn(RenderViewHost* host) {
+  if (render_view_host_) {
+    auto* rwhv = render_view_host_->GetWidget()->GetView();
+    if (rwhv && rwhv->GetNativeView()) {
+      static_cast<RenderWidgetHostViewAndroid*>(rwhv)->UpdateNativeViewTree(
+          nullptr);
+    }
+  }
+  auto* rwhv = host->GetWidget()->GetView();
+  if (rwhv && rwhv->GetNativeView()) {
+    static_cast<RenderWidgetHostViewAndroid*>(rwhv)->UpdateNativeViewTree(
+        GetNativeView());
+  }
+
+  SetFocus(view_.HasFocus());
+  render_view_host_ = host;
+}
+
+void WebContentsViewAndroid::SetFocus(bool focused) {
+  auto* rwhv = GetRenderWidgetHostViewAndroid();
+  if (!rwhv || !rwhv->GetNativeView())
+    return;
+
+  auto* rwhva = static_cast<RenderWidgetHostViewAndroid*>(rwhv);
+  if (focused)
+    rwhva->GotFocus();
+  else
+    rwhva->LostFocus();
 }
 
 void WebContentsViewAndroid::SetOverscrollControllerEnabled(bool enabled) {
@@ -281,11 +316,13 @@ void WebContentsViewAndroid::SetOverscrollControllerEnabled(bool enabled) {
 
 void WebContentsViewAndroid::ShowContextMenu(
     RenderFrameHost* render_frame_host, const ContextMenuParams& params) {
-  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  auto* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
+      web_contents_->GetRenderWidgetHostView());
   // See if context menu is handled by SelectionController as a selection menu.
   // If not, use the delegate to show it.
-  if (view && view->ShowSelectionMenu(params))
+  if (rwhv && rwhv->ShowSelectionMenu(params)) {
     return;
+  }
 
   if (delegate_)
     delegate_->ShowContextMenu(render_frame_host, params);
@@ -550,7 +587,7 @@ bool WebContentsViewAndroid::ScrollTo(float x, float y) {
 }
 
 void WebContentsViewAndroid::OnSizeChanged() {
-  auto* rwhv = ::content::GetRenderWidgetHostViewAndroid(web_contents_);
+  auto* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv) {
     web_contents_->SendScreenRects();
     rwhv->SynchronizeVisualProperties();

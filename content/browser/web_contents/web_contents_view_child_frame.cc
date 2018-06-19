@@ -99,6 +99,8 @@ void WebContentsViewChildFrame::SetPageTitle(const base::string16& title) {
 
 void WebContentsViewChildFrame::RenderViewCreated(RenderViewHost* host) {}
 
+void WebContentsViewChildFrame::RenderViewReady() {}
+
 void WebContentsViewChildFrame::RenderViewSwappedIn(RenderViewHost* host) {}
 
 void WebContentsViewChildFrame::SetOverscrollControllerEnabled(bool enabled) {

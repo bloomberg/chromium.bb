@@ -119,6 +119,7 @@ class CONTENT_EXPORT WebContentsViewAura
       RenderWidgetHost* render_widget_host) override;
   void SetPageTitle(const base::string16& title) override;
   void RenderViewCreated(RenderViewHost* host) override;
+  void RenderViewReady() override;
   void RenderViewSwappedIn(RenderViewHost* host) override;
   void SetOverscrollControllerEnabled(bool enabled) override;
 
