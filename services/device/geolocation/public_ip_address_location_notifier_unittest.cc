@@ -17,7 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
-
+namespace {
 // Simple request context producer that immediately produces a
 // TestURLRequestContextGetter.
 void TestRequestContextProducer(
@@ -28,6 +28,8 @@ void TestRequestContextProducer(
       .Run(base::MakeRefCounted<net::TestURLRequestContextGetter>(
           network_task_runner));
 }
+
+}  // namespace
 
 class PublicIpAddressLocationNotifierTest : public testing::Test {
  protected:

@@ -5,8 +5,8 @@
 // Most logic for the platform wifi provider is now factored into
 // WifiDataProviderCommon and covered by it's unit tests.
 
-#include "base/message_loop/message_loop.h"
 #include "device/geolocation/wifi_data_provider_win.h"
+#include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

@@ -84,9 +84,16 @@ source_set("tests") {
     "generic_sensor/platform_sensor_provider_unittest_android.cc",
     "generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_gyroscope_unittest.cc",
     "generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer_unittest.cc",
+    "geolocation/geolocation_provider_impl_unittest.cc",
     "geolocation/geolocation_service_unittest.cc",
+    "geolocation/location_arbitrator_unittest.cc",
+    "geolocation/network_location_provider_unittest.cc",
     "geolocation/public_ip_address_geolocator_unittest.cc",
     "geolocation/public_ip_address_location_notifier_unittest.cc",
+    "geolocation/wifi_data_provider_chromeos_unittest.cc",
+    "geolocation/wifi_data_provider_common_unittest.cc",
+    "geolocation/wifi_data_provider_win_unittest.cc",
+    "geolocation/wifi_polling_policy_unittest.cc",
     "power_monitor/power_monitor_message_broadcaster_unittest.cc",
     "public/cpp/power_monitor/power_monitor_broadcast_source_unittest.cc",
     "vibration/vibration_manager_impl_unittest.cc",
@@ -97,9 +104,9 @@ source_set("tests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//base/third_party/dynamic_annotations",
     "//device/base/synchronization",
-    "//device/geolocation",
-    "//device/geolocation/public/cpp",
+    "//device/geolocation:test_support",
     "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//net",
@@ -121,7 +128,10 @@ source_set("tests") {
   }
 
   if (is_linux && !is_chromeos && use_dbus) {
-    sources += [ "battery/battery_status_manager_linux_unittest.cc" ]
+    sources += [
+      "battery/battery_status_manager_linux_unittest.cc",
+      "geolocation/wifi_data_provider_linux_unittest.cc",
+    ]
     deps += [ "//dbus:test_support" ]
   }
 
@@ -136,9 +146,14 @@ source_set("tests") {
   }
 
   if (is_android) {
-    sources -= [ "battery/battery_status_service_unittest.cc" ]
+    sources -= [
+      "battery/battery_status_service_unittest.cc",
+      "geolocation/network_location_provider_unittest.cc",
+      "geolocation/wifi_data_provider_common_unittest.cc",
+    ]
     deps += [
       ":device_service_jni_headers",
+      "//device/geolocation/public/java:geolocation_java_test_support",
       "//services/device/vibration/android:vibration_jni_headers",
     ]
   } else {
