@@ -35,9 +35,9 @@ using zoom::ZoomController;
 
 namespace extensions {
 
-namespace {
-
 namespace tabs = api::tabs;
+
+namespace {
 
 bool WillDispatchTabUpdatedEvent(
     WebContents* contents,

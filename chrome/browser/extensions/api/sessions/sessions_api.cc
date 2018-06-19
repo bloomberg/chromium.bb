@@ -44,13 +44,14 @@
 
 namespace extensions {
 
+namespace tabs = api::tabs;
+namespace windows = api::windows;
+
 namespace {
 
 namespace GetRecentlyClosed = api::sessions::GetRecentlyClosed;
 namespace GetDevices = api::sessions::GetDevices;
 namespace Restore = api::sessions::Restore;
-namespace tabs = api::tabs;
-namespace windows = api::windows;
 
 const char kNoRecentlyClosedSessionsError[] =
     "There are no recently closed sessions.";
