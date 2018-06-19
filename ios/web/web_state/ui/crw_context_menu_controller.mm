@@ -114,6 +114,9 @@ struct ContextMenuInfo {
 - (void)longPressGestureRecognizerBegan;
 // Called when the |_contextMenuRecognizer| changes.
 - (void)longPressGestureRecognizerChanged;
+// Show the context menu or allow the system default behavior based on the DOM
+// element details in |_contextMenuInfoForLastTouch.dom_element|.
+- (void)processReceivedDOMElement;
 // Called when the context menu must be shown.
 - (void)showContextMenu;
 // Cancels all touch events in the web view (long presses, tapping, scrolling).
@@ -290,28 +293,12 @@ struct ContextMenuInfo {
 }
 
 - (void)longPressGestureRecognizerBegan {
-  BOOL canShowContextMenu = web::CanShowContextMenuForElementDictionary(
-      _contextMenuInfoForLastTouch.dom_element);
-  if (canShowContextMenu) {
-    // User long pressed on a link or an image. Cancelling all touches will
-    // intentionally suppress system context menu UI.
-    [self cancelAllTouches];
+  if (_contextMenuInfoForLastTouch.dom_element) {
+    [self processReceivedDOMElement];
   } else {
-    // There is no link or image under user's gesture. Do not cancel all touches
-    // to allow system text seletion UI.
-  }
-
-  if ([_delegate respondsToSelector:@selector(webView:handleContextMenu:)]) {
-    _contextMenuInfoForLastTouch.location =
-        [_contextMenuRecognizer locationInView:_webView];
-
-    if (canShowContextMenu) {
-      [self showContextMenu];
-    } else {
-      // Shows the context menu once the DOM element information is set.
-      _contextMenuNeedsDisplay = YES;
-      UMA_HISTOGRAM_BOOLEAN("ContextMenu.WaitingForElementDetails", true);
-    }
+    // Shows the context menu once the DOM element information is set.
+    _contextMenuNeedsDisplay = YES;
+    UMA_HISTOGRAM_BOOLEAN("ContextMenu.WaitingForElementDetails", true);
   }
 }
 
@@ -334,6 +321,26 @@ struct ContextMenuInfo {
   if (deltaX > kLongPressMoveDeltaPixels ||
       deltaY > kLongPressMoveDeltaPixels) {
     [self cancelContextMenuDisplay];
+  }
+}
+
+- (void)processReceivedDOMElement {
+  BOOL canShowContextMenu = web::CanShowContextMenuForElementDictionary(
+      _contextMenuInfoForLastTouch.dom_element);
+  if (!canShowContextMenu) {
+    // There is no link or image under user's gesture. Do not cancel all touches
+    // to allow system text selection UI.
+    return;
+  }
+
+  // User long pressed on a link or an image. Cancelling all touches will
+  // intentionally suppress system context menu UI.
+  [self cancelAllTouches];
+
+  if ([_delegate respondsToSelector:@selector(webView:handleContextMenu:)]) {
+    _contextMenuInfoForLastTouch.location =
+        [_contextMenuRecognizer locationInView:_webView];
+    [self showContextMenu];
   }
 }
 
@@ -378,7 +385,7 @@ struct ContextMenuInfo {
   if (_contextMenuNeedsDisplay) {
     UMA_HISTOGRAM_ENUMERATION(kContextMenuDelayedElementDetailsHistogram,
                               DelayedElementDetailsState::Show);
-    [self showContextMenu];
+    [self processReceivedDOMElement];
   }
 }
 
@@ -419,6 +426,7 @@ struct ContextMenuInfo {
                               DelayedElementDetailsState::Cancel);
   }
   _contextMenuNeedsDisplay = NO;
+  _contextMenuInfoForLastTouch.location = CGPointZero;
   for (HTMLElementFetchRequest* fetchRequest in _pendingElementFetchRequests
            .allValues) {
     [fetchRequest invalidate];
