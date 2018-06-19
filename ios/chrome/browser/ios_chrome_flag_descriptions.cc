@@ -239,6 +239,11 @@ const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
 
+const char kWebFrameMessagingName[] = "Web Frame Messaging";
+const char kWebFrameMessagingDescription[] =
+    "When enabled, API will be injected into webpages to allow sending messages"
+    " directly to any frame of a webpage.";
+
 const char kWebPageTextAccessibilityName[] =
     "Enable text accessibility in web pages";
 const char kWebPageTextAccessibilityDescription[] =
