@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -197,11 +199,16 @@ void DirectLayerTreeFrameSink::DisplayDidDrawAndSwap() {
 
 void DirectLayerTreeFrameSink::DisplayDidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
+#if defined(OS_MACOSX)
   // If |ca_layer_params| should have content only when there exists a client
   // to send it to.
   DCHECK(ca_layer_params.is_empty || display_client_);
   if (display_client_)
     display_client_->OnDisplayReceivedCALayerParams(ca_layer_params);
+#else
+  NOTREACHED();
+  ALLOW_UNUSED_LOCAL(display_client_);
+#endif
 }
 
 void DirectLayerTreeFrameSink::DisplayDidCompleteSwapWithSize(

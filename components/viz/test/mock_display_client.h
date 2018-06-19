@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_VIZ_TEST_MOCK_DISPLAY_CLIENT_H_
 #define COMPONENTS_VIZ_TEST_MOCK_DISPLAY_CLIENT_H_
 
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -19,12 +20,18 @@ class MockDisplayClient : public mojom::DisplayClient {
   mojom::DisplayClientPtr BindInterfacePtr();
 
   // mojom::DisplayClient implementation.
-  MOCK_METHOD1(OnDisplayReceivedCALayerParams, void(const gfx::CALayerParams&));
   MOCK_METHOD1(DidSwapAfterSnapshotRequestReceived,
                void(const std::vector<ui::LatencyInfo>&));
+#if defined(OS_MACOSX)
+  MOCK_METHOD1(OnDisplayReceivedCALayerParams, void(const gfx::CALayerParams&));
+#endif
+#if defined(OS_WIN)
   MOCK_METHOD1(CreateLayeredWindowUpdater,
                void(mojom::LayeredWindowUpdaterRequest));
+#endif
+#if defined(OS_ANDROID)
   MOCK_METHOD1(DidCompleteSwapWithSize, void(const gfx::Size&));
+#endif
 
  private:
   mojo::Binding<mojom::DisplayClient> binding_;
