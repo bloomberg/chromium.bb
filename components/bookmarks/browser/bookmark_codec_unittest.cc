@@ -145,13 +145,17 @@ class BookmarkCodecTest : public testing::Test {
     child_value->GetAsDictionary(result_value);
   }
 
-  base::Value* EncodeHelper(BookmarkModel* model, std::string* checksum) {
+  std::unique_ptr<base::Value> EncodeHelper(
+      BookmarkModel* model,
+      const std::string& sync_metadata_str,
+      std::string* checksum) {
     BookmarkCodec encoder;
     // Computed and stored checksums should be empty.
     EXPECT_EQ("", encoder.computed_checksum());
     EXPECT_EQ("", encoder.stored_checksum());
 
-    std::unique_ptr<base::Value> value(encoder.Encode(model));
+    std::unique_ptr<base::Value> value(
+        encoder.Encode(model, sync_metadata_str));
     const std::string& computed_checksum = encoder.computed_checksum();
     const std::string& stored_checksum = encoder.stored_checksum();
 
@@ -161,18 +165,18 @@ class BookmarkCodecTest : public testing::Test {
     EXPECT_EQ(computed_checksum, stored_checksum);
 
     *checksum = computed_checksum;
-    return value.release();
+    return value;
   }
 
   bool Decode(BookmarkCodec* codec,
+              const base::Value& value,
               BookmarkModel* model,
-              const base::Value& value) {
+              std::string* sync_metadata_str) {
     int64_t max_id;
-    bool result = codec->Decode(AsMutable(model->bookmark_bar_node()),
+    bool result = codec->Decode(value, AsMutable(model->bookmark_bar_node()),
                                 AsMutable(model->other_node()),
-                                AsMutable(model->mobile_node()),
-                                &max_id,
-                                value);
+                                AsMutable(model->mobile_node()), &max_id,
+                                sync_metadata_str);
     model->set_next_node_id(max_id);
     AsMutable(model->root_node())->SetMetaInfoMap(codec->model_meta_info_map());
     AsMutable(model->root_node())
@@ -181,17 +185,20 @@ class BookmarkCodecTest : public testing::Test {
     return result;
   }
 
-  BookmarkModel* DecodeHelper(const base::Value& value,
-                              const std::string& expected_stored_checksum,
-                              std::string* computed_checksum,
-                              bool expected_changes) {
+  std::unique_ptr<BookmarkModel> DecodeHelper(
+      const base::Value& value,
+      const std::string& expected_stored_checksum,
+      std::string* computed_checksum,
+      bool expected_changes,
+      std::string* sync_metadata_str) {
     BookmarkCodec decoder;
     // Computed and stored checksums should be empty.
     EXPECT_EQ("", decoder.computed_checksum());
     EXPECT_EQ("", decoder.stored_checksum());
 
     std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
-    EXPECT_TRUE(Decode(&decoder, model.get(), value));
+    EXPECT_TRUE(Decode(&decoder, value, model.get(),
+                       /*sync_metadata_str=*/sync_metadata_str));
 
     *computed_checksum = decoder.computed_checksum();
     const std::string& stored_checksum = decoder.stored_checksum();
@@ -210,7 +217,7 @@ class BookmarkCodecTest : public testing::Test {
     else
       EXPECT_EQ(*computed_checksum, stored_checksum);
 
-    return model.release();
+    return model;
   }
 
   void CheckIDs(const BookmarkNode* node, std::set<int64_t>* assigned_ids) {
@@ -233,14 +240,16 @@ class BookmarkCodecTest : public testing::Test {
 TEST_F(BookmarkCodecTest, ChecksumEncodeDecodeTest) {
   std::unique_ptr<BookmarkModel> model_to_encode(CreateTestModel1());
   std::string enc_checksum;
-  std::unique_ptr<base::Value> value(
-      EncodeHelper(model_to_encode.get(), &enc_checksum));
+  std::unique_ptr<base::Value> value =
+      EncodeHelper(model_to_encode.get(), /*sync_metadata_str=*/std::string(),
+                   &enc_checksum);
 
   EXPECT_TRUE(value.get() != nullptr);
 
   std::string dec_checksum;
-  std::unique_ptr<BookmarkModel> decoded_model(
-      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, false));
+  std::unique_ptr<BookmarkModel> decoded_model =
+      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, false,
+                   /*sync_metadata_str=*/nullptr);
 }
 
 TEST_F(BookmarkCodecTest, ChecksumEncodeIdenticalModelsTest) {
@@ -248,14 +257,14 @@ TEST_F(BookmarkCodecTest, ChecksumEncodeIdenticalModelsTest) {
   // as the data is the same.
   std::unique_ptr<BookmarkModel> model1(CreateTestModel1());
   std::string enc_checksum1;
-  std::unique_ptr<base::Value> value1(
-      EncodeHelper(model1.get(), &enc_checksum1));
+  std::unique_ptr<base::Value> value1 = EncodeHelper(
+      model1.get(), /*sync_metadata_str=*/std::string(), &enc_checksum1);
   EXPECT_TRUE(value1.get() != nullptr);
 
   std::unique_ptr<BookmarkModel> model2(CreateTestModel1());
   std::string enc_checksum2;
-  std::unique_ptr<base::Value> value2(
-      EncodeHelper(model2.get(), &enc_checksum2));
+  std::unique_ptr<base::Value> value2 = EncodeHelper(
+      model2.get(), /*sync_metadata_str=*/std::string(), &enc_checksum2);
   EXPECT_TRUE(value2.get() != nullptr);
 
   ASSERT_EQ(enc_checksum1, enc_checksum2);
@@ -264,8 +273,9 @@ TEST_F(BookmarkCodecTest, ChecksumEncodeIdenticalModelsTest) {
 TEST_F(BookmarkCodecTest, ChecksumManualEditTest) {
   std::unique_ptr<BookmarkModel> model_to_encode(CreateTestModel1());
   std::string enc_checksum;
-  std::unique_ptr<base::Value> value(
-      EncodeHelper(model_to_encode.get(), &enc_checksum));
+  std::unique_ptr<base::Value> value =
+      EncodeHelper(model_to_encode.get(), /*sync_metadata_str=*/std::string(),
+                   &enc_checksum);
 
   EXPECT_TRUE(value.get() != nullptr);
 
@@ -277,13 +287,15 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditTest) {
   child1_value->SetString(BookmarkCodec::kNameKey, title + "1");
 
   std::string dec_checksum;
-  std::unique_ptr<BookmarkModel> decoded_model1(
-      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, true));
+  std::unique_ptr<BookmarkModel> decoded_model1 =
+      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, true,
+                   /*sync_metadata_str=*/nullptr);
 
   // Undo the change and make sure the checksum is same as original.
   child1_value->SetString(BookmarkCodec::kNameKey, title);
-  std::unique_ptr<BookmarkModel> decoded_model2(
-      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, false));
+  std::unique_ptr<BookmarkModel> decoded_model2 =
+      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, false,
+                   /*sync_metadata_str=*/nullptr);
 }
 
 TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
@@ -295,8 +307,9 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
   ASSERT_GT(bb_child_count, 1);
 
   std::string enc_checksum;
-  std::unique_ptr<base::Value> value(
-      EncodeHelper(model_to_encode.get(), &enc_checksum));
+  std::unique_ptr<base::Value> value =
+      EncodeHelper(model_to_encode.get(), /*sync_metadata_str=*/std::string(),
+                   &enc_checksum);
 
   EXPECT_TRUE(value.get() != nullptr);
 
@@ -310,8 +323,9 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
   }
 
   std::string dec_checksum;
-  std::unique_ptr<BookmarkModel> decoded_model(
-      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, true));
+  std::unique_ptr<BookmarkModel> decoded_model =
+      DecodeHelper(*value.get(), enc_checksum, &dec_checksum, true,
+                   /*sync_metadata_str=*/nullptr);
 
   ExpectIDsUnique(decoded_model.get());
 
@@ -329,12 +343,13 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   std::unique_ptr<BookmarkModel> model_to_encode(CreateTestModel3());
   BookmarkCodec encoder;
   std::unique_ptr<base::Value> model_value(
-      encoder.Encode(model_to_encode.get()));
+      encoder.Encode(model_to_encode.get(), std::string()));
 
   std::unique_ptr<BookmarkModel> decoded_model(
       TestBookmarkClient::CreateModel());
   BookmarkCodec decoder;
-  ASSERT_TRUE(Decode(&decoder, decoded_model.get(), *model_value.get()));
+  ASSERT_TRUE(Decode(&decoder, *model_value.get(), decoded_model.get(),
+                     /*sync_metadata_str=*/nullptr));
   ASSERT_NO_FATAL_FAILURE(
       AssertModelsEqual(model_to_encode.get(), decoded_model.get()));
 
@@ -352,12 +367,13 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
 
   BookmarkCodec encoder2;
   std::unique_ptr<base::Value> model_value2(
-      encoder2.Encode(decoded_model.get()));
+      encoder2.Encode(decoded_model.get(), std::string()));
 
   std::unique_ptr<BookmarkModel> decoded_model2(
       TestBookmarkClient::CreateModel());
   BookmarkCodec decoder2;
-  ASSERT_TRUE(Decode(&decoder2, decoded_model2.get(), *model_value2.get()));
+  ASSERT_TRUE(Decode(&decoder2, *model_value2.get(), decoded_model2.get(),
+                     /*sync_metadata_str=*/nullptr));
   ASSERT_NO_FATAL_FAILURE(
       AssertModelsEqual(decoded_model.get(), decoded_model2.get()));
 }
@@ -374,7 +390,8 @@ TEST_F(BookmarkCodecTest, CanDecodeModelWithoutMobileBookmarks) {
   std::unique_ptr<BookmarkModel> decoded_model(
       TestBookmarkClient::CreateModel());
   BookmarkCodec decoder;
-  ASSERT_TRUE(Decode(&decoder, decoded_model.get(), *root.get()));
+  ASSERT_TRUE(Decode(&decoder, *root.get(), decoded_model.get(),
+                     /*sync_metadata_str=*/nullptr));
   ExpectIDsUnique(decoded_model.get());
 
   const BookmarkNode* bbn = decoded_model->bookmark_bar_node();
@@ -411,11 +428,13 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeMetaInfo) {
   model->SetNodeMetaInfo(
       model->bookmark_bar_node()->GetChild(0), "node_info", "value2");
   std::string checksum;
-  std::unique_ptr<base::Value> value(EncodeHelper(model.get(), &checksum));
+  std::unique_ptr<base::Value> value =
+      EncodeHelper(model.get(), /*sync_metadata_str=*/std::string(), &checksum);
   ASSERT_TRUE(value.get() != nullptr);
 
   // Decode and check for meta info.
-  model.reset(DecodeHelper(*value, checksum, &checksum, false));
+  model = DecodeHelper(*value, checksum, &checksum, false,
+                       /*sync_metadata_str=*/nullptr);
   std::string meta_value;
   EXPECT_TRUE(model->root_node()->GetMetaInfo("model_info", &meta_value));
   EXPECT_EQ("value1", meta_value);
@@ -436,11 +455,13 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeSyncTransactionVersion) {
   model->SetNodeSyncTransactionVersion(bbn->GetChild(1), 42);
 
   std::string checksum;
-  std::unique_ptr<base::Value> value(EncodeHelper(model.get(), &checksum));
+  std::unique_ptr<base::Value> value =
+      EncodeHelper(model.get(), /*sync_metadata_str=*/std::string(), &checksum);
   ASSERT_TRUE(value.get() != nullptr);
 
   // Decode and verify.
-  model.reset(DecodeHelper(*value, checksum, &checksum, false));
+  model = DecodeHelper(*value, checksum, &checksum, false,
+                       /*sync_metadata_str=*/nullptr);
   EXPECT_EQ(1, model->root_node()->sync_transaction_version());
   bbn = model->bookmark_bar_node();
   EXPECT_EQ(42, bbn->GetChild(1)->sync_transaction_version());
@@ -461,7 +482,8 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
 
   std::unique_ptr<BookmarkModel> model(TestBookmarkClient::CreateModel());
   BookmarkCodec decoder;
-  ASSERT_TRUE(Decode(&decoder, model.get(), *root.get()));
+  ASSERT_TRUE(Decode(&decoder, *root.get(), model.get(),
+                     /*sync_metadata_str=*/nullptr));
 
   EXPECT_EQ(1, model->root_node()->sync_transaction_version());
   const BookmarkNode* bbn = model->bookmark_bar_node();
@@ -483,6 +505,22 @@ TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
   EXPECT_EQ("value2", meta_value);
   EXPECT_TRUE(bbn->GetChild(0)->GetMetaInfo(kNestedKey, &meta_value));
   EXPECT_EQ("value3", meta_value);
+}
+
+TEST_F(BookmarkCodecTest, EncodeAndDecodeSyncMetadata) {
+  std::unique_ptr<BookmarkModel> model(CreateTestModel1());
+
+  // Since metadata str serialized proto, it could contain no ASCII characters.
+  std::string sync_metadata_str("a/2'\"");
+  std::string checksum;
+  std::unique_ptr<base::Value> value =
+      EncodeHelper(model.get(), sync_metadata_str, &checksum);
+  ASSERT_TRUE(value.get() != nullptr);
+
+  std::string decoded_sync_metadata_str;
+  // Decode and verify.
+  DecodeHelper(*value, checksum, &checksum, false, &decoded_sync_metadata_str);
+  EXPECT_EQ(sync_metadata_str, decoded_sync_metadata_str);
 }
 
 }  // namespace bookmarks

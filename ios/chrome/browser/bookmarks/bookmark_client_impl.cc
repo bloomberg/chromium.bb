@@ -14,13 +14,21 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 
-BookmarkClientImpl::BookmarkClientImpl(ios::ChromeBrowserState* browser_state)
-    : browser_state_(browser_state) {}
+BookmarkClientImpl::BookmarkClientImpl(
+    ios::ChromeBrowserState* browser_state,
+    sync_bookmarks::BookmarkSyncService* bookmark_sync_service)
+    : browser_state_(browser_state),
+      bookmark_sync_service_(bookmark_sync_service) {}
 
 BookmarkClientImpl::~BookmarkClientImpl() {}
+
+void BookmarkClientImpl::Init(bookmarks::BookmarkModel* model) {
+  model_ = model;
+}
 
 bool BookmarkClientImpl::PreferTouchIcon() {
   return true;
@@ -88,4 +96,15 @@ bool BookmarkClientImpl::CanSyncNode(const bookmarks::BookmarkNode* node) {
 bool BookmarkClientImpl::CanBeEditedByUser(
     const bookmarks::BookmarkNode* node) {
   return true;
+}
+
+std::string BookmarkClientImpl::EncodeBookmarkSyncMetadata() {
+  return bookmark_sync_service_->EncodeBookmarkSyncMetadata();
+}
+
+void BookmarkClientImpl::DecodeBookmarkSyncMetadata(
+    const std::string& metadata_str,
+    const base::RepeatingClosure& schedule_save_closure) {
+  bookmark_sync_service_->DecodeBookmarkSyncMetadata(
+      metadata_str, schedule_save_closure, model_);
 }

@@ -70,6 +70,7 @@ include_rules = [
   "+components/ssl_errors",
   "+components/suggestions",
   "+components/sync",
+  "+components/sync_bookmarks",
   "+components/sync_sessions",
   "+components/sync_preferences",
   "+components/task_scheduler_util",

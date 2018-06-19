@@ -80,10 +80,6 @@ struct UpdateCounters;
 struct UserShare;
 }  // namespace syncer
 
-namespace sync_bookmarks {
-class BookmarkModelTypeProcessor;
-}
-
 namespace browser_sync {
 
 class SyncAuthManager;
@@ -318,10 +314,6 @@ class ProfileSyncService : public syncer::SyncService,
   syncer::SyncableService* GetSessionsSyncableService();
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetSessionSyncControllerDelegateOnUIThread();
-
-  // Returns the ModelTypeControllerDelegate for syncer::BOOKMARKS.
-  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetBookmarkSyncControllerDelegateOnUIThread();
 
   // Returns the ModelTypeControllerDelegate for syncer::DEVICE_INFO.
   virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -793,11 +785,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Locally owned SyncableService or ModelTypeSyncBridge implementations.
   std::unique_ptr<sync_sessions::AbstractSessionsSyncManager>
       sessions_sync_manager_;
-
-  // BookmarkModelTypeProcessor handles communications between sync engine and
-  // BookmarkModel/HistoryService.
-  std::unique_ptr<sync_bookmarks::BookmarkModelTypeProcessor>
-      bookmark_model_type_processor_;
 
   std::unique_ptr<syncer::DeviceInfoSyncBridge> device_info_sync_bridge_;
 

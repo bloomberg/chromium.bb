@@ -14,6 +14,8 @@ static_library("sync_bookmarks") {
     "bookmark_model_associator.h",
     "bookmark_model_type_processor.cc",
     "bookmark_model_type_processor.h",
+    "bookmark_sync_service.cc",
+    "bookmark_sync_service.h",
     "synced_bookmark_tracker.cc",
     "synced_bookmark_tracker.h",
   ]
@@ -23,6 +25,7 @@ static_library("sync_bookmarks") {
     "//components/bookmarks/browser",
     "//components/favicon/core",
     "//components/history/core/browser",
+    "//components/keyed_service/core:core",
     "//components/sync",
     "//components/undo",
     "//ui/gfx",

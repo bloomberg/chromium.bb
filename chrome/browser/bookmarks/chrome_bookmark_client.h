@@ -23,6 +23,10 @@ class BookmarkPermanentNode;
 class ManagedBookmarkService;
 }
 
+namespace sync_bookmarks {
+class BookmarkSyncService;
+}
+
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 namespace offline_pages {
 class OfflinePageBookmarkObserver;
@@ -33,7 +37,8 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient {
  public:
   ChromeBookmarkClient(
       Profile* profile,
-      bookmarks::ManagedBookmarkService* managed_bookmark_service);
+      bookmarks::ManagedBookmarkService* managed_bookmark_service,
+      sync_bookmarks::BookmarkSyncService* bookmark_sync_service);
   ~ChromeBookmarkClient() override;
 
   // bookmarks::BookmarkClient:
@@ -54,6 +59,10 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient {
       const bookmarks::BookmarkNode* permanent_node) override;
   bool CanSyncNode(const bookmarks::BookmarkNode* node) override;
   bool CanBeEditedByUser(const bookmarks::BookmarkNode* node) override;
+  std::string EncodeBookmarkSyncMetadata() override;
+  void DecodeBookmarkSyncMetadata(
+      const std::string& metadata_str,
+      const base::RepeatingClosure& schedule_save_closure) override;
 
  private:
   // Pointer to the associated Profile. Must outlive ChromeBookmarkClient.
@@ -62,6 +71,12 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient {
   // Pointer to the ManagedBookmarkService responsible for bookmark policy. May
   // be null during testing.
   bookmarks::ManagedBookmarkService* managed_bookmark_service_;
+
+  bookmarks::BookmarkModel* model_;
+
+  // Pointer to the BookmarkSyncService responsible for encoding and decoding
+  // sync metadata persisted together with the bookmarks model.
+  sync_bookmarks::BookmarkSyncService* bookmark_sync_service_;
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // Owns the observer used by Offline Page listening to Bookmark Model events.

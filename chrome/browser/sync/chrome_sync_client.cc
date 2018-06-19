@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -68,6 +69,7 @@
 #include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
 #include "components/sync/user_events/user_event_service.h"
+#include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/session_sync_bridge.h"
@@ -514,7 +516,7 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->GetSessionSyncControllerDelegateOnUIThread();
     }
     case syncer::BOOKMARKS: {
-      return ProfileSyncServiceFactory::GetForProfile(profile_)
+      return BookmarkSyncServiceFactory::GetForProfile(profile_)
           ->GetBookmarkSyncControllerDelegateOnUIThread();
     }
     default:

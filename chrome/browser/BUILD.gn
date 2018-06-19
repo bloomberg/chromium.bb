@@ -1465,6 +1465,8 @@ jumbo_split_static_library("browser") {
     "subresource_filter/subresource_filter_profile_context.h",
     "subresource_filter/subresource_filter_profile_context_factory.cc",
     "subresource_filter/subresource_filter_profile_context_factory.h",
+    "sync/bookmark_sync_service_factory.cc",
+    "sync/bookmark_sync_service_factory.h",
     "sync/chrome_sync_client.cc",
     "sync/chrome_sync_client.h",
     "sync/glue/extensions_activity_monitor.cc",

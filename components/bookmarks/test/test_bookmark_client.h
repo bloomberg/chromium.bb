@@ -51,6 +51,10 @@ class TestBookmarkClient : public BookmarkClient {
   bool CanSetPermanentNodeTitle(const BookmarkNode* permanent_node) override;
   bool CanSyncNode(const BookmarkNode* node) override;
   bool CanBeEditedByUser(const BookmarkNode* node) override;
+  std::string EncodeBookmarkSyncMetadata() override;
+  void DecodeBookmarkSyncMetadata(
+      const std::string& metadata_str,
+      const base::RepeatingClosure& schedule_save_closure) override;
 
   // Helpers for GetLoadExtraNodesCallback().
   static BookmarkPermanentNodeList LoadExtraNodes(

@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -43,6 +44,7 @@ const char BookmarkCodec::kSyncTransactionVersion[] =
     "sync_transaction_version";
 const char BookmarkCodec::kTypeURL[] = "url";
 const char BookmarkCodec::kTypeFolder[] = "folder";
+const char BookmarkCodec::kSyncMetadata[] = "sync_metadata";
 
 // Current version of the file.
 static const int kCurrentVersion = 1;
@@ -57,12 +59,13 @@ BookmarkCodec::BookmarkCodec()
 
 BookmarkCodec::~BookmarkCodec() {}
 
-std::unique_ptr<base::Value> BookmarkCodec::Encode(BookmarkModel* model) {
-  return Encode(model->bookmark_bar_node(),
-                model->other_node(),
-                model->mobile_node(),
-                model->root_node()->GetMetaInfoMap(),
-                model->root_node()->sync_transaction_version());
+std::unique_ptr<base::Value> BookmarkCodec::Encode(
+    BookmarkModel* model,
+    const std::string& sync_metadata_str) {
+  return Encode(model->bookmark_bar_node(), model->other_node(),
+                model->mobile_node(), model->root_node()->GetMetaInfoMap(),
+                model->root_node()->sync_transaction_version(),
+                sync_metadata_str);
 }
 
 std::unique_ptr<base::Value> BookmarkCodec::Encode(
@@ -70,7 +73,8 @@ std::unique_ptr<base::Value> BookmarkCodec::Encode(
     const BookmarkNode* other_folder_node,
     const BookmarkNode* mobile_folder_node,
     const BookmarkNode::MetaInfoMap* model_meta_info_map,
-    int64_t sync_transaction_version) {
+    int64_t sync_transaction_version,
+    const std::string& sync_metadata_str) {
   ids_reassigned_ = false;
   InitializeChecksum();
   auto roots = std::make_unique<base::DictionaryValue>();
@@ -92,14 +96,20 @@ std::unique_ptr<base::Value> BookmarkCodec::Encode(
   stored_checksum_ = computed_checksum_;
   main->SetString(kChecksumKey, computed_checksum_);
   main->Set(kRootsKey, std::move(roots));
+  if (!sync_metadata_str.empty()) {
+    std::string sync_metadata_str_base64;
+    base::Base64Encode(sync_metadata_str, &sync_metadata_str_base64);
+    main->SetString(kSyncMetadata, std::move(sync_metadata_str_base64));
+  }
   return std::move(main);
 }
 
-bool BookmarkCodec::Decode(BookmarkNode* bb_node,
+bool BookmarkCodec::Decode(const base::Value& value,
+                           BookmarkNode* bb_node,
                            BookmarkNode* other_folder_node,
                            BookmarkNode* mobile_folder_node,
                            int64_t* max_id,
-                           const base::Value& value) {
+                           std::string* sync_metadata_str) {
   ids_.clear();
   ids_reassigned_ = false;
   ids_valid_ = true;
@@ -107,7 +117,7 @@ bool BookmarkCodec::Decode(BookmarkNode* bb_node,
   stored_checksum_.clear();
   InitializeChecksum();
   bool success = DecodeHelper(bb_node, other_folder_node, mobile_folder_node,
-                              value);
+                              value, sync_metadata_str);
   FinalizeChecksum();
   // If either the checksums differ or some IDs were missing/not unique,
   // reassign IDs.
@@ -167,7 +177,8 @@ std::unique_ptr<base::Value> BookmarkCodec::EncodeMetaInfo(
 bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
                                  BookmarkNode* other_folder_node,
                                  BookmarkNode* mobile_folder_node,
-                                 const base::Value& value) {
+                                 const base::Value& value,
+                                 std::string* sync_metadata_str) {
   const base::DictionaryValue* d_value = nullptr;
   if (!value.GetAsDictionary(&d_value))
     return false;  // Unexpected type.
@@ -233,6 +244,12 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
       !base::StringToInt64(sync_transaction_version_str,
                            &model_sync_transaction_version_))
     return false;
+
+  std::string sync_metadata_str_base64;
+  if (sync_metadata_str &&
+      d_value->GetString(kSyncMetadata, &sync_metadata_str_base64)) {
+    base::Base64Decode(sync_metadata_str_base64, sync_metadata_str);
+  }
 
   // Need to reset the type as decoding resets the type to FOLDER. Similarly
   // we need to reset the title as the title is persisted and restored from
