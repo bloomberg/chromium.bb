@@ -1398,6 +1398,17 @@ void FrameLoader::ClientDroppedNavigation() {
     return;
 
   DetachProvisionalDocumentLoader(provisional_document_loader_);
+  // Forcibly instantiate WindowProxy for initial frame document.
+  // This is only required when frame navigation is aborted, e.g. due to
+  // mixed content.
+  // TODO(lushnikov): this should be done in Init for initial empty doc, but
+  // that breaks extensions abusing SetForceMainWorldInitialization setting
+  // and relying on the number of created window proxies.
+  Settings* settings = frame_->GetSettings();
+  if (settings && settings->GetForceMainWorldInitialization()) {
+    // Forcibly instantiate WindowProxy.
+    frame_->GetScriptController().WindowProxy(DOMWrapperWorld::MainWorld());
+  }
 }
 
 void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
