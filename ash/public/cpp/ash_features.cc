@@ -23,7 +23,7 @@ const base::Feature kKeyboardShortcutViewer{"KeyboardShortcutViewer",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kKeyboardShortcutViewerApp{
-    "KeyboardShortcutViewerApp", base::FEATURE_DISABLED_BY_DEFAULT};
+    "KeyboardShortcutViewerApp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
