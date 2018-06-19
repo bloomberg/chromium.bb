@@ -261,16 +261,35 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern,
     base::StringPiece host_and_port =
         pattern.substr(host_start_pos, host_end_pos - host_start_pos);
 
-    // Ports are only valid with standard (and non-file) schemes.
-    base::StringPiece host_piece;
-    size_t port_pos = host_and_port.find(':');
-    if (port_pos != base::StringPiece::npos &&
-        !SetPort(host_and_port.substr(port_pos + 1))) {
+    size_t port_separator_pos = base::StringPiece::npos;
+    if (host_and_port[0] != '[') {
+      // Not IPv6 (either IPv4 or just a normal address).
+      port_separator_pos = host_and_port.find(':');
+    } else {  // IPv6.
+      size_t host_end_pos = host_and_port.find(']');
+      if (host_end_pos == base::StringPiece::npos)
+        return PARSE_ERROR_INVALID_HOST;
+      if (host_end_pos == 1)
+        return PARSE_ERROR_EMPTY_HOST;
+
+      if (host_end_pos < host_and_port.length() - 1) {
+        // The host isn't the only component. Check for a port. This would
+        // require a ':' to follow the closing ']' from the host.
+        if (host_and_port[host_end_pos + 1] != ':')
+          return PARSE_ERROR_INVALID_HOST;
+
+        port_separator_pos = host_end_pos + 1;
+      }
+    }
+
+    if (port_separator_pos != base::StringPiece::npos &&
+        !SetPort(host_and_port.substr(port_separator_pos + 1))) {
       return PARSE_ERROR_INVALID_PORT;
     }
-    // Note: this substr() will be the entire string if the port position wasn't
-    // found.
-    host_piece = host_and_port.substr(0, port_pos);
+
+    // Note: this substr() will be the entire string if the port position
+    // wasn't found.
+    base::StringPiece host_piece = host_and_port.substr(0, port_separator_pos);
 
     // The first component can optionally be '*' to match all subdomains.
     std::vector<base::StringPiece> host_components = base::SplitStringPiece(

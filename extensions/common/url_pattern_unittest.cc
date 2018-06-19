@@ -101,6 +101,62 @@ TEST(ExtensionURLPatternTest, Ports) {
   }
 }
 
+TEST(ExtensionURLPatternTest, IPv6Patterns) {
+  constexpr struct {
+    const char* pattern;
+    const char* expected_host;
+    const char* expected_port;
+  } kSuccessTestPatterns[] = {
+      {"http://[2607:f8b0:4005:805::200e]/", "[2607:f8b0:4005:805::200e]", "*"},
+      {"http://[2607:f8b0:4005:805::200e]/*", "[2607:f8b0:4005:805::200e]",
+       "*"},
+      {"http://[2607:f8b0:4005:805::200e]:8888/*", "[2607:f8b0:4005:805::200e]",
+       "8888"},
+  };
+
+  for (const auto& test_case : kSuccessTestPatterns) {
+    SCOPED_TRACE(test_case.pattern);
+    URLPattern pattern(URLPattern::SCHEME_HTTP);
+    EXPECT_EQ(URLPattern::PARSE_SUCCESS, pattern.Parse(test_case.pattern));
+    EXPECT_EQ(test_case.expected_host, pattern.host());
+    EXPECT_EQ(test_case.expected_port, pattern.port());
+  }
+
+  constexpr struct {
+    const char* pattern;
+    URLPattern::ParseResult expected_failure;
+  } kFailureTestPatterns[] = {
+      // No port specified, but port separator.
+      {"http://[2607:f8b0:4005:805::200e]:/*",
+       URLPattern::PARSE_ERROR_INVALID_PORT},
+      // No host.
+      {"http://[]:8888/*", URLPattern::PARSE_ERROR_EMPTY_HOST},
+      // No closing bracket (`]`).
+      {"http://[2607:f8b0:4005:805::200e/*",
+       URLPattern::PARSE_ERROR_INVALID_HOST},
+      // Two closing brackets (`]]`).
+      {"http://[2607:f8b0:4005:805::200e]]/*",
+       URLPattern::PARSE_ERROR_INVALID_HOST},
+      // Two open brackets (`[[`).
+      {"http://[[2607:f8b0:4005:805::200e]/*",
+       URLPattern::PARSE_ERROR_INVALID_HOST},
+      // Too few colons in the last chunk.
+      {"http://[2607:f8b0:4005:805:200e]/*",
+       URLPattern::PARSE_ERROR_INVALID_HOST},
+      // Non-hex piece.
+      {"http://[2607:f8b0:4005:805:200e:12:bogus]/*",
+       URLPattern::PARSE_ERROR_INVALID_HOST},
+      {"http://[[2607:f8b0:4005:805::200e]:abc/*",
+       URLPattern::PARSE_ERROR_INVALID_PORT},
+  };
+
+  for (const auto& test_case : kFailureTestPatterns) {
+    SCOPED_TRACE(test_case.pattern);
+    URLPattern pattern(URLPattern::SCHEME_HTTP);
+    EXPECT_EQ(test_case.expected_failure, pattern.Parse(test_case.pattern));
+  }
+}
+
 // all pages for a given scheme
 TEST(ExtensionURLPatternTest, Match1) {
   URLPattern pattern(kAllSchemes);
