@@ -261,9 +261,10 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
       ->TransferChangesTo(batch->GetMetadataChangeList());
   SessionStore::WriteBatch::Commit(std::move(batch));
 
-  // This might overtrigger because we don't check if the batch is empty, but
-  // observers should handle these events well so we don't bother detecting.
-  foreign_sessions_updated_callback_.Run();
+  if (!entity_changes.empty()) {
+    foreign_sessions_updated_callback_.Run();
+  }
+
   return base::nullopt;
 }
 
