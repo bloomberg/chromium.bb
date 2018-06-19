@@ -10,6 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -31,9 +32,11 @@ namespace {
 // seconds apart.
 const int64_t kMaxNumSecondsBetweenBatchScans = 60;
 
-// Scanning immediately after the device is unlocked may cause unwanted
-// interactions with EasyUnlock BLE channels. The scan is delayed slightly in
-// order to circumvent this issue.
+// If Tether and Smart Lock use their own BLE channel logic, instead of the
+// shared SecureChannel API (i.e. |chromeos::features::kMultiDeviceApi| is
+// disabled), scanning immediately after the device is unlocked may cause
+// unwanted interactions with Smart Lock BLE channels. The scan is delayed
+// slightly in order to circumvent this issue.
 const int64_t kNumSecondsToDelayScanAfterUnlock = 3;
 
 // Minimum value for the scan length metric.
@@ -131,7 +134,8 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
     // Note: Once the SecureChannel API is in use, the scan will no longer have
     //       to stop.
     host_scanner_->StopScan();
-    delay_scan_after_unlock_timer_->Stop();
+    if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+      delay_scan_after_unlock_timer_->Stop();
     return;
   }
 
@@ -139,11 +143,15 @@ void HostScanSchedulerImpl::OnSessionStateChanged() {
     return;
 
   // If the device was just unlocked, start a scan.
-  delay_scan_after_unlock_timer_->Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(kNumSecondsToDelayScanAfterUnlock),
-      base::Bind(&HostScanSchedulerImpl::AttemptScan,
-                 weak_ptr_factory_.GetWeakPtr()));
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    AttemptScan();
+  } else {
+    delay_scan_after_unlock_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(kNumSecondsToDelayScanAfterUnlock),
+        base::BindRepeating(&HostScanSchedulerImpl::AttemptScan,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void HostScanSchedulerImpl::SetTestDoubles(
@@ -163,12 +171,13 @@ void HostScanSchedulerImpl::AttemptScan() {
   if (host_scanner_->IsScanActive())
     return;
 
-  // If the screen is locked, a host scan should not occur.  A scan during the
-  // lock screen could cause bad interactions with EasyUnlock. See
-  // https://crbug.com/763604.
-  // Note: Once the SecureChannel API is available, this check can be removed.
-  if (session_manager_->IsScreenLocked())
+  // If the SecureChannel API is not present, and the screen is locked, a host
+  // scan should not occur.  A scan during the lock screen could cause bad
+  // interactions with EasyUnlock. See https://crbug.com/763604.
+  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+      session_manager_->IsScreenLocked()) {
     return;
+  }
 
   // If the timer is running, this new scan is part of the same batch as the
   // previous scan, so the timer should be stopped (it will be restarted after
@@ -179,7 +188,9 @@ void HostScanSchedulerImpl::AttemptScan() {
   else
     last_scan_batch_start_timestamp_ = clock_->Now();
 
-  delay_scan_after_unlock_timer_->Stop();
+  if (!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+    delay_scan_after_unlock_timer_->Stop();
+
   host_scanner_->StartScan();
   network_state_handler_->SetTetherScanState(true);
 }
