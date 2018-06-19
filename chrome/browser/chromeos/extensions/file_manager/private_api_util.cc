@@ -128,8 +128,7 @@ void GetSelectedFileInfoInternal(
       switch (params->local_path_option) {
         case NO_LOCAL_PATH_RESOLUTION:
           // Pass empty local path.
-          params->selected_files.push_back(
-              ui::SelectedFileInfo(file_path, base::FilePath()));
+          params->selected_files.emplace_back(file_path, base::FilePath());
           break;
         case NEED_LOCAL_PATH_FOR_OPENING:
           GetFileNativeLocalPathForOpening(
@@ -149,8 +148,7 @@ void GetSelectedFileInfoInternal(
           return;  // Remaining work is done in ContinueGetSelectedFileInfo.
       }
     } else {
-      params->selected_files.push_back(
-          ui::SelectedFileInfo(file_path, file_path));
+      params->selected_files.emplace_back(file_path, file_path);
     }
   }
   params->callback.Run(params->selected_files);
@@ -167,7 +165,7 @@ void ContinueGetSelectedFileInfo(
   }
   const int index = params->selected_files.size();
   const base::FilePath& file_path = params->file_paths[index];
-  params->selected_files.push_back(ui::SelectedFileInfo(file_path, local_path));
+  params->selected_files.emplace_back(file_path, local_path);
   GetSelectedFileInfoInternal(profile, std::move(params));
 }
 

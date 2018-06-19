@@ -352,7 +352,7 @@ FileManagerPrivateRequestWebStoreAccessTokenFunction::
 
 bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
   std::vector<std::string> scopes;
-  scopes.push_back(kCWSScope);
+  scopes.emplace_back(kCWSScope);
 
   ProfileOAuth2TokenService* oauth_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
