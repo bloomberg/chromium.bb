@@ -298,7 +298,8 @@ def _merge_histogram_results(histogram_lists):
 
   return merged_results
 
-def _merge_perf_results(results_filename, directories):
+def _merge_perf_results(benchmark_name, results_filename, directories):
+  begin_time = time.time()
   collected_results = []
   for directory in directories:
     filename = join(directory, 'perf_results.json')
@@ -315,6 +316,10 @@ def _merge_perf_results(results_filename, directories):
 
   with open(results_filename, 'w') as rf:
     json.dump(merged_results, rf)
+
+  end_time = time.time()
+  print_duration(('%s results merging' % (benchmark_name)),
+                 begin_time, end_time)
 
 
 def _handle_perf_results(
@@ -352,7 +357,7 @@ def _handle_perf_results(
             os.makedirs(merge_perf_dir)
           results_filename = os.path.join(
               merge_perf_dir, 'merged_perf_results.json')
-          _merge_perf_results(results_filename, directories)
+          _merge_perf_results(benchmark_name, results_filename, directories)
         else:
           # It was only written to one shard, use that shards data
           results_filename = join(directories[0], 'perf_results.json')
