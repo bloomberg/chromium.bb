@@ -255,6 +255,16 @@ void GetNativeRtcConfiguration(
   webrtc_config->ice_candidate_pool_size = blink_config.ice_candidate_pool_size;
 }
 
+absl::optional<bool> ConstraintToOptional(
+    const blink::WebMediaConstraints& constraints,
+    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker) {
+  bool value;
+  if (GetConstraintValueAsBoolean(constraints, picker, &value)) {
+    return absl::optional<bool>(value);
+  }
+  return absl::nullopt;
+}
+
 void CopyConstraintsIntoRtcConfiguration(
     const blink::WebMediaConstraints constraints,
     webrtc::PeerConnectionInterface::RTCConfiguration* configuration) {

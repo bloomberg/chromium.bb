@@ -235,16 +235,6 @@ bool GetConstraintValueAsString(
   return false;
 }
 
-rtc::Optional<bool> ConstraintToOptional(
-    const blink::WebMediaConstraints& constraints,
-    const blink::BooleanConstraint blink::WebMediaTrackConstraintSet::*picker) {
-  bool value;
-  if (GetConstraintValueAsBoolean(constraints, picker, &value)) {
-    return rtc::Optional<bool>(value);
-  }
-  return rtc::Optional<bool>();
-}
-
 std::string GetMediaStreamSource(
     const blink::WebMediaConstraints& constraints) {
   std::string source;
