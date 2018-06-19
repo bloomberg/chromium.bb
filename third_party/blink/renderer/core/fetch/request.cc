@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/url/url_search_params.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
@@ -831,9 +830,7 @@ Request* Request::clone(ScriptState* script_state,
     return nullptr;
   }
 
-  FetchRequestData* request = request_->Clone(script_state, exception_state);
-  if (exception_state.HadException())
-    return nullptr;
+  FetchRequestData* request = request_->Clone(script_state);
   RefreshBody(script_state);
   Headers* headers = Headers::Create(request->HeaderList());
   headers->SetGuard(headers_->GetGuard());
