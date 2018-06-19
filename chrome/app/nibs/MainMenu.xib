@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="5056" systemVersion="13F34" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="12120" systemVersion="17D47" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1090" defaultVersion="1060" identifier="macosx"/>
-        <development version="5100" identifier="xcode"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="5056"/>
+        <deployment version="1090" identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="12120"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="BrowserCrApplication"/>
@@ -318,7 +317,7 @@ CA
                                     <action selector="commandDispatch:" target="-1" id="0A7-Iy-65Q"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="^IDS_CUSTOMIZE_TOUCH_BAR" id="679" tag="40251">
+                            <menuItem title="^IDS_CUSTOMIZE_TOUCH_BAR" tag="40251" id="679">
                                 <connections>
                                     <action selector="toggleTouchBarCustomizationPalette:" target="-1" id="680"/>
                                 </connections>
@@ -391,7 +390,7 @@ CA
                                                 <action selector="commandDispatch:" target="-1" id="657"/>
                                             </connections>
                                         </menuItem>
-                                         <menuItem title="^IDS_ALLOW_JAVASCRIPT_APPLE_EVENTS_MAC" tag="40253" id="659">
+                                        <menuItem title="^IDS_ALLOW_JAVASCRIPT_APPLE_EVENTS_MAC" tag="40253" id="659">
                                             <connections>
                                                 <action selector="commandDispatch:" target="-1" id="664"/>
                                             </connections>
