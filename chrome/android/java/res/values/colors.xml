@@ -79,7 +79,7 @@
 
     <!-- Omnibox Suggestion colors -->
     <color name="suggestion_url_dark_modern">@color/google_blue_500</color>
-    <color name="suggestion_url_light_modern">@color/google_blue_300</color>
+    <color name="suggestion_url_light_modern">@color/modern_blue_300</color>
     <color name="suggestion_url_light">#5595FE</color>
     <color name="answers_description_text_negative">@color/google_red_700</color>
     <color name="answers_description_text_positive">@color/google_green_700</color>
@@ -116,7 +116,7 @@
 
     <!-- NTP and Home sheet colors. Also used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg">@color/default_primary_color</color>
-    <color name="ntp_bg_incognito">#222222</color>
+    <color name="ntp_bg_incognito">@color/incognito_modern_primary_color</color>
     <color name="snippets_publisher_name_color">#646464</color>
     <color name="snippets_text_color">#646464</color>
     <color name="snippets_list_header_text_color">#646464</color>
@@ -125,11 +125,7 @@
     <color name="suggestions_offline_badge_tint">@color/google_blue_500</color>
 
     <!-- Incognito NTP Colors. -->
-    <color name="incognito_text">#B3FFFFFF</color>
     <color name="incognito_emphasis">@android:color/white</color>
-    <color name="incognito_header">#CCFFFFFF</color>
-    <color name="incognito_ntp_learn_more_link">#03A9F4</color>
-    <color name="incognito_ntp_header">#D2D2D2</color>
 
     <!-- Contextual Search colors -->
     <color name="contextual_search_promo_background_color">@color/google_grey_200</color>
@@ -149,7 +145,7 @@
 
     <!-- LocationBar colors -->
     <color name="locationbar_dark_hint_text">@color/search_box_hint</color>
-    <color name="locationbar_light_hint_text">@color/white_alpha_70</color>
+    <color name="locationbar_light_hint_text">@color/modern_grey_400</color>
     <color name="locationbar_light_selection_color">#CC5595FE</color>
     <color name="locationbar_status_color">@color/black_alpha_54</color>
     <color name="locationbar_status_color_light">@android:color/white</color>

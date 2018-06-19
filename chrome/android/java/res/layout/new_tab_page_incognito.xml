@@ -46,8 +46,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-light"
                 android:text="@string/new_tab_incognito_header"
-                android:textColor="@color/incognito_ntp_header"
-                android:textSize="24sp" />
+                android:textAppearance="@style/WhiteHeadlineIncognito" />
 
             <TextView
                 android:id="@+id/new_tab_incognito_message"
@@ -56,16 +55,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="10dp"
-                android:text="@null"
-                android:textColor="@color/google_grey_400" />
+                android:text="@null" />
 
             <TextView
                 android:id="@+id/learn_more"
                 style="@style/IncognitoNewTabLearnMoreLink"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/learn_more"
-                android:textColor="@color/incognito_ntp_learn_more_link" />
+                android:text="@string/learn_more" />
 
         </LinearLayout>
 

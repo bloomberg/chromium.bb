@@ -50,7 +50,6 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
     private static final int BULLETPOINTS_HORIZONTAL_SPACING_DP = 40;
     private static final int CONTENT_WIDTH_DP = 600;
     private static final int WIDE_LAYOUT_THRESHOLD_DP = 720;
-    private static final int CHROME_HOME_LEARN_MORE_BOTTOM_PADDING_DP = 8;
 
     private static class IncognitoBulletSpan extends BulletSpan {
         public IncognitoBulletSpan() {
@@ -303,7 +302,7 @@ public class IncognitoNewTabPageViewMD extends IncognitoNewTabPageView {
         SpannableString textWithLearnMoreLink = new SpannableString(concatenatedText.toString());
 
         NoUnderlineClickableSpan span = new NoUnderlineClickableSpan(
-                R.color.google_blue_300, (view) -> getManager().loadIncognitoLearnMore());
+                R.color.modern_blue_300, (view) -> getManager().loadIncognitoLearnMore());
         textWithLearnMoreLink.setSpan(
                 span, subtitleText.length() + 1, textWithLearnMoreLink.length(), 0 /* flags */);
         mSubtitle.setText(textWithLearnMoreLink);
