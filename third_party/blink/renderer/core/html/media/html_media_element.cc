@@ -504,6 +504,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       playing_remotely_(false),
       in_overlay_fullscreen_video_(false),
       mostly_filling_viewport_(false),
+      was_always_muted_(true),
       audio_tracks_(AudioTrackList::Create(*this)),
       video_tracks_(VideoTrackList::Create(*this)),
       audio_source_node_(nullptr),
@@ -2634,8 +2635,13 @@ void HTMLMediaElement::setMuted(bool muted) {
   if (!muted_ && !autoplay_policy_->RequestAutoplayUnmute())
     pause();
 
-  // This is called after the volumechange event to make sure isAutoplayingMuted
-  // returns the right value when webMediaPlayer receives the volume update.
+  // If playback was not paused by the autoplay policy and got unmuted, the
+  // element is marked as being allowed to play unmuted.
+  if (!muted_ && PotentiallyPlaying())
+    was_always_muted_ = false;
+
+  // This is called at the end to make sure the WebMediaPlayer has the right
+  // information.
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->SetVolume(EffectiveMediaVolume());
 
@@ -3358,8 +3364,8 @@ WebMediaPlayer::TrackId HTMLMediaElement::GetSelectedVideoTrackId() {
   return track->id();
 }
 
-bool HTMLMediaElement::IsAutoplayingMuted() {
-  return autoplay_policy_->IsAutoplayingMuted();
+bool HTMLMediaElement::WasAlwaysMuted() {
+  return was_always_muted_;
 }
 
 // MediaPlayerPresentation methods
@@ -3485,6 +3491,9 @@ void HTMLMediaElement::UpdatePlayState() {
   BLINK_MEDIA_LOG << "updatePlayState(" << (void*)this
                   << ") - shouldBePlaying = " << BoolString(should_be_playing)
                   << ", isPlaying = " << BoolString(is_playing);
+
+  if (should_be_playing && !muted_)
+    was_always_muted_ = false;
 
   if (should_be_playing) {
     SetDisplayMode(kVideo);

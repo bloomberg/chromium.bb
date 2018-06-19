@@ -264,7 +264,6 @@ void MediaWebContentsObserver::OnMediaPlaying(
   }
 
   // Notify observers of the new player.
-  DCHECK(has_audio || has_video);
   web_contents_impl()->MediaStartedPlaying(
       WebContentsObserver::MediaPlayerInfo(has_video, has_audio), id);
 }

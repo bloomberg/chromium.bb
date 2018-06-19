@@ -278,10 +278,6 @@ base::Optional<ExceptionCode> AutoplayPolicy::RequestPlay() {
   return base::nullopt;
 }
 
-bool AutoplayPolicy::IsAutoplayingMuted() const {
-  return IsAutoplayingMutedInternal(element_->muted());
-}
-
 bool AutoplayPolicy::IsAutoplayingMutedInternal(bool muted) const {
   return !element_->paused() && IsOrWillBeAutoplayingMutedInternal(muted);
 }

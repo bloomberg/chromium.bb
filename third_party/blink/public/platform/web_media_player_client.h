@@ -111,8 +111,9 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // calling WebMediaPlayer::BecameDominantVisibleContent(bool).
   virtual void ActivateViewportIntersectionMonitoring(bool) = 0;
 
-  // Returns whether the media element is in an autoplay muted state.
-  virtual bool IsAutoplayingMuted() = 0;
+  // Returns whether the media element has always been muted. This is used to
+  // avoid take audio focus for elements that the user is not aware is playing.
+  virtual bool WasAlwaysMuted() = 0;
 
   // Returns if there's a selected video track.
   virtual bool HasSelectedVideoTrack() = 0;
