@@ -552,15 +552,15 @@ Response InspectorLayerTreeAgent::profileSnapshot(
   FloatRect rect;
   if (clip_rect.isJust())
     ParseRect(clip_rect.fromJust(), &rect);
-  std::unique_ptr<PictureSnapshot::Timings> timings = snapshot->Profile(
-      min_repeat_count.fromMaybe(1), min_duration.fromMaybe(0),
-      clip_rect.isJust() ? &rect : nullptr);
+  auto timings =
+      snapshot->Profile(min_repeat_count.fromMaybe(1),
+                        TimeDelta::FromSecondsD(min_duration.fromMaybe(0)),
+                        clip_rect.isJust() ? &rect : nullptr);
   *out_timings = Array<Array<double>>::create();
-  for (size_t i = 0; i < timings->size(); ++i) {
-    const Vector<double>& row = (*timings)[i];
+  for (const auto& row : timings) {
     std::unique_ptr<Array<double>> out_row = Array<double>::create();
-    for (size_t j = 0; j < row.size(); ++j)
-      out_row->addItem(row[j]);
+    for (TimeDelta delta : row)
+      out_row->addItem(delta.InSecondsF());
     (*out_timings)->addItem(std::move(out_row));
   }
   return Response::OK();
