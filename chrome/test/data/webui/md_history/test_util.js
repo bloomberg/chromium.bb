@@ -27,10 +27,10 @@ function replaceBody(element) {
  */
 function replaceApp() {
   const app = document.createElement('history-app');
+  replaceBody(app);
   app.id = 'history-app';
   // Disable querying for tests by default.
   app.queryState_.queryingDisabled = true;
-  replaceBody(app);
   Polymer.dom.flush();
   return app;
 }
@@ -93,10 +93,10 @@ function createHistoryInfo(searchTerm) {
 /**
  * @param {Element} element
  * @param {string} selector
- * @return {Element}
+ * @return {!NodeList<!Element>}
  */
 function polymerSelectAll(element, selector) {
-  return Polymer.dom(element.root).querySelectorAll(selector);
+  return element.shadowRoot.querySelectorAll(selector);
 }
 
 /**
