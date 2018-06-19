@@ -26,20 +26,41 @@ TEST_F(SmbFileSystemIdTest, ShouldCreateFileSystemIdCorrectly) {
   const int32_t mount_id = 12;
 
   EXPECT_EQ("12@@smb://192.168.0.0/test",
-            CreateFileSystemId(mount_id, share_path));
+            CreateFileSystemId(mount_id, share_path, false /* is_kerberos */));
+  EXPECT_EQ("12@@smb://192.168.0.0/test@@kerberos_chromad",
+            CreateFileSystemId(mount_id, share_path, true /* is_kerberos */));
 }
 
 TEST_F(SmbFileSystemIdTest, ShouldParseMountIdCorrectly) {
-  const std::string file_system_id = "12@@smb://192.168.0.0/test";
+  const std::string file_system_id_1 = "12@@smb://192.168.0.0/test";
+  const std::string file_system_id_2 =
+      "13@@smb://192.168.0.1/test@@kerberos_chromad";
 
-  EXPECT_EQ(12, GetMountIdFromFileSystemId(file_system_id));
+  EXPECT_EQ(12, GetMountIdFromFileSystemId(file_system_id_1));
+  EXPECT_EQ(13, GetMountIdFromFileSystemId(file_system_id_2));
 }
 
 TEST_F(SmbFileSystemIdTest, ShouldParseSharePathCorrectly) {
-  const std::string file_system_id = "12@@smb://192.168.0.0/test";
-  const base::FilePath expected_share_path("smb://192.168.0.0/test");
+  const std::string file_system_id_1 = "12@@smb://192.168.0.0/test";
+  const base::FilePath expected_share_path_1("smb://192.168.0.0/test");
 
-  EXPECT_EQ(expected_share_path, GetSharePathFromFileSystemId(file_system_id));
+  const std::string file_system_id_2 =
+      "13@@smb://192.168.0.1/test@@kerberos_chromad";
+  const base::FilePath expected_share_path_2("smb://192.168.0.1/test");
+
+  EXPECT_EQ(expected_share_path_1,
+            GetSharePathFromFileSystemId(file_system_id_1));
+  EXPECT_EQ(expected_share_path_2,
+            GetSharePathFromFileSystemId(file_system_id_2));
+}
+
+TEST_F(SmbFileSystemIdTest, IsKerberosChromadReturnsCorrectly) {
+  const std::string kerberos_file_system_id =
+      "13@@smb://192.168.0.1/test@@kerberos_chromad";
+  const std::string non_kerberos_file_system_id = "12@@smb://192.168.0.0/test";
+
+  EXPECT_TRUE(IsKerberosChromadFileSystemId(kerberos_file_system_id));
+  EXPECT_FALSE(IsKerberosChromadFileSystemId(non_kerberos_file_system_id));
 }
 
 }  // namespace smb_client

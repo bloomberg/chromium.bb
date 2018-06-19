@@ -13,7 +13,10 @@ namespace chromeos {
 namespace smb_client {
 
 // Creates a FileSystemId by concatenating |mount_id| and |share_path| with a
-// delimiter.
+// delimiter. If |is_kerberos_chromad| is set, an additional symbol is appended.
+std::string CreateFileSystemId(int32_t mount_id,
+                               const base::FilePath& share_path,
+                               bool is_kerberos_chromad);
 std::string CreateFileSystemId(int32_t mount_id,
                                const base::FilePath& share_path);
 
@@ -24,6 +27,10 @@ int32_t GetMountIdFromFileSystemId(const std::string& file_system_id);
 // Returns the SharePath component of a |file_system_id|. |file_system_id| must
 // be well-formed (e.g. 2@@smb://192.168.1.1/testShare).
 base::FilePath GetSharePathFromFileSystemId(const std::string& file_system_id);
+
+// Returns whether |file_system_id| corresponds to a share that was mounted
+// using ChromAD Kerberos.
+bool IsKerberosChromadFileSystemId(const std::string& file_system_id);
 
 }  // namespace smb_client
 }  // namespace chromeos
