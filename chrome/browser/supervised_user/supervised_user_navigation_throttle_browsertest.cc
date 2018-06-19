@@ -83,7 +83,7 @@ bool SupervisedUserNavigationThrottleTest::IsInterstitialBeingShown(
   if (AreCommittedInterstitialsEnabled()) {
     base::string16 title;
     ui_test_utils::GetCurrentTabTitle(browser, &title);
-    return tab->GetController().GetActiveEntry()->GetPageType() ==
+    return tab->GetController().GetLastCommittedEntry()->GetPageType() ==
                content::PAGE_TYPE_ERROR &&
            title == base::ASCIIToUTF16("Site blocked");
   }
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserNavigationThrottleTest,
   controller.LoadURL(GURL("http://www.example.com"), content::Referrer(),
                      ui::PAGE_TRANSITION_TYPED, std::string());
   observer.Wait();
-  content::NavigationEntry* entry = controller.GetActiveEntry();
+  content::NavigationEntry* entry = controller.GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
   EXPECT_FALSE(observer.last_navigation_succeeded());

@@ -108,7 +108,7 @@ class SupervisedUserTest : public InProcessBrowserTest,
     if (AreCommittedInterstitialsEnabled()) {
       base::string16 title;
       ui_test_utils::GetCurrentTabTitle(browser, &title);
-      return tab->GetController().GetActiveEntry()->GetPageType() ==
+      return tab->GetController().GetLastCommittedEntry()->GetPageType() ==
                  content::PAGE_TYPE_ERROR &&
              title == base::ASCIIToUTF16("Site blocked");
     }
