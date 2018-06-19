@@ -509,21 +509,23 @@ void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
 }
 
 bool BrowserNonClientFrameView::ShouldShowProfileIndicatorIcon() const {
-  // In Material Refresh, we use a toolbar button for all
-  // profile/incognito-related purposes.
+#if !defined(OS_CHROMEOS)
+  // Outside ChromeOS, in Material Refresh, we use a toolbar button for all
+  // profile/incognito-related purposes. ChromeOS uses it for teleportation (see
+  // below).
   if (MD::IsRefreshUi())
     return false;
+#endif  // !defined(OS_CHROMEOS)
 
   Browser* browser = browser_view()->browser();
   Profile* profile = browser->profile();
   const bool is_incognito =
       profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
 
-  // In the touch-optimized UI, we don't show the incognito icon in the browser
-  // frame. It's instead shown in the new tab button. However, we still show an
-  // avatar icon for the teleported browser windows between multi-user sessions
-  // (Chrome OS only). Note that you can't teleport an incognito window.
-  if (is_incognito && MD::IsTouchOptimizedUiEnabled())
+  // In newer material UIs we only show the avatar icon for the teleported
+  // browser windows between multi-user sessions (Chrome OS only). Note that you
+  // can't teleport an incognito window.
+  if (is_incognito && MD::IsNewerMaterialUi())
     return false;
 
 #if defined(OS_CHROMEOS)
