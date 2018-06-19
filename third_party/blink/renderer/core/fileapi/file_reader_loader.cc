@@ -323,6 +323,7 @@ void FileReaderLoader::OnComplete(int32_t status, uint64_t data_length) {
   }
   if (data_length != total_bytes_) {
     Failed(FileError::kNotReadableErr, FailureType::kReadSizesIncorrect);
+    return;
   }
 
   received_on_complete_ = true;
