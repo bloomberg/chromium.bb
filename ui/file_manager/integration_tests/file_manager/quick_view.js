@@ -77,11 +77,12 @@ testcase.openQuickView = function() {
   let appId;
 
   StepsRunner.run([
-    // Open Files app on local downloads.
+    // Open Files app on Downloads containing ENTRIES.hello.
     function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.hello], []);
     },
-    // Open a file in Quick View.
+    // Open the file in Quick View.
     function(results) {
       appId = results.windowId;
       const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
@@ -100,11 +101,12 @@ testcase.closeQuickView = function() {
   let appId;
 
   StepsRunner.run([
-    // Open Files app on local downloads.
+    // Open Files app on Downloads containing ENTRIES.hello.
     function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.hello], []);
     },
-    // Open a file in Quick View.
+    // Open the file in Quick View.
     function(results) {
       appId = results.windowId;
       const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
@@ -127,11 +129,12 @@ testcase.openQuickViewDrive = function() {
   let appId;
 
   StepsRunner.run([
-    // Open Files app on Drive.
+    // Open Files app on Drive containing ENTRIES.hello.
     function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
+      setupAndWaitUntilReady(
+          null, RootPath.DRIVE, this.next, [], [ENTRIES.hello]);
     },
-    // Open a file in Quick View.
+    // Open the file in Quick View.
     function(results) {
       appId = results.windowId;
       const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
@@ -152,17 +155,18 @@ testcase.openQuickViewUsb = function() {
   const USB_VOLUME_QUERY = '#directory-tree [volume-type-icon="removable"]';
 
   StepsRunner.run([
-    // Open Files app on local Downloads.
+    // Open Files app on Downloads containing ENTRIES.photos.
     function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.photos], []);
     },
-    // Mount an empty USB volume.
+    // Mount a USB volume.
     function(results) {
       appId = results.windowId;
       chrome.test.sendMessage(
-          JSON.stringify({name: 'mountFakeUsbEmpty'}), this.next);
+          JSON.stringify({name: 'mountFakeUsb'}), this.next);
     },
-    // Wait for USB volume to mount.
+    // Wait for the USB volume to mount.
     function() {
       remoteCall.waitForElement(appId, USB_VOLUME_QUERY).then(this.next);
     },
@@ -171,22 +175,14 @@ testcase.openQuickViewUsb = function() {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, [USB_VOLUME_QUERY], this.next);
     },
-    // Check: Files app is showing an empty USB volume.
+    // Check: the USB files should appear in the file list.
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
-      remoteCall.waitForFiles(appId, []).then(this.next);
-    },
-    // Add a file to the USB volume.
-    function() {
-      addEntries(['usb'], [ENTRIES.hello], this.next);
-    },
-    // Check: the file should appear in the USB volume.
-    function() {
-      const files = [ENTRIES.hello.getExpectedRow()];
+      const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
       remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
           .then(this.next);
     },
-    // Open the file in Quick View.
+    // Open a USB file in Quick View.
     function() {
       const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
       StepsRunner.run(openSteps).then(this.next);
@@ -206,9 +202,10 @@ testcase.openQuickViewMtp = function() {
   const MTP_VOLUME_QUERY = '#directory-tree [volume-type-icon="mtp"]';
 
   StepsRunner.run([
-    // Open Files app on local Downloads.
+    // Open Files app on Downloads containing ENTRIES.photos.
     function() {
-      setupAndWaitUntilReady(null, RootPath.DOWNLOADS, this.next);
+      setupAndWaitUntilReady(
+          null, RootPath.DOWNLOADS, this.next, [ENTRIES.photos], []);
     },
     // Mount a non-empty MTP volume.
     function(results) {
@@ -216,7 +213,7 @@ testcase.openQuickViewMtp = function() {
       chrome.test.sendMessage(
           JSON.stringify({name: 'mountFakeMtp'}), this.next);
     },
-    // Wait for MTP volume to mount.
+    // Wait for the MTP volume to mount.
     function() {
       remoteCall.waitForElement(appId, MTP_VOLUME_QUERY).then(this.next);
     },
@@ -225,14 +222,14 @@ testcase.openQuickViewMtp = function() {
       remoteCall.callRemoteTestUtil(
           'fakeMouseClick', appId, [MTP_VOLUME_QUERY], this.next);
     },
-    // Check: the expected files should appear in the MTP volume.
+    // Check: the MTP files should appear in the file list.
     function(result) {
       chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
       const files = TestEntryInfo.getExpectedRows(BASIC_FAKE_ENTRY_SET);
       remoteCall.waitForFiles(appId, files, {ignoreLastModifiedTime: true})
           .then(this.next);
     },
-    // Open a file in Quick View.
+    // Open an MTP file in Quick View.
     function() {
       const openSteps = openQuickViewSteps(appId, ENTRIES.hello.nameText);
       StepsRunner.run(openSteps).then(this.next);
