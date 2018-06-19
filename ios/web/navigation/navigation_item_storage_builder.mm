@@ -39,7 +39,7 @@ NavigationItemStorageBuilder::BuildNavigationItemImpl(
   // GetVirtualURL() returns |url_| for the non-overridden case, this will also
   // update the virtual URL reported by this object.
   item->original_request_url_ = navigation_item_storage.virtualURL;
-  item->url_ = navigation_item_storage.virtualURL;
+  item->SetURL(navigation_item_storage.virtualURL);
   item->referrer_ = navigation_item_storage.referrer;
   item->timestamp_ = navigation_item_storage.timestamp;
   item->title_ = navigation_item_storage.title;
