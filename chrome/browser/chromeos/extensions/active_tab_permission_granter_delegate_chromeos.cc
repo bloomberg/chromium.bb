@@ -29,7 +29,7 @@ void ActiveTabPermissionGranterDelegateChromeOS::
   g_resolved_callback = callback;
 }
 
-bool ActiveTabPermissionGranterDelegateChromeOS::ShouldGrantActiveTab(
+bool ActiveTabPermissionGranterDelegateChromeOS::ShouldGrantActiveTabOrPrompt(
     const Extension* extension,
     content::WebContents* web_contents) {
   permission_helper::RequestResolvedCallback callback;

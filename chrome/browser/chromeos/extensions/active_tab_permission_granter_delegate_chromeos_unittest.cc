@@ -54,7 +54,7 @@ void ActiveTabPermissionGranterDelegateChromeOSTest::TearDown() {
 
 TEST_F(ActiveTabPermissionGranterDelegateChromeOSTest, GrantedForWhitelisted) {
   auto extension = CreateExtension(kWhitelistedId);
-  EXPECT_TRUE(delegate_.ShouldGrantActiveTab(extension.get(), nullptr));
+  EXPECT_TRUE(delegate_.ShouldGrantActiveTabOrPrompt(extension.get(), nullptr));
 }
 
 TEST_F(ActiveTabPermissionGranterDelegateChromeOSTest,
@@ -63,11 +63,13 @@ TEST_F(ActiveTabPermissionGranterDelegateChromeOSTest,
   // Deny the permission request.
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::CANCEL);
   // First request is always rejected (by design).
-  EXPECT_FALSE(delegate_.ShouldGrantActiveTab(extension.get(), nullptr));
+  EXPECT_FALSE(
+      delegate_.ShouldGrantActiveTabOrPrompt(extension.get(), nullptr));
   // Spin the loop, allowing the dialog to be resolved.
   base::RunLoop().RunUntilIdle();
   // Dialog result is propagated here, permission request is rejected.
-  EXPECT_FALSE(delegate_.ShouldGrantActiveTab(extension.get(), nullptr));
+  EXPECT_FALSE(
+      delegate_.ShouldGrantActiveTabOrPrompt(extension.get(), nullptr));
 }
 
 TEST_F(ActiveTabPermissionGranterDelegateChromeOSTest,
@@ -75,10 +77,11 @@ TEST_F(ActiveTabPermissionGranterDelegateChromeOSTest,
   auto extension = CreateExtension(kNonWhitelistedId);
   // Allow the permission request.
   ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
-  EXPECT_FALSE(delegate_.ShouldGrantActiveTab(extension.get(), nullptr));
+  EXPECT_FALSE(
+      delegate_.ShouldGrantActiveTabOrPrompt(extension.get(), nullptr));
   base::RunLoop().RunUntilIdle();
   // The permission request is granted now.
-  EXPECT_TRUE(delegate_.ShouldGrantActiveTab(extension.get(), nullptr));
+  EXPECT_TRUE(delegate_.ShouldGrantActiveTabOrPrompt(extension.get(), nullptr));
 }
 
 }  // namespace extensions
