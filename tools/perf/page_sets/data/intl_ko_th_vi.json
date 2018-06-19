@@ -1,45 +1,72 @@
 {
     "archives": {
-        "http://kenh14.vn/home.chn": {
+        "http://kenh14.vn/home.chn_cold": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://news.zing.vn/the-gioi/ba-dam-thep-margaret-thatcher-qua-doi/a312895.html#home_noibat1": {
+        }, 
+        "http://kenh14.vn/home.chn_warm": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://pantip.com/": {
+        }, 
+        "http://pantip.com/_cold": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://thaimisc.com/": {
+        }, 
+        "http://pantip.com/_warm": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://us.24h.com.vn/": {
+        }, 
+        "http://thaimisc.com/_cold": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://vietnamnet.vn/": {
+        }, 
+        "http://thaimisc.com/_warm": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://vnexpress.net/": {
+        }, 
+        "http://us.24h.com.vn/_cold": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://www.chosun.com/": {
+        }, 
+        "http://us.24h.com.vn/_warm": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://www.danawa.com/": {
+        }, 
+        "http://vietnamnet.vn/_cold": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://www.daum.net/": {
+        }, 
+        "http://vietnamnet.vn/_warm": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://www.donga.com/": {
+        }, 
+        "http://vnexpress.net/_cold": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://www.naver.com/": {
+        }, 
+        "http://vnexpress.net/_warm": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
-        },
-        "http://www.sanook.com/": {
+        }, 
+        "http://www.chosun.com/_cold": {
+            "DEFAULT": "intl_ko_th_vi_000.wprgo"
+        }, 
+        "http://www.chosun.com/_warm": {
+            "DEFAULT": "intl_ko_th_vi_000.wprgo"
+        }, 
+        "http://www.danawa.com/_cold": {
+            "DEFAULT": "intl_ko_th_vi_000.wprgo"
+        }, 
+        "http://www.danawa.com/_warm": {
+            "DEFAULT": "intl_ko_th_vi_000.wprgo"
+        }, 
+        "http://www.daum.net/_cold": {
+            "DEFAULT": "intl_ko_th_vi_000.wprgo"
+        }, 
+        "http://www.daum.net/_warm": {
+            "DEFAULT": "intl_ko_th_vi_000.wprgo"
+        }, 
+        "http://www.donga.com/_cold": {
+            "DEFAULT": "intl_ko_th_vi_000.wprgo"
+        }, 
+        "http://www.donga.com/_warm": {
+            "DEFAULT": "intl_ko_th_vi_000.wprgo"
+        }, 
+        "http://www.naver.com/_cold": {
+            "DEFAULT": "intl_ko_th_vi_000.wprgo"
+        }, 
+        "http://www.naver.com/_warm": {
             "DEFAULT": "intl_ko_th_vi_000.wprgo"
         }
-    },
-    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
+    }, 
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
     "platform_specific": true
 }

@@ -13,7 +13,6 @@ import page_sets
 
 from benchmarks import loading_metrics_category
 from telemetry import benchmark
-from telemetry.page import cache_temperature
 from telemetry.web_perf import timeline_based_measurement
 
 class _PageCyclerV2(perf_benchmark.PerfBenchmark):
@@ -38,9 +37,7 @@ class PageCyclerV2Typical25(_PageCyclerV2):
     return 'page_cycler_v2.typical_25'
 
   def CreateStorySet(self, options):
-    return page_sets.Typical25PageSet(run_no_page_interactions=True,
-        cache_temperatures=[
-          cache_temperature.COLD, cache_temperature.WARM])
+    return page_sets.Typical25PageSet()
 
 
 @benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
@@ -56,8 +53,7 @@ class PageCyclerV2IntlArFaHe(_PageCyclerV2):
     return 'page_cycler_v2.intl_ar_fa_he'
 
   def CreateStorySet(self, options):
-    return page_sets.IntlArFaHePageSet(cache_temperatures=[
-          cache_temperature.COLD, cache_temperature.WARM])
+    return page_sets.IntlArFaHePageSet()
 
 
 @benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
@@ -73,8 +69,7 @@ class PageCyclerV2IntlEsFrPtBr(_PageCyclerV2):
     return 'page_cycler_v2.intl_es_fr_pt-BR'
 
   def CreateStorySet(self, options):
-    return page_sets.IntlEsFrPtBrPageSet(cache_temperatures=[
-          cache_temperature.COLD, cache_temperature.WARM])
+    return page_sets.IntlEsFrPtBrPageSet()
 
 
 @benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
@@ -90,8 +85,7 @@ class PageCyclerV2IntlHiRu(_PageCyclerV2):
     return 'page_cycler_v2.intl_hi_ru'
 
   def CreateStorySet(self, options):
-    return page_sets.IntlHiRuPageSet(cache_temperatures=[
-          cache_temperature.COLD, cache_temperature.WARM])
+    return page_sets.IntlHiRuPageSet()
 
 
 @benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
@@ -106,8 +100,7 @@ class PageCyclerV2IntlJaZh(_PageCyclerV2):
     return 'page_cycler_v2.intl_ja_zh'
 
   def CreateStorySet(self, options):
-    return page_sets.IntlJaZhPageSet(cache_temperatures=[
-          cache_temperature.COLD, cache_temperature.WARM])
+    return page_sets.IntlJaZhPageSet()
 
 
 @benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
@@ -123,5 +116,4 @@ class PageCyclerV2IntlKoThVi(_PageCyclerV2):
     return 'page_cycler_v2.intl_ko_th_vi'
 
   def CreateStorySet(self, options):
-    return page_sets.IntlKoThViPageSet(cache_temperatures=[
-          cache_temperature.COLD, cache_temperature.WARM])
+    return page_sets.IntlKoThViPageSet()
