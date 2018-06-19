@@ -32,6 +32,10 @@ class CommandLineConfigPolicy {
   // The override URL for updates. Can be empty.
   virtual GURL UrlSourceOverride() const;
 
+  // If non-zero, time interval in seconds until the first component
+  // update check.
+  virtual int InitialDelay() const;
+
   virtual ~CommandLineConfigPolicy() {}
 };
 

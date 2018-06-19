@@ -41,7 +41,8 @@ ConfiguratorImpl::ConfiguratorImpl(
       fast_update_(config_policy.FastUpdate()),
       pings_enabled_(config_policy.PingsEnabled()),
       require_encryption_(require_encryption),
-      url_source_override_(config_policy.UrlSourceOverride()) {
+      url_source_override_(config_policy.UrlSourceOverride()),
+      initial_delay_(config_policy.InitialDelay()) {
   if (config_policy.TestRequest())
     extra_info_ += "testrequest=\"1\"";
 }
@@ -49,6 +50,8 @@ ConfiguratorImpl::ConfiguratorImpl(
 ConfiguratorImpl::~ConfiguratorImpl() {}
 
 int ConfiguratorImpl::InitialDelay() const {
+  if (initial_delay_)
+    return initial_delay_;
   return fast_update_ ? 10 : (6 * kDelayOneMinute);
 }
 

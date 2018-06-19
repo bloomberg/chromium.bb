@@ -91,12 +91,13 @@ class ConfiguratorImpl {
 
  private:
   std::string extra_info_;
-  bool background_downloads_enabled_;
-  bool deltas_enabled_;
-  bool fast_update_;
-  bool pings_enabled_;
-  bool require_encryption_;
-  GURL url_source_override_;
+  const bool background_downloads_enabled_;
+  const bool deltas_enabled_;
+  const bool fast_update_;
+  const bool pings_enabled_;
+  const bool require_encryption_;
+  const GURL url_source_override_;
+  const int initial_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfiguratorImpl);
 };
