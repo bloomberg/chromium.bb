@@ -38,6 +38,7 @@ source_set("test_sources") {
     "core_test_base.cc",
     "core_test_base.h",
     "core_unittest.cc",
+    "embedder_unittest.cc",
     "handle_table_unittest.cc",
     "message_pipe_unittest.cc",
     "message_unittest.cc",
@@ -48,6 +49,10 @@ source_set("test_sources") {
     "signals_unittest.cc",
     "trap_unittest.cc",
   ]
+
+  if (is_posix) {
+    sources += [ "platform_channel_pair_posix_unittest.cc" ]
+  }
 
   if (!is_ios) {
     sources += [
@@ -63,7 +68,7 @@ source_set("test_sources") {
     "//base",
     "//base/test:test_support",
     "//mojo/edk",
-    "//mojo/edk/embedder:embedder_unittests",
+    "//mojo/edk:edk_internal",
     "//mojo/edk/system/ports:tests",
     "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",
@@ -71,6 +76,4 @@ source_set("test_sources") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  allow_circular_includes_from = [ "//mojo/edk/embedder:embedder_unittests" ]
 }

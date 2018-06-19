@@ -11,7 +11,6 @@ include_rules = [
   "+crypto",
   "+google_apis/gaia",
   "+media/base/video_facing.h",
-  "+mojo/edk/embedder/embedder.h",
   "+net",
   "+third_party/cros_system_api",
   "+third_party/protobuf",
@@ -19,3 +18,9 @@ include_rules = [
   # Some targets may not have any UI, so explictly exclude src/ui.
   "-ui",
 ]
+
+specific_include_rules = {
+  ".*run_all_unittests.cc": [
+    "+mojo/edk/embedder",
+  ]
+}

@@ -141,15 +141,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
       const std::vector<Dispatcher::DispatcherInTransit>& dispatchers,
       bool in_transit);
 
-  // See "mojo/edk/embedder/embedder.h" for more information on these functions.
-  MojoResult CreateInternalPlatformHandleWrapper(
-      ScopedInternalPlatformHandle platform_handle,
-      MojoHandle* wrapper_handle);
-
-  MojoResult PassWrappedInternalPlatformHandle(
-      MojoHandle wrapper_handle,
-      ScopedInternalPlatformHandle* platform_handle);
-
   // Requests that the EDK tear itself down. |callback| will be called once
   // the shutdown process is complete. Note that |callback| is always called
   // asynchronously on the calling thread if said thread is running a message

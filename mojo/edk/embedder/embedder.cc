@@ -34,20 +34,6 @@ void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback) {
   Core::Get()->SetDefaultProcessErrorCallback(callback);
 }
 
-MojoResult CreateInternalPlatformHandleWrapper(
-    ScopedInternalPlatformHandle platform_handle,
-    MojoHandle* platform_handle_wrapper_handle) {
-  return Core::Get()->CreateInternalPlatformHandleWrapper(
-      std::move(platform_handle), platform_handle_wrapper_handle);
-}
-
-MojoResult PassWrappedInternalPlatformHandle(
-    MojoHandle platform_handle_wrapper_handle,
-    ScopedInternalPlatformHandle* platform_handle) {
-  return Core::Get()->PassWrappedInternalPlatformHandle(
-      platform_handle_wrapper_handle, platform_handle);
-}
-
 scoped_refptr<base::TaskRunner> GetIOTaskRunner() {
   return Core::Get()->GetNodeController()->io_task_runner();
 }

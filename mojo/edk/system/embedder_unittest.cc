@@ -24,15 +24,11 @@
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
-#include "mojo/edk/embedder/peer_connection.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
 #include "mojo/edk/system/test_utils.h"
@@ -40,6 +36,7 @@
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -349,12 +346,10 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessSharedMemoryClient,
 enum class HandleType {
   POSIX,
   MACH,
-  MACH_NULL,
 };
 
 const HandleType kTestHandleTypes[] = {
-    HandleType::MACH,  HandleType::MACH_NULL, HandleType::POSIX,
-    HandleType::POSIX, HandleType::MACH,
+    HandleType::MACH, HandleType::POSIX, HandleType::POSIX, HandleType::MACH,
 };
 
 // Test that we can mix file descriptors and mach port handles.
@@ -362,22 +357,17 @@ TEST_F(EmbedderTest, MultiprocessMixMachAndFds) {
   const size_t kShmSize = 1234;
   RunTestClient("MultiprocessMixMachAndFdsClient", [&](MojoHandle server_mp) {
     // 1. Create fds or Mach objects and mojo handles from them.
-    MojoHandle platform_handles[arraysize(kTestHandleTypes)];
-    for (size_t i = 0; i < arraysize(kTestHandleTypes); i++) {
+    MojoHandle platform_handles[base::size(kTestHandleTypes)];
+    for (size_t i = 0; i < base::size(kTestHandleTypes); i++) {
       const auto type = kTestHandleTypes[i];
-      ScopedInternalPlatformHandle scoped_handle;
+      PlatformHandle scoped_handle;
       if (type == HandleType::POSIX) {
         // The easiest source of fds is opening /dev/null.
         base::File file(base::FilePath("/dev/null"),
                         base::File::FLAG_OPEN | base::File::FLAG_WRITE);
         ASSERT_TRUE(file.IsValid());
-        scoped_handle.reset(InternalPlatformHandle(file.TakePlatformFile()));
-        EXPECT_EQ(InternalPlatformHandle::Type::POSIX,
-                  scoped_handle.get().type);
-      } else if (type == HandleType::MACH_NULL) {
-        scoped_handle.reset(
-            InternalPlatformHandle(static_cast<mach_port_t>(MACH_PORT_NULL)));
-        EXPECT_EQ(InternalPlatformHandle::Type::MACH, scoped_handle.get().type);
+        scoped_handle = PlatformHandle(base::ScopedFD(file.TakePlatformFile()));
+        ASSERT_TRUE(scoped_handle.is_valid_fd());
       } else {
         auto shared_memory = base::UnsafeSharedMemoryRegion::Create(kShmSize);
         ASSERT_TRUE(shared_memory.IsValid());
@@ -385,17 +375,16 @@ TEST_F(EmbedderTest, MultiprocessMixMachAndFds) {
             base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
                 std::move(shared_memory))
                 .PassPlatformHandle();
-        scoped_handle.reset(InternalPlatformHandle(shm_handle.release()));
-        EXPECT_EQ(InternalPlatformHandle::Type::MACH, scoped_handle.get().type);
+        scoped_handle = PlatformHandle(std::move(shm_handle));
+        ASSERT_TRUE(scoped_handle.is_valid_mach_port());
       }
-      ASSERT_EQ(MOJO_RESULT_OK,
-                CreateInternalPlatformHandleWrapper(std::move(scoped_handle),
-                                                    platform_handles + i));
+      platform_handles[i] =
+          WrapPlatformHandle(std::move(scoped_handle)).release().value();
     }
 
     // 2. Send all the handles to the child.
     WriteMessageWithHandles(server_mp, "hello", platform_handles,
-                            arraysize(kTestHandleTypes));
+                            base::size(kTestHandleTypes));
 
     // 3. Read a message from |server_mp|.
     EXPECT_EQ("bye", ReadMessage(server_mp));
@@ -405,7 +394,7 @@ TEST_F(EmbedderTest, MultiprocessMixMachAndFds) {
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessMixMachAndFdsClient,
                                   EmbedderTest,
                                   client_mp) {
-  const int kNumHandles = arraysize(kTestHandleTypes);
+  const int kNumHandles = base::size(kTestHandleTypes);
   MojoHandle platform_handles[kNumHandles];
 
   // 1. Read from |client_mp|, which should have a message containing
@@ -416,20 +405,12 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessMixMachAndFdsClient,
   // 2. Extract each handle, and verify the type.
   for (int i = 0; i < kNumHandles; i++) {
     const auto type = kTestHandleTypes[i];
-    ScopedInternalPlatformHandle scoped_handle;
-    ASSERT_EQ(MOJO_RESULT_OK, PassWrappedInternalPlatformHandle(
-                                  platform_handles[i], &scoped_handle));
+    PlatformHandle scoped_handle =
+        UnwrapPlatformHandle(ScopedHandle(Handle(platform_handles[i])));
     if (type == HandleType::POSIX) {
-      EXPECT_NE(0, scoped_handle.get().handle);
-      EXPECT_EQ(InternalPlatformHandle::Type::POSIX, scoped_handle.get().type);
-    } else if (type == HandleType::MACH_NULL) {
-      EXPECT_EQ(static_cast<mach_port_t>(MACH_PORT_NULL),
-                scoped_handle.get().port);
-      EXPECT_EQ(InternalPlatformHandle::Type::MACH, scoped_handle.get().type);
+      EXPECT_TRUE(scoped_handle.is_valid_fd());
     } else {
-      EXPECT_NE(static_cast<mach_port_t>(MACH_PORT_NULL),
-                scoped_handle.get().port);
-      EXPECT_EQ(InternalPlatformHandle::Type::MACH, scoped_handle.get().type);
+      EXPECT_TRUE(scoped_handle.is_valid_mach_port());
     }
   }
 

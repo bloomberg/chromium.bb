@@ -23,6 +23,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"

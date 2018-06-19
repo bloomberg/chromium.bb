@@ -13,9 +13,7 @@
 #include "chromeos/components/drivefs/pending_connection_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/named_platform_handle.h"
-#include "mojo/edk/embedder/named_platform_handle_utils.h"
+#include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/invitation.h"
@@ -26,19 +24,17 @@ namespace drivefs {
 namespace {
 
 void ConnectAsync(mojom::FakeDriveFsLauncherRequest request,
-                  mojo::edk::NamedPlatformHandle os_pipe) {
-  mojo::edk::ScopedInternalPlatformHandle os_pipe_handle =
-      mojo::edk::CreateClientHandle(os_pipe);
-  if (!os_pipe_handle.is_valid()) {
+                  mojo::NamedPlatformChannel::ServerName server_name) {
+  mojo::PlatformChannelEndpoint endpoint =
+      mojo::NamedPlatformChannel::ConnectToServer(server_name);
+  if (!endpoint.is_valid())
     return;
-  }
+
   mojo::OutgoingInvitation invitation;
   mojo::FuseMessagePipes(invitation.AttachMessagePipe("drivefs-launcher"),
                          request.PassMessagePipe());
-  mojo::OutgoingInvitation::Send(
-      std::move(invitation), base::kNullProcessHandle,
-      mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
-          base::ScopedFD(os_pipe_handle.release().handle))));
+  mojo::OutgoingInvitation::Send(std::move(invitation),
+                                 base::kNullProcessHandle, std::move(endpoint));
 }
 
 }  // namespace
@@ -59,11 +55,10 @@ FakeDriveFsLauncherClient::FakeDriveFsLauncherClient(
     const base::FilePath& socket_path)
     : chroot_path_(chroot_path),
       socket_path_(chroot_path_.Append(socket_path)) {
-  mojo::edk::NamedPlatformHandle os_pipe(socket_path_.value());
-
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindOnce(&ConnectAsync, mojo::MakeRequest(&launcher_), os_pipe));
+      base::BindOnce(&ConnectAsync, mojo::MakeRequest(&launcher_),
+                     socket_path_.value()));
 
   chromeos::DBusThreadManager* dbus_thread_manager =
       chromeos::DBusThreadManager::Get();

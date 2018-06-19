@@ -9,7 +9,6 @@
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"

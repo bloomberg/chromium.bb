@@ -264,36 +264,6 @@ void Core::ReleaseDispatchersForTransit(
     handles_->CancelTransit(dispatchers);
 }
 
-MojoResult Core::CreateInternalPlatformHandleWrapper(
-    ScopedInternalPlatformHandle platform_handle,
-    MojoHandle* wrapper_handle) {
-  MojoHandle h = AddDispatcher(
-      PlatformHandleDispatcher::Create(std::move(platform_handle)));
-  if (h == MOJO_HANDLE_INVALID)
-    return MOJO_RESULT_RESOURCE_EXHAUSTED;
-  *wrapper_handle = h;
-  return MOJO_RESULT_OK;
-}
-
-MojoResult Core::PassWrappedInternalPlatformHandle(
-    MojoHandle wrapper_handle,
-    ScopedInternalPlatformHandle* platform_handle) {
-  base::AutoLock lock(handles_->GetLock());
-  scoped_refptr<Dispatcher> d;
-  MojoResult result = handles_->GetAndRemoveDispatcher(wrapper_handle, &d);
-  if (result != MOJO_RESULT_OK)
-    return result;
-  if (d->GetType() == Dispatcher::Type::PLATFORM_HANDLE) {
-    PlatformHandleDispatcher* phd =
-        static_cast<PlatformHandleDispatcher*>(d.get());
-    *platform_handle = phd->PassInternalPlatformHandle();
-  } else {
-    result = MOJO_RESULT_INVALID_ARGUMENT;
-  }
-  d->Close();
-  return result;
-}
-
 void Core::RequestShutdown(const base::Closure& callback) {
   GetNodeController()->RequestShutdown(callback);
 }
@@ -1022,17 +992,36 @@ MojoResult Core::WrapInternalPlatformHandle(
   if (result != MOJO_RESULT_OK)
     return result;
 
-  return CreateInternalPlatformHandleWrapper(std::move(handle), mojo_handle);
+  MojoHandle h =
+      AddDispatcher(PlatformHandleDispatcher::Create(std::move(handle)));
+  if (h == MOJO_HANDLE_INVALID)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+  *mojo_handle = h;
+  return MOJO_RESULT_OK;
 }
 
 MojoResult Core::UnwrapInternalPlatformHandle(
     MojoHandle mojo_handle,
     const MojoUnwrapPlatformHandleOptions* options,
     MojoPlatformHandle* platform_handle) {
-  ScopedInternalPlatformHandle handle;
-  MojoResult result = PassWrappedInternalPlatformHandle(mojo_handle, &handle);
-  if (result != MOJO_RESULT_OK)
-    return result;
+  scoped_refptr<Dispatcher> dispatcher;
+  {
+    base::AutoLock lock(handles_->GetLock());
+    dispatcher = handles_->GetDispatcher(mojo_handle);
+    if (dispatcher->GetType() != Dispatcher::Type::PLATFORM_HANDLE)
+      return MOJO_RESULT_INVALID_ARGUMENT;
+
+    MojoResult result =
+        handles_->GetAndRemoveDispatcher(mojo_handle, &dispatcher);
+    if (result != MOJO_RESULT_OK)
+      return result;
+  }
+
+  PlatformHandleDispatcher* phd =
+      static_cast<PlatformHandleDispatcher*>(dispatcher.get());
+  ScopedInternalPlatformHandle handle = phd->PassInternalPlatformHandle();
+  phd->Close();
 
   return ScopedInternalPlatformHandleToMojoPlatformHandle(std::move(handle),
                                                           platform_handle);

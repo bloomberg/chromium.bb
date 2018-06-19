@@ -5,8 +5,8 @@
 #ifndef MOJO_EDK_EMBEDDER_SCOPED_IPC_SUPPORT_H_
 #define MOJO_EDK_EMBEDDER_SCOPED_IPC_SUPPORT_H_
 
+#include "base/component_export.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/edk/system/system_impl_export.h"
 
 namespace base {
 class TaskRunner;
@@ -18,7 +18,7 @@ namespace edk {
 // A simple class that initialized Mojo IPC support on construction and shuts
 // down IPC support on destruction, optionally blocking the destructor on clean
 // IPC shutdown completion.
-class MOJO_SYSTEM_IMPL_EXPORT ScopedIPCSupport {
+class COMPONENT_EXPORT(MOJO_EDK_EMBEDDER) ScopedIPCSupport {
  public:
   // ShutdownPolicy is a type for specifying the desired Mojo IPC support
   // shutdown behavior used during ScopedIPCSupport destruction.
