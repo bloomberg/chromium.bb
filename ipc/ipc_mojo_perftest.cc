@@ -22,7 +22,6 @@
 #include "ipc/ipc_test.mojom.h"
 #include "ipc/ipc_test_base.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/edk/test/multiprocess_test_helper.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"

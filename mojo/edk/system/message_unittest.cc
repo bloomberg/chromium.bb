@@ -11,10 +11,9 @@
 #include "base/numerics/safe_math.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/user_message_impl.h"
 #include "mojo/edk/test/mojo_test_base.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -815,11 +814,15 @@ TEST_F(MessageTest, ExtendPayloadWithHandlesAttached) {
 
   MojoHandle handles[5];
   CreateMessagePipe(&handles[0], &handles[1]);
-  PlatformChannelPair channel;
-  ASSERT_EQ(MOJO_RESULT_OK, CreateInternalPlatformHandleWrapper(
-                                channel.PassServerHandle(), &handles[2]));
-  ASSERT_EQ(MOJO_RESULT_OK, CreateInternalPlatformHandleWrapper(
-                                channel.PassClientHandle(), &handles[3]));
+  PlatformChannel channel;
+  handles[2] =
+      WrapPlatformHandle(channel.TakeLocalEndpoint().TakePlatformHandle())
+          .release()
+          .value();
+  handles[3] =
+      WrapPlatformHandle(channel.TakeRemoteEndpoint().TakePlatformHandle())
+          .release()
+          .value();
   handles[4] = SharedBufferHandle::Create(64).release().value();
 
   MojoMessageHandle message;
@@ -864,11 +867,15 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadAndIgnoreMessage, MessageTest, h) {
 TEST_F(MessageTest, ExtendPayloadWithHandlesAttachedViaExtension) {
   MojoHandle handles[5];
   CreateMessagePipe(&handles[0], &handles[4]);
-  PlatformChannelPair channel;
-  ASSERT_EQ(MOJO_RESULT_OK, CreateInternalPlatformHandleWrapper(
-                                channel.PassServerHandle(), &handles[1]));
-  ASSERT_EQ(MOJO_RESULT_OK, CreateInternalPlatformHandleWrapper(
-                                channel.PassClientHandle(), &handles[2]));
+  PlatformChannel channel;
+  handles[1] =
+      WrapPlatformHandle(channel.TakeLocalEndpoint().TakePlatformHandle())
+          .release()
+          .value();
+  handles[2] =
+      WrapPlatformHandle(channel.TakeRemoteEndpoint().TakePlatformHandle())
+          .release()
+          .value();
   handles[3] = SharedBufferHandle::Create(64).release().value();
 
   MojoMessageHandle message;

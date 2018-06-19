@@ -12,8 +12,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 #include <sys/epoll.h>
 
@@ -47,17 +46,14 @@ void RunWithScopedHandle(base::OnceCallback<void(mojo::ScopedHandle)> callback,
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  mojo::edk::ScopedInternalPlatformHandle platform_handle{
-      mojo::edk::InternalPlatformHandle(fd.value().release())};
-  MojoHandle wrapped_handle = MOJO_HANDLE_INVALID;
-  MojoResult result = mojo::edk::CreateInternalPlatformHandleWrapper(
-      std::move(platform_handle), &wrapped_handle);
-  if (result != MOJO_RESULT_OK) {
-    LOG(ERROR) << "Failed to wrap handle: " << result;
+  mojo::ScopedHandle wrapped_handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd.value())));
+  if (!wrapped_handle.is_valid()) {
+    LOG(ERROR) << "Failed to wrap handle";
     std::move(callback).Run(mojo::ScopedHandle());
     return;
   }
-  std::move(callback).Run(mojo::ScopedHandle(mojo::Handle(wrapped_handle)));
+  std::move(callback).Run(std::move(wrapped_handle));
 }
 
 }  // namespace

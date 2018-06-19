@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/files/scoped_file.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace mojo {

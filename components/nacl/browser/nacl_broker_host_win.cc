@@ -4,6 +4,8 @@
 
 #include "components/nacl/browser/nacl_broker_host_win.h"
 
+#include <windows.h>
+
 #include <memory>
 
 #include "base/base_switches.h"

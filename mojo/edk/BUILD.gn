@@ -11,21 +11,39 @@ component("edk") {
   output_name = "mojo_edk"
 
   public = [
+    "embedder/configuration.h",
     "embedder/embedder.h",
-    "embedder/peer_connection.h",
+    "embedder/scoped_ipc_support.h",
   ]
 
   sources = [
     "embedder/embedder.cc",
-    "embedder/peer_connection.cc",
+    "embedder/scoped_ipc_support.cc",
   ]
 
-  defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
+  defines = [ "IS_MOJO_EDK_EMBEDDER_IMPL" ]
 
   public_deps = [
+    "//base",
+  ]
+
+  deps = [
+    ":edk_internal",
+    "//mojo/public/c/system",
+  ]
+}
+
+component("edk_internal") {
+  output_name = "mojo_edk_internal"
+  public_deps = [
     ":impl_for_edk",
-    "//mojo/public/cpp/platform",
-    "//mojo/public/cpp/system",
+  ]
+  defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
+  visibility = [
+    ":edk",
+    "//mojo:*",
+    "//mojo/edk/embedder:embedder_unittests",
+    "//mojo/edk/system:test_sources",
   ]
 }
 
@@ -42,7 +60,7 @@ template("core_impl_source_set") {
     if (invoker.for_mojo_core) {
       visibility = [ ":mojo_core" ]
     } else {
-      visibility = [ ":edk" ]
+      visibility = [ ":edk_internal" ]
     }
 
     public = [
@@ -56,7 +74,6 @@ template("core_impl_source_set") {
       "embedder/platform_handle.h",
       "embedder/platform_handle_utils.h",
       "embedder/process_error_callback.h",
-      "embedder/scoped_ipc_support.h",
       "embedder/scoped_platform_handle.h",
       "embedder/transport_protocol.h",
       "system/channel.h",
@@ -95,7 +112,6 @@ template("core_impl_source_set") {
       "embedder/platform_handle.cc",
       "embedder/platform_handle_utils.cc",
       "embedder/platform_handle_utils_win.cc",
-      "embedder/scoped_ipc_support.cc",
       "system/atomic_flag.h",
       "system/broker.h",
       "system/broker_win.cc",
