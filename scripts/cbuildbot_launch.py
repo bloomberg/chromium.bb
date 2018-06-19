@@ -210,9 +210,9 @@ def _MaybeCleanDistfiles(repo, distfiles_ts, metrics_fields):
   Returns:
     The new distfiles_ts to persist in state.
   """
-
+  # distfiles_ts can be None for a fresh environment, which means clean.
   if distfiles_ts is None:
-    return None
+    return time.time()
 
   distfiles_age = (time.time() - distfiles_ts) / 3600.0
   if distfiles_age < _DISTFILES_CACHE_EXPIRY_HOURS:
@@ -224,8 +224,9 @@ def _MaybeCleanDistfiles(repo, distfiles_ts, metrics_fields):
                 ignore_missing=True, sudo=True)
   metrics.Counter(METRIC_DISTFILES_CLEANUP).increment(
       field(metrics_fields, reason='cache_expired'))
+
   # Cleaned cache, so reset distfiles_ts
-  return None
+  return time.time()
 
 
 @StageDecorator
@@ -268,7 +269,7 @@ def CleanBuildRoot(root, repo, metrics_fields, build_state):
       chroot_dir = os.path.join(repo.directory, constants.DEFAULT_CHROOT_DIR)
       if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
         cros_sdk_lib.CleanupChrootMount(chroot_dir, delete_image=True)
-      osutils.RmDir(chroot_dir, ignore_missing=True, sudo=True)
+        osutils.RmDir(chroot_dir, ignore_missing=True, sudo=True)
 
       logging.info('Remove Chrome checkout.')
       osutils.RmDir(os.path.join(repo.directory, '.cache', 'distfiles'),
@@ -288,8 +289,6 @@ def CleanBuildRoot(root, repo, metrics_fields, build_state):
 
   # Ensure buildroot exists. Save the state we are prepped for.
   osutils.SafeMakedirs(repo.directory)
-  if not build_state.distfiles_ts:
-    build_state.distfiles_ts = time.time()
   SetLastBuildState(root, build_state)
 
 
