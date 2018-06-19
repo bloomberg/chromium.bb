@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/engine_impl/syncer_util.h"
 #include "components/sync/syncable/entry.h"
@@ -276,8 +277,7 @@ void Traversal::AddDeletedParents(const std::set<int64_t>& ready_unsynced_set,
       // We're not interested in non-deleted parents.
       break;
     }
-    if (std::find(traversed.begin(), traversed.end(), handle) !=
-        traversed.end()) {
+    if (base::ContainsValue(traversed, handle)) {
       // We've already added this parent (and therefore all of its parents).
       // We can return early.
       break;
@@ -365,8 +365,7 @@ void Traversal::AddDeletes(const std::set<int64_t>& ready_unsynced_set) {
     if (HaveItem(handle))
       continue;
 
-    if (std::find(deletion_list.begin(), deletion_list.end(), handle) !=
-        deletion_list.end()) {
+    if (base::ContainsValue(deletion_list, handle)) {
       continue;
     }
 

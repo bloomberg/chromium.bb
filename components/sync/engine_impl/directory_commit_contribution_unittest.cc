@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
+#include "base/stl_util.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
@@ -100,10 +101,11 @@ class DirectoryCommitContributionTest : public ::testing::Test {
 // specified type.
 TEST_F(DirectoryCommitContributionTest, GatherByTypes) {
   int64_t pref1;
+  int64_t pref2;
   {
     syncable::WriteTransaction trans(FROM_HERE, syncable::UNITTEST, dir());
     pref1 = CreateUnsyncedItem(&trans, PREFERENCES, "pref1");
-    CreateUnsyncedItem(&trans, PREFERENCES, "pref2");
+    pref2 = CreateUnsyncedItem(&trans, PREFERENCES, "pref2");
     CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
@@ -112,11 +114,8 @@ TEST_F(DirectoryCommitContributionTest, GatherByTypes) {
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 5, &emitter));
   ASSERT_EQ(2U, cc->GetNumEntries());
 
-  const std::vector<int64_t>& metahandles = cc->metahandles_;
-  EXPECT_TRUE(std::find(metahandles.begin(), metahandles.end(), pref1) !=
-              metahandles.end());
-  EXPECT_TRUE(std::find(metahandles.begin(), metahandles.end(), pref1) !=
-              metahandles.end());
+  EXPECT_TRUE(base::ContainsValue(cc->metahandles_, pref1));
+  EXPECT_TRUE(base::ContainsValue(cc->metahandles_, pref2));
 
   cc->CleanUp();
 }
