@@ -308,6 +308,8 @@ class TranslatePrefs {
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, UnblockLanguage);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, AddToLanguageList);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, RemoveFromLanguageList);
+  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest,
+                           RemoveFromLanguageListClearsRecentLanguage);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, AddToLanguageListFeatureEnabled);
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest,
                            RemoveFromLanguageListFeatureEnabled);

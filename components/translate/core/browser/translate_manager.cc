@@ -311,6 +311,13 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
         ->ReportAcceptedAfterForceTriggerOnEnglishPages();
   }
 
+  // If the target language isn't in the chrome://settings/languages list, add
+  // it there. This way, it's obvious to the user that Chrome is remembering
+  // their choice, they can remove it from the list, and they'll send that
+  // language in the Accept-Language header, giving servers a chance to serve
+  // them pages in that language.
+  AddTargetLanguageToAcceptLanguages(target_lang);
+
   // Translation can be kicked by context menu against unsupported languages.
   // Unsupported language strings should be replaced with
   // kUnknownLanguageCode in order to send a translation request with enabling
@@ -595,6 +602,17 @@ bool TranslateManager::ShouldSuppressBubbleUI(
   }
 
   return false;
+}
+
+void TranslateManager::AddTargetLanguageToAcceptLanguages(
+    const std::string& target_language_code) {
+  auto prefs = translate_client_->GetTranslatePrefs();
+  std::vector<std::string> languages;
+  prefs->GetLanguageList(&languages);
+  if (std::find(languages.begin(), languages.end(), target_language_code) ==
+      languages.end()) {
+    prefs->AddToLanguageList(target_language_code, /*force_blocked=*/false);
+  }
 }
 
 }  // namespace translate

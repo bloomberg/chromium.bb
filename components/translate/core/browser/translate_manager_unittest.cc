@@ -556,6 +556,46 @@ TEST_F(TranslateManagerTest,
       translate::TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR, 1);
 }
 
+TEST_F(TranslateManagerTest, LanguageAddedToAcceptLanguagesAfterTranslation) {
+  manager_->set_application_locale("en");
+  TranslateManager::SetIgnoreMissingKeyForTesting(true);
+  mock_language_model_.details = {
+      MockLanguageModel::LanguageDetails("hi", 0.5),
+  };
+  ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
+      .WillByDefault(Return(true));
+  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
+      .WillByDefault(Return(&accept_langugages));
+
+  translate_manager_.reset(new translate::TranslateManager(
+      &mock_translate_client_, &mock_translate_ranker_, &mock_language_model_));
+
+  // Accept languages shouldn't contain "hi" before translating to that language
+  std::vector<std::string> languages;
+  mock_translate_client_.GetTranslatePrefs()->GetLanguageList(&languages);
+  EXPECT_EQ(languages.end(),
+            std::find(languages.begin(), languages.end(), "hi"));
+
+  base::HistogramTester histogram_tester;
+  prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
+  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+  network_notifier_.SimulateOnline();
+
+  translate_manager_->InitiateTranslation("en");
+  histogram_tester.ExpectUniqueSample(
+      kInitiationStatusName,
+      translate::TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR, 1);
+
+  translate_manager_->TranslatePage("en", "hi", false);
+
+  // Accept languages should now contain "hi" because the user chose to
+  // translate to it once.
+  mock_translate_client_.GetTranslatePrefs()->GetLanguageList(&languages);
+  EXPECT_NE(languages.end(),
+            std::find(languages.begin(), languages.end(), "hi"));
+}
+
 TEST_F(TranslateManagerTest, DontTranslateOffline) {
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
   translate_manager_.reset(new translate::TranslateManager(

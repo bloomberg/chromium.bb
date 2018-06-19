@@ -172,6 +172,9 @@ class TranslateManager {
                           const std::string& dst_lang,
                           const TranslatePrefs& translate_prefs);
 
+  void AddTargetLanguageToAcceptLanguages(
+      const std::string& target_language_code);
+
   // Sequence number of the current page.
   int page_seq_no_;
 
