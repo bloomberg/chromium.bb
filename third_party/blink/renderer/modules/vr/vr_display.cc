@@ -67,17 +67,17 @@ class VRDisplayFrameRequestCallback
   void Invoke(double high_res_time_ms) override {
     if (Id() != vr_display_->PendingMagicWindowVSyncId())
       return;
-    double monotonic_time;
+    TimeTicks monotonic_time;
     if (!vr_display_->GetDocument() || !vr_display_->GetDocument()->Loader()) {
-      monotonic_time = WTF::CurrentTimeTicksInSeconds();
+      monotonic_time = WTF::CurrentTimeTicks();
     } else {
       // Convert document-zero time back to monotonic time.
-      double reference_monotonic_time =
-          TimeTicksInSeconds(vr_display_->GetDocument()
-                                 ->Loader()
-                                 ->GetTiming()
-                                 .ReferenceMonotonicTime());
-      monotonic_time = (high_res_time_ms / 1000.0) + reference_monotonic_time;
+      TimeTicks reference_monotonic_time = vr_display_->GetDocument()
+                                               ->Loader()
+                                               ->GetTiming()
+                                               .ReferenceMonotonicTime();
+      monotonic_time = reference_monotonic_time +
+                       TimeDelta::FromMillisecondsD(high_res_time_ms);
     }
     vr_display_->OnMagicWindowVSync(monotonic_time);
   }
@@ -602,7 +602,7 @@ void VRDisplay::BeginPresent() {
   // Run window.rAF once manually so that applications get a chance to
   // schedule a VRDisplay.rAF in case they do so only while presenting.
   if (!pending_vrdisplay_raf_ && !capabilities_->hasExternalDisplay()) {
-    double timestamp = WTF::CurrentTimeTicksInSeconds();
+    TimeTicks timestamp = WTF::CurrentTimeTicks();
     Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
         FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
                              WrapWeakPersistent(this), timestamp));
@@ -849,7 +849,7 @@ void VRDisplay::OnDeactivate(
       EventTypeNames::vrdisplaydeactivate, this, reason));
 }
 
-void VRDisplay::ProcessScheduledWindowAnimations(double timestamp) {
+void VRDisplay::ProcessScheduledWindowAnimations(TimeTicks timestamp) {
   TRACE_EVENT1("gpu", "VRDisplay::window.rAF", "frame", vr_frame_id_);
   auto* doc = navigator_vr_->GetDocument();
   if (!doc)
@@ -860,8 +860,7 @@ void VRDisplay::ProcessScheduledWindowAnimations(double timestamp) {
 
   bool had_pending_vrdisplay_raf = pending_vrdisplay_raf_;
   // TODO(klausw): update timestamp based on scheduling delay?
-  page->Animator().ServiceScriptedAnimations(
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp));
+  page->Animator().ServiceScriptedAnimations(timestamp);
 
   if (had_pending_vrdisplay_raf != pending_vrdisplay_raf_) {
     DVLOG(1) << __FUNCTION__
@@ -879,7 +878,7 @@ void VRDisplay::ProcessScheduledWindowAnimations(double timestamp) {
   }
 }
 
-void VRDisplay::ProcessScheduledAnimations(double timestamp) {
+void VRDisplay::ProcessScheduledAnimations(TimeTicks timestamp) {
   DVLOG(2) << __FUNCTION__;
   // Check if we still have a valid context, the animation controller
   // or document may have disappeared since we scheduled this.
@@ -905,8 +904,7 @@ void VRDisplay::ProcessScheduledAnimations(double timestamp) {
     base::AutoReset<bool> animating(&in_animation_frame_, true);
     pending_vrdisplay_raf_ = false;
     did_submit_this_frame_ = false;
-    scripted_animation_controller_->ServiceScriptedAnimations(
-        base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp));
+    scripted_animation_controller_->ServiceScriptedAnimations(timestamp);
     // If presenting and the script didn't call SubmitFrame, let the device
     // side know so that it can cleanly reuse resources and make appropriate
     // timing decisions. Note that is_presenting_ could become false during
@@ -971,10 +969,10 @@ void VRDisplay::OnPresentingVSync(
   // the interface being waited on.
   Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledAnimations,
-                           WrapWeakPersistent(this), time_delta.InSecondsF()));
+                           WrapWeakPersistent(this), TimeTicks() + time_delta));
 }
 
-void VRDisplay::OnMagicWindowVSync(double timestamp) {
+void VRDisplay::OnMagicWindowVSync(TimeTicks timestamp) {
   DVLOG(2) << __FUNCTION__;
   pending_magic_window_vsync_ = false;
   pending_magic_window_vsync_id_ = -1;
