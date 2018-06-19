@@ -442,11 +442,6 @@ void PaintOpWriter::WriteData(size_t bytes, const void* input) {
   remaining_bytes_ -= bytes;
 }
 
-void PaintOpWriter::WriteArray(size_t count, const SkPoint* input) {
-  size_t bytes = sizeof(SkPoint) * count;
-  WriteData(bytes, input);
-}
-
 void PaintOpWriter::AlignMemory(size_t alignment) {
   // Due to the math below, alignment must be a power of two.
   DCHECK_GT(alignment, 0u);

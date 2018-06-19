@@ -40,8 +40,6 @@ class CC_PAINT_EXPORT PaintOpWriter {
   // Write a sequence of arbitrary bytes.
   void WriteData(size_t bytes, const void* input);
 
-  void WriteArray(size_t count, const SkPoint* input);
-
   size_t size() const { return valid_ ? size_ - remaining_bytes_ : 0u; }
 
   void WriteSize(size_t size);
