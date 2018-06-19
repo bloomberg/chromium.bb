@@ -17,10 +17,13 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/browsing_data/counters/cache_counter.h"
 #include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
+#include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -132,6 +135,32 @@ bool CheckUserDirectoryForString(const std::string& hostname,
   return found;
 }
 
+class CookiesTreeObserver : public CookiesTreeModel::Observer {
+ public:
+  explicit CookiesTreeObserver(base::OnceClosure quit_closure)
+      : quit_closure_(std::move(quit_closure)) {}
+
+  void TreeModelBeginBatch(CookiesTreeModel* model) override {}
+
+  void TreeModelEndBatch(CookiesTreeModel* model) override {
+    std::move(quit_closure_).Run();
+  }
+
+  void TreeNodesAdded(ui::TreeModel* model,
+                      ui::TreeModelNode* parent,
+                      int start,
+                      int count) override {}
+  void TreeNodesRemoved(ui::TreeModel* model,
+                        ui::TreeModelNode* parent,
+                        int start,
+                        int count) override {}
+  void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override {
+  }
+
+ private:
+  base::OnceClosure quit_closure_;
+};
+
 }  // namespace
 
 class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
@@ -226,15 +255,18 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     EXPECT_EQ(0, GetSiteDataCount());
+    EXPECT_EQ(0, GetCookieTreeModelCount());
     EXPECT_FALSE(HasDataForType(type));
 
     SetDataForType(type);
     EXPECT_EQ(1, GetSiteDataCount());
+    EXPECT_EQ(1, GetCookieTreeModelCount());
     EXPECT_TRUE(HasDataForType(type));
 
     RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
                   delete_begin);
     EXPECT_EQ(0, GetSiteDataCount());
+    EXPECT_EQ(0, GetCookieTreeModelCount());
     EXPECT_FALSE(HasDataForType(type));
   }
 
@@ -242,16 +274,20 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   // creates an empty store, are counted and deleted correctly.
   void TestEmptySiteData(const std::string& type, base::Time delete_begin) {
     EXPECT_EQ(0, GetSiteDataCount());
+    EXPECT_EQ(0, GetCookieTreeModelCount());
     GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ(0, GetSiteDataCount());
+    EXPECT_EQ(0, GetCookieTreeModelCount());
     // Opening a store of this type creates a site data entry.
     EXPECT_FALSE(HasDataForType(type));
     EXPECT_EQ(1, GetSiteDataCount());
+    EXPECT_EQ(1, GetCookieTreeModelCount());
     RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA,
                   delete_begin);
 
     EXPECT_EQ(0, GetSiteDataCount());
+    EXPECT_EQ(0, GetCookieTreeModelCount());
   }
 
   bool HasDataForType(const std::string& type) {
@@ -274,6 +310,43 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
         ->CountAndDestroySelfWhenFinished();
     run_loop.Run();
     return count;
+  }
+
+  int GetCookieTreeModelCount() {
+    Profile* profile = browser()->profile();
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(profile);
+    content::IndexedDBContext* indexed_db_context =
+        storage_partition->GetIndexedDBContext();
+    content::ServiceWorkerContext* service_worker_context =
+        storage_partition->GetServiceWorkerContext();
+    content::CacheStorageContext* cache_storage_context =
+        storage_partition->GetCacheStorageContext();
+    storage::FileSystemContext* file_system_context =
+        storage_partition->GetFileSystemContext();
+    auto container = std::make_unique<LocalDataContainer>(
+        new BrowsingDataCookieHelper(storage_partition),
+        new BrowsingDataDatabaseHelper(profile),
+        new BrowsingDataLocalStorageHelper(profile),
+        /*session_storage_helper=*/nullptr,
+        new BrowsingDataAppCacheHelper(profile),
+        new BrowsingDataIndexedDBHelper(indexed_db_context),
+        BrowsingDataFileSystemHelper::Create(file_system_context),
+        BrowsingDataQuotaHelper::Create(profile),
+        BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
+        new BrowsingDataServiceWorkerHelper(service_worker_context),
+        new BrowsingDataSharedWorkerHelper(storage_partition,
+                                           profile->GetResourceContext()),
+        new BrowsingDataCacheStorageHelper(cache_storage_context),
+        BrowsingDataFlashLSOHelper::Create(profile),
+        BrowsingDataMediaLicenseHelper::Create(file_system_context));
+    base::RunLoop run_loop;
+    CookiesTreeObserver observer(run_loop.QuitClosure());
+    CookiesTreeModel model(std::move(container),
+                           profile->GetExtensionSpecialStoragePolicy());
+    model.AddCookiesTreeObserver(&observer);
+    run_loop.Run();
+    return model.GetRoot()->child_count();
   }
 
   void OnVideoDecodePerfInfo(base::RunLoop* run_loop,
@@ -572,11 +645,14 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP,
 // Test that session storage is not counted until crbug.com/772337 is fixed.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionStorageCounting) {
   EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(0, GetCookieTreeModelCount());
   GURL url = embedded_test_server()->GetURL("/browsing_data/site_data.html");
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(0, GetCookieTreeModelCount());
   SetDataForType("SessionStorage");
   EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(0, GetCookieTreeModelCount());
   EXPECT_TRUE(HasDataForType("SessionStorage"));
 }
 
@@ -624,6 +700,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataRemoverBrowserTestP, EmptyIndexedDb) {
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        PRE_PRE_StorageRemovedFromDisk) {
   ASSERT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(0, GetCookieTreeModelCount());
   ASSERT_EQ(0, CheckUserDirectoryForString(kLocalHost, {}));
   // To use secure-only features on a host name, we need an https server.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
@@ -654,11 +731,13 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
                        PRE_StorageRemovedFromDisk) {
   EXPECT_EQ(1, GetSiteDataCount());
+  EXPECT_EQ(1, GetCookieTreeModelCount());
   RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
                 content::BrowsingDataRemover::DATA_TYPE_CACHE |
                 ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY |
                 ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS);
   EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_EQ(0, GetCookieTreeModelCount());
 }
 
 // Check if any data remains after a deletion and a Chrome restart to force
