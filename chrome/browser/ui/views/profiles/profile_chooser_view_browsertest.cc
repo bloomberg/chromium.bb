@@ -76,19 +76,6 @@ Profile* CreateTestingProfile(const std::string& profile_name) {
   return CreateTestingProfile(path);
 }
 
-Profile* CreateProfileOutsideUserDataDir() {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath path;
-  if (!base::CreateNewTempDirectory(base::FilePath::StringType(), &path))
-    NOTREACHED() << "Could not create directory at " << path.MaybeAsASCII();
-
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile =
-      Profile::CreateProfile(path, nullptr, Profile::CREATE_MODE_SYNCHRONOUS);
-  profile_manager->RegisterTestingProfile(profile, true, false);
-  return profile;
-}
-
 // Turns a normal profile into one that's signed in.
 void AddAccountToProfile(Profile* profile, const char* signed_in_email) {
   ProfileAttributesStorage& storage =
@@ -283,30 +270,6 @@ class ProfileChooserViewExtensionsTest
 
   DISALLOW_COPY_AND_ASSIGN(ProfileChooserViewExtensionsTest);
 };
-
-#if !defined(OS_MACOSX)
-#define MAYBE_NoProfileChooserOnOutsideUserDataDirProfiles \
-  NoProfileChooserOnOutsideUserDataDirProfiles
-#else
-// Test fails on macOS as |ProfileImpl::GetSSLConfigService| is not yet
-// initialized when creating the browser - see http://crbug.com/795688 .
-#define MAYBE_NoProfileChooserOnOutsideUserDataDirProfiles \
-  DISABLED_NoProfileChooserOnOutsideUserDataDirProfiles
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       MAYBE_NoProfileChooserOnOutsideUserDataDirProfiles) {
-  // Test that the profile chooser view does not show when avatar menu is not
-  // available. This can be repro'ed with a profile path outside user_data_dir.
-  // crbug.com/527505
-  Profile* new_profile = CreateProfileOutsideUserDataDir();
-  Browser* browser = CreateBrowser(new_profile);
-  browser->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN,
-      signin::ManageAccountsParams(),
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, false);
-  ASSERT_FALSE(ProfileChooserView::IsShowing());
-  CloseBrowserSynchronously(browser);
-}
 
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, SigninButtonHasFocus) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
