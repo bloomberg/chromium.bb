@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/bloated_renderer/bloated_renderer_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
@@ -234,6 +235,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
        IBD::DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE},
       {"automation", IBD::AUTOMATION_INFOBAR_DELEGATE},
       {"page_load_capping", IBD::PAGE_LOAD_CAPPING_INFOBAR_DELEGATE},
+      {"bloated_renderer", IBD::BLOATED_RENDERER_INFOBAR_DELEGATE},
   };
   auto id = kIdentifiers.find(name);
   expected_identifiers_.push_back((id == kIdentifiers.end()) ? IBD::INVALID
@@ -426,6 +428,10 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
           PageLoadCappingInfoBarDelegate::PauseCallback());
       break;
 
+    case IBD::BLOATED_RENDERER_INFOBAR_DELEGATE:
+      BloatedRendererTabHelper::ShowInfoBar(GetInfoBarService());
+      break;
+
     default:
       break;
   }
@@ -598,6 +604,10 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_automation) {
 }
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_page_load_capping) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_bloated_renderer) {
   ShowAndVerifyUi();
 }
 
