@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/app_menu_model_adapter.h"
+#include "ash/app_menu/app_menu_model_adapter.h"
 
+#include "ash/app_menu/notification_menu_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -35,6 +37,11 @@ void AppMenuModelAdapter::Run(const gfx::Rect& menu_anchor_rect,
 
   menu_open_time_ = base::TimeTicks::Now();
   root_ = CreateMenu();
+  if (features::IsNotificationIndicatorEnabled()) {
+    notification_menu_controller_ =
+        std::make_unique<NotificationMenuController>(app_id_, root_,
+                                                     model_.get());
+  }
   menu_runner_ = std::make_unique<views::MenuRunner>(root_, run_types);
   menu_runner_->RunMenuAt(menu_owner_->GetWidget(), nullptr /* MenuButton */,
                           menu_anchor_rect, menu_anchor_position, source_type_);

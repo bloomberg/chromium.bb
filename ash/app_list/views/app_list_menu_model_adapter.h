@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
-#include "ash/public/cpp/app_menu_model_adapter.h"
+#include "ash/app_menu/app_menu_model_adapter.h"
 #include "ash/public/interfaces/menu.mojom.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"

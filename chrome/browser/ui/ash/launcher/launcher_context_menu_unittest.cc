@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/test/ash_test_base.h"
@@ -416,6 +417,16 @@ TEST_F(LauncherContextMenuTest, CommandIdsMatchEnumsForHistograms) {
   EXPECT_EQ(6, LauncherContextMenu::LAUNCH_TYPE_WINDOW);
   EXPECT_EQ(7, LauncherContextMenu::MENU_NEW_WINDOW);
   EXPECT_EQ(8, LauncherContextMenu::MENU_NEW_INCOGNITO_WINDOW);
+  EXPECT_EQ(9, LauncherContextMenu::NOTIFICATION_CONTAINER);
+}
+
+// Tests that LauncherContextMenu::NOTIFICATION_CONTAINER matches
+// ash::NOTIFICATION_CONTAINER.
+TEST_F(LauncherContextMenuTest, CommandIdEquivalency) {
+  // TODO(newcomer): Remove this test when NOTIFICATION_CONTAINER and other
+  // command ids are consolidated.
+  EXPECT_EQ(static_cast<int>(LauncherContextMenu::NOTIFICATION_CONTAINER),
+            static_cast<int>(ash::NOTIFICATION_CONTAINER));
 }
 
 TEST_F(LauncherContextMenuTest, ArcContextMenuOptions) {
