@@ -60,6 +60,25 @@ enum class ContextMenuElementFrame {
   Count
 };
 
+// Name of the histogram for recording when the gesture recognizer recognizes a
+// long press before the DOM element details are available.
+const std::string kContextMenuDelayedElementDetailsHistogram =
+    "ContextMenu.DelayedElementDetails";
+
+// Enum used to record resulting action when the gesture recognizer recognizes a
+// long press before the DOM element details are available.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class DelayedElementDetailsState {
+  // Recorded when the context menu is displayed when receiving the dom element
+  // details after the gesture recognizer had already recognized a long press.
+  Show = 0,
+  // Recorded when the context menu is not displayed after the gesture
+  // recognizer fully recognized a long press.
+  Cancel = 1,
+  kMaxValue = Cancel
+};
+
 // Struct to track the details of the element at |location| in |webView|.
 struct ContextMenuInfo {
   // The location of the long press.
@@ -291,6 +310,7 @@ struct ContextMenuInfo {
     } else {
       // Shows the context menu once the DOM element information is set.
       _contextMenuNeedsDisplay = YES;
+      UMA_HISTOGRAM_BOOLEAN("ContextMenu.WaitingForElementDetails", true);
     }
   }
 }
@@ -333,6 +353,8 @@ struct ContextMenuInfo {
 }
 
 - (void)cancelAllTouches {
+  UMA_HISTOGRAM_BOOLEAN("ContextMenu.CancelSystemTouches", true);
+
   // Disable web view scrolling.
   CancelTouches(self.webView.scrollView.panGestureRecognizer);
 
@@ -354,6 +376,8 @@ struct ContextMenuInfo {
 - (void)setDOMElementForLastTouch:(NSDictionary*)element {
   _contextMenuInfoForLastTouch.dom_element = [element copy];
   if (_contextMenuNeedsDisplay) {
+    UMA_HISTOGRAM_ENUMERATION(kContextMenuDelayedElementDetailsHistogram,
+                              DelayedElementDetailsState::Show);
     [self showContextMenu];
   }
 }
@@ -390,6 +414,10 @@ struct ContextMenuInfo {
 }
 
 - (void)cancelContextMenuDisplay {
+  if (_contextMenuNeedsDisplay) {
+    UMA_HISTOGRAM_ENUMERATION(kContextMenuDelayedElementDetailsHistogram,
+                              DelayedElementDetailsState::Cancel);
+  }
   _contextMenuNeedsDisplay = NO;
   for (HTMLElementFetchRequest* fetchRequest in _pendingElementFetchRequests
            .allValues) {
