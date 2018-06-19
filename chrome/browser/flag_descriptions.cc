@@ -1392,10 +1392,10 @@ const char kResetAppListInstallStateDescription[] =
     "set, Chrome will forget the launcher has been installed each time it "
     "starts. This is used for testing the App Launcher install flow.";
 
-const char kResourceLoadSchedulerName[] = "Use the resource load scheduler";
+const char kResourceLoadSchedulerName[] = "Enable resource load throttling";
 const char kResourceLoadSchedulerDescription[] =
-    "Uses the resource load scheduler in blink to schedule and throttle "
-    "resource load requests.";
+    "Uses the resource load scheduler in blink to throttle resource load "
+    "requests.";
 
 const char kSafeSearchUrlReportingName[] = "SafeSearch URLs reporting.";
 const char kSafeSearchUrlReportingDescription[] =
