@@ -88,7 +88,10 @@ void CheckSecurityState(content::WebContents* tab,
                         security_state::SecurityLevel expected_security_level,
                         int expected_authentication_state) {
   ASSERT_FALSE(tab->IsCrashed());
-  content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  content::NavigationEntry* entry =
+      tab->ShowingInterstitialPage()
+          ? tab->GetController().GetTransientEntry()
+          : tab->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry);
   CertError::Check(*entry, expected_error);
   SecurityStyle::Check(tab, expected_security_level);

@@ -1649,10 +1649,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestInterstitialCrossSiteNavigation) {
   GURL initial_url = https_server_.GetURL("/ssl/google.html");
   ASSERT_EQ("127.0.0.1", initial_url.host());
   ui_test_utils::NavigateToURL(browser(), initial_url);
-
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationEntry* entry = tab->GetController().GetActiveEntry();
-  ASSERT_TRUE(entry);
 
   // Navigate from 127.0.0.1 to localhost so it triggers a
   // cross-site navigation to make sure http://crbug.com/5800 is gone.
@@ -1757,9 +1754,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSExpiredCertAndGoBackViaButton) {
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/ssl/google.html"));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationEntry* entry = tab->GetController().GetActiveEntry();
   content::RenderFrameHost* rfh = tab->GetMainFrame();
-  ASSERT_TRUE(entry);
 
   // Now go to a bad HTTPS page that shows an interstitial.
   ui_test_utils::NavigateToURL(
@@ -1794,8 +1789,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSExpiredCertAndGoBackViaMenu) {
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/ssl/google.html"));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationEntry* entry = tab->GetController().GetActiveEntry();
-  ASSERT_TRUE(entry);
 
   // Now go to a bad HTTPS page that shows an interstitial.
   ui_test_utils::NavigateToURL(
@@ -1825,8 +1818,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSExpiredCertGoBackUsingCommand) {
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/ssl/google.html"));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationEntry* entry = tab->GetController().GetActiveEntry();
-  ASSERT_TRUE(entry);
 
   // Now go to a bad HTTPS page that shows an interstitial.
   ui_test_utils::NavigateToURL(
@@ -1861,11 +1852,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestHTTPSExpiredCertAndGoForward) {
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/ssl/google.html"));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  NavigationEntry* entry1 = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry1 = tab->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry1);
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/ssl/blank_page.html"));
-  NavigationEntry* entry2 = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry2 = tab->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry2);
 
   // Now go back so that a page is in the forward history.
@@ -1877,7 +1868,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestHTTPSExpiredCertAndGoForward) {
     observer.Wait();
   }
   ASSERT_TRUE(tab->GetController().CanGoForward());
-  NavigationEntry* entry3 = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry3 = tab->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry1 == entry3);
 
   // Now go to a bad HTTPS page that shows an interstitial.
@@ -1899,7 +1890,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestBase, TestHTTPSExpiredCertAndGoForward) {
   EXPECT_FALSE(IsShowingInterstitial(tab));
   CheckUnauthenticatedState(tab, AuthState::NONE);
   EXPECT_FALSE(tab->GetController().CanGoForward());
-  NavigationEntry* entry4 = tab->GetController().GetActiveEntry();
+  NavigationEntry* entry4 = tab->GetController().GetLastCommittedEntry();
   EXPECT_TRUE(entry2 == entry4);
 }
 
@@ -1935,7 +1926,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPOk) {
                                         ->tab_strip_model()
                                         ->GetActiveWebContents()
                                         ->GetController()
-                                        .GetActiveEntry();
+                                        .GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_TRUE(entry->GetSSL().cert_status &
               net::CERT_STATUS_REV_CHECKING_ENABLED);
@@ -1991,7 +1982,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPRevokedButNotChecked) {
                                         ->tab_strip_model()
                                         ->GetActiveWebContents()
                                         ->GetController()
-                                        .GetActiveEntry();
+                                        .GetVisibleEntry();
   ASSERT_TRUE(entry);
   EXPECT_FALSE(entry->GetSSL().cert_status &
                net::CERT_STATUS_REV_CHECKING_ENABLED);
@@ -4660,13 +4651,13 @@ IN_PROC_BROWSER_TEST_P(SSLUITest,
   WaitForInterstitial(tab);
   EXPECT_TRUE(IsShowingInterstitial(tab));
 
-  content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  content::NavigationEntry* entry = tab->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   content::SSLStatus interstitial_ssl_status = entry->GetSSL();
 
   ProceedThroughInterstitial(tab);
   EXPECT_FALSE(tab->ShowingInterstitialPage());
-  entry = tab->GetController().GetActiveEntry();
+  entry = tab->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry);
 
   content::SSLStatus after_interstitial_ssl_status = entry->GetSSL();
@@ -4696,7 +4687,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest,
   ASSERT_NO_FATAL_FAILURE(ExpectBadClockInterstitial(tab));
 
   // Grab the SSLStatus on the clock interstitial.
-  content::NavigationEntry* entry = tab->GetController().GetActiveEntry();
+  content::NavigationEntry* entry = tab->GetController().GetVisibleEntry();
   ASSERT_TRUE(entry);
   content::SSLStatus clock_interstitial_ssl_status = entry->GetSSL();
 
@@ -4712,7 +4703,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest,
 
   // Grab the SSLStatus from the page and check that it is the same as
   // on the clock interstitial.
-  entry = tab->GetController().GetActiveEntry();
+  entry = tab->GetController().GetLastCommittedEntry();
   ASSERT_TRUE(entry);
   content::SSLStatus after_interstitial_ssl_status = entry->GetSSL();
   EXPECT_TRUE(ComparePreAndPostInterstitialSSLStatuses(
