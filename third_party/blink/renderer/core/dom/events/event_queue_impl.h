@@ -44,7 +44,7 @@ class CORE_EXPORT EventQueueImpl final : public EventQueue,
  public:
   // TODO(hajimehoshi): TaskType should be determined based on an event instead
   // of specifying here.
-  static EventQueueImpl* Create(EventTarget*, TaskType);
+  static EventQueueImpl* Create(ExecutionContext*, TaskType);
   ~EventQueueImpl() override;
 
   // EventQueue
@@ -53,7 +53,7 @@ class CORE_EXPORT EventQueueImpl final : public EventQueue,
   void CancelAllEvents() override;
 
  private:
-  EventQueueImpl(EventTarget*, TaskType);
+  EventQueueImpl(ExecutionContext*, TaskType);
 
   bool RemoveEvent(Event*);
   void DispatchEvent(Event*);
@@ -63,7 +63,6 @@ class CORE_EXPORT EventQueueImpl final : public EventQueue,
   void DoCancelAllEvents(ExecutionContext*);
 
   const TaskType task_type_;
-  Member<EventTarget> target_;
   HeapLinkedHashSet<Member<Event>> queued_events_;
   bool is_closed_;
 };

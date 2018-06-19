@@ -101,6 +101,7 @@ void BroadcastChannel::OnMessage(BlinkCloneableMessage message) {
   MessageEvent* event = MessageEvent::Create(
       nullptr, std::move(message.message),
       GetExecutionContext()->GetSecurityOrigin()->ToString());
+  event->SetTarget(this);
   bool success = event_queue_->EnqueueEvent(FROM_HERE, event);
   DCHECK(success);
   ALLOW_UNUSED_LOCAL(success);
@@ -114,7 +115,8 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
                                    const String& name)
     : ContextLifecycleObserver(execution_context),
       origin_(execution_context->GetSecurityOrigin()),
-      event_queue_(EventQueueImpl::Create(this, TaskType::kInternalMedia)),
+      event_queue_(
+          EventQueueImpl::Create(execution_context, TaskType::kInternalMedia)),
       name_(name),
       binding_(this) {
   mojom::blink::BroadcastChannelProviderPtr& provider =
