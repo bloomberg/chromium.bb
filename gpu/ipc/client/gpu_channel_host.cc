@@ -91,7 +91,8 @@ uint32_t GpuChannelHost::OrderingBarrier(
     std::vector<SyncToken> sync_token_fences) {
   AutoLock lock(context_lock_);
 
-  if (flush_list_.empty() || flush_list_.back().route_id != route_id)
+  if (flush_list_.empty() || flush_list_.back().route_id != route_id ||
+      flush_list_.back().transfer_buffer_id_to_destroy)
     flush_list_.push_back(FlushParams());
 
   FlushParams& flush_params = flush_list_.back();
@@ -102,7 +103,20 @@ uint32_t GpuChannelHost::OrderingBarrier(
       flush_params.sync_token_fences.end(),
       std::make_move_iterator(sync_token_fences.begin()),
       std::make_move_iterator(sync_token_fences.end()));
+  flush_params.transfer_buffer_id_to_destroy = 0;
   return flush_params.flush_id;
+}
+
+void GpuChannelHost::DestroyTransferBuffer(int32_t route_id,
+                                           int32_t id_to_destroy) {
+  AutoLock lock(context_lock_);
+
+  flush_list_.push_back(FlushParams());
+  FlushParams& flush_params = flush_list_.back();
+  flush_params.flush_id = next_flush_id_++;
+  flush_params.route_id = route_id;
+  flush_params.put_offset = -1;
+  flush_params.transfer_buffer_id_to_destroy = id_to_destroy;
 }
 
 void GpuChannelHost::EnsureFlush(uint32_t flush_id) {
@@ -172,7 +186,10 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
 
 int32_t GpuChannelHost::ReserveTransferBufferId() {
   // 0 is a reserved value.
-  return g_next_transfer_buffer_id.GetNext() + 1;
+  int32_t id = g_next_transfer_buffer_id.GetNext();
+  if (id)
+    return id;
+  return g_next_transfer_buffer_id.GetNext();
 }
 
 int32_t GpuChannelHost::ReserveImageId() {
