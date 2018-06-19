@@ -1,11 +1,17 @@
 This is a testharness.js-based test.
-Found 72 tests; 56 PASS, 16 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS Exposed interfaces in a Document.
+PASS Exposed interfaces in a Service Worker.
 PASS Partial interface ServiceWorkerGlobalScope: original interface defined
 PASS Partial interface ServiceWorkerRegistration: original interface defined
-PASS ServiceWorkerRegistration interface: attribute backgroundFetch
-PASS Unscopable handled correctly for backgroundFetch property on ServiceWorkerRegistration
-PASS ServiceWorkerGlobalScope interface: existence and properties of interface object
+FAIL ServiceWorkerRegistration interface: existence and properties of interface object assert_false: expected false got true
+FAIL ServiceWorkerGlobalScope interface: attribute onbackgroundfetched assert_own_property: self does not have own property "ServiceWorkerGlobalScope" expected property "ServiceWorkerGlobalScope" missing
+PASS Unscopable handled correctly for onbackgroundfetched property on ServiceWorkerGlobalScope
+FAIL ServiceWorkerGlobalScope interface: attribute onbackgroundfetchfail assert_own_property: self does not have own property "ServiceWorkerGlobalScope" expected property "ServiceWorkerGlobalScope" missing
+PASS Unscopable handled correctly for onbackgroundfetchfail property on ServiceWorkerGlobalScope
+FAIL ServiceWorkerGlobalScope interface: attribute onbackgroundfetchabort assert_own_property: self does not have own property "ServiceWorkerGlobalScope" expected property "ServiceWorkerGlobalScope" missing
+PASS Unscopable handled correctly for onbackgroundfetchabort property on ServiceWorkerGlobalScope
+FAIL ServiceWorkerGlobalScope interface: attribute onbackgroundfetchclick assert_own_property: self does not have own property "ServiceWorkerGlobalScope" expected property "ServiceWorkerGlobalScope" missing
+PASS Unscopable handled correctly for onbackgroundfetchclick property on ServiceWorkerGlobalScope
+PASS ExtendableEvent interface: existence and properties of interface object
 PASS BackgroundFetchManager interface: existence and properties of interface object
 PASS BackgroundFetchManager interface object length
 PASS BackgroundFetchManager interface object name

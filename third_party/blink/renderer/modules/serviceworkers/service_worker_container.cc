@@ -183,14 +183,10 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
       ServiceWorkerRegistration, ServiceWorkerErrorForUpdate>>(resolver);
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  String error_message;
-  // Restrict to secure origins:
-  // https://w3c.github.io/webappsec-secure-contexts/#is-settings-object-contextually-secure
-  if (!execution_context->IsSecureContext(error_message)) {
-    callbacks->OnError(WebServiceWorkerError(
-        mojom::blink::ServiceWorkerErrorType::kSecurity, error_message));
-    return promise;
-  }
+
+  // The IDL definition is expected to restrict service worker to secure
+  // contexts.
+  CHECK(execution_context->IsSecureContext());
 
   scoped_refptr<const SecurityOrigin> document_origin =
       execution_context->GetSecurityOrigin();
@@ -309,15 +305,13 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
   }
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
+
+  // The IDL definition is expected to restrict service worker to secure
+  // contexts.
+  CHECK(execution_context->IsSecureContext());
+
   scoped_refptr<const SecurityOrigin> document_origin =
       execution_context->GetSecurityOrigin();
-  String error_message;
-  if (!execution_context->IsSecureContext(error_message)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kSecurityError, error_message));
-    return promise;
-  }
-
   KURL page_url = KURL(NullURL(), document_origin->ToString());
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {
@@ -363,15 +357,13 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
   }
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
+
+  // The IDL definition is expected to restrict service worker to secure
+  // contexts.
+  CHECK(execution_context->IsSecureContext());
+
   scoped_refptr<const SecurityOrigin> document_origin =
       execution_context->GetSecurityOrigin();
-  String error_message;
-  if (!execution_context->IsSecureContext(error_message)) {
-    resolver->Reject(
-        DOMException::Create(DOMExceptionCode::kSecurityError, error_message));
-    return promise;
-  }
-
   KURL page_url = KURL(NullURL(), document_origin->ToString());
   if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowingServiceWorkers(
           page_url.Protocol())) {

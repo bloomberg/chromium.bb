@@ -12,3 +12,9 @@ self.addEventListener('message', function(event) {
           event.data.port.postMessage('FAIL: exception: ' + error.name);
         }));
   });
+
+self.addEventListener('fetch', event => {
+    if (event.request.url.indexOf('simple.txt') >= 0) {
+      event.respondWith(new Response('sw controls the insecure page'));
+    }
+  });
