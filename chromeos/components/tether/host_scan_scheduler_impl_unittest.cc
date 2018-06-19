@@ -9,10 +9,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/components/tether/fake_host_scanner.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -96,6 +98,10 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
     DBusThreadManager::Shutdown();
   }
 
+  void SetMultiDeviceApiEnabled() {
+    scoped_feature_list_.InitAndEnableFeature(features::kMultiDeviceApi);
+  }
+
   void RequestScan() { host_scan_scheduler_->ScanRequested(); }
 
   // Disconnects the Ethernet network and manually sets the default network to
@@ -172,6 +178,8 @@ class HostScanSchedulerImplTest : public NetworkStateTest {
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
   std::unique_ptr<HostScanSchedulerImpl> host_scan_scheduler_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(HostScanSchedulerImplTest, ScheduleScan) {
@@ -212,6 +220,30 @@ TEST_F(HostScanSchedulerImplTest, TestDeviceLockAndUnlock) {
   // Fire the timer; this should start the scan.
   mock_delay_scan_after_unlock_timer_->Fire();
   EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
+}
+
+TEST_F(HostScanSchedulerImplTest,
+       TestDeviceLockAndUnlock_MultiDeviceApiEnabled) {
+  SetMultiDeviceApiEnabled();
+
+  // Lock the screen. This should not trigger a scan.
+  SetScreenLockedState(true /* is_locked */);
+  EXPECT_EQ(0u, fake_host_scanner_->num_scans_started());
+  EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
+
+  // Try to start a scan. Even thought the screen is locked, this should cause a
+  // scan to be started.
+  host_scan_scheduler_->ScheduleScan();
+  EXPECT_EQ(1u, fake_host_scanner_->num_scans_started());
+  EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
+
+  fake_host_scanner_->StopScan();
+
+  // Unlock the screen. A new scan should have started, and the timer should be
+  // untouched.
+  SetScreenLockedState(false /* is_locked */);
+  EXPECT_EQ(2u, fake_host_scanner_->num_scans_started());
+  EXPECT_FALSE(mock_delay_scan_after_unlock_timer_->IsRunning());
 }
 
 TEST_F(HostScanSchedulerImplTest, ScanRequested) {
