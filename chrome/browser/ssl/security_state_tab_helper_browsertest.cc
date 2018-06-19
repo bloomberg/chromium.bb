@@ -302,7 +302,7 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
   net::X509Certificate* cert = browser->tab_strip_model()
                                    ->GetActiveWebContents()
                                    ->GetController()
-                                   .GetActiveEntry()
+                                   .GetVisibleEntry()
                                    ->GetSSL()
                                    .certificate.get();
   EXPECT_TRUE(cert->EqualsExcludingChain(expected_cert));
@@ -326,7 +326,7 @@ void CheckSecureCertificateExplanation(
   net::X509Certificate* cert = browser->tab_strip_model()
                                    ->GetActiveWebContents()
                                    ->GetController()
-                                   .GetActiveEntry()
+                                   .GetLastCommittedEntry()
                                    ->GetSSL()
                                    .certificate.get();
   EXPECT_TRUE(cert->EqualsExcludingChain(expected_cert));
