@@ -12,6 +12,7 @@ import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.TextView;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfoBarController;
@@ -144,9 +145,10 @@ public class DownloadProgressInfoBar extends InfoBar {
     }
 
     private void restartIconAnimation() {
-        if (mAnimatedDrawable == null) return;
-
-        mAnimatedDrawable.start();
+        ThreadUtils.postOnUiThread(() -> {
+            if (mAnimatedDrawable == null) return;
+            mAnimatedDrawable.start();
+        });
     }
 
     /**

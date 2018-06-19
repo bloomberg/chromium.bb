@@ -17,7 +17,7 @@
 
             <path
                 android:name="circle"
-                android:fillColor="@android:color/transparent"
+                android:fillColor="@color/google_blue_50"
                 android:pathData="M 0,12 C 0,6 6,0 12,0 C 18,0 24,6 24,12 C 24,18 18,24 12,24 C 6,24 0,18 0,12"/>
 
             <path
@@ -32,11 +32,18 @@
         <aapt:attr name="android:animation">
             <set android:ordering="sequentially">
                 <objectAnimator
-                    android:duration="800"
+                    android:duration="100"
                     android:interpolator="@android:interpolator/linear"
-                    android:propertyName="fillColor"
-                    android:valueFrom="@color/google_blue_50"
-                    android:valueTo="@android:color/transparent"/>
+                    android:propertyName="fillAlpha"
+                    android:valueFrom="0"
+                    android:valueTo="1"/>
+                <objectAnimator
+                    android:duration="500"
+                    android:startOffset="300"
+                    android:interpolator="@android:interpolator/linear"
+                    android:propertyName="fillAlpha"
+                    android:valueFrom="1"
+                    android:valueTo="0"/>
             </set>
         </aapt:attr>
     </target>

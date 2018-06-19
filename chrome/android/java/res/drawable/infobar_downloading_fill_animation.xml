@@ -64,6 +64,12 @@
         <aapt:attr name="android:animation">
             <set android:ordering="sequentially">
                 <objectAnimator
+                    android:duration="0"
+                    android:interpolator="@android:interpolator/linear"
+                    android:propertyName="fillColor"
+                    android:valueFrom="@color/google_blue_500"
+                    android:valueTo="@color/google_blue_500"/>
+                <objectAnimator
                     android:duration="@integer/download_infobar_fill_out_delay"
                     android:startOffset="@integer/download_infobar_fill_in_delay"
                     android:interpolator="@android:interpolator/linear"
