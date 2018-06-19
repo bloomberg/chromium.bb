@@ -292,7 +292,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SetDoubleTapSupportEnabled(bool enabled);
   void SetMultiTouchZoomSupportEnabled(bool enabled);
 
-  bool SynchronizeVisualProperties();
+  bool SynchronizeVisualProperties(const cc::DeadlinePolicy& deadline_policy,
+                                   const base::Optional<viz::LocalSurfaceId>&
+                                       child_allocated_local_surface_id);
 
   bool HasValidFrame() const;
 
@@ -507,6 +509,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   uint32_t latest_capture_sequence_number_ = 0u;
 
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;
+  bool is_first_navigation_ = true;
 
   base::WeakPtrFactory<RenderWidgetHostViewAndroid> weak_ptr_factory_;
 

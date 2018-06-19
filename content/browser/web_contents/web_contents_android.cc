@@ -842,7 +842,8 @@ void WebContentsAndroid::OnScaleFactorChanged(
   if (rwhva) {
     // |SendScreenRects()| indirectly calls GetViewSize() that asks Java layer.
     web_contents_->SendScreenRects();
-    rwhva->SynchronizeVisualProperties();
+    rwhva->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                       base::nullopt);
   }
 }
 

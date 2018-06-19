@@ -266,12 +266,20 @@ void RenderWidgetHostViewAndroid::InitAsFullscreen(
   NOTIMPLEMENTED();
 }
 
-bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties() {
+bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties(
+    const cc::DeadlinePolicy& deadline_policy,
+    const base::Optional<viz::LocalSurfaceId>&
+        child_allocated_local_surface_id) {
+  if (child_allocated_local_surface_id) {
+    local_surface_id_allocator_.UpdateFromChild(
+        *child_allocated_local_surface_id);
+  } else {
+    local_surface_id_allocator_.GenerateId();
+  }
   if (delegated_frame_host_) {
     delegated_frame_host_->EmbedSurface(
-        local_surface_id_allocator_.GenerateId(),
-        GetCompositorViewportPixelSize(),
-        cc::DeadlinePolicy::UseDefaultDeadline());
+        local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
+        GetCompositorViewportPixelSize(), deadline_policy);
 
     // TODO(ericrk): This can be removed once surface synchronization is
     // enabled. https://crbug.com/835102
@@ -819,7 +827,8 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
 
 void RenderWidgetHostViewAndroid::EnsureSurfaceSynchronizedForLayoutTest() {
   ++latest_capture_sequence_number_;
-  SynchronizeVisualProperties();
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseInfiniteDeadline(),
+                              base::nullopt);
 }
 
 uint32_t RenderWidgetHostViewAndroid::GetCaptureSequenceNumber() const {
@@ -951,7 +960,8 @@ void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
 }
 
 bool RenderWidgetHostViewAndroid::RequestRepaintForTesting() {
-  return SynchronizeVisualProperties();
+  return SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                     base::nullopt);
 }
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
@@ -1268,12 +1278,8 @@ void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
   base::ScopedClosureRunner sync_visual_props_runner(base::BindOnce(
       base::IgnoreResult(
           &RenderWidgetHostViewAndroid::SynchronizeVisualProperties),
-      base::Unretained(this)));
-
-  if (!local_surface_id_allocator_.UpdateFromChild(
-          metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
-    return;
-  }
+      base::Unretained(this), cc::DeadlinePolicy::UseDefaultDeadline(),
+      metadata.local_surface_id));
 
   if (!features::IsSurfaceSynchronizationEnabled())
     return;
@@ -1370,7 +1376,8 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
 
   if (delegated_frame_host_ &&
       delegated_frame_host_->IsPrimarySurfaceEvicted()) {
-    SynchronizeVisualProperties();
+    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                base::nullopt);
   }
 
   host()->WasShown(false /* record_presentation_time */);
@@ -1975,8 +1982,10 @@ void RenderWidgetHostViewAndroid::UpdateNativeViewTree(
   if (is_showing_ && view_.GetWindowAndroid())
     StartObservingRootWindow();
 
-  if (resize)
-    SynchronizeVisualProperties();
+  if (resize) {
+    SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                base::nullopt);
+  }
 
   if (!touch_selection_controller_) {
     ui::TouchSelectionControllerClient* client =
@@ -2067,7 +2076,8 @@ void RenderWidgetHostViewAndroid::OnSizeChanged() {
 
 void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged() {
   EvictFrameIfNecessary();
-  SynchronizeVisualProperties();
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                              base::nullopt);
 }
 
 void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
@@ -2344,7 +2354,8 @@ void RenderWidgetHostViewAndroid::TakeFallbackContentFrom(
 }
 
 void RenderWidgetHostViewAndroid::OnSynchronizedDisplayPropertiesChanged() {
-  SynchronizeVisualProperties();
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                              base::nullopt);
 }
 
 base::Optional<SkColor> RenderWidgetHostViewAndroid::GetBackgroundColor()
@@ -2358,8 +2369,16 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
     return;
   }
 
-  SynchronizeVisualProperties();
+  if (is_first_navigation_) {
+    SynchronizeVisualProperties(
+        cc::DeadlinePolicy::UseExistingDeadline(),
+        local_surface_id_allocator_.GetCurrentLocalSurfaceId());
+  } else {
+    SynchronizeVisualProperties(cc::DeadlinePolicy::UseExistingDeadline(),
+                                base::nullopt);
+  }
   delegated_frame_host_->DidNavigate();
+  is_first_navigation_ = false;
 }
 
 viz::ScopedSurfaceIdAllocator
