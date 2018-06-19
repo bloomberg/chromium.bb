@@ -2402,7 +2402,7 @@ void Element::RebuildPseudoElementLayoutTree(
     // ::first-letter.
     if (!element)
       element = CreatePseudoElementIfNeeded(pseudo_id);
-    else if (pseudo_id == kPseudoIdFirstLetter && UpdateFirstLetter(element))
+    else if (UpdateFirstLetter(element))
       return;
   }
   if (element && element->NeedsRebuildLayoutTree(whitespace_attacher))
