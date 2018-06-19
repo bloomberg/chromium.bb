@@ -3,3 +3,6 @@
 
 # TODO(crbug.com/778405): Test is flaky on CrOS with ASan.
 -MemoryTracingBrowserTest.TestBackgroundMemoryInfra
+
+# TODO(crbug.com/807465): Test is flaky on CrOS with ASan in viz_browser_tests.
+-ArcAccessibilityHelperBridgeBrowserTest.PreferenceChange
