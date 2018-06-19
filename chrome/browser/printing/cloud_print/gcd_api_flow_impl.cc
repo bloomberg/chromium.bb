@@ -22,6 +22,8 @@
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_status.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_access_token_fetcher.h"
 
 using net::DefineNetworkTrafficAnnotation;
 
@@ -78,13 +80,8 @@ net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
 }  // namespace
 
 GCDApiFlowImpl::GCDApiFlowImpl(net::URLRequestContextGetter* request_context,
-                               OAuth2TokenService* token_service,
-                               const std::string& account_id)
-    : OAuth2TokenService::Consumer("cloud_print"),
-      request_context_(request_context),
-      token_service_(token_service),
-      account_id_(account_id) {
-}
+                               identity::IdentityManager* identity_manager)
+    : request_context_(request_context), identity_manager_(identity_manager) {}
 
 GCDApiFlowImpl::~GCDApiFlowImpl() {
 }
@@ -93,14 +90,23 @@ void GCDApiFlowImpl::Start(std::unique_ptr<Request> request) {
   request_ = std::move(request);
   OAuth2TokenService::ScopeSet oauth_scopes;
   oauth_scopes.insert(request_->GetOAuthScope());
-  oauth_request_ =
-      token_service_->StartRequest(account_id_, oauth_scopes, this);
+  DCHECK(identity_manager_);
+  token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
+      "cloud_print", oauth_scopes,
+      base::BindOnce(&GCDApiFlowImpl::OnAccessTokenFetchComplete,
+                     base::Unretained(this)),
+      identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 
-void GCDApiFlowImpl::OnGetTokenSuccess(
-    const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+void GCDApiFlowImpl::OnAccessTokenFetchComplete(GoogleServiceAuthError error,
+                                                std::string access_token) {
+  token_fetcher_.reset();
+
+  if (error.state() != GoogleServiceAuthError::NONE) {
+    request_->OnGCDApiFlowError(ERROR_TOKEN);
+    return;
+  }
+
   CreateRequest();
 
   std::string authorization_header =
@@ -110,12 +116,6 @@ void GCDApiFlowImpl::OnGetTokenSuccess(
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DO_NOT_SEND_COOKIES);
   url_fetcher_->Start();
-}
-
-void GCDApiFlowImpl::OnGetTokenFailure(
-    const OAuth2TokenService::Request* request,
-    const GoogleServiceAuthError& error) {
-  request_->OnGCDApiFlowError(ERROR_TOKEN);
 }
 
 void GCDApiFlowImpl::CreateRequest() {

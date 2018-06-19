@@ -18,10 +18,9 @@ GCDApiFlow::Request::~Request() {
 
 std::unique_ptr<GCDApiFlow> GCDApiFlow::Create(
     net::URLRequestContextGetter* request_context,
-    OAuth2TokenService* token_service,
-    const std::string& account_id) {
+    identity::IdentityManager* identity_manager) {
   return std::unique_ptr<GCDApiFlow>(
-      new GCDApiFlowImpl(request_context, token_service, account_id));
+      new GCDApiFlowImpl(request_context, identity_manager));
 }
 
 GCDApiFlow::GCDApiFlow() {

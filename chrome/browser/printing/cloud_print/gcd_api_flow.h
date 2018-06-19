@@ -18,6 +18,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace identity {
+class IdentityManager;
+}
+
 namespace cloud_print {
 
 // API flow for communicating with cloud print and cloud devices.
@@ -68,8 +72,7 @@ class GCDApiFlow {
 
   static std::unique_ptr<GCDApiFlow> Create(
       net::URLRequestContextGetter* request_context,
-      OAuth2TokenService* token_service,
-      const std::string& account_id);
+      identity::IdentityManager* identity_manager);
 
   virtual void Start(std::unique_ptr<Request> request) = 0;
 
