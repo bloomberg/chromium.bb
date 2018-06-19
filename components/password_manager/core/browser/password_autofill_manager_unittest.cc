@@ -178,10 +178,10 @@ class PasswordAutofillManagerTest : public testing::Test {
   void SetManualFallbacksForFillingStandalone(bool enabled) {
     if (enabled) {
       scoped_feature_list_.InitAndEnableFeature(
-          password_manager::features::kEnableManualFallbacksFillingStandalone);
+          password_manager::features::kManualFallbacksFillingStandalone);
     } else {
       scoped_feature_list_.InitAndDisableFeature(
-          password_manager::features::kEnableManualFallbacksFillingStandalone);
+          password_manager::features::kManualFallbacksFillingStandalone);
     }
   }
 
@@ -194,7 +194,7 @@ class PasswordAutofillManagerTest : public testing::Test {
   void SetManualFallbacks(bool enabled) {
     std::vector<std::string> features = {
         password_manager::features::kManualFallbacksFilling.name,
-        password_manager::features::kEnableManualFallbacksFillingStandalone
+        password_manager::features::kManualFallbacksFillingStandalone
             .name,
         password_manager::features::kEnableManualFallbacksGeneration.name};
     if (enabled) {

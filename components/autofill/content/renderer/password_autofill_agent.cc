@@ -606,7 +606,7 @@ bool ShouldShowStandaloneManuallFallback(const blink::WebInputElement& element,
       !base::StartsWith(url.scheme(), "chrome", base::CompareCase::SENSITIVE) &&
       !url.SchemeIs(url::kAboutScheme) &&
       base::FeatureList::IsEnabled(
-          password_manager::features::kEnableManualFallbacksFillingStandalone));
+          password_manager::features::kManualFallbacksFillingStandalone));
 }
 
 PasswordForm::SubmissionIndicatorEvent ToSubmissionIndicatorEvent(
