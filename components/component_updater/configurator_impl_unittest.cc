@@ -88,4 +88,55 @@ TEST_F(ComponentUpdaterConfiguratorImplTest, FastUpdateWithCustomPolicy) {
   CHECK_EQ(10, config->UpdateDelay());
 }
 
+TEST_F(ComponentUpdaterConfiguratorImplTest, InitialDelay) {
+  std::unique_ptr<ConfiguratorImpl> config = std::make_unique<ConfiguratorImpl>(
+      update_client::CommandLineConfigPolicy(), false);
+  CHECK_EQ(6 * kDelayOneMinute, config->InitialDelay());
+
+  class CommandLineConfigPolicy
+      : public update_client::CommandLineConfigPolicy {
+   public:
+    CommandLineConfigPolicy() {}
+
+    // update_client::CommandLineConfigPolicy overrides.
+    bool BackgroundDownloadsEnabled() const override { return false; }
+    bool DeltaUpdatesEnabled() const override { return false; }
+    bool FastUpdate() const override { return fast_update_; }
+    bool PingsEnabled() const override { return false; }
+    bool TestRequest() const override { return false; }
+    GURL UrlSourceOverride() const override { return GURL(); }
+    int InitialDelay() const override { return initial_delay_; };
+
+    void set_fast_update(bool fast_update) { fast_update_ = fast_update; }
+    void set_initial_delay(int initial_delay) {
+      initial_delay_ = initial_delay;
+    }
+
+   private:
+    int initial_delay_ = 0;
+    bool fast_update_ = false;
+  };
+
+  {
+    CommandLineConfigPolicy clcp;
+    clcp.set_fast_update(true);
+    config = std::make_unique<ConfiguratorImpl>(clcp, false);
+    CHECK_EQ(10, config->InitialDelay());
+  }
+
+  {
+    CommandLineConfigPolicy clcp;
+    clcp.set_fast_update(false);
+    config = std::make_unique<ConfiguratorImpl>(clcp, false);
+    CHECK_EQ(6 * kDelayOneMinute, config->InitialDelay());
+  }
+
+  {
+    CommandLineConfigPolicy clcp;
+    clcp.set_initial_delay(kDelayOneMinute);
+    config = std::make_unique<ConfiguratorImpl>(clcp, false);
+    CHECK_EQ(kDelayOneMinute, config->InitialDelay());
+  }
+}
+
 }  // namespace component_updater

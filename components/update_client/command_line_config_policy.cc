@@ -37,4 +37,8 @@ GURL CommandLineConfigPolicy::UrlSourceOverride() const {
   return GURL();
 }
 
+int CommandLineConfigPolicy::InitialDelay() const {
+  return 0;
+}
+
 }  // namespace update_client
