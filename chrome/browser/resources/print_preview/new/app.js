@@ -285,6 +285,9 @@ Polymer({
         this.recentDestinations_);
     this.isInAppKioskMode_ = settings.isInAppKioskMode;
     this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
+
+    // This is only visible in the task manager.
+    document.head.querySelector('title').textContent = settings.documentTitle;
   },
 
   /**
