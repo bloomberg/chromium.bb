@@ -22,7 +22,6 @@ namespace blink {
 
 class AbortSignal;
 class BodyStreamBuffer;
-class ExceptionState;
 class RequestInit;
 class WebServiceWorkerRequest;
 

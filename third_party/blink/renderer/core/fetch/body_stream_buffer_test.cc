@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_test_util.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
-#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -88,7 +87,6 @@ class MockFetchDataLoader : public FetchDataLoader {
 
 TEST_F(BodyStreamBufferTest, Tee) {
   V8TestingScope scope;
-  NonThrowableExceptionState exception_state;
   Checkpoint checkpoint;
   MockFetchDataLoaderClient* client1 = MockFetchDataLoaderClient::Create();
   MockFetchDataLoaderClient* client2 = MockFetchDataLoaderClient::Create();
@@ -112,7 +110,7 @@ TEST_F(BodyStreamBufferTest, Tee) {
 
   BodyStreamBuffer* new1;
   BodyStreamBuffer* new2;
-  buffer->Tee(&new1, &new2, exception_state);
+  buffer->Tee(&new1, &new2);
 
   EXPECT_TRUE(buffer->IsStreamLocked());
   EXPECT_TRUE(buffer->IsStreamDisturbed());
@@ -132,7 +130,6 @@ TEST_F(BodyStreamBufferTest, Tee) {
 
 TEST_F(BodyStreamBufferTest, TeeFromHandleMadeFromStream) {
   V8TestingScope scope;
-  NonThrowableExceptionState exception_state;
   ScriptValue stream = EvalWithPrintingError(
       scope.GetScriptState(),
       "stream = new ReadableStream({start: c => controller = c});"
@@ -153,11 +150,11 @@ TEST_F(BodyStreamBufferTest, TeeFromHandleMadeFromStream) {
   EXPECT_CALL(checkpoint, Call(4));
 
   BodyStreamBuffer* buffer =
-      new BodyStreamBuffer(scope.GetScriptState(), stream, exception_state);
+      new BodyStreamBuffer(scope.GetScriptState(), stream);
 
   BodyStreamBuffer* new1;
   BodyStreamBuffer* new2;
-  buffer->Tee(&new1, &new2, exception_state);
+  buffer->Tee(&new1, &new2);
 
   EXPECT_TRUE(buffer->IsStreamLocked());
   // Note that this behavior is slightly different from for the behavior of
@@ -231,11 +228,10 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandleReturnsNull) {
 TEST_F(BodyStreamBufferTest,
        DrainAsBlobFromBufferMadeFromBufferMadeFromStream) {
   V8TestingScope scope;
-  NonThrowableExceptionState exception_state;
   ScriptValue stream =
       EvalWithPrintingError(scope.GetScriptState(), "new ReadableStream()");
   BodyStreamBuffer* buffer =
-      new BodyStreamBuffer(scope.GetScriptState(), stream, exception_state);
+      new BodyStreamBuffer(scope.GetScriptState(), stream);
 
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_FALSE(buffer->IsStreamLocked());
@@ -297,11 +293,10 @@ TEST_F(BodyStreamBufferTest, DrainAsFormDataReturnsNull) {
 TEST_F(BodyStreamBufferTest,
        DrainAsFormDataFromBufferMadeFromBufferMadeFromStream) {
   V8TestingScope scope;
-  NonThrowableExceptionState exception_state;
   ScriptValue stream =
       EvalWithPrintingError(scope.GetScriptState(), "new ReadableStream()");
   BodyStreamBuffer* buffer =
-      new BodyStreamBuffer(scope.GetScriptState(), stream, exception_state);
+      new BodyStreamBuffer(scope.GetScriptState(), stream);
 
   EXPECT_FALSE(buffer->HasPendingActivity());
   EXPECT_FALSE(buffer->IsStreamLocked());

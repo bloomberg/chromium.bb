@@ -236,17 +236,11 @@ Response* Response::Create(ScriptState* script_state,
         new FormDataBytesConsumer(execution_context, std::move(form_data)),
         nullptr /* AbortSignal */);
     content_type = "application/x-www-form-urlencoded;charset=UTF-8";
-  } else if (ReadableStreamOperations::IsReadableStream(
-                 script_state, body_value, exception_state)
-                 .value_or(true)) {
-    if (exception_state.HadException())
-      return nullptr;
+  } else if (ReadableStreamOperations::IsReadableStream(script_state,
+                                                        body_value)) {
     UseCounter::Count(execution_context,
                       WebFeature::kFetchResponseConstructionWithStream);
-    body_buffer =
-        new BodyStreamBuffer(script_state, body_value, exception_state);
-    if (exception_state.HadException())
-      return nullptr;
+    body_buffer = new BodyStreamBuffer(script_state, body_value);
   } else {
     String string = NativeValueTraits<IDLUSVString>::NativeValue(
         isolate, body, exception_state);
@@ -456,9 +450,7 @@ Response* Response::clone(ScriptState* script_state,
     return nullptr;
   }
 
-  FetchResponseData* response = response_->Clone(script_state, exception_state);
-  if (exception_state.HadException())
-    return nullptr;
+  FetchResponseData* response = response_->Clone(script_state);
   RefreshBody(script_state);
   Headers* headers = Headers::Create(response->HeaderList());
   headers->SetGuard(headers_->GetGuard());
