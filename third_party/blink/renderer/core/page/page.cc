@@ -618,9 +618,9 @@ void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
         if (!frame->IsLocalFrame())
           continue;
         LocalFrame* local_frame = ToLocalFrame(frame);
-        if (local_frame->Loader()
-                .StateMachine()
-                ->CommittedFirstRealDocumentLoad()) {
+        if (!local_frame->Loader()
+                 .StateMachine()
+                 ->CreatingInitialEmptyDocument()) {
           // Forcibly instantiate WindowProxy.
           local_frame->GetScriptController().WindowProxy(
               DOMWrapperWorld::MainWorld());
