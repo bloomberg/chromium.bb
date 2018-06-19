@@ -162,8 +162,7 @@ void AnalyzeZipFile(base::File zip_file,
       std::string file_basename_utf8(file.BaseName().AsUTF8Unsafe());
       if (base::StreamingUtf8Validator::Validate(file_basename_utf8))
         archived_archive->set_file_basename(file_basename_utf8);
-      archived_archive->set_download_type(
-          ClientDownloadRequest::ZIPPED_ARCHIVE);
+      archived_archive->set_download_type(ClientDownloadRequest::ARCHIVE);
     } else if (current_entry_is_executable) {
 #if defined(OS_MACOSX)
       // This check prevents running analysis on .app files since they are

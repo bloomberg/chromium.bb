@@ -57,11 +57,7 @@ void AnalyzeRarFile(base::File rar_file,
 
     bool is_executable =
         FileTypePolicies::GetInstance()->IsCheckedBinaryFile(file_path);
-    results->has_executable |= is_executable;
-
     bool is_archive = FileTypePolicies::GetInstance()->IsArchiveFile(file_path);
-    results->has_archive |= is_archive;
-
     int64 unpacked_size =
         archive->FileHead.UnpSize;  // Read from header, may not be accurate.
     // TODO(vakh): Log UMA if |unpacked_size| < 0.
@@ -72,15 +68,16 @@ void AnalyzeRarFile(base::File rar_file,
         base::StreamingUtf8Validator::Validate(basename_utf8);
 
     if (is_archive) {
+      results->has_archive = true;
       archived_archive_filenames.insert(basename);
       ClientDownloadRequest::ArchivedBinary* archived_archive =
           results->archived_binary.Add();
       if (is_utf8_valid_basename)
         archived_archive->set_file_basename(basename_utf8);
-      archived_archive->set_download_type(
-          ClientDownloadRequest::RAR_COMPRESSED_ARCHIVE);
+      archived_archive->set_download_type(ClientDownloadRequest::ARCHIVE);
       archived_archive->set_length(unpacked_size);
     } else if (is_executable) {
+      results->has_executable = true;
       ClientDownloadRequest::ArchivedBinary* archived_binary =
           results->archived_binary.Add();
       if (is_utf8_valid_basename)
