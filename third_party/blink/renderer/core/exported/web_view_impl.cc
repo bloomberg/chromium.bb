@@ -2393,10 +2393,11 @@ void WebViewImpl::ComputeScaleAndScrollForEditableElementRects(
     // the caret height will become minReadableCaretHeightForNode (adjusted
     // for dpi and font scale factor).
     const int min_readable_caret_height_for_node =
-        element_bounds_in_document.Height() >=
-                2 * caret_bounds_in_document.Height()
-            ? minReadableCaretHeightForTextArea
-            : minReadableCaretHeight;
+        (element_bounds_in_document.Height() >=
+                 2 * caret_bounds_in_document.Height()
+             ? minReadableCaretHeightForTextArea
+             : minReadableCaretHeight) *
+        MainFrameImpl()->GetFrame()->PageZoomFactor();
     new_scale = ClampPageScaleFactorToLimits(
         MaximumLegiblePageScale() * min_readable_caret_height_for_node /
         caret_bounds_in_document.Height());
