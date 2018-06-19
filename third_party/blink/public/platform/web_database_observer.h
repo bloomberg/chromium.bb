@@ -31,6 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DATABASE_OBSERVER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DATABASE_OBSERVER_H_
 
+#include "base/time/time.h"
+
 namespace blink {
 
 class WebString;
@@ -51,7 +53,7 @@ class WebDatabaseObserver {
                                         int error_site,
                                         int web_sql_error_code,
                                         int sqlite_error_code,
-                                        double call_time) {}
+                                        base::TimeDelta call_time) {}
   virtual void ReportChangeVersionResult(const WebSecurityOrigin&,
                                          const WebString& database_name,
                                          int error_site,

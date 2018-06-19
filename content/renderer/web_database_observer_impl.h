@@ -37,7 +37,7 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
                                 int callsite,
                                 int websql_error,
                                 int sqlite_error,
-                                double call_time) override;
+                                base::TimeDelta call_time) override;
   void ReportChangeVersionResult(const blink::WebSecurityOrigin& origin,
                                  const blink::WebString& database_name,
                                  int callsite,
