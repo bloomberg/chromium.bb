@@ -815,6 +815,10 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverUnpacker);
   command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverPacker);
 
+  if (IsDriveFsTest()) {
+    feature_list_.InitAndEnableFeature(drive::kDriveFs);
+  }
+
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 }
 
@@ -904,6 +908,10 @@ void FileManagerBrowserTestBase::StartTest() {
       base::FilePath(FILE_PATH_LITERAL("ui/file_manager/integration_tests"));
   LaunchExtension(test_extension_dir, GetTestExtensionManifestName());
   RunTestMessageLoop();
+}
+
+bool FileManagerBrowserTestBase::GetEnableDriveFs() const {
+  return false;
 }
 
 void FileManagerBrowserTestBase::LaunchExtension(const base::FilePath& path,
