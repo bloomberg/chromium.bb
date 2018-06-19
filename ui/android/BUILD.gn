@@ -228,6 +228,7 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/display/DisplayUtil.java",
     "java/src/org/chromium/ui/display/PhysicalDisplayAndroid.java",
     "java/src/org/chromium/ui/display/VirtualDisplayAndroid.java",
+    "java/src/org/chromium/ui/drawable/StateListDrawableBuilder.java",
     "java/src/org/chromium/ui/events/devices/InputDeviceObserver.java",
     "java/src/org/chromium/ui/gfx/BitmapHelper.java",
     "java/src/org/chromium/ui/gfx/ViewConfigurationHelper.java",
@@ -295,7 +296,11 @@ junit_binary("ui_junit_tests") {
   java_files = [
     "junit/src/org/chromium/ui/base/ClipboardTest.java",
     "junit/src/org/chromium/ui/base/SelectFileDialogTest.java",
+    "junit/src/org/chromium/ui/drawable/StateListDrawableBuilderTest.java",
     "junit/src/org/chromium/ui/text/SpanApplierTest.java",
+    "junit/src/org/chromium/ui/shadows/ShadowAppCompatResources.java",
+    "junit/src/org/chromium/ui/shadows/ShadowAppCompatResourcesTest.java",
+    "junit/src/org/chromium/ui/shadows/ShadowAnimatedStateListDrawable.java",
     "junit/src/org/chromium/ui/widget/AnchoredPopupWindowTest.java",
   ]
   deps = [
