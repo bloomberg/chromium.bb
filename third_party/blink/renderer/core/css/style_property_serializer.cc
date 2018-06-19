@@ -526,16 +526,53 @@ String StylePropertySerializer::SerializeShorthand(
   }
 }
 
-void StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
+// The font shorthand only allows keyword font-stretch values. Thus, we check if
+// a percentage value can be parsed as a keyword, and if so, serialize it as
+// that keyword.
+const CSSValue* GetFontStretchKeyword(const CSSValue* font_stretch_value) {
+  if (font_stretch_value->IsIdentifierValue())
+    return font_stretch_value;
+  if (font_stretch_value->IsPrimitiveValue()) {
+    double value = ToCSSPrimitiveValue(font_stretch_value)->GetDoubleValue();
+    if (value == 50)
+      return CSSIdentifierValue::Create(CSSValueUltraCondensed);
+    if (value == 62.5)
+      return CSSIdentifierValue::Create(CSSValueExtraCondensed);
+    if (value == 75)
+      return CSSIdentifierValue::Create(CSSValueCondensed);
+    if (value == 87.5)
+      return CSSIdentifierValue::Create(CSSValueSemiCondensed);
+    if (value == 100)
+      return CSSIdentifierValue::Create(CSSValueNormal);
+    if (value == 112.5)
+      return CSSIdentifierValue::Create(CSSValueSemiExpanded);
+    if (value == 125)
+      return CSSIdentifierValue::Create(CSSValueExpanded);
+    if (value == 150)
+      return CSSIdentifierValue::Create(CSSValueExtraExpanded);
+    if (value == 200)
+      return CSSIdentifierValue::Create(CSSValueUltraExpanded);
+  }
+  return nullptr;
+}
+
+// Returns false if the value cannot be represented in the font shorthand
+bool StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
     const CSSProperty& property,
     StringBuilder& result) const {
   int found_property_index = property_set_.FindPropertyIndex(property);
   DCHECK_NE(found_property_index, -1);
 
   const CSSValue* val = property_set_.PropertyAt(found_property_index).Value();
+  if (property.IDEquals(CSSPropertyFontStretch)) {
+    const CSSValue* keyword = GetFontStretchKeyword(val);
+    if (!keyword)
+      return false;
+    val = keyword;
+  }
   if (val->IsIdentifierValue() &&
       ToCSSIdentifierValue(val)->GetValueID() == CSSValueNormal)
-    return;
+    return true;
 
   char prefix = '\0';
   switch (property.PropertyID()) {
@@ -570,10 +607,11 @@ void StylePropertySerializer::AppendFontLonghandValueIfNotNormal(
         "no-common-ligatures no-discretionary-ligatures "
         "no-historical-ligatures no-contextual";
   } else {
-    value = property_set_.PropertyAt(found_property_index).Value()->CssText();
+    value = val->CssText();
   }
 
   result.Append(value);
+  return true;
 }
 
 String StylePropertySerializer::FontValue() const {
@@ -637,7 +675,10 @@ String StylePropertySerializer::FontValue() const {
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontVariantCaps(), result);
 
   AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontWeight(), result);
-  AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontStretch(), result);
+  bool font_stretch_valid =
+      AppendFontLonghandValueIfNotNormal(GetCSSPropertyFontStretch(), result);
+  if (!font_stretch_valid)
+    return String();
   if (!result.IsEmpty())
     result.Append(' ');
   result.Append(font_size_property.Value()->CssText());

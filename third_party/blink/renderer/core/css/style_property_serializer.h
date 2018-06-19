@@ -54,7 +54,7 @@ class StylePropertySerializer {
                            String separator = " ") const;
   String FontValue() const;
   String FontVariantValue() const;
-  void AppendFontLonghandValueIfNotNormal(const CSSProperty&,
+  bool AppendFontLonghandValueIfNotNormal(const CSSProperty&,
                                           StringBuilder& result) const;
   String OffsetValue() const;
   String BackgroundRepeatPropertyValue() const;
