@@ -15,7 +15,7 @@ component("lib") {
     ":test_support",
   ]
   public = [
-    "gpu_support.h",
+    "gpu_interface_provider.h",
     "ids.h",
     "window_delegate_impl.h",
     "window_properties.h",

@@ -177,7 +177,7 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/ws2/gpu_support.h"
+#include "services/ui/ws2/gpu_interface_provider.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -280,7 +280,7 @@ Shell* Shell::CreateInstance(ShellInitParams init_params) {
   instance_->Init(init_params.context_factory,
                   init_params.context_factory_private,
                   std::move(init_params.initial_display_prefs),
-                  std::move(init_params.gpu_support));
+                  std::move(init_params.gpu_interface_provider));
   return instance_;
 }
 
@@ -955,10 +955,11 @@ Shell::~Shell() {
   instance_ = nullptr;
 }
 
-void Shell::Init(ui::ContextFactory* context_factory,
-                 ui::ContextFactoryPrivate* context_factory_private,
-                 std::unique_ptr<base::Value> initial_display_prefs,
-                 std::unique_ptr<ui::ws2::GpuSupport> gpu_support) {
+void Shell::Init(
+    ui::ContextFactory* context_factory,
+    ui::ContextFactoryPrivate* context_factory_private,
+    std::unique_ptr<base::Value> initial_display_prefs,
+    std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider) {
   const Config config = shell_port_->GetAshConfig();
 
   // This creates the MessageCenter object which is used by some other objects
@@ -1298,7 +1299,7 @@ void Shell::Init(ui::ContextFactory* context_factory,
 
   if (config != Config::MASH) {
     window_service_owner_ =
-        std::make_unique<WindowServiceOwner>(std::move(gpu_support));
+        std::make_unique<WindowServiceOwner>(std::move(gpu_interface_provider));
     ime_focus_handler_ = std::make_unique<ImeFocusHandler>(
         focus_controller(), window_tree_host_manager_->input_method());
   }

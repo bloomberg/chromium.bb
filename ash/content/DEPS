@@ -1,5 +1,6 @@
 specific_include_rules = {
-  "content_gpu_support.*": [
+  "content_gpu_interface_provider.*": [
+    "+components/discardable_memory/public/interfaces",
     "+content/public/browser",
   ],
   "screen_orientation_delegate_chromeos.cc": [

@@ -16,7 +16,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/ui/public/interfaces/window_tree_host_factory.mojom.h"
-#include "services/ui/ws2/gpu_support.h"
+#include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "services/ui/ws2/window_tree.h"
