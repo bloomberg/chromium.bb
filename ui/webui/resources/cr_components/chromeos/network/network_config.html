@@ -17,7 +17,7 @@
     <!-- SSID (WiFi) -->
     <template is="dom-if" if="[[isType_(NetworkType_.WI_FI, type)]]" restamp>
       <cr-input id="ssid" label="[[i18n('OncWiFi-SSID')]]"
-          value="{{configProperties_.WiFi.SSID}}" disabled="[[hasGuid_(guid)]]">
+          value="{{configProperties_.WiFi.SSID}}" readonly="[[hasGuid_(guid)]]">
       </cr-input>
     </template>
 
@@ -46,7 +46,7 @@
           value="{{configProperties_.VPN.Host}}">
       </cr-input>
       <cr-input label="[[i18n('OncName')]]"
-          value="{{configProperties_.Name}}" disabled="[[hasGuid_(guid)]]">
+          value="{{configProperties_.Name}}" readonly="[[hasGuid_(guid)]]">
       </cr-input>
       <network-config-select id="outer" label="[[i18n('OncVPN-Type')]]"
           value="{{vpnType_}}" items="[[vpnTypeItems_]]"
