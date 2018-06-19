@@ -156,7 +156,8 @@ TEST_F(ExternalProviderImplChromeOSTest, AppMode) {
 
 // Normal mode, standalone app should be installed, because sync is enabled but
 // not running.
-TEST_F(ExternalProviderImplChromeOSTest, Standalone) {
+// flaky: crbug.com/854206
+TEST_F(ExternalProviderImplChromeOSTest, DISABLED_Standalone) {
   InitServiceWithExternalProviders(true);
 
   WaitForPendingStandaloneExtensionsInstalled();
@@ -167,7 +168,8 @@ TEST_F(ExternalProviderImplChromeOSTest, Standalone) {
 }
 
 // Should include only subset of default apps
-TEST_F(ExternalProviderImplChromeOSTest, StandaloneChild) {
+// flaky: crbug.com/854206
+TEST_F(ExternalProviderImplChromeOSTest, DISABLED_StandaloneChild) {
   InitServiceWithExternalProvidersAndUserType(true /* standalone */,
                                               true /* is_child */);
 
