@@ -22,6 +22,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedDownloadDelegate;
 import org.chromium.chrome.browser.download.ui.StubbedProvider.StubbedOfflineContentProvider;
@@ -31,6 +32,7 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -108,6 +110,11 @@ public class DownloadHistoryAdapterTest {
         mOfflineContentProvider = mBackendProvider.getOfflineContentProvider();
         Editor editor = ContextUtils.getAppSharedPreferences().edit();
         editor.putBoolean(PREF_SHOW_STORAGE_INFO_HEADER, true).apply();
+
+        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
+        features.put(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE, false);
+        features.put(ChromeFeatureList.DOWNLOAD_HOME_SHOW_STORAGE_INFO, false);
+        ChromeFeatureList.setTestFeatures(features);
     }
 
     private void initializeAdapter(boolean showOffTheRecord, boolean hasHeader) throws Exception {

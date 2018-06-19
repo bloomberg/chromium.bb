@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -206,8 +207,11 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
     private BackendProvider mBackendProvider;
     private @DownloadFilter.Type int mFilter = DownloadFilter.FILTER_ALL;
     private String mSearchQuery = EMPTY_QUERY;
+    // TODO(xingliu): Remove deprecated storage info. See https://crbug/853260.
     private SpaceDisplay mSpaceDisplay;
+    private StorageSummary mStorageSummary;
     private HeaderItem mSpaceDisplayHeaderItem;
+    private HeaderItem mStorageSummaryHeaderItem;
     private boolean mIsSearching;
     private boolean mShouldShowStorageInfoHeader;
     private boolean mShouldPrefetchSectionExpand;
@@ -413,6 +417,13 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         View view = mSpaceDisplay.getViewContainer();
         registerAdapterDataObserver(mSpaceDisplay);
         mSpaceDisplayHeaderItem = new HeaderItem(0, view);
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)) {
+            View storageSummaryView = LayoutInflater.from(ContextUtils.getApplicationContext())
+                                              .inflate(R.layout.download_storage_summary, null);
+            mStorageSummary = new StorageSummary((TextView) storageSummaryView);
+            mStorageSummaryHeaderItem = new HeaderItem(0, storageSummaryView);
+        }
     }
 
     /** Called when a new DownloadItem has been created by the native DownloadManager. */
@@ -634,7 +645,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         filter(mFilter, mSearchQuery, mOfflineItems, filteredTimedItems, prefetchedItems);
 
         clear(false);
-        if (!filteredTimedItems.isEmpty() && !mIsSearching && mShouldShowStorageInfoHeader) {
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)) {
+            setHeaders(mStorageSummaryHeaderItem);
+        } else if (!filteredTimedItems.isEmpty() && !mIsSearching && mShouldShowStorageInfoHeader) {
             setHeaders(mSpaceDisplayHeaderItem);
         }
 
