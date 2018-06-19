@@ -4749,3 +4749,4 @@ crbug.com/853360 [ Mac ] fast/forms/select/menulist-appearance-rtl.html [ Failur
 # Sheriff 2018-06-18
 crbug.com/853852 [ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-wheel-block-manual.tentative.html [ Pass Timeout ]
 crbug.com/854053 [ Mac10.13 Debug ] virtual/threaded/fast/animationworklet/animation-worklet-scroll-timeline.html [ Pass Crash ]
+crbug.com/854071 [ Win10 ] virtual/user-activation-v2/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
