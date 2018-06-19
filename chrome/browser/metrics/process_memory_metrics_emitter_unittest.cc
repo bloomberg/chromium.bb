@@ -170,6 +170,9 @@ void PopulateRendererMetrics(
                          metrics_mb_or_count["BlinkGC"] * 1024 * 1024);
   SetAllocatorDumpMetric(pmd, "v8", "effective_size",
                          metrics_mb_or_count["V8"] * 1024 * 1024);
+  SetAllocatorDumpMetric(
+      pmd, "v8", "allocated_objects_size",
+      metrics_mb_or_count["V8.AllocatedObjects"] * 1024 * 1024);
 
   SetAllocatorDumpMetric(pmd, "blink_objects/AdSubframe", "object_count",
                          metrics_mb_or_count["NumberOfAdSubframes"]);
@@ -213,8 +216,8 @@ base::flat_map<const char*, int64_t> GetExpectedRendererMetrics() {
         {"ProcessType", static_cast<int64_t>(ProcessType::RENDERER)},
             {"Resident", 110}, {"Malloc", 120}, {"PrivateMemoryFootprint", 130},
             {"SharedMemoryFootprint", 135}, {"PartitionAlloc", 140},
-            {"BlinkGC", 150}, {"V8", 160}, {"NumberOfExtensions", 0},
-            {"Uptime", 42},
+            {"BlinkGC", 150}, {"V8", 160}, {"V8.AllocatedObjects", 100},
+            {"NumberOfExtensions", 0}, {"Uptime", 42},
 #if defined(OS_LINUX) || defined(OS_ANDROID)
             {"PrivateSwapFootprint", 50},
 #endif

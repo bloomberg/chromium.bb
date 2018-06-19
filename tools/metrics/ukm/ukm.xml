@@ -2046,6 +2046,11 @@ be describing additional metrics about the same event.
       Measure of memory consumed by V8.
     </summary>
   </metric>
+  <metric name="V8.AllocatedObjects">
+    <summary>
+      Measure of memory consumed by live objects in V8.
+    </summary>
+  </metric>
   <metric name="WebCache">
     <summary>
       Measure of memory consumed by all resources in Blink Web Cache.
