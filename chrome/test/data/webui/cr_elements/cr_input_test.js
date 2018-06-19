@@ -21,6 +21,7 @@ suite('cr-input', function() {
       ['disabled', 'disabled', false, true],
       ['incremental', 'incremental', false, true],
       ['maxlength', 'maxLength', -1, 5],
+      ['minlength', 'minLength', -1, 5],
       ['pattern', 'pattern', '', '[a-z]+'],
       ['readonly', 'readOnly', false, true],
       ['required', 'required', false, true],

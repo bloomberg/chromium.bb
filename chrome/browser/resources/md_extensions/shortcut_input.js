@@ -57,7 +57,7 @@ cr.define('extensions', function() {
 
     /** @override */
     ready: function() {
-      const node = this.$['input'];
+      const node = this.$.input;
       node.addEventListener('mouseup', this.startCapture_.bind(this));
       node.addEventListener('blur', this.endCapture_.bind(this));
       node.addEventListener('focus', this.startCapture_.bind(this));
@@ -90,6 +90,9 @@ cr.define('extensions', function() {
      * @private
      */
     onKeyDown_: function(e) {
+      if (e.target == this.$.clear)
+        return;
+
       if (e.keyCode == extensions.Key.Escape) {
         if (!this.capturing_) {
           // If we're not currently capturing, allow escape to propagate.
@@ -117,6 +120,13 @@ cr.define('extensions', function() {
      * @private
      */
     onKeyUp_: function(e) {
+      // Ignores pressing 'Space' or 'Enter' on the clear button. In 'Enter's
+      // case, the clear button disappears before key-up, so 'Enter's key-up
+      // target becomes the input field, not the clear button, and needs to
+      // be caught explicitly.
+      if (e.target == this.$.clear || e.key == 'Enter')
+        return;
+
       if (e.keyCode == extensions.Key.Escape || e.keyCode == extensions.Key.Tab)
         return;
 
@@ -206,10 +216,11 @@ cr.define('extensions', function() {
 
     /** @private */
     onClearTap_: function() {
-      if (this.shortcut) {
-        this.pendingShortcut_ = '';
-        this.commitPending_();
-      }
+      assert(this.shortcut);
+
+      this.pendingShortcut_ = '';
+      this.commitPending_();
+      this.endCapture_();
     },
   });
 

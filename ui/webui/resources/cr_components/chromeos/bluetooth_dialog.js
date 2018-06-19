@@ -326,10 +326,10 @@ Polymer({
         (this.pairingEvent_.pairing == PairingEventType.REQUEST_PINCODE) ?
         '#pincode' :
         '#passkey';
-    var paperInput = /** @type {!PaperInputElement} */ (this.$$(inputId));
-    assert(paperInput);
-    /** @type {string} */ var value = paperInput.value;
-    return !!value && paperInput.validate();
+    var crInput = /** @type {!CrInputElement} */ (this.$$(inputId));
+    assert(crInput);
+    /** @type {string} */ var value = crInput.value;
+    return !!value && crInput.validate();
   },
 
   /**

@@ -2,13 +2,13 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="icons.html">
 <link rel="import" href="shared_styles.html">
@@ -24,18 +24,18 @@
       <div slot="body">
         <form>
           <div class="form-field-section">
-            <paper-input value="{{currentEditableObject.alias}}"
-                label="Alias"></paper-input>
-            <paper-input on-input="validatePath"
+            <cr-input value="{{currentEditableObject.alias}}"
+                label="Alias"></cr-input>
+            <cr-input on-input="validatePath"
                 id="devicePathInput"
                 value="{{currentEditableObject.path}}"
-                label="Path" on-input="validatePath"></paper-input>
-            <paper-input value="{{currentEditableObject.name}}"
-                label="Name"></paper-input>
-            <paper-input id="deviceAddressInput" on-input="handleAddressInput"
+                label="Path"></cr-input>
+            <cr-input value="{{currentEditableObject.name}}"
+                label="Name"></cr-input>
+            <cr-input id="deviceAddressInput" on-input="handleAddressInput"
                 value="{{currentEditableObject.address}}"
                 label="Address (xx:xx:xx:xx:xx:xx)"
-                maxlength="17"></paper-input>
+                maxlength="17"></cr-input>
           </div>
           <div class="form-field-section">
             <span class="toggle-button-label">Trusted</span>
@@ -78,8 +78,8 @@
                   hidden$=
                       "[[!showAuthToken(currentEditableObject.pairingMethod)]]"
                       >
-                <paper-input value="{{currentEditableObject.pairingAuthToken}}"
-                    label="Code"></paper-input>
+                <cr-input value="{{currentEditableObject.pairingAuthToken}}"
+                    label="Code"></cr-input>
               </div>
             <div class="form-field-section">
               <label>

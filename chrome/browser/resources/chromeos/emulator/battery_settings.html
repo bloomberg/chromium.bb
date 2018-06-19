@@ -1,13 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="icons.html">
 <link rel="import" href="shared_styles.html">
@@ -18,6 +19,10 @@
          See https://github.com/Polymer/polymer/pull/3668. -->
     <style include="device-emulator-shared-styles iron-flex iron-flex-alignment
         iron-positioning md-select">
+      cr-input {
+        --cr-input-error-display: none;
+        margin-bottom: var(--cr-form-field-bottom-spacing);
+      }
     </style>
     <div class="layout vertical">
       <div class="element-label">
@@ -36,17 +41,15 @@
       </label>
       <iron-collapse opened="[[isBatteryPresent(batteryState)]]">
         <div class="layout vertical">
-          <paper-input label="Battery percentage" value="[[batteryPercent]]"
+          <cr-input label="Battery percentage" value="[[batteryPercent]]"
               on-change="onBatteryPercentChange" type="number">
-          </paper-input>
-
-          <paper-input label="Seconds until empty" value="[[timeUntilEmpty]]"
+          </cr-input>
+          <cr-input label="Seconds until empty" value="[[timeUntilEmpty]]"
               on-change="onTimeUntilEmptyChange" type="number">
-          </paper-input>
-
-          <paper-input label="Seconds until full" value="[[timeUntilFull]]"
+          </cr-input>
+          <cr-input label="Seconds until full" value="[[timeUntilFull]]"
               on-change="onTimeUntilFullChange" type="number">
-          </paper-input>
+          </cr-input>
         </div>
       </iron-collapse>
 

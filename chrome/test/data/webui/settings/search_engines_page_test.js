@@ -92,14 +92,14 @@ cr.define('settings_search_engines_page', function() {
       });
 
       // Tests the dialog to add a new search engine. Specifically
-      //  - paper-input elements are empty initially.
+      //  - cr-input elements are empty initially.
       //  - action button initially disabled.
       //  - validation is triggered on 'input' event.
       //  - action button is enabled when all fields are valid.
       //  - action button triggers appropriate browser signal when tapped.
       test('DialogAddSearchEngine', function() {
         /**
-         * Triggers an 'input' event on the paper-input element and checks that
+         * Triggers an 'input' event on the cr-input element and checks that
          * validation is triggered.
          * @param {string} inputId
          * @return {!Promise}
@@ -421,7 +421,7 @@ cr.define('settings_search_engines_page', function() {
               const dialog = page.$$('settings-search-engine-dialog');
               assertTrue(!!dialog);
 
-              // Check that the paper-input fields are pre-populated.
+              // Check that the cr-input fields are pre-populated.
               assertEquals(engine.name, dialog.$.searchEngine.value);
               assertEquals(engine.keyword, dialog.$.keyword.value);
               assertEquals(engine.url, dialog.$.queryUrl.value);
