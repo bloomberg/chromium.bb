@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/services/secure_channel/ble_initiator_failure_type.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
@@ -17,6 +18,8 @@
 namespace chromeos {
 
 namespace secure_channel {
+
+class BleConnectionManager;
 
 // Attempts to connect to a remote device over BLE via the initiator role.
 class BleInitiatorOperation
@@ -28,7 +31,8 @@ class BleInitiatorOperation
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<ConnectToDeviceOperation<BleInitiatorFailureType>>
-    BuildInstance(ConnectToDeviceOperation<BleInitiatorFailureType>::
+    BuildInstance(BleConnectionManager* ble_connection_manager,
+                  ConnectToDeviceOperation<BleInitiatorFailureType>::
                       ConnectionSuccessCallback success_callback,
                   const ConnectToDeviceOperation<BleInitiatorFailureType>::
                       ConnectionFailedCallback& failure_callback,
@@ -45,6 +49,7 @@ class BleInitiatorOperation
 
  private:
   BleInitiatorOperation(
+      BleConnectionManager* ble_connection_manager,
       ConnectToDeviceOperation<
           BleInitiatorFailureType>::ConnectionSuccessCallback success_callback,
       const ConnectToDeviceOperation<
@@ -59,6 +64,15 @@ class BleInitiatorOperation
   void PerformCancellation() override;
   void PerformUpdateConnectionPriority(
       ConnectionPriority connection_priority) override;
+
+  void OnSuccessfulConnection(
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel);
+  void OnConnectionFailure(BleInitiatorFailureType failure_type);
+
+  BleConnectionManager* ble_connection_manager_;
+  bool is_attempt_active_ = false;
+
+  base::WeakPtrFactory<BleInitiatorOperation> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BleInitiatorOperation);
 };
