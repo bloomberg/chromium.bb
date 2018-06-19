@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/surface_tree_host.h"
+#include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor_lock.h"
@@ -53,6 +54,7 @@ class Surface;
 class ShellSurfaceBase : public SurfaceTreeHost,
                          public SurfaceObserver,
                          public aura::WindowObserver,
+                         public aura::client::CaptureClientObserver,
                          public views::WidgetDelegate,
                          public views::View,
                          public wm::ActivationChangeObserver {
@@ -166,6 +168,12 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // |window| must not be nullptr.
   static Surface* GetMainSurface(const aura::Window* window);
 
+  // Returns the target surface for the located event |event|.  If an
+  // event handling is grabbed by an window, it'll first examine that
+  // window, then traverse to its transeitn parent if the parent also
+  // requested grab.
+  static Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event);
+
   // Returns a trace value representing the state of the surface.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
@@ -180,6 +188,10 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;
+
+  // Overridden from CaptureClientObserver:
+  void OnCaptureChanged(aura::Window* lost_capture,
+                        aura::Window* gained_capture) override;
 
   // Overridden from views::WidgetDelegate:
   bool CanResize() const override;
@@ -278,6 +290,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // In the coordinate system of the parent root window.
   gfx::Point GetMouseLocation() const;
 
+  // Returns the bounds of the client area.nnn
+  gfx::Rect GetClientViewBounds() const;
+
   // In the local coordinate system of the window.
   virtual gfx::Rect GetShadowBounds() const;
 
@@ -288,6 +303,9 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Set the parent window of this surface.
   void SetParentWindow(aura::Window* parent);
+
+  // Start the event capture on this surface.
+  void StartCapture();
 
   const gfx::Rect& geometry() const { return geometry_; }
 
@@ -316,6 +334,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // complete. https://crbug.com/801666.
   bool client_controlled_move_resize_ = true;
   SurfaceFrameType frame_type_ = SurfaceFrameType::NONE;
+  bool is_popup_ = false;
+  bool has_grab_ = false;
 
   bool frame_enabled() const {
     return frame_type_ != SurfaceFrameType::NONE &&

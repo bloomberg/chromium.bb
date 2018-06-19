@@ -43,6 +43,12 @@ class ShellSurface : public ShellSurfaceBase,
   // Set fullscreen state for shell surface.
   void SetFullscreen(bool fullscreen);
 
+  // Make the shell surface popup type.
+  void SetPopup();
+
+  // Set event grab on the surface.
+  void Grab();
+
   // Start an interactive resize of surface. |component| is one of the windows
   // HT constants (see ui/base/hit_test.h) and describes in what direction the
   // surface should be resized.

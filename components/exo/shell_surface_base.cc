@@ -45,6 +45,7 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
@@ -236,7 +237,10 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     if (!surface)
       return false;
 
-    int component = widget_->non_client_view()->NonClientHitTest(local_point);
+    int component =
+        widget_->non_client_view()
+            ? widget_->non_client_view()->NonClientHitTest(local_point)
+            : HTNOWHERE;
     if (component != HTNOWHERE && component != HTCLIENT &&
         component != HTBORDER) {
       return true;
@@ -412,6 +416,8 @@ ShellSurfaceBase::~ShellSurfaceBase() {
     parent_->RemoveObserver(this);
   if (root_surface())
     root_surface()->RemoveSurfaceObserver(this);
+  if (has_grab_)
+    wm::CaptureController::Get()->RemoveObserver(this);
 }
 
 void ShellSurfaceBase::AcknowledgeConfigure(uint32_t serial) {
@@ -650,6 +656,41 @@ Surface* ShellSurfaceBase::GetMainSurface(const aura::Window* window) {
   return window->GetProperty(kMainSurfaceKey);
 }
 
+// static
+Surface* ShellSurfaceBase::GetTargetSurfaceForLocatedEvent(
+    ui::LocatedEvent* event) {
+  aura::Window* window = wm::CaptureController::Get()->GetCaptureWindow();
+  gfx::PointF location_in_target = event->location_f();
+
+  if (!window)
+    return Surface::AsSurface(static_cast<aura::Window*>(event->target()));
+
+  Surface* main_surface = ShellSurfaceBase::GetMainSurface(window);
+  // Skip if the event is captured by non exo windwows.
+  if (!main_surface)
+    return nullptr;
+
+  while (true) {
+    aura::Window* focused = window->GetEventHandlerForPoint(
+        gfx::ToFlooredPoint(location_in_target));
+
+    if (focused) {
+      aura::Window::ConvertPointToTarget(window, focused, &location_in_target);
+      return Surface::AsSurface(focused);
+    }
+
+    aura::Window* parent_window = wm::GetTransientParent(window);
+
+    if (!parent_window) {
+      location_in_target = event->location_f();
+      return main_surface;
+    }
+    aura::Window::ConvertPointToTarget(window, parent_window,
+                                       &location_in_target);
+    window = parent_window;
+  }
+}
+
 std::unique_ptr<base::trace_event::TracedValue>
 ShellSurfaceBase::AsTracedValue() const {
   std::unique_ptr<base::trace_event::TracedValue> value(
@@ -746,6 +787,9 @@ void ShellSurfaceBase::OnSurfaceCommit() {
       DCHECK(!widget_->IsVisible());
       pending_show_widget_ = false;
       widget_->Show();
+      if (has_grab_)
+        StartCapture();
+
       if (container_ == ash::kShellWindowId_SystemModalContainer)
         UpdateSystemModal();
     }
@@ -970,6 +1014,29 @@ void ShellSurfaceBase::GetWidgetHitTestMask(gfx::Path* mask) const {
   mask->transform(matrix);
 }
 
+void ShellSurfaceBase::OnCaptureChanged(aura::Window* lost_capture,
+                                        aura::Window* gained_capture) {
+  if (lost_capture == widget_->GetNativeWindow() && is_popup_) {
+    wm::CaptureController::Get()->RemoveObserver(this);
+    if (gained_capture &&
+        lost_capture == wm::GetTransientParent(gained_capture)) {
+      // Don't close if the capture has been transferred to the child popup.
+      return;
+    }
+    aura::Window* parent = wm::GetTransientParent(lost_capture);
+    if (parent) {
+      // The capture needs to be transferred to the parent if it had grab.
+      views::Widget* parent_widget =
+          views::Widget::GetWidgetForNativeWindow(parent);
+      ShellSurfaceBase* parent_shell_surface = static_cast<ShellSurfaceBase*>(
+          parent_widget->widget_delegate()->GetContentsView());
+      if (parent_shell_surface->has_grab_)
+        parent_shell_surface->StartCapture();
+    }
+    widget_->Close();
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // views::Views overrides:
 
@@ -1178,7 +1245,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   DCHECK(!widget_);
 
   views::Widget::InitParams params;
-  params.type = views::Widget::InitParams::TYPE_WINDOW;
+  params.type = is_popup_ ? views::Widget::InitParams::TYPE_POPUP
+                          : views::Widget::InitParams::TYPE_WINDOW;
   params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.delegate = this;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
@@ -1268,9 +1336,8 @@ void ShellSurfaceBase::Configure() {
   uint32_t serial = 0;
   if (!configure_callback_.is_null()) {
     if (widget_) {
-      const views::NonClientView* non_client_view = widget_->non_client_view();
       serial = configure_callback_.Run(
-          non_client_view->frame_view()->GetBoundsForClientView().size(),
+          GetClientViewBounds().size(),
           ash::wm::GetWindowState(widget_->GetNativeWindow())->GetStateType(),
           IsResizing(), widget_->IsActive(), origin_offset);
     } else {
@@ -1349,10 +1416,7 @@ void ShellSurfaceBase::SetWidgetBounds(const gfx::Rect& bounds) {
 }
 
 void ShellSurfaceBase::UpdateSurfaceBounds() {
-  gfx::Point origin = widget_->non_client_view()
-                          ->frame_view()
-                          ->GetBoundsForClientView()
-                          .origin();
+  gfx::Point origin = GetClientViewBounds().origin();
 
   origin += GetSurfaceOrigin().OffsetFromOrigin();
   origin -= ToFlooredVector2d(ScaleVector2d(
@@ -1411,6 +1475,14 @@ gfx::Point ShellSurfaceBase::GetMouseLocation() const {
   aura::Window::ConvertPointToTarget(
       root_window, widget_->GetNativeWindow()->parent(), &location);
   return location;
+}
+
+gfx::Rect ShellSurfaceBase::GetClientViewBounds() const {
+  return widget_->non_client_view()
+             ? widget_->non_client_view()
+                   ->frame_view()
+                   ->GetBoundsForClientView()
+             : gfx::Rect(widget_->GetWindowBoundsInScreen().size());
 }
 
 gfx::Rect ShellSurfaceBase::GetShadowBounds() const {
@@ -1551,8 +1623,11 @@ void ShellSurfaceBase::EndDrag(bool revert) {
 gfx::Rect ShellSurfaceBase::GetWidgetBounds() const {
   gfx::Rect visible_bounds = GetVisibleBounds();
   gfx::Rect new_widget_bounds =
-      widget_->non_client_view()->GetWindowBoundsForClientBounds(
-          visible_bounds);
+      widget_->non_client_view()
+          ? widget_->non_client_view()->GetWindowBoundsForClientBounds(
+                visible_bounds)
+          : visible_bounds;
+
   if (movement_disabled_) {
     new_widget_bounds.set_origin(origin_);
   } else if (resize_component_ == HTCAPTION) {
@@ -1574,8 +1649,8 @@ gfx::Point ShellSurfaceBase::GetSurfaceOrigin() const {
   DCHECK(!movement_disabled_ || resize_component_ == HTCAPTION);
 
   gfx::Rect visible_bounds = GetVisibleBounds();
-  gfx::Rect client_bounds =
-      widget_->non_client_view()->frame_view()->GetBoundsForClientView();
+  gfx::Rect client_bounds = GetClientViewBounds();
+
   switch (resize_component_) {
     case HTCAPTION:
       return gfx::Point() + origin_offset_ - visible_bounds.OffsetFromOrigin();
@@ -1617,6 +1692,13 @@ void ShellSurfaceBase::SetParentWindow(aura::Window* parent) {
   // If |parent_| is set effects the ability to maximize the window.
   if (widget_)
     widget_->OnSizeConstraintsChanged();
+}
+
+void ShellSurfaceBase::StartCapture() {
+  widget_->set_auto_release_capture(false);
+  wm::CaptureController::Get()->AddObserver(this);
+  // Just capture on the window.
+  widget_->SetCapture(nullptr /* view */);
 }
 
 }  // namespace exo

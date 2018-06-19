@@ -140,6 +140,17 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
   widget_->SetFullscreen(fullscreen);
 }
 
+void ShellSurface::SetPopup() {
+  DCHECK(!widget_);
+  is_popup_ = true;
+}
+
+void ShellSurface::Grab() {
+  DCHECK(is_popup_);
+  DCHECK(!widget_);
+  has_grab_ = true;
+}
+
 void ShellSurface::Resize(int component) {
   TRACE_EVENT1("exo", "ShellSurface::Resize", "component", component);
 
