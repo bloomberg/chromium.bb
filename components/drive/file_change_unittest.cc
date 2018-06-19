@@ -4,6 +4,7 @@
 
 #include "components/drive/file_change.h"
 
+#include "components/drive/drive.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -55,6 +56,32 @@ TEST(ChangeListTest, FileChange) {
 
   ASSERT_EQ(3u, changed_files.size());
   ASSERT_EQ(2u, changed_files.CountDirectory(change_dir));
+}
+
+TEST(ChangeListTest, TeamDriveRootChange) {
+  base::FilePath team_drive1(FILE_PATH_LITERAL("a/b/c"));
+  base::FilePath team_drive2(FILE_PATH_LITERAL("a/b/d"));
+
+  ResourceEntry resource;
+  resource.mutable_file_info()->set_is_directory(true);
+  resource.mutable_file_info()->set_is_team_drive_root(true);
+
+  FileChange changed_files;
+  resource.set_resource_id("team_drive_id_1");
+  changed_files.Update(team_drive1, resource,
+                       FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
+
+  resource.set_resource_id("team_drive_id_2");
+  changed_files.Update(team_drive2, resource,
+                       FileChange::CHANGE_TYPE_ADD_OR_UPDATE);
+
+  ASSERT_EQ(2UL, changed_files.size());
+
+  const FileChange::Map& change_map = changed_files.map();
+  ASSERT_EQ("team_drive_id_1",
+            change_map.at(team_drive1).front().team_drive_id());
+  ASSERT_EQ("team_drive_id_2",
+            change_map.at(team_drive2).front().team_drive_id());
 }
 
 }  // namespace drive
