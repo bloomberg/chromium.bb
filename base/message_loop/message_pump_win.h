@@ -209,7 +209,7 @@ class BASE_EXPORT MessagePumpForIO : public MessagePumpWin {
   // Register the handler to be used when asynchronous IO for the given file
   // completes. The registration persists as long as |file_handle| is valid, so
   // |handler| must be valid as long as there is pending IO for the given file.
-  void RegisterIOHandler(HANDLE file_handle, IOHandler* handler);
+  HRESULT RegisterIOHandler(HANDLE file_handle, IOHandler* handler);
 
   // Register the handler to be used to process job events. The registration
   // persists as long as the job object is live, so |handler| must be valid

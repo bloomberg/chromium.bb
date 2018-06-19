@@ -119,8 +119,10 @@ FileStream::Context::IOResult FileStream::Context::SeekFileImpl(
 }
 
 void FileStream::Context::OnFileOpened() {
-  base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(
+  HRESULT hr = base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(
       file_.GetPlatformFile(), this);
+  if (!SUCCEEDED(hr))
+    file_.Close();
 }
 
 void FileStream::Context::IOCompletionIsPending(CompletionOnceCallback callback,

@@ -201,11 +201,11 @@ bool MessageLoopCurrentForIO::IsSet() {
 #if !defined(OS_NACL_SFI)
 
 #if defined(OS_WIN)
-void MessageLoopCurrentForIO::RegisterIOHandler(
+HRESULT MessageLoopCurrentForIO::RegisterIOHandler(
     HANDLE file,
     MessagePumpForIO::IOHandler* handler) {
   DCHECK_CALLED_ON_VALID_THREAD(current_->bound_thread_checker_);
-  pump_->RegisterIOHandler(file, handler);
+  return pump_->RegisterIOHandler(file, handler);
 }
 
 bool MessageLoopCurrentForIO::RegisterJobObject(

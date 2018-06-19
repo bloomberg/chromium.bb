@@ -21,6 +21,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -804,6 +805,27 @@ TEST_F(FileStreamTest, ReadError) {
   stream.reset();
   base::RunLoop().RunUntilIdle();
 }
+
+#if defined(OS_WIN)
+// Verifies that a FileStream will close itself if it receives a File whose
+// async flag doesn't match the async state of the underlying handle.
+TEST_F(FileStreamTest, AsyncFlagMismatch) {
+  // Open the test file without async, then make a File with the same sync
+  // handle but with the async flag set to true.
+  uint32_t flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+  base::File file(temp_file_path(), flags);
+  base::File lying_file =
+      base::File::CreateForAsyncHandle(file.TakePlatformFile());
+  ASSERT_TRUE(lying_file.IsValid());
+
+  FileStream stream(std::move(lying_file), base::ThreadTaskRunnerHandle::Get());
+  ASSERT_FALSE(stream.IsOpen());
+  TestCompletionCallback callback;
+  scoped_refptr<IOBufferWithSize> buf = new IOBufferWithSize(4);
+  int rv = stream.Read(buf.get(), buf->size(), callback.callback());
+  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_UNEXPECTED));
+}
+#endif
 
 #if defined(OS_ANDROID)
 TEST_F(FileStreamTest, ContentUriRead) {

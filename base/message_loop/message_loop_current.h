@@ -265,7 +265,7 @@ class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
 
 #if defined(OS_WIN)
   // Please see MessagePumpWin for definitions of these methods.
-  void RegisterIOHandler(HANDLE file, MessagePumpForIO::IOHandler* handler);
+  HRESULT RegisterIOHandler(HANDLE file, MessagePumpForIO::IOHandler* handler);
   bool RegisterJobObject(HANDLE job, MessagePumpForIO::IOHandler* handler);
   bool WaitForIOCompletion(DWORD timeout, MessagePumpForIO::IOHandler* filter);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
