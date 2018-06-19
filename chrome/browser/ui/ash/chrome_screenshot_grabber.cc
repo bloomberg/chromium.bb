@@ -22,6 +22,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/syslog_logging.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -538,6 +539,10 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
             weak_factory_.GetWeakPtr(), result, screenshot_path, gfx::Image()));
     return;
   }
+
+#if defined(OS_CHROMEOS)
+  SYSLOG(INFO) << "Screenshot taken";
+#endif
 
   if (drive::util::IsUnderDriveMountPoint(screenshot_path)) {
     drive::FileSystemInterface* file_system =
