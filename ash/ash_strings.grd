@@ -488,8 +488,25 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_SHUTDOWN" desc="The accessible text for the shutdown button.">
         Shut down
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_COLLAPSE" desc="The accessible text for the collapse button of system menu.">
-        Collapse
+      <message name="IDS_ASH_STATUS_TRAY_COLLAPSE" desc="The accessible text for the button to collapse system menu.">
+        Collapse menu
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_EXPAND" desc="The accessible text for the button to expand system menu.">
+        Expand menu
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL" desc="The label text shown under do not disturb button in system tray bubble.">
+        Notifications
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_ON_SUBLABEL" desc="The sub label text shown under do not disturb button when all notifications are enabled.">
+        On, all apps
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_OFF_FOR_APPS_SUBLABEL" desc="The sub label text shown under do not disturb button when some notifications are disabled. [ICU Syntax]">
+        {NUM_APPS, plural,
+         =1 {Off for an app}
+         other {Off for # apps}}
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_SUBLABEL" desc="The sub label text shown under do not disturb button when all notifications are disabled.">
+        Do not disturb
       </message>
 
       <!-- Status tray enterprise management. -->
@@ -715,6 +732,27 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_NETWORK_AUTOCONNECT_NOTIFICATION_MESSAGE" desc="Message displayed in the system notification shown when a network has been auto-connected (e.g., when an enterprise policy is applied which initiates a connection to a corporate network like Google-A).">
         Your connection has switched to a more secure network
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_LABEL" desc="The label text used when network is not connected.">
+        Not connected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_DISCONNECTED_SUBLABEL" desc="The sub label text used when network is not connected.">
+        No networks
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK_SUBLABEL" desc="The sub label text used when WiFi signal strength is weak (among weak, medium, and strong.)">
+        Weak
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM_SUBLABEL" desc="The sub label text used when WiFi signal strength is medium (among weak, medium, and strong.)">
+        Medium
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG_SUBLABEL" desc="The sub label text used when WiFi signal strength is strong (among weak, medium, and strong.)">
+        Strong
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING_SUBLABEL" desc="The sub label text used when network is connecting. The network name is shown above this label.">
+        Connecting
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING_SUBLABEL" desc="The sub label text used when network is activating. The network name is shown above this label.">
+        Activating
       </message>
 
       <!-- Status Tray Network strings -->

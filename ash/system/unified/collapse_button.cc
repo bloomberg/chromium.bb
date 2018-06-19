@@ -108,13 +108,17 @@ CollapseButton::CollapseButton(views::ButtonListener* listener)
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(kNotificationCenterCollapseIcon,
                                  kCollapseIconSize, kUnifiedMenuIconColor));
-  SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_COLLAPSE));
 }
 
 CollapseButton::~CollapseButton() = default;
 
 void CollapseButton::SetExpandedAmount(double expanded_amount) {
   expanded_amount_ = expanded_amount;
+  if (expanded_amount == 0.0 || expanded_amount == 1.0) {
+    SetTooltipText(l10n_util::GetStringUTF16(expanded_amount == 1.0
+                                                 ? IDS_ASH_STATUS_TRAY_COLLAPSE
+                                                 : IDS_ASH_STATUS_TRAY_EXPAND));
+  }
   SchedulePaint();
 }
 
