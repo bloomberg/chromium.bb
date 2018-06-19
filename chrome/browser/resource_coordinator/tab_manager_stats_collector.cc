@@ -333,10 +333,15 @@ void RecordLifecycleStateChangeUkm(
   }
 
   // Set all visibility related fields.
+  //
+  // |time_since_visible| is:
+  // - Zero if the LifecycleUnit is currently visible.
+  // - Time since creation if the LifecycleUnit was never visible.
+  // - Time since visible if the LifecycleUnit was visible in the past.
   auto visibility = lifecycle_unit->GetVisibility();
   base::TimeDelta time_since_visible;  // Zero.
   if (visibility != content::Visibility::VISIBLE)
-    time_since_visible = NowTicks() - lifecycle_unit->GetLastVisibleTime();
+    time_since_visible = NowTicks() - lifecycle_unit->GetLastActiveTime();
   builder.SetTimeSinceVisibilityStateChangeMs(
       time_since_visible.InMilliseconds());
   builder.SetVisibilityState(static_cast<int64_t>(visibility));
