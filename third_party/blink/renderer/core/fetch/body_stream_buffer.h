@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_BODY_STREAM_BUFFER_H_
 
 #include <memory>
+#include "base/optional.h"
 #include "third_party/blink/public/platform/web_data_consumer_handle.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -20,6 +21,7 @@
 namespace blink {
 
 class EncodedFormData;
+class ExceptionState;
 class ScriptState;
 
 class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
@@ -36,7 +38,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
                    AbortSignal* /* signal */);
   // |ReadableStreamOperations::isReadableStream(stream)| must hold.
   // This function must be called with entering an appropriate V8 context.
-  BodyStreamBuffer(ScriptState*, ScriptValue stream);
+  BodyStreamBuffer(ScriptState*, ScriptValue stream, ExceptionState&);
 
   ScriptValue Stream();
 
@@ -45,7 +47,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
       BytesConsumer::BlobSizePolicy);
   scoped_refptr<EncodedFormData> DrainAsFormData();
   void StartLoading(FetchDataLoader*, FetchDataLoader::Client* /* client */);
-  void Tee(BodyStreamBuffer**, BodyStreamBuffer**);
+  void Tee(BodyStreamBuffer**, BodyStreamBuffer**, ExceptionState&);
 
   // UnderlyingSourceBase
   ScriptPromise pull(ScriptState*) override;
@@ -86,6 +88,13 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void EndLoading();
   void StopLoading();
 
+  // Implementation of IsStream*() methods. Sets |stream_broken_| if |predicate|
+  // returns empty. Returns |fallback_value| if |stream_broken_| is or becomes
+  // true.
+  bool BooleanStreamOperationOrFallback(
+      base::Optional<bool> (*predicate)(ScriptState*, ScriptValue),
+      bool fallback_value);
+
   scoped_refptr<ScriptState> script_state_;
   Member<BytesConsumer> consumer_;
   // We need this member to keep it alive while loading.
@@ -96,6 +105,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   bool stream_needs_more_ = false;
   bool made_from_readable_stream_;
   bool in_process_data_ = false;
+  bool stream_broken_ = false;
   DISALLOW_COPY_AND_ASSIGN(BodyStreamBuffer);
 };
 
