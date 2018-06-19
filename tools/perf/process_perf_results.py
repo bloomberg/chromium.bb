@@ -341,6 +341,7 @@ def _handle_perf_results(
       for benchmark_name, directories in benchmark_directory_map.iteritems():
         if not benchmark_enabled_map[benchmark_name]:
           continue
+        upload_begin_time = time.time()
         # There are potentially multiple directores with results, re-write and
         # merge them if necessary
         results_filename = None
@@ -361,6 +362,9 @@ def _handle_perf_results(
             build_properties, oauth_file, tmpfile_dir, logdog_dict,
             ('.reference' in benchmark_name))
         upload_failure = upload_failure or upload_fail
+        upload_end_time = time.time()
+        print_duration(('%s upload time' % (benchmark_name)),
+                       upload_begin_time, upload_end_time)
 
     logdog_file_name = _generate_unique_logdog_filename('Results_Dashboard_')
     logdog_stream = logdog_helper.text(logdog_file_name,
@@ -370,13 +374,13 @@ def _handle_perf_results(
     if upload_failure:
       logdog_label += ' Upload Failure'
     extra_links[logdog_label] = logdog_stream
+    end_time = time.time()
+    print_duration('Uploading results to perf dashboard', begin_time, end_time)
     if upload_failure:
       return 1
     return 0
   finally:
     shutil.rmtree(tmpfile_dir)
-  end_time = time.time()
-  print_duration('Uploading results to perf dashboard', begin_time, end_time)
 
 
 def _upload_and_write_perf_data_to_logfile(benchmark_name, results_file,
