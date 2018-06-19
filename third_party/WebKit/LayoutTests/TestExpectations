@@ -1999,6 +1999,7 @@ crbug.com/636207 [ Win Debug ] fast/dom/HTMLImageElement/image-srcset-w-onerror.
 crbug.com/569139 fast/js/string-replace-2.html [ Failure ]
 crbug.com/569139 fast/js/regexp-caching.html [ Failure ]
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
+crbug.com/597221 virtual/user-activation-v2/fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
 
 crbug.com/498539 http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
 crbug.com/498539 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-bound-function.js [ Pass Failure ]
@@ -2051,6 +2052,7 @@ crbug.com/688613 virtual/feature-policy-permissions/external/wpt/mediacapture-st
 crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
 crbug.com/766135 fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
+crbug.com/766135 virtual/user-activation-v2/fast/dom/Window/redirect-with-timer.html [ Timeout Pass ]
 
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
@@ -4035,6 +4037,7 @@ crbug.com/734873 [ Linux ] fast/backgrounds/size/contain-and-cover.html [ Pass F
 crbug.com/731509 [ Win ] css3/viewport-percentage-lengths/viewport-percentage-lengths-resize.html [ Failure Pass Timeout ]
 
 crbug.com/731535 [ Mac Win7 ] fast/dom/Window/window-resize-contents.html [ Failure Pass ]
+crbug.com/731535 [ Mac Win7 ] virtual/user-activation-v2/fast/dom/Window/window-resize-contents.html [ Failure Pass ]
 
 crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Timeout Pass ]
 
@@ -4522,6 +4525,7 @@ crbug.com/806249 virtual/video-surface-layer/media/picture-in-picture/controls/p
 crbug.com/816475 [ Win7 Linux ] external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass ]
 crbug.com/816914 [ Mac ] fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
 crbug.com/816766 [ Mac ] fast/dom/Window/window-focus-self.html [ Failure Pass ]
+crbug.com/816766 [ Mac ] virtual/user-activation-v2/fast/dom/Window/window-focus-self.html [ Failure Pass ]
 crbug.com/817167 http/tests/devtools/oopif/oopif-cookies-refresh.js [ Failure Timeout Pass ]
 
 # Sheriff 2018-03-02

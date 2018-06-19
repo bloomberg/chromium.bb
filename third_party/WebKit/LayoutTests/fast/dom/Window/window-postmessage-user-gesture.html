@@ -56,14 +56,20 @@ function onMessageFrame(event) {
     if (msg.count < msg.bounceTotal)
         document.getElementById("subframe").contentWindow.postMessage(msg, "*");
     else {
-        if (msg.consumeCount == 1)
-            testPassed("Bounce postMessages between self and frame window and" +
-                " the user gesture is only consumed once " +
-                (consumeInFrame ? "in frame" : "in self window"));
+        var outputStr = "Bounce postMessages between self and frame window" +
+            " and the user gesture is consumed " +
+            (msg.consumeCount == 1? "only once " : msg.consumeCount + " times ") +
+            (consumeInFrame ? "in frame" : "in self window");
+
+        var consumeCountIsCorrect = (msg.consumeCount == 1);
+        if (internals.runtimeFlags.userActivationV2Enabled)
+            consumeCountIsCorrect = (!consumeInFrame && msg.consumeCount == 1) ||
+                                    (consumeInFrame && msg.consumeCount == 0);
+
+        if (consumeCountIsCorrect)
+            testPassed(outputStr);
         else
-            testFailed("Bounce postMessages between self and frame window and" +
-                " the user gesture is consumed " + msg.consumeCount + " times "+
-                (consumeInFrame ? "in frame" : "in self window"));
+            testFailed(outputStr);
 
         if (!consumeInFrame) {
             consumeInFrame = true;
