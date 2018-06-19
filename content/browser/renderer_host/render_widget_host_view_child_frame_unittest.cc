@@ -141,12 +141,11 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   }
 
   viz::SurfaceId GetSurfaceId() const {
-    return viz::SurfaceId(view_->frame_sink_id_,
-                          view_->last_received_local_surface_id_);
+    return view_->last_activated_surface_info_.id();
   }
 
   viz::LocalSurfaceId GetLocalSurfaceId() const {
-    return view_->last_received_local_surface_id_;
+    return GetSurfaceId().local_surface_id();
   }
 
  protected:

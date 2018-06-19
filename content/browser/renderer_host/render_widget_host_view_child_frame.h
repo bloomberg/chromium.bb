@@ -212,7 +212,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   }
 
   // Returns the current surface scale factor.
-  float current_surface_scale_factor() { return current_surface_scale_factor_; }
+  float current_surface_scale_factor() {
+    return last_activated_surface_info_.device_scale_factor();
+  }
 
   // Returns the view into which this view is directly embedded. This can
   // return nullptr when this view's associated child frame is not connected
@@ -267,9 +269,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // Surface-related state.
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
-  viz::LocalSurfaceId last_received_local_surface_id_;
-  gfx::Size current_surface_size_;
-  float current_surface_scale_factor_;
+  viz::SurfaceInfo last_activated_surface_info_;
   gfx::Rect last_screen_rect_;
 
   // frame_connector_ provides a platform abstraction. Messages
@@ -295,8 +295,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void CreateCompositorFrameSinkSupport();
   void ResetCompositorFrameSinkSupport();
   void DetachFromTouchSelectionClientManagerIfNecessary();
-
-  virtual bool HasEmbedderChanged();
 
   // Returns false if the view cannot be shown. This is the case where the frame
   // associated with this view or a cross process ancestor frame has been hidden

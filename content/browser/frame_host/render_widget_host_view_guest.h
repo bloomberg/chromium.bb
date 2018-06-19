@@ -190,8 +190,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void ProcessTouchpadPinchAckInRoot(const blink::WebGestureEvent& event,
                                      InputEventAckState ack_result);
 
-  bool HasEmbedderChanged() override;
-
 #if defined(USE_AURA)
   void OnGotEmbedToken(const base::UnguessableToken& token);
 #endif

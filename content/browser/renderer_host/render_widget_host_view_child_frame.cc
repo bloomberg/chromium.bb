@@ -69,7 +69,6 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       frame_sink_id_(
           base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
           base::checked_cast<uint32_t>(widget_host->GetRoutingID())),
-      current_surface_scale_factor_(1.f),
       frame_connector_(nullptr),
       enable_viz_(
           base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
@@ -134,7 +133,6 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
 
   if (frame_connector_) {
     SetParentFrameSinkId(viz::FrameSinkId());
-    last_received_local_surface_id_ = viz::LocalSurfaceId();
 
     // Unlocks the mouse if this RenderWidgetHostView holds the lock.
     UnlockMouse();
@@ -175,6 +173,8 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
         GetWindowTreeClientFromRenderer());
   }
 #endif
+
+  SendSurfaceInfoToEmbedder();
 }
 
 #if defined(USE_AURA)
@@ -636,10 +636,9 @@ void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
   if (!features::IsAshInBrowserProcess())
     return;
-  viz::SurfaceId surface_id(frame_sink_id_, last_received_local_surface_id_);
-  viz::SurfaceInfo surface_info(surface_id, current_surface_scale_factor_,
-                                current_surface_size_);
-  SendSurfaceInfoToEmbedderImpl(surface_info);
+  if (!last_activated_surface_info_.is_valid())
+    return;
+  SendSurfaceInfoToEmbedderImpl(last_activated_surface_info_);
 }
 
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl(
@@ -655,20 +654,8 @@ void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
   DCHECK(!enable_viz_);
   TRACE_EVENT0("content",
                "RenderWidgetHostViewChildFrame::OnSwapCompositorFrame");
-  current_surface_size_ = frame.size_in_pixels();
-  current_surface_scale_factor_ = frame.device_scale_factor();
-
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                   std::move(hit_test_region_list));
-  has_frame_ = true;
-
-  if (last_received_local_surface_id_ != local_surface_id ||
-      HasEmbedderChanged()) {
-    last_received_local_surface_id_ = local_surface_id;
-    SendSurfaceInfoToEmbedder();
-  }
-
-  ProcessFrameSwappedCallbacks();
 }
 
 void RenderWidgetHostViewChildFrame::OnDidNotProduceFrame(
@@ -770,7 +757,7 @@ viz::FrameSinkId RenderWidgetHostViewChildFrame::GetRootFrameSinkId() {
 }
 
 viz::SurfaceId RenderWidgetHostViewChildFrame::GetCurrentSurfaceId() const {
-  return viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_);
+  return last_activated_surface_info_.id();
 }
 
 bool RenderWidgetHostViewChildFrame::HasSize() const {
@@ -781,12 +768,12 @@ gfx::PointF RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpaceF(
     const gfx::PointF& point) {
   // LocalSurfaceId is not needed in Viz hit-test.
   if (!frame_connector_ ||
-      (!use_viz_hit_test_ && !last_received_local_surface_id_.is_valid())) {
+      (!use_viz_hit_test_ && !last_activated_surface_info_.is_valid())) {
     return point;
   }
 
   return frame_connector_->TransformPointToRootCoordSpace(
-      point, viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_));
+      point, last_activated_surface_info_.id());
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpaceLegacy(
@@ -794,12 +781,11 @@ bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpaceLegacy(
     const viz::SurfaceId& original_surface,
     gfx::PointF* transformed_point) {
   *transformed_point = point;
-  if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
+  if (!frame_connector_ || !last_activated_surface_info_.is_valid())
     return false;
 
   return frame_connector_->TransformPointToLocalCoordSpaceLegacy(
-      point, original_surface,
-      viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_),
+      point, original_surface, last_activated_surface_info_.id(),
       transformed_point);
 }
 
@@ -810,7 +796,7 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     viz::EventSource source) {
   // LocalSurfaceId is not needed in Viz hit-test.
   if (!frame_connector_ ||
-      (!use_viz_hit_test_ && !last_received_local_surface_id_.is_valid())) {
+      (!use_viz_hit_test_ && !last_activated_surface_info_.is_valid())) {
     return false;
   }
 
@@ -820,9 +806,8 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
   }
 
   return frame_connector_->TransformPointToCoordSpaceForView(
-      point, target_view,
-      viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_),
-      transformed_point, source);
+      point, target_view, last_activated_surface_info_.id(), transformed_point,
+      source);
 }
 
 gfx::PointF RenderWidgetHostViewChildFrame::TransformRootPointToViewCoordSpace(
@@ -913,11 +898,11 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
               std::move(callback)));
 
   if (src_subrect.IsEmpty()) {
-    request->set_area(gfx::Rect(current_surface_size_));
+    request->set_area(gfx::Rect(last_activated_surface_info_.size_in_pixels()));
   } else {
     // |src_subrect| is in DIP coordinates; convert to Surface coordinates.
-    request->set_area(
-        gfx::ScaleToRoundedRect(src_subrect, current_surface_scale_factor_));
+    request->set_area(gfx::ScaleToRoundedRect(
+        src_subrect, last_activated_surface_info_.device_scale_factor()));
   }
 
   if (!output_size.IsEmpty()) {
@@ -934,8 +919,7 @@ void RenderWidgetHostViewChildFrame::CopyFromSurface(
   }
 
   GetHostFrameSinkManager()->RequestCopyOfOutput(
-      viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_),
-      std::move(request));
+      last_activated_surface_info_.id(), std::move(request));
 }
 
 void RenderWidgetHostViewChildFrame::ReclaimResources(
@@ -958,7 +942,10 @@ void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {
 
 void RenderWidgetHostViewChildFrame::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
+  last_activated_surface_info_ = surface_info;
+  has_frame_ = true;
   SendSurfaceInfoToEmbedderImpl(surface_info);
+  ProcessFrameSwappedCallbacks();
 }
 
 void RenderWidgetHostViewChildFrame::OnFrameTokenChanged(uint32_t frame_token) {
@@ -1148,10 +1135,6 @@ void RenderWidgetHostViewChildFrame::ResetCompositorFrameSinkSupport() {
         parent_frame_sink_id_, frame_sink_id_);
   }
   support_.reset();
-}
-
-bool RenderWidgetHostViewChildFrame::HasEmbedderChanged() {
-  return false;
 }
 
 bool RenderWidgetHostViewChildFrame::GetSelectionRange(
