@@ -250,7 +250,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       const ResourceResponse&) override {}
 
   void DispatchDidHandleOnloadEvents() override {}
-  void DispatchDidReceiveServerRedirectForProvisionalLoad() override {}
   void DispatchWillCommitProvisionalLoad() override {}
   void DispatchDidStartProvisionalLoad(DocumentLoader*,
                                        ResourceRequest&) override {}

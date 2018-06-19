@@ -91,11 +91,6 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     Base::DidStartProvisionalLoad(document_loader, request);
   }
 
-  void DidReceiveServerRedirectForProvisionalLoad() override {
-    test_client()->DidReceiveServerRedirectForProvisionalLoad();
-    Base::DidReceiveServerRedirectForProvisionalLoad();
-  }
-
   void DidFailProvisionalLoad(
       const blink::WebURLError& error,
       blink::WebHistoryCommitType commit_type) override {

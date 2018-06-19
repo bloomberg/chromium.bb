@@ -3984,11 +3984,6 @@ void RenderFrameImpl::DidStartProvisionalLoad(
       navigation_start));
 }
 
-void RenderFrameImpl::DidReceiveServerRedirectForProvisionalLoad() {
-  // TODO(creis): Determine if this can be removed or if we need to clear any
-  // local state here to fix https://crbug.com/671276.
-}
-
 void RenderFrameImpl::DidFailProvisionalLoad(
     const WebURLError& error,
     blink::WebHistoryCommitType commit_type) {
