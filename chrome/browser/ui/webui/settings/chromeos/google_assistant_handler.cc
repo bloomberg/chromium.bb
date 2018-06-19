@@ -10,6 +10,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_service_manager.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -35,6 +37,13 @@ void GoogleAssistantHandler::RegisterMessages() {
       base::BindRepeating(
           &GoogleAssistantHandler::HandleSetGoogleAssistantContextEnabled,
           base::Unretained(this)));
+  if (chromeos::switches::IsAssistantEnabled()) {
+    web_ui()->RegisterMessageCallback(
+        "setGoogleAssistantHotwordEnabled",
+        base::BindRepeating(
+            &GoogleAssistantHandler::HandleSetGoogleAssistantHotwordEnabled,
+            base::Unretained(this)));
+  }
   web_ui()->RegisterMessageCallback(
       "showGoogleAssistantSettings",
       base::BindRepeating(
@@ -70,6 +79,17 @@ void GoogleAssistantHandler::HandleSetGoogleAssistantContextEnabled(
     service->SetVoiceInteractionContextEnabled(enabled);
 }
 
+void GoogleAssistantHandler::HandleSetGoogleAssistantHotwordEnabled(
+    const base::ListValue* args) {
+  CHECK(chromeos::switches::IsAssistantEnabled());
+
+  CHECK_EQ(1U, args->GetSize());
+  bool enabled;
+  CHECK(args->GetBoolean(0, &enabled));
+
+  // TODO(b/110219351) Handle toggle hotword.
+}
+
 void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
     const base::ListValue* args) {
   auto* service =
@@ -80,6 +100,12 @@ void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
 
 void GoogleAssistantHandler::HandleTurnOnGoogleAssistant(
     const base::ListValue* args) {
+  if (chromeos::switches::IsAssistantEnabled()) {
+    if (!chromeos::AssistantOptInDialog::IsActive())
+      chromeos::AssistantOptInDialog::Show();
+    return;
+  }
+
   auto* service =
       arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(profile_);
   if (service)

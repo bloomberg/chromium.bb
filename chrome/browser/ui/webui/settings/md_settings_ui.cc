@@ -201,7 +201,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       std::make_unique<chromeos::settings::CupsPrintersHandler>(web_ui));
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::FingerprintHandler>(profile));
-  if (chromeos::switches::IsVoiceInteractionEnabled()) {
+  if (chromeos::switches::IsVoiceInteractionEnabled() ||
+      chromeos::switches::IsAssistantEnabled()) {
     AddSettingsPageUIHandler(
         std::make_unique<chromeos::settings::GoogleAssistantHandler>(profile));
   }

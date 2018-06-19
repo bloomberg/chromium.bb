@@ -47,10 +47,18 @@ Polymer({
     },
 
     /** @private */
+    assistantFeatureEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableAssistant');
+      },
+    },
+
+    /** @private */
     assistantOn_: {
       type: Boolean,
-      computed:
-          'isAssistantTurnedOn_(arcEnabled, voiceInteractionValuePropAccepted)',
+      computed: 'isAssistantTurnedOn_(arcEnabled, ' +
+          'voiceInteractionValuePropAccepted, assistantFeatureEnabled_)',
     }
     // </if>
   },
@@ -137,10 +145,12 @@ Polymer({
   /** @private
    *  @param {boolean} arcEnabled
    *  @param {boolean} valuePropAccepted
+   *  @param {boolean} assistantFeatureEnabled
    *  @return {boolean}
    */
-  isAssistantTurnedOn_: function(arcEnabled, valuePropAccepted) {
-    return arcEnabled && valuePropAccepted;
+  isAssistantTurnedOn_: function(
+      arcEnabled, valuePropAccepted, assistantFeatureEnabled) {
+    return (arcEnabled || assistantFeatureEnabled) && valuePropAccepted;
   },
   // </if>
 

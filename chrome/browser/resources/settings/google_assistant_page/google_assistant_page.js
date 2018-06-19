@@ -11,6 +11,16 @@ Polymer({
 
   behaviors: [I18nBehavior, PrefsBehavior],
 
+  properties: {
+    /** @private */
+    assistantFeatureEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableAssistant');
+      },
+    },
+  },
+
   /** @private {?settings.GoogleAssistantBrowserProxy} */
   browserProxy_: null,
 
@@ -38,6 +48,12 @@ Polymer({
   onGoogleAssistantContextEnableChange_: function() {
     this.browserProxy_.setGoogleAssistantContextEnabled(
         !!this.getPref('settings.voice_interaction.context.enabled.value'));
+  },
+
+  /** @private */
+  onGoogleAssistantHotwordEnableChange_: function() {
+    this.browserProxy_.setGoogleAssistantHotwordEnabled(
+        !!this.getPref('settings.voice_interaction.hotword.enabled.value'));
   },
 
   /** @private */

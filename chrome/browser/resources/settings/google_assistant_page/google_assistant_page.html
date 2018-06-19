@@ -29,6 +29,15 @@
           sub-label="$i18n{googleAssistantEnableContextDescription}"
           on-change="onGoogleAssistantContextEnableChange_">
       </settings-toggle-button>
+      <template is="dom-if" if="[[assistantFeatureEnabled_]]">
+        <settings-toggle-button id="googleAssistantHotwordEnable"
+            class="continuation indented"
+            pref="{{prefs.settings.voice_interaction.hotword.enabled}}"
+            label="$i18n{googleAssistantEnableHotword}"
+            sub-label="$i18n{googleAssistantEnableHotwordDescription}"
+            on-change="onGoogleAssistantHotwordEnableChange_">
+        </settings-toggle-button>
+      </template>
       <div id="googleAssistantSettings" class="settings-box"
           on-click="onGoogleAssistantSettingsTapped_" actionable>
         <div class="start">
