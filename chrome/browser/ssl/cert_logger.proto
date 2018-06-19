@@ -186,7 +186,7 @@ message CertLoggerRequest {
 // Contains the results of verification by the trial verifier. All fields
 // have the same meaning as those of the same name in CertLoggerRequest.
 message TrialVerificationInfo {
-  required string cert_chain = 1;
+  optional string cert_chain = 1;
 
   repeated string public_key_hash = 2;
 
