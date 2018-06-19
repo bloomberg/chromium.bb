@@ -808,7 +808,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 
 #if BUILDFLAG(ENABLE_REPORTING)
   if (base::FeatureList::IsEnabled(features::kReporting))
-    builder->set_reporting_policy(std::make_unique<net::ReportingPolicy>());
+    builder->set_reporting_policy(net::ReportingPolicy::Create());
   else
     builder->set_reporting_policy(nullptr);
 
