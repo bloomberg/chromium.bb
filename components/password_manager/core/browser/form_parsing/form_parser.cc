@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/form_parsing/form_parser.h"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <iterator>
 #include <set>
@@ -14,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 using autofill::FieldPropertiesFlags;
 using autofill::FormFieldData;
@@ -376,9 +379,14 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
   return focusable_username ? focusable_username : username;
 }
 
+// Tries to find the username and password fields in |processed_fields| based on
+// the structure (how the fields are ordered). If |mode| is SAVING, only
+// consideres non-empty fields. If |username_hint| is not null, it is returned
+// as the username.
 std::unique_ptr<ParseResult> ParseUsingBaseHeuristics(
     const std::vector<ProcessedField>& processed_fields,
-    FormParsingMode mode) {
+    FormParsingMode mode,
+    const FormFieldData* username_hint) {
   // What is the best interactability among passwords?
   Interactability password_max = Interactability::kUnlikely;
   for (const ProcessedField& processed_field : processed_fields) {
@@ -401,6 +409,12 @@ std::unique_ptr<ParseResult> ParseUsingBaseHeuristics(
                           &result->confirmation_password_field);
   if (result->IsEmpty())
     return nullptr;
+
+  if (username_hint &&
+      !(mode == FormParsingMode::SAVING && username_hint->value.empty())) {
+    result->username_field = username_hint;
+    return result;
+  }
 
   // What is the best interactability among text fields preceding the passwords?
   Interactability username_max = Interactability::kUnlikely;
@@ -504,6 +518,24 @@ std::vector<ProcessedField> ProcessFields(
   return result;
 }
 
+// Find the first element in |username_predictions| (i.e. the most reliable
+// prediction) that occurs in |processed_fields|.
+const FormFieldData* FindUsernameInPredictions(
+    const std::vector<uint32_t>& username_predictions,
+    const std::vector<ProcessedField>& processed_fields) {
+  for (uint32_t predicted_id : username_predictions) {
+    auto iter = std::find_if(
+        processed_fields.begin(), processed_fields.end(),
+        [predicted_id](const ProcessedField& processed_field) {
+          return processed_field.field->unique_renderer_id == predicted_id;
+        });
+    if (iter != processed_fields.end()) {
+      return iter->field;
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 std::unique_ptr<PasswordForm> ParseFormData(
@@ -546,9 +578,17 @@ std::unique_ptr<PasswordForm> ParseFormData(
     return result;
   }
 
+  // Try to find the username based on the context of the fields.
+  const FormFieldData* username_field_by_context = nullptr;
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kHtmlBasedUsernameDetector)) {
+    username_field_by_context = FindUsernameInPredictions(
+        form_data.username_predictions, processed_fields);
+  }
+
   // Try to parse with base heuristic.
-  auto base_heuristics_parse_result =
-      ParseUsingBaseHeuristics(processed_fields, mode);
+  auto base_heuristics_parse_result = ParseUsingBaseHeuristics(
+      processed_fields, mode, username_field_by_context);
   if (base_heuristics_parse_result) {
     SetFields(*base_heuristics_parse_result, result.get());
     return result;

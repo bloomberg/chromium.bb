@@ -615,6 +615,9 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
   if (!data.ReadFields(&out->fields))
     return false;
 
+  if (!data.ReadUsernamePredictions(&out->username_predictions))
+    return false;
+
   return true;
 }
 

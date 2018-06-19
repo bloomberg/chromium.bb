@@ -61,6 +61,12 @@ struct FormData {
   uint32_t unique_renderer_id = kNotSetFormRendererId;
   // A vector of all the input fields in the form.
   std::vector<FormFieldData> fields;
+  // Contains unique renderer IDs of text elements which are predicted to be
+  // usernames. The order matters: elements are sorted in descending likelihood
+  // of being a username (the first one is the most likely username). Can
+  // contain IDs of elements which are not in |fields|. This is only used during
+  // parsing into PasswordForm, and hence not serialised for storage.
+  std::vector<uint32_t> username_predictions;
 };
 
 // For testing.

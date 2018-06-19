@@ -143,6 +143,7 @@ struct FormData {
   bool is_formless_checkout;
   uint32 unique_renderer_id;
   array<FormFieldData> fields;
+  array<uint32> username_predictions;
 };
 
 // autofill::FormFieldDataPredictions

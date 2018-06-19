@@ -264,6 +264,11 @@ struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
     return r.fields;
   }
 
+  static const std::vector<uint32_t>& username_predictions(
+      const autofill::FormData& r) {
+    return r.username_predictions;
+  }
+
   static bool Read(autofill::mojom::FormDataDataView data,
                    autofill::FormData* out);
 };
