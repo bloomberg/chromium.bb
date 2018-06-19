@@ -179,14 +179,9 @@ Polymer({
 
     this.focusGrid_.destroy();
 
-    this.debounce('updateFocusGrid', function() {
-      Polymer.dom(this.root)
-          .querySelectorAll('history-synced-device-card')
-          .reduce(
-              function(prev, cur) {
-                return prev.concat(cur.createFocusRows());
-              },
-              [])
+    this.debounce('updateFocusGrid', () => {
+      Array.from(this.shadowRoot.querySelectorAll('history-synced-device-card'))
+          .reduce((prev, cur) => prev.concat(cur.createFocusRows()), [])
           .forEach((row) => {
             this.focusGrid_.addRow(row);
           });

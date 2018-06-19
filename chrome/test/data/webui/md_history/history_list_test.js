@@ -447,7 +447,7 @@ suite('<history-list>', function() {
               // Deletion should deselect all.
               assertDeepEquals(
                   [false, false, false],
-                  items.slice(0, 3).map(i => i.selected));
+                  Array.from(items).slice(0, 3).map(i => i.selected));
 
               done();
             });
