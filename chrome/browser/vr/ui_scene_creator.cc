@@ -1425,6 +1425,7 @@ void UiSceneCreator::CreateContentQuad() {
   indicator_bg->SetTranslate(0, kLoadingIndicatorYOffset, 0);
   indicator_bg->SetCornerRadii(
       {0, 0, kContentCornerRadius, kContentCornerRadius});
+  indicator_bg->SetTransitionedProperties({OPACITY});
   VR_BIND_VISIBILITY(indicator_bg, model->loading);
   VR_BIND_COLOR(model_, indicator_bg.get(),
                 &ColorScheme::loading_indicator_background, &Rect::SetColor);
