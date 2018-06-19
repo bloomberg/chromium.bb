@@ -8,8 +8,14 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "chromeos/services/secure_channel/ble_initiator_failure_type.h"
+#include "chromeos/services/secure_channel/ble_listener_failure_type.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
+#include "chromeos/services/secure_channel/connection_attempt.h"
+#include "chromeos/services/secure_channel/connection_attempt_delegate.h"
 #include "chromeos/services/secure_channel/connection_medium.h"
 #include "chromeos/services/secure_channel/connection_role.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
@@ -20,9 +26,18 @@ namespace chromeos {
 
 namespace secure_channel {
 
-// Concrete PendingConnectionManager implementation.
-// TODO(khorimoto): Implement.
-class PendingConnectionManagerImpl : public PendingConnectionManager {
+class BleConnectionManager;
+
+// Concrete PendingConnectionManager implementation. This class creates one
+// ConnectionAttempt per ConnectionAttemptDetails requested; if more than one
+// request shares the same ConnectionAttemptDetails, a single ConnectionAttempt
+// attempts a connection for all associated requests.
+//
+// If a ConnectionAttempt successfully creates a channel, this class extracts
+// client data from all requests to the same remote device and alerts its
+// delegate, deleting all associated ConnectionAttempts when it is finished.
+class PendingConnectionManagerImpl : public PendingConnectionManager,
+                                     public ConnectionAttemptDelegate {
  public:
   class Factory {
    public:
@@ -30,7 +45,8 @@ class PendingConnectionManagerImpl : public PendingConnectionManager {
     static void SetFactoryForTesting(Factory* test_factory);
     virtual ~Factory();
     virtual std::unique_ptr<PendingConnectionManager> BuildInstance(
-        Delegate* delegate);
+        Delegate* delegate,
+        BleConnectionManager* ble_connection_manager);
 
    private:
     static Factory* test_factory_;
@@ -39,12 +55,46 @@ class PendingConnectionManagerImpl : public PendingConnectionManager {
   ~PendingConnectionManagerImpl() override;
 
  private:
-  PendingConnectionManagerImpl(Delegate* delegate);
+  PendingConnectionManagerImpl(Delegate* delegate,
+                               BleConnectionManager* ble_connection_manager);
 
+  // PendingConnectionManager:
   void HandleConnectionRequest(
       const ConnectionAttemptDetails& connection_attempt_details,
       std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
       ConnectionPriority connection_priority) override;
+
+  // ConnectionAttemptDelegate:
+  void OnConnectionAttemptSucceeded(
+      const ConnectionDetails& connection_details,
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel) override;
+  void OnConnectionAttemptFinishedWithoutConnection(
+      const ConnectionAttemptDetails& connection_attempt_details) override;
+
+  void HandleBleInitiatorRequest(
+      const ConnectionAttemptDetails& connection_attempt_details,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
+      ConnectionPriority connection_priority);
+  void HandleBleListenerRequest(
+      const ConnectionAttemptDetails& connection_attempt_details,
+      std::unique_ptr<ClientConnectionParameters> client_connection_parameters,
+      ConnectionPriority connection_priority);
+
+  void RemoveMapEntriesForFinishedConnectionAttempt(
+      const ConnectionAttemptDetails& connection_attempt_details);
+
+  base::flat_map<DeviceIdPair,
+                 std::unique_ptr<ConnectionAttempt<BleInitiatorFailureType>>>
+      id_pair_to_ble_initiator_connection_attempts_;
+
+  base::flat_map<DeviceIdPair,
+                 std::unique_ptr<ConnectionAttempt<BleListenerFailureType>>>
+      id_pair_to_ble_listener_connection_attempts_;
+
+  base::flat_map<ConnectionDetails, base::flat_set<ConnectionAttemptDetails>>
+      details_to_attempt_details_map_;
+
+  BleConnectionManager* ble_connection_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PendingConnectionManagerImpl);
 };

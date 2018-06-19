@@ -68,7 +68,10 @@ class FakePendingConnectionManagerFactory
 
  private:
   std::unique_ptr<PendingConnectionManager> BuildInstance(
-      PendingConnectionManager::Delegate* delegate) override {
+      PendingConnectionManager::Delegate* delegate,
+      BleConnectionManager* ble_connection_manager) override {
+    // TODO(khorimoto): Verify that |ble_connection_manager| is correctly passed
+    // to this factory.
     EXPECT_FALSE(instance_);
     auto instance = std::make_unique<FakePendingConnectionManager>(delegate);
     instance_ = instance.get();
