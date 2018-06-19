@@ -2033,6 +2033,7 @@ jumbo_source_set("unit_tests") {
     "paint/block_painter_test.cc",
     "paint/box_paint_invalidator_test.cc",
     "paint/clip_path_clipper_test.cc",
+    "paint/clip_rect_test.cc",
     "paint/compositing/composited_layer_mapping_test.cc",
     "paint/compositing/compositing_inputs_updater_test.cc",
     "paint/compositing/compositing_layer_assigner_test.cc",

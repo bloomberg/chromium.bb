@@ -33,19 +33,31 @@
 namespace blink {
 
 ClipRect::ClipRect(const FloatClipRect& rect)
-    : rect_(rect.Rect()), has_radius_(rect.HasRadius()) {}
+    : rect_(rect.Rect()),
+      has_radius_(rect.HasRadius()),
+      is_infinite_(rect.IsInfinite()) {}
 
 void ClipRect::SetRect(const FloatClipRect& rect) {
   rect_ = LayoutRect(rect.Rect());
   has_radius_ = rect.HasRadius();
+  is_infinite_ = rect.IsInfinite();
+}
+
+void ClipRect::SetRect(const LayoutRect& rect) {
+  rect_ = rect;
+  has_radius_ = false;
+  is_infinite_ = false;
 }
 
 bool ClipRect::Intersects(const HitTestLocation& hit_test_location) const {
+  if (is_infinite_)
+    return true;
   return hit_test_location.Intersects(rect_);
 }
 
 String ClipRect::ToString() const {
-  return rect_.ToString() + (has_radius_ ? " hasRadius" : " noRadius");
+  return rect_.ToString() + (has_radius_ ? " hasRadius" : " noRadius") +
+         (is_infinite_ ? " isInfinite" : " notInfinite");
 }
 
 std::ostream& operator<<(std::ostream& ostream, const ClipRect& rect) {

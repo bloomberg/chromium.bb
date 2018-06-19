@@ -701,7 +701,7 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
   ClipRect damage_rect, clip_rect_to_apply;
   layer->Clipper(PaintLayer::kUseGeometryMapper)
       .CalculateRects(ClipRectsContext(root_layer, kUncachedClipRects),
-                      &layer->GetLayoutObject().FirstFragment(), paint_rect,
+                      &layer->GetLayoutObject().FirstFragment(), &paint_rect,
                       layer_bounds, damage_rect, clip_rect_to_apply);
 
   // Ensure our lists are up to date.
