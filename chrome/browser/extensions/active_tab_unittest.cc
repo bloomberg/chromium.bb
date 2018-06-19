@@ -331,6 +331,35 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, chromium));
 }
 
+TEST_F(ActiveTabTest, CapturingPagesWithActiveTab) {
+  std::vector<GURL> test_urls = {
+      GURL("https://example.com"), GURL("chrome://version"),
+      GURL("chrome://newtab"),
+      // IPv6 addresses don't work with activeTab: https://crbug.com/853064.
+      //    {"http://[2607:f8b0:4005:805::200e]"},
+      extension->GetResourceURL("test.html"),
+      another_extension->GetResourceURL("test.html"),
+  };
+
+  const GURL kAboutBlank("about:blank");
+
+  for (const GURL& url : test_urls) {
+    SCOPED_TRACE(url);
+    NavigateAndCommit(url);
+    // By default, there should be no access.
+    EXPECT_FALSE(extension->permissions_data()->CanCaptureVisiblePage(
+        url, tab_id(), nullptr /*error*/));
+    // Granting permission should allow page capture.
+    active_tab_permission_granter()->GrantIfRequested(extension.get());
+    EXPECT_TRUE(extension->permissions_data()->CanCaptureVisiblePage(
+        url, tab_id(), nullptr /*error*/));
+    // Navigating away should revoke access.
+    NavigateAndCommit(kAboutBlank);
+    EXPECT_FALSE(extension->permissions_data()->CanCaptureVisiblePage(
+        url, tab_id(), nullptr /*error*/));
+  }
+}
+
 TEST_F(ActiveTabTest, Uninstalling) {
   // Some semi-arbitrary setup.
   GURL google("http://www.google.com");
