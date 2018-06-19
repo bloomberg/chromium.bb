@@ -810,27 +810,28 @@ DriveVolumeItem.prototype.handleClick = function(e) {
 };
 
 /**
- * Checks whether the Team Drives grand root should be shown.
- * We show the Team Drives grand root if the user has at least one Team Drive.
+ * Sets the hidden state of the given item depending on whether the user has any
+ * Team Drives.
  *
- * @param {function(boolean)} callback Called with True if the grand root and
- *     its subtree should be shown, false if not.
+ * Since we don't currently support any functionality with just the grand root
+ * (e.g. you can't create a new team drive from the root yet), hide the grand
+ * root unless the user has at least one Team Drive. If there is at least one
+ * Team Drive, show it.
+ *
+ * @param {!DirectoryItem} teamDrivesGrandRootItem The item to show if there is
+ *     at least one Team Drive, or hide if not.
  * @private
  */
-DriveVolumeItem.prototype.shouldShowTeamDrives_ = function(callback) {
+DriveVolumeItem.prototype.setHiddenForTeamDrivesGrandRoot_ = function(
+    teamDrivesGrandRootItem) {
   var teamDriveEntry = this.volumeInfo_.teamDriveDisplayRoot;
-  if (!teamDriveEntry) {
-    callback(false);
-  } else {
-    // Don't show the Team Drives root unless the user has at least one team
-    // drive, since we don't currently support any functionality with just the
-    // grand root (e.g. you can't create a new team drive from the root yet).
-    var reader = teamDriveEntry.createReader();
-    reader.readEntries(function(results) {
-      metrics.recordSmallCount('TeamDrivesCount', results.length);
-      callback(results.length > 0);
-    });
-  }
+  if (!teamDriveEntry)
+    return;
+  var reader = teamDriveEntry.createReader();
+  reader.readEntries(function(results) {
+    metrics.recordSmallCount('TeamDrivesCount', results.length);
+    teamDrivesGrandRootItem.hidden = results.length == 0;
+  });
 };
 
 /**
@@ -841,35 +842,46 @@ DriveVolumeItem.prototype.shouldShowTeamDrives_ = function(callback) {
 DriveVolumeItem.prototype.updateSubDirectories = function(recursive) {
   if (!this.entry || this.hasChildren)
     return;
-  this.shouldShowTeamDrives_(function(shouldShowTeamDrives) {
-    var entries = [this.entry];
-    if (shouldShowTeamDrives)
-      entries.push(this.volumeInfo_.teamDriveDisplayRoot);
-    // Drive volume has children including fake entries (offline, recent, ...)
-    var fakeEntries = [];
-    if (this.parentTree_.fakeEntriesVisible_) {
-      for (var key in this.volumeInfo_.fakeEntries)
-        fakeEntries.push(this.volumeInfo_.fakeEntries[key]);
-      // This list is sorted by URL on purpose.
-      fakeEntries.sort(function(a, b) {
-        if (a.toURL() === b.toURL())
-          return 0;
-        return b.toURL() > a.toURL() ? 1 : -1;
-      });
-      entries = entries.concat(fakeEntries);
+
+  var entries = [this.entry];
+
+  var teamDrivesDisplayRoot = this.volumeInfo_.teamDriveDisplayRoot;
+  if (!!teamDrivesDisplayRoot) {
+    entries.push(teamDrivesDisplayRoot);
+  }
+
+  // Drive volume has children including fake entries (offline, recent, ...)
+  var fakeEntries = [];
+  if (this.parentTree_.fakeEntriesVisible_) {
+    for (var key in this.volumeInfo_.fakeEntries)
+      fakeEntries.push(this.volumeInfo_.fakeEntries[key]);
+    // This list is sorted by URL on purpose.
+    fakeEntries.sort(function(a, b) {
+      if (a.toURL() === b.toURL())
+        return 0;
+      return b.toURL() > a.toURL() ? 1 : -1;
+    });
+    entries = entries.concat(fakeEntries);
+  }
+
+  for (var i = 0; i < entries.length; i++) {
+    var item = new SubDirectoryItem(
+        util.getEntryLabel(
+            this.parentTree_.volumeManager_.getLocationInfo(entries[i]),
+            entries[i]) ||
+            '',
+        entries[i], this, this.parentTree_);
+
+    // Hide the team drives root in case we have no team drives.
+    if (entries[i] === teamDrivesDisplayRoot) {
+      item.hidden = true;
+      this.setHiddenForTeamDrivesGrandRoot_(item);
     }
 
-    for (var i = 0; i < entries.length; i++) {
-      var item = new SubDirectoryItem(
-          util.getEntryLabel(
-              this.parentTree_.volumeManager_.getLocationInfo(entries[i]),
-              entries[i]) || '',
-          entries[i], this, this.parentTree_);
-      this.add(item);
-      item.updateSubDirectories(false);
-    }
-    this.expanded = true;
-  }.bind(this));
+    this.add(item);
+    item.updateSubDirectories(false);
+  }
+  this.expanded = true;
 };
 
 /**

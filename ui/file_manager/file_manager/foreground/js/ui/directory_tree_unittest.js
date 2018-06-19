@@ -238,15 +238,21 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
 
   reportPromise(
       waitUntil(function() {
-        // Root entries under Drive volume is generated except Team Drives.
+        // Root entries under Drive volume is generated, plus Team Drives.
         // See testCreateDirectoryTreeWithTeamDrive for detail.
-        return driveItem.items.length == 3;
+        return driveItem.items.length == 4;
       }).then(function() {
+        var teamDrivesItemFound = false;
         for (var i = 0; i < driveItem.items.length; i++) {
-          assertFalse(
-              driveItem.items[i].label == str('DRIVE_TEAM_DRIVES_LABEL'),
-              'Team Drives node should not be shown');
+          if (driveItem.items[i].label == str('DRIVE_TEAM_DRIVES_LABEL')) {
+            assertEquals(
+                true, driveItem.items[i].hidden,
+                'Team Drives node should not be shown');
+            teamDrivesItemFound = true;
+            break;
+          }
         }
+        assertTrue(teamDrivesItemFound, 'Team Drives node should be generated');
       }),
       callback);
 }
