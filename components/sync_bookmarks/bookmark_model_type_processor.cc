@@ -15,6 +15,7 @@
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/protocol/bookmark_model_metadata.pb.h"
+#include "components/sync_bookmarks/bookmark_model_observer_impl.h"
 #include "components/undo/bookmark_undo_utils.h"
 
 namespace sync_bookmarks {
@@ -157,9 +158,13 @@ void BookmarkModelTypeProcessor::ConnectSync(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!worker_);
   DCHECK(bookmark_model_);
-  DCHECK(bookmark_tracker_);
 
   worker_ = std::move(worker);
+
+  // |bookmark_tracker_| is instantiated only after initial sync is done.
+  if (bookmark_tracker_) {
+    NudgeForCommitIfNeeded();
+  }
 }
 
 void BookmarkModelTypeProcessor::DisconnectSync() {
@@ -187,6 +192,16 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& model_type_state,
     const syncer::UpdateResponseDataList& updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!bookmark_tracker_) {
+    // TODO(crbug.com/516866): Implement the merge logic.
+    auto model_type_state = std::make_unique<sync_pb::ModelTypeState>();
+    model_type_state->set_initial_sync_done(true);
+    std::vector<NodeMetadataPair> nodes_metadata;
+    bookmark_tracker_ = std::make_unique<SyncedBookmarkTracker>(
+        std::move(nodes_metadata), std::move(model_type_state));
+  }
+  // TODO(crbug.com/516866): Set the model type state.
 
   ScopedRemoteUpdateBookmarks update_bookmarks(bookmark_model_,
                                                bookmark_undo_service_);
@@ -449,6 +464,9 @@ void BookmarkModelTypeProcessor::DecodeSyncMetadata(
     bookmarks::BookmarkModel* model) {
   DCHECK(model);
   DCHECK(!bookmark_model_);
+  DCHECK(!bookmark_tracker_);
+  DCHECK(!bookmark_model_observer_);
+
   bookmark_model_ = model;
   schedule_save_closure_ = schedule_save_closure;
 
@@ -458,8 +476,8 @@ void BookmarkModelTypeProcessor::DecodeSyncMetadata(
   auto model_type_state = std::make_unique<sync_pb::ModelTypeState>();
   model_type_state->Swap(model_metadata.mutable_model_type_state());
 
-  std::vector<NodeMetadataPair> nodes_metadata;
   if (model_type_state->initial_sync_done()) {
+    std::vector<NodeMetadataPair> nodes_metadata;
     for (sync_pb::BookmarkMetadata& bookmark_metadata :
          *model_metadata.mutable_bookmarks_metadata()) {
       // TODO(crbug.com/516866): Replace with a more efficient way to retrieve
@@ -489,14 +507,21 @@ void BookmarkModelTypeProcessor::DecodeSyncMetadata(
       metadata->Swap(bookmark_metadata.mutable_metadata());
       nodes_metadata.emplace_back(node, std::move(metadata));
     }
+    // TODO(crbug.com/516866): Handle local nodes that don't have a
+    // corresponding
+    // metadata.
+    bookmark_tracker_ = std::make_unique<SyncedBookmarkTracker>(
+        std::move(nodes_metadata), std::move(model_type_state));
+
+    bookmark_model_observer_ = std::make_unique<BookmarkModelObserverImpl>(
+        base::BindRepeating(&BookmarkModelTypeProcessor::NudgeForCommitIfNeeded,
+                            base::Unretained(this)),
+        bookmark_tracker_.get());
+    // TODO(crbug.com/516866): Register the observer with the bookmark model.
   } else if (!model_metadata.bookmarks_metadata().empty()) {
     DLOG(ERROR)
         << "Persisted Metadata not empty while initial sync is not done.";
   }
-  // TODO(crbug.com/516866): Handle local nodes that don't have a corresponding
-  // metadata.
-  bookmark_tracker_ = std::make_unique<SyncedBookmarkTracker>(
-      std::move(nodes_metadata), std::move(model_type_state));
   ConnectIfReady();
 }
 
@@ -546,16 +571,32 @@ void BookmarkModelTypeProcessor::OnSyncStopping(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
 }
+
+void BookmarkModelTypeProcessor::NudgeForCommitIfNeeded() {
+  DCHECK(bookmark_tracker_);
+  // Don't bother sending anything if there's no one to send to.
+  if (!worker_) {
+    return;
+  }
+
+  // Nudge worker if there are any entities with local changes.
+  if (bookmark_tracker_->HasLocalChanges()) {
+    worker_->NudgeForCommit();
+  }
+}
+
 void BookmarkModelTypeProcessor::GetAllNodesForDebugging(
     AllNodesCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
 }
+
 void BookmarkModelTypeProcessor::GetStatusCountersForDebugging(
     StatusCountersCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
 }
+
 void BookmarkModelTypeProcessor::RecordMemoryUsageHistogram() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
