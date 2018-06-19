@@ -179,7 +179,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
             false /* report_raw_headers */, false /* is_prerenering */,
             upgrade_if_insecure /* upgrade_if_insecure */,
             nullptr /* blob_url_loader_factory */,
-            base::UnguessableToken::Create() /* devtools_navigation_token */));
+            base::UnguessableToken::Create() /* devtools_navigation_token */,
+            base::UnguessableToken::Create() /* devtools_frame_token */));
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors;
     most_recent_resource_request_ = base::nullopt;
     interceptors.push_back(std::make_unique<TestNavigationLoaderInterceptor>(

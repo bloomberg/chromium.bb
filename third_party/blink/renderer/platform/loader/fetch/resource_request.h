@@ -31,6 +31,7 @@
 #include <memory>
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
@@ -379,6 +380,14 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetAllowStaleResponse(bool value) { allow_stale_response_ = value; }
   bool AllowsStaleResponse() const { return allow_stale_response_; }
 
+  const base::Optional<base::UnguessableToken>& GetDevToolsToken() const {
+    return devtools_token_;
+  }
+  void SetDevToolsToken(
+      const base::Optional<base::UnguessableToken>& devtools_token) {
+    devtools_token_ = devtools_token;
+  }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -448,6 +457,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   WebContentSecurityPolicyList initiator_csp_;
 
   bool upgrade_if_insecure_ = false;
+
+  base::Optional<base::UnguessableToken> devtools_token_;
 };
 
 // This class is needed to copy a ResourceRequest across threads, because it
@@ -507,6 +518,7 @@ struct CrossThreadResourceRequestData {
   bool is_ad_resource_;
   WebContentSecurityPolicyList navigation_csp_;
   bool upgrade_if_insecure_;
+  base::Optional<base::UnguessableToken> devtools_token_;
 };
 
 }  // namespace blink

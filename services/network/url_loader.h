@@ -41,6 +41,7 @@ class NetToMojoPendingBuffer;
 class NetworkUsageAccumulator;
 class KeepaliveStatisticsRecorder;
 struct ResourceResponse;
+class ScopedThrottlingToken;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     : public mojom::URLLoader,
@@ -225,6 +226,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator_;
 
   bool first_auth_attempt_;
+
+  std::unique_ptr<ScopedThrottlingToken> throttling_token_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_;
 

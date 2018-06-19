@@ -34,7 +34,6 @@ class X509Certificate;
 namespace network {
 
 class ThrottlingController;
-class ThrottlingControllerHelper;
 class ThrottlingUploadDataStream;
 
 // ThrottlingNetworkTransaction is a wrapper for network transaction. All
@@ -45,8 +44,6 @@ class ThrottlingUploadDataStream;
 class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingNetworkTransaction
     : public net::HttpTransaction {
  public:
-  static const char kDevToolsEmulateNetworkConditionsClientId[];
-
   explicit ThrottlingNetworkTransaction(
       std::unique_ptr<net::HttpTransaction> network_transaction);
 
@@ -93,7 +90,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ThrottlingNetworkTransaction
   void GetConnectionAttempts(net::ConnectionAttempts* out) const override;
 
  protected:
-  friend class ThrottlingControllerHelper;
+  friend class ThrottlingControllerTestHelper;
 
  private:
   void Fail();

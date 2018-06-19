@@ -58,6 +58,7 @@ class URLRequestContextGetter;
 
 namespace network {
 class ResourceScheduler;
+class ScopedThrottlingToken;
 }  // namespace network
 
 namespace storage {
@@ -409,9 +410,11 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void OnShutdown();
 
   // Helper function for URL requests.
-  void BeginRequestInternal(std::unique_ptr<net::URLRequest> request,
-                            std::unique_ptr<ResourceHandler> handler,
-                            bool is_initiated_by_fetch_api);
+  void BeginRequestInternal(
+      std::unique_ptr<net::URLRequest> request,
+      std::unique_ptr<ResourceHandler> handler,
+      bool is_initiated_by_fetch_api,
+      std::unique_ptr<network::ScopedThrottlingToken> throttling_token);
 
   void StartLoading(ResourceRequestInfoImpl* info,
                     std::unique_ptr<ResourceLoader> loader);

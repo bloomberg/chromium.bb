@@ -1344,7 +1344,8 @@ void NavigationRequest::OnStartChecksComplete(
           upgrade_if_insecure_,
           blob_url_loader_factory_ ? blob_url_loader_factory_->Clone()
                                    : nullptr,
-          devtools_navigation_token()),
+          devtools_navigation_token(),
+          frame_tree_node_->devtools_frame_token()),
       std::move(navigation_ui_data),
       navigation_handle_->service_worker_handle(),
       navigation_handle_->appcache_handle(), this);

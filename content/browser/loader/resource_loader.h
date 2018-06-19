@@ -25,6 +25,10 @@ class HttpResponseHeaders;
 class X509Certificate;
 }
 
+namespace network {
+class ScopedThrottlingToken;
+}
+
 namespace content {
 class LoginDelegate;
 class ResourceHandler;
@@ -39,10 +43,12 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
                                       public SSLClientAuthHandler::Delegate,
                                       public ResourceHandler::Delegate {
  public:
-  ResourceLoader(std::unique_ptr<net::URLRequest> request,
-                 std::unique_ptr<ResourceHandler> handler,
-                 ResourceLoaderDelegate* delegate,
-                 ResourceContext* resource_context);
+  ResourceLoader(
+      std::unique_ptr<net::URLRequest> request,
+      std::unique_ptr<ResourceHandler> handler,
+      ResourceLoaderDelegate* delegate,
+      ResourceContext* resource_context,
+      std::unique_ptr<network::ScopedThrottlingToken> throttling_token);
   ~ResourceLoader() override;
 
   void StartRequest();
@@ -176,6 +182,8 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   scoped_refptr<const net::HttpResponseHeaders> raw_response_headers_;
 
   ResourceContext* resource_context_;
+
+  std::unique_ptr<network::ScopedThrottlingToken> throttling_token_;
 
   bool should_pause_reading_body_ = false;
   // The request is not deferred (i.e., DEFERRED_NONE) and is ready to read more

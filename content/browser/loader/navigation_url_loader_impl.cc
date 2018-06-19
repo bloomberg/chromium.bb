@@ -245,6 +245,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->fetch_request_context_type =
       request_info->begin_params->request_context_type;
   new_request->upgrade_if_insecure = request_info->upgrade_if_insecure;
+  new_request->throttling_profile_id = request_info->devtools_frame_token;
   return new_request;
 }
 
@@ -283,7 +284,8 @@ std::unique_ptr<NavigationRequestInfo> CreateNavigationRequestInfoForRedirect(
       previous_request_info.is_prerendering,
       previous_request_info.upgrade_if_insecure,
       nullptr /* blob_url_loader_factory */,
-      previous_request_info.devtools_navigation_token);
+      previous_request_info.devtools_navigation_token,
+      previous_request_info.devtools_frame_token);
 }
 
 // Called for requests that we don't have a URLLoaderFactory for.

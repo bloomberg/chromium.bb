@@ -88,9 +88,6 @@ using DeleteCookiesCallback = Network::Backend::DeleteCookiesCallback;
 using ClearBrowserCookiesCallback =
     Network::Backend::ClearBrowserCookiesCallback;
 
-const char kDevToolsEmulateNetworkConditionsClientId[] =
-    "X-DevTools-Emulate-Network-Conditions-Client-Id";
-
 Network::CertificateTransparencyCompliance SerializeCTPolicyCompliance(
     net::ct::CTPolicyCompliance ct_compliance) {
   switch (ct_compliance) {
@@ -820,12 +817,6 @@ class NetworkNavigationThrottle : public content::NavigationThrottle {
   DISALLOW_COPY_AND_ASSIGN(NetworkNavigationThrottle);
 };
 
-void ConfigureServiceWorkerContextOnIO() {
-  std::set<std::string> headers;
-  headers.insert(kDevToolsEmulateNetworkConditionsClientId);
-  content::ServiceWorkerContext::AddExcludedHeadersForFetchEvent(headers);
-}
-
 bool GetPostData(const net::URLRequest* request, std::string* post_data) {
   if (!request->has_upload())
     return false;
@@ -967,9 +958,11 @@ class BackgroundSyncRestorer {
 };
 
 NetworkHandler::NetworkHandler(const std::string& host_id,
+                               const base::UnguessableToken& devtools_token,
                                DevToolsIOContext* io_context)
     : DevToolsDomainHandler(Network::Metainfo::domainName),
       host_id_(host_id),
+      devtools_token_(devtools_token),
       io_context_(io_context),
       browser_context_(nullptr),
       storage_partition_(nullptr),
@@ -983,8 +976,6 @@ NetworkHandler::NetworkHandler(const std::string& host_id,
   if (have_configured_service_worker_context)
     return;
   have_configured_service_worker_context = true;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&ConfigureServiceWorkerContextOnIO));
 }
 
 NetworkHandler::~NetworkHandler() {
@@ -2038,7 +2029,6 @@ bool NetworkHandler::MaybeCreateProxyForInterception(
 void NetworkHandler::ApplyOverrides(net::HttpRequestHeaders* headers,
                                     bool* skip_service_worker,
                                     bool* disable_cache) {
-  headers->SetHeader(kDevToolsEmulateNetworkConditionsClientId, host_id_);
   for (auto& entry : extra_headers_)
     headers->SetHeader(entry.first, entry.second);
   *skip_service_worker |= bypass_service_worker_;
@@ -2113,7 +2103,9 @@ void NetworkHandler::SetNetworkConditions(
   network::mojom::NetworkContext* context =
       storage_partition_->GetNetworkContext();
   bool offline = conditions ? conditions->offline : false;
-  context->SetNetworkConditions(host_id_, std::move(conditions));
+
+  if (!devtools_token_.is_empty())
+    context->SetNetworkConditions(devtools_token_, std::move(conditions));
 
   if (offline == !!background_sync_restorer_)
     return;

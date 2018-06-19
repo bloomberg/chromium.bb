@@ -318,8 +318,7 @@ bool IsCORSSafelistedHeader(const std::string& name, const std::string& value) {
   // Treat 'Intervention' as a CORS-safelisted header, since it is added by
   // Chrome when an intervention is (or may be) applied.
   static const std::set<std::string> safe_names = {
-      "accept", "accept-language", "content-language",
-      "x-devtools-emulate-network-conditions-client-id", "intervention",
+      "accept", "accept-language", "content-language", "intervention",
       "content-type", "save-data",
       // The Device Memory header field is a number that indicates the client’s
       // device memory i.e. approximate amount of ram in GiB. The header value

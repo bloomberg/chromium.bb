@@ -6,6 +6,7 @@ module network.mojom;
 
 import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "net/interfaces/address_list.mojom";
@@ -369,12 +370,11 @@ interface NetworkContext {
   ClearNetworkErrorLogging(ClearDataFilter? filter) => ();
 
   // Configures network conditions for the specified throttling profile.
-  // The throttling will be applied only to requests that have
-  // X-DevTools-Emulate-Network-Conditions-Client-Id: <profile_id>
-  // header with matching <profile_id>.
+  // The throttling will be applied only to requests that have maching
+  // throttling_profile_id.
   // Passing null NetworkConditions disables the throttling.
-  // TODO(caseq): get rid of header, make profile_id part of ResourceRequest.
-  SetNetworkConditions(string profile_id, NetworkConditions? conditions);
+  SetNetworkConditions(mojo_base.mojom.UnguessableToken throttling_profile_id,
+                       NetworkConditions? conditions);
 
   // Updates the Accept-Language header to be used for requests.
   SetAcceptLanguage(string new_accept_language);

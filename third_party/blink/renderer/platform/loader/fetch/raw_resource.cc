@@ -337,8 +337,7 @@ static bool ShouldIgnoreHeaderForCacheReuse(AtomicString header_name) {
   DEFINE_STATIC_LOCAL(
       HashSet<AtomicString>, headers,
       ({"Cache-Control", "If-Modified-Since", "If-None-Match", "Origin",
-        "Pragma", "Purpose", "Referer", "User-Agent",
-        HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id}));
+        "Pragma", "Purpose", "Referer", "User-Agent"}));
   return headers.Contains(header_name);
 }
 

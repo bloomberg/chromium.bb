@@ -817,11 +817,12 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
 }
 
 TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
+  const base::UnguessableToken profile_id = base::UnguessableToken::Create();
   CreateNetworkContext();
   mojom::NetworkConditionsPtr network_conditions =
       mojom::NetworkConditions::New();
   network_conditions->offline = true;
-  context()->SetNetworkConditions("42", std::move(network_conditions));
+  context()->SetNetworkConditions(profile_id, std::move(network_conditions));
 
   ResourceRequest request;
   request.url = test_server()->GetURL("/nocache.html");
@@ -831,8 +832,7 @@ TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
   client()->RunUntilComplete();
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
 
-  request.headers.AddHeaderFromString(
-      "X-DevTools-Emulate-Network-Conditions-Client-Id: 42");
+  request.throttling_profile_id = profile_id;
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
   EXPECT_EQ(net::ERR_INTERNET_DISCONNECTED,
@@ -840,22 +840,21 @@ TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
 
   network_conditions = mojom::NetworkConditions::New();
   network_conditions->offline = false;
-  context()->SetNetworkConditions("42", std::move(network_conditions));
+  context()->SetNetworkConditions(profile_id, std::move(network_conditions));
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
 
   network_conditions = mojom::NetworkConditions::New();
   network_conditions->offline = true;
-  context()->SetNetworkConditions("42", std::move(network_conditions));
+  context()->SetNetworkConditions(profile_id, std::move(network_conditions));
 
-  request.headers.AddHeaderFromString(
-      "X-DevTools-Emulate-Network-Conditions-Client-Id: 42");
+  request.throttling_profile_id = profile_id;
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
   EXPECT_EQ(net::ERR_INTERNET_DISCONNECTED,
             client()->completion_status().error_code);
-  context()->SetNetworkConditions("42", nullptr);
+  context()->SetNetworkConditions(profile_id, nullptr);
   StartLoadingURL(request, 0);
   client()->RunUntilComplete();
   EXPECT_EQ(net::OK, client()->completion_status().error_code);

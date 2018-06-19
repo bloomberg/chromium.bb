@@ -35,6 +35,7 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/resource_scheduler_client.h"
+#include "services/network/throttling/scoped_throttling_token.h"
 
 namespace network {
 
@@ -339,6 +340,9 @@ URLLoader::URLLoader(
 
   url_request_->SetUserData(kUserDataKey,
                             std::make_unique<UnownedPointer>(this));
+
+  throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
+      url_request_->net_log().source().id, request.throttling_profile_id);
 
   // Resolve elements from request_body and prepare upload data.
   if (request.request_body.get()) {

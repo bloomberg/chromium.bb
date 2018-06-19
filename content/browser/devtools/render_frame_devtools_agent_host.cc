@@ -443,8 +443,11 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::IOHandler(
       GetIOContext())));
   session->AddHandler(base::WrapUnique(new protocol::MemoryHandler()));
-  session->AddHandler(
-      base::WrapUnique(new protocol::NetworkHandler(GetId(), GetIOContext())));
+  session->AddHandler(base::WrapUnique(new protocol::NetworkHandler(
+      GetId(),
+      frame_tree_node_ ? frame_tree_node_->devtools_frame_token()
+                       : base::UnguessableToken(),
+      GetIOContext())));
   session->AddHandler(base::WrapUnique(new protocol::SchemaHandler()));
   session->AddHandler(base::WrapUnique(new protocol::ServiceWorkerHandler()));
   session->AddHandler(base::WrapUnique(new protocol::StorageHandler()));

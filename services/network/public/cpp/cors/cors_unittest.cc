@@ -249,8 +249,6 @@ TEST_F(CORSTest, CheckCORSSafelist) {
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("accept", "text/html"));
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("Accept-Language", "en"));
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("Content-Language", "ja"));
-  EXPECT_TRUE(cors::IsCORSSafelistedHeader(
-      "x-devtools-emulate-network-conditions-client-id", ""));
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("SAVE-DATA", "on"));
   EXPECT_TRUE(cors::IsCORSSafelistedHeader("Intervention", ""));
   EXPECT_FALSE(cors::IsCORSSafelistedHeader("Cache-Control", ""));
