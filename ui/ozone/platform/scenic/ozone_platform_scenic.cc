@@ -75,8 +75,12 @@ class OzonePlatformScenic : public OzonePlatform {
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
-    NOTREACHED();
-    return nullptr;
+    if (!properties.view_owner_request) {
+      NOTREACHED();
+      return nullptr;
+    }
+    return std::make_unique<ScenicWindow>(
+        &window_manager_, delegate, std::move(properties.view_owner_request));
   }
 
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
