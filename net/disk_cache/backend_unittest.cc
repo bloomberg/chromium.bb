@@ -4115,7 +4115,7 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationDestruction) {
 
 // Verify that tasks run in priority order when the experiment is enabled.
 // Test has races, disabling until fixed: https://crbug.com/853283
-TEST_F(DiskCacheBackendTest, DISABLE_SimpleCachePrioritizedEntryOrder) {
+TEST_F(DiskCacheBackendTest, DISABLED_SimpleCachePrioritizedEntryOrder) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       disk_cache::SimpleBackendImpl::kPrioritizedSimpleCacheTasks);
