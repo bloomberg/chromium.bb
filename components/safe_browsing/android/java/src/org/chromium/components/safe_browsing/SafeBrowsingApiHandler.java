@@ -20,16 +20,9 @@ public interface SafeBrowsingApiHandler {
      * Observer to be notified when the SafeBrowsingApiHandler determines the verdict for a url.
      */
     public interface Observer {
-        // TODO(vakh): Remove this after updating the downstream code.
         // Note: |checkDelta| is the time the remote call took in microseconds.
         void onUrlCheckDone(long callbackId, @SafeBrowsingResult int resultStatus, String metadata,
                 long checkDelta);
-
-        // Note: |checkDelta| is the time the remote call took in microseconds,
-        // |internalErrorStatusCode| is the |SafetyNetStatusCode| for when there's an internal error
-        // and is undefined otherwise.
-        void onUrlCheckDone(long callbackId, @SafeBrowsingResult int resultStatus, String metadata,
-                long checkDelta, int internalErrorStatusCode);
     }
 
     // Possible values for resultStatus. Native side has the same definitions.

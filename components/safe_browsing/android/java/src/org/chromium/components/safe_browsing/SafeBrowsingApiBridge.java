@@ -48,20 +48,10 @@ public final class SafeBrowsingApiBridge {
         }
         boolean initSuccesssful =
                 handler.init(new SafeBrowsingApiHandler.Observer() {
-                    // TODO(vakh): Temporary to avoid breaking downstream. Remove after updating the
-                    // downstream code in issue 851587
                     @Override
                     public void onUrlCheckDone(
                             long callbackId, int resultStatus, String metadata, long checkDelta) {
-                        nativeOnUrlCheckDone(callbackId, resultStatus, metadata, checkDelta,
-                                0 /* internalErrorStatusCode */);
-                    }
-
-                    @Override
-                    public void onUrlCheckDone(long callbackId, int resultStatus, String metadata,
-                            long checkDelta, int internalErrorStatusCode) {
-                        nativeOnUrlCheckDone(callbackId, resultStatus, metadata, checkDelta,
-                                internalErrorStatusCode);
+                        nativeOnUrlCheckDone(callbackId, resultStatus, metadata, checkDelta);
                     }
                 });
         return initSuccesssful ? handler : null;
@@ -77,6 +67,6 @@ public final class SafeBrowsingApiBridge {
         Log.d(TAG, "Done starting request");
     }
 
-    private static native void nativeOnUrlCheckDone(long callbackId, int resultStatus,
-            String metadata, long checkDelta, int internalErrorStatusCode);
+    private static native void nativeOnUrlCheckDone(
+            long callbackId, int resultStatus, String metadata, long checkDelta);
 }
