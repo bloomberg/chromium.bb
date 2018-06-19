@@ -99,17 +99,15 @@ void WebDatabaseObserverImpl::ReportOpenDatabaseResult(
     int callsite,
     int websql_error,
     int sqlite_error,
-    double call_time) {
+    base::TimeDelta call_time) {
   UMA_HISTOGRAM_WEBSQL_RESULT("OpenResult", callsite,
                               websql_error, sqlite_error);
   HandleSqliteError(origin, database_name, sqlite_error);
 
   if (websql_error == kWebSQLSuccess && sqlite_error == SQLITE_OK) {
-    UMA_HISTOGRAM_TIMES("websql.Async.OpenTime.Success",
-                        base::TimeDelta::FromSecondsD(call_time));
+    UMA_HISTOGRAM_TIMES("websql.Async.OpenTime.Success", call_time);
   } else {
-    UMA_HISTOGRAM_TIMES("websql.Async.OpenTime.Error",
-                        base::TimeDelta::FromSecondsD(call_time));
+    UMA_HISTOGRAM_TIMES("websql.Async.OpenTime.Error", call_time);
   }
 }
 
