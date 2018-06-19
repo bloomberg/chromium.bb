@@ -5125,8 +5125,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   CGFloat newPageOffset = 0;
   UIView* newPage = nil;
   CGFloat offset = 0;
-  if (tab.webState->GetLastCommittedURL() == kChromeUINewTabURL &&
-      !_isOffTheRecord && ![self canShowTabStrip]) {
+  GURL tabURL = tab.webState->GetLastCommittedURL();
+  // Vislble URL should be more correct here than last committed, but for
+  // safety, limiting the scope only to WKBasedNavigationManager, which needs
+  // it to correctly animate NTP. See https://crbug.com/819606.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled())
+    tabURL = tab.webState->GetVisibleURL();
+  if (tabURL == kChromeUINewTabURL && !_isOffTheRecord &&
+      ![self canShowTabStrip]) {
     offset = 0;
     // Temporary expand content area to take whole view space. Otherwise the
     // animated NTP will be clipped by content area bound. Previous frame will
