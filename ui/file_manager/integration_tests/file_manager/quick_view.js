@@ -4,6 +4,14 @@
 
 'use strict';
 
+/**
+ * Returns an array of steps that opens the Quick View dialog on a given file
+ * |name|. The file must be present in the Files app file list.
+ *
+ * @param {string} appId Files app windowId.
+ * @param {string} name File name.
+ * @return {!Array<function>}
+ */
 function openQuickViewSteps(appId, name) {
   let caller = getCaller();
 
@@ -39,6 +47,13 @@ function openQuickViewSteps(appId, name) {
   ];
 }
 
+/**
+ * Assuming that Quick View is currently open per the openQuickViewSteps above,
+ * returns an array of steps that closes the Quick View dialog.
+ *
+ * @param {string} appId Files app windowId.
+ * @return {!Array<function>}
+ */
 function closeQuickViewSteps(appId) {
   let caller = getCaller();
 
