@@ -8,7 +8,6 @@ import("//testing/test.gni")
 
 source_set("lib") {
   sources = [
-    "barcode_detection_provider_impl.h",
     "shape_detection_service.cc",
     "shape_detection_service.h",
     "text_detection_impl.h",
@@ -18,6 +17,8 @@ source_set("lib") {
     sources += [
       "barcode_detection_impl_mac.h",
       "barcode_detection_impl_mac.mm",
+      "barcode_detection_provider_mac.h",
+      "barcode_detection_provider_mac.mm",
       "detection_utils_mac.h",
       "detection_utils_mac.mm",
       "face_detection_impl_mac.h",
@@ -33,6 +34,7 @@ source_set("lib") {
   } else if (is_win) {
     sources += [
       "barcode_detection_provider_impl.cc",
+      "barcode_detection_provider_impl.h",
       "detection_utils_win.cc",
       "detection_utils_win.h",
       "face_detection_impl_win.cc",
@@ -45,6 +47,7 @@ source_set("lib") {
   } else {
     sources += [
       "barcode_detection_provider_impl.cc",
+      "barcode_detection_provider_impl.h",
       "face_detection_provider_impl.cc",
       "face_detection_provider_impl.h",
       "text_detection_impl.cc",
