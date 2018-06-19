@@ -56,7 +56,6 @@ class CORE_EXPORT HTMLStyleElement final : public HTMLElement,
   // overload from HTMLElement
   void ParseAttribute(const AttributeModificationParams&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
-  void DidNotifySubtreeInsertionsToDocument() override;
   void RemovedFrom(ContainerNode*) override;
   void ChildrenChanged(const ChildrenChange&) override;
 

@@ -105,14 +105,14 @@ void SVGStyleElement::FinishParsingChildren() {
 Node::InsertionNotificationRequest SVGStyleElement::InsertedInto(
     ContainerNode* insertion_point) {
   SVGElement::InsertedInto(insertion_point);
-  return kInsertionShouldCallDidNotifySubtreeInsertions;
-}
-
-void SVGStyleElement::DidNotifySubtreeInsertionsToDocument() {
-  if (StyleElement::ProcessStyleSheet(GetDocument(), *this) ==
-      StyleElement::kProcessingFatalError)
-    NotifyLoadedSheetAndAllCriticalSubresources(
-        kErrorOccurredLoadingSubresource);
+  if (isConnected()) {
+    if (StyleElement::ProcessStyleSheet(GetDocument(), *this) ==
+        StyleElement::kProcessingFatalError) {
+      NotifyLoadedSheetAndAllCriticalSubresources(
+          kErrorOccurredLoadingSubresource);
+    }
+  }
+  return kInsertionDone;
 }
 
 void SVGStyleElement::RemovedFrom(ContainerNode* insertion_point) {
