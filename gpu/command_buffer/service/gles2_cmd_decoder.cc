@@ -2062,8 +2062,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   void DoSetReadbackBufferShadowAllocationINTERNAL(GLuint buffer_id,
                                                    GLuint shm_id,
-                                                   GLuint shm_offset,
-                                                   GLuint size);
+                                                   GLuint shm_offset);
 
   // Returns false if textures were replaced.
   bool PrepareTexturesForRender();
@@ -16707,6 +16706,7 @@ void GLES2DecoderImpl::ReadBackBuffersIntoShadowCopies(
   GLuint old_binding =
       state_.bound_array_buffer ? state_.bound_array_buffer->service_id() : 0;
 
+  base::Optional<error::ContextLostReason> error;
   for (scoped_refptr<Buffer>& buffer : buffers_to_shadow_copy) {
     if (buffer->IsDeleted()) {
       continue;
@@ -16734,22 +16734,24 @@ void GLES2DecoderImpl::ReadBackBuffersIntoShadowCopies(
                                              GL_MAP_READ_BIT);
     if (!mapped) {
       DLOG(ERROR) << "glMapBufferRange unexpectedly returned NULL";
-      MarkContextLost(error::kOutOfMemory);
-      group_->LoseContexts(error::kUnknown);
-      return;
+      error = error::kOutOfMemory;
+      break;
     }
     memcpy(shadow, mapped, buffer->size());
     bool unmap_ok = api()->glUnmapBufferFn(GL_ARRAY_BUFFER);
     if (unmap_ok == GL_FALSE) {
       DLOG(ERROR) << "glUnmapBuffer unexpectedly returned GL_FALSE";
-      MarkContextLost(error::kUnknown);
-      group_->LoseContexts(error::kUnknown);
-      return;
+      error = error::kUnknown;
+      break;
     }
   }
 
-  // Restore original GL_ARRAY_BUFFER binding
   api()->glBindBufferFn(GL_ARRAY_BUFFER, old_binding);
+
+  if (error.has_value()) {
+    MarkContextLost(error.value());
+    group_->LoseContexts(error::kUnknown);
+  }
 }
 
 error::Error GLES2DecoderImpl::HandleEndQueryEXT(
@@ -16767,19 +16769,18 @@ error::Error GLES2DecoderImpl::HandleEndQueryEXT(
     return error::kNoError;
   }
 
-  if (target == GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM &&
-      !writes_submitted_but_not_completed_.empty()) {
+  if (target == GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM) {
+    base::flat_set<scoped_refptr<Buffer>> buffers_to_shadow_copy;
+    std::swap(buffers_to_shadow_copy, writes_submitted_but_not_completed_);
     // - This callback will be called immediately by MarkAsCompleted, so it's
     //   okay that it's called after UnmarkAsPending. (It's guaranteed to not be
     //   called immediately here, because the query has not even ended yet.)
     //
     // - It's okay to capture Unretained(this) because the callback is called by
     //   the query, which is owned by query_manager_, which is owned by `this`.
-    query->AddCallback(
-        base::BindOnce(&GLES2DecoderImpl::ReadBackBuffersIntoShadowCopies,
-                       base::Unretained(this),
-                       std::move(writes_submitted_but_not_completed_)));
-    writes_submitted_but_not_completed_.clear();
+    query->AddCallback(base::BindOnce(
+        &GLES2DecoderImpl::ReadBackBuffersIntoShadowCopies,
+        base::Unretained(this), std::move(buffers_to_shadow_copy)));
   }
 
   query_manager_->EndQuery(query, submit_count);
@@ -20349,17 +20350,11 @@ void GLES2DecoderImpl::OnAbstractTextureDestroyed(
 void GLES2DecoderImpl::DoSetReadbackBufferShadowAllocationINTERNAL(
     GLuint buffer_id,
     GLuint shm_id,
-    GLuint shm_offset,
-    GLuint size) {
+    GLuint shm_offset) {
   static const char kFunctionName[] = "glSetBufferShadowAllocationINTERNAL";
   scoped_refptr<Buffer> buffer = buffer_manager()->GetBuffer(buffer_id);
   if (!buffer) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName, "unknown buffer");
-    return;
-  }
-  if (static_cast<GLsizeiptr>(size) != buffer->size()) {
-    MarkContextLost(error::kGuilty);
-    group_->LoseContexts(error::kUnknown);
     return;
   }
 
