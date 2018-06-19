@@ -395,15 +395,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   // closing the tabs. Set the BVC to inactive to cancel all the dialogs.
   if ([_browserLauncher browserInitializationStage] >=
       INITIALIZATION_STAGE_FOREGROUND) {
-    [[_browserLauncher browserViewInformation].mainTabModel haltAllTabs];
-
-    // Application termination flow is only triggered on a shutdown deliberately
-    // triggered by a user. In this case, close all incognito tabs.
-    TabModel* OTRTabModel =
-        [_browserLauncher browserViewInformation].otrTabModel;
-    [OTRTabModel closeAllTabs];
-    [OTRTabModel saveSessionImmediately:YES];
-
+    [[_browserLauncher browserViewInformation] haltAllTabs];
     [_browserLauncher browserViewInformation].currentBVC.active = NO;
   }
 

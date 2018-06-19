@@ -967,6 +967,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 #pragma mark - BrowserViewInformation implementation.
 
+- (void)haltAllTabs {
+  [_browserViewWrangler haltAllTabs];
+}
+
 - (void)cleanDeviceSharingManager {
   [_browserViewWrangler cleanDeviceSharingManager];
 }
