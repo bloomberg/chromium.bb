@@ -369,9 +369,18 @@ class SymbolsTest(image_test_lib.ImageTestCase):
             'ps_lgetregs', 'ps_lsetfpregs', 'ps_pglobal_lookup', 'ps_getpid']),
     }
 
+    excluded_files = set([
+        # These libraries are built against Android NDK's libc and have several
+        # imports that will appear to be unsatisfied.
+        'libmojo_core_arc32.so',
+        'libmojo_core_arc64.so',
+    ])
+
     failures = []
     for full_name, imported in importeds.iteritems():
       file_name = os.path.basename(full_name)
+      if file_name in excluded_files:
+        continue
       missing = imported - exported - known_unsatisfieds.get(file_name, set())
       if missing:
         failures.append('File %s contains unsatisfied symbols: %r' %
