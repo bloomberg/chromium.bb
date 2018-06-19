@@ -416,6 +416,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void LostFocusInternal();
 
   void SetTextHandlesHiddenForStylus(bool hide_handles);
+  void SetTextHandlesHiddenInternal();
 
   // The begin frame source being observed.  Null if none.
   viz::BeginFrameSource* begin_frame_source_;
