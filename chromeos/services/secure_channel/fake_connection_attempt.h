@@ -7,6 +7,7 @@
 
 #include <unordered_map>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "chromeos/services/secure_channel/client_connection_parameters.h"
@@ -26,8 +27,16 @@ class FakeConnectionAttempt : public ConnectionAttempt<FailureDetailType> {
  public:
   FakeConnectionAttempt(
       ConnectionAttemptDelegate* delegate,
-      const ConnectionAttemptDetails& connection_attempt_details);
-  ~FakeConnectionAttempt() override;
+      const ConnectionAttemptDetails& connection_attempt_details,
+      base::OnceClosure destructor_callback = base::OnceClosure())
+      : ConnectionAttempt<FailureDetailType>(delegate,
+                                             connection_attempt_details),
+        destructor_callback_(std::move(destructor_callback)) {}
+
+  ~FakeConnectionAttempt() override {
+    if (destructor_callback_)
+      std::move(destructor_callback_).Run();
+  }
 
   using IdToRequestMap = std::unordered_map<
       base::UnguessableToken,
@@ -70,6 +79,7 @@ class FakeConnectionAttempt : public ConnectionAttempt<FailureDetailType> {
   }
 
   IdToRequestMap id_to_request_map_;
+  base::OnceClosure destructor_callback_;
 
   std::vector<std::unique_ptr<ClientConnectionParameters>>
       client_data_for_extraction_;
