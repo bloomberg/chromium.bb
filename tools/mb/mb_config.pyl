@@ -545,6 +545,7 @@
       'android_optional_gpu_tests_rel': 'gpu_tests_android_release_trybot_arm64',
       'android_unswarmed_n5_rel': 'android_release_trybot',
       'android_unswarmed_n5x_rel': 'android_release_trybot_arm64',
+      'android_unswarmed_pixel_aosp': 'android_debug_trybot_arm64',
       'cast_shell_android': 'android_cast_debug_static_bot_compile_only',
       'linux_android_dbg_ng': 'android_debug_trybot',
     },
