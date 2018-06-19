@@ -3672,13 +3672,6 @@ TEST_F(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange) {
 // then the fallback is dropped.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DropFallbackWhenHidden) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      !features::IsAshInBrowserProcess()) {
-    return;
-  }
-
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -3693,24 +3686,16 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   EXPECT_FALSE(view_->HasPrimarySurface());
 
   // Submitting a CompositorFrame should not update the fallback SurfaceId
-  view_->SubmitCompositorFrame(
-      kArbitraryLocalSurfaceId,
-      MakeDelegatedFrame(1.f, gfx::Size(400, 400), gfx::Rect(400, 400)),
-      base::nullopt);
+  viz::SurfaceId surface_id(view_->GetFrameSinkId(), kArbitraryLocalSurfaceId);
+  view_->delegated_frame_host_->OnFirstSurfaceActivation(
+      viz::SurfaceInfo(surface_id, 1.f, gfx::Size(400, 400)));
   EXPECT_FALSE(view_->HasPrimarySurface());
   EXPECT_FALSE(view_->HasFallbackSurface());
 }
 
 // This test verifies that the primary SurfaceId is populated on resize and
-// the fallback SurfaceId is populated on SubmitCompositorFrame.
+// the fallback SurfaceId is populated in OnFirstSurfaceActivation.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      !features::IsAshInBrowserProcess()) {
-    return;
-  }
-
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(
       view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
@@ -3732,12 +3717,14 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
   EXPECT_EQ(gfx::Size(400, 400),
             view_->delegated_frame_host_->CurrentFrameSizeInDipForTesting());
 
+  // Fallback SurfaceId should be updated in OnFirstSurfaceActivation.
   // Submitting a CompositorFrame should update the fallback SurfaceId
-  view_->SubmitCompositorFrame(
-      kArbitraryLocalSurfaceId,
-      MakeDelegatedFrame(1.f, gfx::Size(400, 400), gfx::Rect(400, 400)),
-      base::nullopt);
+  viz::SurfaceId surface_id(view_->GetFrameSinkId(),
+                            view_->GetLocalSurfaceId());
+  view_->delegated_frame_host_->OnFirstSurfaceActivation(
+      viz::SurfaceInfo(surface_id, 1.f, gfx::Size(400, 400)));
   EXPECT_EQ(gfx::Size(400, 400), view_->window_->layer()->size());
+  EXPECT_EQ(surface_id, *view_->window_->layer()->GetFallbackSurfaceId());
 }
 
 // This test verifies that the primary SurfaceId is updated on device scale
@@ -3809,13 +3796,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 // RenderWidgetHostViewAuraTest.DiscardDelegatedFrame.
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
        DiscardDelegatedFrames) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      !features::IsAshInBrowserProcess()) {
-    return;
-  }
-
   view_->InitAsChild(nullptr);
 
   size_t max_renderer_frames =
@@ -3856,9 +3836,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
     views[i]->Show();
     ASSERT_TRUE(views[i]->HasPrimarySurface());
     ASSERT_FALSE(views[i]->HasFallbackSurface());
-    views[i]->SubmitCompositorFrame(
-        views[i]->GetLocalSurfaceId(),
-        MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+    viz::SurfaceId surface_id(views[i]->GetFrameSinkId(),
+                              views[i]->GetLocalSurfaceId());
+    views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
+        viz::SurfaceInfo(surface_id, 1.f, frame_size));
     ASSERT_TRUE(views[i]->HasPrimarySurface());
     EXPECT_TRUE(views[i]->HasFallbackSurface());
     views[i]->Hide();
@@ -3876,9 +3857,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   EXPECT_TRUE(views[1]->HasFallbackSurface());
 
   // Swap a frame on it, it should evict the next LRU [1].
-  views[0]->SubmitCompositorFrame(
-      views[0]->GetLocalSurfaceId(),
-      MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+  viz::SurfaceId surface_id0(views[0]->GetFrameSinkId(),
+                             views[0]->GetLocalSurfaceId());
+  views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
+      viz::SurfaceInfo(surface_id0, 1.f, frame_size));
   EXPECT_TRUE(views[0]->HasFallbackSurface());
   EXPECT_FALSE(views[1]->HasFallbackSurface());
   views[0]->Hide();
@@ -3886,9 +3868,10 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   // LRU renderer is [1], which is still hidden. Showing it and submitting a
   // CompositorFrame to it should evict the next LRU [2].
   views[1]->Show();
-  views[1]->SubmitCompositorFrame(
-      views[1]->GetLocalSurfaceId(),
-      MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+  viz::SurfaceId surface_id1(views[1]->GetFrameSinkId(),
+                             views[1]->GetLocalSurfaceId());
+  views[1]->delegated_frame_host_->OnFirstSurfaceActivation(
+      viz::SurfaceInfo(surface_id1, 1.f, frame_size));
   EXPECT_TRUE(views[0]->HasFallbackSurface());
   EXPECT_TRUE(views[1]->HasFallbackSurface());
   EXPECT_FALSE(views[2]->HasFallbackSurface());
@@ -3901,25 +3884,24 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
     views[i]->Show();
     // The renderers who don't have a frame should be waiting. The ones that
     // have a frame should not.
-    views[i]->SubmitCompositorFrame(
-        views[i]->GetLocalSurfaceId(),
-        MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+    viz::SurfaceId surface_id(views[i]->GetFrameSinkId(),
+                              views[i]->GetLocalSurfaceId());
+    views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
+        viz::SurfaceInfo(surface_id, 1.f, frame_size));
     EXPECT_TRUE(views[i]->HasFallbackSurface());
   }
   EXPECT_FALSE(views[0]->HasFallbackSurface());
 
   // Swap a frame on [0], it should be evicted immediately.
-  views[0]->SubmitCompositorFrame(
-      views[0]->GetLocalSurfaceId(),
-      MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+  views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
+      viz::SurfaceInfo(surface_id0, 1.f, frame_size));
   EXPECT_FALSE(views[0]->HasFallbackSurface());
 
   // Make [0] visible, and swap a frame on it. Nothing should be evicted
   // although we're above the limit.
   views[0]->Show();
-  views[0]->SubmitCompositorFrame(
-      views[0]->GetLocalSurfaceId(),
-      MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+  views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
+      viz::SurfaceInfo(surface_id0, 1.f, frame_size));
   for (size_t i = 0; i < renderer_count; ++i)
     EXPECT_TRUE(views[i]->HasFallbackSurface()) << i;
 
@@ -3940,9 +3922,8 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   EXPECT_FALSE(views[1]->HasFallbackSurface());
   // Show it, it should block until we give it a frame.
   views[1]->Show();
-  views[1]->SubmitCompositorFrame(
-      views[1]->GetLocalSurfaceId(),
-      MakeDelegatedFrame(1.f, size2, gfx::Rect(size2)), base::nullopt);
+  views[1]->delegated_frame_host_->OnFirstSurfaceActivation(
+      viz::SurfaceInfo(surface_id1, 1.f, frame_size));
 
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Destroy();
@@ -3951,13 +3932,6 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      !features::IsAshInBrowserProcess()) {
-    return;
-  }
-
   view_->InitAsChild(nullptr);
 
   size_t max_renderer_frames =
@@ -3993,10 +3967,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   // occur because all frames are visible.
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Show();
-    views[i]->SubmitCompositorFrame(
-        i ? parent_local_surface_id_allocator_.GenerateId()
-          : kArbitraryLocalSurfaceId,
-        MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+    viz::SurfaceId surface_id(views[i]->GetFrameSinkId(),
+                              views[i]->GetLocalSurfaceId());
+    views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
+        viz::SurfaceInfo(surface_id, 1.f, frame_size));
     EXPECT_TRUE(views[i]->HasFallbackSurface());
   }
 
@@ -4006,9 +3980,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
 
   // If we lock [0] before hiding it, then [0] should not be evicted.
   views[0]->Show();
-  views[0]->SubmitCompositorFrame(
-      kArbitraryLocalSurfaceId, MakeDelegatedFrame(1.f, frame_size, view_rect),
-      base::nullopt);
+  viz::SurfaceId surface_id(views[0]->GetFrameSinkId(),
+                            views[0]->GetLocalSurfaceId());
+  views[0]->delegated_frame_host_->OnFirstSurfaceActivation(
+      viz::SurfaceInfo(surface_id, 1.f, frame_size));
   EXPECT_TRUE(views[0]->HasFallbackSurface());
   views[0]->GetDelegatedFrameHost()->LockResources();
   views[0]->Hide();
@@ -4027,13 +4002,6 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
 // Test that changing the memory pressure should delete saved frames. This test
 // only applies to ChromeOS.
 TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
-  // TODO(jonross): Delete this test once Viz launches as it will be obsolete.
-  // https://crbug.com/844469
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
-      !features::IsAshInBrowserProcess()) {
-    return;
-  }
-
   view_->InitAsChild(nullptr);
 
   // The test logic below relies on having max_renderer_frames > 2.  By default,
@@ -4074,9 +4042,10 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   // occur because all frames are visible.
   for (size_t i = 0; i < renderer_count; ++i) {
     views[i]->Show();
-    views[i]->SubmitCompositorFrame(
-        kArbitraryLocalSurfaceId,
-        MakeDelegatedFrame(1.f, frame_size, view_rect), base::nullopt);
+    viz::SurfaceId surface_id(views[i]->GetFrameSinkId(),
+                              kArbitraryLocalSurfaceId);
+    views[i]->delegated_frame_host_->OnFirstSurfaceActivation(
+        viz::SurfaceInfo(surface_id, 1.f, frame_size));
     EXPECT_TRUE(views[i]->HasFallbackSurface());
   }
 
