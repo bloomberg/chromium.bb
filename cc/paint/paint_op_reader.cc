@@ -153,23 +153,6 @@ void PaintOpReader::ReadData(size_t bytes, void* data) {
   remaining_bytes_ -= bytes;
 }
 
-void PaintOpReader::ReadArray(size_t count, SkPoint* array) {
-  size_t bytes = count * sizeof(SkPoint);
-  if (remaining_bytes_ < bytes)
-    SetInvalid();
-  // Overflow?
-  if (count > static_cast<size_t>(~0) / sizeof(SkPoint))
-    SetInvalid();
-  if (!valid_)
-    return;
-  if (count == 0)
-    return;
-
-  memcpy(array, const_cast<const char*>(memory_), bytes);
-  memory_ += bytes;
-  remaining_bytes_ -= bytes;
-}
-
 void PaintOpReader::ReadSize(size_t* size) {
   ReadSimple(size);
 }
