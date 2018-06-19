@@ -588,7 +588,7 @@ void PermissionManager::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
-    std::string resource_identifier) {
+    const std::string& resource_identifier) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::list<base::Closure> callbacks;
 

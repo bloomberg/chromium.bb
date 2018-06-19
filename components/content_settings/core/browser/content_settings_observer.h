@@ -18,7 +18,7 @@ class Observer {
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
-      std::string resource_identifier) = 0;
+      const std::string& resource_identifier) = 0;
 
  protected:
   virtual ~Observer() {}

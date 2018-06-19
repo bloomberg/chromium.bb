@@ -38,10 +38,11 @@ class ProfileContentSettingObserver : public content_settings::Observer {
   explicit ProfileContentSettingObserver(Profile* profile)
       : profile_(profile) {}
   ~ProfileContentSettingObserver() override {}
-  void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
-                               const ContentSettingsPattern& secondary_pattern,
-                               ContentSettingsType content_type,
-                               std::string resource_identifier) override {
+  void OnContentSettingChanged(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
+      ContentSettingsType content_type,
+      const std::string& resource_identifier) override {
     if (content_type != CONTENT_SETTINGS_TYPE_PLUGINS)
       return;
 

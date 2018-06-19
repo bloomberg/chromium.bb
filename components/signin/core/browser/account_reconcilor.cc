@@ -234,7 +234,7 @@ void AccountReconcilor::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
-    std::string resource_identifier) {
+    const std::string& resource_identifier) {
   // If this is not a change to cookie settings, just ignore.
   if (content_type != CONTENT_SETTINGS_TYPE_COOKIES)
     return;

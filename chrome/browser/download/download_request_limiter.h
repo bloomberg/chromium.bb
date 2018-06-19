@@ -157,7 +157,7 @@ class DownloadRequestLimiter
         const ContentSettingsPattern& primary_pattern,
         const ContentSettingsPattern& secondary_pattern,
         ContentSettingsType content_type,
-        std::string resource_identifier) override;
+        const std::string& resource_identifier) override;
 
     // Remember to either block or allow automatic downloads from this origin.
     void SetContentSetting(ContentSetting setting);

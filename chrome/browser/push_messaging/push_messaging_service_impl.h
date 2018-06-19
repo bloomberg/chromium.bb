@@ -113,7 +113,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
                                ContentSettingsType content_type,
-                               std::string resource_identifier) override;
+                               const std::string& resource_identifier) override;
 
   // KeyedService implementation.
   void Shutdown() override;

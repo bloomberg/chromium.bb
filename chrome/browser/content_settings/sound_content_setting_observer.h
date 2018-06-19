@@ -37,7 +37,7 @@ class SoundContentSettingObserver
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
                                const ContentSettingsPattern& secondary_pattern,
                                ContentSettingsType content_type,
-                               std::string resource_identifier) override;
+                               const std::string& resource_identifier) override;
 
  private:
   explicit SoundContentSettingObserver(content::WebContents* web_contents);
