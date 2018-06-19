@@ -71,7 +71,8 @@ class IntentFilter {
 
   IntentFilter();
   IntentFilter(IntentFilter&& other);
-  IntentFilter(std::vector<AuthorityEntry> authorities,
+  IntentFilter(const std::string& package_name,
+               std::vector<AuthorityEntry> authorities,
                std::vector<PatternMatcher> paths);
   ~IntentFilter();
 
@@ -79,6 +80,7 @@ class IntentFilter {
 
   bool Match(const GURL& url) const;
 
+  const std::string& package_name() const { return package_name_; }
   const std::vector<AuthorityEntry>& authorities() const {
     return authorities_;
   }
@@ -88,6 +90,7 @@ class IntentFilter {
   bool MatchDataAuthority(const GURL& url) const;
   bool HasDataPath(const GURL& url) const;
 
+  std::string package_name_;
   std::vector<AuthorityEntry> authorities_;
   std::vector<PatternMatcher> paths_;
 

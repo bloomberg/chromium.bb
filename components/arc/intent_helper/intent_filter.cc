@@ -17,9 +17,10 @@ IntentFilter::IntentFilter() = default;
 IntentFilter::IntentFilter(IntentFilter&& other) = default;
 
 IntentFilter::IntentFilter(
+    const std::string& package_name,
     std::vector<IntentFilter::AuthorityEntry> authorities,
     std::vector<IntentFilter::PatternMatcher> paths)
-    : authorities_(std::move(authorities)) {
+    : package_name_(package_name), authorities_(std::move(authorities)) {
   // In order to register a path we need to have at least one authority.
   if (!authorities_.empty())
     paths_ = std::move(paths);
