@@ -290,6 +290,22 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
   return std::string();
 }
 
+// Syncs content settings to the network service for a profile.
+void SyncCookieSettingsToNetworkService(Profile* profile) {
+  ContentSettingsForOneType settings;
+  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
+  content::BrowserContext::ForEachStoragePartition(
+      profile,
+      base::BindRepeating(
+          [](const ContentSettingsForOneType& settings,
+             content::StoragePartition* partition) {
+            partition->GetCookieManagerForBrowserProcess()->SetContentSettings(
+                settings);
+          },
+          std::move(settings)));
+}
+
 }  // namespace
 
 // static
@@ -803,6 +819,9 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
   if (!off_the_record_profile_) {
     std::unique_ptr<Profile> p(CreateOffTheRecordProfile());
     off_the_record_profile_.swap(p);
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+      SyncCookieSettingsToNetworkService(off_the_record_profile_.get());
 
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_CREATED,
@@ -1444,18 +1463,9 @@ void ProfileImpl::OnContentSettingChanged(
     return;
   }
 
-  ContentSettingsForOneType settings;
-  HostContentSettingsMapFactory::GetForProfile(this)->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
-  content::BrowserContext::ForEachStoragePartition(
-      this,
-      base::BindRepeating(
-          [](const ContentSettingsForOneType& settings,
-             content::StoragePartition* partition) {
-            partition->GetCookieManagerForBrowserProcess()->SetContentSettings(
-                settings);
-          },
-          std::move(settings)));
+  SyncCookieSettingsToNetworkService(this);
+  if (off_the_record_profile_)
+    SyncCookieSettingsToNetworkService(off_the_record_profile_.get());
 }
 
 // Gets the media cache parameters from the command line. |cache_path| will be
