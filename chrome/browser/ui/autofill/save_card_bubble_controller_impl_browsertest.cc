@@ -35,7 +35,14 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
     std::unique_ptr<base::Value> value(base::JSONReader::Read(
         "{"
         "  \"line\" : [ {"
-        "     \"template\": \"This is the entire message.\""
+        "     \"template\": \"The legal documents are: {0} and {1}.\","
+        "     \"template_parameter\" : [ {"
+        "        \"display_text\" : \"Terms of Service\","
+        "        \"url\": \"http://www.example.com/tos\""
+        "     }, {"
+        "        \"display_text\" : \"Privacy Policy\","
+        "        \"url\": \"http://www.example.com/pp\""
+        "     } ]"
         "  } ]"
         "}"));
     base::DictionaryValue* dictionary;

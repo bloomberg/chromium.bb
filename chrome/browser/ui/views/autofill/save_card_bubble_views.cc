@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/autofill/dialog_view_ids.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
@@ -32,6 +33,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
@@ -47,6 +49,8 @@ std::unique_ptr<views::StyledLabel> CreateLegalMessageLineLabel(
     views::StyledLabelListener* listener) {
   std::unique_ptr<views::StyledLabel> label(
       new views::StyledLabel(line.text(), listener));
+  label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
+  label->SetDefaultTextStyle(ChromeTextStyle::STYLE_SECONDARY);
   for (const LegalMessageLine::Link& link : line.links()) {
     label->AddStyleRange(link.range,
                          views::StyledLabel::RangeStyleInfo::CreateForLink());
@@ -253,7 +257,8 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   // info.
   base::string16 explanation = controller_->GetExplanatoryMessage();
   if (!explanation.empty()) {
-    auto* explanation_label = new views::Label(explanation);
+    auto* explanation_label = new views::Label(
+        explanation, CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_SECONDARY);
     explanation_label->SetMultiLine(true);
     explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     view->AddChildView(explanation_label);
@@ -278,7 +283,8 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   description_view->AddChildView(card_type_icon);
 
   description_view->AddChildView(
-      new views::Label(card.NetworkAndLastFourDigits()));
+      new views::Label(card.NetworkAndLastFourDigits(), CONTEXT_BODY_TEXT_LARGE,
+                       views::style::STYLE_PRIMARY));
 
   // The spacer will stretch to use the available horizontal space in the
   // dialog, which will end-align the expiration date label.
@@ -286,8 +292,9 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   description_view->AddChildView(spacer);
   box_layout->SetFlexForView(spacer, /*flex=*/1);
 
-  description_view->AddChildView(
-      new views::Label(card.AbbreviatedExpirationDateForDisplay()));
+  description_view->AddChildView(new views::Label(
+      card.AbbreviatedExpirationDateForDisplay(), CONTEXT_BODY_TEXT_LARGE,
+      ChromeTextStyle::STYLE_SECONDARY));
 
   // If necessary, add the cardholder name textfield to the upload save dialog.
   if (controller_->ShouldRequestNameFromUser()) {
