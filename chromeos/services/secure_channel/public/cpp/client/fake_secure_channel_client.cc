@@ -26,8 +26,8 @@ FakeSecureChannelClient::ConnectionRequestArguments::
 FakeSecureChannelClient::FakeSecureChannelClient() = default;
 
 FakeSecureChannelClient::~FakeSecureChannelClient() {
-  DCHECK(!next_initiate_connection_connection_attempt_);
-  DCHECK(!next_listen_for_connection_connection_attempt_);
+  DCHECK(device_pair_to_next_initiate_connection_attempt_.empty());
+  DCHECK(device_pair_to_next_listen_connection_attempt_.empty());
 }
 
 std::unique_ptr<ConnectionAttempt>
@@ -36,10 +36,11 @@ FakeSecureChannelClient::InitiateConnectionToDevice(
     cryptauth::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority) {
-  last_initiate_connection_request_arguments_list_.push_back(
-      std::make_unique<ConnectionRequestArguments>(
-          device_to_connect, local_device, feature, connection_priority));
-  return std::move(next_initiate_connection_connection_attempt_);
+  auto remote_local_pair = std::make_pair(device_to_connect, local_device);
+  std::unique_ptr<ConnectionAttempt> connection_attempt = std::move(
+      device_pair_to_next_initiate_connection_attempt_[remote_local_pair]);
+  device_pair_to_next_initiate_connection_attempt_.erase(remote_local_pair);
+  return connection_attempt;
 }
 
 std::unique_ptr<ConnectionAttempt>
@@ -48,10 +49,11 @@ FakeSecureChannelClient::ListenForConnectionFromDevice(
     cryptauth::RemoteDeviceRef local_device,
     const std::string& feature,
     ConnectionPriority connection_priority) {
-  last_listen_for_connection_request_arguments_list_.push_back(
-      std::make_unique<ConnectionRequestArguments>(
-          device_to_connect, local_device, feature, connection_priority));
-  return std::move(next_listen_for_connection_connection_attempt_);
+  auto remote_local_pair = std::make_pair(device_to_connect, local_device);
+  std::unique_ptr<ConnectionAttempt> connection_attempt = std::move(
+      device_pair_to_next_listen_connection_attempt_[remote_local_pair]);
+  device_pair_to_next_listen_connection_attempt_.erase(remote_local_pair);
+  return connection_attempt;
 }
 
 }  // namespace secure_channel
