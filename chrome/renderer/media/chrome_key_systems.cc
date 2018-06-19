@@ -237,17 +237,33 @@ static void AddWidevine(
     return;
   }
 
+  // Codecs and encryption schemes.
   auto supported_codecs = GetSupportedCodecs(capability->video_codecs);
   const auto& supported_encryption_schemes = capability->encryption_schemes;
-
-  // On ChromeOS, we do not have real hardware secure codecs. But this does not
-  // affect HW_SECURE* support since the support doesn't require hardware secure
-  // codecs. See WidevineKeySystemProperties::GetRobustnessConfigRule().
   auto supported_hw_secure_codecs =
       GetSupportedCodecs(capability->hw_secure_video_codecs);
 
-  // TODO(crbug.com/853261): Support capability->hw_secure_encryption_schemes.
+  // TODO(crbug.com/853261): Support capability->hw_secure_encryption_schemes
+  // and pass it into WidevineKeySystemProperties.
 
+  // Robustness.
+  using Robustness = cdm::WidevineKeySystemProperties::Robustness;
+  auto max_audio_robustness = Robustness::SW_SECURE_CRYPTO;
+  auto max_video_robustness = Robustness::SW_SECURE_DECODE;
+
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, we support HW_SECURE_ALL even without hardware secure codecs.
+  // See WidevineKeySystemProperties::GetRobustnessConfigRule().
+  max_audio_robustness = Robustness::HW_SECURE_ALL;
+  max_video_robustness = Robustness::HW_SECURE_ALL;
+#else
+  if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
+    max_audio_robustness = Robustness::HW_SECURE_CRYPTO;
+    max_video_robustness = Robustness::HW_SECURE_ALL;
+  }
+#endif
+
+  // Session types.
   bool cdm_supports_temporary_session = base::ContainsValue(
       capability->session_types, media::CdmSessionType::TEMPORARY_SESSION);
   if (!cdm_supports_temporary_session) {
@@ -260,28 +276,21 @@ static void AddWidevine(
                           media::CdmSessionType::PERSISTENT_LICENSE_SESSION);
   auto persistent_license_support =
       GetPersistentLicenseSupport(cdm_supports_persistent_license);
+  auto persistent_release_message_support =
+      EmeSessionTypeSupport::NOT_SUPPORTED;
 
-  using Robustness = cdm::WidevineKeySystemProperties::Robustness;
+  // Others.
+  auto persistent_state_support = EmeFeatureSupport::REQUESTABLE;
+  auto distinctive_identifier_support = EmeFeatureSupport::NOT_SUPPORTED;
+#if defined(OS_CHROMEOS)
+  distinctive_identifier_support = EmeFeatureSupport::REQUESTABLE;
+#endif
 
-  // TODO(xhwang/jrummell): Parse hw_secure_encryption_schemes.
   concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
       supported_encryption_schemes, supported_codecs,
-      supported_hw_secure_codecs,
-#if defined(OS_CHROMEOS)
-      Robustness::HW_SECURE_ALL,             // Maximum audio robustness.
-      Robustness::HW_SECURE_ALL,             // Maximum video robustness.
-      persistent_license_support,            // Persistent-license.
-      EmeSessionTypeSupport::NOT_SUPPORTED,  // Persistent-release-message.
-      EmeFeatureSupport::REQUESTABLE,        // Persistent state.
-      EmeFeatureSupport::REQUESTABLE));      // Distinctive identifier.
-#else                                        // Desktop
-      Robustness::SW_SECURE_CRYPTO,          // Maximum audio robustness.
-      Robustness::SW_SECURE_DECODE,          // Maximum video robustness.
-      persistent_license_support,            // persistent-license.
-      EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
-      EmeFeatureSupport::REQUESTABLE,        // Persistent state.
-      EmeFeatureSupport::NOT_SUPPORTED));    // Distinctive identifier.
-#endif                                       // defined(OS_CHROMEOS)
+      supported_hw_secure_codecs, max_audio_robustness, max_video_robustness,
+      persistent_license_support, persistent_release_message_support,
+      persistent_state_support, distinctive_identifier_support));
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

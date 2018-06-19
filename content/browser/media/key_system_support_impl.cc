@@ -7,12 +7,14 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "content/public/browser/cdm_registry.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
 #include "media/base/key_systems.h"
+#include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
@@ -77,7 +79,11 @@ void KeySystemSupportImpl::IsKeySystemSupported(
   capability->encryption_schemes =
       std::vector<media::EncryptionMode>(schemes.begin(), schemes.end());
 
-  // TODO(xhwang): Populate hw_secure* fields on Windows.
+  if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
+    // TODO(xhwang): Call into GetContentClient()->browser() to get key system
+    // specific hardware secure decryption capability on Windows.
+    NOTIMPLEMENTED();
+  }
 
   // Temporary session is always supported.
   // TODO(xhwang): Populate this from CdmInfo.
