@@ -10,7 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/options/passphrase_textfield.h"
+#include "chrome/browser/chromeos/ui/passphrase_textfield.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"

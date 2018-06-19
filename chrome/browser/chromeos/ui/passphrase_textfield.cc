@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/options/passphrase_textfield.h"
+#include "chrome/browser/chromeos/ui/passphrase_textfield.h"
 
 #include "base/strings/utf_string_conversions.h"
 
 namespace chromeos {
 
 PassphraseTextfield::PassphraseTextfield()
-    : Textfield(),
-      show_fake_(false),
-      changed_(true) {
+    : Textfield(), show_fake_(false), changed_(true) {
   SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 }
 
@@ -43,7 +41,7 @@ std::string PassphraseTextfield::GetPassphrase() {
 
 void PassphraseTextfield::SetFakePassphrase() {
   CR_DEFINE_STATIC_LOCAL(base::string16, fake_passphrase,
-      (base::ASCIIToUTF16("********")));
+                         (base::ASCIIToUTF16("********")));
   SetText(fake_passphrase);
   changed_ = false;
 }

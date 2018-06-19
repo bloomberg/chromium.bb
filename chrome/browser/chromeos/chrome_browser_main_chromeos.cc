@@ -75,7 +75,6 @@
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
-#include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -395,7 +394,6 @@ class DBusServices {
     cryptohome::HomedirMethods::Initialize();
 
     NetworkHandler::Initialize();
-    CertLibrary::Initialize();
 
     // Initialize the network change notifier for Chrome OS. The network
     // change notifier starts to monitor changes from the power manager and
@@ -412,7 +410,6 @@ class DBusServices {
   }
 
   ~DBusServices() {
-    CertLibrary::Shutdown();
     NetworkHandler::Shutdown();
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
