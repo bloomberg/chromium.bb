@@ -49,6 +49,13 @@ identity::IdentityManager* IdentityManagerFactory::GetForProfile(
 }
 
 // static
+identity::IdentityManager* IdentityManagerFactory::GetForProfileIfExists(
+    Profile* profile) {
+  return static_cast<IdentityManagerWrapper*>(
+      GetInstance()->GetServiceForBrowserContext(profile, false));
+}
+
+// static
 IdentityManagerFactory* IdentityManagerFactory::GetInstance() {
   return base::Singleton<IdentityManagerFactory>::get();
 }
