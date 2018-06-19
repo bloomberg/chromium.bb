@@ -39,6 +39,7 @@ typedef struct ThreadData {
   /* dqcoeff are shared by all the planes. So planes must be decoded serially */
   DECLARE_ALIGNED(32, tran_low_t, dqcoeff[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, uint8_t, color_index_map[2][MAX_PALETTE_SQUARE]);
+  CB_BUFFER cb_buffer_base;
   uint8_t *mc_buf[2];
   int32_t mc_buf_size;
 } ThreadData;

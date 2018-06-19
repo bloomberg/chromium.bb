@@ -386,8 +386,21 @@ struct buf_2d {
   int stride;
 };
 
+typedef struct eob_info {
+  uint16_t eob;
+  uint16_t max_scan_line;
+} eob_info;
+
+typedef struct {
+  DECLARE_ALIGNED(32, tran_low_t, dqcoeff[MAX_MB_PLANE][MAX_SB_SQUARE]);
+  eob_info eob_data[MAX_MB_PLANE]
+                   [MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+} CB_BUFFER;
+
 typedef struct macroblockd_plane {
   tran_low_t *dqcoeff;
+  tran_low_t *dqcoeff_block;
+  eob_info *eob_data;
   PLANE_TYPE plane_type;
   int subsampling_x;
   int subsampling_y;
@@ -581,6 +594,9 @@ typedef struct macroblockd {
   CFL_CTX cfl;
 
   JNT_COMP_PARAMS jcp_param;
+
+  uint16_t cb_offset[MAX_MB_PLANE];
+  uint16_t txb_offset[MAX_MB_PLANE];
 } MACROBLOCKD;
 
 static INLINE int get_bitdepth_data_path_index(const MACROBLOCKD *xd) {
