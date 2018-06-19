@@ -199,6 +199,10 @@ extern const char kUnifiedConsentDescription[];
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
 
+// Title and description for the flag to enable web frame messaging.
+extern const char kWebFrameMessagingName[];
+extern const char kWebFrameMessagingDescription[];
+
 // Title and description for the flag to enable text accessibility in webpages.
 extern const char kWebPageTextAccessibilityName[];
 extern const char kWebPageTextAccessibilityDescription[];

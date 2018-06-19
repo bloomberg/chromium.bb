@@ -348,6 +348,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebPageTextAccessibilityName,
      flag_descriptions::kWebPageTextAccessibilityDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::kWebPageTextAccessibility)},
+    {"web-frame-messaging", flag_descriptions::kWebFrameMessagingName,
+     flag_descriptions::kWebFrameMessagingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kWebFrameMessaging)},
 };
 
 // Add all switches from experimental flags to |command_line|.
