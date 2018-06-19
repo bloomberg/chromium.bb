@@ -8,8 +8,9 @@ layer at (8,8) size 300x150
   LayoutVideo {VIDEO} at (0,0) size 300x150
 layer at (8,8) size 300x150
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x150 [bgcolor=#333333]
-    LayoutBlockFlow {DIV} at (150,0) size 0x0
     LayoutFlexibleBox {DIV} at (0,0) size 300x150
+layer at (8,8) size 300x150
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 300x150
 layer at (8,8) size 300x150
   LayoutFlexibleBox {DIV} at (0,0) size 300x150
 layer at (8,8) size 300x138 clip at (9,9) size 298x136

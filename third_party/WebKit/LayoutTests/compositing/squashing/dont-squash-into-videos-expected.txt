@@ -29,6 +29,11 @@
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV",
+      "bounds": [100, 100],
+      "drawsContent": false
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
       "position": [50, 50],
       "bounds": [200, 200],
       "contentsOpaque": true,
