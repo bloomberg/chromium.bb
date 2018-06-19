@@ -162,7 +162,9 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 // |guideName|.
 - (void)presentPopupOfType:(PopupMenuType)type
             fromNamedGuide:(GuideName*)guideName {
-  DCHECK(!self.presenter);
+  if (self.presenter)
+    [self dismissPopupMenuAnimated:YES];
+
   id<BrowserCommands> callableDispatcher =
       static_cast<id<BrowserCommands>>(self.dispatcher);
   [callableDispatcher
