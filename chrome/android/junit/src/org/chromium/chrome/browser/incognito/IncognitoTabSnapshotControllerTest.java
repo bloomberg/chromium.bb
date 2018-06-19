@@ -22,9 +22,12 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+
+import java.util.HashMap;
 
 /**
  * Unit tests for IncognitoTabSnapshotController.java.
@@ -122,6 +125,10 @@ public class IncognitoTabSnapshotControllerTest {
 
     @Test
     public void testInOverviewModeWithIncognitoTab() {
+        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
+        features.put(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID, false);
+        ChromeFeatureList.setTestFeatures(features);
+
         mController = new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector);
         mController.setInOverViewMode(true);
 
@@ -136,6 +143,10 @@ public class IncognitoTabSnapshotControllerTest {
 
     @Test
     public void testInOverviewModeWithNoIncognitoTab() {
+        HashMap<String, Boolean> features = new HashMap<String, Boolean>();
+        features.put(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID, false);
+        ChromeFeatureList.setTestFeatures(features);
+
         mController = new IncognitoTabSnapshotController(mWindow, mLayoutManager, mSelector);
         mController.setInOverViewMode(true);
 
