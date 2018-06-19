@@ -12,10 +12,9 @@
 namespace ash {
 
 class AssistantController;
+class AssistantMainStage;
 class CaptionBar;
 class DialogPlate;
-class SuggestionContainerView;
-class UiElementContainerView;
 
 class AssistantMainView : public views::View,
                           public AssistantInteractionModelObserver {
@@ -39,9 +38,8 @@ class AssistantMainView : public views::View,
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
   CaptionBar* caption_bar_;                         // Owned by view hierarchy.
-  UiElementContainerView* ui_element_container_;    // Owned by view hierarchy.
-  SuggestionContainerView* suggestions_container_;  // Owned by view hierarchy.
   DialogPlate* dialog_plate_;                       // Owned by view hierarchy.
+  AssistantMainStage* main_stage_;                  // Owned by view hierarchy.
 
   int min_height_dip_;
 

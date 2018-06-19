@@ -12,8 +12,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
-#include "ash/assistant/ui/main_stage/ui_element_container_view.h"
-#include "ash/assistant/ui/suggestion_container_view.h"
+#include "ash/assistant/ui/main_stage/assistant_main_stage.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -27,10 +26,6 @@ constexpr int kMinHeightDip = 200;
 
 AssistantMainView::AssistantMainView(AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      caption_bar_(new CaptionBar()),
-      ui_element_container_(new UiElementContainerView(assistant_controller)),
-      suggestions_container_(new SuggestionContainerView(assistant_controller)),
-      dialog_plate_(new DialogPlate(assistant_controller)),
       min_height_dip_(kMinHeightDip) {
   InitLayout();
 
@@ -62,13 +57,14 @@ void AssistantMainView::OnBoundsChanged(const gfx::Rect& prev_bounds) {
 void AssistantMainView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 
-  // We force a layout here because, though we are receiving a
-  // ChildPreferredSizeChanged event, it may be that the
-  // |ui_element_container_|'s bounds will not actually change due to the height
-  // restrictions imposed by AssistantMainView. When this is the case, we
-  // need to force a layout to see |ui_element_container_|'s new contents.
-  if (child == ui_element_container_)
+  // Even though the preferred size for |main_stage_| may change, its bounds
+  // may not actually change due to height restrictions imposed by its parent.
+  // For this reason, we need to explicitly trigger a layout pass so that the
+  // children of |main_stage_| are properly updated.
+  if (child == main_stage_) {
     Layout();
+    SchedulePaint();
+  }
 }
 
 void AssistantMainView::ChildVisibilityChanged(views::View* child) {
@@ -81,18 +77,17 @@ void AssistantMainView::InitLayout() {
           views::BoxLayout::Orientation::kVertical));
 
   // Caption bar.
+  caption_bar_ = new CaptionBar();
   AddChildView(caption_bar_);
 
-  // UI element container.
-  AddChildView(ui_element_container_);
+  // Main stage.
+  main_stage_ = new AssistantMainStage(assistant_controller_);
+  AddChildView(main_stage_);
 
-  layout_manager->SetFlexForView(ui_element_container_, 1);
-
-  // Suggestions container.
-  suggestions_container_->SetVisible(false);
-  AddChildView(suggestions_container_);
+  layout_manager->SetFlexForView(main_stage_, 1);
 
   // Dialog plate.
+  dialog_plate_ = new DialogPlate(assistant_controller_);
   AddChildView(dialog_plate_);
 }
 

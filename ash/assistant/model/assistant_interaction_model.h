@@ -56,8 +56,10 @@ class AssistantInteractionModel {
   void AddObserver(AssistantInteractionModelObserver* observer);
   void RemoveObserver(AssistantInteractionModelObserver* observer);
 
-  // Resets the interaction to its initial state.
-  void ClearInteraction();
+  // Resets the interaction to its initial state. There are instances in which
+  // we wish to clear the interaction but retain the committed query. As such,
+  // |retain_committed_query| is provided but defaults to |false|.
+  void ClearInteraction(bool retain_committed_query = false);
 
   // Sets the interaction state.
   void SetInteractionState(InteractionState interaction_state);
@@ -77,21 +79,30 @@ class AssistantInteractionModel {
   // Returns the mic state for the interaction.
   MicState mic_state() const { return mic_state_; }
 
+  // Returns the committed query for the interaction.
+  const AssistantQuery& committed_query() const { return *committed_query_; }
+
+  // Clears the committed query for the interaction.
+  void ClearCommittedQuery();
+
+  // Updates the pending query for the interaction.
+  void SetPendingQuery(std::unique_ptr<AssistantQuery> pending_query);
+
+  // Returns the pending query for the interaction.
+  const AssistantQuery& pending_query() const { return *pending_query_; }
+
+  // Commits the pending query for the interaction.
+  void CommitPendingQuery();
+
+  // Clears the pending query for the interaction.
+  void ClearPendingQuery();
+
   // Adds the specified |ui_element| that should be rendered for the
   // interaction.
   void AddUiElement(std::unique_ptr<AssistantUiElement> ui_element);
 
   // Clears all UI elements for the interaction.
   void ClearUiElements();
-
-  // Updates the query for the interaction.
-  void SetQuery(std::unique_ptr<AssistantQuery> query);
-
-  // Returns the query for the interaction.
-  const AssistantQuery& query() const { return *query_; }
-
-  // Clears the query for the interaction.
-  void ClearQuery();
 
   // Adds the specified |suggestions| that should be rendered for the
   // interaction.
@@ -111,10 +122,12 @@ class AssistantInteractionModel {
   void NotifyInteractionStateChanged();
   void NotifyInputModalityChanged();
   void NotifyMicStateChanged();
+  void NotifyCommittedQueryChanged();
+  void NotifyCommittedQueryCleared();
+  void NotifyPendingQueryChanged();
+  void NotifyPendingQueryCleared();
   void NotifyUiElementAdded(const AssistantUiElement* ui_element);
   void NotifyUiElementsCleared();
-  void NotifyQueryChanged();
-  void NotifyQueryCleared();
   void NotifySuggestionsAdded(
       const std::map<int, AssistantSuggestion*>& suggestions);
   void NotifySuggestionsCleared();
@@ -123,7 +136,8 @@ class AssistantInteractionModel {
   InteractionState interaction_state_ = InteractionState::kInactive;
   InputModality input_modality_ = InputModality::kKeyboard;
   MicState mic_state_ = MicState::kClosed;
-  std::unique_ptr<AssistantQuery> query_;
+  std::unique_ptr<AssistantQuery> committed_query_;
+  std::unique_ptr<AssistantQuery> pending_query_;
   std::vector<AssistantSuggestionPtr> suggestions_;
   std::vector<std::unique_ptr<AssistantUiElement>> ui_element_list_;
 
