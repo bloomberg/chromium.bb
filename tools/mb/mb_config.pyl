@@ -128,7 +128,7 @@
       'ToTLinuxCoverage': 'clang_tot_coverage_minimal_symbols_shared_release_with_libfuzzer',
       'ToTLinux (dbg)': 'clang_tot_shared_debug',
       'ToTLinuxASan': 'clang_tot_asan_lsan_static_release',
-      'ToTLinuxASanLibfuzzer': 'release_libfuzzer_asan_clang_tot',
+      'ToTLinuxASanLibfuzzer': 'libfuzzer_asan_clang_tot_release',
       'ToTLinuxMSan': 'clang_tot_msan_release',
       'ToTLinuxThinLTO': 'clang_tot_release_minimal_symbols_thin_lto_static_use_lld',
       'ToTLinuxUBSanVptr': 'clang_tot_edge_ubsan_no_recover_hack_static_release',
@@ -151,7 +151,7 @@
     },
 
     'chromium.fyi': {
-      'Afl Upload Linux ASan': 'release_afl_asan',
+      'Afl Upload Linux ASan': 'afl_asan_release_bot',
       'Android Builder (dbg)': 'android_debug_static_bot_vrdata',
 
       'Android Builder (dbg) Goma Canary': 'android_debug_static_bot_vrdata',
@@ -203,11 +203,11 @@
       'MD Top Chrome ChromeOS non-material': 'chromeos_with_codecs_debug_bot',
       'MD Top Chrome Win material': 'debug_bot_minimal_symbols',
       'MD Top Chrome Linux material': 'debug_bot',
-      'Libfuzzer Upload Linux ASan': 'release_libfuzzer_asan',
-      'Libfuzzer Upload Linux ASan Debug': 'debug_libfuzzer_asan',
-      'Libfuzzer Upload Linux MSan': 'release_libfuzzer_msan',
-      'Libfuzzer Upload Linux UBSan': 'release_libfuzzer_ubsan',
-      'Libfuzzer Upload Mac ASan': 'release_libfuzzer_mac_asan',
+      'Libfuzzer Upload Linux ASan': 'libfuzzer_asan_release_bot',
+      'Libfuzzer Upload Linux ASan Debug': 'libfuzzer_asan_debug_bot',
+      'Libfuzzer Upload Linux MSan': 'libfuzzer_msan_release_bot',
+      'Libfuzzer Upload Linux UBSan': 'libfuzzer_ubsan_release_bot',
+      'Libfuzzer Upload Mac ASan': 'libfuzzer_mac_asan_release_bot',
       'Linux ARM': 'release_bot_arm',
       'Linux ARM (dbg)': 'debug_bot_arm',
       'Linux ARM64': 'release_bot_arm64',
@@ -718,6 +718,10 @@
   # is not necessarily so (i.e., we might have mac, win, and linux
   # bots all using the 'release_bot' config).
   'configs': {
+    'afl_asan_release_bot': [
+      'afl', 'asan', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+    ],
+
     'android_binary_size': [
       'android', 'chrome_with_codecs', 'goma', 'minimal_symbols', 'official_optimize',
     ],
@@ -1233,8 +1237,8 @@
       'debug_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs'
     ],
 
-    'debug_libfuzzer_asan': [
-      'debug', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+    'libfuzzer_asan_debug_bot': [
+      'libfuzzer', 'asan', 'debug_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'debug_trybot': [
@@ -1368,6 +1372,30 @@
       'jumbo_non_goma_chunks', 'release_bot', 'minimal_symbols'
     ],
 
+    'libfuzzer_asan_debug_bot': [
+      'libfuzzer', 'asan', 'debug_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+    ],
+    'libfuzzer_asan_release_bot': [
+      'libfuzzer', 'asan', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+    ],
+
+
+    'libfuzzer_asan_clang_tot_release': [
+      'libfuzzer', 'asan', 'clang_tot', 'release', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+    ],
+
+    'libfuzzer_mac_asan_release_bot': [
+      'libfuzzer', 'asan', 'release_bot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+    ],
+
+    'libfuzzer_msan_release_bot': [
+      'libfuzzer', 'msan', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+    ],
+
+    'libfuzzer_ubsan_release_bot': [
+      'libfuzzer', 'ubsan_security', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+    ],
+
     'linux_chromium_analysis': [
       'analysis'
     ],
@@ -1441,10 +1469,6 @@
       'error',
     ],
 
-    'release_afl_asan': [
-      'release', 'afl', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
-    ],
-
     'release_bot': [
       'release_bot',
     ],
@@ -1509,26 +1533,6 @@
 
     'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs': [
       'release_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs'
-    ],
-
-    'release_libfuzzer_asan': [
-      'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
-    ],
-
-    'release_libfuzzer_asan_clang_tot': [
-      'clang_tot', 'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
-    ],
-
-    'release_libfuzzer_mac_asan': [
-      'release', 'libfuzzer', 'asan', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
-    ],
-
-    'release_libfuzzer_msan': [
-      'release', 'libfuzzer', 'msan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
-    ],
-
-    'release_libfuzzer_ubsan': [
-      'release', 'libfuzzer', 'ubsan_security', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'release_trybot': [
