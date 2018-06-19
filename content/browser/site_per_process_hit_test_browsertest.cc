@@ -1624,11 +1624,15 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
   HitTestWatermark(shell(), embedded_test_server());
 }
 
-// TODO(jonross): Update this to use HitTestRegionObserver, then disable for /2
-// as currently that variant does not submit hit test regions for overlapping
-// surfaces. https://crbug.com/846798
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        HitTestStaleDataDeletedView) {
+  // TODO(sunxd): Hit test regions are not submitted for overlapping surfaces,
+  // causing /2 to fail outside of Viz. https::/crbug.com/846798
+  if (base::FeatureList::IsEnabled(features::kEnableVizHitTestSurfaceLayer) &&
+      !base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+    return;
+  }
+
   // Have two iframes to avoid going to short circuit path during the second
   // targeting.
   GURL main_url(
@@ -1660,8 +1664,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
       static_cast<RenderWidgetHostViewBase*>(
           child_node2->current_frame_host()->GetRenderWidgetHost()->GetView());
 
-  WaitForChildFrameSurfaceReady(child_node1->current_frame_host());
-  WaitForChildFrameSurfaceReady(child_node2->current_frame_host());
+  WaitForHitTestDataOrChildSurfaceReady(child_node1->current_frame_host());
+  WaitForHitTestDataOrChildSurfaceReady(child_node2->current_frame_host());
 
   const gfx::PointF child_location(50, 50);
   gfx::PointF parent_location =
