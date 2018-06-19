@@ -26,7 +26,7 @@ class FileManagerPrivateCancelDialogFunction
                              FILEMANAGERPRIVATE_CANCELDIALOG)
 
  protected:
-  ~FileManagerPrivateCancelDialogFunction() override {}
+  ~FileManagerPrivateCancelDialogFunction() override = default;
 
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -39,7 +39,7 @@ class FileManagerPrivateSelectFileFunction
                              FILEMANAGERPRIVATE_SELECTFILE)
 
  protected:
-  ~FileManagerPrivateSelectFileFunction() override {}
+  ~FileManagerPrivateSelectFileFunction() override = default;
 
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -59,7 +59,7 @@ class FileManagerPrivateSelectFilesFunction
                              FILEMANAGERPRIVATE_SELECTFILES)
 
  protected:
-  ~FileManagerPrivateSelectFilesFunction() override {}
+  ~FileManagerPrivateSelectFilesFunction() override = default;
 
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;

@@ -24,8 +24,7 @@ JobEventRouter::JobEventRouter(const base::TimeDelta& event_delay)
       weak_factory_(this) {
 }
 
-JobEventRouter::~JobEventRouter() {
-}
+JobEventRouter::~JobEventRouter() = default;
 
 void JobEventRouter::OnJobAdded(const drive::JobInfo& job_info) {
   OnJobUpdated(job_info);

@@ -53,7 +53,7 @@ class FileManagerPrivateLogoutUserForReauthenticationFunction
                              FILEMANAGERPRIVATE_LOGOUTUSERFORREAUTHENTICATION)
 
  protected:
-  ~FileManagerPrivateLogoutUserForReauthenticationFunction() override {}
+  ~FileManagerPrivateLogoutUserForReauthenticationFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -68,7 +68,7 @@ class FileManagerPrivateGetPreferencesFunction
                              FILEMANAGERPRIVATE_GETPREFERENCES)
 
  protected:
-  ~FileManagerPrivateGetPreferencesFunction() override {}
+  ~FileManagerPrivateGetPreferencesFunction() override = default;
 
   ResponseAction Run() override;
 };
@@ -82,7 +82,7 @@ class FileManagerPrivateSetPreferencesFunction
                              FILEMANAGERPRIVATE_SETPREFERENCES)
 
  protected:
-  ~FileManagerPrivateSetPreferencesFunction() override {}
+  ~FileManagerPrivateSetPreferencesFunction() override = default;
 
   ResponseAction Run() override;
 };
@@ -118,7 +118,7 @@ class FileManagerPrivateZoomFunction : public UIThreadExtensionFunction {
                              FILEMANAGERPRIVATE_ZOOM);
 
  protected:
-  ~FileManagerPrivateZoomFunction() override {}
+  ~FileManagerPrivateZoomFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -151,7 +151,7 @@ class FileManagerPrivateGetProfilesFunction : public UIThreadExtensionFunction {
                              FILEMANAGERPRIVATE_GETPROFILES);
 
  protected:
-  ~FileManagerPrivateGetProfilesFunction() override {}
+  ~FileManagerPrivateGetProfilesFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -165,7 +165,7 @@ class FileManagerPrivateOpenInspectorFunction
                              FILEMANAGERPRIVATE_OPENINSPECTOR);
 
  protected:
-  ~FileManagerPrivateOpenInspectorFunction() override {}
+  ~FileManagerPrivateOpenInspectorFunction() override = default;
 
   ResponseAction Run() override;
 };
@@ -178,7 +178,7 @@ class FileManagerPrivateOpenSettingsSubpageFunction
                              FILEMANAGERPRIVATE_OPENSETTINGSSUBPAGE);
 
  protected:
-  ~FileManagerPrivateOpenSettingsSubpageFunction() override {}
+  ~FileManagerPrivateOpenSettingsSubpageFunction() override = default;
 
   ResponseAction Run() override;
 };
@@ -205,11 +205,11 @@ class FileManagerPrivateInternalGetMimeTypeFunction
 class FileManagerPrivateIsPiexLoaderEnabledFunction
     : public UIThreadExtensionFunction {
  public:
-  FileManagerPrivateIsPiexLoaderEnabledFunction() {}
+  FileManagerPrivateIsPiexLoaderEnabledFunction() = default;
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.isPiexLoaderEnabled",
                              FILEMANAGERPRIVATE_ISPIEXLOADERENABLED)
  protected:
-  ~FileManagerPrivateIsPiexLoaderEnabledFunction() override {}
+  ~FileManagerPrivateIsPiexLoaderEnabledFunction() override = default;
 
  private:
   ResponseAction Run() override;
@@ -224,7 +224,7 @@ class FileManagerPrivateGetProvidersFunction
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.getProviders",
                              FILEMANAGERPRIVATE_GETPROVIDERS)
  protected:
-  ~FileManagerPrivateGetProvidersFunction() override {}
+  ~FileManagerPrivateGetProvidersFunction() override = default;
 
  private:
   ResponseAction Run() override;
@@ -240,7 +240,7 @@ class FileManagerPrivateAddProvidedFileSystemFunction
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.addProvidedFileSystem",
                              FILEMANAGERPRIVATE_ADDPROVIDEDFILESYSTEM)
  protected:
-  ~FileManagerPrivateAddProvidedFileSystemFunction() override {}
+  ~FileManagerPrivateAddProvidedFileSystemFunction() override = default;
 
  private:
   ResponseAction Run() override;
@@ -256,7 +256,7 @@ class FileManagerPrivateConfigureVolumeFunction
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.configureVolume",
                              FILEMANAGERPRIVATE_CONFIGUREVOLUME)
  protected:
-  ~FileManagerPrivateConfigureVolumeFunction() override {}
+  ~FileManagerPrivateConfigureVolumeFunction() override = default;
 
  private:
   ResponseAction Run() override;
@@ -275,7 +275,7 @@ class FileManagerPrivateIsCrostiniEnabledFunction
                              FILEMANAGERPRIVATE_ISCROSTINIENABLED)
 
  protected:
-  ~FileManagerPrivateIsCrostiniEnabledFunction() override {}
+  ~FileManagerPrivateIsCrostiniEnabledFunction() override = default;
 
   ResponseAction Run() override;
 };
@@ -320,7 +320,7 @@ class FileManagerPrivateInternalGetCustomActionsFunction
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getCustomActions",
                              FILEMANAGERPRIVATEINTERNAL_GETCUSTOMACTIONS)
  protected:
-  ~FileManagerPrivateInternalGetCustomActionsFunction() override {}
+  ~FileManagerPrivateInternalGetCustomActionsFunction() override = default;
 
  private:
   ResponseAction Run() override;
@@ -339,7 +339,7 @@ class FileManagerPrivateInternalExecuteCustomActionFunction
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.executeCustomAction",
                              FILEMANAGERPRIVATEINTERNAL_EXECUTECUSTOMACTION)
  protected:
-  ~FileManagerPrivateInternalExecuteCustomActionFunction() override {}
+  ~FileManagerPrivateInternalExecuteCustomActionFunction() override = default;
 
  private:
   ResponseAction Run() override;
@@ -358,7 +358,7 @@ class FileManagerPrivateInternalGetRecentFilesFunction
   DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getRecentFiles",
                              FILEMANAGERPRIVATE_GETRECENTFILES)
  protected:
-  ~FileManagerPrivateInternalGetRecentFilesFunction() override {}
+  ~FileManagerPrivateInternalGetRecentFilesFunction() override = default;
 
  private:
   ResponseAction Run() override;

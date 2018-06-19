@@ -38,8 +38,7 @@ EventRouterFactory::EventRouterFactory()
   DependsOn(arc::ArcIntentHelperBridge::GetFactory());
 }
 
-EventRouterFactory::~EventRouterFactory() {
-}
+EventRouterFactory::~EventRouterFactory() = default;
 
 KeyedService* EventRouterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

@@ -252,10 +252,10 @@ FileManagerPrivateSetPreferencesFunction::Run() {
 }
 
 FileManagerPrivateInternalZipSelectionFunction::
-    FileManagerPrivateInternalZipSelectionFunction() {}
+    FileManagerPrivateInternalZipSelectionFunction() = default;
 
 FileManagerPrivateInternalZipSelectionFunction::
-    ~FileManagerPrivateInternalZipSelectionFunction() {}
+    ~FileManagerPrivateInternalZipSelectionFunction() = default;
 
 bool FileManagerPrivateInternalZipSelectionFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::ZipSelection::Params;
@@ -344,12 +344,10 @@ ExtensionFunction::ResponseAction FileManagerPrivateZoomFunction::Run() {
 }
 
 FileManagerPrivateRequestWebStoreAccessTokenFunction::
-    FileManagerPrivateRequestWebStoreAccessTokenFunction() {
-}
+    FileManagerPrivateRequestWebStoreAccessTokenFunction() = default;
 
 FileManagerPrivateRequestWebStoreAccessTokenFunction::
-    ~FileManagerPrivateRequestWebStoreAccessTokenFunction() {
-}
+    ~FileManagerPrivateRequestWebStoreAccessTokenFunction() = default;
 
 bool FileManagerPrivateRequestWebStoreAccessTokenFunction::RunAsync() {
   std::vector<std::string> scopes;
@@ -478,12 +476,10 @@ FileManagerPrivateOpenSettingsSubpageFunction::Run() {
 }
 
 FileManagerPrivateInternalGetMimeTypeFunction::
-    FileManagerPrivateInternalGetMimeTypeFunction() {
-}
+    FileManagerPrivateInternalGetMimeTypeFunction() = default;
 
 FileManagerPrivateInternalGetMimeTypeFunction::
-    ~FileManagerPrivateInternalGetMimeTypeFunction() {
-}
+    ~FileManagerPrivateInternalGetMimeTypeFunction() = default;
 
 bool FileManagerPrivateInternalGetMimeTypeFunction::RunAsync() {
   using extensions::api::file_manager_private_internal::GetMimeType::Params;

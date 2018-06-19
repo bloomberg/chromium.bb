@@ -45,7 +45,7 @@ class FileManagerPrivateInternalEnsureFileDownloadedFunction
                              FILEMANAGERPRIVATE_ENSUREFILEDOWNLOADED)
 
  protected:
-  ~FileManagerPrivateInternalEnsureFileDownloadedFunction() override {}
+  ~FileManagerPrivateInternalEnsureFileDownloadedFunction() override = default;
 
   // AsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -93,7 +93,7 @@ class FileManagerPrivateInternalPinDriveFileFunction
                              FILEMANAGERPRIVATEINTERNAL_PINDRIVEFILE)
 
  protected:
-  ~FileManagerPrivateInternalPinDriveFileFunction() override {}
+  ~FileManagerPrivateInternalPinDriveFileFunction() override = default;
 
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -115,7 +115,7 @@ class FileManagerPrivateInternalCancelFileTransfersFunction
                              FILEMANAGERPRIVATEINTERNAL_CANCELFILETRANSFERS)
 
  protected:
-  ~FileManagerPrivateInternalCancelFileTransfersFunction() override {}
+  ~FileManagerPrivateInternalCancelFileTransfersFunction() override = default;
 
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -129,7 +129,7 @@ class FileManagerPrivateCancelAllFileTransfersFunction
                              FILEMANAGERPRIVATE_CANCELALLFILETRANSFERS)
 
  protected:
-  ~FileManagerPrivateCancelAllFileTransfersFunction() override {}
+  ~FileManagerPrivateCancelAllFileTransfersFunction() override = default;
 
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -144,7 +144,7 @@ class FileManagerPrivateSearchDriveFunction
                              FILEMANAGERPRIVATE_SEARCHDRIVE)
 
  protected:
-  ~FileManagerPrivateSearchDriveFunction() override {}
+  ~FileManagerPrivateSearchDriveFunction() override = default;
 
   bool RunAsync() override;
 
@@ -173,7 +173,7 @@ class FileManagerPrivateSearchDriveMetadataFunction
                              FILEMANAGERPRIVATE_SEARCHDRIVEMETADATA)
 
  protected:
-  ~FileManagerPrivateSearchDriveMetadataFunction() override {}
+  ~FileManagerPrivateSearchDriveMetadataFunction() override = default;
 
   bool RunAsync() override;
 
@@ -201,7 +201,7 @@ class FileManagerPrivateGetDriveConnectionStateFunction
       FILEMANAGERPRIVATE_GETDRIVECONNECTIONSTATE);
 
  protected:
-  ~FileManagerPrivateGetDriveConnectionStateFunction() override {}
+  ~FileManagerPrivateGetDriveConnectionStateFunction() override = default;
 
   ResponseAction Run() override;
 };
@@ -214,7 +214,7 @@ class FileManagerPrivateRequestAccessTokenFunction
                              FILEMANAGERPRIVATE_REQUESTACCESSTOKEN)
 
  protected:
-  ~FileManagerPrivateRequestAccessTokenFunction() override {}
+  ~FileManagerPrivateRequestAccessTokenFunction() override = default;
 
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -232,7 +232,7 @@ class FileManagerPrivateInternalGetShareUrlFunction
                              FILEMANAGERPRIVATEINTERNAL_GETSHAREURL)
 
  protected:
-  ~FileManagerPrivateInternalGetShareUrlFunction() override {}
+  ~FileManagerPrivateInternalGetShareUrlFunction() override = default;
 
   // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
@@ -250,7 +250,7 @@ class FileManagerPrivateInternalRequestDriveShareFunction
                              FILEMANAGERPRIVATEINTERNAL_REQUESTDRIVESHARE);
 
  protected:
-  ~FileManagerPrivateInternalRequestDriveShareFunction() override {}
+  ~FileManagerPrivateInternalRequestDriveShareFunction() override = default;
   bool RunAsync() override;
 
  private:

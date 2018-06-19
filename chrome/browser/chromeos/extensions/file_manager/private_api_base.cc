@@ -22,8 +22,7 @@ LoggedAsyncExtensionFunction::LoggedAsyncExtensionFunction()
   start_time_  = base::Time::Now();
 }
 
-LoggedAsyncExtensionFunction::~LoggedAsyncExtensionFunction() {
-}
+LoggedAsyncExtensionFunction::~LoggedAsyncExtensionFunction() = default;
 
 void LoggedAsyncExtensionFunction::OnResponded() {
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
