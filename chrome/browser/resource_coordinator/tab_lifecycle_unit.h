@@ -91,12 +91,13 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   content::Visibility GetVisibility() const override;
   LifecycleUnitLoadingState GetLoadingState() const override;
   bool Load() override;
-  bool Freeze() override;
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
   bool CanPurge() const override;
   bool CanFreeze(DecisionDetails* decision_details) const override;
   bool CanDiscard(DiscardReason reason,
                   DecisionDetails* decision_details) const override;
+  bool Freeze() override;
+  bool Unfreeze() override;
   bool Discard(DiscardReason discard_reason) override;
   ukm::SourceId GetUkmSourceId() const override;
 

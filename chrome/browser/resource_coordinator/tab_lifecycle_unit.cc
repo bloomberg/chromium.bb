@@ -67,6 +67,9 @@ bool IsValidStateChange(LifecycleUnitState from,
     }
     case LifecycleUnitState::PENDING_FREEZE: {
       switch (to) {
+        // Unfreeze() is called.
+        case LifecycleUnitState::ACTIVE:
+          return reason == StateChangeReason::BROWSER_INITIATED;
         // Discard(kProactive) is called.
         case LifecycleUnitState::PENDING_DISCARD:
           return reason == StateChangeReason::BROWSER_INITIATED;
@@ -83,9 +86,12 @@ bool IsValidStateChange(LifecycleUnitState from,
     }
     case LifecycleUnitState::FROZEN: {
       switch (to) {
-        // The renderer re-activates the page because it became visible.
-        case LifecycleUnitState::ACTIVE:
-          return reason == StateChangeReason::RENDERER_INITIATED;
+        // Unfreeze() is called or the renderer re-activates the page because it
+        // became visible.
+        case LifecycleUnitState::ACTIVE: {
+          return reason == StateChangeReason::BROWSER_INITIATED ||
+                 reason == StateChangeReason::RENDERER_INITIATED;
+        }
         // Discard(kProactive|kUrgent|kExternal) is called.
         case LifecycleUnitState::DISCARDED: {
           return reason == StateChangeReason::BROWSER_INITIATED ||
@@ -328,19 +334,6 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Load() {
   return true;
 }
 
-bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
-  if (!IsValidStateChange(GetState(), LifecycleUnitState::PENDING_FREEZE,
-                          StateChangeReason::BROWSER_INITIATED)) {
-    return false;
-  }
-
-  SetState(LifecycleUnitState::PENDING_FREEZE,
-           StateChangeReason::BROWSER_INITIATED);
-  GetWebContents()->SetPageFrozen(true);
-
-  return true;
-}
-
 int TabLifecycleUnitSource::TabLifecycleUnit::
     GetEstimatedMemoryFreedOnDiscardKB() const {
 #if defined(OS_CHROMEOS)
@@ -500,6 +493,37 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
     DCHECK(decision_details->IsPositive());
   }
   return decision_details->IsPositive();
+}
+
+bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
+  if (!IsValidStateChange(GetState(), LifecycleUnitState::PENDING_FREEZE,
+                          StateChangeReason::BROWSER_INITIATED)) {
+    return false;
+  }
+
+  // WebContents::SetPageFrozen() DCHECKs if the page is visible.
+  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
+    return false;
+
+  SetState(LifecycleUnitState::PENDING_FREEZE,
+           StateChangeReason::BROWSER_INITIATED);
+  GetWebContents()->SetPageFrozen(true);
+  return true;
+}
+
+bool TabLifecycleUnitSource::TabLifecycleUnit::Unfreeze() {
+  if (!IsValidStateChange(GetState(), LifecycleUnitState::ACTIVE,
+                          StateChangeReason::BROWSER_INITIATED)) {
+    return false;
+  }
+
+  // WebContents::SetPageFrozen() DCHECKs if the page is visible.
+  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE)
+    return false;
+
+  SetState(LifecycleUnitState::ACTIVE, StateChangeReason::BROWSER_INITIATED);
+  GetWebContents()->SetPageFrozen(false);
+  return true;
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(DiscardReason reason) {
