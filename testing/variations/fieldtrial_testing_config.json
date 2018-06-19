@@ -2475,7 +2475,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled3",
                     "enable_features": [
                         "KeepPrefetchedContentSuggestions",
                         "OfflinePagesPrefetching"
