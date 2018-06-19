@@ -545,8 +545,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetHideLayerAndSubtree(bool hide);
   bool hide_layer_and_subtree() const { return inputs_.hide_layer_and_subtree; }
 
-  void UpdateDebugInfo();
-
   // The index of this layer's node in the various property trees. These are
   // only valid after a main frame, when Update() is called on the layer, and
   // remain valid and in in the same state until the next main frame, or until
@@ -562,6 +560,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
   bool has_transform_node() { return has_transform_node_; }
 
+  // Sets that the content shown in this layer may be a video. This may be used
+  // by the system compositor to distinguish between animations updating the
+  // screen and video, which the user would be watching. This allows
+  // optimizations like turning off the display when video is not playing,
+  // without interfering with video playback.
   void SetMayContainVideo(bool yes);
 
   // Stable identifier for clients. See comment in cc/trees/element_id.h.
@@ -579,12 +582,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.has_will_change_transform_hint;
   }
 
+  // Sets or gets if trilinear filtering should be used to scaling the contents
+  // of this layer and its subtree. When set the layer and its subtree will be
+  // composited together as a single unit, mip maps will be generated of the
+  // subtree together, and trilinear filtering applied when supported, if
+  // scaling during composite of the content from this layer and its subtree
+  // into the target.
   void SetTrilinearFiltering(bool trilinear_filtering);
   bool trilinear_filtering() const { return inputs_.trilinear_filtering; }
-
-  ElementListType GetElementTypeForAnimation() const;
-
-  void SetScrollbarsHiddenFromImplSide(bool hidden);
 
   // Called on the scroll layer to trigger showing the overlay scrollbars.
   void ShowScrollbars() { needs_show_scrollbars_ = true; }
@@ -594,6 +599,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // which case the layer won't be shown with any content in the tracing
   // display.
   virtual sk_sp<SkPicture> GetPicture() const;
+
+  // For tracing. Calls out to the LayerClient to get tracing data that will
+  // be attached to this layer's tracing outputs under the 'debug_info' key.
+  void UpdateDebugInfo();
 
   // For telemetry testing. Runs a given test behaviour implemented in
   // |benchmark| for this layer. The base class does nothing as benchmarks
@@ -664,6 +673,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // was called before it.
   void SetNeedsPushProperties();
 
+  // Internal method to call the LayerClient, if there is one, to inform it when
+  // overlay scrollbars have been completely hidden (due to lack of scrolling by
+  // the user).
+  void SetScrollbarsHiddenFromImplSide(bool hidden);
+
   // Internal to property tree construction. A generation number for the
   // property trees, to verify the layer's indices are pointers into the trees
   // currently held by the LayerTreeHost. The number is updated when property
@@ -697,6 +711,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // considered damaged and re-displayed to the user.
   void SetSubtreePropertyChanged();
   bool subtree_property_changed() const { return subtree_property_changed_; }
+
+  // Internal to property tree construction. Returns ElementListType::ACTIVE
+  // as main thread layers do not have a pending/active tree split, and
+  // animations should run normally on the main thread layer tree.
+  ElementListType GetElementTypeForAnimation() const;
 
   // Internal to property tree construction. Whether this layer may animate its
   // opacity on the compositor thread. Layer subclasses may override this to
@@ -735,8 +754,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
-  virtual ~Layer();
+
   Layer();
+  virtual ~Layer();
 
   // These SetNeeds functions are in order of severity of update:
   //
@@ -758,11 +778,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Will recalculate whether the layer draws content and set draws_content_
   // appropriately.
   void UpdateDrawsContent(bool has_drawable_content);
+  // May be overridden by subclasses if they have optional content, to return
+  // false if there is no content to be displayed. If they do have content, then
+  // they should return the value from this base class method.
   virtual bool HasDrawableContent() const;
 
   // Called when the layer's number of drawable descendants changes.
   void AddDrawableDescendants(int num);
 
+  // For debugging. Returns false if the LayerTreeHost this layer is attached to
+  // is in the process of updating layers for a BeginMainFrame. Layer properties
+  // should be changed by the client before the BeginMainFrame, and should not
+  // be changed while the frame is being generated for commit.
   bool IsPropertyChangeAllowed() const;
 
   // When true, the layer is about to perform an update. Any commit requests
