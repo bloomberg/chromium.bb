@@ -524,6 +524,10 @@ source_set("browser_tests") {
     sources += [ "browser/shell_desktop_controller_aura_browsertest.cc" ]
     deps += [ "//ui/aura" ]
   }
+
+  if (is_mac) {
+    sources += [ "test/test_shell_main_delegate_mac.mm" ]
+  }
 }
 
 source_set("unit_tests") {
