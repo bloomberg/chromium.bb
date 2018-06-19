@@ -34,8 +34,6 @@ void MicroBenchmark::NotifyDone(std::unique_ptr<base::Value> result) {
   is_done_ = true;
 }
 
-void MicroBenchmark::RunOnLayer(Layer* layer) {}
-
 void MicroBenchmark::RunOnLayer(PictureLayer* layer) {}
 
 bool MicroBenchmark::ProcessMessage(std::unique_ptr<base::Value> value) {
