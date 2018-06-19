@@ -77,12 +77,25 @@ ShadowValues ShadowValue::MakeRefreshShadowValues(int elevation) {
   // Refresh uses hand-tweaked shadows corresponding to a small set of
   // elevations. Use the Refresh spec and designer input to add missing shadow
   // values.
+
+  // To match the CSS notion of blur (spread outside the bounding box) to the
+  // Skia notion of blur (spread outside and inside the bounding box), we have
+  // to double the designer-provided blur values.
+  const int kBlurCorrection = 2;
+
   switch (elevation) {
     case 3: {
       ShadowValue key = {gfx::Vector2d(0, 1), 12,
                          SkColorSetA(shadow_base_color, 0x66)};
       ShadowValue ambient = {gfx::Vector2d(0, 4), 64,
                              SkColorSetA(shadow_base_color, 0x40)};
+      return {key, ambient};
+    }
+    case 16: {
+      gfx::ShadowValue key = {gfx::Vector2d(0, 0), kBlurCorrection * 16,
+                              SkColorSetA(shadow_base_color, 0x1a)};
+      gfx::ShadowValue ambient = {gfx::Vector2d(0, 12), kBlurCorrection * 16,
+                                  SkColorSetA(shadow_base_color, 0x3d)};
       return {key, ambient};
     }
     default:
