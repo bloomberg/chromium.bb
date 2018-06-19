@@ -891,7 +891,13 @@ TEST_F(LocalStorageContextMojoTestWithService, OnDisk) {
   context->ShutdownAndDelete();
 }
 
-TEST_F(LocalStorageContextMojoTestWithService, InvalidVersionOnDisk) {
+// Flaky on Android. https://crbug.com/756550
+#if defined(OS_ANDROID)
+#define MAYBE_InvalidVersionOnDisk DISABLED_InvalidVersionOnDisk
+#else
+#define MAYBE_InvalidVersionOnDisk InvalidVersionOnDisk
+#endif
+TEST_F(LocalStorageContextMojoTestWithService, MAYBE_InvalidVersionOnDisk) {
   base::FilePath test_path(FILE_PATH_LITERAL("test_path"));
 
   // Create context and add some data to it.
