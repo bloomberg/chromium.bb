@@ -1313,3 +1313,17 @@ camera.util.makeElementsUnfocusableByMouse = function() {
   }
 };
 
+/*
+ * Checks if the window is maximized or fullscreen.
+ * @return {boolean} True if maximized or fullscreen, false otherwise.
+ */
+camera.util.isWindowFullSize = function() {
+  // Use window size to check maximized or fullscreen states as app-window's
+  // isMaximized/isFullscreen states may not persist as expected during
+  // transitioning to/out-of maximized or fulscreen.
+  var maximized = window.outerWidth >= screen.availWidth &&
+      window.outerHeight >= screen.availHeight;
+  var fullscreen = window.innerWidth >= screen.width &&
+      window.innerHeight >= screen.height;
+  return maximized || fullscreen;
+};

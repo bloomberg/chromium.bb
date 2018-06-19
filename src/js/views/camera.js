@@ -139,7 +139,7 @@ camera.views.Camera = function(context, router) {
    * @type {boolean}
    * @private
    */
-  this.is_recording_mode_ = false;
+  this.recordMode_ = false;
 
   /**
    * @type {string}
@@ -317,7 +317,7 @@ camera.views.Camera.prototype.onInactivate = function() {
  * @private
  */
 camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
-  if (this.is_recording_mode_) {
+  if (this.recordMode_) {
     if (this.mediaRecorder_ == null) {
       // Create a media-recorder before proceeding to record video.
       this.mediaRecorder_ = this.createMediaRecorder_(this.stream_);
@@ -387,19 +387,19 @@ camera.views.Camera.prototype.onToggleCameraClicked_ = function(event) {
 camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
   var label;
   var toggleRecord = document.querySelector('#toggle-record');
-  if (this.is_recording_mode_) {
-    this.is_recording_mode_ = false;
+  if (this.recordMode_) {
+    this.recordMode_ = false;
     toggleRecord.classList.remove('toggle-off');
     label = 'toggleRecordOnButton';
   } else {
-    this.is_recording_mode_ = true;
+    this.recordMode_ = true;
     toggleRecord.classList.add('toggle-off');
     label = 'toggleRecordOffButton';
   }
   this.updateButtonLabel_(toggleRecord, label);
 
   var takePictureButton = document.querySelector('#take-picture');
-  if (this.is_recording_mode_) {
+  if (this.recordMode_) {
     takePictureButton.classList.add('motion-picture');
     label = 'recordVideoStartButton';
   } else {
@@ -408,7 +408,7 @@ camera.views.Camera.prototype.onToggleRecordClicked_ = function(event) {
   }
   this.updateButtonLabel_(takePictureButton, label);
 
-  document.querySelector('#toggle-timer').hidden = this.is_recording_mode_;
+  document.querySelector('#toggle-timer').hidden = this.recordMode_;
 
   this.stop_();
 };
@@ -623,7 +623,7 @@ camera.views.Camera.prototype.takePicture_ = function() {
   var onTimerTick = function() {
     tickCounter--;
     if (tickCounter == 0) {
-      if (this.is_recording_mode_) {
+      if (this.recordMode_) {
         // Play a sound before recording started and wait for its playback to
         // avoid it being recorded.
         this.recordStartSound_.currentTime = 0;
@@ -697,7 +697,7 @@ camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
       this.updateToolbar_();
     }.bind(this);
 
-    if (this.is_recording_mode_) {
+    if (this.recordMode_) {
       var takePictureButton = document.querySelector('#take-picture');
 
       var stopRecordingUI = function() {
@@ -878,7 +878,7 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
  camera.views.Camera.prototype.startWithConstraints_ =
      function(constraints, onSuccess, onFailure) {
   navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-    if (this.is_recording_mode_) {
+    if (this.recordMode_) {
       // Disable audio stream until video recording is started.
       this.enableAudio_(false);
     }
@@ -936,13 +936,17 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
  * @private
  */
 camera.views.Camera.prototype.updateVideoSize_ = function() {
-  // Keep the video frame aspect ratio and fill up the whole window inner width
-  // and height.
-  // TODO(yuli): Handle letterbox mode when the window is fullscreen/maximized.
-  var scale = Math.max(window.innerHeight / this.video_.videoHeight,
+  var fill = this.recordMode_ || !camera.util.isWindowFullSize();
+
+  // The video content keeps its aspect ratio and is filled up or letterboxed
+  // inside the window's inner-bounds. Don't use app-window.innerBounds' width
+  // and height properties during resizing as they are not updated immediately.
+  var f = fill ? Math.max : Math.min;
+  var scale = f(window.innerHeight / this.video_.videoHeight,
       window.innerWidth / this.video_.videoWidth);
   this.video_.width = scale * this.video_.videoWidth;
   this.video_.height = scale * this.video_.videoHeight;
+  // TODO(yuli); Align letterboxed video-element by new UI spec.
 }
 
 /**
@@ -1032,7 +1036,7 @@ camera.views.Camera.prototype.stop_ = function() {
  */
 camera.views.Camera.prototype.constraintsCandidates_ = function(deviceId) {
   var videoConstraints = function() {
-    if (this.is_recording_mode_) {
+    if (this.recordMode_) {
       // Video constraints for video recording are ordered by priority.
       return [
           {
@@ -1067,7 +1071,7 @@ camera.views.Camera.prototype.constraintsCandidates_ = function(deviceId) {
           // As a default camera use the one which is facing the user.
           videoConstraint.facingMode = { exact: 'user' };
         }
-        return { audio: this.is_recording_mode_, video: videoConstraint };
+        return { audio: this.recordMode_, video: videoConstraint };
       }.bind(this));
 };
 
