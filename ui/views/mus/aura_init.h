@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "services/service_manager/public/cpp/identity.h"
 #include "ui/aura/env.h"
 #include "ui/views/mus/mus_export.h"
 
@@ -22,7 +23,6 @@ class SingleThreadTaskRunner;
 
 namespace service_manager {
 class Connector;
-class Identity;
 }
 
 namespace views {
@@ -49,20 +49,24 @@ class VIEWS_MUS_EXPORT AuraInit {
 
   ~AuraInit();
 
+  struct InitParams {
+    InitParams();
+    ~InitParams();
+    service_manager::Connector* connector = nullptr;
+    service_manager::Identity identity;
+    // File for strings and 1x icons. Defaults to views_mus_resources.pak.
+    std::string resource_file;
+    // File for 2x icons. Can be empty.
+    std::string resource_file_200;
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr;
+    Mode mode = Mode::AURA_MUS;
+    bool register_path_provider = true;
+  };
+
   // Returns an AuraInit if initialization can be completed successfully,
   // otherwise a nullptr is returned. If initialization fails then Aura is in an
   // unusable state, and calling services should shutdown.
-  // |resource_file| is the file to load strings and 1x icons from.
-  // |resource_file_200| can be an empty string, otherwise it is the file to
-  // load 2x icons from.
-  static std::unique_ptr<AuraInit> Create(
-      service_manager::Connector* connector,
-      const service_manager::Identity& identity,
-      const std::string& resource_file,
-      const std::string& resource_file_200 = std::string(),
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
-      Mode mode = Mode::AURA_MUS,
-      bool register_path_provider = true);
+  static std::unique_ptr<AuraInit> Create(const InitParams& params);
 
   // Only valid if Mode::AURA_MUS was passed to constructor.
   MusClient* mus_client() { return mus_client_.get(); }
@@ -73,18 +77,10 @@ class VIEWS_MUS_EXPORT AuraInit {
   // Returns true if AuraInit was able to successfully complete initialization.
   // If this returns false, then Aura is in an unusable state, and calling
   // services should shutdown.
-  bool Init(service_manager::Connector* connector,
-            const service_manager::Identity& identity,
-            const std::string& resource_file,
-            const std::string& resource_file_200,
-            scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-            Mode mode,
-            bool register_path_provider);
+  bool Init(const InitParams& params);
 
-  bool InitializeResources(service_manager::Connector* connector,
-                           const std::string& resource_file,
-                           const std::string& resource_file_200,
-                           bool register_path_provider);
+  // Returns true on success.
+  bool InitializeResources(const InitParams& params);
 
   std::unique_ptr<aura::Env> env_;
   std::unique_ptr<MusClient> mus_client_;
