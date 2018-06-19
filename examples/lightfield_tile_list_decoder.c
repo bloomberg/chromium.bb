@@ -21,7 +21,7 @@
 // The lf_blocksize determines the number of reference images used.
 // Run lightfield tile list decoder to decode an AV1 tile list file:
 // examples/lightfield_tile_list_decoder vase_tile_list.ivf vase_tile_list.yuv
-// 10 10 5 20
+// 10 10 5 2
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -159,9 +159,8 @@ int main(int argc, char **argv) {
 
     aom_codec_iter_t iter = NULL;
     aom_image_t *img;
-    while ((img = aom_codec_get_frame(&codec, &iter))) {
-      aom_img_write(img, outfile);
-    }
+    while ((img = aom_codec_get_frame(&codec, &iter)))
+      fwrite(img->img_data, 1, img->sz, outfile);
   }
 
   for (i = 0; i < num_references; i++) aom_img_free(&reference_images[i]);

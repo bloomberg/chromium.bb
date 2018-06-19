@@ -51,7 +51,6 @@ void usage_exit(void) {
 // SB size: 64x64
 const uint8_t output_frame_width_in_tiles_minus_1 = 512 / 64 - 1;
 const uint8_t output_frame_height_in_tiles_minus_1 = 512 / 64 - 1;
-const uint16_t tile_count_minus_1 = 4 - 1;
 
 // Spec:
 // typedef struct {
@@ -74,9 +73,26 @@ typedef struct {
 // Note: order the image index incrementally, so that we only go through the
 // bitstream once to construct the tile list.
 const int num_tile_lists = 2;
-const TILE_LIST_INFO tile_list[2][4] = {
-  { { 0, 0, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 }, { 0, 0, 1, 1 } },
-  { { 1, 0, 0, 0 }, { 1, 0, 1, 0 }, { 1, 0, 0, 1 }, { 1, 0, 1, 1 } },
+const uint16_t tile_count_minus_1 = 9 - 1;
+const TILE_LIST_INFO tile_list[2][9] = {
+  { { 16, 0, 4, 5 },
+    { 83, 3, 13, 2 },
+    { 57, 2, 2, 6 },
+    { 31, 1, 11, 5 },
+    { 2, 0, 7, 4 },
+    { 77, 3, 9, 9 },
+    { 49, 1, 0, 1 },
+    { 6, 0, 3, 10 },
+    { 63, 2, 5, 8 } },
+  { { 65, 2, 11, 1 },
+    { 42, 1, 3, 7 },
+    { 88, 3, 8, 4 },
+    { 76, 3, 1, 15 },
+    { 1, 0, 2, 2 },
+    { 19, 0, 5, 6 },
+    { 60, 2, 4, 0 },
+    { 25, 1, 11, 15 },
+    { 50, 2, 5, 4 } },
 };
 
 int main(int argc, char **argv) {

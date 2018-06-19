@@ -628,17 +628,24 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                               &grain_params) == 0) {
           *index += 1;  // Advance the iterator to point to the next image
 
-          AV1_COMMON *const cm = &frame_worker_data->pbi->common;
+          AV1Decoder *const pbi = frame_worker_data->pbi;
+          AV1_COMMON *const cm = &pbi->common;
           RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
-          ctx->last_show_frame = frame_worker_data->pbi->common.new_fb_idx;
+          ctx->last_show_frame = cm->new_fb_idx;
           if (ctx->need_resync) return NULL;
           yuvconfig2image(&ctx->img, sd, frame_worker_data->user_priv);
 
+          if (!pbi->ext_tile_debug && cm->large_scale_tile) {
+            img = &ctx->img;
+            img->img_data = pbi->tile_list_output;
+            img->sz = pbi->tile_list_size;
+            return img;
+          }
+
           const int num_planes = av1_num_planes(cm);
-          if (cm->single_tile_decoding &&
-              frame_worker_data->pbi->dec_tile_row >= 0) {
-            const int tile_row =
-                AOMMIN(frame_worker_data->pbi->dec_tile_row, cm->tile_rows - 1);
+          if (pbi->ext_tile_debug && cm->single_tile_decoding &&
+              pbi->dec_tile_row >= 0) {
+            const int tile_row = AOMMIN(pbi->dec_tile_row, cm->tile_rows - 1);
             const int mi_row = tile_row * cm->tile_height;
             const int ssy = ctx->img.y_chroma_shift;
             int plane;
@@ -653,10 +660,9 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
                 AOMMIN(cm->tile_height, cm->mi_rows - mi_row) * MI_SIZE;
           }
 
-          if (cm->single_tile_decoding &&
-              frame_worker_data->pbi->dec_tile_col >= 0) {
-            const int tile_col =
-                AOMMIN(frame_worker_data->pbi->dec_tile_col, cm->tile_cols - 1);
+          if (pbi->ext_tile_debug && cm->single_tile_decoding &&
+              pbi->dec_tile_col >= 0) {
+            const int tile_col = AOMMIN(pbi->dec_tile_col, cm->tile_cols - 1);
             const int mi_col = tile_col * cm->tile_width;
             const int ssx = ctx->img.x_chroma_shift;
             int plane;

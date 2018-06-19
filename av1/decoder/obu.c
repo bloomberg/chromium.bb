@@ -381,9 +381,39 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
     return 0;
   }
 
+  // Allocate output frame buffer for the tile list.
+  // TODO(yunqing): for now, copy each tile's decoded YUV data directly to the
+  // output buffer. This needs to be modified according to the application
+  // requirement.
+  const int tile_width_in_pixels = cm->tile_width * MI_SIZE;
+  const int tile_height_in_pixels = cm->tile_height * MI_SIZE;
+  const int ssy = cm->subsampling_y;
+  const int ssx = cm->subsampling_x;
+  const int num_planes = av1_num_planes(cm);
+  const size_t yplane_tile_size = tile_height_in_pixels * tile_width_in_pixels;
+  const size_t uvplane_tile_size =
+      (num_planes > 1)
+          ? (tile_height_in_pixels >> ssy) * (tile_width_in_pixels >> ssx)
+          : 0;
+  const size_t tile_size = (cm->use_highbitdepth ? 2 : 1) *
+                           (yplane_tile_size + 2 * uvplane_tile_size);
+  pbi->tile_list_size = tile_size * (pbi->tile_count_minus_1 + 1);
+
+  if (pbi->tile_list_size > pbi->buffer_sz) {
+    if (pbi->tile_list_output != NULL) aom_free(pbi->tile_list_output);
+    pbi->tile_list_output = NULL;
+
+    pbi->tile_list_output = (uint8_t *)aom_memalign(32, pbi->tile_list_size);
+    if (pbi->tile_list_output == NULL)
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                         "Failed to allocate the tile list output buffer");
+    pbi->buffer_sz = pbi->tile_list_size;
+  }
+
   uint32_t tile_list_info_bytes = 4;
   tile_list_payload_size += tile_list_info_bytes;
   data += tile_list_info_bytes;
+  uint8_t *output = pbi->tile_list_output;
 
   for (i = 0; i <= pbi->tile_count_minus_1; i++) {
     // Process 1 tile.
@@ -395,7 +425,7 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
     uint32_t tile_info_bytes = 5;
     // Set reference for each tile.
     int ref_idx = aom_rb_read_literal(rb, 8);
-    if (ref_idx > 127) {
+    if (ref_idx >= MAX_EXTERNAL_REFERENCES) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return 0;
     }
@@ -403,7 +433,8 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
 
     pbi->dec_tile_row = aom_rb_read_literal(rb, 8);
     pbi->dec_tile_col = aom_rb_read_literal(rb, 8);
-    if (pbi->dec_tile_row >= cm->tile_rows ||
+    if (pbi->dec_tile_row < 0 || pbi->dec_tile_col < 0 ||
+        pbi->dec_tile_row >= cm->tile_rows ||
         pbi->dec_tile_col >= cm->tile_cols) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return 0;
@@ -425,6 +456,46 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
     // Update data ptr for next tile decoding.
     data = *p_data_end;
     assert(data <= data_end);
+
+    // Copy decoded tile to the tile list output buffer.
+    YV12_BUFFER_CONFIG *cur_frame = get_frame_new_buffer(cm);
+    const int mi_row = pbi->dec_tile_row * cm->tile_height;
+    const int mi_col = pbi->dec_tile_col * cm->tile_width;
+    const int is_hbd = cur_frame->flags & YV12_FLAG_HIGHBITDEPTH;
+    uint8_t *bufs[MAX_MB_PLANE] = { NULL, NULL, NULL };
+    int strides[MAX_MB_PLANE] = { 0, 0, 0 };
+    int plane;
+
+    for (plane = 0; plane < num_planes; ++plane) {
+      int shift_x = plane > 0 ? ssx : 0;
+      int shift_y = plane > 0 ? ssy : 0;
+
+      bufs[plane] = cur_frame->buffers[plane];
+      strides[plane] =
+          (plane > 0) ? cur_frame->strides[1] : cur_frame->strides[0];
+      if (is_hbd) {
+        bufs[plane] = (uint8_t *)CONVERT_TO_SHORTPTR(cur_frame->buffers[plane]);
+        strides[plane] =
+            (plane > 0) ? 2 * cur_frame->strides[1] : 2 * cur_frame->strides[0];
+      }
+
+      bufs[plane] += mi_row * (MI_SIZE >> shift_y) * strides[plane] +
+                     mi_col * (MI_SIZE >> shift_x);
+
+      int w, h;
+      w = (plane > 0 && shift_x > 0) ? ((tile_width_in_pixels + 1) >> shift_x)
+                                     : tile_width_in_pixels;
+      w *= (1 + is_hbd);
+      h = (plane > 0 && shift_y > 0) ? ((tile_height_in_pixels + 1) >> shift_y)
+                                     : tile_height_in_pixels;
+      int j;
+
+      for (j = 0; j < h; ++j) {
+        memcpy(output, bufs[plane], w);
+        bufs[plane] += strides[plane];
+        output += w;
+      }
+    }
   }
 
   *frame_decoding_finished = 1;

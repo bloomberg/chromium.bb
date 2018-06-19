@@ -150,6 +150,10 @@ void av1_decoder_remove(AV1Decoder *pbi) {
 
   if (!pbi) return;
 
+  // Free the tile list output buffer.
+  if (pbi->tile_list_output != NULL) aom_free(pbi->tile_list_output);
+  pbi->tile_list_output = NULL;
+
   aom_get_worker_interface()->end(&pbi->lf_worker);
   aom_free(pbi->lf_worker.data1);
 
