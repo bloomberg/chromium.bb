@@ -8,6 +8,7 @@
 
 #include "base/guid.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
@@ -17,28 +18,64 @@ namespace service_manager {
 
 namespace {
 
+class TestServiceControl : public mojom::ServiceControl {
+ public:
+  TestServiceControl(ServiceContext* context,
+                     mojom::ServiceControlAssociatedRequest control_request)
+      : context_(context), binding_(this, std::move(control_request)) {}
+
+  // mojom::ServiceControl implementation
+  void RequestQuit() override { context_->QuitNow(); }
+
+ private:
+  ServiceContext* const context_;
+  mojo::AssociatedBinding<mojom::ServiceControl> binding_;
+};
+
 class TestConnectorImplBase : public mojom::Connector {
  public:
-  TestConnectorImplBase(std::string test_user_id)
-      : test_user_id_(std::move(test_user_id)) {}
+  TestConnectorImplBase(std::string test_user_id,
+                        bool release_service_on_quit_request)
+      : test_user_id_(std::move(test_user_id)),
+        release_service_on_quit_request_(release_service_on_quit_request) {}
   ~TestConnectorImplBase() override = default;
 
   void AddService(const std::string& service_name,
                   std::unique_ptr<Service> service,
                   mojom::ServicePtr* service_ptr) {
-    service_contexts_.push_back(std::make_unique<ServiceContext>(
-        std::move(service), mojo::MakeRequest(service_ptr)));
+    auto service_context = std::make_unique<ServiceContext>(
+        std::move(service), mojo::MakeRequest(service_ptr));
+    auto* service_context_ptr = service_context.get();
+    // Use of |Unretained(this)| is safe because |this| owns
+    // |service_context|.
+    service_context->SetQuitClosure(
+        base::BindRepeating(&TestConnectorImplBase::OnServiceRequestingQuit,
+                            base::Unretained(this), service_context_ptr));
+    service_contexts_.emplace(service_context_ptr, std::move(service_context));
     (*service_ptr)
         ->OnStart(Identity("TestConnectorFactory", test_user_id_),
                   base::BindOnce(&TestConnectorImplBase::OnStartCallback,
-                                 base::Unretained(this)));
+                                 base::Unretained(this), service_context_ptr));
   }
 
  private:
   virtual mojom::ServicePtr* GetServicePtr(const std::string& service_name) = 0;
 
-  void OnStartCallback(mojom::ConnectorRequest request,
+  void OnStartCallback(ServiceContext* context,
+                       mojom::ConnectorRequest request,
                        mojom::ServiceControlAssociatedRequest control_request) {
+    if (!release_service_on_quit_request_)
+      return;
+    service_controls_.emplace(context,
+                              std::make_unique<TestServiceControl>(
+                                  context, std::move(control_request)));
+  }
+
+  void OnServiceRequestingQuit(ServiceContext* context) {
+    DCHECK(base::ContainsKey(service_controls_, context));
+    DCHECK(base::ContainsKey(service_contexts_, context));
+    service_controls_.erase(context);
+    service_contexts_.erase(context);
   }
 
   // mojom::Connector implementation:
@@ -88,8 +125,11 @@ class TestConnectorImplBase : public mojom::Connector {
     NOTREACHED();
   }
 
-  std::string test_user_id_;
-  std::vector<std::unique_ptr<ServiceContext>> service_contexts_;
+  const std::string test_user_id_;
+  const bool release_service_on_quit_request_;
+  std::map<ServiceContext*, std::unique_ptr<ServiceContext>> service_contexts_;
+  std::map<ServiceContext*, std::unique_ptr<TestServiceControl>>
+      service_controls_;
   mojo::BindingSet<mojom::Connector> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectorImplBase);
@@ -98,8 +138,10 @@ class TestConnectorImplBase : public mojom::Connector {
 class UniqueServiceConnector : public TestConnectorImplBase {
  public:
   explicit UniqueServiceConnector(std::unique_ptr<Service> service,
-                                  std::string test_user_id)
-      : TestConnectorImplBase(std::move(test_user_id)) {
+                                  std::string test_user_id,
+                                  bool release_service_on_quit_request)
+      : TestConnectorImplBase(std::move(test_user_id),
+                              release_service_on_quit_request) {
     AddService(/*service_name=*/std::string(), std::move(service),
                &service_ptr_);
   }
@@ -118,8 +160,10 @@ class MultipleServiceConnector : public TestConnectorImplBase {
  public:
   explicit MultipleServiceConnector(
       TestConnectorFactory::NameToServiceMap services,
-      std::string test_user_id)
-      : TestConnectorImplBase(std::move(test_user_id)) {
+      std::string test_user_id,
+      bool release_service_on_quit_request)
+      : TestConnectorImplBase(std::move(test_user_id),
+                              release_service_on_quit_request) {
     for (auto& name_and_service : services) {
       mojom::ServicePtr service_ptr;
       const std::string& service_name = name_and_service.first;
@@ -154,21 +198,26 @@ TestConnectorFactory::~TestConnectorFactory() = default;
 
 // static
 std::unique_ptr<TestConnectorFactory>
-TestConnectorFactory::CreateForUniqueService(std::unique_ptr<Service> service) {
+TestConnectorFactory::CreateForUniqueService(
+    std::unique_ptr<Service> service,
+    bool release_service_on_quit_request) {
   // Note that we are not using std::make_unique below so TestConnectorFactory's
   // constructor can be kept private.
   std::string guid = base::GenerateGUID();
   return std::unique_ptr<TestConnectorFactory>(new TestConnectorFactory(
-      std::make_unique<UniqueServiceConnector>(std::move(service), guid),
+      std::make_unique<UniqueServiceConnector>(std::move(service), guid,
+                                               release_service_on_quit_request),
       guid));
 }
 
 // static
 std::unique_ptr<TestConnectorFactory> TestConnectorFactory::CreateForServices(
-    NameToServiceMap services) {
+    NameToServiceMap services,
+    bool release_service_on_quit_request) {
   std::string guid = base::GenerateGUID();
   return std::unique_ptr<TestConnectorFactory>(new TestConnectorFactory(
-      std::make_unique<MultipleServiceConnector>(std::move(services), guid),
+      std::make_unique<MultipleServiceConnector>(
+          std::move(services), guid, release_service_on_quit_request),
       guid));
 }
 
