@@ -56,9 +56,18 @@ int ShellNetworkDelegate::OnBeforeURLRequest(
     net::CompletionOnceCallback callback,
     GURL* new_url) {
   WebRequestInfo* web_request_info = GetWebRequestInfo(request);
-  return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
+  bool should_collapse_initiator = false;
+  int result = ExtensionWebRequestEventRouter::GetInstance()->OnBeforeRequest(
       browser_context_, extension_info_map_.get(), web_request_info,
-      std::move(callback), new_url);
+      std::move(callback), new_url, &should_collapse_initiator);
+  if (should_collapse_initiator) {
+    auto* info = content::ResourceRequestInfo::ForRequest(request);
+    DCHECK(info);
+    info->SetResourceRequestBlockedReason(
+        blink::ResourceRequestBlockedReason::kCollapsedByClient);
+  }
+
+  return result;
 }
 
 int ShellNetworkDelegate::OnBeforeStartTransaction(

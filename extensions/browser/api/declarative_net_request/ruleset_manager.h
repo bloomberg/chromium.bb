@@ -31,7 +31,11 @@ class RulesetManager {
  public:
   enum class Action {
     NONE,
+    // Block the network request.
     BLOCK,
+    // Block the network request and collapse the corresponding DOM element.
+    COLLAPSE,
+    // Redirect the network request.
     REDIRECT,
   };
 

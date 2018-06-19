@@ -327,12 +327,16 @@ class ExtensionWebRequestEventRouter {
 
   // Dispatches the OnBeforeRequest event to any extensions whose filters match
   // the given request. Returns net::ERR_IO_PENDING if an extension is
-  // intercepting the request, OK otherwise.
+  // intercepting the request and OK if the request should proceed normally.
+  // net::ERR_BLOCKED_BY_CLIENT is returned if the request should be blocked. In
+  // this case, |should_collapse_initiator| might be set to true indicating
+  // whether the DOM element which initiated the request should be blocked.
   int OnBeforeRequest(void* browser_context,
                       const extensions::InfoMap* extension_info_map,
                       WebRequestInfo* request,
                       net::CompletionOnceCallback callback,
-                      GURL* new_url);
+                      GURL* new_url,
+                      bool* should_collapse_initiator);
 
   // Dispatches the onBeforeSendHeaders event. This is fired for HTTP(s)
   // requests only, and allows modification of the outgoing request headers.
