@@ -2847,12 +2847,6 @@ const char kDisableLockScreenAppsDescription[] =
     "not be able to launch the preferred note-taking action from the lock "
     "screen, provided that the app supports lock screen note taking.";
 
-const char kDisableNetworkSettingsConfigName[] =
-    "Disable Settings based Network Configuration";
-const char kDisableNetworkSettingsConfigDescription[] =
-    "Disables the Settings based network configuration UI and restores the "
-    "Views based configuration dialog.";
-
 const char kDisableSystemTimezoneAutomaticDetectionName[] =
     "SystemTimezoneAutomaticDetection policy support";
 const char kDisableSystemTimezoneAutomaticDetectionDescription[] =

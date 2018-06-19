@@ -116,9 +116,8 @@ interface SystemTrayClient {
   // which may include showing payment or captive portal UI when appropriate.
   ShowNetworkConfigure(string network_id);
 
-  // Shows UI to create a new network connection. The |type| is a Shill/Flimflam
-  // network type from third_party/cros_system_api/dbus/shill/dbus-constants.h
-  // ('wifi', 'cellular', etc.).
+  // Shows UI to create a new network connection. |type| is the ONC network type
+  // (see onc_spec.md). TODO(stevenjb): Use NetworkType from onc.mojo (TBD).
   ShowNetworkCreate(string type);
 
   // Shows the "add network" UI to create a third-party extension-backed VPN

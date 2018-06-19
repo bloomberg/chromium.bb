@@ -1749,9 +1749,6 @@ extern const char kCrosRegionsModeHide[];
 extern const char kDisableLockScreenAppsName[];
 extern const char kDisableLockScreenAppsDescription[];
 
-extern const char kDisableNetworkSettingsConfigName[];
-extern const char kDisableNetworkSettingsConfigDescription[];
-
 extern const char kDisableSystemTimezoneAutomaticDetectionName[];
 extern const char kDisableSystemTimezoneAutomaticDetectionDescription[];
 

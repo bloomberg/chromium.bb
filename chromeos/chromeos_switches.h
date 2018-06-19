@@ -74,7 +74,6 @@ CHROMEOS_EXPORT extern const char kDisableMachineCertRequest[];
 CHROMEOS_EXPORT extern const char kDisableMtpWriteSupport[];
 CHROMEOS_EXPORT extern const char kDisableMultiDisplayLayout[];
 CHROMEOS_EXPORT extern const char kDisableNetworkPortalNotification[];
-CHROMEOS_EXPORT extern const char kDisableNetworkSettingsConfig[];
 CHROMEOS_EXPORT extern const char kDisableNewKoreanIme[];
 CHROMEOS_EXPORT extern const char kDisableNewZIPUnpacker[];
 CHROMEOS_EXPORT extern const char kDisableOfficeEditingComponentApp[];
@@ -206,9 +205,6 @@ CHROMEOS_EXPORT bool IsAssistantFlagsEnabled();
 
 // Returns true if Google Assistant is enabled.
 CHROMEOS_EXPORT bool IsAssistantEnabled();
-
-// Returns true if Settings based network configuration is enabled.
-CHROMEOS_EXPORT bool IsNetworkSettingsConfigEnabled();
 
 // Returns true if Zip Archiver is enabled for unpacking files.
 CHROMEOS_EXPORT bool IsZipArchiverUnpackerEnabled();

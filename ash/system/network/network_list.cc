@@ -45,6 +45,7 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "components/device_event_log/device_event_log.h"
+#include "components/onc/onc_constants.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -480,7 +481,7 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
       Shell::Get()->system_tray_controller()->ShowNetworkCreate(
-          shill::kTypeWifi);
+          ::onc::network_type::kWiFi);
       return;
     }
     SectionHeaderRowView::ButtonPressed(sender, event);

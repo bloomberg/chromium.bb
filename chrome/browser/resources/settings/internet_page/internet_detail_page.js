@@ -678,15 +678,14 @@ Polymer({
 
   /** @private */
   onConfigureTap_: function() {
-    if (this.networkProperties && this.isArcVpn_(this.networkProperties)) {
-      this.browserProxy_.showNetworkConfigure(this.guid);
+    if (this.networkProperties &&
+        (this.isThirdPartyVpn_(this.networkProperties) ||
+         this.isArcVpn_(this.networkProperties))) {
+      this.browserProxy_.configureThirdPartyVpn(this.guid);
       return;
     }
 
-    if (loadTimeData.getBoolean('networkSettingsConfig'))
-      this.fire('show-config', this.networkProperties);
-    else
-      chrome.send('configureNetwork', [this.guid]);
+    this.fire('show-config', this.networkProperties);
   },
 
   /** @private */
@@ -1149,7 +1148,19 @@ Polymer({
    */
   isArcVpn_: function(networkProperties) {
     return !!networkProperties.VPN &&
-        CrOnc.getActiveValue(networkProperties.VPN.Type) == 'ARCVPN';
+        CrOnc.getActiveValue(networkProperties.VPN.Type) ==
+        CrOnc.VPNType.ARCVPN;
+  },
+
+  /**
+   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @return {boolean}
+   * @private
+   */
+  isThirdPartyVpn_: function(networkProperties) {
+    return !!networkProperties.VPN &&
+        CrOnc.getActiveValue(networkProperties.VPN.Type) ==
+        CrOnc.VPNType.THIRD_PARTY_VPN;
   },
 
   /**
@@ -1184,6 +1195,6 @@ Polymer({
         return false;
     }
     return true;
-  }
+  },
 });
 })();
