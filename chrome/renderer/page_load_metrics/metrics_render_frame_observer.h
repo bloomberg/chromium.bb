@@ -38,6 +38,15 @@ class MetricsRenderFrameObserver : public content::RenderFrameObserver {
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) override;
   void DidObserveNewCssPropertyUsage(int css_property,
                                      bool is_animated) override;
+  void DidStartResponse(
+      int request_id,
+      const network::ResourceResponseHead& response_head) override;
+  void DidReceiveTransferSizeUpdate(int request_id,
+                                    int received_data_length) override;
+  void DidCompleteResponse(
+      int request_id,
+      const network::URLLoaderCompletionStatus& status) override;
+  void DidCancelResponse(int request_id) override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
   void OnDestruct() override;

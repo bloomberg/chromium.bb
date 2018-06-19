@@ -876,6 +876,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // browser.
   void OnDroppedNavigation();
 
+  void DidStartResponse(int request_id,
+                        const network::ResourceResponseHead& response_head);
+  void DidCompleteResponse(int request_id,
+                           const network::URLLoaderCompletionStatus& status);
+  void DidCancelResponse(int request_id);
+  void DidReceiveTransferSizeUpdate(int request_id, int received_data_length);
+
  protected:
   explicit RenderFrameImpl(CreateParams params);
 

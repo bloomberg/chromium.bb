@@ -85,6 +85,20 @@ void MetricsRenderFrameObserver::DidObserveNewCssPropertyUsage(
   }
 }
 
+void MetricsRenderFrameObserver::DidStartResponse(
+    int request_id,
+    const network::ResourceResponseHead& response_head) {}
+
+void MetricsRenderFrameObserver::DidCompleteResponse(
+    int request_id,
+    const network::URLLoaderCompletionStatus& status) {}
+
+void MetricsRenderFrameObserver::DidCancelResponse(int request_id) {}
+
+void MetricsRenderFrameObserver::DidReceiveTransferSizeUpdate(
+    int request_id,
+    int received_data_length) {}
+
 void MetricsRenderFrameObserver::FrameDetached() {
   page_timing_metrics_sender_.reset();
 }

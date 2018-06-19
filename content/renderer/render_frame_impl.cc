@@ -4816,6 +4816,32 @@ void RenderFrameImpl::DidLoadResourceFromMemoryCache(
       response.MimeType().Utf8(), WebURLRequestToResourceType(request)));
 }
 
+void RenderFrameImpl::DidStartResponse(
+    int request_id,
+    const network::ResourceResponseHead& response_head) {
+  for (auto& observer : observers_)
+    observer.DidStartResponse(request_id, response_head);
+}
+
+void RenderFrameImpl::DidCompleteResponse(
+    int request_id,
+    const network::URLLoaderCompletionStatus& status) {
+  for (auto& observer : observers_)
+    observer.DidCompleteResponse(request_id, status);
+}
+
+void RenderFrameImpl::DidCancelResponse(int request_id) {
+  for (auto& observer : observers_)
+    observer.DidCancelResponse(request_id);
+}
+
+void RenderFrameImpl::DidReceiveTransferSizeUpdate(int resource_id,
+                                                   int received_data_length) {
+  for (auto& observer : observers_) {
+    observer.DidReceiveTransferSizeUpdate(resource_id, received_data_length);
+  }
+}
+
 void RenderFrameImpl::DidDisplayInsecureContent() {
   Send(new FrameHostMsg_DidDisplayInsecureContent(routing_id_));
 }
