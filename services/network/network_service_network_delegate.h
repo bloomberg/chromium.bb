@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_NETWORK_SERVICE_NETWORK_DELEGATE_H_
 #define SERVICES_NETWORK_NETWORK_SERVICE_NETWORK_DELEGATE_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "net/base/network_delegate_impl.h"
 
@@ -12,7 +13,8 @@ namespace network {
 
 class NetworkContext;
 
-class NetworkServiceNetworkDelegate : public net::NetworkDelegateImpl {
+class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
+    : public net::NetworkDelegateImpl {
  public:
   // |network_context| is guaranteed to outlive this class.
   explicit NetworkServiceNetworkDelegate(NetworkContext* network_context);
@@ -27,6 +29,8 @@ class NetworkServiceNetworkDelegate : public net::NetworkDelegateImpl {
   bool OnCanAccessFile(const net::URLRequest& request,
                        const base::FilePath& original_path,
                        const base::FilePath& absolute_path) const override;
+  bool OnCanEnablePrivacyMode(const GURL& url,
+                              const GURL& site_for_cookies) const override;
 
   NetworkContext* network_context_;
 
