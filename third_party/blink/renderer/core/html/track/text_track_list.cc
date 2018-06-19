@@ -36,7 +36,9 @@
 namespace blink {
 
 TextTrackList::TextTrackList(HTMLMediaElement* owner)
-    : owner_(owner), async_event_queue_(MediaElementEventQueue::Create(this)) {}
+    : owner_(owner),
+      async_event_queue_(
+          MediaElementEventQueue::Create(GetExecutionContext())) {}
 
 TextTrackList::~TextTrackList() = default;
 
@@ -247,8 +249,9 @@ ExecutionContext* TextTrackList::GetExecutionContext() const {
 
 void TextTrackList::ScheduleTrackEvent(const AtomicString& event_name,
                                        TextTrack* track) {
-  async_event_queue_->EnqueueEvent(FROM_HERE,
-                                   TrackEvent::Create(event_name, track));
+  Event* event = TrackEvent::Create(event_name, track);
+  event->SetTarget(this);
+  async_event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
 void TextTrackList::ScheduleAddTrackEvent(TextTrack* track) {
@@ -270,8 +273,9 @@ void TextTrackList::ScheduleChangeEvent() {
   // Fire a simple event named change at the media element's textTracks
   // attribute's TextTrackList object.
 
-  async_event_queue_->EnqueueEvent(FROM_HERE,
-                                   Event::Create(EventTypeNames::change));
+  Event* event = Event::Create(EventTypeNames::change);
+  event->SetTarget(this);
+  async_event_queue_->EnqueueEvent(FROM_HERE, event);
 }
 
 void TextTrackList::ScheduleRemoveTrackEvent(TextTrack* track) {

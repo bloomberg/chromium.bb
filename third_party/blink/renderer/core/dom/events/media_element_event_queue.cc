@@ -32,14 +32,13 @@
 
 namespace blink {
 
-MediaElementEventQueue* MediaElementEventQueue::Create(EventTarget* owner) {
-  return new MediaElementEventQueue(owner);
+MediaElementEventQueue* MediaElementEventQueue::Create(
+    ExecutionContext* context) {
+  return new MediaElementEventQueue(context);
 }
 
-MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner)
-    : ContextLifecycleObserver(owner->GetExecutionContext()),
-      owner_(owner),
-      is_closed_(false) {
+MediaElementEventQueue::MediaElementEventQueue(ExecutionContext* context)
+    : ContextLifecycleObserver(context), is_closed_(false) {
   if (!GetExecutionContext())
     Close(nullptr);
 }
@@ -47,7 +46,6 @@ MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner)
 MediaElementEventQueue::~MediaElementEventQueue() = default;
 
 void MediaElementEventQueue::Trace(blink::Visitor* visitor) {
-  visitor->Trace(owner_);
   visitor->Trace(pending_events_);
   ContextLifecycleObserver::Trace(visitor);
 }
@@ -57,6 +55,7 @@ bool MediaElementEventQueue::EnqueueEvent(const base::Location& from_here,
   if (is_closed_)
     return false;
 
+  DCHECK(event->target());
   DCHECK(GetExecutionContext());
 
   TRACE_EVENT_ASYNC_BEGIN1("event", "MediaElementEventQueue:enqueueEvent",
@@ -90,8 +89,7 @@ void MediaElementEventQueue::DispatchEvent(Event* event) {
   probe::AsyncTask async_task(GetExecutionContext(), event);
   TRACE_EVENT_ASYNC_STEP_INTO1("event", "MediaElementEventQueue:enqueueEvent",
                                event, "dispatch", "type", type);
-  EventTarget* target = event->target() ? event->target() : owner_.Get();
-  target->DispatchEvent(event);
+  event->target()->DispatchEvent(event);
   TRACE_EVENT_ASYNC_END1("event", "MediaElementEventQueue:enqueueEvent", event,
                          "type", type);
 }
@@ -115,7 +113,6 @@ void MediaElementEventQueue::ContextDestroyed(ExecutionContext* context) {
 void MediaElementEventQueue::Close(ExecutionContext* context) {
   is_closed_ = true;
   DoCancelAllEvents(context);
-  owner_.Clear();
 }
 
 void MediaElementEventQueue::DoCancelAllEvents(ExecutionContext* context) {

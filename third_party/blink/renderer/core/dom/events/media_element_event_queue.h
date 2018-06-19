@@ -44,7 +44,7 @@ class CORE_EXPORT MediaElementEventQueue final
   USING_GARBAGE_COLLECTED_MIXIN(MediaElementEventQueue);
 
  public:
-  static MediaElementEventQueue* Create(EventTarget*);
+  static MediaElementEventQueue* Create(ExecutionContext*);
   ~MediaElementEventQueue();
 
   void Trace(blink::Visitor*) override;
@@ -54,7 +54,7 @@ class CORE_EXPORT MediaElementEventQueue final
   bool HasPendingEvents() const;
 
  private:
-  explicit MediaElementEventQueue(EventTarget*);
+  explicit MediaElementEventQueue(ExecutionContext*);
   bool RemoveEvent(Event* event);
   void DispatchEvent(Event* event);
 
@@ -62,7 +62,6 @@ class CORE_EXPORT MediaElementEventQueue final
   void Close(ExecutionContext*);
   void DoCancelAllEvents(ExecutionContext*);
 
-  Member<EventTarget> owner_;
   HeapHashSet<Member<Event>> pending_events_;
 
   bool is_closed_;
