@@ -106,12 +106,8 @@ class CORE_EXPORT ScrollingCoordinator final
 
   // Update non-fast scrollable regions, touch event target rects, main thread
   // scrolling reasons, and whether the visual viewport is user scrollable.
-  void UpdateAfterPrePaint(LocalFrameView*);
-
-  // Set the touch action rects on cc Layer's. This is the BlinkGenPropertyTrees
-  // version of |ComputeTouchEventTargetRects|.
-  // TODO(pdr): We may want to move this to a different file.
-  void UpdateTouchActionRects(LocalFrameView*);
+  // TODO(pdr): Refactor this out of ScrollingCoordinator.
+  void UpdateAfterPaint(LocalFrameView*);
 
   // Should be called whenever the slow repaint objects counter changes between
   // zero and one.

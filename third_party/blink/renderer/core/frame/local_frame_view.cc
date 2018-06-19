@@ -2781,12 +2781,6 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
         // TODO(pdr): prePaint should be under the "Paint" devtools timeline
         // step for slimming paint v2.
         PrePaint();
-
-        if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-          if (layout_view->Compositor()->InCompositingMode()) {
-            GetScrollingCoordinator()->UpdateAfterPrePaint(this);
-          }
-        }
       }
     }
 
@@ -2804,7 +2798,11 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
       if (!print_mode_enabled)
         PaintTree();
 
-      GetScrollingCoordinator()->UpdateTouchActionRects(this);
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+        if (layout_view->Compositor()->InCompositingMode()) {
+          GetScrollingCoordinator()->UpdateAfterPaint(this);
+        }
+      }
 
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {

@@ -261,11 +261,11 @@ const OverscrollController& Page::GetOverscrollController() const {
   return *overscroll_controller_;
 }
 
-DOMRectList* Page::NonFastScrollableRects(const LocalFrame* frame) {
+DOMRectList* Page::NonFastScrollableRectsForTesting(const LocalFrame* frame) {
   // Update lifecycle to kPrePaintClean.  This includes the compositing update
-  // and ScrollingCoordinator::UpdateAfterPrePaint, which computes the non-fast
+  // and ScrollingCoordinator::UpdateAfterPaint, which computes the non-fast
   // scrollable region.
-  frame->View()->UpdateAllLifecyclePhasesExceptPaint();
+  frame->View()->UpdateAllLifecyclePhases();
 
   GraphicsLayer* layer = frame->View()->LayoutViewport()->LayerForScrolling();
   if (!layer)

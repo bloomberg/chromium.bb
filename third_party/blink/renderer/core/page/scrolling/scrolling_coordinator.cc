@@ -127,6 +127,14 @@ void ScrollingCoordinator::NotifyTransformChanged(LocalFrame* frame,
   if (frame->View()->NeedsLayout())
     return;
 
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
+    // PaintTouchActionRects does not keep a list of layers with touch rects so
+    // just do an update if transforms change.
+    frame->View()->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(
+        true);
+    return;
+  }
+
   for (PaintLayer* layer = box.EnclosingLayer(); layer;
        layer = layer->Parent()) {
     if (frame->View()
@@ -163,7 +171,7 @@ void ScrollingCoordinator::DidScroll(const gfx::ScrollOffset& offset,
   // safely ignore the DidScroll callback.
 }
 
-void ScrollingCoordinator::UpdateAfterPrePaint(LocalFrameView* frame_view) {
+void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
   LocalFrame* frame = &frame_view->GetFrame();
   DCHECK(frame->IsLocalRoot());
 
@@ -181,7 +189,7 @@ void ScrollingCoordinator::UpdateAfterPrePaint(LocalFrameView* frame_view) {
   }
 
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.ScrollingCoordinator.UpdateTime");
-  TRACE_EVENT0("input", "ScrollingCoordinator::UpdateAfterPrePaint");
+  TRACE_EVENT0("input", "ScrollingCoordinator::UpdateAfterPaint");
 
   // TODO(pdr): Move the scroll gesture region logic to use touch action rects.
   // These features are similar and do not need independent implementations.
@@ -243,6 +251,8 @@ static void ForAllGraphicsLayers(GraphicsLayer& layer,
 // Set the touch action rects on the cc layer from the touch action data stored
 // on the GraphicsLayer's paint chunks.
 static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
+  DCHECK(RuntimeEnabledFeatures::PaintTouchActionRectsEnabled());
+
   // TODO(pdr): This will need to be moved to PaintArtifactCompositor (or later)
   // for SPV2 because composited layers are not known until then. The SPV2
   // implementation will iterate over the paint chunks in each composited layer
@@ -272,24 +282,6 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
   }
   layer.CcLayer()->SetTouchActionRegion(
       TouchActionRect::BuildRegion(touch_action_rects_in_layer_space));
-}
-
-void ScrollingCoordinator::UpdateTouchActionRects(LocalFrameView* frame_view) {
-  LocalFrame* frame = &frame_view->GetFrame();
-  DCHECK(frame->IsLocalRoot());
-
-  SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
-      "Blink.ScrollingCoordinator.UpdateTouchActionRectsTime");
-  TRACE_EVENT0("input", "ScrollingCoordinator::UpdateTouchActionRects");
-
-  // TODO(pdr): Use a bit for whether any touch action data changed and
-  // early-out if no work is needed.
-
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
-    auto* view_layer = frame_view->GetLayoutView()->Layer();
-    if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
-      ForAllGraphicsLayers(*root, UpdateLayerTouchActionRects);
-  }
 }
 
 static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
@@ -812,12 +804,15 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
-  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled())
-    return;
-
-  LayerHitTestRects touch_event_target_rects;
-  ComputeTouchEventTargetRects(frame, touch_event_target_rects);
-  SetTouchEventTargetRects(frame, touch_event_target_rects);
+  if (RuntimeEnabledFeatures::PaintTouchActionRectsEnabled()) {
+    auto* view_layer = frame->View()->GetLayoutView()->Layer();
+    if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
+      ForAllGraphicsLayers(*root, UpdateLayerTouchActionRects);
+  } else {
+    LayerHitTestRects touch_event_target_rects;
+    ComputeTouchEventTargetRects(frame, touch_event_target_rects);
+    SetTouchEventTargetRects(frame, touch_event_target_rects);
+  }
 }
 
 void ScrollingCoordinator::UpdateUserInputScrollable(
@@ -852,6 +847,8 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
     LocalFrame* frame,
     LayerHitTestRects& layer_rects) {
   TRACE_EVENT0("input", "ScrollingCoordinator::setTouchEventTargetRects");
+
+  DCHECK(!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled());
 
   // Ensure we have an entry for each composited layer that previously had rects
   // (so that old ones will get cleared out). Note that ideally we'd track this
@@ -1244,6 +1241,8 @@ void ScrollingCoordinator::ComputeTouchEventTargetRects(
     LocalFrame* frame,
     LayerHitTestRects& rects) {
   TRACE_EVENT0("input", "ScrollingCoordinator::computeTouchEventTargetRects");
+
+  DCHECK(!RuntimeEnabledFeatures::PaintTouchActionRectsEnabled());
 
   Document* document = frame->GetDocument();
   if (!document || !document->View() || !document->GetFrame())

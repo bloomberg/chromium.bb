@@ -189,7 +189,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   SmoothScrollSequencer* GetSmoothScrollSequencer();
 
-  DOMRectList* NonFastScrollableRects(const LocalFrame*);
+  DOMRectList* NonFastScrollableRectsForTesting(const LocalFrame*);
 
   Settings& GetSettings() const { return *settings_; }
 

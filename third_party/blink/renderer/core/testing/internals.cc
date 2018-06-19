@@ -1918,7 +1918,7 @@ LayerRectList* Internals::touchEventTargetLayerRects(
           document->GetPage()->GetScrollingCoordinator()) {
     FrameView* view = document->GetPage()->MainFrame()->View();
     if (view->IsLocalFrameView()) {
-      scrolling_coordinator->UpdateAfterPrePaint(
+      scrolling_coordinator->UpdateAfterPaint(
           static_cast<LocalFrameView*>(view));
     } else {
       NOTREACHED();
@@ -2267,7 +2267,7 @@ DOMRectList* Internals::nonFastScrollableRects(
   if (!page)
     return nullptr;
 
-  return page->NonFastScrollableRects(document->GetFrame());
+  return page->NonFastScrollableRectsForTesting(document->GetFrame());
 }
 
 void Internals::evictAllResources() const {
