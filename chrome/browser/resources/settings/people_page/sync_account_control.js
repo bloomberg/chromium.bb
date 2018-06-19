@@ -231,6 +231,9 @@ Polymer({
    * @private
    */
   computeShouldShowAvatarRow_: function() {
+    if (this.storedAccounts_ == undefined)
+      return false;
+
     return this.syncStatus.signedIn || this.storedAccounts_.length > 0;
   },
 
@@ -290,6 +293,9 @@ Polymer({
 
   /** @private */
   onShownAccountShouldChange_: function() {
+    if (this.storedAccounts_ == undefined)
+      return;
+
     if (this.syncStatus.signedIn) {
       for (let i = 0; i < this.storedAccounts_.length; i++) {
         if (this.storedAccounts_[i].email == this.syncStatus.signedInUsername) {

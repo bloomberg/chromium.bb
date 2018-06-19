@@ -81,6 +81,7 @@ cr.define('settings_prefs', function() {
       CrSettingsPrefs.deferInitialization = true;
 
       prefs = document.createElement('settings-prefs');
+      document.body.appendChild(prefs);
       prefs.initialize(fakeApi);
 
       // getAllPrefs is asynchronous, so return the prefs promise.
