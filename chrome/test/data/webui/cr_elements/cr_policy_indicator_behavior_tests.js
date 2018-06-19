@@ -4,9 +4,8 @@
 
 /** @fileoverview Suite of tests for CrPolicyIndicatorBehavior. */
 suite('CrPolicyIndicatorBehavior', function() {
-  let TestIndicator;
   suiteSetup(function() {
-    TestIndicator = Polymer({
+    Polymer({
       is: 'test-indicator',
 
       behaviors: [CrPolicyIndicatorBehavior],
@@ -15,7 +14,9 @@ suite('CrPolicyIndicatorBehavior', function() {
 
   let indicator;
   setup(function() {
-    indicator = new TestIndicator;
+    PolymerTest.clearBody();
+    indicator = document.createElement('test-indicator');
+    document.body.appendChild(indicator);
   });
 
   test('default indicator is blank', function() {

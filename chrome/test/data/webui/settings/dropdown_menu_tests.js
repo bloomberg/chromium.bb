@@ -35,10 +35,10 @@ cr.define('settings_dropdown_menu', function() {
     setup(function() {
       PolymerTest.clearBody();
       dropdown = document.createElement('settings-dropdown-menu');
+      document.body.appendChild(dropdown);
       selectElement = assert(dropdown.$$('select'));
       const options = selectElement.options;
       customOption = assert(options[options.length - 1]);
-      document.body.appendChild(dropdown);
     });
 
     test('with number options', function testNumberOptions() {

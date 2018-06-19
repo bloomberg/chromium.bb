@@ -14,19 +14,23 @@ suite('cr-lazy-render', function() {
   setup(function() {
     PolymerTest.clearBody();
     const template = `
-        <template is="dom-bind" id="bind">
-          <cr-lazy-render id="lazy">
-            <template>
-              <h1>
-                <cr-checkbox checked="{{checked}}"></cr-checkbox>
-                {{name}}
-              </h1>
-            </template>
-          </cr-lazy-render>
-        </template>`;
+        <dom-bind>
+          <template is="dom-bind">
+            <cr-lazy-render id="lazy">
+              <template>
+                <h1>
+                  <cr-checkbox checked="{{checked}}"></cr-checkbox>
+                  {{name}}
+                </h1>
+              </template>
+            </cr-lazy-render>
+          </template>
+        </dom-bind>`;
     document.body.innerHTML = template;
     lazy = document.getElementById('lazy');
-    bind = document.getElementById('bind');
+    // TODO(dpapad): Remove conditional when Polymer 2 migration has completed.
+    bind = document.querySelector(
+        Polymer.DomBind ? 'dom-bind' : 'template[is=\'dom-bind\']');
   });
 
   test('stamps after get()', function() {

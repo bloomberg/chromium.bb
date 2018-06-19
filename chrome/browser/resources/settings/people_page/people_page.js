@@ -456,7 +456,10 @@ Polymer({
    * @private
    */
   shouldShowSyncAccountControl_: function() {
-    return !!this.diceEnabled_ && !!this.syncStatus.syncSystemEnabled &&
+    if (this.syncStatus == undefined)
+      return false;
+
+    return this.diceEnabled_ && !!this.syncStatus.syncSystemEnabled &&
         !!this.syncStatus.signinAllowed;
   },
   // </if>
