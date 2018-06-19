@@ -5,6 +5,7 @@
 #include "chromecast/browser/extension_request_protocol_handler.h"
 
 #include "chromecast/common/cast_redirect_manifest_handler.h"
+#include "content/common/net/url_request_user_data.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/info_map.h"
@@ -86,7 +87,15 @@ CastExtensionURLRequestJob::CastExtensionURLRequestJob(
     : net::URLRequestJob(request, network_delegate),
       sub_request_(request->context()->CreateRequest(redirect_url,
                                                      request->priority(),
-                                                     this)) {}
+                                                     this)) {
+  content::URLRequestUserData* user_data =
+      static_cast<content::URLRequestUserData*>(
+          request->GetUserData(content::URLRequestUserData::kUserDataKey));
+  sub_request_->SetUserData(
+      content::URLRequestUserData::kUserDataKey,
+      std::make_unique<content::URLRequestUserData>(
+          user_data->render_process_id(), user_data->render_frame_id()));
+}
 
 CastExtensionURLRequestJob::~CastExtensionURLRequestJob() {}
 
