@@ -178,9 +178,9 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
   // to repaint these bounds.
   gfx::Rect repaint_bounds_;
 
-  int animation_duration_ms_;
+  int animation_duration_ms_ = 200;
 
-  gfx::Tween::Type tween_type_;
+  gfx::Tween::Type tween_type_ = gfx::Tween::EASE_OUT;
 
   DISALLOW_COPY_AND_ASSIGN(BoundsAnimator);
 };

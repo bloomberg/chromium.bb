@@ -177,39 +177,35 @@ int Tween::LinearIntValueBetween(double value, int start, int target) {
 
 // static
 gfx::Rect Tween::RectValueBetween(double value,
-                                  const gfx::Rect& start_bounds,
-                                  const gfx::Rect& target_bounds) {
+                                  const gfx::Rect& start,
+                                  const gfx::Rect& target) {
   return gfx::Rect(
-      LinearIntValueBetween(value, start_bounds.x(), target_bounds.x()),
-      LinearIntValueBetween(value, start_bounds.y(), target_bounds.y()),
-      LinearIntValueBetween(value, start_bounds.width(), target_bounds.width()),
-      LinearIntValueBetween(
-          value, start_bounds.height(), target_bounds.height()));
+      LinearIntValueBetween(value, start.x(), target.x()),
+      LinearIntValueBetween(value, start.y(), target.y()),
+      LinearIntValueBetween(value, start.width(), target.width()),
+      LinearIntValueBetween(value, start.height(), target.height()));
 }
 
 // static
-gfx::Transform Tween::TransformValueBetween(
-    double value,
-    const gfx::Transform& start_transform,
-    const gfx::Transform& end_transform) {
+gfx::Transform Tween::TransformValueBetween(double value,
+                                            const gfx::Transform& start,
+                                            const gfx::Transform& target) {
   if (value >= 1.0)
-    return end_transform;
+    return target;
   if (value <= 0.0)
-    return start_transform;
+    return start;
 
-  gfx::Transform to_return = end_transform;
-  to_return.Blend(start_transform, value);
-
+  gfx::Transform to_return = target;
+  to_return.Blend(start, value);
   return to_return;
 }
 
 gfx::SizeF Tween::SizeValueBetween(double value,
-                                   const gfx::SizeF& start_size,
-                                   const gfx::SizeF& target_size) {
+                                   const gfx::SizeF& start,
+                                   const gfx::SizeF& target) {
   return gfx::SizeF(
-      Tween::FloatValueBetween(value, start_size.width(), target_size.width()),
-      Tween::FloatValueBetween(value, start_size.height(),
-                               target_size.height()));
+      Tween::FloatValueBetween(value, start.width(), target.width()),
+      Tween::FloatValueBetween(value, start.height(), target.height()));
 }
 
 }  // namespace gfx

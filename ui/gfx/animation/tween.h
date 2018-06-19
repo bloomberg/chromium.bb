@@ -65,17 +65,16 @@ class ANIMATION_EXPORT Tween {
   // other integers in the range. This is the integer interpolation approach
   // specified by www.w3.org/TR/css3-transitions.
   static int LinearIntValueBetween(double value, int start, int target);
-  static gfx::Rect RectValueBetween(double value,
-                                    const gfx::Rect& start_bounds,
-                                    const gfx::Rect& target_bounds);
-  static gfx::Transform TransformValueBetween(
-      double value,
-      const gfx::Transform& start_transform,
-      const gfx::Transform& target_transform);
 
+  static gfx::Rect RectValueBetween(double value,
+                                    const gfx::Rect& start,
+                                    const gfx::Rect& target);
+  static gfx::Transform TransformValueBetween(double value,
+                                              const gfx::Transform& start,
+                                              const gfx::Transform& target);
   static gfx::SizeF SizeValueBetween(double value,
-                                     const gfx::SizeF& start_size,
-                                     const gfx::SizeF& target_size);
+                                     const gfx::SizeF& start,
+                                     const gfx::SizeF& target);
 
  private:
   Tween();
