@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/get_root_node_options.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -2114,7 +2115,7 @@ static inline void CollectMatchingObserversForMutation(
         observers,
     Registry* registry,
     Node& target,
-    MutationObserver::MutationType type,
+    MutationType type,
     const QualifiedName* attribute_name) {
   if (!registry)
     return;
@@ -2135,9 +2136,9 @@ static inline void CollectMatchingObserversForMutation(
 void Node::GetRegisteredMutationObserversOfType(
     HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>&
         observers,
-    MutationObserver::MutationType type,
+    MutationType type,
     const QualifiedName* attribute_name) {
-  DCHECK((type == MutationObserver::kAttributes && attribute_name) ||
+  DCHECK((type == kMutationTypeAttributes && attribute_name) ||
          !attribute_name);
   CollectMatchingObserversForMutation(observers, MutationObserverRegistry(),
                                       *this, type, attribute_name);

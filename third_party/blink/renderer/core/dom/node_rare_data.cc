@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
@@ -48,6 +49,33 @@ struct SameSizeAsNodeRareData {
 
 static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData),
               "NodeRareData should stay small");
+
+void NodeMutationObserverData::Trace(blink::Visitor* visitor) {
+  visitor->Trace(registry_);
+  visitor->Trace(transient_registry_);
+}
+
+void NodeMutationObserverData::AddTransientRegistration(
+    MutationObserverRegistration* registration) {
+  transient_registry_.insert(registration);
+}
+
+void NodeMutationObserverData::RemoveTransientRegistration(
+    MutationObserverRegistration* registration) {
+  DCHECK(transient_registry_.Contains(registration));
+  transient_registry_.erase(registration);
+}
+
+void NodeMutationObserverData::AddRegistration(
+    MutationObserverRegistration* registration) {
+  registry_.push_back(registration);
+}
+
+void NodeMutationObserverData::RemoveRegistration(
+    MutationObserverRegistration* registration) {
+  DCHECK(registry_.Contains(registration));
+  registry_.EraseAt(registry_.Find(registration));
+}
 
 void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(mutation_observer_data_);

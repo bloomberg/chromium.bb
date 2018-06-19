@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
-#include "third_party/blink/renderer/core/dom/mutation_observer.h"
+#include "third_party/blink/renderer/core/dom/mutation_observer_options.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -58,6 +58,8 @@ class KURL;
 class LayoutBox;
 class LayoutBoxModelObject;
 class LayoutObject;
+class MutationObserver;
+class MutationObserverRegistration;
 class NodeList;
 class NodeListsNodeData;
 class NodeOrString;
@@ -804,7 +806,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   void GetRegisteredMutationObserversOfType(
       HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>&,
-      MutationObserver::MutationType,
+      MutationType,
       const QualifiedName* attribute_name);
   void RegisterMutationObserver(MutationObserver&,
                                 MutationObserverOptions,

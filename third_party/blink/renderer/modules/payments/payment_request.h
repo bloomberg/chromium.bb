@@ -9,6 +9,7 @@
 #include "components/payments/mojom/payment_request_data.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/modules/payments/payment_request.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"

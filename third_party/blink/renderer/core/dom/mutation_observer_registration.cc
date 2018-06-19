@@ -116,9 +116,9 @@ void MutationObserverRegistration::Unregister() {
 
 bool MutationObserverRegistration::ShouldReceiveMutationFrom(
     Node& node,
-    MutationObserver::MutationType type,
+    MutationType type,
     const QualifiedName* attribute_name) const {
-  DCHECK((type == MutationObserver::kAttributes && attribute_name) ||
+  DCHECK((type == kMutationTypeAttributes && attribute_name) ||
          !attribute_name);
   if (!(options_ & type))
     return false;
@@ -126,7 +126,7 @@ bool MutationObserverRegistration::ShouldReceiveMutationFrom(
   if (registration_node_ != &node && !IsSubtree())
     return false;
 
-  if (type != MutationObserver::kAttributes ||
+  if (type != kMutationTypeAttributes ||
       !(options_ & MutationObserver::kAttributeFilter))
     return true;
 

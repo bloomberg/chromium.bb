@@ -136,7 +136,7 @@ void MutationObserver::observe(Node* node,
   if (attributes || (!observer_init.hasAttributes() &&
                      (observer_init.hasAttributeOldValue() ||
                       observer_init.hasAttributeFilter())))
-    options |= kAttributes;
+    options |= kMutationTypeAttributes;
 
   if (observer_init.hasCharacterDataOldValue() &&
       observer_init.characterDataOldValue())
@@ -146,15 +146,15 @@ void MutationObserver::observe(Node* node,
       observer_init.hasCharacterData() && observer_init.characterData();
   if (character_data || (!observer_init.hasCharacterData() &&
                          observer_init.hasCharacterDataOldValue()))
-    options |= kCharacterData;
+    options |= kMutationTypeCharacterData;
 
   if (observer_init.childList())
-    options |= kChildList;
+    options |= kMutationTypeChildList;
 
   if (observer_init.subtree())
     options |= kSubtree;
 
-  if (!(options & kAttributes)) {
+  if (!(options & kMutationTypeAttributes)) {
     if (options & kAttributeOldValue) {
       exception_state.ThrowTypeError(
           "The options object may only set 'attributeOldValue' to true when "
@@ -168,14 +168,15 @@ void MutationObserver::observe(Node* node,
       return;
     }
   }
-  if (!((options & kCharacterData) || !(options & kCharacterDataOldValue))) {
+  if (!((options & kMutationTypeCharacterData) ||
+        !(options & kCharacterDataOldValue))) {
     exception_state.ThrowTypeError(
         "The options object may only set 'characterDataOldValue' to true when "
         "'characterData' is true or not present.");
     return;
   }
 
-  if (!(options & (kAttributes | kCharacterData | kChildList))) {
+  if (!(options & kMutationTypeAll)) {
     exception_state.ThrowTypeError(
         "The options object must set at least one of 'attributes', "
         "'characterData', or 'childList' to true.");

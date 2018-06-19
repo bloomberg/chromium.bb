@@ -66,7 +66,7 @@ class CORE_EXPORT MutationObserverRegistration final
   void Unregister();
 
   bool ShouldReceiveMutationFrom(Node&,
-                                 MutationObserver::MutationType,
+                                 MutationType,
                                  const QualifiedName* attribute_name) const;
   bool IsSubtree() const { return options_ & MutationObserver::kSubtree; }
 
@@ -75,8 +75,8 @@ class CORE_EXPORT MutationObserverRegistration final
     return options_ & (MutationObserver::kAttributeOldValue |
                        MutationObserver::kCharacterDataOldValue);
   }
-  MutationObserverOptions MutationTypes() const {
-    return options_ & MutationObserver::kAllMutationTypes;
+  MutationType MutationTypes() const {
+    return static_cast<MutationType>(options_ & kMutationTypeAll);
   }
 
   void AddRegistrationNodesToSet(HeapHashSet<Member<Node>>&) const;

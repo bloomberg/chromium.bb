@@ -36,10 +36,10 @@ namespace blink {
 
 MutationObserverInterestGroup* MutationObserverInterestGroup::CreateIfNeeded(
     Node& target,
-    MutationObserver::MutationType type,
+    MutationType type,
     MutationRecordDeliveryOptions old_value_flag,
     const QualifiedName* attribute_name) {
-  DCHECK((type == MutationObserver::kAttributes && attribute_name) ||
+  DCHECK((type == kMutationTypeAttributes && attribute_name) ||
          !attribute_name);
   HeapHashMap<Member<MutationObserver>, MutationRecordDeliveryOptions>
       observers;
