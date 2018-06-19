@@ -54,11 +54,9 @@ TimeTicks CalculateDelayedRuntime(TimeDelta delay) {
 IncomingTaskQueue::IncomingTaskQueue(MessageLoop* message_loop)
     : always_schedule_work_(AlwaysNotifyPump(message_loop->type())),
       triage_tasks_(this),
-      delayed_tasks_(this),
-      deferred_tasks_(this),
       message_loop_(message_loop) {
-  // The constructing sequence is not necessarily the running sequence in the
-  // case of base::Thread.
+  // The constructing sequence is not necessarily the running sequence, e.g. in
+  // the case of a MessageLoop created unbound.
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -155,10 +153,6 @@ PendingTask IncomingTaskQueue::TriageQueue::Pop() {
   DCHECK(!queue_.empty());
   PendingTask pending_task = std::move(queue_.front());
   queue_.pop();
-
-  if (pending_task.is_high_res)
-    --outer_->pending_high_res_tasks_;
-
   return pending_task;
 }
 
@@ -205,49 +199,46 @@ void IncomingTaskQueue::TriageQueue::Clear() {
 void IncomingTaskQueue::TriageQueue::ReloadFromIncomingQueueIfEmpty() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
   if (queue_.empty()) {
-    // Incrementing the high resolution task count now will have the impact of
-    // triggering the high resolution timer before these tasks arrive in the
-    // delayed queue. This is fine as this loop will remain awake anyways until
-    // the triage queue is empty and has placed any delayed tasks in the delayed
-    // queue.
-    outer_->pending_high_res_tasks_ += outer_->ReloadWorkQueue(&queue_);
+    outer_->ReloadWorkQueue(&queue_);
   }
 }
 
-IncomingTaskQueue::DelayedQueue::DelayedQueue(IncomingTaskQueue* outer)
-    : outer_(outer) {}
+IncomingTaskQueue::DelayedQueue::DelayedQueue() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 IncomingTaskQueue::DelayedQueue::~DelayedQueue() = default;
 
 void IncomingTaskQueue::DelayedQueue::Push(PendingTask pending_task) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pending_task.is_high_res)
-    ++outer_->pending_high_res_tasks_;
+    ++pending_high_res_tasks_;
 
   queue_.push(std::move(pending_task));
 }
 
 const PendingTask& IncomingTaskQueue::DelayedQueue::Peek() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!queue_.empty());
   return queue_.top();
 }
 
 PendingTask IncomingTaskQueue::DelayedQueue::Pop() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!queue_.empty());
   PendingTask delayed_task = std::move(const_cast<PendingTask&>(queue_.top()));
   queue_.pop();
 
   if (delayed_task.is_high_res)
-    --outer_->pending_high_res_tasks_;
+    --pending_high_res_tasks_;
+  DCHECK_GE(pending_high_res_tasks_, 0);
 
   return delayed_task;
 }
 
 bool IncomingTaskQueue::DelayedQueue::HasTasks() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(robliao): The other queues don't check for IsCancelled(). Should they?
   while (!queue_.empty() && Peek().task.IsCancelled())
     Pop();
@@ -256,57 +247,48 @@ bool IncomingTaskQueue::DelayedQueue::HasTasks() {
 }
 
 void IncomingTaskQueue::DelayedQueue::Clear() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   while (!queue_.empty())
     Pop();
 }
 
 size_t IncomingTaskQueue::DelayedQueue::Size() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return queue_.size();
 }
 
-IncomingTaskQueue::DeferredQueue::DeferredQueue(IncomingTaskQueue* outer)
-    : outer_(outer) {}
+IncomingTaskQueue::DeferredQueue::DeferredQueue() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 IncomingTaskQueue::DeferredQueue::~DeferredQueue() = default;
 
 void IncomingTaskQueue::DeferredQueue::Push(PendingTask pending_task) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
-
-  // TODO(robliao): These tasks should not count towards the high res task count
-  // since they are no longer in the delayed queue.
-  if (pending_task.is_high_res)
-    ++outer_->pending_high_res_tasks_;
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   queue_.push(std::move(pending_task));
 }
 
 const PendingTask& IncomingTaskQueue::DeferredQueue::Peek() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!queue_.empty());
   return queue_.front();
 }
 
 PendingTask IncomingTaskQueue::DeferredQueue::Pop() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!queue_.empty());
   PendingTask deferred_task = std::move(queue_.front());
   queue_.pop();
-
-  if (deferred_task.is_high_res)
-    --outer_->pending_high_res_tasks_;
-
   return deferred_task;
 }
 
 bool IncomingTaskQueue::DeferredQueue::HasTasks() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !queue_.empty();
 }
 
 void IncomingTaskQueue::DeferredQueue::Clear() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(outer_->sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   while (!queue_.empty())
     Pop();
 }
@@ -352,11 +334,6 @@ bool IncomingTaskQueue::PostPendingTask(PendingTask* pending_task) {
 bool IncomingTaskQueue::PostPendingTaskLockRequired(PendingTask* pending_task) {
   incoming_queue_lock_.AssertAcquired();
 
-#if defined(OS_WIN)
-  if (pending_task->is_high_res)
-    ++high_res_task_count_;
-#endif
-
   // Initialize the sequence number. The sequence number is used for delayed
   // tasks (to facilitate FIFO sorting when two tasks have the same
   // delayed_run_time value) and for identifying the task in about:tracing.
@@ -380,7 +357,7 @@ bool IncomingTaskQueue::PostPendingTaskLockRequired(PendingTask* pending_task) {
   return false;
 }
 
-int IncomingTaskQueue::ReloadWorkQueue(TaskQueue* work_queue) {
+void IncomingTaskQueue::ReloadWorkQueue(TaskQueue* work_queue) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Make sure no tasks are lost.
@@ -396,10 +373,6 @@ int IncomingTaskQueue::ReloadWorkQueue(TaskQueue* work_queue) {
   } else {
     incoming_queue_.swap(*work_queue);
   }
-  // Reset the count of high resolution tasks since our queue is now empty.
-  int high_res_tasks = high_res_task_count_;
-  high_res_task_count_ = 0;
-  return high_res_tasks;
 }
 
 }  // namespace internal

@@ -93,9 +93,9 @@ class BASE_EXPORT IncomingTaskQueue
 
   Queue& deferred_tasks() { return deferred_tasks_; }
 
-  bool HasPendingHighResolutionTasks() {
+  bool HasPendingHighResolutionTasks() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    return pending_high_res_tasks_ > 0;
+    return delayed_tasks_.HasPendingHighResolutionTasks();
   }
 
   // Reports UMA metrics about its queues before the MessageLoop goes to sleep
@@ -153,7 +153,7 @@ class BASE_EXPORT IncomingTaskQueue
 
   class DelayedQueue : public Queue {
    public:
-    DelayedQueue(IncomingTaskQueue* outer);
+    DelayedQueue();
     ~DelayedQueue() override;
 
     // Queue:
@@ -165,17 +165,24 @@ class BASE_EXPORT IncomingTaskQueue
     void Push(PendingTask pending_task) override;
 
     size_t Size() const;
+    bool HasPendingHighResolutionTasks() const {
+      return pending_high_res_tasks_ > 0;
+    }
 
    private:
-    IncomingTaskQueue* const outer_;
     DelayedTaskQueue queue_;
+
+    // Number of high resolution tasks in |queue_|.
+    int pending_high_res_tasks_ = 0;
+
+    SEQUENCE_CHECKER(sequence_checker_);
 
     DISALLOW_COPY_AND_ASSIGN(DelayedQueue);
   };
 
   class DeferredQueue : public Queue {
    public:
-    DeferredQueue(IncomingTaskQueue* outer);
+    DeferredQueue();
     ~DeferredQueue() override;
 
     // Queue:
@@ -186,8 +193,9 @@ class BASE_EXPORT IncomingTaskQueue
     void Push(PendingTask pending_task) override;
 
    private:
-    IncomingTaskQueue* const outer_;
     TaskQueue queue_;
+
+    SEQUENCE_CHECKER(sequence_checker_);
 
     DISALLOW_COPY_AND_ASSIGN(DeferredQueue);
   };
@@ -205,9 +213,8 @@ class BASE_EXPORT IncomingTaskQueue
   bool PostPendingTaskLockRequired(PendingTask* pending_task);
 
   // Loads tasks from the |incoming_queue_| into |*work_queue|. Must be called
-  // from the sequence processing the tasks. Returns the number of tasks that
-  // require high resolution timers in |work_queue|.
-  int ReloadWorkQueue(TaskQueue* work_queue);
+  // from the sequence processing the tasks.
+  void ReloadWorkQueue(TaskQueue* work_queue);
 
   // Checks calls made only on the MessageLoop thread.
   SEQUENCE_CHECKER(sequence_checker_);
@@ -227,9 +234,6 @@ class BASE_EXPORT IncomingTaskQueue
   // Queue for non-nestable deferred tasks on the |sequence_checker_| sequence.
   DeferredQueue deferred_tasks_;
 
-  // Number of high resolution tasks in the sequence affine queues above.
-  int pending_high_res_tasks_ = 0;
-
   // Lock that serializes |message_loop_->ScheduleWork()| calls as well as
   // prevents |message_loop_| from being made nullptr during such a call.
   base::Lock message_loop_lock_;
@@ -239,10 +243,6 @@ class BASE_EXPORT IncomingTaskQueue
 
   // Synchronizes access to all members below this line.
   base::Lock incoming_queue_lock_;
-
-  // Number of tasks that require high resolution timing. This value is kept
-  // so that ReloadWorkQueue() completes in constant time.
-  int high_res_task_count_ = 0;
 
   // An incoming queue of tasks that are acquired under a mutex for processing
   // on this instance's thread. These tasks have not yet been been pushed to
