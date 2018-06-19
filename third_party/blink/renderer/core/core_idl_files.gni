@@ -611,6 +611,7 @@ core_dictionary_idl_files =
                     "fetch/response_init.idl",
                     "fileapi/blob_property_bag.idl",
                     "fileapi/file_property_bag.idl",
+                    "frame/reporting_observer_options.idl",
                     "frame/scroll_into_view_options.idl",
                     "frame/scroll_options.idl",
                     "frame/scroll_to_options.idl",
