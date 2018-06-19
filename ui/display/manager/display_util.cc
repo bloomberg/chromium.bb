@@ -24,6 +24,10 @@ constexpr int kNumOfZoomFactors = 9;
 // resolution width.
 using ZoomListBucket = std::pair<int, std::array<float, kNumOfZoomFactors>>;
 
+// A pair representing the list of zoom values for a given minimum default dsf.
+using ZoomListBucketDsf =
+    std::pair<float, std::array<float, kNumOfZoomFactors>>;
+
 // For displays with a device scale factor of unity, we use a static list of
 // initialized zoom values. For a given resolution width of a display, we can
 // find its associated list of zoom values by simply finding the last bucket
@@ -34,21 +38,25 @@ constexpr std::array<ZoomListBucket, 8> kZoomListBuckets{{
     {720, {0.70f, 0.75f, 0.80f, 0.85f, 0.90f, 0.95f, 1.f, 1.05f, 1.10f}},
     {800, {0.75f, 0.80f, 0.85f, 0.90f, 0.95f, 1.f, 1.05f, 1.10f, 1.15f}},
     {960, {0.90f, 0.95f, 1.f, 1.05f, 1.10f, 1.15f, 1.20f, 1.25f, 1.30f}},
-    {1280, {1.f, 1.10f, 1.15f, 1.20f, 1.25f, 1.30f, 1.50f, 1.70f, 1.80f}},
+    {1280, {0.90f, 1.f, 1.05f, 1.10f, 1.15f, 1.20f, 1.25f, 1.30f, 1.50f}},
     {1920, {1.f, 1.10f, 1.15f, 1.20f, 1.30f, 1.40f, 1.50f, 1.75f, 2.00f}},
     {3840, {1.f, 1.10f, 1.20f, 1.40f, 1.60f, 1.80f, 2.00f, 2.20f, 2.40f}},
     {5120, {1.f, 1.25f, 1.50f, 1.75f, 2.00f, 2.25f, 2.50f, 2.75f, 3.00f}},
 }};
 
+// Displays with a default device scale factor have a static list of initialized
+// zoom values that includes a zoom level to go to the native resolution of the
+// display. Ensure that the list of DSFs are in sync with the list of default
+// device scale factors in display_change_observer.cc.
+constexpr std::array<ZoomListBucketDsf, 4> kZoomListBucketsForDsf{{
+    {1.25f, {0.7f, 1.f / 1.25f, 0.85f, 0.9f, 0.95f, 1.f, 1.1f, 1.2f, 1.3f}},
+    {1.6f, {1.f / 1.6f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 1.f, 1.15f, 1.3f}},
+    {2.f, {1.f / 2.f, 0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.25f, 1.5f}},
+    {2.25f, {1.f / 2.25f, 0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.15f, 1.3f, 1.5f}},
+}};
+
 bool WithinEpsilon(float a, float b) {
   return std::abs(a - b) < std::numeric_limits<float>::epsilon();
-}
-
-// Returns the user friendly delta to be used for the given |dsf|.
-float FindDeltaForDsf(float dsf) {
-  DCHECK_GT(dsf, 1.f);
-  const float raw_delta = (1.f - 1.f / dsf) / (kNumOfZoomFactors - 1.f);
-  return raw_delta > 0.05f ? 0.1f : 0.05f;
 }
 
 }  // namespace
@@ -116,13 +124,12 @@ std::vector<float> GetDisplayZoomFactors(const ManagedDisplayMode& mode) {
   // associated with them. This means that if we use the usual logic, we would
   // end up with a list of zoom levels that the user may not find very useful.
   // Take for example the pixelbook with device scale factor of 2. Based on the
-  // usual approach, we would get a zoom range of 100% to 180% with a step of
-  // 10% between each consecutive levels. This means:
+  // usual approach, we would get a zoom range of 90% to 150%. This means:
   //   1. Users will not be able to go to the native resolution which is
   //      achieved at 50% zoom level.
   //   2. Due to the device scale factor, the display already has a low DPI and
   //      users dont want to zoom in, they mostly want to zoom out and add more
-  //      pixels to the screen. But we only provide a zoom list of 90% to 130%.
+  //      pixels to the screen. But we only provide a zoom list of 90% to 150%.
   // This clearly shows we need a different logic to handle internal displays
   // which have lower DPI due to the device scale factor associated with them.
   //
@@ -153,20 +160,12 @@ std::vector<float> GetDisplayZoomFactorForDsf(float dsf) {
   DCHECK(!WithinEpsilon(dsf, 1.f));
   DCHECK_GT(dsf, 1.f);
 
-  const float delta = FindDeltaForDsf(dsf);
-  const float inverse_dsf = 1.f / dsf;
-  int zoom_out_count = std::ceil((1.f - inverse_dsf) / delta);
-  zoom_out_count = std::min(zoom_out_count, kNumOfZoomFactors - 1);
-
-  const float min_zoom = 1.f - delta * zoom_out_count;
-
-  std::vector<float> zoom_values;
-  for (int i = 0; i < kNumOfZoomFactors; i++)
-    zoom_values.push_back(min_zoom + i * delta);
-
-  // Ensure the inverse dsf is in the list.
-  zoom_values[0] = inverse_dsf;
-  return zoom_values;
+  for (const auto& bucket : kZoomListBucketsForDsf) {
+    if (WithinEpsilon(bucket.first, dsf))
+      return std::vector<float>(bucket.second.begin(), bucket.second.end());
+  }
+  NOTREACHED() << "Received a DSF not on the list: " << dsf;
+  return {1.f / dsf, 1.f};
 }
 
 void InsertDsfIntoList(std::vector<float>* zoom_values, float dsf) {
