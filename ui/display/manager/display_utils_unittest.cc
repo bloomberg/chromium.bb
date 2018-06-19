@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/gfx/geometry/size.h"
@@ -17,6 +18,10 @@ namespace test {
 namespace {
 constexpr std::size_t kNumOfZoomFactors = 9;
 using ZoomListBucket = std::pair<int, std::array<float, kNumOfZoomFactors>>;
+
+bool WithinEpsilon(float a, float b) {
+  return std::abs(a - b) < std::numeric_limits<float>::epsilon();
+}
 
 }  // namespace
 using DisplayUtilTest = testing::Test;
@@ -40,19 +45,21 @@ TEST_F(DisplayUtilTest, DisplayZooms) {
 }
 
 TEST_F(DisplayUtilTest, DisplayZoomsWithInternalDsf) {
-  const std::vector<std::pair<float, std::vector<float>>> expected_zoom_values{
-      {1.25f, {1.f / 1.25f, 0.85f, 0.9f, 0.95f, 1.f, 1.05f, 1.1f, 1.15f, 1.2f}},
-      {1.5f, {1.f / 1.5f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f, 1.05f}},
-      {1.6f, {1.f / 1.6f, 0.65f, 0.7f, 0.75f, 0.8f, 0.85f, 0.9f, 0.95f, 1.f}},
-      {1.8f, {1.f / 1.8f, 0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f}},
-      {2.f, {1.f / 2.f, 0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f}},
-      {2.25f, {1.f / 2.25f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f}}};
+  std::vector<float> kDsfs = {1.25f, 1.6f, 2.f, 2.25f};
 
-  for (const auto& pair : expected_zoom_values) {
-    const std::vector<float> zoom_values =
-        GetDisplayZoomFactorForDsf(pair.first);
-    for (std::size_t j = 0; j < kNumOfZoomFactors; j++)
-      EXPECT_FLOAT_EQ(zoom_values[j], pair.second[j]);
+  for (const auto& dsf : kDsfs) {
+    SCOPED_TRACE(base::StringPrintf("dsf=%f", dsf));
+    const std::vector<float> zoom_values = GetDisplayZoomFactorForDsf(dsf);
+    const float inverse_dsf = 1.f / dsf;
+    uint8_t checks = 0;
+    for (std::size_t j = 0; j < kNumOfZoomFactors; j++) {
+      if (WithinEpsilon(zoom_values[j], inverse_dsf))
+        checks |= 0x01;
+      if (WithinEpsilon(zoom_values[j], 1.f))
+        checks |= 0x02;
+    }
+    EXPECT_TRUE(checks & 0x01) << "Inverse of " << dsf << " not on the list.";
+    EXPECT_TRUE(checks & 0x02) << "Zoom level of unity is not on the list.";
   }
 }
 
