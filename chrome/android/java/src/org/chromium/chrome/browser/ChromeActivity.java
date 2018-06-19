@@ -1423,6 +1423,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 findViewById(R.id.keyboard_accessory_stub),
                 findViewById(R.id.keyboard_accessory_sheet_stub));
 
+        if (mToolbarManager != null && mToolbarManager.getToolbar() != null) {
+            mToolbarManager.getToolbar().setScrim(mFadingBackgroundView);
+        }
+
         if (supportsContextualSuggestionsBottomSheet()
                 && FeatureUtilities.isContextualSuggestionsBottomSheetEnabled(isTablet())) {
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
