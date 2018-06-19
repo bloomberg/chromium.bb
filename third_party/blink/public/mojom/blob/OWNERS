@@ -4,4 +4,4 @@ per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 
 # TEAM: storage-dev@chromium.org
-# COMPONENT: Blink>FileAPI
+# COMPONENT: Blink>Storage>FileAPI
