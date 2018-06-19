@@ -164,4 +164,67 @@ TEST(PenProcessorTest, UnpairedPointerDownMouseDMEnabled) {
   EXPECT_EQ(nullptr, event.get());
 }
 
+TEST(PenProcessorTest, TouchFlagDMEnabled) {
+  ui::SequentialIDGenerator id_generator(0);
+  PenEventProcessor processor(&id_generator,
+                              /*direct_manipulation_enabled*/ true);
+
+  POINTER_PEN_INFO pen_info;
+  memset(&pen_info, 0, sizeof(POINTER_PEN_INFO));
+  gfx::Point point(100, 100);
+
+  pen_info.pointerInfo.pointerFlags =
+      POINTER_FLAG_INCONTACT | POINTER_FLAG_FIRSTBUTTON;
+  pen_info.pointerInfo.ButtonChangeType = POINTER_CHANGE_FIRSTBUTTON_DOWN;
+
+  std::unique_ptr<ui::Event> event =
+      processor.GenerateEvent(WM_POINTERDOWN, 0, pen_info, point);
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsTouchEvent());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, event->AsTouchEvent()->type());
+  EXPECT_TRUE(event->flags() & ui::EF_LEFT_MOUSE_BUTTON);
+
+  pen_info.pointerInfo.pointerFlags = POINTER_FLAG_UP;
+  pen_info.pointerInfo.ButtonChangeType = POINTER_CHANGE_FIRSTBUTTON_UP;
+
+  event = processor.GenerateEvent(WM_POINTERUP, 0, pen_info, point);
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsTouchEvent());
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, event->AsTouchEvent()->type());
+  EXPECT_FALSE(event->flags() & ui::EF_LEFT_MOUSE_BUTTON);
+}
+
+TEST(PenProcessorTest, MouseFlagDMEnabled) {
+  ui::SequentialIDGenerator id_generator(0);
+  PenEventProcessor processor(&id_generator,
+                              /*direct_manipulation_enabled*/ true);
+
+  POINTER_PEN_INFO pen_info;
+  memset(&pen_info, 0, sizeof(POINTER_PEN_INFO));
+  gfx::Point point(100, 100);
+
+  pen_info.pointerInfo.pointerFlags = POINTER_FLAG_FIRSTBUTTON;
+  pen_info.pointerInfo.ButtonChangeType = POINTER_CHANGE_FIRSTBUTTON_DOWN;
+
+  std::unique_ptr<ui::Event> event =
+      processor.GenerateEvent(WM_POINTERDOWN, 0, pen_info, point);
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsMouseEvent());
+  EXPECT_EQ(ui::ET_MOUSE_PRESSED, event->AsMouseEvent()->type());
+  EXPECT_TRUE(event->flags() & ui::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON,
+            event->AsMouseEvent()->changed_button_flags());
+
+  pen_info.pointerInfo.pointerFlags = POINTER_FLAG_NONE;
+  pen_info.pointerInfo.ButtonChangeType = POINTER_CHANGE_FIRSTBUTTON_UP;
+
+  event = processor.GenerateEvent(WM_POINTERUP, 0, pen_info, point);
+  ASSERT_TRUE(event);
+  ASSERT_TRUE(event->IsMouseEvent());
+  EXPECT_EQ(ui::ET_MOUSE_RELEASED, event->AsMouseEvent()->type());
+  EXPECT_TRUE(event->flags() & ui::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(ui::EF_LEFT_MOUSE_BUTTON,
+            event->AsMouseEvent()->changed_button_flags());
+}
+
 }  // namespace views
