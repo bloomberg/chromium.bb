@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "media/base/audio_parameters.h"
+
 using media::cast::FrameSenderConfig;
 using media::cast::Codec;
 using media::cast::RtpPayloadType;
@@ -114,6 +116,14 @@ media::VideoCaptureParams MirrorSettings::GetVideoCaptureParams() {
   } else {
     params.resolution_change_policy = ResolutionChangePolicy::ANY_WITHIN_LIMIT;
   }
+  DCHECK(params.IsValid());
+  return params;
+}
+
+media::AudioParameters MirrorSettings::GetAudioCaptureParams() {
+  media::AudioParameters params(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                                media::CHANNEL_LAYOUT_STEREO, kAudioTimebase,
+                                kAudioTimebase / 100);
   DCHECK(params.IsValid());
   return params;
 }

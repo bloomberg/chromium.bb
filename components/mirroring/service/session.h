@@ -19,6 +19,8 @@
 
 namespace media {
 
+class AudioInputDevice;
+
 namespace cast {
 class CastTransport;
 }  // namespace cast
@@ -79,7 +81,15 @@ class Session final : public RtpStreamClient {
   // responses.
   void OnResponseParsingError(const std::string& error_message);
 
+  // Creates an audio input stream through Audio Service. |client| will be
+  // called after the stream is created.
+  void CreateAudioStream(AudioStreamCreatorClient* client,
+                         const media::AudioParameters& params,
+                         uint32_t shared_memory_count);
+
  private:
+  class AudioCapturingCallback;
+
   void StopSession();
 
   // Notify |observer_| that error occurred and close the session.
@@ -118,6 +128,8 @@ class Session final : public RtpStreamClient {
   std::unique_ptr<media::cast::CastTransport> cast_transport_;
   scoped_refptr<base::SingleThreadTaskRunner> audio_encode_thread_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> video_encode_thread_ = nullptr;
+  std::unique_ptr<AudioCapturingCallback> audio_capturing_callback_;
+  scoped_refptr<media::AudioInputDevice> audio_input_device_;
 
   base::WeakPtrFactory<Session> weak_factory_;
 };

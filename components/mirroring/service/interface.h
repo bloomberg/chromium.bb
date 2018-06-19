@@ -7,7 +7,10 @@
 
 #include <string>
 
+#include "media/base/audio_parameters.h"
 #include "media/capture/mojom/video_capture.mojom.h"
+#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/interfaces/audio_input_stream.mojom.h"
 #include "net/base/ip_address.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
@@ -78,6 +81,19 @@ class SessionObserver {
   virtual void DidStop() = 0;
 };
 
+class AudioStreamCreatorClient {
+ public:
+  virtual ~AudioStreamCreatorClient() {}
+
+  // Called by ResourceProvider when an audio input stream is created as
+  // requested.
+  virtual void StreamCreated(
+      media::mojom::AudioInputStreamPtr stream,
+      media::mojom::AudioInputStreamClientRequest client_request,
+      media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
+      bool initially_muted) = 0;
+};
+
 class ResourceProvider {
  public:
   virtual ~ResourceProvider() {}
@@ -86,7 +102,9 @@ class ResourceProvider {
       media::mojom::VideoCaptureHostRequest request) = 0;
   virtual void GetNetworkContext(
       network::mojom::NetworkContextRequest request) = 0;
-  // TODO(xjz): Add interface to get AudioCaptureHost.
+  virtual void CreateAudioStream(AudioStreamCreatorClient* client,
+                                 const media::AudioParameters& params,
+                                 uint32_t total_segments) = 0;
   // TODO(xjz): Add interface for HW encoder profiles query and VEA create
   // support.
 };
