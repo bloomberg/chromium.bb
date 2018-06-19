@@ -10,7 +10,6 @@
 #include <set>
 #include <string>
 
-#include "base/containers/flat_set.h"
 #include "base/i18n/case_conversion.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -406,20 +405,15 @@ bool IsEnabledPasswordFieldPresent(const std::vector<FormFieldData>& fields) {
 // Find the first element in |username_predictions| (i.e. the most reliable
 // prediction) that occurs in |possible_usernames|.
 const FormFieldData* FindUsernameInPredictions(
-    const std::vector<const FormFieldData*>& username_predictions,
+    const std::vector<uint32_t>& username_predictions,
     const std::vector<const FormFieldData*>& possible_usernames) {
-  // To speed-up the matching for-loop below, convert |possible_usernames| to a
-  // set. Creating is O(N log N) for N=possible_usernames.size(). Retrieval is
-  // O(log N), so the whole for-loop is O(M log N) for
-  // M=username_predictions.size(). Use flat_set, because of cache locality (the
-  // M and N are likely small, so this can make a difference) and less heap
-  // allocations.
-  const base::flat_set<const FormFieldData*> usernames(
-      possible_usernames.begin(), possible_usernames.end());
-
-  for (const FormFieldData* prediction : username_predictions) {
-    auto iter = usernames.find(prediction);
-    if (iter != usernames.end()) {
+  for (uint32_t predicted_id : username_predictions) {
+    auto iter =
+        std::find_if(possible_usernames.begin(), possible_usernames.end(),
+                     [predicted_id](const FormFieldData* field) {
+                       return field->unique_renderer_id == predicted_id;
+                     });
+    if (iter != possible_usernames.end()) {
       return *iter;
     }
   }
@@ -430,11 +424,11 @@ const FormFieldData* FindUsernameInPredictions(
 // elements of the form, |form_data| should be the already extracted FormData
 // representation of that form. |username_detector_cache| is optional, and can
 // be used to spare recomputation if called multiple times for the same form.
-std::vector<const FormFieldData*> GetUsernamePredictions(
+std::vector<uint32_t> GetUsernamePredictions(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const FormData& form_data,
     UsernameDetectorCache* username_detector_cache) {
-  std::vector<const FormFieldData*> username_predictions;
+  std::vector<uint32_t> username_predictions;
   // Dummy cache stores the predictions in case no real cache was passed to
   // here.
   UsernameDetectorCache dummy_cache;
@@ -445,21 +439,8 @@ std::vector<const FormFieldData*> GetUsernamePredictions(
       GetPredictionsFieldBasedOnHtmlAttributes(control_elements, form_data,
                                                username_detector_cache);
   username_predictions.reserve(username_predictions_dom.size());
-
-  // Convert the DOM elements to FormFieldData.
-  std::map<uint32_t, const FormFieldData*> id_to_fields;
-  for (const FormFieldData& field : form_data.fields) {
-    auto insert_result =
-        id_to_fields.insert({field.unique_renderer_id, &field});
-    DCHECK(insert_result.second) << "Unique ID is not unique.";
-  }
   for (const WebInputElement& element : username_predictions_dom) {
-    std::map<uint32_t, const FormFieldData*>::const_iterator prediction_it =
-        id_to_fields.find(element.UniqueRendererFormControlId());
-    // Note: some of the |element|s may not have an equivalent in
-    // |form_data.fields|, e.g., because those are not autofillable.
-    if (prediction_it != id_to_fields.end())
-      username_predictions.push_back(prediction_it->second);
+    username_predictions.push_back(element.UniqueRendererFormControlId());
   }
   return username_predictions;
 }
@@ -483,11 +464,10 @@ bool GetPasswordForm(
     return false;
 
   // Evaluate the context of the fields.
-  std::vector<const FormFieldData*> username_predictions;
   if (base::FeatureList::IsEnabled(
           password_manager::features::kHtmlBasedUsernameDetector)) {
-    username_predictions = GetUsernamePredictions(control_elements, form_data,
-                                                  username_detector_cache);
+    password_form->form_data.username_predictions = GetUsernamePredictions(
+        control_elements, form_data, username_detector_cache);
   }
 
   // Narrow the scope to enabled inputs.
@@ -664,8 +644,8 @@ bool GetPasswordForm(
     // Use HTML based username detector only if neither server predictions nor
     // autocomplete attributes were useful to detect the username.
     if (!predicted_username_field && !username_by_attribute) {
-      username_field_by_context =
-          FindUsernameInPredictions(username_predictions, plausible_usernames);
+      username_field_by_context = FindUsernameInPredictions(
+          form_data.username_predictions, plausible_usernames);
     }
   }
 

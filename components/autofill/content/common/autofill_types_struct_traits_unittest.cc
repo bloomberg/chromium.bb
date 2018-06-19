@@ -341,6 +341,7 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
 TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
   FormData input;
   test::CreateTestAddressFormData(&input);
+  input.username_predictions = {1, 13, 2};
 
   base::RunLoop loop;
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();

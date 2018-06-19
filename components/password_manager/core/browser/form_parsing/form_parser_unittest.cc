@@ -66,6 +66,9 @@ struct FieldDataDescription {
   const char* name = kNonimportantValue;
   const char* form_control_type = "text";
   PasswordFieldPrediction prediction = {.type = autofill::MAX_VALID_FIELD_TYPE};
+  // If not -1, indicates on which rank among predicted usernames this should
+  // be. Unused ranks will be padded with unique IDs (not found in any fields).
+  int predicted_username = -1;
 };
 
 // Describes a test case for the parser.
@@ -81,7 +84,7 @@ struct FormParsingTestCase {
 // Returns numbers which are distinct from each other within the scope of one
 // test.
 uint32_t GetUniqueId() {
-  static uint32_t counter = 0;
+  static uint32_t counter = 10;
   return counter++;
 }
 
@@ -191,6 +194,19 @@ FormData GetFormDataAndExpectation(
     if (field_description.prediction.type != autofill::MAX_VALID_FIELD_TYPE) {
       (*predictions)[unique_id] = field_description.prediction;
     }
+    if (field_description.predicted_username >= 0) {
+      size_t index = static_cast<size_t>(field_description.predicted_username);
+      if (form_data.username_predictions.size() <= index)
+        form_data.username_predictions.resize(index + 1);
+      form_data.username_predictions[index] = field.unique_renderer_id;
+    }
+  }
+  // Fill unused ranks in predictions with fresh IDs to check that those are
+  // correctly ignored. In real situation, this might correspond, e.g., to
+  // fields which were not fillable and hence dropped from the selection.
+  for (uint32_t& id : form_data.username_predictions) {
+    if (id == 0)
+      id = GetUniqueId();
   }
   return form_data;
 }
@@ -1113,6 +1129,71 @@ TEST(FormParserTest, AllPossiblePasswords) {
                   {.form_control_type = "password"},
               },
           .number_of_all_possible_passwords = 4,
+      },
+  });
+}
+
+TEST(FormParserTest, UsernamePredictions) {
+  CheckTestData({
+      {
+          "Username prediction overrides structure",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .predicted_username = 0},
+              {.form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+      },
+      {
+          "Username prediction does not override structure if empty and mode "
+          "is SAVING",
+          {
+              {.role = ElementRole::USERNAME_FILLING,
+               .form_control_type = "text",
+               .predicted_username = 2,
+               .value = ""},
+              {.role = ElementRole::USERNAME_SAVING,
+               .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+      },
+      {
+          "Username prediction does not override autocomplete analysis",
+          {
+              {.form_control_type = "text", .predicted_username = 0},
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .autocomplete_attribute = "username"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .autocomplete_attribute = "current-password"},
+          },
+      },
+      {
+          "Username prediction does not override server hints",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS}},
+              {.form_control_type = "text", .predicted_username = 0},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .prediction = {.type = autofill::PASSWORD},
+               .form_control_type = "password"},
+          },
+      },
+      {
+          "Username prediction order matters",
+          {
+              {.role = ElementRole::USERNAME,
+               .form_control_type = "text",
+               .predicted_username = 1},
+              {.form_control_type = "text", .predicted_username = 4},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
       },
   });
 }
