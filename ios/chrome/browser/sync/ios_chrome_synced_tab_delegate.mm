@@ -37,8 +37,7 @@ NavigationItem* GetPossiblyPendingItemAtIndex(web::WebState* web_state, int i) {
 }  // namespace
 
 IOSChromeSyncedTabDelegate::IOSChromeSyncedTabDelegate(web::WebState* web_state)
-    : web_state_(web_state),
-      sync_session_id_(sync_sessions::TabNodePool::kInvalidTabNodeID) {}
+    : web_state_(web_state) {}
 
 IOSChromeSyncedTabDelegate::~IOSChromeSyncedTabDelegate() {}
 
@@ -114,14 +113,6 @@ IOSChromeSyncedTabDelegate::GetBlockedNavigations() const {
 
 bool IOSChromeSyncedTabDelegate::IsPlaceholderTab() const {
   return false;
-}
-
-int IOSChromeSyncedTabDelegate::GetSyncId() const {
-  return sync_session_id_;
-}
-
-void IOSChromeSyncedTabDelegate::SetSyncId(int sync_id) {
-  sync_session_id_ = sync_id;
 }
 
 bool IOSChromeSyncedTabDelegate::ShouldSync(

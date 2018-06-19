@@ -46,77 +46,6 @@ bool IsWindowSyncable(const SyncedWindowDelegate& window_delegate) {
          window_delegate.HasWindow();
 }
 
-// Each sync id should only ever be used once. Previously there existed a race
-// condition which could cause them to be duplicated, see
-// https://crbug.com/639009 for more information. This counts the number of
-// times each id is used so that the second window/tab loop can act on every
-// tab using duplicate ids. Lastly, it is important to note that this
-// duplication scan is only checking the in-memory tab state. On Android, if
-// we have no tabbed window, we may also have sync data with conflicting sync
-// ids, but to keep this logic simple and less error prone, we do not attempt
-// to do anything clever.
-//
-// Returns tabs grouped by sync id (tab_node_id).
-std::map<int, std::vector<SyncedTabDelegate*>> GroupTabsBySyncId(
-    const SyncedWindowDelegatesGetter::SyncedWindowDelegateMap& windows) {
-  std::map<int, std::vector<SyncedTabDelegate*>> tabs_per_sync_id;
-  int duplicate_count = 0;
-  for (auto& window_iter_pair : windows) {
-    const SyncedWindowDelegate* window_delegate = window_iter_pair.second;
-    for (int j = 0; j < window_delegate->GetTabCount(); ++j) {
-      SyncedTabDelegate* synced_tab = window_delegate->GetTabAt(j);
-      if (!synced_tab ||
-          synced_tab->GetSyncId() == TabNodePool::kInvalidTabNodeID) {
-        continue;
-      }
-      std::vector<SyncedTabDelegate*>* synced_tabs =
-          &tabs_per_sync_id[synced_tab->GetSyncId()];
-      synced_tabs->push_back(synced_tab);
-      if (synced_tabs->size() > 1) {
-        // If an id is used more than twice, this count will be a bit odd,
-        // but for our purposes, it will be sufficient.
-        duplicate_count++;
-      }
-    }
-  }
-
-  if (duplicate_count > 0) {
-    UMA_HISTOGRAM_COUNTS_100("Sync.SesssionsDuplicateSyncId", duplicate_count);
-  }
-  return tabs_per_sync_id;
-}
-
-// Function to resolve a conflict when multiple tabs reported by the delegate
-// contain a shared sync ID (tab_node_id). |initially_associated_tab_id| can be
-// invalid if |tab_node_id| is currently not associated in the tracker.
-const SyncedTabDelegate* ResolveConflictingSyncId(
-    int tab_node_id,
-    SessionID initially_associated_tab_id,
-    const std::vector<SyncedTabDelegate*>& synced_tabs) {
-  DCHECK_GT(synced_tabs.size(), 1U);
-  // If among the conflicting tabs, there's one which matches what sync knows
-  // about, we should prefer that. This should be rare but is possible for
-  // example if a Custom tab was being synced without a tabbed window, and
-  // suddenly the tabbed window shows up with conflicting sync IDs.
-  for (const SyncedTabDelegate* synced_tab : synced_tabs) {
-    if (synced_tab->GetSessionId() == initially_associated_tab_id) {
-      return synced_tab;
-    }
-  }
-  // In doubt, prefer placeholder tabs, because changing the sync ID for a
-  // placeholder tab (to amend the conflict) won't get persisted by Android
-  // session restore code (only non-placeholder tabs are saved).
-  for (const SyncedTabDelegate* synced_tab : synced_tabs) {
-    if (synced_tab->IsPlaceholderTab()) {
-      // If multiple placeholder tabs have the same sync ID, choose among them
-      // arbitrarily.
-      return synced_tab;
-    }
-  }
-  // We have multiple conflicting non-placeholder tabs, so choose arbitrarily.
-  return synced_tabs.front();
-}
-
 }  // namespace
 
 LocalSessionEventHandlerImpl::WriteBatch::WriteBatch() = default;
@@ -148,7 +77,6 @@ LocalSessionEventHandlerImpl::~LocalSessionEventHandlerImpl() {}
 
 void LocalSessionEventHandlerImpl::OnSessionRestoreComplete() {
   std::unique_ptr<WriteBatch> batch = delegate_->CreateLocalSessionWriteBatch();
-  AssociateExistingSyncIds();
   AssociateWindows(RELOAD_TABS, ScanForTabbedWindow(), batch.get());
   batch->Commit();
 }
@@ -157,36 +85,6 @@ sync_pb::SessionTab
 LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegateForTest(
     const SyncedTabDelegate& tab_delegate) const {
   return GetTabSpecificsFromDelegate(tab_delegate);
-}
-
-void LocalSessionEventHandlerImpl::AssociateExistingSyncIds() {
-  const SyncedWindowDelegatesGetter::SyncedWindowDelegateMap windows =
-      sessions_client_->GetSyncedWindowDelegatesGetter()
-          ->GetSyncedWindowDelegates();
-
-  const std::map<int, std::vector<SyncedTabDelegate*>> tabs_per_sync_id =
-      GroupTabsBySyncId(windows);
-
-  for (const auto& sync_id_and_tabs : tabs_per_sync_id) {
-    const int tab_node_id = sync_id_and_tabs.first;
-    const std::vector<SyncedTabDelegate*>& tabs = sync_id_and_tabs.second;
-
-    const SessionID initially_associated_tab_id =
-        session_tracker_->LookupTabIdFromTabNodeId(current_session_tag_,
-                                                   tab_node_id);
-    const SyncedTabDelegate* selected_tab =
-        tabs.size() == 1 ? tabs.front()
-                         : ResolveConflictingSyncId(
-                               tab_node_id, initially_associated_tab_id, tabs);
-    // Execute the result of the conflict resolution.
-    session_tracker_->ReassociateLocalTab(tab_node_id,
-                                          selected_tab->GetSessionId());
-    for (SyncedTabDelegate* synced_tab : tabs) {
-      if (synced_tab != selected_tab) {
-        synced_tab->SetSyncId(TabNodePool::kInvalidTabNodeID);
-      }
-    }
-  }
 }
 
 void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
@@ -258,20 +156,13 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
 
       // Placeholder tabs are those without WebContents, either because they
       // were never loaded into memory or they were evicted from memory
-      // (typically only on Android devices). They only have a tab id,
-      // window id, and a saved synced id (corresponding to the tab node
-      // id). Note that only placeholders have this sync id, as it's
-      // necessary to properly reassociate the tab with the entity that was
-      // backing it.
+      // (typically only on Android devices). They only have a window ID and a
+      // tab ID, and we use the latter to properly reassociate the tab with the
+      // entity that was backing it.
       if (synced_tab->IsPlaceholderTab()) {
-        // For tabs without WebContents update the |tab_id| and |window_id|,
-        // as it could have changed after a session restore.
-        if (synced_tab->GetSyncId() > TabNodePool::kInvalidTabNodeID) {
-          AssociateRestoredPlaceholderTab(*synced_tab, tab_id, window_id,
-                                          batch);
-        } else {
-          DVLOG(1) << "Placeholder tab " << tab_id.id() << " has no sync id.";
-        }
+        // For tabs without WebContents update |window_id|, as it could have
+        // changed after a session restore.
+        AssociateRestoredPlaceholderTab(*synced_tab, tab_id, window_id, batch);
       } else if (RELOAD_TABS == option) {
         AssociateTab(synced_tab, has_tabbed_window, batch);
       }
@@ -357,8 +248,7 @@ void LocalSessionEventHandlerImpl::AssociateTab(
       session_tracker_->LookupTabNodeFromTabId(current_session_tag_, tab_id);
 
   if (tab_node_id != TabNodePool::kInvalidTabNodeID) {
-    DCHECK(tab_delegate->GetSyncId() == TabNodePool::kInvalidTabNodeID ||
-           tab_delegate->GetSyncId() == tab_node_id);
+    // Already associated, so do nothing.
   } else if (has_tabbed_window) {
     // Allocate a new (or reused) sync node for this tab.
     tab_node_id = session_tracker_->AssociateLocalTabWithFreeTabNode(tab_id);
@@ -373,8 +263,6 @@ void LocalSessionEventHandlerImpl::AssociateTab(
     // atomically, see https://crbug.com/681921.
     return;
   }
-
-  tab_delegate->SetSyncId(tab_node_id);
 
   // Get the previously synced url.
   sessions::SessionTab* session_tab =
@@ -473,7 +361,6 @@ void LocalSessionEventHandlerImpl::OnLocalTabModified(
 
   bool found_tabbed_window = ScanForTabbedWindow();
   std::unique_ptr<WriteBatch> batch = delegate_->CreateLocalSessionWriteBatch();
-  AssociateExistingSyncIds();
   AssociateTab(modified_tab, found_tabbed_window, batch.get());
   // Note, we always associate windows because it's possible a tab became
   // "interesting" by going to a valid URL, in which case it needs to be added
@@ -495,17 +382,24 @@ void LocalSessionEventHandlerImpl::OnFaviconsChanged(
 
 void LocalSessionEventHandlerImpl::AssociateRestoredPlaceholderTab(
     const SyncedTabDelegate& tab_delegate,
-    SessionID new_tab_id,
+    SessionID tab_id,
     SessionID new_window_id,
     WriteBatch* batch) {
-  int tab_node_id = tab_delegate.GetSyncId();
-  DCHECK_NE(tab_node_id, TabNodePool::kInvalidTabNodeID);
-  DCHECK_EQ(new_tab_id, session_tracker_->LookupTabIdFromTabNodeId(
-                            current_session_tag_, tab_node_id));
+  const int tab_node_id =
+      session_tracker_->LookupTabNodeFromTabId(current_session_tag_, tab_id);
+
+  // If a placeholder tab is not present in the tracker, we must ignore it
+  // because the delegate doesn't expose sufficient information to start
+  // tracking the tab (e.g. navigations are missing).
+  if (tab_node_id == TabNodePool::kInvalidTabNodeID) {
+    DVLOG(1) << "Placeholder tab " << tab_id << " has no sync id.";
+    return;
+  }
 
   // Update the window id on the SessionTab itself.
   sessions::SessionTab* local_tab =
-      session_tracker_->GetTab(current_session_tag_, new_tab_id);
+      session_tracker_->GetTab(current_session_tag_, tab_id);
+  // TODO(mastiz): Return early if the window ID hasn't changed.
   local_tab->window_id = new_window_id;
 
   // Filter out placeholder tabs that have been associated but don't have known

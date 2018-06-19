@@ -131,14 +131,6 @@ bool TestSyncedTabDelegate::IsPlaceholderTab() const {
   return false;
 }
 
-int TestSyncedTabDelegate::GetSyncId() const {
-  return sync_id_;
-}
-
-void TestSyncedTabDelegate::SetSyncId(int sync_id) {
-  sync_id_ = sync_id;
-}
-
 bool TestSyncedTabDelegate::ShouldSync(SyncSessionsClient* sessions_client) {
   // This is just a simple filter that isn't meant to fully reproduce
   // the TabContentsTabDelegate's ShouldSync logic.
@@ -158,21 +150,13 @@ SessionID TestSyncedTabDelegate::GetSourceTabID() const {
   return SessionID::InvalidValue();
 }
 
-PlaceholderTabDelegate::PlaceholderTabDelegate(SessionID tab_id, int sync_id)
-    : tab_id_(tab_id), sync_id_(sync_id) {}
+PlaceholderTabDelegate::PlaceholderTabDelegate(SessionID tab_id)
+    : tab_id_(tab_id) {}
 
 PlaceholderTabDelegate::~PlaceholderTabDelegate() = default;
 
 SessionID PlaceholderTabDelegate::GetSessionId() const {
   return tab_id_;
-}
-
-int PlaceholderTabDelegate::GetSyncId() const {
-  return sync_id_;
-}
-
-void PlaceholderTabDelegate::SetSyncId(int sync_id) {
-  sync_id_ = sync_id;
 }
 
 bool PlaceholderTabDelegate::IsPlaceholderTab() const {

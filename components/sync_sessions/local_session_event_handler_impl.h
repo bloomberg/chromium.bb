@@ -79,15 +79,6 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
  private:
   enum ReloadTabsOption { RELOAD_TABS, DONT_RELOAD_TABS };
 
-  // Updates |session_tracker_| with tab_id<->tab_node_id association that the
-  // delegate already knows about, while resolving conflicts if the delegate
-  // reports conflicting sync IDs. This makes sure duplicate tab_node_id-s are
-  // not assigned. On return, the following conditions are met:
-  // 1. Delegate contains no duplicate sync IDs (tab_node_id).
-  // 2. Delegate contains no sync-ID <-> tab_id association that the tracker
-  //    doesn't know about (but not the opposite).
-  void AssociateExistingSyncIds();
-
   void AssociateWindows(ReloadTabsOption option,
                         bool has_tabbed_window,
                         WriteBatch* batch);
@@ -107,7 +98,7 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
   // compares new_tab_id and new_window_id against the previously persisted tab
   // ID and window ID (from our TabNodePool) and updates them if either differs.
   void AssociateRestoredPlaceholderTab(const SyncedTabDelegate& tab_delegate,
-                                       SessionID new_tab_id,
+                                       SessionID tab_id,
                                        SessionID new_window_id,
                                        WriteBatch* batch);
 
