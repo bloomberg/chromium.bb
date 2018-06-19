@@ -22,8 +22,18 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
 
     // The dialog should immediately close as soon as it is displayed.
     if (name == "completed") {
-      model->set_current_step(
-          AuthenticatorRequestDialogModel::Step::kCompleted);
+      model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kCompleted);
+    } else if (name == "transports") {
+      TransportListModel* transports = model->transport_list_model();
+      transports->AppendTransport(AuthenticatorTransport::kBluetoothLowEnergy);
+      transports->AppendTransport(AuthenticatorTransport::kUsb);
+      transports->AppendTransport(
+          AuthenticatorTransport::kNearFieldCommunication);
+      transports->AppendTransport(AuthenticatorTransport::kInternal);
+      transports->AppendTransport(
+          AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy);
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kTransportSelection);
     }
 
     ShowAuthenticatorRequestDialog(
@@ -42,5 +52,9 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_default) {
 }
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_completed) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_transports) {
   ShowAndVerifyUi();
 }

@@ -10544,6 +10544,21 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_WEBAUTHN_DIALOG_DESCRIPTION" desc="Contents of the dialog shown when a web site wants to register/verify a user's security key through the Web Authentication API.">
       The site wants to verify your Security Key for added security for your account.
     </message>
+    <message name="IDS_WEBAUTHN_TRANSPORT_BLE" desc="Use a Security Key with the Web Authentication API over Bluetooth Low Energy.">
+      Use your Security Key with Bluetooth
+    </message>
+    <message name="IDS_WEBAUTHN_TRANSPORT_USB" desc="Use a Security Key with the Web Authentication API over Universal Serial Bus (USB).">
+      Use your Security Key with USB
+    </message>
+    <message name="IDS_WEBAUTHN_TRANSPORT_NFC" desc="Use a Security Key with the Web Authentication API over Near-Field Communication (NFC).">
+      Use your Security Key with NFC
+    </message>
+    <message name="IDS_WEBAUTHN_TRANSPORT_INTERNAL" desc="Use a Security Key with the Web Authentication API that is built in to the platform, such as Touch ID or Face ID.">
+      Use a built-in Security Key
+    </message>
+    <message name="IDS_WEBAUTHN_TRANSPORT_CABLE" desc="Use a phone as a Security Key over cloud-assisted BLE with the Web Authentication API.">
+      Use your phone as a Security Key
+    </message>
   </messages>
  </release>
 </grit>

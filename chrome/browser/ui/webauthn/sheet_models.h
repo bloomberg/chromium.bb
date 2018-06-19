@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "chrome/browser/webauthn/transport_list_model.h"
 
 // Base class for sheets, implementing the shared behavior used on most sheets,
 // as well as maintaining a weak pointer to the dialog model.
@@ -19,11 +20,11 @@ class AuthenticatorSheetModelBase
       AuthenticatorRequestDialogModel* dialog_model);
   ~AuthenticatorSheetModelBase() override;
 
- protected:
   AuthenticatorRequestDialogModel* dialog_model() const {
     return dialog_model_;
   }
 
+ protected:
   // AuthenticatorRequestSheetModel:
   bool IsBackButtonVisible() const override;
   bool IsCancelButtonVisible() const override;
@@ -48,6 +49,23 @@ class AuthenticatorSheetModelBase
 class AuthenticatorInitialSheetModel : public AuthenticatorSheetModelBase {
  public:
   using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+};
+
+// The sheet shown for selecting the transport over which the security key
+// should be accessed.
+class AuthenticatorTransportSelectorSheetModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+
+  // Initiates the step-by-step flow with the the transport at the given |index|
+  // selected by the user.
+  void OnTransportSelected(AuthenticatorTransport transport);
 
  private:
   // AuthenticatorSheetModelBase:
