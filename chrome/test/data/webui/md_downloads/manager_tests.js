@@ -40,6 +40,7 @@ suite('manager tests', function() {
     downloads.Manager.insertItems(0, [{
                                     file_name: 'file name',
                                     state: downloads.States.COMPLETE,
+                                    since_string: 'Today',
                                     url: 'a'.repeat(1000),
                                   }]);
     Polymer.dom.flush();
@@ -50,8 +51,12 @@ suite('manager tests', function() {
   });
 
   test('inserting items at beginning render dates correctly', function() {
-    const dateQuery = '* /deep/ h3[id=date]:not(:empty)';
-    const countDates = () => manager.querySelectorAll(dateQuery).length;
+    const countDates = () => {
+      const items = manager.shadowRoot.querySelectorAll('downloads-item');
+      return Array.from(items).reduce((soFar, item) => {
+        return item.$$('h3[id=date]:not(:empty)') ? soFar + 1 : soFar;
+      }, 0);
+    };
 
     let download1 = Object.assign({}, DOWNLOAD_DATA_TEMPLATE);
     let download2 = Object.assign({}, DOWNLOAD_DATA_TEMPLATE);
