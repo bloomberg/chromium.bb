@@ -18,6 +18,7 @@ class TestSyncService : public syncer::FakeSyncService {
   // FakeSyncService:
   bool CanSyncStart() const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
+  syncer::ModelTypeSet GetActiveDataTypes() const override;
   bool IsEngineInitialized() const override;
   bool IsUsingSecondaryPassphrase() const override;
   bool IsSyncActive() const override;
@@ -30,8 +31,8 @@ class TestSyncService : public syncer::FakeSyncService {
     can_sync_start_ = can_sync_start;
   }
 
-  void SetPreferredDataTypes(syncer::ModelTypeSet preferred_data_types) {
-    preferred_data_types_ = preferred_data_types;
+  void SetDataTypes(syncer::ModelTypeSet data_types) {
+    data_types_ = data_types;
   }
 
   void SetIsEngineInitialized(bool is_engine_initialized) {
@@ -56,7 +57,8 @@ class TestSyncService : public syncer::FakeSyncService {
 
  private:
   bool can_sync_start_ = true;
-  syncer::ModelTypeSet preferred_data_types_;
+  // Used as both "preferred" and "active" data types.
+  syncer::ModelTypeSet data_types_;
   bool is_engine_initialized_ = true;
   bool is_using_secondary_passphrase_ = false;
   bool is_sync_active_ = true;

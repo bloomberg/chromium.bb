@@ -14,8 +14,7 @@
 
 namespace autofill {
 
-TestSyncService::TestSyncService()
-    : preferred_data_types_(syncer::ModelTypeSet::All()) {}
+TestSyncService::TestSyncService() : data_types_(syncer::ModelTypeSet::All()) {}
 
 TestSyncService::~TestSyncService() {}
 
@@ -24,7 +23,11 @@ bool TestSyncService::CanSyncStart() const {
 }
 
 syncer::ModelTypeSet TestSyncService::GetPreferredDataTypes() const {
-  return preferred_data_types_;
+  return data_types_;
+}
+
+syncer::ModelTypeSet TestSyncService::GetActiveDataTypes() const {
+  return data_types_;
 }
 
 bool TestSyncService::IsEngineInitialized() const {
