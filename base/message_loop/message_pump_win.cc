@@ -443,11 +443,11 @@ void MessagePumpForIO::ScheduleDelayedWork(const TimeTicks& delayed_work_time) {
   delayed_work_time_ = delayed_work_time;
 }
 
-void MessagePumpForIO::RegisterIOHandler(HANDLE file_handle,
-                                         IOHandler* handler) {
+HRESULT MessagePumpForIO::RegisterIOHandler(HANDLE file_handle,
+                                            IOHandler* handler) {
   HANDLE port = CreateIoCompletionPort(file_handle, port_.Get(),
                                        reinterpret_cast<ULONG_PTR>(handler), 1);
-  DPCHECK(port);
+  return (port != nullptr) ? S_OK : HRESULT_FROM_WIN32(GetLastError());
 }
 
 bool MessagePumpForIO::RegisterJobObject(HANDLE job_handle,
