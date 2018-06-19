@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -25,7 +26,7 @@
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -207,22 +208,23 @@ TEST(ErrorReportTest, CertificateTransparencyError) {
 // Tests that information about network time querying is included in the
 // report.
 TEST(ErrorReportTest, NetworkTimeQueryingFeatureInfo) {
-  base::Thread io_thread("IO thread");
-  base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  EXPECT_TRUE(io_thread.StartWithOptions(thread_options));
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
 
   std::unique_ptr<network_time::FieldTrialTest> field_trial_test(
       new network_time::FieldTrialTest());
   field_trial_test->SetNetworkQueriesWithVariationsService(
       true, 0.0, network_time::NetworkTimeTracker::FETCHES_ON_DEMAND_ONLY);
 
+  scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory =
+      base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
+
   TestingPrefServiceSimple pref_service;
   network_time::NetworkTimeTracker::RegisterPrefs(pref_service.registry());
   network_time::NetworkTimeTracker network_time_tracker(
       std::make_unique<base::DefaultClock>(),
       std::make_unique<base::DefaultTickClock>(), &pref_service,
-      new net::TestURLRequestContextGetter(io_thread.task_runner()));
+      shared_url_loader_factory);
 
   // Serialize a report containing information about the network time querying
   // feature.

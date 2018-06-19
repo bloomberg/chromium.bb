@@ -30,9 +30,8 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_response_writer.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace network_time {
 
@@ -136,36 +135,14 @@ const uint8_t kKeyPubBytes[] = {
     0x4e, 0xf6, 0x8f, 0x54, 0xb5, 0x0c, 0x49, 0xe9, 0xa5, 0xf1, 0x40, 0xfd,
     0xd9, 0x1a, 0x92, 0x90, 0x8a, 0x67, 0x15};
 
-std::string GetServerProof(const net::URLFetcher* source) {
-  const net::HttpResponseHeaders* response_headers =
-      source->GetResponseHeaders();
-  if (!response_headers) {
-    return std::string();
-  }
+std::string GetServerProof(
+    scoped_refptr<net::HttpResponseHeaders> response_headers) {
   std::string proof;
   return response_headers->EnumerateHeader(nullptr, "x-cup-server-proof",
                                            &proof)
              ? proof
              : std::string();
 }
-
-// Limits the amount of data that will be buffered from the server's response.
-class SizeLimitingStringWriter : public net::URLFetcherStringWriter {
- public:
-  explicit SizeLimitingStringWriter(size_t limit) : limit_(limit) {}
-
-  int Write(net::IOBuffer* buffer,
-            int num_bytes,
-            const net::CompletionCallback& callback) override {
-    if (data().length() + num_bytes > limit_) {
-      return net::ERR_FILE_TOO_BIG;
-    }
-    return net::URLFetcherStringWriter::Write(buffer, num_bytes, callback);
-  }
-
- private:
-  size_t limit_;
-};
 
 base::TimeDelta CheckTimeInterval() {
   int64_t seconds;
@@ -205,11 +182,11 @@ NetworkTimeTracker::NetworkTimeTracker(
     std::unique_ptr<base::Clock> clock,
     std::unique_ptr<const base::TickClock> tick_clock,
     PrefService* pref_service,
-    scoped_refptr<net::URLRequestContextGetter> getter)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : server_url_(kTimeServiceURL),
       max_response_size_(1024),
       backoff_(base::TimeDelta::FromMinutes(kBackoffMinutes)),
-      getter_(std::move(getter)),
+      url_loader_factory_(std::move(url_loader_factory)),
       clock_(std::move(clock)),
       tick_clock_(std::move(tick_clock)),
       pref_service_(pref_service),
@@ -491,60 +468,54 @@ void NetworkTimeTracker::CheckTime() {
             }
           }
         })");
-  // This cancels any outstanding fetch.
-  time_fetcher_ = net::URLFetcher::Create(url, net::URLFetcher::GET, this,
-                                          traffic_annotation);
-  if (!time_fetcher_) {
-    DVLOG(1) << "tried to make fetch happen; failed";
-    return;
-  }
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      time_fetcher_.get(),
-      data_use_measurement::DataUseUserData::NETWORK_TIME_TRACKER);
-  time_fetcher_->SaveResponseWithWriter(
-      std::unique_ptr<net::URLFetcherResponseWriter>(
-          new SizeLimitingStringWriter(max_response_size_)));
-  DCHECK(getter_);
-  time_fetcher_->SetRequestContext(getter_.get());
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
   // Not expecting any cookies, but just in case.
-  time_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-                              net::LOAD_DO_NOT_SAVE_COOKIES |
-                              net::LOAD_DO_NOT_SEND_COOKIES |
-                              net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  resource_request->load_flags =
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+      net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  // This cancels any outstanding fetch.
+  time_fetcher_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                   traffic_annotation);
+  time_fetcher_->SetAllowHttpErrorResults(true);
+  time_fetcher_->DownloadToString(
+      url_loader_factory_.get(),
+      base::BindOnce(&NetworkTimeTracker::OnURLLoaderComplete,
+                     base::Unretained(this)),
+      max_response_size_);
 
-  time_fetcher_->Start();
   fetch_started_ = tick_clock_->NowTicks();
 
-  timer_.Stop();  // Restarted in OnURLFetchComplete().
+  timer_.Stop();  // Restarted in OnURLLoaderComplete().
 }
 
-bool NetworkTimeTracker::UpdateTimeFromResponse() {
-  if (time_fetcher_->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
-      time_fetcher_->GetResponseCode() != 200) {
+bool NetworkTimeTracker::UpdateTimeFromResponse(
+    std::unique_ptr<std::string> response_body) {
+  int response_code = 0;
+  if (time_fetcher_->ResponseInfo() && time_fetcher_->ResponseInfo()->headers)
+    response_code = time_fetcher_->ResponseInfo()->headers->response_code();
+  if (response_code != 200 || !response_body) {
     time_query_completed_ = true;
-    DVLOG(1) << "fetch failed, status=" << time_fetcher_->GetStatus().status()
-             << ",code=" << time_fetcher_->GetResponseCode();
+    DVLOG(1) << "fetch failed code=" << response_code;
     // The error code is negated because net errors are negative, but
     // the corresponding histogram enum is positive.
     base::UmaHistogramSparse("NetworkTimeTracker.UpdateTimeFetchFailed",
-                             -time_fetcher_->GetStatus().error());
+                             -time_fetcher_->NetError());
     return false;
   }
 
-  std::string response_body;
-  if (!time_fetcher_->GetResponseAsString(&response_body)) {
-    DVLOG(1) << "failed to get response";
-    return false;
-  }
+  std::string data = *response_body.get();
+
   DCHECK(query_signer_);
-  if (!query_signer_->ValidateResponse(response_body,
-                                       GetServerProof(time_fetcher_.get()))) {
+  if (!query_signer_->ValidateResponse(
+          data, GetServerProof(time_fetcher_->ResponseInfo()->headers))) {
     DVLOG(1) << "invalid signature";
     RecordFetchValidHistogram(false);
     return false;
   }
-  response_body = response_body.substr(5);  // Skips leading )]}'\n
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response_body);
+  data = data.substr(5);  // Skips leading )]}'\n
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(data);
   if (!value) {
     DVLOG(1) << "bad JSON";
     RecordFetchValidHistogram(false);
@@ -588,16 +559,17 @@ bool NetworkTimeTracker::UpdateTimeFromResponse() {
   return true;
 }
 
-void NetworkTimeTracker::OnURLFetchComplete(const net::URLFetcher* source) {
+void NetworkTimeTracker::OnURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(time_fetcher_);
-  DCHECK_EQ(source, time_fetcher_.get());
 
   time_query_completed_ = true;
 
   // After completion of a query, whether succeeded or failed, go to sleep for a
   // long time.
-  if (!UpdateTimeFromResponse()) {  // On error, back off.
+  if (!UpdateTimeFromResponse(
+          std::move(response_body))) {  // On error, back off.
     if (backoff_ < base::TimeDelta::FromDays(2)) {
       backoff_ *= 2;
     }

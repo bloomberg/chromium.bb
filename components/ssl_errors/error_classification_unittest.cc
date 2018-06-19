@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -26,7 +27,9 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -52,6 +55,9 @@ class SSLErrorClassificationTest : public ::testing::Test {
   network_time::FieldTrialTest* field_trial_test() {
     return field_trial_test_.get();
   }
+
+ protected:
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:
   std::unique_ptr<network_time::FieldTrialTest> field_trial_test_;
@@ -214,7 +220,7 @@ TEST_F(SSLErrorClassificationTest, TestPrivateURL) {
   EXPECT_TRUE(ssl_errors::IsHostnameNonUniqueOrDotless("foo.blah"));
 }
 
-TEST(ErrorClassification, LevenshteinDistance) {
+TEST_F(SSLErrorClassificationTest, LevenshteinDistance) {
   EXPECT_EQ(0u, ssl_errors::GetLevenshteinDistance("banana", "banana"));
 
   EXPECT_EQ(2u, ssl_errors::GetLevenshteinDistance("ab", "ba"));
@@ -252,8 +258,8 @@ TEST_F(SSLErrorClassificationTest, GetClockState) {
   network_time::NetworkTimeTracker network_time_tracker(
       std::make_unique<base::DefaultClock>(),
       std::make_unique<base::DefaultTickClock>(), &pref_service,
-      new net::TestURLRequestContextGetter(
-          base::ThreadTaskRunnerHandle::Get()));
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory_));
 
   ssl_errors::SetBuildTimeForTesting(base::Time::Now());
   EXPECT_EQ(
@@ -359,10 +365,11 @@ TEST_F(SSLErrorClassificationTest, GetClockState) {
 // Tests that all possible NetworkClockState histogram values are recorded
 // appropriately.
 TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
-  base::Thread io_thread("IO thread");
-  base::Thread::Options thread_options;
-  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
-  EXPECT_TRUE(io_thread.StartWithOptions(thread_options));
+  base::test::ScopedTaskEnvironment task_environment(
+      base::test::ScopedTaskEnvironment::MainThreadType::IO);
+
+  scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory =
+      base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
 
   net::EmbeddedTestServer test_server;
   ASSERT_TRUE(test_server.InitializeAndListen());
@@ -377,12 +384,10 @@ TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
   clock->Advance(base::TimeDelta::FromDays(111));
   tick_clock->Advance(base::TimeDelta::FromDays(222));
 
-  base::MessageLoop loop;
   network_time::NetworkTimeTracker network_time_tracker(
       std::unique_ptr<base::Clock>(clock),
       std::unique_ptr<const base::TickClock>(tick_clock), &pref_service,
-      new net::TestURLRequestContextGetter(io_thread.task_runner()));
-  network_time_tracker.SetTimeServerURLForTesting(test_server.GetURL("/"));
+      shared_url_loader_factory);
   field_trial_test()->SetNetworkQueriesWithVariationsService(
       true, 0.0,
       network_time::NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND);
@@ -475,6 +480,4 @@ TEST_F(SSLErrorClassificationTest, NetworkClockStateHistogram) {
   histograms.ExpectBucketCount(
       kNetworkTimeHistogram, ssl_errors::NETWORK_CLOCK_STATE_UNKNOWN_SYNC_LOST,
       1);
-
-  io_thread.Stop();
 }

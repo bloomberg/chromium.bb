@@ -147,6 +147,7 @@
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -4710,160 +4711,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest,
       clock_interstitial_ssl_status, after_interstitial_ssl_status));
 }
 
-// A URLRequestJob that serves valid time server responses, but delays
-// them until Resume() is called. If Resume() is called before a request
-// is made, then the request will not be delayed.
-class DelayableNetworkTimeURLRequestJob : public net::URLRequestJob {
- public:
-  DelayableNetworkTimeURLRequestJob(net::URLRequest* request,
-                                    net::NetworkDelegate* network_delegate,
-                                    bool delayed)
-      : net::URLRequestJob(request, network_delegate),
-        delayed_(delayed),
-        weak_factory_(this) {}
-
-  ~DelayableNetworkTimeURLRequestJob() override {}
-
-  base::WeakPtr<DelayableNetworkTimeURLRequestJob> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
-
-  // URLRequestJob:
-  void Start() override {
-    started_ = true;
-    if (delayed_) {
-      // Do nothing until Resume() is called.
-      return;
-    }
-    Resume();
-  }
-
-  int ReadRawData(net::IOBuffer* buf, int buf_size) override {
-    int bytes_read =
-        std::min(static_cast<size_t>(buf_size),
-                 strlen(network_time::kGoodTimeResponseBody[0]) - data_offset_);
-    memcpy(buf->data(), network_time::kGoodTimeResponseBody[0] + data_offset_,
-           bytes_read);
-    data_offset_ += bytes_read;
-    return bytes_read;
-  }
-
-  void GetResponseInfo(net::HttpResponseInfo* info) override {
-    std::string headers;
-    headers.append(
-        "HTTP/1.1 200 OK\n"
-        "Content-type: text/plain\n");
-    headers.append(base::StringPrintf(
-        "Content-Length: %1d\n",
-        static_cast<int>(strlen(network_time::kGoodTimeResponseBody[0]))));
-    info->headers =
-        new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
-            headers.c_str(), static_cast<int>(headers.length())));
-    info->headers->AddHeader(
-        "x-cup-server-proof: " +
-        std::string(network_time::kGoodTimeResponseServerProofHeader[0]));
-  }
-
-  // Resumes a previously started request that was delayed. If no
-  // request has been started yet, then when Start() is called it will
-  // not delay.
-  void Resume() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    DCHECK(delayed_);
-    if (!started_) {
-      // If Start() hasn't been called yet, then unset |delayed_| so
-      // that when Start() is called, the request will begin
-      // immediately.
-      delayed_ = false;
-      return;
-    }
-
-    // Start reading asynchronously as would a normal network request.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &DelayableNetworkTimeURLRequestJob::NotifyHeadersComplete,
-            weak_factory_.GetWeakPtr()));
-  }
-
- private:
-  bool delayed_;
-  bool started_ = false;
-  int data_offset_ = 0;
-  base::WeakPtrFactory<DelayableNetworkTimeURLRequestJob> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayableNetworkTimeURLRequestJob);
-};
-
-// A URLRequestInterceptor that intercepts requests to use
-// DelayableNetworkTimeURLRequestJobs. Expects to intercept only a
-// single request in its lifetime.
-class DelayedNetworkTimeInterceptor : public net::URLRequestInterceptor {
- public:
-  DelayedNetworkTimeInterceptor() {}
-  ~DelayedNetworkTimeInterceptor() override {}
-
-  // Intercepts |request| to use a DelayableNetworkTimeURLRequestJob. If
-  // Resume() has been called before MaybeInterceptRequest(), then the
-  // request will not be delayed.
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    // Only support one intercepted request.
-    EXPECT_FALSE(intercepted_request_);
-    intercepted_request_ = true;
-    // If the request has been resumed before this request is created,
-    // then |should_delay_requests_| will be false and the request will
-    // not delay.
-    DelayableNetworkTimeURLRequestJob* job =
-        new DelayableNetworkTimeURLRequestJob(request, network_delegate,
-                                              should_delay_requests_);
-    if (should_delay_requests_)
-      delayed_request_ = job->GetWeakPtr();
-    return job;
-  }
-
-  void Resume() {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!should_delay_requests_)
-      return;
-    should_delay_requests_ = false;
-    if (delayed_request_)
-      delayed_request_->Resume();
-  }
-
- private:
-  // True if a request has been intercepted. Used to enforce that only
-  // one request is intercepted in this object's lifetime.
-  mutable bool intercepted_request_ = false;
-  // True until Resume() is called. If Resume() is called before a
-  // request is intercepted, then a request that is intercepted later
-  // will continue without a delay.
-  bool should_delay_requests_ = true;
-  // Use a WeakPtr in case the request is cancelled before Resume() is called.
-  mutable base::WeakPtr<DelayableNetworkTimeURLRequestJob> delayed_request_ =
-      nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(DelayedNetworkTimeInterceptor);
-};
-
-// IO-thread helper methods for SSLNetworkTimeBrowserTest.
-
-void ResumeDelayedNetworkTimeRequest(
-    DelayedNetworkTimeInterceptor* interceptor) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  interceptor->Resume();
-}
-
-void SetUpNetworkTimeInterceptorOnIOThread(
-    DelayedNetworkTimeInterceptor* interceptor,
-    const GURL& time_server_url) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-      time_server_url.scheme(), time_server_url.host(),
-      std::unique_ptr<DelayedNetworkTimeInterceptor>(interceptor));
-}
-
 void CleanUpOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::URLRequestFilter::GetInstance()->ClearHandlers();
@@ -4876,7 +4723,7 @@ void CleanUpOnIOThread() {
 // request to be issued during the test.
 class SSLNetworkTimeBrowserTest : public SSLUITest {
  public:
-  SSLNetworkTimeBrowserTest() : SSLUITest(), interceptor_(nullptr) {}
+  SSLNetworkTimeBrowserTest() : SSLUITest() {}
   ~SSLNetworkTimeBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -4896,31 +4743,27 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
     parameters["FetchBehavior"] = "on-demand-only";
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         network_time::kNetworkTimeServiceQuerying, parameters);
-    SetUpNetworkTimeServer();
-  }
-
-  void TearDownOnMainThread() override {
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                     base::BindOnce(&CleanUpOnIOThread));
+    controllable_response_ =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(), "/", true);
+    ASSERT_TRUE(embedded_test_server()->Start());
+    g_browser_process->network_time_tracker()->SetTimeServerURLForTesting(
+        embedded_test_server()->GetURL("/"));
   }
 
  protected:
-  void SetUpNetworkTimeServer() {
-    // Install the URL interceptor that serves delayed network time responses.
-    interceptor_ = new DelayedNetworkTimeInterceptor();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&SetUpNetworkTimeInterceptorOnIOThread,
-                       base::Unretained(interceptor_),
-                       g_browser_process->network_time_tracker()
-                           ->GetTimeServerURLForTesting()));
-  }
-
   void TriggerTimeResponse() {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ResumeDelayedNetworkTimeRequest,
-                       base::Unretained(interceptor_)));
+    std::string response = "HTTP/1.1 200 OK\nContent-type: text/plain\n";
+    response += base::StringPrintf(
+        "Content-Length: %1d\n",
+        static_cast<int>(strlen(network_time::kGoodTimeResponseBody[0])));
+    response +=
+        "x-cup-server-proof: " +
+        std::string(network_time::kGoodTimeResponseServerProofHeader[0]);
+    response += "\n\n";
+    response += std::string(network_time::kGoodTimeResponseBody[0]);
+    controllable_response_->WaitForRequest();
+    controllable_response_->Send(response);
   }
 
   // Asserts that the first time request to the server is currently pending.
@@ -4934,7 +4777,8 @@ class SSLNetworkTimeBrowserTest : public SSLUITest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  DelayedNetworkTimeInterceptor* interceptor_;
+  std::unique_ptr<net::test_server::ControllableHttpResponse>
+      controllable_response_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLNetworkTimeBrowserTest);
 };

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
@@ -18,9 +19,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/url_request_test_util.h"
-#include "services/network/network_context.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -62,74 +61,22 @@ base::FilePath GetTestFilePath() {
   return file_path;
 }
 
-class SharedURLLoaderFactory : public network::SharedURLLoaderFactory {
- public:
-  explicit SharedURLLoaderFactory(
-      network::mojom::URLLoaderFactory* url_loader_factory)
-      : url_loader_factory_(url_loader_factory) {}
-
-  // network::URLLoaderFactory implementation:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest loader,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    url_loader_factory_->CreateLoaderAndStart(
-        std::move(loader), routing_id, request_id, options, std::move(request),
-        std::move(client), traffic_annotation);
-  }
-
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    NOTREACHED();
-  }
-
-  // network::SharedURLLoaderFactoryInfo implementation
-  std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
- private:
-  friend class base::RefCounted<SharedURLLoaderFactory>;
-  ~SharedURLLoaderFactory() override = default;
-
-  network::mojom::URLLoaderFactory* url_loader_factory_;
-};
-
 }  // namespace
 
 class TwoPhaseUploaderTest : public testing::Test {
  public:
   TwoPhaseUploaderTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        url_request_context_(std::make_unique<net::TestURLRequestContext>()) {
-    network::mojom::NetworkContextPtr network_context;
-    network_context_ = std::make_unique<network::NetworkContext>(
-        nullptr, mojo::MakeRequest(&network_context),
-        url_request_context_.get());
-    network::mojom::URLLoaderFactoryParamsPtr params =
-        network::mojom::URLLoaderFactoryParams::New();
-    params->process_id = network::mojom::kBrowserProcessId;
-    params->is_corb_enabled = false;
-    network_context_->CreateURLLoaderFactory(
-        mojo::MakeRequest(&url_loader_factory_), std::move(params));
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
     shared_url_loader_factory_ =
-        base::MakeRefCounted<SharedURLLoaderFactory>(url_loader_factory_.get());
+        base::MakeRefCounted<network::TestSharedURLLoaderFactory>();
   }
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-
-  std::unique_ptr<net::TestURLRequestContext> url_request_context_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_ =
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND});
-  std::unique_ptr<network::NetworkContext> network_context_;
-  network::mojom::URLLoaderFactoryPtr url_loader_factory_;
-  scoped_refptr<SharedURLLoaderFactory> shared_url_loader_factory_;
+  scoped_refptr<network::TestSharedURLLoaderFactory> shared_url_loader_factory_;
 };
 
 TEST_F(TwoPhaseUploaderTest, UploadFile) {
