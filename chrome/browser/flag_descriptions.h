@@ -1222,6 +1222,9 @@ extern const char kAutofillAccessoryViewDescription[];
 extern const char kBackgroundLoaderForDownloadsName[];
 extern const char kBackgroundLoaderForDownloadsDescription[];
 
+extern const char kCCTModuleName[];
+extern const char kCCTModuleDescription[];
+
 extern const char kChromeDuplexName[];
 extern const char kChromeDuplexDescription[];
 

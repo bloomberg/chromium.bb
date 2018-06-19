@@ -23,6 +23,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
+import android.util.Pair;
 import android.widget.RemoteViews;
 
 import org.json.JSONException;
@@ -52,6 +53,8 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleEntryPoint;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleLoader;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChainedTasks;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -229,6 +232,12 @@ public class CustomTabsConnection {
     private boolean mNativeTickOffsetUsComputed;
 
     private volatile ChainedTasks mWarmupTasks;
+
+    /** The module package name and class name. */
+    private Pair<String, String> mModuleNames;
+
+    /** The module entry point. */
+    private ModuleEntryPoint mModuleEntryPoint;
 
     /**
      * <strong>DO NOT CALL</strong>
@@ -1408,4 +1417,27 @@ public class CustomTabsConnection {
 
     private static native void nativeCreateAndStartDetachedResourceRequest(
             Profile profile, String url, String origin, @WebReferrerPolicy int referrerPolicy);
+
+    /**
+     * Dynamically loads the class {@code className} from the application identified by
+     * {@code packageName} and wraps it in a {@link ModuleEntryPoint}.
+     * @param packageName The package name of the application to load form.
+     * @param className The fully-qualified name of the class to load.
+     * @return The loaded class, cast to an AIDL interface and wrapped in a more user friendly form.
+     */
+    @Nullable
+    public ModuleEntryPoint loadModule(String packageName, String className) {
+        if (mModuleEntryPoint != null && mModuleNames != null) {
+            if ((!mModuleNames.first.equals(packageName)
+                    || !mModuleNames.second.equals(className))) {
+                throw new IllegalStateException("Only one module can be loaded at a time.");
+            }
+            return mModuleEntryPoint;
+        }
+
+        // TODO(https://crbug.com/853732): Add cleanup mechanism to unload the module.
+        mModuleNames = new Pair<>(packageName, className);
+        mModuleEntryPoint = ModuleLoader.loadModule(packageName, className);
+        return mModuleEntryPoint;
+    }
 }

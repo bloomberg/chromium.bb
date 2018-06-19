@@ -72,6 +72,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidPaymentApps,
     &kCCTBackgroundTab,
     &kCCTExternalLinkHandling,
+    &kCCTModule,
     &kCCTParallelRequest,
     &kCCTPostMessageAPI,
     &kCCTRedirectPreconnect,
@@ -188,6 +189,8 @@ const base::Feature kCCTBackgroundTab{"CCTBackgroundTab",
 
 const base::Feature kCCTExternalLinkHandling{"CCTExternalLinkHandling",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kCCTModule{"CCTModule", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTParallelRequest{"CCTParallelRequest",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

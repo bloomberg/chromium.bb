@@ -27155,6 +27155,7 @@ from previous Chrome versions.
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
   <int value="-1466990325" label="CrosCompUpdates:enabled"/>
   <int value="-1466759286" label="TabModalJsDialog:disabled"/>
+  <int value="-1465172796" label="CCTModule:disabled"/>
   <int value="-1463489219" label="OfflinePagesCTSuppressNotifications:enabled"/>
   <int value="-1463410070" label="IPH_DemoMode:enabled"/>
   <int value="-1461261930" label="OutOfBlinkCORS:disabled"/>
@@ -27717,6 +27718,7 @@ from previous Chrome versions.
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>
   <int value="-231922000" label="enable-renderer-mojo-channel"/>
   <int value="-230824955" label="NTPMostLikelyFaviconsFromServer:enabled"/>
+  <int value="-225505731" label="CCTModule:enabled"/>
   <int value="-220599034" label="UsePdfCompositorServiceForPrint:enabled"/>
   <int value="-216219963" label="ash-shelf-color-scheme"/>
   <int value="-215534141" label="NativeWindowNavButtons:enabled"/>

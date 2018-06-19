@@ -48,6 +48,7 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
     private ChromeActivity mActivity;
     private ChromeFullscreenManager mFullscreenManager;
     private ViewGroup mBottomBarView;
+    @Nullable private View mBottomBarContentView;
     private CustomTabIntentDataProvider mDataProvider;
     private PendingIntent mClickPendingIntent;
     private int[] mClickableIDs;
@@ -74,7 +75,12 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
      * Makes the bottom bar area to show, if any.
      */
     public void showBottomBarIfNecessary() {
-        if (!mDataProvider.shouldShowBottomBar()) return;
+        if (!shouldShowBottomBar()) return;
+
+        if (mBottomBarContentView != null) {
+            getBottomBarView().addView(mBottomBarContentView);
+            return;
+        }
 
         RemoteViews remoteViews = mDataProvider.getBottomBarRemoteViews();
         if (remoteViews != null) {
@@ -140,10 +146,17 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
     }
 
     /**
+     * Sets the content of the bottom bar.
+     */
+    public void setBottomBarContentView(View view) {
+        mBottomBarContentView = view;
+    }
+
+    /**
      * @return The height of the bottom bar, excluding its top shadow.
      */
     public int getBottomBarHeight() {
-        if (!mDataProvider.shouldShowBottomBar() || mBottomBarView == null
+        if (!shouldShowBottomBar() || mBottomBarView == null
                 || mBottomBarView.getChildCount() < 2) {
             return 0;
         }
@@ -242,6 +255,10 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
         } catch (CanceledException e) {
             Log.e(TAG, "CanceledException when sending pending intent.");
         }
+    }
+
+    private boolean shouldShowBottomBar() {
+        return mBottomBarContentView != null || mDataProvider.shouldShowBottomBar();
     }
 
     // FullscreenListener methods

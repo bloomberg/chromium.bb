@@ -3934,6 +3934,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid, FEATURE_VALUE_TYPE(media::kMediaControlsExpandGesture)},
 #endif
 
+#if defined(OS_ANDROID)
+    {"cct-module", flag_descriptions::kCCTModuleName,
+     flag_descriptions::kCCTModuleDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTModule)},
+#endif
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
