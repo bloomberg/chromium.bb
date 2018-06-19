@@ -140,6 +140,7 @@ Connector::Connector(ScopedMessagePipeHandle message_pipe,
                      scoped_refptr<base::SequencedTaskRunner> runner)
     : message_pipe_(std::move(message_pipe)),
       task_runner_(std::move(runner)),
+      error_(false),
       outgoing_serialization_mode_(g_default_outgoing_serialization_mode),
       incoming_serialization_mode_(g_default_incoming_serialization_mode),
       nesting_observer_(RunLoopNestingObserver::GetForThread()),
@@ -263,9 +264,6 @@ bool Connector::Accept(Message* message) {
   if (!lock_)
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // It shouldn't hurt even if |error_| may be changed by a different sequence
-  // at the same time. The outcome is that we may write into |message_pipe_|
-  // after encountering an error, which should be fine.
   if (error_)
     return false;
 

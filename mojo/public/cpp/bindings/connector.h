@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_CONNECTOR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_CONNECTOR_H_
 
+#include <atomic>
 #include <memory>
 #include <utility>
 
@@ -234,7 +235,7 @@ class MOJO_CPP_BINDINGS_EXPORT Connector : public MessageReceiver {
   std::unique_ptr<SimpleWatcher> handle_watcher_;
   base::Optional<HandleSignalTracker> peer_remoteness_tracker_;
 
-  bool error_ = false;
+  std::atomic<bool> error_;
   bool drop_writes_ = false;
   bool enforce_errors_from_incoming_receiver_ = true;
 
