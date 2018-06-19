@@ -10,12 +10,10 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
-#include "chrome/common/mac/app_shim_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "ipc/ipc_channel_mojo.h"
-#include "ipc/ipc_channel_proxy.h"
 
-AppShimHost::AppShimHost() : initial_launch_finished_(false) {}
+AppShimHost::AppShimHost()
+    : host_binding_(this), initial_launch_finished_(false) {}
 
 AppShimHost::~AppShimHost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -26,18 +24,16 @@ AppShimHost::~AppShimHost() {
 
 void AppShimHost::ServeChannel(mojo::PlatformChannelEndpoint endpoint) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!channel_.get());
-  channel_ = IPC::ChannelProxy::Create(
-      IPC::ChannelMojo::CreateServerFactory(
-          mojo_connection_.Connect(std::move(endpoint)),
-          content::BrowserThread::GetTaskRunnerForThread(
-              content::BrowserThread::IO)
-              .get(),
-          base::ThreadTaskRunnerHandle::Get()),
-      this,
-      content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::IO)
-          .get(),
-      base::ThreadTaskRunnerHandle::Get());
+  mojo::ScopedMessagePipeHandle message_pipe =
+      mojo_connection_.Connect(std::move(endpoint));
+  BindToRequest(chrome::mojom::AppShimHostRequest(std::move(message_pipe)));
+}
+
+void AppShimHost::BindToRequest(
+    chrome::mojom::AppShimHostRequest host_request) {
+  host_binding_.Bind(std::move(host_request));
+  host_binding_.set_connection_error_with_reason_handler(
+      base::BindOnce(&AppShimHost::ChannelError, base::Unretained(this)));
 }
 
 base::FilePath AppShimHost::GetProfilePath() const {
@@ -48,39 +44,25 @@ std::string AppShimHost::GetAppId() const {
   return app_id_;
 }
 
-bool AppShimHost::OnMessageReceived(const IPC::Message& message) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AppShimHost, message)
-    IPC_MESSAGE_HANDLER(AppShimHostMsg_LaunchApp, OnLaunchApp)
-    IPC_MESSAGE_HANDLER(AppShimHostMsg_FocusApp, OnFocus)
-    IPC_MESSAGE_HANDLER(AppShimHostMsg_SetAppHidden, OnSetHidden)
-    IPC_MESSAGE_HANDLER(AppShimHostMsg_QuitApp, OnQuit)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
-void AppShimHost::OnChannelError() {
+void AppShimHost::ChannelError(uint32_t custom_reason,
+                               const std::string& description) {
+  LOG(ERROR) << "Channel error custom_reason:" << custom_reason
+             << " description: " << description;
   Close();
 }
 
-bool AppShimHost::Send(IPC::Message* message) {
-  DCHECK(channel_.get());
-  return channel_->Send(message);
-}
-
-void AppShimHost::OnLaunchApp(const base::FilePath& profile_dir,
-                              const std::string& app_id,
-                              apps::AppShimLaunchType launch_type,
-                              const std::vector<base::FilePath>& files) {
+void AppShimHost::LaunchApp(chrome::mojom::AppShimPtr app_shim_ptr,
+                            const base::FilePath& profile_dir,
+                            const std::string& app_id,
+                            apps::AppShimLaunchType launch_type,
+                            const std::vector<base::FilePath>& files) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(profile_path_.empty());
   // Only one app launch message per channel.
   if (!profile_path_.empty())
     return;
 
+  app_shim_ = std::move(app_shim_ptr);
   profile_path_ = profile_dir;
   app_id_ = app_id;
 
@@ -91,22 +73,22 @@ void AppShimHost::OnLaunchApp(const base::FilePath& profile_dir,
   // this only happens at shutdown, do nothing here.
 }
 
-void AppShimHost::OnFocus(apps::AppShimFocusType focus_type,
-                          const std::vector<base::FilePath>& files) {
+void AppShimHost::FocusApp(apps::AppShimFocusType focus_type,
+                           const std::vector<base::FilePath>& files) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
     handler->OnShimFocus(this, focus_type, files);
 }
 
-void AppShimHost::OnSetHidden(bool hidden) {
+void AppShimHost::SetAppHidden(bool hidden) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
     handler->OnShimSetHidden(this, hidden);
 }
 
-void AppShimHost::OnQuit() {
+void AppShimHost::QuitApp() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   apps::AppShimHandler* handler = apps::AppShimHandler::GetForAppMode(app_id_);
   if (handler)
@@ -115,7 +97,7 @@ void AppShimHost::OnQuit() {
 
 void AppShimHost::OnAppLaunchComplete(apps::AppShimLaunchResult result) {
   if (!initial_launch_finished_) {
-    Send(new AppShimMsg_LaunchApp_Done(result));
+    app_shim_->LaunchAppDone(result);
     initial_launch_finished_ = true;
   }
 }
@@ -125,15 +107,15 @@ void AppShimHost::OnAppClosed() {
 }
 
 void AppShimHost::OnAppHide() {
-  Send(new AppShimMsg_Hide);
+  app_shim_->Hide();
 }
 
 void AppShimHost::OnAppUnhideWithoutActivation() {
-  Send(new AppShimMsg_UnhideWithoutActivation);
+  app_shim_->UnhideWithoutActivation();
 }
 
 void AppShimHost::OnAppRequestUserAttention(apps::AppShimAttentionType type) {
-  Send(new AppShimMsg_SetUserAttention(type));
+  app_shim_->SetUserAttention(type);
 }
 
 void AppShimHost::Close() {

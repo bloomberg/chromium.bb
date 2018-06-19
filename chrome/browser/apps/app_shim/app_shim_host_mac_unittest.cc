@@ -10,42 +10,70 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class TestingAppShimHost : public AppShimHost {
+class TestingAppShim : public chrome::mojom::AppShim {
  public:
-  TestingAppShimHost() {}
-  ~TestingAppShimHost() override {}
+  TestingAppShim() : app_shim_binding_(this) {}
 
-  bool ReceiveMessage(IPC::Message* message);
-
-  const std::vector<std::unique_ptr<IPC::Message>>& sent_messages() {
-    return sent_messages_;
+  chrome::mojom::AppShimPtr GetMojoPtr() {
+    chrome::mojom::AppShimPtr app_shim_ptr;
+    chrome::mojom::AppShimRequest app_shim_request =
+        mojo::MakeRequest(&app_shim_ptr);
+    app_shim_binding_.Bind(std::move(app_shim_request));
+    return app_shim_ptr;
   }
 
- protected:
-  bool Send(IPC::Message* message) override;
+  chrome::mojom::AppShimHostRequest GetHostRequest() {
+    return mojo::MakeRequest(&host_ptr_);
+  }
+
+  apps::AppShimLaunchResult GetLaunchResult() const {
+    EXPECT_TRUE(received_launch_done_result_);
+    return launch_done_result_;
+  }
 
  private:
-  std::vector<std::unique_ptr<IPC::Message>> sent_messages_;
+  // chrome::mojom::AppShim implementation.
+  void LaunchAppDone(apps::AppShimLaunchResult result) override {
+    received_launch_done_result_ = true;
+    launch_done_result_ = result;
+  }
+  void Hide() override {}
+  void UnhideWithoutActivation() override {}
+  void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
 
-  DISALLOW_COPY_AND_ASSIGN(TestingAppShimHost);
+  bool received_launch_done_result_ = false;
+  apps::AppShimLaunchResult launch_done_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
+
+  chrome::mojom::AppShimHostPtr host_ptr_;
+  mojo::Binding<chrome::mojom::AppShim> app_shim_binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingAppShim);
 };
 
-bool TestingAppShimHost::ReceiveMessage(IPC::Message* message) {
-  bool handled = OnMessageReceived(*message);
-  delete message;
-  return handled;
-}
+class TestingAppShimHost : public AppShimHost {
+ public:
+  explicit TestingAppShimHost(chrome::mojom::AppShimHostRequest host_request)
+      : test_weak_factory_(this) {
+    // AppShimHost will bind to the request from ServeChannel. For testing
+    // purposes, have this request passed in at creation.
+    BindToRequest(std::move(host_request));
+  }
 
-bool TestingAppShimHost::Send(IPC::Message* message) {
-  sent_messages_.push_back(base::WrapUnique(message));
-  return true;
-}
+  base::WeakPtr<TestingAppShimHost> GetWeakPtr() {
+    return test_weak_factory_.GetWeakPtr();
+  }
+
+ private:
+  base::WeakPtrFactory<TestingAppShimHost> test_weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(TestingAppShimHost);
+};
 
 const char kTestAppId[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kTestProfileDir[] = "Profile 1";
@@ -53,35 +81,34 @@ const char kTestProfileDir[] = "Profile 1";
 class AppShimHostTest : public testing::Test,
                         public apps::AppShimHandler {
  public:
-  AppShimHostTest() : launch_result_(apps::APP_SHIM_LAUNCH_SUCCESS),
-                      launch_count_(0),
-                      launch_now_count_(0),
-                      close_count_(0),
-                      focus_count_(0),
-                      quit_count_(0) {}
+  AppShimHostTest()
+      : task_runner_(new base::TestSimpleTaskRunner),
+        task_runner_handle_(task_runner_) {}
 
+  ~AppShimHostTest() override {
+    if (host_)
+      delete host_.get();
+    DCHECK(!host_);
+  }
+
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner() {
+    return task_runner_;
+  }
   TestingAppShimHost* host() { return host_.get(); }
+  chrome::mojom::AppShimHost* GetMojoHost() { return host_.get(); }
 
   void LaunchApp(apps::AppShimLaunchType launch_type) {
-    EXPECT_TRUE(host()->ReceiveMessage(
-        new AppShimHostMsg_LaunchApp(base::FilePath(kTestProfileDir),
-                                     kTestAppId,
-                                     launch_type,
-                                     std::vector<base::FilePath>())));
+    GetMojoHost()->LaunchApp(shim_->GetMojoPtr(),
+                             base::FilePath(kTestProfileDir), kTestAppId,
+                             launch_type, std::vector<base::FilePath>());
   }
 
   apps::AppShimLaunchResult GetLaunchResult() {
-    EXPECT_EQ(1u, host()->sent_messages().size());
-    IPC::Message* message = host()->sent_messages()[0].get();
-    EXPECT_EQ(AppShimMsg_LaunchApp_Done::ID, message->type());
-    AppShimMsg_LaunchApp_Done::Param param;
-    AppShimMsg_LaunchApp_Done::Read(message, &param);
-    return std::get<0>(param);
+    task_runner_->RunUntilIdle();
+    return shim_->GetLaunchResult();
   }
 
-  void SimulateDisconnect() {
-    static_cast<IPC::Listener*>(host_.release())->OnChannelError();
-  }
+  void SimulateDisconnect() { shim_.reset(); }
 
  protected:
   void OnShimLaunch(Host* host,
@@ -105,20 +132,29 @@ class AppShimHostTest : public testing::Test,
 
   void OnShimQuit(Host* host) override { ++quit_count_; }
 
-  apps::AppShimLaunchResult launch_result_;
-  int launch_count_;
-  int launch_now_count_;
-  int close_count_;
-  int focus_count_;
-  int quit_count_;
+  apps::AppShimLaunchResult launch_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
+  int launch_count_ = 0;
+  int launch_now_count_ = 0;
+  int close_count_ = 0;
+  int focus_count_ = 0;
+  int quit_count_ = 0;
 
  private:
   void SetUp() override {
     testing::Test::SetUp();
-    host_.reset(new TestingAppShimHost());
+    shim_.reset(new TestingAppShim());
+    TestingAppShimHost* host = new TestingAppShimHost(shim_->GetHostRequest());
+    host_ = host->GetWeakPtr();
   }
 
-  std::unique_ptr<TestingAppShimHost> host_;
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  base::ThreadTaskRunnerHandle task_runner_handle_;
+
+  std::unique_ptr<TestingAppShim> shim_;
+
+  // AppShimHost will destroy itself in AppShimHost::Close, so use a weak
+  // pointer here to avoid lifetime issues.
+  base::WeakPtr<TestingAppShimHost> host_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHostTest);
 };
@@ -142,16 +178,19 @@ TEST_F(AppShimHostTest, TestLaunchAppWithHandler) {
       ->OnAppLaunchComplete(apps::APP_SHIM_LAUNCH_APP_NOT_FOUND);
   EXPECT_EQ(apps::APP_SHIM_LAUNCH_SUCCESS, GetLaunchResult());
 
-  EXPECT_TRUE(host()->ReceiveMessage(
-      new AppShimHostMsg_FocusApp(apps::APP_SHIM_FOCUS_NORMAL,
-                                  std::vector<base::FilePath>())));
+  GetMojoHost()->FocusApp(apps::APP_SHIM_FOCUS_NORMAL,
+                          std::vector<base::FilePath>());
+  task_runner()->RunUntilIdle();
   EXPECT_EQ(1, focus_count_);
 
-  EXPECT_TRUE(host()->ReceiveMessage(new AppShimHostMsg_QuitApp()));
+  GetMojoHost()->QuitApp();
+  task_runner()->RunUntilIdle();
   EXPECT_EQ(1, quit_count_);
 
   SimulateDisconnect();
+  task_runner()->RunUntilIdle();
   EXPECT_EQ(1, close_count_);
+  EXPECT_EQ(nullptr, host());
   apps::AppShimHandler::RemoveHandler(kTestAppId);
 }
 

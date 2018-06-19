@@ -684,6 +684,10 @@ mojom("mojo_bindings") {
     sources += [ "sandbox_status_extension_android.mojom" ]
   }
 
+  if (is_mac) {
+    sources += [ "mac/app_shim.mojom" ]
+  }
+
   if (is_win) {
     sources += [ "conflicts/module_event_sink_win.mojom" ]
   }
