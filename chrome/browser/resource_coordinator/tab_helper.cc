@@ -27,10 +27,6 @@
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/resource_coordinator/local_site_characteristics_webcontents_observer.h"
-#endif
-
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(
     resource_coordinator::ResourceCoordinatorTabHelper);
 
@@ -66,14 +62,6 @@ ResourceCoordinatorTabHelper::ResourceCoordinatorTabHelper(
 
     TabMemoryMetricsReporter::Get()->StartReporting(TabLoadTracker::Get());
   }
-
-#if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kSiteCharacteristicsDatabase)) {
-    local_site_characteristics_wc_observer_ =
-        std::make_unique<LocalSiteCharacteristicsWebContentsObserver>(
-            web_contents);
-  }
-#endif
 }
 
 ResourceCoordinatorTabHelper::~ResourceCoordinatorTabHelper() = default;
