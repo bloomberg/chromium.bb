@@ -42,14 +42,6 @@
     {
       "object": "LayoutBlockFlow HTML",
       "reason": "style change"
-    },
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV id='div'",
-      "reason": "geometry"
     }
   ]
 }

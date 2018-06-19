@@ -1159,22 +1159,6 @@
     {
       "object": "LayoutSVGViewportContainer svg id='minimizeButton'",
       "reason": "full"
-    },
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGContainer g",
-      "reason": "appeared"
-    },
-    {
-      "object": "LayoutSVGContainer g id='windowTitlebarGroupminimalWindow'",
-      "reason": "appeared"
     }
   ]
 }

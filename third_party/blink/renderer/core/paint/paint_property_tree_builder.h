@@ -107,6 +107,8 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // The repeated paintings need to add an adjustment to the calculated paint
   // offset to paint at the desired place.
   LayoutSize repeating_paint_offset_adjustment;
+
+  LayoutPoint old_paint_offset;
 };
 
 struct PaintPropertyTreeBuilderContext {

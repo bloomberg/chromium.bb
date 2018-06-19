@@ -99,13 +99,13 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
   // If either border box changed or bounds changed, and old or new border box
   // doesn't equal old or new bounds, incremental invalidation is not
   // applicable. This captures the following cases:
-  // - pixel snapping of paint invalidation bounds,
+  // - pixel snapping, or not snapping e.g. for some visual overflowing effects,
   // - scale, rotate, skew etc. transforms,
-  // - visual overflows.
+  // - visual (ink) overflows.
   if (context_.old_visual_rect !=
-          LayoutRect(context_.old_location, old_border_box_size) ||
+          LayoutRect(context_.old_paint_offset, old_border_box_size) ||
       context_.fragment_data->VisualRect() !=
-          LayoutRect(context_.fragment_data->LocationInBacking(),
+          LayoutRect(context_.fragment_data->PaintOffset(),
                      new_border_box_size)) {
     return PaintInvalidationReason::kGeometry;
   }
@@ -316,8 +316,8 @@ PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
     if (should_invalidate &&
         !RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       IncrementallyInvalidatePaint(
-          reason, LayoutRect(context_.old_location, box_.PreviousSize()),
-          LayoutRect(context_.fragment_data->LocationInBacking(), box_.Size()));
+          reason, LayoutRect(context_.old_paint_offset, box_.PreviousSize()),
+          LayoutRect(context_.fragment_data->PaintOffset(), box_.Size()));
     }
     if (should_invalidate) {
       context_.painting_layer->SetNeedsRepaint();

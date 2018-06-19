@@ -54,7 +54,7 @@ static LayoutRect ScrollControlVisualRect(
     // the rect as in flipped block direction, but scrollbar controls don't
     // flip for block direction, so flip here to undo the flip in the function.
     box.FlipForWritingMode(visual_rect);
-    context.MapLocalRectToVisualRectInBacking(box, visual_rect);
+    context.MapLocalRectToVisualRect(box, visual_rect);
   }
   return visual_rect;
 }

@@ -92,13 +92,10 @@ void PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation(
       -context.paint_invalidation_container->Layer()->SubpixelAccumulation())));
 }
 
-// TODO(wangxianzhu): Combine this into
-// PaintInvalidator::mapLocalRectToBacking() when removing
-// PaintInvalidationState.
 // This function is templatized to avoid FloatRect<->LayoutRect conversions
 // which affect performance.
 template <typename Rect, typename Point>
-LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
+LayoutRect PaintInvalidator::MapLocalRectToVisualRect(
     const LayoutObject& object,
     const Rect& local_rect,
     const PaintInvalidatorContext& context,
@@ -227,11 +224,10 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
   return result;
 }
 
-void PaintInvalidatorContext::MapLocalRectToVisualRectInBacking(
+void PaintInvalidatorContext::MapLocalRectToVisualRect(
     const LayoutObject& object,
     LayoutRect& rect) const {
-  rect = PaintInvalidator::MapLocalRectToVisualRectInBacking<LayoutRect,
-                                                             LayoutPoint>(
+  rect = PaintInvalidator::MapLocalRectToVisualRect<LayoutRect, LayoutPoint>(
       object, rect, *this);
 }
 
@@ -242,17 +238,17 @@ PaintInvalidatorContext::ParentContextAccessor::ParentContext() const {
                     : nullptr;
 }
 
-LayoutRect PaintInvalidator::ComputeVisualRectInBacking(
+LayoutRect PaintInvalidator::ComputeVisualRect(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
   if (object.IsSVGChild()) {
     FloatRect local_rect = SVGLayoutSupport::LocalVisualRect(object);
-    return MapLocalRectToVisualRectInBacking<FloatRect, FloatPoint>(
-        object, local_rect, context);
+    return MapLocalRectToVisualRect<FloatRect, FloatPoint>(object, local_rect,
+                                                           context);
   }
   LayoutRect local_rect = object.LocalVisualRect();
-  return MapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
-      object, local_rect, context);
+  return MapLocalRectToVisualRect<LayoutRect, LayoutPoint>(object, local_rect,
+                                                           context);
 }
 
 static LayoutRect ComputeFragmentLocalSelectionRect(
@@ -277,54 +273,8 @@ LayoutRect PaintInvalidator::MapFragmentLocalRectToVisualRect(
   if (!object.IsBox())
     rect.Move(fragment.InlineOffsetToContainerBox().ToLayoutSize());
   bool disable_flip = true;
-  return MapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
+  return MapLocalRectToVisualRect<LayoutRect, LayoutPoint>(
       object, rect, context, disable_flip);
-}
-
-LayoutPoint PaintInvalidator::ComputeLocationInBacking(
-    const LayoutObject& object,
-    const PaintInvalidatorContext& context) {
-  // In SPv2, locationInBacking is in the space of their local transform node.
-  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
-    return object.FirstFragment().PaintOffset();
-
-  LayoutPoint point;
-  if (object != context.paint_invalidation_container) {
-    point.MoveBy(context.fragment_data->PaintOffset());
-
-    const auto* container_transform =
-        context.paint_invalidation_container->FirstFragment()
-            .ContentsProperties()
-            .Transform();
-    if (context.tree_builder_context_->current.transform !=
-        container_transform) {
-      FloatRect rect = FloatRect(FloatPoint(point), FloatSize());
-      GeometryMapper::SourceToDestinationRect(
-          context.tree_builder_context_->current.transform, container_transform,
-          rect);
-      point = LayoutPoint(rect.Location());
-    }
-
-    // Convert the result to the paint invalidation container's contents space.
-    // If the paint invalidation container has a transform node associated
-    // with it (due to scroll or transform), then its PaintOffset
-    // must be zero or equal to its subpixel accumulation, since in all
-    // such cases we allocate a paint offset translation transform.
-    point.MoveBy(
-        -context.paint_invalidation_container->FirstFragment().PaintOffset());
-  }
-
-  if (context.paint_invalidation_container->Layer()->GroupedMapping()) {
-    FloatPoint float_point(point);
-    PaintLayer::MapPointInPaintInvalidationContainerToBacking(
-        *context.paint_invalidation_container, float_point);
-    point = LayoutPoint(float_point);
-  }
-
-  point.Move(object.ScrollAdjustmentForPaintInvalidation(
-      *context.paint_invalidation_container));
-
-  return point;
 }
 
 void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
@@ -446,23 +396,11 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
   DCHECK(context.tree_builder_context_->current.paint_offset ==
          fragment_data.PaintOffset());
 
-  LayoutRect new_visual_rect = ComputeVisualRectInBacking(object, context);
-  LayoutPoint new_location;
-  if (object.IsBoxModelObject()) {
-    new_location = ComputeLocationInBacking(object, context);
-    // Location of empty visual rect doesn't affect paint invalidation. Set it
-    // to newLocation to avoid saving the previous location separately in
-    // ObjectPaintInvalidator.
-    if (new_visual_rect.IsEmpty())
-      new_visual_rect.SetLocation(new_location);
-  } else {
-    // Use visual rect location for non-LayoutBoxModelObject because it suffices
-    // to check whether a visual rect changes for layout caused invalidation.
-    new_location = new_visual_rect.Location();
-  }
-
+  LayoutRect new_visual_rect = ComputeVisualRect(object, context);
+  // Make the empty visual rect more meaningful for debugging and testing.
+  if (new_visual_rect.IsEmpty())
+    new_visual_rect.SetLocation(fragment_data.PaintOffset());
   fragment_data.SetVisualRect(new_visual_rect);
-  fragment_data.SetLocationInBacking(new_location);
 
   // For LayoutNG, update NGPaintFragments.
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
@@ -604,7 +542,6 @@ void PaintInvalidator::InvalidatePaint(
        fragment_data;
        fragment_data = fragment_data->NextFragment(), tree_builder_index++) {
     context.old_visual_rect = fragment_data->VisualRect();
-    context.old_location = fragment_data->LocationInBacking();
     context.fragment_data = fragment_data;
 
     DCHECK(!tree_builder_context ||
@@ -612,18 +549,19 @@ void PaintInvalidator::InvalidatePaint(
 
     {
 #if DCHECK_IS_ON()
-      bool is_actually_needed =
+      context.tree_builder_context_actually_needed_ =
           tree_builder_context && tree_builder_context->is_actually_needed;
-      FindObjectVisualRectNeedingUpdateScope finder(
-          object, *fragment_data, context, is_actually_needed);
-
-      context.tree_builder_context_actually_needed_ = is_actually_needed;
+      FindObjectVisualRectNeedingUpdateScope finder(object, *fragment_data,
+                                                    context);
 #endif
       if (tree_builder_context) {
         context.tree_builder_context_ =
             &tree_builder_context->fragments[tree_builder_index];
+        context.old_paint_offset =
+            context.tree_builder_context_->old_paint_offset;
       } else {
         context.tree_builder_context_ = nullptr;
+        context.old_paint_offset = fragment_data->PaintOffset();
       }
 
       UpdateVisualRect(object, *fragment_data, context);
@@ -646,12 +584,6 @@ void PaintInvalidator::InvalidatePaint(
         break;
       default:
         break;
-    }
-
-    if (context.old_location != fragment_data->LocationInBacking() &&
-        !context.painting_layer->SubtreeIsInvisible()) {
-      context.subtree_flags |=
-          PaintInvalidatorContext::kSubtreeInvalidationChecking;
     }
   }
 

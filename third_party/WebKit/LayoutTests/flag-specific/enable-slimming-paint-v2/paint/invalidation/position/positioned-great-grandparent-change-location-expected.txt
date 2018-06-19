@@ -31,18 +31,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) DIV id='great-grandparent'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow (positioned) DIV",
       "reason": "geometry"
     },

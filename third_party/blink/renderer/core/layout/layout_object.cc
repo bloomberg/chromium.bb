@@ -1554,10 +1554,11 @@ LayoutRect LayoutObject::VisualRectIncludingCompositedScrolling(
 }
 
 void LayoutObject::ClearPreviousVisualRects() {
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
+
   for (auto* fragment = &fragment_; fragment;
        fragment = fragment->NextFragment()) {
     fragment->SetVisualRect(LayoutRect());
-    fragment->SetLocationInBacking(LayoutPoint());
     fragment->SetSelectionVisualRect(LayoutRect());
   }
 
@@ -1571,9 +1572,6 @@ void LayoutObject::ClearPreviousVisualRects() {
     }
   }
 
-  // Ensure check paint invalidation of subtree that would be triggered by
-  // location change if we had valid previous location.
-  SetMayNeedPaintInvalidationSubtree();
   // After clearing ("invalidating") the visual rects, mark this object as
   // needing to re-compute them.
   SetShouldDoFullPaintInvalidation();

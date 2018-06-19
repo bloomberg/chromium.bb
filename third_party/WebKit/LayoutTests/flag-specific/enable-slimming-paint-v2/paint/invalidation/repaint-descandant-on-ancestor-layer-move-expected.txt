@@ -53,10 +53,6 @@
     {
       "object": "InlineTextBox 'There should only be one copy of this text.'",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
     }
   ]
 }

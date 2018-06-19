@@ -41,10 +41,6 @@
       "reason": "appeared"
     },
     {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
@@ -54,19 +50,7 @@
     },
     {
       "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableCell TD id='s'",
-      "reason": "geometry"
+      "reason": "disappeared"
     }
   ]
 }

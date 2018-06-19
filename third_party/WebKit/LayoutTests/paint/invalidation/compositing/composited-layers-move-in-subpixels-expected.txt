@@ -38,12 +38,6 @@
       "contentsOpaque": true,
       "backgroundColor": "#D3D3D3"
     }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow BODY",
-      "reason": "geometry"
-    }
   ]
 }
 

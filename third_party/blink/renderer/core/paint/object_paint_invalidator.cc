@@ -486,8 +486,10 @@ ObjectPaintInvalidatorWithContext::ComputePaintInvalidationReason() {
       context_.old_visual_rect.Location())
     return PaintInvalidationReason::kGeometry;
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-      context_.fragment_data->LocationInBacking() != context_.old_location)
+  // Most paintings are pixel-snapped so subpixel change of paint offset doesn't
+  // directly cause full raster invalidation.
+  if (RoundedIntPoint(context_.fragment_data->PaintOffset()) !=
+      RoundedIntPoint(context_.old_paint_offset))
     return PaintInvalidationReason::kGeometry;
 
   // Incremental invalidation is only applicable to LayoutBoxes. Return
@@ -532,7 +534,7 @@ void ObjectPaintInvalidatorWithContext::InvalidateSelection(
 #endif
   if (context_.NeedsVisualRectUpdate(object_)) {
     new_selection_rect = object_.LocalSelectionRect();
-    context_.MapLocalRectToVisualRectInBacking(object_, new_selection_rect);
+    context_.MapLocalRectToVisualRect(object_, new_selection_rect);
   } else {
     new_selection_rect = old_selection_rect;
   }
@@ -565,7 +567,7 @@ void ObjectPaintInvalidatorWithContext::InvalidatePartialRect(
   if (rect.IsEmpty())
     return;
 
-  context_.MapLocalRectToVisualRectInBacking(object_, rect);
+  context_.MapLocalRectToVisualRect(object_, rect);
   if (rect.IsEmpty())
     return;
 

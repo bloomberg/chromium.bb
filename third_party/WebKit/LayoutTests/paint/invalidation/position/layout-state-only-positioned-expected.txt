@@ -42,10 +42,6 @@
     {
       "object": "VerticalScrollbar",
       "reason": "scroll control"
-    },
-    {
-      "object": "LayoutBlockFlow (positioned) DIV id='q'",
-      "reason": "geometry"
     }
   ]
 }

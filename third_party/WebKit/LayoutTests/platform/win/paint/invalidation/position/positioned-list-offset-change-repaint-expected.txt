@@ -32,10 +32,6 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow (positioned) UL id='list'",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutListItem (positioned) LI",
       "reason": "geometry"
     },
@@ -49,10 +45,6 @@
     },
     {
       "object": "LayoutImage IMG",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
       "reason": "geometry"
     }
   ]

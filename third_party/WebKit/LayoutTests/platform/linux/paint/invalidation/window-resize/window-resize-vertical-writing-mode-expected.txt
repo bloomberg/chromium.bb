@@ -67,10 +67,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow BODY",
       "reason": "geometry"
     },
@@ -195,10 +191,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow BODY",
       "reason": "geometry"
     },
@@ -320,10 +312,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow BODY",
       "reason": "geometry"
     },
@@ -442,10 +430,6 @@
     {
       "object": "LayoutView #document",
       "reason": "incremental"
-    },
-    {
-      "object": "LayoutBlockFlow HTML",
-      "reason": "geometry"
     },
     {
       "object": "LayoutBlockFlow BODY",

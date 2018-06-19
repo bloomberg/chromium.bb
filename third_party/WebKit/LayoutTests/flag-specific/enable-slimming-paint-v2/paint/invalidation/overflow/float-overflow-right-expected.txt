@@ -593,7 +593,35 @@
       "reason": "geometry"
     },
     {
+      "object": "LayoutBlockFlow DIV class='outer'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutInline SPAN",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'x'",
       "reason": "geometry"
     },
     {
@@ -629,10 +657,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow DIV class='outer'",
       "reason": "geometry"
     },
@@ -665,10 +689,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow DIV class='outer'",
       "reason": "geometry"
     },
@@ -698,46 +718,6 @@
     },
     {
       "object": "InlineTextBox 'x'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='outer'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (floating) DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'x'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
       "reason": "geometry"
     },
     {
@@ -773,10 +753,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutDeprecatedFlexibleBox DIV class='outer box'",
       "reason": "geometry"
     },
@@ -809,19 +785,7 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTable TABLE class='outer'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableSection TBODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {
@@ -853,19 +817,7 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTable TABLE class='outer'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableSection TBODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
       "reason": "geometry"
     },
     {
@@ -894,10 +846,6 @@
     },
     {
       "object": "InlineTextBox 'x'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
       "reason": "geometry"
     },
     {
@@ -913,14 +861,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutTableSection TBODY",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutTableRow TR",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutTableCell TD",
       "reason": "geometry"
     },
@@ -949,11 +889,35 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutText #text",
+      "object": "LayoutBlockFlow DIV class='outer'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutInline SPAN",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineFlowBox",
       "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'x'",
       "reason": "geometry"
     },
     {
@@ -989,10 +953,6 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow DIV class='outer'",
       "reason": "geometry"
     },
@@ -1022,46 +982,6 @@
     },
     {
       "object": "InlineTextBox 'x'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV class='outer'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow (floating) DIV",
-      "reason": "geometry"
-    },
-    {
-      "object": "RootInlineBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutInline SPAN",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineFlowBox",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox 'x'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
       "reason": "geometry"
     },
     {
@@ -1098,14 +1018,6 @@
     },
     {
       "object": "InlineTextBox 'x'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutText #text",
       "reason": "geometry"
     }
   ]

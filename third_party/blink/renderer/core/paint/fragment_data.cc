@@ -11,9 +11,7 @@ namespace blink {
 
 // These are defined here because of PaintLayer dependency.
 
-FragmentData::RareData::RareData(const LayoutPoint& location_in_backing)
-    : unique_id(NewUniqueObjectId()),
-      location_in_backing(location_in_backing) {}
+FragmentData::RareData::RareData() : unique_id(NewUniqueObjectId()) {}
 
 FragmentData::RareData::~RareData() = default;
 
@@ -25,7 +23,7 @@ FragmentData& FragmentData::EnsureNextFragment() {
 
 FragmentData::RareData& FragmentData::EnsureRareData() {
   if (!rare_data_)
-    rare_data_ = std::make_unique<RareData>(visual_rect_.Location());
+    rare_data_ = std::make_unique<RareData>();
   return *rare_data_;
 }
 

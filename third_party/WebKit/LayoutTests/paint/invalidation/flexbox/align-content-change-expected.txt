@@ -36,15 +36,7 @@
       "reason": "geometry"
     },
     {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "geometry"
-    },
-    {
       "object": "LayoutBlockFlow DIV class='item'",
-      "reason": "geometry"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
       "reason": "geometry"
     }
   ]

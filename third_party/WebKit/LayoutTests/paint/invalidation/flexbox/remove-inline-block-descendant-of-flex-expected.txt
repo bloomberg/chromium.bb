@@ -51,14 +51,6 @@
     {
       "object": "RootInlineBox",
       "reason": "geometry"
-    },
-    {
-      "object": "LayoutBR BR",
-      "reason": "geometry"
-    },
-    {
-      "object": "InlineTextBox '\n'",
-      "reason": "geometry"
     }
   ]
 }
