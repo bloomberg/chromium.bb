@@ -10,33 +10,34 @@ from telemetry import story
 
 class Typical25Page(page_module.Page):
 
-  def __init__(self, url, page_set, run_no_page_interactions,
+  def __init__(self, url, page_set,
       shared_page_state_class=shared_page_state.SharedDesktopPageState,
       cache_temperature=None):
+    if cache_temperature == cache_temperature_module.COLD:
+      temp_suffix = '_cold'
+    elif cache_temperature == cache_temperature_module.WARM:
+      temp_suffix = '_warm'
+    else:
+      raise NotImplementedError
     super(Typical25Page, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state_class,
-        cache_temperature=cache_temperature, name=url)
+        cache_temperature=cache_temperature, name=url + temp_suffix)
     if cache_temperature != cache_temperature_module.ANY:
       self.grouping_keys['cache_temperature'] = cache_temperature
-    self._run_no_page_interactions = run_no_page_interactions
 
   def RunPageInteractions(self, action_runner):
-    if self._run_no_page_interactions:
-      action_runner.WaitForJavaScriptCondition(
-          'performance.timing.loadEventStart > 0')
-      return
-    with action_runner.CreateGestureInteraction('ScrollAction'):
-      action_runner.ScrollPage()
+    action_runner.WaitForJavaScriptCondition(
+        'performance.timing.loadEventStart > 0')
+    return
 
 
 class Typical25PageSet(story.StorySet):
 
   """ Pages designed to represent the median, not highly optimized web """
 
-  def __init__(self, run_no_page_interactions=False,
-               page_class=Typical25Page,
-               cache_temperatures=None):
+  def __init__(self, cache_temperatures=(cache_temperature_module.COLD,
+                                         cache_temperature_module.WARM)):
     super(Typical25PageSet, self).__init__(
       archive_data_file='data/typical_25.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
@@ -83,5 +84,4 @@ class Typical25PageSet(story.StorySet):
 
     for url in urls_list:
       for temp in cache_temperatures:
-        self.AddStory(page_class(
-          url, self, run_no_page_interactions, cache_temperature=temp))
+        self.AddStory(Typical25Page(url, self, cache_temperature=temp))

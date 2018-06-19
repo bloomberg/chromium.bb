@@ -1,39 +1,72 @@
 {
     "archives": {
-        "http://apeha.ru/": {
+        "http://apeha.ru/_cold": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
-        },
-        "http://hindi.oneindia.in/": {
+        }, 
+        "http://apeha.ru/_warm": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
-        },
-        "http://hindi.webdunia.com/": {
+        }, 
+        "http://hindi.oneindia.in/_cold": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
-        },
-        "http://narod.yandex.ru/": {
+        }, 
+        "http://hindi.oneindia.in/_warm": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
-        },
-        "http://news.google.co.in/nwshp?tab=in&hl=hi": {
+        }, 
+        "http://hindi.webdunia.com/_cold": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
-        },
-        "http://photofile.ru/": {
+        }, 
+        "http://hindi.webdunia.com/_warm": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
-        },
-        "http://ru.wikipedia.org/": {
+        }, 
+        "http://narod.yandex.ru/_cold": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
-        },
-        "http://rutracker.org/forum/index.php": {
+        }, 
+        "http://narod.yandex.ru/_warm": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
-        },
-        "http://www.indiatimes.com/": {
+        }, 
+        "http://news.google.co.in/nwshp?tab=in&hl=hi_cold": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
-        },
-        "http://www.rambler.ru/": {
+        }, 
+        "http://news.google.co.in/nwshp?tab=in&hl=hi_warm": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
-        },
-        "http://yandex.ru/yandsearch?lr=102567&text=%D0%9F%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0": {
+        }, 
+        "http://photofile.ru/_cold": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://photofile.ru/_warm": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://ru.wikipedia.org/_cold": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://ru.wikipedia.org/_warm": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://rutracker.org/forum/index.php_cold": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://rutracker.org/forum/index.php_warm": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://www.indiatimes.com/_cold": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://www.indiatimes.com/_warm": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://www.rambler.ru/_cold": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://www.rambler.ru/_warm": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://yandex.ru/yandsearch?lr=102567&text=%D0%9F%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0_cold": {
+            "DEFAULT": "intl_hi_ru_000.wprgo"
+        }, 
+        "http://yandex.ru/yandsearch?lr=102567&text=%D0%9F%D0%BE%D0%B3%D0%BE%D0%B4%D0%B0_warm": {
             "DEFAULT": "intl_hi_ru_000.wprgo"
         }
-    },
-    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.",
+    }, 
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
     "platform_specific": true
 }

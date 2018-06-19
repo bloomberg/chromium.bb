@@ -11,18 +11,26 @@ from telemetry import story
 class IntlHiRuPage(page_cycler_story.PageCyclerStory):
 
   def __init__(self, url, page_set, cache_temperature=None):
+    if cache_temperature == cache_temperature_module.COLD:
+      temp_suffix = '_cold'
+    elif cache_temperature == cache_temperature_module.WARM:
+      temp_suffix = '_warm'
+    else:
+      raise NotImplementedError
+
     super(IntlHiRuPage, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state.SharedDesktopPageState,
         cache_temperature=cache_temperature,
-        name=url)
+        name=url+temp_suffix)
 
 
 class IntlHiRuPageSet(story.StorySet):
 
   """ Popular pages in Hindi and Russian. """
 
-  def __init__(self, cache_temperatures=None):
+  def __init__(self, cache_temperatures=(cache_temperature_module.COLD,
+                                         cache_temperature_module.WARM)):
     super(IntlHiRuPageSet, self).__init__(
       archive_data_file='data/intl_hi_ru.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)
