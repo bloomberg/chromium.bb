@@ -77,12 +77,9 @@ ResourceRequest::ResourceRequest(const KURL& url)
       did_set_http_referrer_(false),
       check_for_browser_side_navigation_(true),
       was_discarded_(false),
-      ui_start_time_(0),
       is_external_request_(false),
       cors_preflight_policy_(
           network::mojom::CORSPreflightPolicy::kConsiderPreflight),
-      input_perf_metric_report_policy_(
-          InputToLoadPerfMetricReportPolicy::kNoReport),
       redirect_status_(RedirectStatus::kNoRedirect) {}
 
 ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
@@ -119,10 +116,8 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   referrer_policy_ = data->referrer_policy_;
   did_set_http_referrer_ = data->did_set_http_referrer_;
   check_for_browser_side_navigation_ = data->check_for_browser_side_navigation_;
-  ui_start_time_ = data->ui_start_time_;
   is_external_request_ = data->is_external_request_;
   cors_preflight_policy_ = data->cors_preflight_policy_;
-  input_perf_metric_report_policy_ = data->input_perf_metric_report_policy_;
   redirect_status_ = data->redirect_status_;
   suggested_filename_ = data->suggested_filename_;
   is_ad_resource_ = data->is_ad_resource_;
@@ -216,10 +211,8 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->referrer_policy_ = referrer_policy_;
   data->did_set_http_referrer_ = did_set_http_referrer_;
   data->check_for_browser_side_navigation_ = check_for_browser_side_navigation_;
-  data->ui_start_time_ = ui_start_time_;
   data->is_external_request_ = is_external_request_;
   data->cors_preflight_policy_ = cors_preflight_policy_;
-  data->input_perf_metric_report_policy_ = input_perf_metric_report_policy_;
   data->redirect_status_ = redirect_status_;
   data->suggested_filename_ = suggested_filename_;
   data->is_ad_resource_ = is_ad_resource_;

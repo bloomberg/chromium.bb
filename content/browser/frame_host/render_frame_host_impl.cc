@@ -1555,20 +1555,7 @@ void RenderFrameHostImpl::CancelInitialHistoryLoad() {
   NOTIMPLEMENTED();
 }
 
-void RenderFrameHostImpl::OnDocumentOnLoadCompleted(
-    FrameMsg_UILoadMetricsReportType::Value report_type,
-    base::TimeTicks ui_timestamp) {
-  if (report_type == FrameMsg_UILoadMetricsReportType::REPORT_LINK) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation.UI_OnLoadComplete.Link",
-                               base::TimeTicks::Now() - ui_timestamp,
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromMinutes(10), 100);
-  } else if (report_type == FrameMsg_UILoadMetricsReportType::REPORT_INTENT) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation.UI_OnLoadComplete.Intent",
-                               base::TimeTicks::Now() - ui_timestamp,
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromMinutes(10), 100);
-  }
+void RenderFrameHostImpl::OnDocumentOnLoadCompleted() {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   delegate_->DocumentOnLoadCompleted(this);
@@ -3433,7 +3420,6 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
   CommonNavigationParams common_params(
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, false, false,
-      base::TimeTicks::Now(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
       GURL(), GURL(), PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(),
       CSPDisposition::CHECK /* should_check_main_world_csp */,
@@ -5041,22 +5027,6 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   return true;
 }
 
-void RenderFrameHostImpl::UMACommitReport(
-    FrameMsg_UILoadMetricsReportType::Value report_type,
-    const base::TimeTicks& ui_timestamp) {
-  if (report_type == FrameMsg_UILoadMetricsReportType::REPORT_LINK) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation.UI_OnCommitProvisionalLoad.Link",
-                               base::TimeTicks::Now() - ui_timestamp,
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromMinutes(10), 100);
-  } else if (report_type == FrameMsg_UILoadMetricsReportType::REPORT_INTENT) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation.UI_OnCommitProvisionalLoad.Intent",
-                               base::TimeTicks::Now() - ui_timestamp,
-                               base::TimeDelta::FromMilliseconds(10),
-                               base::TimeDelta::FromMinutes(10), 100);
-  }
-}
-
 void RenderFrameHostImpl::UpdateSiteURL(const GURL& url,
                                         bool url_is_unreachable) {
   if (url_is_unreachable || delegate_->GetAsInterstitialPage()) {
@@ -5072,9 +5042,6 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // Sanity-check the page transition for frame type.
   DCHECK_EQ(ui::PageTransitionIsMainFrame(validated_params->transition),
             !GetParent());
-
-  UMACommitReport(validated_params->report_type,
-                  validated_params->ui_timestamp);
 
   if (!ValidateDidCommitParams(validated_params))
     return false;

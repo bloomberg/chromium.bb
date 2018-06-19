@@ -574,7 +574,6 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     jint referrer_policy,
     jboolean is_renderer_initiated,
     jboolean should_replace_current_entry,
-    jlong intent_received_timestamp,
     jboolean has_user_gesture,
     jboolean should_clear_history_list) {
   if (!web_contents())
@@ -637,7 +636,6 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     }
     load_params.is_renderer_initiated = is_renderer_initiated;
     load_params.should_replace_current_entry = should_replace_current_entry;
-    load_params.intent_received_timestamp = intent_received_timestamp;
     load_params.has_user_gesture = has_user_gesture;
     load_params.should_clear_history_list = should_clear_history_list;
     web_contents()->GetController().LoadURLWithParams(load_params);

@@ -174,8 +174,6 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   params.history_list_was_cleared = false;
   params.render_view_routing_id = 0;
   params.origin = url::Origin();
-  params.report_type = FrameMsg_UILoadMetricsReportType::NO_REPORT;
-  params.ui_timestamp = base::TimeTicks();
   params.insecure_request_policy = blink::kLeaveInsecureRequestsAlone;
   params.has_potentially_trustworthy_unique_origin = false;
   params.searchable_form_url = GURL();

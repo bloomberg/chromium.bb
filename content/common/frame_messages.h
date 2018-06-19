@@ -111,8 +111,6 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::JavaScriptDialogType,
                               content::JAVASCRIPT_DIALOG_TYPE_PROMPT)
 IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_Navigate_Type::Value,
                           FrameMsg_Navigate_Type::NAVIGATE_TYPE_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(FrameMsg_UILoadMetricsReportType::Value,
-                          FrameMsg_UILoadMetricsReportType::REPORT_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::MediaType,
                           blink::WebContextMenuData::kMediaTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::InputFieldType,
@@ -416,13 +414,6 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // RenderFrameProxies.
   IPC_STRUCT_MEMBER(url::Origin, origin)
 
-  // How navigation metrics starting on UI action for this load should be
-  // reported.
-  IPC_STRUCT_MEMBER(FrameMsg_UILoadMetricsReportType::Value, report_type)
-
-  // Timestamp at which the UI action that triggered the navigation originated.
-  IPC_STRUCT_MEMBER(base::TimeTicks, ui_timestamp)
-
   // The insecure request policy the document for the load is enforcing.
   IPC_STRUCT_MEMBER(blink::WebInsecureRequestPolicy, insecure_request_policy)
 
@@ -477,8 +468,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(navigation_type)
   IPC_STRUCT_TRAITS_MEMBER(allow_download)
   IPC_STRUCT_TRAITS_MEMBER(should_replace_current_entry)
-  IPC_STRUCT_TRAITS_MEMBER(ui_timestamp)
-  IPC_STRUCT_TRAITS_MEMBER(report_type)
   IPC_STRUCT_TRAITS_MEMBER(base_url_for_data_url)
   IPC_STRUCT_TRAITS_MEMBER(history_url_for_data_url)
   IPC_STRUCT_TRAITS_MEMBER(previews_state)
@@ -1255,9 +1244,7 @@ IPC_MESSAGE_CONTROL3(FrameHostMsg_SaveImageFromDataURL,
 // in this frame. Sent for top-level frames. |report_type| and |ui_timestamp|
 // are used to report navigation metrics starting on the ui input event that
 // triggered the navigation timestamp.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_DocumentOnLoadCompleted,
-                    FrameMsg_UILoadMetricsReportType::Value /* report_type */,
-                    base::TimeTicks /* ui_timestamp */)
+IPC_MESSAGE_ROUTED0(FrameHostMsg_DocumentOnLoadCompleted)
 
 // Notifies that the initial empty document of a view has been accessed.
 // After this, it is no longer safe to show a pending navigation's URL without

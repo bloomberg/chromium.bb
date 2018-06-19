@@ -52,12 +52,6 @@
 
 namespace blink {
 
-enum InputToLoadPerfMetricReportPolicy : uint8_t {
-  kNoReport,    // Don't report metrics for this ResourceRequest.
-  kReportLink,  // Report metrics for this request as initiated by a link click.
-  kReportIntent,  // Report metrics for this request as initiated by an intent.
-};
-
 struct CrossThreadResourceRequestData;
 
 // A ResourceRequest is a "request" object for ResourceLoader. Conceptually
@@ -325,11 +319,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool WasDiscarded() const { return was_discarded_; }
   void SetWasDiscarded(bool was_discarded) { was_discarded_ = was_discarded; }
 
-  double UiStartTime() const { return ui_start_time_; }
-  void SetUIStartTime(double ui_start_time_seconds) {
-    ui_start_time_ = ui_start_time_seconds;
-  }
-
   // https://wicg.github.io/cors-rfc1918/#external-request
   bool IsExternalRequest() const { return is_external_request_; }
   void SetExternalRequestStateFromRequestorAddressSpace(mojom::IPAddressSpace);
@@ -339,14 +328,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
   void SetCORSPreflightPolicy(network::mojom::CORSPreflightPolicy policy) {
     cors_preflight_policy_ = policy;
-  }
-
-  InputToLoadPerfMetricReportPolicy InputPerfMetricReportPolicy() const {
-    return input_perf_metric_report_policy_;
-  }
-  void SetInputPerfMetricReportPolicy(
-      InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy) {
-    input_perf_metric_report_policy_ = input_perf_metric_report_policy;
   }
 
   void SetRedirectStatus(RedirectStatus status) { redirect_status_ = status; }
@@ -440,10 +421,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool did_set_http_referrer_;
   bool check_for_browser_side_navigation_;
   bool was_discarded_;
-  double ui_start_time_;
   bool is_external_request_;
   network::mojom::CORSPreflightPolicy cors_preflight_policy_;
-  InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
   RedirectStatus redirect_status_;
   base::Optional<String> suggested_filename_;
 
@@ -509,10 +488,8 @@ struct CrossThreadResourceRequestData {
   ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;
   bool check_for_browser_side_navigation_;
-  double ui_start_time_;
   bool is_external_request_;
   network::mojom::CORSPreflightPolicy cors_preflight_policy_;
-  InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
   ResourceRequest::RedirectStatus redirect_status_;
   base::Optional<String> suggested_filename_;
   bool is_ad_resource_;

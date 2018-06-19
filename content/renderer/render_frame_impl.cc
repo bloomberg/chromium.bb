@@ -473,16 +473,6 @@ WebURLRequest CreateURLRequestForNavigation(
   request.SetExtraData(std::move(extra_data));
   request.SetWasDiscarded(request_params.was_discarded);
 
-  // Set the ui timestamp for this navigation. Currently the timestamp here is
-  // only non empty when the navigation was triggered by an Android intent. The
-  // timestamp is converted to a double version supported by blink. It will be
-  // passed back to the browser in the DidCommitProvisionalLoad and the
-  // DocumentLoadComplete IPCs.
-  base::TimeDelta ui_timestamp = common_params.ui_timestamp - base::TimeTicks();
-  request.SetUiStartTime(ui_timestamp.InSecondsF());
-  request.SetInputPerfMetricReportPolicy(
-      static_cast<WebURLRequest::InputToLoadPerfMetricReportPolicy>(
-          common_params.report_type));
   return request;
 }
 
@@ -509,19 +499,6 @@ CommonNavigationParams MakeCommonNavigationParams(
       GURL(info.url_request.HttpHeaderField(WebString::FromUTF8("Referer"))
                .Latin1()),
       info.url_request.GetReferrerPolicy());
-
-  // Set the ui timestamp for this navigation. Currently the timestamp here is
-  // only non empty when the navigation was triggered by an Android intent, or
-  // by the user clicking on a link. The timestamp is converted from a double
-  // version supported by blink. It will be passed back to the renderer in the
-  // CommitNavigation IPC, and then back to the browser again in the
-  // DidCommitProvisionalLoad and the DocumentLoadComplete IPCs.
-  base::TimeTicks ui_timestamp =
-      base::TimeTicks() +
-      base::TimeDelta::FromSecondsD(info.url_request.UiStartTime());
-  FrameMsg_UILoadMetricsReportType::Value report_type =
-      static_cast<FrameMsg_UILoadMetricsReportType::Value>(
-          info.url_request.InputPerfMetricReportPolicy());
 
   // No history-navigation is expected to happen.
   DCHECK(info.navigation_type != blink::kWebNavigationTypeBackForward);
@@ -555,8 +532,7 @@ CommonNavigationParams MakeCommonNavigationParams(
   DCHECK(extra_data);
   return CommonNavigationParams(
       info.url_request.Url(), referrer, extra_data->transition_type(),
-      navigation_type, true, info.replaces_current_history_item, ui_timestamp,
-      report_type, GURL(), GURL(),
+      navigation_type, true, info.replaces_current_history_item, GURL(), GURL(),
       static_cast<PreviewsState>(info.url_request.GetPreviewsState()),
       base::TimeTicks::Now(), info.url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info.url_request), source_location,
@@ -4317,18 +4293,7 @@ void RenderFrameImpl::RunScriptsAtDocumentIdle() {
 
 void RenderFrameImpl::DidHandleOnloadEvents() {
   if (!frame_->Parent()) {
-    FrameMsg_UILoadMetricsReportType::Value report_type =
-        static_cast<FrameMsg_UILoadMetricsReportType::Value>(
-            frame_->GetDocumentLoader()
-                ->GetRequest()
-                .InputPerfMetricReportPolicy());
-    base::TimeTicks ui_timestamp =
-        base::TimeTicks() +
-        base::TimeDelta::FromSecondsD(
-            frame_->GetDocumentLoader()->GetRequest().UiStartTime());
-
-    Send(new FrameHostMsg_DocumentOnLoadCompleted(
-        routing_id_, report_type, ui_timestamp));
+    Send(new FrameHostMsg_DocumentOnLoadCompleted(routing_id_));
   }
 }
 
@@ -5387,15 +5352,6 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
 
     params->history_list_was_cleared =
         navigation_state->request_params().should_clear_history_list;
-
-    params->report_type = static_cast<FrameMsg_UILoadMetricsReportType::Value>(
-        frame_->GetDocumentLoader()
-            ->GetRequest()
-            .InputPerfMetricReportPolicy());
-    params->ui_timestamp =
-        base::TimeTicks() +
-        base::TimeDelta::FromSecondsD(
-            frame_->GetDocumentLoader()->GetRequest().UiStartTime());
   } else {
     // Subframe navigation: the type depends on whether this navigation
     // generated a new session history entry. When they do generate a session
@@ -5408,7 +5364,6 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
 
     DCHECK(!navigation_state->request_params().should_clear_history_list);
     params->history_list_was_cleared = false;
-    params->report_type = FrameMsg_UILoadMetricsReportType::NO_REPORT;
   }
 
   // Standard URLs must match the reported origin, when it is not unique.
