@@ -781,6 +781,7 @@ TEST_F(UiTest, LoadingIndicatorBindings) {
 
   model_->loading = true;
   model_->load_progress = 0;
+  RunForMs(100);
   EXPECT_TRUE(
       VerifyVisibility({kLoadingIndicator, kLoadingIndicatorForeground}, true));
   EXPECT_EQ(foreground->GetClipRect(), gfx::RectF(0, 0, 0, 1));
