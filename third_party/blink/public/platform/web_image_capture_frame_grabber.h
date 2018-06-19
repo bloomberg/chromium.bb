@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_CAPTURE_FRAME_GRABBER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_IMAGE_CAPTURE_FRAME_GRABBER_H_
 
+#include <memory>
+
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -22,8 +24,9 @@ class WebImageCaptureFrameGrabber {
  public:
   virtual ~WebImageCaptureFrameGrabber() = default;
 
-  virtual void GrabFrame(WebMediaStreamTrack*,
-                         WebImageCaptureGrabFrameCallbacks*) = 0;
+  virtual void GrabFrame(
+      WebMediaStreamTrack*,
+      std::unique_ptr<WebImageCaptureGrabFrameCallbacks> callbacks) = 0;
 };
 
 }  // namespace blink

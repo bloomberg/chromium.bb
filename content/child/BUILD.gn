@@ -67,7 +67,6 @@ target(link_target_type, "child") {
     "runtime_features.h",
     "scoped_child_process_reference.cc",
     "scoped_child_process_reference.h",
-    "scoped_web_callbacks.h",
     "service_factory.cc",
     "service_factory.h",
     "thread_safe_sender.cc",

@@ -13,7 +13,6 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
-#include "content/child/scoped_web_callbacks.h"
 #include "content/renderer/media/stream/media_stream_audio_track.h"
 #include "content/renderer/media/stream/media_stream_track.h"
 #include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
@@ -27,6 +26,7 @@
 #include "media/base/video_frame.h"
 #include "media/muxers/webm_muxer.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_configuration.h"
+#include "third_party/blink/public/platform/scoped_web_callbacks.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler_client.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -350,9 +350,8 @@ void MediaRecorderHandler::EncodingInfo(
   DCHECK(configuration.video_configuration ||
          configuration.audio_configuration);
 
-  ScopedWebCallbacks<WebMediaCapabilitiesQueryCallbacks> scoped_callbacks =
-      make_scoped_web_callbacks(callbacks.release(),
-                                base::Bind(&OnEncodingInfoError));
+  auto scoped_callbacks = blink::MakeScopedWebCallbacks(
+      std::move(callbacks), base::BindOnce(&OnEncodingInfoError));
 
   std::unique_ptr<blink::WebMediaCapabilitiesInfo> info(
       new blink::WebMediaCapabilitiesInfo());

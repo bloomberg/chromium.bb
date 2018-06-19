@@ -1,17 +1,17 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_SCOPED_WEB_CALLBACKS_H_
-#define CONTENT_CHILD_SCOPED_WEB_CALLBACKS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCOPED_WEB_CALLBACKS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCOPED_WEB_CALLBACKS_H_
 
 #include <memory>
 #include <utility>
 
 #include "base/callback.h"
-#include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
+
+namespace blink {
 
 // A ScopedWebCallbacks is a move-only scoper which helps manage the lifetime of
 // a blink::WebCallbacks object. This is particularly useful when you're
@@ -48,14 +48,14 @@
 //   }
 //
 //   // Blink client implementation
-//   void FooClientImpl::doMagic(FooCallbacks* callbacks) {
+//   void FooClientImpl::doMagic(std::unique_ptr<FooCallbacks> callbacks) {
 //     auto scoped_callbacks = make_scoped_web_callbacks(
-//         callbacks, base::Bind(&OnCallbacksDropped));
+//         std::move(callbacks), base::BindOnce(&OnCallbacksDropped));
 //
 //     // Call to some lower-level service which may never run the callback we
 //     // give it.
-//     foo_service_->DoMagic(base::Bind(&RespondWithSuccess,
-//                                      base::Passed(&scoped_callbacks)));
+//     foo_service_->DoMagic(base::BindOnce(&RespondWithSuccess,
+//                                          std::move(scoped_callbacks)));
 //   }
 //
 // If the bound RespondWithSuccess callback actually runs, PassCallbacks() will
@@ -69,44 +69,43 @@ template <typename CallbacksType>
 class ScopedWebCallbacks {
  public:
   using DestructionCallback =
-      base::Callback<void(std::unique_ptr<CallbacksType> callbacks)>;
+      base::OnceCallback<void(std::unique_ptr<CallbacksType> callbacks)>;
 
   ScopedWebCallbacks(std::unique_ptr<CallbacksType> callbacks,
-                     const DestructionCallback& destruction_callback)
+                     DestructionCallback destruction_callback)
       : callbacks_(std::move(callbacks)),
-        destruction_callback_(destruction_callback) {}
+        destruction_callback_(std::move(destruction_callback)) {}
 
   ~ScopedWebCallbacks() {
-    if (callbacks_)
-      destruction_callback_.Run(std::move(callbacks_));
+    if (destruction_callback_)
+      std::move(destruction_callback_).Run(std::move(callbacks_));
   }
 
-  ScopedWebCallbacks(ScopedWebCallbacks&& other) { *this = std::move(other); }
+  ScopedWebCallbacks(ScopedWebCallbacks&& other) = default;
+  ScopedWebCallbacks(const ScopedWebCallbacks& other) = delete;
 
-  ScopedWebCallbacks& operator=(ScopedWebCallbacks&& other) {
-    callbacks_ = std::move(other.callbacks_);
-    destruction_callback_ = other.destruction_callback_;
-    return *this;
-  }
+  ScopedWebCallbacks& operator=(ScopedWebCallbacks&& other) = default;
+  ScopedWebCallbacks& operator=(const ScopedWebCallbacks& other) = delete;
 
   std::unique_ptr<CallbacksType> PassCallbacks() {
+    destruction_callback_ = DestructionCallback();
     return std::move(callbacks_);
   }
 
  private:
   std::unique_ptr<CallbacksType> callbacks_;
   DestructionCallback destruction_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedWebCallbacks);
 };
 
 template <typename CallbacksType>
-ScopedWebCallbacks<CallbacksType> make_scoped_web_callbacks(
-    CallbacksType* callbacks,
-    const typename ScopedWebCallbacks<CallbacksType>::DestructionCallback&
+ScopedWebCallbacks<CallbacksType> MakeScopedWebCallbacks(
+    std::unique_ptr<CallbacksType> callbacks,
+    typename ScopedWebCallbacks<CallbacksType>::DestructionCallback
         destruction_callback) {
-  return ScopedWebCallbacks<CallbacksType>(base::WrapUnique(callbacks),
-                                           destruction_callback);
+  return ScopedWebCallbacks<CallbacksType>(std::move(callbacks),
+                                           std::move(destruction_callback));
 }
 
-#endif  // CONTENT_CHILD_SCOPED_WEB_CALLBACKS_H_
+}  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCOPED_WEB_CALLBACKS_H_

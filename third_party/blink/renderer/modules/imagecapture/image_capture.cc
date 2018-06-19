@@ -313,8 +313,9 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* script_state) {
 
   // The platform does not know about MediaStreamTrack, so we wrap it up.
   WebMediaStreamTrack track(stream_track_->Component());
-  frame_grabber_->GrabFrame(
-      &track, new CallbackPromiseAdapter<ImageBitmap, void>(resolver));
+  auto resolver_callback_adapter =
+      std::make_unique<CallbackPromiseAdapter<ImageBitmap, void>>(resolver);
+  frame_grabber_->GrabFrame(&track, std::move(resolver_callback_adapter));
 
   return promise;
 }

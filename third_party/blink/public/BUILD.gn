@@ -195,6 +195,7 @@ source_set("blink_headers") {
     "platform/scheduler/web_main_thread_scheduler.h",
     "platform/scheduler/web_render_widget_scheduling_state.h",
     "platform/scheduler/web_thread_scheduler.h",
+    "platform/scoped_web_callbacks.h",
     "platform/shape_properties.h",
     "platform/task_type.h",
     "platform/url_conversion.h",
