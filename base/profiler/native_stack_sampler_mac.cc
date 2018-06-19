@@ -66,9 +66,11 @@ std::string GetUniqueId(const void* module_addr) {
 
   size_t offset = sizeof(mach_header_64);
   size_t offset_limit = sizeof(mach_header_64) + mach_header->sizeofcmds;
-  for (uint32_t i = 0; (i < mach_header->ncmds) &&
-                       (offset + sizeof(load_command) < offset_limit);
-       ++i) {
+
+  for (uint32_t i = 0; i < mach_header->ncmds; ++i) {
+    if (offset + sizeof(load_command) >= offset_limit)
+      return std::string();
+
     const load_command* current_cmd = reinterpret_cast<const load_command*>(
         reinterpret_cast<const uint8_t*>(mach_header) + offset);
 
@@ -123,9 +125,9 @@ size_t GetModuleIndex(const uintptr_t instruction_pointer,
                      return instruction_pointer >= index.base_address &&
                             instruction_pointer < index.end_address;
                    });
-  if (module_index != profile_module_index->end()) {
+  if (module_index != profile_module_index->end())
     return module_index->index;
-  }
+
   Dl_info inf;
   if (!dladdr(reinterpret_cast<const void*>(instruction_pointer), &inf))
     return StackSamplingProfiler::Frame::kUnknownModuleIndex;
@@ -173,10 +175,8 @@ uintptr_t RewritePointerIfInOriginalStack(
   auto original_stack_top_int = reinterpret_cast<uintptr_t>(original_stack_top);
   auto stack_copy_bottom_int = reinterpret_cast<uintptr_t>(stack_copy_bottom);
 
-  if ((pointer < original_stack_bottom_int) ||
-      (pointer >= original_stack_top_int)) {
+  if (pointer < original_stack_bottom_int || pointer >= original_stack_top_int)
     return pointer;
-  }
 
   return stack_copy_bottom_int + (pointer - original_stack_bottom_int);
 }
@@ -288,9 +288,8 @@ bool HasValidRbp(unw_cursor_t* unwind_cursor, uintptr_t stack_top) {
     unw_get_reg(unwind_cursor, UNW_X86_64_RSP, &rsp);
     unw_get_reg(unwind_cursor, UNW_X86_64_RBP, &rbp);
     uint32_t offset = GetFrameOffset(proc_info.format) * sizeof(unw_word_t);
-    if (rbp < offset || (rbp - offset) < rsp || rbp > stack_top) {
+    if (rbp < offset || (rbp - offset) < rsp || rbp > stack_top)
       return false;
-    }
   }
   return true;
 }
@@ -329,9 +328,8 @@ bool WalkStackFromContext(
     // frame.
     size_t module_index =
         GetModuleIndex(rip, current_modules, profile_module_index);
-    if (module_index == StackSamplingProfiler::Frame::kUnknownModuleIndex) {
+    if (module_index == StackSamplingProfiler::Frame::kUnknownModuleIndex)
       return false;
-    }
 
     callback(static_cast<uintptr_t>(rip), module_index);
 
