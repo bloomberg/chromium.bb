@@ -62,9 +62,6 @@ class ExtensionContentSettingsApiTest : public ExtensionApiTest {
     ExtensionApiTest::TearDownOnMainThread();
   }
 
-  // Override to let the test normally run on Windows Debug.
-  bool ExtensionSubtestsAreSkipped() override { return false; }
-
  protected:
   void CheckContentSettingsSet() {
     HostContentSettingsMap* map =

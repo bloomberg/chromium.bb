@@ -242,16 +242,6 @@ bool ExtensionApiTest::RunExtensionTestIncognitoNoFileAccess(
       extension_name, std::string(), NULL, kFlagEnableIncognito);
 }
 
-bool ExtensionApiTest::ExtensionSubtestsAreSkipped() {
-  // See http://crbug.com/177163 for details.
-#if defined(OS_WIN) && !defined(NDEBUG)
-  LOG(WARNING) << "Workaround for 177163, prematurely returning";
-  return true;
-#else
-  return false;
-#endif
-}
-
 bool ExtensionApiTest::RunExtensionSubtest(const std::string& extension_name,
                                            const std::string& page_url) {
   return RunExtensionSubtestWithArgAndFlags(extension_name, page_url, nullptr,
@@ -279,8 +269,6 @@ bool ExtensionApiTest::RunExtensionSubtestWithArgAndFlags(
     const char* custom_arg,
     int flags) {
   DCHECK(!page_url.empty()) << "Argument page_url is required.";
-  if (ExtensionSubtestsAreSkipped())
-    return true;
   return RunExtensionTestImpl(extension_name, page_url, custom_arg, flags);
 }
 

@@ -29,12 +29,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, EventsAreUnregistered) {
   // In this test, page1.html registers for a number of events, then navigates
   // to page2.html, which should unregister those events. page2.html notifies
   // pass, by which point the event should have been unregistered.
-  //
-  // This test relies on the extension installed with RunExtensionSubtest
-  // actually being installed, which won't happen if subtests are skipped (see
-  // comment on ExtensionApiTest::ExtensionSubtestsAreSkipped)
-  if (ExtensionSubtestsAreSkipped())
-    return;
 
   EventRouter* event_router = EventRouter::Get(profile());
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
