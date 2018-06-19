@@ -134,26 +134,24 @@ std::unique_ptr<Vector<char>> PictureSnapshot::Replay(unsigned from_step,
   return base64_data;
 }
 
-std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::Profile(
+Vector<Vector<TimeDelta>> PictureSnapshot::Profile(
     unsigned min_repeat_count,
-    double min_duration,
+    TimeDelta min_duration,
     const FloatRect* clip_rect) const {
-  std::unique_ptr<PictureSnapshot::Timings> timings =
-      std::make_unique<PictureSnapshot::Timings>();
-  timings->ReserveCapacity(min_repeat_count);
+  Vector<Vector<TimeDelta>> timings;
+  timings.ReserveInitialCapacity(min_repeat_count);
   const SkIRect bounds = picture_->cullRect().roundOut();
   SkBitmap bitmap;
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
   bitmap.eraseARGB(0, 0, 0, 0);
 
-  double now = WTF::CurrentTimeTicksInSeconds();
-  double stop_time = now + min_duration;
+  TimeTicks now = WTF::CurrentTimeTicks();
+  TimeTicks stop_time = now + min_duration;
   for (unsigned step = 0; step < min_repeat_count || now < stop_time; ++step) {
-    timings->push_back(Vector<double>());
-    Vector<double>* current_timings = &timings->back();
-    if (timings->size() > 1)
-      current_timings->ReserveCapacity(timings->begin()->size());
+    Vector<TimeDelta> current_timings;
+    if (!timings.IsEmpty())
+      current_timings.ReserveInitialCapacity(timings.front().size());
     ProfilingCanvas canvas(bitmap);
     if (clip_rect) {
       canvas.clipRect(SkRect::MakeXYWH(clip_rect->X(), clip_rect->Y(),
@@ -161,9 +159,10 @@ std::unique_ptr<PictureSnapshot::Timings> PictureSnapshot::Profile(
                                        clip_rect->Height()));
       canvas.ResetStepCount();
     }
-    canvas.SetTimings(current_timings);
+    canvas.SetTimings(&current_timings);
     picture_->playback(&canvas);
-    now = WTF::CurrentTimeTicksInSeconds();
+    timings.push_back(std::move(current_timings));
+    now = WTF::CurrentTimeTicks();
   }
   return timings;
 }

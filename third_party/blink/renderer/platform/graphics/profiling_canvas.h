@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PROFILING_CANVAS_H_
 
 #include "third_party/blink/renderer/platform/graphics/intercepting_canvas.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -46,18 +47,18 @@ class CanvasInterceptor<ProfilingCanvas>
   ~CanvasInterceptor();
 
  private:
-  double start_time_;
+  TimeTicks start_time_;
 };
 
 class ProfilingCanvas : public InterceptingCanvas<ProfilingCanvas> {
  public:
   explicit ProfilingCanvas(SkBitmap);
-  void SetTimings(Vector<double>*);
+  void SetTimings(Vector<TimeDelta>*);
 
  private:
   friend class CanvasInterceptor<ProfilingCanvas>;
 
-  Vector<double>* timings_;
+  Vector<TimeDelta>* timings_;
 };
 
 }  // namespace blink
