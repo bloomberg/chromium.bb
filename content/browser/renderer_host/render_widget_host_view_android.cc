@@ -1244,7 +1244,9 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
   float top_shown_pix = top_content_offset * to_pix;
   float top_translate = top_shown_pix - top_controls_pix;
   bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
-  if (top_changed || !controls_initialized_)
+  // TODO(mthiesse, https://crbug.com/853686): Remove the IsInVR check once
+  // there are no use cases for ignoring the initial update.
+  if (top_changed || (!controls_initialized_ && IsInVR()))
     view_.OnTopControlsChanged(top_translate, top_shown_pix);
   prev_top_shown_pix_ = top_shown_pix;
   prev_top_controls_translate_ = top_translate;
@@ -1253,7 +1255,7 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
   float bottom_shown_pix = bottom_controls_pix * bottom_controls_shown_ratio;
   bool bottom_changed = !FloatEquals(bottom_shown_pix, prev_bottom_shown_pix_);
   float bottom_translate = bottom_controls_pix - bottom_shown_pix;
-  if (bottom_changed || !controls_initialized_)
+  if (bottom_changed || (!controls_initialized_ && IsInVR()))
     view_.OnBottomControlsChanged(bottom_translate, bottom_shown_pix);
   prev_bottom_shown_pix_ = bottom_shown_pix;
   prev_bottom_controls_translate_ = bottom_translate;
@@ -1887,6 +1889,17 @@ void RenderWidgetHostViewAndroid::SetIsInVR(bool is_in_vr) {
   } else if (view_.parent()) {
     touch_selection_controller_ = CreateSelectionController(
         touch_selection_controller_client_manager_.get(), view_.parent());
+  }
+
+  if (is_in_vr_ && controls_initialized_) {
+    // TODO(mthiesse, https://crbug.com/825765): See the TODO in
+    // RenderWidgetHostViewAndroid::OnFrameMetadataUpdated. RWHVA isn't
+    // initialized with VR state so the initial frame metadata top controls
+    // height can be dropped when a new RWHVA is created.
+    view_.OnTopControlsChanged(prev_top_controls_translate_,
+                               prev_top_shown_pix_);
+    view_.OnBottomControlsChanged(prev_bottom_controls_translate_,
+                                  prev_bottom_shown_pix_);
   }
 }
 
