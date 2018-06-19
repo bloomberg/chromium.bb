@@ -29,7 +29,9 @@
  */
 
 // https://w3c.github.io/ServiceWorker/#serviceworkercontainer-interface
-interface ServiceWorkerContainer : EventTarget {
+[
+    SecureContext
+] interface ServiceWorkerContainer : EventTarget {
     readonly attribute ServiceWorker? controller;
     [CallWith=ScriptState] readonly attribute Promise<ServiceWorkerRegistration> ready;
 

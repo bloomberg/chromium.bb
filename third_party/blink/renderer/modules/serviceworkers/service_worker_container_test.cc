@@ -211,15 +211,6 @@ class ServiceWorkerContainerTest : public PageTestBase {
   }
 };
 
-TEST_F(ServiceWorkerContainerTest, Register_NonSecureOriginIsRejected) {
-  SetPageURL("http://www.example.com/");
-  TestRegisterRejected(
-      "http://www.example.com/worker.js", "http://www.example.com/",
-      ExpectDOMException(
-          "SecurityError",
-          "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."));
-}
-
 TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScriptIsRejected) {
   SetPageURL("https://www.example.com");
   TestRegisterRejected(
@@ -242,15 +233,6 @@ TEST_F(ServiceWorkerContainerTest, Register_CrossOriginScopeIsRejected) {
                          "the provided scope ('wss://www.example.com') does "
                          "not match the current origin "
                          "('https://www.example.com')."));
-}
-
-TEST_F(ServiceWorkerContainerTest, GetRegistration_NonSecureOriginIsRejected) {
-  SetPageURL("http://www.example.com/");
-  TestGetRegistrationRejected(
-      "http://www.example.com/",
-      ExpectDOMException(
-          "SecurityError",
-          "Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."));
 }
 
 TEST_F(ServiceWorkerContainerTest, GetRegistration_CrossOriginURLIsRejected) {
