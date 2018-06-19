@@ -4,8 +4,6 @@
 
 source_set("desktop_promotion") {
   sources = [
-    "desktop_promotion_sync_observer.cc",
-    "desktop_promotion_sync_observer.h",
     "desktop_promotion_sync_service.cc",
     "desktop_promotion_sync_service.h",
     "desktop_promotion_sync_service_factory.cc",
@@ -14,6 +12,7 @@ source_set("desktop_promotion") {
   deps = [
     "//base",
     "//components/browser_sync",
+    "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/metrics",
     "//components/pref_registry",

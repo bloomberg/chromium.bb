@@ -6,31 +6,48 @@
 #define CHROME_BROWSER_DESKTOP_PROMOTION_DESKTOP_PROMOTION_SYNC_SERVICE_H
 
 #include "base/macros.h"
-#include "components/browser_sync/profile_sync_service.h"
-#include "ios/chrome/browser/desktop_promotion/desktop_promotion_sync_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
+#include "components/sync/driver/sync_service_observer.h"
+
+class PrefService;
+
+namespace syncer {
+class SyncService;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// This class is responsible for creating a DesktopPromotionSyncObserver
-// after the main browser state is initialized.
-// An object from this class should only be created by
-// DesktopPromotionSyncServiceFactory.
-class DesktopPromotionSyncService : public KeyedService {
+// This class is responsible for observing the SyncService. Once the
+// priority preferences are synced, it will check the desktop promotion
+// pref and if eligible it will log the desktop promotion metrics to
+// uma and mark the promotion cycle as completed in a pref.
+class DesktopPromotionSyncService : public KeyedService,
+                                    public syncer::SyncServiceObserver {
  public:
   // Only the DesktopPromotionSyncServiceFactory and tests should call this.
   DesktopPromotionSyncService(PrefService* pref_service,
-                              browser_sync::ProfileSyncService* sync_service);
+                              syncer::SyncService* sync_service);
 
   ~DesktopPromotionSyncService() override;
+
+  // KeyedService implementation.
+  void Shutdown() override;
+
+  // syncer::SyncServiceObserver implementation.
+  void OnStateChanged(syncer::SyncService* sync) override;
 
   // Register profile specific desktop promotion related preferences.
   static void RegisterDesktopPromotionUserPrefs(
       user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  DesktopPromotionSyncObserver observer_;
+  PrefService* pref_service_ = nullptr;
+  syncer::SyncService* sync_service_ = nullptr;
+  bool desktop_metrics_logger_initiated_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopPromotionSyncService);
 };
 
 #endif  // CHROME_BROWSER_DESKTOP_PROMOTION_DESKTOP_PROMOTION_SYNC_SERVICE_H
