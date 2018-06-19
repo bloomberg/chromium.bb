@@ -93,7 +93,7 @@ class ChildListMutationScope final {
  public:
   explicit ChildListMutationScope(Node& target) {
     if (target.GetDocument().HasMutationObserversOfType(
-            MutationObserver::kChildList)) {
+            kMutationTypeChildList)) {
       accumulator_ = ChildListMutationAccumulator::GetOrCreate(target);
       // Register another user of the accumulator.
       accumulator_->EnterMutationScope();
