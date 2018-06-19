@@ -41,7 +41,7 @@ void WaylandTest::SetUp() {
       .WillOnce(SaveArg<0>(&widget_));
   PlatformWindowInitProperties properties;
   properties.bounds = gfx::Rect(0, 0, 800, 600);
-  properties.type = PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW;
+  properties.type = PlatformWindowType::kWindow;
   ASSERT_TRUE(window_->Initialize(std::move(properties)));
   ASSERT_NE(widget_, gfx::kNullAcceleratedWidget);
 

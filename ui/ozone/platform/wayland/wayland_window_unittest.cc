@@ -483,8 +483,8 @@ TEST_P(WaylandWindowTest, CreateAndDestroyMenuWindow) {
   EXPECT_CALL(menu_window_delegate, OnAcceleratedWidgetDestroyed()).Times(1);
 
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
-      PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, widget_,
-      gfx::Rect(0, 0, 10, 10), &menu_window_delegate);
+      PlatformWindowType::kMenu, widget_, gfx::Rect(0, 0, 10, 10),
+      &menu_window_delegate);
 
   Sync();
 }
@@ -496,8 +496,8 @@ TEST_P(WaylandWindowTest, CreateAndDestroyNestedMenuWindow) {
       .WillOnce(SaveArg<0>(&menu_window_widget));
 
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
-      PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, widget_,
-      gfx::Rect(0, 0, 10, 10), &menu_window_delegate);
+      PlatformWindowType::kMenu, widget_, gfx::Rect(0, 0, 10, 10),
+      &menu_window_delegate);
   ASSERT_NE(menu_window_widget, gfx::kNullAcceleratedWidget);
 
   Sync();
@@ -505,7 +505,7 @@ TEST_P(WaylandWindowTest, CreateAndDestroyNestedMenuWindow) {
   MockPlatformWindowDelegate nested_menu_window_delegate;
   std::unique_ptr<WaylandWindow> nested_menu_window =
       CreateWaylandWindowWithParams(
-          PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, menu_window_widget,
+          PlatformWindowType::kMenu, menu_window_widget,
           gfx::Rect(20, 0, 10, 10), &nested_menu_window_delegate);
 
   Sync();
@@ -514,8 +514,8 @@ TEST_P(WaylandWindowTest, CreateAndDestroyNestedMenuWindow) {
 TEST_P(WaylandWindowTest, CanDispatchEventToMenuWindowNonNested) {
   MockPlatformWindowDelegate menu_window_delegate;
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
-      PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, widget_,
-      gfx::Rect(0, 0, 10, 10), &menu_window_delegate);
+      PlatformWindowType::kMenu, widget_, gfx::Rect(0, 0, 10, 10),
+      &menu_window_delegate);
 
   wl_seat_send_capabilities(server_.seat()->resource(),
                             WL_SEAT_CAPABILITY_POINTER);
@@ -539,15 +539,15 @@ TEST_P(WaylandWindowTest, CanDispatchEventToMenuWindowNested) {
       .WillOnce(SaveArg<0>(&menu_window_widget));
 
   std::unique_ptr<WaylandWindow> menu_window = CreateWaylandWindowWithParams(
-      PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, widget_,
-      gfx::Rect(0, 0, 10, 10), &menu_window_delegate);
+      PlatformWindowType::kMenu, widget_, gfx::Rect(0, 0, 10, 10),
+      &menu_window_delegate);
 
   Sync();
 
   MockPlatformWindowDelegate nested_menu_window_delegate;
   std::unique_ptr<WaylandWindow> nested_menu_window =
       CreateWaylandWindowWithParams(
-          PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU, menu_window_widget,
+          PlatformWindowType::kMenu, menu_window_widget,
           gfx::Rect(20, 0, 10, 10), &nested_menu_window_delegate);
 
   Sync();

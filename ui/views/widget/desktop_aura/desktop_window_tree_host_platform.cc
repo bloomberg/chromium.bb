@@ -27,15 +27,15 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
 
   switch (params.type) {
     case Widget::InitParams::TYPE_WINDOW:
-      properties.type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_WINDOW;
+      properties.type = ui::PlatformWindowType::kWindow;
       break;
 
     case Widget::InitParams::TYPE_MENU:
-      properties.type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_MENU;
+      properties.type = ui::PlatformWindowType::kMenu;
       break;
 
     default:
-      properties.type = ui::PlatformWindowType::PLATFORM_WINDOW_TYPE_POPUP;
+      properties.type = ui::PlatformWindowType::kPopup;
       break;
   }
 
