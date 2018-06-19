@@ -214,6 +214,7 @@ class CONTENT_EXPORT ResourceDispatcher {
         navigation_response_override;
     bool should_follow_redirect = true;
     bool always_access_network = false;
+    bool did_request_complete = false;
 
     std::vector<content::mojom::RedirectInfoPtr> redirect_info_chain;
 

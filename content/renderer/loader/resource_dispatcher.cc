@@ -96,18 +96,18 @@ void NotifySubresourceStarted(
   render_frame->GetFrameHost()->SubresourceResponseStarted(url, cert_status);
 }
 
-void NotifyResourceLoadComplete(
+void NotifyResourceLoadStarted(
     scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
     int render_frame_id,
-    mojom::ResourceLoadInfoPtr resource_load_info) {
+    int request_id,
+    const network::ResourceResponseHead& response_head) {
   if (!thread_task_runner)
     return;
 
   if (!thread_task_runner->BelongsToCurrentThread()) {
     thread_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(NotifyResourceLoadComplete, thread_task_runner,
-                       render_frame_id, std::move(resource_load_info)));
+        FROM_HERE, base::BindOnce(NotifyResourceLoadStarted, thread_task_runner,
+                                  render_frame_id, request_id, response_head));
     return;
   }
 
@@ -116,8 +116,79 @@ void NotifyResourceLoadComplete(
   if (!render_frame)
     return;
 
+  render_frame->DidStartResponse(request_id, response_head);
+}
+
+void NotifyResourceLoadComplete(
+    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
+    int render_frame_id,
+    mojom::ResourceLoadInfoPtr resource_load_info,
+    const network::URLLoaderCompletionStatus& status) {
+  if (!thread_task_runner)
+    return;
+
+  if (!thread_task_runner->BelongsToCurrentThread()) {
+    thread_task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(NotifyResourceLoadComplete, thread_task_runner,
+                       render_frame_id, std::move(resource_load_info), status));
+    return;
+  }
+
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id);
+  if (!render_frame)
+    return;
+
+  render_frame->DidCompleteResponse(resource_load_info->request_id, status);
   render_frame->GetFrameHost()->ResourceLoadComplete(
       std::move(resource_load_info));
+}
+
+void NotifyResourceLoadCancel(
+    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
+    int render_frame_id,
+    int request_id) {
+  if (!thread_task_runner)
+    return;
+
+  if (!thread_task_runner->BelongsToCurrentThread()) {
+    thread_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(NotifyResourceLoadCancel, thread_task_runner,
+                                  render_frame_id, request_id));
+    return;
+  }
+
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id);
+  if (!render_frame)
+    return;
+
+  render_frame->DidCancelResponse(request_id);
+}
+
+void NotifyResourceTransferSizeUpdate(
+    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
+    int render_frame_id,
+    int request_id,
+    int transfer_size_diff) {
+  if (!thread_task_runner)
+    return;
+
+  if (!thread_task_runner->BelongsToCurrentThread()) {
+    thread_task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(NotifyResourceTransferSizeUpdate, thread_task_runner,
+                       render_frame_id, request_id, transfer_size_diff));
+    return;
+  }
+
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id);
+  if (!render_frame)
+    return;
+
+  render_frame->DidReceiveTransferSizeUpdate(request_id, transfer_size_diff);
 }
 
 // Returns true if the headers indicate that this resource should always be
@@ -232,6 +303,14 @@ void ResourceDispatcher::OnReceivedResponse(
   }
 
   request_info->peer->OnReceivedResponse(renderer_response_info);
+
+  // Make a deep copy of ResourceResponseHead before passing it cross-thread.
+  auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
+  resource_response->head = response_head;
+  auto deep_copied_response = resource_response->DeepCopy();
+  NotifyResourceLoadStarted(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
+                            request_info->render_frame_id, request_id,
+                            deep_copied_response->head);
 }
 
 void ResourceDispatcher::OnReceivedCachedMetadata(
@@ -322,6 +401,7 @@ void ResourceDispatcher::OnRequestComplete(
     return;
   request_info->buffer.reset();
   request_info->buffer_size = 0;
+  request_info->did_request_complete = true;
 
   auto resource_load_info = mojom::ResourceLoadInfo::New();
   resource_load_info->url = request_info->response_url;
@@ -347,7 +427,7 @@ void ResourceDispatcher::OnRequestComplete(
 
   NotifyResourceLoadComplete(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                              request_info->render_frame_id,
-                             std::move(resource_load_info));
+                             std::move(resource_load_info), status);
 
   RequestPeer* peer = request_info->peer.get();
 
@@ -396,6 +476,11 @@ bool ResourceDispatcher::RemovePendingRequest(
   PendingRequestMap::iterator it = pending_requests_.find(request_id);
   if (it == pending_requests_.end())
     return false;
+
+  if (!it->second->did_request_complete) {
+    NotifyResourceLoadCancel(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
+                             it->second->render_frame_id, request_id);
+  }
 
   // Cancel loading.
   it->second->url_loader = nullptr;
@@ -465,6 +550,10 @@ void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
   // TODO(yhirano): Consider using int64_t in
   // RequestPeer::OnTransferSizeUpdated.
   request_info->peer->OnTransferSizeUpdated(transfer_size_diff);
+
+  NotifyResourceTransferSizeUpdate(
+      RenderThreadImpl::DeprecatedGetMainTaskRunner(),
+      request_info->render_frame_id, request_id, transfer_size_diff);
 }
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
