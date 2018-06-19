@@ -32,9 +32,6 @@ from chromite.lib import rewrite_git_alternates
 site_config = config_lib.GetConfig()
 
 
-# File that marks a buildroot as being used by a trybot
-_TRYBOT_MARKER = '.trybot'
-
 # Default sleep time(second) between retries
 DEFAULT_SLEEP_TIME = 5
 
@@ -159,19 +156,13 @@ def UpdateGitRepo(working_dir, repo_url, **kwargs):
     CloneGitRepo(working_dir, repo_url, **kwargs)
 
 
-def GetTrybotMarkerPath(buildroot):
-  """Get path to trybot marker file given the buildroot."""
-  return os.path.join(buildroot, _TRYBOT_MARKER)
-
-
-def CreateTrybotMarker(buildroot):
-  """Create the file that identifies a buildroot as being used by a trybot."""
-  osutils.WriteFile(GetTrybotMarkerPath(buildroot), '')
-
-
 def ClearBuildRoot(buildroot, preserve_paths=()):
-  """Remove and recreate the buildroot while preserving the trybot marker."""
-  trybot_root = os.path.exists(GetTrybotMarkerPath(buildroot))
+  """Remove all files in the buildroot not preserved.
+
+  Args:
+    buildroot: buildroot to clear.
+      preserve_paths: paths need to be preserved during clean.
+  """
   if os.path.exists(buildroot):
     cmd = ['find', buildroot, '-mindepth', '1', '-maxdepth', '1']
 
@@ -184,10 +175,8 @@ def ClearBuildRoot(buildroot, preserve_paths=()):
 
     cmd += ['-exec', 'rm', '-rf', '{}', '+']
     cros_build_lib.SudoRunCommand(cmd)
-  else:
-    os.makedirs(buildroot)
-  if trybot_root:
-    CreateTrybotMarker(buildroot)
+
+  osutils.SafeMakedirs(buildroot)
 
 
 def PrepManifestForRepo(git_repo, manifest):

@@ -389,10 +389,6 @@ class FullInterfaceTest(cros_test_lib.MockTempDirTestCase):
     self.root = self.tempdir
     self.buildroot = self.MakeTestRootDir('build_root')
     self.sourceroot = self.MakeTestRootDir('source_root')
-    self.trybot_root = self.MakeTestRootDir('trybot')
-    self.trybot_internal_root = self.MakeTestRootDir('trybot-internal')
-    self.external_marker = os.path.join(self.trybot_root, '.trybot')
-    self.internal_marker = os.path.join(self.trybot_internal_root, '.trybot')
 
     osutils.SafeMakedirs(os.path.join(self.sourceroot, '.repo', 'manifests'))
     osutils.SafeMakedirs(os.path.join(self.sourceroot, '.repo', 'repo'))
