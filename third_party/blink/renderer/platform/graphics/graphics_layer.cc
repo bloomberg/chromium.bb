@@ -337,6 +337,13 @@ void GraphicsLayer::PaintRecursivelyInternal(
 
 bool GraphicsLayer::Paint(const IntRect* interest_rect,
                           GraphicsContext::DisabledMode disabled_mode) {
+#if !DCHECK_IS_ON()
+  // TODO(crbug.com/853096): Investigate why we can ever reach here without
+  // a valid layer state. Seems to only happen on Android builds.
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() && !layer_state_)
+    return false;
+#endif
+
   if (PaintWithoutCommit(interest_rect, disabled_mode))
     GetPaintController().CommitNewDisplayItems();
   else if (!needs_check_raster_invalidation_)
