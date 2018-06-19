@@ -7,7 +7,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/assistant/ui/main_stage/assistant_query_view.h"
+#include "ash/assistant/ui/main_stage/assistant_header_view.h"
 #include "ash/assistant/ui/main_stage/assistant_text_element_view.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "base/base64.h"
@@ -19,6 +19,9 @@ namespace ash {
 
 namespace {
 
+// Appearance.
+constexpr int kPaddingHorizontalDip = 32;
+
 constexpr char kDataUriPrefix[] = "data:text/html;base64,";
 
 }  // namespace
@@ -26,8 +29,6 @@ constexpr char kDataUriPrefix[] = "data:text/html;base64,";
 UiElementContainerView::UiElementContainerView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
-      assistant_query_view_(
-          std::make_unique<AssistantQueryView>(assistant_controller)),
       render_request_weak_factory_(this) {
   InitLayout();
 
@@ -48,15 +49,17 @@ void UiElementContainerView::ChildPreferredSizeChanged(views::View* child) {
 void UiElementContainerView::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical, gfx::Insets(0, kPaddingDip),
-          kSpacingDip));
+          views::BoxLayout::Orientation::kVertical,
+          gfx::Insets(0, kPaddingHorizontalDip), kSpacingDip));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_START);
 
-  // Query.
-  assistant_query_view_->set_owned_by_client();
-  AddChildView(assistant_query_view_.get());
+  // Header.
+  assistant_header_view_ =
+      std::make_unique<AssistantHeaderView>(assistant_controller_);
+  assistant_header_view_->set_owned_by_client();
+  AddChildView(assistant_header_view_.get());
 }
 
 void UiElementContainerView::OnUiElementAdded(
@@ -83,7 +86,7 @@ void UiElementContainerView::OnUiElementsCleared() {
   render_request_weak_factory_.InvalidateWeakPtrs();
 
   RemoveAllChildViews(/*delete_children=*/true);
-  AddChildView(assistant_query_view_.get());
+  AddChildView(assistant_header_view_.get());
 
   PreferredSizeChanged();
 
@@ -115,9 +118,10 @@ void UiElementContainerView::OnCardElementAdded(
   ash::mojom::ManagedWebContentsParamsPtr params(
       ash::mojom::ManagedWebContentsParams::New());
   params->url = GURL(kDataUriPrefix + encoded_html);
-  params->min_size_dip = gfx::Size(kPreferredWidthDip - 2 * kPaddingDip, 1);
+  params->min_size_dip =
+      gfx::Size(kPreferredWidthDip - 2 * kPaddingHorizontalDip, 1);
   params->max_size_dip =
-      gfx::Size(kPreferredWidthDip - 2 * kPaddingDip, INT_MAX);
+      gfx::Size(kPreferredWidthDip - 2 * kPaddingHorizontalDip, INT_MAX);
 
   // The card will be rendered by AssistantCardRenderer, running the specified
   // callback when the card is ready for embedding.
@@ -145,7 +149,6 @@ void UiElementContainerView::OnCardReady(
   // When the card has been rendered in the same process, its view is
   // available in the AnswerCardContentsRegistry's token-to-view map.
   if (app_list::AnswerCardContentsRegistry::Get()) {
-    RemoveChildView(assistant_query_view_.get());
     AddChildView(app_list::AnswerCardContentsRegistry::Get()->GetView(
         embed_token.value()));
   }
@@ -162,7 +165,6 @@ void UiElementContainerView::OnTextElementAdded(
     const AssistantTextElement* text_element) {
   DCHECK(!is_processing_ui_element_);
 
-  RemoveChildView(assistant_query_view_.get());
   AddChildView(new AssistantTextElementView(text_element));
 
   PreferredSizeChanged();

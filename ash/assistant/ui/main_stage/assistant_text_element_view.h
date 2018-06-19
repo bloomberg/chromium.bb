@@ -6,7 +6,7 @@
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_TEXT_ELEMENT_VIEW_H_
 
 #include "base/macros.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/label.h"
 
 namespace ash {
 
@@ -14,17 +14,12 @@ class AssistantTextElement;
 
 // AssistantTextElementView is the visual representation of an
 // AssistantTextElement. It is a child view of UiElementContainerView.
-class AssistantTextElementView : public views::View {
+class AssistantTextElementView : public views::Label {
  public:
   explicit AssistantTextElementView(const AssistantTextElement* text_element);
   ~AssistantTextElementView() override;
 
-  // views::View:
-  void ChildPreferredSizeChanged(views::View* child) override;
-
  private:
-  void InitLayout(const AssistantTextElement* text_element);
-
   DISALLOW_COPY_AND_ASSIGN(AssistantTextElementView);
 };
 

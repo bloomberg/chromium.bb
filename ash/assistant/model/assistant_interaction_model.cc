@@ -11,7 +11,8 @@
 namespace ash {
 
 AssistantInteractionModel::AssistantInteractionModel()
-    : query_(std::make_unique<AssistantEmptyQuery>()) {}
+    : committed_query_(std::make_unique<AssistantEmptyQuery>()),
+      pending_query_(std::make_unique<AssistantEmptyQuery>()) {}
 
 AssistantInteractionModel::~AssistantInteractionModel() = default;
 
@@ -25,9 +26,12 @@ void AssistantInteractionModel::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void AssistantInteractionModel::ClearInteraction() {
+void AssistantInteractionModel::ClearInteraction(bool retain_committed_query) {
+  if (!retain_committed_query)
+    ClearCommittedQuery();
+
+  ClearPendingQuery();
   ClearUiElements();
-  ClearQuery();
   ClearSuggestions();
 }
 
@@ -56,6 +60,31 @@ void AssistantInteractionModel::SetMicState(MicState mic_state) {
   NotifyMicStateChanged();
 }
 
+void AssistantInteractionModel::ClearCommittedQuery() {
+  committed_query_ = std::make_unique<AssistantEmptyQuery>();
+  NotifyCommittedQueryCleared();
+}
+
+void AssistantInteractionModel::SetPendingQuery(
+    std::unique_ptr<AssistantQuery> pending_query) {
+  DCHECK(!pending_query->Empty());
+  pending_query_ = std::move(pending_query);
+  NotifyPendingQueryChanged();
+}
+
+void AssistantInteractionModel::CommitPendingQuery() {
+  committed_query_ = std::move(pending_query_);
+  pending_query_ = std::make_unique<AssistantEmptyQuery>();
+
+  NotifyCommittedQueryChanged();
+  NotifyPendingQueryCleared();
+}
+
+void AssistantInteractionModel::ClearPendingQuery() {
+  pending_query_ = std::make_unique<AssistantEmptyQuery>();
+  NotifyPendingQueryCleared();
+}
+
 void AssistantInteractionModel::AddUiElement(
     std::unique_ptr<AssistantUiElement> ui_element) {
   AssistantUiElement* ptr = ui_element.get();
@@ -66,18 +95,6 @@ void AssistantInteractionModel::AddUiElement(
 void AssistantInteractionModel::ClearUiElements() {
   ui_element_list_.clear();
   NotifyUiElementsCleared();
-}
-
-void AssistantInteractionModel::SetQuery(
-    std::unique_ptr<AssistantQuery> query) {
-  DCHECK(query);
-  query_ = std::move(query);
-  NotifyQueryChanged();
-}
-
-void AssistantInteractionModel::ClearQuery() {
-  query_.reset(new AssistantEmptyQuery());
-  NotifyQueryCleared();
 }
 
 void AssistantInteractionModel::AddSuggestions(
@@ -127,6 +144,26 @@ void AssistantInteractionModel::NotifyMicStateChanged() {
     observer.OnMicStateChanged(mic_state_);
 }
 
+void AssistantInteractionModel::NotifyCommittedQueryChanged() {
+  for (AssistantInteractionModelObserver& observer : observers_)
+    observer.OnCommittedQueryChanged(*committed_query_);
+}
+
+void AssistantInteractionModel::NotifyCommittedQueryCleared() {
+  for (AssistantInteractionModelObserver& observer : observers_)
+    observer.OnCommittedQueryCleared();
+}
+
+void AssistantInteractionModel::NotifyPendingQueryChanged() {
+  for (AssistantInteractionModelObserver& observer : observers_)
+    observer.OnPendingQueryChanged(*pending_query_);
+}
+
+void AssistantInteractionModel::NotifyPendingQueryCleared() {
+  for (AssistantInteractionModelObserver& observer : observers_)
+    observer.OnPendingQueryCleared();
+}
+
 void AssistantInteractionModel::NotifyUiElementAdded(
     const AssistantUiElement* ui_element) {
   for (AssistantInteractionModelObserver& observer : observers_)
@@ -136,16 +173,6 @@ void AssistantInteractionModel::NotifyUiElementAdded(
 void AssistantInteractionModel::NotifyUiElementsCleared() {
   for (AssistantInteractionModelObserver& observer : observers_)
     observer.OnUiElementsCleared();
-}
-
-void AssistantInteractionModel::NotifyQueryChanged() {
-  for (AssistantInteractionModelObserver& observer : observers_)
-    observer.OnQueryChanged(*query_);
-}
-
-void AssistantInteractionModel::NotifyQueryCleared() {
-  for (AssistantInteractionModelObserver& observer : observers_)
-    observer.OnQueryCleared();
 }
 
 void AssistantInteractionModel::NotifySuggestionsAdded(

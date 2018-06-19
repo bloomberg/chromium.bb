@@ -10,12 +10,7 @@
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
-#include "ash/resources/vector_icons/vector_icons.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -23,16 +18,16 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kIconSizeDip = 24;
+constexpr int kMinHeightDip = 32;
 
 }  // namespace
 
 AssistantQueryView::AssistantQueryView(
-    AssistantController* assistant_controller)
+    AssistantController* assistant_controller,
+    ObservedQueryState observed_query_state)
     : assistant_controller_(assistant_controller),
-      label_(new views::StyledLabel(base::string16(), /*listener=*/nullptr)) {
+      observed_query_state_(observed_query_state) {
   InitLayout();
-  OnQueryChanged(assistant_controller_->interaction_model()->query());
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // AssistantQueryView belongs so is guaranteed to outlive it.
@@ -47,6 +42,10 @@ gfx::Size AssistantQueryView::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
 }
 
+int AssistantQueryView::GetHeightForWidth(int width) const {
+  return std::max(views::View::GetHeightForWidth(width), kMinHeightDip);
+}
+
 void AssistantQueryView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
@@ -58,23 +57,41 @@ void AssistantQueryView::OnBoundsChanged(const gfx::Rect& prev_bounds) {
 void AssistantQueryView::InitLayout() {
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical, gfx::Insets(),
-          kSpacingDip));
+          views::BoxLayout::Orientation::kVertical));
+
+  layout_manager->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
 
   layout_manager->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_START);
-
-  // Icon.
-  views::ImageView* icon = new views::ImageView();
-  icon->SetImage(gfx::CreateVectorIcon(kAssistantIcon, kIconSizeDip));
-  icon->SetImageSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  icon->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  AddChildView(icon);
+      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
   // Label.
+  label_ = new views::StyledLabel(base::string16(), /*listener=*/nullptr);
   label_->set_auto_color_readability_enabled(false);
-  label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+  label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
   AddChildView(label_);
+
+  // Artificially trigger event to initialize state.
+  OnPendingQueryChanged(
+      observed_query_state_ == ObservedQueryState::kCommitted
+          ? assistant_controller_->interaction_model()->committed_query()
+          : assistant_controller_->interaction_model()->pending_query());
+}
+
+void AssistantQueryView::OnCommittedQueryChanged(
+    const AssistantQuery& committed_query) {
+  if (observed_query_state_ != ObservedQueryState::kCommitted)
+    return;
+
+  OnQueryChanged(committed_query);
+}
+
+void AssistantQueryView::OnPendingQueryChanged(
+    const AssistantQuery& pending_query) {
+  if (observed_query_state_ != ObservedQueryState::kPending)
+    return;
+
+  OnQueryChanged(pending_query);
 }
 
 void AssistantQueryView::OnQueryChanged(const AssistantQuery& query) {
@@ -105,46 +122,72 @@ void AssistantQueryView::OnQueryChanged(const AssistantQuery& query) {
   }
 }
 
+void AssistantQueryView::OnCommittedQueryCleared() {
+  if (observed_query_state_ != ObservedQueryState::kCommitted)
+    return;
+
+  OnQueryCleared();
+}
+
+void AssistantQueryView::OnPendingQueryCleared() {
+  if (observed_query_state_ != ObservedQueryState::kPending)
+    return;
+
+  OnQueryCleared();
+}
+
 void AssistantQueryView::OnQueryCleared() {
-  SetText(l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
+  SetVisible(false);
+  label_->SetText(base::string16());
 }
 
 void AssistantQueryView::SetText(const std::string& high_confidence_text,
                                  const std::string& low_confidence_text) {
-  const base::string16& high_confidence_text_16 =
-      base::UTF8ToUTF16(high_confidence_text);
+  if (observed_query_state_ == ObservedQueryState::kCommitted) {
+    // When observing a committed query, text is displayed in a single color.
+    const base::string16& text_16 =
+        base::UTF8ToUTF16(high_confidence_text + low_confidence_text);
 
-  if (low_confidence_text.empty()) {
-    label_->SetText(high_confidence_text_16);
-    label_->AddStyleRange(gfx::Range(0, high_confidence_text_16.length()),
-                          CreateStyleInfo(kTextColorPrimary));
+    label_->SetText(text_16);
+    label_->AddStyleRange(gfx::Range(0, text_16.length()),
+                          CreateStyleInfo(kTextColorSecondary));
   } else {
-    const base::string16& low_confidence_text_16 =
-        base::UTF8ToUTF16(low_confidence_text);
+    // When observing a pending query, high confidence text and low confidence
+    // text are displayed in different colors for visual emphasis.
+    const base::string16& high_confidence_text_16 =
+        base::UTF8ToUTF16(high_confidence_text);
 
-    label_->SetText(high_confidence_text_16 + low_confidence_text_16);
+    if (low_confidence_text.empty()) {
+      label_->SetText(high_confidence_text_16);
+      label_->AddStyleRange(gfx::Range(0, high_confidence_text_16.length()),
+                            CreateStyleInfo(kTextColorPrimary));
+    } else {
+      const base::string16& low_confidence_text_16 =
+          base::UTF8ToUTF16(low_confidence_text);
 
-    // High confidence text styling.
-    label_->AddStyleRange(gfx::Range(0, high_confidence_text_16.length()),
-                          CreateStyleInfo(kTextColorPrimary));
+      label_->SetText(high_confidence_text_16 + low_confidence_text_16);
 
-    // Low confidence text styling.
-    label_->AddStyleRange(gfx::Range(high_confidence_text_16.length(),
-                                     high_confidence_text_16.length() +
-                                         low_confidence_text_16.length()),
-                          CreateStyleInfo(kTextColorHint));
+      // High confidence text styling.
+      label_->AddStyleRange(gfx::Range(0, high_confidence_text_16.length()),
+                            CreateStyleInfo(kTextColorPrimary));
+
+      // Low confidence text styling.
+      label_->AddStyleRange(gfx::Range(high_confidence_text_16.length(),
+                                       high_confidence_text_16.length() +
+                                           low_confidence_text_16.length()),
+                            CreateStyleInfo(kTextColorHint));
+    }
   }
 
   label_->SizeToFit(width());
   PreferredSizeChanged();
+  SetVisible(true);
 }
 
 views::StyledLabel::RangeStyleInfo AssistantQueryView::CreateStyleInfo(
     SkColor color) const {
   views::StyledLabel::RangeStyleInfo style;
-  style.custom_font =
-      label_->GetDefaultFontList().DeriveWithSizeDelta(8).DeriveWithWeight(
-          gfx::Font::Weight::MEDIUM);
+  style.custom_font = label_->GetDefaultFontList().DeriveWithSizeDelta(2);
   style.override_color = color;
   return style;
 }

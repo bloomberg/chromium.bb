@@ -42,17 +42,25 @@ class AssistantInteractionModelObserver {
   // Invoked when the mic state associated with the interaction is changed.
   virtual void OnMicStateChanged(MicState mic_state) {}
 
+  // Invoked when the committed query associated with the interaction is
+  // changed.
+  virtual void OnCommittedQueryChanged(const AssistantQuery& committed_query) {}
+
+  // Invoked when the committed query associated with the interaction is
+  // cleared.
+  virtual void OnCommittedQueryCleared() {}
+
+  // Invoked when the pending query associated with the interaction is changed.
+  virtual void OnPendingQueryChanged(const AssistantQuery& pending_query) {}
+
+  // Invoked when the pending query associated with the interaction is cleared.
+  virtual void OnPendingQueryCleared() {}
+
   // Invoked when a UI element associated with the interaction is added.
   virtual void OnUiElementAdded(const AssistantUiElement* ui_element) {}
 
   // Invoked when all UI elements associated with the interaction are cleared.
   virtual void OnUiElementsCleared() {}
-
-  // Invoked when the query associated with the interaction is changed.
-  virtual void OnQueryChanged(const AssistantQuery& query) {}
-
-  // Invoked when the query associated with the interaction is cleared.
-  virtual void OnQueryCleared() {}
 
   // Invoked when the specified |suggestions| are added to the associated
   // interaction. The key for the map is the unique identifier by which the

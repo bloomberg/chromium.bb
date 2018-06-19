@@ -203,12 +203,20 @@ void AssistantController::OnInteractionStateChanged(
     return;
 
   // When the user-facing interaction is dismissed, we instruct the service to
-  // terminate any listening, speaking, or query in flight.
+  // terminate any listening, speaking, or pending query.
   has_active_interaction_ = false;
   assistant_->StopActiveInteraction();
 
   assistant_interaction_model_.ClearInteraction();
   assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+}
+
+void AssistantController::OnCommittedQueryChanged(
+    const AssistantQuery& committed_query) {
+  // We clear the interaction when a query is committed, but need to retain
+  // the committed query as it is query that is currently being fulfilled.
+  assistant_interaction_model_.ClearInteraction(
+      /*retain_committed_query=*/true);
 }
 
 void AssistantController::OnHighlighterEnabledChanged(
@@ -227,18 +235,16 @@ void AssistantController::OnInputModalityChanged(InputModality input_modality) {
     return;
 
   // When switching to a non-voice input modality we instruct the underlying
-  // service to terminate any listening, speaking, or in flight voice query. We
-  // do not do this when switching to voice input modality because initiation of
-  // a voice interaction will automatically interrupt any pre-existing activity.
+  // service to terminate any listening, speaking, or pending voice query. We do
+  // not do this when switching to voice input modality because initiation of a
+  // voice interaction will automatically interrupt any pre-existing activity.
   // Stopping the active interaction here for voice input modality would
   // actually have the undesired effect of stopping the voice interaction.
-  if (assistant_interaction_model_.query().type() ==
+  if (assistant_interaction_model_.pending_query().type() ==
       AssistantQueryType::kVoice) {
     has_active_interaction_ = false;
     assistant_->StopActiveInteraction();
-
-    // Clear the interaction to reset the UI.
-    assistant_interaction_model_.ClearInteraction();
+    assistant_interaction_model_.ClearPendingQuery();
   }
 }
 
@@ -270,8 +276,6 @@ void AssistantController::OnSuggestionChipPressed(int id) {
   const AssistantSuggestion* suggestion =
       assistant_interaction_model_.GetSuggestionById(id);
 
-  DCHECK(suggestion);
-
   // If the suggestion contains a non-empty action url, we will handle the
   // suggestion chip pressed event by launching the action url in the browser.
   if (!suggestion->action_url.is_empty()) {
@@ -282,11 +286,10 @@ void AssistantController::OnSuggestionChipPressed(int id) {
   // Otherwise, we will submit a simple text query using the suggestion text.
   const std::string text = suggestion->text;
 
-  assistant_interaction_model_.ClearInteraction();
-  assistant_interaction_model_.SetQuery(
+  assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantTextQuery>(text));
+  assistant_interaction_model_.CommitPendingQuery();
 
-  DCHECK(assistant_);
   assistant_->SendTextQuery(text);
 }
 
@@ -307,18 +310,18 @@ void AssistantController::OnTextResponse(const std::string& response) {
 }
 
 void AssistantController::OnSpeechRecognitionStarted() {
-  assistant_interaction_model_.ClearInteraction();
   assistant_interaction_model_.SetInputModality(InputModality::kVoice);
   assistant_interaction_model_.SetMicState(MicState::kOpen);
-  assistant_interaction_model_.SetQuery(
+  assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantVoiceQuery>());
 }
 
 void AssistantController::OnSpeechRecognitionIntermediateResult(
     const std::string& high_confidence_text,
     const std::string& low_confidence_text) {
-  assistant_interaction_model_.SetQuery(std::make_unique<AssistantVoiceQuery>(
-      high_confidence_text, low_confidence_text));
+  assistant_interaction_model_.SetPendingQuery(
+      std::make_unique<AssistantVoiceQuery>(high_confidence_text,
+                                            low_confidence_text));
 }
 
 void AssistantController::OnSpeechRecognitionEndOfUtterance() {
@@ -327,8 +330,9 @@ void AssistantController::OnSpeechRecognitionEndOfUtterance() {
 
 void AssistantController::OnSpeechRecognitionFinalResult(
     const std::string& final_result) {
-  assistant_interaction_model_.SetQuery(
+  assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantVoiceQuery>(final_result));
+  assistant_interaction_model_.CommitPendingQuery();
 }
 
 void AssistantController::OnSpeechLevelUpdated(float speech_level) {
@@ -361,26 +365,20 @@ void AssistantController::OnDialogPlateButtonPressed(DialogPlateButtonId id) {
     case MicState::kOpen:
       has_active_interaction_ = false;
       assistant_->StopActiveInteraction();
-
-      // Clear the interaction to reset the UI.
-      assistant_interaction_model_.ClearInteraction();
       break;
   }
 }
 
 void AssistantController::OnDialogPlateContentsCommitted(
     const std::string& text) {
-  // TODO(dmblack): Handle an empty text query more gracefully by showing a
-  // helpful message to the user. Currently we just reset state and pretend as
-  // if nothing happened.
-  if (text.empty()) {
-    assistant_interaction_model_.ClearInteraction();
+  // TODO(dmblack): This case no longer makes sense now that the DialogPlate has
+  // been rebuilt. Remove the ability to commit empty DialogPlate contents.
+  if (text.empty())
     return;
-  }
 
-  assistant_interaction_model_.ClearInteraction();
-  assistant_interaction_model_.SetQuery(
+  assistant_interaction_model_.SetPendingQuery(
       std::make_unique<AssistantTextQuery>(text));
+  assistant_interaction_model_.CommitPendingQuery();
 
   assistant_->SendTextQuery(text);
 }

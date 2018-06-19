@@ -19,6 +19,7 @@ constexpr int kSpacingDip = 8;
 // Typography.
 constexpr SkColor kTextColorHint = gfx::kGoogleGrey500;
 constexpr SkColor kTextColorPrimary = gfx::kGoogleGrey900;
+constexpr SkColor kTextColorSecondary = gfx::kGoogleGrey700;
 
 }  // namespace ash
 

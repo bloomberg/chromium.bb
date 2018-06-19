@@ -100,6 +100,7 @@ class AssistantController
   // AssistantInteractionModelObserver:
   void OnInputModalityChanged(InputModality input_modality) override;
   void OnInteractionStateChanged(InteractionState interaction_state) override;
+  void OnCommittedQueryChanged(const AssistantQuery& committed_query) override;
 
   // HighlighterController::Observer:
   void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;

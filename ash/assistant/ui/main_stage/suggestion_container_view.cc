@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/ui/suggestion_container_view.h"
+#include "ash/assistant/ui/main_stage/suggestion_container_view.h"
 
 #include <memory>
 
@@ -119,14 +119,11 @@ void SuggestionContainerView::OnSuggestionsAdded(
     contents_view_->AddChildView(suggestion_chip_view);
   }
   UpdateContentsBounds();
-  SetVisible(contents_view_->has_children());
 }
 
 void SuggestionContainerView::OnSuggestionsCleared() {
   // Abort any download requests in progress.
   download_request_weak_factory_.InvalidateWeakPtrs();
-
-  SetVisible(false);
 
   // When modifying the view hierarchy, make sure we keep our view cache synced.
   contents_view_->RemoveAllChildViews(/*delete_children=*/true);
