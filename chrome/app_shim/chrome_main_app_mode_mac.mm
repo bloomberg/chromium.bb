@@ -33,14 +33,12 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/mac/app_mode_common.h"
+#include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/common/mac/app_shim_messages.h"
 #include "chrome/grit/generated_resources.h"
-#include "ipc/ipc_channel_mojo.h"
-#include "ipc/ipc_channel_proxy.h"
-#include "ipc/ipc_listener.h"
-#include "ipc/ipc_message.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -91,7 +89,7 @@ class AppShimController;
 
 // The AppShimController is responsible for communication with the main Chrome
 // process, and generally controls the lifetime of the app shim process.
-class AppShimController : public IPC::Listener {
+class AppShimController : public chrome::mojom::AppShim {
  public:
   AppShimController();
   ~AppShimController() override;
@@ -124,31 +122,21 @@ class AppShimController : public IPC::Listener {
                     const std::vector<base::FilePath>& files);
 
  private:
-  // IPC::Listener implemetation.
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void OnChannelError() override;
+  void ChannelError(uint32_t custom_reason, const std::string& description);
 
-  // If Chrome failed to launch the app, |success| will be false and the app
-  // shim process should die.
-  void OnLaunchAppDone(apps::AppShimLaunchResult result);
-
-  // Hide this app.
-  void OnHide();
-
-  // Set this app to the unhidden state. Happens when an app window shows
-  // itself.
-  void OnUnhideWithoutActivation();
-
-  // Requests user attention.
-  void OnRequestUserAttention();
-  void OnSetUserAttention(apps::AppShimAttentionType attention_type);
+  // chrome::mojom::AppShim implementation.
+  void LaunchAppDone(apps::AppShimLaunchResult result) override;
+  void Hide() override;
+  void UnhideWithoutActivation() override;
+  void SetUserAttention(apps::AppShimAttentionType attention_type) override;
 
   // Terminates the app shim process.
   void Close();
 
   base::FilePath user_data_dir_;
   mojo::IsolatedConnection mojo_connection_;
-  std::unique_ptr<IPC::ChannelProxy> channel_;
+  mojo::Binding<chrome::mojom::AppShim> shim_binding_;
+  chrome::mojom::AppShimHostPtr host_;
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
   bool ping_chrome_reply_received_;
@@ -158,7 +146,8 @@ class AppShimController : public IPC::Listener {
 };
 
 AppShimController::AppShimController()
-    : delegate_([[AppShimDelegate alloc] init]),
+    : shim_binding_(this),
+      delegate_([[AppShimDelegate alloc] init]),
       launch_app_done_(false),
       ping_chrome_reply_received_(false),
       attention_request_id_(0) {
@@ -219,14 +208,15 @@ void AppShimController::Init() {
 
 void AppShimController::CreateChannelAndSendLaunchApp(
     const base::FilePath& socket_path) {
-  channel_ = IPC::ChannelProxy::Create(
-      IPC::ChannelMojo::CreateClientFactory(
-          mojo_connection_.Connect(
-              mojo::NamedPlatformChannel::ConnectToServer(socket_path.value())),
-          g_io_thread->task_runner().get(),
-          base::ThreadTaskRunnerHandle::Get()),
-      this, g_io_thread->task_runner().get(),
-      base::ThreadTaskRunnerHandle::Get());
+  mojo::ScopedMessagePipeHandle message_pipe = mojo_connection_.Connect(
+      mojo::NamedPlatformChannel::ConnectToServer(socket_path.value()));
+  host_ = chrome::mojom::AppShimHostPtr(
+      chrome::mojom::AppShimHostPtrInfo(std::move(message_pipe), 0));
+
+  chrome::mojom::AppShimPtr app_shim_ptr;
+  shim_binding_.Bind(mojo::MakeRequest(&app_shim_ptr));
+  shim_binding_.set_connection_error_with_reason_handler(
+      base::BindOnce(&AppShimController::ChannelError, base::Unretained(this)));
 
   bool launched_by_chrome = base::CommandLine::ForCurrentProcess()->HasSwitch(
       app_mode::kLaunchedByChromeProcessId);
@@ -238,8 +228,8 @@ void AppShimController::CreateChannelAndSendLaunchApp(
   std::vector<base::FilePath> files;
   [delegate_ getFilesToOpenAtStartup:&files];
 
-  channel_->Send(new AppShimHostMsg_LaunchApp(
-      g_info->profile_dir, g_info->app_mode_id, launch_type, files));
+  host_->LaunchApp(std::move(app_shim_ptr), g_info->profile_dir,
+                   g_info->app_mode_id, launch_type, files);
 }
 
 void AppShimController::SetUpMenu() {
@@ -290,29 +280,17 @@ void AppShimController::SetUpMenu() {
 }
 
 void AppShimController::SendQuitApp() {
-  channel_->Send(new AppShimHostMsg_QuitApp);
+  host_->QuitApp();
 }
 
-bool AppShimController::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AppShimController, message)
-    IPC_MESSAGE_HANDLER(AppShimMsg_LaunchApp_Done, OnLaunchAppDone)
-    IPC_MESSAGE_HANDLER(AppShimMsg_Hide, OnHide)
-    IPC_MESSAGE_HANDLER(AppShimMsg_UnhideWithoutActivation,
-                        OnUnhideWithoutActivation)
-    IPC_MESSAGE_HANDLER(AppShimMsg_RequestUserAttention, OnRequestUserAttention)
-    IPC_MESSAGE_HANDLER(AppShimMsg_SetUserAttention, OnSetUserAttention)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
-void AppShimController::OnChannelError() {
+void AppShimController::ChannelError(uint32_t custom_reason,
+                                     const std::string& description) {
+  LOG(ERROR) << "Channel error custom_reason:" << custom_reason
+             << " description: " << description;
   Close();
 }
 
-void AppShimController::OnLaunchAppDone(apps::AppShimLaunchResult result) {
+void AppShimController::LaunchAppDone(apps::AppShimLaunchResult result) {
   if (result != apps::APP_SHIM_LAUNCH_SUCCESS) {
     Close();
     return;
@@ -325,19 +303,15 @@ void AppShimController::OnLaunchAppDone(apps::AppShimLaunchResult result) {
   launch_app_done_ = true;
 }
 
-void AppShimController::OnHide() {
+void AppShimController::Hide() {
   [NSApp hide:nil];
 }
 
-void AppShimController::OnUnhideWithoutActivation() {
+void AppShimController::UnhideWithoutActivation() {
   [NSApp unhideWithoutActivation];
 }
 
-void AppShimController::OnRequestUserAttention() {
-  OnSetUserAttention(apps::APP_SHIM_ATTENTION_INFORMATIONAL);
-}
-
-void AppShimController::OnSetUserAttention(
+void AppShimController::SetUserAttention(
     apps::AppShimAttentionType attention_type) {
   switch (attention_type) {
     case apps::APP_SHIM_ATTENTION_CANCEL:
@@ -363,7 +337,7 @@ void AppShimController::Close() {
 bool AppShimController::SendFocusApp(apps::AppShimFocusType focus_type,
                                      const std::vector<base::FilePath>& files) {
   if (launch_app_done_) {
-    channel_->Send(new AppShimHostMsg_FocusApp(focus_type, files));
+    host_->FocusApp(focus_type, files);
     return true;
   }
 
@@ -371,7 +345,7 @@ bool AppShimController::SendFocusApp(apps::AppShimFocusType focus_type,
 }
 
 void AppShimController::SendSetAppHidden(bool hidden) {
-  channel_->Send(new AppShimHostMsg_SetAppHidden(hidden));
+  host_->SetAppHidden(hidden);
 }
 
 @implementation AppShimDelegate

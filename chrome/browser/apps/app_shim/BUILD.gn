@@ -21,6 +21,7 @@ source_set("app_shim") {
   ]
 
   deps = [
+    "//chrome/common:mojo_bindings",
     "//content/public/browser",
     "//content/public/common",
     "//extensions/browser",
