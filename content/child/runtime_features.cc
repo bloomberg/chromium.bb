@@ -317,6 +317,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kCompositorTouchAction))
     WebRuntimeFeatures::EnableCompositorTouchAction(true);
 
+  if (base::FeatureList::IsEnabled(features::kCSSFragmentIdentifiers))
+    WebRuntimeFeatures::EnableCSSFragmentIdentifiers(true);
+
   if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
     WebRuntimeFeatures::EnableGenericSensor(true);
     if (base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses))

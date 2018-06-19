@@ -3940,6 +3940,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kCCTModule)},
 #endif
 
+    {"enable-css-fragment-identifiers",
+     flag_descriptions::kEnableCSSFragmentIdentifiersName,
+     flag_descriptions::kEnableCSSFragmentIdentifiersDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kCSSFragmentIdentifiers)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

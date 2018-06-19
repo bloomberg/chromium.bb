@@ -265,6 +265,9 @@
       status: "experimental",
     },
     {
+      name: "CSSFragmentIdentifiers"
+    },
+    {
       name: "CSSHexAlphaColor",
       status: "stable",
     },

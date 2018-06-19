@@ -110,6 +110,11 @@ const base::Feature kCrossSiteDocumentBlockingAlways{
 const base::Feature kCrossSiteDocumentBlockingIfIsolating{
     "CrossSiteDocumentBlockingIfIsolating", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables specification of a target element in the fragment identifier
+// via a CSS selector.
+const base::Feature kCSSFragmentIdentifiers{"CSSFragmentIdentifiers",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Puts save-data header in the holdback mode. This disables sending of
 // save-data header to origins, and to the renderer processes within Chrome.
 const base::Feature kDataSaverHoldback{"DataSaverHoldback",

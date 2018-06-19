@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
+#include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
@@ -155,6 +156,10 @@ constexpr int kA4PortraitPageWidth = 595;
 constexpr int kA4PortraitPageHeight = 842;
 constexpr int kLetterPortraitPageWidth = 612;
 constexpr int kLetterPortraitPageHeight = 792;
+
+constexpr char kCssFragmentIdentifierPrefix[] = "targetElement=";
+constexpr size_t kCssFragmentIdentifierPrefixLength =
+    base::size(kCssFragmentIdentifierPrefix);
 
 // Changing these values requires changing the names generated in
 // EnsureUkmTimeAggregator().
@@ -1673,7 +1678,15 @@ bool LocalFrameView::ProcessUrlFragmentHelper(const String& name,
                                               UrlFragmentBehavior behavior) {
   DCHECK(frame_->GetDocument());
 
-  Element* anchor_node = frame_->GetDocument()->FindAnchor(name);
+  Element* anchor_node;
+  String selector;
+  if (RuntimeEnabledFeatures::CSSFragmentIdentifiersEnabled() &&
+      ParseCSSFragmentIdentifier(name, &selector)) {
+    anchor_node =
+        FindCSSFragmentAnchor(AtomicString(selector), frame_->GetDocument());
+  } else {
+    anchor_node = frame_->GetDocument()->FindAnchor(name);
+  }
 
   // Setting to null will clear the current target.
   frame_->GetDocument()->SetCSSTarget(anchor_node);
@@ -1722,6 +1735,23 @@ bool LocalFrameView::ProcessUrlFragmentHelper(const String& name,
   }
 
   return true;
+}
+
+Element* LocalFrameView::FindCSSFragmentAnchor(const AtomicString& selector,
+                                               Document* document) {
+  DummyExceptionStateForTesting exception_state;
+  return document->QuerySelector(selector, exception_state);
+}
+
+bool LocalFrameView::ParseCSSFragmentIdentifier(const String& fragment,
+                                                String* selector) {
+  size_t pos = fragment.Find(kCssFragmentIdentifierPrefix);
+  if (pos == 0) {
+    *selector = fragment.Substring(kCssFragmentIdentifierPrefixLength - 1);
+    return true;
+  }
+
+  return false;
 }
 
 void LocalFrameView::ClearFragmentAnchor() {

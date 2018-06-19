@@ -52,6 +52,7 @@ namespace blink {
 
 class AXObjectCache;
 class Cursor;
+class Document;
 class DocumentLifecycle;
 class Element;
 class ElementVisibilityObserver;
@@ -870,6 +871,8 @@ class CORE_EXPORT LocalFrameView final
   bool UpdatePlugins();
 
   bool ProcessUrlFragmentHelper(const String&, UrlFragmentBehavior);
+  bool ParseCSSFragmentIdentifier(const String&, String*);
+  Element* FindCSSFragmentAnchor(const AtomicString&, Document*);
   void DidScrollTimerFired(TimerBase*);
 
   void UpdateCompositedSelectionIfNeeded();

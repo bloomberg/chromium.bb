@@ -275,6 +275,9 @@ extern const char kEnableCaptivePortalRandomUrlDescription[];
 extern const char kEnableClientLoFiName[];
 extern const char kEnableClientLoFiDescription[];
 
+extern const char kEnableCSSFragmentIdentifiersName[];
+extern const char kEnableCSSFragmentIdentifiersDescription[];
+
 extern const char kEnableCursorMotionBlurName[];
 extern const char kEnableCursorMotionBlurDescription[];
 
