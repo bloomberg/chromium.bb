@@ -111,12 +111,12 @@ class SandboxedRarAnalyzerTest : public testing::Test {
 
 const SandboxedRarAnalyzerTest::BinaryData SandboxedRarAnalyzerTest::kEmptyZip =
     {
-        "empty.zip", CDRDT(RAR_COMPRESSED_ARCHIVE), 22,
+        "empty.zip", CDRDT(ARCHIVE), 22,
 };
 
 const SandboxedRarAnalyzerTest::BinaryData SandboxedRarAnalyzerTest::kNotARar =
     {
-        "not_a_rar.rar", CDRDT(RAR_COMPRESSED_ARCHIVE), 18,
+        "not_a_rar.rar", CDRDT(ARCHIVE), 18,
 };
 
 const SandboxedRarAnalyzerTest::BinaryData
@@ -183,7 +183,7 @@ TEST_F(SandboxedRarAnalyzerTest, AnalyzeTextAsRar) {
 }
 
 TEST_F(SandboxedRarAnalyzerTest, AnalyzeRarContainingArchive) {
-  // Can detect when .rar contains executable files.
+  // Can detect when .rar contains other archive files.
   // has_archive.rar contains 1 file: empty.zip
   base::FilePath path;
   ASSERT_NO_FATAL_FAILURE(path = GetFilePath("has_archive.rar"));
@@ -192,7 +192,7 @@ TEST_F(SandboxedRarAnalyzerTest, AnalyzeRarContainingArchive) {
   AnalyzeFile(path, &results);
 
   ASSERT_TRUE(results.success);
-  EXPECT_TRUE(results.has_executable);  // .zip is considered binary executable.
+  EXPECT_FALSE(results.has_executable);
   EXPECT_EQ(1, results.archived_binary.size());
   EXPECT_EQ(1u, results.archived_archive_filenames.size());
   ExpectBinary(kEmptyZip, results.archived_binary.Get(0));
