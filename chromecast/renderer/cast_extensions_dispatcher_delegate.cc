@@ -73,6 +73,7 @@ void CastExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("automationEvent", IDR_AUTOMATION_EVENT_JS);
   source_map->RegisterSource("automationNode", IDR_AUTOMATION_NODE_JS);
   source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("automationNode", IDR_SPEECH_SYNTHESIS_JS);
 }
 
 void CastExtensionsDispatcherDelegate::RequireAdditionalModules(
