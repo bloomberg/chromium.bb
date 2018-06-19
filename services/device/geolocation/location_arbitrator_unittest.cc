@@ -77,6 +77,17 @@ void SetReferencePosition(FakeLocationProvider* provider) {
   SetPositionFix(provider, 51.0, -0.1, 400);
 }
 
+// Simple request context producer that immediately produces a
+// TestURLRequestContextGetter.
+void TestRequestContextProducer(
+    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
+    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
+        response_callback) {
+  std::move(response_callback)
+      .Run(base::MakeRefCounted<net::TestURLRequestContextGetter>(
+          network_task_runner));
+}
+
 }  // namespace
 
 // Simple request context producer that immediately produces a nullptr
@@ -87,17 +98,6 @@ void NullRequestContextProducer(
         response_callback) {
   std::move(response_callback)
       .Run(scoped_refptr<net::URLRequestContextGetter>(nullptr));
-}
-
-// Simple request context producer that immediately produces a
-// TestURLRequestContextGetter.
-void TestRequestContextProducer(
-    const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
-    base::OnceCallback<void(scoped_refptr<net::URLRequestContextGetter>)>
-        response_callback) {
-  std::move(response_callback)
-      .Run(base::MakeRefCounted<net::TestURLRequestContextGetter>(
-          network_task_runner));
 }
 
 class TestingLocationArbitrator : public LocationArbitrator {
