@@ -34,6 +34,8 @@ class MojoTestWithFileService : public testing::Test {
 
   service_manager::Connector* connector() const { return connector_.get(); }
 
+  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<service_manager::TestConnectorFactory> test_connector_;
