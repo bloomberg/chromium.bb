@@ -2147,8 +2147,6 @@ class CountingMemoryTracker : public MemoryTracker {
     current_size_ += new_size - old_size;
   }
 
-  bool EnsureGPUMemoryAvailable(size_t size_needed) override { return true; }
-
   size_t GetSize() {
     return current_size_;
   }

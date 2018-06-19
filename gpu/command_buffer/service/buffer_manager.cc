@@ -439,12 +439,6 @@ void BufferManager::ValidateAndDoBufferData(
     return;
   }
 
-  if (!memory_type_tracker_->EnsureGPUMemoryAvailable(size)) {
-    ERRORSTATE_SET_GL_ERROR(
-        error_state, GL_OUT_OF_MEMORY, "glBufferData", "out of memory");
-    return;
-  }
-
   if (buffer->IsBoundForTransformFeedbackAndOther()) {
     ERRORSTATE_SET_GL_ERROR(
         error_state, GL_INVALID_OPERATION, "glBufferData",

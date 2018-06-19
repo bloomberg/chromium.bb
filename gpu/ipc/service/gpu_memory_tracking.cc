@@ -29,9 +29,4 @@ void GpuMemoryTrackingGroup::TrackMemoryAllocatedChange(uint64_t old_size,
       this, old_size, new_size);
 }
 
-bool GpuMemoryTrackingGroup::EnsureGPUMemoryAvailable(uint64_t size_needed) {
-  return memory_manager_->EnsureGPUMemoryAvailable(size_needed);
-}
-
-
 }  // namespace gpu

@@ -56,7 +56,6 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryManager
                                   uint64_t old_size,
                                   uint64_t new_size);
   void OnDestroyTrackingGroup(GpuMemoryTrackingGroup* tracking_group);
-  bool EnsureGPUMemoryAvailable(uint64_t size_needed);
 
   GpuChannelManager* channel_manager_;
 

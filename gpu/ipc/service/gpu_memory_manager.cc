@@ -47,11 +47,6 @@ void GpuMemoryManager::TrackMemoryAllocatedChange(
   TrackValueChanged(old_size, new_size, &bytes_allocated_current_);
 }
 
-bool GpuMemoryManager::EnsureGPUMemoryAvailable(uint64_t /* size_needed */) {
-  // TODO: Check if there is enough space. Lose contexts until there is.
-  return true;
-}
-
 uint64_t GpuMemoryManager::GetTrackerMemoryUsage(
     gles2::MemoryTracker* tracker) const {
   TrackingGroupMap::const_iterator tracking_group_it =

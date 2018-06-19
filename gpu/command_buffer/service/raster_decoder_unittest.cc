@@ -36,9 +36,6 @@ class MockMemoryTracker : public gles2::MemoryTracker {
  public:
   MockMemoryTracker() {}
 
-  // Ensure a certain amount of GPU memory is free. Returns true on success.
-  MOCK_METHOD1(EnsureGPUMemoryAvailable, bool(size_t size_needed));
-
   void TrackMemoryAllocatedChange(size_t old_size, size_t new_size) override {}
 
   uint64_t ClientTracingId() const override { return 0; }
@@ -262,22 +259,6 @@ TEST_P(RasterDecoderManualInitTest, TexStorage2DWithEXTTextureStorage) {
       texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
   EXPECT_EQ(width, kWidth);
   EXPECT_EQ(height, kHeight);
-}
-
-TEST_P(RasterDecoderManualInitTest, TexStorage2DOutOfMemory) {
-  scoped_refptr<MockMemoryTracker> memory_tracker = new MockMemoryTracker();
-  set_memory_tracker(memory_tracker.get());
-
-  InitDecoder(InitState());
-
-  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(_))
-      .WillOnce(Return(false))
-      .RetiresOnSaturation();
-
-  cmds::TexStorage2D cmd;
-  cmd.Init(client_texture_id_, kWidth, kHeight);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
 
 TEST_P(RasterDecoderTest, TexStorage2DInvalid) {
