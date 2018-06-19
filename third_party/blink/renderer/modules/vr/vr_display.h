@@ -99,7 +99,7 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   void FocusChanged();
 
-  void OnMagicWindowVSync(double timestamp);
+  void OnMagicWindowVSync(TimeTicks timestamp);
   int PendingMagicWindowVSyncId() { return pending_magic_window_vsync_id_; }
 
   void Trace(blink::Visitor*) override;
@@ -156,8 +156,8 @@ class VRDisplay final : public EventTargetWithInlineData,
   bool FocusedOrPresenting();
 
   ScriptedAnimationController& EnsureScriptedAnimationController(Document*);
-  void ProcessScheduledAnimations(double timestamp);
-  void ProcessScheduledWindowAnimations(double timestamp);
+  void ProcessScheduledAnimations(TimeTicks timestamp);
+  void ProcessScheduledWindowAnimations(TimeTicks timestamp);
 
   // Request delivery of a VSync event for either magic window mode or
   // presenting mode as applicable. May be called more than once per frame, it
