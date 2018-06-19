@@ -477,12 +477,36 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
                                    });
 }
 
+// Tests that system touches are cancelled when the context menu is shown.
+// (While the kContextMenuElementPostMessage feature is enabled.)
+- (void)testContextMenuCancelSystemTouchesMetricPostMessage {
+  base::test::ScopedFeatureList scopedFeatureList;
+  scopedFeatureList.InitAndEnableFeature(
+      web::features::kContextMenuElementPostMessage);
+  chrome_test_util::HistogramTester histogramTester;
+
+  const GURL pageURL = self.testServer->GetURL(kLogoPagePath);
+  [ChromeEarlGrey loadURL:pageURL];
+  [ChromeEarlGrey waitForWebViewContainingText:kLogoPageText];
+
+  LongPressElement(kLogoPageChromiumImageId);
+  TapOnContextMenuButton(OpenImageButton());
+  [ChromeEarlGrey waitForPageToFinishLoading];
+
+  // Verify that system touches were cancelled.
+  histogramTester.ExpectTotalCount("ContextMenu.CancelSystemTouches", 1,
+                                   ^(NSString* error) {
+                                     GREYFail(error);
+                                   });
+}
+
 // Tests that the system selected text callout is displayed instead of the
 // context menu when user long presses on plain text.
 - (void)testContextMenuSelectedTextCalloutPostMessage {
   base::test::ScopedFeatureList scopedFeatureList;
   scopedFeatureList.InitAndEnableFeature(
       web::features::kContextMenuElementPostMessage);
+  chrome_test_util::HistogramTester histogramTester;
 
   // Load the destination page directly because it has a plain text message on
   // it.
@@ -499,6 +523,12 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   // Verify that system text selection callout is displayed.
   [[[EarlGrey selectElementWithMatcher:SystemSelectionCalloutCopyButton()]
       inRoot:SystemSelectionCallout()] assertWithMatcher:grey_notNil()];
+
+  // Verify that system touches were not cancelled.
+  histogramTester.ExpectTotalCount("ContextMenu.CancelSystemTouches", 0,
+                                   ^(NSString* error) {
+                                     GREYFail(error);
+                                   });
 }
 
 @end

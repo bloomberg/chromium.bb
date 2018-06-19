@@ -7209,6 +7209,21 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="CONTEXT_LOST_INVALID_GPU_MESSAGE"/>
 </enum>
 
+<enum name="ContextMenuDelayedElementDetails">
+  <summary>
+    Used to record resulting action when the gesture recognizer recognizes a
+    long press before the DOM element details are available.
+  </summary>
+  <int value="0" label="Show">
+    Recorded when the context menu is shown once the DOM element details become
+    available.
+  </int>
+  <int value="1" label="Cancel">
+    Recorded when the context menu display is cancelled before the DOM element
+    details are available.
+  </int>
+</enum>
+
 <enum name="ContextMenuDOMElementFrame">
   <summary>The frame that the element was found in.</summary>
   <int value="0" label="Main frame">
