@@ -80,7 +80,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "chrome_table_view_controller_unittest.mm",
-    "table_view_model_unittest.mm",
   ]
   deps = [
     ":table_view",

@@ -75,7 +75,7 @@ id<GREYMatcher> TitleOfTestPage() {
   }});
   if (IsUIRefreshPhase1Enabled()) {
     [NSUserDefaults.standardUserDefaults setObject:@{}
-                                            forKey:kTableViewModelCollapsedKey];
+                                            forKey:kListModelCollapsedKey];
   } else {
     [NSUserDefaults.standardUserDefaults setObject:@{}
                                             forKey:kCollapsedSectionsKey];

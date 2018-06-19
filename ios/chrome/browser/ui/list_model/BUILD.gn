@@ -21,6 +21,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "list_item_unittest.mm",
+    "list_model_collapse_unittest.mm",
     "list_model_unittest.mm",
   ]
   deps = [

@@ -12,7 +12,10 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kListModelCollapsedKey = @"ChromeListModelCollapsedSections";
+
 namespace {
+
 typedef NSMutableArray<ListItem*> SectionItems;
 }
 
@@ -26,6 +29,9 @@ typedef NSMutableArray<ListItem*> SectionItems;
   // Maps from section identifier to header and footer.
   NSMutableDictionary<NSNumber*, ListItem*>* _headers;
   NSMutableDictionary<NSNumber*, ListItem*>* _footers;
+
+  // Maps from collapsed keys to section identifier.
+  NSMutableDictionary<NSNumber*, NSString*>* _collapsedKeys;
 }
 
 - (instancetype)init {
@@ -103,6 +109,7 @@ typedef NSMutableArray<ListItem*> SectionItems;
   NSInteger section = [self sectionForSectionIdentifier:sectionIdentifier];
   [_sectionIdentifiers removeObjectAtIndex:section];
   [_sections removeObjectAtIndex:section];
+  [_collapsedKeys removeObjectForKey:@(sectionIdentifier)];
 }
 
 - (void)setHeader:(ListItem*)header
@@ -285,8 +292,60 @@ typedef NSMutableArray<ListItem*> SectionItems;
 
 - (NSInteger)numberOfItemsInSection:(NSInteger)section {
   DCHECK_LT(base::checked_cast<NSUInteger>(section), [_sections count]);
+  NSInteger sectionIdentifier = [self sectionIdentifierForSection:section];
+  if ([self sectionIsCollapsed:sectionIdentifier])
+    return 0;
   SectionItems* items = [_sections objectAtIndex:section];
   return items.count;
+}
+
+#pragma mark Collapsing methods.
+
+- (void)setSectionIdentifier:(NSInteger)sectionIdentifier
+                collapsedKey:(NSString*)collapsedKey {
+  // Check that the sectionIdentifier exists.
+  DCHECK([self hasSectionForSectionIdentifier:sectionIdentifier]);
+  // Check that the collapsedKey is not being used already.
+  DCHECK(![self.collapsedKeys allKeysForObject:collapsedKey].count);
+  [self.collapsedKeys setObject:collapsedKey forKey:@(sectionIdentifier)];
+}
+
+- (void)setSection:(NSInteger)sectionIdentifier collapsed:(BOOL)collapsed {
+  // TODO(crbug.com/419346): Store in the browser state preference instead of
+  // NSUserDefaults.
+  DCHECK([self hasSectionForSectionIdentifier:sectionIdentifier]);
+  NSString* sectionKey = [self.collapsedKeys objectForKey:@(sectionIdentifier)];
+  DCHECK(sectionKey);
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  NSDictionary* collapsedSections =
+      [defaults dictionaryForKey:kListModelCollapsedKey];
+  NSMutableDictionary* newCollapsedSection =
+      [NSMutableDictionary dictionaryWithDictionary:collapsedSections];
+  NSNumber* value = [NSNumber numberWithBool:collapsed];
+  [newCollapsedSection setValue:value forKey:sectionKey];
+  [defaults setObject:newCollapsedSection forKey:kListModelCollapsedKey];
+}
+
+- (BOOL)sectionIsCollapsed:(NSInteger)sectionIdentifier {
+  // TODO(crbug.com/419346): Store in the profile's preference instead of the
+  // NSUserDefaults.
+  DCHECK([self hasSectionForSectionIdentifier:sectionIdentifier]);
+  NSString* sectionKey = [self.collapsedKeys objectForKey:@(sectionIdentifier)];
+  if (!sectionKey)
+    return NO;
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  NSDictionary* collapsedSections =
+      [defaults dictionaryForKey:kListModelCollapsedKey];
+  NSNumber* value = (NSNumber*)[collapsedSections valueForKey:sectionKey];
+  return [value boolValue];
+}
+
+// |_collapsedKeys| lazy instantiation.
+- (NSMutableDictionary*)collapsedKeys {
+  if (!_collapsedKeys) {
+    _collapsedKeys = [[NSMutableDictionary alloc] init];
+  }
+  return _collapsedKeys;
 }
 
 #pragma mark Private methods
