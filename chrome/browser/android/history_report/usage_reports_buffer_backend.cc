@@ -15,6 +15,7 @@
 #include "chrome/browser/android/history_report/usage_report_util.h"
 #include "chrome/browser/android/proto/delta_file.pb.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
@@ -46,15 +47,19 @@ bool UsageReportsBufferBackend::Init() {
                             leveldb_env::LEVELDB_STATUS_MAX);
   if (status.IsCorruption()) {
     LOG(ERROR) << "Deleting corrupt database";
-    base::DeleteFile(db_file_name_, true);
+    status = leveldb_chrome::DeleteDB(db_file_name_, options);
+    if (!status.ok()) {
+      LOG(ERROR) << "Unable to delete " << db_file_name_
+                 << ", error: " << status.ToString();
+      return false;
+    }
     status = leveldb_env::OpenDB(options, path, &db_);
   }
   if (status.ok()) {
     CHECK(db_);
     return true;
   }
-  LOG(WARNING) << "Unable to open " << path << ": "
-               << status.ToString();
+  LOG(WARNING) << "Unable to open " << path << ": " << status.ToString();
   return false;
 }
 
@@ -122,7 +127,7 @@ void UsageReportsBufferBackend::Remove(
 
 void UsageReportsBufferBackend::Clear() {
   db_.reset();
-  base::DeleteFile(db_file_name_, true);
+  leveldb_chrome::DeleteDB(db_file_name_, leveldb_env::Options());
   Init();
 }
 

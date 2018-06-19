@@ -24,6 +24,7 @@
 #include "storage/browser/fileapi/file_system_usage_cache.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -760,7 +761,7 @@ bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
       FALLTHROUGH;
     case DELETE_ON_CORRUPTION:
       LOG(WARNING) << "Clearing SandboxDirectoryDatabase.";
-      if (!base::DeleteFile(filesystem_data_directory_, true))
+      if (!leveldb_chrome::DeleteDB(filesystem_data_directory_, options).ok())
         return false;
       if (!base::CreateDirectory(filesystem_data_directory_))
         return false;
