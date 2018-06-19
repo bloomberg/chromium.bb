@@ -13,6 +13,7 @@ namespace blink {
 
 class HTMLImageElement;
 class HTMLVideoElement;
+class WebString;
 
 // Media Remoting UI. DOM structure looks like:
 //
