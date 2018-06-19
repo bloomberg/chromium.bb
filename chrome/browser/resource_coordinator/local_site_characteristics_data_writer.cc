@@ -66,8 +66,6 @@ void LocalSiteCharacteristicsDataWriter::NotifyUpdatesTitleInBackground() {
 void LocalSiteCharacteristicsDataWriter::NotifyUsesAudioInBackground() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(TabVisibility::kBackground, tab_visibility_);
-  // TODO(sebmarchand): Do not advance the background audio observation time
-  // when the WebContents has never played audio.
   impl_->NotifyUsesAudioInBackground();
 }
 
