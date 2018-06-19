@@ -144,6 +144,7 @@
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
+#include "chrome/common/prerender_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "chrome/common/secure_origin_whitelist.h"
@@ -2152,9 +2153,13 @@ void ChromeContentBrowserClient::NavigationRequestStarted(
           web_contents->GetBrowserContext(), url);
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(web_contents);
-  if (prerender_contents) {
-    if (prerender_contents->prerender_mode() == prerender::PREFETCH_ONLY)
-      *extra_load_flags = net::LOAD_PREFETCH;
+  if (prerender_contents &&
+      prerender_contents->prerender_mode() == prerender::PREFETCH_ONLY) {
+    *extra_load_flags = net::LOAD_PREFETCH;
+    if (*extra_headers == nullptr)
+      *extra_headers = std::make_unique<net::HttpRequestHeaders>();
+    extra_headers->get()->SetHeader(prerender::kPurposeHeaderName,
+                                    prerender::kPurposeHeaderValue);
   }
 }
 
