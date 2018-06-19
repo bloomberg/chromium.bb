@@ -168,6 +168,7 @@ source_set("settings") {
     "//ios/chrome/browser/ui/signin_interaction",
     "//ios/chrome/browser/ui/signin_interaction/public",
     "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/voice",
     "//ios/chrome/browser/web:web",

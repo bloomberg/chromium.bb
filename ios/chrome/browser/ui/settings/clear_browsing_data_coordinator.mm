@@ -15,7 +15,8 @@
 
 - (void)start {
   ClearBrowsingDataTableViewController* clearBrowsingDataTableViewController =
-      [[ClearBrowsingDataTableViewController alloc] init];
+      [[ClearBrowsingDataTableViewController alloc]
+          initWithBrowserState:self.browserState];
   clearBrowsingDataTableViewController.extendedLayoutIncludesOpaqueBars = YES;
   // We currently know for sure that baseViewController is a
   // Navigation Controller.

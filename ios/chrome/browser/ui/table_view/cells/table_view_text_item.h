@@ -36,6 +36,9 @@ typedef NS_ENUM(UInt32, TextItemColor) {
 // The text to display.
 @property(nonatomic, readonly, strong) UILabel* textLabel;
 
+// Whether to show the checkmark accessory view.
+@property(nonatomic, assign) BOOL checked;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CELLS_TABLE_VIEW_TEXT_ITEM_H_
