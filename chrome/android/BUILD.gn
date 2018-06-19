@@ -189,6 +189,17 @@ android_aidl("photo_picker_aidl") {
   ]
 }
 
+android_aidl("cct_dynamic_module_aidl") {
+  import_include = [ "java/src" ]
+  sources = [
+    "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/IActivityDelegate.aidl",
+    "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/IActivityHost.aidl",
+    "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/IModuleEntryPoint.aidl",
+    "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/IModuleHost.aidl",
+    "java/src/org/chromium/chrome/browser/customtabs/dynamicmodule/IObjectWrapper.aidl",
+  ]
+}
+
 android_library("chrome_java") {
   deps = [
     ":chrome_java_resources",
@@ -292,6 +303,7 @@ android_library("chrome_java") {
     ":chrome_android_java_enums_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
     ":chrome_version_srcjar",
+    ":cct_dynamic_module_aidl",
     ":photo_picker_aidl",
     ":resource_id_javagen",
     "//chrome:assist_ranker_prediction_enum_javagen",

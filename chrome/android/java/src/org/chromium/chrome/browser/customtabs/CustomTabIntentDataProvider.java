@@ -15,6 +15,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -106,6 +107,14 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     public static final String EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER =
             "android.support.customtabs.extra.SEND_TO_EXTERNAL_HANDLER";
 
+    /** The APK package to load the module from. */
+    private static final String EXTRA_MODULE_PACKAGE_NAME =
+            "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_PACKAGE_NAME";
+
+    /** The class name of the module entry point. */
+    private static final String EXTRA_MODULE_CLASS_NAME =
+            "org.chromium.chrome.browser.customtabs.EXTRA_MODULE_CLASS_NAME";
+
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
 
     private static final int MAX_CUSTOM_TOOLBAR_ITEMS = 2;
@@ -122,6 +131,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     private final int mInitialBackgroundColor;
     private final boolean mDisableStar;
     private final boolean mDisableDownload;
+    @Nullable private final String mModulePackageName;
+    @Nullable private final String mModuleClassName;
 
     private int mToolbarColor;
     private int mBottomBarColor;
@@ -232,6 +243,8 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         mDisableStar = IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_STAR_BUTTON, false);
         mDisableDownload =
                 IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_DOWNLOAD_BUTTON, false);
+        mModulePackageName = IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_PACKAGE_NAME);
+        mModuleClassName = IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_CLASS_NAME);
     }
 
     /**
@@ -593,5 +606,21 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     boolean isIncognito() {
         // Only open custom tab in incognito mode for payment request.
         return isTrustedIntent() && mIsOpenedByChrome && isForPaymentRequest() && mIsIncognito;
+    }
+
+    /**
+     * @return The APK package to load the module from, or null if not specified.
+     */
+    @Nullable
+    String getModulePackageName() {
+        return mModulePackageName;
+    }
+
+    /**
+     * @return The class name of the module entry point, or null if not specified.
+     */
+    @Nullable
+    String getModuleClassName() {
+        return mModuleClassName;
     }
 }

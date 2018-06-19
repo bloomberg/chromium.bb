@@ -59,7 +59,11 @@ import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityDelegate;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ActivityHostImpl;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleEntryPoint;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
@@ -152,6 +156,8 @@ public class CustomTabActivity extends ChromeActivity {
     private final CustomTabsConnection mConnection = CustomTabsConnection.getInstance();
 
     private WebappCustomTabTimeSpentLogger mWebappTimeSpentLogger;
+
+    @Nullable private ActivityDelegate mActivityDelegate;
 
     private static class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
         private final CustomTabsConnection mConnection;
@@ -336,6 +342,39 @@ public class CustomTabActivity extends ChromeActivity {
                     IntentHandler.getTimestampFromIntent(getIntent()));
             mHasCreatedTabEarly = true;
         }
+    }
+
+    /**
+     * Dynamically loads a module using the package and class names specified in the intent, if it
+     * is not loaded yet.
+     */
+    private void maybeLoadModule() {
+        // TODO(https://crbug.com/853728): Load the module in the background.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
+            Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
+            return;
+        }
+
+        String packageName = mIntentDataProvider.getModulePackageName();
+        if (!ExternalAuthUtils.getInstance().isGoogleSigned(packageName)) {
+            Log.w(TAG, "The %s package is not Google-signed.", packageName);
+            return;
+        }
+
+        ModuleEntryPoint entryPoint =
+                mConnection.loadModule(packageName, mIntentDataProvider.getModuleClassName());
+        if (entryPoint == null) return;
+
+        mActivityDelegate = entryPoint.createActivityDelegate(new ActivityHostImpl(this));
+        mActivityDelegate.onCreate(getSavedInstanceState());
+        if (mBottomBarDelegate != null) {
+            mBottomBarDelegate.setBottomBarContentView(mActivityDelegate.getBottomBarView());
+            mBottomBarDelegate.showBottomBarIfNecessary();
+        }
+
+        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        addContentView(mActivityDelegate.getOverlayView(), layoutParams);
     }
 
     @Override
@@ -539,6 +578,9 @@ public class CustomTabActivity extends ChromeActivity {
                 return entry != null ? entry.getUrl() : null;
             }
         };
+
+        maybeLoadModule();
+
         recordClientPackageName();
         mConnection.showSignInToastIfNecessary(mSession, getIntent());
         String url = getUrlToLoad();
@@ -704,6 +746,11 @@ public class CustomTabActivity extends ChromeActivity {
         super.onStartWithNative();
         BrowserSessionContentUtils.setActiveContentHandler(mBrowserSessionContentHandler);
         if (mHasCreatedTabEarly && !mMainTab.isLoading()) postDeferredStartupIfNeeded();
+        if (mActivityDelegate != null) {
+            mActivityDelegate.onStart();
+            mActivityDelegate.onRestoreInstanceState(getSavedInstanceState());
+            mActivityDelegate.onPostCreate(getSavedInstanceState());
+        }
     }
 
     @Override
@@ -739,6 +786,7 @@ public class CustomTabActivity extends ChromeActivity {
         mWebappTimeSpentLogger = WebappCustomTabTimeSpentLogger.createInstanceAndStartTimer(
                 getIntent().getIntExtra(CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE,
                         ACTIVITY_TYPE_OTHER));
+        if (mActivityDelegate != null) mActivityDelegate.onResume();
     }
 
     @Override
@@ -747,18 +795,38 @@ public class CustomTabActivity extends ChromeActivity {
         if (mWebappTimeSpentLogger != null) {
             mWebappTimeSpentLogger.onPause();
         }
+        if (mActivityDelegate != null) mActivityDelegate.onPause(isChangingConfigurations());
     }
 
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
         BrowserSessionContentUtils.setActiveContentHandler(null);
+        if (mActivityDelegate != null) mActivityDelegate.onStop(isChangingConfigurations());
         if (mIsClosing) {
             getTabModelSelector().closeAllTabs(true);
             mTabPersistencePolicy.deleteMetadataStateFileAsync();
         } else {
             getTabModelSelector().saveState();
         }
+    }
+
+    @Override
+    protected void onDestroyInternal() {
+        super.onDestroyInternal();
+        if (mActivityDelegate != null) mActivityDelegate.onDestroy(isChangingConfigurations());
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mActivityDelegate != null) mActivityDelegate.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (mActivityDelegate != null) mActivityDelegate.onWindowFocusChanged(hasFocus);
     }
 
     /**
@@ -927,6 +995,8 @@ public class CustomTabActivity extends ChromeActivity {
         if (getActivityTab() == null) return false;
 
         if (exitFullscreenIfShowing()) return true;
+
+        if (mActivityDelegate != null && mActivityDelegate.onBackPressed()) return true;
 
         if (!getToolbarManager().back()) {
             if (getCurrentTabModel().getCount() > 1) {

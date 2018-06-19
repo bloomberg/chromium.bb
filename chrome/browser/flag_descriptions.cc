@@ -2008,6 +2008,10 @@ const char kBackgroundLoaderForDownloadsDescription[] =
     "Enables downloading pages in the background in case page is not yet "
     "loaded in current tab.";
 
+const char kCCTModuleName[] = "Chrome Custom Tabs Module";
+const char kCCTModuleDescription[] =
+    "Enables a dynamically loaded module in Chrome Custom Tabs, on Android.";
+
 const char kChromeDuplexName[] = "Chrome Duplex";
 const char kChromeDuplexDescription[] =
     "Enables Chrome Duplex, split toolbar Chrome Home, on Android.";
