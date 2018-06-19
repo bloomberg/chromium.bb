@@ -349,9 +349,7 @@
     'cacheinvalidation_unittests': {},
     'capture_unittests': {},
     'cc_unittests': {},
-    'cros_vm_sanity_test': {
-      'experiment_percentage': 100,
-    },
+    'cros_vm_sanity_test': {},
     'crypto_unittests': {},
     'display_unittests': {},
     'google_apis_unittests': {},
