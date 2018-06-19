@@ -19,6 +19,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/test/browser_test_utils.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget.h"
@@ -82,10 +83,10 @@ class SadTabViewInteractiveUITest : public InProcessBrowserTest {
 
   const char* ActionButtonClassName() {
 #if defined(OS_CHROMEOS)
-    return views::BlueButton::kViewClassName;
-#else
-    return views::LabelButton::kViewClassName;
+    if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
+      return views::BlueButton::kViewClassName;
 #endif
+    return views::LabelButton::kViewClassName;
   }
 
   bool IsFocusedViewInsideViewClass(const char* view_class) {
