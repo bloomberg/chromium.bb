@@ -120,6 +120,7 @@ void UnifiedSystemTrayController::HandleLockAction() {
 void UnifiedSystemTrayController::HandleSettingsAction() {
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_SETTINGS);
   Shell::Get()->system_tray_controller()->ShowSettings();
+  CloseBubble();
 }
 
 void UnifiedSystemTrayController::HandlePowerAction() {
