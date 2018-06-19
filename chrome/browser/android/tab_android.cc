@@ -449,7 +449,6 @@ void TabAndroid::InitWebContents(
           env, jweb_contents_delegate);
   web_contents_delegate_->LoadProgressChanged(web_contents(), 0);
   web_contents()->SetDelegate(web_contents_delegate_.get());
-
   notification_registrar_.Add(
       this,
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,

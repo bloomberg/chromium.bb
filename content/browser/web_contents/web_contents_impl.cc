@@ -5300,6 +5300,8 @@ void WebContentsImpl::RenderViewReady(RenderViewHost* rvh) {
     view_->Focus();
   }
 
+  view_->RenderViewReady();
+
   for (auto& observer : observers_)
     observer.RenderViewReady();
 }

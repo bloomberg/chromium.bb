@@ -4,7 +4,6 @@
 
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 
-#include "content/browser/android/content_view_core.h"
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "jni/ScreenOrientationProviderImpl_jni.h"
 #include "ui/android/window_android.h"

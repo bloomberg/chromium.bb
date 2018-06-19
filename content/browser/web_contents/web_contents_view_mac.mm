@@ -423,6 +423,8 @@ void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
   host->EnablePreferredSizeMode();
 }
 
+void WebContentsViewMac::RenderViewReady() {}
+
 void WebContentsViewMac::RenderViewSwappedIn(RenderViewHost* host) {
 }
 
