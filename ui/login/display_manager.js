@@ -847,6 +847,12 @@ cr.define('cr.ui.login', function() {
         screen.classList.remove('right');
         screen.classList.remove('left');
       }
+      if (this.showingViewsLogin) {
+        // Hide the shelf and version info because these should be displayed in
+        // views.
+        $('login-header-bar').hidden = true;
+        $('top-header-bar').hidden = true;
+      }
     },
 
     /**

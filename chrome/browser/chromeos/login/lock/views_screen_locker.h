@@ -8,7 +8,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/lock_screen_apps/focus_cycler_delegate.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
-#include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -17,6 +16,7 @@ namespace chromeos {
 
 class UserBoardViewMojo;
 class UserSelectionScreen;
+class MojoVersionInfoDispatcher;
 
 // ViewsScreenLocker acts like LoginScreenClient::Delegate which handles method
 // calls coming from ash into chrome.
@@ -25,8 +25,7 @@ class UserSelectionScreen;
 class ViewsScreenLocker : public LoginScreenClient::Delegate,
                           public ScreenLocker::Delegate,
                           public PowerManagerClient::Observer,
-                          public lock_screen_apps::FocusCyclerDelegate,
-                          public VersionInfoUpdater::Delegate {
+                          public lock_screen_apps::FocusCyclerDelegate {
  public:
   explicit ViewsScreenLocker(ScreenLocker* screen_locker);
   ~ViewsScreenLocker() override;
@@ -73,17 +72,9 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   void UnregisterLockScreenAppFocusHandler() override;
   void HandleLockScreenAppFocusOut(bool reverse) override;
 
-  // VersionInfoUpdater::Delegate:
-  void OnOSVersionLabelTextUpdated(
-      const std::string& os_version_label_text) override;
-  void OnEnterpriseInfoUpdated(const std::string& message_text,
-                               const std::string& asset_id) override;
-  void OnDeviceInfoUpdated(const std::string& bluetooth_name) override;
-
  private:
   void UpdatePinKeyboardState(const AccountId& account_id);
   void OnAllowedInputMethodsChanged();
-  void OnDevChannelInfoUpdated();
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
 
   std::unique_ptr<UserBoardViewMojo> user_board_view_mojo_;
@@ -109,12 +100,8 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
   // called to hand focus over to lock screen apps.
   LockScreenAppFocusCallback lock_screen_app_focus_handler_;
 
-  // Updates when version info is changed.
-  VersionInfoUpdater version_info_updater_;
-
-  std::string os_version_label_text_;
-  std::string enterprise_info_text_;
-  std::string bluetooth_name_;
+  // Updates UI when version info is changed.
+  std::unique_ptr<MojoVersionInfoDispatcher> version_info_updater_;
 
   base::WeakPtrFactory<ViewsScreenLocker> weak_factory_;
 

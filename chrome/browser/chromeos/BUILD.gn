@@ -979,6 +979,8 @@ source_set("chromeos") {
     "login/lock_screen_utils.cc",
     "login/lock_screen_utils.h",
     "login/login_wizard.h",
+    "login/mojo_version_info_dispatcher.cc",
+    "login/mojo_version_info_dispatcher.h",
     "login/oobe_screen.cc",
     "login/oobe_screen.h",
     "login/profile_auth_data.cc",
