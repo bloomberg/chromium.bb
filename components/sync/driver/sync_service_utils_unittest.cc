@@ -23,6 +23,9 @@ class TestSyncService : public FakeSyncService {
   void SetPreferredDataTypes(const ModelTypeSet& types) {
     preferred_data_types_ = types;
   }
+  void SetActiveDataTypes(const ModelTypeSet& types) {
+    active_data_types_ = types;
+  }
   void SetConfigurationDone(bool done) { configuration_done_ = done; }
   void SetCustomPassphraseEnabled(bool enabled) {
     custom_passphrase_enabled_ = enabled;
@@ -40,7 +43,7 @@ class TestSyncService : public FakeSyncService {
   ModelTypeSet GetActiveDataTypes() const override {
     if (!sync_active_)
       return ModelTypeSet();
-    return preferred_data_types_;
+    return active_data_types_;
   }
   ModelTypeSet GetEncryptedDataTypes() const override {
     if (!custom_passphrase_enabled_) {
@@ -77,6 +80,7 @@ class TestSyncService : public FakeSyncService {
   bool sync_cycle_complete_ = false;
   bool local_sync_enabled_ = false;
   ModelTypeSet preferred_data_types_;
+  ModelTypeSet active_data_types_;
   bool configuration_done_ = false;
   bool custom_passphrase_enabled_ = false;
 };
@@ -90,6 +94,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfSyncNotAllowed) {
 
   service.SetConfigurationDone(true);
   service.SetPreferredDataTypes(ProtocolTypes());
+  service.SetActiveDataTypes(ProtocolTypes());
 
   EXPECT_EQ(UploadState::NOT_ACTIVE,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
@@ -107,6 +112,7 @@ TEST(SyncServiceUtilsTest,
   TestSyncService service;
   service.SetSyncAllowed(true);
   service.SetPreferredDataTypes(ProtocolTypes());
+  service.SetActiveDataTypes(ProtocolTypes());
 
   // By default, if sync isn't disabled, we should be INITIALIZING.
   EXPECT_EQ(UploadState::INITIALIZING,
@@ -136,6 +142,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledForModelType) {
 
   // Sync is enabled only for a specific model type.
   service.SetPreferredDataTypes(ModelTypeSet(syncer::BOOKMARKS));
+  service.SetActiveDataTypes(ModelTypeSet(syncer::BOOKMARKS));
 
   // Sanity check: Upload is ACTIVE for this model type.
   ASSERT_EQ(UploadState::ACTIVE,
@@ -149,10 +156,34 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledForModelType) {
             GetUploadToGoogleState(&service, syncer::PREFERENCES));
 }
 
+TEST(SyncServiceUtilsTest,
+     UploadToGoogleDisabledForModelTypeThatFailedToStart) {
+  TestSyncService service;
+  service.SetSyncAllowed(true);
+  service.SetConfigurationDone(true);
+  service.SetSyncActive(true);
+  service.SetSyncCycleComplete(true);
+
+  // Sync is enabled for some model types.
+  service.SetPreferredDataTypes(
+      ModelTypeSet(syncer::BOOKMARKS, syncer::PREFERENCES));
+  // But one of them fails to actually start up!
+  service.SetActiveDataTypes(ModelTypeSet(syncer::BOOKMARKS));
+
+  // Sanity check: Upload is ACTIVE for the model type that did start up.
+  ASSERT_EQ(UploadState::ACTIVE,
+            GetUploadToGoogleState(&service, syncer::BOOKMARKS));
+
+  // ...but not for the type that failed.
+  EXPECT_EQ(UploadState::NOT_ACTIVE,
+            GetUploadToGoogleState(&service, syncer::PREFERENCES));
+}
+
 TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfLocalSyncEnabled) {
   TestSyncService service;
   service.SetSyncAllowed(true);
   service.SetPreferredDataTypes(ProtocolTypes());
+  service.SetActiveDataTypes(ProtocolTypes());
   service.SetSyncActive(true);
   service.SetConfigurationDone(true);
   service.SetSyncCycleComplete(true);
@@ -173,6 +204,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
   TestSyncService service;
   service.SetSyncAllowed(true);
   service.SetPreferredDataTypes(ProtocolTypes());
+  service.SetActiveDataTypes(ProtocolTypes());
   service.SetSyncActive(true);
   service.SetConfigurationDone(true);
   service.SetSyncCycleComplete(true);
@@ -212,6 +244,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfCustomPassphraseInUse) {
   TestSyncService service;
   service.SetSyncAllowed(true);
   service.SetPreferredDataTypes(ProtocolTypes());
+  service.SetActiveDataTypes(ProtocolTypes());
   service.SetSyncActive(true);
   service.SetConfigurationDone(true);
   service.SetSyncCycleComplete(true);

@@ -42,6 +42,11 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
       !sync_service->GetLastCycleSnapshot().is_initialized()) {
     return UploadState::INITIALIZING;
   }
+  // If configuration is done and sync is active, but the data type in question
+  // still isn't, then something must have gone wrong with that data type.
+  if (!sync_service->GetActiveDataTypes().Has(type)) {
+    return UploadState::NOT_ACTIVE;
+  }
   return UploadState::ACTIVE;
 }
 
