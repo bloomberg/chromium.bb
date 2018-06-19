@@ -2829,9 +2829,11 @@ crbug.com/803200 virtual/off-main-thread-websocket/external/wpt/websockets/openi
 
 crbug.com/805463 external/wpt/acid/acid3/numbered-tests.html [ Skip ]
 
-crbug.com/829567 [ Linux Win ] fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
-crbug.com/829567 [ Linux Win ] virtual/mouseevent_fractional/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
-crbug.com/829567 [ Linux Win ] virtual/scroll_customization/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
+crbug.com/828506 [ Linux Win ] fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
+crbug.com/828506 [ Linux Win ] virtual/mouseevent_fractional/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
+crbug.com/828506 [ Linux Win ] virtual/scroll_customization/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
+crbug.com/828506 [ Linux Win ] virtual/user-activation-v2/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
+
 
 # Failure messages are unstable so we cannot create baselines.
 crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
@@ -4749,4 +4751,3 @@ crbug.com/853360 [ Mac ] fast/forms/select/menulist-appearance-rtl.html [ Failur
 # Sheriff 2018-06-18
 crbug.com/853852 [ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-wheel-block-manual.tentative.html [ Pass Timeout ]
 crbug.com/854053 [ Mac10.13 Debug ] virtual/threaded/fast/animationworklet/animation-worklet-scroll-timeline.html [ Pass Crash ]
-crbug.com/854071 [ Win10 ] virtual/user-activation-v2/fast/events/touch/scroll-without-mouse-lacks-mousemove-events.html [ Pass Failure ]
