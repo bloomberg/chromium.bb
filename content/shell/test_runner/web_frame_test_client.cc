@@ -407,14 +407,6 @@ void WebFrameTestClient::DidStartProvisionalLoad(
   }
 }
 
-void WebFrameTestClient::DidReceiveServerRedirectForProvisionalLoad() {
-  if (test_runner()->shouldDumpFrameLoadCallbacks()) {
-    PrintFrameDescription(delegate_, web_frame_test_proxy_base_->web_frame());
-    delegate_->PrintMessage(
-        " - didReceiveServerRedirectForProvisionalLoadForFrame\n");
-  }
-}
-
 void WebFrameTestClient::DidFailProvisionalLoad(
     const blink::WebURLError& error,
     blink::WebHistoryCommitType commit_type) {

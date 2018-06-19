@@ -376,13 +376,6 @@ void LocalFrameClientImpl::DispatchDidHandleOnloadEvents() {
     web_frame_->Client()->DidHandleOnloadEvents();
 }
 
-void LocalFrameClientImpl::
-    DispatchDidReceiveServerRedirectForProvisionalLoad() {
-  if (web_frame_->Client()) {
-    web_frame_->Client()->DidReceiveServerRedirectForProvisionalLoad();
-  }
-}
-
 void LocalFrameClientImpl::DidFinishSameDocumentNavigation(
     HistoryItem* item,
     WebHistoryCommitType commit_type,

@@ -220,19 +220,6 @@ class CORE_EXPORT FrameLoader final {
       mojom::blink::BlobURLTokenPtr,
       bool check_with_client);
 
-  // Like ShouldContinueForNavigationPolicy, but should be used when following
-  // redirects.
-  NavigationPolicy ShouldContinueForRedirectNavigationPolicy(
-      const ResourceRequest&,
-      const SubstituteData&,
-      DocumentLoader*,
-      ContentSecurityPolicyDisposition,
-      WebNavigationType,
-      NavigationPolicy,
-      WebFrameLoadType,
-      bool is_client_redirect,
-      HTMLFormElement*);
-
   // Note: When a PlzNavigtate navigation is handled by the client, we will
   // have created a dummy provisional DocumentLoader, so this will return true
   // while the client handles the navigation.

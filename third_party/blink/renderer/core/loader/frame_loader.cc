@@ -1370,29 +1370,6 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
   return policy;
 }
 
-NavigationPolicy FrameLoader::ShouldContinueForRedirectNavigationPolicy(
-    const ResourceRequest& request,
-    const SubstituteData& substitute_data,
-    DocumentLoader* loader,
-    ContentSecurityPolicyDisposition
-        should_check_main_world_content_security_policy,
-    WebNavigationType type,
-    NavigationPolicy policy,
-    WebFrameLoadType frame_load_type,
-    bool is_client_redirect,
-    HTMLFormElement* form) {
-  return ShouldContinueForNavigationPolicy(
-      request,
-      // |origin_document| is not set. It doesn't really matter here. It is
-      // useful for PlzNavigate (aka browser-side-navigation). It is used
-      // during the first navigation and not during redirects.
-      nullptr,  // origin_document
-      substitute_data, loader, should_check_main_world_content_security_policy,
-      type, policy, frame_load_type, is_client_redirect,
-      WebTriggeringEventInfo::kNotFromEvent, form, nullptr /* blob_url_token */,
-      true /* check_with_client */);
-}
-
 void FrameLoader::ClientDroppedNavigation() {
   if (!provisional_document_loader_ || provisional_document_loader_->DidStart())
     return;

@@ -122,7 +122,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const ResourceResponse&) = 0;
 
   virtual void DispatchDidHandleOnloadEvents() = 0;
-  virtual void DispatchDidReceiveServerRedirectForProvisionalLoad() = 0;
   virtual void DidFinishSameDocumentNavigation(HistoryItem*,
                                                WebHistoryCommitType,
                                                bool content_initiated) {}

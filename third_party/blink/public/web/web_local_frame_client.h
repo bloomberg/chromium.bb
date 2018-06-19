@@ -405,9 +405,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidStartProvisionalLoad(WebDocumentLoader* document_loader,
                                        WebURLRequest& request) {}
 
-  // The provisional load was redirected via a HTTP 3xx response.
-  virtual void DidReceiveServerRedirectForProvisionalLoad() {}
-
   // The provisional load failed. The WebHistoryCommitType is the commit type
   // that would have been used had the load succeeded.
   virtual void DidFailProvisionalLoad(const WebURLError&,

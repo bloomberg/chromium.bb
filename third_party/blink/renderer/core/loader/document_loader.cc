@@ -508,13 +508,6 @@ bool DocumentLoader::RedirectReceived(
     fetcher_->StopFetching();
     return false;
   }
-  if (GetFrameLoader().ShouldContinueForRedirectNavigationPolicy(
-          request_, SubstituteData(), this, kCheckContentSecurityPolicy,
-          navigation_type_, kNavigationPolicyCurrentTab, load_type_,
-          IsClientRedirect(), nullptr) != kNavigationPolicyCurrentTab) {
-    fetcher_->StopFetching();
-    return false;
-  }
 
   DCHECK(!GetTiming().FetchStart().is_null());
   AppendRedirect(request_url);
@@ -525,8 +518,8 @@ bool DocumentLoader::RedirectReceived(
   // back/forward navigation only. In the other case, clearing it is a no-op.
   history_item_.Clear();
 
-  GetLocalFrameClient().DispatchDidReceiveServerRedirectForProvisionalLoad();
-
+  // TODO(creis): Determine if we need to clear any history state
+  // in embedder to fix https://crbug.com/671276.
   return true;
 }
 
