@@ -314,8 +314,9 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'Windows Registry Editor Version 5.00',
         '',
         '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium]',
-        '"DictionaryPolicy"="{"bool": true, "dict": {"a": 1, '
-        '"b": 2}, "int": 10, "list": [1, 2, 3], "string": "abc"}"'])
+        '"DictionaryPolicy"="{\\"bool\\": true, '
+        '\\"dict\\": {\\"a\\": 1, \\"b\\": 2}, \\"int\\": 10, '
+        '\\"list\\": [1, 2, 3], \\"string\\": \\"abc\\"}"'])
     self.CompareOutputs(output, expected_output)
 
   def testExternalPolicy(self):
@@ -344,7 +345,8 @@ class RegWriterUnittest(writer_unittest_common.WriterUnittestCommon):
         'Windows Registry Editor Version 5.00',
         '',
         '[HKEY_LOCAL_MACHINE\\Software\\Policies\\Chromium]',
-        '"ExternalPolicy"="{"hash": "deadbeef", "url": "https://example.com/avatar.jpg"}"'])
+        '"ExternalPolicy"="{\\"hash\\": \\"deadbeef\\", '
+        '\\"url\\": \\"https://example.com/avatar.jpg\\"}"'])
     self.CompareOutputs(output, expected_output)
 
   def testNonSupportedPolicy(self):
