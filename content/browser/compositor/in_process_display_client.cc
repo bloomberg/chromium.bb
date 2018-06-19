@@ -27,7 +27,7 @@ InProcessDisplayClient::InProcessDisplayClient(gfx::AcceleratedWidget widget)
 #endif
 }
 
-InProcessDisplayClient::~InProcessDisplayClient() {}
+InProcessDisplayClient::~InProcessDisplayClient() = default;
 
 viz::mojom::DisplayClientPtr InProcessDisplayClient::GetBoundPtr(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -36,27 +36,24 @@ viz::mojom::DisplayClientPtr InProcessDisplayClient::GetBoundPtr(
   return ptr;
 }
 
+void InProcessDisplayClient::DidSwapAfterSnapshotRequestReceived(
+    const std::vector<ui::LatencyInfo>& latency_info) {}
+
+#if defined(OS_MACOSX)
 void InProcessDisplayClient::OnDisplayReceivedCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
-#if defined(OS_MACOSX)
   ui::CALayerFrameSink* ca_layer_frame_sink =
       ui::CALayerFrameSink::FromAcceleratedWidget(widget_);
   if (ca_layer_frame_sink)
     ca_layer_frame_sink->UpdateCALayerTree(ca_layer_params);
   else
     DLOG(WARNING) << "Received frame for non-existent widget.";
-#else
-  DLOG(ERROR) << "Should not receive CALayer params on non-macOS platforms.";
+}
 #endif
-}
 
-void InProcessDisplayClient::DidSwapAfterSnapshotRequestReceived(
-    const std::vector<ui::LatencyInfo>& latency_info) {
-}
-
+#if defined(OS_WIN)
 void InProcessDisplayClient::CreateLayeredWindowUpdater(
     viz::mojom::LayeredWindowUpdaterRequest request) {
-#if defined(OS_WIN)
   if (!viz::NeedsToUseLayerWindow(widget_)) {
     DLOG(ERROR) << "HWND shouldn't be using a layered window";
     return;
@@ -64,15 +61,7 @@ void InProcessDisplayClient::CreateLayeredWindowUpdater(
 
   layered_window_updater_ = std::make_unique<viz::LayeredWindowUpdaterImpl>(
       widget_, std::move(request));
-#else
-// This should never happen on non-Windows platforms.
+}
 #endif
-}
-
-void InProcessDisplayClient::DidCompleteSwapWithSize(
-    const gfx::Size& pixel_size) {
-  // Only used by Viz on Android, which overrides this.
-  NOTREACHED();
-}
 
 }  // namespace content

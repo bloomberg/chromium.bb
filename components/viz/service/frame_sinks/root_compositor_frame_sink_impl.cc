@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
@@ -177,17 +179,27 @@ void RootCompositorFrameSinkImpl::DisplayWillDrawAndSwap(
 
 void RootCompositorFrameSinkImpl::DisplayDidReceiveCALayerParams(
     const gfx::CALayerParams& ca_layer_params) {
+#if defined(OS_MACOSX)
   // If |ca_layer_params| should have content only when there exists a client
   // to send it to.
   DCHECK(ca_layer_params.is_empty || display_client_);
   if (display_client_)
     display_client_->OnDisplayReceivedCALayerParams(ca_layer_params);
+#else
+  NOTREACHED();
+  ALLOW_UNUSED_LOCAL(display_client_);
+#endif
 }
 
 void RootCompositorFrameSinkImpl::DisplayDidCompleteSwapWithSize(
     const gfx::Size& pixel_size) {
+#if defined(OS_ANDROID)
   if (display_client_)
     display_client_->DidCompleteSwapWithSize(pixel_size);
+#else
+  NOTREACHED();
+  ALLOW_UNUSED_LOCAL(display_client_);
+#endif
 }
 
 void RootCompositorFrameSinkImpl::DidSwapAfterSnapshotRequestReceived(

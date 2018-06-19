@@ -32,13 +32,18 @@ class InProcessDisplayClient : public viz::mojom::DisplayClient {
 
  private:
   // viz::mojom::DisplayClient implementation:
-  void OnDisplayReceivedCALayerParams(
-      const gfx::CALayerParams& ca_layer_params) override;
   void DidSwapAfterSnapshotRequestReceived(
       const std::vector<ui::LatencyInfo>& latency_info) override;
+
+#if defined(OS_MACOSX)
+  void OnDisplayReceivedCALayerParams(
+      const gfx::CALayerParams& ca_layer_params) override;
+#endif
+
+#if defined(OS_WIN)
   void CreateLayeredWindowUpdater(
       viz::mojom::LayeredWindowUpdaterRequest request) override;
-  void DidCompleteSwapWithSize(const gfx::Size& pixel_size) override;
+#endif
 
   mojo::Binding<viz::mojom::DisplayClient> binding_;
 #if defined(OS_MACOSX) || defined(OS_WIN)

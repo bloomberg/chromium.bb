@@ -46,19 +46,20 @@ interface DisplayPrivate {
 };
 
 interface DisplayClient {
-  OnDisplayReceivedCALayerParams(gfx.mojom.CALayerParams ca_layer_params);
-
   // Notifies that a swap has occured after some latency info with snapshot
   // component reached the display.
   DidSwapAfterSnapshotRequestReceived(array<ui.mojom.LatencyInfo> latency_info);
 
-  // WINDOWS ONLY: Create a LayeredWindowUpdater implementation to draw into
-  // layered window.
-  // Note: This will only be used when running Windows 7 and earlier with
-  // software compositing and a transparent HWND.
+  [EnableIf=is_mac]
+  OnDisplayReceivedCALayerParams(gfx.mojom.CALayerParams ca_layer_params);
+
+  // Creates a LayeredWindowUpdater implementation to draw into a layered
+  // window.
+  [EnableIf=is_win]
   CreateLayeredWindowUpdater(LayeredWindowUpdater& layered_window_updater);
 
-  // ANDROID ONLY: Notifies that a swap has occurred and provides information
-  // about the pixel size of the swapped frame.
+  // Notifies that a swap has occurred and provides information about the pixel
+  // size of the swapped frame.
+  [EnableIf=is_android]
   DidCompleteSwapWithSize(gfx.mojom.Size size);
 };
