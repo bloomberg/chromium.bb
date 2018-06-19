@@ -70,9 +70,7 @@ SecureChannelImpl::SecureChannelImpl()
               this /* delegate */)),
       pending_connection_manager_(
           PendingConnectionManagerImpl::Factory::Get()->BuildInstance(
-              this /* delegate */,
-              // TODO(khorimoto): Pass the actual BleConnectionManager here.
-              nullptr /* ble_connection_manager */)),
+              this /* delegate */)),
       remote_device_cache_(
           cryptauth::RemoteDeviceCache::Factory::Get()->BuildInstance()) {}
 
