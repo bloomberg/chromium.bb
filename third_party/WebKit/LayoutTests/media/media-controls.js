@@ -73,6 +73,14 @@ function overlayCastButton(videoElement)
     return button;
 }
 
+function overlayEnclosureElement(videoElement) {
+    var controlID = '-webkit-media-controls-overlay-enclosure';
+    var element = mediaControlsElement(internals.shadowRoot(videoElement).firstChild, controlID);
+    if (!element)
+        throw 'Failed to find overlay enclosure';
+    return element;
+}
+
 function overflowButton(videoElement)
 {
     var controlID = '-internal-media-controls-overflow-button';

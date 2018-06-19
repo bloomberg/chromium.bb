@@ -33,7 +33,7 @@
       "bounds": [320, 240]
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutFlexibleBox DIV)",
+      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
       "position": [8, 8],
       "bounds": [320, 240]
     }

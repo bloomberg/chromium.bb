@@ -795,6 +795,12 @@ label[pseudo="-internal-media-controls-text-track-list-item"] input:checked {
   background-image: -webkit-image-set(url(ic_check_blue.svg) 1x);
 }
 
+video::-webkit-media-controls-overlay-enclosure {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
 /**
  * Audio Controls
  */

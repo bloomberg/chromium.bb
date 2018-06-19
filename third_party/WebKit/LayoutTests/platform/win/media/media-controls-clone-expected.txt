@@ -15,8 +15,9 @@ layer at (308,259) size 300x54
   LayoutMedia {AUDIO} at (300,96) size 300x54
 layer at (8,8) size 300x150
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x150 [bgcolor=#333333]
-    LayoutBlockFlow {DIV} at (150,0) size 0x0
     LayoutFlexibleBox {DIV} at (0,0) size 300x150
+layer at (8,8) size 300x150
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 300x150
 layer at (8,8) size 300x150
   LayoutFlexibleBox {DIV} at (0,0) size 300x150
 layer at (8,98) size 300x48
@@ -54,8 +55,9 @@ layer at (334,129) size 0x4
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 0x4 [bgcolor=#0000008A]
 layer at (8,163) size 300x150
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x150 [bgcolor=#333333]
-    LayoutBlockFlow {DIV} at (150,0) size 0x0
     LayoutFlexibleBox {DIV} at (0,0) size 300x150
+layer at (8,163) size 300x150
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 300x150
 layer at (8,163) size 300x150
   LayoutFlexibleBox {DIV} at (0,0) size 300x150
 layer at (8,253) size 300x48

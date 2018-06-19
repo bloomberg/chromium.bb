@@ -10,8 +10,9 @@ layer at (57,85) size 240x180
   LayoutVideo {VIDEO} at (45,73) size 240x180
 layer at (57,85) size 240x180
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 240x180
-    LayoutBlockFlow {DIV} at (120,0) size 0x0
     LayoutFlexibleBox {DIV} at (0,0) size 240x180
+layer at (57,85) size 240x180
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 240x180
 layer at (57,85) size 240x180
   LayoutFlexibleBox {DIV} at (0,0) size 240x180
 layer at (57,85) size 240x162 clip at (60,88) size 234x156
@@ -47,8 +48,9 @@ layer at (57,310) size 240x180
   LayoutVideo {VIDEO} at (45,298) size 240x180
 layer at (57,310) size 240x180
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 240x180
-    LayoutBlockFlow {DIV} at (120,0) size 0x0
     LayoutFlexibleBox {DIV} at (0,0) size 240x180
+layer at (57,310) size 240x180
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 240x180
 layer at (57,310) size 240x180
   LayoutFlexibleBox {DIV} at (0,0) size 240x180
 layer at (57,310) size 240x162 clip at (60,313) size 234x156

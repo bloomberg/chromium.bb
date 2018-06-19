@@ -16,8 +16,9 @@ layer at (8,282) size 320x240
   LayoutVideo {VIDEO} at (0,0) size 320x240
 layer at (18,42) size 320x240
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240 [color=#000000]
-    LayoutBlockFlow {DIV} at (160,0) size 0x0
     LayoutFlexibleBox {DIV} at (0,0) size 320x240
+layer at (18,42) size 320x240
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 320x240
 layer at (18,42) size 320x240
   LayoutFlexibleBox {DIV} at (0,0) size 320x240
 layer at (18,42) size 320x228 clip at (19,43) size 318x226
@@ -50,8 +51,9 @@ layer at (34,270) size 288x4
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 288x4 [bgcolor=#FFFFFF8A]
 layer at (8,282) size 320x240
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
-    LayoutBlockFlow {DIV} at (160,0) size 0x0
     LayoutFlexibleBox {DIV} at (0,0) size 320x240
+layer at (8,282) size 320x240
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 320x240
 layer at (8,282) size 320x240
   LayoutFlexibleBox {DIV} at (0,0) size 320x240
 layer at (8,282) size 320x228 clip at (9,283) size 318x226
