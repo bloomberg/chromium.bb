@@ -27,6 +27,8 @@ static_library("secure_channel") {
     "ble_initiator_failure_type.h",
     "ble_initiator_operation.cc",
     "ble_initiator_operation.h",
+    "ble_listener_connection_attempt.cc",
+    "ble_listener_connection_attempt.h",
     "ble_listener_failure_type.cc",
     "ble_listener_failure_type.h",
     "ble_listener_operation.cc",
