@@ -14,7 +14,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
@@ -1072,26 +1071,28 @@ public class IntentHandler {
 
     @VisibleForTesting
     static String maybeAddAdditionalExtraHeaders(Intent intent, String url, String extraHeaders) {
-        // On Oreo, ContentResolver.getType(contentUri) returns "application/octet-stream", instead
-        // of the registered MIME type when opening a document from Downloads. To work around this,
-        // we pass the intent type in extra headers such that content request job can get it.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return extraHeaders;
+        // For some apps, ContentResolver.getType(contentUri) returns "application/octet-stream",
+        // instead of the registered MIME type when opening a document from Downloads. To work
+        // around this, we pass the intent type in extra headers such that content request job can
+        // get it.
         if (intent == null || url == null) return extraHeaders;
 
         String scheme = getSanitizedUrlScheme(url);
         if (!TextUtils.equals(scheme, UrlConstants.CONTENT_SCHEME)) return extraHeaders;
 
-        Uri uri = Uri.parse(url);
-        if (uri == null
-                || !"com.android.providers.downloads.documents".equals(uri.getAuthority())) {
-            return extraHeaders;
-        }
-
         String type = intent.getType();
         if (type == null || type.isEmpty()) return extraHeaders;
 
+        // Only override the type for MHTML related types, which some applications get wrong.
+        if (!isMhtmlMimeType(type)) return extraHeaders;
+
         String typeHeader = "X-Chrome-intent-type: " + type;
         return (extraHeaders == null) ? typeHeader : (extraHeaders + "\n" + typeHeader);
+    }
+
+    /** Return true if the type is one of the Mime types used for MHTML */
+    static boolean isMhtmlMimeType(String type) {
+        return type.equals("multipart/related") || type.equals("message/rfc822");
     }
 
     /**
@@ -1107,7 +1108,7 @@ public class IntentHandler {
         boolean isFileUriScheme = TextUtils.equals(scheme, UrlConstants.FILE_SCHEME);
         if (!isContentUriScheme && !isFileUriScheme) return false;
         String type = intent.getType();
-        if (type != null && (type.equals("multipart/related") || type.equals("message/rfc822"))) {
+        if (type != null && isMhtmlMimeType(type)) {
             return true;
         }
         // Note that "application/octet-stream" type may be passed by some apps that do not know
