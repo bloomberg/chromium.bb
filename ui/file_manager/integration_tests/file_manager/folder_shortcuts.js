@@ -49,7 +49,7 @@ var DIRECTORY = {
   A: {
     contents: [ENTRIES.directoryB.getExpectedRow()],
     name: 'A',
-    navItem: '#tree-item-autogen-id-14',
+    navItem: '.tree-item[label="A"]',
     treeItem: TREEITEM_A
   },
   B: {
@@ -60,13 +60,13 @@ var DIRECTORY = {
   C: {
     contents: [],
     name: 'C',
-    navItem: '#tree-item-autogen-id-14',
+    navItem: '.tree-item[label="C"]',
     treeItem: TREEITEM_C
   },
   D: {
     contents: [ENTRIES.directoryE.getExpectedRow()],
     name: 'D',
-    navItem: '#tree-item-autogen-id-13',
+    navItem: '.tree-item[label="D"]',
     treeItem: TREEITEM_D
   },
   E: {

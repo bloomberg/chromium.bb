@@ -933,6 +933,11 @@ function ShortcutItem(modelItem, tree) {
     item.setContextMenu_(tree.contextMenuForRootItems);
 
   item.label = modelItem.entry.name;
+
+  // Set the 'label' attribute of this element so it can be selected by tests.
+  // TODO(sashab): Figure out a reliable way to select elements in the directory
+  // tree by label and remove this.
+  item.setAttribute('label', item.label);
   return item;
 }
 
