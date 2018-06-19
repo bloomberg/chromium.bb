@@ -304,6 +304,12 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
     return;
   has_touch_event_handler_ = has_handlers;
   ResetTouchAction();
+  // If a page has a touch event handler, this function can be called twice with
+  // has_handlers = false first and then true later. When it is true, we need to
+  // reset the |scrolling_touch_action_|. However, we do not want to reset it if
+  // there is an active scroll in progress.
+  if (has_touch_event_handler_ && !touchscreen_scroll_in_progress_)
+    scrolling_touch_action_.reset();
 }
 
 }  // namespace content

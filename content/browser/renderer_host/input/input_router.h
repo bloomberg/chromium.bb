@@ -79,6 +79,11 @@ class InputRouter : public IPC::Listener {
   // Called when a set-touch-action message is received from the renderer
   // for a touch start event that is currently in flight.
   virtual void OnSetTouchAction(cc::TouchAction touch_action) = 0;
+
+  // In the case when a gesture event is bubbled from a child frame to the main
+  // frame, we set the touch action in the main frame Auto even if there is no
+  // pending touch start.
+  virtual void ForceSetTouchActionAuto() = 0;
 };
 
 }  // namespace content

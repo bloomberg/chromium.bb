@@ -1005,13 +1005,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 class SitePerProcessEmulatedTouchBrowserTest
     : public SitePerProcessHitTestBrowserTest {
  public:
-  enum TestType { ScrollBubbling, PinchGoesToMainFrame };
+  enum TestType { ScrollBubbling, PinchGoesToMainFrame, TouchActionBubbling };
 
   ~SitePerProcessEmulatedTouchBrowserTest() override {}
 
   void RunTest(TestType test_type) {
-    GURL main_url(embedded_test_server()->GetURL(
-        "/frame_tree/page_with_positioned_frame.html"));
+    std::string url;
+    if (test_type == TouchActionBubbling)
+      url = "/frame_tree/page_with_pany_frame.html";
+    else
+      url = "/frame_tree/page_with_positioned_frame.html";
+    GURL main_url(embedded_test_server()->GetURL(url));
     ASSERT_TRUE(NavigateToURL(shell(), main_url));
 
     // It is safe to obtain the root frame tree node here, as it doesn't change.
@@ -1057,6 +1061,7 @@ class SitePerProcessEmulatedTouchBrowserTest
     blink::WebInputEvent::Type expected_gesture_type;
     switch (test_type) {
       case ScrollBubbling:
+      case TouchActionBubbling:
         expected_gesture_type = blink::WebInputEvent::kGestureScrollBegin;
         break;
       case PinchGoesToMainFrame:
@@ -1128,7 +1133,7 @@ class SitePerProcessEmulatedTouchBrowserTest
     router->RouteMouseEvent(root_rwhv, &mouse_drag_event, ui::LatencyInfo());
     router->RouteMouseEvent(root_rwhv, &mouse_up_event, ui::LatencyInfo());
 
-    if (test_type == ScrollBubbling) {
+    if (test_type == ScrollBubbling || test_type == TouchActionBubbling) {
       // Verify child receives GestureScrollBegin.
       child_gesture_event_observer.Wait();
     }
@@ -1150,6 +1155,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
 IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
                        EmulatedTouchPinchGoesToMainFrame) {
   RunTest(PinchGoesToMainFrame);
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessEmulatedTouchBrowserTest,
+                       EmulatedGestureScrollBubbles) {
+  RunTest(TouchActionBubbling);
 }
 
 #if defined(USE_AURA) || defined(OS_ANDROID)
