@@ -16,6 +16,9 @@ TestLifecycleUnit::TestLifecycleUnit(base::TimeTicks last_focused_time,
       process_handle_(process_handle),
       can_discard_(can_discard) {}
 
+TestLifecycleUnit::TestLifecycleUnit(content::Visibility visibility)
+    : LifecycleUnitBase(visibility) {}
+
 TestLifecycleUnit::~TestLifecycleUnit() {
   OnLifecycleUnitDestroyed();
 }

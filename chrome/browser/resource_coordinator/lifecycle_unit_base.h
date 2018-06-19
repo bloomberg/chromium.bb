@@ -23,7 +23,7 @@ class LifecycleUnitBase : public LifecycleUnit {
 
   // LifecycleUnit:
   int32_t GetID() const override;
-  base::TimeTicks GetLastVisibleTime() const override;
+  base::TimeTicks GetLastActiveTime() const override;
   LifecycleUnitState GetState() const override;
   void AddObserver(LifecycleUnitObserver* observer) override;
   void RemoveObserver(LifecycleUnitObserver* observer) override;
@@ -60,7 +60,12 @@ class LifecycleUnitBase : public LifecycleUnit {
   // Current state of this LifecycleUnit.
   LifecycleUnitState state_ = LifecycleUnitState::ACTIVE;
 
-  base::TimeTicks last_visible_time_;
+  // TODO(fdoray): Use WebContents::GetLastActiveTime() instead of tracking a
+  // separate last active time here. For this to work,
+  // WebContents::GetLastActiveTime() will have to be updated to return the last
+  // time at which the WebContents was active, rather than the last time at
+  // which it was activated.
+  base::TimeTicks last_active_time_;
 
   base::ObserverList<LifecycleUnitObserver> observers_;
 
