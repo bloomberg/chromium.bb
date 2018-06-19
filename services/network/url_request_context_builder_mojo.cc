@@ -33,23 +33,6 @@ void URLRequestContextBuilderMojo::SetMojoProxyResolverFactory(
   mojo_proxy_resolver_factory_ = std::move(mojo_proxy_resolver_factory);
 }
 
-URLRequestContextOwner URLRequestContextBuilderMojo::Create(
-    mojom::NetworkContextParams* params,
-    bool quic_disabled,
-    net::NetLog* net_log,
-    net::HostResolver* host_resolver,
-    net::NetworkQualityEstimator* network_quality_estimator) {
-  return NetworkContext::ApplyContextParamsToBuilder(
-      this, params, quic_disabled, net_log, host_resolver,
-      network_quality_estimator, nullptr /* http_auth_handler_factory */,
-      nullptr /* sth_distributor */, nullptr /* out_ct_tree_tracker */,
-      nullptr /* out_require_ct_delegate */,
-      nullptr /* out_certificate_report_sender */,
-      nullptr /* out_expect_ct_reporter */,
-      nullptr /* out_static_user_agent_settings */,
-      nullptr /* out_context_network_delegate */);
-}
-
 std::unique_ptr<net::ProxyResolutionService>
 URLRequestContextBuilderMojo::CreateProxyResolutionService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,

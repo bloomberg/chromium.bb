@@ -35,9 +35,6 @@
 
 namespace net {
 class CertVerifier;
-class HostResolver;
-class HttpAuthHandlerFactory;
-class NetworkQualityEstimator;
 class ReportSender;
 class StaticHttpUserAgentSettings;
 class URLRequestContext;
@@ -46,7 +43,6 @@ class URLRequestContext;
 namespace certificate_transparency {
 class ChromeRequireCTDelegate;
 class TreeStateTracker;
-class STHReporter;
 }  // namespace certificate_transparency
 
 namespace network {
@@ -207,29 +203,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
  private:
   class ContextNetworkDelegate;
-  friend class URLRequestContextBuilderMojo;
 
-  // Applies the values in |network_context_params| to |builder|, and builds
-  // the URLRequestContext. If |out_http_user_agent_settings| is non-null, it
-  // will be set to point to StaticHttpUserAgentSettings owned by the
+  // Applies the values in |params_| to |builder|, and builds the
   // URLRequestContext.
-  static URLRequestContextOwner ApplyContextParamsToBuilder(
-      URLRequestContextBuilderMojo* builder,
-      mojom::NetworkContextParams* network_context_params,
-      bool quic_disabled,
-      net::NetLog* net_log,
-      net::HostResolver* host_resolver,
-      net::NetworkQualityEstimator* network_quality_estimator,
-      net::HttpAuthHandlerFactory* http_auth_handler_factory,
-      certificate_transparency::STHReporter* sth_reporter,
-      std::unique_ptr<certificate_transparency::TreeStateTracker>*
-          out_tree_state_tracker,
-      std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>*
-          out_require_ct_delegate,
-      std::unique_ptr<net::ReportSender>* out_certificate_report_sender,
-      std::unique_ptr<ExpectCTReporter>* out_expect_ct_reporter,
-      net::StaticHttpUserAgentSettings** out_http_user_agent_settings,
-      ContextNetworkDelegate** out_context_network_delegate_ptr);
+  URLRequestContextOwner ApplyContextParamsToBuilder(
+      URLRequestContextBuilderMojo* builder);
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
   void OnHttpCacheCleared(ClearHttpCacheCallback callback,
@@ -239,7 +217,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnConnectionError();
 
   URLRequestContextOwner MakeURLRequestContext(
-      mojom::NetworkContextParams* network_context_params,
       SessionCleanupCookieStore** session_cleanup_cookie_store);
 
   NetworkService* const network_service_;

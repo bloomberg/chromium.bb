@@ -48,20 +48,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
       proxy_resolver::mojom::ProxyResolverFactoryPtr
           mojo_proxy_resolver_factory);
 
-  // Can be used to create a URLRequestContext from this consumer-configured
-  // URLRequestContextBuilder, which |params| will then be applied to. The
-  // results URLRequestContext will be returned along with other state that it
-  // depends on. The URLRequestContext can be further modified before first use.
-  //
-  // This method is intended to ease the transition to an out-of-process
-  // NetworkService, and will be removed once that ships.
-  URLRequestContextOwner Create(
-      mojom::NetworkContextParams* params,
-      bool quic_disabled,
-      net::NetLog* net_log,
-      net::HostResolver* host_resolver,
-      net::NetworkQualityEstimator* network_quality_estimator);
-
  private:
   std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
       std::unique_ptr<net::ProxyConfigService> proxy_config_service,
